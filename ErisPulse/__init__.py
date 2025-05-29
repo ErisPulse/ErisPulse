@@ -2,9 +2,16 @@ import os
 import sys
 import types
 from . import util
-from . import errors
-from . import logger
-from .envManager import env
+from .errors import ErrorHook
+from .logger import logger
+from .db import env
+
+# 注册 ErrorHook 并预注册常用错误类型
+ErrorHook.register("MissingDependencyError", doc="缺少依赖错误")
+ErrorHook.register("InvalidDependencyError", doc="依赖无效错误")
+ErrorHook.register("CycleDependencyError"  , doc="依赖循环错误")
+ErrorHook.register("ModuleLoadError"       , doc="模块加载错误")
+logger.info(ErrorHook.info())
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
@@ -50,18 +57,18 @@ def init():
                         "info": moduleObj.moduleInfo
                     }
                     env.set_module(moduleObj.moduleInfo.get("meta", {}).get("name", None), module_info)
-                    logger.info(f"模块 {moduleObj.moduleInfo.get("meta", {}).get("name", None)} 信息已初始化并存储到数据库")
+                    logger.info(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 信息已初始化并存储到数据库")
                 
                 if not module_info.get('status', True):
                     disabledModules.append(module_name)
-                    logger.warning(f"模块 {moduleObj.moduleInfo.get("meta", {}).get("name", None)} 已禁用，跳过加载")
+                    logger.warning(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 已禁用，跳过加载")
                     continue
                     
                 required_deps = moduleObj.moduleInfo.get("dependencies", []).get("requires", [])
                 missing_required_deps = [dep for dep in required_deps if dep not in TempModules]
                 if missing_required_deps:
                     logger.error(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
-                    raise errors.MissingDependencyError(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
+                    ErrorHook.MissingDependencyError(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
 
                 # 检查可选依赖部分
                 optional_deps = moduleObj.moduleInfo.get("dependencies", []).get("optional", [])
@@ -100,13 +107,13 @@ def init():
                     continue
             
             if not all(dep in sdkInstalledModuleNames for dep in moduleDependecies):
-                raise errors.InvalidDependencyError(
+                ErrorHook.InvalidDependencyError(
                     f"模块 {module_name} 的依赖无效: {moduleDependecies}"
                 )
             sdkModuleDependencies[module_name] = moduleDependecies
 
         sdkInstalledModuleNames: list[str] = sdk.util.topological_sort(
-            sdkInstalledModuleNames, sdkModuleDependencies, errors.CycleDependencyError
+            sdkInstalledModuleNames, sdkModuleDependencies, ErrorHook.CycleDependencyError
         )
 
         all_modules_info = {}
@@ -131,7 +138,7 @@ def init():
             moduleMain = moduleObj.Main(sdk)
             setattr(moduleMain, "moduleInfo", moduleInfo)
             setattr(sdk, moduleInfo.get("meta", {}).get("name", None), moduleMain)
-            logger.debug(f"模块 {moduleInfo.get("meta", {}).get("name", None)} 正在初始化")
+            logger.debug(f"模块 {moduleInfo.get('meta', {}).get('name', None)} 正在初始化")
     except Exception as e:
         logger.error(f"初始化失败: {e}")
         raise e

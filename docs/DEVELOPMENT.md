@@ -85,8 +85,8 @@ moduleInfo = {
     },
     "dependencies": {
         "requires": [],  # 必需依赖模块列表
-        "optional": [],  # 可选依赖模块列表（至少拥有其中一个依赖便可）
-        "pip": [["mod1", "mod2"], ["mod3"], "mod4"],  # 第三方 pip 依赖列表
+        "optional": [["mod1", "mod2"], ["mod3"], "mod4"],  # 可选依赖模块列表（至少拥有其中一个依赖便可）
+        "pip": [],  # 第三方 pip 依赖列表
     },
 }
 ```
@@ -113,32 +113,15 @@ class Main:
 
 ### 3. 核心特性
 
-#### 3.1 同步方法调用支持
+#### 3.1 内置 Logger 模块
 
-在需要同步调用异步函数时，可以使用工具函数 `util.ExecAsync`：
-
-```python
-from sdk.util import ExecAsync
-
-# 调用异步函数
-result = ExecAsync(async_func, *args, **kwargs)
-```
-
-**参数说明**：
-
--   `async_func`: 异步函数对象。
--   `*args`: 异步函数的位置参数。
--   `**kwargs`: 异步函数的关键字参数。
-
-#### 3.2 内置 Logger 模块
-
-`logger` 实例会通过模块的 `Main` 类构造函数传入，开发者可以直接使用它记录日志：
+使用 `sdk.logger` 开发者可以直接使用并记录日志到控制台：
 
 ```python
 class Main:
-    def __init__(self, sdk, logger):
+    def __init__(self, sdk):
         self.sdk = sdk
-        self.logger = logger
+        self.logger = sdk.logger
 
         # 记录不同级别的日志
         self.logger.info("这是一条信息日志")
@@ -148,7 +131,7 @@ class Main:
         self.logger.critical("这是一条严重错误日志")
 ```
 
-#### 3.3 动态服务加载与运行
+#### 3.2 动态服务加载与运行
 
 ```python
 import asyncio
@@ -178,7 +161,7 @@ async def run_servers():
 await run_servers()
 ```
 
-#### 3.4 灵活的配置初始化
+#### 3.3 灵活的配置初始化
 
 支持两种方式初始化配置数据：
 
@@ -202,7 +185,7 @@ await run_servers()
     env.set("SERVER", {"host": "0.0.0.0", "port": 11451, "path": "/114514"})
     ```
 
-#### 3.6 模块状态管理
+#### 3.4 模块状态管理
 
 可以使用 `envManager` 动态启用或禁用模块。
 
@@ -252,7 +235,7 @@ env.set_module_status("模块名称", True)
     ```
 
 ---
-
+    
 ### 5. 示例项目
 
 以下是一个完整的示例模块，展示如何实现一个简单的异步模块：
@@ -317,7 +300,7 @@ class Main:
         if not self.handlers_registered:
             self.logger.warning("未找到任何可用的消息处理器")
     
-    def Run(self):
+    def Run(self):  # Run只是示例的启动方法，留给用户直接启动某些主任务模块，而不是sdk直接启动
         self.logger.info("示例模块已启动")
 
     # 消息处理器
@@ -326,3 +309,42 @@ class Main:
     async def handle_onebot_message(self, data):
         pass
 ```
+
+---
+
+### 6. 贡献模块流程
+
+1. Fork [模块仓库](https://github.com/ErisPulse/ErisPulse-ModuleRepo) 并新建分支。
+2. 按照[模块开发基础](#1-模块开发基础)规范实现模块。
+3. 提交 Pull Request，并在 PR 描述中说明模块功能与依赖。
+4. 通过代码审核后合并。
+
+---
+
+### 7. 常见开发问题与排查
+
+- **模块未被加载？**
+  - 检查 `moduleInfo` 是否完整，`meta.name` 是否唯一。
+  - 检查依赖模块是否已安装并启用。
+  - 查看日志输出，定位加载失败原因。
+
+- **依赖冲突或循环依赖？**
+  - 检查 `requires` 和 `optional` 配置，避免循环引用。
+  - 使用 CLI 的 `list` 命令查看依赖关系。
+
+- **pip 依赖未自动安装？**
+  - 确认 `pip` 字段已正确填写。
+  - 检查网络环境，或手动执行 `pip install`。
+
+---
+
+### 8. FAQ
+
+**Q: 如何在模块中访问其他模块？**  
+A: 通过 `self.sdk.模块名` 访问已加载的模块实例。
+
+**Q: 如何自定义日志格式？**  
+A: 可使用 `self.sdk.env.set("LOG_LEVEL", 日志等级)` 修改中的日志格式化器。
+
+**Q: 如何贡献文档？**  
+A: 直接编辑 `docs/` 目录下的 Markdown 文件并提交 PR。

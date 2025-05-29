@@ -1,8 +1,6 @@
-from collections import defaultdict, deque
 import asyncio
-import os
-import shutil
 from concurrent.futures import ThreadPoolExecutor
+from collections import defaultdict, deque
 
 executor = ThreadPoolExecutor()
 

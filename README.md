@@ -1,3 +1,5 @@
+> ⚠️ **注意：2.0 之前的版本已统一标记为 Alpha（阿尔法）版本，当前 ErisPulse 仍处于探索阶段，API 和功能可能会有较大变动。请谨慎用于生产环境。**
+
 # 🚀 ErisPulse - 异步机器人开发框架
 
 基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPythonSDK2) 构建，由 [sdkFrame](https://github.com/runoneall/sdkFrame) 提供支持的异步机器人开发框架。

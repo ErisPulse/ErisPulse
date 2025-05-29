@@ -16,7 +16,7 @@ from rich import box
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.formatted_text import HTML
-from .envManager import env
+from .db import env
 
 console = Console()
 class SourceManager:
@@ -103,38 +103,38 @@ class SourceManager:
         async def fetch_source_data():
             async with aiohttp.ClientSession() as session:
                 for origin in origins:
-                    with console.status(f"[cyan]正在获取 {origin}...[/cyan]"):
-                        try:
-                            async with session.get(origin) as response:
-                                response.raise_for_status()
-                                if response.headers.get('Content-Type', '').startswith('application/json'):
-                                    content = await response.json()
-                                    providers[content["name"]] = content["base"]
-                                    
-                                    for module in content["modules"].keys():
-                                        module_content = content["modules"][module]
-                                        modules[f'{module}@{content["name"]}'] = module_content
-                                        module_origin_name = module_content["path"]
-                                        module_alias_name = module
-                                        module_alias[f'{module_origin_name}@{content["name"]}'] = module_alias_name
+                    console.print(f"[cyan]正在获取 {origin}...[/cyan]")
+                    try:
+                        async with session.get(origin) as response:
+                            response.raise_for_status()
+                            if response.headers.get('Content-Type', '').startswith('application/json'):
+                                content = await response.json()
+                                providers[content["name"]] = content["base"]
+                                
+                                for module in content["modules"].keys():
+                                    module_content = content["modules"][module]
+                                    modules[f'{module}@{content["name"]}'] = module_content
+                                    module_origin_name = module_content["path"]
+                                    module_alias_name = module
+                                    module_alias[f'{module_origin_name}@{content["name"]}'] = module_alias_name
 
-                                        table.add_row(
-                                            content['name'],
-                                            module,
-                                            f"{providers[content['name']]}{module_origin_name}"
-                                        )
-                                else:
-                                    console.print(Panel(
-                                        f"[red]源 {origin} 返回的内容不是有效的 JSON 格式[/red]",
-                                        title="错误",
-                                        border_style="red"
-                                    ))
-                        except Exception as e:
-                            console.print(Panel(
-                                f"[red]获取 {origin} 时出错: {e}[/red]",
-                                title="错误",
-                                border_style="red"
-                            ))
+                                    table.add_row(
+                                        content['name'],
+                                        module,
+                                        f"{providers[content['name']]}{module_origin_name}"
+                                    )
+                            else:
+                                console.print(Panel(
+                                    f"[red]源 {origin} 返回的内容不是有效的 JSON 格式[/red]",
+                                    title="错误",
+                                    border_style="red"
+                                ))
+                    except Exception as e:
+                        console.print(Panel(
+                            f"[red]获取 {origin} 时出错: {e}[/red]",
+                            title="错误",
+                            border_style="red"
+                        ))
 
         asyncio.run(fetch_source_data())
         console.print(table)
