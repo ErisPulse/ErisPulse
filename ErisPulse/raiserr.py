@@ -5,7 +5,7 @@ class Error:
     def __init__(self):
         self._types = {}
 
-    def register(self, name, base=Exception, doc=""):
+    def register(self, name, doc="", base=Exception):
         if name not in self._types:
             err_cls = type(name, (base,), {"__doc__": doc})
             self._types[name] = err_cls
@@ -16,11 +16,10 @@ class Error:
             from .logger import logger
             err_cls = self._types.get(name) or self.register(name)
             exc = err_cls(msg)
-            logger.error(f"[ErisPulse Error] {name}: {msg} | {err_cls.__doc__}")
+            logger.error(f"{name}: {msg} | {err_cls.__doc__}")
             logger.error("".join(traceback.format_stack()))
             if exit:
-                sys.exit(1)
-            raise exc
+                raise exc
         return raiser
 
     def info(self, name: str = None):
@@ -42,4 +41,4 @@ class Error:
             "class": err_cls,
         }
     
-ErrorHook = Error()
+raiserr = Error()

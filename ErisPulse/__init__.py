@@ -2,19 +2,20 @@ import os
 import sys
 import types
 from . import util
-from .errors import ErrorHook
+from .raiserr import raiserr
 from .logger import logger
 from .db import env
 
 # 注册 ErrorHook 并预注册常用错误类型
-ErrorHook.register("MissingDependencyError", doc="缺少依赖错误")
-ErrorHook.register("InvalidDependencyError", doc="依赖无效错误")
-ErrorHook.register("CycleDependencyError"  , doc="依赖循环错误")
-ErrorHook.register("ModuleLoadError"       , doc="模块加载错误")
-logger.info(ErrorHook.info())
+raiserr.register("MissingDependencyError", doc="缺少依赖错误")
+raiserr.register("InvalidDependencyError", doc="依赖无效错误")
+raiserr.register("CycleDependencyError"  , doc="依赖循环错误")
+raiserr.register("ModuleLoadError"       , doc="模块加载错误")
+logger.info(raiserr.info())
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
+setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
 setattr(sdk, "util", util)
 
@@ -68,7 +69,7 @@ def init():
                 missing_required_deps = [dep for dep in required_deps if dep not in TempModules]
                 if missing_required_deps:
                     logger.error(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
-                    ErrorHook.MissingDependencyError(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
+                    raiserr.MissingDependencyError(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
 
                 # 检查可选依赖部分
                 optional_deps = moduleObj.moduleInfo.get("dependencies", []).get("optional", [])
@@ -107,13 +108,13 @@ def init():
                     continue
             
             if not all(dep in sdkInstalledModuleNames for dep in moduleDependecies):
-                ErrorHook.InvalidDependencyError(
+                raiserr.InvalidDependencyError(
                     f"模块 {module_name} 的依赖无效: {moduleDependecies}"
                 )
             sdkModuleDependencies[module_name] = moduleDependecies
 
         sdkInstalledModuleNames: list[str] = sdk.util.topological_sort(
-            sdkInstalledModuleNames, sdkModuleDependencies, ErrorHook.CycleDependencyError
+            sdkInstalledModuleNames, sdkModuleDependencies, raiserr.CycleDependencyError
         )
 
         all_modules_info = {}
