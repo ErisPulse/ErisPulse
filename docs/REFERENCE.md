@@ -5,7 +5,7 @@
 ## 1. SDK 入口对象
 
 ErisPulse 通过 `sdk` 对象暴露核心能力：
-- sdk实例有伪指针的特性,第三方模块可以通过重写底层模块来进行
+- sdk实例有伪指针的特性,第三方模块可以通过重定义`sdk.<Name>`的方式重写底层模块。
 
 ```python
 from ErisPulse import sdk

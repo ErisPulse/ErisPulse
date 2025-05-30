@@ -11,7 +11,6 @@ raiserr.register("MissingDependencyError", doc="缺少依赖错误")
 raiserr.register("InvalidDependencyError", doc="依赖无效错误")
 raiserr.register("CycleDependencyError"  , doc="依赖循环错误")
 raiserr.register("ModuleLoadError"       , doc="模块加载错误")
-logger.info(raiserr.info())
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)

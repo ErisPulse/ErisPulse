@@ -55,3 +55,4 @@ epsdk list                  # 查看所有模块
 - [命令行工具](docs/CLI.md) - CLI 使用手册
 - [源配置指南](docs/ORIGIN.md) - 模块源配置说明
 - [更新日志](docs/CHANGELOG.md) - 版本更新历史
+- [底层API](docs/REFERENCE.md) - 方法与接口
