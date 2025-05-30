@@ -22,7 +22,7 @@ class Logger:
             self._logger.warning("没有log记录可供保存。")
             return
         try:
-            with open(path, "w") as file:
+            with open(path, "w", encoding="utf-8") as file:
                 for module, logs in self._logs.items():
                     file.write(f"Module: {module}\n")
                     for log in logs:
