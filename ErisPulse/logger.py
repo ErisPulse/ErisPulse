@@ -7,6 +7,7 @@ class Logger:
         self._logs = {}
         self._logger = logging.getLogger("ErisPulse")
         self._logger.setLevel(logging.DEBUG)
+        self._file_handler = None
         if not self._logger.handlers:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(logging.Formatter("%(message)s"))
@@ -17,6 +18,20 @@ class Logger:
         if hasattr(logging, level):
             self._logger.setLevel(getattr(logging, level))
 
+    def log_to(self, path: str):
+        if self._file_handler:
+            self._logger.removeHandler(self._file_handler)
+            self._file_handler.close()
+        
+        try:
+            self._file_handler = logging.FileHandler(path, encoding='utf-8')
+            self._file_handler.setFormatter(logging.Formatter("%(message)s"))
+            self._logger.addHandler(self._file_handler)
+            self._logger.info(f"日志输出已设置到文件: {path}")
+        except Exception as e:
+            self._logger.error(f"无法设置日志文件 {path}: {e}")
+            raise e
+        
     def save_logs(self, path: str):
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
