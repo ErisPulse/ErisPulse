@@ -18,34 +18,42 @@ class Logger:
         if hasattr(logging, level):
             self._logger.setLevel(getattr(logging, level))
 
-    def set_output_file(self, path: str):
+    def set_output_file(self, path: str | list):
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
         
-        try:
-            self._file_handler = logging.FileHandler(path, encoding='utf-8')
-            self._file_handler.setFormatter(logging.Formatter("%(message)s"))
-            self._logger.addHandler(self._file_handler)
-            self._logger.info(f"日志输出已设置到文件: {path}")
-        except Exception as e:
-            self._logger.error(f"无法设置日志文件 {path}: {e}")
-            raise e
+        if isinstance(path, str):
+            path = [path]
         
-    def save_logs(self, path: str):
+        for p in path:
+            try:
+                file_handler = logging.FileHandler(p, encoding='utf-8')
+                file_handler.setFormatter(logging.Formatter("%(message)s"))
+                self._logger.addHandler(file_handler)
+                self._logger.info(f"日志输出已设置到文件: {p}")
+            except Exception as e:
+                self._logger.error(f"无法设置日志文件 {p}: {e}")
+                raise e
+        
+    def save_logs(self, path: str | list):
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
             return
-        try:
-            with open(path, "w", encoding="utf-8") as file:
-                for module, logs in self._logs.items():
-                    file.write(f"Module: {module}\n")
-                    for log in logs:
-                        file.write(f"  {log}\n")
-            self._logger.info(f"日志已被保存到：{path}。")
-        except Exception as e:
-            self._logger.error(f"无法保存日志到 {path}: {e}。")
-            raise e
+        if isinstance(path, str):
+            path = [path]
+        
+        for p in path:
+            try:
+                with open(p, "w", encoding="utf-8") as file:
+                    for module, logs in self._logs.items():
+                        file.write(f"Module: {module}\n")
+                        for log in logs:
+                            file.write(f"  {log}\n")
+                    self._logger.info(f"日志已被保存到：{p}。")
+            except Exception as e:
+                self._logger.error(f"无法保存日志到 {p}: {e}。")
+                raise e
 
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
