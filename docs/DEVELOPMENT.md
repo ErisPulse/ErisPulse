@@ -1,10 +1,21 @@
 # ErisPulse 开发指南
 
-ErisPulse 是基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPythonSDK2) 和 [SDKFrame](https://github.com/runoneall/sdkFrame) 构建的异步 SDK 项目，最低支持 **Python 3.7**，推荐使用 **Python 3.9 或更高版本**。
-
----
+ErisPulse（EP）是一个基于全异步架构和模块化设计的机器人开发框架。它通过内置的 sdk 对象将环境配置、日志、错误处理和工具函数封装起来，极大简化了模块开发和扩展。
 
 ## 快速开始
+
+### 初始化 SDK
+
+```python
+from ErisPulse import sdk
+sdk.init()
+```
+
+通过 sdk 对象，您可以访问以下核心功能：
+- `sdk.env` - 环境配置管理
+- `sdk.raiserr` - 内置错误管理器
+- `sdk.logger` - 日志记录器
+- `sdk.util` - 工具函数（如拓扑排序）
 
 ### 项目结构
 
@@ -12,11 +23,9 @@ ErisPulse 是基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPyth
 ErisPulse/
 ├── __init__.py        # 项目初始化
 ├── __main__.py        # CLI 接口
-├── envManager.py      # 环境配置管理
-├── errors.py          # 自定义异常
+├── db.py              # 环境配置管理
+├── raiserr.py         # 自定义异常
 ├── logger.py          # 日志记录
-├── origin.py          # 模块源管理
-├── sdk.py             # SDK 核心
 ├── util.py            # 工具函数
 └── modules/           # 功能模块目录
     └── ...
@@ -24,106 +33,153 @@ ErisPulse/
 
 ### 主要模块说明
 
-- **envManager**: 负责管理环境配置和模块信息，使用 SQLite 数据库存储配置
-- **logger**: 提供日志功能，支持不同日志级别
-- **origin**: 管理模块源，添加、删除、更新模块源等方法在此处
-- **util**: 提供工具函数，拓扑排序、异步执行
-- **modules**: 功能模块目录
+- **db**: 负责管理环境配置和模块信息，使用 SQLite 数据库存储配置
+- **raiserr**: 提供自定义错误管理，支持注册和抛出模块特定错误
+- **logger**: 提供日志功能，支持不同日志级别和日志输出控制
+- **util**: 提供工具函数，包括拓扑排序和异步执行器
+- **modules**: 存放所有功能模块
 
-本项目采用模块化设计，开发者可以通过实现符合规范的模块快速扩展功能。以下是开发的核心步骤：
+## 模块开发基础
 
-1.  **模块开发基础**：了解模块目录结构和开发建议。
-2.  **模块接口规范**：实现 `moduleInfo` 字典和 `Main` 类。
-3.  **核心特性**：掌握异步调用、日志记录和模块入口方法。
-4.  **最佳实践**：遵循异步编程和日志记录的最佳实践。
-
-详细内容请参考以下章节。
-
----
-
-### 1. 模块开发基础
-
-#### 1.1 建议
-
--   **日志记录**：使用 `logger` 记录关键操作，日志级别包括 `DEBUG < INFO < WARNING < ERROR < CRITICAL`。
--   **减少第三方依赖**：优先使用 Python 原生库实现功能，避免引入不必要的第三方库。
--   **性能优化**：
-    -   使用异步编程模型。
-    -   避免阻塞操作。
-    -   引入缓存机制以提升性能。
-
-#### 1.2 目录结构
+### 目录结构
 
 模块目录应遵循以下结构：
 
-```plaintext
+```
 模块名/
 ├── __init__.py        # 模块入口文件
 └── Core.py            # 核心逻辑实现
 ```
 
--   `__init__.py` 必须包含 `moduleInfo` 字典，并导入 `Main` 类。
--   `Core.py` 必须实现 `Main` 类（`Core.py` 的命名不是必须的）。
+- `__init__.py` 必须包含 `moduleInfo` 字典，并导入 `Main` 类
+- `Core.py` 必须实现 `Main` 类
 
----
+### 模块开发建议
 
-### 2. 模块接口规范
+- **异步支持**：优先使用异步编程模型（async/await）
+- **日志记录**：使用 `logger` 记录关键操作，日志级别包括 `DEBUG < INFO < WARNING < ERROR < CRITICAL`
+- **减少第三方依赖**：优先使用 Python 原生库实现功能
+- **性能优化**：避免阻塞操作，引入缓存机制以提升性能
 
-#### 2.1 moduleInfo 字典
+## 模块接口规范
+
+### moduleInfo 字典
 
 `moduleInfo` 是模块的元信息，定义如下：
 
 ```python
+# __init__.py
 moduleInfo = {
     "meta": {
-        "name": "logger",  # 模块名称（必填）
-        "author": "ErisPulse",  # 开发者姓名（选填）
-        "description": "Test Logger Module",  # 模块功能描述（选填）
-        "version": "1.0.0",  # 版本号（选填）
-        "license": "MIT",  # 许可证（选填）
-        "homepage": "",  # 项目主页（选填）
+        "name": "示例模块",              # 模块名称（必填）
+        "version": "1.0.0",             # 版本号
+        "description": "模块描述信息",   # 功能描述
+        "author": "开发者",             # 模块作者
+        "license": "MIT",               # 许可协议
+        "homepage": ""                  # 项目主页（可选）
     },
     "dependencies": {
         "requires": [],  # 必需依赖模块列表
-        "optional": [["mod1", "mod2"], ["mod3"], "mod4"],  # 可选依赖模块列表（至少拥有其中一个依赖便可）
-        "pip": [],  # 第三方 pip 依赖列表
+        "optional": [],  # 可选依赖模块列表（满足其中一项即可）
+        "pip": []        # 第三方 pip 依赖包列表
     },
 }
 ```
 
-#### 2.2 Main 类
+### Main 类
 
 `Main` 类是模块的核心实现，其构造函数必须接受 `sdk` 参数：
 
 ```python
+# Core.py
 class Main:
     def __init__(self, sdk):
-        self.sdk = sdk  # SDK 实例，提供核心功能
-        self.logger = sdk.logger  # 日志记录器实例
+        self.sdk = sdk          # sdk 对象，包含 env、logger、raiserr、util
+        self.logger = sdk.logger
+        self.env = sdk.env
+        self.raiserr = sdk.raiserr
+
+    async def start(self):
+        # 模块异步启动逻辑
+        self.logger.info(f"{self.moduleInfo['meta']['name']} 模块启动")
 ```
 
--   `sdk` 实例：
-    -   提供访问其他模块、注册事件处理器、管理配置等核心功能。
-    -   可以通过 `sdk.模块名` 访问其他模块的实例。
--   `sdk.logger` ：
-    -   用于记录模块运行时的各种信息，方便调试和监控。
-    -   支持 `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` 等日志级别。
+## 核心特性
 
----
+### 异步编程支持
 
-### 3. 核心特性
+ErisPulse 完全基于异步架构，利用 asyncio 实现非阻塞操作。模块开发中应该使用 async/await 模式，确保高并发下的稳定运行。
 
-#### 3.1 内置 Logger 模块
+### 模块间通信
+
+通过 `self.sdk.模块名` 访问已加载的模块实例，实现模块间通信。
+
+## 伪指针特性
+
+ErisPulse 的 sdk 实例支持伪指针特性，第三方模块可以通过重写 `sdk.<Name>`（如 `sdk.logger`、`sdk.env` 等）来直接覆盖底层模块实现。例如：
+
+```python
+# 示例：重写日志模块
+class CustomLogger:
+    def info(self, msg):
+        print(f"CustomLogger INFO: {msg}")
+    def debug(self, msg):
+        print(f"CustomLogger DEBUG: {msg}")
+    def warning(self, msg):
+        print(f"CustomLogger WARNING: {msg}")
+    def error(self, msg):
+        print(f"CustomLogger ERROR: {msg}")
+    def critical(self, msg):
+        print(f"CustomLogger CRITICAL: {msg}")
+
+# 重定义 sdk.logger
+sdk.logger = CustomLogger()
+sdk.logger.info("通过自定义日志模块打印信息")
+```
+
+### 内置错误管理
+
+通过 `sdk.raiserr` 统一注册和抛出模块错误。开发者可使用 `sdk.raiserr.register` 注册自定义错误类型，并使用相应属性触发错误。
+
+```python
+# 注册新的错误类型
+sdk.raiserr.register("CustomError", doc="自定义错误描述")
+
+# 抛出错误（默认仅记录日志，不中断程序）
+sdk.raiserr.CustomError("发生了自定义错误", exit=False)
+```
+
+### 灵活的配置管理
+
+利用 `sdk.env` 实现全局配置的动态读取与写入。
+
+```python
+# 获取配置项
+value = sdk.env.get("配置项", "默认值")
+
+# 设置配置项
+sdk.env.set("配置项", "新值")
+```
+
+## 日志系统
+
+### 日志等级
+
+ErisPulse 使用标准日志等级：
+- DEBUG - 调试信息，用于开发时的问题排查
+- INFO - 重要操作记录，用于跟踪模块运行状态
+- WARNING - 潜在问题警告，提示开发者注意
+- ERROR - 错误发生，但不影响模块继续运行
+- CRITICAL - 严重错误，可能导致模块停止
+
+### 日志记录
 
 使用 `sdk.logger` 开发者可以直接使用并记录日志到控制台：
 
 ```python
 class Main:
     def __init__(self, sdk):
-        self.sdk = sdk
         self.logger = sdk.logger
-
-        # 记录不同级别的日志
         self.logger.info("这是一条信息日志")
         self.logger.debug("这是一条调试日志")
         self.logger.warning("这是一条警告日志")
@@ -131,112 +187,112 @@ class Main:
         self.logger.critical("这是一条严重错误日志")
 ```
 
-#### 3.2 动态服务加载与运行
+### 模块级日志控制
+
+ErisPulse 支持为每个模块设置独立的日志等级：
 
 ```python
-import asyncio
-from sdk import sdk
+# 设置模块日志等级
+sdk.logger.set_module_level("模块名", "DEBUG")
 
-# 初始化 SDK
-sdk.init()
-
-async def run_servers():
-    tasks = []
-
-    # 加载并运行 AsyncServer
-    if hasattr(sdk, "AsyncServer"):
-        tasks.append(sdk.AsyncServer.Run())
-        sdk.AsyncServer.AddTrigger(sdk.NormalHandler)
-        sdk.AsyncServer.AddTrigger(sdk.CommandHandler)
-
-    # 加载并运行 OneBotAdapter
-    if hasattr(sdk, "OneBotAdapter"):
-        tasks.append(sdk.OneBotAdapter.Run())
-        sdk.OneBotAdapter.AddTrigger(sdk.OneBotMessageHandler)
-
-    # 并行运行所有服务
-    await asyncio.gather(*tasks)
-
-# 启动服务
-await run_servers()
+# 每个模块可以独立设置日志等级
+sdk.logger.set_module_level("模块A", "INFO")
+sdk.logger.set_module_level("模块B", "DEBUG")
 ```
 
-#### 3.3 灵活的配置初始化
+### 日志输出和保存
 
-支持两种方式初始化配置数据：
-
-1.  **通过 `env.py` 文件直接定义变量**：
-
-    ```python
-    # env.py
-    YUNHU_TOKEN = "114514"
-    LOG_LEVEL = "DEBUG"
-    SERVER = {"host": "0.0.0.0", "port": 11451, "path": "/114514"}
-    ```
-
-2.  **通过代码动态设置**：
-
-    ```python
-    # env.py
-    from sdk import env
-
-    env.set("YUNHU_TOKEN", "114514")
-    env.set("LOG_LEVEL", "DEBUG")
-    env.set("SERVER", {"host": "0.0.0.0", "port": 11451, "path": "/114514"})
-    ```
-
-#### 3.4 模块状态管理
-
-可以使用 `envManager` 动态启用或禁用模块。
+支持将日志输出到多个文件，并可手动保存日志到指定位置：
 
 ```python
-from ErisPulse import env
+# 设置日志输出文件（支持多个文件）
+sdk.logger.set_output_file(["日志1.log", "日志2.log"])
 
-# 禁用模块
-env.set_module_status("模块名称", False)
-
-# 启用模块
-env.set_module_status("模块名称", True)
+# 手动保存日志（支持多个文件）
+sdk.logger.save_logs(["日志1.log", "日志2.log"])
 ```
 
-被禁用的模块不会被加载和运行。
+## 模块系统
 
----
+### 模块加载机制
 
-### 4. 开发最佳实践
+模块加载时会检查以下内容：
+1. 模块元信息是否完整
+2. 必需依赖是否满足
+3. 可选依赖是否可用
 
-#### 4.1 异步编程注意事项
+### 模块依赖管理
 
--   **避免阻塞操作**：尽量使用异步库替代阻塞式库（如 `aiohttp` 替代 `requests`）。
--   **任务管理**：使用 `asyncio.create_task` 创建后台任务，并确保任务异常被捕获。
+模块可以通过 `dependencies` 字段声明依赖：
 
-#### 4.2 日志记录的最佳实践
+```python
+"dependencies": {
+    "requires": ["依赖模块1", "依赖模块2"],  # 必需依赖
+    "optional": [["可选依赖1", "可选依赖2"], ["可选依赖3"]],  # 可选依赖
+    "pip": ["第三方依赖包1", "第三方依赖包2"]  # pip 依赖
+}
+```
 
--   **分级记录**：根据问题严重性选择合适的日志级别。
--   **上下文信息**：在日志中添加上下文信息（如用户 ID、请求 ID），便于排查问题。
+### 模块初始化流程
 
-#### 4.3 异常处理
+模块初始化流程包括：
+1. 检查模块元信息
+2. 验证模块依赖
+3. 进行拓扑排序
+4. 初始化模块配置
+5. 实例化模块
 
--   **务必在入口方法中使用 `try...except` 捕获异常**，避免线程意外退出。
+## SDK 核心功能
 
-    ```python
-    from ErisPulse import sdk
+### 异步支持
 
-    class Main:
-        def __init__(self, sdk, logger):
-            self.sdk = sdk
-            self.logger = logger
+ErisPulse 的所有核心功能都支持异步操作，开发者可以充分利用 async/await 模式进行开发。
 
-        def start_service(self):
-            try:
-                # ...服务逻辑...
-            except Exception as e:
-                self.logger.error("服务启动失败")
-    ```
+### 模块间通信
 
----
-    
-### 5. 示例项目
+通过 `self.sdk.模块名` 访问其他模块的实例，实现模块间通信。
+
+### 环境配置管理
+
+通过 `sdk.env` 实现全局配置的动态读取与写入。
+
+### 错误处理
+
+通过 `sdk.raiserr` 统一注册和抛出模块错误。
+
+### 工具函数
+
+提供实用工具函数：
+- `sdk.util.topological_sort` - 模块依赖排序
+- `sdk.util.ExecAsync` - 在线程池中执行异步函数
+
+## 开发最佳实践
+
+### 异步编程注意事项
+
+- **避免阻塞操作**：尽量使用异步库替代阻塞式库（如 `aiohttp` 替代 `requests`）
+- **任务管理**：使用 `asyncio.create_task` 创建后台任务，并确保任务异常被捕获
+- **资源管理**：使用 `async with` 语句管理异步资源
+
+### 日志记录的最佳实践
+
+- **分级记录**：根据问题严重性选择合适的日志级别
+- **上下文信息**：在日志中添加上下文信息（如用户 ID、请求 ID）
+- **模块区分**：通过模块名区分日志来源
+
+### 异常处理
+
+- **务必捕获异常**：在模块入口方法中使用 `try...except` 捕获异常
+- **自定义错误**：为模块定义专门的错误类型
+- **合理使用 exit 参数**：决定错误是否中断程序
+
+### 配置管理
+
+- **统一配置访问**：所有配置通过 `sdk.env` 访问
+- **动态配置更新**：支持运行时动态更新配置
+- **配置持久化**：配置更改会持久化存储
+
+## 示例项目
 
 以下是一个完整的示例模块，展示如何实现一个简单的异步模块：
 
@@ -263,19 +319,12 @@ moduleInfo = {
 
 ```python
 # Core.py
-
 class Main:
     def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger
         self.env = sdk.env
-        if self.env.get("田所浩二", False) or self.env.get("目力先辈恶臭", False):
-            self.logger.info("""
-                该模块需要以下env配置才能运行，请检测是否配置正确
-                \n田所浩二: 用来判断你是不是()
-                \n目力先辈恶臭: ？
-                """
-            )
+        self.raiserr = sdk.raiserr
 
         # 初始化标志变量
         self.handlers_registered = False
@@ -300,51 +349,53 @@ class Main:
         if not self.handlers_registered:
             self.logger.warning("未找到任何可用的消息处理器")
     
-    def Run(self):  # Run只是示例的启动方法，留给用户直接启动某些主任务模块，而不是sdk直接启动
+    def Run(self):  # Run只是示例的启动方法，留给用户直接启动某些主任务模块
         self.logger.info("示例模块已启动")
 
     # 消息处理器
     async def handle_normal_message(self, data):
         pass
+    
     async def handle_onebot_message(self, data):
         pass
 ```
 
----
+## 贡献模块流程
 
-### 6. 贡献模块流程
+1. Fork [模块仓库](https://github.com/ErisPulse/ErisPulse-ModuleRepo) 并新建分支
+2. 按照[模块开发基础](#1-模块开发基础)规范实现模块
+3. 提交 Pull Request，并在 PR 描述中说明模块功能与依赖
+4. 通过代码审核后合并
 
-1. Fork [模块仓库](https://github.com/ErisPulse/ErisPulse-ModuleRepo) 并新建分支。
-2. 按照[模块开发基础](#1-模块开发基础)规范实现模块。
-3. 提交 Pull Request，并在 PR 描述中说明模块功能与依赖。
-4. 通过代码审核后合并。
+## 常见开发问题与排查
 
----
+### 模块未被加载
 
-### 7. 常见开发问题与排查
+- 检查 `moduleInfo` 是否完整，`meta.name` 是否唯一
+- 检查依赖模块是否已安装并启用
+- 查看日志输出，定位加载失败原因
 
-- **模块未被加载？**
-  - 检查 `moduleInfo` 是否完整，`meta.name` 是否唯一。
-  - 检查依赖模块是否已安装并启用。
-  - 查看日志输出，定位加载失败原因。
+### pip 依赖未自动安装
 
-- **依赖冲突或循环依赖？**
-  - 检查 `requires` 和 `optional` 配置，避免循环引用。
-  - 使用 CLI 的 `list` 命令查看依赖关系。
+- 确认 `pip` 字段已正确填写
+- 检查网络环境
 
-- **pip 依赖未自动安装？**
-  - 确认 `pip` 字段已正确填写。
-  - 检查网络环境，或手动执行 `pip install`。
+### 模块状态管理
 
----
+- 通过 `env.set_module_status("模块名称", True)` 启用模块
+- 通过 `env.set_module_status("模块名称", False)` 禁用模块
+- 被禁用的模块不会被加载和运行
 
-### 8. FAQ
+## FAQ
 
-**Q: 如何在模块中访问其他模块？**  
-A: 通过 `self.sdk.模块名` 访问已加载的模块实例。
+### 如何在模块中访问其他模块？
 
-**Q: 如何自定义日志格式？**  
-A: 可使用 `self.sdk.env.set("LOG_LEVEL", 日志等级)` 修改中的日志格式化器。
+通过 `self.sdk.模块名` 访问已加载的模块实例。
 
-**Q: 如何贡献文档？**  
-A: 直接编辑 `docs/` 目录下的 Markdown 文件并提交 PR。
+### 如何贡献文档？
+
+直接编辑 `docs/` 目录下的 Markdown 文件并提交 PR。
+
+### 如何查看模块的运行时配置？
+
+通过 `sdk.env.get("KEY")` 获取配置，通过 `sdk.env.set("KEY", "VALUE")` 设置配置。
