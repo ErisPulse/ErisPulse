@@ -5,6 +5,7 @@ import datetime
 class Logger:
     def __init__(self):
         self._logs = {}
+        self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
         self._logger.setLevel(logging.DEBUG)
         self._file_handler = None
@@ -17,7 +18,21 @@ class Logger:
         level = level.upper()
         if hasattr(logging, level):
             self._logger.setLevel(getattr(logging, level))
-
+    
+    def set_module_level(self, module_name: str, level: str) -> bool:
+        from .db import env
+        if not env.get_module_status(module_name):
+            self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
+            return False
+        level = level.upper()
+        if hasattr(logging, level):
+            self._module_levels[module_name] = getattr(logging, level)
+            self._logger.info(f"模块 {module_name} 日志等级已设置为 {level}")
+            return True
+        else:
+            self._logger.error(f"无效的日志等级: {level}")
+            return False
+    
     def set_output_file(self, path: str | list):
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
@@ -61,7 +76,10 @@ class Logger:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
-
+    
+    def _get_effective_level(self, module_name):
+        return self._module_levels.get(module_name, self._logger.level)
+    
     def _get_caller(self):
         frame = inspect.currentframe().f_back.f_back
         module = inspect.getmodule(frame)
@@ -74,27 +92,32 @@ class Logger:
 
     def debug(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
-        self._save_in_memory(caller_module, msg)
-        self._logger.debug(f"[{caller_module}] {msg}", *args, **kwargs)
+        if self._get_effective_level(caller_module) <= logging.DEBUG:
+            self._save_in_memory(caller_module, msg)
+            self._logger.debug(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
-        self._save_in_memory(caller_module, msg)
-        self._logger.info(f"[{caller_module}] {msg}", *args, **kwargs)
+        if self._get_effective_level(caller_module) <= logging.INFO:
+            self._save_in_memory(caller_module, msg)
+            self._logger.info(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
-        self._save_in_memory(caller_module, msg)
-        self._logger.warning(f"[{caller_module}] {msg}", *args, **kwargs)
+        if self._get_effective_level(caller_module) <= logging.WARNING:
+            self._save_in_memory(caller_module, msg)
+            self._logger.warning(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
-        self._save_in_memory(caller_module, msg)
-        self._logger.error(f"[{caller_module}] {msg}", *args, **kwargs)
+        if self._get_effective_level(caller_module) <= logging.ERROR:
+            self._save_in_memory(caller_module, msg)
+            self._logger.error(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
-        self._save_in_memory(caller_module, msg)
-        self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
+        if self._get_effective_level(caller_module) <= logging.CRITICAL:
+            self._save_in_memory(caller_module, msg)
+            self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
 
 logger = Logger()

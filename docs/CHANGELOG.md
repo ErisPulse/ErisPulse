@@ -13,7 +13,10 @@
 ## [1.0.14.dev1]
 > 当前为开发版，内容可能随时变更
 ### 新增
-- 内置`logger`新增log保存功能，可使用`sdk.logger.save_logs(<Path> + <FileName>: str)`手动保存到指定位置
+- 内置`logger`新增日志保存功能，可使用`sdk.logger.save_logs(<Path> + <FileName>: str | list)`手动保存到指定位置
+- 内置`logger`新增运行日志写入功能，可使用`sdk.logger.set_output_file(<Path> + <FileName>: str | list)`选择“在哪些地方拉屎”
+> 以上两个条目 支持列表多个路径文件
+- 内置`logger`新增对于单个模块的日志等级设置，可使用`sdk.logger.set_module_level(<ModuleName>, <Level>)`设置单个模块日志等级
 
 ---
 
