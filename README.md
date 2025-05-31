@@ -1,10 +1,6 @@
 ⚠ 当前版本处于开发中，请谨慎使用。
 
-# 🚀 ErisPulse - 异步机器人开发框架
-
-<div align="center">
-  <img src="https://avatars.githubusercontent.com/u/210464547" alt="头像" onClick="return false;" style="border-radius: 50%; pointer-events: none;">
-</div>
+![](./.github/assets/erispulse_logo.png)
 
 基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPythonSDK2) 构建，由 [sdkFrame](https://github.com/runoneall/sdkFrame) 提供支持的异步机器人开发框架。
 
