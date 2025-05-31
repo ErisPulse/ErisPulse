@@ -18,7 +18,7 @@ class Logger:
         if hasattr(logging, level):
             self._logger.setLevel(getattr(logging, level))
 
-    def log_to(self, path: str):
+    def set_output_file(self, path: str):
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
