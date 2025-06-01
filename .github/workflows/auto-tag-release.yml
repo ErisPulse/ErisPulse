@@ -1,0 +1,52 @@
+name: Auto Tag and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  auto-tag-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 从 pyproject.toml 提取版本号
+        id: get_version
+        run: |
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "当前版本：$version"
+
+      - name: 获取最新 Git 标签
+        id: get_tag
+        run: |
+          tag=$(git tag --sort=-v:refname | head -n 1)
+          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
+          echo "最新标签：$tag"
+
+      - name: 判断版本是否更新并创建新标签
+        id: create_tag
+        run: |
+          current_version=${{ steps.get_version.outputs.version }}
+          latest_tag=${{ steps.get_tag.outputs.latest_tag }}
+          if [ "v$current_version" != "$latest_tag" ]; then
+            echo "检测到新版本：v$current_version"
+            git tag "v$current_version"
+            git push origin "v$current_version"
+          else
+            echo "版本无更新，跳过打标签。"
+          fi
+
+      - name: 自动创建 GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: "Release v${{ steps.get_version.outputs.version }}"
+          body: "自动创建 Release，由 CI 自动生成。"
