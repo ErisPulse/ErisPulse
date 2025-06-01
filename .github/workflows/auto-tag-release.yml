@@ -1,5 +1,6 @@
-name: Auto Tag and Release
+name: 🎀 艾莉丝的版本标签魔法 ~
 
+# 艾莉丝会自动为主分支的更新打上标签喔!
 permissions:
   contents: write
 
@@ -11,29 +12,29 @@ jobs:
   auto-tag-and-release:
     runs-on: ubuntu-latest
     steps:
-      - name: 克隆代码
+      - name: 检出代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 提取版本和提交信息
+      - name: 读取魔法卷轴
         id: info
         shell: bash
         run: |
-          # 获取版本号
+          # 解读版本魔法
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           echo "version=$version" >> $GITHUB_OUTPUT
-          echo "当前版本：$version"
+          echo "✨ 发现新版本: $version"
           
-          # 检查是否为开发版本
+          # 检查是否是试验魔法
           if [[ $version =~ dev|alpha|beta|a|b ]]; then
             echo "is_dev=true" >> $GITHUB_OUTPUT
           else
             echo "is_dev=false" >> $GITHUB_OUTPUT
           fi
           
-          # 获取提交信息
+          # 获取魔法变更记录
           commit_msg=$(git log -1 --pretty=%B)
           commit_short=$(git rev-parse --short HEAD)
           echo "commit_short=$commit_short" >> $GITHUB_OUTPUT
@@ -41,7 +42,7 @@ jobs:
           echo "$commit_msg" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 处理发行版
+      - name: 施展版本魔法
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -52,33 +53,35 @@ jobs:
           is_dev="${{ steps.info.outputs.is_dev }}"
           tag_name="v$version"
           
-          # 构建更新日志
+          # 读取魔法记录书
           if [ -f "docs/CHANGELOG.md" ]; then
             changelog=$(sed -n "/^## \[$version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
           fi
           
+          # 如果没有找到记录,就用简单的魔法
           if [ -z "$changelog" ]; then
-            changelog="### 更新内容\n\n- $commit_msg ($commit_short)"
+            changelog="### ✨ 魔法更新\n\n- $commit_msg ($commit_short)"
           fi
           
-          # 检查标签是否存在
+          # 检查魔法印记是否已存在
           if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
+            echo "🎀 施加新的魔法印记..."
             git tag "$tag_name"
             git push origin "$tag_name"
           fi
           
-          # 使用 GitHub CLI 处理发行版
+          # 在魔法集市上发布
           if gh release view "$tag_name" &>/dev/null; then
-            # 更新现有发行版
+            # 更新已有的魔法
             gh release edit "$tag_name" \
               --notes "$changelog" \
               --prerelease=$is_dev
-            echo "已更新发行版 $tag_name"
+            echo "🌟 已更新魔法版本 $tag_name"
           else
-            # 创建新发行版
+            # 发布新的魔法
             gh release create "$tag_name" \
               --notes "$changelog" \
-              --title "Release $tag_name" \
+              --title "✨ 艾莉丝的魔法更新 $tag_name" \
               --prerelease=$is_dev
-            echo "已创建发行版 $tag_name"
+            echo "✨ 已发布新的魔法版本 $tag_name"
           fi
