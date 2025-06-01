@@ -1,9 +1,14 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'          # 正式版本
+      - 'v*.*.*dev*'      # 开发版本
+      - 'v*.*.*alpha*'    # alpha版本
+      - 'v*.*.*beta*'     # beta版本
+      - 'v*.*.*a*'        # alpha简写
+      - 'v*.*.*b*'        # beta简写
 
 permissions:
   contents: read
@@ -17,15 +22,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 切换到上一个稳定版本
+      - name: 检查并切换版本
+        id: version
         run: |
-          PREV_TAG=$(git tag --sort=-v:refname | head -n 2 | tail -n 1)
-          if [ -z "$PREV_TAG" ]; then
-            echo "错误：没有找到上一个版本标签"
-            exit 1
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          # 如果是开发版本，直接使用当前版本
+          if [[ $CURRENT_TAG =~ dev|alpha|beta|a|b ]]; then
+            echo "使用当前开发版本: $CURRENT_TAG"
+            echo "use_current=true" >> $GITHUB_OUTPUT
+          else
+            # 如果是正式版本，使用上一个版本
+            PREV_TAG=$(git tag --sort=-v:refname | grep -v "$CURRENT_TAG" | grep "^v" | head -n 1)
+            if [ -z "$PREV_TAG" ]; then
+              echo "错误：没有找到上一个版本标签"
+              exit 1
+            fi
+            echo "使用上一个版本: $PREV_TAG"
+            git checkout $PREV_TAG
+            echo "use_current=false" >> $GITHUB_OUTPUT
           fi
-          echo "使用上一个稳定版本标签: $PREV_TAG"
-          git checkout $PREV_TAG
 
       - uses: actions/setup-python@v5
         with:
