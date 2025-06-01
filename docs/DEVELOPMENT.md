@@ -260,11 +260,72 @@ ErisPulse 的所有核心功能都支持异步操作，开发者可以充分利�
 
 通过 `sdk.raiserr` 统一注册和抛出模块错误。
 
-### 工具函数
+## 内置工具
 
-提供实用工具函数：
-- `sdk.util.topological_sort` - 模块依赖排序
-- `sdk.util.ExecAsync` - 在线程池中执行异步函数
+工具模块提供了一系列实用函数和装饰器，用于简化开发过程并提高代码质量。
+
+### 工具列表
+
+*   **`ExecAsync(async_func, *args, **kwargs)`**: 在事件循环中异步执行一个异步函数。
+*   **`@cache`**: 缓存函数结果的装饰器。
+*   **`@run_in_executor`**: 将同步函数转换为异步函数，并在线程池中执行。
+*   **`@retry(max_attempts=3, delay=1)`**: 自动重试可能会失败的函数。
+
+### 示例
+
+以下示例展示了如何在模块中使用工具模块中的函数和装饰器：
+
+```python
+import asyncio
+from ErisPulse import sdk, util
+
+class Main:
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger
+
+    @util.run_in_executor
+    def blocking_task(self, data):
+        # 模拟一个耗时的同步任务
+        import time
+        time.sleep(2)
+        return f"处理后的数据: {data}"
+
+    @util.cache
+    def cached_calculation(self, arg):
+        # 模拟一个计算密集型任务
+        self.logger.info(f"执行缓存计算，参数: {arg}")
+        return arg * 2
+
+    async def start(self):
+        self.logger.info("模块启动")
+
+        # 异步执行同步任务
+        result = await self.blocking_task("一些数据")
+        self.logger.info(f"异步任务结果: {result}")
+
+        # 使用缓存
+        result1 = self.cached_calculation(5)
+        self.logger.info(f"第一次缓存结果: {result1}")
+        result2 = self.cached_calculation(5)  # 从缓存中获取
+        self.logger.info(f"第二次缓存结果: {result2}")
+
+        # 使用重试装饰器
+        try:
+            await self.unreliable_operation()
+        except Exception as e:
+            self.logger.error(f"重试操作失败: {e}")
+
+    @util.retry(max_attempts=3, delay=1)
+    async def unreliable_operation(self):
+        # 模拟一个可能失败的异步操作
+        import random
+        if random.random() < 0.5:
+            raise Exception("操作失败")
+        self.logger.info("操作成功")
+```
+
+在这个示例中，我们展示了如何使用 `@run_in_executor` 异步执行同步任务，使用 `@cache` 缓存计算结果，以及使用 `@retry` 自动重试可能失败的操作。
 
 ## 开发最佳实践
 
