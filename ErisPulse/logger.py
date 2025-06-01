@@ -1,6 +1,7 @@
 import logging
 import inspect
 import datetime
+import functools
 
 class Logger:
     def __init__(self):
@@ -69,6 +70,34 @@ class Logger:
             except Exception as e:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
                 raise e
+    
+    def catch(self, func_or_level=None, level="error"):
+        if isinstance(func_or_level, str):
+            return lambda func: self.catch(func, level=func_or_level)
+        if func_or_level is None:
+            return lambda func: self.catch(func, level=level)
+        func = func_or_level
+        
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                import traceback
+                error_info = traceback.format_exc()
+                
+                module_name = func.__module__
+                if module_name == "__main__":
+                    module_name = "Main"
+                func_name = func.__name__
+                
+                error_msg = f"Exception in {func_name}: {str(e)}\n{error_info}"
+                
+                log_method = getattr(self, level, self.error)
+                log_method(error_msg)
+                
+                return None
+        return wrapper
 
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
