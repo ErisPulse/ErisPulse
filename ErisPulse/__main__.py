@@ -9,6 +9,7 @@ import asyncio
 import subprocess
 import json
 from .db import env
+from .mods import mods
 
 def print_panel(msg, title=None, border_style=None):
     print("=" * 60)
@@ -157,17 +158,17 @@ class SourceManager:
             print_panel(f"源 {value} 不存在", "错误")
 
 def enable_module(module_name):
-    module_info = env.get_module(module_name)
+    module_info = mods.get_module(module_name)
     if module_info:
-        env.set_module_status(module_name, True)
+        mods.set_module_status(module_name, True)
         print_panel(f"✓ 模块 {module_name} 已成功启用", "成功")
     else:
         print_panel(f"模块 {module_name} 不存在", "错误")
 
 def disable_module(module_name):
-    module_info = env.get_module(module_name)
+    module_info = mods.get_module(module_name)
     if module_info:
-        env.set_module_status(module_name, False)
+        mods.set_module_status(module_name, False)
         print_panel(f"✓ 模块 {module_name} 已成功禁用", "成功")
     else:
         print_panel(f"模块 {module_name} 不存在", "错误")
@@ -255,7 +256,7 @@ def install_module(module_name, force=False):
                 SourceManager().update_sources()
                 env.set('last_origin_update_time', datetime.now().isoformat())
                 print("✓ 源更新完成")
-    module_info = env.get_module(module_name)
+    module_info = mods.get_module(module_name)
     if module_info and not force:
         meta = module_info.get('info', {}).get('meta', {})
         print_panel(
@@ -332,7 +333,7 @@ def install_module(module_name, force=False):
         module_dir=module_dir
     ):
         return
-    env.set_module(module_name, {
+    mods.set_module(module_name, {
         'status': True,
         'info': {
             'meta': {
@@ -352,7 +353,7 @@ def install_module(module_name, force=False):
 
 def uninstall_module(module_name):
     print_panel(f"准备卸载模块: {module_name}", "卸载摘要")
-    module_info = env.get_module(module_name)
+    module_info = mods.get_module(module_name)
     if not module_info:
         print_panel(f"模块 {module_name} 不存在", "错误")
         return
@@ -383,7 +384,7 @@ def uninstall_module(module_name):
         return
     pip_dependencies = depsinfo.get('pip', [])
     if pip_dependencies:
-        all_modules = env.get_all_modules()
+        all_modules = mods.get_all_modules()
         unused_pip_dependencies = []
         essential_packages = {'aiohttp'}
         for dep in pip_dependencies:
@@ -419,13 +420,13 @@ def uninstall_module(module_name):
                         f"卸载 pip 依赖失败: {e.stderr.decode()}",
                         "错误"
                     )
-    if env.remove_module(module_name):
+    if mods.remove_module(module_name):
         print_panel(f"✓ 模块 {module_name} 已成功卸载", "成功")
     else:
         print_panel(f"模块 {module_name} 不存在", "错误")
 
 def upgrade_all_modules(force=False):
-    all_modules = env.get_all_modules()
+    all_modules = mods.get_all_modules()
     if not all_modules:
         print("未找到任何模块，无法更新")
         return
@@ -478,16 +479,16 @@ def upgrade_all_modules(force=False):
         ):
             continue
         all_modules[update['name']]['info']['version'] = update['remote_version']
-        env.set_all_modules(all_modules)
+        mods.set_all_modules(all_modules)
         print(f"模块 {update['name']} 已更新至版本 {update['remote_version']}")
 
 def list_modules(module_name=None):
-    all_modules = env.get_all_modules()
+    all_modules = mods.get_all_modules()
     if not all_modules:
         print_panel("未在数据库中发现注册模块,正在初始化模块列表...", "提示")
         from . import init as init_module
         init_module()
-        all_modules = env.get_all_modules()
+        all_modules = mods.get_all_modules()
     if not all_modules:
         print_panel("未找到任何模块", "错误")
         return
@@ -576,7 +577,7 @@ def main():
                 continue
             if '*' in module_name or '?' in module_name:
                 print(f"正在匹配模块模式: {module_name}...")
-                all_modules = env.get_all_modules()
+                all_modules = mods.get_all_modules()
                 if not all_modules:
                     print_panel("未找到任何模块，请先更新源或检查配置", "错误")
                     continue
@@ -601,7 +602,7 @@ def main():
                 continue
             if '*' in module_name or '?' in module_name:
                 print(f"正在匹配模块模式: {module_name}...")
-                all_modules = env.get_all_modules()
+                all_modules = mods.get_all_modules()
                 if not all_modules:
                     print_panel("未找到任何模块，请先更新源或检查配置", "错误")
                     continue
@@ -628,7 +629,7 @@ def main():
                 continue
             if '*' in module_name or '?' in module_name:
                 print(f"正在匹配模块模式: {module_name}...")
-                all_modules = env.get_all_modules()
+                all_modules = mods.get_all_modules()
                 if not all_modules:
                     print_panel("未找到任何模块，请先更新源或检查配置", "错误")
                     continue
@@ -653,7 +654,7 @@ def main():
                 continue
             if '*' in module_name or '?' in module_name:
                 print(f"正在匹配模块模式: {module_name}...")
-                all_modules = env.get_all_modules()
+                all_modules = mods.get_all_modules()
                 if not all_modules:
                     print_panel("未找到任何模块，请先更新源或检查配置", "错误")
                     continue
