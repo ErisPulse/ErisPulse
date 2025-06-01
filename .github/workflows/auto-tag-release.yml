@@ -15,60 +15,82 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
           git fetch --tags
-      
+
       - name: 从 pyproject.toml 提取版本号
         id: get_version
         run: |
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "当前版本：$version"
-          # 检查是否为开发版本
           if [[ $version =~ dev|alpha|beta|a|b ]]; then
             echo "is_dev=true" >> $GITHUB_OUTPUT
           else
             echo "is_dev=false" >> $GITHUB_OUTPUT
           fi
-      
-      - name: 获取最新提交信息
+
+      - name: 获取提交信息
         id: get_commit
         run: |
-          commit_hash=$(git rev-parse HEAD)
+          commit_msg=$(git log -1 --pretty=%B)
           commit_short=$(git rev-parse --short HEAD)
-          echo "commit_hash=$commit_hash" >> $GITHUB_OUTPUT
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$commit_msg" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           echo "commit_short=$commit_short" >> $GITHUB_OUTPUT
-      
-      - name: 获取标签信息
-        id: get_tag
-        run: |
-          latest_tag=$(git tag --sort=-v:refname | head -n 1)
-          previous_tag=$(git tag --sort=-v:refname | head -n 2 | tail -n 1)
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
-          echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
-          echo "最新标签：$latest_tag"
-          echo "上一个标签：$previous_tag"
-      
-      - name: 创建版本标签和发布
+
+      - name: 更新并创建标签
         run: |
           current_version=${{ steps.get_version.outputs.version }}
           commit_short=${{ steps.get_commit.outputs.commit_short }}
+          commit_msg=${{ steps.get_commit.outputs.message }}
           is_dev=${{ steps.get_version.outputs.is_dev }}
-          
-          # 从 CHANGELOG.md 提取更新日志
-          release_body=$(sed -n "/^## \[$current_version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
-          if [ -z "$release_body" ]; then
-            release_body="- 代码更新 ($commit_short)"
-          fi
-          
-          # 创建标签名
           tag_name="v$current_version"
           
-          # 检查标签是否已存在
-          if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-            # 使用 jq 组装 JSON 参数
+          # 构建更新日志内容
+          changelog=""
+          if [ -f "docs/CHANGELOG.md" ]; then
+            # 尝试从 CHANGELOG.md 获取更新日志
+            changelog=$(sed -n "/^## \[$current_version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
+          fi
+          
+          # 如果没有找到更新日志，使用提交信息
+          if [ -z "$changelog" ]; then
+            changelog="### 更新内容\n\n- $commit_msg ($commit_short)"
+          fi
+          
+          # 更新现有发行版或创建新发行版
+          release_data=$(curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag_name" || echo "")
+          
+          if [ -n "$release_data" ] && [ "$(echo "$release_data" | jq -r '.message')" != "Not Found" ]; then
+            # 更新现有发行版
+            release_id=$(echo "$release_data" | jq -r '.id')
+            json=$(jq -n \
+              --arg body "$changelog" \
+              '{
+                body: $body
+              }')
+            
+            curl -X PATCH \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/$release_id" \
+              -d "$json"
+            
+            echo "已更新发行版 $tag_name 的更新日志"
+          else
+            # 创建新标签和发行版
+            if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
+              git tag "$tag_name"
+              git push origin "$tag_name"
+            fi
+            
             json=$(jq -n \
               --arg tag "$tag_name" \
               --arg name "Release $tag_name" \
-              --arg body "$release_body" \
+              --arg body "$changelog" \
               --argjson prerelease $is_dev \
               '{
                 tag_name: $tag,
@@ -78,18 +100,11 @@ jobs:
                 generate_release_notes: true
               }')
             
-            # 创建标签
-            git tag "$tag_name"
-            git push origin "$tag_name"
-            
-            # 创建发行版
             curl -X POST \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              https://api.github.com/repos/${{ github.repository }}/releases \
+              "https://api.github.com/repos/${{ github.repository }}/releases" \
               -d "$json"
             
             echo "已创建新标签和发行版：$tag_name"
-          else
-            echo "标签 $tag_name 已存在，跳过创建"
           fi
