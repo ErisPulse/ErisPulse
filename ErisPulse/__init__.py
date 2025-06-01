@@ -5,6 +5,7 @@ from . import util
 from .raiserr import raiserr
 from .logger import logger
 from .db import env
+from .mods import mods
 
 # 注册 ErrorHook 并预注册常用错误类型
 raiserr.register("MissingDependencyError", doc="缺少依赖错误")
@@ -50,13 +51,13 @@ def init():
                     logger.warning(f"模块 {module_name} 缺少 'Main' 类.")
                     continue
                 
-                module_info = env.get_module(moduleObj.moduleInfo.get("meta", {}).get("name", None))
+                module_info = mods.get_module(moduleObj.moduleInfo.get("meta", {}).get("name", None))
                 if module_info is None:
                     module_info = {
                         "status": True,
                         "info": moduleObj.moduleInfo
                     }
-                    env.set_module(moduleObj.moduleInfo.get("meta", {}).get("name", None), module_info)
+                    mods.set_module(moduleObj.moduleInfo.get("meta", {}).get("name", None), module_info)
                     logger.info(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 信息已初始化并存储到数据库")
                 
                 if not module_info.get('status', True):
@@ -121,8 +122,8 @@ def init():
             moduleObj = __import__(module_name)
             moduleInfo: dict = moduleObj.moduleInfo
 
-            module_info = env.get_module(moduleInfo.get("meta", {}).get("name", None))
-            env.set_module(moduleInfo.get("meta", {}).get("name", None), {
+            module_info = mods.get_module(moduleInfo.get("meta", {}).get("name", None))
+            mods.set_module(moduleInfo.get("meta", {}).get("name", None), {
                 "status": True,
                 "info": moduleInfo
             })
@@ -131,7 +132,7 @@ def init():
         for module_name in sdkInstalledModuleNames:
             moduleObj = __import__(module_name)
             moduleInfo = moduleObj.moduleInfo
-            module_status = env.get_module_status(moduleInfo.get("meta", {}).get("name", None))
+            module_status = mods.get_module_status(moduleInfo.get("meta", {}).get("name", None))
             if not module_status:
                 continue
             
