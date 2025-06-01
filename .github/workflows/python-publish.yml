@@ -9,6 +9,7 @@ on:
       - 'v*.*.*beta*'     # beta版本
       - 'v*.*.*a*'        # alpha简写
       - 'v*.*.*b*'        # beta简写
+  workflow_dispatch: {}
 
 permissions:
   contents: read
