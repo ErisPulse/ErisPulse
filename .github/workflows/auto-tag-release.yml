@@ -45,8 +45,15 @@ jobs:
       - name: 创建 GitHub Release
         run: |
           current_version=${{ steps.get_version.outputs.version }}
+          # 从 docs/CHANGELOG.md 中提取当前版本的更新日志（取版本标题与下一个版本标题之间的内容）
+          release_body=$(sed -n "/^## \[$current_version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
+          echo "Release Body 内容："
+          echo "$release_body"
+          # 使用 jq 组装 JSON 参数（Ubuntu Runner 默认已安装 jq）
+          json=$(jq -n --arg tag "v$current_version" --arg name "Release v$current_version" --arg body "$release_body" '{tag_name: $tag, name: $name, body: $body}')
+          echo "$json"
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/releases \
-            -d "{\"tag_name\": \"v$current_version\", \"name\": \"Release v$current_version\", \"body\": \"自动创建 Release，由 CI 自动生成。\"}"
+            -d "$json"
