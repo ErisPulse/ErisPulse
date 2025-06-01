@@ -11,6 +11,7 @@ ErisPulse 通过 `sdk` 对象暴露核心能力：
 from ErisPulse import sdk
 
 sdk.env         # 环境与配置管理
+sdk.mods        # 模块管理器
 sdk.util        # 工具
 sdk.logger      # 日志记录器
 sdk.raiserr     # 内置的错误管理器

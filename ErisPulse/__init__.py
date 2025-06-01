@@ -15,6 +15,7 @@ raiserr.register("ModuleLoadError"       , doc="模块加载错误")
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
+setattr(sdk, "mods", mods)
 setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
 setattr(sdk, "util", util)
