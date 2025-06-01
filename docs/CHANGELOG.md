@@ -17,6 +17,7 @@
 - `logger` 新增 `save_logs(path: str | list)` 方法，支持手动保存日志到指定路径  
 - `logger` 新增 `set_output_file(path: str | list)` 方法，支持配置日志输出路径  
 - `logger` 新增 `set_module_level(module: str, level: int)` 方法，支持按模块设置日志等级  
+- `logger` 新增 `catch` 装饰器，支持自动捕获和记录函数异常
  
 ### 修复  
 - 修复了日志保存功能中的文件编码问题，确保使用 UTF-8 编码  
