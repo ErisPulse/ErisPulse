@@ -1,68 +1,73 @@
-name: Upload Python Package
+name: 🎀 艾莉丝的PyPI包裹快递服务 ~
 
+# 艾莉丝今天也要努力发包呢!
 on:
   push:
     tags:
-      - 'v*.*.*'          # 正式版本
-      - 'v*.*.*dev*'      # 开发版本
-      - 'v*.*.*alpha*'    # alpha版本
-      - 'v*.*.*beta*'     # beta版本
-      - 'v*.*.*a*'        # alpha简写
-      - 'v*.*.*b*'        # beta简写
-  workflow_dispatch: {}
+      - 'v*.*.*'           # v2.0.0
+      - 'v*.*.*.dev*'      # v2.0.0.dev0
+      - 'v*.*.*.alpha*'    # v2.0.0.alpha0
+      - 'v*.*.*.beta*'     # v2.0.0.beta0
+
+  workflow_dispatch: {}    # 手动触发
 
 permissions:
   contents: read
 
 jobs:
+  # 第一阶段: 打包准备
   release-build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: 检查并切换版本
+          
+      - name: 版本检查
         id: version
         run: |
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          # 如果是开发版本，直接使用当前版本
-          if [[ $CURRENT_TAG =~ dev|alpha|beta|a|b ]]; then
-            echo "使用当前开发版本: $CURRENT_TAG"
-            echo "use_current=true" >> $GITHUB_OUTPUT
-          else
-            # 如果是正式版本，使用上一个版本
-            PREV_TAG=$(git tag --sort=-v:refname | grep -v "$CURRENT_TAG" | grep "^v" | head -n 1)
+          echo "✨ 当前版本: $CURRENT_TAG"
+          
+          if [[ $CURRENT_TAG =~ \.dev|\.alpha|\.beta ]]; then
+            BASE_VERSION=$(echo $CURRENT_TAG | sed -E 's/([0-9]+)$//')
+            PREV_TAG=$(git tag --sort=-v:refname | grep "^$BASE_VERSION" | grep -v "$CURRENT_TAG" | head -n 1)
+            
             if [ -z "$PREV_TAG" ]; then
-              echo "错误：没有找到上一个版本标签"
+              echo "💢 找不到上一个版本!"
               exit 1
             fi
-            echo "使用上一个版本: $PREV_TAG"
+            echo "🎀 发现上一个试验版本: $PREV_TAG"
             git checkout $PREV_TAG
             echo "use_current=false" >> $GITHUB_OUTPUT
+          else
+            echo "🌟 正式版本~"
+            echo "use_current=true" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-python@v5
+      - name: 环境准备
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Build release distributions
+      - name: 打包构建
         run: |
           python -m pip install --upgrade pip
           python -m pip install build
           python -m build
 
-      - name: Upload distributions
+      - name: 暂存包裹
         uses: actions/upload-artifact@v4
         with:
           name: release-dists
           path: dist/
 
+  # 第二阶段: 发布上传
   pypi-publish:
     runs-on: ubuntu-latest
-    needs:
-      - release-build
+    needs: [ release-build ]
     permissions:
       id-token: write
 
@@ -71,13 +76,13 @@ jobs:
       url: https://pypi.org/p/erispulse
 
     steps:
-      - name: Retrieve release distributions
+      - name: 获取包裹
         uses: actions/download-artifact@v4
         with:
           name: release-dists
           path: dist/
 
-      - name: Publish release distributions to PyPI
+      - name: 发布上传
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
