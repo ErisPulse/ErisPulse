@@ -14,6 +14,7 @@ jobs:
       - name: 手动克隆代码
         run: |
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+          git fetch --tags
       
       - name: 从 pyproject.toml 提取版本号
         id: get_version
@@ -22,12 +23,15 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "当前版本：$version"
       
-      - name: 获取最新 Git 标签
+      - name: 获取标签信息
         id: get_tag
         run: |
-          tag=$(git tag --sort=-v:refname | head -n 1)
-          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
-          echo "最新标签：$tag"
+          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          previous_tag=$(git tag --sort=-v:refname | head -n 2 | tail -n 1)
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
+          echo "最新标签：$latest_tag"
+          echo "上一个标签：$previous_tag"
       
       - name: 检查版本更新并打标签
         id: create_tag
@@ -38,19 +42,34 @@ jobs:
             echo "检测到新版本：v$current_version"
             git tag "v$current_version"
             git push origin "v$current_version"
+            echo "create_release=true" >> $GITHUB_OUTPUT
           else
             echo "版本无更新，跳过打标签。"
+            echo "create_release=false" >> $GITHUB_OUTPUT
           fi
       
       - name: 创建 GitHub Release
+        if: steps.create_tag.outputs.create_release == 'true'
         run: |
           current_version=${{ steps.get_version.outputs.version }}
-          # 从 docs/CHANGELOG.md 中提取当前版本的更新日志（取版本标题与下一个版本标题之间的内容）
+          previous_tag=${{ steps.get_tag.outputs.previous_tag }}
+          # 从 docs/CHANGELOG.md 中提取当前版本的更新日志
           release_body=$(sed -n "/^## \[$current_version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
           echo "Release Body 内容："
           echo "$release_body"
-          # 使用 jq 组装 JSON 参数（Ubuntu Runner 默认已安装 jq）
-          json=$(jq -n --arg tag "v$current_version" --arg name "Release v$current_version" --arg body "$release_body" '{tag_name: $tag, name: $name, body: $body}')
+          # 使用 jq 组装 JSON 参数
+          json=$(jq -n \
+            --arg tag "v$current_version" \
+            --arg name "Release v$current_version" \
+            --arg body "$release_body" \
+            --arg prev_tag "$previous_tag" \
+            '{
+              tag_name: $tag,
+              name: $name,
+              body: $body,
+              prerelease: true,
+              discussion_category_name: "发布说明"
+            }')
           echo "$json"
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
