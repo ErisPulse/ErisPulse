@@ -409,14 +409,14 @@ class Main:
         # 如果没有任何处理器被注册，记录警告日志
         if not self.handlers_registered:
             self.logger.warning("未找到任何可用的消息处理器")
-    
+
     def Run(self):  # Run只是示例的启动方法，留给用户直接启动某些主任务模块
         self.logger.info("示例模块已启动")
 
     # 消息处理器
     async def handle_normal_message(self, data):
         pass
-    
+
     async def handle_onebot_message(self, data):
         pass
 ```

@@ -2,10 +2,10 @@
 
 所有版本更新遵循 [语义化版本控制](https://semver.org/lang/zh-CN/) 规范。
 
-> **如何阅读本日志**  
+> **如何阅读本日志**
 > 每个版本分为“新增”、“变更”、“修复”等部分。建议开发者在升级前先阅读对应版本的 Breaking Change 和修复内容。
 
-> **贡献日志**  
+> **贡献日志**
 > 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
 
 ## [1.0.14]
@@ -53,15 +53,15 @@
 
 ## [1.0.14.dev1]
 
-### 新增  
-- `logger` 新增 `save_logs(path: str | list)` 方法，支持手动保存日志到指定路径  
-- `logger` 新增 `set_output_file(path: str | list)` 方法，支持配置日志输出路径  
-- `logger` 新增 `set_module_level(module: str, level: int)` 方法，支持按模块设置日志等级  
+### 新增
+- `logger` 新增 `save_logs(path: str | list)` 方法，支持手动保存日志到指定路径
+- `logger` 新增 `set_output_file(path: str | list)` 方法，支持配置日志输出路径
+- `logger` 新增 `set_module_level(module: str, level: int)` 方法，支持按模块设置日志等级
 - `logger` 新增 `catch` 装饰器，支持自动捕获和记录函数异常
- 
-### 修复  
-- 修复了日志保存功能中的文件编码问题，确保使用 UTF-8 编码  
-- 修复了日志输出文件功能中的多路径处理问题  
+
+### 修复
+- 修复了日志保存功能中的文件编码问题，确保使用 UTF-8 编码
+- 修复了日志输出文件功能中的多路径处理问题
 
 ---
 

@@ -25,7 +25,7 @@ env.load_env_file()
 def init():
     try:
         sdkModulePath = os.path.join(os.path.dirname(__file__), "modules")
-        
+
         if not os.path.exists(sdkModulePath):
             os.makedirs(sdkModulePath)
 
@@ -51,7 +51,7 @@ def init():
                 if not hasattr(moduleObj, "Main"):
                     logger.warning(f"模块 {module_name} 缺少 'Main' 类.")
                     continue
-                
+
                 module_info = mods.get_module(moduleObj.moduleInfo.get("meta", {}).get("name", None))
                 if module_info is None:
                     module_info = {
@@ -60,12 +60,12 @@ def init():
                     }
                     mods.set_module(moduleObj.moduleInfo.get("meta", {}).get("name", None), module_info)
                     logger.info(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 信息已初始化并存储到数据库")
-                
+
                 if not module_info.get('status', True):
                     disabledModules.append(module_name)
                     logger.warning(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 已禁用，跳过加载")
                     continue
-                    
+
                 required_deps = moduleObj.moduleInfo.get("dependencies", []).get("requires", [])
                 missing_required_deps = [dep for dep in required_deps if dep not in TempModules]
                 if missing_required_deps:
@@ -107,7 +107,7 @@ def init():
                 if dep in disabledModules:
                     logger.warning(f"模块 {module_name} 的依赖模块 {dep} 已禁用，跳过加载")
                     continue
-            
+
             if not all(dep in sdkInstalledModuleNames for dep in moduleDependecies):
                 raiserr.InvalidDependencyError(
                     f"模块 {module_name} 的依赖无效: {moduleDependecies}"
@@ -136,7 +136,7 @@ def init():
             module_status = mods.get_module_status(moduleInfo.get("meta", {}).get("name", None))
             if not module_status:
                 continue
-            
+
             moduleMain = moduleObj.Main(sdk)
             setattr(moduleMain, "moduleInfo", moduleInfo)
             setattr(sdk, moduleInfo.get("meta", {}).get("name", None), moduleMain)

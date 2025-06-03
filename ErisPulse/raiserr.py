@@ -40,5 +40,5 @@ class Error:
             "doc": getattr(err_cls, "__doc__", ""),
             "class": err_cls,
         }
-    
+
 raiserr = Error()

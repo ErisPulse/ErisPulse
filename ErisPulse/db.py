@@ -17,7 +17,7 @@ class EnvManager:
         if not hasattr(self, "_initialized"):
             self._init_db()
             self._initialized = True
-    
+
     def _init_db(self):
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         conn = sqlite3.connect(self.db_path)
@@ -49,13 +49,13 @@ class EnvManager:
                 return self.get(key, default)
             else:
                 raise
-    
+
     def get_all_keys(self) -> list:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT key FROM config")
             return [row[0] for row in cursor.fetchall()]
-    
+
     def set(self, key, value):
         serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
         conn = sqlite3.connect(self.db_path)
@@ -70,7 +70,7 @@ class EnvManager:
         cursor.execute("DELETE FROM config WHERE key = ?", (key,))
         conn.commit()
         conn.close()
-    
+
     def clear(self):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -87,7 +87,7 @@ class EnvManager:
             for key, value in vars(env_module).items():
                 if not key.startswith("__") and isinstance(value, (dict, list, str, int, float, bool)):
                     self.set(key, value)
-    
+
     def __getattr__(self, key):
         try:
             return self.get(key)
