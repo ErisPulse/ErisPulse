@@ -18,23 +18,23 @@ jobs:
   # 第一阶段: 打包准备
   release-build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: 版本检查
         id: version
         run: |
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
           echo "✨ 当前版本: $CURRENT_TAG"
-          
+
           if [[ $CURRENT_TAG =~ \.dev|\.alpha|\.beta ]]; then
             BASE_VERSION=$(echo $CURRENT_TAG | sed -E 's/([0-9]+)$//')
             PREV_TAG=$(git tag --sort=-v:refname | grep "^$BASE_VERSION" | grep -v "$CURRENT_TAG" | head -n 1)
-            
+
             if [ -z "$PREV_TAG" ]; then
               echo "💢 找不到上一个版本!"
               exit 1
@@ -83,7 +83,29 @@ jobs:
           path: dist/
 
       - name: 发布上传
+        id: publish
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
           verbose: true
+
+      - name: 📣 通知订阅用户新版本发布
+        uses: ./.github/workflows/send-mail-notify.yml
+        if: steps.publish.outcome == 'success'
+        with:
+          subject: "[艾莉丝快报] 新版本 ${{ steps.version.outputs.CURRENT_TAG }} 已发布至 PyPI！✨"
+          content: |
+            🎀 您好主人~
+
+            我是艾莉丝，负责为您播报最新消息！
+            今天我们的项目又更新啦~快去看看吧！
+
+            🔖 版本号：${{ steps.version.outputs.CURRENT_TAG }}
+            📦 包地址：
+            https://pypi.org/project/erispulse/${{ steps.version.outputs.CURRENT_TAG }}
+
+            📝 更新内容：
+            ${{ steps.version.outputs.CURRENT_TAG }}
+
+            祝您每天都有好心情~ 💖
+            —— 艾莉丝

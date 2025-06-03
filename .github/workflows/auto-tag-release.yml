@@ -26,14 +26,14 @@ jobs:
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "✨ 发现新版本: $version"
-          
+
           # 检查是否是试验魔法
           if [[ $version =~ dev|alpha|beta|a|b ]]; then
             echo "is_dev=true" >> $GITHUB_OUTPUT
           else
             echo "is_dev=false" >> $GITHUB_OUTPUT
           fi
-          
+
           # 获取魔法变更记录
           commit_msg=$(git log -1 --pretty=%B)
           commit_short=$(git rev-parse --short HEAD)
@@ -41,6 +41,30 @@ jobs:
           echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
           echo "$commit_msg" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 📦 获取变更文件列表
+        id: changed_files
+        shell: bash
+        run: |
+          before="${{ github.event.before }}"
+          after="${{ github.sha }}"
+
+          if [[ "$before" == "0000000000000000000000000000000000000000" ]]; then
+            before="HEAD~1"
+          fi
+
+          echo "before=$before" >> $GITHUB_OUTPUT
+          echo "after=$after" >> $GITHUB_OUTPUT
+
+          # 获取修改的文件列表（最多显示20个）
+          files=$(git diff --name-only $before..$after | head -n 20 | xargs)
+          file_count=$(git diff --name-only $before..$after | wc -l)
+
+          if [ "$file_count" -gt 20 ]; then
+            files="$files ..."
+          fi
+
+          echo "files=$files" >> $GITHUB_OUTPUT
 
       - name: 施展版本魔法
         env:
@@ -52,24 +76,24 @@ jobs:
           commit_msg="${{ steps.info.outputs.commit_msg }}"
           is_dev="${{ steps.info.outputs.is_dev }}"
           tag_name="v$version"
-          
+
           # 读取魔法记录书
           if [ -f "docs/CHANGELOG.md" ]; then
             changelog=$(sed -n "/^## \[$version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
           fi
-          
+
           # 如果没有找到记录,就用简单的魔法
           if [ -z "$changelog" ]; then
             changelog="### ✨ 魔法更新\n\n- $commit_msg ($commit_short)"
           fi
-          
+
           # 检查魔法印记是否已存在
           if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
             echo "🎀 施加新的魔法印记..."
             git tag "$tag_name"
             git push origin "$tag_name"
           fi
-          
+
           # 在魔法集市上发布
           if gh release view "$tag_name" &>/dev/null; then
             # 更新已有的魔法
@@ -85,3 +109,26 @@ jobs:
               --prerelease=$is_dev
             echo "✨ 已发布新的魔法版本 $tag_name"
           fi
+
+      - name: 📣 通知订阅用户代码更新
+        uses: ./.github/workflows/send-mail-notify.yml
+        with:
+          subject: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
+          content: |
+            🎀 您好主人~
+
+            我是艾莉丝，负责为您播报最新消息！
+            刚刚我们的项目又更新啦~快来看看是谁做了改动吧！
+
+            👤 提交者：${{ github.event.pusher.name }}
+            📝 提交信息：
+            ${{ steps.info.outputs.commit_msg }}
+
+            🗂️ 修改的文件：
+            ${{ steps.changed_files.outputs.files }}
+
+            🔗 变更地址：
+            https://github.com/${{ github.repository }}/compare/${{ steps.changed_files.outputs.before }}...${{ steps.changed_files.outputs.after }}?expand=1
+
+            祝您每天都有好心情~ 💖
+            —— 艾莉丝

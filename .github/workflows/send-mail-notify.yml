@@ -1,0 +1,68 @@
+name: 🎀 艾莉丝的魔法邮差服务 ~
+
+on:
+  workflow_call:
+    inputs:
+      subject:
+        type: string
+        default: "[艾莉丝来信] 您有一封新通知~ ✨"
+      content:
+        type: string
+        required: true
+
+jobs:
+  send-mail:
+    runs-on: ubuntu-latest
+    name: 📨 艾莉丝送信去啦!
+
+    steps:
+      - name: 🧸 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📖 读取收件人列表
+        id: read_emails
+        run: |
+          emails=$(cat .github/config/notify_emails.json | jq -r '.emails[]')
+          echo "emails=$emails" >> $GITHUB_OUTPUT
+
+      - name: 🐍 安装Python依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install smtplib email
+
+      - name: 💌 准备并发送邮件
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          SUBJECT: ${{ inputs.subject }}
+          CONTENT: ${{ inputs.content }}
+        run: |
+          IFS=$'\n'
+          emails=($(echo "$INPUT_EMAILS"))
+
+          cat << EOF > send_mail.py
+          import smtplib
+          from email.message import EmailMessage
+          import os
+
+          recipients = [
+            ${emails[@]/#/$'"'}${emails[@]/%/$'"'}
+          ]
+
+          msg = EmailMessage()
+          msg['Subject'] = os.getenv("SUBJECT")
+          msg['From'] = os.getenv("MAIL_USER")
+          msg['To'] = ", ".join(recipients)
+          msg.set_content(os.getenv("CONTENT"))
+
+          with smtplib.SMTP("mail.anran.xyz", 587) as server:
+              server.starttls()
+              server.login(os.getenv("MAIL_USER"), os.getenv("MAIL_PASSWORD"))
+              server.send_message(msg)
+
+          print("💌 魔法信件已成功寄出！")
+          EOF
+
+          python send_mail.py
+        env:
+          INPUT_EMAILS: ${{ steps.read_emails.outputs.emails }}
