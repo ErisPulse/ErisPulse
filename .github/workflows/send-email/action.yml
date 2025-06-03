@@ -41,7 +41,7 @@ runs:
         resend_api_key = os.getenv("RESEND_API_KEY")
         subject = os.getenv("SUBJECT")
         content = os.getenv("CONTENT")
-
+        print(f"📬 收件人列表: {recipients}")
         response = requests.post(
             "https://api.resend.com/emails",
             headers={
