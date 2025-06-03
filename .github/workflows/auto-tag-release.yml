@@ -117,7 +117,7 @@ jobs:
           echo "emails=$emails" >> $GITHUB_OUTPUT
 
       - name: 💌 发送邮件通知
-        uses: ./.github/workflows/send-email.yml
+        uses: .github/workflows/send-email.yml
         with:
           subject: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
           content: |
