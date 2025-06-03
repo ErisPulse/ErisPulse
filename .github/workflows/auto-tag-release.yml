@@ -157,7 +157,7 @@ jobs:
                   "Content-Type": "application/json"
               },
               json={
-                  "from": "ErisPulse <noreply@erispulse.dev>",
+                  "from": "ErisPulse <noreply@anran.xyz>",
                   "to": recipients,
                   "subject": os.getenv("SUBJECT"),
                   "text": os.getenv("CONTENT")
