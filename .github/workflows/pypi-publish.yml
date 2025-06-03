@@ -89,10 +89,9 @@ jobs:
           packages-dir: dist/
           verbose: true
 
-      - name: 💌 准备并发送邮件通知
+      - name: 💌 准备并发送邮件通知（通过 Resend）
         env:
-          MAIL_USER: ${{ secrets.MAIL_USER }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SUBJECT: "[艾莉丝快报] 新版本 ${{ steps.version.outputs.CURRENT_TAG }} 已发布至 PyPI！✨"
           CONTENT: |
             🎀 您好主人~
@@ -110,31 +109,42 @@ jobs:
             祝您每天都有好心情~ 💖
             —— 艾莉丝
         run: |
+          python -m pip install requests
+
           # 读取收件人列表
           emails=$(cat .github/config/notify_emails.json | jq -r '.emails[]')
 
           cat << EOF > send_mail.py
-          import smtplib
-          from email.message import EmailMessage
+          import requests
           import os
           import json
 
-          # 直接读取 .github/config/notify_emails.json
+          # 读取收件人
           with open('.github/config/notify_emails.json', 'r') as f:
               config = json.load(f)
               recipients = config['emails']
 
-          msg = EmailMessage()
-          msg['Subject'] = os.getenv("SUBJECT")
-          msg['From'] = os.getenv("MAIL_USER")
-          msg['To'] = ", ".join(recipients)
-          msg.set_content(os.getenv("CONTENT"))
+          resend_api_key = os.getenv("RESEND_API_KEY")
 
-          with smtplib.SMTP_SSL("mail.anran.xyz", 465) as server:
-              server.login(os.getenv("MAIL_USER"), os.getenv("MAIL_PASSWORD"))
-              server.send_message(msg)
+          response = requests.post(
+              "https://api.resend.com/emails",
+              headers={
+                  "Authorization": f"Bearer {resend_api_key}",
+                  "Content-Type": "application/json"
+              },
+              json={
+                  "from": "ErisPulse <noreply@anran.xyz>",
+                  "to": recipients,
+                  "subject": os.getenv("SUBJECT"),
+                  "text": os.getenv("CONTENT")
+              }
+          )
 
-          print("💌 魔法信件已成功寄出！")
+          if response.status_code == 200:
+              print("💌 魔法信件已成功寄出！")
+          else:
+              print(f"❌ 发送失败: {response.text}")
+              exit(1)
           EOF
 
           python send_mail.py
