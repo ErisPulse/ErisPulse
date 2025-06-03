@@ -27,7 +27,7 @@ runs:
 
     - name: 发送邮件
       env:
-        RECIPIENTS_JSON: ${{ toJson(inputs.recipients) }}
+        RECIPIENTS_JSON: ${{ inputs.recipients }}
         SUBJECT: ${{ inputs.subject }}
         CONTENT: ${{ inputs.content }}
         RESEND_API_KEY: ${{ inputs.resend_api_key }}
