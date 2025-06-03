@@ -114,5 +114,5 @@ jobs:
 
             祝您每天都有好心情~ 💖
             —— 艾莉丝
-          recipients: ${{ fromJson(steps.get_emails.outputs.emails) }}
+          recipients: ${{ steps.get_emails.outputs.emails }}
           resend_api_key: ${{ secrets.RESEND_API_KEY }}
