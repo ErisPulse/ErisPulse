@@ -19,7 +19,7 @@ class Logger:
         level = level.upper()
         if hasattr(logging, level):
             self._logger.setLevel(getattr(logging, level))
-    
+
     def set_module_level(self, module_name: str, level: str) -> bool:
         from .db import env
         if not env.get_module_status(module_name):
@@ -33,15 +33,15 @@ class Logger:
         else:
             self._logger.error(f"无效的日志等级: {level}")
             return False
-    
+
     def set_output_file(self, path: str | list):
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
-        
+
         if isinstance(path, str):
             path = [path]
-        
+
         for p in path:
             try:
                 file_handler = logging.FileHandler(p, encoding='utf-8')
@@ -51,14 +51,14 @@ class Logger:
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
                 raise e
-        
+
     def save_logs(self, path: str | list):
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
             return
         if isinstance(path, str):
             path = [path]
-        
+
         for p in path:
             try:
                 with open(p, "w", encoding="utf-8") as file:
@@ -70,14 +70,14 @@ class Logger:
             except Exception as e:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
                 raise e
-    
+
     def catch(self, func_or_level=None, level="error"):
         if isinstance(func_or_level, str):
             return lambda func: self.catch(func, level=func_or_level)
         if func_or_level is None:
             return lambda func: self.catch(func, level=level)
         func = func_or_level
-        
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
@@ -85,17 +85,17 @@ class Logger:
             except Exception as e:
                 import traceback
                 error_info = traceback.format_exc()
-                
+
                 module_name = func.__module__
                 if module_name == "__main__":
                     module_name = "Main"
                 func_name = func.__name__
-                
+
                 error_msg = f"Exception in {func_name}: {str(e)}\n{error_info}"
-                
+
                 log_method = getattr(self, level, self.error)
                 log_method(error_msg)
-                
+
                 return None
         return wrapper
 
@@ -105,10 +105,10 @@ class Logger:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
-    
+
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
-    
+
     def _get_caller(self):
         frame = inspect.currentframe().f_back.f_back
         module = inspect.getmodule(frame)
