@@ -96,7 +96,7 @@ jobs:
           echo "emails=$emails" >> $GITHUB_OUTPUT
 
       - name: 发送邮件通知
-        uses: ./.github/workflows/send-email.yml
+        uses: ./.github/workflows/send-email
         with:
           subject: "[艾莉丝快报] 新版本 ${{ steps.version.outputs.CURRENT_TAG }} 已发布至 PyPI！✨"
           content: |
