@@ -141,8 +141,12 @@ jobs:
           import smtplib
           from email.message import EmailMessage
           import os
+          import json
 
-          recipients = [${emails//$/\$\ }}
+          # 直接读取 .github/config/notify_emails.json
+          with open('.github/config/notify_emails.json', 'r') as f:
+              config = json.load(f)
+              recipients = config['emails']
 
           msg = EmailMessage()
           msg['Subject'] = os.getenv("SUBJECT")
