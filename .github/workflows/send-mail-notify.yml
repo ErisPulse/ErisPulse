@@ -13,8 +13,6 @@ on:
 jobs:
   send-mail:
     runs-on: ubuntu-latest
-    name: 📨 艾莉丝送信去啦!
-
     steps:
       - name: 🧸 检出代码
         uses: actions/checkout@v4
@@ -45,9 +43,7 @@ jobs:
           from email.message import EmailMessage
           import os
 
-          recipients = [
-            ${emails[@]/#/$'"'}${emails[@]/%/$'"'}
-          ]
+          recipients = [ "${emails[@]/#/$'"}"${emails[@]/%/$'"}" ]
 
           msg = EmailMessage()
           msg['Subject'] = os.getenv("SUBJECT")
