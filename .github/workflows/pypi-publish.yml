@@ -112,13 +112,13 @@ jobs:
         run: |
           # 读取收件人列表
           emails=$(cat .github/config/notify_emails.json | jq -r '.emails[]')
-          
+
           cat << EOF > send_mail.py
           import smtplib
           from email.message import EmailMessage
           import os
 
-          recipients = [ "$emails" ]
+          recipients = [${emails//$/\$\ }}
 
           msg = EmailMessage()
           msg['Subject'] = os.getenv("SUBJECT")
