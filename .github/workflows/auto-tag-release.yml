@@ -42,7 +42,7 @@ jobs:
           echo "$commit_msg" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 📦 获取变更文件列表
+      - name: 获取变更文件列表
         id: changed_files
         shell: bash
         run: |
@@ -116,8 +116,8 @@ jobs:
           emails=$(cat .github/config/notify.json | jq -c '.emails')
           echo "emails=$emails" >> $GITHUB_OUTPUT
 
-      - name: 💌 发送邮件通知
-        uses: .github/workflows/send-email.yml
+      - name: 发送邮件通知
+        uses: ./.github/workflows/send-email.yml
         with:
           subject: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
           content: |

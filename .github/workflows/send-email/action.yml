@@ -1,0 +1,63 @@
+name: '🎀 艾莉丝的魔法邮件服务 ~'
+description: '通过 Resend 发送魔法电子邮件通知'
+inputs:
+  subject:
+    type: string
+    default: '[艾莉丝快报] 默认主题'
+    description: '邮件主题'
+  content:
+    type: string
+    required: true
+    description: '邮件正文内容'
+  recipients:
+    type: json
+    required: true
+    description: '收件人列表 JSON 数组'
+
+runs:
+  using: "composite"
+  steps:
+    - name: 安装依赖
+      run: python -m pip install requests
+      shell: bash
+
+    - name: 发送邮件
+      env:
+        RECIPIENTS_JSON: ${{ toJson(inputs.recipients) }}
+        SUBJECT: ${{ inputs.subject }}
+        CONTENT: ${{ inputs.content }}
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      run: |
+        cat << EOF > send_mail.py
+        import requests
+        import os
+        import json
+
+        recipients = json.loads(os.getenv("RECIPIENTS_JSON"))
+        resend_api_key = os.getenv("RESEND_API_KEY")
+        subject = os.getenv("SUBJECT")
+        content = os.getenv("CONTENT")
+
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {resend_api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": "ErisPulse <noreply@anran.xyz>",
+                "to": recipients,
+                "subject": subject,
+                "text": content
+            }
+        )
+
+        if response.status_code == 200:
+            print("💌 魔法信件已成功寄出！")
+        else:
+            print(f"❌ 发送失败: {response.text}")
+            exit(1)
+        EOF
+
+        python send_mail.py
+      shell: bash
