@@ -154,7 +154,7 @@ jobs:
           msg['To'] = ", ".join(recipients)
           msg.set_content(os.getenv("CONTENT"))
 
-          with with smtplib.SMTP_SSL("mail.anran.xyz", 465) as server:
+          with smtplib.SMTP_SSL("mail.anran.xyz", 465) as server:
               server.login(os.getenv("MAIL_USER"), os.getenv("MAIL_PASSWORD"))
               server.send_message(msg)
 
