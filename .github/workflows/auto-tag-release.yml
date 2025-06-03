@@ -110,11 +110,12 @@ jobs:
             echo "✨ 已发布新的魔法版本 $tag_name"
           fi
 
-      - name: 📣 通知订阅用户代码更新
-        uses: ./.github/workflows/send-mail-notify.yml
-        with:
-          subject: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
-          content: |
+      - name: 💌 准备并发送邮件通知
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          SUBJECT: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
+          CONTENT: |
             🎀 您好主人~
 
             我是艾莉丝，负责为您播报最新消息！
@@ -132,3 +133,29 @@ jobs:
 
             祝您每天都有好心情~ 💖
             —— 艾莉丝
+        run: |
+          # 读取收件人列表
+          emails=$(cat .github/config/notify_emails.json | jq -r '.emails[]')
+          
+          cat << EOF > send_mail.py
+          import smtplib
+          from email.message import EmailMessage
+          import os
+
+          recipients = [ "$emails" ]
+
+          msg = EmailMessage()
+          msg['Subject'] = os.getenv("SUBJECT")
+          msg['From'] = os.getenv("MAIL_USER")
+          msg['To'] = ", ".join(recipients)
+          msg.set_content(os.getenv("CONTENT"))
+
+          with smtplib.SMTP("mail.anran.xyz", 587) as server:
+              server.starttls()
+              server.login(os.getenv("MAIL_USER"), os.getenv("MAIL_PASSWORD"))
+              server.send_message(msg)
+
+          print("💌 魔法信件已成功寄出！")
+          EOF
+
+          python send_mail.py
