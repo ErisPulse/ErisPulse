@@ -1,0 +1,43 @@
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  notify-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 获取提交信息
+        id: commit_info
+        run: |
+          commit_msg=$(git log -1 --pretty=%B)
+          echo "commit_msg=$commit_msg" >> $GITHUB_OUTPUT
+
+      - name: 读取收件人列表
+        id: get_emails
+        run: |
+          emails=$(cat .github/config/notify.json | jq -c '.emails[].address')
+          echo "emails=$emails" >> $GITHUB_OUTPUT
+
+      - name: 发送邮件通知
+        uses: ./.github/workflows/send-email
+        with:
+          subject: "[艾莉丝快报] develop 分支有新提交啦~ 🌱"
+          content: |
+            🎀 您好主人~
+
+            我是艾莉丝，负责为您播报最新消息！
+            develop 分支刚刚收到了新的提交，请注意查看！
+
+            👤 提交者：${{ github.event.pusher.name }}
+            📝 提交信息：${{ steps.commit_info.outputs.commit_msg }}
+
+            🔗 变更地址：
+            https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.event.after }}?expand=1
+
+            祝您每天都有好心情~ 💖
+            —— 艾莉丝
+          recipients: ${{ steps.get_emails.outputs.emails }}
+          resend_api_key: ${{ secrets.RESEND_API_KEY }}
