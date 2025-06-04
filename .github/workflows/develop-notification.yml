@@ -30,7 +30,7 @@ jobs:
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <img src="https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/erispulse_logo.png" alt="ErisPulse Logo" width="64" height="64" />
+                    <img src="https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/erispulse_logo.png" alt="ErisPulse Logo"/>
                   </td>
                 </tr>
               </table>

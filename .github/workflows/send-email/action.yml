@@ -52,7 +52,7 @@ runs:
                 "from": "ErisPulse <noreply@anran.xyz>",
                 "to": recipients,
                 "subject": subject,
-                "text": content
+                "html": content
             }
         )
 
