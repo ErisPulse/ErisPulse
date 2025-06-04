@@ -17,11 +17,8 @@ class BaseAdapter:
             return wrapper
         return decorator
 
-    def middleware(self, event_type: str, func: Callable):
-        async def wrapped_middleware(data):
-            return await func(event_type, data)
-
-        self._middlewares.append(wrapped_middleware)
+    def middleware(self, func: Callable):
+        self._middlewares.append(func)
         return func
 
     async def send(self, target: Any, message: Any, **kwargs):
