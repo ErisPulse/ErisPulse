@@ -18,7 +18,7 @@ jobs:
       - name: 读取收件人列表
         id: get_emails
         run: |
-          emails=$(cat .github/config/notify.json | jq -c '.emails[].address')
+          emails=$(cat .github/config/notify.json | jq -c '.emails')
           echo "emails=$emails" >> $GITHUB_OUTPUT
 
       - name: 发送邮件通知
