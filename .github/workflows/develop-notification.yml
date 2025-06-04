@@ -12,8 +12,10 @@ jobs:
       - name: 获取提交信息
         id: commit_info
         run: |
-          commit_msg=$(git log -1 --pretty=%B)
-          echo "commit_msg=$commit_msg" >> $GITHUB_OUTPUT
+          commit_msg=$(git log -1 --pretty=%B | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed '$d')
+          echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
+          echo "$commit_msg" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 读取收件人列表
         id: get_emails
