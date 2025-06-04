@@ -146,7 +146,6 @@ jobs:
                 查看变更
               </a></p>
 
-              <p style="margin-top: 20px;"><em>要我帮你打标签没问题，但别以为我很乐意！</em></p>
               <p>—— 艾莉丝·格雷拉特 ⚔️</p>
             </div>
           recipients: ${{ steps.get_emails.outputs.emails }}

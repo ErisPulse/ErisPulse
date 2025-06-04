@@ -48,7 +48,6 @@ jobs:
                 查看变更
               </a></p>
 
-              <p style="margin-top: 20px; font-weight: bold; color: #ff4d4d;">下次还要这么随便~</p>
               <p>—— 艾莉丝·格雷拉特 ⚔️</p>
             </div>
           recipients: ${{ steps.get_emails.outputs.emails }}
