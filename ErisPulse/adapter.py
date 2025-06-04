@@ -17,8 +17,11 @@ class BaseAdapter:
             return wrapper
         return decorator
 
-    def middleware(self, func: Callable):
-        self._middlewares.append(func)
+    def middleware(self, event_type: str, func: Callable):
+        async def wrapped_middleware(data):
+            return await func(event_type, data)
+
+        self._middlewares.append(wrapped_middleware)
         return func
 
     async def send(self, target: Any, message: Any, **kwargs):
@@ -53,7 +56,7 @@ class AdapterManager:
         try:
             await adapter.start()
         except Exception as e:
-            self.logger.error(f"Adapter {platform} stopped with error: {e}")
+            self.logger.error(f"平台 {platform} 停止时遇到了错误： {e}")
 
     async def shutdown(self):
         for adapter in self._adapters.values():
@@ -66,6 +69,7 @@ class AdapterManager:
         if platform not in self._adapters:
             raise AttributeError(f"平台 {platform} 的适配器未注册")
         return self._adapters[platform]
+
     @property
     def platforms(self) -> list:
         return list(self._adapters.keys())
