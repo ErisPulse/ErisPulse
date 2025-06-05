@@ -119,24 +119,34 @@ jobs:
       - name: 发送邮件通知
         uses: ./.github/workflows/send-email
         with:
-          subject: "[艾莉丝快报] 主分支有新魔法记录啦~ 💫"
+          subject: "[艾莉丝快报] 主分支莫名其妙多出来一些不知道的东西..."
           content: |
-            🎀 您好主人~
+            <div style="font-family: 'Segoe UI', sans-serif; background-color: #1e1e2f; color: #ffffff; padding: 20px; border-radius: 8px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <img src="https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/erispulse_logo.png" alt="ErisPulse Logo"/>
+                  </td>
+                </tr>
+              </table>
 
-            我是艾莉丝，负责为您播报最新消息！
-            刚刚我们的项目又更新啦~快来看看是谁做了改动吧！
+              <h2 style="color: #ff6ec7;">喂！主分支又被人动过了吧？</h2>
 
-            👤 提交者：${{ github.event.pusher.name }}
-            📝 提交信息：
-            ${{ steps.info.outputs.commit_msg }}
+              <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;" />
 
-            🗂️ 修改的文件：
-            ${{ steps.changed_files.outputs.files }}
+              <p><strong>提交者：</strong> ${{ github.event.pusher.name }}</p>
+              <p><strong>提交信息：</strong></p>
+              <pre style="background-color: #2d2d3d; padding: 10px; border-radius: 4px; white-space: pre-wrap;">${{ steps.info.outputs.commit_msg }}</pre>
 
-            🔗 变更地址：
-            https://github.com/${{ github.repository }}/compare/${{ steps.changed_files.outputs.before }}...${{ steps.changed_files.outputs.after }}?expand=1
+              <p><strong>修改的文件：</strong><br/>
+              <code style="background-color: #2d2d3d; padding: 4px 8px; border-radius: 4px;">${{ steps.changed_files.outputs.files }}</code></p>
 
-            祝您每天都有好心情~ 💖
-            —— 艾莉丝
+              <p><strong>变更地址：</strong><br/>
+              <a href="https://github.com/${{ github.repository }}/compare/${{ steps.changed_files.outputs.before }}...${{ steps.changed_files.outputs.after }}?expand=1" style="color: #7acbf7; text-decoration: none;">
+                查看变更
+              </a></p>
+
+              <p>—— 艾莉丝·格雷拉特 ⚔️</p>
+            </div>
           recipients: ${{ steps.get_emails.outputs.emails }}
           resend_api_key: ${{ secrets.RESEND_API_KEY }}

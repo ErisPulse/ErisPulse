@@ -1,0 +1,54 @@
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  notify-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 获取提交信息
+        id: commit_info
+        run: |
+          commit_msg=$(git log -1 --pretty=%s)
+          echo "commit_msg=$commit_msg" >> $GITHUB_OUTPUT
+
+      - name: 读取收件人列表
+        id: get_emails
+        run: |
+          emails=$(cat .github/config/notify.json | jq -c '.emails')
+          echo "emails=$emails" >> $GITHUB_OUTPUT
+
+      - name: 发送邮件通知
+        uses: ./.github/workflows/send-email
+        with:
+          subject: "[艾莉丝快报] 开发分支又有人乱发东西了！"
+          content: |
+            <div style="font-family: 'Segoe UI', sans-serif; background-color: #2a2a3c; color: #f5f5f5; padding: 20px; border-radius: 8px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <img src="https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/erispulse_logo.png" alt="ErisPulse Logo"/>
+                  </td>
+                </tr>
+              </table>
+
+              <h2 style="color: #ff6ec7;">看看是谁又往开发分支提交了垃圾代码？</h2>
+
+              <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;" />
+
+              <p><strong>提交者：</strong> ${{ github.event.pusher.name }}</p>
+              <p><strong>提交信息：</strong></p>
+              <pre style="background-color: #3b3b4f; padding: 10px; border-radius: 4px; white-space: pre-wrap;">${{ steps.commit_info.outputs.commit_msg }}</pre>
+
+              <p><strong>变更地址：</strong><br/>
+              <a href="https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.event.after }}?expand=1" style="color: #7acbf7; text-decoration: none;">
+                查看变更
+              </a></p>
+
+              <p>—— 艾莉丝·格雷拉特 ⚔️</p>
+            </div>
+          recipients: ${{ steps.get_emails.outputs.emails }}
+          resend_api_key: ${{ secrets.RESEND_API_KEY }}
