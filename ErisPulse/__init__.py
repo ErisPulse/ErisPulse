@@ -6,6 +6,7 @@ from .raiserr import raiserr
 from .logger import logger
 from .db import env
 from .mods import mods
+from .adapter import adapter, adapterbase
 
 # 注册 ErrorHook 并预注册常用错误类型
 raiserr.register("MissingDependencyError", doc="缺少依赖错误")
@@ -16,9 +17,11 @@ raiserr.register("ModuleLoadError"       , doc="模块加载错误")
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
 setattr(sdk, "mods", mods)
+setattr(sdk, "util", util)
 setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
-setattr(sdk, "util", util)
+setattr(sdk, "adapter", adapter)
+setattr(sdk, "BaseAdapter", adapterbase)
 
 env.load_env_file()
 
@@ -141,6 +144,17 @@ def init():
             setattr(moduleMain, "moduleInfo", moduleInfo)
             setattr(sdk, moduleInfo.get("meta", {}).get("name", None), moduleMain)
             logger.debug(f"模块 {moduleInfo.get('meta', {}).get('name', None)} 正在初始化")
+
+            if hasattr(moduleMain, "register_adapters"):
+                try:
+                    adapters = moduleMain.register_adapters()
+                    if isinstance(adapters, dict):
+                        for platform_name, adapter_class in adapters.items():
+                            sdk.adapter.register(platform_name, adapter_class)
+                            logger.info(f"模块 {moduleInfo['meta']['name']} 注册了适配器: {platform_name}")
+                except Exception as e:
+                    logger.error(f"注册适配器失败: {e}")
+
     except Exception as e:
         logger.error(f"初始化失败: {e}")
         raise e
