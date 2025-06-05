@@ -45,8 +45,14 @@ class AdapterManager:
         self._adapters[platform] = adapter_class(sdk)
         return True
 
-    async def startup(self):
-        for platform, adapter in self._adapters.items():
+    async def startup(self, platforms: List[str] = None):
+        if platforms is None:
+            platforms = self._adapters.keys()
+
+        for platform in platforms:
+            if platform not in self._adapters:
+                raise ValueError(f"平台 {platform} 未注册")
+            adapter = self._adapters[platform]
             asyncio.create_task(self._run_adapter(adapter, platform))
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
