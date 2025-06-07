@@ -16,8 +16,13 @@ class Error:
             from .logger import logger
             err_cls = self._types.get(name) or self.register(name)
             exc = err_cls(msg)
-            logger.error(f"{name}: {msg} | {err_cls.__doc__}")
-            logger.error("".join(traceback.format_stack()))
+
+            red = '\033[91m'
+            reset = '\033[0m'
+
+            logger.error(f"{red}{name}: {msg} | {err_cls.__doc__}{reset}")
+            logger.error(f"{red}{ ''.join(traceback.format_stack()) }{reset}")
+
             if exit:
                 raise exc
         return raiser
