@@ -33,7 +33,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     error_message = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     sdk.logger.error(f"未处理的异常被捕获:\n{error_message}")
     sdk.raiserr.CaughtExternalError(
-        f"检测到外部异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {exc_type.__name__}: {exc_value}"
+        f"检测到外部异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {exc_type.__name__}: {exc_value}\nTraceback:\n{error_message}"
     )
 sys.excepthook = global_exception_handler
 
@@ -41,9 +41,10 @@ def async_exception_handler(loop, context):
     exception = context.get('exception')
     message = context.get('message', 'Async error')
     if exception:
-        logger.error(f"异步任务异常: {message}\n{repr(exception)}")
+        tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+        logger.error(f"异步任务异常: {message}\n{tb}")
         raiserr.CaughtExternalError(
-            f"检测到异步任务异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(exception).__name__}: {exception}"
+            f"检测到异步任务异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(exception).__name__}: {exception}\nTraceback:\n{tb}"
         )
     else:
         logger.warning(f"异步任务警告: {message}")
