@@ -26,6 +26,7 @@ ErisPulse/
 ├── db.py              # 环境配置管理
 ├── util.py            # 工具函数
 ├── logger.py          # 日志记录
+├── adapter.py         # 平台适配器
 ├── raiserr.py         # 自定义异常
 └── modules/           # 功能模块目录
     └── ...
@@ -36,30 +37,31 @@ ErisPulse/
 - **db**: 负责管理环境配置和模块信息，使用 SQLite 数据库存储配置
 - **util**: 提供工具函数，包括拓扑排序和异步执行器
 - **logger**: 提供日志功能，支持不同日志级别和日志输出控制
+- **adapter**: 提供平台适配器基类及管理
 - **raiserr**: 提供自定义错误管理，支持注册和抛出模块特定错误
-- **modules**: 存放所有功能模块
+- **modules/**: 存放所有功能模块
 
 ## 模块开发基础
 
 ### 目录结构
 
-模块目录应遵循以下结构：
+模块目录建议应遵循以下结构：
 
 ```
 模块名/
 ├── __init__.py        # 模块入口文件
 └── Core.py            # 核心逻辑实现
 ```
-
+`Core.py` 不是必须的命名方式，基本上来说你可以是任何命名，只要在 `__init__.py` 中导入 `Main` 类即可。
 - `__init__.py` 必须包含 `moduleInfo` 字典，并导入 `Main` 类
 - `Core.py` 必须实现 `Main` 类
 
 ### 模块开发建议
 
 - **异步支持**：优先使用异步编程模型（async/await）
-- **日志记录**：使用 `logger` 记录关键操作，日志级别包括 `DEBUG < INFO < WARNING < ERROR < CRITICAL`
-- **减少第三方依赖**：优先使用 Python 原生库实现功能
 - **性能优化**：避免阻塞操作，引入缓存机制以提升性能
+- **减少第三方依赖**：优先使用 Python 原生库实现功能
+- **日志记录**：使用 `logger` 记录关键操作，日志级别包括 `DEBUG < INFO < WARNING < ERROR < CRITICAL`
 
 ## 模块接口规范
 
@@ -98,11 +100,15 @@ class Main:
         self.logger = sdk.logger
         self.env = sdk.env
         self.raiserr = sdk.raiserr
+        self.util = sdk.util
+        self.adapter = sdk.adapter
+        self.logger.info("模块已启动")
 
-    async def start(self):
-        # 模块异步启动逻辑
-        self.logger.info(f"{self.moduleInfo['meta']['name']} 模块启动")
+    def any_function(self):
+        self.logger.info("模块中的 any_function 方法被调用")
 ```
+
+这时用户即可使用 sdk.<ModuleName>.<ModuleFunc> 调用模块方法, 或者是您的自定义操作模块，如监听某个Adapter的事件，并执行相应的操作。
 
 ## 核心特性
 
@@ -112,7 +118,7 @@ ErisPulse 完全基于异步架构，利用 asyncio 实现非阻塞操作。模�
 
 ### 模块间通信
 
-通过 `self.sdk.模块名` 访问已加载的模块实例，实现模块间通信。
+通过 `sdk.模块名` 访问已加载的模块实例，实现模块间通信。
 
 ## 伪指针特性
 
@@ -386,37 +392,14 @@ class Main:
         self.logger = sdk.logger
         self.env = sdk.env
         self.raiserr = sdk.raiserr
-
-        # 初始化标志变量
-        self.handlers_registered = False
-
-        # 注册 NormalHandler
-        if hasattr(sdk, "NormalHandler"):
-            sdk.NormalHandler.AddHandle(self.handle_normal_message) #注册处理器
-            self.logger.info("成功注册NormalHandler消息处理")
-            self.handlers_registered = True
-
-        # 注册 OneBotMessageHandler
-        if hasattr(sdk, "OneBotMessageHandler"):
-            sdk.OneBotMessageHandler.AddHandle(self.handle_onebot_message)#注册处理器
-            self.logger.info("成功注册OneBotMessageHandler消息处理")
-            self.handlers_registered = True
-
-        # 检查 m_ServNormal 是否存在
-        if hasattr(sdk, "m_ServNormal"):
-            self.logger.info("此模块仅支持异步消息处理器，请使用其它模块代替")
-
-        # 如果没有任何处理器被注册，记录警告日志
-        if not self.handlers_registered:
-            self.logger.warning("未找到任何可用的消息处理器")
-
-    def Run(self):  # Run只是示例的启动方法，留给用户直接启动某些主任务模块
-        self.logger.info("示例模块已启动")
+        self.adapter = sdk.adapter
 
     # 消息处理器
+    self.adapter.Yunhu.on("message")
     async def handle_normal_message(self, data):
         pass
 
+    self.adapter.QQ.on("message")
     async def handle_onebot_message(self, data):
         pass
 ```
