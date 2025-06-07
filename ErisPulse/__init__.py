@@ -1,6 +1,8 @@
 import os
 import sys
 import types
+import asyncio
+import traceback
 from . import util
 from .raiserr import raiserr
 from .logger import logger
@@ -8,11 +10,6 @@ from .db import env
 from .mods import mods
 from .adapter import adapter, adapterbase
 
-# 注册 ErrorHook 并预注册常用错误类型
-raiserr.register("MissingDependencyError", doc="缺少依赖错误")
-raiserr.register("InvalidDependencyError", doc="依赖无效错误")
-raiserr.register("CycleDependencyError"  , doc="依赖循环错误")
-raiserr.register("ModuleLoadError"       , doc="模块加载错误")
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
@@ -24,6 +21,32 @@ setattr(sdk, "adapter", adapter)
 setattr(sdk, "BaseAdapter", adapterbase)
 
 env.load_env_file()
+
+# 注册 ErrorHook 并预注册常用错误类型
+raiserr.register("CaughtExternalError"      , doc="捕获的非SDK抛出的异常")
+raiserr.register("MissingDependencyError"   , doc="缺少依赖错误")
+raiserr.register("InvalidDependencyError"   , doc="依赖无效错误")
+raiserr.register("CycleDependencyError"     , doc="依赖循环错误")
+raiserr.register("ModuleLoadError"          , doc="模块加载错误")
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    error_message = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    sdk.logger.error(f"未处理的异常被捕获:\n{error_message}")
+    sdk.raiserr.CaughtExternalError(
+        f"检测到外部异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {exc_type.__name__}: {exc_value}"
+    )
+sys.excepthook = global_exception_handler
+
+def async_exception_handler(loop, context):
+    exception = context.get('exception')
+    message = context.get('message', 'Async error')
+    if exception:
+        logger.error(f"异步任务异常: {message}\n{repr(exception)}")
+        raiserr.CaughtExternalError(
+            f"检测到异步任务异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(exception).__name__}: {exception}"
+        )
+    else:
+        logger.warning(f"异步任务警告: {message}")
+asyncio.get_event_loop().set_exception_handler(async_exception_handler)
 
 def init():
     try:

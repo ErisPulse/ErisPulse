@@ -1,6 +1,7 @@
 import time
 import asyncio
 import functools
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict, deque
 
@@ -44,7 +45,14 @@ def run_in_executor(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
+        try:
+            return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
+        except Exception as e:
+            from . import sdk
+            sdk.logger.error(f"线程内发生未处理异常:\n{''.join(traceback.format_exc())}")
+            sdk.raiserr.CaughtExternalError(
+                f"检测到线程内异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(e).__name__}: {e}"
+            )
     return wrapper
 
 def retry(max_attempts=3, delay=1):
