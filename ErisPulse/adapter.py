@@ -56,10 +56,24 @@ class AdapterManager:
             asyncio.create_task(self._run_adapter(adapter, platform))
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
-        try:
-            await adapter.start()
-        except Exception as e:
-            self.logger.error(f"平台 {platform} 停止时遇到了错误： {e}")
+        from . import sdk
+        retry_count = 0
+        max_retry = 3
+        while retry_count < max_retry:
+            try:
+                await adapter.start()
+                break
+            except Exception as e:
+                retry_count += 1
+                sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+                try:
+                    await adapter.stop()
+                except Exception as stop_err:
+                    sdk.logger.warning(f"停止适配器失败: {stop_err}")
+
+                if retry_count >= max_retry:
+                    sdk.logger.critical(f"平台 {platform} 达到最大重试次数，放弃重启")
+                    sdk.raiserr.AdapterStartFailedError(f"平台 {platform} 适配器无法重写启动: {e}")
 
     async def shutdown(self):
         for adapter in self._adapters.values():
