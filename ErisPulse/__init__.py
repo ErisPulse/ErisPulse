@@ -10,6 +10,7 @@ from .db import env
 from .mods import mods
 from .adapter import adapter, adapterbase
 
+os.system('')
 
 sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
