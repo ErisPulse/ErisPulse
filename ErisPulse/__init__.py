@@ -24,6 +24,7 @@ env.load_env_file()
 
 # 注册 ErrorHook 并预注册常用错误类型
 raiserr.register("CaughtExternalError"      , doc="捕获的非SDK抛出的异常")
+raiserr.register("InitError"               , doc="SDK初始化错误")
 raiserr.register("MissingDependencyError"   , doc="缺少依赖错误")
 raiserr.register("InvalidDependencyError"   , doc="依赖无效错误")
 raiserr.register("CycleDependencyError"     , doc="依赖循环错误")
@@ -160,7 +161,6 @@ def init():
                     logger.error(f"注册适配器失败: {e}")
 
     except Exception as e:
-        logger.error(f"初始化失败: {e}")
-        raise e
+        raiserr.InitError(f"sdk初始化失败: {e}", exit=True)
 
 sdk.init = init
