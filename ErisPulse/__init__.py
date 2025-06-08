@@ -19,7 +19,7 @@ setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
 setattr(sdk, "adapter", adapter)
 setattr(sdk, "SendDSL", SendDSL)
-setattr(sdk, "BaseAdapter", adapterbase)
+setattr(sdk, "BaseAdapter", adapterbase(sdk))
 
 env.load_env_file()
 

@@ -140,4 +140,4 @@ class AdapterManager:
 
 adapter = AdapterManager()
 SendDSL = SendDSL
-adapterbase = BaseAdapter()
+adapterbase = BaseAdapter
