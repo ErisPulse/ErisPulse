@@ -1,17 +1,18 @@
+
+import types
+sdk = types.SimpleNamespace()
 import os
 import sys
-import types
 from . import util
 from .raiserr import raiserr
 from .logger import logger
 from .db import env
 from .mods import mods
-from .adapter import adapter, adapterbase, SendDSL
+from .adapter import adapter, BaseAdapter, SendDSL
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')
 
-sdk = types.SimpleNamespace()
 setattr(sdk, "env", env)
 setattr(sdk, "mods", mods)
 setattr(sdk, "util", util)
@@ -19,7 +20,7 @@ setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
 setattr(sdk, "adapter", adapter)
 setattr(sdk, "SendDSL", SendDSL)
-setattr(sdk, "BaseAdapter", adapterbase)
+setattr(sdk, "BaseAdapter", BaseAdapter)
 
 env.load_env_file()
 
