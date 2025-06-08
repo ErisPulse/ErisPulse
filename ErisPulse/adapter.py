@@ -31,9 +31,17 @@ class SendDSL:
 
 
 class BaseAdapter:
-    def __init__(self):
+    def __init__(self, sdk):
+        self.sdk = sdk
         self._handlers = defaultdict(list)
         self._middlewares = []
+
+        # 检测是否有 Send 子类定义
+        if not hasattr(self.__class__, 'Send') or not issubclass(self.__class__.Send, SendDSL):
+            raise TypeError(f"{self.__class__.__name__} 必须定义 Send 嵌套类并继承 SendDSL")
+
+        # 绑定当前适配器的 Send 实例
+        self.Send = self.__class__.Send(self)
 
     def on(self, event_type: str):
         def decorator(func: Callable):
@@ -54,7 +62,7 @@ class BaseAdapter:
     async def start(self):
         raise NotImplementedError
 
-    async def stop(self):
+    async def shutdown(self):
         raise NotImplementedError
 
     async def emit(self, event_type: str, data: Any):
@@ -64,31 +72,12 @@ class BaseAdapter:
         for handler in self._handlers.get(event_type, []):
             await handler(data)
 
-    # 新风格：Send.To(...).Func()
-    Send: Type[SendDSL] = SendDSL
-
-    # 老风格：send(target, message, ...)
-    async def send(self, target: Any, message: Any, **kwargs):
-        """
-        保留老式的 send 方法，兼容已有逻辑
-        :param target: 目标 (type, id)
-        :param message: 消息内容，格式不限
-        :param kwargs: 可选参数
-        """
-        target_type, target_id = target
-        await self._real_send(
-            target_type=target_type,
-            target_id=target_id,
-            action="raw",
-            data={
-                "message": message,
-                "extra": kwargs
-            }
-        )
-
-    # 开发者应重写此方法以支持具体发送逻辑
-    async def _real_send(self, target_type: str, target_id: str, action: str, data: dict):
-        raise NotImplementedError("请在子类中实现 _real_send 方法")
+    async def send(self, target_type: str, target_id: str, message: Any, **kwargs):
+        method_name = kwargs.pop("method", "Text")
+        method = getattr(self.Send.To(target_type, target_id), method_name, None)
+        if not method:
+            raise AttributeError(f"未找到 {method_name} 方法，请确保已在 Send 类中定义")
+        return await method(text=message, **kwargs)
 
 
 class AdapterManager:
