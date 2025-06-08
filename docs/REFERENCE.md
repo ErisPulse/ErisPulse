@@ -120,37 +120,72 @@ adapter_instance = my_adapter_class(config)
 
 ### 2.7 BaseAdapter 接口规范
 
-所有平台适配器必须继承自 `BaseAdapter` 并至少实现以下方法：
+所有平台适配器必须继承自 BaseAdapter 并至少实现以下方法：
 
 ```python
 from ErisPulse import sdk
 
 class MyAdapter(sdk.BaseAdapter):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, sdk):
+        super().__init__()
+        # 初始化配置等操作
 
-    async def handle_event(self, event):
+    async def send(self, target, message, **kwargs):
         raise NotImplementedError()
 
-    async def send(self, target, message):
+    async def call_api(self, endpoint: str, **params):
+        raise NotImplementedError()
+
+    async def start(self):
+        raise NotImplementedError()
+
+    async def stop(self):
         raise NotImplementedError()
 ```
 
 #### 必须实现的方法
 
-| 方法名 | 参数 | 返回类型 | 描述 |
-|--------|------|----------|------|
-| `handle_event(self, event)` | `event: dict` | `Coroutine` | 处理来自平台的事件（如消息、状态变更等），需异步实现。 |
-| `send(self, target, message)` | `target: str`, `message: str` | `Coroutine` | 向指定目标发送消息，支持文本格式。 |
+- `__init__(self, sdk)`  
+  - 初始化适配器，接收sdk实例。
+- `async def send(self, target, message, **kwargs)`  
+  - 发送消息到指定目标（如用户、群组等）。
+  - 抛出 `NotImplementedError` 表示子类必须重写该方法。
+- `async def call_api(self, endpoint: str, **params)`  
+  - 调用平台 API 的统一接口。
+- `async def start(self)`  
+  - 启动适配器逻辑，例如连接 WebSocket 或启动监听线程。
+- `async def stop(self)`  
+  - 停止适配器运行，释放资源。
 
 #### 可选重写的方法
 
-| 方法名 | 参数 | 返回类型 | 描述 |
-|--------|------|----------|------|
-| `connect(self)` | 无 | `Coroutine` | 建立连接前的初始化操作。 |
-| `disconnect(self)` | 无 | `Coroutine` | 断开连接时清理资源。 |
-| `on_connected(self)` | 无 | `Coroutine` | 连接建立后的回调处理。 |
-| `on_disconnected(self)` | 无 | `Coroutine` | 连接断开后的回调处理。 |
+- `async def emit(self, event_type: str, data: Any)` (inherited from `BaseAdapter`)  
+  - 用于事件分发，可被覆盖以定制事件处理流程。
+- `def middleware(self, func: Callable)`  
+  - 添加中间件逻辑，用于在事件触发前进行预处理。
+
+#### 附加功能说明
+
+- `on(event_type: str)`  
+  - 装饰器方法，用于注册特定事件类型的处理函数。
+  - 示例：
+    ```python
+    @adapter.on("message")
+    async def handle_message(data):
+        await process(data)
+    ```
+
+- `middleware(func: Callable)`  
+  - 注册中间件函数，用于对传入事件数据进行预处理。
+  - 示例：
+    ```python
+    @adapter.middleware
+    async def log_middleware(data):
+        print("Received event:", data)
+        return data
+    ```
+
+> **提示**：开发者可通过 `sdk.adapter.get(platform_name)` 获取已注册的适配器类，并通过实例化进行使用。
 
 ---
 
