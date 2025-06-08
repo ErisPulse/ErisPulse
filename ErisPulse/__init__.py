@@ -6,7 +6,7 @@ from .raiserr import raiserr
 from .logger import logger
 from .db import env
 from .mods import mods
-from .adapter import adapter, adapterbase
+from .adapter import adapter, adapterbase, SendDSL
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')
@@ -18,6 +18,7 @@ setattr(sdk, "util", util)
 setattr(sdk, "raiserr", raiserr)
 setattr(sdk, "logger", logger)
 setattr(sdk, "adapter", adapter)
+setattr(sdk, "SendDSL", SendDSL)
 setattr(sdk, "BaseAdapter", adapterbase)
 
 env.load_env_file()
