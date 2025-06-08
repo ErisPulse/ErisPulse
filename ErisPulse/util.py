@@ -24,7 +24,8 @@ def topological_sort(elements, dependencies, error):
             if in_degree[neighbor] == 0:
                 queue.append(neighbor)
     if len(sorted_list) != len(elements):
-        raise error(f"Cycle detected in the dependencies: {elements} -> {dependencies}")
+        from . import sdk
+        sdk.logger.error(f"Topological sort failed: {sorted_list} vs {elements}")
     return sorted_list
 
 def ExecAsync(async_func, *args, **kwargs):
