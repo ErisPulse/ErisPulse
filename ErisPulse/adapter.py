@@ -1,7 +1,34 @@
 import functools
 import asyncio
-from typing import Callable, Any, Dict, List, Type
+from typing import Callable, Any, Dict, List, Type, Optional
 from collections import defaultdict
+
+
+# DSL 基类，用于实现 Send.To(...).Func(...) 风格
+class SendDSL:
+    def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None):
+        self._adapter = adapter
+        self._target_type = target_type
+        self._target_id = target_id
+
+    def To(self, target_type: str, target_id: str) -> 'SendDSL':
+        return self.__class__(self._adapter, target_type, target_id)
+
+    def __getattr__(self, name: str):
+        def wrapper(*args, **kwargs):
+            return asyncio.create_task(
+                self._adapter._real_send(
+                    target_type=self._target_type,
+                    target_id=self._target_id,
+                    action=name,
+                    data={
+                        "args": args,
+                        "kwargs": kwargs
+                    }
+                )
+            )
+        return wrapper
+
 
 class BaseAdapter:
     def __init__(self):
@@ -21,9 +48,6 @@ class BaseAdapter:
         self._middlewares.append(func)
         return func
 
-    async def send(self, target: Any, message: Any, **kwargs):
-        raise NotImplementedError
-
     async def call_api(self, endpoint: str, **params):
         raise NotImplementedError
 
@@ -39,6 +63,33 @@ class BaseAdapter:
 
         for handler in self._handlers.get(event_type, []):
             await handler(data)
+
+    # 新风格：Send.To(...).Func()
+    Send: Type[SendDSL] = SendDSL
+
+    # 老风格：send(target, message, ...)
+    async def send(self, target: Any, message: Any, **kwargs):
+        """
+        保留老式的 send 方法，兼容已有逻辑
+        :param target: 目标 (type, id)
+        :param message: 消息内容，格式不限
+        :param kwargs: 可选参数
+        """
+        target_type, target_id = target
+        await self._real_send(
+            target_type=target_type,
+            target_id=target_id,
+            action="raw",
+            data={
+                "message": message,
+                "extra": kwargs
+            }
+        )
+
+    # 开发者应重写此方法以支持具体发送逻辑
+    async def _real_send(self, target_type: str, target_id: str, action: str, data: dict):
+        raise NotImplementedError("请在子类中实现 _real_send 方法")
+
 
 class AdapterManager:
     def __init__(self):
@@ -97,5 +148,7 @@ class AdapterManager:
     def platforms(self) -> list:
         return list(self._adapters.keys())
 
+
 adapter = AdapterManager()
-adapterbase = BaseAdapter
+adapter.SendDSL = SendDSL
+adapterbase = BaseAdapter()
