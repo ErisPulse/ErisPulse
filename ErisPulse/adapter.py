@@ -2,10 +2,10 @@ import functools
 import asyncio
 from typing import Callable, Any, Dict, List, Type, Optional
 from collections import defaultdict
-from . import sdk
+
 
 # DSL 基类，用于实现 Send.To(...).Func(...) 风格
-class SendDSL:
+class SendDSLBase:
     def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None):
         self._adapter = adapter
         self._target_type = target_type
@@ -32,7 +32,6 @@ class SendDSL:
 
 class BaseAdapter:
     def __init__(self):
-        self.sdk = sdk
         self._handlers = defaultdict(list)
         self._middlewares = []
 
@@ -139,5 +138,4 @@ class AdapterManager:
 
 
 adapter = AdapterManager()
-SendDSL = SendDSL()
-adapterbase = BaseAdapter()
+SendDSL = SendDSLBase
