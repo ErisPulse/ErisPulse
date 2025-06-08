@@ -27,6 +27,12 @@ class BaseAdapter:
     async def call_api(self, endpoint: str, **params):
         raise NotImplementedError
 
+    async def start(self):
+        raise NotImplementedError
+
+    async def stop(self):
+        raise NotImplementedError
+
     async def emit(self, event_type: str, data: Any):
         for middleware in self._middlewares:
             data = await middleware(data)
