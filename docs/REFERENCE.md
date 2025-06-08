@@ -185,6 +185,15 @@ class MyAdapter(sdk.BaseAdapter):
         return data
     ```
 
+#### Send（DSL 风格发送接口）
+
+所有平台适配器支持链式调用风格的 `Send.To(...).Func()` 接口，用于更语义化的消息发送。
+
+##### 使用示例：
+```python
+adapter.QQ.Send.To("user", "U1001").Text(text="你好")
+adapter.Yunhu.Send.To("group", "G8888").Image(file="http://example.com/image.jpg")
+
 > **提示**：开发者可通过 `sdk.adapter.get(platform_name)` 获取已注册的适配器类，并通过实例化进行使用。
 
 ---

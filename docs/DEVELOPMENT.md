@@ -404,6 +404,14 @@ class Main:
         pass
 ```
 
+### 链式消息发送接口（DSL）
+
+ErisPulse 支持一种全新的链式调用风格的消息发送方式：
+
+```python
+adapter.Send.To("user", "U1001").Text(text="你好")
+adapter.Send.To("group", "G8888").Image(file="http://example.com/image.jpg")
+
 ## 贡献模块流程
 
 1. Fork [模块仓库](https://github.com/ErisPulse/ErisPulse-ModuleRepo) 并新建分支
