@@ -139,5 +139,5 @@ class AdapterManager:
 
 
 adapter = AdapterManager()
-adapter.SendDSL = SendDSL
+SendDSL = SendDSL
 adapterbase = BaseAdapter()
