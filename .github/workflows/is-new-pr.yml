@@ -1,3 +1,5 @@
+name: 🎀 艾莉丝的新PR提醒 ~
+
 on:
   pull_request:
     types: [opened]
