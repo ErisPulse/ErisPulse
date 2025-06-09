@@ -1,6 +1,6 @@
 import functools
 import asyncio
-from typing import Callable, Any, Dict, List, Type, Optional
+from typing import Callable, Any, Dict, List, Type, Optional, Set
 from collections import defaultdict
 
 
@@ -82,22 +82,36 @@ class BaseAdapter:
 class AdapterManager:
     def __init__(self):
         self._adapters: Dict[str, BaseAdapter] = {}
-
+        self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
+        self._started_instances: Set[BaseAdapter] = set()
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
         from . import sdk
-        self._adapters[platform] = adapter_class(sdk)
+
+        if adapter_class in self._adapter_instances:
+            self._adapters[platform] = self._adapter_instances[adapter_class]
+        else:
+            instance = adapter_class(sdk)
+            self._adapters[platform] = instance
+            self._adapter_instances[adapter_class] = instance
+
         return True
 
     async def startup(self, platforms: List[str] = None):
         if platforms is None:
-            platforms = self._adapters.keys()
+            platforms = list(self._adapters.keys())
 
         for platform in platforms:
             if platform not in self._adapters:
                 raise ValueError(f"平台 {platform} 未注册")
             adapter = self._adapters[platform]
+
+            # 如果该实例已经被启动过，跳过
+            if adapter in self._started_instances:
+                continue
+
+            self._started_instances.add(adapter)
             asyncio.create_task(self._run_adapter(adapter, platform))
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
