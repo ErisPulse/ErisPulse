@@ -350,4 +350,4 @@ class MyAdapter(sdk.BaseAdapter):
 
 ---
 
-> ⚠️ 本文档仅关注开发实践，完整的 API 文档请参考[ErisPulse 方法与接口文档](docs/REFERENCE.md)
+> ⚠️ 本文档仅关注开发实践，完整的 API 文档请参考[ErisPulse 方法与接口文档](REFERENCE.md)

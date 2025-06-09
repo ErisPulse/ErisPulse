@@ -33,17 +33,14 @@ if __name__ == "__main__":
 ```
 
 ## 导航
-- [开发指南](docs/DEVELOPMENT.md) - 完整的开发文档
-- [命令行工具](docs/CLI.md) - CLI 使用手册
-- [源配置指南](docs/ORIGIN.md) - 模块源配置说明
-- [更新日志](docs/CHANGELOG.md) - 版本更新历史
-- [底层API](docs/REFERENCE.md) - 方法与接口
-- [GitHub Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+- [开发者指南](docs/DEVELOPMENT.md)
+- [底层方法与接口](docs/REFERENCE.md)
+- [命令行工具](docs/CLI.md)
+- [源配置指南](docs/ORIGIN.md)
+- [更新日志](docs/CHANGELOG.md)
+> [GitHub 社区](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ## 🤝 贡献
 
 欢迎任何形式的贡献！无论是报告 bug、提出新功能请求，还是直接提交代码，都非常感谢。
 
-## 📄 许可证
-
-本项目采用 [MIT 许可证](LICENSE)。
