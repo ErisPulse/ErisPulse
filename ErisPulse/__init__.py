@@ -49,6 +49,8 @@ def init():
         sdkInstalledModuleNames: list[str] = []
         disabledModules: list[str] = []
 
+        # ==== 扫描模块并收集基本信息 ====
+        module_objs = {}  # {module_name: moduleObj}
         for module_name in TempModules:
             try:
                 moduleObj = __import__(module_name)
@@ -62,107 +64,119 @@ def init():
                     logger.warning(f"模块 {module_name} 缺少 'Main' 类.")
                     continue
 
-                module_info = mods.get_module(moduleObj.moduleInfo.get("meta", {}).get("name", None))
+                meta_name = moduleObj.moduleInfo["meta"]["name"]
+                module_info = mods.get_module(meta_name)
                 if module_info is None:
                     module_info = {
                         "status": True,
                         "info": moduleObj.moduleInfo
                     }
-                    mods.set_module(moduleObj.moduleInfo.get("meta", {}).get("name", None), module_info)
-                    logger.info(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 信息已初始化并存储到数据库")
+                    mods.set_module(meta_name, module_info)
+                    logger.info(f"模块 {meta_name} 信息已初始化并存储到数据库")
 
                 if not module_info.get('status', True):
                     disabledModules.append(module_name)
-                    logger.warning(f"模块 {moduleObj.moduleInfo.get('meta', {}).get('name', None)} 已禁用，跳过加载")
+                    logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
                     continue
 
-                required_deps = moduleObj.moduleInfo.get("dependencies", []).get("requires", [])
+                required_deps = moduleObj.moduleInfo.get("dependencies", {}).get("requires", [])
                 missing_required_deps = [dep for dep in required_deps if dep not in TempModules]
                 if missing_required_deps:
                     logger.error(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
                     raiserr.MissingDependencyError(f"模块 {module_name} 缺少必需依赖: {missing_required_deps}")
 
-                # 检查可选依赖部分
-                optional_deps = moduleObj.moduleInfo.get("dependencies", []).get("optional", [])
-                if optional_deps:
-                    available_optional_deps = []
-                    for dep in optional_deps:
-                        if isinstance(dep, list):
-                            available_deps = [d for d in dep if d in TempModules]
-                            if available_deps:
-                                available_optional_deps.extend(available_deps)
-                        elif dep in TempModules:
-                            available_optional_deps.append(dep)
+                optional_deps = moduleObj.moduleInfo.get("dependencies", {}).get("optional", [])
+                available_optional_deps = []
+                for dep in optional_deps:
+                    if isinstance(dep, list):
+                        available_deps = [d for d in dep if d in TempModules]
+                        if available_deps:
+                            available_optional_deps.extend(available_deps)
+                    elif dep in TempModules:
+                        available_optional_deps.append(dep)
 
-                    if available_optional_deps:
-                        logger.info(f"模块 {module_name} 加载了部分可选依赖: {available_optional_deps}")
-                    else:
-                        logger.warning(f"模块 {module_name} 缺少所有可选依赖: {optional_deps}")
+                if optional_deps and not available_optional_deps:
+                    logger.warning(f"模块 {module_name} 缺少所有可选依赖: {optional_deps}")
 
+                module_objs[module_name] = moduleObj
                 sdkInstalledModuleNames.append(module_name)
+
             except Exception as e:
                 logger.warning(f"模块 {module_name} 加载失败: {e}")
                 continue
 
+        # ==== 构建依赖图并进行拓扑排序 ====
         sdkModuleDependencies = {}
         for module_name in sdkInstalledModuleNames:
-            moduleObj = __import__(module_name)
-            moduleDependecies: list[str] = moduleObj.moduleInfo.get("dependencies", []).get("requires", [])
+            moduleObj = module_objs[module_name]
+            meta_name = moduleObj.moduleInfo["meta"]["name"]
 
-            optional_deps = moduleObj.moduleInfo.get("dependencies", []).get("optional", [])
-            available_optional_deps = [dep for dep in optional_deps if dep in sdkInstalledModuleNames]
-            moduleDependecies.extend(available_optional_deps)
+            req_deps = moduleObj.moduleInfo.get("dependencies", {}).get("requires", [])
+            opt_deps = moduleObj.moduleInfo.get("dependencies", {}).get("optional", [])
 
-            for dep in moduleDependecies:
+            available_optional_deps = [dep for dep in opt_deps if dep in sdkInstalledModuleNames]
+            deps = req_deps + available_optional_deps
+
+            for dep in deps:
                 if dep in disabledModules:
-                    logger.warning(f"模块 {module_name} 的依赖模块 {dep} 已禁用，跳过加载")
+                    logger.warning(f"模块 {meta_name} 的依赖模块 {dep} 已禁用，跳过加载")
                     continue
 
-            if not all(dep in sdkInstalledModuleNames for dep in moduleDependecies):
-                raiserr.InvalidDependencyError(
-                    f"模块 {module_name} 的依赖无效: {moduleDependecies}"
-                )
-            sdkModuleDependencies[module_name] = moduleDependecies
+            if not all(dep in sdkInstalledModuleNames for dep in deps):
+                raiserr.InvalidDependencyError(f"模块 {meta_name} 的依赖无效: {deps}")
+            sdkModuleDependencies[module_name] = deps
 
         sdkInstalledModuleNames: list[str] = sdk.util.topological_sort(
             sdkInstalledModuleNames, sdkModuleDependencies, raiserr.CycleDependencyError
         )
 
+        # ==== 注册适配器 ====
+        logger.debug("[Init] 开始注册适配器...")
+        for module_name in sdkInstalledModuleNames:
+            moduleObj = module_objs[module_name]
+            meta_name = moduleObj.moduleInfo["meta"]["name"]
+
+            if hasattr(moduleObj.Main, "register_adapters"):
+                try:
+                    adapters = moduleObj.Main.register_adapters()
+                    if isinstance(adapters, dict):
+                        for platform_name, adapter_class in adapters.items():
+                            sdk.adapter.register(platform_name, adapter_class)
+                            logger.info(f"模块 {meta_name} 注册了适配器: {platform_name}")
+                except Exception as e:
+                    logger.error(f"模块 {meta_name} 注册适配器失败: {e}")
+
+        # ==== 存储模块信息到数据库 ====
         all_modules_info = {}
         for module_name in sdkInstalledModuleNames:
-            moduleObj = __import__(module_name)
+            moduleObj = module_objs[module_name]
             moduleInfo: dict = moduleObj.moduleInfo
 
-            module_info = mods.get_module(moduleInfo.get("meta", {}).get("name", None))
-            mods.set_module(moduleInfo.get("meta", {}).get("name", None), {
+            meta_name = moduleInfo.get("meta", {}).get("name", None)
+            module_info = mods.get_module(meta_name)
+            mods.set_module(meta_name, {
                 "status": True,
                 "info": moduleInfo
             })
         logger.debug("所有模块信息已加载并存储到数据库")
 
+        # ==== 实例化 Main 类并挂载到 sdk ====
+        logger.debug("[Init] 开始实例化模块 Main 类...")
         for module_name in sdkInstalledModuleNames:
-            moduleObj = __import__(module_name)
-            moduleInfo = moduleObj.moduleInfo
-            module_status = mods.get_module_status(moduleInfo.get("meta", {}).get("name", None))
+            moduleObj = module_objs[module_name]
+            meta_name = moduleObj.moduleInfo["meta"]["name"]
+
+            module_status = mods.get_module_status(meta_name)
             if not module_status:
                 continue
 
             moduleMain = moduleObj.Main(sdk)
-            setattr(moduleMain, "moduleInfo", moduleInfo)
-            setattr(sdk, moduleInfo.get("meta", {}).get("name", None), moduleMain)
-            logger.debug(f"模块 {moduleInfo.get('meta', {}).get('name', None)} 正在初始化")
-
-            if hasattr(moduleMain, "register_adapters"):
-                try:
-                    adapters = moduleMain.register_adapters()
-                    if isinstance(adapters, dict):
-                        for platform_name, adapter_class in adapters.items():
-                            sdk.adapter.register(platform_name, adapter_class)
-                            logger.info(f"模块 {moduleInfo['meta']['name']} 注册了适配器: {platform_name}")
-                except Exception as e:
-                    logger.error(f"注册适配器失败: {e}")
+            setattr(moduleMain, "moduleInfo", moduleObj.moduleInfo)
+            setattr(sdk, meta_name, moduleMain)
+            logger.debug(f"模块 {meta_name} 正在初始化")
 
     except Exception as e:
         raiserr.InitError(f"sdk初始化失败: {e}", exit=True)
+
 
 sdk.init = init
