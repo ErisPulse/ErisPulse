@@ -25,7 +25,7 @@ jobs:
           emails=$(cat .github/config/notify.json | jq -c '.emails')
           echo "emails=$emails" >> $GITHUB_OUTPUT
 
-      - name: Debug: 检查 API KEY
+      - name: Debug- 检查 API KEY
         run: |
           echo "RESEND_API_KEY length: ${#RESEND_API_KEY}"
           if [ -z "$RESEND_API_KEY" ]; then
