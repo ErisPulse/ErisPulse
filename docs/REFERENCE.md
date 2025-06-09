@@ -389,7 +389,9 @@ class Main:
 class Main:
     def __init__(self, sdk):
         self.sdk = sdk
-        self.other_module = sdk.OtherModule  # 访问其他模块
+
+    def your_function(self, ...):
+        other_module = self.sdk.OtherModule  # 访问其他模块
 ```
 
 ---
