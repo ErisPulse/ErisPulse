@@ -112,7 +112,7 @@ class AdapterManager:
                 retry_count += 1
                 sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
                 try:
-                    await adapter.stop()
+                    await adapter.shutdown()
                 except Exception as stop_err:
                     sdk.logger.warning(f"停止适配器失败: {stop_err}")
 
