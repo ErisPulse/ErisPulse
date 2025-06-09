@@ -141,8 +141,6 @@ def init():
                     for platform_name, adapter_class in moduleObj.adapterInfo.items():
                         sdk.adapter.register(platform_name, adapter_class)
                         logger.info(f"模块 {meta_name} 注册了适配器: {platform_name}")
-                else:
-                    logger.debug(f"模块 {meta_name} 未定义 adapterInfo 或格式错误")
             except Exception as e:
                 logger.error(f"模块 {meta_name} 注册适配器失败: {e}")
 
