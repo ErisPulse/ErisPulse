@@ -149,6 +149,12 @@ moduleInfo = {
 }
 
 from .Core import Main
+from .Core import MyPlatformAdapter
+
+adapterInfo = {
+    "myplatform": MyPlatformAdapter,
+    "MyPlatform": MyPlatformAdapter,
+}
 ```
 
 ### 3. `Core.py`
@@ -161,11 +167,6 @@ class Main:
     def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger
-
-    def register_adapters(self):
-        return {
-            "myplatform": MyPlatformAdapter
-        }
 
 class MyPlatformAdapter(sdk.BaseAdapter):
     class Send(sdk.SendDSL):
@@ -289,58 +290,6 @@ moduleInfo = {
 - 在 `call_api` 中做好异常捕获与日志记录；
 - 若涉及上传操作，封装为 `_upload_file_and_call_api` 更好；
 - 避免同步阻塞操作，优先使用异步库（如 `aiohttp`）；
-
----
-
-## 六、示例代码
-
-### 示例：最小化模块
-
-```python
-# Core.py
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.logger.info("Hello from MyModule")
-```
-
-### 示例：最小化适配器
-
-```python
-# Core.py
-from ErisPulse import sdk
-
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-
-    def register_adapters(self):
-        return {
-            "myplatform": MyAdapter
-        }
-
-class MyAdapter(sdk.BaseAdapter):
-    class Send(sdk.SendDSL):
-        def Text(self, text: str):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-
-    async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError("请实现具体的 API 调用逻辑")
-
-    async def start(self):
-        self.logger.info("适配器启动")
-
-    async def shutdown(self):
-        self.logger.info("适配器关闭")
-```
 
 ---
 
