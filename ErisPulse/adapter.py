@@ -121,6 +121,9 @@ class AdapterManager:
         while retry_count < max_retry:
             try:
                 await adapter.start()
+                sdk.logger.debug(f"尝试启动适配器 {platform}，实例ID: {id(adapter)}")
+                if adapter in self._started_instances:
+                    sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已启动，跳过")
                 break
             except Exception as e:
                 retry_count += 1
