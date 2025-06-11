@@ -83,18 +83,24 @@ class AdapterManager:
     def __init__(self):
         self._adapters: Dict[str, BaseAdapter] = {}
         self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
+        self._platform_to_instance: Dict[str, BaseAdapter] = {}
         self._started_instances: Set[BaseAdapter] = set()
+
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
         from . import sdk
 
+        # 如果该类已经创建过实例，复用
         if adapter_class in self._adapter_instances:
-            self._adapters[platform] = self._adapter_instances[adapter_class]
+            instance = self._adapter_instances[adapter_class]
         else:
             instance = adapter_class(sdk)
-            self._adapters[platform] = instance
             self._adapter_instances[adapter_class] = instance
+
+        # 注册平台名，并统一映射到该实例
+        self._adapters[platform] = instance
+        self._platform_to_instance[platform] = instance
 
         return True
 
@@ -102,15 +108,20 @@ class AdapterManager:
         if platforms is None:
             platforms = list(self._adapters.keys())
 
+        # 已经被调度过的 adapter 实例集合（防止重复调度）
+        scheduled_adapters = set()
+
         for platform in platforms:
             if platform not in self._adapters:
                 raise ValueError(f"平台 {platform} 未注册")
             adapter = self._adapters[platform]
 
-            if adapter in self._started_instances:
+            # 如果该实例已经被启动或已调度，跳过
+            if adapter in self._started_instances or adapter in scheduled_adapters:
                 continue
 
-            self._started_instances.add(adapter)
+            # 加入调度队列
+            scheduled_adapters.add(adapter)
             asyncio.create_task(self._run_adapter(adapter, platform))
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
@@ -118,24 +129,33 @@ class AdapterManager:
         retry_count = 0
         max_retry = 3
 
-        if adapter in self._started_instances:
-            return
+        # 加锁防止并发启动
+        if not getattr(adapter, "_starting_lock", None):
+            adapter._starting_lock = asyncio.Lock()
 
-        while retry_count < max_retry:
-            try:
-                await adapter.start()
-                break
-            except Exception as e:
-                retry_count += 1
-                sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+        async with adapter._starting_lock:
+            # 再次确认是否已经被启动
+            if adapter in self._started_instances:
+                sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过")
+                return
+
+            while retry_count < max_retry:
                 try:
-                    await adapter.shutdown()
-                except Exception as stop_err:
-                    sdk.logger.warning(f"停止适配器失败: {stop_err}")
+                    await adapter.start()
+                    self._started_instances.add(adapter)
+                    sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已启动")
+                    break
+                except Exception as e:
+                    retry_count += 1
+                    sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+                    try:
+                        await adapter.shutdown()
+                    except Exception as stop_err:
+                        sdk.logger.warning(f"停止适配器失败: {stop_err}")
 
-                if retry_count >= max_retry:
-                    sdk.logger.critical(f"平台 {platform} 达到最大重试次数，放弃重启")
-                    sdk.raiserr.AdapterStartFailedError(f"平台 {platform} 适配器无法重写启动: {e}")
+                    if retry_count >= max_retry:
+                        sdk.logger.critical(f"平台 {platform} 达到最大重试次数，放弃重启")
+                        raise sdk.raiserr.AdapterStartFailedError(f"平台 {platform} 适配器无法重写启动: {e}")
     async def shutdown(self):
         for adapter in self._adapters.values():
             await adapter.shutdown()
