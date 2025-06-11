@@ -107,7 +107,6 @@ class AdapterManager:
                 raise ValueError(f"平台 {platform} 未注册")
             adapter = self._adapters[platform]
 
-            # 如果该实例已经被启动过，跳过
             if adapter in self._started_instances:
                 continue
 
@@ -118,12 +117,13 @@ class AdapterManager:
         from . import sdk
         retry_count = 0
         max_retry = 3
+
+        if adapter in self._started_instances:
+            return
+
         while retry_count < max_retry:
             try:
                 await adapter.start()
-                sdk.logger.debug(f"尝试启动适配器 {platform}，实例ID: {id(adapter)}")
-                if adapter in self._started_instances:
-                    sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已启动，跳过")
                 break
             except Exception as e:
                 retry_count += 1
@@ -136,7 +136,6 @@ class AdapterManager:
                 if retry_count >= max_retry:
                     sdk.logger.critical(f"平台 {platform} 达到最大重试次数，放弃重启")
                     sdk.raiserr.AdapterStartFailedError(f"平台 {platform} 适配器无法重写启动: {e}")
-
     async def shutdown(self):
         for adapter in self._adapters.values():
             await adapter.shutdown()
