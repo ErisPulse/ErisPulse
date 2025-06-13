@@ -10,8 +10,13 @@ class SendDSLBase:
         self._adapter = adapter
         self._target_type = target_type
         self._target_id = target_id
+        self._target_to = target_id
 
-    def To(self, target_type: str, target_id: str) -> 'SendDSL':
+    def To(self, target_type: str = None, target_id: str = None) -> 'SendDSL':
+        if target_id is None and target_type is not None:
+            target_id = target_type
+            target_type = None
+
         return self.__class__(self._adapter, target_type, target_id)
 
     def __getattr__(self, name: str):
