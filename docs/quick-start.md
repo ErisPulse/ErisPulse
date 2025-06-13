@@ -126,7 +126,7 @@ ErisPulse 支持多平台适配器，例如 Yunhu、OneBot、Telegram 等。以�
 await sdk.adapter.Yunhu.Send.To("user", "U1001").Text("你好！")
 ```
 
-你可以在 `devs` 文件夹下的测试文件中找到完整的适配器使用案例，如：
+你可以在项目 `devs` 文件夹下的测试文件中找到完整的官方测试适配器使用案例，如：
 
 - `test_telegram.py`
 - `test_mail.py`
