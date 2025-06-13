@@ -16,7 +16,6 @@ class EnvManager:
     def __init__(self):
         if not hasattr(self, "_initialized"):
             self._init_db()
-            self._create_env_file_if_not_exists()
             self._initialized = True
 
     def _init_db(self):
@@ -90,7 +89,7 @@ class EnvManager:
                 if not key.startswith("__") and isinstance(value, (dict, list, str, int, float, bool)):
                     self.set(key, value)
 
-    def _create_env_file_if_not_exists(self):
+    def create_env_file_if_not_exists(self):
         env_file = Path("env.py")
         if not env_file.exists():
             content = '''# env.py
@@ -122,7 +121,7 @@ from ErisPulse import sdk
         try:
             return self.get(key)
         except KeyError:
-            from . import sdk
-            sdk.logger.error(f"配置项 {key} 不存在")
+            from .logger import logger
+            logger.error(f"配置项 {key} 不存在")
 
 env = EnvManager()

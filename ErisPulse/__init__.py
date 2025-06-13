@@ -22,8 +22,6 @@ setattr(sdk, "adapter", adapter)
 setattr(sdk, "SendDSL", SendDSL)
 setattr(sdk, "BaseAdapter", BaseAdapter)
 
-env.load_env_file()
-
 # 注册 ErrorHook 并预注册常用错误类型
 raiserr.register("CaughtExternalError"      , doc="捕获的非SDK抛出的异常")
 raiserr.register("InitError"               , doc="SDK初始化错误")
@@ -34,6 +32,10 @@ raiserr.register("ModuleLoadError"          , doc="模块加载错误")
 
 def init():
     try:
+        logger.info("[Init] SDK 正在初始化...")
+        env.create_env_file_if_not_exists()
+        env.load_env_file()
+
         sdkModulePath = os.path.join(os.path.dirname(__file__), "modules")
 
         if not os.path.exists(sdkModulePath):
