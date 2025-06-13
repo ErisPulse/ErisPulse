@@ -41,7 +41,7 @@ sdk.init()
 你可以通过 CLI 安装所需模块：
 
 ```bash
-epsdk install chatgpt weather
+epsdk install YunhuAdapter OneBotAdapter AIChat
 ```
 
 你也可以手动编写模块逻辑，参考开发者文档进行模块开发。
