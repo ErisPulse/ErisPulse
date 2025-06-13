@@ -409,4 +409,4 @@ sdk.logger = CustomLogger()  # 替换日志模块
 ```
 
 
-> 更多详细信息请阅读源码或参考[ErisPulse 开发者文档](DEVELOPMENT.md)。
+> 更多详细信息请阅读源码。
