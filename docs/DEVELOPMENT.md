@@ -350,7 +350,3 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 ## 五、提交到官方源
 
 如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
-
----
-
-> ⚠️ 本文档仅关注开发实践，完整的 API 文档请参考[ErisPulse 方法与接口文档](REFERENCE.md)
