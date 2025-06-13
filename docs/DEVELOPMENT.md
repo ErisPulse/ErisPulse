@@ -285,11 +285,12 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 | 方法 | 描述 |
 |------|------|
 | `on(event_type: str)` | 注册事件处理器 |
+| `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
 | `middleware(func: Callable)` | 添加中间件处理传入数据 |
 | `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
 
 - 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
-- 这时用户可以通过 `on([事件类型])` 方法获取到您提交到adapter的事件。
+- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到您提交到adapter的事件。
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；
