@@ -3,8 +3,124 @@
 > 本指南从开发者角度出发，帮助你快速理解并接入 **ErisPulse** 框架，进行模块和适配器的开发。
 
 ---
+## 一、使用 SDK 功能
+### SDK 提供的核心对象
 
-## 一、模块开发
+| 名称 | 用途 |
+|------|------|
+| `sdk.env` | 获取/设置全局配置 |
+| `sdk.mods` | 管理模块 |
+| `sdk.logger` | 日志记录器 |
+| `sdk.raiserr` | 错误管理器 |
+| `sdk.util` | 工具函数（缓存、重试等） |
+| `sdk.adapter` | 获取其他适配器实例 |
+| `sdk.BaseAdapter` | 适配器基类 |
+| `sdk.SendDSL` | 消息发送接口模板 |
+
+#### 日志记录：
+
+```python
+#  设置日志级别
+self.logger.set_level("DEBUG")
+
+#  设置单个模块日志级别
+self.logger.set_module_level("MyModule", "DEBUG")
+
+#  设置日志输出到文件
+self.logger.set_output_file("log.txt")
+
+#  单次保持所有模块日志历史到文件
+self.logger.save_logs("log.txt")
+
+#  各等级日志
+self.logger.debug("调试信息")
+self.logger.info("运行状态")
+self.logger.warning("警告信息")
+self.logger.error("错误信息")
+self.logger.critical("致命错误")    # 会触发程序崩溃
+```
+
+#### env配置模块：
+
+```python
+# 设置配置项
+self.env.set("my_config_key", "new_value")
+
+#  获取配置项
+config_value = self.env.get("my_config_key", "default_value")
+
+#  删除配置项
+self.env.delete("my_config_key")
+
+#  获取所有配置项(不建议，性能浪费)
+all_config   = self.env.get_all_keys()
+
+```
+
+#### 注册自定义错误类型：
+
+```python
+#  注册一个自定义错误类型
+self.raiserr.register("MyCustomError", doc="这是一个自定义错误")
+
+#  获取错误信息
+error_info = self.raiserr.info("MyCustomError")
+if error_info:
+    print(f"错误类型: {error_info['type']}")
+    print(f"文档描述: {error_info['doc']}")
+    print(f"错误类: {error_info['class']}")
+else:
+    print("未找到该错误类型")
+
+#  抛出一个自定义错误
+self.raiserr.MyCustomError("发生了一个错误")
+```
+
+#### 工具函数：
+
+```python
+# 工具函数装饰器：自动重试指定次数
+@self.util.retry(max_attempts=3, delay=1)
+async def my_retry_function():
+    # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
+    ...
+
+# 缓存装饰器：缓存函数调用结果（基于参数）
+@self.util.cache
+def get_expensive_result(param):
+    # 第一次调用后，相同参数将直接返回缓存结果
+    ...
+
+# 异步执行装饰器：将同步函数放入线程池中异步执行
+@self.util.run_in_executor
+def sync_task():
+    # 此函数将在独立线程中运行，避免阻塞事件循环
+    ...
+
+# 异步调用同步函数的快捷方式
+self.util.ExecAsync(sync_task)  # 在事件循环中
+
+```
+
+---
+
+### 5. 模块间通信
+
+通过 `sdk.<ModuleName>` 访问其他模块实例：
+
+```python
+other_module = self.sdk.OtherModule
+result = other_module.some_method()
+```
+
+### 6. 适配器的方法调用
+通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
+```python
+adapter = self.sdk.adapter.AdapterName
+result = adapter.some_method()
+```
+
+## 二、模块开发
 
 ### 1. 目录结构
 
@@ -57,66 +173,21 @@ class Main:
         self.raiserr = sdk.raiserr
 
         self.logger.info("模块已加载")
+
+    def print_hello(self):
+        self.logger.info("Hello World!")
+
 ```
 
 - 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
-- 不需要注册适配器。
-
+```python
+# 这时候在其它地方可以访问到该模块
+from ErisPulse import sdk
+sdk.MyModule.print_hello()
+```
 ---
 
-### 4. 使用 SDK 功能
-
-#### 日志记录：
-
-```python
-self.logger.debug("调试信息")
-self.logger.info("运行状态")
-self.logger.warning("警告信息")
-self.logger.error("错误信息")
-```
-
-#### 获取配置项：
-
-```python
-config_value = self.env.get("my_config_key", "default_value")
-```
-
-#### 设置配置项：
-
-```python
-self.env.set("my_config_key", "new_value")
-```
-
-#### 注册自定义错误类型：
-
-```python
-self.raiserr.register("MyCustomError", doc="这是一个自定义错误")
-
-self.raiserr.MyCustomError("发生了一个错误")
-```
-
-#### 工具函数：
-
-```python
-@self.util.retry(max_attempts=3, delay=1)
-async def my_retry_function():
-    ...
-```
-
----
-
-### 5. 模块间通信
-
-通过 `sdk.<ModuleName>` 访问其他模块实例：
-
-```python
-other_module = self.sdk.OtherModule
-result = other_module.some_method()
-```
-
----
-
-## 二、平台适配器开发（Adapter）
+## 三、平台适配器开发（Adapter）
 
 适配器用于对接不同平台的消息协议（如 Yunhu、OneBot 等），是框架与外部平台交互的核心组件。
 
@@ -148,12 +219,10 @@ moduleInfo = {
     }
 }
 
-from .Core import Main
-from .Core import MyPlatformAdapter
+from .Core import Main, MyPlatformAdapter
 
 adapterInfo = {
     "myplatform": MyPlatformAdapter,
-    "MyPlatform": MyPlatformAdapter,
 }
 ```
 
@@ -167,9 +236,17 @@ class Main:
     def __init__(self, sdk):
         self.sdk = sdk
         self.logger = sdk.logger
+        #   这里是模块的初始化类，当然你也可以在这里进行一些方法提供
+        #   在这里的方法可以通过 sdk.<模块名>.<方法名> 访问
+        #   如果该模块专精于Adapter，那么本类不建议提供方法
+        #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
     class Send(sdk.SendDSL):
+        #   底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
+        #   当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
+        #   或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
+        #   必须实现一个Text方法，因为底层的send(非链式)是直接调用Text方法，当然这是一个兼容的选择，这不是强制的，因为非链式send在不久的日后会被弃用
         def Text(self, text: str):
             return asyncio.create_task(
                 self._adapter.call_api(
@@ -180,24 +257,46 @@ class MyPlatformAdapter(sdk.BaseAdapter):
                 )
             )
 
+    #   这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
+    #   因为这是必须继承的方法
     async def call_api(self, endpoint: str, **params):
         raise NotImplementedError()
 
+    #   启动方法，你需要在这里定义你的adapter启动时候的逻辑
     async def start(self):
         raise NotImplementedError()
-
+    #   停止方法，你需要在这里进行必要的释放资源等逻辑
     async def shutdown(self):
         raise NotImplementedError()
+    #  适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.update() 来启动所有适配器，当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
 ```
+### 接口规范说明
+
+#### 必须实现的方法
+
+| 方法 | 描述 |
+|------|------|
+| `call_api(endpoint: str, **params)` | 调用平台 API |
+| `start()` | 启动适配器 |
+| `shutdown()` | 关闭适配器资源 |
+
+#### 可选实现的方法
+
+| 方法 | 描述 |
+|------|------|
+| `on(event_type: str)` | 注册事件处理器 |
+| `middleware(func: Callable)` | 添加中间件处理传入数据 |
+| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
+
+- 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
+- 这时用户可以通过 `on([事件类型])` 方法获取到您提交到adapter的事件。
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.SendDSL`；
 > - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
 
----
-
-### 4. DSL 风格消息接口（SendDSL）
+## 4. DSL 风格消息接口（SendDSL）
 
 每个适配器可定义一组链式调用风格的方法，例如：
 
@@ -224,76 +323,31 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 
 ---
 
-### 5. BaseAdapter 接口规范
+### 四、开发建议
 
-适配器必须继承 `BaseAdapter` 并实现以下方法：
+#### 1. 使用异步编程模型
+- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
+- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
 
-| 方法 | 描述 |
-|------|------|
-| `call_api(endpoint: str, **params)` | 调用平台 API |
-| `start()` | 启动适配器 |
-| `shutdown()` | 关闭适配器资源 |
+#### 2. 异常处理与日志记录
+- **统一异常处理机制**：结合 `sdk.raiserr` 注册自定义错误类型，提供清晰的错误信息。
+- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
 
-可选实现：
+#### 3. 模块化与解耦设计
+- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
+- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
 
-| 方法 | 描述 |
-|------|------|
-| `on(event_type: str)` | 注册事件处理器 |
-| `middleware(func: Callable)` | 添加中间件处理传入数据 |
-| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
+#### 4. 性能优化
+- **缓存机制**：利用 `@self.util.cache` 缓存频繁调用的结果。
+- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
 
----
-
-## 三、模块元信息（moduleInfo）说明
-
-所有模块都必须提供 `moduleInfo` 字典，其结构如下：
-
-```python
-moduleInfo = {
-    "meta": {
-        "name": "模块名称",         # 唯一标识符
-        "version": "版本号",         # 版本信息
-        "description": "模块描述",   # 功能简介
-        "author": "作者",            # 开发者或团队
-        "license": "许可协议",       # 如 MIT
-        "homepage": "项目主页"       # 可选
-    },
-    "dependencies": {
-        "requires": ["模块A", "模块B"],     # 必须依赖的模块
-        "optional": [["模块C", "模块D"]],   # 至少满足其中一项
-        "pip": ["requests", "some-library"]  # pip 安装依赖
-    }
-}
-```
+#### 5. 安全与隐私
+- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
+- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
 ---
 
-## 四、SDK 提供的核心对象
-
-| 名称 | 用途 |
-|------|------|
-| `sdk.env` | 获取/设置全局配置 |
-| `sdk.mods` | 管理模块 |
-| `sdk.logger` | 日志记录器 |
-| `sdk.raiserr` | 错误管理器 |
-| `sdk.util` | 工具函数（缓存、重试等） |
-| `sdk.adapter` | 获取其他适配器实例 |
-| `sdk.BaseAdapter` | 适配器基类 |
-| `sdk.SendDSL` | 消息发送接口模板 |
-
----
-
-## 五、开发建议
-
-- 所有消息方法推荐使用首字母大写（如 `Text`, `Image`）；
-- 所有 `.Send.*()` 方法应返回 `asyncio.Task`，以便异步调用；
-- 在 `call_api` 中做好异常捕获与日志记录；
-- 若涉及上传操作，封装为 `_upload_file_and_call_api` 更好；
-- 避免同步阻塞操作，优先使用异步库（如 `aiohttp`）；
-
----
-
-## 七、提交到官方源
+## 五、提交到官方源
 
 如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
 
