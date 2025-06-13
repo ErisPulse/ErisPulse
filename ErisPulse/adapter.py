@@ -47,7 +47,7 @@ class BaseAdapter:
         # 绑定当前适配器的 Send 实例
         self.Send = self.__class__.Send(self)
 
-    def on(self, event_type: str):
+    def on(self, event_type: str = "*"):
         def decorator(func: Callable):
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
@@ -69,11 +69,32 @@ class BaseAdapter:
     async def shutdown(self):
         raise NotImplementedError
 
+    def add_handler(self, *args):
+        if len(args) == 1:
+            event_type = "*"
+            handler = args[0]
+        elif len(args) == 2:
+            event_type, handler = args
+        else:
+            raise TypeError("add_handler() 接受 1 个（监听所有事件）或 2 个参数（指定事件类型）")
+
+        @functools.wraps(handler)
+        async def wrapper(*handler_args, **handler_kwargs):
+            return await handler(*handler_args, **handler_kwargs)
+
+        self._handlers[event_type].append(wrapper)
     async def emit(self, event_type: str, data: Any):
+        # 先执行中间件
         for middleware in self._middlewares:
             data = await middleware(data)
 
-        for handler in self._handlers.get(event_type, []):
+        # 触发具体事件类型的处理器
+        if event_type in self._handlers:
+            for handler in self._handlers[event_type]:
+                await handler(data)
+
+        # 触发通配符 "*" 的处理器
+        for handler in self._handlers.get("*", []):
             await handler(data)
 
     async def send(self, target_type: str, target_id: str, message: Any, **kwargs):
@@ -166,12 +187,18 @@ class AdapterManager:
             await adapter.shutdown()
 
     def get(self, platform: str) -> BaseAdapter:
-        return self._adapters.get(platform)
+        platform_lower = platform.lower()
+        for registered, instance in self._adapters.items():
+            if registered.lower() == platform_lower:
+                return instance
+        return None
 
     def __getattr__(self, platform: str) -> BaseAdapter:
-        if platform not in self._adapters:
-            raise AttributeError(f"平台 {platform} 的适配器未注册")
-        return self._adapters[platform]
+        platform_lower = platform.lower()
+        for registered, instance in self._adapters.items():
+            if registered.lower() == platform_lower:
+                return instance
+        raise AttributeError(f"平台 {platform} 的适配器未注册")
 
     @property
     def platforms(self) -> list:

@@ -205,7 +205,8 @@ class MyAdapter(sdk.BaseAdapter):
 
 #### 可选重写的方法：
 
-- `on(event_type: str)`：注册事件处理器
+- `on(event_type: str)`：注册事件处理器(装饰器)
+- `add_handler(event_type: str, handler: Callable)/remove_handler(handler: Callable)`: 添加事件处理器
 - `middleware(func: Callable)`：添加中间件
 
 ---

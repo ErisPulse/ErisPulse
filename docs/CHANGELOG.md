@@ -9,7 +9,18 @@
 > 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
 
 ---
-# 更新日志
+
+## [1.1.9]
+### 新增
+- `adapter.<AdapterRegName>.on` 修饰器现在不强制要求传入事件类型
+- `adapter.<AdapterRegName>.add_handler(event_type, handler)` 方法，用于运行时动态注册事件处理器
+- 支持调用 `add_handler(handler)` 单参数形式，默认监听所有事件（等价于 `"*"`）
+
+### 变更
+- 更新 `adapter` 实现，支持通过任意大小写形式访问适配器（如 `adapter.QQ`、`adapter.qq`）
+- 新增 `AdapterManager.get()` 对大小写不敏感的支持，提升平台查找兼容性
+
+---
 
 ## [1.1.8]
 ### 变更
@@ -17,6 +28,8 @@
 - 添加 SDK 初始化日志输出
 - 调整 SendDSLBase.To 方法，支持可选参数
 - 更新 logger 中的致命错误处理方式
+
+---
 
 ## [1.1.7]
 ### 变更
