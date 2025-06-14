@@ -128,6 +128,17 @@ class AdapterManager:
         self._adapters[platform] = instance
         self._platform_to_instance[platform] = instance
 
+        if len(platform) <= 10:
+            from itertools import product
+            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
+            for name in set(combinations):
+                setattr(self, name, instance)
+        else:
+            self.logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
+            setattr(self, platform.lower(), instance)
+            setattr(self, platform.upper(), instance)
+            setattr(self, platform.capitalize(), instance)
+
         return True
 
     async def startup(self, platforms: List[str] = None):
