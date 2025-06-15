@@ -25,8 +25,34 @@ def topological_sort(elements, dependencies, error):
                 queue.append(neighbor)
     if len(sorted_list) != len(elements):
         from . import sdk
-        sdk.logger.error(f"Topological sort failed: {sorted_list} vs {elements}")
+        sdk.logger.error(f"依赖导入错误: {elements} vs  {sorted_list} | 发生了循环依赖")
     return sorted_list
+
+def show_topology():
+    from . import sdk
+    dep_data = sdk.env.get('module_dependencies')
+    if not dep_data:
+        return "未找到模块依赖关系数据，请先运行sdk.init()"
+        
+    sorted_modules = topological_sort(
+        dep_data['modules'], 
+        dep_data['dependencies'], 
+        sdk.raiserr.CycleDependencyError
+    )
+    
+    tree = {}
+    for module in sorted_modules:
+        tree[module] = dep_data['dependencies'].get(module, [])
+    
+    result = ["模块拓扑关系表:"]
+    for i, module in enumerate(sorted_modules, 1):
+        deps = dep_data['dependencies'].get(module, [])
+        indent = "  " * (len(deps) if deps else 0)
+        result.append(f"{i}. {indent}{module}")
+        if deps:
+            result.append(f"   {indent}└─ 依赖: {', '.join(deps)}")
+    
+    return "\n".join(result)
 
 def ExecAsync(async_func, *args, **kwargs):
     loop = asyncio.get_event_loop()
