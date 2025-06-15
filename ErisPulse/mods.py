@@ -27,6 +27,11 @@ class ModuleManager:
     def set_module_status(self, module_name: str, status: bool) -> None:
         self.env.set(f"{self.status_prefix}{module_name}", bool(status))
 
+        module_info = self.get_module(module_name)
+        if module_info:
+            module_info["status"] = bool(status)
+            self.env.set(f"{self.module_prefix}{module_name}", module_info)
+
     def get_module_status(self, module_name: str) -> bool:
         status = self.env.get(f"{self.status_prefix}{module_name}", True)
         if isinstance(status, str):

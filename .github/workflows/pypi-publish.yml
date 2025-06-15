@@ -6,8 +6,6 @@ on:
     tags:
       - "v*.*.*" # v2.0.0
       - "v*.*.*.dev*" # v2.0.0.dev0
-      - "v*.*.*.alpha*" # v2.0.0.alpha0
-      - "v*.*.*.beta*" # v2.0.0.beta0
 
   workflow_dispatch: {} # 手动触发
 
@@ -76,6 +74,10 @@ jobs:
       url: https://pypi.org/p/erispulse
 
     steps:
+      # 👇 新增这一步：检出代码，使 send-email 可用
+      - name: 检出代码
+        uses: actions/checkout@v4
+
       - name: 获取包裹
         uses: actions/download-artifact@v4
         with:
