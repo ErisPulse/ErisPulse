@@ -54,3 +54,4 @@ jobs:
             </div>
           recipients: ${{ steps.get_emails.outputs.emails }}
           resend_api_key: ${{ secrets.RESEND_API_KEY }}
+          feishu_smtp_password: ${{ secrets.FEISHU_SMTP_PASSWORD }}
