@@ -1,6 +1,6 @@
 [project]
 name = "ErisPulse"
-version = "1.1.10"
+version = "1.1.11dev0"
 authors = [
     { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" },
     { name = "runoneall", email = "runoobsteve@gmail.com" }
@@ -23,7 +23,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-dependencies = ["aiohttp"]
+dependencies = ["aiohttp", "watchdog"]
 
 [project.scripts]
 epsdk = "ErisPulse.__main__:main"

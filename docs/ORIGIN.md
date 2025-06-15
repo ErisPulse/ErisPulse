@@ -10,7 +10,7 @@
 
 1. 通过 CLI 命令添加：
    ```bash
-   epsdk origin add https://your.domain/source.json
+   epsdk origin add https://your.domain/map.json
    ```
 2. 添加后建议执行 `epsdk update` 更新模块索引。
 

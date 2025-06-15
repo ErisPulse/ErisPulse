@@ -163,8 +163,6 @@ class AdapterManager:
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
         from . import sdk
-        retry_count = 0
-        max_retry = 3
 
         # 加锁防止并发启动
         if not getattr(adapter, "_starting_lock", None):
@@ -176,23 +174,34 @@ class AdapterManager:
                 sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过")
                 return
 
-            while retry_count < max_retry:
+            retry_count = 0
+            fixed_delay = 3 * 60 * 60
+            backoff_intervals = [60, 10 * 60, 30 * 60, 60 * 60]
+
+            while True:
                 try:
                     await adapter.start()
                     self._started_instances.add(adapter)
                     sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已启动")
-                    break
+                    return
                 except Exception as e:
                     retry_count += 1
                     sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+
                     try:
                         await adapter.shutdown()
                     except Exception as stop_err:
                         sdk.logger.warning(f"停止适配器失败: {stop_err}")
 
-                    if retry_count >= max_retry:
-                        sdk.logger.critical(f"平台 {platform} 达到最大重试次数，放弃重启")
-                        raise sdk.raiserr.AdapterStartFailedError(f"平台 {platform} 适配器无法重写启动: {e}")
+                    # 计算等待时间
+                    if retry_count <= len(backoff_intervals):
+                        wait_time = backoff_intervals[retry_count - 1]
+                    else:
+                        wait_time = fixed_delay
+
+                    sdk.logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
+                    await asyncio.sleep(wait_time)
+
     async def shutdown(self):
         for adapter in self._adapters.values():
             await adapter.shutdown()
