@@ -4,12 +4,12 @@ name: 🎀 艾莉丝的PyPI包裹快递服务 ~
 on:
   push:
     tags:
-      - 'v*.*.*'           # v2.0.0
-      - 'v*.*.*.dev*'      # v2.0.0.dev0
-      - 'v*.*.*.alpha*'    # v2.0.0.alpha0
-      - 'v*.*.*.beta*'     # v2.0.0.beta0
+      - "v*.*.*" # v2.0.0
+      - "v*.*.*.dev*" # v2.0.0.dev0
+      - "v*.*.*.alpha*" # v2.0.0.alpha0
+      - "v*.*.*.beta*" # v2.0.0.beta0
 
-  workflow_dispatch: {}    # 手动触发
+  workflow_dispatch: {} # 手动触发
 
 permissions:
   contents: read
@@ -67,7 +67,7 @@ jobs:
   # 第二阶段: 发布上传
   pypi-publish:
     runs-on: ubuntu-latest
-    needs: [ release-build ]
+    needs: [release-build]
     permissions:
       id-token: write
 

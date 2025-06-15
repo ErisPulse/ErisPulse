@@ -1,6 +1,15 @@
 ![](./.github/assets/erispulse_logo.png)
+**ErisPulse** 是基于 [Framer](https://github.com/FramerOrg/Framer) 构建的异步机器人开发框架。
 
-基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPythonSDK2) 构建，由 [sdkFrame](https://github.com/runoneall/sdkFrame) 提供支持的异步机器人开发框架。
+## 合作伙伴
+[![FramerOrg](https://img.shields.io/badge/合作伙伴-FramerOrg-blue?style=flat-square)](https://github.com/FramerOrg)
+
+### 框架选型指南
+| 需求          | 推荐框架       | 理由                          |
+|-------------------|----------------|-----------------------------|
+| 轻量化/底层模块化 | [Framer](https://github.com/FramerOrg/Framer) | 高度解耦的模块化设计          |
+| 全功能机器人开发  | ErisPulse      | 开箱即用的完整解决方案        |
+
 
 ## ✨ 核心特性
 - ⚡ 完全异步架构设计（async/await）
@@ -26,24 +35,20 @@ from ErisPulse import sdk, logger
 async def main():
     sdk.init()
     logger.info("ErisPulse 已启动")
-    # 这里可以添加自定义逻辑 | 如模块的 AddHandle，AddTrigger 等
+    # 这里可以添加自定义逻辑
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
 ## 导航
-- [开发指南](docs/DEVELOPMENT.md) - 完整的开发文档
-- [命令行工具](docs/CLI.md) - CLI 使用手册
-- [源配置指南](docs/ORIGIN.md) - 模块源配置说明
-- [更新日志](docs/CHANGELOG.md) - 版本更新历史
-- [底层API](docs/REFERENCE.md) - 方法与接口
-- [GitHub Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+- [开发者指南](docs/DEVELOPMENT.md)
+- [底层方法与接口](docs/REFERENCE.md)
+- [命令行工具](docs/CLI.md)
+- [源配置指南](docs/ORIGIN.md)
+- [更新日志](docs/CHANGELOG.md)
+> [GitHub 社区](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ## 🤝 贡献
 
 欢迎任何形式的贡献！无论是报告 bug、提出新功能请求，还是直接提交代码，都非常感谢。
-
-## 📄 许可证
-
-本项目采用 [MIT 许可证](LICENSE)。
