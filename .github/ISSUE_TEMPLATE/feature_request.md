@@ -1,14 +1,11 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: 提出你的完美想法
 title: ''
 labels: ''
 assignees: ''
 
 ---
-
-<!-- issue-template: Feature request -->
-
 ## 功能名称
 请填写你想建议的新功能名称
 
@@ -42,3 +39,4 @@ assignees: ''
     ├── bug_report.md
     └── feature_request.md
 ```
+
