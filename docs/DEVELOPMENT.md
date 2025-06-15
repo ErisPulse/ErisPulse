@@ -85,6 +85,10 @@ async def my_retry_function():
     # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
     ...
 
+# 可视化模块依赖关系
+topology = sdk.util.show_topology()
+print(topology)  # 打印模块依赖拓扑图
+
 # 缓存装饰器：缓存函数调用结果（基于参数）
 @self.util.cache
 def get_expensive_result(param):
@@ -184,6 +188,9 @@ class Main:
 # 这时候在其它地方可以访问到该模块
 from ErisPulse import sdk
 sdk.MyModule.print_hello()
+
+# 运行模块主程序（推荐使用CLI命令）
+# epsdk run main.py --reload
 ```
 ---
 
