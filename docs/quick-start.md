@@ -75,7 +75,13 @@ if __name__ == "__main__":
 然后运行：
 
 ```bash
-python main.py
+epsdk run main.py
+```
+
+或者使用热重载模式（开发时推荐）：
+
+```bash
+epsdk run main.py --reload
 ```
 
 ---
@@ -144,4 +150,4 @@ await sdk.adapter.Yunhu.Send.To("user", "U1001").Text("你好！")
 | install    | 安装一个或多个模块        | epsdk install translator      |
 | list       | 列出模块（可筛选）       | epsdk list --module=payment  |
 | update     | 更新模块索引               | epsdk update                  |
-| origin add | 添加模块源                 | epsdk origin add https://example.com/source.json |
+| origin add | 添加模块源                 | epsdk origin add https://example.com/map.json |

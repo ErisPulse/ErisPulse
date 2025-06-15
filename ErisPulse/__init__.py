@@ -30,10 +30,12 @@ raiserr.register("InvalidDependencyError"   , doc="依赖无效错误")
 raiserr.register("CycleDependencyError"     , doc="依赖循环错误")
 raiserr.register("ModuleLoadError"          , doc="模块加载错误")
 
-def init():
+def init() -> None:
     try:
         logger.info("[Init] SDK 正在初始化...")
-        env.create_env_file_if_not_exists()
+        if env.create_env_file_if_not_exists():
+            logger.info("[Init] 项目首次初始化，建议先配置环境变量")
+            sys.exit(0)
         env.load_env_file()
 
         sdkModulePath = os.path.join(os.path.dirname(__file__), "modules")
@@ -131,6 +133,11 @@ def init():
         sdkInstalledModuleNames: list[str] = sdk.util.topological_sort(
             sdkInstalledModuleNames, sdkModuleDependencies, raiserr.CycleDependencyError
         )
+        # 存储模块依赖关系到env
+        env.set('module_dependencies', {
+            'modules': sdkInstalledModuleNames,
+            'dependencies': sdkModuleDependencies
+        })
 
         # ==== 注册适配器 ====
         logger.debug("[Init] 开始注册适配器...")
@@ -174,7 +181,6 @@ def init():
             setattr(moduleMain, "moduleInfo", moduleObj.moduleInfo)
             setattr(sdk, meta_name, moduleMain)
             logger.debug(f"模块 {meta_name} 正在初始化")
-
     except Exception as e:
         raiserr.InitError(f"sdk初始化失败: {e}", exit=True)
 
