@@ -1,5 +1,5 @@
 ![](./.github/assets/erispulse_logo.png)
-**ErisPulse** 是基于 [RyhBotPythonSDK V2](https://github.com/runoneall/RyhBotPythonSDK2) 构建的异步机器人开发框架，由 [sdkFrame](https://github.com/runoneall/sdkFrame) 提供核心支持。
+**ErisPulse** 是基于 [Framer](https://github.com/FramerOrg/Framer) 构建的异步机器人开发框架。
 
 ## 合作伙伴
 [![FramerOrg](https://img.shields.io/badge/合作伙伴-FramerOrg-blue?style=flat-square)](https://github.com/FramerOrg)
