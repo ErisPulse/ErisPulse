@@ -17,6 +17,10 @@ inputs:
     type: string
     required: true
     description: "Resend API 密钥"
+  feishu_smtp_password:
+    type: string
+    required: true
+    description: "飞书 SMTP 密码"
 
 runs:
   using: "composite"
@@ -31,6 +35,7 @@ runs:
         SUBJECT: ${{ inputs.subject }}
         CONTENT: ${{ inputs.content }}
         RESEND_API_KEY: ${{ inputs.resend_api_key }}
+        FEISHU_SMTP_PASSWORD: ${{ inputs.feishu_smtp_password }}
       run: |
         python ${{ github.action_path }}/send_mail.py
       shell: bash
