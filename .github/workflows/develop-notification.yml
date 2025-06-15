@@ -1,6 +1,8 @@
+name: 🎀 艾莉丝的开发分支提醒 ~
+
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
 
 jobs:
   notify-develop:
