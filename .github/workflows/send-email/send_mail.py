@@ -9,7 +9,7 @@ from email.utils import formataddr, formatdate
 # 邮箱配置信息
 EMAIL_HOST = "smtp.feishu.cn"  # SMTP服务器地址
 EMAIL_PORT_SSL = 465  # SSL加密端口
-USERNAME = "noreply@fs.514.loc.cc"  # 邮箱地址
+USERNAME = "noreply@ns1.loc.cc"  # 邮箱地址
 PASSWORD = os.getenv("FEISHU_SMTP_PASSWORD")  # IMAP/SMTP密码
 
 
