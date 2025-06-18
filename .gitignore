@@ -192,3 +192,5 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# osx
+.DS_Store
