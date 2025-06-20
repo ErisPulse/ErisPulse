@@ -221,13 +221,15 @@ DSL 风格的消息发送接口是 ErisPulse 的核心设计之一，它不仅�
 
 ```python
 class YunhuAdapter(sdk.BaseAdapter):
-    class Send(sdk.SendDSL):
+    class Send(super().Send):  # 继承BaseAdapter内置的Send类
         def Text(self, text: str, buttons: List = None, parent_id: str = ""):
+            """重写Text方法提供平台特定实现"""
             return asyncio.create_task(
                 self._adapter.call_api(...)
             )
 
         def Image(self, file: bytes):
+            """添加新的消息类型"""
             return asyncio.create_task(
                 self._upload_file_and_call_api(...)
             )
