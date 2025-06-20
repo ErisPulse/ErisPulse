@@ -36,14 +36,21 @@ class SendDSLBase:
 
 
 class BaseAdapter:
+    class Send(SendDSLBase):
+        def Text(self, text: str):
+            """基础文本消息发送方法，子类应该重写此方法"""
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send",
+                    content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+
     def __init__(self):
         self._handlers = defaultdict(list)
         self._middlewares = []
-
-        # 检测是否有 Send 子类定义
-        if not hasattr(self.__class__, 'Send') or not issubclass(self.__class__.Send, SendDSL):
-            raise TypeError(f"{self.__class__.__name__} 必须定义 Send 嵌套类并继承 SendDSL")
-
         # 绑定当前适配器的 Send 实例
         self.Send = self.__class__.Send(self)
 
