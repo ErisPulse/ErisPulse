@@ -113,9 +113,12 @@ from ErisPulse import sdk
             try:
                 with open(env_file, "w", encoding="utf-8") as f:
                     f.write(content)
-                self.logger.info("已自动生成 env.py 文件")
+                return True
             except Exception as e:
-                self.logger.error(f"无法创建 env.py 文件: {e}")
+                from . import sdk
+                sdk.logger.error(f"无法创建 env.py 文件: {e}")
+                return False
+        return False
 
     def __getattr__(self, key):
         try:

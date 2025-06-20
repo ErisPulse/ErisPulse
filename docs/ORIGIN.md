@@ -3,8 +3,7 @@
 ## 全功能源列表
 | 源名称 | 类型 | 协议 | 地址 |
 |--------|------|------|------|
-| SDKFrame | 异步 | HTTPS | `https://sdkframe.anran.xyz/`
-| r1a 同步 | 同步 | HTTPS | `https://runoneall.serv00.net/ryhsdk2/`
+| ErisPulse官方源 | 异步 | HTTPS | `https://erisdev.com/map.json`
 
 ## 如何添加自定义源
 
