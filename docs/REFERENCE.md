@@ -53,7 +53,6 @@ sdk.logger      # 日志记录器
 sdk.raiserr     # 内置错误管理器
 sdk.adapter     # 平台适配器注册中心
 sdk.BaseAdapter # 适配器基类
-sdk.SendDSL     # DSL 发送消息接口
 ```
 
 > 所有模块都可通过 `sdk.<ModuleName>.<Method>` 的方式调用。
@@ -186,7 +185,7 @@ sdk.mods.set_module_status("模块名", True)  # 启用/禁用模块
 
 ```python
 class MyAdapter(sdk.BaseAdapter):
-    class Send(sdk.SendDSL):
+    class Send(super().Send):
         def Text(self, text: str): ...
         def Image(self, file: bytes): ...
 
@@ -217,7 +216,7 @@ DSL 风格的消息发送接口是 ErisPulse 的核心设计之一，它不仅�
 
 ### 定义消息类型
 
-每个平台适配器需继承 `sdk.SendDSL` 并在其内部定义所需的消息方法：
+每个平台适配器需继承 `super().Send` 并在其内部定义所需的消息方法：
 
 ```python
 class YunhuAdapter(sdk.BaseAdapter):
@@ -295,7 +294,7 @@ sdk.adapter.Yunhu.Send.To("user", "U1001").Text("你好")
 
 ```python
 class YunhuAdapter(sdk.BaseAdapter):
-    class Send(sdk.SendDSL):
+    class Send(super().Send):
         def Card(self, title: str, content: str, image_url: str = None):
             payload = {
                 "title": title,
