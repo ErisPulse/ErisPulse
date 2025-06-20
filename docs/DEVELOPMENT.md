@@ -249,16 +249,28 @@ class Main:
         #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.SendDSL):
-        #   底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
-        #   当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
-        #   或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
-        #   必须实现一个Text方法，因为底层的send(非链式)是直接调用Text方法，当然这是一个兼容的选择，这不是强制的，因为非链式send在不久的日后会被弃用
+    class Send(super().Send):  # 继承BaseAdapter内置的Send类
+        # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
+        # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
+        # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
+        
+        # 可以重写Text方法提供平台特定实现
         def Text(self, text: str):
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send",
                     content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+            
+        # 添加新的消息类型
+        def Image(self, file: bytes):
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send_image",
+                    file=file,
                     recvId=self._target_id,
                     recvType=self._target_type
                 )
