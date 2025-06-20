@@ -18,9 +18,9 @@
 ## 源管理
 | 命令 | 参数 | 描述 | 示例 |
 |------|------|------|------|
-| `origin add` | `<url>` | 添加源 | `epsdk origin add https://example.com/map.json` |
+| `origin add` | `<url>` | 添加源 | `epsdk origin add https://erisdev.com/map.json` |
 | `origin list` | - | 源列表 | `epsdk origin list` |
-| `origin del` | `<url>` | 删除源 | `epsdk origin del https://example.com/map.json` |
+| `origin del` | `<url>` | 删除源 | `epsdk origin del https://erisdev.com/map.json` |
 | `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
 
 ---
