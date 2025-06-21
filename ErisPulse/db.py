@@ -127,4 +127,11 @@ from ErisPulse import sdk
             from .logger import logger
             logger.error(f"配置项 {key} 不存在")
 
+    def __setattr__(self, key, value):
+        try:
+            self.set(key, value)
+        except Exception as e:
+            from .logger import logger
+            logger.error(f"设置配置项 {key} 失败: {e}")
+
 env = EnvManager()
