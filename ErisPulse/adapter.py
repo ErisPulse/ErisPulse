@@ -29,16 +29,20 @@ ErisPulse 适配器系统
     - get(): 获取适配器实例
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 注册适配器
-    sdk.adapter.register("MyPlatform", MyAdapter)
-    
-    # 发送消息
-    sdk.adapter.MyPlatform.Send.To("user", "123").Text("Hello")
-    
-    # 启动适配器
-    await sdk.adapter.startup()
+
+```
+from ErisPulse import sdk
+
+# 注册适配器
+sdk.adapter.register("MyPlatform", MyAdapter)
+
+# 发送消息
+sdk.adapter.MyPlatform.Send.To("user", "123").Text("Hello")
+
+# 启动适配器
+await sdk.adapter.startup()
+```
+
 """
 
 import functools
