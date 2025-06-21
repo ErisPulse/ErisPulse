@@ -1,25 +1,25 @@
 """
-ErisPulse 模块管理系统
+# 模块管理系统
 
 提供模块的注册、状态管理和依赖解析功能。
 
-=== API 文档 ===
-模块状态：
+## API 文档
+### 模块状态：
     - set_module_status(module_name, status):   设置模块启用状态
     - get_module_status(module_name):           获取模块状态
 
-模块信息：
+### 模块信息：
     - set_module(module_name, module_info): 设置模块信息
     - get_module(module_name):              获取模块信息
     - get_all_modules():                    获取所有模块信息
     - remove_module(module_name):           删除模块
 
-前缀管理：
+### 前缀管理：
     - update_prefixes(module_prefix, status_prefix): 更新存储前缀
     - module_prefix: 模块存储前缀属性
     - status_prefix: 状态存储前缀属性
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk

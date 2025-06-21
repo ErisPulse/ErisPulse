@@ -1,35 +1,35 @@
 """
-ErisPulse 环境配置
+# 环境配置
 
 提供键值存储、事务支持、快照和恢复功能，用于管理框架配置数据。
 
-=== API 文档 ===
-基本操作：
+## API 文档
+### 基本操作：
     - get(key, default=None) -> any: 获取配置项
     - set(key, value) -> bool: 设置配置项
     - delete(key) -> bool: 删除配置项
     - get_all_keys() -> list[str]: 获取所有键名
 
-批量操作：
+### 批量操作：
     - get_multi(keys) -> dict: 批量获取键值
     - set_multi(items) -> bool: 批量设置键值
     - delete_multi(keys) -> bool: 批量删除键值
 
-事务管理：
+### 事务管理：
     - transaction() -> contextmanager: 创建事务上下文
 
-快照管理：
+### 快照管理：
     - snapshot(name=None) -> str: 创建数据库快照
     - restore(snapshot_name) -> bool: 从快照恢复
     - list_snapshots() -> list: 列出所有快照
     - delete_snapshot(name) -> bool: 删除指定快照
     - set_snapshot_interval(seconds): 设置自动快照间隔
 
-其他功能：
+### 其他功能：
     - clear(): 清空所有配置
     - load_env_file(): 从env.py加载配置(SDK自动)
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk
