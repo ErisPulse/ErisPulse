@@ -1,12 +1,76 @@
+"""
+ErisPulse 环境配置
+
+提供键值存储、事务支持、快照和恢复功能，用于管理框架配置数据。
+
+=== 主要功能 ===
+- 键值存储：支持字符串、字典、列表等数据类型
+- 事务支持：保证操作的安全性
+- 快照/恢复：支持数据库状态保存和恢复
+- 批量操作：高效处理大量数据
+
+=== API 文档 ===
+基本操作：
+    - get(key, default=None) -> any: 获取配置项
+    - set(key, value) -> bool: 设置配置项
+    - delete(key) -> bool: 删除配置项
+    - get_all_keys() -> list[str]: 获取所有键名
+
+批量操作：
+    - get_multi(keys) -> dict: 批量获取键值
+    - set_multi(items) -> bool: 批量设置键值
+    - delete_multi(keys) -> bool: 批量删除键值
+
+事务管理：
+    - transaction() -> contextmanager: 创建事务上下文
+
+快照管理：
+    - snapshot(name=None) -> str: 创建数据库快照
+    - restore(snapshot_name) -> bool: 从快照恢复
+    - list_snapshots() -> list: 列出所有快照
+    - delete_snapshot(name) -> bool: 删除指定快照
+    - set_snapshot_interval(seconds): 设置自动快照间隔
+
+其他功能：
+    - clear(): 清空所有配置
+    - load_env_file(): 从env.py加载配置(SDK自动)
+
+示例用法：
+    from ErisPulse import sdk
+    
+    env = sdk.env
+
+    # 基本操作
+    env.set('config_key', 'value')
+    value = env.get('config_key')
+    value_another = env.config_key  # 通过属性访问
+    env.config_key = 'value'        # 通过属性赋值
+    
+    # 事务使用
+    with env.transaction():
+        env.set('key1', 'value1')
+        env.set('key2', 'value2')
+        
+    # 快照管理
+    snapshot_path = env.snapshot()
+    env.restore('snapshot_name')
+"""
+
 import os
 import json
 import sqlite3
 import importlib.util
+import shutil
+import time
+import threading
 from pathlib import Path
+from datetime import datetime
+from functools import lru_cache
 
 class EnvManager:
     _instance = None
     db_path = os.path.join(os.path.dirname(__file__), "config.db")
+    SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), "snapshots")
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -20,7 +84,13 @@ class EnvManager:
 
     def _init_db(self):
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        os.makedirs(self.SNAPSHOT_DIR, exist_ok=True)
         conn = sqlite3.connect(self.db_path)
+        
+        # 启用WAL模式提高并发性能
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
+        
         cursor = conn.cursor()
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS config (
@@ -30,6 +100,10 @@ class EnvManager:
         """)
         conn.commit()
         conn.close()
+        
+        # 初始化自动快照调度器
+        self._last_snapshot_time = 0
+        self._snapshot_interval = 3600  # 默认每小时自动快照
 
     def get(self, key, default=None):
         try:
@@ -59,18 +133,94 @@ class EnvManager:
 
     def set(self, key, value):
         serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
-        conn.commit()
-        conn.close()
+        with self.transaction():
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
+            conn.commit()
+            conn.close()
+        
+        self._check_auto_snapshot()
+        return True
+
+    def set_multi(self, items):
+        with self.transaction():
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            for key, value in items.items():
+                serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
+                cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", 
+                    (key, serialized_value))
+            conn.commit()
+            conn.close()
+        
+        self._check_auto_snapshot()
+        return True
 
     def delete(self, key):
+        with self.transaction():
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM config WHERE key = ?", (key,))
+            conn.commit()
+            conn.close()
+        
+        self._check_auto_snapshot()
+        return True
+
+    def delete_multi(self, keys):
+        with self.transaction():
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.executemany("DELETE FROM config WHERE key = ?", [(k,) for k in keys])
+            conn.commit()
+            conn.close()
+        
+        self._check_auto_snapshot()
+        return True
+
+    def get_multi(self, keys):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM config WHERE key = ?", (key,))
-        conn.commit()
+        placeholders = ','.join(['?'] * len(keys))
+        cursor.execute(f"SELECT key, value FROM config WHERE key IN ({placeholders})", keys)
+        results = {row[0]: json.loads(row[1]) if row[1].startswith(('{', '[')) else row[1] 
+                    for row in cursor.fetchall()}
         conn.close()
+        return results
+
+    def transaction(self):
+        return self._Transaction(self)
+
+    class _Transaction:
+        def __init__(self, env_manager):
+            self.env_manager = env_manager
+            self.conn = None
+            self.cursor = None
+
+        def __enter__(self):
+            self.conn = sqlite3.connect(self.env_manager.db_path)
+            self.cursor = self.conn.cursor()
+            self.cursor.execute("BEGIN TRANSACTION")
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+                from .logger import logger
+                logger.error(f"事务执行失败: {exc_val}")
+            self.conn.close()
+
+    def _check_auto_snapshot(self):
+        current_time = time.time()
+        if current_time - self._last_snapshot_time > self._snapshot_interval:
+            self._last_snapshot_time = current_time
+            self.snapshot(f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+
+    def set_snapshot_interval(self, seconds):
+        self._snapshot_interval = seconds
 
     def clear(self):
         conn = sqlite3.connect(self.db_path)
@@ -133,5 +283,80 @@ from ErisPulse import sdk
         except Exception as e:
             from .logger import logger
             logger.error(f"设置配置项 {key} 失败: {e}")
+
+    def snapshot(self, name=None):
+        if not name:
+            name = datetime.now().strftime("%Y%m%d_%H%M%S")
+        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{name}.db")
+        
+        # 确保所有连接关闭
+        if hasattr(self, "_conn"):
+            self._conn.close()
+            
+        try:
+            shutil.copy2(self.db_path, snapshot_path)
+            from .logger import logger
+            logger.info(f"数据库快照已创建: {snapshot_path}")
+            return snapshot_path
+        except Exception as e:
+            from .logger import logger
+            logger.error(f"创建快照失败: {e}")
+            raise
+
+    def restore(self, snapshot_name):
+        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
+            if not snapshot_name.endswith('.db') else snapshot_name
+            
+        if not os.path.exists(snapshot_path):
+            from .logger import logger
+            logger.error(f"快照文件不存在: {snapshot_path}")
+            return False
+            
+        # 确保所有连接关闭
+        if hasattr(self, "_conn"):
+            self._conn.close()
+            
+        try:
+            shutil.copy2(snapshot_path, self.db_path)
+            self._init_db()  # 恢复后重新初始化数据库连接
+            from .logger import logger
+            logger.info(f"数据库已从快照恢复: {snapshot_path}")
+            return True
+        except Exception as e:
+            from .logger import logger
+            logger.error(f"恢复快照失败: {e}")
+            return False
+
+    def list_snapshots(self):
+        snapshots = []
+        for f in os.listdir(self.SNAPSHOT_DIR):
+            if f.endswith('.db'):
+                path = os.path.join(self.SNAPSHOT_DIR, f)
+                stat = os.stat(path)
+                snapshots.append((
+                    f[:-3],  # 去掉.db后缀
+                    datetime.fromtimestamp(stat.st_ctime),
+                    stat.st_size
+                ))
+        return sorted(snapshots, key=lambda x: x[1], reverse=True)
+
+    def delete_snapshot(self, snapshot_name):
+        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
+            if not snapshot_name.endswith('.db') else snapshot_name
+            
+        if not os.path.exists(snapshot_path):
+            from .logger import logger
+            logger.error(f"快照文件不存在: {snapshot_path}")
+            return False
+            
+        try:
+            os.remove(snapshot_path)
+            from .logger import logger
+            logger.info(f"快照已删除: {snapshot_path}")
+            return True
+        except Exception as e:
+            from .logger import logger
+            logger.error(f"删除快照失败: {e}")
+            return False
 
 env = EnvManager()
