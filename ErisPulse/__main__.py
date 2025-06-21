@@ -9,6 +9,7 @@ import fnmatch
 import asyncio
 import subprocess
 import json
+import json
 from .db import env
 from .mods import mods
 from watchdog.observers import Observer
@@ -37,7 +38,6 @@ class Shell_Printer:
 
     @classmethod
     def _get_color(cls, level):
-        """根据消息级别返回颜色"""
         return {
             "info": cls.CYAN,
             "success": cls.GREEN,
@@ -49,77 +49,87 @@ class Shell_Printer:
 
     @classmethod
     def panel(cls, msg: str, title: str = None, level: str = "info") -> None:
-        """带标题和边框的面板，支持颜色编码"""
         color = cls._get_color(level)
-        border_char = "═" * 60
+        width = 70
+        border_char = "─" * width
         
-        # 标题行
+        if level == "error":
+            border_char = "═" * width
+            msg = f"{cls.RED}✗ {msg}{cls.RESET}"
+        elif level == "warning":
+            border_char = "─" * width
+            msg = f"{cls.YELLOW}⚠ {msg}{cls.RESET}"
+        
         title_line = ""
         if title:
             title = f" {title.upper()} "
-            title_padding = (60 - len(title) - 4) // 2
+            title_padding = (width - len(title)) // 2
             left_pad = " " * title_padding
-            right_pad = " " * (60 - len(title) - title_padding - 4)
-            title_line = f"{cls.DIM}╔{left_pad}{cls.BOLD}{color}{title}{cls.RESET}{cls.DIM}{right_pad}╗{cls.RESET}\n"
+            right_pad = " " * (width - len(title) - title_padding)
+            title_line = f"{cls.DIM}┌{left_pad}{cls.BOLD}{color}{title}{cls.RESET}{cls.DIM}{right_pad}┐{cls.RESET}\n"
         
-        # 内容行
         lines = []
         for line in msg.split("\n"):
-            padding = (60 - len(line) - 4) // 2
-            left_pad = " " * padding
-            right_pad = " " * (60 - len(line) - padding - 4)
-            lines.append(f"{cls.DIM}║{cls.RESET}{left_pad}{line}{right_pad}{cls.DIM}║{cls.RESET}")
+            if len(line) > width - 4:
+                words = line.split()
+                current_line = ""
+                for word in words:
+                    if len(current_line) + len(word) + 1 > width - 4:
+                        lines.append(f"{cls.DIM}│{cls.RESET} {current_line.ljust(width-4)} {cls.DIM}│{cls.RESET}")
+                        current_line = word
+                    else:
+                        current_line += (" " + word) if current_line else word
+                if current_line:
+                    lines.append(f"{cls.DIM}│{cls.RESET} {current_line.ljust(width-4)} {cls.DIM}│{cls.RESET}")
+            else:
+                lines.append(f"{cls.DIM}│{cls.RESET} {line.ljust(width-4)} {cls.DIM}│{cls.RESET}")
         
-        # 底部边框
-        bottom_border = f"{cls.DIM}╚{border_char}╝{cls.RESET}"
+        if level == "error":
+            border_style = "╘"
+        elif level == "warning":
+            border_style = "╧"
+        else:
+            border_style = "└"
+        bottom_border = f"{cls.DIM}{border_style}{border_char}┘{cls.RESET}"
         
-        # 组合所有部分
-        panel = f"{title_line}{border_char}\n"
+        panel = f"{title_line}"
+        panel += f"{cls.DIM}├{border_char}┤{cls.RESET}\n"
         panel += "\n".join(lines) + "\n"
-        panel += f"{border_char}\n{bottom_border}\n"
+        panel += f"{bottom_border}\n"
         
         print(panel)
 
     @classmethod
     def table(cls, headers, rows, title=None, level="info") -> None:
-        """改进的表格输出，带有颜色和分隔线"""
         color = cls._get_color(level)
         if title:
             print(f"{cls.BOLD}{color}== {title} =={cls.RESET}")
         
-        # 计算列宽
         col_widths = [len(h) for h in headers]
         for row in rows:
             for i, cell in enumerate(row):
                 col_widths[i] = max(col_widths[i], len(str(cell)))
         
-        # 构建标题格式
         fmt = "│".join(f" {{:<{w}}} " for w in col_widths)
         
-        # 顶部边框
         top_border = "┌" + "┬".join("─" * (w+2) for w in col_widths) + "┐"
         print(f"{cls.DIM}{top_border}{cls.RESET}")
         
-        # 表头
         header_line = fmt.format(*headers)
         print(f"{cls.BOLD}{color}│{header_line}│{cls.RESET}")
         
-        # 表头分隔线
         separator = "├" + "┼".join("─" * (w+2) for w in col_widths) + "┤"
         print(f"{cls.DIM}{separator}{cls.RESET}")
         
-        # 表格内容
         for row in rows:
             row_line = fmt.format(*row)
             print(f"│{row_line}│")
         
-        # 底部边框
         bottom_border = "└" + "┴".join("─" * (w+2) for w in col_widths) + "┘"
         print(f"{cls.DIM}{bottom_border}{cls.RESET}")
 
     @classmethod
     def progress_bar(cls, current, total, prefix="", suffix="", length=50):
-        """显示进度条"""
         filled_length = int(length * current // total)
         percent = min(100.0, 100 * (current / float(total)))
         bar = f"{cls.GREEN}{'█' * filled_length}{cls.WHITE}{'░' * (length - filled_length)}{cls.RESET}"
@@ -130,7 +140,6 @@ class Shell_Printer:
 
     @classmethod
     def confirm(cls, msg, default=False) -> bool:
-        """带颜色和默认选择的确认对话框"""
         yes_options = {'y', 'yes'}
         no_options = {'n', 'no'}
         default_str = "Y/n" if default else "y/N"
@@ -148,7 +157,6 @@ class Shell_Printer:
 
     @classmethod
     def ask(cls, msg, choices=None, default=None) -> str | None:
-        """带颜色和选择的提问"""
         prompt = f"{cls.BOLD}{msg}{cls.RESET}"
         if choices:
             prompt += f" ({cls.CYAN}{'/'.join(choices)}{cls.RESET})"
@@ -166,7 +174,6 @@ class Shell_Printer:
 
     @classmethod
     def status(cls, msg, success=True):
-        """显示状态指示器"""
         symbol = f"{cls.GREEN}✓" if success else f"{cls.RED}✗"
         print(f"\r{symbol}{cls.RESET} {msg}")
 
@@ -179,10 +186,29 @@ class SourceManager:
     def _init_sources(self):
         if not env.get('origins'):
             env.set('origins', [])
+            
+            primary_source = "https://erisdev.com/map.json"
+            secondary_source = "https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/refs/heads/main/map.json"
+            
+            shellprint.status("正在验证主源...")
+            validated_url = asyncio.run(self._validate_url(primary_source))
+            
+            if validated_url:
+                env.set('origins', [validated_url])
+                shellprint.status(f"主源 {validated_url} 已成功添加")
+            else:
+                if secondary_source not in env.get('origins', []):
+                    env.set('origins', [secondary_source])
+                    shellprint.panel(
+                        f"主源不可用，已添加备用源 {secondary_source}\n\n"
+                        f"{Shell_Printer.YELLOW}提示:{Shell_Printer.RESET} 建议尽快升级 ErisPulse SDK 版本",
+                        "源初始化", 
+                        "warning"
+                    )
 
     async def _validate_url(self, url):
         if not url.startswith(('http://', 'https://')):
-            protocol = shellprint.confirm("未指定协议，请输入使用的协议", choices=['http', 'https'], default="https")
+            protocol = shellprint.ask("未指定协议，请输入使用的协议", choices=['http', 'https'], default="https")
             url = f"{protocol}://{url}"
         if not url.endswith('.json'):
             url = f"{url}/map.json"
@@ -190,10 +216,12 @@ class SourceManager:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
-                    if response.headers.get('Content-Type', '').startswith('application/json'):
+                    try:
+                        content = await response.text()
+                        json.loads(content)
                         return url
-                    else:
-                        shellprint.panel(f"源 {url} 返回的内容不是有效的 JSON 格式", "错误", "error")
+                    except (ValueError, json.JSONDecodeError) as e:
+                        shellprint.panel(f"源 {url} 返回的内容不是有效的 JSON 格式: {e}", "错误", "error")
                         return None
         except Exception as e:
             shellprint.panel(f"访问源 {url} 失败: {e}", "错误", "error")
@@ -230,8 +258,9 @@ class SourceManager:
                     async with aiohttp.ClientSession() as session:
                         async with session.get(origin) as response:
                             response.raise_for_status()
-                            if response.headers.get('Content-Type', '').startswith('application/json'):
-                                content = await response.json()
+                            try:
+                                text = await response.text()
+                                content = json.loads(text)
                                 providers[content["name"]] = content["base"]
                                 for module in content["modules"].keys():
                                     module_content = content["modules"][module]
@@ -244,8 +273,8 @@ class SourceManager:
                                         module,
                                         f"{providers[content['name']]}{module_origin_name}"
                                     ])
-                            else:
-                                shellprint.panel(f"源 {origin} 返回的内容不是有效的 JSON 格式", "错误", "error")
+                            except (ValueError, json.JSONDecodeError) as e:
+                                shellprint.panel(f"源 {origin} 返回的内容不是有效的 JSON 格式: {e}", "错误", "error")
                 except Exception as e:
                     shellprint.panel(f"获取 {origin} 时出错: {e}", "错误", "error")
                     
