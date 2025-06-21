@@ -2,11 +2,7 @@ name: 🎀 艾莉丝的API文档魔法 ~
 
 on:
   push:
-    branches: [ "main", "develop" ]
-    paths:
-      - 'ErisPulse/*.py'
-  pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ main ]
     paths:
       - 'ErisPulse/*.py'
   workflow_dispatch:
