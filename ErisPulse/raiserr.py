@@ -17,16 +17,20 @@ ErisPulse 错误管理系统
     - async_exception_handler: 全局异步异常处理器
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 注册自定义错误
-    sdk.raiserr.register("MyError", doc="自定义错误描述")
-    
-    # 抛出错误
-    sdk.raiserr.MyError("发生了错误", exit=False)
-    
-    # 获取错误信息
-    error_info = sdk.raiserr.info("MyError")
+
+```
+from ErisPulse import sdk
+
+# 注册自定义错误
+sdk.raiserr.register("MyError", doc="自定义错误描述")
+
+# 抛出错误
+sdk.raiserr.MyError("发生了错误", exit=False)
+
+# 获取错误信息
+error_info = sdk.raiserr.info("MyError")
+```
+
 """
 
 import sys

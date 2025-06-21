@@ -17,25 +17,29 @@ ErisPulse 工具函数集合
     - ExecAsync(async_func, *args, **kwargs): 异步执行函数
 
 示例用法：
-    from ErisPulse import sdk
+
+```
+from ErisPulse import sdk
+
+# 拓扑排序
+sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
+
+# 缓存装饰器
+@sdk.util.cache
+def expensive_operation(param):
+    return heavy_computation(param)
     
-    # 拓扑排序
-    sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
+# 异步执行
+@sdk.util.run_in_executor
+def sync_task():
+    pass
     
-    # 缓存装饰器
-    @sdk.util.cache
-    def expensive_operation(param):
-        return heavy_computation(param)
-        
-    # 异步执行
-    @sdk.util.run_in_executor
-    def sync_task():
-        pass
-        
-    # 重试机制
-    @sdk.util.retry(max_attempts=3, delay=1)
-    def unreliable_operation():
-        pass
+# 重试机制
+@sdk.util.retry(max_attempts=3, delay=1)
+def unreliable_operation():
+    pass
+```
+
 """
 
 import time

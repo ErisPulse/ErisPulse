@@ -26,13 +26,17 @@ ErisPulse SDK 核心初始化
     - ModuleLoadError: 模块加载错误
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 初始化SDK
-    sdk.init()
-    
-    # 访问各模块功能
-    sdk.logger.info("SDK已初始化")
+
+```
+from ErisPulse import sdk
+
+# 初始化SDK
+sdk.init()
+
+# 访问各模块功能
+sdk.logger.info("SDK已初始化")
+```
+
 
 ## __main__ (source: ErisPulse/__main__.py)
 
@@ -66,14 +70,18 @@ ErisPulse CLI 入口
     --reload: 启用热重载
 
 示例用法:
-    # 安装模块
-    epsdk install MyModule
-    
-    # 启用热重载
-    epsdk run main.py --reload
-    
-    # 管理源
-    epsdk origin add https://example.com/map.json
+
+```
+# 安装模块
+epsdk install MyModule
+
+# 启用热重载
+epsdk run main.py --reload
+
+# 管理源
+epsdk origin add https://example.com/map.json
+```
+
 
 ## adapter (source: ErisPulse/adapter.py)
 
@@ -107,16 +115,20 @@ ErisPulse 适配器系统
     - get(): 获取适配器实例
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 注册适配器
-    sdk.adapter.register("MyPlatform", MyAdapter)
-    
-    # 发送消息
-    sdk.adapter.MyPlatform.Send.To("user", "123").Text("Hello")
-    
-    # 启动适配器
-    await sdk.adapter.startup()
+
+```
+from ErisPulse import sdk
+
+# 注册适配器
+sdk.adapter.register("MyPlatform", MyAdapter)
+
+# 发送消息
+sdk.adapter.MyPlatform.Send.To("user", "123").Text("Hello")
+
+# 启动适配器
+await sdk.adapter.startup()
+```
+
 
 ## db (source: ErisPulse/db.py)
 
@@ -151,24 +163,28 @@ ErisPulse 环境配置
     - load_env_file(): 从env.py加载配置(SDK自动)
 
 示例用法：
-    from ErisPulse import sdk
-    
-    env = sdk.env
 
-    # 基本操作
-    env.set('config_key', 'value')
-    value = env.get('config_key')
-    value_another = env.config_key  # 通过属性访问
-    env.config_key = 'value'        # 通过属性赋值
+```
+from ErisPulse import sdk
+
+env = sdk.env
+
+# 基本操作
+env.set('config_key', 'value')
+value = env.get('config_key')
+value_another = env.config_key  # 通过属性访问
+env.config_key = 'value'        # 通过属性赋值
+
+# 事务使用
+with env.transaction():
+    env.set('key1', 'value1')
+    env.set('key2', 'value2')
     
-    # 事务使用
-    with env.transaction():
-        env.set('key1', 'value1')
-        env.set('key2', 'value2')
-        
-    # 快照管理
-    snapshot_path = env.snapshot()
-    env.restore('snapshot_name')
+# 快照管理
+snapshot_path = env.snapshot()
+env.restore('snapshot_name')
+```
+
 
 ## logger (source: ErisPulse/logger.py)
 
@@ -193,24 +209,28 @@ ErisPulse 日志系统
     - set_output_file(path):    设置日志输出文件
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 基本日志记录
-    sdk.logger.debug("调试信息")
-    sdk.logger.info("运行状态")
-    
-    # 模块级日志控制
-    sdk.logger.set_module_level("MyModule", "DEBUG")
-    
-    # 异常捕获
-    @sdk.logger.catch
-    def risky_function():
-        raise Exception("出错了")
+
+```
+from ErisPulse import sdk
+
+# 基本日志记录
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行状态")
+
+# 模块级日志控制
+sdk.logger.set_module_level("MyModule", "DEBUG")
+
+# 异常捕获
+@sdk.logger.catch
+def risky_function():
+    raise Exception("出错了")
+```
 
 === 准备弃用 ===
 
 catch(func_or_level=None, level="error"): 异常捕获装饰器
 - 原因: 异常捕获功能已集成到 raiserr 模块中，建议使用 raiserr 进行异常处理。
+
 
 ## mods (source: ErisPulse/mods.py)
 
@@ -235,16 +255,20 @@ ErisPulse 模块管理系统
     - status_prefix: 状态存储前缀属性
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 设置模块状态
-    sdk.mods.set_module_status("MyModule", True)
-    
-    # 获取模块信息
-    module_info = sdk.mods.get_module("MyModule")
-    
-    # 批量操作
-    sdk.mods.set_all_modules({"Module1": {...}, "Module2": {...}})
+
+```
+from ErisPulse import sdk
+
+# 设置模块状态
+sdk.mods.set_module_status("MyModule", True)
+
+# 获取模块信息
+module_info = sdk.mods.get_module("MyModule")
+
+# 批量操作
+sdk.mods.set_all_modules({"Module1": {...}, "Module2": {...}})
+```
+
 
 ## raiserr (source: ErisPulse/raiserr.py)
 
@@ -266,16 +290,20 @@ ErisPulse 错误管理系统
     - async_exception_handler: 全局异步异常处理器
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 注册自定义错误
-    sdk.raiserr.register("MyError", doc="自定义错误描述")
-    
-    # 抛出错误
-    sdk.raiserr.MyError("发生了错误", exit=False)
-    
-    # 获取错误信息
-    error_info = sdk.raiserr.info("MyError")
+
+```
+from ErisPulse import sdk
+
+# 注册自定义错误
+sdk.raiserr.register("MyError", doc="自定义错误描述")
+
+# 抛出错误
+sdk.raiserr.MyError("发生了错误", exit=False)
+
+# 获取错误信息
+error_info = sdk.raiserr.info("MyError")
+```
+
 
 ## util (source: ErisPulse/util.py)
 
@@ -297,23 +325,26 @@ ErisPulse 工具函数集合
     - ExecAsync(async_func, *args, **kwargs): 异步执行函数
 
 示例用法：
-    from ErisPulse import sdk
+
+```
+from ErisPulse import sdk
+
+# 拓扑排序
+sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
+
+# 缓存装饰器
+@sdk.util.cache
+def expensive_operation(param):
+    return heavy_computation(param)
     
-    # 拓扑排序
-    sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
+# 异步执行
+@sdk.util.run_in_executor
+def sync_task():
+    pass
     
-    # 缓存装饰器
-    @sdk.util.cache
-    def expensive_operation(param):
-        return heavy_computation(param)
-        
-    # 异步执行
-    @sdk.util.run_in_executor
-    def sync_task():
-        pass
-        
-    # 重试机制
-    @sdk.util.retry(max_attempts=3, delay=1)
-    def unreliable_operation():
-        pass
+# 重试机制
+@sdk.util.retry(max_attempts=3, delay=1)
+def unreliable_operation():
+    pass
+```
 
