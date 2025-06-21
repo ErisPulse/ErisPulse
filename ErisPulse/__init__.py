@@ -1,20 +1,20 @@
 """
-ErisPulse SDK 核心初始化
+# SDK 核心初始化
 
 提供SDK全局对象构建和初始化功能。
 
-=== 主要功能 ===
+## 主要功能
 - 构建全局sdk对象
 - 预注册核心错误类型
 - 提供SDK初始化入口
 - 集成各核心模块
 
-=== API 文档 ===
-核心对象：
+## API 文档
+### 核心对象：
     - sdk: 全局SDK命名空间对象
     - sdk.init(): SDK初始化入口函数
 
-预注册错误类型：
+### 预注册错误类型：
     - CaughtExternalError: 外部捕获异常
     - InitError: 初始化错误
     - MissingDependencyError: 缺少依赖错误  
@@ -22,7 +22,7 @@ ErisPulse SDK 核心初始化
     - CycleDependencyError: 循环依赖错误
     - ModuleLoadError: 模块加载错误
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk

@@ -1,34 +1,34 @@
 """
-ErisPulse 适配器系统
+# 适配器系统
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。
 
-=== 主要功能 ===
+## 主要功能
 - BaseAdapter: 适配器基类
 - SendDSL: 链式消息发送接口
 - AdapterManager: 适配器管理
 - 适配器注册和生命周期管理
 
-=== API 文档 ===
-适配器基类 (BaseAdapter):
+## API 文档
+### 适配器基类 (BaseAdapter):
     - call_api(): 必须实现的API调用方法
     - start(): 启动适配器
     - shutdown(): 关闭适配器
     - on(): 事件监听装饰器
     - emit(): 触发事件
 
-消息发送DSL (SendDSL):
+### 消息发送DSL (SendDSL):
     - To(): 设置消息目标
     - Text(): 发送文本消息
     - 可扩展其他消息类型
 
-适配器管理 (AdapterManager):
+### 适配器管理 (AdapterManager):
     - register(): 注册适配器
     - startup(): 启动适配器
     - shutdown(): 关闭所有适配器
     - get(): 获取适配器实例
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk
