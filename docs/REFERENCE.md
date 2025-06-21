@@ -111,8 +111,9 @@ sdk.logger.save_logs(["日志1.log", "日志2.log"])        # 保存当前日志
 
 ## 4. 环境配置管理 (Env)
 
-通过 `sdk.env` 实现全局配置的动态读写：
+通过 `sdk.env` 实现全局配置的动态读写，支持事务、快照和批量操作：
 
+### 基本操作
 ```python
 sdk.env.get(Key, [DefValue])     # 获取配置项
 sdk.env.set(Key, Value)          # 设置配置项
@@ -120,6 +121,49 @@ sdk.env.delete(Key)              # 删除配置项
 sdk.env.clear()                  # 清空配置
 sdk.env.load_env_file()          # 从 env.py 加载配置
 ```
+
+### 批量操作
+```python
+# 批量设置
+sdk.env.set_multi({'key1': 'val1', 'key2': 'val2'})
+
+# 批量获取
+values = sdk.env.get_multi(['key1', 'key2'])
+
+# 批量删除
+sdk.env.delete_multi(['key1', 'key2'])
+```
+
+### 事务支持
+```python
+with sdk.env.transaction():
+    sdk.env.set('key1', 'value1')
+    sdk.env.set('key2', 'value2')
+    # 如果出现异常会自动回滚
+```
+
+### 快照管理
+```python
+# 创建快照
+snapshot_path = sdk.env.snapshot('before_update')
+
+# 恢复快照
+sdk.env.restore('before_update')
+
+# 列出快照
+snapshots = sdk.env.list_snapshots()
+
+# 删除快照
+sdk.env.delete_snapshot('old_snapshot')
+
+# 设置自动快照间隔(秒)
+sdk.env.set_snapshot_interval(3600)  # 每小时自动快照
+```
+
+### 性能优化
+- 自动启用WAL模式提高并发性能
+- 内置查询缓存减少IO操作
+- 批量操作优化大数据量处理
 
 ---
 

@@ -21,50 +21,80 @@
 
 ```python
 #  设置日志级别
-self.logger.set_level("DEBUG")
+sdk.logger.set_level("DEBUG")
 
 #  设置单个模块日志级别
-self.logger.set_module_level("MyModule", "DEBUG")
+sdk.logger.set_module_level("MyModule", "DEBUG")
 
 #  设置日志输出到文件
-self.logger.set_output_file("log.txt")
+sdk.logger.set_output_file("log.txt")
 
 #  单次保持所有模块日志历史到文件
-self.logger.save_logs("log.txt")
+sdk.logger.save_logs("log.txt")
 
 #  各等级日志
-self.logger.debug("调试信息")
-self.logger.info("运行状态")
-self.logger.warning("警告信息")
-self.logger.error("错误信息")
-self.logger.critical("致命错误")    # 会触发程序崩溃
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行状态")
+sdk.logger.warning("警告信息")
+sdk.logger.error("错误信息")
+sdk.logger.critical("致命错误")    # 会触发程序崩溃
 ```
 
 #### env配置模块：
 
 ```python
 # 设置配置项
-self.env.set("my_config_key", "new_value")
+sdk.env.set("my_config_key", "new_value")
 
-#  获取配置项
-config_value = self.env.get("my_config_key", "default_value")
+# 获取配置项
+config_value = sdk.env.get("my_config_key", "default_value")
 
-#  删除配置项
-self.env.delete("my_config_key")
+# 删除配置项
+sdk.env.delete("my_config_key")
 
-#  获取所有配置项(不建议，性能浪费)
-all_config   = self.env.get_all_keys()
+# 获取所有配置项(不建议，性能浪费)
+all_config = sdk.env.get_all_keys()
 
+# 批量操作
+sdk.env.set_multi({
+    'config1': 'value1',
+    'config2': {'data': [1,2,3]},
+    'config3': True
+})
+
+values = sdk.env.get_multi(['config1', 'config2'])
+sdk.env.delete_multi(['old_key1', 'old_key2'])
+
+# 事务使用
+with sdk.env.transaction():
+    sdk.env.set('important_key', 'value')
+    sdk.env.delete('temp_key')
+    # 如果出现异常会自动回滚
+
+# 快照管理
+# 创建重要操作前的快照
+snapshot_path = sdk.env.snapshot('before_update')
+
+# 恢复数据库状态
+sdk.env.restore('before_update')
+
+# 自动快照(默认每小时)
+sdk.env.set_snapshot_interval(3600)  # 设置自动快照间隔(秒)
+
+# 性能提示：
+# - 批量操作比单次操作更高效
+# - 事务可以保证多个操作的安全性
+# - 快照适合在重大变更前创建
 ```
 
 #### 注册自定义错误类型：
 
 ```python
 #  注册一个自定义错误类型
-self.raiserr.register("MyCustomError", doc="这是一个自定义错误")
+sdk.raiserr.register("MyCustomError", doc="这是一个自定义错误")
 
 #  获取错误信息
-error_info = self.raiserr.info("MyCustomError")
+error_info = sdk.raiserr.info("MyCustomError")
 if error_info:
     print(f"错误类型: {error_info['type']}")
     print(f"文档描述: {error_info['doc']}")
@@ -73,14 +103,15 @@ else:
     print("未找到该错误类型")
 
 #  抛出一个自定义错误
-self.raiserr.MyCustomError("发生了一个错误")
+sdk.raiserr.MyCustomError("发生了一个错误")
+
 ```
 
 #### 工具函数：
 
 ```python
 # 工具函数装饰器：自动重试指定次数
-@self.util.retry(max_attempts=3, delay=1)
+@sdk.util.retry(max_attempts=3, delay=1)
 async def my_retry_function():
     # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
     ...
@@ -90,19 +121,19 @@ topology = sdk.util.show_topology()
 print(topology)  # 打印模块依赖拓扑图
 
 # 缓存装饰器：缓存函数调用结果（基于参数）
-@self.util.cache
+@sdk.util.cache
 def get_expensive_result(param):
     # 第一次调用后，相同参数将直接返回缓存结果
     ...
 
 # 异步执行装饰器：将同步函数放入线程池中异步执行
-@self.util.run_in_executor
+@sdk.util.run_in_executor
 def sync_task():
     # 此函数将在独立线程中运行，避免阻塞事件循环
     ...
 
 # 异步调用同步函数的快捷方式
-self.util.ExecAsync(sync_task)  # 在事件循环中
+sdk.util.ExecAsync(sync_task)  # 在事件循环中
 
 ```
 
@@ -113,14 +144,14 @@ self.util.ExecAsync(sync_task)  # 在事件循环中
 通过 `sdk.<ModuleName>` 访问其他模块实例：
 
 ```python
-other_module = self.sdk.OtherModule
+other_module = sdk.OtherModule
 result = other_module.some_method()
 ```
 
 ### 6. 适配器的方法调用
 通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
 ```python
-adapter = self.sdk.adapter.AdapterName
+adapter = sdk.adapter.AdapterName
 result = adapter.some_method()
 ```
 
@@ -358,7 +389,7 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 - **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
 
 #### 4. 性能优化
-- **缓存机制**：利用 `@self.util.cache` 缓存频繁调用的结果。
+- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
 - **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
 
 #### 5. 安全与隐私
