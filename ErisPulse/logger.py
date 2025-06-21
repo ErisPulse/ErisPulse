@@ -20,19 +20,22 @@ ErisPulse 日志系统
     - set_output_file(path):    设置日志输出文件
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 基本日志记录
-    sdk.logger.debug("调试信息")
-    sdk.logger.info("运行状态")
-    
-    # 模块级日志控制
-    sdk.logger.set_module_level("MyModule", "DEBUG")
-    
-    # 异常捕获
-    @sdk.logger.catch
-    def risky_function():
-        raise Exception("出错了")
+
+```
+from ErisPulse import sdk
+
+# 基本日志记录
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行状态")
+
+# 模块级日志控制
+sdk.logger.set_module_level("MyModule", "DEBUG")
+
+# 异常捕获
+@sdk.logger.catch
+def risky_function():
+    raise Exception("出错了")
+```
 
 === 准备弃用 ===
 

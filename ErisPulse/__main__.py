@@ -29,14 +29,18 @@ ErisPulse CLI 入口
     --reload: 启用热重载
 
 示例用法:
-    # 安装模块
-    epsdk install MyModule
-    
-    # 启用热重载
-    epsdk run main.py --reload
-    
-    # 管理源
-    epsdk origin add https://example.com/map.json
+
+```
+# 安装模块
+epsdk install MyModule
+
+# 启用热重载
+epsdk run main.py --reload
+
+# 管理源
+epsdk origin add https://example.com/map.json
+```
+
 """
 
 import argparse

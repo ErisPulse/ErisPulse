@@ -30,24 +30,28 @@ ErisPulse 环境配置
     - load_env_file(): 从env.py加载配置(SDK自动)
 
 示例用法：
-    from ErisPulse import sdk
-    
-    env = sdk.env
 
-    # 基本操作
-    env.set('config_key', 'value')
-    value = env.get('config_key')
-    value_another = env.config_key  # 通过属性访问
-    env.config_key = 'value'        # 通过属性赋值
+```
+from ErisPulse import sdk
+
+env = sdk.env
+
+# 基本操作
+env.set('config_key', 'value')
+value = env.get('config_key')
+value_another = env.config_key  # 通过属性访问
+env.config_key = 'value'        # 通过属性赋值
+
+# 事务使用
+with env.transaction():
+    env.set('key1', 'value1')
+    env.set('key2', 'value2')
     
-    # 事务使用
-    with env.transaction():
-        env.set('key1', 'value1')
-        env.set('key2', 'value2')
-        
-    # 快照管理
-    snapshot_path = env.snapshot()
-    env.restore('snapshot_name')
+# 快照管理
+snapshot_path = env.snapshot()
+env.restore('snapshot_name')
+```
+
 """
 
 import os

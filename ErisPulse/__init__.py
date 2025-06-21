@@ -23,13 +23,17 @@ ErisPulse SDK 核心初始化
     - ModuleLoadError: 模块加载错误
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 初始化SDK
-    sdk.init()
-    
-    # 访问各模块功能
-    sdk.logger.info("SDK已初始化")
+
+```
+from ErisPulse import sdk
+
+# 初始化SDK
+sdk.init()
+
+# 访问各模块功能
+sdk.logger.info("SDK已初始化")
+```
+
 """
 
 import types
