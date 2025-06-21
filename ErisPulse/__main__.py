@@ -1119,7 +1119,6 @@ def main():
         else:
             origin_parser.print_help()
     else:
-        # 如果没有提供命令，显示帮助信息
         parser.print_help()
 
 if __name__ == "__main__":
