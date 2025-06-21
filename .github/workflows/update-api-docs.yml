@@ -33,8 +33,8 @@ jobs:
       - name: Commit changes
         if: github.event_name == 'push'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "docs-update[bot]"
+          git config --global user.email "114514@erisdev.com"
           git add docs/REFERENCE.md
           git diff --quiet && git diff --staged --quiet || git commit -m "Update API documentation [skip ci]"
           git push
