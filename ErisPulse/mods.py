@@ -20,16 +20,20 @@ ErisPulse 模块管理系统
     - status_prefix: 状态存储前缀属性
 
 示例用法：
-    from ErisPulse import sdk
-    
-    # 设置模块状态
-    sdk.mods.set_module_status("MyModule", True)
-    
-    # 获取模块信息
-    module_info = sdk.mods.get_module("MyModule")
-    
-    # 批量操作
-    sdk.mods.set_all_modules({"Module1": {...}, "Module2": {...}})
+
+```
+from ErisPulse import sdk
+
+# 设置模块状态
+sdk.mods.set_module_status("MyModule", True)
+
+# 获取模块信息
+module_info = sdk.mods.get_module("MyModule")
+
+# 批量操作
+sdk.mods.set_all_modules({"Module1": {...}, "Module2": {...}})
+```
+
 """
 
 import json
