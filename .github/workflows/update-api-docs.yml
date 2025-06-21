@@ -32,7 +32,7 @@ jobs:
           
       - name: 📝 更新API文档
         run: |
-          python ${{ github.action_path }}/update_api_docs.py
+          python ${{ github.action_path }}/update-api-docs/update_api_docs.py
           
       - name: 📚 获取变更信息
         id: changes
