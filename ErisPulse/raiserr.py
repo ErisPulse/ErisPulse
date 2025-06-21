@@ -1,22 +1,22 @@
 """
-ErisPulse 错误管理系统
+# 错误管理系统
 
 提供错误类型注册、抛出和管理功能，集成全局异常处理。
 
-=== API 文档 ===
-错误注册：
+## API 文档
+### 错误注册：
     - register(name, doc="", base=Exception): 注册新的错误类型
     - info(name: str = None): 获取错误类型信息
 
-错误抛出：
+### 错误抛出：
     - __getattr__(name): 动态获取错误抛出函数
     - ErrorType(msg, exit=False): 抛出注册的错误类型
 
-全局处理：
+### 全局处理：
     - global_exception_handler: 全局同步异常处理器
     - async_exception_handler: 全局异步异常处理器
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk

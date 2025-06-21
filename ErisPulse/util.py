@@ -1,22 +1,22 @@
 """
-ErisPulse 工具函数集合
+# 工具函数集合
 
 提供各种实用工具函数和装饰器，简化开发流程。
 
-=== API 文档 ===
-拓扑排序：
+## API 文档
+### 拓扑排序：
     - topological_sort(elements, dependencies, error): 拓扑排序依赖关系
     - show_topology(): 可视化模块依赖关系
 
-装饰器：
+### 装饰器：
     - @cache: 缓存函数结果
     - @run_in_executor: 将同步函数转为异步
     - @retry(max_attempts=3, delay=1): 失败自动重试
 
-异步执行：
+### 异步执行：
     - ExecAsync(async_func, *args, **kwargs): 异步执行函数
 
-示例用法：
+### 示例用法：
 
 ```
 from ErisPulse import sdk
