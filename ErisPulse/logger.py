@@ -1,3 +1,46 @@
+"""
+ErisPulse 日志系统
+
+提供模块化、多级别的日志记录功能，支持内存存储和文件输出。
+
+=== API 文档 ===
+基本操作：
+    - debug(msg, *args, **kwargs):      调试信息
+    - info(msg, *args, **kwargs):       运行信息  
+    - warning(msg, *args, **kwargs):    警告信息
+    - error(msg, *args, **kwargs):      错误信息
+    - critical(msg, *args, **kwargs):   致命错误并终止程序
+
+日志控制：
+    - set_level(level):                     设置全局日志级别
+    - set_module_level(module_name, level): 设置模块日志级别
+
+日志存储：
+    - save_logs(path):          保存内存中的日志到文件
+    - set_output_file(path):    设置日志输出文件
+
+示例用法：
+    from ErisPulse import sdk
+    
+    # 基本日志记录
+    sdk.logger.debug("调试信息")
+    sdk.logger.info("运行状态")
+    
+    # 模块级日志控制
+    sdk.logger.set_module_level("MyModule", "DEBUG")
+    
+    # 异常捕获
+    @sdk.logger.catch
+    def risky_function():
+        raise Exception("出错了")
+
+=== 准备弃用 ===
+
+catch(func_or_level=None, level="error"): 异常捕获装饰器
+- 原因: 异常捕获功能已集成到 raiserr 模块中，建议使用 raiserr 进行异常处理。
+
+"""
+
 import logging
 import inspect
 import datetime
