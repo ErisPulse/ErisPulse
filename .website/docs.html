@@ -1,0 +1,1250 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档中心 | ErisPulse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #0ea5e9;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #f1f5f9;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f8fafc"/><path d="M0 50 Q25 30, 50 50 T100 50" stroke="%23e2e8f0" stroke-width="2" fill="none"/></svg>');
+            background-size: 400px;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 头部样式 */
+        header {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 1.5rem 1rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+        }
+        
+        .home-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            fill: currentColor;
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-container {
+            max-width: 600px;
+            margin: 1.5rem auto 0;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            pointer-events: none;
+        }
+        
+        /* 主要内容区域 */
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        .section {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .docs-sidebar {
+            flex: 0 0 200px;
+            position: sticky;
+            top: 80px;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .docs-main {
+            flex: 1;
+            min-width: 0;
+            max-width: calc(100% - 200px);
+        }
+
+        .markdown-content pre,
+        .source-viewer pre {
+            background: var(--dark);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            margin: 0 0 1.5rem 0;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            overflow-y: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+            tab-size: 4;
+            max-width: 100%;
+            white-space: pre;
+        }
+
+        .markdown-content pre code,
+        .source-viewer pre code {
+            display: block;
+            overflow: visible;
+            white-space: pre;
+            word-wrap: normal;
+        }
+
+        @media (max-width: 900px) {
+            .markdown-content pre,
+            .source-viewer pre {
+                padding: 0.75rem;
+                border-radius: 8px;
+            }
+            
+            .section {
+                flex-direction: column;
+            }
+
+            .docs-sidebar {
+                position: static;
+                height: auto;
+                margin-bottom: 2rem;
+            }
+            
+            .docs-main {
+                max-width: 100%;
+            }
+        }
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gray);
+        }
+        .docs-nav {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+        
+        .docs-nav-list {
+            list-style: none;
+        }
+        
+        .docs-nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .docs-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            color: var(--text);
+            transition: var(--transition);
+        }
+        
+        .docs-nav-link:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .docs-nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .docs-nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 文档内容 */
+        .docs-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+        
+        .markdown-content {
+            line-height: 1.7;
+        }
+        
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .markdown-content h1 {
+            font-size: 2rem;
+            border-bottom: 2px solid var(--gray);
+            padding-bottom: 0.5rem;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.6rem;
+            border-bottom: 1px solid var(--gray);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.3rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content pre,
+        .source-viewer pre {
+            background: var(--dark);
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: var(--radius);
+            overflow: auto;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+
+        /* 代码高亮样式 */
+        .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+        .string {
+            color: #ce9178;
+        }
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+        .number {
+            color: #b5cea8;
+        }
+        .function {
+            color: #dcdcaa;
+        }
+        .class {
+            color: #4ec9b0;
+        }
+        [class*="language-"] {
+            background: transparent;
+        }
+        
+        .markdown-content code {
+            background: rgba(37, 99, 235, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content th,
+        .markdown-content td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .markdown-content th {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--dark);
+        }
+        
+        .markdown-content tr:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        /* 源码查看区域样式 */
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .source-toggle-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .source-toggle-btn:hover {
+            background: var(--primary-dark);
+            transform: rotate(90deg);
+        }
+        
+        .source-file-list {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .source-file-list ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .source-file-list a {
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            color: var(--text);
+            transition: var(--transition);
+        }
+        
+        .source-file-list a:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .source-viewer {
+            background: var(--dark);
+            border-radius: var(--radius);
+            padding: 1rem;
+            color: white;
+            position: relative;
+            height: auto;
+            min-height: 60vh;
+        }
+        
+        .source-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .source-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        #source-code-display {
+            counter-reset: line;
+            margin: 0;
+            background: transparent;
+            color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            padding: 1rem 1rem 1rem 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+        
+        #source-code-display code {
+            display: block;
+            white-space: pre-wrap;
+        }
+        
+        #source-code-display code .line {
+            display: block;
+            position: relative;
+            padding-left: 0;
+            margin-left: 0.5em;
+        }
+        
+        #source-code-container {
+            position: relative;
+            display: flex;
+            overflow: auto;
+        }
+
+        #line-numbers {
+            position: sticky;
+            left: 0;
+            background: transparent;
+            padding: 1rem 0.5rem 1rem 1rem;
+            text-align: right;
+            user-select: none;
+            color: rgba(255,255,255,0.5);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #source-code-display {
+            margin: 0;
+            padding: 1rem 1rem 1rem 0.5rem;
+            background: transparent;
+            overflow: visible;
+        }
+
+        #source-code-display code {
+            display: block;
+            white-space: pre;
+            background: transparent !important;
+        }
+        
+        /* 页脚 */
+        footer {
+            background: var(--dark);
+            color: var(--text-light);
+            padding: 4rem 1rem 2rem;
+            margin-top: 4rem;
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.8rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .footer-column:hover h3 {
+            color: var(--accent);
+        }
+        
+        .footer-column:hover h3::after {
+            width: 80px;
+            background: var(--accent);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-light);
+            opacity: 0.9;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            padding: 0.4rem 0;
+            position: relative;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .footer-links a i {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover i {
+            transform: scale(1.2);
+            color: var(--accent);
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 1.2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .social-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: -1;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .social-link:hover::before {
+            transform: scale(1);
+        }
+        
+        .social-link:active {
+            transform: translateY(-1px) scale(0.95);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .copyright a {
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .copyright a:hover {
+            color: var(--accent);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .docs-content {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .header-title {
+                font-size: 1.3rem;
+            }
+            
+            .docs-nav {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <a href="/" class="home-logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <h1 class="header-title">ErisPulse 文档中心</h1>
+                </a>
+            </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <div class="docs-sidebar">
+                    <div class="docs-nav">
+                        <ul class="docs-nav-list">
+                            <li class="docs-nav-item">
+                                <a href="#quick-start" class="docs-nav-link active">
+                                    <i class="fas fa-rocket"></i>
+                                    快速开始
+                                </a>
+                            </li>
+                            
+                            <li class="docs-nav-item">
+                                <a href="#development" class="docs-nav-link">
+                                    <i class="fas fa-code"></i>
+                                    开发者指南
+                                </a>
+                            </li>
+                            
+                            <li class="docs-nav-item">
+                                <a href="#cli" class="docs-nav-link">
+                                    <i class="fas fa-terminal"></i>
+                                    CLI 命令手册
+                                </a>
+                            </li>
+
+                            <li class="docs-nav-item">
+                                <a href="#origin" class="docs-nav-link">
+                                    <i class="fas fa-server"></i>
+                                    模块源配置指南
+                                </a>
+                            </li>
+
+                            <li class="docs-nav-item">
+                                <a href="#changelog" class="docs-nav-link">
+                                    <i class="fas fa-history"></i>
+                                    更新日志
+                                </a>
+                            </li>
+
+                            <li class="docs-nav-item">
+                                <a href="#source-code" class="docs-nav-link">
+                                    <i class="fas fa-file-code"></i>
+                                    项目源码
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="docs-main">
+                    <div class="markdown-content" id="markdown-content">
+                        <!-- 这里将通过JavaScript动态加载Markdown内容 -->
+                        <div class="loading-spinner">...</div>
+                    </div>
+                    
+                    <div id="source-code-content" class="docs-content" style="display: none;">
+                        <div class="source-header">
+                            <h2>项目源码</h2>
+                            <button id="toggle-source-list" class="source-toggle-btn">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="source-file-list" class="source-file-list" style="display: none;">
+                            <ul>
+                                <li><a href="#" data-file="adapter.py">adapter.py</a></li>
+                                <li><a href="#" data-file="db.py">db.py</a></li>
+                                <li><a href="#" data-file="logger.py">logger.py</a></li>
+                                <li><a href="#" data-file="mods.py">mods.py</a></li>
+                                <li><a href="#" data-file="raiserr.py">raiserr.py</a></li>
+                                <li><a href="#" data-file="util.py">util.py</a></li>
+                                <li><a href="#" data-file="__init__.py">__init__.py</a></li>
+                                <li><a href="#" data-file="__main__.py">__main__.py</a></li>
+                            </ul>
+                        </div>
+                        
+                                                    <div id="source-viewer" class="source-viewer">
+                                                        <div class="source-placeholder">
+                                                            <i class="fas fa-file-code"></i>
+                                                            <p>请从顶部文件列表中选择一个文件查看源码</p>
+                                                        </div>
+                                                        <div id="source-code-container" style="display: none;">
+                                                            <div id="line-numbers"></div>
+                                                            <pre id="source-code-display"></pre>
+                                                        </div>
+                                                    </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>ErisPulse</h3>
+                <ul class="footer-links">
+                    <li><a href="/"><i class="fas fa-home"></i> 项目主页</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse#readme" target="_blank"><i class="fas fa-book"></i> 使用文档</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/releases" target="_blank"><i class="fas fa-download"></i> 版本发布</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>贡献与开发</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/ErisPulse/ErisPulse-ModuleRepo" target="_blank"><i class="fas fa-code"></i> 贡献模块</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/pulls" target="_blank"><i class="fas fa-code-branch"></i> 提交 PR</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>支持</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/issues" target="_blank"><i class="fas fa-exclamation-circle"></i> 报告问题</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank"><i class="fas fa-comments"></i> 社区讨论</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE" target="_blank"><i class="fas fa-balance-scale"></i> 许可协议</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2025 ErisPulse Project | 开源许可证：MIT | <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" style="color: inherit;">GitHub 仓库</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sourceCodeContent = document.getElementById('source-code-content');
+            const toggleSourceListBtn = document.getElementById('toggle-source-list');
+            const sourceFileList = document.getElementById('source-file-list');
+            const sourceCodeDisplay = document.getElementById('source-code-display');
+            const sourcePlaceholder = document.querySelector('.source-placeholder');
+            const sourceBaseUrl = 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/ErisPulse/';
+            const docUrls = {
+                "quick-start": 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/quick-start.md',
+                'development': 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/DEVELOPMENT.md',
+                'cli': 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/CLI.md',
+                'origin': 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/ORIGIN.md',
+                'changelog': 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/CHANGELOG.md'
+            };
+            const apiBaseUrl = 'https://api.github.com/repos/ErisPulse/ErisPulse/commits?path=docs/';
+            
+            const hash = window.location.hash.substring(1) || 'quick-start';
+            document.querySelectorAll('.docs-nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === hash) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (hash === 'source-code') {
+                document.getElementById('markdown-content').style.display = 'none';
+                sourceCodeContent.style.display = 'block';
+                sourceFileList.style.display = 'none';
+                sourceCodeDisplay.style.display = 'none';
+                sourcePlaceholder.style.display = 'block';
+            } else {
+                sourceCodeContent.style.display = 'none';
+                document.getElementById('markdown-content').style.display = 'block';
+                loadDocument(hash);
+            }
+
+            document.querySelectorAll('.docs-nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('href').substring(1);
+                    window.location.hash = target;
+                    
+                    if (target === 'source-code') {
+                        document.getElementById('markdown-content').style.display = 'none';
+                        sourceCodeContent.style.display = 'block';
+                        sourceFileList.style.display = 'none';
+                        sourceCodeDisplay.style.display = 'none';
+                        sourcePlaceholder.style.display = 'block';
+                    } else {
+                        sourceCodeContent.style.display = 'none';
+                        document.getElementById('markdown-content').style.display = 'block';
+                        loadDocument(target);
+                    }
+                    
+                    document.querySelectorAll('.docs-nav-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            toggleSourceListBtn.addEventListener('click', function() {
+                if (sourceFileList.style.display === 'none') {
+                    sourceFileList.style.display = 'block';
+                } else {
+                    sourceFileList.style.display = 'none';
+                }
+            });
+            
+            document.querySelectorAll('.source-file-list a').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const fileName = this.getAttribute('data-file');
+                    loadSourceCode(fileName);
+                });
+            });
+            
+            async function loadSourceCode(fileName) {
+                sourcePlaceholder.style.display = 'none';
+                document.getElementById('source-code-container').style.display = 'flex';
+                sourceCodeDisplay.style.display = 'block';
+                document.getElementById('line-numbers').innerHTML = '';
+                
+                const loadingHTML = `
+                    <div style="text-align: center; padding: 2rem; width: 100%;">
+                        <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); 
+                            border-top-color: var(--primary); border-radius: 50%; 
+                            margin: 0 auto 1rem; animation: spin 1s linear infinite;"></div>
+                        <p>正在加载 ${fileName}...</p>
+                    </div>
+                `;
+                sourceCodeDisplay.innerHTML = loadingHTML;
+                
+                try {
+                    const response = await fetch(sourceBaseUrl + fileName);
+                    if (!response.ok) throw new Error('Failed to load source code');
+                    
+                    const code = await response.text();
+                    const escapedCode = code.replace(/&/g, '&amp;')
+                                          .replace(/</g, '&lt;')
+                                          .replace(/>/g, '&gt;')
+                                          .replace(/"/g, '&quot;')
+                                          .replace(/'/g, '&#39;');
+            
+                    // 更新源码显示
+                    sourceCodeDisplay.innerHTML = `<code class="language-python">${escapedCode}</code>`;
+                    
+                    // 生成行号
+                    const lineNumbersContainer = document.getElementById('line-numbers');
+                    const lines = code.split('\n');
+                    let lineNumbersHTML = '';
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        lineNumbersHTML += `${i + 1}<br>`;
+                    }
+                    
+                    lineNumbersContainer.innerHTML = lineNumbersHTML;
+                    
+                    // 手动触发Prism高亮
+                    if (window.Prism) {
+                        Prism.highlightAllUnder(sourceCodeDisplay);
+                    }
+                    
+                    // 同步滚动
+                    sourceCodeDisplay.addEventListener('scroll', function() {
+                        lineNumbersContainer.scrollTop = this.scrollTop;
+                    });
+                    
+                    lineNumbersContainer.addEventListener('scroll', function() {
+                        sourceCodeDisplay.scrollTop = this.scrollTop;
+                    });
+                    
+                } catch (error) {
+                    console.error('加载源码失败:', error);
+                    sourceCodeDisplay.textContent = `加载源码失败: ${error.message}`;
+                }
+            }
+
+        async function loadDocument(docName) {
+            const markdownContent = document.getElementById('markdown-content');
+            markdownContent.innerHTML = `
+                <div class="loading-spinner" style="text-align: center; padding: 3rem 0;">
+                    <div style="width: 50px; height: 50px; border: 5px solid rgba(37, 99, 235, 0.2); border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+                    <p>正在加载文档...</p>
+                </div>
+            `;
+
+            let docUrl = docUrls[docName];
+            let docContent = '';
+            let commitInfo = null;
+            
+            try {
+                const docResponse = await fetch(docUrl);
+                if (!docResponse.ok) {
+                    throw new Error(`文档加载失败: HTTP ${docResponse.status}`);
+                }
+                docContent = await docResponse.text();
+                
+                try {
+                    let apiUrl = apiBaseUrl + docUrls[docName].split('/docs/')[1];
+                    const commitResponse = await fetch(apiUrl, {
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (commitResponse.ok) {
+                        const commitData = await commitResponse.json();
+                        if (commitData && commitData.length > 0 && commitData[0].commit) {
+                            commitInfo = commitData[0];
+                        }
+                    }
+                } catch (commitError) {
+                    console.warn('获取提交信息失败:', commitError);
+                }
+                function timeAgo(date) {
+                    const seconds = Math.floor((new Date() - date) / 1000);
+                    let interval = Math.floor(seconds / 31536000);
+                    if (interval >= 1) return `${interval}年前`;
+                    interval = Math.floor(seconds / 2592000);
+                    if (interval >= 1) return `${interval}个月前`;
+                    interval = Math.floor(seconds / 86400);
+                    if (interval >= 1) return `${interval}天前`;
+                    interval = Math.floor(seconds / 3600);
+                    if (interval >= 1) return `${interval}小时前`;
+                    interval = Math.floor(seconds / 60);
+                    if (interval >= 1) return `${interval}分钟前`;
+                    return `${Math.floor(seconds)}秒前`;
+                }
+                markdownContent.innerHTML = marked.parse(docContent);
+                
+                const infoContainer = document.createElement('div');
+                infoContainer.style.marginTop = '1.5rem';
+                infoContainer.style.display = 'flex';
+                infoContainer.style.flexDirection = 'column';
+                infoContainer.style.gap = '0.5rem';
+                infoContainer.style.alignItems = 'flex-end';
+                
+                if (commitInfo) {
+                    const commitDate = new Date(commitInfo.commit.author.date);
+                    const formattedDate = commitDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const relativeTime = timeAgo(commitDate);
+                    
+                    let commitMessage = commitInfo.commit.message;
+                    if (commitMessage.includes('\n')) {
+                        commitMessage = commitMessage.split('\n')[0];
+                    }
+                    
+                    const commitCard = document.createElement('div');
+                    commitCard.style.background = 'var(--card-bg)';
+                    commitCard.style.padding = '1rem';
+                    commitCard.style.borderRadius = 'var(--radius)';
+                    commitCard.style.boxShadow = 'var(--shadow-sm)';
+                    commitCard.style.maxWidth = '500px';
+                    commitCard.style.width = '100%';
+                    
+                    commitCard.innerHTML = `
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                            <img src="${commitInfo.author?.avatar_url || ''}" 
+                                alt="${commitInfo.commit.author.name}'s avatar" 
+                                style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.9rem; margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 500; color: var(--dark);">${commitInfo.commit.author.name}</span>
+                                    <span style="color: var(--secondary); font-size: 0.8rem; margin-left: 0.5rem;">
+                                        ${relativeTime}
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: var(--text);">
+                                    ${commitMessage}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--secondary); margin-top: 0.25rem;">
+                                    ${formattedDate}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    infoContainer.appendChild(commitCard);
+                }
+                
+                // 贡献提醒卡片 - 始终显示
+                const contributionCard = document.createElement('div');
+                contributionCard.style.background = 'var(--card-bg)';
+                contributionCard.style.padding = '1rem';
+                contributionCard.style.borderRadius = 'var(--radius)';
+                contributionCard.style.boxShadow = 'var(--shadow-sm)';
+                contributionCard.style.maxWidth = '500px';
+                contributionCard.style.width = '100%';
+                
+                contributionCard.innerHTML = `
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary);">
+                        <i class="fas fa-hands-helping"></i> 贡献文档
+                    </h4>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        如果你想改进这篇文档，欢迎提交 Pull Request 到我们的 GitHub 仓库！
+                    </p>
+                    <a href="https://github.com/ErisPulse/ErisPulse" 
+                        target="_blank" 
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary); font-size: 0.9rem;">
+                        <i class="fab fa-github"></i> 前往 GitHub 仓库
+                    </a>
+                `;
+                
+                infoContainer.appendChild(contributionCard);
+                markdownContent.appendChild(infoContainer);
+
+            } catch (error) {
+                console.error('加载文档失败:', error);
+                
+                let errorMessage = error.message;
+                let suggestion = '请检查网络连接或稍后再试';
+                let showRetryButton = false;
+                
+                if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    errorMessage = '网络连接失败';
+                    suggestion = '请检查您的网络连接后重试';
+                    showRetryButton = true;
+                } 
+                else if (errorMessage.includes('API rate limit exceeded')) {
+                    errorMessage = 'GitHub API请求次数已达上限';
+                    suggestion = '请等待1小时后重试，或使用GitHub个人访问令牌提高限制';
+                }
+                else if (errorMessage.includes('HTTP')) {
+                    const statusMatch = errorMessage.match(/HTTP (\d+)/);
+                    if (statusMatch) {
+                        const statusCode = statusMatch[1];
+                        errorMessage = `服务器返回错误: HTTP ${statusCode}`;
+                        
+                        if (statusCode === '404') {
+                            suggestion = '请求的文档不存在，可能是URL错误';
+                        } else if (statusCode === '403') {
+                            suggestion = '访问被拒绝，可能是权限问题';
+                        } else if (statusCode === '500') {
+                            suggestion = '服务器内部错误，请稍后再试';
+                        }
+                    }
+                }
+                
+                let errorHTML = `
+                    <div class="error-message" style="text-align: center; padding: 3rem 0;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                        <h3>无法加载文档</h3>
+                        <p>${errorMessage}</p>
+                        <p style="color: var(--secondary); margin-bottom: 1.5rem;">${suggestion}</p>
+                `;
+                
+                if (showRetryButton) {
+                    errorHTML += `
+                        <button onclick="location.reload()" 
+                            style="background: var(--primary); color: white; border: none; 
+                                padding: 0.75rem 1.5rem; border-radius: 50px; 
+                                cursor: pointer; transition: var(--transition);">
+                            <i class="fas fa-sync-alt"></i> 重新加载
+                        </button>
+                    `;
+                }
+                
+                errorHTML += `</div>`;
+                markdownContent.innerHTML = errorHTML;
+            }
+        }
+        });
+    </script>
+</body>
+</html>
