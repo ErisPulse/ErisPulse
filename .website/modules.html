@@ -1,0 +1,1515 @@
+    <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块商店 | ErisPulse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+        
+        :root {
+            --primary: #4a6bdf;
+            --primary-dark: #3a56b8;
+            --secondary: #718096;
+            --accent: #63b3ed;
+            --light: #f7fafc;
+            --dark: #2d3748;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --gray: #e2e8f0;
+            --text: #2d3748;
+            --text-light: #f8f9fa;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--accent));
+            --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f8fafc"/><path d="M0 50 Q25 30, 50 50 T100 50" stroke="%23e2e8f0" stroke-width="2" fill="none"/></svg>');
+            background-size: 400px;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 头部样式 */
+        header {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 1.5rem 1rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+        }
+        
+        .home-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            fill: currentColor;
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-container {
+            max-width: 600px;
+            margin: 1.5rem auto 0;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            pointer-events: none;
+        }
+        
+        /* 主要内容区域 */
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gray);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--dark);
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+        
+        /* 模块展示区域 */
+        .module-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.02);
+            border-radius: var(--radius);
+        }
+        
+        .category-btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            background: var(--gray);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-btn.active, .category-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 107, 223, 0.3);
+        }
+        
+        .category-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .category-btn:hover::after {
+            transform: translateX(100%);
+        }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .module-card {
+            background: var(--gradient-card);
+            border-radius: var(--radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            will-change: transform;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(74,107,223,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .module-card:hover::before {
+            opacity: 1;
+        }
+        
+        .module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+        
+        .module-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(74, 107, 223, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.2rem;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .module-card:hover .module-icon {
+            transform: scale(1.1);
+            background: rgba(74, 107, 223, 0.2);
+        }
+        
+        .module-info {
+            flex: 1;
+        }
+        
+        .module-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+        
+        .module-card:hover .module-name {
+            color: var(--primary);
+        }
+        
+        .module-version {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: white;
+            background: var(--primary);
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-right: 0.6rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .module-platform {
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            background: var(--gray);
+            color: var(--dark);
+            display: inline-block;
+        }
+        
+        .module-desc {
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            flex: 1;
+            display: -webkit-box;
+            line-clamp: 3;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .module-meta {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 1.2rem;
+            align-items: center;
+        }
+        
+        .module-author {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .module-author:hover {
+            color: var(--primary-dark);
+            transform: translateX(3px);
+        }
+        
+        .module-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .module-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(74, 107, 223, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .module-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 107, 223, 0.4);
+        }
+        
+        .module-btn:active {
+            transform: translateY(0);
+        }
+        
+        .module-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .module-btn:hover::after {
+            transform: translateX(100%);
+        }
+        
+        .module-btn.docs {
+            background: var(--dark);
+            box-shadow: 0 2px 8px rgba(45, 55, 72, 0.3);
+        }
+        
+        .module-btn.docs:hover {
+            background: #2a3446;
+            box-shadow: 0 5px 15px rgba(45, 55, 72, 0.4);
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(30px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .modal-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .install-command {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .install-command::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .install-command:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .copy-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+        
+        .modal-content {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .docs-content {
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        .docs-content h1,
+        .docs-content h2,
+        .docs-content h3,
+        .docs-content h4,
+        .docs-content h5,
+        .docs-content h6 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .docs-content h1 {
+            font-size: 2rem;
+            border-bottom: 2px solid var(--gray);
+            padding-bottom: 0.5rem;
+        }
+        
+        .docs-content h2 {
+            font-size: 1.6rem;
+            border-bottom: 1px solid var(--gray);
+            padding-bottom: 0.3rem;
+        }
+        
+        .docs-content h3 {
+            font-size: 1.3rem;
+        }
+        
+        .docs-content p {
+            margin-bottom: 1.2rem;
+            color: var(--text);
+        }
+        
+        .docs-content ul,
+        .docs-content ol {
+            margin-bottom: 1.2rem;
+            padding-left: 2rem;
+        }
+        
+        .docs-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .docs-content pre {
+            background: var(--dark);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            overflow: auto;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+        
+        .docs-content code {
+            background: rgba(37, 99, 235, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .docs-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: var(--secondary);
+            margin-bottom: 1.2rem;
+        }
+        
+        .docs-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.2rem;
+        }
+        
+        .docs-content th,
+        .docs-content td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .docs-content th {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--dark);
+        }
+        
+        .docs-content tr:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        /* 代码高亮样式 */
+        .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+        .string {
+            color: #ce9178;
+        }
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+        .number {
+            color: #b5cea8;
+        }
+        .function {
+            color: #dcdcaa;
+        }
+        .class {
+            color: #4ec9b0;
+        }
+        
+        .docs-content img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .loading-content {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(74, 107, 223, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 页脚 */
+        footer {
+            background: var(--dark);
+            color: var(--text-light);
+            padding: 4rem 1rem 2rem;
+            margin-top: 4rem;
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.8rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .footer-column:hover h3 {
+            color: var(--accent);
+        }
+        
+        .footer-column:hover h3::after {
+            width: 80px;
+            background: var(--accent);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-light);
+            opacity: 0.9;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            padding: 0.4rem 0;
+            position: relative;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .footer-links a i {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover i {
+            transform: scale(1.2);
+            color: var(--accent);
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 1.2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .social-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: -1;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .social-link:hover::before {
+            transform: scale(1);
+        }
+        
+        .social-link:active {
+            transform: translateY(-1px) scale(0.95);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .copyright a {
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .copyright a:hover {
+            color: var(--accent);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .modal {
+                width: 95%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .header-title {
+                font-size: 1.3rem;
+            }
+            
+            .install-command {
+                font-size: 0.85rem;
+            }
+            
+            .module-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .module-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <a href="/" class="home-logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <h1 class="header-title">ErisPulse 模块商店</h1>
+                </a>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="search-input" placeholder="搜索模块...">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <h2 class="section-title">模块商店</h2>
+                
+                <!-- 模块统计 -->
+                <div class="stats-grid">
+                    <div class="stat-card animate-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="stat-number" id="total-modules">--</div>
+                        <div class="stat-label">可用模块</div>
+                    </div>
+                    
+                    <div class="stat-card animate-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <div class="stat-number" id="adapter-count">--</div>
+                        <div class="stat-label">平台适配器</div>
+                    </div>
+                    
+                    <div class="stat-card animate-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="stat-number" id="last-updated">--</div>
+                        <div class="stat-label">最后更新时间</div>
+                    </div>
+                </div>
+                
+                <div class="module-categories" id="categories-container">
+                    <!-- 分类按钮将由JS动态生成 -->
+                </div>
+                
+                <div class="module-grid" id="modules-container">
+                    <!-- 模块卡片将由JS动态生成 -->
+                    <div class="loading-indicator">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">正在加载模块...</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 模块详情模态框 -->
+    <div class="modal-overlay" id="module-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3 id="module-modal-title">模块详情</h3>
+                    <button class="close-btn" id="close-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="install-command">
+                    <code id="install-command">epsdk install modulename</code>
+                    <button class="copy-btn" id="copy-command">
+                        <i class="fas fa-copy"></i> 复制
+                    </button>
+                </div>
+            </div>
+            <div class="modal-content" id="docs-container">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p>正在加载文档...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>ErisPulse</h3>
+                <ul class="footer-links">
+                    <li><a href="/"><i class="fas fa-home"></i> 项目主页</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse#readme" target="_blank"><i class="fas fa-book"></i> 使用文档</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/releases" target="_blank"><i class="fas fa-download"></i> 版本发布</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>贡献与开发</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/ErisPulse/ErisPulse-ModuleRepo" target="_blank"><i class="fas fa-code"></i> 贡献模块</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/pulls" target="_blank"><i class="fas fa-code-branch"></i> 提交 PR</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>支持</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/issues" target="_blank"><i class="fas fa-exclamation-circle"></i> 报告问题</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank"><i class="fas fa-comments"></i> 社区讨论</a></li>
+                    <li><a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE" target="_blank"><i class="fas fa-balance-scale"></i> 许可协议</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2025 ErisPulse Project | 开源许可证：MIT | <a href="https://github.com/ErisPulse/ErisPulse" target="_blank" style="color: inherit;">GitHub 仓库</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模块存储变量
+            let allModules = [];
+            let modulesByCategory = {};
+            let categories = {};
+            let currentModule = null;
+            
+            // DOM元素引用
+            const searchInput = document.getElementById('search-input');
+            const modulesContainer = document.getElementById('modules-container');
+            const categoriesContainer = document.getElementById('categories-container');
+            const totalModulesElem = document.getElementById('total-modules');
+            const adapterCountElem = document.getElementById('adapter-count');
+            const lastUpdatedElem = document.getElementById('last-updated');
+            const modalOverlay = document.getElementById('module-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const moduleModalTitle = document.getElementById('module-modal-title');
+            const installCommand = document.getElementById('install-command');
+            const docsContainer = document.getElementById('docs-container');
+            const copyCommandBtn = document.getElementById('copy-command');
+            
+            // 从远程获取模块数据
+            async function fetchModules() {
+                try {
+                    const response = await fetch('https://erisdev.com/map.json');
+                    if (!response.ok) throw new Error('模块API请求失败');
+                    const data = await response.json();
+                    
+                    // 获取最后更新时间
+                    const now = new Date();
+                    lastUpdatedElem.textContent = now.toLocaleDateString();
+                    
+                    return data.modules;
+                } catch (error) {
+                    console.error('加载模块列表失败:', error);
+                    showError('加载模块失败，请稍后再试');
+                    return {};
+                }
+            }
+            
+            // 处理模块数据
+            async function processModules() {
+                const modules = await fetchModules();
+                allModules = Object.entries(modules).map(([name, info]) => {
+                    // 确定模块类别
+                    const category = determineCategory(name);
+                    
+                    return {
+                        name,
+                        description: info.meta.description || '此模块未提供描述信息',
+                        version: info.meta.version || '未知版本',
+                        author: info.meta.author || '未知作者',
+                        homepage: info.meta.homepage,
+                        category,
+                        dependencies: info.dependencies,
+                        isAdapter: name.endsWith('Adapter')
+                    };
+                });
+                
+                // 统计模块
+                updateModuleStats();
+                
+                // 生成分类
+                generateCategories();
+                
+                // 默认显示所有模块
+                renderModules(allModules);
+            }
+            
+            // 确定模块类别
+            function determineCategory(name) {
+                if (name.endsWith('Adapter')) return '适配器';
+                if (name.includes('Admin') || name.includes('Manager')) return '管理工具';
+                if (name.includes('Game') || name.includes('Play')) return '娱乐游戏';
+                if (name.includes('Tool') || name.includes('Utils')) return '实用工具';
+                if (name.includes('AI') || name.includes('Chat')) return '人工智能';
+                return '其他';
+            }
+            
+            // 生成分类
+            function generateCategories() {
+                categories = {};
+                modulesByCategory = {};
+                
+                // 统计分类
+                allModules.forEach(module => {
+                    if (!categories[module.category]) {
+                        categories[module.category] = 0;
+                        modulesByCategory[module.category] = [];
+                    }
+                    categories[module.category]++;
+                    modulesByCategory[module.category].push(module);
+                });
+                
+                // 清空容器
+                categoriesContainer.innerHTML = '';
+                
+                // 创建"全部"按钮
+                const allBtn = document.createElement('button');
+                allBtn.className = 'category-btn active';
+                allBtn.dataset.category = 'all';
+                allBtn.textContent = '全部模块';
+                allBtn.addEventListener('click', () => filterModules('all'));
+                categoriesContainer.appendChild(allBtn);
+                
+                // 为每个分类创建按钮
+                Object.entries(categories).forEach(([category, count]) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'category-btn';
+                    btn.dataset.category = category;
+                    btn.textContent = `${category} (${count})`;
+                    btn.addEventListener('click', () => filterModules(category));
+                    categoriesContainer.appendChild(btn);
+                });
+            }
+            
+            // 更新模块统计信息
+            function updateModuleStats() {
+                // 计算适配器数量
+                const adapterCount = allModules.filter(m => m.isAdapter).length;
+                
+                totalModulesElem.textContent = allModules.length;
+                adapterCountElem.textContent = adapterCount;
+            }
+            
+            // 过滤模块
+            function filterModules(category) {
+                // 更新活动按钮
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.category === category);
+                });
+                
+                // 根据分类选择模块
+                let filteredModules = [];
+                if (category === 'all') {
+                    filteredModules = allModules;
+                } else {
+                    filteredModules = modulesByCategory[category] || [];
+                }
+                
+                // 应用搜索过滤
+                if (searchInput.value) {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    filteredModules = filteredModules.filter(module => 
+                        module.name.toLowerCase().includes(searchTerm) || 
+                        module.description.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                renderModules(filteredModules);
+            }
+            
+            // 渲染模块
+            function renderModules(modules) {
+                // 清空容器
+                modulesContainer.innerHTML = '';
+                
+                if (modules.length === 0) {
+                    modulesContainer.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                            <i class="fas fa-box-open" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                            <h3>未找到匹配的模块</h3>
+                            <p>尝试不同的搜索关键词或查看所有模块</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 渲染每个模块
+                modules.forEach((module, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'module-card';
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    
+                    card.innerHTML = `
+                        <div class="module-header">
+                            <div class="module-icon">
+                                ${getIconByCategory(module.category)}
+                            </div>
+                            <div class="module-info">
+                                <div class="module-name">${module.name}</div>
+                                <div class="module-meta">
+                                    <span class="module-version">v${module.version}</span>
+                                    <span class="module-platform">${module.category}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="module-desc">${module.description}</div>
+                        
+                        <div class="module-meta">
+                            <div class="module-author">
+                                <i class="fas fa-user"></i> ${module.author}
+                            </div>
+                            <div class="module-actions">
+                                <button class="module-btn" data-action="install" data-module="${module.name}">
+                                    <i class="fas fa-download"></i> 安装
+                                </button>
+                                ${module.homepage ? `<button class="module-btn docs" data-action="docs" data-module="${module.name}">
+                                    <i class="fas fa-book"></i> 文档
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    modulesContainer.appendChild(card);
+                });
+                
+                // 添加事件监听器
+                document.querySelectorAll('[data-action="install"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => showInstallModal(e.target.dataset.module));
+                });
+                
+                document.querySelectorAll('[data-action="docs"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => showDocsModal(e.target.dataset.module));
+                });
+            }
+            
+            // 根据类别获取图标
+            function getIconByCategory(category) {
+                const icons = {
+                    '适配器': '<i class="fas fa-plug"></i>',
+                    '管理工具': '<i class="fas fa-cogs"></i>',
+                    '娱乐游戏': '<i class="fas fa-gamepad"></i>',
+                    '实用工具': '<i class="fas fa-tools"></i>',
+                    '人工智能': '<i class="fas fa-brain"></i>',
+                };
+                return icons[category] || '<i class="fas fa-box"></i>';
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                modulesContainer.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                        <h3>${message}</h3>
+                        <p>请刷新页面或稍后再试</p>
+                    </div>
+                `;
+            }
+            
+            // 显示安装模态框
+            function showInstallModal(moduleName) {
+                const module = allModules.find(m => m.name === moduleName);
+                if (!module) return;
+                
+                // 设置模态框内容
+                moduleModalTitle.textContent = `安装 ${module.name}`;
+                installCommand.textContent = `epsdk install ${module.name}`;
+                docsContainer.innerHTML = `
+                    <div class="docs-content">
+                        <h3>${module.name} v${module.version}</h3>
+                        <p>${module.description}</p>
+                        <p><strong>作者：</strong>${module.author}</p>
+                        
+                        <h4>依赖项</h4>
+                        <ul>
+                            ${renderDependencies(module.dependencies)}
+                        </ul>
+                    </div>
+                `;
+                
+                // 显示模态框
+                modalOverlay.classList.add('active');
+            }
+            
+            // 渲染依赖项
+            function renderDependencies(deps) {
+                if (!deps) return '<li>无依赖项</li>';
+                
+                let html = '';
+                
+                if (deps.requires && deps.requires.length > 0) {
+                    html += '<li><strong>必须依赖：</strong>';
+                    deps.requires.forEach(dep => html += `<span class="dependency-tag">${dep} </span>`);
+                    html += '</li>';
+                }
+                
+                if (deps.optional && deps.optional.length > 0) {
+                    html += '<li><strong>可选依赖：</strong>';
+                    deps.optional.forEach(dep => html += `<span class="dependency-tag">${dep} </span>`);
+                    html += '</li>';
+                }
+                
+                if (deps.pip && deps.pip.length > 0) {
+                    html += '<li><strong>Python依赖：</strong>';
+                    deps.pip.forEach(dep => html += `<span class="dependency-tag">${dep} </span>`);
+                    html += '</li>';
+                }
+                
+                return html || '<li>无依赖项</li>';
+            }
+            
+            // 显示文档模态框
+            function showDocsModal(moduleName) {
+                const module = allModules.find(m => m.name === moduleName);
+                if (!module || !module.homepage) return;
+                
+                // 设置模态框内容
+                moduleModalTitle.textContent = `${module.name} 文档`;
+                installCommand.textContent = `epsdk install ${module.name}`;
+                currentModule = module;
+                
+                // 显示加载状态
+                docsContainer.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <p>正在加载文档...</p>
+                    </div>
+                `;
+                
+                // 显示模态框
+                modalOverlay.classList.add('active');
+                
+                // 获取文档内容
+                fetchReadmeContent(module.homepage);
+            }
+            
+            // 获取README内容
+            async function fetchReadmeContent(homepageUrl) {
+                try {
+                    // 假设Github仓库URL
+                    const repoUrl = homepageUrl.replace('https://github.com/', '');
+                    const [owner, repo] = repoUrl.split('/');
+                    
+                    // 获取默认分支
+                    const repoInfo = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+                    const repoData = await repoInfo.json();
+                    const defaultBranch = repoData.default_branch;
+                    
+                    // 获取README内容
+                    const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/README.md`;
+                    const response = await fetch(readmeUrl);
+                    const markdown = await response.text();
+                    
+                    // 转换为HTML
+                    const htmlContent = marked.parse(markdown);
+                    
+                    // 渲染内容
+                    docsContainer.innerHTML = `
+                        <div class="docs-content">
+                            ${htmlContent}
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('获取README失败:', error);
+                    docsContainer.innerHTML = `
+                        <div class="docs-content">
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                                <h3>无法加载文档</h3>
+                                <p>请访问 <a href="${currentModule.homepage}" target="_blank">模块主页</a> 查看文档</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 复制命令到剪贴板
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // 显示复制成功反馈
+                const originalText = copyCommandBtn.innerHTML;
+                copyCommandBtn.innerHTML = '<i class="fas fa-check"></i> 已复制!';
+                
+                setTimeout(() => {
+                    copyCommandBtn.innerHTML = originalText;
+                }, 2000);
+            }
+            
+            // 事件监听器
+            searchInput.addEventListener('input', () => {
+                const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+                filterModules(activeCategory);
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                modalOverlay.classList.remove('active');
+            });
+            
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.classList.remove('active');
+                }
+            });
+            
+            copyCommandBtn.addEventListener('click', () => {
+                copyToClipboard(installCommand.textContent);
+            });
+            
+            processModules();
+        });
+    </script>
+</body>
+</html>
