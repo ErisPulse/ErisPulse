@@ -1,6 +1,7 @@
 # dev gnore ignore file for Python projects
 env.py
 config.db
+.website
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
