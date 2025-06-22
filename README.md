@@ -8,11 +8,10 @@
 
 > 文档站:
 
-[![Docs-Main](https://img.shields.io/badge/docs-main_site-blue?style=flat-square)](https://www.erisdev.com/docs)
-[![Docs-CF Pages](https://img.shields.io/badge/docs-cloudflare-blue?style=flat-square)](https://erispulse.pages.dev/docs)
-[![Docs-GitHub](https://img.shields.io/badge/docs-github-blue?style=flat-square)](https://erispulse.github.io/docs)
-[![Docs-Netlify](https://img.shields.io/badge/docs-netlify-blue?style=flat-square)](https://erispulse.netlify.app/docs)
-[![Docs-Vercel](https://img.shields.io/badge/docs-vercel-blue?style=flat-square)](https://erispulse.vercel.app/docs)
+[![Docs-Main](https://img.shields.io/badge/docs-main_site-blue?style=flat-square)](https://www.erisdev.com/docs.html)
+[![Docs-CF Pages](https://img.shields.io/badge/docs-cloudflare-blue?style=flat-square)](https://erispulse.pages.dev/docs.html)
+[![Docs-GitHub](https://img.shields.io/badge/docs-github-blue?style=flat-square)](https://erispulse.github.io/docs.html)
+[![Docs-Netlify](https://img.shields.io/badge/docs-netlify-blue?style=flat-square)](https://erispulse.netlify.app/docs.htm)
 
 - [GitHub 社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
 
@@ -25,7 +24,7 @@
 ## ✨ 核心特性
 - ⚡ 完全异步架构设计（async/await）
 - 🧩 模块化插件系统
-- � 内置日志系统
+- 🔁 支持python热重载
 - 🛑 统一的错误管理
 - 🛠️ 灵活的配置管理
 
@@ -37,20 +36,70 @@ pip install ErisPulse --upgrade
 
 ---
 
-### 如果你具有以下需求，建议使用 `uv` 进行开发：
-- 进行模块开发
-- 调试 ErisPulse SDK
-- 对 ErisPulse SDK 进行二次开发
-- 提交 Pull Request（PR）
+## 开发者快速入门
+
+ErisPulse SDK 支持使用 [`uv`](https://github.com/astral-sh/uv) 进行完整的开发环境管理。你可以**无需手动安装 Python**，直接通过 `uv` 下载 Python、创建虚拟环境并开始开发。
+
+### 安装 `uv`
+
+#### macOS / Linux:
+```bash
+curl -Ls https://install.python-uv.com | sh
+```
+
+#### Windows (PowerShell):
+```powershell
+irm https://install.python-uv.com | iex
+```
+
+验证是否安装成功：
+```bash
+uv --version
+```
+
+### 克隆项目并进入目录
 
 ```bash
 git clone https://github.com/ErisPulse/ErisPulse.git
 cd ErisPulse
+```
+
+### 使用 `uv` 自动下载 Python 并创建虚拟环境
+
+```bash
+uv python install 3.12          # 自动下载并安装 Python 3.12
+uv venv                         # 创建默认 .venv 虚拟环境
+source .venv/bin/activate    
+# Windows: .venv\Scripts\activate
+```
+
+> ✅ 如果你切换分支或需要不同 Python 版本，只需替换 `3.12` 为其他版本即可。
+
+### 安装依赖并开始开发
+
+```bash
 uv pip install -e .
 ```
 
-> **说明**：
-> - `-e` 表示可编辑安装，方便本地修改即时生效
+这将以“开发模式”安装 SDK，所有本地修改都会立即生效。
+
+### 验证安装
+
+运行以下命令确认 SDK 正常加载：
+
+```bash
+python -c "from ErisPulse import sdk; sdk.init()"
+```
+
+### 开始开发
+
+你可以通过 CLI 工具进行模块调试、热重载开发等操作：
+
+```bash
+epsdk run your_script.py --reload
+```
+
+---
 
 ## 🤝 贡献
 
