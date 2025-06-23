@@ -44,12 +44,12 @@ ErisPulse SDK 支持使用 [`uv`](https://github.com/astral-sh/uv) 进行完整�
 
 #### macOS / Linux:
 ```bash
-curl -Ls https://install.python-uv.com | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 #### Windows (PowerShell):
 ```powershell
-irm https://install.python-uv.com | iex
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 验证是否安装成功：
