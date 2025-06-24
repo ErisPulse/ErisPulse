@@ -42,6 +42,3 @@ ErisPulse-CLI = "ErisPulse.__main__:main"
 
 [tool.hatch]
 project.root = "src"
-
-[tool.uv]
-entry-point = "devs.main:main"
