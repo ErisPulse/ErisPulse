@@ -325,11 +325,19 @@ from ErisPulse import sdk
             name = datetime.now().strftime("%Y%m%d_%H%M%S")
         snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{name}.db")
         
-        # 确保所有连接关闭
-        if hasattr(self, "_conn"):
-            self._conn.close()
-            
         try:
+            # 快照目录
+            os.makedirs(self.SNAPSHOT_DIR, exist_ok=True)
+            
+            # 安全关闭连接
+            if hasattr(self, "_conn") and self._conn is not None:
+                try:
+                    self._conn.close()
+                except Exception as e:
+                    from .logger import logger
+                    logger.warning(f"关闭数据库连接时出错: {e}")
+            
+            # 创建快照
             shutil.copy2(self.db_path, snapshot_path)
             from .logger import logger
             logger.info(f"数据库快照已创建: {snapshot_path}")
@@ -348,11 +356,16 @@ from ErisPulse import sdk
             logger.error(f"快照文件不存在: {snapshot_path}")
             return False
             
-        # 确保所有连接关闭
-        if hasattr(self, "_conn"):
-            self._conn.close()
-            
         try:
+            # 安全关闭连接
+            if hasattr(self, "_conn") and self._conn is not None:
+                try:
+                    self._conn.close()
+                except Exception as e:
+                    from .logger import logger
+                    logger.warning(f"关闭数据库连接时出错: {e}")
+            
+            # 执行恢复操作
             shutil.copy2(snapshot_path, self.db_path)
             self._init_db()  # 恢复后重新初始化数据库连接
             from .logger import logger
