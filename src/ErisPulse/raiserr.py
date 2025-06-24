@@ -1,35 +1,158 @@
 """
 # 错误管理系统
 
-提供错误类型注册、抛出和管理功能，集成全局异常处理。
+提供错误类型注册、抛出和管理功能，集成全局异常处理。支持自定义错误类型、错误链追踪和全局异常捕获。
+
+## 核心功能
+1. 错误类型注册和管理
+2. 动态错误抛出
+3. 全局异常处理
+4. 错误信息追踪
+5. 异步错误处理
 
 ## API 文档
-### 错误注册：
-    - register(name, doc="", base=Exception): 注册新的错误类型
-    - info(name: str = None): 获取错误类型信息
 
-### 错误抛出：
-    - __getattr__(name): 动态获取错误抛出函数
-    - ErrorType(msg, exit=False): 抛出注册的错误类型
+### 错误注册
+#### register(name: str, doc: str = "", base: type = Exception) -> type
+注册新的错误类型。
+- 参数:
+  - name: 错误类型名称
+  - doc: 错误描述文档
+  - base: 基础异常类，默认为Exception
+- 返回:
+  - type: 注册的错误类型类
+- 示例:
+```python
+# 注册一个简单错误
+sdk.raiserr.register("SimpleError", "简单的错误类型")
 
-### 全局处理：
-    - global_exception_handler: 全局同步异常处理器
-    - async_exception_handler: 全局异步异常处理器
-
-### 示例用法：
-
+# 注册带有自定义基类的错误
+class CustomBase(Exception):
+    pass
+sdk.raiserr.register("AdvancedError", "高级错误", CustomBase)
 ```
-from ErisPulse import sdk
 
-# 注册自定义错误
-sdk.raiserr.register("MyError", doc="自定义错误描述")
+#### info(name: str = None) -> dict | None
+获取错误类型信息。
+- 参数:
+  - name: 错误类型名称，如果为None则返回所有错误类型信息
+- 返回:
+  - dict: 包含错误类型信息的字典，包括类型名、文档和类引用
+  - None: 如果指定的错误类型不存在
+- 示例:
+```python
+# 获取特定错误信息
+error_info = sdk.raiserr.info("SimpleError")
+print(f"错误类型: {error_info['type']}")
+print(f"错误描述: {error_info['doc']}")
 
-# 抛出错误
-sdk.raiserr.MyError("发生了错误", exit=False)
-
-# 获取错误信息
-error_info = sdk.raiserr.info("MyError")
+# 获取所有注册的错误信息
+all_errors = sdk.raiserr.info()
+for name, info in all_errors.items():
+    print(f"{name}: {info['doc']}")
 ```
+
+### 错误抛出
+#### ErrorType(msg: str, exit: bool = False)
+动态生成的错误抛出函数。
+- 参数:
+  - msg: 错误消息
+  - exit: 是否在抛出错误后退出程序
+- 示例:
+```python
+# 抛出不退出的错误
+sdk.raiserr.SimpleError("操作失败")
+
+# 抛出导致程序退出的错误
+sdk.raiserr.CriticalError("致命错误", exit=True)
+
+# 带有异常捕获的使用方式
+try:
+    sdk.raiserr.ValidationError("数据验证失败")
+except Exception as e:
+    print(f"捕获到错误: {e}")
+```
+
+### 全局异常处理
+#### global_exception_handler(exc_type: type, exc_value: Exception, exc_traceback: traceback)
+全局同步异常处理器。
+- 参数:
+  - exc_type: 异常类型
+  - exc_value: 异常值
+  - exc_traceback: 异常追踪信息
+- 示例:
+```python
+# 系统会自动捕获未处理的异常
+def risky_operation():
+    raise Exception("未处理的异常")
+    
+# 异常会被global_exception_handler捕获并处理
+risky_operation()
+```
+
+#### async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict)
+全局异步异常处理器。
+- 参数:
+  - loop: 事件循环实例
+  - context: 异常上下文信息
+- 示例:
+```python
+async def async_operation():
+    raise Exception("异步操作错误")
+    
+# 异常会被async_exception_handler捕获并处理
+asyncio.create_task(async_operation())
+```
+
+## 最佳实践
+1. 错误类型注册
+```python
+# 为特定功能模块注册错误类型
+sdk.raiserr.register("DatabaseError", "数据库操作错误")
+sdk.raiserr.register("NetworkError", "网络连接错误")
+sdk.raiserr.register("ValidationError", "数据验证错误")
+
+# 使用继承关系组织错误类型
+class ModuleError(Exception):
+    pass
+sdk.raiserr.register("ConfigError", "配置错误", ModuleError)
+sdk.raiserr.register("PluginError", "插件错误", ModuleError)
+```
+
+2. 错误处理流程
+```python
+def process_data(data):
+    try:
+        if not data:
+            sdk.raiserr.ValidationError("数据不能为空")
+        if not isinstance(data, dict):
+            sdk.raiserr.ValidationError("数据必须是字典类型")
+            
+        # 处理数据...
+        
+    except Exception as e:
+        # 错误会被自动记录并处理
+        sdk.raiserr.ProcessingError(f"数据处理失败: {str(e)}")
+```
+
+3. 异步环境使用
+```python
+async def async_task():
+    try:
+        result = await some_async_operation()
+        if not result.success:
+            sdk.raiserr.AsyncOperationError("异步操作失败")
+    except Exception as e:
+        # 异步错误会被async_exception_handler捕获
+        raise
+```
+
+## 注意事项
+1. 错误类型命名应具有描述性，便于理解错误来源
+2. 错误消息应包含足够的上下文信息，便于调试
+3. 适当使用exit参数，只在致命错误时设置为True
+4. 避免在全局异常处理器中执行耗时操作
+5. 确保异步代码中的错误能够被正确捕获和处理
 
 """
 
