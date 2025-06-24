@@ -15,7 +15,6 @@
 | `sdk.util` | 工具函数（缓存、重试等） |
 | `sdk.adapter` | 获取其他适配器实例 |
 | `sdk.BaseAdapter` | 适配器基类 |
-| `sdk.SendDSL` | 消息发送接口模板 |
 
 #### 日志记录：
 
@@ -344,7 +343,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.SendDSL`；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
 > - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
 
 ## 4. DSL 风格消息接口（SendDSL）
@@ -352,7 +351,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 每个适配器可定义一组链式调用风格的方法，例如：
 
 ```python
-class Send(sdk.SendDSL):
+class Send(super().Send):
     def Text(self, text: str):
         return asyncio.create_task(
             self._adapter.call_api(...)
