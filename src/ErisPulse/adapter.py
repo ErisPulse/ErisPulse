@@ -1,48 +1,352 @@
 """
 # 适配器系统
 
-提供平台适配器基类、消息发送DSL和适配器管理功能。
+提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-## 主要功能
-- BaseAdapter: 适配器基类
-- SendDSL: 链式消息发送接口
-- AdapterManager: 适配器管理
-- 适配器注册和生命周期管理
+## 核心功能
+1. 适配器基类定义
+2. 链式消息发送DSL
+3. 适配器注册和管理
+4. 事件处理系统
+5. 中间件支持
 
 ## API 文档
-### 适配器基类 (BaseAdapter):
-    - call_api(): 必须实现的API调用方法
-    - start(): 启动适配器
-    - shutdown(): 关闭适配器
-    - on(): 事件监听装饰器
-    - emit(): 触发事件
 
-### 消息发送DSL (SendDSL):
-    - To(): 设置消息目标
-    - Text(): 发送文本消息
-    - 可扩展其他消息类型
+### 适配器基类 (BaseAdapter)
+适配器基类提供了与外部平台交互的标准接口。
 
-### 适配器管理 (AdapterManager):
-    - register(): 注册适配器
-    - startup(): 启动适配器
-    - shutdown(): 关闭所有适配器
-    - get(): 获取适配器实例
-
-### 示例用法：
-
+#### call_api(endpoint: str, **params) -> Any
+调用平台API的抽象方法。
+- 参数:
+  - endpoint: API端点
+  - **params: API参数
+- 返回:
+  - Any: API调用结果
+- 说明:
+  - 必须由子类实现
+  - 处理与平台的实际通信
+- 示例:
+```python
+class MyPlatformAdapter(BaseAdapter):
+    async def call_api(self, endpoint: str, **params):
+        if endpoint == "/send":
+            return await self._send_message(params)
+        elif endpoint == "/upload":
+            return await self._upload_file(params)
+        raise NotImplementedError(f"未实现的端点: {endpoint}")
 ```
-from ErisPulse import sdk
 
+#### start() -> None
+启动适配器的抽象方法。
+- 参数: 无
+- 返回:
+  - None
+- 说明:
+  - 必须由子类实现
+  - 处理适配器的初始化和启动逻辑
+- 示例:
+```python
+class MyPlatformAdapter(BaseAdapter):
+    async def start(self):
+        self.client = await self._create_client()
+        self.ws = await self.client.create_websocket()
+        self._start_heartbeat()
+```
+
+#### shutdown() -> None
+关闭适配器的抽象方法。
+- 参数: 无
+- 返回:
+  - None
+- 说明:
+  - 必须由子类实现
+  - 处理资源清理和关闭逻辑
+- 示例:
+```python
+class MyPlatformAdapter(BaseAdapter):
+    async def shutdown(self):
+        if self.ws:
+            await self.ws.close()
+        if self.client:
+            await self.client.close()
+```
+
+#### on(event_type: str = "*") -> Callable
+事件监听装饰器。
+- 参数:
+  - event_type: 事件类型，默认"*"表示所有事件
+- 返回:
+  - Callable: 装饰器函数
+- 示例:
+```python
+adapter = MyPlatformAdapter()
+
+@adapter.on("message")
+async def handle_message(data):
+    print(f"收到消息: {data}")
+
+@adapter.on("error")
+async def handle_error(error):
+    print(f"发生错误: {error}")
+
+# 处理所有事件
+@adapter.on()
+async def handle_all(event):
+    print(f"事件: {event}")
+```
+
+#### emit(event_type: str, data: Any) -> None
+触发事件。
+- 参数:
+  - event_type: 事件类型
+  - data: 事件数据
+- 返回:
+  - None
+- 示例:
+```python
+class MyPlatformAdapter(BaseAdapter):
+    async def _handle_websocket_message(self, message):
+        # 处理消息并触发相应事件
+        if message.type == "chat":
+            await self.emit("message", {
+                "type": "chat",
+                "content": message.content,
+                "sender": message.sender
+            })
+```
+
+#### middleware(func: Callable) -> Callable
+添加中间件处理器。
+- 参数:
+  - func: 中间件函数
+- 返回:
+  - Callable: 中间件函数
+- 示例:
+```python
+adapter = MyPlatformAdapter()
+
+@adapter.middleware
+async def log_middleware(data):
+    print(f"处理数据: {data}")
+    return data
+
+@adapter.middleware
+async def filter_middleware(data):
+    if "spam" in data.get("content", ""):
+        return None
+    return data
+```
+
+### 消息发送DSL (SendDSL)
+提供链式调用风格的消息发送接口。
+
+#### To(target_type: str = None, target_id: str = None) -> 'SendDSL'
+设置消息目标。
+- 参数:
+  - target_type: 目标类型（可选）
+  - target_id: 目标ID
+- 返回:
+  - SendDSL: 发送器实例
+- 示例:
+```python
+# 发送到用户
+sdk.adapter.Platform.Send.To("user", "123").Text("Hello")
+
+# 发送到群组
+sdk.adapter.Platform.Send.To("group", "456").Text("Hello Group")
+
+# 简化形式（只有ID）
+sdk.adapter.Platform.Send.To("123").Text("Hello")
+```
+
+#### Text(text: str) -> Task
+发送文本消息。
+- 参数:
+  - text: 文本内容
+- 返回:
+  - Task: 异步任务
+- 示例:
+```python
+# 发送简单文本
+await sdk.adapter.Platform.Send.To("user", "123").Text("Hello")
+
+# 发送格式化文本
+name = "Alice"
+await sdk.adapter.Platform.Send.To("123").Text(f"Hello {name}")
+```
+
+### 适配器管理 (AdapterManager)
+管理多个平台适配器的注册、启动和关闭。
+
+#### register(platform: str, adapter_class: Type[BaseAdapter]) -> bool
+注册新的适配器类。
+- 参数:
+  - platform: 平台名称
+  - adapter_class: 适配器类
+- 返回:
+  - bool: 注册是否成功
+- 示例:
+```python
 # 注册适配器
-sdk.adapter.register("MyPlatform", MyAdapter)
+sdk.adapter.register("MyPlatform", MyPlatformAdapter)
 
-# 发送消息
-sdk.adapter.MyPlatform.Send.To("user", "123").Text("Hello")
-
-# 启动适配器
-await sdk.adapter.startup()
+# 注册多个适配器
+adapters = {
+    "Platform1": Platform1Adapter,
+    "Platform2": Platform2Adapter
+}
+for name, adapter in adapters.items():
+    sdk.adapter.register(name, adapter)
 ```
 
+#### startup(platforms: List[str] = None) -> None
+启动指定的适配器。
+- 参数:
+  - platforms: 要启动的平台列表，None表示所有平台
+- 返回:
+  - None
+- 示例:
+```python
+# 启动所有适配器
+await sdk.adapter.startup()
+
+# 启动指定适配器
+await sdk.adapter.startup(["Platform1", "Platform2"])
+```
+
+#### shutdown() -> None
+关闭所有适配器。
+- 参数: 无
+- 返回:
+  - None
+- 示例:
+```python
+# 关闭所有适配器
+await sdk.adapter.shutdown()
+
+# 在程序退出时关闭
+import atexit
+atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
+```
+
+## 最佳实践
+
+1. 适配器实现
+```python
+class MyPlatformAdapter(sdk.BaseAdapter):
+    class Send(sdk.BaseAdapter.Send):
+        # 实现基本消息类型
+        def Text(self, text: str):
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send",
+                    content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+            
+        # 添加自定义消息类型
+        def Image(self, file: bytes):
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send_image",
+                    file=file,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+    
+    async def call_api(self, endpoint: str, **params):
+        # 实现API调用逻辑
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{self.api_base}{endpoint}",
+                json=params
+            ) as response:
+                return await response.json()
+                
+    async def start(self):
+        # 初始化连接
+        self.client = await self._create_client()
+        # 启动事件监听
+        asyncio.create_task(self._listen_events())
+        
+    async def shutdown(self):
+        # 清理资源
+        if self.client:
+            await self.client.close()
+```
+
+2. 事件处理
+```python
+# 注册事件处理器
+adapter = MyPlatformAdapter()
+
+@adapter.on("message")
+async def handle_message(data):
+    # 消息处理逻辑
+    if data["type"] == "text":
+        await process_text_message(data)
+    elif data["type"] == "image":
+        await process_image_message(data)
+
+# 使用中间件
+@adapter.middleware
+async def auth_middleware(data):
+    if not verify_token(data.get("token")):
+        return None
+    return data
+
+@adapter.middleware
+async def log_middleware(data):
+    sdk.logger.info(f"处理事件: {data}")
+    return data
+```
+
+3. 消息发送
+```python
+# 基本消息发送
+async def send_welcome(user_id: str):
+    await sdk.adapter.Platform.Send.To("user", user_id).Text("欢迎！")
+
+# 复杂消息处理
+async def process_group_notification(group_id: str, event: dict):
+    # 发送格式化消息
+    message = format_notification(event)
+    await sdk.adapter.Platform.Send.To("group", group_id).Text(message)
+    
+    # 发送附加文件
+    if event.get("has_attachment"):
+        file_data = await get_attachment(event["attachment_id"])
+        await sdk.adapter.Platform.Send.To("group", group_id).File(file_data)
+```
+
+## 注意事项
+
+1. 适配器实现
+   - 确保正确实现所有抽象方法
+   - 处理所有可能的异常情况
+   - 实现适当的重试机制
+   - 注意资源的正确释放
+
+2. 事件处理
+   - 避免在事件处理器中执行长时间操作
+   - 使用适当的错误处理
+   - 考虑事件处理的顺序性
+   - 合理使用中间件过滤机制
+
+3. 消息发送
+   - 实现消息发送的限流机制
+   - 处理发送失败的情况
+   - 注意消息格式的平台兼容性
+   - 大文件传输时考虑分片
+
+4. 生命周期管理
+   - 确保适配器正确启动和关闭
+   - 处理意外断开的情况
+   - 实现自动重连机制
+   - 注意资源泄漏问题
 """
 
 import functools
