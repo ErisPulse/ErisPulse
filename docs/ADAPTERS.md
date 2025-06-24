@@ -106,6 +106,36 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 }
 ```
 
+#### 注意：`chat` 与 `sender` 的误区
+
+##### 常见问题：
+
+| 字段 | 含义 |
+|------|------|
+| `data.event.chatType` | 当前聊天类型（`user`/`bot` 或 `group`） |
+| `data.event.sender.senderType` | 发送者类型（通常为 `user`） |
+| `data.event.sender.senderId` | 发送者唯一 ID |
+
+> **注意：**  
+> - 使用 `chatType` 判断消息是私聊还是群聊  
+> - 群聊使用 `chatId`，私聊使用 `senderId` 作为目标地址  
+> - `senderType` 通常为 `"user"`，不能用于判断是否为群消息  
+
+---
+
+##### 示例代码：
+
+```python
+@sdk.adapter.Yunhu.on("message")
+async def handle_message(data):
+    if data.event.chatType == "group":
+        target = data.event.chat.chatId
+    else:
+        target = data.event.sender.senderId
+
+    await sdk.adapter.Yunhu.Send.To(target).Text("收到你的消息！")
+```
+
 ---
 
 ### 2. TelegramAdapter
