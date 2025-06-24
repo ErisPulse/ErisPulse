@@ -64,6 +64,7 @@ import threading
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
+from .raiserr import raiserr
 
 class EnvManager:
     _instance = None
@@ -217,25 +218,33 @@ class EnvManager:
     def _check_auto_snapshot(self):
         from .logger import logger
         
-        # 确保所有关键属性存在且有效
         if not hasattr(self, '_last_snapshot_time') or self._last_snapshot_time is None:
             self._last_snapshot_time = time.time()
-            logger.debug(f"重置_last_snapshot_time为当前时间: {self._last_snapshot_time}")
             
         if not hasattr(self, '_snapshot_interval') or self._snapshot_interval is None:
             self._snapshot_interval = 3600
-            logger.debug(f"重置_snapshot_interval为默认值: {self._snapshot_interval}")
             
         current_time = time.time()
         
-        # 类型安全检查
         try:
             time_diff = current_time - self._last_snapshot_time
             if not isinstance(time_diff, (int, float)):
-                raise TypeError(f"时间差应为数值类型，实际为: {type(time_diff)}")
-                
+                raiserr.register(
+                    "ErisPulseEnvTimeDiffTypeError",
+                    doc = "时间差应为数值类型",
+                )
+                raiserr.ErisPulseEnvTimeDiffTypeError(
+                    f"时间差应为数值类型，实际为: {type(time_diff)}"
+                )
+
             if not isinstance(self._snapshot_interval, (int, float)):
-                raise TypeError(f"快照间隔应为数值类型，实际为: {type(self._snapshot_interval)}")
+                raiserr.register(
+                    "ErisPulseEnvSnapshotIntervalTypeError",
+                    doc = "快照间隔应为数值类型",
+                )
+                raiserr.ErisPulseEnvSnapshotIntervalTypeError(
+                    f"快照间隔应为数值类型，实际为: {type(self._snapshot_interval)}"
+                )
                 
             if time_diff > self._snapshot_interval:
                 self._last_snapshot_time = current_time
@@ -243,8 +252,6 @@ class EnvManager:
                 
         except Exception as e:
             logger.error(f"自动快照检查失败: {e}")
-            logger.debug(f"当前值: last_snapshot={self._last_snapshot_time}, interval={self._snapshot_interval}")
-            # 强制重置为安全值
             self._last_snapshot_time = current_time
             self._snapshot_interval = 3600
 

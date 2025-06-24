@@ -91,6 +91,22 @@ uv pip install -e .
 python -c "from ErisPulse import sdk; sdk.init()"
 ```
 
+### 运行测试
+
+我们提供了一个交互式测试脚本，可以帮助您快速验证SDK功能：
+
+```bash
+uv run devs/test.py
+```
+
+测试脚本提供以下功能：
+- 日志功能测试
+- 环境配置测试  
+- 错误管理测试
+- 工具函数测试
+- 适配器功能测试
+- 版本信息查看
+
 ### 开始开发
 
 你可以通过 CLI 工具进行模块调试、热重载开发等操作：
