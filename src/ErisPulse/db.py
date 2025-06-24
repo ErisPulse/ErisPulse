@@ -77,6 +77,9 @@ class EnvManager:
 
     def __init__(self):
         if not hasattr(self, "_initialized"):
+            # 确保关键属性在初始化时都有默认值
+            self._last_snapshot_time = time.time()
+            self._snapshot_interval = 3600
             self._init_db()
             self._initialized = True
 
@@ -100,7 +103,7 @@ class EnvManager:
         conn.close()
         
         # 初始化自动快照调度器
-        self._last_snapshot_time = 0
+        self._last_snapshot_time = time.time()  # 初始化为当前时间
         self._snapshot_interval = 3600  # 默认每小时自动快照
 
     def get(self, key, default=None):
@@ -212,10 +215,38 @@ class EnvManager:
             self.conn.close()
 
     def _check_auto_snapshot(self):
+        from .logger import logger
+        
+        # 确保所有关键属性存在且有效
+        if not hasattr(self, '_last_snapshot_time') or self._last_snapshot_time is None:
+            self._last_snapshot_time = time.time()
+            logger.debug(f"重置_last_snapshot_time为当前时间: {self._last_snapshot_time}")
+            
+        if not hasattr(self, '_snapshot_interval') or self._snapshot_interval is None:
+            self._snapshot_interval = 3600
+            logger.debug(f"重置_snapshot_interval为默认值: {self._snapshot_interval}")
+            
         current_time = time.time()
-        if current_time - self._last_snapshot_time > self._snapshot_interval:
+        
+        # 类型安全检查
+        try:
+            time_diff = current_time - self._last_snapshot_time
+            if not isinstance(time_diff, (int, float)):
+                raise TypeError(f"时间差应为数值类型，实际为: {type(time_diff)}")
+                
+            if not isinstance(self._snapshot_interval, (int, float)):
+                raise TypeError(f"快照间隔应为数值类型，实际为: {type(self._snapshot_interval)}")
+                
+            if time_diff > self._snapshot_interval:
+                self._last_snapshot_time = current_time
+                self.snapshot(f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+                
+        except Exception as e:
+            logger.error(f"自动快照检查失败: {e}")
+            logger.debug(f"当前值: last_snapshot={self._last_snapshot_time}, interval={self._snapshot_interval}")
+            # 强制重置为安全值
             self._last_snapshot_time = current_time
-            self.snapshot(f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            self._snapshot_interval = 3600
 
     def set_snapshot_interval(self, seconds):
         self._snapshot_interval = seconds
