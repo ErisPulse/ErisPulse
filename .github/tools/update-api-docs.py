@@ -57,7 +57,7 @@ def update_reference_docs(module_name, docs, reference_path, module_path):
     print(f"Updated docs for {module_name} in REFERENCE.md")
 
 def main():
-    module_dir = Path('ErisPulse')
+    module_dir = Path('src/ErisPulse')
     reference_path = Path('docs/REFERENCE.md')
     
     modules = ['__init__', '__main__', 'adapter', 'db', 'logger', 'mods', 'raiserr', 'util']
