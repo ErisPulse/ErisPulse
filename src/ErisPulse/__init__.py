@@ -72,7 +72,8 @@ def init() -> None:
         logger.info("[Init] SDK 正在初始化...")
         if env.create_env_file_if_not_exists():
             logger.info("[Init] 项目首次初始化，建议先配置环境变量")
-            sys.exit(0)
+            if input("是否立即退出？(y/n): ").strip().lower() == "y":
+                sys.exit(0)
         env.load_env_file()
 
         sdkModulePath = os.path.join(os.path.dirname(__file__), "modules")
