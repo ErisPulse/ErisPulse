@@ -1,13 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "ErisPulse"
-version = "1.1.14dev0"
+version = "1.1.14"
+description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+
 authors = [
     { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" },
     { name = "runoneall", email = "runoobsteve@gmail.com" }
 ]
-description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
-readme = "README.md"
-requires-python = ">=3.9"
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -21,7 +28,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-dependencies = ["aiohttp", "watchdog"]
+
+dependencies = [
+    "aiohttp",
+    "watchdog"
+]
 
 [project.scripts]
 epsdk = "ErisPulse.__main__:main"
@@ -29,9 +40,8 @@ ep = "ErisPulse.__main__:main"
 ErisPulse = "ErisPulse.__main__:main"
 ErisPulse-CLI = "ErisPulse.__main__:main"
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+[tool.hatch]
+project.root = "src"
 
-[tool.setuptools]
-packages = ["ErisPulse"]
+[tool.uv]
+entry-point = "devs.main:main"

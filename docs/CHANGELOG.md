@@ -24,6 +24,9 @@
 
 - 启用 SQL-WAL 模式提升并发性能
 
+### 修复
+- 修复自动快照初始化时`_last_snapshot_time`和`_snapshot_interval`可能为None的问题
+
 ---
 
 ## [1.1.12 - 1.1.13]

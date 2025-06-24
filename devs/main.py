@@ -1,152 +1,100 @@
-from ErisPulse import sdk
 import asyncio
-from typing import Dict, Any
+from ErisPulse import sdk
+from importlib.metadata import version
+
+async def show_menu():
+    """显示交互式菜单"""
+    print("\n=== ErisPulse 交互探索 ===")
+    print("1. 查看核心模块列表")
+    print("2. 测试日志功能")
+    print("3. 测试环境配置")
+    print("4. 测试错误管理")
+    print("5. 查看SDK版本")
+    print("6. 退出")
+    choice = input("请选择操作(1-6): ")
+    return choice.strip()
+
+async def test_logger():
+    """测试日志功能"""
+    print("\n--- 日志功能测试 ---")
+    print("将演示不同级别的日志输出")
+    sdk.logger.debug("这是一条调试信息")
+    sdk.logger.info("这是一条普通信息")
+    sdk.logger.warning("这是一条警告信息")
+    sdk.logger.error("这是一条错误信息")
+    print("日志测试完成，请查看控制台输出")
+
+async def test_env():
+    """测试环境配置功能"""
+    print("\n--- 环境配置测试 ---")
+    key = input("请输入要测试的配置项名称: ")
+    value = input(f"请输入{key}的值: ")
+    sdk.env.set(key, value)
+    print(f"已设置 {key}={value}")
+    print(f"读取测试: {key} = {sdk.env.get(key)}")
+
+async def test_raiserr():
+    """测试错误管理功能"""
+    print("\n--- 错误管理测试 ---")
+    print("1. 测试默认错误类型")
+    print("2. 注册自定义错误")
+    choice = input("请选择(1-2): ")
+    if choice == "1":
+        try:
+            sdk.raiserr.InitError("这是一个初始化错误示例")
+        except Exception as e:
+            print(f"捕获到错误: {type(e).__name__}: {e}")
+    else:
+        name = input("请输入自定义错误名称: ")
+        doc = input("请输入错误描述: ")
+        sdk.raiserr.register(name, doc)
+        print(f"已注册错误类型: {name}")
+        print(f"尝试抛出错误...")
+        getattr(sdk.raiserr, name)(f"这是一个{name}错误示例")
 
 async def main():
     sdk.init()
-    try:
-        await sdk.adapter.startup()
-        # OneBot 适配器处理
-        # if hasattr(sdk.adapter, "QQ"):
-        if 1 == 2:
-            await asyncio.sleep(5)
-            qq_adapter = sdk.adapter.QQ
-
-            @qq_adapter.on("message")
-            async def handle_qq_message(data):
-                sdk.logger.info("接收到QQ消息事件:")
-                sdk.logger.info(data)
-
-            @qq_adapter.on("request")
-            async def handle_qq_request(data):
-                sdk.logger.info("接收到QQ请求事件:")
-                sdk.logger.info(data)
-
-            @qq_adapter.on("notify")
-            async def handle_qq_notify(data):
-                sdk.logger.info("接收到QQ通知事件:")
-                sdk.logger.info(data)
-
-            await qq_adapter.send("group", 782199153, "Hello from SDK!")
-            await qq_adapter.call_api("send_msg", 
-                message_type="group", 
-                group_id=782199153, 
-                message="Hello from SDKCallAPI!"
-            )
-
-        # 云湖适配器处理 - 完整事件处理
-        if hasattr(sdk.adapter, "Yunhu"):
-            yunhu_adapter = sdk.adapter.Yunhu
-            def parse_sender_info(data: Dict[str, Any]) -> str:
-                """解析发送者信息"""
-                sender = data["event"]["sender"]
-                return (
-                    f"发送者: {sender['senderNickname']}({sender['senderId']}) "
-                    f"类型: {sender['senderType']} 等级: {sender['senderUserLevel']}"
-                )
-
-            def parse_chat_info(data: Dict[str, Any]) -> str:
-                """解析会话信息"""
-                chat = data["event"]["chat"]
-                return f"会话: {chat['chatType']}({chat['chatId']})"
-
-            # 普通消息事件
-            @yunhu_adapter.on("message")
-            async def handle_normal_message(data: Dict[str, Any]):
-                sdk.logger.info("=== 普通消息事件 ===")
-                sdk.logger.info(parse_sender_info(data))
-                sdk.logger.info(parse_chat_info(data))
-
-                message  = data["event"]["message"]
-                sender   = data["event"]["sender"]
-
-                sdk.logger.info(
-                    f"消息ID: {message['msgId']} 类型: {message['contentType']}\n"
-                    f"内容: {message['content']['text']}"
-                )
-
-                await yunhu_adapter.send(
-                    sender['senderType'],
-                    sender['senderId'],
-                    f"[ECHO] {message['content']['text']}"
-                )
-
-            @yunhu_adapter.on("command")
-            async def handle_command_message(data: Dict[str, Any]):
-                sdk.logger.info("=== 指令消息事件 ===")
-                message = data["event"]["message"]
-                sender  = data["event"]["sender"]
-                sdk.logger.info(
-                    f"指令ID: {message.get('commandId')} "
-                    f"指令名称: {message.get('commandName')}\n"
-                    f"内容: {message['content']['text']}"
-                )
-
-                await yunhu_adapter.send(
-                    sender['senderType'],
-                    sender['senderId'],
-                    f"收到指令: {message.get('commandName')}, 内容: {message['content']['text']}"
-                )
-
-            @yunhu_adapter.on("follow")
-            async def handle_follow_event(data: Dict[str, Any]):
-                sdk.logger.info("=== 关注事件 ===")
-                user = data["event"]["user"]
-                sdk.logger.info(
-                    f"新关注: {user['userNickname']}({user['userId']})"
-                )
-                await yunhu_adapter.send(
-                    "user",
-                    user["userId"],
-                    "感谢关注！发送 '帮助' 获取使用指南"
-                )
-
-            @yunhu_adapter.on("unfollow")
-            async def handle_unfollow_event(data: Dict[str, Any]):
-                sdk.logger.info("=== 取消关注事件 ===")
-                user = data["event"]["user"]
-                sdk.logger.warning(
-                    f"用户取关: {user['userNickname']}({user['userId']})"
-                )
-
-            @yunhu_adapter.on("group_join")
-            async def handle_group_join(data: Dict[str, Any]):
-                sdk.logger.info("=== 加入群事件 ===")
-                event = data["event"]
-                sdk.logger.info(
-                    f"用户 {event['user']['userNickname']} "
-                    f"加入群 {event['group']['groupId']}"
-                )
-                await yunhu_adapter.send(
-                    "group",
-                    event["group"]["groupId"],
-                    f"欢迎 {event['user']['userNickname']} 加入本群！"
-                )
-
-            @yunhu_adapter.on("group_leave")
-            async def handle_group_leave(data: Dict[str, Any]):
-                sdk.logger.info("=== 退出群事件 ===")
-                event = data["event"]
-                sdk.logger.info(
-                    f"用户 {event['user']['userNickname']} "
-                    f"退出群 {event['group']['groupId']}"
-                )
-
-
-            # 系统启动后发送测试消息
-            await yunhu_adapter.send(
-                "user",
-                "5197892",
-                "SDK Is Running..."
-            )
-
-        # 保持程序运行
-        await asyncio.Event().wait()
-
-    except KeyboardInterrupt:
-        print("Shutting down...")
-    finally:
-        await sdk.adapter.shutdown()
+    logger = sdk.logger
+    logger.info("欢迎使用ErisPulse交互探索系统！")
+    
+    while True:
+        try:
+            choice = await show_menu()
+            if choice == "1":
+                print("\n核心模块列表:")
+                print("- logger: 日志记录系统")
+                print("- env: 环境配置管理")
+                print("- raiserr: 错误管理系统")
+                print("- util: 实用工具集合")
+                print("- adapter: 适配器系统")
+            elif choice == "2":
+                await test_logger()
+            elif choice == "3":
+                await test_env()
+            elif choice == "4":
+                await test_raiserr()
+            elif choice == "5":
+                try:
+                    v = version("ErisPulse")
+                    print(f"\n当前ErisPulse版本: {v}")
+                except Exception as e:
+                    logger.error(f"获取版本信息失败: {e}")
+            elif choice == "6":
+                print("感谢使用，再见！")
+                break
+            else:
+                print("无效选择，请重新输入")
+        except KeyboardInterrupt:
+            print("\n操作已取消")
+            break
+        except Exception as e:
+            logger.error(f"操作出错: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
