@@ -1,39 +1,332 @@
 """
 # 模块管理系统
 
-提供模块的注册、状态管理和依赖解析功能。
+提供模块的注册、状态管理和依赖解析功能。支持模块信息存储、状态切换和批量操作。
+
+## 核心功能
+1. 模块信息管理
+2. 模块状态控制
+3. 批量模块操作
+4. 存储前缀自定义
+5. 模块依赖管理
 
 ## API 文档
-### 模块状态：
-    - set_module_status(module_name, status):   设置模块启用状态
-    - get_module_status(module_name):           获取模块状态
 
-### 模块信息：
-    - set_module(module_name, module_info): 设置模块信息
-    - get_module(module_name):              获取模块信息
-    - get_all_modules():                    获取所有模块信息
-    - remove_module(module_name):           删除模块
-
-### 前缀管理：
-    - update_prefixes(module_prefix, status_prefix): 更新存储前缀
-    - module_prefix: 模块存储前缀属性
-    - status_prefix: 状态存储前缀属性
-
-### 示例用法：
-
-```
-from ErisPulse import sdk
-
-# 设置模块状态
+### 模块状态管理
+#### set_module_status(module_name: str, status: bool) -> None
+设置模块的启用状态。
+- 参数:
+  - module_name: 模块名称
+  - status: 模块状态，True为启用，False为禁用
+- 返回:
+  - None
+- 示例:
+```python
+# 启用模块
 sdk.mods.set_module_status("MyModule", True)
 
-# 获取模块信息
-module_info = sdk.mods.get_module("MyModule")
+# 禁用模块
+sdk.mods.set_module_status("MyModule", False)
 
-# 批量操作
-sdk.mods.set_all_modules({"Module1": {...}, "Module2": {...}})
+# 条件性启用模块
+if check_dependencies():
+    sdk.mods.set_module_status("MyModule", True)
+else:
+    sdk.logger.warning("依赖检查失败，模块未启用")
 ```
 
+#### get_module_status(module_name: str) -> bool
+获取模块的启用状态。
+- 参数:
+  - module_name: 模块名称
+- 返回:
+  - bool: 模块状态，True为启用，False为禁用
+- 示例:
+```python
+# 检查模块是否启用
+if sdk.mods.get_module_status("MyModule"):
+    print("模块已启用")
+else:
+    print("模块已禁用")
+    
+# 在条件中使用
+if sdk.mods.get_module_status("DatabaseModule") and sdk.mods.get_module_status("NetworkModule"):
+    start_application()
+```
+
+### 模块信息管理
+#### set_module(module_name: str, module_info: dict) -> None
+设置模块信息。
+- 参数:
+  - module_name: 模块名称
+  - module_info: 模块信息字典，包含模块的元数据和配置
+- 返回:
+  - None
+- 示例:
+```python
+# 设置基本模块信息
+sdk.mods.set_module("MyModule", {
+    "status": True,
+    "info": {
+        "meta": {
+            "name": "MyModule",
+            "version": "1.0.0",
+            "description": "示例模块",
+            "author": "开发者"
+        },
+        "dependencies": {
+            "requires": ["CoreModule"],
+            "optional": ["OptionalModule"],
+            "pip": ["requests", "numpy"]
+        }
+    }
+})
+
+# 更新现有模块信息
+module_info = sdk.mods.get_module("MyModule")
+module_info["info"]["meta"]["version"] = "1.1.0"
+sdk.mods.set_module("MyModule", module_info)
+```
+
+#### get_module(module_name: str) -> dict | None
+获取模块信息。
+- 参数:
+  - module_name: 模块名称
+- 返回:
+  - dict: 模块信息字典
+  - None: 如果模块不存在
+- 示例:
+```python
+# 获取模块信息
+module_info = sdk.mods.get_module("MyModule")
+if module_info:
+    print(f"模块版本: {module_info['info']['meta']['version']}")
+    print(f"模块描述: {module_info['info']['meta']['description']}")
+    print(f"模块状态: {'启用' if module_info['status'] else '禁用'}")
+else:
+    print("模块不存在")
+```
+
+#### get_all_modules() -> dict
+获取所有模块信息。
+- 参数: 无
+- 返回:
+  - dict: 包含所有模块信息的字典，键为模块名，值为模块信息
+- 示例:
+```python
+# 获取所有模块
+all_modules = sdk.mods.get_all_modules()
+
+# 统计启用和禁用的模块
+enabled_count = 0
+disabled_count = 0
+for name, info in all_modules.items():
+    if info.get("status", False):
+        enabled_count += 1
+    else:
+        disabled_count += 1
+        
+print(f"已启用模块: {enabled_count}")
+print(f"已禁用模块: {disabled_count}")
+
+# 查找特定类型的模块
+adapters = [name for name, info in all_modules.items() 
+           if "adapter" in info.get("info", {}).get("meta", {}).get("tags", [])]
+print(f"适配器模块: {adapters}")
+```
+
+#### update_module(module_name: str, module_info: dict) -> None
+更新模块信息。
+- 参数:
+  - module_name: 模块名称
+  - module_info: 更新后的模块信息字典
+- 返回:
+  - None
+- 示例:
+```python
+# 更新模块版本
+module_info = sdk.mods.get_module("MyModule")
+module_info["info"]["meta"]["version"] = "1.2.0"
+sdk.mods.update_module("MyModule", module_info)
+
+# 添加新的配置项
+module_info = sdk.mods.get_module("MyModule")
+if "config" not in module_info:
+    module_info["config"] = {}
+module_info["config"]["debug_mode"] = True
+sdk.mods.update_module("MyModule", module_info)
+```
+
+#### remove_module(module_name: str) -> bool
+删除模块。
+- 参数:
+  - module_name: 模块名称
+- 返回:
+  - bool: 是否成功删除
+- 示例:
+```python
+# 删除模块
+if sdk.mods.remove_module("OldModule"):
+    print("模块已成功删除")
+else:
+    print("模块不存在或删除失败")
+    
+# 条件删除
+if sdk.mods.get_module_status("TestModule") and is_test_environment():
+    sdk.mods.remove_module("TestModule")
+    print("测试模块已在生产环境中移除")
+```
+
+#### set_all_modules(modules_info: Dict[str, dict]) -> None
+批量设置多个模块信息。
+- 参数:
+  - modules_info: 模块信息字典的字典，键为模块名，值为模块信息
+- 返回:
+  - None
+- 示例:
+```python
+# 批量设置模块
+sdk.mods.set_all_modules({
+    "Module1": {
+        "status": True,
+        "info": {"meta": {"name": "Module1", "version": "1.0.0"}}
+    },
+    "Module2": {
+        "status": True,
+        "info": {"meta": {"name": "Module2", "version": "1.0.0"}}
+    }
+})
+
+# 从配置文件加载模块信息
+import json
+with open("modules_config.json", "r") as f:
+    modules_config = json.load(f)
+sdk.mods.set_all_modules(modules_config)
+```
+
+### 前缀管理
+#### update_prefixes(module_prefix: str = None, status_prefix: str = None) -> None
+更新存储前缀。
+- 参数:
+  - module_prefix: 模块存储前缀
+  - status_prefix: 状态存储前缀
+- 返回:
+  - None
+- 示例:
+```python
+# 更新模块前缀
+sdk.mods.update_prefixes(module_prefix="custom.module.")
+
+# 更新状态前缀
+sdk.mods.update_prefixes(status_prefix="custom.status.")
+
+# 同时更新两个前缀
+sdk.mods.update_prefixes(
+    module_prefix="app.modules.",
+    status_prefix="app.status."
+)
+```
+
+#### module_prefix 属性
+获取当前模块存储前缀。
+- 返回:
+  - str: 当前模块存储前缀
+- 示例:
+```python
+# 获取当前模块前缀
+prefix = sdk.mods.module_prefix
+print(f"当前模块前缀: {prefix}")
+
+# 在自定义存储操作中使用
+custom_key = f"{sdk.mods.module_prefix}custom.{module_name}"
+sdk.env.set(custom_key, custom_data)
+```
+
+#### status_prefix 属性
+获取当前状态存储前缀。
+- 返回:
+  - str: 当前状态存储前缀
+- 示例:
+```python
+# 获取当前状态前缀
+prefix = sdk.mods.status_prefix
+print(f"当前状态前缀: {prefix}")
+
+# 在自定义状态操作中使用
+custom_status_key = f"{sdk.mods.status_prefix}custom.{module_name}"
+sdk.env.set(custom_status_key, is_active)
+```
+
+## 最佳实践
+1. 模块信息结构
+```python
+# 推荐的模块信息结构
+module_info = {
+    "status": True,  # 模块启用状态
+    "info": {
+        "meta": {
+            "name": "ModuleName",  # 模块名称
+            "version": "1.0.0",    # 模块版本
+            "description": "模块描述",
+            "author": "作者",
+            "license": "MIT",
+            "tags": ["tag1", "tag2"]  # 分类标签
+        },
+        "dependencies": {
+            "requires": ["RequiredModule1"],  # 必需依赖
+            "optional": ["OptionalModule1"],  # 可选依赖
+            "pip": ["package1", "package2"]   # pip包依赖
+        }
+    },
+    "config": {  # 模块配置（可选）
+        "setting1": "value1",
+        "setting2": "value2"
+    }
+}
+```
+
+2. 模块状态管理
+```python
+# 根据条件启用/禁用模块
+def toggle_modules_by_environment():
+    env_type = get_environment_type()
+    
+    # 开发环境启用调试模块
+    if env_type == "development":
+        sdk.mods.set_module_status("DebugModule", True)
+        sdk.mods.set_module_status("PerformanceModule", False)
+    
+    # 生产环境禁用调试模块，启用性能模块
+    elif env_type == "production":
+        sdk.mods.set_module_status("DebugModule", False)
+        sdk.mods.set_module_status("PerformanceModule", True)
+```
+
+3. 模块依赖检查
+```python
+# 检查模块依赖
+def check_module_dependencies(module_name):
+    module_info = sdk.mods.get_module(module_name)
+    if not module_info:
+        return False
+        
+    dependencies = module_info.get("info", {}).get("dependencies", {}).get("requires", [])
+    
+    for dep in dependencies:
+        dep_info = sdk.mods.get_module(dep)
+        if not dep_info or not dep_info.get("status", False):
+            sdk.logger.warning(f"模块 {module_name} 的依赖 {dep} 未启用或不存在")
+            return False
+            
+    return True
+```
+
+## 注意事项
+1. 模块名称应唯一，避免冲突
+2. 模块信息结构应保持一致，便于管理
+3. 更新模块信息前应先获取现有信息，避免覆盖
+4. 批量操作时注意性能影响
+5. 自定义前缀时确保不与系统其他键冲突
 """
 
 import json
