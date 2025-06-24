@@ -279,7 +279,7 @@ class Main:
         #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(super().Send):  # 继承BaseAdapter内置的Send类
+    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
         # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
@@ -343,7 +343,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.BaseAdapter.Send`；
 > - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
 
 ## 4. DSL 风格消息接口（SendDSL）
@@ -351,7 +351,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 每个适配器可定义一组链式调用风格的方法，例如：
 
 ```python
-class Send(super().Send):
+class Send(sdk.BaseAdapter.Send):
     def Text(self, text: str):
         return asyncio.create_task(
             self._adapter.call_api(...)
