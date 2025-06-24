@@ -1,5 +1,6 @@
 # dev gnore ignore file for Python projects
 env.py
+snapshots/
 config.db*
 .website
 
