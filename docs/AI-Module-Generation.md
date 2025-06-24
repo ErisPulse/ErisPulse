@@ -102,10 +102,16 @@ class Main:
         self.util = sdk.util
 
         @sdk.adapter.Yunhu.on("command")
-        async def handle_weather(event):
-            if event.message.commandName.lower() == "weather":
-                city = event.message.content.text
-                await self.reply_weather(event.chat, city)
+        async def handle_weather(data):
+            if data.event.message.commandName.lower() == "weather":
+                city = data.event.message.content.text.strip()
+                if not city:
+                    await self.sdk.adapter.Yunhu.Send.To(data.chat).Text("请指定城市名称，例如：/weather 上海")
+                    return
+                chat_type = data.event.chatType
+                sender_type = "group" if chat_type == "group" else "user"
+                sender_id = data.chat.chatId if chat_type == "group" else data.event.sender.senderId
+                await self.reply_weather(sender_type, sender_id, city)
 
     @sdk.util.cache
     async def get_weather_data(self, city: str):
@@ -118,14 +124,14 @@ class Main:
                 else:
                     raise Exception("无法获取天气信息")
 
-    async def reply_weather(self, chat, city):
+    async def reply_weather(self, sender_type, sender_id, city):
         try:
             data = await self.get_weather_data(city)
             temperature = data["main"]["temp"] - 273.15
-            await self.sdk.adapter.Yunhu.Send.To(chat).Text(f"{city} 的温度是 {temperature:.1f}℃")
+            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"{city} 的温度是 {temperature:.1f}℃")
         except Exception as e:
             self.logger.error(f"获取天气失败: {e}")
-            await self.sdk.adapter.Yunhu.Send.To(chat).Text(f"获取天气失败，请稍后再试。")
+            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"获取天气失败，请稍后再试。")
 ```
 
 ---
