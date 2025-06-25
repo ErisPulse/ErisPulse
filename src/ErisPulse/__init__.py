@@ -37,7 +37,7 @@ sdk.logger.info("SDK已初始化")
 """
 
 import types
-sdk = types.SimpleNamespace()
+# sdk = types.SimpleNamespace()
 import os
 import sys
 from . import util
@@ -46,6 +46,13 @@ from .logger import logger
 from .db import env
 from .mods import mods
 from .adapter import adapter, BaseAdapter, SendDSL
+
+# 添加ModuleFather
+class ModuleFather:
+    sdk = types.SimpleNamespace()
+
+# 外部sdk对象指向ModuleFather
+sdk = ModuleFather.sdk
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')
@@ -58,6 +65,9 @@ setattr(sdk, "logger", logger)
 setattr(sdk, "adapter", adapter)
 setattr(sdk, "SendDSL", SendDSL)
 setattr(sdk, "BaseAdapter", BaseAdapter)
+
+# 将ModuleFather链接到外部sdk对象 (实际是同一个sdk)
+setattr(sdk, "ModuleFather", ModuleFather)
 
 # 注册 ErrorHook 并预注册常用错误类型
 raiserr.register("CaughtExternalError"      , doc="捕获的非SDK抛出的异常")
@@ -215,7 +225,9 @@ def init() -> None:
             if not module_status:
                 continue
 
-            moduleMain = moduleObj.Main(sdk)
+            # 这里不再传入sdk，模块继承 sdk.ModuleFather
+            moduleMain = moduleObj.Main()
+
             setattr(moduleMain, "moduleInfo", moduleObj.moduleInfo)
             setattr(sdk, meta_name, moduleMain)
             logger.debug(f"模块 {meta_name} 正在初始化")
