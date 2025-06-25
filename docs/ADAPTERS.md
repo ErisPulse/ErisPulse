@@ -129,11 +129,13 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 @sdk.adapter.Yunhu.on("message")
 async def handle_message(data):
     if data.event.chatType == "group":
-        target = data.event.chat.chatId
+        targetId = data.event.chat.chatId
+        targeType = "group"
     else:
-        target = data.event.sender.senderId
+        targetId = data.event.sender.senderId
+        targeType = "user"
 
-    await sdk.adapter.Yunhu.Send.To(target).Text("收到你的消息！")
+    await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
 ```
 
 ---
