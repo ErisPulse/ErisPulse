@@ -39,7 +39,7 @@ git fetch origin develop
 if git merge --no-ff --no-commit origin/develop; then
     # 自动合并成功
     git commit -m "同步 develop 分支的最新代码到 $current_branch"
-    echo "✅ 成功同步 develop 最新代码到 $current_branch"
+    echo "成功同步 develop 最新代码到 $current_branch"
 else
     # 自动合并失败，处理冲突
     echo "⚠️ 检测到合并冲突，请手动解决冲突后提交"
