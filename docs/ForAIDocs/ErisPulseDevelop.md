@@ -1,3 +1,18 @@
+# ErisPulse 开发文档合集
+
+本文件由多个开发文档合并而成，用于辅助 AI 理解 ErisPulse 的模块开发规范与 SDK 使用方式。
+
+## 各文件对应内容说明
+
+| 文件名 | 作用 |
+|--------|------|
+| README.md | 项目概览、安装说明和快速入门指南 |
+| DEVELOPMENT.md | 开发者文档，模块结构定义、入口文件格式、Main 类规范 |
+| ADAPTERS.md | 各平台适配器说明，包括事件监听和消息发送方式 |
+| REFERENCE.md | 底层接口调用方式（如 `sdk.env`, `sdk.logger`, `sdk.adapter` 等） |
+
+## 合并内容开始
+
 <!-- README.md -->
 
 ![](./.github/assets/erispulse_logo.png)
@@ -123,9 +138,9 @@ epsdk run your_script.py --reload
 
 欢迎任何形式的贡献！无论是报告 bug、提出新功能请求，还是直接提交代码，都非常感谢。
 
- <!--- End of README.md -->
+<!--- End of README.md -->
 
-<!-- docs/DEVELOPMENT.md -->
+<!-- DEVELOPMENT.md -->
 
 # ErisPulse 开发者指南
 
@@ -562,9 +577,9 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 
 如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
 
- <!--- End of docs/DEVELOPMENT.md -->
+<!--- End of DEVELOPMENT.md -->
 
-<!-- docs/ADAPTERS.md -->
+<!-- ADAPTERS.md -->
 
 # ErisPulse Adapter 文档
 
@@ -885,9 +900,9 @@ ErisPulse 项目：
 感谢您的支持！
 
 
- <!--- End of docs/ADAPTERS.md -->
+<!--- End of ADAPTERS.md -->
 
-<!-- docs/REFERENCE.md -->
+<!-- REFERENCE.md -->
 
 # API Reference Documentation
 
@@ -2970,5 +2985,5 @@ def process_dependency(dependency_str):
 
 
 
- <!--- End of docs/REFERENCE.md -->
+<!--- End of REFERENCE.md -->
 
