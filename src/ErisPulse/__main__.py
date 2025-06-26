@@ -1147,7 +1147,12 @@ def main():
         else:
             shellprint.panel(f"运行脚本: {Shell_Printer.BOLD}{script_path}{Shell_Printer.RESET}", "执行", "info")
             import runpy
-            runpy.run_path(script_path, run_name="__main__")
+
+            # 添加KeyboardInterrupt异常捕捉
+            try:
+                runpy.run_path(script_path, run_name="__main__")
+            except KeyboardInterrupt:
+                shellprint.panel("脚本执行已中断", "中断", "info")
             
     elif args.command == 'origin':
         if args.origin_command == 'add':
