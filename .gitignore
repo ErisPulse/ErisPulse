@@ -198,3 +198,13 @@ cython_debug/
 
 # osx
 .DS_Store
+
+# pyvenv
+bin
+include
+lib
+pyvenv.cfg
+
+# erispulse
+my_bot
+modules
