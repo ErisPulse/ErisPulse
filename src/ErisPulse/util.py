@@ -9,6 +9,8 @@
 3. 异步执行支持
 4. 自动重试机制
 5. 可视化工具
+6. 版本管理和比较
+
 
 ## API 文档
 
@@ -177,6 +179,67 @@ def process_with_retry(data: dict) -> bool:
     return process_data(data)
 ```
 
+### 版本管理工具
+#### parse_dependency_with_version(dependency_str: str) -> tuple
+解析带有版本要求的依赖字符串。
+- 参数:
+  - dependency_str: 依赖字符串，如 "ModuleA==1.0.0", "ModuleB>=2.0.0"
+- 返回:
+  - tuple: (模块名, 操作符, 版本号) 或 (模块名, None, None)
+- 示例:
+```python
+# 解析带版本要求的依赖
+module_name, operator, version = sdk.util.parse_dependency_with_version("ModuleA==1.0.0")
+print(f"模块: {module_name}, 操作符: {operator}, 版本: {version}")
+# 输出: 模块: ModuleA, 操作符: ==, 版本: 1.0.0
+
+# 解析不带版本要求的依赖
+module_name, operator, version = sdk.util.parse_dependency_with_version("ModuleB")
+print(f"模块: {module_name}, 操作符: {operator}, 版本: {version}")
+# 输出: 模块: ModuleB, 操作符: None, 版本: None
+```
+
+#### compare_versions(version1: str, version2: str) -> int
+比较两个版本号。
+- 参数:
+  - version1: 第一个版本号字符串，如 "1.0.0"
+  - version2: 第二个版本号字符串，如 "2.0.0"
+- 返回:
+  - int: 如果 version1 < version2 返回 -1，如果 version1 == version2 返回 0，如果 version1 > version2 返回 1
+- 示例:
+```python
+# 比较版本号
+result = sdk.util.compare_versions("1.0.0", "2.0.0")
+print(f"比较结果: {result}")  # 输出: 比较结果: -1
+
+result = sdk.util.compare_versions("2.0.0", "2.0.0")
+print(f"比较结果: {result}")  # 输出: 比较结果: 0
+
+result = sdk.util.compare_versions("2.1.0", "2.0.5")
+print(f"比较结果: {result}")  # 输出: 比较结果: 1
+```
+
+#### check_version_requirement(current_version: str, operator: str, required_version: str) -> bool
+检查当前版本是否满足版本要求。
+- 参数:
+  - current_version: 当前版本号字符串，如 "1.0.0"
+  - operator: 操作符，如 "==", ">=", "<="
+  - required_version: 要求的版本号字符串，如 "2.0.0"
+- 返回:
+  - bool: 如果满足要求返回 True，否则返回 False
+- 示例:
+```python
+# 检查版本要求
+result = sdk.util.check_version_requirement("1.0.0", "==", "1.0.0")
+print(f"版本匹配: {result}")  # 输出: 版本匹配: True
+
+result = sdk.util.check_version_requirement("1.5.0", ">=", "1.0.0")
+print(f"版本匹配: {result}")  # 输出: 版本匹配: True
+
+result = sdk.util.check_version_requirement("2.0.0", "<", "1.0.0")
+print(f"版本匹配: {result}")  # 输出: 版本匹配: False
+```
+
 ## 最佳实践
 1. 依赖管理
 ```python
@@ -236,6 +299,47 @@ def safe_operation():
         raise
 ```
 
+4. 版本管理
+```python
+# 在模块中定义依赖
+moduleInfo = {
+    "meta": {
+        "name": "AdvancedFeatures",
+        "version": "1.2.0"
+    },
+    "dependencies": {
+        "requires": [
+            "CoreModule>=1.0.0",
+            "DatabaseModule==2.1.0"
+        ],
+        "optional": [
+            "VisualizationModule>=1.5.0",
+            ["CacheModule>2.0.0", "FastCacheModule>=1.0.0"]
+        ]
+    }
+}
+
+# 手动检查版本兼容性
+def check_plugin_compatibility(plugin_info):
+    required_version = "2.0.0"
+    plugin_version = plugin_info.get("version", "0.0.0")
+    
+    if sdk.util.check_version_requirement(plugin_version, ">=", required_version):
+        sdk.logger.info(f"插件 '{plugin_info['name']}' 版本兼容")
+        return True
+    else:
+        sdk.logger.warning(f"插件 '{plugin_info['name']}' 版本 {plugin_version} 不兼容，需要 >={required_version}")
+        return False
+        
+# 解析带版本要求的依赖字符串
+def process_dependency(dependency_str):
+    module_name, operator, version = sdk.util.parse_dependency_with_version(dependency_str)
+    if operator and version:
+        return f"需要模块 {module_name} {operator}{version}"
+    else:
+        return f"需要模块 {module_name}，无版本要求"
+```
+
 ## 注意事项
 1. 缓存使用
    - 注意内存占用，避免缓存过大数据
@@ -256,12 +360,20 @@ def safe_operation():
    - 保持依赖关系清晰简单
    - 避免循环依赖
    - 定期检查和更新依赖关系
+
+5. 版本管理
+   - 遵循语义化版本规范（主版本.次版本.修订版本）
+   - 明确指定版本要求，避免使用过于宽松的版本约束
+   - 在主版本更新时，注意可能的不兼容变更
+   - 测试不同版本依赖组合的兼容性
+   - 为模块提供明确的版本号和更新日志
 """
 
 import time
 import asyncio
 import functools
 import traceback
+import re
 from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict, deque
 
@@ -357,3 +469,52 @@ def retry(max_attempts=3, delay=1):
                     time.sleep(delay)
         return wrapper
     return decorator
+
+def parse_dependency_with_version(dependency_str):
+    pattern = r'^([a-zA-Z0-9_\-]+)(?:([=<>!]+)([0-9]+(?:\.[0-9]+)*))?\s**$'
+    match = re.match(pattern, dependency_str)
+    
+    if not match:
+        return dependency_str, None, None
+    
+    module_name, operator, version = match.groups()
+    return module_name, operator, version
+
+def compare_versions(version1, version2):
+    v1_parts = [int(x) for x in version1.split('.')]
+    v2_parts = [int(x) for x in version2.split('.')]
+    
+    # 确保两个版本号有相同的部分数
+    while len(v1_parts) < len(v2_parts):
+        v1_parts.append(0)
+    while len(v2_parts) < len(v1_parts):
+        v2_parts.append(0)
+    
+    for i in range(len(v1_parts)):
+        if v1_parts[i] < v2_parts[i]:
+            return -1
+        elif v1_parts[i] > v2_parts[i]:
+            return 1
+    
+    return 0
+
+def check_version_requirement(current_version, operator, required_version):
+    if not operator or not required_version:
+        return True
+    
+    comparison = compare_versions(current_version, required_version)
+    
+    if operator == '==':
+        return comparison == 0
+    elif operator == '!=':
+        return comparison != 0
+    elif operator == '>':
+        return comparison > 0
+    elif operator == '>=':
+        return comparison >= 0
+    elif operator == '<':
+        return comparison < 0
+    elif operator == '<=':
+        return comparison <= 0
+    
+    return False
