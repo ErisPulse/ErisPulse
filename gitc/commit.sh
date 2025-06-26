@@ -16,7 +16,7 @@ if [ $# -eq 0 ]; then
     commit_msg="更新: $(date +'%Y-%m-%d %H:%M')"
     echo "⚠️ 未提供提交信息，使用默认信息: \"$commit_msg\""
 else
-    commit_msg="$1"
+    commit_msg="$@"
 fi
 
 # 执行提交
