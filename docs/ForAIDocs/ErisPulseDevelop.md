@@ -125,6 +125,768 @@ epsdk run your_script.py --reload
 
  <!--- End of README.md -->
 
+<!-- docs/DEVELOPMENT.md -->
+
+# ErisPulse 开发者指南
+
+> 本指南从开发者角度出发，帮助你快速理解并接入 **ErisPulse** 框架，进行模块和适配器的开发。
+
+---
+## 一、使用 SDK 功能
+### SDK 提供的核心对象
+
+| 名称 | 用途 |
+|------|------|
+| `sdk.env` | 获取/设置全局配置 |
+| `sdk.mods` | 管理模块 |
+| `sdk.logger` | 日志记录器 |
+| `sdk.raiserr` | 错误管理器 |
+| `sdk.util` | 工具函数（缓存、重试等） |
+| `sdk.adapter` | 获取其他适配器实例 |
+| `sdk.BaseAdapter` | 适配器基类 |
+
+#### 日志记录：
+
+```python
+#  设置日志级别
+sdk.logger.set_level("DEBUG")
+
+#  设置单个模块日志级别
+sdk.logger.set_module_level("MyModule", "DEBUG")
+
+#  设置日志输出到文件
+sdk.logger.set_output_file("log.txt")
+
+#  单次保持所有模块日志历史到文件
+sdk.logger.save_logs("log.txt")
+
+#  各等级日志
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行状态")
+sdk.logger.warning("警告信息")
+sdk.logger.error("错误信息")
+sdk.logger.critical("致命错误")    # 会触发程序崩溃
+```
+
+#### env配置模块：
+
+```python
+# 设置配置项
+sdk.env.set("my_config_key", "new_value")
+
+# 获取配置项
+config_value = sdk.env.get("my_config_key", "default_value")
+
+# 删除配置项
+sdk.env.delete("my_config_key")
+
+# 获取所有配置项(不建议，性能浪费)
+all_config = sdk.env.get_all_keys()
+
+# 批量操作
+sdk.env.set_multi({
+    'config1': 'value1',
+    'config2': {'data': [1,2,3]},
+    'config3': True
+})
+
+values = sdk.env.get_multi(['config1', 'config2'])
+sdk.env.delete_multi(['old_key1', 'old_key2'])
+
+# 事务使用
+with sdk.env.transaction():
+    sdk.env.set('important_key', 'value')
+    sdk.env.delete('temp_key')
+    # 如果出现异常会自动回滚
+
+# 快照管理
+# 创建重要操作前的快照
+snapshot_path = sdk.env.snapshot('before_update')
+
+# 恢复数据库状态
+sdk.env.restore('before_update')
+
+# 自动快照(默认每小时)
+sdk.env.set_snapshot_interval(3600)  # 设置自动快照间隔(秒)
+
+# 性能提示：
+# - 批量操作比单次操作更高效
+# - 事务可以保证多个操作的安全性
+# - 快照适合在重大变更前创建
+```
+
+#### 注册自定义错误类型：
+
+```python
+#  注册一个自定义错误类型
+sdk.raiserr.register("MyCustomError", doc="这是一个自定义错误")
+
+#  获取错误信息
+error_info = sdk.raiserr.info("MyCustomError")
+if error_info:
+    print(f"错误类型: {error_info['type']}")
+    print(f"文档描述: {error_info['doc']}")
+    print(f"错误类: {error_info['class']}")
+else:
+    print("未找到该错误类型")
+
+#  抛出一个自定义错误
+sdk.raiserr.MyCustomError("发生了一个错误")
+
+```
+
+#### 工具函数：
+
+```python
+# 工具函数装饰器：自动重试指定次数
+@sdk.util.retry(max_attempts=3, delay=1)
+async def my_retry_function():
+    # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
+    ...
+
+# 可视化模块依赖关系
+topology = sdk.util.show_topology()
+print(topology)  # 打印模块依赖拓扑图
+
+# 缓存装饰器：缓存函数调用结果（基于参数）
+@sdk.util.cache
+def get_expensive_result(param):
+    # 第一次调用后，相同参数将直接返回缓存结果
+    ...
+
+# 异步执行装饰器：将同步函数放入线程池中异步执行
+@sdk.util.run_in_executor
+def sync_task():
+    # 此函数将在独立线程中运行，避免阻塞事件循环
+    ...
+
+# 异步调用同步函数的快捷方式
+sdk.util.ExecAsync(sync_task)  # 在事件循环中
+
+```
+
+---
+
+### 5. 模块间通信
+
+通过 `sdk.<ModuleName>` 访问其他模块实例：
+
+```python
+other_module = sdk.OtherModule
+result = other_module.some_method()
+```
+
+### 6. 适配器的方法调用
+通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
+```python
+adapter = sdk.adapter.AdapterName
+result = adapter.some_method()
+```
+
+## 二、模块开发
+
+### 1. 目录结构
+
+一个标准模块应包含以下两个核心文件：
+
+```
+MyModule/
+├── __init__.py    # 模块入口
+└── Core.py        # 核心逻辑
+```
+
+### 2. `__init__.py` 文件
+
+该文件必须定义 `moduleInfo` 字典，并导入 `Main` 类：
+
+```python
+moduleInfo = {
+    "meta": {
+        "name": "MyModule",
+        "version": "1.0.0",
+        "description": "我的功能模块",
+        "author": "开发者",
+        "license": "MIT"
+    },
+    "dependencies": {
+        "requires": [
+            "ModuleA==1.0.0",    # 必须依赖特定版本的模块
+            "ModuleB>=2.0.0",    # 必须依赖大于等于特定版本的模块
+            "ModuleC"            # 必须依赖模块，不限版本
+        ],
+        "optional": [
+            "ModuleD<=1.5.0",    # 可选依赖小于等于特定版本的模块
+            ["ModuleE>1.0.0", "ModuleF<3.0.0"]  # 可选依赖组（满足其中一个即可）
+        ],
+        "pip": []                # 第三方 pip 包依赖
+    }
+}
+
+from .Core import Main
+```
+> 若版本不匹配, SDK会在启动时抛出异常并退出程序
+
+---
+
+### 3. `Core.py` 文件
+
+实现模块主类 `Main`，构造函数必须接收 `sdk` 参数：
+
+```python
+class Main:
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        self.env = sdk.env
+        self.util = sdk.util
+        self.raiserr = sdk.raiserr
+
+        self.logger.info("模块已加载")
+
+    def print_hello(self):
+        self.logger.info("Hello World!")
+
+```
+
+- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
+```python
+# 这时候在其它地方可以访问到该模块
+from ErisPulse import sdk
+sdk.MyModule.print_hello()
+
+# 运行模块主程序（推荐使用CLI命令）
+# epsdk run main.py --reload
+```
+
+明白了，以下是符合你要求的 **简洁版开发者文档更新内容**，保持与原结构一致：
+
+---
+
+### 4. 模块路径说明
+
+ErisPulse 支持两种模块加载路径：
+
+| 路径 | 来源 | 数据库存储 | 加载优先级 |
+|------|------|------------|------------|
+| `src/ErisPulse/modules/` | SDK 内置模块 | 是 | 较低 |
+| `./modules/`（项目目录） | 用户自定义模块 | 否 | 较高 |
+
+> - SDK 模块用于官方或长期维护的模块，支持启用/禁用状态控制。
+> - 项目模块仅运行时加载，不写入数据库，适合快速测试。
+
+若同一模块名存在于多个路径中，系统会根据权重选择加载路径，并输出提示日志：
+
+> 项目模块目录 | README.md :
+```
+此目录 (`./modules`) 用于存放项目专属模块。这些模块会优先于 SDK 内置模块被加载，但不会写入数据库。
+
+你可以将自定义模块放入此目录，SDK 会自动识别并加载它们。
+```
+
+---
+
+## 三、平台适配器开发（Adapter）
+
+适配器用于对接不同平台的消息协议（如 Yunhu、OneBot 等），是框架与外部平台交互的核心组件。
+
+### 1. 目录结构
+
+```
+MyAdapter/
+├── __init__.py    # 模块入口
+└── Core.py        # 适配器逻辑
+```
+
+### 2. `__init__.py` 文件
+
+同样需定义 `moduleInfo` 并导入 `Main` 类：
+
+```python
+moduleInfo = {
+    "meta": {
+        "name": "MyAdapter",
+        "version": "1.0.0",
+        "description": "我的平台适配器",
+        "author": "开发者",
+        "license": "MIT"
+    },
+    "dependencies": {
+        "requires": [],
+        "optional": [],
+        "pip": ["aiohttp"]
+    }
+}
+
+from .Core import Main, MyPlatformAdapter
+
+adapterInfo = {
+    "myplatform": MyPlatformAdapter,
+}
+```
+
+### 3. `Core.py`
+实现适配器主类 `Main`，并提供适配器类继承 `sdk.BaseAdapter`：
+
+```python
+from ErisPulse import sdk
+
+class Main:
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        #   这里是模块的初始化类，当然你也可以在这里进行一些方法提供
+        #   在这里的方法可以通过 sdk.<模块名>.<方法名> 访问
+        #   如果该模块专精于Adapter，那么本类不建议提供方法
+        #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
+
+class MyPlatformAdapter(sdk.BaseAdapter):
+    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
+        # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
+        # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
+        # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
+        
+        # 可以重写Text方法提供平台特定实现
+        def Text(self, text: str):
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send",
+                    content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+            
+        # 添加新的消息类型
+        def Image(self, file: bytes):
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send_image",
+                    file=file,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+
+    #   这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
+    #   因为这是必须继承的方法
+    async def call_api(self, endpoint: str, **params):
+        raise NotImplementedError()
+
+    #   启动方法，你需要在这里定义你的adapter启动时候的逻辑
+    async def start(self):
+        raise NotImplementedError()
+    #   停止方法，你需要在这里进行必要的释放资源等逻辑
+    async def shutdown(self):
+        raise NotImplementedError()
+    #  适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.update() 来启动所有适配器，当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
+```
+### 接口规范说明
+
+#### 必须实现的方法
+
+| 方法 | 描述 |
+|------|------|
+| `call_api(endpoint: str, **params)` | 调用平台 API |
+| `start()` | 启动适配器 |
+| `shutdown()` | 关闭适配器资源 |
+
+#### 可选实现的方法
+
+| 方法 | 描述 |
+|------|------|
+| `on(event_type: str)` | 注册事件处理器 |
+| `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
+| `middleware(func: Callable)` | 添加中间件处理传入数据 |
+| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
+
+- 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
+- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到您提交到adapter的事件。
+
+> ⚠️ 注意：
+> - 适配器类必须继承 `sdk.BaseAdapter`；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.BaseAdapter.Send`；
+> - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
+
+## 4. DSL 风格消息接口（SendDSL）
+
+每个适配器可定义一组链式调用风格的方法，例如：
+
+```python
+class Send(sdk.BaseAdapter.Send):
+    def Text(self, text: str):
+        return asyncio.create_task(
+            self._adapter.call_api(...)
+        )
+
+    def Image(self, file: bytes):
+        return asyncio.create_task(
+            self._upload_file_and_call_api(...)
+        )
+```
+
+调用方式如下：
+
+```python
+sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
+```
+
+> 建议方法名首字母大写，保持命名统一。
+
+---
+
+### 四、开发建议
+
+#### 1. 使用异步编程模型
+- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
+- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
+
+#### 2. 异常处理与日志记录
+- **统一异常处理机制**：结合 `sdk.raiserr` 注册自定义错误类型，提供清晰的错误信息。
+- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
+
+#### 3. 模块化与解耦设计
+- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
+- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
+
+#### 4. 性能优化
+- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
+- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
+
+#### 5. 安全与隐私
+- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
+- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
+
+---
+
+## 五、提交到官方源
+
+如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
+
+ <!--- End of docs/DEVELOPMENT.md -->
+
+<!-- docs/ADAPTERS.md -->
+
+# ErisPulse Adapter 文档
+
+## 简介
+ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处理机制。目前支持的主要适配器包括：
+
+- **TelegramAdapter**
+- **OneBotAdapter**
+- **YunhuAdapter**
+
+每个适配器都实现了标准化的事件映射、消息发送方法和生命周期管理。以下将详细介绍现有适配器的功能、支持的方法以及推荐的开发实践。
+
+---
+
+## 适配器功能概述
+
+### 1. YunhuAdapter
+YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
+
+#### 支持的事件类型
+
+| 官方事件命名                  | 映射名称       | 说明                     |
+|-------------------------------|----------------|--------------------------|
+| `message.receive.normal`      | `message`      | 普通消息                 |
+| `message.receive.instruction` | `command`      | 指令消息                 |
+| `bot.followed`                | `follow`       | 用户关注机器人           |
+| `bot.unfollowed`              | `unfollow`     | 用户取消关注机器人       |
+| `group.join`                  | `group_join`   | 用户加入群组             |
+| `group.leave`                 | `group_leave`  | 用户离开群组             |
+| `button.report.inline`        | `button_click` | 按钮点击事件             |
+| `bot.shortcut.menu`           | `shortcut_menu`| 快捷菜单触发事件         |
+
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
+```python
+await yunhu.Send.To("user", user_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str, buttons: List = None)`：发送纯文本消息，可选添加按钮。
+- `.Html(html: str, buttons: List = None)`：发送HTML格式消息。
+- `.Markdown(markdown: str, buttons: List = None)`：发送Markdown格式消息。
+- `.Image(file: bytes, buttons: List = None)`：发送图片消息。
+- `.Video(file: bytes, buttons: List = None)`：发送视频消息。
+- `.File(file: bytes, buttons: List = None)`：发送文件消息。
+- `.Batch(target_ids: List[str], message: str)`：批量发送消息。
+- `.Edit(msg_id: str, text: str)`：编辑已有消息。
+- `.Recall(msg_id: str)`：撤回消息。
+- `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
+- `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
+
+#### 按钮参数说明
+`buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
+
+| 字段         | 类型   | 是否必填 | 说明                                                                 |
+|--------------|--------|----------|----------------------------------------------------------------------|
+| `text`       | string | 是       | 按钮上的文字                                                         |
+| `actionType` | int    | 是       | 动作类型：<br>`1`: 跳转 URL<br>`2`: 复制<br>`3`: 点击汇报            |
+| `url`        | string | 否       | 当 `actionType=1` 时使用，表示跳转的目标 URL                         |
+| `value`      | string | 否       | 当 `actionType=2` 时，该值会复制到剪贴板<br>当 `actionType=3` 时，该值会发送给订阅端 |
+
+示例：
+```python
+buttons = [
+    [
+        {"text": "复制", "actionType": 2, "value": "xxxx"},
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"}
+    ]
+]
+await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
+```
+
+#### 数据格式示例
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "xxxxx",
+        "eventTime": 1647735644000,
+        "eventType": "message.receive.instruction"
+    },
+    "event": {
+        "sender": {
+            "senderId": "xxxxx",
+            "senderType": "user",
+            "senderUserLevel": "member",
+            "senderNickname": "昵称"
+        },
+        "chat": {
+            "chatId": "xxxxx",
+            "chatType": "group"
+        },
+        "message": {
+            "msgId": "xxxxxx",
+            "parentId": "xxxx",
+            "sendTime": 1647735644000,
+            "chatId": "xxxxxxxx",
+            "chatType": "group",
+            "contentType": "text",
+            "content": {
+                "text": "早上好"
+            },
+            "commandId": 98,
+            "commandName": "计算器"
+        }
+    }
+}
+```
+
+#### 注意：`chat` 与 `sender` 的误区
+
+##### 常见问题：
+
+| 字段 | 含义 |
+|------|------|
+| `data.event.chatType` | 当前聊天类型（`user`/`bot` 或 `group`） |
+| `data.event.sender.senderType` | 发送者类型（通常为 `user`） |
+| `data.event.sender.senderId` | 发送者唯一 ID |
+
+> **注意：**  
+> - 使用 `chatType` 判断消息是私聊还是群聊  
+> - 群聊使用 `chatId`，私聊使用 `senderId` 作为目标地址  
+> - `senderType` 通常为 `"user"`，不能用于判断是否为群消息  
+
+---
+
+##### 示例代码：
+
+```python
+@sdk.adapter.Yunhu.on("message")
+async def handle_message(data):
+    if data.event.chatType == "group":
+        targetId = data.event.chat.chatId
+        targeType = "group"
+    else:
+        targetId = data.event.sender.senderId
+        targeType = "user"
+
+    await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
+```
+
+---
+
+### 2. TelegramAdapter
+TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
+
+#### 支持的事件类型
+
+| Telegram 原生事件       | 映射名称           | 说明                     |
+|-------------------------|--------------------|--------------------------|
+| `message`               | `message`          | 普通消息                 |
+| `edited_message`        | `message_edit`     | 消息被编辑               |
+| `channel_post`          | `channel_post`     | 频道发布消息             |
+| `edited_channel_post`   | `channel_post_edit`| 频道消息被编辑           |
+| `inline_query`          | `inline_query`     | 内联查询                 |
+| `chosen_inline_result`  | `chosen_inline_result` | 内联结果被选择       |
+| `callback_query`        | `callback_query`   | 回调查询（按钮点击）     |
+| `shipping_query`        | `shipping_query`   | 配送信息查询             |
+| `pre_checkout_query`    | `pre_checkout_query` | 支付预检查询           |
+| `poll`                  | `poll`             | 投票创建                 |
+| `poll_answer`           | `poll_answer`      | 投票响应                 |
+
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
+```python
+await telegram.Send.To("user", user_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: bytes, caption: str = "")`：发送图片消息。
+- `.Video(file: bytes, caption: str = "")`：发送视频消息。
+- `.Audio(file: bytes, caption: str = "")`：发送音频消息。
+- `.Document(file: bytes, caption: str = "")`：发送文件消息。
+- `.EditMessageText(message_id: int, text: str)`：编辑已有消息。
+- `.DeleteMessage(message_id: int)`：删除指定消息。
+- `.GetChat()`：获取聊天信息。
+
+#### 数据格式示例
+```json
+{
+  "update_id": 123456789,
+  "message": {
+    "message_id": 101,
+    "from": {
+      "id": 123456789,
+      "is_bot": false,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 123456789,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "type": "private"
+    },
+    "date": 1672531199,
+    "text": "Hello!"
+  }
+}
+```
+
+---
+
+### 3. OneBotAdapter
+OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
+
+#### 支持的事件类型
+
+| OneBot 原生事件       | 映射名称           | 说明                     |
+|-----------------------|--------------------|--------------------------|
+| `message`             | `message`          | 消息事件                 |
+| `notice`              | `notice`           | 通知类事件（如群成员变动）|
+| `request`             | `request`          | 请求类事件（如加群请求） |
+| `meta_event`          | `meta_event`       | 元事件（如心跳包）       |
+
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
+```python
+await onebot.Send.To("group", group_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: str)`：发送图片消息（支持 URL 或 Base64）。
+- `.Voice(file: str)`：发送语音消息。
+- `.Video(file: str)`：发送视频消息。
+- `.Raw(message_list: List[Dict])`：发送原生 OneBot 消息结构。
+- `.Recall(message_id: int)`：撤回消息。
+- `.Edit(message_id: int, new_text: str)`：编辑消息。
+- `.Batch(target_ids: List[str], text: str)`：批量发送消息。
+
+#### 数据格式示例
+```json
+{
+  "post_type": "message",
+  "message_type": "group",
+  "group_id": 123456,
+  "user_id": 987654321,
+  "message": "Hello!",
+  "raw_message": "Hello!",
+  "time": 1672531199,
+  "self_id": 123456789
+}
+```
+
+---
+
+## 生命周期管理
+
+### 启动适配器
+```python
+await sdk.adapter.startup()
+```
+此方法会根据配置启动适配器，并初始化必要的连接。
+
+### 关闭适配器
+```python
+await sdk.adapter.shutdown()
+```
+确保资源释放，关闭 WebSocket 连接或其他网络资源。
+
+---
+
+## 开发者指南
+
+### 如何编写新的 Adapter
+1. **继承 BaseAdapter**  
+   所有适配器需继承 `sdk.BaseAdapter` 类，并实现以下方法：
+   - `start()`：启动适配器。
+   - `shutdown()`：关闭适配器。
+   - `call_api(endpoint: str, **params)`：调用底层 API。
+
+2. **定义 Send 方法**  
+   使用链式语法实现消息发送逻辑，推荐参考现有适配器的实现。
+
+3. **注册事件映射**  
+   在 `_setup_event_mapping()` 方法中定义事件映射表。
+
+4. **测试与调试**  
+   编写单元测试验证适配器的功能完整性，并在不同环境下进行充分测试。
+
+### 推荐的文档结构
+新适配器的文档应包含以下内容：
+- **简介**：适配器的功能和适用场景。
+- **事件映射表**：列出支持的事件及其映射名称。
+- **发送方法**：详细说明支持的消息类型和使用示例。
+- **数据格式**：展示典型事件的 JSON 数据格式。
+- **配置说明**：列出适配器所需的配置项及默认值。
+- **注意事项**：列出开发和使用过程中需要注意的事项。
+
+---
+
+## 参考链接
+ErisPulse 项目：
+- [主库](https://github.com/ErisPulse/ErisPulse/)
+- [ErisPulse Yunhu 适配器库](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [ErisPulse Telegram 适配器库](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [ErisPulse OneBot 适配器库](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+
+官方文档：
+- [OneBot V11 协议文档](https://github.com/botuniverse/onebot-11)
+- [Telegram Bot API 官方文档](https://core.telegram.org/bots/api)
+- [云湖官方文档](https://www.yhchat.com/document/1-3)
+
+---
+
+## 参与贡献
+
+我们欢迎更多开发者参与编写和维护适配器文档！请按照以下步骤提交贡献：
+1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 仓库。
+2. 在 `docs/` 目录下找到 ADAPTER.md 适配器文档。
+3. 提交 Pull Request，并附上详细的描述。
+
+感谢您的支持！
+
+
+ <!--- End of docs/ADAPTERS.md -->
+
 <!-- docs/REFERENCE.md -->
 
 # API Reference Documentation
@@ -2209,766 +2971,4 @@ def process_dependency(dependency_str):
 
 
  <!--- End of docs/REFERENCE.md -->
-
-<!-- docs/ADAPTERS.md -->
-
-# ErisPulse Adapter 文档
-
-## 简介
-ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处理机制。目前支持的主要适配器包括：
-
-- **TelegramAdapter**
-- **OneBotAdapter**
-- **YunhuAdapter**
-
-每个适配器都实现了标准化的事件映射、消息发送方法和生命周期管理。以下将详细介绍现有适配器的功能、支持的方法以及推荐的开发实践。
-
----
-
-## 适配器功能概述
-
-### 1. YunhuAdapter
-YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
-
-#### 支持的事件类型
-
-| 官方事件命名                  | 映射名称       | 说明                     |
-|-------------------------------|----------------|--------------------------|
-| `message.receive.normal`      | `message`      | 普通消息                 |
-| `message.receive.instruction` | `command`      | 指令消息                 |
-| `bot.followed`                | `follow`       | 用户关注机器人           |
-| `bot.unfollowed`              | `unfollow`     | 用户取消关注机器人       |
-| `group.join`                  | `group_join`   | 用户加入群组             |
-| `group.leave`                 | `group_leave`  | 用户离开群组             |
-| `button.report.inline`        | `button_click` | 按钮点击事件             |
-| `bot.shortcut.menu`           | `shortcut_menu`| 快捷菜单触发事件         |
-
-#### 支持的消息发送类型
-所有发送方法均通过链式语法实现，例如：
-```python
-await yunhu.Send.To("user", user_id).Text("Hello World!")
-```
-
-支持的发送类型包括：
-- `.Text(text: str, buttons: List = None)`：发送纯文本消息，可选添加按钮。
-- `.Html(html: str, buttons: List = None)`：发送HTML格式消息。
-- `.Markdown(markdown: str, buttons: List = None)`：发送Markdown格式消息。
-- `.Image(file: bytes, buttons: List = None)`：发送图片消息。
-- `.Video(file: bytes, buttons: List = None)`：发送视频消息。
-- `.File(file: bytes, buttons: List = None)`：发送文件消息。
-- `.Batch(target_ids: List[str], message: str)`：批量发送消息。
-- `.Edit(msg_id: str, text: str)`：编辑已有消息。
-- `.Recall(msg_id: str)`：撤回消息。
-- `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
-- `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
-
-#### 按钮参数说明
-`buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
-
-| 字段         | 类型   | 是否必填 | 说明                                                                 |
-|--------------|--------|----------|----------------------------------------------------------------------|
-| `text`       | string | 是       | 按钮上的文字                                                         |
-| `actionType` | int    | 是       | 动作类型：<br>`1`: 跳转 URL<br>`2`: 复制<br>`3`: 点击汇报            |
-| `url`        | string | 否       | 当 `actionType=1` 时使用，表示跳转的目标 URL                         |
-| `value`      | string | 否       | 当 `actionType=2` 时，该值会复制到剪贴板<br>当 `actionType=3` 时，该值会发送给订阅端 |
-
-示例：
-```python
-buttons = [
-    [
-        {"text": "复制", "actionType": 2, "value": "xxxx"},
-        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"}
-    ]
-]
-await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
-```
-
-#### 数据格式示例
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "xxxxx",
-        "eventTime": 1647735644000,
-        "eventType": "message.receive.instruction"
-    },
-    "event": {
-        "sender": {
-            "senderId": "xxxxx",
-            "senderType": "user",
-            "senderUserLevel": "member",
-            "senderNickname": "昵称"
-        },
-        "chat": {
-            "chatId": "xxxxx",
-            "chatType": "group"
-        },
-        "message": {
-            "msgId": "xxxxxx",
-            "parentId": "xxxx",
-            "sendTime": 1647735644000,
-            "chatId": "xxxxxxxx",
-            "chatType": "group",
-            "contentType": "text",
-            "content": {
-                "text": "早上好"
-            },
-            "commandId": 98,
-            "commandName": "计算器"
-        }
-    }
-}
-```
-
-#### 注意：`chat` 与 `sender` 的误区
-
-##### 常见问题：
-
-| 字段 | 含义 |
-|------|------|
-| `data.event.chatType` | 当前聊天类型（`user`/`bot` 或 `group`） |
-| `data.event.sender.senderType` | 发送者类型（通常为 `user`） |
-| `data.event.sender.senderId` | 发送者唯一 ID |
-
-> **注意：**  
-> - 使用 `chatType` 判断消息是私聊还是群聊  
-> - 群聊使用 `chatId`，私聊使用 `senderId` 作为目标地址  
-> - `senderType` 通常为 `"user"`，不能用于判断是否为群消息  
-
----
-
-##### 示例代码：
-
-```python
-@sdk.adapter.Yunhu.on("message")
-async def handle_message(data):
-    if data.event.chatType == "group":
-        targetId = data.event.chat.chatId
-        targeType = "group"
-    else:
-        targetId = data.event.sender.senderId
-        targeType = "user"
-
-    await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
-```
-
----
-
-### 2. TelegramAdapter
-TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
-
-#### 支持的事件类型
-
-| Telegram 原生事件       | 映射名称           | 说明                     |
-|-------------------------|--------------------|--------------------------|
-| `message`               | `message`          | 普通消息                 |
-| `edited_message`        | `message_edit`     | 消息被编辑               |
-| `channel_post`          | `channel_post`     | 频道发布消息             |
-| `edited_channel_post`   | `channel_post_edit`| 频道消息被编辑           |
-| `inline_query`          | `inline_query`     | 内联查询                 |
-| `chosen_inline_result`  | `chosen_inline_result` | 内联结果被选择       |
-| `callback_query`        | `callback_query`   | 回调查询（按钮点击）     |
-| `shipping_query`        | `shipping_query`   | 配送信息查询             |
-| `pre_checkout_query`    | `pre_checkout_query` | 支付预检查询           |
-| `poll`                  | `poll`             | 投票创建                 |
-| `poll_answer`           | `poll_answer`      | 投票响应                 |
-
-#### 支持的消息发送类型
-所有发送方法均通过链式语法实现，例如：
-```python
-await telegram.Send.To("user", user_id).Text("Hello World!")
-```
-
-支持的发送类型包括：
-- `.Text(text: str)`：发送纯文本消息。
-- `.Image(file: bytes, caption: str = "")`：发送图片消息。
-- `.Video(file: bytes, caption: str = "")`：发送视频消息。
-- `.Audio(file: bytes, caption: str = "")`：发送音频消息。
-- `.Document(file: bytes, caption: str = "")`：发送文件消息。
-- `.EditMessageText(message_id: int, text: str)`：编辑已有消息。
-- `.DeleteMessage(message_id: int)`：删除指定消息。
-- `.GetChat()`：获取聊天信息。
-
-#### 数据格式示例
-```json
-{
-  "update_id": 123456789,
-  "message": {
-    "message_id": 101,
-    "from": {
-      "id": 123456789,
-      "is_bot": false,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "language_code": "en"
-    },
-    "chat": {
-      "id": 123456789,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "type": "private"
-    },
-    "date": 1672531199,
-    "text": "Hello!"
-  }
-}
-```
-
----
-
-### 3. OneBotAdapter
-OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
-
-#### 支持的事件类型
-
-| OneBot 原生事件       | 映射名称           | 说明                     |
-|-----------------------|--------------------|--------------------------|
-| `message`             | `message`          | 消息事件                 |
-| `notice`              | `notice`           | 通知类事件（如群成员变动）|
-| `request`             | `request`          | 请求类事件（如加群请求） |
-| `meta_event`          | `meta_event`       | 元事件（如心跳包）       |
-
-#### 支持的消息发送类型
-所有发送方法均通过链式语法实现，例如：
-```python
-await onebot.Send.To("group", group_id).Text("Hello World!")
-```
-
-支持的发送类型包括：
-- `.Text(text: str)`：发送纯文本消息。
-- `.Image(file: str)`：发送图片消息（支持 URL 或 Base64）。
-- `.Voice(file: str)`：发送语音消息。
-- `.Video(file: str)`：发送视频消息。
-- `.Raw(message_list: List[Dict])`：发送原生 OneBot 消息结构。
-- `.Recall(message_id: int)`：撤回消息。
-- `.Edit(message_id: int, new_text: str)`：编辑消息。
-- `.Batch(target_ids: List[str], text: str)`：批量发送消息。
-
-#### 数据格式示例
-```json
-{
-  "post_type": "message",
-  "message_type": "group",
-  "group_id": 123456,
-  "user_id": 987654321,
-  "message": "Hello!",
-  "raw_message": "Hello!",
-  "time": 1672531199,
-  "self_id": 123456789
-}
-```
-
----
-
-## 生命周期管理
-
-### 启动适配器
-```python
-await sdk.adapter.startup()
-```
-此方法会根据配置启动适配器，并初始化必要的连接。
-
-### 关闭适配器
-```python
-await sdk.adapter.shutdown()
-```
-确保资源释放，关闭 WebSocket 连接或其他网络资源。
-
----
-
-## 开发者指南
-
-### 如何编写新的 Adapter
-1. **继承 BaseAdapter**  
-   所有适配器需继承 `sdk.BaseAdapter` 类，并实现以下方法：
-   - `start()`：启动适配器。
-   - `shutdown()`：关闭适配器。
-   - `call_api(endpoint: str, **params)`：调用底层 API。
-
-2. **定义 Send 方法**  
-   使用链式语法实现消息发送逻辑，推荐参考现有适配器的实现。
-
-3. **注册事件映射**  
-   在 `_setup_event_mapping()` 方法中定义事件映射表。
-
-4. **测试与调试**  
-   编写单元测试验证适配器的功能完整性，并在不同环境下进行充分测试。
-
-### 推荐的文档结构
-新适配器的文档应包含以下内容：
-- **简介**：适配器的功能和适用场景。
-- **事件映射表**：列出支持的事件及其映射名称。
-- **发送方法**：详细说明支持的消息类型和使用示例。
-- **数据格式**：展示典型事件的 JSON 数据格式。
-- **配置说明**：列出适配器所需的配置项及默认值。
-- **注意事项**：列出开发和使用过程中需要注意的事项。
-
----
-
-## 参考链接
-ErisPulse 项目：
-- [主库](https://github.com/ErisPulse/ErisPulse/)
-- [ErisPulse Yunhu 适配器库](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
-- [ErisPulse Telegram 适配器库](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
-- [ErisPulse OneBot 适配器库](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
-
-官方文档：
-- [OneBot V11 协议文档](https://github.com/botuniverse/onebot-11)
-- [Telegram Bot API 官方文档](https://core.telegram.org/bots/api)
-- [云湖官方文档](https://www.yhchat.com/document/1-3)
-
----
-
-## 参与贡献
-
-我们欢迎更多开发者参与编写和维护适配器文档！请按照以下步骤提交贡献：
-1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 仓库。
-2. 在 `docs/` 目录下找到 ADAPTER.md 适配器文档。
-3. 提交 Pull Request，并附上详细的描述。
-
-感谢您的支持！
-
-
- <!--- End of docs/ADAPTERS.md -->
-
-<!-- docs/DEVELOPMENT.md -->
-
-# ErisPulse 开发者指南
-
-> 本指南从开发者角度出发，帮助你快速理解并接入 **ErisPulse** 框架，进行模块和适配器的开发。
-
----
-## 一、使用 SDK 功能
-### SDK 提供的核心对象
-
-| 名称 | 用途 |
-|------|------|
-| `sdk.env` | 获取/设置全局配置 |
-| `sdk.mods` | 管理模块 |
-| `sdk.logger` | 日志记录器 |
-| `sdk.raiserr` | 错误管理器 |
-| `sdk.util` | 工具函数（缓存、重试等） |
-| `sdk.adapter` | 获取其他适配器实例 |
-| `sdk.BaseAdapter` | 适配器基类 |
-
-#### 日志记录：
-
-```python
-#  设置日志级别
-sdk.logger.set_level("DEBUG")
-
-#  设置单个模块日志级别
-sdk.logger.set_module_level("MyModule", "DEBUG")
-
-#  设置日志输出到文件
-sdk.logger.set_output_file("log.txt")
-
-#  单次保持所有模块日志历史到文件
-sdk.logger.save_logs("log.txt")
-
-#  各等级日志
-sdk.logger.debug("调试信息")
-sdk.logger.info("运行状态")
-sdk.logger.warning("警告信息")
-sdk.logger.error("错误信息")
-sdk.logger.critical("致命错误")    # 会触发程序崩溃
-```
-
-#### env配置模块：
-
-```python
-# 设置配置项
-sdk.env.set("my_config_key", "new_value")
-
-# 获取配置项
-config_value = sdk.env.get("my_config_key", "default_value")
-
-# 删除配置项
-sdk.env.delete("my_config_key")
-
-# 获取所有配置项(不建议，性能浪费)
-all_config = sdk.env.get_all_keys()
-
-# 批量操作
-sdk.env.set_multi({
-    'config1': 'value1',
-    'config2': {'data': [1,2,3]},
-    'config3': True
-})
-
-values = sdk.env.get_multi(['config1', 'config2'])
-sdk.env.delete_multi(['old_key1', 'old_key2'])
-
-# 事务使用
-with sdk.env.transaction():
-    sdk.env.set('important_key', 'value')
-    sdk.env.delete('temp_key')
-    # 如果出现异常会自动回滚
-
-# 快照管理
-# 创建重要操作前的快照
-snapshot_path = sdk.env.snapshot('before_update')
-
-# 恢复数据库状态
-sdk.env.restore('before_update')
-
-# 自动快照(默认每小时)
-sdk.env.set_snapshot_interval(3600)  # 设置自动快照间隔(秒)
-
-# 性能提示：
-# - 批量操作比单次操作更高效
-# - 事务可以保证多个操作的安全性
-# - 快照适合在重大变更前创建
-```
-
-#### 注册自定义错误类型：
-
-```python
-#  注册一个自定义错误类型
-sdk.raiserr.register("MyCustomError", doc="这是一个自定义错误")
-
-#  获取错误信息
-error_info = sdk.raiserr.info("MyCustomError")
-if error_info:
-    print(f"错误类型: {error_info['type']}")
-    print(f"文档描述: {error_info['doc']}")
-    print(f"错误类: {error_info['class']}")
-else:
-    print("未找到该错误类型")
-
-#  抛出一个自定义错误
-sdk.raiserr.MyCustomError("发生了一个错误")
-
-```
-
-#### 工具函数：
-
-```python
-# 工具函数装饰器：自动重试指定次数
-@sdk.util.retry(max_attempts=3, delay=1)
-async def my_retry_function():
-    # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
-    ...
-
-# 可视化模块依赖关系
-topology = sdk.util.show_topology()
-print(topology)  # 打印模块依赖拓扑图
-
-# 缓存装饰器：缓存函数调用结果（基于参数）
-@sdk.util.cache
-def get_expensive_result(param):
-    # 第一次调用后，相同参数将直接返回缓存结果
-    ...
-
-# 异步执行装饰器：将同步函数放入线程池中异步执行
-@sdk.util.run_in_executor
-def sync_task():
-    # 此函数将在独立线程中运行，避免阻塞事件循环
-    ...
-
-# 异步调用同步函数的快捷方式
-sdk.util.ExecAsync(sync_task)  # 在事件循环中
-
-```
-
----
-
-### 5. 模块间通信
-
-通过 `sdk.<ModuleName>` 访问其他模块实例：
-
-```python
-other_module = sdk.OtherModule
-result = other_module.some_method()
-```
-
-### 6. 适配器的方法调用
-通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
-```python
-adapter = sdk.adapter.AdapterName
-result = adapter.some_method()
-```
-
-## 二、模块开发
-
-### 1. 目录结构
-
-一个标准模块应包含以下两个核心文件：
-
-```
-MyModule/
-├── __init__.py    # 模块入口
-└── Core.py        # 核心逻辑
-```
-
-### 2. `__init__.py` 文件
-
-该文件必须定义 `moduleInfo` 字典，并导入 `Main` 类：
-
-```python
-moduleInfo = {
-    "meta": {
-        "name": "MyModule",
-        "version": "1.0.0",
-        "description": "我的功能模块",
-        "author": "开发者",
-        "license": "MIT"
-    },
-    "dependencies": {
-        "requires": [
-            "ModuleA==1.0.0",    # 必须依赖特定版本的模块
-            "ModuleB>=2.0.0",    # 必须依赖大于等于特定版本的模块
-            "ModuleC"            # 必须依赖模块，不限版本
-        ],
-        "optional": [
-            "ModuleD<=1.5.0",    # 可选依赖小于等于特定版本的模块
-            ["ModuleE>1.0.0", "ModuleF<3.0.0"]  # 可选依赖组（满足其中一个即可）
-        ],
-        "pip": []                # 第三方 pip 包依赖
-    }
-}
-
-from .Core import Main
-```
-> 若版本不匹配, SDK会在启动时抛出异常并退出程序
-
----
-
-### 3. `Core.py` 文件
-
-实现模块主类 `Main`，构造函数必须接收 `sdk` 参数：
-
-```python
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-        self.raiserr = sdk.raiserr
-
-        self.logger.info("模块已加载")
-
-    def print_hello(self):
-        self.logger.info("Hello World!")
-
-```
-
-- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
-```python
-# 这时候在其它地方可以访问到该模块
-from ErisPulse import sdk
-sdk.MyModule.print_hello()
-
-# 运行模块主程序（推荐使用CLI命令）
-# epsdk run main.py --reload
-```
-
-明白了，以下是符合你要求的 **简洁版开发者文档更新内容**，保持与原结构一致：
-
----
-
-### 4. 模块路径说明
-
-ErisPulse 支持两种模块加载路径：
-
-| 路径 | 来源 | 数据库存储 | 加载优先级 |
-|------|------|------------|------------|
-| `src/ErisPulse/modules/` | SDK 内置模块 | 是 | 较低 |
-| `./modules/`（项目目录） | 用户自定义模块 | 否 | 较高 |
-
-> - SDK 模块用于官方或长期维护的模块，支持启用/禁用状态控制。
-> - 项目模块仅运行时加载，不写入数据库，适合快速测试。
-
-若同一模块名存在于多个路径中，系统会根据权重选择加载路径，并输出提示日志：
-
-> 项目模块目录 | README.md :
-```
-此目录 (`./modules`) 用于存放项目专属模块。这些模块会优先于 SDK 内置模块被加载，但不会写入数据库。
-
-你可以将自定义模块放入此目录，SDK 会自动识别并加载它们。
-```
-
----
-
-## 三、平台适配器开发（Adapter）
-
-适配器用于对接不同平台的消息协议（如 Yunhu、OneBot 等），是框架与外部平台交互的核心组件。
-
-### 1. 目录结构
-
-```
-MyAdapter/
-├── __init__.py    # 模块入口
-└── Core.py        # 适配器逻辑
-```
-
-### 2. `__init__.py` 文件
-
-同样需定义 `moduleInfo` 并导入 `Main` 类：
-
-```python
-moduleInfo = {
-    "meta": {
-        "name": "MyAdapter",
-        "version": "1.0.0",
-        "description": "我的平台适配器",
-        "author": "开发者",
-        "license": "MIT"
-    },
-    "dependencies": {
-        "requires": [],
-        "optional": [],
-        "pip": ["aiohttp"]
-    }
-}
-
-from .Core import Main, MyPlatformAdapter
-
-adapterInfo = {
-    "myplatform": MyPlatformAdapter,
-}
-```
-
-### 3. `Core.py`
-实现适配器主类 `Main`，并提供适配器类继承 `sdk.BaseAdapter`：
-
-```python
-from ErisPulse import sdk
-
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        #   这里是模块的初始化类，当然你也可以在这里进行一些方法提供
-        #   在这里的方法可以通过 sdk.<模块名>.<方法名> 访问
-        #   如果该模块专精于Adapter，那么本类不建议提供方法
-        #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
-
-class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
-        # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
-        # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
-        # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
-        
-        # 可以重写Text方法提供平台特定实现
-        def Text(self, text: str):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-            
-        # 添加新的消息类型
-        def Image(self, file: bytes):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_image",
-                    file=file,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-
-    #   这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
-    #   因为这是必须继承的方法
-    async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError()
-
-    #   启动方法，你需要在这里定义你的adapter启动时候的逻辑
-    async def start(self):
-        raise NotImplementedError()
-    #   停止方法，你需要在这里进行必要的释放资源等逻辑
-    async def shutdown(self):
-        raise NotImplementedError()
-    #  适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.update() 来启动所有适配器，当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
-```
-### 接口规范说明
-
-#### 必须实现的方法
-
-| 方法 | 描述 |
-|------|------|
-| `call_api(endpoint: str, **params)` | 调用平台 API |
-| `start()` | 启动适配器 |
-| `shutdown()` | 关闭适配器资源 |
-
-#### 可选实现的方法
-
-| 方法 | 描述 |
-|------|------|
-| `on(event_type: str)` | 注册事件处理器 |
-| `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
-| `middleware(func: Callable)` | 添加中间件处理传入数据 |
-| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
-
-- 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
-- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到您提交到adapter的事件。
-
-> ⚠️ 注意：
-> - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.BaseAdapter.Send`；
-> - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
-
-## 4. DSL 风格消息接口（SendDSL）
-
-每个适配器可定义一组链式调用风格的方法，例如：
-
-```python
-class Send(sdk.BaseAdapter.Send):
-    def Text(self, text: str):
-        return asyncio.create_task(
-            self._adapter.call_api(...)
-        )
-
-    def Image(self, file: bytes):
-        return asyncio.create_task(
-            self._upload_file_and_call_api(...)
-        )
-```
-
-调用方式如下：
-
-```python
-sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
-```
-
-> 建议方法名首字母大写，保持命名统一。
-
----
-
-### 四、开发建议
-
-#### 1. 使用异步编程模型
-- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
-- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
-
-#### 2. 异常处理与日志记录
-- **统一异常处理机制**：结合 `sdk.raiserr` 注册自定义错误类型，提供清晰的错误信息。
-- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
-
-#### 3. 模块化与解耦设计
-- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
-- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
-
-#### 4. 性能优化
-- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
-- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
-
-#### 5. 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
-- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
----
-
-## 五、提交到官方源
-
-如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
-
- <!--- End of docs/DEVELOPMENT.md -->
 
