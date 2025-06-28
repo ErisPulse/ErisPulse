@@ -37,8 +37,8 @@ dependencies = [
 [project.scripts]
 epsdk = "ErisPulse.__main__:main"
 ep = "ErisPulse.__main__:main"
-ErisPulse = "ErisPulse.__main__:main"
-ErisPulse-CLI = "ErisPulse.__main__:main"
+ep-cli = "ErisPulse.__main__:main"
+ep-init = "ErisPulse.__init__:init"
 
 [tool.hatch]
 project.root = "src"
