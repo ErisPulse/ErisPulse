@@ -1,88 +1,64 @@
-# 使用 AI 根据文档生成模块
+# AI 模块生成指南
 
-ErisPulse 的完整文档已经为AI提供了所有开发所需的信息。现在，你可以直接将 **你的需求** 告诉 AI，并让它根据 ErisPulse 的规范和文档结构，为你生成符合要求的模块代码。
+使用本指南，你可以通过AI快速生成符合ErisPulse规范的模块代码，无需从零开始编写。
 
----
+## 快速开始
 
-## 你需要做的仅仅是：
+1. **获取开发文档**  
+   下载 `docs/ForAIDocs/ErisPulseDevelop.md` - 它包含了所有AI需要的开发规范、适配器接口和SDK参考。
 
-1. **阅读并理解我们的文档内容**
-   - 尤其是 DEVELOPMENT.md 中关于模块结构、SDK 接口调用方式等内容。
-2. **明确你要实现的功能**
-   - 包括：模块功能描述、使用的适配器（如 YunhuAdapter）、是否需要依赖其他模块等。
-3. **告诉 AI 你的需求**
-   - 描述得越清晰，AI 生成的结果越准确！
+2. **明确你的需求**  
+   确定模块功能、使用的适配器、依赖关系等核心要素。
 
----
+3. **向AI描述需求**  
+   使用下面的标准格式清晰地描述你的模块需求。
 
-## 如何向 AI 描述你的模块需求？
+## 如何描述你的需求
 
-请按照以下格式组织你的描述，确保包含以下信息：
+用简单的话告诉AI你想要什么模块，比如：
 
-### 示例模板：
-```
-我需要一个用于处理用户指令的模块，名为 CommandProcessor。
-该模块应该能够：
-- 监听 Yunhu 平台的指令事件
-- 当用户发送 "/help" 时，回复帮助信息
+"帮我做一个[模块名称]模块，它能[主要功能]"
+"这个模块需要：
+- [功能点1]
+- [功能点2]
+- [其他你想要的]
 
-请根据 ErisPulse 的模块规范和文档，为我生成完整的模块文件结构和代码
-```
+技术方面：
+- 用[适配器名称]来连接
+- 需要[依赖项]支持
+- [其他技术上的说明]"
 
----
+## 示例：通知提醒模块
 
-## 需要哪些文档来生成模块？
+### 你可以这样描述
 
-### 使用 AI 生成模块时，需要以下文档：
+"帮我做个ReminderBot模块，用来管理各种提醒
+这个模块需要：
+- 能接收用户设置的提醒，比如'/remind 明天10点开会'
+- 到时间了能自动发通知
+- 支持一次性和重复的提醒
 
-| 文档 | 内容说明 |
-|------|----------|
-| `DEVELOPMENT.md` | 提供模块结构、入口文件、Main 类定义规范 |
-| `ADAPTERS.md` | 如果你使用了适配器（如 Yunhu、Telegram），AI 会参考其中的事件监听和消息发送方式 |
-| `REFERENCE.md` | SDK 接口调用方式（如 `sdk.env`, `sdk.logger`, `sdk.adapter` 等） |
+技术方面：
+- 用YunhuAdapter来接收用户指令
+- 需要sdk.util.scheduler处理定时任务
+- 用sdk.storage保存提醒数据"
 
-#### 文档的位置在 ErisPulse 项目的 docs 目录下
-
-> 如果你有git环境，可以直接使用 git clone 命令下载 ErisPulse 项目:
-
-```bash
-git clone https://github.com/ErisPulse/ErisPulse.git
-```
-
-> 如果你没有git环境，也可以访问我们的github项目直接下载 ErisPulse 项目的压缩包：
-
-https://github.com/ErisPulse/ErisPulse
-
----
-
-## 示例：生成一个天气查询模块
-
-### 用户输入需求：
-
-> 我需要一个天气查询模块 WeatherBot，当用户在群聊中发送“/weather 上海”时，机器人会调用 OpenWeatherMap API 查询天气，并返回中文格式的天气信息。  
-> 要求：
-> - 使用 YunhuAdapter 监听指令消息；
-> - 使用 sdk.util.cache 缓存结果；
-> - 模块结构符合 ErisPulse 规范。
-
-并且将 docs 目录下的 `DEVELOPMENT.md`、`ADAPTERS.md`、`REFERENCE.md` 作为附件发送给 AI。
-
-### AI 输出示例：
+### AI生成代码示例
 
 ```python
 # __init__.py
 moduleInfo = {
     "meta": {
-        "name": "WeatherBot",
+        "name": "ReminderBot",
         "version": "1.0.0",
-        "description": "天气查询模块",
+        "description": "定时提醒模块",
         "author": "YourName",
         "license": "MIT"
     },
     "dependencies": {
         "requires": [],
         "optional": [],
-        "pip": ["aiohttp"]
+        "pip": []
     }
 }
 
@@ -91,54 +67,31 @@ from .Core import Main
 
 ```python
 # Core.py
-import aiohttp
-import time
+from datetime import datetime
 
 class Main:
     def __init__(self, sdk):
         self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-
+        self.storage = sdk.storage
+        self.scheduler = sdk.util.scheduler
+        
         @sdk.adapter.Yunhu.on("command")
-        async def handle_weather(data):
-            if data.event.message.commandName.lower() == "weather":
-                city = data.event.message.content.text.strip()
-                if not city:
-                    await self.sdk.adapter.Yunhu.Send.To(data.chat).Text("请指定城市名称，例如：/weather 上海")
-                    return
-                chat_type = data.event.chatType
-                sender_type = "group" if chat_type == "group" else "user"
-                sender_id = data.chat.chatId if chat_type == "group" else data.event.sender.senderId
-                await self.reply_weather(sender_type, sender_id, city)
+        async def handle_reminder(data):
+            if data.event.message.commandName == "remind":
+                await self.process_reminder(data)
 
-    @sdk.util.cache
-    async def get_weather_data(self, city: str):
-        api_key = self.env.get("WEATHER_API_KEY")
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                else:
-                    raise Exception("无法获取天气信息")
-
-    async def reply_weather(self, sender_type, sender_id, city):
-        try:
-            data = await self.get_weather_data(city)
-            temperature = data["main"]["temp"] - 273.15
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"{city} 的温度是 {temperature:.1f}℃")
-        except Exception as e:
-            self.logger.error(f"获取天气失败: {e}")
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"获取天气失败，请稍后再试。")
+    async def process_reminder(self, data):
+        # 实现提醒逻辑
+        pass
 ```
 
----
+## 常见问题
 
-你不再需要从零开始写模块。只需：
+Q: 如何测试生成的模块？  
+A: 将生成的代码放入ErisPulse的modules目录，重启服务即可加载测试。
 
-- 发送给AI, ErisPulse的文档内容  
-- 明确你的需求  
-- 向 AI 描述你的想法  
-- 运行并测试
+Q: 生成的代码不符合我的需求怎么办？  
+A: 可以调整需求描述后重新生成，或直接在生成代码基础上进行修改。
+
+Q: 需要更复杂的功能怎么办？  
+A: 可以将复杂功能拆分为多个简单模块，或分阶段实现。
