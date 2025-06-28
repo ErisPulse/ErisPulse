@@ -12,7 +12,7 @@
 | `list`     | `[--module=<name>] [--init]` | 列出模块（可筛选）                   | `epsdk list --module=payment`       |
 | `update`   | -                         | 更新模块索引                           | `epsdk update`                      |
 | `upgrade`  | `[--force] [--init]`      | 升级模块（`--force` 强制覆盖）        | `epsdk upgrade --force --init`      |
-| `install`  | `<module...> [--init]`    | 安装一个或多个模块（空格分隔）        | `epsdk install YunhuAdapter OpenAI` |
+| `install`  | `<module...> [--init]`    | 安装一个或多个模块（空格分隔），支持本地目录路径 | `epsdk install YunhuAdapter OpenAI`<br>`epsdk install .`<br>`epsdk install /path/to/module` |
 | `uninstall`| `<module> [--init]`       | 移除指定模块                          | `epsdk uninstall old-module --init` |
 
 ## 源管理
