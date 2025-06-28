@@ -180,22 +180,16 @@ moduleInfo = {
         "license": "MIT"
     },
     "dependencies": {
-        "requires": [
-            "ModuleA==1.0.0",    # 必须依赖特定版本的模块
-            "ModuleB>=2.0.0",    # 必须依赖大于等于特定版本的模块
-            "ModuleC"            # 必须依赖模块，不限版本
-        ],
-        "optional": [
-            "ModuleD<=1.5.0",    # 可选依赖小于等于特定版本的模块
-            ["ModuleE>1.0.0", "ModuleF<3.0.0"]  # 可选依赖组（满足其中一个即可）
-        ],
-        "pip": []                # 第三方 pip 包依赖
+        "requires": [],       # 必须依赖的其他模块
+        "optional": [],       # 可选依赖模块列表（满足其中一个即可）
+        "pip": []             # 第三方 pip 包依赖
     }
 }
 
 from .Core import Main
 ```
-> 若版本不匹配, SDK会在启动时抛出异常并退出程序
+
+> ⚠️ 注意：模块名必须唯一，避免与其他模块冲突。
 
 ---
 
@@ -228,32 +222,6 @@ sdk.MyModule.print_hello()
 # 运行模块主程序（推荐使用CLI命令）
 # epsdk run main.py --reload
 ```
-
-明白了，以下是符合你要求的 **简洁版开发者文档更新内容**，保持与原结构一致：
-
----
-
-### 4. 模块路径说明
-
-ErisPulse 支持两种模块加载路径：
-
-| 路径 | 来源 | 数据库存储 | 加载优先级 |
-|------|------|------------|------------|
-| `src/ErisPulse/modules/` | SDK 内置模块 | 是 | 较低 |
-| `./modules/`（项目目录） | 用户自定义模块 | 否 | 较高 |
-
-> - SDK 模块用于官方或长期维护的模块，支持启用/禁用状态控制。
-> - 项目模块仅运行时加载，不写入数据库，适合快速测试。
-
-若同一模块名存在于多个路径中，系统会根据权重选择加载路径，并输出提示日志：
-
-> 项目模块目录 | README.md :
-```
-此目录 (`./modules`) 用于存放项目专属模块。这些模块会优先于 SDK 内置模块被加载，但不会写入数据库。
-
-你可以将自定义模块放入此目录，SDK 会自动识别并加载它们。
-```
-
 ---
 
 ## 三、平台适配器开发（Adapter）
@@ -311,7 +279,7 @@ class Main:
         #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
+    class Send(super().Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
         # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
@@ -375,7 +343,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `sdk.BaseAdapter.Send`；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
 > - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
 
 ## 4. DSL 风格消息接口（SendDSL）
@@ -383,7 +351,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 每个适配器可定义一组链式调用风格的方法，例如：
 
 ```python
-class Send(sdk.BaseAdapter.Send):
+class Send(super().Send):
     def Text(self, text: str):
         return asyncio.create_task(
             self._adapter.call_api(...)
