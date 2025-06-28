@@ -549,7 +549,74 @@ def install_pip_dependencies(dependencies):
         shellprint.panel(f"安装pip依赖失败: {e.stderr}", "错误", "error")
         return False
 
+def install_local_module(module_path, force=False):
+    """安装本地目录中的模块"""
+    module_path = os.path.abspath(module_path)
+    if not os.path.exists(module_path):
+        shellprint.panel(f"路径不存在: {module_path}", "错误", "error")
+        return False
+    
+    # 尝试从目录名获取模块名
+    module_name = os.path.basename(module_path.rstrip('/\\'))
+    
+    # 检查是否是有效的模块目录
+    init_py = os.path.join(module_path, '__init__.py')
+    if not os.path.exists(init_py):
+        shellprint.panel(f"目录 {module_path} 不是一个有效的Python模块", "错误", "error")
+        return False
+    
+    # 尝试导入模块获取moduleInfo
+    try:
+        spec = importlib.util.spec_from_file_location(module_name, init_py)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if not hasattr(module, 'moduleInfo'):
+            shellprint.panel(f"模块 {module_name} 缺少 moduleInfo 定义", "错误", "error")
+            return False
+    except Exception as e:
+        shellprint.panel(f"导入模块 {module_name} 失败: {e}", "错误", "error")
+        return False
+    
+    module_info = mods.get_module(module_name)
+    if module_info and not force:
+        meta = module_info.get('info', {}).get('meta', {})
+        shellprint.panel(
+            f"{Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET}\n版本: {meta.get('version', '未知')}\n描述: {meta.get('description', '无描述')}",
+            "模块已存在",
+            "info"
+        )
+        if not shellprint.confirm("是否要强制重新安装？", default=False):
+            return False
+    
+    # 复制模块到modules目录
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    target_dir = os.path.join(script_dir, 'modules', module_name)
+    
+    try:
+        if os.path.exists(target_dir):
+            shutil.rmtree(target_dir)
+        shutil.copytree(module_path, target_dir)
+    except Exception as e:
+        shellprint.panel(f"复制模块文件失败: {e}", "错误", "error")
+        return False
+    
+    # 注册模块信息
+    mods.set_module(module_name, {
+        'status': True,
+        'info': {
+            'meta': module.moduleInfo.get('meta', {}),
+            'dependencies': module.moduleInfo.get('dependencies', {})
+        }
+    })
+    
+    shellprint.panel(f"本地模块 {Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET} 安装成功", "成功", "success")
+    return True
+
 def install_module(module_name, force=False):
+    # 检查是否是本地路径
+    if module_name.startswith('.') or os.path.isabs(module_name):
+        return install_local_module(module_name, force)
+        
     shellprint.panel(f"准备安装模块: {Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET}", "安装摘要", "info")
     last_update_time = env.get('last_origin_update_time', None)
     if last_update_time:
