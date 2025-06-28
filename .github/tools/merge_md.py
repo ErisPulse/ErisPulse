@@ -25,9 +25,14 @@ def merge_markdown_files(file_paths, output_file):
 if __name__ == "__main__":
     files_to_merge = [
         "README.md",
+        
         "docs/DEVELOPMENT.md",
-        "docs/ADAPTERS.md",
+        
         "docs/REFERENCE.md",
+
+        "docs/ADAPTERS.md",
+
+        "docs/CLI.md"
     ]
     output_file = "docs/ForAIDocs/ErisPulseDevelop.md"
 
