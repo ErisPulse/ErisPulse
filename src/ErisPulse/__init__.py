@@ -67,6 +67,7 @@ BaseModules = {
 }
 
 BaseErrors = {
+    "ExternalError"             : "外部捕获异常",
     "CaughtExternalError"       : "捕获的非SDK抛出的异常", 
     "InitError"                 : "SDK初始化错误",
     "MissingDependencyError"    : "缺少依赖错误",
@@ -100,7 +101,6 @@ def _prepare_environment() -> bool:
     except Exception as e:
         logger.error(f"环境准备失败: {e}")
         return False
-
 def _scan_modules(module_path: str) -> tuple[dict, list, list]:
     # 扫描并验证模块
     module_objs = {}
