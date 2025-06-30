@@ -88,7 +88,7 @@ for error, doc in BaseErrors.items():
         raise e
 
 def _prepare_environment() -> bool:
-    """准备环境并加载配置"""
+    # 检查环境
     logger.info("[Init] 准备初始化环境...")
     try:
         if env.create_env_file_if_not_exists():
@@ -102,7 +102,7 @@ def _prepare_environment() -> bool:
         return False
 
 def _scan_modules(module_path: str) -> tuple[dict, list, list]:
-    """扫描并验证模块"""
+    # 扫描并验证模块
     module_objs = {}
     enabled_modules = []
     disabled_modules = []
@@ -142,7 +142,7 @@ def _scan_modules(module_path: str) -> tuple[dict, list, list]:
     return module_objs, enabled_modules, disabled_modules
 
 def _validate_module(moduleObj, module_name: str) -> bool:
-    """验证模块基本结构"""
+    # 验证模块基本结构
     if not hasattr(moduleObj, "moduleInfo") or not isinstance(moduleObj.moduleInfo, dict):
         logger.warning(f"模块 {module_name} 缺少有效的 'moduleInfo' 字典")
         return False
@@ -155,7 +155,7 @@ def _validate_module(moduleObj, module_name: str) -> bool:
     return True
 
 def _check_dependencies(moduleObj, module_name: str, available_modules: list):
-    """检查模块依赖关系"""
+    # 检查模块依赖关系
     required_deps = moduleObj.moduleInfo.get("dependencies", {}).get("requires", [])
     if missing := [dep for dep in required_deps if dep not in available_modules]:
         logger.error(f"模块 {module_name} 缺少必需依赖: {missing}")
@@ -171,7 +171,7 @@ def _check_dependencies(moduleObj, module_name: str, available_modules: list):
         logger.warning(f"模块 {module_name} 缺少所有可选依赖: {optional_deps}")
 
 def _resolve_dependencies(modules: list, module_objs: dict) -> list:
-    """解析模块依赖关系并进行拓扑排序"""
+    # 解析模块依赖关系并进行拓扑排序
     dependencies = {}
     for module_name in modules:
         moduleObj = module_objs[module_name]
@@ -188,7 +188,7 @@ def _resolve_dependencies(modules: list, module_objs: dict) -> list:
     return sorted_modules
 
 def _register_adapters(modules: list, module_objs: dict) -> bool:
-    """注册所有适配器"""
+    # 注册适配器
     success = True
     logger.debug("[Init] 开始注册适配器...")
     for module_name in modules:
@@ -206,7 +206,7 @@ def _register_adapters(modules: list, module_objs: dict) -> bool:
     return success
 
 def _initialize_modules(modules: list, module_objs: dict) -> bool:
-    """初始化所有模块"""
+    # 初始化模块
     success = True
     logger.debug("[Init] 开始实例化模块...")
     for module_name in modules:
@@ -225,7 +225,6 @@ def _initialize_modules(modules: list, module_objs: dict) -> bool:
     return success
 
 def init() -> bool:
-    """初始化SDK，返回是否成功"""
     logger.info("[Init] SDK 正在初始化...")
     try:
         if not _prepare_environment():
@@ -236,7 +235,7 @@ def init() -> bool:
         
         if not enabled_modules:
             logger.warning("没有找到可用的模块")
-            return True  # 视为成功但无模块
+            return True
             
         sorted_modules = _resolve_dependencies(enabled_modules, module_objs)
         if not _register_adapters(sorted_modules, module_objs):
