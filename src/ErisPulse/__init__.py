@@ -87,12 +87,67 @@ for error, doc in BaseErrors.items():
         raiserr.register(error, doc=doc)
     except Exception as e:
         raise e
+def init_progress():
+    from pathlib import Path
+    env_file = Path("env.py")
+    main_file = Path("main.py")
+
+    if not env_file.exists():
+        content = '''# env.py
+# ErisPulse 环境配置文件
+# 本文件由 SDK 自动创建，请勿随意删除
+# 配置项可通过 sdk.env.get(key, default) 获取，或使用 sdk.env.set(key, value) 设置
+# 你也可以像写普通变量一样直接定义配置项，例如：
+#
+#     MY_CONFIG = "value"
+#     MY_CONFIG_2 = {"key": "value"}
+#     MY_CONFIG_3 = [1, 2, 3]
+#
+#     sdk.env.set("MY_CONFIG", "value")
+#     sdk.env.set("MY_CONFIG_2", {"key": "value"})
+#     sdk.env.set("MY_CONFIG_3", [1, 2, 3])
+#
+# 这些变量会自动被加载到 SDK 的配置系统中，可通过 sdk.env.MY_CONFIG 或 sdk.env.get("MY_CONFIG") 访问。
+
+from ErisPulse import sdk
+'''
+    if not main_file.exists():
+        content += '''# main.py
+# ErisPulse 主程序文件
+# 本文件由 SDK 自动创建，您可随意修改
+
+from ErisPulse import sdk
+
+async def main():
+    try:
+        sdk.init()
+        await sdk.adapter.startup()
+
+    except Exception as e:
+        sdk.logger.error(e)
+    except KeyboardInterrupt:
+        sdk.logger.info("正在停止程序")
+    finally:
+        await sdk.shutdown()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+'''
+        try:
+            with open(env_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            return True
+        except Exception as e:
+            from . import sdk
+            sdk.logger.error(f"无法初始化项目环境: {e}")
+            return False
+    return False
 
 def _prepare_environment() -> bool:
     # 检查环境
     logger.info("[Init] 准备初始化环境...")
     try:
-        if env.create_env_file_if_not_exists():
+        if init_progress():
             logger.info("[Init] 项目首次初始化，建议先配置环境变量")
             if input("是否立即退出？(y/n): ").strip().lower() == "y":
                 return False
