@@ -93,7 +93,7 @@ def init_progress():
     main_file = Path("main.py")
 
     if not env_file.exists():
-        content = '''# env.py
+        env_content = '''# env.py
 # ErisPulse 环境配置文件
 # 本文件由 SDK 自动创建，请勿随意删除
 # 配置项可通过 sdk.env.get(key, default) 获取，或使用 sdk.env.set(key, value) 设置
@@ -112,7 +112,7 @@ def init_progress():
 from ErisPulse import sdk
 '''
     if not main_file.exists():
-        content += '''# main.py
+        main_content = '''# main.py
 # ErisPulse 主程序文件
 # 本文件由 SDK 自动创建，您可随意修改
 
@@ -135,10 +135,11 @@ if __name__ == "__main__":
 '''
         try:
             with open(env_file, "w", encoding="utf-8") as f:
-                f.write(content)
+                f.write(env_content)
+            with open(main_file, "w", encoding="utf-8") as f:
+                f.write(main_content)
             return True
         except Exception as e:
-            from . import sdk
             sdk.logger.error(f"无法初始化项目环境: {e}")
             return False
     return False
