@@ -3,13 +3,6 @@
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-## 核心功能
-1. 适配器基类定义
-2. 链式消息发送DSL
-3. 适配器注册和管理
-4. 事件处理系统
-5. 中间件支持
-
 ## API 文档
 
 ### 适配器基类 (BaseAdapter)
@@ -229,124 +222,6 @@ import atexit
 atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 ```
 
-## 最佳实践
-
-1. 适配器实现
-```python
-class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.BaseAdapter.Send):
-        # 实现基本消息类型
-        def Text(self, text: str):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-            
-        # 添加自定义消息类型
-        def Image(self, file: bytes):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_image",
-                    file=file,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-    
-    async def call_api(self, endpoint: str, **params):
-        # 实现API调用逻辑
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.api_base}{endpoint}",
-                json=params
-            ) as response:
-                return await response.json()
-                
-    async def start(self):
-        # 初始化连接
-        self.client = await self._create_client()
-        # 启动事件监听
-        asyncio.create_task(self._listen_events())
-        
-    async def shutdown(self):
-        # 清理资源
-        if self.client:
-            await self.client.close()
-```
-
-2. 事件处理
-```python
-# 注册事件处理器
-adapter = MyPlatformAdapter()
-
-@adapter.on("message")
-async def handle_message(data):
-    # 消息处理逻辑
-    if data["type"] == "text":
-        await process_text_message(data)
-    elif data["type"] == "image":
-        await process_image_message(data)
-
-# 使用中间件
-@adapter.middleware
-async def auth_middleware(data):
-    if not verify_token(data.get("token")):
-        return None
-    return data
-
-@adapter.middleware
-async def log_middleware(data):
-    sdk.logger.info(f"处理事件: {data}")
-    return data
-```
-
-3. 消息发送
-```python
-# 基本消息发送
-async def send_welcome(user_id: str):
-    await sdk.adapter.Platform.Send.To("user", user_id).Text("欢迎！")
-
-# 复杂消息处理
-async def process_group_notification(group_id: str, event: dict):
-    # 发送格式化消息
-    message = format_notification(event)
-    await sdk.adapter.Platform.Send.To("group", group_id).Text(message)
-    
-    # 发送附加文件
-    if event.get("has_attachment"):
-        file_data = await get_attachment(event["attachment_id"])
-        await sdk.adapter.Platform.Send.To("group", group_id).File(file_data)
-```
-
-## 注意事项
-
-1. 适配器实现
-   - 确保正确实现所有抽象方法
-   - 处理所有可能的异常情况
-   - 实现适当的重试机制
-   - 注意资源的正确释放
-
-2. 事件处理
-   - 避免在事件处理器中执行长时间操作
-   - 使用适当的错误处理
-   - 考虑事件处理的顺序性
-   - 合理使用中间件过滤机制
-
-3. 消息发送
-   - 实现消息发送的限流机制
-   - 处理发送失败的情况
-   - 注意消息格式的平台兼容性
-   - 大文件传输时考虑分片
-
-4. 生命周期管理
-   - 确保适配器正确启动和关闭
-   - 处理意外断开的情况
-   - 实现自动重连机制
-   - 注意资源泄漏问题
 """
 
 import functools

@@ -3,13 +3,6 @@
 
 提供错误类型注册、抛出和管理功能，集成全局异常处理。支持自定义错误类型、错误链追踪和全局异常捕获。
 
-## 核心功能
-1. 错误类型注册和管理
-2. 动态错误抛出
-3. 全局异常处理
-4. 错误信息追踪
-5. 异步错误处理
-
 ## API 文档
 
 ### 错误注册
@@ -73,87 +66,6 @@ except Exception as e:
     print(f"捕获到错误: {e}")
 ```
 
-### 全局异常处理
-#### global_exception_handler(exc_type: type, exc_value: Exception, exc_traceback: traceback)
-全局同步异常处理器。
-- 参数:
-  - exc_type: 异常类型
-  - exc_value: 异常值
-  - exc_traceback: 异常追踪信息
-- 示例:
-```python
-# 系统会自动捕获未处理的异常
-def risky_operation():
-    raise Exception("未处理的异常")
-    
-# 异常会被global_exception_handler捕获并处理
-risky_operation()
-```
-
-#### async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict)
-全局异步异常处理器。
-- 参数:
-  - loop: 事件循环实例
-  - context: 异常上下文信息
-- 示例:
-```python
-async def async_operation():
-    raise Exception("异步操作错误")
-    
-# 异常会被async_exception_handler捕获并处理
-asyncio.create_task(async_operation())
-```
-
-## 最佳实践
-1. 错误类型注册
-```python
-# 为特定功能模块注册错误类型
-sdk.raiserr.register("DatabaseError", "数据库操作错误")
-sdk.raiserr.register("NetworkError", "网络连接错误")
-sdk.raiserr.register("ValidationError", "数据验证错误")
-
-# 使用继承关系组织错误类型
-class ModuleError(Exception):
-    pass
-sdk.raiserr.register("ConfigError", "配置错误", ModuleError)
-sdk.raiserr.register("PluginError", "插件错误", ModuleError)
-```
-
-2. 错误处理流程
-```python
-def process_data(data):
-    try:
-        if not data:
-            sdk.raiserr.ValidationError("数据不能为空")
-        if not isinstance(data, dict):
-            sdk.raiserr.ValidationError("数据必须是字典类型")
-            
-        # 处理数据...
-        
-    except Exception as e:
-        # 错误会被自动记录并处理
-        sdk.raiserr.ProcessingError(f"数据处理失败: {str(e)}")
-```
-
-3. 异步环境使用
-```python
-async def async_task():
-    try:
-        result = await some_async_operation()
-        if not result.success:
-            sdk.raiserr.AsyncOperationError("异步操作失败")
-    except Exception as e:
-        # 异步错误会被async_exception_handler捕获
-        raise
-```
-
-## 注意事项
-1. 错误类型命名应具有描述性，便于理解错误来源
-2. 错误消息应包含足够的上下文信息，便于调试
-3. 适当使用exit参数，只在致命错误时设置为True
-4. 避免在全局异常处理器中执行耗时操作
-5. 确保异步代码中的错误能够被正确捕获和处理
-
 """
 
 import sys
@@ -209,24 +121,16 @@ raiserr = Error()
 
 # 全局异常处理器
 def global_exception_handler(exc_type, exc_value, exc_traceback):
-    from .logger import logger
     error_message = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    logger.error(f"未处理的异常被捕获:\n{error_message}")
-    raiserr.CaughtExternalError(
-        f"检测到外部异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {exc_type.__name__}: {exc_value}\nTraceback:\n{error_message}"
+    raiserr.ExternalError(
+        f"{exc_type.__name__}: {exc_value}\nTraceback:\n{error_message}"
     )
-sys.excepthook = global_exception_handler
-
 def async_exception_handler(loop, context):
-    from .logger import logger
     exception = context.get('exception')
-    message = context.get('message', 'Async error')
-    if exception:
-        tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__))
-        logger.error(f"异步任务异常: {message}\n{tb}")
-        raiserr.CaughtExternalError(
-            f"检测到异步任务异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(exception).__name__}: {exception}\nTraceback:\n{tb}"
-        )
-    else:
-        logger.warning(f"异步任务警告: {message}")
+    tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+    raiserr.ExternalError(
+        f"{type(exception).__name__}: {exception}\nTraceback:\n{tb}"
+    )
+
+sys.excepthook = global_exception_handler
 asyncio.get_event_loop().set_exception_handler(async_exception_handler)

@@ -992,7 +992,6 @@ def list_modules(module_name=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        
         prog="epsdk",
         formatter_class=argparse.RawTextHelpFormatter
     )
