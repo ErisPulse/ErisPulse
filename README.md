@@ -77,7 +77,45 @@ uv pip install ErisPulse --upgrade  # 安装框架
 
 ## 测试与开发
 
-### 运行测试套件
+### 克隆项目并进入目录
+
+```bash
+git clone https://github.com/ErisPulse/ErisPulse.git
+cd ErisPulse
+```
+
+### 使用 `uv` 同步项目环境
+
+```bash
+uv sync
+
+# 启动虚拟环境
+source .venv/bin/activate   
+# Windows: .venv\Scripts\activate
+```
+
+> `ErisPulse` 目前正在使用 `python3.13` 进行开发(所以您同步环境时会自动安装 `3.13`)，但也可以使用其他版本(版本不应低于 `3.10`)。
+
+### 安装依赖并开始
+
+```bash
+uv pip install -e .
+```
+
+这将以“开发模式”安装 SDK，所有本地修改都会立即生效。
+
+### 验证安装
+
+运行以下命令确认 SDK 正常加载：
+
+```bash
+python -c "from ErisPulse import sdk; sdk.init()"
+```
+
+### 运行测试
+
+我们提供了一个交互式测试脚本，可以帮助您快速验证SDK功能：
+
 ```bash
 uv run devs/test.py
 ```
