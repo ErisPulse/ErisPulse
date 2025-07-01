@@ -346,7 +346,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 > - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
 > - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
 
-## 4. DSL 风格消息接口（SendDSL）
+### 4. DSL 风格消息接口（SendDSL）
 
 每个适配器可定义一组链式调用风格的方法，例如：
 
@@ -372,6 +372,25 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 > 建议方法名首字母大写，保持命名统一。
 
 ---
+### 四、最简 main.py 示例
+```python
+from ErisPulse import sdk
+
+async def main():
+    try:
+        sdk.init()
+        await sdk.adapter.startup()
+
+    except Exception as e:
+        sdk.logger.error(e)
+    except KeyboardInterrupt:
+        sdk.logger.info("正在停止程序")
+    finally:
+        await sdk.shutdown()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 
 ### 四、开发建议
 

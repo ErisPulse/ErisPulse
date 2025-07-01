@@ -44,6 +44,7 @@ epsdk origin add https://example.com/map.json
 """
 
 import argparse
+import importlib
 import os
 import sys
 import time
@@ -550,29 +551,27 @@ def install_pip_dependencies(dependencies):
         return False
 
 def install_local_module(module_path, force=False):
-    """安装本地目录中的模块"""
-    module_path = os.path.abspath(module_path)
-    if not os.path.exists(module_path):
-        shellprint.panel(f"路径不存在: {module_path}", "错误", "error")
-        return False
-    
-    # 尝试从目录名获取模块名
-    module_name = os.path.basename(module_path.rstrip('/\\'))
-    
-    # 检查是否是有效的模块目录
-    init_py = os.path.join(module_path, '__init__.py')
-    if not os.path.exists(init_py):
-        shellprint.panel(f"目录 {module_path} 不是一个有效的Python模块", "错误", "error")
-        return False
-    
-    # 尝试导入模块获取moduleInfo
     try:
-        spec = importlib.util.spec_from_file_location(module_name, init_py)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        if not hasattr(module, 'moduleInfo'):
-            shellprint.panel(f"模块 {module_name} 缺少 moduleInfo 定义", "错误", "error")
+        module_path = os.path.abspath(module_path)
+        if not os.path.exists(module_path):
+            shellprint.panel(f"路径不存在: {module_path}", "错误", "error")
             return False
+        
+        module_name = os.path.basename(module_path.rstrip('/\\'))
+        init_py = os.path.join(module_path, '__init__.py')
+        
+        if not os.path.exists(init_py):
+            shellprint.panel(f"目录 {module_path} 不是一个有效的Python模块", "错误", "error")
+            return False
+        import sys
+        sys.path.insert(0, os.path.dirname(module_path))
+        try:
+            module = importlib.import_module(module_name)
+            if not hasattr(module, 'moduleInfo'):
+                shellprint.panel(f"模块 {module_name} 缺少 moduleInfo 定义", "错误", "error")
+                return False
+        finally:
+            sys.path.remove(os.path.dirname(module_path))
     except Exception as e:
         shellprint.panel(f"导入模块 {module_name} 失败: {e}", "错误", "error")
         return False
