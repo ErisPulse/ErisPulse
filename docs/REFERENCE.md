@@ -87,13 +87,6 @@ epsdk origin add https://example.com/map.json
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-## 核心功能
-1. 适配器基类定义
-2. 链式消息发送DSL
-3. 适配器注册和管理
-4. 事件处理系统
-5. 中间件支持
-
 ## API 文档
 
 ### 适配器基类 (BaseAdapter)
@@ -313,137 +306,11 @@ import atexit
 atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 ```
 
-## 最佳实践
-
-1. 适配器实现
-```python
-class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.BaseAdapter.Send):
-        # 实现基本消息类型
-        def Text(self, text: str):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-            
-        # 添加自定义消息类型
-        def Image(self, file: bytes):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_image",
-                    file=file,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-    
-    async def call_api(self, endpoint: str, **params):
-        # 实现API调用逻辑
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.api_base}{endpoint}",
-                json=params
-            ) as response:
-                return await response.json()
-                
-    async def start(self):
-        # 初始化连接
-        self.client = await self._create_client()
-        # 启动事件监听
-        asyncio.create_task(self._listen_events())
-        
-    async def shutdown(self):
-        # 清理资源
-        if self.client:
-            await self.client.close()
-```
-
-2. 事件处理
-```python
-# 注册事件处理器
-adapter = MyPlatformAdapter()
-
-@adapter.on("message")
-async def handle_message(data):
-    # 消息处理逻辑
-    if data["type"] == "text":
-        await process_text_message(data)
-    elif data["type"] == "image":
-        await process_image_message(data)
-
-# 使用中间件
-@adapter.middleware
-async def auth_middleware(data):
-    if not verify_token(data.get("token")):
-        return None
-    return data
-
-@adapter.middleware
-async def log_middleware(data):
-    sdk.logger.info(f"处理事件: {data}")
-    return data
-```
-
-3. 消息发送
-```python
-# 基本消息发送
-async def send_welcome(user_id: str):
-    await sdk.adapter.Platform.Send.To("user", user_id).Text("欢迎！")
-
-# 复杂消息处理
-async def process_group_notification(group_id: str, event: dict):
-    # 发送格式化消息
-    message = format_notification(event)
-    await sdk.adapter.Platform.Send.To("group", group_id).Text(message)
-    
-    # 发送附加文件
-    if event.get("has_attachment"):
-        file_data = await get_attachment(event["attachment_id"])
-        await sdk.adapter.Platform.Send.To("group", group_id).File(file_data)
-```
-
-## 注意事项
-
-1. 适配器实现
-   - 确保正确实现所有抽象方法
-   - 处理所有可能的异常情况
-   - 实现适当的重试机制
-   - 注意资源的正确释放
-
-2. 事件处理
-   - 避免在事件处理器中执行长时间操作
-   - 使用适当的错误处理
-   - 考虑事件处理的顺序性
-   - 合理使用中间件过滤机制
-
-3. 消息发送
-   - 实现消息发送的限流机制
-   - 处理发送失败的情况
-   - 注意消息格式的平台兼容性
-   - 大文件传输时考虑分片
-
-4. 生命周期管理
-   - 确保适配器正确启动和关闭
-   - 处理意外断开的情况
-   - 实现自动重连机制
-   - 注意资源泄漏问题
-
 ## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/db.py))
 
 # 环境配置
 
 提供键值存储、事务支持、快照和恢复功能，用于管理框架配置数据。基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
-
-## 核心功能
-1. 键值存储
-2. 事务支持
-3. 数据库快照
-4. 自动备份
-5. 配置文件集成
 
 ## API 文档
 
@@ -866,46 +733,21 @@ def safe_bulk_update(updates):
         raise
 ```
 
-## 注意事项
-
-1. 性能优化
-   - 使用批量操作代替多次单独操作
-   - 合理使用事务减少数据库操作次数
-   - 避免存储过大的值，考虑分片存储
-
-2. 数据安全
-   - 定期创建快照备份重要数据
-   - 使用事务确保数据一致性
-   - 不要存储敏感信息（如密码）的明文
-
-3. 配置管理
-   - 使用有意义的键名和层次结构
-   - 记录配置的更新历史
-   - 定期清理不再使用的配置
-
-4. 错误处理
-   - 所有数据库操作都应该有错误处理
-   - 重要操作前创建快照以便回滚
-   - 记录所有关键操作的日志
-
 ## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/logger.py))
 
 # 日志系统
 
 提供模块化、多级别的日志记录功能，支持内存存储和文件输出。实现了模块级别的日志控制、彩色输出和灵活的存储选项。
 
-## 核心功能
-1. 多级别日志记录
-2. 模块级别日志控制
-3. 内存日志存储
-4. 文件输出支持
-5. 自动调用者识别
-6. 异常捕获装饰器
-
 ## API 文档
 
 ### 基本日志操作
-#### debug(msg: str, *args, **kwargs) -> None
+
+以debug为例：
+> 此外，还有其他级别的日志记录函数，如info, warning, error, critical等，用法相同。
+
+debug(msg: str, *args, **kwargs) -> None
+
 记录调试级别的日志信息。
 - 参数:
   - msg: 日志消息
@@ -914,107 +756,9 @@ def safe_bulk_update(updates):
 - 返回:
   - None
 - 示例:
+
 ```python
-# 基本调试信息
-sdk.logger.debug("初始化配置")
-
-# 带有变量的调试信息
-config_value = get_config("timeout")
-sdk.logger.debug(f"读取配置: timeout = {config_value}")
-
-# 在条件下记录调试信息
-if is_development_mode():
-    sdk.logger.debug("开发模式下的详细信息: %s", detailed_info)
-```
-
-#### info(msg: str, *args, **kwargs) -> None
-记录信息级别的日志信息。
-- 参数:
-  - msg: 日志消息
-  - *args: 传递给底层logger的位置参数
-  - **kwargs: 传递给底层logger的关键字参数
-- 返回:
-  - None
-- 示例:
-```python
-# 基本信息记录
-sdk.logger.info("应用已启动")
-
-# 带有上下文的信息
-user_count = get_active_users()
-sdk.logger.info(f"当前活跃用户: {user_count}")
-
-# 记录操作结果
-sdk.logger.info("数据导入完成，共处理 %d 条记录", record_count)
-```
-
-#### warning(msg: str, *args, **kwargs) -> None
-记录警告级别的日志信息。
-- 参数:
-  - msg: 日志消息
-  - *args: 传递给底层logger的位置参数
-  - **kwargs: 传递给底层logger的关键字参数
-- 返回:
-  - None
-- 示例:
-```python
-# 基本警告信息
-sdk.logger.warning("配置文件未找到，使用默认配置")
-
-# 性能警告
-if response_time > threshold:
-    sdk.logger.warning(f"响应时间过长: {response_time}ms > {threshold}ms")
-
-# 资源使用警告
-memory_usage = get_memory_usage()
-if memory_usage > 80:
-    sdk.logger.warning("内存使用率高: %d%%", memory_usage)
-```
-
-#### error(msg: str, *args, **kwargs) -> None
-记录错误级别的日志信息。
-- 参数:
-  - msg: 日志消息
-  - *args: 传递给底层logger的位置参数
-  - **kwargs: 传递给底层logger的关键字参数
-- 返回:
-  - None
-- 示例:
-```python
-# 基本错误信息
-sdk.logger.error("数据库连接失败")
-
-# 带有异常信息的错误
-try:
-    process_data()
-except Exception as e:
-    sdk.logger.error(f"数据处理错误: {str(e)}")
-
-# 带有错误代码的错误
-sdk.logger.error("API请求失败，状态码: %d, 错误: %s", status_code, error_message)
-```
-
-#### critical(msg: str, *args, **kwargs) -> None
-记录致命错误级别的日志信息，并终止程序。
-- 参数:
-  - msg: 日志消息
-  - *args: 传递给底层logger的位置参数
-  - **kwargs: 传递给底层logger的关键字参数
-- 返回:
-  - None (程序会终止)
-- 示例:
-```python
-# 致命错误记录
-if not database_connection:
-    sdk.logger.critical("无法连接到主数据库，应用无法继续运行")
-
-# 安全相关的致命错误
-if security_breach_detected():
-    sdk.logger.critical("检测到安全漏洞，强制关闭系统")
-
-# 资源耗尽的致命错误
-if disk_space < min_required:
-    sdk.logger.critical("磁盘空间不足 (%dMB)，无法继续运行", disk_space)
+sdk.logger.debug("这是一条日志")
 ```
 
 ### 日志级别控制
@@ -1105,125 +849,11 @@ import atexit
 atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 ```
 
-### 异常捕获 (准备弃用)
-#### catch(func_or_level=None, level="error")
-异常捕获装饰器。
-- 参数:
-  - func_or_level: 要装饰的函数或日志级别
-  - level: 捕获异常时使用的日志级别
-- 返回:
-  - function: 装饰后的函数
-- 注意:
-  - 此功能已集成到 raiserr 模块中，建议使用 raiserr 进行异常处理
-- 示例:
-```python
-# 基本用法 (不推荐，请使用raiserr)
-@sdk.logger.catch
-def risky_function():
-    # 可能抛出异常的代码
-    process_data()
-
-# 指定日志级别 (不推荐，请使用raiserr)
-@sdk.logger.catch(level="critical")
-def very_important_function():
-    # 关键操作
-    update_database()
-```
-
-## 最佳实践
-1. 日志级别使用
-```python
-# 开发环境使用详细日志
-if is_development():
-    sdk.logger.set_level("DEBUG")
-    sdk.logger.debug("详细的调试信息")
-else:
-    sdk.logger.set_level("INFO")
-    
-# 性能敏感模块使用更高级别
-sdk.logger.set_module_level("PerformanceModule", "WARNING")
-```
-
-2. 结构化日志信息
-```python
-# 使用一致的格式
-def log_api_request(endpoint, method, status, duration):
-    sdk.logger.info(
-        f"API请求: {method} {endpoint} - 状态: {status}, 耗时: {duration}ms"
-    )
-
-# 包含关键上下文
-def log_user_action(user_id, action, result):
-    sdk.logger.info(
-        f"用户操作: [用户:{user_id}] {action} - 结果: {result}"
-    )
-```
-
-3. 日志文件管理
-```python
-# 按日期分割日志文件
-from datetime import datetime
-import os
-
-def setup_logging():
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    
-    today = datetime.now().strftime("%Y-%m-%d")
-    log_file = os.path.join(log_dir, f"app_{today}.log")
-    
-    sdk.logger.set_output_file(log_file)
-    sdk.logger.info(f"日志文件已设置: {log_file}")
-```
-
-4. 异常处理与日志
-```python
-# 推荐方式：使用raiserr结合logger
-def process_with_logging():
-    try:
-        result = perform_operation()
-        sdk.logger.info(f"操作成功: {result}")
-        return result
-    except Exception as e:
-        sdk.logger.error(f"操作失败: {str(e)}")
-        sdk.raiserr.OperationError(f"处理失败: {str(e)}")
-```
-
-## 注意事项
-1. 日志级别选择
-   - DEBUG: 详细的调试信息，仅在开发环境使用
-   - INFO: 常规操作信息，适用于生产环境
-   - WARNING: 潜在问题或异常情况
-   - ERROR: 错误但不影响整体功能
-   - CRITICAL: 致命错误，导致程序终止
-
-2. 性能考虑
-   - 避免在高频循环中记录过多日志
-   - 使用适当的日志级别减少不必要的输出
-   - 考虑日志文件大小和轮转策略
-
-3. 敏感信息保护
-   - 不要记录密码、令牌等敏感信息
-   - 在记录用户数据前进行脱敏处理
-   - 遵循数据保护法规要求
-
-4. 迁移建议
-   - 从catch装饰器迁移到raiserr模块
-   - 使用结构化的错误处理方式
-   - 结合日志和错误管理实现完整的异常处理流程
-
 ## mods (source: [ErisPulse/mods.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/mods.py))
 
 # 模块管理系统
 
 提供模块的注册、状态管理和依赖解析功能。支持模块信息存储、状态切换和批量操作。
-
-## 核心功能
-1. 模块信息管理
-2. 模块状态控制
-3. 批量模块操作
-4. 存储前缀自定义
-5. 模块依赖管理
 
 ## API 文档
 
@@ -1472,89 +1102,11 @@ custom_status_key = f"{sdk.mods.status_prefix}custom.{module_name}"
 sdk.env.set(custom_status_key, is_active)
 ```
 
-## 最佳实践
-1. 模块信息结构
-```python
-# 推荐的模块信息结构
-module_info = {
-    "status": True,  # 模块启用状态
-    "info": {
-        "meta": {
-            "name": "ModuleName",  # 模块名称
-            "version": "1.0.0",    # 模块版本
-            "description": "模块描述",
-            "author": "作者",
-            "license": "MIT",
-            "tags": ["tag1", "tag2"]  # 分类标签
-        },
-        "dependencies": {
-            "requires": ["RequiredModule1"],  # 必需依赖
-            "optional": ["OptionalModule1"],  # 可选依赖
-            "pip": ["package1", "package2"]   # pip包依赖
-        }
-    },
-    "config": {  # 模块配置（可选）
-        "setting1": "value1",
-        "setting2": "value2"
-    }
-}
-```
-
-2. 模块状态管理
-```python
-# 根据条件启用/禁用模块
-def toggle_modules_by_environment():
-    env_type = get_environment_type()
-    
-    # 开发环境启用调试模块
-    if env_type == "development":
-        sdk.mods.set_module_status("DebugModule", True)
-        sdk.mods.set_module_status("PerformanceModule", False)
-    
-    # 生产环境禁用调试模块，启用性能模块
-    elif env_type == "production":
-        sdk.mods.set_module_status("DebugModule", False)
-        sdk.mods.set_module_status("PerformanceModule", True)
-```
-
-3. 模块依赖检查
-```python
-# 检查模块依赖
-def check_module_dependencies(module_name):
-    module_info = sdk.mods.get_module(module_name)
-    if not module_info:
-        return False
-        
-    dependencies = module_info.get("info", {}).get("dependencies", {}).get("requires", [])
-    
-    for dep in dependencies:
-        dep_info = sdk.mods.get_module(dep)
-        if not dep_info or not dep_info.get("status", False):
-            sdk.logger.warning(f"模块 {module_name} 的依赖 {dep} 未启用或不存在")
-            return False
-            
-    return True
-```
-
-## 注意事项
-1. 模块名称应唯一，避免冲突
-2. 模块信息结构应保持一致，便于管理
-3. 更新模块信息前应先获取现有信息，避免覆盖
-4. 批量操作时注意性能影响
-5. 自定义前缀时确保不与系统其他键冲突
-
 ## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/raiserr.py))
 
 # 错误管理系统
 
 提供错误类型注册、抛出和管理功能，集成全局异常处理。支持自定义错误类型、错误链追踪和全局异常捕获。
-
-## 核心功能
-1. 错误类型注册和管理
-2. 动态错误抛出
-3. 全局异常处理
-4. 错误信息追踪
-5. 异步错误处理
 
 ## API 文档
 
@@ -1618,87 +1170,6 @@ try:
 except Exception as e:
     print(f"捕获到错误: {e}")
 ```
-
-### 全局异常处理
-#### global_exception_handler(exc_type: type, exc_value: Exception, exc_traceback: traceback)
-全局同步异常处理器。
-- 参数:
-  - exc_type: 异常类型
-  - exc_value: 异常值
-  - exc_traceback: 异常追踪信息
-- 示例:
-```python
-# 系统会自动捕获未处理的异常
-def risky_operation():
-    raise Exception("未处理的异常")
-    
-# 异常会被global_exception_handler捕获并处理
-risky_operation()
-```
-
-#### async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict)
-全局异步异常处理器。
-- 参数:
-  - loop: 事件循环实例
-  - context: 异常上下文信息
-- 示例:
-```python
-async def async_operation():
-    raise Exception("异步操作错误")
-    
-# 异常会被async_exception_handler捕获并处理
-asyncio.create_task(async_operation())
-```
-
-## 最佳实践
-1. 错误类型注册
-```python
-# 为特定功能模块注册错误类型
-sdk.raiserr.register("DatabaseError", "数据库操作错误")
-sdk.raiserr.register("NetworkError", "网络连接错误")
-sdk.raiserr.register("ValidationError", "数据验证错误")
-
-# 使用继承关系组织错误类型
-class ModuleError(Exception):
-    pass
-sdk.raiserr.register("ConfigError", "配置错误", ModuleError)
-sdk.raiserr.register("PluginError", "插件错误", ModuleError)
-```
-
-2. 错误处理流程
-```python
-def process_data(data):
-    try:
-        if not data:
-            sdk.raiserr.ValidationError("数据不能为空")
-        if not isinstance(data, dict):
-            sdk.raiserr.ValidationError("数据必须是字典类型")
-            
-        # 处理数据...
-        
-    except Exception as e:
-        # 错误会被自动记录并处理
-        sdk.raiserr.ProcessingError(f"数据处理失败: {str(e)}")
-```
-
-3. 异步环境使用
-```python
-async def async_task():
-    try:
-        result = await some_async_operation()
-        if not result.success:
-            sdk.raiserr.AsyncOperationError("异步操作失败")
-    except Exception as e:
-        # 异步错误会被async_exception_handler捕获
-        raise
-```
-
-## 注意事项
-1. 错误类型命名应具有描述性，便于理解错误来源
-2. 错误消息应包含足够的上下文信息，便于调试
-3. 适当使用exit参数，只在致命错误时设置为True
-4. 避免在全局异常处理器中执行耗时操作
-5. 确保异步代码中的错误能够被正确捕获和处理
 
 ## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/util.py))
 
