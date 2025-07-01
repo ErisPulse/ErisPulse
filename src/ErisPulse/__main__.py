@@ -1040,6 +1040,9 @@ def main():
     upgrade_parser = subparsers.add_parser('upgrade', help='升级模块列表')
     upgrade_parser.add_argument('--force', action='store_true', help='跳过二次确认，强制更新')
     
+    # 初始化命令
+    init_parser = subparsers.add_parser('init', help='初始化模块数据库')
+    
     origin_parser = subparsers.add_parser('origin', help='管理模块源')
     origin_subparsers = origin_parser.add_subparsers(
         dest='origin_command', 
@@ -1218,6 +1221,15 @@ def main():
                 runpy.run_path(script_path, run_name="__main__")
             except KeyboardInterrupt:
                 shellprint.panel("脚本执行已中断", "中断", "info")
+            
+    elif args.command == 'init':
+        print(f"{Shell_Printer.GREEN}正在初始化项目...{Shell_Printer.RESET}")
+        from . import init as init_module
+        try:
+            init_module()
+            print(f"{Shell_Printer.GREEN}项目初始化完成{Shell_Printer.RESET}")
+        except Exception as e:
+            print(f"{Shell_Printer.RED}项目初始化失败: {e}{Shell_Printer.RESET}")
             
     elif args.command == 'origin':
         if args.origin_command == 'add':
