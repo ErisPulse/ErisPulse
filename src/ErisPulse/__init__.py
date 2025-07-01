@@ -91,9 +91,11 @@ def init_progress():
     from pathlib import Path
     env_file = Path("env.py")
     main_file = Path("main.py")
-
-    if not env_file.exists():
-        env_content = '''# env.py
+    env_init = False
+    main_init = False
+    try:
+        if not env_file.exists():
+            env_content = '''# env.py
 # ErisPulse 环境配置文件
 # 本文件由 SDK 自动创建，请勿随意删除
 # 配置项可通过 sdk.env.get(key, default) 获取，或使用 sdk.env.set(key, value) 设置
@@ -111,45 +113,52 @@ def init_progress():
 
 from ErisPulse import sdk
 '''
-    if not main_file.exists():
-        main_content = '''# main.py
+            with open(env_file, "w", encoding="utf-8") as f:
+                f.write(env_content)
+            env_init = True
+        if not main_file.exists():
+            main_content = '''# main.py
 # ErisPulse 主程序文件
 # 本文件由 SDK 自动创建，您可随意修改
-
+import asyncio
 from ErisPulse import sdk
 
 async def main():
     try:
         sdk.init()
         await sdk.adapter.startup()
-
+        
+        # 保持程序运行(不建议修改)
+        await asyncio.Event().wait()
     except Exception as e:
         sdk.logger.error(e)
     except KeyboardInterrupt:
         sdk.logger.info("正在停止程序")
     finally:
-        await sdk.shutdown()
+        await sdk.adapter.shutdown()
 
 if __name__ == "__main__":
     asyncio.run(main())
 '''
-        try:
-            with open(env_file, "w", encoding="utf-8") as f:
-                f.write(env_content)
             with open(main_file, "w", encoding="utf-8") as f:
                 f.write(main_content)
-            return True
-        except Exception as e:
-            sdk.logger.error(f"无法初始化项目环境: {e}")
-            return False
-    return False
+            main_init = True
+        return env_init, main_init
+    except Exception as e:
+        sdk.logger.error(f"无法初始化项目环境: {e}")
+        return False
 
 def _prepare_environment() -> bool:
     # 检查环境
     logger.info("[Init] 准备初始化环境...")
     try:
-        if init_progress():
+        env_init, main_init = init_progress()
+        if env_init:
             logger.info("[Init] 项目首次初始化，建议先配置环境变量")
+            if input("是否立即退出？(y/n): ").strip().lower() == "y":
+                return False
+        if main_init:
+            logger.info("[Init] 项目入口已生成, 建议您在 main.py 中编写主程序")
             if input("是否立即退出？(y/n): ").strip().lower() == "y":
                 return False
         env.load_env_file()
