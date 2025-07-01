@@ -15,51 +15,58 @@
 
 <!-- README.md -->
 
-![](./.github/assets/erispulse_logo.png)
-**ErisPulse** 是基于 [Framer](https://github.com/FramerOrg/Framer) 构建的异步机器人开发框架。
+# ErisPulse - 异步机器人开发框架
+
+![ErisPulse Logo](.github/assets/erispulse_logo.png)
 
 [![FramerOrg](https://img.shields.io/badge/合作伙伴-FramerOrg-blue?style=flat-square)](https://github.com/FramerOrg)
 [![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
-
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 
-> 文档站:
-
+> 文档站: 
 [![Docs-Main](https://img.shields.io/badge/docs-main_site-blue?style=flat-square)](https://www.erisdev.com/docs.html)
 [![Docs-CF Pages](https://img.shields.io/badge/docs-cloudflare-blue?style=flat-square)](https://erispulse.pages.dev/docs.html)
 [![Docs-GitHub](https://img.shields.io/badge/docs-github-blue?style=flat-square)](https://erispulse.github.io/docs.html)
 [![Docs-Netlify](https://img.shields.io/badge/docs-netlify-blue?style=flat-square)](https://erispulse.netlify.app/docs.htm)
 
-- [GitHub 社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
 
-### 框架选型指南
-| 需求          | 推荐框架       | 理由                          |
-|-------------------|----------------|-----------------------------|
-| 轻量化/底层模块化 | [Framer](https://github.com/FramerOrg/Framer) | 高度解耦的模块化设计          |
-| 全功能机器人开发  | ErisPulse      | 开箱即用的完整解决方案        |
+## 核心特性
 
-## ✨ 核心特性
-- ⚡ 完全异步架构设计（async/await）
-- 🧩 模块化插件系统
-- 🔁 支持python热重载
-- 🛑 统一的错误管理
-- 🛠️ 灵活的配置管理
-
-## 📦 安装
-
-```bash
-pip install ErisPulse --upgrade
-```
+| 特性 | 描述 |
+|------|------|
+| **异步架构** | 完全基于 async/await 的异步设计 |
+| **模块化系统** | 灵活的插件和模块管理 |
+| **热重载** | 开发时自动重载，无需重启 |
+| **错误管理** | 统一的错误处理和报告系统 |
+| **配置管理** | 灵活的配置存储和访问 |
 
 ---
 
-## 开发者快速入门
+## 快速开始
 
-ErisPulse SDK 支持使用 [`uv`](https://github.com/astral-sh/uv) 进行完整的开发环境管理。你可以**无需手动安装 Python**，直接通过 `uv` 下载 Python、创建虚拟环境并开始开发。
+### 框架选型指南
 
-### 安装 `uv`
+| 需求 | 推荐框架 | 理由 |
+|------|---------|------|
+| 轻量化/底层模块化 | [Framer](https://github.com/FramerOrg/Framer) | 高度解耦的模块化设计 |
+| 全功能机器人开发 | ErisPulse | 开箱即用的完整解决方案 |
 
-#### macOS / Linux:
+---
+
+## 安装指南
+
+我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链，提供更快速可靠的安装体验。
+
+> ℹ️ **uv** 是由 Astral 开发的新一代 Python 包管理工具，比传统 pip 快 10-100 倍，并具有更好的依赖解析能力。
+
+### 1. 安装 uv
+
+#### 通用方法 (pip):
+```bash
+pip install uv
+```
+
+#### macOS/Linux:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
@@ -69,10 +76,23 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-验证是否安装成功：
+验证安装:
 ```bash
 uv --version
 ```
+
+### 2. 安装 ErisPulse
+
+```bash
+uv python install 3.12          # 安装 Python 3.12
+uv venv                         # 创建虚拟环境
+source .venv/bin/activate       # 激活环境 (Windows: .venv\Scripts\activate)
+uv pip install ErisPulse --upgrade  # 安装框架
+```
+
+---
+
+## 测试与开发
 
 ### 克隆项目并进入目录
 
@@ -81,18 +101,19 @@ git clone https://github.com/ErisPulse/ErisPulse.git
 cd ErisPulse
 ```
 
-### 使用 `uv` 自动下载 Python 并创建虚拟环境
+### 使用 `uv` 同步项目环境
 
 ```bash
-uv python install 3.12          # 自动下载并安装 Python 3.12
-uv venv                         # 创建默认 .venv 虚拟环境
-source .venv/bin/activate    
+uv sync
+
+# 启动虚拟环境
+source .venv/bin/activate   
 # Windows: .venv\Scripts\activate
 ```
 
-> ✅ 如果你切换分支或需要不同 Python 版本，只需替换 `3.12` 为其他版本即可。
+> `ErisPulse` 目前正在使用 `python3.13` 进行开发(所以您同步环境时会自动安装 `3.13`)，但也可以使用其他版本(版本不应低于 `3.10`)。
 
-### 安装依赖并开始开发
+### 安装依赖并开始
 
 ```bash
 uv pip install -e .
@@ -116,27 +137,39 @@ python -c "from ErisPulse import sdk; sdk.init()"
 uv run devs/test.py
 ```
 
-测试脚本提供以下功能：
-- 日志功能测试
-- 环境配置测试  
+测试功能包括:
+- 日志系统测试
+- 环境配置测试
 - 错误管理测试
 - 工具函数测试
 - 适配器功能测试
-- 版本信息查看
 
-### 开始开发
-
-你可以通过 CLI 工具进行模块调试、热重载开发等操作：
-
+### 开发模式 (热重载)
 ```bash
 epsdk run your_script.py --reload
 ```
 
 ---
 
-## 🤝 贡献
+## 🤝 贡献指南
 
-欢迎任何形式的贡献！无论是报告 bug、提出新功能请求，还是直接提交代码，都非常感谢。
+我们欢迎各种形式的贡献，包括但不限于:
+
+1. **报告问题**  
+   在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交bug报告
+
+2. **功能请求**  
+   通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+
+3. **代码贡献**  
+   提交 Pull Request 前请阅读我们的 [开发指南](docs/DEVELOPMENT.md)
+
+4. **文档改进**  
+   帮助完善文档和示例代码
+
+---
+
+[加入社区讨论 →](https://github.com/ErisPulse/ErisPulse/discussions)
 
 <!--- End of README.md -->
 
@@ -1772,131 +1805,323 @@ def unreliable_operation():
 
 <!-- ADAPTERS.md -->
 
-# AI 模块生成指南
+# ErisPulse Adapter 文档
 
-使用本指南，你可以通过AI快速生成符合ErisPulse规范的模块代码，无需从零开始编写。
+## 简介
+ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处理机制。目前支持的主要适配器包括：
 
-## 快速开始
+- **TelegramAdapter**
+- **OneBotAdapter**
+- **YunhuAdapter**
 
-1. **获取开发文档**  
-   下载 `docs/ForAIDocs/ErisPulseDevelop.md` - 它包含了所有AI需要的开发规范、适配器接口和SDK参考。
+每个适配器都实现了标准化的事件映射、消息发送方法和生命周期管理。以下将详细介绍现有适配器的功能、支持的方法以及推荐的开发实践。
 
-2. **明确你的需求**  
-   确定模块功能、使用的适配器、依赖关系等核心要素。
+---
 
-3. **向AI描述需求**  
-   使用下面的标准格式清晰地描述你的模块需求。
+## 适配器功能概述
 
-## 需求描述规范
+### 1. YunhuAdapter
+YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
 
-请按照以下格式描述你的模块需求：
+#### 支持的事件类型
 
-```
-我需要一个用于处理用户指令的模块，名为 CommandProcessor。
-该模块应该能够：
-- 监听 Yunhu 平台的指令事件
-- 当用户发送 "/help" 时，回复帮助信息
+| 官方事件命名                  | 映射名称       | 说明                     |
+|-------------------------------|----------------|--------------------------|
+| `message.receive.normal`      | `message`      | 普通消息                 |
+| `message.receive.instruction` | `command`      | 指令消息                 |
+| `bot.followed`                | `follow`       | 用户关注机器人           |
+| `bot.unfollowed`              | `unfollow`     | 用户取消关注机器人       |
+| `group.join`                  | `group_join`   | 用户加入群组             |
+| `group.leave`                 | `group_leave`  | 用户离开群组             |
+| `button.report.inline`        | `button_click` | 按钮点击事件             |
+| `bot.shortcut.menu`           | `shortcut_menu`| 快捷菜单触发事件         |
 
-请根据 ErisPulse 的模块规范和文档，为我生成完整的模块文件结构和代码
-```
-
-### AI生成代码示例
-
-## 示例：生成一个天气查询模块
-
-### 用户输入需求：
-
-> 我需要一个天气查询模块 WeatherBot，当用户在群聊中发送“/weather 上海”时，机器人会调用 OpenWeatherMap API 查询天气，并返回中文格式的天气信息。  
-> 要求：
-> - 使用 YunhuAdapter 监听指令消息；
-> - 使用 sdk.util.cache 缓存结果；
-> - 模块结构符合 ErisPulse 规范。
-
-并且将刚刚下载的 `ErisPulseDevelop.md` 作为附件发送给 AI。
-
-### AI 输出示例：
-
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
 ```python
-# __init__.py
-moduleInfo = {
-    "meta": {
-        "name": "WeatherBot",
-        "version": "1.0.0",
-        "description": "天气查询模块",
-        "author": "YourName",
-        "license": "MIT"
+await yunhu.Send.To("user", user_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str, buttons: List = None)`：发送纯文本消息，可选添加按钮。
+- `.Html(html: str, buttons: List = None)`：发送HTML格式消息。
+- `.Markdown(markdown: str, buttons: List = None)`：发送Markdown格式消息。
+- `.Image(file: bytes, buttons: List = None)`：发送图片消息。
+- `.Video(file: bytes, buttons: List = None)`：发送视频消息。
+- `.File(file: bytes, buttons: List = None)`：发送文件消息。
+- `.Batch(target_ids: List[str], message: str)`：批量发送消息。
+- `.Edit(msg_id: str, text: str)`：编辑已有消息。
+- `.Recall(msg_id: str)`：撤回消息。
+- `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
+- `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
+
+#### 按钮参数说明
+`buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
+
+| 字段         | 类型   | 是否必填 | 说明                                                                 |
+|--------------|--------|----------|----------------------------------------------------------------------|
+| `text`       | string | 是       | 按钮上的文字                                                         |
+| `actionType` | int    | 是       | 动作类型：<br>`1`: 跳转 URL<br>`2`: 复制<br>`3`: 点击汇报            |
+| `url`        | string | 否       | 当 `actionType=1` 时使用，表示跳转的目标 URL                         |
+| `value`      | string | 否       | 当 `actionType=2` 时，该值会复制到剪贴板<br>当 `actionType=3` 时，该值会发送给订阅端 |
+
+示例：
+```python
+buttons = [
+    [
+        {"text": "复制", "actionType": 2, "value": "xxxx"},
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"}
+    ]
+]
+await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
+```
+
+#### 数据格式示例
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "xxxxx",
+        "eventTime": 1647735644000,
+        "eventType": "message.receive.instruction"
     },
-    "dependencies": {
-        "requires": [
-            "YunhuAdapter"
-        ],
-        "optional": [],
-        "pip": ["aiohttp"]
+    "event": {
+        "sender": {
+            "senderId": "xxxxx",
+            "senderType": "user",
+            "senderUserLevel": "member",
+            "senderNickname": "昵称"
+        },
+        "chat": {
+            "chatId": "xxxxx",
+            "chatType": "group"
+        },
+        "message": {
+            "msgId": "xxxxxx",
+            "parentId": "xxxx",
+            "sendTime": 1647735644000,
+            "chatId": "xxxxxxxx",
+            "chatType": "group",
+            "contentType": "text",
+            "content": {
+                "text": "早上好"
+            },
+            "commandId": 98,
+            "commandName": "计算器"
+        }
     }
 }
-
-from .Core import Main
 ```
+
+#### 注意：`chat` 与 `sender` 的误区
+
+##### 常见问题：
+
+| 字段 | 含义 |
+|------|------|
+| `data.event.chatType` | 当前聊天类型（`user`/`bot` 或 `group`） |
+| `data.event.sender.senderType` | 发送者类型（通常为 `user`） |
+| `data.event.sender.senderId` | 发送者唯一 ID |
+
+> **注意：**  
+> - 使用 `chatType` 判断消息是私聊还是群聊  
+> - 群聊使用 `chatId`，私聊使用 `senderId` 作为目标地址  
+> - `senderType` 通常为 `"user"`，不能用于判断是否为群消息  
+
+---
+
+##### 示例代码：
 
 ```python
-# Core.py
-import aiohttp
-import time
+@sdk.adapter.Yunhu.on("message")
+async def handle_message(data):
+    if data.event.chatType == "group":
+        targetId = data.event.chat.chatId
+        targeType = "group"
+    else:
+        targetId = data.event.sender.senderId
+        targeType = "user"
 
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-
-        @sdk.adapter.Yunhu.on("command")
-        async def handle_weather(data):
-            if data.event.message.commandName.lower() == "weather":
-                city = data.event.message.content.text.strip()
-                chat_type = data.event.chatType
-                sender_type = "group" if chat_type == "group" else "user"
-                sender_id = data.chat.chatId if chat_type == "group" else data.event.sender.senderId
-
-                if not city:
-                    await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text("请指定城市名称，例如：/weather 上海")
-                    return
-                await self.reply_weather(sender_type, sender_id, city)
-
-    @sdk.util.cache
-    async def get_weather_data(self, city: str):
-        api_key = self.env.get("WEATHER_API_KEY")
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                else:
-                    raise Exception("无法获取天气信息")
-
-    async def reply_weather(self, sender_type, sender_id, city):
-        try:
-            data = await self.get_weather_data(city)
-            temperature = data["main"]["temp"] - 273.15
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"{city} 的温度是 {temperature:.1f}℃")
-        except Exception as e:
-            self.logger.error(f"获取天气失败: {e}")
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"获取天气失败，请稍后再试。")
+    await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
 ```
 
-## 常见问题
+---
 
-Q: 如何测试生成的模块？  
-A: 将生成的代码放入ErisPulse项目(初始化过的你自己的项目内会有这个文件夹)的modules目录，重启服务即可加载测试。
+### 2. TelegramAdapter
+TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
 
-Q: 生成的代码不符合我的需求怎么办？  
-A: 可以调整需求描述后重新生成，或直接在生成代码基础上进行修改。
+#### 支持的事件类型
 
-Q: 需要更复杂的功能怎么办？  
-A: 可以将复杂功能拆分为多个简单模块，或分阶段实现。
+| Telegram 原生事件       | 映射名称           | 说明                     |
+|-------------------------|--------------------|--------------------------|
+| `message`               | `message`          | 普通消息                 |
+| `edited_message`        | `message_edit`     | 消息被编辑               |
+| `channel_post`          | `channel_post`     | 频道发布消息             |
+| `edited_channel_post`   | `channel_post_edit`| 频道消息被编辑           |
+| `inline_query`          | `inline_query`     | 内联查询                 |
+| `chosen_inline_result`  | `chosen_inline_result` | 内联结果被选择       |
+| `callback_query`        | `callback_query`   | 回调查询（按钮点击）     |
+| `shipping_query`        | `shipping_query`   | 配送信息查询             |
+| `pre_checkout_query`    | `pre_checkout_query` | 支付预检查询           |
+| `poll`                  | `poll`             | 投票创建                 |
+| `poll_answer`           | `poll_answer`      | 投票响应                 |
 
-Q: 我可以把这个模块发布到ErisPulse吗？
-A: 当然可以！但是我们会审查你的代码，确保它符合我们的规范。
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
+```python
+await telegram.Send.To("user", user_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: bytes, caption: str = "")`：发送图片消息。
+- `.Video(file: bytes, caption: str = "")`：发送视频消息。
+- `.Audio(file: bytes, caption: str = "")`：发送音频消息。
+- `.Document(file: bytes, caption: str = "")`：发送文件消息。
+- `.EditMessageText(message_id: int, text: str)`：编辑已有消息。
+- `.DeleteMessage(message_id: int)`：删除指定消息。
+- `.GetChat()`：获取聊天信息。
+
+#### 数据格式示例
+```json
+{
+  "update_id": 123456789,
+  "message": {
+    "message_id": 101,
+    "from": {
+      "id": 123456789,
+      "is_bot": false,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 123456789,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "type": "private"
+},
+    "date": 1672531199,
+    "text": "Hello!"
+  }
+}
+```
+
+---
+
+### 3. OneBotAdapter
+OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
+
+#### 支持的事件类型
+
+| OneBot 原生事件       | 映射名称           | 说明                     |
+|-----------------------|--------------------|--------------------------|
+| `message`             | `message`          | 消息事件                 |
+| `notice`              | `notice`           | 通知类事件（如群成员变动）|
+| `request`             | `request`          | 请求类事件（如加群请求） |
+| `meta_event`          | `meta_event`       | 元事件（如心跳包）       |
+
+#### 支持的消息发送类型
+所有发送方法均通过链式语法实现，例如：
+```python
+await onebot.Send.To("group", group_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: str)`：发送图片消息（支持 URL 或 Base64）。
+- `.Voice(file: str)`：发送语音消息。
+- `.Video(file: str)`：发送视频消息。
+- `.Raw(message_list: List[Dict])`：发送原生 OneBot 消息结构。
+- `.Recall(message_id: int)`：撤回消息。
+- `.Edit(message_id: int, new_text: str)`：编辑消息。
+- `.Batch(target_ids: List[str], text: str)`：批量发送消息。
+
+#### 数据格式示例
+```json
+{
+  "post_type": "message",
+  "message_type": "group",
+  "group_id": 123456,
+  "user_id": 987654321,
+  "message": "Hello!",
+  "raw_message": "Hello!",
+  "time": 1672531199,
+  "self_id": 123456789
+}
+```
+
+---
+
+## 生命周期管理
+
+### 启动适配器
+```python
+await sdk.adapter.startup()
+```
+此方法会根据配置启动适配器，并初始化必要的连接。
+
+### 关闭适配器
+```python
+await sdk.adapter.shutdown()
+```
+确保资源释放，关闭 WebSocket 连接或其他网络资源。
+
+---
+
+## 开发者指南
+
+### 如何编写新的 Adapter
+1. **继承 BaseAdapter**  
+   所有适配器需继承 `sdk.BaseAdapter` 类，并实现以下方法：
+   - `start()`：启动适配器。
+   - `shutdown()`：关闭适配器。
+   - `call_api(endpoint: str, **params)`：调用底层 API。
+
+2. **定义 Send 方法**  
+   使用链式语法实现消息发送逻辑，推荐参考现有适配器的实现。
+
+3. **注册事件映射**  
+   在 `_setup_event_mapping()` 方法中定义事件映射表。
+
+4. **测试与调试**  
+   编写单元测试验证适配器的功能完整性，并在不同环境下进行充分测试。
+
+### 推荐的文档结构
+新适配器的文档应包含以下内容：
+- **简介**：适配器的功能和适用场景。
+- **事件映射表**：列出支持的事件及其映射名称。
+- **发送方法**：详细说明支持的消息类型和使用示例。
+- **数据格式**：展示典型事件的 JSON 数据格式。
+- **配置说明**：列出适配器所需的配置项及默认值。
+- **注意事项**：列出开发和使用过程中需要注意的事项。
+
+---
+
+## 参考链接
+ErisPulse 项目：
+- [主库](https://github.com/ErisPulse/ErisPulse/)
+- [ErisPulse Yunhu 适配器库](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [ErisPulse Telegram 适配器库](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [ErisPulse OneBot 适配器库](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+
+官方文档：
+- [OneBot V11 协议文档](https://github.com/botuniverse/onebot-11)
+- [Telegram Bot API 官方文档](https://core.telegram.org/bots/api)
+- [云湖官方文档](https://www.yhchat.com/document/1-3)
+
+---
+
+## 参与贡献
+
+我们欢迎更多开发者参与编写和维护适配器文档！请按照以下步骤提交贡献：
+1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 仓库。
+2. 在 `docs/` 目录下找到 ADAPTER.md 适配器文档。
+3. 提交 Pull Request，并附上详细的描述。
+
+感谢您的支持！
 
 <!--- End of ADAPTERS.md -->
 
