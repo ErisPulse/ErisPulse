@@ -44,6 +44,7 @@ epsdk origin add https://example.com/map.json
 """
 
 import argparse
+import importlib
 import os
 import sys
 import time
