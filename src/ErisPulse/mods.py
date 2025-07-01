@@ -3,13 +3,6 @@
 
 提供模块的注册、状态管理和依赖解析功能。支持模块信息存储、状态切换和批量操作。
 
-## 核心功能
-1. 模块信息管理
-2. 模块状态控制
-3. 批量模块操作
-4. 存储前缀自定义
-5. 模块依赖管理
-
 ## API 文档
 
 ### 模块状态管理
@@ -257,76 +250,6 @@ custom_status_key = f"{sdk.mods.status_prefix}custom.{module_name}"
 sdk.env.set(custom_status_key, is_active)
 ```
 
-## 最佳实践
-1. 模块信息结构
-```python
-# 推荐的模块信息结构
-module_info = {
-    "status": True,  # 模块启用状态
-    "info": {
-        "meta": {
-            "name": "ModuleName",  # 模块名称
-            "version": "1.0.0",    # 模块版本
-            "description": "模块描述",
-            "author": "作者",
-            "license": "MIT",
-            "tags": ["tag1", "tag2"]  # 分类标签
-        },
-        "dependencies": {
-            "requires": ["RequiredModule1"],  # 必需依赖
-            "optional": ["OptionalModule1"],  # 可选依赖
-            "pip": ["package1", "package2"]   # pip包依赖
-        }
-    },
-    "config": {  # 模块配置（可选）
-        "setting1": "value1",
-        "setting2": "value2"
-    }
-}
-```
-
-2. 模块状态管理
-```python
-# 根据条件启用/禁用模块
-def toggle_modules_by_environment():
-    env_type = get_environment_type()
-    
-    # 开发环境启用调试模块
-    if env_type == "development":
-        sdk.mods.set_module_status("DebugModule", True)
-        sdk.mods.set_module_status("PerformanceModule", False)
-    
-    # 生产环境禁用调试模块，启用性能模块
-    elif env_type == "production":
-        sdk.mods.set_module_status("DebugModule", False)
-        sdk.mods.set_module_status("PerformanceModule", True)
-```
-
-3. 模块依赖检查
-```python
-# 检查模块依赖
-def check_module_dependencies(module_name):
-    module_info = sdk.mods.get_module(module_name)
-    if not module_info:
-        return False
-        
-    dependencies = module_info.get("info", {}).get("dependencies", {}).get("requires", [])
-    
-    for dep in dependencies:
-        dep_info = sdk.mods.get_module(dep)
-        if not dep_info or not dep_info.get("status", False):
-            sdk.logger.warning(f"模块 {module_name} 的依赖 {dep} 未启用或不存在")
-            return False
-            
-    return True
-```
-
-## 注意事项
-1. 模块名称应唯一，避免冲突
-2. 模块信息结构应保持一致，便于管理
-3. 更新模块信息前应先获取现有信息，避免覆盖
-4. 批量操作时注意性能影响
-5. 自定义前缀时确保不与系统其他键冲突
 """
 
 import json

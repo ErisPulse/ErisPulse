@@ -93,9 +93,6 @@ async def yunhu_test(startup: bool):
         if TEST_VIDEO_PATH.exists():
             with open(TEST_VIDEO_PATH, "rb") as f:
                 await yunhu.Send.To("user", YUNHU_USER_ID).Video(f.read())
-        if TEST_DOCUMENT_PATH.exists():
-            with open(TEST_DOCUMENT_PATH, "rb") as f:
-                await yunhu.Send.To("user", YUNHU_USER_ID).Document(f.read())
         if YUNHU_GROUP_ID:
             await yunhu.Send.To("group", YUNHU_GROUP_ID).Text("【启动通知】SDK已启动 - 云湖群聊文本消息")
             if TEST_IMAGE_PATH.exists():
@@ -104,9 +101,6 @@ async def yunhu_test(startup: bool):
             if TEST_VIDEO_PATH.exists():
                 with open(TEST_VIDEO_PATH, "rb") as f:
                     await yunhu.Send.To("group", YUNHU_GROUP_ID).Video(f.read())
-            if TEST_DOCUMENT_PATH.exists():
-                with open(TEST_DOCUMENT_PATH, "rb") as f:
-                    await yunhu.Send.To("group", YUNHU_GROUP_ID).Document(f.read())
     else:
         await yunhu.Send.To("user", YUNHU_USER_ID).Text("【关闭通知】SDK已关闭")
         if YUNHU_GROUP_ID:
@@ -115,7 +109,9 @@ async def yunhu_test(startup: bool):
 async def main():
     sdk.init()
     try:
+        sdk.logger.set_output_file("test.log")
         await sdk.adapter.startup()
+        await asyncio.sleep(1)
         await telegram_test(True)
         await qq_test(True)
         await yunhu_test(True)
@@ -127,7 +123,8 @@ async def main():
         await qq_test(False)
         await yunhu_test(False)
     except Exception as e:
-        sdk.logger.error(f"测试过程中发生错误: {e}")
+        sdk.logger.error(f"测试过程中发生错误: {str(e)}")
+        raise  # 重新抛出异常以便调试
 
 if __name__ == "__main__":
     asyncio.run(main())
