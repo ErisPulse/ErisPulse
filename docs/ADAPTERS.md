@@ -69,6 +69,25 @@ buttons = [
 await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```
 
+#### env.py 配置示例
+```python
+sdk.env.set("YunhuAdapter", {
+    "token": "",       # 机器人 Token
+    "mode": "server",  # server / polling (polling使用社区脚本支持)
+    "server": {
+        "host": "0.0.0.0",
+        "port": 25888,
+        "path": "/yunhu/webhook"
+    },
+    "polling": {
+        "url": "https://example.com/",
+    }
+})
+```
+> **注意：**
+> - 云湖适配器使用 `server` 模式时，需要配置 `server` 字段；使用 `polling` 模式时，需要配置 `polling` 字段。
+> - 云湖需要在控制台指向我们开启的 `server` 地址，否则无法正常接收消息。
+
 #### 数据格式示例
 ```json
 {
@@ -175,32 +194,38 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 - `.DeleteMessage(message_id: int)`：删除指定消息。
 - `.GetChat()`：获取聊天信息。
 
-#### 数据格式示例
-```json
-{
-  "update_id": 123456789,
-  "message": {
-    "message_id": 101,
-    "from": {
-      "id": 123456789,
-      "is_bot": false,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "language_code": "en"
+#### env.py 配置示例
+```python
+sdk.env.set("TelegramAdapter", {
+    # 必填：Telegram Bot Token
+    "token": "YOUR_BOT_TOKEN",
+
+    # Webhook 模式下的服务配置（如使用 webhook）
+    "server": {
+        "host": "127.0.0.1",            # 推荐监听本地，防止外网直连
+        "port": 8443,                   # 监听端口
+        "path": "/telegram/webhook"     # Webhook 路径
     },
-    "chat": {
-      "id": 123456789,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "type": "private"
-},
-    "date": 1672531199,
-    "text": "Hello!"
-  }
-}
+    "webhook": {
+        "host": "example.com",          # Telegram API 监听地址（外部地址）
+        "port": 8443,                   # 监听端口
+        "path": "/telegram/webhook"     # Webhook 路径
+    }
+
+    # 启动模式: webhook 或 polling
+    "mode": "webhook",
+
+    # 可选：代理配置（用于连接 Telegram API）
+    "proxy": {
+        "host": "127.0.0.1",
+        "port": 1080,
+        "type": "socks5"  # 支持 socks4 / socks5
+    }
+})
 ```
+
+#### 数据格式示例
+> 略: 使用你了解的 TG 事件数据格式即可,这里不进行演示
 
 ---
 
@@ -232,19 +257,25 @@ await onebot.Send.To("group", group_id).Text("Hello World!")
 - `.Edit(message_id: int, new_text: str)`：编辑消息。
 - `.Batch(target_ids: List[str], text: str)`：批量发送消息。
 
-#### 数据格式示例
-```json
-{
-  "post_type": "message",
-  "message_type": "group",
-  "group_id": 123456,
-  "user_id": 987654321,
-  "message": "Hello!",
-  "raw_message": "Hello!",
-  "time": 1672531199,
-  "self_id": 123456789
-}
+#### env.py 配置示例
+```python
+sdk.env.set("OneBotAdapter", {
+    "mode": "client", # 或者 "server"
+    "server": {
+        "host": "127.0.0.1",
+        "port": 8080,
+        "path": "/",
+        "token": ""
+    },
+    "client": {
+        "url": "ws://127.0.0.1:3001",
+        "token": ""
+    }
+})
 ```
+
+#### 数据格式示例
+> 略: 使用你了解的 OneBot v11 事件数据格式即可,这里不进行演示
 
 ---
 
