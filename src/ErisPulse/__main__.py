@@ -11,6 +11,7 @@
 
 ## 主要命令
 ### 模块管理:
+    init: 初始化SDK
     install: 安装模块
     uninstall: 卸载模块
     enable: 启用模块
