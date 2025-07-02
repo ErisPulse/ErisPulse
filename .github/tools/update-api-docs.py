@@ -60,7 +60,7 @@ def main():
     module_dir = Path('src/ErisPulse')
     reference_path = Path('docs/REFERENCE.md')
     
-    modules = ['__init__', '__main__', 'adapter', 'db', 'logger', 'mods', 'raiserr', 'util']
+    modules = ['__init__', '__main__', 'adapter', 'db', 'logger', 'raiserr', 'util']
     
     for module in modules:
         py_file = module_dir / f'{module}.py'
