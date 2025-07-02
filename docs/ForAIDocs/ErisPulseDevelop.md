@@ -1673,7 +1673,6 @@ sdk.env.set("YunhuAdapter", {
 |bot.unfollowed|机器人取关|
 |bot.shortcut.menu|快捷菜单|
 |button.report.inline|按钮汇报|
-|bot.setting|机器人设置|
 
 每个事件的触发条件以及数据结构如下：
 
@@ -1756,14 +1755,14 @@ sdk.env.set("YunhuAdapter", {
     }
 }
 ```
-##### 用户加群事件
+##### 用户加群/退群事件
 当用户加入机器人所在的群聊后，将会触发该事件。
 ```json
 {
     "version": "1.0",
     "header": {
         "eventId": "d5429cb5e4654fbcaeee9e4adb244741",
-        "eventType": "group.join",
+        "eventType": "group.join",  // 或 group.leave
         "eventTime": 1749442891943
     },
     "event": {
@@ -1776,33 +1775,14 @@ sdk.env.set("YunhuAdapter", {
     }
 }
 ```
-##### 用户退群事件
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "06959e95aaf547078367104ba754c554",
-        "eventType": "group.leave",
-        "eventTime": 1749442644367
-    },
-    "event": {
-        "time": 1749442644343,
-        "chatId": "985140593",
-        "chatType": "group",
-        "userId": "3707697",
-        "nickname": "ShanFishApp",
-        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=92fdef22a240a05de78b13afdab5ac51&t=68466e64"
-    }
-}
-```
-##### 用户关注机器人事件
+##### 用户关注/取关机器人事件
 当用户在机器人ID或机器人推荐处添加机器人后，将会触发该事件。
 ```json
 {
     "version": "1.0",
     "header": {
         "eventId": "3fe280a400f9460daa03a642d1fad39b",
-        "eventType": "bot.followed",
+        "eventType": "bot.followed", // 或 bot.unfollowed
         "eventTime": 1749443049592
     },
     "event": {
@@ -1812,26 +1792,6 @@ sdk.env.set("YunhuAdapter", {
         "userId": "3707697",
         "nickname": "ShanFishApp",
         "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=33bb173f1b22ed0e44da048b175767c6&t=68466ff9"
-    }
-}
-```
-##### 用户取关机器人事件
-当用户点击删除机器人按钮后，将会触发该事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "b4f51386d916464b99782052c030c5b7",
-        "eventType": "bot.unfollowed",
-        "eventTime": 1749443036382
-    },
-    "event": {
-        "time": 1749443036373,
-        "chatId": "49871624",
-        "chatType": "bot",
-        "userId": "3707697",
-        "nickname": "ShanFishApp",
-        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=07cf8e9d6ca0875835f9a4a6811b6b4c&t=68466fec"
     }
 }
 ```
@@ -1880,35 +1840,7 @@ sdk.env.set("YunhuAdapter", {
 }
 
 ```
-##### 机器人设置事件
-当开发者配置了机器人设置项时，在机器人列表处将会出现"设置"按钮。用户设置完成后，将会触发本事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "5ad7e23399ef46a685cead1abe2efa19",
-        "eventType": "bot.setting",
-        "eventTime": 1749446299131
-    },
-    "event": {
-        "time": 1749446299128,
-        "chatId": "49871624",
-        "chatType": "bot",
-        "groupId": "985140593",
-        "groupName": "云湖测试群",
-        "avatarUrl": "https://chat-img.jwznb.com/77db590d9cee77de13e7c8cf0887b5ba.jpg",
-        "settingJson": {
-            "wezzrm": {
-                "id": "wezzrm",
-                "type": "switch",
-                "label": "测试",
-                "value": true
-            }
-        }
-    }
-}
 
-```
 
 #### 注意：`chat` 与 `sender` 的误区
 
@@ -1916,9 +1848,9 @@ sdk.env.set("YunhuAdapter", {
 
 | 字段 | 含义 |
 |------|------|
-| `data.event.chatType` | 当前聊天类型（`user`/`bot` 或 `group`） |
-| `data.event.sender.senderType` | 发送者类型（通常为 `user`） |
-| `data.event.sender.senderId` | 发送者唯一 ID |
+| `data.get("event", {}).get("chatType", "")` | 当前聊天类型（`user`/`bot` 或 `group`） |
+| `data.get("event", {}).get("sender", {}).get("senderType", "")` | 发送者类型（通常为 `user`） |
+| `data.get("event", {}).get("sender", {}).get("senderId", "")` | 发送者唯一 ID |
 
 > **注意：**  
 > - 使用 `chatType` 判断消息是私聊还是群聊  
@@ -1932,11 +1864,11 @@ sdk.env.set("YunhuAdapter", {
 ```python
 @sdk.adapter.Yunhu.on("message")
 async def handle_message(data):
-    if data.event.chatType == "group":
-        targetId = data.event.chat.chatId
+    if data.get("event", {}).get("chatType", "") == "group":
+        targetId = data.get("event", {}).get("chat", {}).get("chatId", "")
         targeType = "group"
     else:
-        targetId = data.event.sender.senderId
+        targetId = data.get("event", {}).get("sender", {}).get("senderId", "")
         targeType = "user"
 
     await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
