@@ -14,6 +14,8 @@
 | `upgrade`  | `[--force] [--init]`      | 升级模块（`--force` 强制覆盖）        | `epsdk upgrade --force --init`      |
 | `install`  | `<module...> [--init]`    | 安装一个或多个模块（空格分隔），支持本地目录路径 | `epsdk install YunhuAdapter OpenAI`<br>`epsdk install .`<br>`epsdk install /path/to/module` |
 | `uninstall`| `<module> [--init]`       | 移除指定模块                          | `epsdk uninstall old-module --init` |
+| `init`    | -                         | 初始化sdk | `epsdk init`                        |
+| `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
 
 ## 源管理
 | 命令 | 参数 | 描述 | 示例 |
@@ -21,27 +23,6 @@
 | `origin add` | `<url>` | 添加源 | `epsdk origin add https://erisdev.com/map.json` |
 | `origin list` | - | 源列表 | `epsdk origin list` |
 | `origin del` | `<url>` | 删除源 | `epsdk origin del https://erisdev.com/map.json` |
-| `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
-
----
-
-## 运行脚本命令详解
-
-`run` 命令支持以下参数：
-
-- `<script>`: 要运行的Python脚本路径
-- `--reload`: 启用热重载模式，当脚本文件发生变化时自动重启
-
-示例：
-```bash
-# 普通运行
-epsdk run main.py
-
-# 热重载模式
-epsdk run main.py --reload
-```
-
-热重载模式下，任何对脚本文件的修改都会触发自动重启，方便开发调试。
 
 ---
 

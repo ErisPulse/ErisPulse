@@ -19,14 +19,8 @@
 #### 日志记录：
 
 ```python
-#  设置日志级别
-sdk.logger.set_level("DEBUG")
-
 #  设置单个模块日志级别
 sdk.logger.set_module_level("MyModule", "DEBUG")
-
-#  设置日志输出到文件
-sdk.logger.set_output_file("log.txt")
 
 #  单次保持所有模块日志历史到文件
 sdk.logger.save_logs("log.txt")
@@ -115,10 +109,6 @@ async def my_retry_function():
     # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
     ...
 
-# 可视化模块依赖关系
-topology = sdk.util.show_topology()
-print(topology)  # 打印模块依赖拓扑图
-
 # 缓存装饰器：缓存函数调用结果（基于参数）
 @sdk.util.cache
 def get_expensive_result(param):
@@ -131,8 +121,8 @@ def sync_task():
     # 此函数将在独立线程中运行，避免阻塞事件循环
     ...
 
-# 异步调用同步函数的快捷方式
-sdk.util.ExecAsync(sync_task)  # 在事件循环中
+# 在同步函数中调用异步任务
+sdk.util.ExecAsync(sync_task)
 
 ```
 
@@ -181,13 +171,21 @@ moduleInfo = {
     },
     "dependencies": {
         "requires": [],       # 必须依赖的其他模块
-        "optional": [],       # 可选依赖模块列表（满足其中一个即可）
+        "optional": [         # 可选依赖模块列表（满足其中一个即可）
+            "可选模块",
+            ["可选模块"],
+            ["可选组依赖模块1", "可选组依赖模块2"]
+        ],
         "pip": []             # 第三方 pip 包依赖
     }
 }
 
 from .Core import Main
 ```
+
+其中, 可选依赖支持组依赖：
+- 可选模块与组依赖模块（如 `["组依赖模块1", "组依赖模块2"]` 和 `["组依赖模块3", "组依赖模块4"]`）构成“或”关系，即满足其中一组即可。
+- 组依赖模块以数组形式表示，视为一个整体（例如：`组依赖模块1 + 组依赖模块2` 和 `可选模块` 中任意一组存在即符合要求）。
 
 > ⚠️ 注意：模块名必须唯一，避免与其他模块冲突。
 
@@ -279,7 +277,7 @@ class Main:
         #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(super().Send):  # 继承BaseAdapter内置的Send类
+    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
         # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法

@@ -196,14 +196,8 @@ epsdk run your_script.py --reload
 #### 日志记录：
 
 ```python
-#  设置日志级别
-sdk.logger.set_level("DEBUG")
-
 #  设置单个模块日志级别
 sdk.logger.set_module_level("MyModule", "DEBUG")
-
-#  设置日志输出到文件
-sdk.logger.set_output_file("log.txt")
 
 #  单次保持所有模块日志历史到文件
 sdk.logger.save_logs("log.txt")
@@ -292,10 +286,6 @@ async def my_retry_function():
     # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
     ...
 
-# 可视化模块依赖关系
-topology = sdk.util.show_topology()
-print(topology)  # 打印模块依赖拓扑图
-
 # 缓存装饰器：缓存函数调用结果（基于参数）
 @sdk.util.cache
 def get_expensive_result(param):
@@ -308,8 +298,8 @@ def sync_task():
     # 此函数将在独立线程中运行，避免阻塞事件循环
     ...
 
-# 异步调用同步函数的快捷方式
-sdk.util.ExecAsync(sync_task)  # 在事件循环中
+# 在同步函数中调用异步任务
+sdk.util.ExecAsync(sync_task)
 
 ```
 
@@ -358,13 +348,21 @@ moduleInfo = {
     },
     "dependencies": {
         "requires": [],       # 必须依赖的其他模块
-        "optional": [],       # 可选依赖模块列表（满足其中一个即可）
+        "optional": [         # 可选依赖模块列表（满足其中一个即可）
+            "可选模块",
+            ["可选模块"],
+            ["可选组依赖模块1", "可选组依赖模块2"]
+        ],
         "pip": []             # 第三方 pip 包依赖
     }
 }
 
 from .Core import Main
 ```
+
+其中, 可选依赖支持组依赖：
+- 可选模块与组依赖模块（如 `["组依赖模块1", "组依赖模块2"]` 和 `["组依赖模块3", "组依赖模块4"]`）构成“或”关系，即满足其中一组即可。
+- 组依赖模块以数组形式表示，视为一个整体（例如：`组依赖模块1 + 组依赖模块2` 和 `可选模块` 中任意一组存在即符合要求）。
 
 > ⚠️ 注意：模块名必须唯一，避免与其他模块冲突。
 
@@ -456,7 +454,7 @@ class Main:
         #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
 
 class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(super().Send):  # 继承BaseAdapter内置的Send类
+    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
         # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
@@ -655,6 +653,7 @@ sdk.logger.info("SDK已初始化")
 
 ## 主要命令
 ### 模块管理:
+    init: 初始化SDK
     install: 安装模块
     uninstall: 卸载模块
     enable: 启用模块
@@ -1453,259 +1452,6 @@ import atexit
 atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 ```
 
-## mods (source: [ErisPulse/mods.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/mods.py))
-
-# 模块管理系统
-
-提供模块的注册、状态管理和依赖解析功能。支持模块信息存储、状态切换和批量操作。
-
-## API 文档
-
-### 模块状态管理
-#### set_module_status(module_name: str, status: bool) -> None
-设置模块的启用状态。
-- 参数:
-  - module_name: 模块名称
-  - status: 模块状态，True为启用，False为禁用
-- 返回:
-  - None
-- 示例:
-```python
-# 启用模块
-sdk.mods.set_module_status("MyModule", True)
-
-# 禁用模块
-sdk.mods.set_module_status("MyModule", False)
-
-# 条件性启用模块
-if check_dependencies():
-    sdk.mods.set_module_status("MyModule", True)
-else:
-    sdk.logger.warning("依赖检查失败，模块未启用")
-```
-
-#### get_module_status(module_name: str) -> bool
-获取模块的启用状态。
-- 参数:
-  - module_name: 模块名称
-- 返回:
-  - bool: 模块状态，True为启用，False为禁用
-- 示例:
-```python
-# 检查模块是否启用
-if sdk.mods.get_module_status("MyModule"):
-    print("模块已启用")
-else:
-    print("模块已禁用")
-    
-# 在条件中使用
-if sdk.mods.get_module_status("DatabaseModule") and sdk.mods.get_module_status("NetworkModule"):
-    start_application()
-```
-
-### 模块信息管理
-#### set_module(module_name: str, module_info: dict) -> None
-设置模块信息。
-- 参数:
-  - module_name: 模块名称
-  - module_info: 模块信息字典，包含模块的元数据和配置
-- 返回:
-  - None
-- 示例:
-```python
-# 设置基本模块信息
-sdk.mods.set_module("MyModule", {
-    "status": True,
-    "info": {
-        "meta": {
-            "name": "MyModule",
-            "version": "1.0.0",
-            "description": "示例模块",
-            "author": "开发者"
-        },
-        "dependencies": {
-            "requires": ["CoreModule"],
-            "optional": ["OptionalModule"],
-            "pip": ["requests", "numpy"]
-        }
-    }
-})
-
-# 更新现有模块信息
-module_info = sdk.mods.get_module("MyModule")
-module_info["info"]["meta"]["version"] = "1.1.0"
-sdk.mods.set_module("MyModule", module_info)
-```
-
-#### get_module(module_name: str) -> dict | None
-获取模块信息。
-- 参数:
-  - module_name: 模块名称
-- 返回:
-  - dict: 模块信息字典
-  - None: 如果模块不存在
-- 示例:
-```python
-# 获取模块信息
-module_info = sdk.mods.get_module("MyModule")
-if module_info:
-    print(f"模块版本: {module_info['info']['meta']['version']}")
-    print(f"模块描述: {module_info['info']['meta']['description']}")
-    print(f"模块状态: {'启用' if module_info['status'] else '禁用'}")
-else:
-    print("模块不存在")
-```
-
-#### get_all_modules() -> dict
-获取所有模块信息。
-- 参数: 无
-- 返回:
-  - dict: 包含所有模块信息的字典，键为模块名，值为模块信息
-- 示例:
-```python
-# 获取所有模块
-all_modules = sdk.mods.get_all_modules()
-
-# 统计启用和禁用的模块
-enabled_count = 0
-disabled_count = 0
-for name, info in all_modules.items():
-    if info.get("status", False):
-        enabled_count += 1
-    else:
-        disabled_count += 1
-        
-print(f"已启用模块: {enabled_count}")
-print(f"已禁用模块: {disabled_count}")
-
-# 查找特定类型的模块
-adapters = [name for name, info in all_modules.items() 
-           if "adapter" in info.get("info", {}).get("meta", {}).get("tags", [])]
-print(f"适配器模块: {adapters}")
-```
-
-#### update_module(module_name: str, module_info: dict) -> None
-更新模块信息。
-- 参数:
-  - module_name: 模块名称
-  - module_info: 更新后的模块信息字典
-- 返回:
-  - None
-- 示例:
-```python
-# 更新模块版本
-module_info = sdk.mods.get_module("MyModule")
-module_info["info"]["meta"]["version"] = "1.2.0"
-sdk.mods.update_module("MyModule", module_info)
-
-# 添加新的配置项
-module_info = sdk.mods.get_module("MyModule")
-if "config" not in module_info:
-    module_info["config"] = {}
-module_info["config"]["debug_mode"] = True
-sdk.mods.update_module("MyModule", module_info)
-```
-
-#### remove_module(module_name: str) -> bool
-删除模块。
-- 参数:
-  - module_name: 模块名称
-- 返回:
-  - bool: 是否成功删除
-- 示例:
-```python
-# 删除模块
-if sdk.mods.remove_module("OldModule"):
-    print("模块已成功删除")
-else:
-    print("模块不存在或删除失败")
-    
-# 条件删除
-if sdk.mods.get_module_status("TestModule") and is_test_environment():
-    sdk.mods.remove_module("TestModule")
-    print("测试模块已在生产环境中移除")
-```
-
-#### set_all_modules(modules_info: Dict[str, dict]) -> None
-批量设置多个模块信息。
-- 参数:
-  - modules_info: 模块信息字典的字典，键为模块名，值为模块信息
-- 返回:
-  - None
-- 示例:
-```python
-# 批量设置模块
-sdk.mods.set_all_modules({
-    "Module1": {
-        "status": True,
-        "info": {"meta": {"name": "Module1", "version": "1.0.0"}}
-    },
-    "Module2": {
-        "status": True,
-        "info": {"meta": {"name": "Module2", "version": "1.0.0"}}
-    }
-})
-
-# 从配置文件加载模块信息
-import json
-with open("modules_config.json", "r") as f:
-    modules_config = json.load(f)
-sdk.mods.set_all_modules(modules_config)
-```
-
-### 前缀管理
-#### update_prefixes(module_prefix: str = None, status_prefix: str = None) -> None
-更新存储前缀。
-- 参数:
-  - module_prefix: 模块存储前缀
-  - status_prefix: 状态存储前缀
-- 返回:
-  - None
-- 示例:
-```python
-# 更新模块前缀
-sdk.mods.update_prefixes(module_prefix="custom.module.")
-
-# 更新状态前缀
-sdk.mods.update_prefixes(status_prefix="custom.status.")
-
-# 同时更新两个前缀
-sdk.mods.update_prefixes(
-    module_prefix="app.modules.",
-    status_prefix="app.status."
-)
-```
-
-#### module_prefix 属性
-获取当前模块存储前缀。
-- 返回:
-  - str: 当前模块存储前缀
-- 示例:
-```python
-# 获取当前模块前缀
-prefix = sdk.mods.module_prefix
-print(f"当前模块前缀: {prefix}")
-
-# 在自定义存储操作中使用
-custom_key = f"{sdk.mods.module_prefix}custom.{module_name}"
-sdk.env.set(custom_key, custom_data)
-```
-
-#### status_prefix 属性
-获取当前状态存储前缀。
-- 返回:
-  - str: 当前状态存储前缀
-- 示例:
-```python
-# 获取当前状态前缀
-prefix = sdk.mods.status_prefix
-print(f"当前状态前缀: {prefix}")
-
-# 在自定义状态操作中使用
-custom_status_key = f"{sdk.mods.status_prefix}custom.{module_name}"
-sdk.env.set(custom_status_key, is_active)
-```
-
 ## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/raiserr.py))
 
 # 错误管理系统
@@ -1915,40 +1661,253 @@ sdk.env.set("YunhuAdapter", {
 > - 云湖需要在控制台指向我们开启的 `server` 地址，否则无法正常接收消息。
 
 #### 数据格式示例
+云湖目前有9种事件会推送给机器人：
+
+|事件字段名称|事件用途|
+|:---:|:---:|
+|message.receive.normal|普通消息|
+|message.receive.instruction|指令消息|
+|group.join|用户加群|
+|group.leave|用户退群|
+|bot.followed|机器人关注|
+|bot.unfollowed|机器人取关|
+|bot.shortcut.menu|快捷菜单|
+|button.report.inline|按钮汇报|
+|bot.setting|机器人设置|
+
+每个事件的触发条件以及数据结构如下：
+
+##### 普通消息事件
+当用户向机器人或机器人所在的群聊发送消息，且没有选择指令时，将会触发该事件。
+```json
+{
+  "version": "1.0",
+  "header": 
+    "eventId": "c192ccc83d5147f2859ca77bcfafc9f9",
+    "eventType": "message.receive.normal",
+    "eventTime": 1748613099002
+  }
+  "event": {
+    "sender": 
+      "senderId": "6300451",
+      "senderType": "user",
+      "senderUserLevel": "owner",
+      "senderNickname": "ShanFish"
+    },
+    "chat": {
+      "chatId": "49871624",
+      "chatType": "bot"
+    },
+    "message": {
+      "msgId": "5c887bc0a82244c7969c08000f5b3ae8",
+      "parentId": "",
+      "sendTime": 1748613098989,
+      "chatId": "49871624",
+      "chatType": "bot",
+      "contentType": "text",
+      "content": {
+        "text": "你好"
+      },
+      "instructionId": 0,
+      "instructionName": "",
+      "commandId": 0,
+      "comandName": ""
+    }
+  }
+}
+```
+##### 指令消息事件
+当用户点击聊天栏的"/"图标时，将列出该机器人/群聊可用的所有指令。用户发送带有指令的消息后，将会触发该事件。
 ```json
 {
     "version": "1.0",
     "header": {
-        "eventId": "xxxxx",
-        "eventTime": 1647735644000,
-        "eventType": "message.receive.instruction"
+        "eventId": "ee74aded326b4578959073fe88f0076a",
+        "eventType": "message.receive.instruction",
+        "eventTime": 1749442433069
     },
     "event": {
         "sender": {
-            "senderId": "xxxxx",
+            "senderId": "6300451",
             "senderType": "user",
-            "senderUserLevel": "member",
-            "senderNickname": "昵称"
+            "senderUserLevel": "owner",
+            "senderNickname": "ShanFish"
         },
         "chat": {
-            "chatId": "xxxxx",
-            "chatType": "group"
+            "chatId": "49871624",
+            "chatType": "bot"
         },
         "message": {
-            "msgId": "xxxxxx",
-            "parentId": "xxxx",
-            "sendTime": 1647735644000,
-            "chatId": "xxxxxxxx",
-            "chatType": "group",
+            "msgId": "1d879c6ec68c4c52b78f87d83084955e",
+            "parentId": "",
+            "sendTime": 1749442433057,
+            "chatId": "49871624",
+            "chatType": "bot",
             "contentType": "text",
             "content": {
-                "text": "早上好"
+                "text": "/抽奖信息",
+                "menu": {}
             },
-            "commandId": 98,
-            "commandName": "计算器"
+            "instructionId": 1505,
+            "instructionName": "抽奖信息",
+            "commandId": 1505,
+            "commandName": "抽奖信息"
         }
     }
 }
+```
+##### 用户加群事件
+当用户加入机器人所在的群聊后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "d5429cb5e4654fbcaeee9e4adb244741",
+        "eventType": "group.join",
+        "eventTime": 1749442891943
+    },
+    "event": {
+        "time": 1749442891843,
+        "chatId": "985140593",
+        "chatType": "group",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=b19c8978f4e0d9e43a8aec4f1e3c82ef&t=68466f5b"
+    }
+}
+```
+##### 用户退群事件
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "06959e95aaf547078367104ba754c554",
+        "eventType": "group.leave",
+        "eventTime": 1749442644367
+    },
+    "event": {
+        "time": 1749442644343,
+        "chatId": "985140593",
+        "chatType": "group",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=92fdef22a240a05de78b13afdab5ac51&t=68466e64"
+    }
+}
+```
+##### 用户关注机器人事件
+当用户在机器人ID或机器人推荐处添加机器人后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "3fe280a400f9460daa03a642d1fad39b",
+        "eventType": "bot.followed",
+        "eventTime": 1749443049592
+    },
+    "event": {
+        "time": 1749443049580,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=33bb173f1b22ed0e44da048b175767c6&t=68466ff9"
+    }
+}
+```
+##### 用户取关机器人事件
+当用户点击删除机器人按钮后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "b4f51386d916464b99782052c030c5b7",
+        "eventType": "bot.unfollowed",
+        "eventTime": 1749443036382
+    },
+    "event": {
+        "time": 1749443036373,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=07cf8e9d6ca0875835f9a4a6811b6b4c&t=68466fec"
+    }
+}
+```
+##### 按钮汇报事件
+机器人可以发送带按钮的消息。当用户按下按钮actionType为3(汇报类按钮)的按钮时，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "0d6d269ff7f046828c8562f905f9ee08",
+        "eventType": "button.report.inline",
+        "eventTime": 1749446185273
+    },
+    "event": {
+        "time": 1749446185268,
+        "msgId": "1838c3dd84474e9e9e1e00ca64e72065",
+        "recvId": "6300451",
+        "recvType": "user",
+        "userId": "6300451",
+        "value": "xxxx"
+    }
+}
+```
+
+##### 快捷菜单事件
+当用户点击了开发者自行配置的快捷菜单时，且该快捷菜单类型为普通菜单，将会触发本事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "93d0e36ce0334da58448409fd0527590",
+        "eventType": "bot.shortcut.menu",
+        "eventTime": 1749445822197
+    },
+    "event": {
+        "botId": "49871624",
+        "menuId": "HNH1LDHF",
+        "menuType": 1,
+        "menuAction": 1,
+        "chatId": "985140593",
+        "chatType": "group",
+        "senderType": "user",
+        "senderId": "6300451",
+        "sendTime": 1749445822
+    }
+}
+
+```
+##### 机器人设置事件
+当开发者配置了机器人设置项时，在机器人列表处将会出现"设置"按钮。用户设置完成后，将会触发本事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "5ad7e23399ef46a685cead1abe2efa19",
+        "eventType": "bot.setting",
+        "eventTime": 1749446299131
+    },
+    "event": {
+        "time": 1749446299128,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "groupId": "985140593",
+        "groupName": "云湖测试群",
+        "avatarUrl": "https://chat-img.jwznb.com/77db590d9cee77de13e7c8cf0887b5ba.jpg",
+        "settingJson": {
+            "wezzrm": {
+                "id": "wezzrm",
+                "type": "switch",
+                "label": "测试",
+                "value": true
+            }
+        }
+    }
+}
+
 ```
 
 #### 注意：`chat` 与 `sender` 的误区
@@ -2193,6 +2152,8 @@ ErisPulse 项目：
 | `upgrade`  | `[--force] [--init]`      | 升级模块（`--force` 强制覆盖）        | `epsdk upgrade --force --init`      |
 | `install`  | `<module...> [--init]`    | 安装一个或多个模块（空格分隔），支持本地目录路径 | `epsdk install YunhuAdapter OpenAI`<br>`epsdk install .`<br>`epsdk install /path/to/module` |
 | `uninstall`| `<module> [--init]`       | 移除指定模块                          | `epsdk uninstall old-module --init` |
+| `init`    | -                         | 初始化sdk | `epsdk init`                        |
+| `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
 
 ## 源管理
 | 命令 | 参数 | 描述 | 示例 |
@@ -2200,27 +2161,6 @@ ErisPulse 项目：
 | `origin add` | `<url>` | 添加源 | `epsdk origin add https://erisdev.com/map.json` |
 | `origin list` | - | 源列表 | `epsdk origin list` |
 | `origin del` | `<url>` | 删除源 | `epsdk origin del https://erisdev.com/map.json` |
-| `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
-
----
-
-## 运行脚本命令详解
-
-`run` 命令支持以下参数：
-
-- `<script>`: 要运行的Python脚本路径
-- `--reload`: 启用热重载模式，当脚本文件发生变化时自动重启
-
-示例：
-```bash
-# 普通运行
-epsdk run main.py
-
-# 热重载模式
-epsdk run main.py --reload
-```
-
-热重载模式下，任何对脚本文件的修改都会触发自动重启，方便开发调试。
 
 ---
 
