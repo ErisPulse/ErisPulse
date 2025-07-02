@@ -600,6 +600,20 @@ def install_local_module(module_path, force=False):
         shellprint.panel(f"复制模块文件失败: {e}", "错误", "error")
         return False
     
+    # 安装依赖
+    dependencies = module.moduleInfo.get('dependencies', {})
+    for dep in dependencies.get('requires', []):
+        print(f"\n{Shell_Printer.BOLD}处理依赖: {dep}{Shell_Printer.RESET}")
+        install_module(dep)
+        
+    # 安装pip依赖
+    pip_dependencies = dependencies.get('pip', [])
+    if pip_dependencies:
+        print(f"{Shell_Printer.YELLOW}模块 {module_name} 需要以下pip依赖: {', '.join(pip_dependencies)}{Shell_Printer.RESET}")
+        if not install_pip_dependencies(pip_dependencies):
+            print(f"{Shell_Printer.RED}无法安装模块 {module_name} 的pip依赖，安装终止{Shell_Printer.RESET}")
+            return False
+            
     # 注册模块信息
     mods.set_module(module_name, {
         'status': True,
