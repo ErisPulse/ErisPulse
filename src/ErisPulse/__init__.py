@@ -58,6 +58,7 @@ sdk = types.SimpleNamespace()
 BaseModules = {
     "util"          : util,
     "logger"        : logger,
+    "raiserr"       : raiserr,
     "env"           : env,
     "mods"          : mods,
     "adapter"       : adapter,
