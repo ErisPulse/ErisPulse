@@ -1,18 +1,44 @@
 # 快速开始
 
-## 安装 ErisPulse
+## 安装ErisPulse
 
-使用 pip 安装最新版本：
-
+### 使用 pip 安装
 ```bash
 pip install ErisPulse
 ```
 
-> 📌 **提示**：如果你在开发过程中需要调试或修改源码，建议克隆仓库并使用本地安装：
+### 更先进的安装方法
+> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以您需要先安装 uv。
+
+### 1. 安装 uv
+
+#### 通用方法 (pip):
 ```bash
-git clone https://github.com/ErisPulse/ErisPulse.git
-cd ErisPulse
-pip install -e .
+pip install uv
+```
+
+#### macOS/Linux:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+#### Windows (PowerShell):
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+验证安装:
+```bash
+uv --version
+```
+
+### 2. 创建虚拟环境,并安装 ErisPulse
+
+```bash
+uv python install 3.12              # 安装 Python 3.12
+uv venv                             # 创建虚拟环境
+source .venv/bin/activate           # 激活环境 (Windows: .venv\Scripts\activate)
+uv pip install ErisPulse --upgrade  # 安装框架
 ```
 
 ---
@@ -27,12 +53,12 @@ mkdir my_bot && cd my_bot
 
 2. 初始化 SDK 并生成配置文件：
 
-```python
-from ErisPulse import sdk
-sdk.init()
+```bsah
+epsdk init
+# 或 ep-init
 ```
 
-这将在当前目录下自动生成 `env.py` 配置模板文件。
+这将在当前目录下自动生成 `env.py` 配置模板文件, 以及最简程序入口 `main.py`。
 
 ---
 
@@ -41,6 +67,7 @@ sdk.init()
 你可以通过 CLI 安装所需模块：
 
 ```bash
+# 一般情况下,您需要先更新源: epsdk update
 epsdk install YunhuAdapter OneBotAdapter AIChat
 ```
 
@@ -49,31 +76,7 @@ epsdk install YunhuAdapter OneBotAdapter AIChat
 ---
 
 ## 运行你的机器人
-
-创建主程序文件 `main.py`：
-
-```python
-from ErisPulse import sdk
-import asyncio
-
-async def main():
-    sdk.init()
-
-    # 启动所有适配器
-    await sdk.adapter.startup()
-    
-    # 示例：发送日志消息
-    sdk.logger.info("机器人已启动")
-
-    # 保持运行
-    await asyncio.Event().wait()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-然后运行：
-
+运行我们自动生成的程序入口：
 ```bash
 epsdk run main.py
 ```
@@ -83,70 +86,3 @@ epsdk run main.py
 ```bash
 epsdk run main.py --reload
 ```
-
----
-
-## 核心功能示例
-
-### 日志记录
-
-```python
-sdk.logger.info("机器人已启动")
-sdk.logger.error("发生了一个错误")
-```
-
-你还可以设置日志输出到文件：
-
-```python
-sdk.logger.set_output_file("bot.log")
-```
-
-### 环境配置
-
-```python
-# 设置配置
-sdk.env.set("API_KEY", "your-api-key")
-
-# 获取配置
-api_key = sdk.env.get("API_KEY")
-```
-
-### 错误处理
-
-```python
-# 注册自定义错误
-sdk.raiserr.register("MyError", doc="我的自定义错误")
-
-# 抛出错误
-sdk.raiserr.MyError("发生了自定义错误")
-```
-
----
-
-## 使用适配器（Adapter）
-
-ErisPulse 支持多平台适配器，例如 Yunhu、OneBot、Telegram 等。以下是一个简单的适配器使用示例：
-
-```python
-# 发送文本消息给指定用户
-await sdk.adapter.Yunhu.Send.To("user", "U1001").Text("你好！")
-```
-
-你可以在项目 `devs` 文件夹下的测试文件中找到完整的官方测试适配器使用案例：
-
-- `test_adapter.py`
-
----
-
-## 模块管理（CLI）
-
-你可以通过命令行工具管理模块：
-
-| 命令       | 描述                      | 示例                          |
-|------------|---------------------------|-------------------------------|
-| enable     | 激活指定模块              | epsdk enable chatgpt          |
-| disable    | 停用指定模块              | epsdk disable weather         |
-| install    | 安装一个或多个模块        | epsdk install translator      |
-| list       | 列出模块（可筛选）       | epsdk list --module=payment  |
-| update     | 更新模块索引               | epsdk update                  |
-| origin add | 添加模块源                 | epsdk origin add https://erisdev.com/map.json |
