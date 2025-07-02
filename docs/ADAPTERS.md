@@ -89,40 +89,253 @@ sdk.env.set("YunhuAdapter", {
 > - 云湖需要在控制台指向我们开启的 `server` 地址，否则无法正常接收消息。
 
 #### 数据格式示例
+云湖目前有9种事件会推送给机器人：
+
+|事件字段名称|事件用途|
+|:---:|:---:|
+|message.receive.normal|普通消息|
+|message.receive.instruction|指令消息|
+|group.join|用户加群|
+|group.leave|用户退群|
+|bot.followed|机器人关注|
+|bot.unfollowed|机器人取关|
+|bot.shortcut.menu|快捷菜单|
+|button.report.inline|按钮汇报|
+|bot.setting|机器人设置|
+
+每个事件的触发条件以及数据结构如下：
+
+##### 普通消息事件
+当用户向机器人或机器人所在的群聊发送消息，且没有选择指令时，将会触发该事件。
+```json
+{
+  "version": "1.0",
+  "header": 
+    "eventId": "c192ccc83d5147f2859ca77bcfafc9f9",
+    "eventType": "message.receive.normal",
+    "eventTime": 1748613099002
+  }
+  "event": {
+    "sender": 
+      "senderId": "6300451",
+      "senderType": "user",
+      "senderUserLevel": "owner",
+      "senderNickname": "ShanFish"
+    },
+    "chat": {
+      "chatId": "49871624",
+      "chatType": "bot"
+    },
+    "message": {
+      "msgId": "5c887bc0a82244c7969c08000f5b3ae8",
+      "parentId": "",
+      "sendTime": 1748613098989,
+      "chatId": "49871624",
+      "chatType": "bot",
+      "contentType": "text",
+      "content": {
+        "text": "你好"
+      },
+      "instructionId": 0,
+      "instructionName": "",
+      "commandId": 0,
+      "comandName": ""
+    }
+  }
+}
+```
+##### 指令消息事件
+当用户点击聊天栏的"/"图标时，将列出该机器人/群聊可用的所有指令。用户发送带有指令的消息后，将会触发该事件。
 ```json
 {
     "version": "1.0",
     "header": {
-        "eventId": "xxxxx",
-        "eventTime": 1647735644000,
-        "eventType": "message.receive.instruction"
+        "eventId": "ee74aded326b4578959073fe88f0076a",
+        "eventType": "message.receive.instruction",
+        "eventTime": 1749442433069
     },
     "event": {
         "sender": {
-            "senderId": "xxxxx",
+            "senderId": "6300451",
             "senderType": "user",
-            "senderUserLevel": "member",
-            "senderNickname": "昵称"
+            "senderUserLevel": "owner",
+            "senderNickname": "ShanFish"
         },
         "chat": {
-            "chatId": "xxxxx",
-            "chatType": "group"
+            "chatId": "49871624",
+            "chatType": "bot"
         },
         "message": {
-            "msgId": "xxxxxx",
-            "parentId": "xxxx",
-            "sendTime": 1647735644000,
-            "chatId": "xxxxxxxx",
-            "chatType": "group",
+            "msgId": "1d879c6ec68c4c52b78f87d83084955e",
+            "parentId": "",
+            "sendTime": 1749442433057,
+            "chatId": "49871624",
+            "chatType": "bot",
             "contentType": "text",
             "content": {
-                "text": "早上好"
+                "text": "/抽奖信息",
+                "menu": {}
             },
-            "commandId": 98,
-            "commandName": "计算器"
+            "instructionId": 1505,
+            "instructionName": "抽奖信息",
+            "commandId": 1505,
+            "commandName": "抽奖信息"
         }
     }
 }
+```
+##### 用户加群事件
+当用户加入机器人所在的群聊后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "d5429cb5e4654fbcaeee9e4adb244741",
+        "eventType": "group.join",
+        "eventTime": 1749442891943
+    },
+    "event": {
+        "time": 1749442891843,
+        "chatId": "985140593",
+        "chatType": "group",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=b19c8978f4e0d9e43a8aec4f1e3c82ef&t=68466f5b"
+    }
+}
+```
+##### 用户退群事件
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "06959e95aaf547078367104ba754c554",
+        "eventType": "group.leave",
+        "eventTime": 1749442644367
+    },
+    "event": {
+        "time": 1749442644343,
+        "chatId": "985140593",
+        "chatType": "group",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=92fdef22a240a05de78b13afdab5ac51&t=68466e64"
+    }
+}
+```
+##### 用户关注机器人事件
+当用户在机器人ID或机器人推荐处添加机器人后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "3fe280a400f9460daa03a642d1fad39b",
+        "eventType": "bot.followed",
+        "eventTime": 1749443049592
+    },
+    "event": {
+        "time": 1749443049580,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=33bb173f1b22ed0e44da048b175767c6&t=68466ff9"
+    }
+}
+```
+##### 用户取关机器人事件
+当用户点击删除机器人按钮后，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "b4f51386d916464b99782052c030c5b7",
+        "eventType": "bot.unfollowed",
+        "eventTime": 1749443036382
+    },
+    "event": {
+        "time": 1749443036373,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "userId": "3707697",
+        "nickname": "ShanFishApp",
+        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=07cf8e9d6ca0875835f9a4a6811b6b4c&t=68466fec"
+    }
+}
+```
+##### 按钮汇报事件
+机器人可以发送带按钮的消息。当用户按下按钮actionType为3(汇报类按钮)的按钮时，将会触发该事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "0d6d269ff7f046828c8562f905f9ee08",
+        "eventType": "button.report.inline",
+        "eventTime": 1749446185273
+    },
+    "event": {
+        "time": 1749446185268,
+        "msgId": "1838c3dd84474e9e9e1e00ca64e72065",
+        "recvId": "6300451",
+        "recvType": "user",
+        "userId": "6300451",
+        "value": "xxxx"
+    }
+}
+```
+
+##### 快捷菜单事件
+当用户点击了开发者自行配置的快捷菜单时，且该快捷菜单类型为普通菜单，将会触发本事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "93d0e36ce0334da58448409fd0527590",
+        "eventType": "bot.shortcut.menu",
+        "eventTime": 1749445822197
+    },
+    "event": {
+        "botId": "49871624",
+        "menuId": "HNH1LDHF",
+        "menuType": 1,
+        "menuAction": 1,
+        "chatId": "985140593",
+        "chatType": "group",
+        "senderType": "user",
+        "senderId": "6300451",
+        "sendTime": 1749445822
+    }
+}
+
+```
+##### 机器人设置事件
+当开发者配置了机器人设置项时，在机器人列表处将会出现"设置"按钮。用户设置完成后，将会触发本事件。
+```json
+{
+    "version": "1.0",
+    "header": {
+        "eventId": "5ad7e23399ef46a685cead1abe2efa19",
+        "eventType": "bot.setting",
+        "eventTime": 1749446299131
+    },
+    "event": {
+        "time": 1749446299128,
+        "chatId": "49871624",
+        "chatType": "bot",
+        "groupId": "985140593",
+        "groupName": "云湖测试群",
+        "avatarUrl": "https://chat-img.jwznb.com/77db590d9cee77de13e7c8cf0887b5ba.jpg",
+        "settingJson": {
+            "wezzrm": {
+                "id": "wezzrm",
+                "type": "switch",
+                "label": "测试",
+                "value": true
+            }
+        }
+    }
+}
+
 ```
 
 #### 注意：`chat` 与 `sender` 的误区

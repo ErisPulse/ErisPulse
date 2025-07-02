@@ -29,6 +29,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "pip",
     "aiohttp",
     "importlib>=1.0.4",
     "watchdog",
