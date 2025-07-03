@@ -457,6 +457,6 @@ class AdapterManager:
     def platforms(self) -> list:
         return list(self._adapters.keys())
 
-
+AdapterFather = BaseAdapter
 adapter = AdapterManager()
 SendDSL = SendDSLBase
