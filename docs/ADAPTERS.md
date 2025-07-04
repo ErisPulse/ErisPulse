@@ -67,11 +67,14 @@ Borard board_type 支持以下类型：
 buttons = [
     [
         {"text": "复制", "actionType": 2, "value": "xxxx"},
-        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"}
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "汇报事件", "actionType": 3, "value", "xxxxx"}
     ]
 ]
 await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```
+> **注意：**
+> - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制***和**跳转URL**均无法收到推送。
 
 #### 主要方法返回值示例(Send.To(Type, ID).)
 1. .Text/.Html/Markdown/.Image/.Video/.File
@@ -326,7 +329,7 @@ sdk.env.set("YunhuAdapter", {
 ```python
 @sdk.adapter.Yunhu.on("message")
 async def handle_message(data):
-    if data.get("event", {}).get("chatType", "") == "group":
+    if data.get("event", {}).get("chat", {}).get("chatType", "") == "group":
         targetId = data.get("event", {}).get("chat", {}).get("chatId", "")
         targeType = "group"
     else:
