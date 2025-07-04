@@ -25,12 +25,12 @@ class CustomBase(Exception):
 sdk.raiserr.register("AdvancedError", "高级错误", CustomBase)
 ```
 
-#### info(name: str = None) -> dict | None
+#### info(name: str = None) -> Dict[str, Any] | None
 获取错误类型信息。
 - 参数:
   - name: 错误类型名称，如果为None则返回所有错误类型信息
 - 返回:
-  - dict: 包含错误类型信息的字典，包括类型名、文档和类引用
+  - Dict[str, Any]: 包含错误类型信息的字典，包括类型名、文档和类引用
   - None: 如果指定的错误类型不存在
 - 示例:
 ```python
@@ -71,12 +71,13 @@ except Exception as e:
 import sys
 import traceback
 import asyncio
+from typing import Dict, Any, Optional, Type, List, Set, Tuple, Union
 
 class Error:
     def __init__(self):
         self._types = {}
 
-    def register(self, name, doc="", base=Exception):
+    def register(self, name, doc="", base=Exception) -> Type:
         if name not in self._types:
             err_cls = type(name, (base,), {"__doc__": doc})
             self._types[name] = err_cls
@@ -98,7 +99,7 @@ class Error:
                 raise exc
         return raiser
 
-    def info(self, name: str = None):
+    def info(self, name: str = None) -> Dict[str, Any] | None:
         result = {}
         for err_name, err_cls in self._types.items():
             result[err_name] = {

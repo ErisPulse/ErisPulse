@@ -38,6 +38,7 @@ sdk.logger.info("SDK已初始化")
 
 import os
 import sys
+from typing import Tuple, Dict, List, Any, Optional, Set, Union, Type, FrozenSet
 
 # 依赖类型
 import types
@@ -88,7 +89,7 @@ for error, doc in BaseErrors.items():
         raiserr.register(error, doc=doc)
     except Exception as e:
         raise e
-def init_progress():
+def init_progress() -> Tuple[bool, bool]:
     from pathlib import Path
     env_file = Path("env.py")
     main_file = Path("main.py")
@@ -150,7 +151,6 @@ if __name__ == "__main__":
         return False
 
 def _prepare_environment() -> bool:
-    # 检查环境
     logger.info("[Init] 准备初始化环境...")
     try:
         env_init, main_init = init_progress()
@@ -167,7 +167,8 @@ def _prepare_environment() -> bool:
     except Exception as e:
         logger.error(f"环境准备失败: {e}")
         return False
-def _scan_modules(module_path: str) -> tuple[dict, list, list]:
+def _scan_modules(module_path: str) -> Tuple[Dict, List, List]:
+
     # 扫描并验证模块
     module_objs = {}
     enabled_modules = []
@@ -220,7 +221,7 @@ def _validate_module(moduleObj, module_name: str) -> bool:
         return False
     return True
 
-def _check_dependencies(moduleObj, module_name: str, available_modules: list):
+def _check_dependencies(moduleObj, module_name: str, available_modules: list) -> None:
     # 检查模块依赖关系
     required_deps = moduleObj.moduleInfo.get("dependencies", {}).get("requires", [])
     if missing := [dep for dep in required_deps if dep not in available_modules]:

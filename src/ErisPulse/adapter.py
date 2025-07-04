@@ -8,7 +8,7 @@
 ### 适配器基类 (BaseAdapter)
 适配器基类提供了与外部平台交互的标准接口。
 
-#### call_api(endpoint: str, **params) -> Any
+#### call_api(endpoint: str, **params: Any) -> Any
 调用平台API的抽象方法。
 - 参数:
   - endpoint: API端点
@@ -21,7 +21,7 @@
 - 示例:
 ```python
 class MyPlatformAdapter(BaseAdapter):
-    async def call_api(self, endpoint: str, **params):
+    async def call_api(self, endpoint: str, **params: Any) -> Any:
         if endpoint == "/send":
             return await self._send_message(params)
         elif endpoint == "/upload":
@@ -40,7 +40,7 @@ class MyPlatformAdapter(BaseAdapter):
 - 示例:
 ```python
 class MyPlatformAdapter(BaseAdapter):
-    async def start(self):
+    async def start(self) -> None:
         self.client = await self._create_client()
         self.ws = await self.client.create_websocket()
         self._start_heartbeat()
@@ -57,34 +57,34 @@ class MyPlatformAdapter(BaseAdapter):
 - 示例:
 ```python
 class MyPlatformAdapter(BaseAdapter):
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         if self.ws:
             await self.ws.close()
         if self.client:
             await self.client.close()
 ```
 
-#### on(event_type: str = "*") -> Callable
+#### on(event_type: str = "*") -> Callable[[Callable[..., Any]], Callable[..., Any]]
 事件监听装饰器。
 - 参数:
   - event_type: 事件类型，默认"*"表示所有事件
 - 返回:
-  - Callable: 装饰器函数
+  - Callable[[Callable[..., Any]], Callable[..., Any]]: 装饰器函数
 - 示例:
 ```python
 adapter = MyPlatformAdapter()
 
 @adapter.on("message")
-async def handle_message(data):
+async def handle_message(data: Any) -> None:
     print(f"收到消息: {data}")
 
 @adapter.on("error")
-async def handle_error(error):
+async def handle_error(error: Exception) -> None:
     print(f"发生错误: {error}")
 
 # 处理所有事件
 @adapter.on()
-async def handle_all(event):
+async def handle_all(event: Any) -> None:
     print(f"事件: {event}")
 ```
 
@@ -98,7 +98,7 @@ async def handle_all(event):
 - 示例:
 ```python
 class MyPlatformAdapter(BaseAdapter):
-    async def _handle_websocket_message(self, message):
+    async def _handle_websocket_message(self, message: Any) -> None:
         # 处理消息并触发相应事件
         if message.type == "chat":
             await self.emit("message", {
@@ -108,23 +108,23 @@ class MyPlatformAdapter(BaseAdapter):
             })
 ```
 
-#### middleware(func: Callable) -> Callable
+#### middleware(func: Callable[..., Any]) -> Callable[..., Any]
 添加中间件处理器。
 - 参数:
   - func: 中间件函数
 - 返回:
-  - Callable: 中间件函数
+  - Callable[..., Any]: 中间件函数
 - 示例:
 ```python
 adapter = MyPlatformAdapter()
 
 @adapter.middleware
-async def log_middleware(data):
+async def log_middleware(data: Any) -> Any:
     print(f"处理数据: {data}")
     return data
 
 @adapter.middleware
-async def filter_middleware(data):
+async def filter_middleware(data: Any) -> Optional[Any]:
     if "spam" in data.get("content", ""):
         return None
     return data
@@ -133,7 +133,7 @@ async def filter_middleware(data):
 ### 消息发送DSL (SendDSL)
 提供链式调用风格的消息发送接口。
 
-#### To(target_type: str = None, target_id: str = None) -> 'SendDSL'
+#### To(target_type: Optional[str] = None, target_id: Optional[str] = None) -> 'SendDSL'
 设置消息目标。
 - 参数:
   - target_type: 目标类型（可选）
@@ -152,12 +152,12 @@ sdk.adapter.Platform.Send.To("group", "456").Text("Hello Group")
 sdk.adapter.Platform.Send.To("123").Text("Hello")
 ```
 
-#### Text(text: str) -> Task
+#### Text(text: str) -> asyncio.Task
 发送文本消息。
 - 参数:
   - text: 文本内容
 - 返回:
-  - Task: 异步任务
+  - asyncio.Task: 异步任务
 - 示例:
 ```python
 # 发送简单文本
@@ -192,7 +192,7 @@ for name, adapter in adapters.items():
     sdk.adapter.register(name, adapter)
 ```
 
-#### startup(platforms: List[str] = None) -> None
+#### startup(platforms: Optional[List[str]] = None) -> None
 启动指定的适配器。
 - 参数:
   - platforms: 要启动的平台列表，None表示所有平台
@@ -226,7 +226,10 @@ atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 
 import functools
 import asyncio
-from typing import Callable, Any, Dict, List, Type, Optional, Set
+from typing import (
+    Callable, Any, Dict, List, Type, Optional, Set, 
+    Union, Awaitable, TypeVar, Generic, Tuple, Coroutine, FrozenSet
+)
 from collections import defaultdict
 
 
