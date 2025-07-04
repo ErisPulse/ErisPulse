@@ -26,7 +26,7 @@ def update_reference_docs(module_name, docs, reference_path, module_path):
     with open(reference_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    github_base_url = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/"
+    github_base_url = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/"
     github_source_url = github_base_url + module_path.replace('\\', '/')
     
     section_header = f"## {module_name} (source: [{module_path}]({github_source_url}))"
