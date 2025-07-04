@@ -203,7 +203,7 @@ class Shell_Printer:
             print(f"{cls.YELLOW}请输入 'y' 或 'n'{cls.RESET}")
 
     @classmethod
-    def ask(cls, msg, choices=None, default=None) -> str | None:
+    def ask(cls, msg, choices=None, default="") -> str:
         prompt = f"{cls.BOLD}{msg}{cls.RESET}"
         if choices:
             prompt += f" ({cls.CYAN}{'/'.join(choices)}{cls.RESET})"

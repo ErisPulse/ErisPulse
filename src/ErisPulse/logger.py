@@ -70,7 +70,7 @@ for module, level in config.get("logging", {}).items():
 ```
 
 ### 日志存储和输出
-#### set_output_file(path: str | list) -> None
+#### set_output_file(path: str 或 list) -> None
 设置日志输出文件。
 - 参数:
   - path: 日志文件路径，可以是单个字符串或路径列表
@@ -92,7 +92,7 @@ log_file = f"logs/app_{datetime.now().strftime('%Y%m%d')}.log"
 sdk.logger.set_output_file(log_file)
 ```
 
-#### save_logs(path: str | list) -> None
+#### save_logs(path: str 或 list) -> None
 保存内存中的日志到文件。
 - 参数:
   - path: 保存路径，可以是单个字符串或路径列表
@@ -150,7 +150,7 @@ class Logger:
             self._logger.error(f"无效的日志等级: {level}")
             return False
 
-    def set_output_file(self, path: str | list):
+    def set_output_file(self, path):
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
@@ -168,13 +168,13 @@ class Logger:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
                 raise e
 
-    def save_logs(self, path: str | list):
+    def save_logs(self, path):
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
             return
         if isinstance(path, str):
             path = [path]
-
+        
         for p in path:
             try:
                 with open(p, "w", encoding="utf-8") as file:
@@ -187,6 +187,11 @@ class Logger:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
                 raise e
 
+    def get_logs(self, module_name: str = None) -> dict:
+        if module_name:
+            return {module_name: self._logs.get(module_name, [])}
+        return {k: v.copy() for k, v in self._logs.items()}
+    
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
             self._logs[ModuleName] = []
