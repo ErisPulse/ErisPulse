@@ -909,11 +909,56 @@ def upgrade_all_modules(force=False):
             
     for i, update in enumerate(updates_available, 1):
         print(f"\n{Shell_Printer.BOLD}[{i}/{len(updates_available)}]{Shell_Printer.RESET} 更新模块 {Shell_Printer.BOLD}{update['name']}{Shell_Printer.RESET}")
+        
+        # 检查新版本的依赖
+        module_key = f"{update['name']}@{update['provider']}"
+        new_module_info = modules_data[module_key]
+        new_dependencies = new_module_info.get('dependencies', {}).get('requires', [])
+        
+        # 检查缺失的依赖
+        missing_deps = []
+        for dep in new_dependencies:
+            if dep not in all_modules or not all_modules[dep].get('status', True):
+                missing_deps.append(dep)
+                
+        if missing_deps:
+            shellprint.panel(
+                f"模块 {update['name']} 需要以下依赖:\n{Shell_Printer.YELLOW}{', '.join(missing_deps)}{Shell_Printer.RESET}",
+                "缺失依赖",
+                "warning"
+            )
+            if not shellprint.confirm("是否安装这些依赖？", default=True):
+                print(f"{Shell_Printer.BLUE}跳过模块 {update['name']} 的更新{Shell_Printer.RESET}")
+                continue
+                
+            for dep in missing_deps:
+                print(f"\n{Shell_Printer.BOLD}安装依赖: {dep}{Shell_Printer.RESET}")
+                install_module(dep)
+        
         module_url = update['url'] + update['path']
         script_dir = os.path.dirname(os.path.abspath(__file__))
         module_dir = os.path.join(script_dir, 'modules', update['name'])
         zip_path = os.path.join(script_dir, f"{update['name']}.zip")
         
+        # 检查新版本的pip依赖
+        new_pip_deps = new_module_info.get('dependencies', {}).get('pip', [])
+        current_pip_deps = all_modules[update['name']].get('info', {}).get('dependencies', {}).get('pip', [])
+        added_pip_deps = [dep for dep in new_pip_deps if dep not in current_pip_deps]
+        
+        if added_pip_deps:
+            shellprint.panel(
+                f"模块 {update['name']} 需要以下新的pip依赖:\n{Shell_Printer.YELLOW}{', '.join(added_pip_deps)}{Shell_Printer.RESET}",
+                "新增pip依赖",
+                "warning"
+            )
+            if not shellprint.confirm("是否安装这些pip依赖？", default=True):
+                print(f"{Shell_Printer.BLUE}跳过模块 {update['name']} 的更新{Shell_Printer.RESET}")
+                continue
+                
+            if not install_pip_dependencies(added_pip_deps):
+                print(f"{Shell_Printer.RED}无法安装模块 {update['name']} 的pip依赖，更新终止{Shell_Printer.RESET}")
+                continue
+
         if not extract_and_setup_module(
             module_name=update['name'],
             module_url=module_url,
@@ -922,7 +967,12 @@ def upgrade_all_modules(force=False):
         ):
             continue
             
+        # 更新模块信息，包括新的依赖
         all_modules[update['name']]['info']['version'] = update['remote_version']
+        all_modules[update['name']]['info']['dependencies'] = {
+            'requires': new_dependencies,
+            'pip': new_pip_deps
+        }
         mods.set_all_modules(all_modules)
         print(f"{Shell_Printer.GREEN}模块 {update['name']} 已更新至版本 {update['remote_version']}{Shell_Printer.RESET}")
         
