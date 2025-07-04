@@ -436,6 +436,7 @@ import threading
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
+from typing import List, Dict, Optional, Any, Set, Tuple, Union, Type, FrozenSet
 from .raiserr import raiserr
 
 class EnvManager:
@@ -479,7 +480,7 @@ class EnvManager:
         self._last_snapshot_time = time.time()  # 初始化为当前时间
         self._snapshot_interval = 3600  # 默认每小时自动快照
 
-    def get(self, key, default=None):
+    def get(self, key, default=None) -> Any:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
@@ -505,55 +506,65 @@ class EnvManager:
             cursor.execute("SELECT key FROM config")
             return [row[0] for row in cursor.fetchall()]
 
-    def set(self, key, value):
-        serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
-        with self.transaction():
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
-            conn.commit()
-            conn.close()
-        
-        self._check_auto_snapshot()
-        return True
+    def set(self, key, value) -> bool:
+        try:
+            serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
+            with self.transaction():
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
+                conn.commit()
+                conn.close()
+            
+            self._check_auto_snapshot()
+            return True
+        except Exception as e:
+            return False
 
     def set_multi(self, items):
-        with self.transaction():
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            for key, value in items.items():
-                serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
-                cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", 
-                    (key, serialized_value))
-            conn.commit()
-            conn.close()
-        
-        self._check_auto_snapshot()
-        return True
+        try:
+            with self.transaction():
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                for key, value in items.items():
+                    serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
+                    cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", 
+                        (key, serialized_value))
+                conn.commit()
+                conn.close()
+            
+            self._check_auto_snapshot()
+            return True
+        except Exception as e:
+            return False
 
-    def delete(self, key):
-        with self.transaction():
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM config WHERE key = ?", (key,))
-            conn.commit()
-            conn.close()
-        
-        self._check_auto_snapshot()
-        return True
-
-    def delete_multi(self, keys):
-        with self.transaction():
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.executemany("DELETE FROM config WHERE key = ?", [(k,) for k in keys])
-            conn.commit()
-            conn.close()
-        
-        self._check_auto_snapshot()
-        return True
-
-    def get_multi(self, keys):
+    def delete(self, key) -> bool:
+        try:
+            with self.transaction():
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM config WHERE key = ?", (key,))
+                conn.commit()
+                conn.close()
+            
+            self._check_auto_snapshot()
+            return True
+        except Exception as e:
+            return False
+    def delete_multi(self, keys) -> bool:
+        try:
+            with self.transaction():
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.executemany("DELETE FROM config WHERE key = ?", [(k,) for k in keys])
+                conn.commit()
+                conn.close()
+            
+            self._check_auto_snapshot()
+            return True
+        except Exception as e:
+            return False
+    def get_multi(self, keys) -> dict:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         placeholders = ','.join(['?'] * len(keys))
@@ -630,22 +641,29 @@ class EnvManager:
     def set_snapshot_interval(self, seconds):
         self._snapshot_interval = seconds
 
-    def clear(self):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM config")
-        conn.commit()
-        conn.close()
-
-    def load_env_file(self):
-        env_file = Path("env.py")
-        if env_file.exists():
-            spec = importlib.util.spec_from_file_location("env_module", env_file)
-            env_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(env_module)
-            for key, value in vars(env_module).items():
-                if not key.startswith("__") and isinstance(value, (dict, list, str, int, float, bool)):
-                    self.set(key, value)
+    def clear(self) -> bool:
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM config")
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            return False
+    def load_env_file(self) -> bool:
+        try:
+            env_file = Path("env.py")
+            if env_file.exists():
+                spec = importlib.util.spec_from_file_location("env_module", env_file)
+                env_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(env_module)
+                for key, value in vars(env_module).items():
+                    if not key.startswith("__") and isinstance(value, (dict, list, str, int, float, bool)):
+                        self.set(key, value)
+            return True
+        except Exception as e:
+            return False
     def __getattr__(self, key):
         try:
             return self.get(key)
@@ -660,7 +678,7 @@ class EnvManager:
             from .logger import logger
             logger.error(f"设置配置项 {key} 失败: {e}")
 
-    def snapshot(self, name=None):
+    def snapshot(self, name=None) -> str:
         if not name:
             name = datetime.now().strftime("%Y%m%d_%H%M%S")
         snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{name}.db")
@@ -687,7 +705,7 @@ class EnvManager:
             logger.error(f"创建快照失败: {e}")
             raise
 
-    def restore(self, snapshot_name):
+    def restore(self, snapshot_name) -> bool:
         snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
             if not snapshot_name.endswith('.db') else snapshot_name
             
@@ -716,7 +734,7 @@ class EnvManager:
             logger.error(f"恢复快照失败: {e}")
             return False
 
-    def list_snapshots(self):
+    def list_snapshots(self) -> list:
         snapshots = []
         for f in os.listdir(self.SNAPSHOT_DIR):
             if f.endswith('.db'):
@@ -729,7 +747,7 @@ class EnvManager:
                 ))
         return sorted(snapshots, key=lambda x: x[1], reverse=True)
 
-    def delete_snapshot(self, snapshot_name):
+    def delete_snapshot(self, snapshot_name) -> bool:
         snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
             if not snapshot_name.endswith('.db') else snapshot_name
             
