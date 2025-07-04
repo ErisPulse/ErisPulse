@@ -5,8 +5,8 @@
 
 ## API 文档
 ### 拓扑排序：
-    - topological_sort(elements, dependencies, error): 拓扑排序依赖关系
-    - show_topology(): 可视化模块依赖关系
+    - topological_sort(elements: List[str], dependencies: Dict[str, List[str]], error: Type[Exception]) -> List[str]: 拓扑排序依赖关系
+    - show_topology() -> str: 可视化模块依赖关系
 
 ### 装饰器：
     - @cache: 缓存函数结果
@@ -14,7 +14,7 @@
     - @retry(max_attempts=3, delay=1): 失败自动重试
 
 ### 异步执行：
-    - ExecAsync(async_func, *args, **kwargs): 异步执行函数
+    - ExecAsync(async_func: Callable, *args: Any, **kwargs: Any) -> Any: 异步执行函数
 
 ### 示例用法：
 
@@ -48,10 +48,11 @@ import functools
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict, deque
+from typing import List, Dict, Type, Callable, Any, Optional, Set
 
 executor = ThreadPoolExecutor()
 
-def topological_sort(elements, dependencies, error):
+def topological_sort(elements, dependencies, error) -> List[str]:
     graph = defaultdict(list)
     in_degree = {element: 0 for element in elements}
     for element, deps in dependencies.items():
@@ -72,7 +73,7 @@ def topological_sort(elements, dependencies, error):
         sdk.logger.error(f"依赖导入错误: {elements} vs  {sorted_list} | 发生了循环依赖")
     return sorted_list
 
-def show_topology():
+def show_topology() -> str:
     from . import sdk
     dep_data = sdk.env.get('module_dependencies')
     if not dep_data:
@@ -98,7 +99,7 @@ def show_topology():
     
     return "\n".join(result)
 
-def ExecAsync(async_func, *args, **kwargs):
+def ExecAsync(async_func, *args, **kwargs) -> Any:
     loop = asyncio.get_event_loop()
     return loop.run_in_executor(executor, lambda: asyncio.run(async_func(*args, **kwargs)))
 

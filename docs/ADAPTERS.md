@@ -313,7 +313,7 @@ sdk.env.set("YunhuAdapter", {
 
 | 字段 | 含义 |
 |------|------|
-| `data.get("event", {}).get("chatType", "")` | 当前聊天类型（`user`/`bot` 或 `group`） |
+| `data.get("event", {}).get("chat", {}).get("chatType", "")` | 当前聊天类型（`user`/`bot` 或 `group`） |
 | `data.get("event", {}).get("sender", {}).get("senderType", "")` | 发送者类型（通常为 `user`） |
 | `data.get("event", {}).get("sender", {}).get("senderId", "")` | 发送者唯一 ID |
 
