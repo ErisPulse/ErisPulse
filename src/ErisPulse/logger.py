@@ -10,7 +10,7 @@
 以debug为例：
 > 此外，还有其他级别的日志记录函数，如info, warning, error, critical等，用法相同。
 
-debug(msg: str, *args, **kwargs) -> None
+debug(msg: str, *args: Any, **kwargs: Any) -> None
 
 记录调试级别的日志信息。
 - 参数:
@@ -70,7 +70,7 @@ for module, level in config.get("logging", {}).items():
 ```
 
 ### 日志存储和输出
-#### set_output_file(path: str 或 list) -> None
+#### set_output_file(path: Union[str, List[str]]) -> None
 设置日志输出文件。
 - 参数:
   - path: 日志文件路径，可以是单个字符串或路径列表
@@ -92,7 +92,7 @@ log_file = f"logs/app_{datetime.now().strftime('%Y%m%d')}.log"
 sdk.logger.set_output_file(log_file)
 ```
 
-#### save_logs(path: str 或 list) -> None
+#### save_logs(path: Union[str, List[str]]) -> None
 保存内存中的日志到文件。
 - 参数:
   - path: 保存路径，可以是单个字符串或路径列表
@@ -118,6 +118,7 @@ atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 import logging
 import inspect
 import datetime
+from typing import List, Dict, Any, Optional, Union, Type, Set, Tuple, FrozenSet
 
 class Logger:
     def __init__(self):
@@ -131,10 +132,16 @@ class Logger:
             console_handler.setFormatter(logging.Formatter("%(message)s"))
             self._logger.addHandler(console_handler)
 
-    def set_level(self, level: str):
-        level = level.upper()
-        if hasattr(logging, level):
-            self._logger.setLevel(getattr(logging, level))
+    def set_level(self, level: str) -> bool:
+        try:
+            level = level.upper()
+            if hasattr(logging, level):
+                self._logger.setLevel(getattr(logging, level))
+                return True
+            return False
+        except Exception as e:
+            self._logger.error(f"无效的日志等级: {level}")
+            return False
 
     def set_module_level(self, module_name: str, level: str) -> bool:
         from .db import env
@@ -150,7 +157,7 @@ class Logger:
             self._logger.error(f"无效的日志等级: {level}")
             return False
 
-    def set_output_file(self, path):
+    def set_output_file(self, path) -> bool:
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
@@ -164,14 +171,14 @@ class Logger:
                 file_handler.setFormatter(logging.Formatter("%(message)s"))
                 self._logger.addHandler(file_handler)
                 self._logger.info(f"日志输出已设置到文件: {p}")
+                return True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
-                raise e
-
-    def save_logs(self, path):
+                return False
+    def save_logs(self, path) -> bool:
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
-            return
+            return False
         if isinstance(path, str):
             path = [path]
         
@@ -183,9 +190,10 @@ class Logger:
                         for log in logs:
                             file.write(f"  {log}\n")
                     self._logger.info(f"日志已被保存到：{p}。")
+                    return True
             except Exception as e:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
-                raise e
+                return False
 
     def get_logs(self, module_name: str = None) -> dict:
         if module_name:
