@@ -48,6 +48,10 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
 - `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
 
+Borard board_type 支持以下类型：
+- `local`：指定用户看板
+- `global`：全局看板
+
 #### 按钮参数说明
 `buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
 
@@ -71,6 +75,36 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```
 > **注意：**
 > - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制***和**跳转URL**均无法收到推送。
+
+#### 主要方法返回值示例(Send.To(Type, ID).)
+1. .Text/.Html/Markdown/.Image/.Video/.File
+```json
+{
+  "code": 1,
+  "data": {
+    "messageInfo": {
+      "msgId": "65a314006db348be97a09eb065985d2d",
+      "recvId": "5197892",
+      "recvType": "user"
+    }
+  },
+  "msg": "success"
+}
+```
+
+2. .Batch
+```json
+{
+    "code": 1,
+    "data": {
+        "successCount": 1,
+        "successList": [
+            {"msgId": "65a314006db348be97a09eb065985d2d", "recvId": "5197892", "recvType": "user"}
+        ]
+    },
+    "msg": "success"
+}
+```
 
 #### env.py 配置示例
 ```python

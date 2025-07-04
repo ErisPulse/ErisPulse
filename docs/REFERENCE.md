@@ -1,6 +1,6 @@
 # API Reference Documentation
 
-## __init__ (source: [ErisPulse/__init__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/__init__.py))
+## __init__ (source: [ErisPulse/__init__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/__init__.py))
 
 # SDK 核心初始化
 
@@ -37,7 +37,7 @@ sdk.init()
 sdk.logger.info("SDK已初始化")
 ```
 
-## __main__ (source: [ErisPulse/__main__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/__main__.py))
+## __main__ (source: [ErisPulse/__main__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/__main__.py))
 
 # CLI 入口
 
@@ -82,7 +82,7 @@ epsdk run main.py --reload
 epsdk origin add https://example.com/map.json
 ```
 
-## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/adapter.py))
+## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/adapter.py))
 
 # 适配器系统
 
@@ -307,7 +307,7 @@ import atexit
 atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 ```
 
-## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/db.py))
+## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/db.py))
 
 # 环境配置
 
@@ -734,7 +734,7 @@ def safe_bulk_update(updates):
         raise
 ```
 
-## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/logger.py))
+## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/logger.py))
 
 # 日志系统
 
@@ -850,7 +850,7 @@ import atexit
 atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 ```
 
-## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/raiserr.py))
+## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/raiserr.py))
 
 # 错误管理系统
 
@@ -919,7 +919,7 @@ except Exception as e:
     print(f"捕获到错误: {e}")
 ```
 
-## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/util.py))
+## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/util.py))
 
 # 工具函数集合
 

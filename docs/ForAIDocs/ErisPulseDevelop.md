@@ -257,6 +257,18 @@ sdk.env.set_snapshot_interval(3600)  # 设置自动快照间隔(秒)
 # - 快照适合在重大变更前创建
 ```
 
+须知：
+模块在env.py中的定义的配置项是硬加载的，每次重启都会被重新加载覆盖原来的key值，不会保留之前的配置；所以谨慎使用您的env.py中的配置项进行任何存储行为！
+如，一个屏蔽词模块在env.py中存储着全局屏蔽词列表，如果使用env.py中的配置项存储，那么每次重启都会丢失屏蔽词列表，导致屏蔽词失效！
+这时建议的方法是：使用一个全新的key存储，每次初始化的时候使用类似以下代码获取配置项：
+```python
+a = env.get("模块在env.py中存储的key", "default_value")
+b = env.get("一个用来存储动态屏蔽词的全新的key", "default_value")
+
+# 那么我们使用的屏蔽词列表为：
+self.band_words = a + b
+```
+
 #### 注册自定义错误类型：
 
 ```python
@@ -602,7 +614,7 @@ if __name__ == "__main__":
 
 # API Reference Documentation
 
-## __init__ (source: [ErisPulse/__init__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/__init__.py))
+## __init__ (source: [ErisPulse/__init__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/__init__.py))
 
 # SDK 核心初始化
 
@@ -639,7 +651,7 @@ sdk.init()
 sdk.logger.info("SDK已初始化")
 ```
 
-## __main__ (source: [ErisPulse/__main__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/__main__.py))
+## __main__ (source: [ErisPulse/__main__.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/__main__.py))
 
 # CLI 入口
 
@@ -684,7 +696,7 @@ epsdk run main.py --reload
 epsdk origin add https://example.com/map.json
 ```
 
-## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/adapter.py))
+## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/adapter.py))
 
 # 适配器系统
 
@@ -909,7 +921,7 @@ import atexit
 atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 ```
 
-## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/db.py))
+## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/db.py))
 
 # 环境配置
 
@@ -1336,7 +1348,7 @@ def safe_bulk_update(updates):
         raise
 ```
 
-## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/logger.py))
+## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/logger.py))
 
 # 日志系统
 
@@ -1452,7 +1464,7 @@ import atexit
 atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 ```
 
-## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/raiserr.py))
+## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/raiserr.py))
 
 # 错误管理系统
 
@@ -1521,7 +1533,7 @@ except Exception as e:
     print(f"捕获到错误: {e}")
 ```
 
-## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/ErisPulse/util.py))
+## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/util.py))
 
 # 工具函数集合
 
@@ -1620,6 +1632,10 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
 - `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
 
+Borard board_type 支持以下类型：
+- `local`：指定用户看板
+- `global`：全局看板
+
 #### 按钮参数说明
 `buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
 
@@ -1639,6 +1655,36 @@ buttons = [
     ]
 ]
 await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
+```
+
+#### 主要方法返回值示例(Send.To(Type, ID).)
+1. .Text/.Html/Markdown/.Image/.Video/.File
+```json
+{
+  "code": 1,
+  "data": {
+    "messageInfo": {
+      "msgId": "65a314006db348be97a09eb065985d2d",
+      "recvId": "5197892",
+      "recvType": "user"
+    }
+  },
+  "msg": "success"
+}
+```
+
+2. .Batch
+```json
+{
+    "code": 1,
+    "data": {
+        "successCount": 1,
+        "successList": [
+            {"msgId": "65a314006db348be97a09eb065985d2d", "recvId": "5197892", "recvType": "user"}
+        ]
+    },
+    "msg": "success"
+}
 ```
 
 #### env.py 配置示例

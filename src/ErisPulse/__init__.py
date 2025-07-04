@@ -48,7 +48,7 @@ from .raiserr import raiserr
 from .logger import logger
 from .db import env
 from .mods import mods
-from .adapter import adapter, BaseAdapter, SendDSL
+from .adapter import adapter, AdapterFather, SendDSL
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')
@@ -62,9 +62,9 @@ BaseModules = {
     "env"           : env,
     "mods"          : mods,
     "adapter"       : adapter,
-    "SendDSL"       : SendDSL,      # 链式发送基类 - 兼容原 sdk.SendDSL | 待弃用, 需要在 Adapter继承类中手动创建嵌套类并集成 super().SendDSL()
-    "AdapterFather" : BaseAdapter,
-    "BaseAdapter"   : BaseAdapter
+    "SendDSL"       : SendDSL,          # 链式发送基类 - 兼容原 sdk.SendDSL | 待弃用, 需要在 Adapter继承类中手动创建嵌套类并集成 super().SendDSL()
+    "AdapterFather" : AdapterFather,
+    "BaseAdapter"   : AdapterFather
 }
 
 BaseErrors = {
