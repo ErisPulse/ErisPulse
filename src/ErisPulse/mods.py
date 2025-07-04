@@ -253,7 +253,7 @@ sdk.env.set(custom_status_key, is_active)
 """
 
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, List, Set, Tuple, Union, Type, FrozenSet
 
 class ModuleManager:
     DEFAULT_MODULE_PREFIX = "erispulse.module.data:"
