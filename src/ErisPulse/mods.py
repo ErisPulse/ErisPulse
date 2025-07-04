@@ -81,7 +81,7 @@ module_info["info"]["meta"]["version"] = "1.1.0"
 sdk.mods.set_module("MyModule", module_info)
 ```
 
-#### get_module(module_name: str) -> dict | None
+#### get_module(module_name: str) -> dict
 获取模块信息。
 - 参数:
   - module_name: 模块名称
