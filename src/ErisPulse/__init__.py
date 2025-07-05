@@ -40,21 +40,18 @@ import os
 import sys
 from typing import Tuple, Dict, List, Any, Optional, Set, Union, Type, FrozenSet
 
-# 依赖类型
-import types
-
 # BaseModules: SDK核心模块
-from . import util
-from .raiserr import raiserr
-from .logger import logger
-from .db import env
-from .mods import mods
-from .adapter import adapter, AdapterFather, SendDSL
+from .core import util
+from .core import raiserr
+from .core import logger
+from .core import env
+from .core import mods
+from .core import adapter, AdapterFather, SendDSL
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')
 
-sdk = types.SimpleNamespace()
+sdk = sys.modules[__name__]
 
 BaseModules = {
     "util"          : util,
