@@ -2,7 +2,7 @@ name: 🎀 艾莉丝的PyPI包裹快递服务 ~
 
 # 艾莉丝今天也要努力发包呢!
 on:
-  workflow_dispatch: {} # 手动触发
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -89,26 +89,3 @@ jobs:
         run: |
           emails=$(cat .github/config/notify.json | jq -c '.emails')
           echo "emails=$emails" >> $GITHUB_OUTPUT
-
-      - name: 发送邮件通知
-        uses: ./.github/workflows/send-email
-        with:
-          subject: "[艾莉丝快报] 新版本 ${{ steps.version.outputs.CURRENT_TAG }} 已发布至 PyPI！✨"
-          content: |
-            🎀 您好主人~
-
-            我是艾莉丝，负责为您播报最新消息！
-            今天我们的项目又更新啦~快去看看吧！
-
-            🔖 版本号：${{ steps.version.outputs.CURRENT_TAG }}
-            📦 包地址：
-            https://pypi.org/project/erispulse/${{ steps.version.outputs.CURRENT_TAG }}
-
-            📝 更新内容：
-            ${{ steps.version.outputs.CURRENT_TAG }}
-
-            祝您每天都有好心情~ 💖
-            —— 艾莉丝
-          recipients: ${{ steps.get_emails.outputs.emails }}
-          resend_api_key: ${{ secrets.RESEND_API_KEY }}
-          feishu_smtp_password: ${{ secrets.FEISHU_SMTP_PASSWORD }}
