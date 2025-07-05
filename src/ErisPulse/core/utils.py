@@ -1,8 +1,6 @@
 """
 # 工具函数集合
 
-提供各种实用工具函数和装饰器，简化开发流程。
-
 ## API 文档
 ### 拓扑排序：
     - topological_sort(elements: List[str], dependencies: Dict[str, List[str]], error: Type[Exception]) -> List[str]: 拓扑排序依赖关系
@@ -19,11 +17,6 @@
 ### 示例用法：
 
 ```
-from ErisPulse import sdk
-
-# 拓扑排序
-sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
-
 # 缓存装饰器
 @sdk.util.cache
 def expensive_operation(param):

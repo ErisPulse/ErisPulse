@@ -1,0 +1,99 @@
+name: 🎀 艾莉丝的版本标签魔法 ~
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  auto-tag-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 读取版本卷轴
+        id: info
+        shell: bash
+        run: |
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "发现新版本: $version"
+
+          if [[ $version =~ dev|alpha|beta|a|b ]]; then
+            echo "is_dev=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dev=false" >> $GITHUB_OUTPUT
+          fi
+
+          commit_msg=$(git log -1 --pretty=%B)
+          commit_short=$(git rev-parse --short HEAD)
+          echo "commit_short=$commit_short" >> $GITHUB_OUTPUT
+          echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
+          echo "$commit_msg" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 获取变更文件列表
+        id: changed_files
+        shell: bash
+        run: |
+          before="${{ github.event.before }}"
+          after="${{ github.sha }}"
+
+          if [[ "$before" == "0000000000000000000000000000000000000000" ]]; then
+            before="HEAD~1"
+          fi
+
+          echo "before=$before" >> $GITHUB_OUTPUT
+          echo "after=$after" >> $GITHUB_OUTPUT
+
+          files=$(git diff --name-only $before..$after | head -n 50 | xargs)
+          file_count=$(git diff --name-only $before..$after | wc -l)
+
+          if [ "$file_count" -gt 50 ]; then
+            files="$files ..."
+          fi
+
+          echo "files=$files" >> $GITHUB_OUTPUT
+
+      - name: 施展版本魔法
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          version="${{ steps.info.outputs.version }}"
+          commit_short="${{ steps.info.outputs.commit_short }}"
+          commit_msg="${{ steps.info.outputs.commit_msg }}"
+          is_dev="${{ steps.info.outputs.is_dev }}"
+          tag_name="v$version"
+          
+          if [ -f "docs/CHANGELOG.md" ]; then
+            changelog=$(sed -n "/^## \[$version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
+          fi
+          if [ -z "$changelog" ]; then
+            changelog="### ✨ 魔法更新\n\n- $commit_msg ($commit_short)"
+          fi
+
+          if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
+            echo "🎀 施加新的魔法印记..."
+            git tag "$tag_name"
+            git push origin "$tag_name"
+          fi
+
+          if gh release view "$tag_name" &>/dev/null; then
+            gh release edit "$tag_name" \
+              --notes "$changelog" \
+              --prerelease=$is_dev
+            echo "🌟 已更新魔法版本 $tag_name"
+          else
+            gh release create "$tag_name" \
+              --notes "$changelog" \
+              --title "✨ 艾莉丝的魔法更新 $tag_name" \
+              --prerelease=$is_dev
+            echo "✨ 已发布新的魔法版本 $tag_name"
+          fi
