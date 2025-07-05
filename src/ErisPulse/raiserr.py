@@ -25,7 +25,7 @@ class CustomBase(Exception):
 sdk.raiserr.register("AdvancedError", "高级错误", CustomBase)
 ```
 
-#### info(name: str = None) -> Dict[str, Any] | None
+#### info(name: str = None) -> Dict[str, Any] or None
 获取错误类型信息。
 - 参数:
   - name: 错误类型名称，如果为None则返回所有错误类型信息
@@ -99,7 +99,7 @@ class Error:
                 raise exc
         return raiser
 
-    def info(self, name: str = None) -> Dict[str, Any] | None:
+    def info(self, name: str = None) -> Dict[str, Any]:
         result = {}
         for err_name, err_cls in self._types.items():
             result[err_name] = {
@@ -111,7 +111,11 @@ class Error:
             return result
         err_cls = self._types.get(name)
         if not err_cls:
-            return None
+            return {
+                "type": None,
+                "doc": None,
+                "class": None,
+            }
         return {
             "type": name,
             "doc": getattr(err_cls, "__doc__", ""),
