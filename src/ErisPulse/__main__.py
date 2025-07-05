@@ -57,8 +57,8 @@ import asyncio
 import subprocess
 import json
 import json
-from .db import env
-from .mods import mods
+from .core import env
+from .core import mods
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 

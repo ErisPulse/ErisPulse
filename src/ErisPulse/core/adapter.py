@@ -351,7 +351,7 @@ class AdapterManager:
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
-        from . import sdk
+        from .. import sdk
 
         # 如果该类已经创建过实例，复用
         if adapter_class in self._adapter_instances:
@@ -398,7 +398,7 @@ class AdapterManager:
             asyncio.create_task(self._run_adapter(adapter, platform))
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str):
-        from . import sdk
+        from .. import sdk
 
         # 加锁防止并发启动
         if not getattr(adapter, "_starting_lock", None):

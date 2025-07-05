@@ -441,8 +441,8 @@ from .raiserr import raiserr
 
 class EnvManager:
     _instance = None
-    db_path = os.path.join(os.path.dirname(__file__), "config.db")
-    SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), "snapshots")
+    db_path = os.path.join(os.path.dirname(__file__), "../data/config.db")
+    SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), "../data/snapshots")
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -497,7 +497,7 @@ class EnvManager:
                 self._init_db()
                 return self.get(key, default)
             else:
-                from . import sdk
+                from .. import sdk
                 sdk.logger.error(f"数据库操作错误: {e}")
 
     def get_all_keys(self) -> list:
