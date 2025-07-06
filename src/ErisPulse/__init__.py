@@ -32,12 +32,12 @@ sdk.init()
 
 # 访问各模块功能
 sdk.logger.info("SDK已初始化")
-```
-
 """
 
 import os
 import sys
+import toml
+import importlib.metadata
 from typing import Tuple, Dict, List, Any, Optional, Set, Union, Type, FrozenSet
 
 # BaseModules: SDK核心模块
@@ -164,9 +164,200 @@ def _prepare_environment() -> bool:
     except Exception as e:
         logger.error(f"环境准备失败: {e}")
         return False
-def _scan_modules(module_path: str) -> Tuple[Dict, List, List]:
+def _load_from_entry_points() -> Tuple[Dict, List, List]:
+    # 从entry-points加载PyPI包中的模块
+    module_objs = {}
+    enabled_modules = []
+    disabled_modules = []
+    package_map = {}  # 记录模块名到包名的映射
+    
+    try:
+        # 加载模块entry-points
+        entry_points = importlib.metadata.entry_points()
+        # 处理Python 3.10+的API变化
+        if hasattr(entry_points, 'select'):
+            module_entries = entry_points.select(group='erispulse.module')
+        else:
+            module_entries = entry_points.get('erispulse.module', [])
+        
+        for entry_point in module_entries:
+            try:
+                module_main = entry_point.load()
+                moduleObj = sys.modules[module_main.__module__]
+                dist = importlib.metadata.distribution(entry_point.dist.name)
+                
+                # 从pyproject.toml读取依赖配置
+                requires = []
+                optional = []
+                pip_deps = []
+                
+                # 读取tool.erispulse.dependencies配置
+                if dist is not None:
+                    pyproject = dist.read_text("pyproject.toml")
+                    if pyproject:
+                        try:
+                            import toml
+                            config = toml.loads(pyproject)
+                            erispulse_deps = config.get("tool", {}).get("erispulse", {}).get("dependencies", {})
+                            requires = erispulse_deps.get("requires", [])
+                            optional = erispulse_deps.get("optional", [])
+                            
+                            # 读取项目依赖作为pip依赖
+                            project_deps = config.get("project", {}).get("dependencies", [])
+                            pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
+                        except Exception as e:
+                            logger.warning(f"解析 {entry_point.dist.name} 的pyproject.toml失败: {e}")
+                
+                # 自动推断依赖：检查依赖包中的erispulse模块
+                auto_requires = set()
+                if dist is not None:
+                    for dep in (dist.requires or []):
+                        dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
+                        try:
+                            dep_dist = importlib.metadata.distribution(dep_name)
+                            if dep_dist:
+                                for ep in dep_dist.entry_points:
+                                    if ep.group in ('erispulse.module', 'erispulse.adapter'):
+                                        auto_requires.add(ep.name)
+                        except:
+                            continue
 
-    # 扫描并验证模块
+                # 合并显式和自动推断的依赖
+                all_requires = list(set(requires + list(auto_requires)))
+
+                # 为兼容性创建moduleInfo
+                moduleObj.moduleInfo = {
+                    "meta": {
+                        "name": entry_point.name,
+                        "version": getattr(moduleObj, "__version__", dist.version if dist else "1.0.0"),
+                        "description": getattr(moduleObj, "__description__", ""),
+                        "author": getattr(moduleObj, "__author__", ""),
+                        "license": getattr(moduleObj, "__license__", ""),
+                        "package": entry_point.dist.name
+                    },
+                    "dependencies": {
+                        "requires": all_requires,
+                        "optional": optional,
+                        "pip": pip_deps
+                    }
+                }
+                
+                meta_name = entry_point.name
+                module_info = mods.get_module(meta_name) or {
+                    "status": True,
+                    "info": moduleObj.moduleInfo
+                }
+                mods.set_module(meta_name, module_info)
+                
+                if not module_info.get('status', True):
+                    disabled_modules.append(meta_name)
+                    logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
+                    continue
+                    
+                module_objs[meta_name] = moduleObj
+                enabled_modules.append(meta_name)
+                
+            except Exception as e:
+                logger.warning(f"从entry-point加载模块 {entry_point.name} 失败: {e}")
+                
+        # 加载适配器entry-points
+        entry_points = importlib.metadata.entry_points()
+        # 处理Python 3.10+的API变化
+        if hasattr(entry_points, 'select'):
+            adapter_entries = entry_points.select(group='erispulse.adapter')
+        else:
+            adapter_entries = entry_points.get('erispulse.adapter', [])
+            
+        for entry_point in adapter_entries:
+            try:
+                adapter_class = entry_point.load()
+                moduleObj = sys.modules[adapter_class.__module__]
+                dist = importlib.metadata.distribution(entry_point.dist.name)
+                
+                # 从pyproject.toml读取依赖配置
+                requires = []
+                optional = []
+                pip_deps = []
+                
+                # 读取tool.erispulse.dependencies配置
+                if dist is not None:
+                    pyproject = dist.read_text("pyproject.toml")
+                    if pyproject:
+                        try:
+                            config = toml.loads(pyproject)
+                            erispulse_deps = config.get("tool", {}).get("erispulse", {}).get("dependencies", {})
+                            requires = erispulse_deps.get("requires", [])
+                            optional = erispulse_deps.get("optional", [])
+                            
+                            # 读取项目依赖作为pip依赖
+                            project_deps = config.get("project", {}).get("dependencies", [])
+                            pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
+                        except Exception as e:
+                            logger.warning(f"解析 {entry_point.dist.name} 的pyproject.toml失败: {e}")
+                
+                # 自动推断依赖：检查依赖包中的erispulse模块
+                auto_requires = set()
+                if dist is not None:
+                    for dep in (dist.requires or []):
+                        dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
+                        try:
+                            dep_dist = importlib.metadata.distribution(dep_name)
+                            if dep_dist:
+                                for ep in dep_dist.entry_points:
+                                    if ep.group in ('erispulse.module', 'erispulse.adapter'):
+                                        auto_requires.add(ep.name)
+                        except:
+                            continue
+
+                # 合并显式和自动推断的依赖
+                all_requires = list(set(requires + list(auto_requires)))
+
+                # 为兼容性创建moduleInfo和adapterInfo
+                moduleObj.moduleInfo = {
+                    "meta": {
+                        "name": entry_point.name,
+                        "version": getattr(moduleObj, "__version__", dist.version if dist else "1.0.0"),
+                        "description": getattr(moduleObj, "__description__", ""),
+                        "author": getattr(moduleObj, "__author__", ""),
+                        "license": getattr(moduleObj, "__license__", ""),
+                        "package": entry_point.dist.name
+                    },
+                    "dependencies": {
+                        "requires": all_requires,
+                        "optional": optional,
+                        "pip": pip_deps
+                    }
+                }
+                
+                if not hasattr(moduleObj, 'adapterInfo'):
+                    moduleObj.adapterInfo = {}
+                moduleObj.adapterInfo[entry_point.name] = adapter_class
+                
+                meta_name = entry_point.name
+                module_info = mods.get_module(meta_name) or {
+                    "status": True,
+                    "info": moduleObj.moduleInfo
+                }
+                mods.set_module(meta_name, module_info)
+                
+                if not module_info.get('status', True):
+                    disabled_modules.append(meta_name)
+                    logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
+                    continue
+                    
+                module_objs[meta_name] = moduleObj
+                enabled_modules.append(meta_name)
+                
+            except Exception as e:
+                logger.warning(f"从entry-point加载适配器 {entry_point.name} 失败: {e}")
+                
+    except Exception as e:
+        logger.error(f"加载entry-points失败: {e}")
+        
+    return module_objs, enabled_modules, disabled_modules
+
+def _scan_modules(module_path: str) -> Tuple[Dict, List, List]:
+    """扫描并验证模块目录中的模块(兼容旧方式)"""
     module_objs = {}
     enabled_modules = []
     disabled_modules = []
@@ -237,17 +428,41 @@ def _check_dependencies(moduleObj, module_name: str, available_modules: list) ->
 def _resolve_dependencies(modules: list, module_objs: dict) -> list:
     # 解析模块依赖关系并进行拓扑排序
     dependencies = {}
+    package_deps = {}
+    
+    # 构建包名到模块名的映射
+    pkg_to_mod = {}
+    for mod_name in modules:
+        pkg_name = module_objs[mod_name].moduleInfo["meta"].get("package")
+        if pkg_name:
+            pkg_to_mod[pkg_name] = mod_name
+    
     for module_name in modules:
         moduleObj = module_objs[module_name]
         req_deps = moduleObj.moduleInfo.get("dependencies", {}).get("requires", [])
         opt_deps = moduleObj.moduleInfo.get("dependencies", {}).get("optional", [])
         available_opt = [dep for dep in opt_deps if dep in modules]
-        dependencies[module_name] = req_deps + available_opt
+        
+        # 添加包级别的依赖
+        pkg_deps = []
+        pkg_name = moduleObj.moduleInfo["meta"].get("package")
+        if pkg_name:
+            try:
+                dist = importlib.metadata.distribution(pkg_name)
+                for dep in (dist.requires or []):
+                    dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
+                    if dep_name in pkg_to_mod:
+                        pkg_deps.append(pkg_to_mod[dep_name])
+            except:
+                pass
+        
+        dependencies[module_name] = list(set(req_deps + available_opt + pkg_deps))
         
     sorted_modules = sdk.util.topological_sort(modules, dependencies, raiserr.CycleDependencyError)
     env.set('module_dependencies', {
         'modules': sorted_modules,
-        'dependencies': dependencies
+        'dependencies': dependencies,
+        'package_mapping': pkg_to_mod
     })
     return sorted_modules
 
@@ -294,18 +509,44 @@ def init() -> bool:
         if not _prepare_environment():
             return False
             
+        # 从entry-points加载PyPI包中的模块
+        logger.debug("[Init] 正在从PyPI包entry-points加载模块...")
+        pkg_objs, pkg_enabled, pkg_disabled = _load_from_entry_points()
+        logger.info(f"[Init] 从PyPI包加载了 {len(pkg_enabled)} 个模块, {len(pkg_disabled)} 个模块被禁用")
+        
+        # 从modules目录加载传统模块(保持兼容)
         module_path = os.path.join(os.path.dirname(__file__), "modules")
-        module_objs, enabled_modules, _ = _scan_modules(module_path)
+        logger.debug(f"[Init] 正在从目录 {module_path} 扫描模块...")
+        dir_objs, dir_enabled, dir_disabled = _scan_modules(module_path)
+        logger.info(f"[Init] 从目录扫描加载了 {len(dir_enabled)} 个模块, {len(dir_disabled)} 个模块被禁用")
+        
+        # 合并模块(entry-points优先)
+        module_objs = {**dir_objs, **pkg_objs}  # PyPI包中的模块会覆盖同名目录模块
+        enabled_modules = list(set(pkg_enabled + dir_enabled))
+        
+        # 记录模块冲突情况
+        conflicts = set(pkg_enabled) & set(dir_enabled)
+        if conflicts:
+            logger.warning(f"[Init] 发现 {len(conflicts)} 个模块冲突, PyPI包中的模块将优先使用: {', '.join(conflicts)}")
         
         if not enabled_modules:
-            logger.warning("没有找到可用的模块")
+            logger.warning("[Init] 没有找到可用的模块")
             return True
             
+        logger.debug(f"[Init] 开始解析 {len(enabled_modules)} 个模块的依赖关系...")
         sorted_modules = _resolve_dependencies(enabled_modules, module_objs)
+        logger.info(f"[Init] 模块加载顺序(拓扑排序): {', '.join(sorted_modules)}")
+        
+        # 注册适配器
+        logger.debug("[Init] 正在注册适配器...")
         if not _register_adapters(sorted_modules, module_objs):
             return False
             
-        return _initialize_modules(sorted_modules, module_objs)
+        # 初始化模块
+        logger.debug("[Init] 正在初始化模块...")
+        success = _initialize_modules(sorted_modules, module_objs)
+        logger.info(f"[Init] SDK初始化{'成功' if success else '失败'}")
+        return success
         
     except Exception as e:
         logger.critical(f"SDK初始化严重错误: {e}")

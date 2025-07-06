@@ -30,14 +30,15 @@ description = "My awesome module"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
-homepage = "https://github.com/your-username/your-module"
+urls = { "https://github.com/your-username/your-module" }
 authors = [
     { name = "Your Name", email = "your@email.com" }
 ]
+dependencies = []
 
 # 定义模块信息
 [project.entry-points]
-"erispulse-module"  = { "my_module" = "my_module.core:Main" }
+"erispulse.module"  = { "my_module" = "my_module.core:Main" }
 
 [tool.erispulse.dependencies]
 requires = ["OneBotAdapter"],    # 必须的erispulse包内依赖模块
