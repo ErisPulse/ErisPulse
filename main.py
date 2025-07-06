@@ -9,6 +9,9 @@ async def main():
         sdk.init()
         await sdk.adapter.startup()
         
+        sys_info = sdk.SystemStatus.get()
+        sdk.logger.info(sys_info)
+        
         # 保持程序运行(不建议修改)
         await asyncio.Event().wait()
     except Exception as e:
