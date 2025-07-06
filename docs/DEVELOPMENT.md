@@ -4,6 +4,11 @@
 
 ---
 ## 一、使用 SDK 功能
+
+通过 `from ErisPulse import sdk` 可以引入 sdk 提供的关键对象集合
+
+当然你也可以通过 `from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter` 直接获取核心模块对象
+
 ### SDK 提供的核心对象
 
 | 名称 | 用途 |
@@ -15,6 +20,7 @@
 | `sdk.util` | 工具函数（缓存、重试等） |
 | `sdk.adapter` | 获取其他适配器实例 |
 | `sdk.BaseAdapter` | 适配器基类 |
+
 
 #### 日志记录：
 

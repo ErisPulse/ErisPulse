@@ -41,12 +41,12 @@ import sys
 from typing import Tuple, Dict, List, Any, Optional, Set, Union, Type, FrozenSet
 
 # BaseModules: SDK核心模块
-from .core import util
-from .core import raiserr
-from .core import logger
-from .core import env
-from .core import mods
-from .core import adapter, AdapterFather, SendDSL
+from .Core import util
+from .Core import raiserr
+from .Core import logger
+from .Core import env
+from .Core import mods
+from .Core import adapter, AdapterFather, SendDSL
 
 # 这里不能删，确保windows下的shell能正确显示颜色
 os.system('')

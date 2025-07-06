@@ -2,8 +2,7 @@ MIT License
 
 Copyright (c) 2025 ErisPulse
 
-Portions of this software are based on https://github.com/FramerOrg/Framer 
-(Copyright (c) 2025 runoneall).
+Portions of this software are based on https://github.com/runoneall/sdkFrame.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,3 +25,5 @@ SOFTWARE.
 The documentation portion of this project references content from https://codeberg.org/ybr/yhwiki,
 licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 
 International License (CC BY-NC-ND 4.0).
+
+Note: This license file has been updated to correct the upstream project reference.

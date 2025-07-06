@@ -26,7 +26,11 @@ def update_reference_docs(module_name, docs, reference_path, module_path):
     with open(reference_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    github_base_url = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/"
+    if module_name in ["__init__", "__main__"]:
+        github_base_url = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/"
+    else:
+        github_base_url = "https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/"
+
     github_source_url = github_base_url + module_path.replace('\\', '/')
     
     section_header = f"## {module_name} (source: [{module_path}]({github_source_url}))"
@@ -63,7 +67,11 @@ def main():
     modules = ['__init__', '__main__', 'adapter', 'db', 'logger', 'raiserr', 'util']
     
     for module in modules:
-        py_file = module_dir / f'{module}.py'
+        if module in ['__init__', '__main__']:
+            py_file = module_dir / f'{module}.py'
+        else:
+            py_file = module_dir / 'core' / f'{module}.py'
+            
         if not py_file.exists():
             print(f"Warning: {py_file} not found")
             continue
