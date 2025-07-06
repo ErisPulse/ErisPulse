@@ -2,9 +2,9 @@
 
 ## 安装ErisPulse
 
-### 使用 pip 安装
+### 使用 pip 安装 | 并安装官方 CLI
 ```bash
-pip install ErisPulse
+pip install ErisPulse[cli]
 ```
 
 ### 更先进的安装方法
@@ -32,13 +32,13 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 uv --version
 ```
 
-### 2. 创建虚拟环境,并安装 ErisPulse
+### 2. 创建虚拟环境,并安装 ErisPulse 及官方CLI
 
 ```bash
 uv python install 3.12              # 安装 Python 3.12
 uv venv                             # 创建虚拟环境
 source .venv/bin/activate           # 激活环境 (Windows: .venv\Scripts\activate)
-uv pip install ErisPulse --upgrade  # 安装框架
+uv pip install ErisPulse[cli] --upgrade  # 安装框架
 ```
 
 ---
