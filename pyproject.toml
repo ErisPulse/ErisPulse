@@ -34,13 +34,14 @@ dependencies = [
     "pip",
     "aiohttp",
     "watchdog",
+    "toml"
 ]
 
 [project.scripts]
 ep-init = "ErisPulse.__init__:init"
-epsdk = "ErisPulse-CLI.__init__:main"
-ep = "ErisPulse-CLI.__init__:main"
-ep-cli = "ErisPulse-CLI.__init__:main"
+epsdk = "ErisPulse.__main__:main"
+ep = "ErisPulse.__main__:main"
+ep-cli = "ErisPulse.__main__:main"
 
 [tool.hatch]
 project.root = "src"
