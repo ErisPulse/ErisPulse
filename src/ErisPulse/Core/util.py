@@ -63,20 +63,20 @@ class Util:
                 if in_degree[neighbor] == 0:
                     queue.append(neighbor)
         if len(sorted_list) != len(elements):
-            from .. import sdk
-            sdk.logger.error(f"依赖导入错误: {elements} vs  {sorted_list} | 发生了循环依赖")
+            from . import logger
+            logger.error(f"依赖导入错误: {elements} vs  {sorted_list} | 发生了循环依赖")
         return sorted_list
 
     def show_topology(self) -> str:
-        from .. import sdk
-        dep_data = sdk.env.get('module_dependencies')
+        from . import env, raiserr
+        dep_data = env.get('module_dependencies')
         if not dep_data:
             return "未找到模块依赖关系数据，请先运行sdk.init()"
             
         sorted_modules = topological_sort(
             dep_data['modules'], 
             dep_data['dependencies'], 
-            sdk.raiserr.CycleDependencyError
+            raiserr.CycleDependencyError
         )
         
         tree = {}
@@ -114,9 +114,9 @@ class Util:
             try:
                 return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
             except Exception as e:
-                from .. import sdk
-                sdk.logger.error(f"线程内发生未处理异常:\n{''.join(traceback.format_exc())}")
-                sdk.raiserr.CaughtExternalError(
+                from . import logger, raiserr
+                logger.error(f"线程内发生未处理异常:\n{''.join(traceback.format_exc())}")
+                raiserr.CaughtExternalError(
                     f"检测到线程内异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(e).__name__}: {e}"
                 )
         return wrapper
