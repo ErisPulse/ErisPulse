@@ -4,11 +4,6 @@
 
 本文档指导您将现有的ErisPulse模块从传统的目录扫描方式迁移到PyPI包方式
 
-### 迁移好处
-- **更好的依赖管理**：依赖项通过包系统自动处理
-- **版本控制**：可以明确指定模块版本
-- **部署简便**：通过pip一键安装
-
 ## 迁移步骤
 
 ### 1. 创建包结构
@@ -30,37 +25,33 @@ my_module/
 
 ```toml
 [project]
-name = "erispulse-my-module"
+name = "MyModule"
 version = "1.0.0"
-description = "My ErisPulse Module"
+description = "My awesome module"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+homepage = "https://github.com/your-username/your-module"
+authors = [
+    { name = "Your Name", email = "your@email.com" }
+]
 
 # 定义模块信息
 [project.entry-points]
-"erispulse-module" = { "my_module" = "my_module.core:Main" }
+"erispulse-module"  = { "my_module" = "my_module.core:Main" }
 
-[tool.erispulse.moduleInfo]
-meta = { 
-    name = "MyModule",
-    version = "1.0.0", 
-    description = "My awesome module", 
-    author = "Your Name" ,
-    author_email = "your@email.com",
-    license = "MIT",
-    homepage = "https://github.com/your-username/my-module"
-}
-dependencies = { 
-    requires = ["module_a", "module_b"],    # 必须的erispulse包内依赖模块
-    optional = ["module_c"]                 # 可选的erispulse包内依赖模块
-}
+[tool.erispulse.dependencies]
+requires = ["OneBotAdapter"],    # 必须的erispulse包内依赖模块
+optional = ["YunhuAdapter"]      # 可选的erispulse包内依赖模块
 ```
 
 ## 依赖配置处理的逻辑
 
 1. **显式配置优先**：
    ```toml
-   [tool.erispulse.moduleInfo.dependencies]
-   requires = ["db", "auth"]  # 必须的依赖模块
-   optional = ["monitoring"]  # 可选的依赖模块
+   [tool.erispulse.dependencies]
+   requires = ["OneBotAdapter"]  # 必须的依赖模块
+   optional = ["YunhuAdapter"]   # 可选的依赖模块
    ```
    - 系统会构建完整的依赖图
    - 使用拓扑排序确定加载顺序
