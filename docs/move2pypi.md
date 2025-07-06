@@ -64,24 +64,17 @@ dependencies = {
    ```
    - 系统会构建完整的依赖图
    - 使用拓扑排序确定加载顺序
-   - 检测到循环依赖会抛出`CycleDependencyError`
 
 2. **自动推断模式**：
    - 分析PyPI包的`requires`元数据
    - 只识别 包含模块/适配器 信息的模块
-   - 缺少依赖会抛出`MissingDependencyError`
-   - 示例PyPI依赖：
-     ```text
-     Requires-Dist: erispulse-db
-     Requires-Dist: erispulse-auth
-     ```
 
 ### 3. 修改模块代码
 
 移除`__init__.py`中的`moduleInfo`定义，只保留：
 
 ```python
-from .core import Main
+from .Core import Main
 ```
 
 ### 4. 构建并发布包
