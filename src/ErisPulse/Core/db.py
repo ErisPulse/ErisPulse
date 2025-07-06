@@ -496,8 +496,8 @@ class EnvManager:
                 self._init_db()
                 return self.get(key, default)
             else:
-                from .. import sdk
-                sdk.logger.error(f"数据库操作错误: {e}")
+                from . import logger
+                logger.error(f"数据库操作错误: {e}")
 
     def get_all_keys(self) -> list:
         with sqlite3.connect(self.db_path) as conn:
