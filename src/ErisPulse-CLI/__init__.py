@@ -57,8 +57,7 @@ import asyncio
 import subprocess
 import json
 import json
-from .Core import env
-from .Core import mods
+from ErisPulse.Core import env, mods
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
