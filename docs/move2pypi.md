@@ -13,10 +13,9 @@
 ```
 my_module/
 ├── pyproject.toml   # 包配置文件
-├── src/
-│   └── my_module/
-│       ├── __init__.py
-│       └── Core.py   # 原Core.py内容
+├── my_module/
+│   ├── __init__.py
+│   └── Core.py   # 原Core.py内容
 ```
 
 ### 2. 配置包信息
@@ -93,12 +92,12 @@ pip install erispulse-my-module
 ```python
 from ErisPulse import sdk
 sdk.init()
-print(hasattr(sdk, 'MyModule'))  # 应该返回True
+print(hasattr(sdk, 'my_module'))  # 应该返回True
 ```
 
 3. 查看日志确认：
 ```
-[Init] 模块 MyModule 已从包配置加载
+[Init] 模块 my_module 已从包配置加载
 ```
 
 ## 注意事项
