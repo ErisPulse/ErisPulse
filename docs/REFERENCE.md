@@ -82,7 +82,7 @@ epsdk run main.py --reload
 epsdk origin add https://example.com/map.json
 ```
 
-## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/adapter.py))
+## adapter (source: [ErisPulse/adapter.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/ErisPulse/adapter.py))
 
 # 适配器系统
 
@@ -307,7 +307,7 @@ import atexit
 atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
 ```
 
-## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/db.py))
+## db (source: [ErisPulse/db.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/ErisPulse/db.py))
 
 # 环境配置
 
@@ -734,7 +734,7 @@ def safe_bulk_update(updates):
         raise
 ```
 
-## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/logger.py))
+## logger (source: [ErisPulse/logger.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/ErisPulse/logger.py))
 
 # 日志系统
 
@@ -850,7 +850,7 @@ import atexit
 atexit.register(lambda: sdk.logger.save_logs("final_logs.txt"))
 ```
 
-## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/raiserr.py))
+## raiserr (source: [ErisPulse/raiserr.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/ErisPulse/raiserr.py))
 
 # 错误管理系统
 
@@ -878,7 +878,7 @@ class CustomBase(Exception):
 sdk.raiserr.register("AdvancedError", "高级错误", CustomBase)
 ```
 
-#### info(name: str = None) -> Dict[str, Any] | None
+#### info(name: str = None) -> Dict[str, Any] or None
 获取错误类型信息。
 - 参数:
   - name: 错误类型名称，如果为None则返回所有错误类型信息
@@ -919,11 +919,9 @@ except Exception as e:
     print(f"捕获到错误: {e}")
 ```
 
-## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/ErisPulse/util.py))
+## util (source: [ErisPulse/util.py](https://raw.githubusercontent.com/ErisPulse/ErisPulse/refs/heads/main/src/core/ErisPulse/util.py))
 
 # 工具函数集合
-
-提供各种实用工具函数和装饰器，简化开发流程。
 
 ## API 文档
 ### 拓扑排序：
@@ -941,11 +939,6 @@ except Exception as e:
 ### 示例用法：
 
 ```
-from ErisPulse import sdk
-
-# 拓扑排序
-sorted_modules = sdk.util.topological_sort(modules, dependencies, error)
-
 # 缓存装饰器
 @sdk.util.cache
 def expensive_operation(param):
