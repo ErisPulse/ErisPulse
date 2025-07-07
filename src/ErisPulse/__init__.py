@@ -79,6 +79,8 @@ class PyPIModuleLoader:
             Dict[str, object]: 模块对象字典
             List[str]: 启用的模块列表
             List[str]: 停用的模块列表
+            
+        :raises ImportError: 当无法加载模块时抛出
         """
         module_objs = {}
         enabled_modules = []
@@ -106,6 +108,7 @@ class PyPIModuleLoader:
                     
         except Exception as e:
             logger.error(f"加载PyPI包entry-points失败: {e}")
+            raise ImportError(f"无法加载PyPI模块: {e}")
             
         return module_objs, enabled_modules, disabled_modules
     
@@ -131,6 +134,8 @@ class PyPIModuleLoader:
             Dict[str, object]: 模块对象字典
             List[str]: 启用的模块列表
             List[str]: 停用的模块列表
+            
+        :raises ImportError: 当模块加载失败时抛出
         """
         try:
             loaded_obj = entry_point.load()
@@ -190,6 +195,7 @@ class PyPIModuleLoader:
             
         except Exception as e:
             logger.warning(f"从entry-point加载{'适配器' if is_adapter else '模块'} {entry_point.name} 失败: {e}")
+            raise ImportError(f"无法加载模块 {entry_point.name}: {e}")
             
         return module_objs, enabled_modules, disabled_modules
     
@@ -205,6 +211,8 @@ class PyPIModuleLoader:
             List[str]: 必选依赖列表
             List[str]: 可选依赖列表 
             List[str]: pip依赖列表
+            
+        :raises toml.TomlDecodeError: 当toml解析失败时抛出
         """
         requires = []
         optional = []
@@ -224,6 +232,7 @@ class PyPIModuleLoader:
                     pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
                 except Exception as e:
                     logger.warning(f"解析 {dist.name} 的pyproject.toml失败: {e}")
+                    raise toml.TomlDecodeError(f"无法解析pyproject.toml: {e}")
         return requires, optional, pip_deps
     
     @staticmethod
@@ -270,6 +279,8 @@ class DirectoryModuleLoader:
             Dict[str, object]: 模块对象字典
             List[str]: 启用的模块列表
             List[str]: 停用的模块列表
+            
+        :raises ImportError: 当模块加载失败时抛出
         """
         module_objs = {}
         enabled_modules = []
@@ -307,6 +318,7 @@ class DirectoryModuleLoader:
                 
             except Exception as e:
                 logger.warning(f"模块 {module_name} 加载失败: {e}")
+                raise ImportError(f"无法加载模块 {module_name}: {e}")
                 
         return module_objs, enabled_modules, disabled_modules
     
@@ -390,6 +402,8 @@ class ModuleInitializer:
         2. 如果初始化失败会抛出InitError异常
         3. 初始化过程会自动处理模块依赖关系
         {!--< /tips >!--}
+        
+        :raises InitError: 当初始化失败时抛出
         """
         logger.info("[Init] SDK 正在初始化...")
         
@@ -663,6 +677,8 @@ def init() -> bool:
     2. 如果初始化失败会抛出InitError异常
     3. 建议在main.py中调用此函数
     {!--< /tips >!--}
+    
+    :raises InitError: 当初始化失败时抛出
     """
     if not _prepare_environment():
         return False
