@@ -15,8 +15,8 @@ import shutil
 import fnmatch
 import subprocess
 from typing import Dict, List, Optional
-from ErisPulse import sdk
-from ErisPulse_CLI import shellprint, Shell_Printer
+from ..Core import env, mods
+from ..Core.shellprint import shellprint, Shell_Printer
 
 class LegacyManager:
     """旧版模块管理器"""
@@ -26,8 +26,8 @@ class LegacyManager:
         
     def _init_sources(self):
         """初始化源"""
-        if not sdk.env.get('origins'):
-            sdk.env.set('origins', [])
+        if not env.get('origins'):
+            env.set('origins', [])
             
             primary_source = "https://erisdev.com/map.json"
             secondary_source = "https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/refs/heads/main/map.json"
@@ -36,11 +36,11 @@ class LegacyManager:
             validated_url = asyncio.run(self._validate_url(primary_source))
             
             if validated_url:
-                sdk.env.set('origins', [validated_url])
+                env.set('origins', [validated_url])
                 shellprint.status(f"主源 {validated_url} 已成功添加")
             else:
-                if secondary_source not in sdk.env.get('origins', []):
-                    sdk.env.set('origins', [secondary_source])
+                if secondary_source not in env.get('origins', []):
+                    env.set('origins', [secondary_source])
                     shellprint.panel(
                         f"主源不可用，已添加备用源 {secondary_source}\n\n"
                         f"{Shell_Printer.YELLOW}提示:{Shell_Printer.RESET} 建议尽快升级 ErisPulse SDK 版本",
@@ -116,10 +116,10 @@ class LegacyManager:
             shellprint.panel("提供的源不是一个有效源，请检查后重试", "错误", "error")
             return False
             
-        origins = sdk.env.get('origins')
+        origins = env.get('origins')
         if validated_url not in origins:
             origins.append(validated_url)
-            sdk.env.set('origins', origins)
+            env.set('origins', origins)
             shellprint.panel(f"源 {validated_url} 已成功添加", "成功", "success")
             return True
         else:
@@ -129,7 +129,7 @@ class LegacyManager:
     def update_sources(self):
         """更新源"""
         shellprint.status("更新模块源...")
-        origins = sdk.env.get('origins')
+        origins = env.get('origins')
         providers = {}
         modules = {}
         module_alias = {}
@@ -164,15 +164,15 @@ class LegacyManager:
         asyncio.run(fetch_source_data())
         shellprint.table(["源", "模块", "地址"], table_rows, "源更新状态", "success")
         from datetime import datetime
-        sdk.env.set('providers', providers)
-        sdk.env.set('modules', modules)
-        sdk.env.set('module_alias', module_alias)
-        sdk.env.set('last_origin_update_time', datetime.now().isoformat())
+        env.set('providers', providers)
+        env.set('modules', modules)
+        env.set('module_alias', module_alias)
+        env.set('last_origin_update_time', datetime.now().isoformat())
         shellprint.panel("源更新完成", "成功", "success")
 
     def list_sources(self):
         """列出源"""
-        origins = sdk.env.get('origins')
+        origins = env.get('origins')
         if not origins:
             shellprint.panel("当前没有配置任何源", "提示", "info")
             return
@@ -182,10 +182,10 @@ class LegacyManager:
 
     def del_source(self, value):
         """删除源"""
-        origins = sdk.env.get('origins')
+        origins = env.get('origins')
         if value in origins:
             origins.remove(value)
-            sdk.env.set('origins', origins)
+            env.set('origins', origins)
             shellprint.panel(f"源 {value} 已成功删除", "成功", "success")
         else:
             shellprint.panel(f"源 {value} 不存在", "错误", "error")
@@ -193,9 +193,9 @@ class LegacyManager:
     def enable_module(self, module_name):
         """启用模块"""
         shellprint.status(f"启用模块: {module_name}")
-        module_info = sdk.mods.get_module(module_name)
+        module_info = mods.get_module(module_name)
         if module_info:
-            sdk.mods.set_module_status(module_name, True)
+            mods.set_module_status(module_name, True)
             shellprint.panel(f"模块 {module_name} 已成功启用", "成功", "success")
         else:
             shellprint.panel(f"模块 {module_name} 不存在", "错误", "error")
@@ -203,9 +203,9 @@ class LegacyManager:
     def disable_module(self, module_name):
         """禁用模块"""
         shellprint.status(f"禁用模块: {module_name}")
-        module_info = sdk.mods.get_module(module_name)
+        module_info = mods.get_module(module_name)
         if module_info:
-            sdk.mods.set_module_status(module_name, False)
+            mods.set_module_status(module_name, False)
             shellprint.panel(f"模块 {module_name} 已成功禁用", "成功", "success")
         else:
             shellprint.panel(f"模块 {module_name} 不存在", "错误", "error")
@@ -216,7 +216,7 @@ class LegacyManager:
             return self.install_local_module(module_name, force)
             
         shellprint.panel(f"准备安装模块: {Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET}", "安装摘要", "info")
-        last_update_time = sdk.env.get('last_origin_update_time', None)
+        last_update_time = env.get('last_origin_update_time', None)
         if last_update_time:
             from datetime import datetime, timedelta
             last_update = datetime.fromisoformat(last_update_time)
@@ -224,10 +224,10 @@ class LegacyManager:
                 shellprint.panel("距离上次源更新已超过30天，源内可能有新模块或更新。", "提示", "warning")
                 if shellprint.confirm("是否在安装模块前更新源？", default=True):
                     self.update_sources()
-                    sdk.env.set('last_origin_update_time', datetime.now().isoformat())
+                    env.set('last_origin_update_time', datetime.now().isoformat())
                     shellprint.status("源更新完成")
     
-        module_info = sdk.mods.get_module(module_name)
+        module_info = mods.get_module(module_name)
         if module_info and not force:
             meta = module_info.get('info', {}).get('meta', {})
             shellprint.panel(
@@ -238,14 +238,14 @@ class LegacyManager:
             if not shellprint.confirm("是否要强制重新安装？", default=False):
                 return
                 
-        providers = sdk.env.get('providers', {})
+        providers = env.get('providers', {})
         if isinstance(providers, str):
             providers = json.loads(providers)
         module_info_list = []
         
         for provider, url in providers.items():
             module_key = f"{module_name}@{provider}"
-            modules_data = sdk.env.get('modules', {})
+            modules_data = env.get('modules', {})
             if isinstance(modules_data, str):
                 modules_data = json.loads(modules_data)
             if module_key in modules_data:
@@ -323,7 +323,7 @@ class LegacyManager:
             return
             
         # 注册模块信息
-        sdk.mods.set_module(module_name, {
+        mods.set_module(module_name, {
             'status': True,
             'info': {
                 'meta': {
@@ -369,7 +369,7 @@ class LegacyManager:
             shellprint.panel(f"导入模块 {module_name} 失败: {e}", "错误", "error")
             return False
         
-        module_info = sdk.mods.get_module(module_name)
+        module_info = mods.get_module(module_name)
         if module_info and not force:
             meta = module_info.get('info', {}).get('meta', {})
             shellprint.panel(
@@ -407,7 +407,7 @@ class LegacyManager:
                 return False
                 
         # 注册模块信息
-        sdk.mods.set_module(module_name, {
+        mods.set_module(module_name, {
             'status': True,
             'info': {
                 'meta': module.moduleInfo.get('meta', {}),
@@ -548,7 +548,7 @@ class LegacyManager:
     def uninstall_module(self, module_name):
         """卸载模块"""
         shellprint.panel(f"准备卸载模块: {Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET}", "卸载摘要", "warning")
-        module_info = sdk.mods.get_module(module_name)
+        module_info = mods.get_module(module_name)
         if not module_info:
             shellprint.panel(f"模块 {module_name} 不存在", "错误", "error")
             return
@@ -589,7 +589,7 @@ class LegacyManager:
             
         pip_dependencies = depsinfo.get('pip', [])
         if pip_dependencies:
-            all_modules = sdk.mods.get_all_modules()
+            all_modules = mods.get_all_modules()
             unused_pip_dependencies = []
             essential_packages = {'aiohttp'}
             for dep in pip_dependencies:
@@ -633,22 +633,22 @@ class LegacyManager:
                             "error"
                         )
                         
-        if sdk.mods.remove_module(module_name):
+        if mods.remove_module(module_name):
             shellprint.panel(f"模块 {Shell_Printer.BOLD}{module_name}{Shell_Printer.RESET} 已成功卸载", "成功", "success")
         else:
             shellprint.panel(f"模块 {module_name} 不存在", "错误", "error")
 
     def upgrade_all_modules(self, force=False):
         """升级所有模块"""
-        all_modules = sdk.mods.get_all_modules()
+        all_modules = mods.get_all_modules()
         if not all_modules:
             print(f"{Shell_Printer.YELLOW}未找到任何模块，无法更新{Shell_Printer.RESET}")
             return
             
-        providers = sdk.env.get('providers', {})
+        providers = env.get('providers', {})
         if isinstance(providers, str):
             providers = json.loads(providers)
-        modules_data = sdk.env.get('modules', {})
+        modules_data = env.get('modules', {})
         if isinstance(modules_data, str):
             modules_data = json.loads(modules_data)
             
@@ -762,19 +762,19 @@ class LegacyManager:
                 'requires': new_dependencies,
                 'pip': new_pip_deps
             }
-            sdk.mods.set_all_modules(all_modules)
+            mods.set_all_modules(all_modules)
             print(f"{Shell_Printer.GREEN}模块 {update['name']} 已更新至版本 {update['remote_version']}{Shell_Printer.RESET}")
             
         shellprint.panel("所有可用更新已处理完成", "完成", "success")
 
     def list_modules(self, module_name=None):
         """列出模块"""
-        all_modules = sdk.mods.get_all_modules()
+        all_modules = mods.get_all_modules()
         if not all_modules:
             shellprint.panel("未在数据库中发现注册模块,正在初始化模块列表...", "提示", "info")
-            from . import init as init_module
+            from .. import init as init_module
             init_module()
-            all_modules = sdk.mods.get_all_modules()
+            all_modules = mods.get_all_modules()
             
         if not all_modules:
             shellprint.panel("未找到任何模块", "错误", "error")
