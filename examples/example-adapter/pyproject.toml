@@ -12,7 +12,8 @@ dependencies = [
 ]
 
 [project.authors]
-name = "yourname", email = "your@mail.com"
+name = ["yourname"]
+email = ["your@mail.com"]
 
 [project.urls]
 "homepage" = "https://github.com/yourname/MyAdapter"
