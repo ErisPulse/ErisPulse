@@ -24,7 +24,7 @@ my_module/
 
 ```toml
 [project]
-name = "MyModule"
+name = "ErisPulse-MyModule"
 version = "1.0.0"
 description = "My awesome module"
 readme = "README.md"
