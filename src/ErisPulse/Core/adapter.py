@@ -134,7 +134,7 @@ class BaseAdapter:
                     recvType=self._target_type
                 )
             )
-
+        
     def __init__(self):
         """
         初始化适配器
@@ -276,7 +276,7 @@ class BaseAdapter:
             
         :example:
         >>> await adapter.send("user", "123", "Hello")
-        >>> await adapter.send("group", "456", "Hello", method="Notice")
+        >>> await adapter.send("group", "456", "Hello", method="Markdown")
         """
         method_name = kwargs.pop("method", "Text")
         method = getattr(self.Send.To(target_type, target_id), method_name, None)
