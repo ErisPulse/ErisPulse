@@ -41,7 +41,7 @@ dependencies = []
 "erispulse.module"  = { "my_module" = "my_module.core:Main" }
 
 [tool.erispulse.dependencies]
-requires = ["OneBotAdapter"],    # 必须的erispulse包内依赖模块
+requires = ["OneBotAdapter"]     # 必须的erispulse包内依赖模块
 optional = ["YunhuAdapter"]      # 可选的erispulse包内依赖模块
 ```
 
