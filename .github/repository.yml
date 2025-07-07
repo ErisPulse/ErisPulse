@@ -1,7 +1,0 @@
-repository:
-  files:
-    - name: "STYLE_GUIDE.md"
-      label: "Style Guide"
-    - name: "README.md"
-    - name: "LICENSE"
-    - name: "CODE_OF_CONDUCT.md"
