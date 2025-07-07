@@ -1,0 +1,21 @@
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "一个非常哇塞的模块"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+
+# 可以直接依赖对应的ErisPulse模块包名
+dependencies = [
+    
+]
+
+[project.authors]
+name = "yourname", email = "your@mail.com"
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyModule"
+
+[project.entry-points]
+"erispulse.module" = { "MyModule" = "MyModule:Main" }
