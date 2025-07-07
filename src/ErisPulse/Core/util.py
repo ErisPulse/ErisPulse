@@ -1,40 +1,3 @@
-"""
-# 工具函数集合
-
-## API 文档
-### 拓扑排序：
-    - topological_sort(elements: List[str], dependencies: Dict[str, List[str]], error: Type[Exception]) -> List[str]: 拓扑排序依赖关系
-    - show_topology() -> str: 可视化模块依赖关系
-
-### 装饰器：
-    - @cache: 缓存函数结果
-    - @run_in_executor: 将同步函数转为异步
-    - @retry(max_attempts=3, delay=1): 失败自动重试
-
-### 异步执行：
-    - ExecAsync(async_func: Callable, *args: Any, **kwargs: Any) -> Any: 异步执行函数
-
-### 示例用法：
-
-```
-# 缓存装饰器
-@sdk.util.cache
-def expensive_operation(param):
-    return heavy_computation(param)
-    
-# 异步执行
-@sdk.util.run_in_executor
-def sync_task():
-    pass
-    
-# 重试机制
-@sdk.util.retry(max_attempts=3, delay=1)
-def unreliable_operation():
-    pass
-```
-
-"""
-
 import time
 import asyncio
 import functools
@@ -73,7 +36,7 @@ class Util:
         if not dep_data:
             return "未找到模块依赖关系数据，请先运行sdk.init()"
             
-        sorted_modules = topological_sort(
+        sorted_modules = self.topological_sort(
             dep_data['modules'], 
             dep_data['dependencies'], 
             raiserr.CycleDependencyError
