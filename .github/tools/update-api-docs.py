@@ -1,307 +1,204 @@
-import re
 import os
-from pathlib import Path
-from typing import Optional, Dict, List, Tuple
-import inspect
+import ast
+import re
+import argparse
+from typing import List, Dict, Tuple, Optional, Set
 
-def extract_module_docs(file_path: Path) -> Optional[Tuple[str, Dict[str, str]]]:
+def process_docstring(docstring: str) -> Optional[str]:
     """
-    提取模块文档字符串和元数据标签
+    处理文档字符串中的特殊标签
     
-    :param file_path: Python文件路径
-    :return: (文档字符串, 标签字典) 或 None
+    :param docstring: 原始文档字符串
+    :return: 处理后的文档字符串或None（如果包含忽略标签）
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # 匹配模块文档字符串
-    match = re.search(r'^\"\"\"(.*?)\"\"\"', content, re.DOTALL)
-    if not match:
+    if not docstring:
         return None
     
-    docstring = match.group(1).strip()
-    tags = extract_tags(docstring)
+    # 检查忽略标签
+    if "{!--< internal-use >!--}" in docstring or "{!--< ignore >!--}" in docstring:
+        return None
     
-    return docstring, tags
-
-def extract_tags(docstring: str) -> Dict[str, str]:
-    """
-    从文档字符串中提取特殊标签
+    # 替换过时标签
+    docstring = docstring.replace("{!--< deprecated >!--}", "**过时**：")
     
-    :param docstring: 文档字符串
-    :return: 标签字典 {tag_name: tag_content}
-    """
-    tags = {}
+    # 替换实验性标签
+    docstring = docstring.replace("{!--< experimental >!--}", "**实验性**：")
     
-    # 匹配单行标签
-    single_tags = re.findall(r'\{!--<\s*([a-z-]+)\s*>!--\}', docstring)
-    for tag in single_tags:
-        tags[tag] = True
-    
-    # 匹配多行标签
-    multiline_tags = re.findall(
-        r'\{!--<\s*([a-z-]+)\s*>!--\}(.*?)\{!--<\s*/\1\s*>!--\}',
-        docstring, 
-        re.DOTALL
+    # 处理提示标签（单行）
+    docstring = re.sub(
+        r"\{!--< tips >!--\}(.*?)\{!--< /tips >!--\}",
+        lambda m: f"> **提示**：{m.group(1)}\n\n",
+        docstring,
+        flags=re.DOTALL
     )
-    for tag, content in multiline_tags:
-        tags[tag] = content.strip()
     
-    return tags
+    # 处理单行提示标签（没有结束标签）
+    docstring = re.sub(
+        r"\{!--< tips >!--\}([^\n]*)",
+        lambda m: f"> **提示**：{m.group(1)}\n\n",
+        docstring
+    )
+    
+    return docstring.strip()
 
-def extract_function_dunctions(file_path: Path) -> List[Dict]:
+def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[Dict]]:
     """
-    提取文件中的所有函数及其文档
+    解析Python文件，提取模块文档、类和函数信息
     
     :param file_path: Python文件路径
-    :return: 函数信息列表
+    :return: (模块文档, 类列表, 函数列表)
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    with open(file_path, "r", encoding="utf-8") as f:
+        source = f.read()
     
-    # 匹配函数定义和文档字符串
+    try:
+        module = ast.parse(source)
+    except SyntaxError:
+        print(f"⚠️ 语法错误，跳过文件: {file_path}")
+        return None, [], []
+    
+    # 提取模块文档
+    module_doc = ast.get_docstring(module)
+    processed_module_doc = process_docstring(module_doc) if module_doc else None
+    
+    classes = []
     functions = []
-    pattern = re.compile(
-        r'def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\((.*?)\)\s*(?:->\s*([^:\n]+))?\s*:\s*\"\"\"(.*?)\"\"\"',
-        re.DOTALL
-    )
     
-    for match in pattern.finditer(content):
-        func_name = match.group(1)
-        params_str = match.group(2)
-        return_type = match.group(3)
-        docstring = match.group(4).strip()
-        
-        # 解析参数
-        params = []
-        for param in re.split(r',\s*(?![^()]*\))', params_str):
-            if '=' in param:
-                name, default = param.split('=', 1)
-                default = default.strip()
-            else:
-                name = param
-                default = None
+    # 遍历AST节点
+    for node in module.body:
+        # 处理类定义
+        if isinstance(node, ast.ClassDef):
+            class_doc = ast.get_docstring(node)
+            processed_class_doc = process_docstring(class_doc) if class_doc else None
             
-            # 提取类型提示
-            if ':' in name:
-                param_name, param_type = name.split(':', 1)
-                param_name = param_name.strip()
-                param_type = param_type.strip()
-            else:
-                param_name = name.strip()
-                param_type = None
+            if processed_class_doc is None:
+                continue
+                
+            methods = []
+            # 提取类方法
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    method_doc = ast.get_docstring(item)
+                    processed_method_doc = process_docstring(method_doc) if method_doc else None
+                    
+                    if processed_method_doc:
+                        methods.append({
+                            "name": item.name,
+                            "doc": processed_method_doc
+                        })
             
-            params.append({
-                'name': param_name,
-                'type': param_type,
-                'default': default
+            classes.append({
+                "name": node.name,
+                "doc": processed_class_doc,
+                "methods": methods
             })
         
-        # 提取文档标签
-        tags = extract_tags(docstring)
-        
-        # 提取参数和返回描述
-        param_docs = {}
-        return_doc = None
-        raises = []
-        
-        lines = docstring.split('\n')
-        current_section = None
-        
-        for line in lines:
-            line = line.strip()
-            if line.startswith(':param'):
-                # 参数文档
-                parts = re.split(r':\s+', line[6:].strip(), maxsplit=2)
-                if len(parts) >= 2:
-                    param_name = parts[0]
-                    param_docs[param_name] = parts[1] if len(parts) == 2 else parts[2]
-            elif line.startswith(':return:'):
-                # 返回文档
-                return_doc = line[8:].strip()
-            elif line.startswith(':raises'):
-                # 异常文档
-                parts = line[7:].strip().split(':', 1)
-                if len(parts) == 2:
-                    raises.append({
-                        'type': parts[0].strip(),
-                        'description': parts[1].strip()
-                    })
-        
-        functions.append({
-            'name': func_name,
-            'params': params,
-            'return_type': return_type,
-            'docstring': docstring,
-            'param_docs': param_docs,
-            'return_doc': return_doc,
-            'raises': raises,
-            'tags': tags
-        })
-    
-    return functions
-
-def should_include_function(func_info: Dict) -> bool:
-    """
-    根据标签判断是否应包含此函数在文档中
-    
-    :param func_info: 函数信息字典
-    :return: 是否包含
-    """
-    tags = func_info.get('tags', {})
-    return not ('ignore' in tags or 'internal-use' in tags)
-
-def format_function_docs(func_info: Dict) -> str:
-    """
-    格式化函数文档为Markdown
-    
-    :param func_info: 函数信息字典
-    :return: Markdown格式的文档
-    """
-    tags = func_info.get('tags', {})
-    
-    # 处理过时方法
-    if 'deprecated' in tags:
-        deprecated_note = f"\n> ⚠️ **Deprecated**: {tags['deprecated']}\n"
-    else:
-        deprecated_note = ""
-    
-    # 处理实验性方法
-    experimental_note = ""
-    if 'experimental' in tags:
-        experimental_note = "\n> 🔬 **Experimental**: This API is experimental and may change in future versions.\n"
-    
-    # 处理提示
-    tips_note = ""
-    if 'tips' in tags:
-        tips_content = tags['tips']
-        tips_note = f"\n> 💡 **Note**: {tips_content}\n"
-    
-    # 构建函数签名
-    params_str = []
-    for param in func_info['params']:
-        param_str = param['name']
-        if param['type']:
-            param_str += f": {param['type']}"
-        if param['default'] is not None:
-            param_str += f" = {param['default']}"
-        params_str.append(param_str)
-    
-    signature = f"{func_info['name']}({', '.join(params_str)})"
-    if func_info['return_type']:
-        signature += f" -> {func_info['return_type']}"
-    
-    # 构建参数文档
-    params_doc = ""
-    for param in func_info['params']:
-        param_name = param['name']
-        param_desc = func_info['param_docs'].get(param_name, "")
-        
-        param_line = f"- `{param_name}`"
-        if param['type']:
-            param_line += f" ({param['type']})"
-        if param['default'] is not None:
-            param_line += f" [optional, default: {param['default']}]"
-        if param_desc:
-            param_line += f": {param_desc}"
-        
-        params_doc += param_line + "\n"
-    
-    # 构建返回文档
-    return_doc = ""
-    if func_info['return_doc'] or func_info['return_type']:
-        return_doc = "\n**Returns**\n\n"
-        if func_info['return_type']:
-            return_doc += f"- Type: `{func_info['return_type']}`\n"
-        if func_info['return_doc']:
-            return_doc += f"- Description: {func_info['return_doc']}\n"
-    
-    # 构建异常文档
-    raises_doc = ""
-    if func_info['raises']:
-        raises_doc = "\n**Raises**\n\n"
-        for exc in func_info['raises']:
-            raises_doc += f"- `{exc['type']}`: {exc['description']}\n"
-    
-    # 组合所有部分
-    docs = f"""### `{signature}`
-
-{deprecated_note}{experimental_note}{tips_note}
-
-**Description**  
-{func_info['docstring'].split(':param')[0].strip()}
-
-**Parameters**  
-{params_doc.strip()}
-
-{return_doc.strip()}
-
-{raises_doc.strip()}
-"""
-    
-    return docs.strip()
-
-def generate_module_docs(module_path: Path, output_path: Path) -> None:
-    """
-    生成模块文档
-    
-    :param module_path: Python模块路径
-    :param output_path: 输出文档路径
-    """
-    module_docs = extract_module_docs(module_path)
-    functions = extract_function_dunctions(module_path)
-    
-    if not module_docs and not functions:
-        return
-    
-    module_name = module_path.stem
-    docstring, tags = module_docs or ("", {})
-    
-    # 创建输出目录
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # 写入模块文档
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(f"# {module_name}\n\n")
-        
-        # 写入模块描述
-        if docstring:
-            if 'tips' in tags:
-                f.write(f"> 💡 **Note**: {tags['tips']}\n\n")
+        # 处理函数定义
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            func_doc = ast.get_docstring(node)
+            processed_func_doc = process_docstring(func_doc) if func_doc else None
             
-            # 移除标签内容
-            clean_docstring = re.sub(r'\{!--<.*?>!--\}', '', docstring)
-            f.write(f"{clean_docstring}\n\n")
-        
-        # 写入函数文档
+            if processed_func_doc:
+                functions.append({
+                    "name": node.name,
+                    "doc": processed_func_doc
+                })
+    
+    return processed_module_doc, classes, functions
+
+def generate_markdown(module_path: str, module_doc: Optional[str], 
+                     classes: List[Dict], functions: List[Dict]) -> str:
+    """
+    生成Markdown格式的API文档
+    
+    :param module_path: 模块路径（点分隔）
+    :param module_doc: 模块文档
+    :param classes: 类信息列表
+    :param functions: 函数信息列表
+    :return: Markdown格式的文档字符串
+    """
+    content = []
+    
+    # 模块标题
+    content.append(f"# `{module_path}` 模块\n")
+    
+    # 模块文档
+    if module_doc:
+        content.append(f"{module_doc}\n")
+    
+    # 函数部分
+    if functions:
+        content.append("## 函数\n")
         for func in functions:
-            if should_include_function(func):
-                f.write(format_function_docs(func) + "\n\n")
-
-
-def update_api_docs(source_dir: Path, docs_dir: Path) -> None:
-    """
-    更新所有API文档
+            content.append(f"### `{func['name']}`\n")
+            content.append(f"{func['doc']}\n\n")
     
-    :param source_dir: 源代码目录
-    :param docs_dir: 文档输出目录
-    """
-    # 遍历所有Python文件
-    for py_file in source_dir.glob('**/*.py'):
-        if py_file.name.startswith('_') and py_file.name != '__init__.py':
-            continue
-        
-        # 确定输出路径
-        rel_path = py_file.relative_to(source_dir)
-        docs_path = docs_dir / 'api' / rel_path.with_suffix('.md')
-        
-        # 生成文档
-        generate_module_docs(py_file, docs_path)
-
-if __name__ == '__main__':
-    # 配置路径
-    source_dir = Path('src')  # 源代码目录
-    docs_dir = Path('docs')   # 文档输出目录
+    # 类部分
+    if classes:
+        content.append("## 类\n")
+        for cls in classes:
+            content.append(f"### `{cls['name']}`\n")
+            content.append(f"{cls['doc']}\n\n")
+            
+            # 类方法
+            if cls["methods"]:
+                content.append("#### 方法\n")
+                for method in cls["methods"]:
+                    content.append(f"##### `{method['name']}`\n")
+                    content.append(f"{method['doc']}\n\n")
     
-    # 更新API文档
-    update_api_docs(source_dir, docs_dir)
+    return "\n".join(content)
+
+def generate_api_docs(src_dir: str, output_dir: str):
+    """
+    生成API文档
+    
+    :param src_dir: 源代码目录
+    :param output_dir: 输出目录
+    """
+    # 确保输出目录存在
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 遍历源代码目录
+    for root, _, files in os.walk(src_dir):
+        for file in files:
+            if file.endswith(".py"):
+                file_path = os.path.join(root, file)
+                
+                # 计算模块路径
+                rel_path = os.path.relpath(file_path, src_dir)
+                module_path = rel_path.replace(".py", "").replace(os.sep, "/")
+                
+                # 解析Python文件
+                module_doc, classes, functions = parse_python_file(file_path)
+                
+                # 跳过没有文档的文件
+                if not module_doc and not classes and not functions:
+                    continue
+                
+                # 生成Markdown内容
+                md_content = generate_markdown(module_path, module_doc, classes, functions)
+                
+                # 写入文件
+                output_path = os.path.join(output_dir, f"{module_path}.md")
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                
+                with open(output_path, "w", encoding="utf-8") as f:
+                    f.write(md_content)
+                
+                print(f"✅ 已生成: {output_path}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="API文档生成器")
+    parser.add_argument("--src", default="src", help="源代码目录 (默认: src)")
+    parser.add_argument("--output", default="docs/api", help="输出目录 (默认: docs/api)")
+    
+    args = parser.parse_args()
+    
+    print(f"📁 源代码目录: {args.src}")
+    print(f"📂 输出目录: {args.output}")
+    print("⏳ 正在生成API文档...")
+    
+    generate_api_docs(args.src, args.output)
+    
+    print("🎉 API文档生成完成！")
