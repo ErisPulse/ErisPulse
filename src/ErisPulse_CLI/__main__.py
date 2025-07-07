@@ -981,7 +981,7 @@ def list_modules(module_name=None):
     all_modules = mods.get_all_modules()
     if not all_modules:
         shellprint.panel("未在数据库中发现注册模块,正在初始化模块列表...", "提示", "info")
-        from . import init as init_module
+        from ..ErisPulse import init as init_module
         init_module()
         all_modules = mods.get_all_modules()
         
@@ -1130,7 +1130,7 @@ def main():
     
     if hasattr(args, 'init') and args.init:
         print(f"{Shell_Printer.GREEN}正在初始化模块列表...{Shell_Printer.RESET}")
-        from . import init as init_module
+        from ..ErisPulse import init as init_module
         init_module()
         print(f"{Shell_Printer.GREEN}模块列表初始化完成{Shell_Printer.RESET}")
     
@@ -1288,7 +1288,7 @@ def main():
             
     elif args.command == 'init':
         print(f"{Shell_Printer.GREEN}正在初始化项目...{Shell_Printer.RESET}")
-        from . import init as init_module
+        from ..ErisPulse import init as init_module
         try:
             init_module()
             print(f"{Shell_Printer.GREEN}项目初始化完成{Shell_Printer.RESET}")
