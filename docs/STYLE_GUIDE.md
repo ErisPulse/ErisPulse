@@ -1,4 +1,4 @@
-# ErisPulse 贡献指南
+# ErisPulse 代码风格规范
 
 ## 方法注释规范
 
