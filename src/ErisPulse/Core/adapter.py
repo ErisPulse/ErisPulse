@@ -1,227 +1,13 @@
 """
-# 适配器系统
+ErisPulse 适配器系统
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-## API 文档
-
-### 适配器基类 (BaseAdapter)
-适配器基类提供了与外部平台交互的标准接口。
-
-#### call_api(endpoint: str, **params: Any) -> Any
-调用平台API的抽象方法。
-- 参数:
-  - endpoint: API端点
-  - **params: API参数
-- 返回:
-  - Any: API调用结果
-- 说明:
-  - 必须由子类实现
-  - 处理与平台的实际通信
-- 示例:
-```python
-class MyPlatformAdapter(BaseAdapter):
-    async def call_api(self, endpoint: str, **params: Any) -> Any:
-        if endpoint == "/send":
-            return await self._send_message(params)
-        elif endpoint == "/upload":
-            return await self._upload_file(params)
-        raise NotImplementedError(f"未实现的端点: {endpoint}")
-```
-
-#### start() -> None
-启动适配器的抽象方法。
-- 参数: 无
-- 返回:
-  - None
-- 说明:
-  - 必须由子类实现
-  - 处理适配器的初始化和启动逻辑
-- 示例:
-```python
-class MyPlatformAdapter(BaseAdapter):
-    async def start(self) -> None:
-        self.client = await self._create_client()
-        self.ws = await self.client.create_websocket()
-        self._start_heartbeat()
-```
-
-#### shutdown() -> None
-关闭适配器的抽象方法。
-- 参数: 无
-- 返回:
-  - None
-- 说明:
-  - 必须由子类实现
-  - 处理资源清理和关闭逻辑
-- 示例:
-```python
-class MyPlatformAdapter(BaseAdapter):
-    async def shutdown(self) -> None:
-        if self.ws:
-            await self.ws.close()
-        if self.client:
-            await self.client.close()
-```
-
-#### on(event_type: str = "*") -> Callable[[Callable[..., Any]], Callable[..., Any]]
-事件监听装饰器。
-- 参数:
-  - event_type: 事件类型，默认"*"表示所有事件
-- 返回:
-  - Callable[[Callable[..., Any]], Callable[..., Any]]: 装饰器函数
-- 示例:
-```python
-adapter = MyPlatformAdapter()
-
-@adapter.on("message")
-async def handle_message(data: Any) -> None:
-    print(f"收到消息: {data}")
-
-@adapter.on("error")
-async def handle_error(error: Exception) -> None:
-    print(f"发生错误: {error}")
-
-# 处理所有事件
-@adapter.on()
-async def handle_all(event: Any) -> None:
-    print(f"事件: {event}")
-```
-
-#### emit(event_type: str, data: Any) -> None
-触发事件。
-- 参数:
-  - event_type: 事件类型
-  - data: 事件数据
-- 返回:
-  - None
-- 示例:
-```python
-class MyPlatformAdapter(BaseAdapter):
-    async def _handle_websocket_message(self, message: Any) -> None:
-        # 处理消息并触发相应事件
-        if message.type == "chat":
-            await self.emit("message", {
-                "type": "chat",
-                "content": message.content,
-                "sender": message.sender
-            })
-```
-
-#### middleware(func: Callable[..., Any]) -> Callable[..., Any]
-添加中间件处理器。
-- 参数:
-  - func: 中间件函数
-- 返回:
-  - Callable[..., Any]: 中间件函数
-- 示例:
-```python
-adapter = MyPlatformAdapter()
-
-@adapter.middleware
-async def log_middleware(data: Any) -> Any:
-    print(f"处理数据: {data}")
-    return data
-
-@adapter.middleware
-async def filter_middleware(data: Any) -> Optional[Any]:
-    if "spam" in data.get("content", ""):
-        return None
-    return data
-```
-
-### 消息发送DSL (SendDSL)
-提供链式调用风格的消息发送接口。
-
-#### To(target_type: Optional[str] = None, target_id: Optional[str] = None) -> 'SendDSL'
-设置消息目标。
-- 参数:
-  - target_type: 目标类型（可选）
-  - target_id: 目标ID
-- 返回:
-  - SendDSL: 发送器实例
-- 示例:
-```python
-# 发送到用户
-sdk.adapter.Platform.Send.To("user", "123").Text("Hello")
-
-# 发送到群组
-sdk.adapter.Platform.Send.To("group", "456").Text("Hello Group")
-
-# 简化形式（只有ID）
-sdk.adapter.Platform.Send.To("123").Text("Hello")
-```
-
-#### Text(text: str) -> asyncio.Task
-发送文本消息。
-- 参数:
-  - text: 文本内容
-- 返回:
-  - asyncio.Task: 异步任务
-- 示例:
-```python
-# 发送简单文本
-await sdk.adapter.Platform.Send.To("user", "123").Text("Hello")
-
-# 发送格式化文本
-name = "Alice"
-await sdk.adapter.Platform.Send.To("123").Text(f"Hello {name}")
-```
-
-### 适配器管理 (AdapterManager)
-管理多个平台适配器的注册、启动和关闭。
-
-#### register(platform: str, adapter_class: Type[BaseAdapter]) -> bool
-注册新的适配器类。
-- 参数:
-  - platform: 平台名称
-  - adapter_class: 适配器类
-- 返回:
-  - bool: 注册是否成功
-- 示例:
-```python
-# 注册适配器
-sdk.adapter.register("MyPlatform", MyPlatformAdapter)
-
-# 注册多个适配器
-adapters = {
-    "Platform1": Platform1Adapter,
-    "Platform2": Platform2Adapter
-}
-for name, adapter in adapters.items():
-    sdk.adapter.register(name, adapter)
-```
-
-#### startup(platforms: Optional[List[str]] = None) -> None
-启动指定的适配器。
-- 参数:
-  - platforms: 要启动的平台列表，None表示所有平台
-- 返回:
-  - None
-- 示例:
-```python
-# 启动所有适配器
-await sdk.adapter.startup()
-
-# 启动指定适配器
-await sdk.adapter.startup(["Platform1", "Platform2"])
-```
-
-#### shutdown() -> None
-关闭所有适配器。
-- 参数: 无
-- 返回:
-  - None
-- 示例:
-```python
-# 关闭所有适配器
-await sdk.adapter.shutdown()
-
-# 在程序退出时关闭
-import atexit
-atexit.register(lambda: asyncio.run(sdk.adapter.shutdown()))
-```
-
+{!--< tips >!--}
+1. 适配器必须继承BaseAdapter并实现必要方法
+2. 使用SendDSL实现链式调用风格的消息发送接口
+3. 适配器管理器支持多平台适配器的注册和生命周期管理
+{!--< /tips >!--}
 """
 
 import functools
@@ -233,23 +19,66 @@ from typing import (
 from collections import defaultdict
 
 
-# DSL 基类，用于实现 Send.To(...).Func(...) 风格
 class SendDSLBase:
+    """
+    消息发送DSL基类
+    
+    用于实现 Send.To(...).Func(...) 风格的链式调用接口
+    
+    {!--< tips >!--}
+    1. 子类应实现具体的消息发送方法(如Text, Image等)
+    2. 通过__getattr__实现动态方法调用
+    {!--< /tips >!--}
+    """
+    
     def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None):
+        """
+        初始化DSL发送器
+        
+        :param adapter: 所属适配器实例
+        :param target_type: 目标类型(可选)
+        :param target_id: 目标ID(可选)
+        """
         self._adapter = adapter
         self._target_type = target_type
         self._target_id = target_id
         self._target_to = target_id
 
     def To(self, target_type: str = None, target_id: str = None) -> 'SendDSL':
+        """
+        设置消息目标
+        
+        :param target_type: 目标类型(可选)
+        :param target_id: 目标ID(可选)
+        :return: SendDSL实例
+        
+        :example:
+        >>> adapter.Send.To("user", "123").Text("Hello")
+        >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+        """
         if target_id is None and target_type is not None:
             target_id = target_type
             target_type = None
 
         return self.__class__(self._adapter, target_type, target_id)
 
-    def __getattr__(self, name: str):
-        def wrapper(*args, **kwargs):
+    def __getattr__(self, name: str) -> Callable[..., Awaitable[Any]]:
+        """
+        动态获取消息发送方法
+        
+        :param name: 方法名
+        :return: 消息发送函数
+        
+        :raises AttributeError: 当方法不存在时抛出
+        """
+        def wrapper(*args, **kwargs) -> Awaitable[Any]:
+            """
+            消息发送包装函数
+            
+            :param args: 位置参数
+            :param kwargs: 关键字参数
+            :return: 异步任务
+            """
             return asyncio.create_task(
                 self._adapter._real_send(
                     target_type=self._target_type,
@@ -265,9 +94,38 @@ class SendDSLBase:
 
 
 class BaseAdapter:
+    """
+    适配器基类
+    
+    提供与外部平台交互的标准接口，子类必须实现必要方法
+    
+    {!--< tips >!--}
+    1. 必须实现call_api, start和shutdown方法
+    2. 可以自定义Send类实现平台特定的消息发送逻辑
+    3. 通过on装饰器注册事件处理器
+    {!--< /tips >!--}
+    """
+    
     class Send(SendDSLBase):
-        def Text(self, text: str):
-            """基础文本消息发送方法，子类应该重写此方法"""
+        """
+        消息发送DSL实现
+        
+        {!--< tips >!--}
+        1. 子类可以重写Text方法提供平台特定实现
+        2. 可以添加新的消息类型(如Image, Voice等)
+        {!--< /tips >!--}
+        """
+        
+        def Text(self, text: str) -> Awaitable[Any]:
+            """
+            基础文本消息发送方法
+            
+            :param text: 文本内容
+            :return: 异步任务
+            
+            :example:
+            >>> await adapter.Send.To("123").Text("Hello")
+            """
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send",
@@ -278,13 +136,27 @@ class BaseAdapter:
             )
 
     def __init__(self):
+        """
+        初始化适配器
+        """
         self._handlers = defaultdict(list)
         self._middlewares = []
         # 绑定当前适配器的 Send 实例
         self.Send = self.__class__.Send(self)
 
-    def on(self, event_type: str = "*"):
-        def decorator(func: Callable):
+    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
+        """
+        事件监听装饰器
+        
+        :param event_type: 事件类型，默认"*"表示所有事件
+        :return: 装饰器函数
+        
+        :example:
+        >>> @adapter.on("message")
+        >>> async def handle_message(data):
+        >>>     print(f"收到消息: {data}")
+        """
+        def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
@@ -292,20 +164,66 @@ class BaseAdapter:
             return wrapper
         return decorator
 
-    def middleware(self, func: Callable):
+    def middleware(self, func: Callable) -> Callable:
+        """
+        添加中间件处理器
+        
+        :param func: 中间件函数
+        :return: 中间件函数
+        
+        :example:
+        >>> @adapter.middleware
+        >>> async def log_middleware(data):
+        >>>     print(f"处理数据: {data}")
+        >>>     return data
+        """
         self._middlewares.append(func)
         return func
 
-    async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError
+    async def call_api(self, endpoint: str, **params: Any) -> Any:
+        """
+        调用平台API的抽象方法
+        
+        :param endpoint: API端点
+        :param params: API参数
+        :return: API调用结果
+        
+        :raises NotImplementedError: 必须由子类实现
+        """
+        raise NotImplementedError("适配器必须实现call_api方法")
 
-    async def start(self):
-        raise NotImplementedError
+    async def start(self) -> None:
+        """
+        启动适配器的抽象方法
+        
+        :raises NotImplementedError: 必须由子类实现
+        """
+        raise NotImplementedError("适配器必须实现start方法")
 
-    async def shutdown(self):
-        raise NotImplementedError
+    async def shutdown(self) -> None:
+        """
+        关闭适配器的抽象方法
+        
+        :raises NotImplementedError: 必须由子类实现
+        """
+        raise NotImplementedError("适配器必须实现shutdown方法")
 
-    def add_handler(self, *args):
+    def add_handler(self, *args: Any) -> None:
+        """
+        添加事件处理器
+        
+        :param args: 参数列表
+            - 1个参数: 处理器函数(监听所有事件)
+            - 2个参数: 事件类型和处理器函数
+            
+        :raises TypeError: 当参数数量无效时抛出
+            
+        :example:
+        >>> # 监听所有事件
+        >>> adapter.add_handler(handle_all_events)
+        >>> # 监听特定事件
+        >>> adapter.add_handler("message", handle_message)
+        """
         if len(args) == 1:
             event_type = "*"
             handler = args[0]
@@ -319,7 +237,17 @@ class BaseAdapter:
             return await handler(*handler_args, **handler_kwargs)
 
         self._handlers[event_type].append(wrapper)
-    async def emit(self, event_type: str, data: Any):
+        
+    async def emit(self, event_type: str, data: Any) -> None:
+        """
+        触发事件
+        
+        :param event_type: 事件类型
+        :param data: 事件数据
+        
+        :example:
+        >>> await adapter.emit("message", {"text": "Hello"})
+        """
         # 先执行中间件
         for middleware in self._middlewares:
             data = await middleware(data)
@@ -333,7 +261,23 @@ class BaseAdapter:
         for handler in self._handlers.get("*", []):
             await handler(data)
 
-    async def send(self, target_type: str, target_id: str, message: Any, **kwargs):
+    async def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> Any:
+        """
+        发送消息的便捷方法
+        
+        :param target_type: 目标类型
+        :param target_id: 目标ID
+        :param message: 消息内容
+        :param kwargs: 其他参数
+            - method: 发送方法名(默认为"Text")
+        :return: 发送结果
+        
+        :raises AttributeError: 当发送方法不存在时抛出
+            
+        :example:
+        >>> await adapter.send("user", "123", "Hello")
+        >>> await adapter.send("group", "456", "Hello", method="Notice")
+        """
         method_name = kwargs.pop("method", "Text")
         method = getattr(self.Send.To(target_type, target_id), method_name, None)
         if not method:
@@ -342,6 +286,18 @@ class BaseAdapter:
 
 
 class AdapterManager:
+    """
+    适配器管理器
+    
+    管理多个平台适配器的注册、启动和关闭
+    
+    {!--< tips >!--}
+    1. 通过register方法注册适配器
+    2. 通过startup方法启动适配器
+    3. 通过shutdown方法关闭所有适配器
+    {!--< /tips >!--}
+    """
+    
     def __init__(self):
         self._adapters: Dict[str, BaseAdapter] = {}
         self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
@@ -349,6 +305,18 @@ class AdapterManager:
         self._started_instances: Set[BaseAdapter] = set()
 
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
+        """
+        注册新的适配器类
+        
+        :param platform: 平台名称
+        :param adapter_class: 适配器类
+        :return: 注册是否成功
+        
+        :raises TypeError: 当适配器类无效时抛出
+            
+        :example:
+        >>> adapter.register("MyPlatform", MyPlatformAdapter)
+        """
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
         from .. import sdk
@@ -377,7 +345,20 @@ class AdapterManager:
 
         return True
 
-    async def startup(self, platforms: List[str] = None):
+    async def startup(self, platforms: List[str] = None) -> None:
+        """
+        启动指定的适配器
+        
+        :param platforms: 要启动的平台列表，None表示所有平台
+        
+        :raises ValueError: 当平台未注册时抛出
+            
+        :example:
+        >>> # 启动所有适配器
+        >>> await adapter.startup()
+        >>> # 启动指定适配器
+        >>> await adapter.startup(["Platform1", "Platform2"])
+        """
         if platforms is None:
             platforms = list(self._adapters.keys())
 
@@ -397,7 +378,14 @@ class AdapterManager:
             scheduled_adapters.add(adapter)
             asyncio.create_task(self._run_adapter(adapter, platform))
 
-    async def _run_adapter(self, adapter: BaseAdapter, platform: str):
+    async def _run_adapter(self, adapter: BaseAdapter, platform: str) -> None:
+        """
+        {!--< internal-use >!--}
+        运行适配器实例
+        
+        :param adapter: 适配器实例
+        :param platform: 平台名称
+        """
         from .. import sdk
 
         # 加锁防止并发启动
@@ -438,11 +426,26 @@ class AdapterManager:
                     sdk.logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
+        """
+        关闭所有适配器
+        
+        :example:
+        >>> await adapter.shutdown()
+        """
         for adapter in self._adapters.values():
             await adapter.shutdown()
 
-    def get(self, platform: str) -> BaseAdapter:
+    def get(self, platform: str) -> Optional[BaseAdapter]:
+        """
+        获取指定平台的适配器实例
+        
+        :param platform: 平台名称
+        :return: 适配器实例或None
+            
+        :example:
+        >>> adapter = adapter.get("MyPlatform")
+        """
         platform_lower = platform.lower()
         for registered, instance in self._adapters.items():
             if registered.lower() == platform_lower:
@@ -450,6 +453,17 @@ class AdapterManager:
         return None
 
     def __getattr__(self, platform: str) -> BaseAdapter:
+        """
+        通过属性访问获取适配器实例
+        
+        :param platform: 平台名称
+        :return: 适配器实例
+        
+        :raises AttributeError: 当平台未注册时抛出
+            
+        :example:
+        >>> adapter = adapter.MyPlatform
+        """
         platform_lower = platform.lower()
         for registered, instance in self._adapters.items():
             if registered.lower() == platform_lower:
@@ -457,8 +471,17 @@ class AdapterManager:
         raise AttributeError(f"平台 {platform} 的适配器未注册")
 
     @property
-    def platforms(self) -> list:
+    def platforms(self) -> List[str]:
+        """
+        获取所有已注册的平台列表
+        
+        :return: 平台名称列表
+            
+        :example:
+        >>> print("已注册平台:", adapter.platforms)
+        """
         return list(self._adapters.keys())
+
 
 AdapterFather = BaseAdapter
 adapter = AdapterManager()
