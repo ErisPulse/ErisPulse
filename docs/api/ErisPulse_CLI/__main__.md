@@ -1,4 +1,4 @@
-# `ErisPulse/__main__` 模块
+# `ErisPulse_CLI/__main__` 模块
 
 # CLI 入口
 
