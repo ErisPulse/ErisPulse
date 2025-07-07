@@ -2,9 +2,9 @@
 
 ## 安装ErisPulse
 
-### 使用 pip 安装 | 并安装官方 CLI
+### 使用 pip 安装
 ```bash
-pip install ErisPulse[cli]
+pip install ErisPulse
 ```
 
 ### 更先进的安装方法

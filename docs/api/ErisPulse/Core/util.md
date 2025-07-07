@@ -1,161 +1,109 @@
-# util
-
-> 💡 **Note**: 1. 使用@cache装饰器缓存函数结果
-2. 使用@run_in_executor在独立线程中运行同步函数
-3. 使用@retry实现自动重试机制
+# `ErisPulse/Core/util` 模块
 
 ErisPulse 工具函数集合
 
 提供常用工具函数，包括拓扑排序、缓存装饰器、异步执行等实用功能。
 
-
+> **提示**：
 1. 使用@cache装饰器缓存函数结果
 2. 使用@run_in_executor在独立线程中运行同步函数
 3. 使用@retry实现自动重试机制
 
+## 类
 
-### `topological_sort(self, elements: List[str], dependencies: Dict[str, List[str]], error: Type[Exception]) -> List[str]`
+### `Util`
+
+工具函数集合
+
+提供各种实用功能，简化开发流程
+
+> **提示**：
+1. 拓扑排序用于解决依赖关系
+2. 装饰器简化常见模式实现
+3. 异步执行提升性能
 
 
+#### 方法
 
-**Description**  
+##### `topological_sort`
+
 拓扑排序依赖关系
 
-**Parameters**  
-- `self`
-- `elements` (List[str]): 元素列表
-- `dependencies` (Dict[str): 依赖关系字典
-- `List[str]]`
-- `error` (Type[Exception]): 错误类型(当发现循环依赖时抛出)
+:param elements: 元素列表
+:param dependencies: 依赖关系字典
+:param error: 错误类型(当发现循环依赖时抛出)
+:return: 排序后的元素列表
 
-**Returns**
+:raises error: 当发现循环依赖时抛出
 
-- Type: `List[str]`
-- Description: 排序后的元素列表
-
-**Raises**
-
-- `error`: 当发现循环依赖时抛出
-
-### `show_topology(self) -> str`
+:example:
+>>> sorted_modules = util.topological_sort(
+>>>     modules, 
+>>>     dependencies,
+>>>     raiserr.CycleDependencyError
+>>> )
 
 
+##### `show_topology`
 
-**Description**  
 可视化模块依赖关系
-        
-        :return: 依赖关系字符串表示
-        
-        :example:
-        >>> print(util.show_topology())
 
-**Parameters**  
-- `self`
+:return: 依赖关系字符串表示
 
-**Returns**
-
-- Type: `str`
-- Description: 依赖关系字符串表示
-
-### `ExecAsync(self, async_func: Callable, *args: Any, **kwargs: Any) -> Any`
+:example:
+>>> print(util.show_topology())
 
 
+##### `ExecAsync`
 
-**Description**  
 异步执行函数
 
-**Parameters**  
-- `self`
-- `async_func` (Callable): 异步函数
-- `*args` (Any)
-- `**kwargs` (Any)
+:param async_func: 异步函数
+:param args: 位置参数
+:param kwargs: 关键字参数
+:return: 函数执行结果
 
-**Returns**
-
-- Type: `Any`
-- Description: 函数执行结果
-
-### `cache(self, func: Callable) -> Callable`
+:example:
+>>> result = util.ExecAsync(my_async_func, arg1, arg2)
 
 
+##### `cache`
 
-**Description**  
 缓存装饰器
 
-**Parameters**  
-- `self`
-- `func` (Callable): 被装饰函数
+:param func: 被装饰函数
+:return: 装饰后的函数
 
-**Returns**
-
-- Type: `Callable`
-- Description: 装饰后的函数
-
-### `wrapper(*args, **kwargs): key = (args, tuple(sorted(kwargs.items())))
-            if key not in cache_dict: cache_dict[key] = func(*args, **kwargs)
-            return cache_dict[key]
-        return wrapper
-
-    def run_in_executor(self, func: Callable) -> Callable`
+:example:
+>>> @util.cache
+>>> def expensive_operation(param):
+>>>     return heavy_computation(param)
 
 
+##### `run_in_executor`
 
-**Description**  
 在独立线程中执行同步函数的装饰器
 
-**Parameters**  
-- `*args, **kwargs)` (key) [optional, default: (args]
-- `tuple(sorted(kwargs.items())))
-            if key not in cache_dict` (cache_dict[key]) [optional, default: func(*args, **kwargs)
-            return cache_dict[key]
-        return wrapper
+:param func: 被装饰的同步函数
+:return: 可等待的协程函数
 
-    def run_in_executor(self]
-- `func` (Callable): 被装饰的同步函数
-
-**Returns**
-
-- Type: `Callable`
-- Description: 可等待的协程函数
-
-### `wrapper(*args, **kwargs): loop = asyncio.get_event_loop()
-            try:
-                return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
-            except Exception as e:
-                from . import logger, raiserr
-                logger.error(f"线程内发生未处理异常: \n{''.join(traceback.format_exc())}")
-                raiserr.CaughtExternalError(
-                    f"检测到线程内异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(e).__name__}: {e}"
-                )
-        return wrapper
-
-    def retry(self, max_attempts: int = 3, delay: int = 1) -> Callable`
+:example:
+>>> @util.run_in_executor
+>>> def blocking_io():
+>>>     # 执行阻塞IO操作
+>>>     return result
 
 
+##### `retry`
 
-**Description**  
 自动重试装饰器
 
-**Parameters**  
-- `*args, **kwargs)` (loop) [optional, default: asyncio.get_event_loop()
-            try:
-                return await loop.run_in_executor(None]
-- `lambda` (func(*args, **kwargs))
-            except Exception as e:
-                from . import logger)
-- `raiserr
-                logger.error(f"线程内发生未处理异常` (\n{''.join(traceback.format_exc())}")
-                raiserr.CaughtExternalError(
-                    f"检测到线程内异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(e).__name__}: {e}"
-                )
-        return wrapper
+:param max_attempts: 最大重试次数 (默认: 3)
+:param delay: 重试间隔(秒) (默认: 1)
+:return: 装饰器函数
 
-    def retry(self)
-- `max_attempts` (int) [optional, default: 3]: 3)
-- `delay` (int) [optional, default: 1]: 1)
-
-**Returns**
-
-- Type: `Callable`
-- Description: 装饰器函数
+:example:
+>>> @util.retry(max_attempts=5, delay=2)
+>>> def unreliable_operation():
+>>>     # 可能失败的操作
 
