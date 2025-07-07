@@ -1,203 +1,154 @@
-# mods
-
-> 💡 **Note**: 1. 使用模块前缀区分不同模块的配置
-2. 支持模块状态持久化存储
-3. 自动处理模块间的依赖关系
+# `ErisPulse/Core/mods` 模块
 
 ErisPulse 模块管理器
 
 提供模块的注册、状态管理和依赖关系处理功能。支持模块的启用/禁用、版本控制和依赖解析。
 
-
+> **提示**：
 1. 使用模块前缀区分不同模块的配置
 2. 支持模块状态持久化存储
 3. 自动处理模块间的依赖关系
 
+## 类
 
-### `module_prefix(self) -> str`
+### `ModuleManager`
+
+模块管理器
+
+管理所有模块的注册、状态和依赖关系
+
+> **提示**：
+1. 通过set_module/get_module管理模块信息
+2. 通过set_module_status/get_module_status控制模块状态
+3. 通过set_all_modules/get_all_modules批量操作模块
 
 
+#### 方法
 
-**Description**  
+##### `module_prefix`
+
 获取模块数据前缀
-        
-        :return: 模块数据前缀字符串
 
-**Parameters**  
-- `self`
-
-**Returns**
-
-- Type: `str`
-- Description: 模块数据前缀字符串
-
-### `status_prefix(self) -> str`
+:return: 模块数据前缀字符串
 
 
+##### `status_prefix`
 
-**Description**  
 获取模块状态前缀
-        
-        :return: 模块状态前缀字符串
 
-**Parameters**  
-- `self`
-
-**Returns**
-
-- Type: `str`
-- Description: 模块状态前缀字符串
-
-### `set_module_status(self, module_name: str, status: bool) -> None`
+:return: 模块状态前缀字符串
 
 
+##### `set_module_status`
 
-**Description**  
 设置模块启用状态
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
-- `status` (bool): 启用状态
+:param module_name: 模块名称
+:param status: 启用状态
 
-**Returns**
-
-- Type: `None`
-
-### `get_module_status(self, module_name: str) -> bool`
+:example:
+>>> # 启用模块
+>>> mods.set_module_status("MyModule", True)
+>>> # 禁用模块
+>>> mods.set_module_status("MyModule", False)
 
 
+##### `get_module_status`
 
-**Description**  
 获取模块启用状态
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
+:param module_name: 模块名称
+:return: 模块是否启用
 
-**Returns**
-
-- Type: `bool`
-- Description: 模块是否启用
-
-### `set_module(self, module_name: str, module_info: Dict[str, Any]) -> None`
+:example:
+>>> if mods.get_module_status("MyModule"):
+>>>     print("模块已启用")
 
 
+##### `set_module`
 
-**Description**  
 设置模块信息
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
-- `module_info` (Dict[str): 模块信息字典
-- `Any]`
+:param module_name: 模块名称
+:param module_info: 模块信息字典
 
-**Returns**
-
-- Type: `None`
-
-### `get_module(self, module_name: str) -> Optional[Dict[str, Any]]`
+:example:
+>>> mods.set_module("MyModule", {
+>>>     "version": "1.0.0",
+>>>     "description": "我的模块",
+>>>     "status": True
+>>> })
 
 
+##### `get_module`
 
-**Description**  
 获取模块信息
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
+:param module_name: 模块名称
+:return: 模块信息字典或None
 
-**Returns**
-
-- Type: `Optional[Dict[str, Any]]`
-- Description: 模块信息字典或None
-
-### `set_all_modules(self, modules_info: Dict[str, Dict[str, Any]]) -> None`
+:example:
+>>> module_info = mods.get_module("MyModule")
+>>> if module_info:
+>>>     print(f"模块版本: {module_info.get('version')}")
 
 
+##### `set_all_modules`
 
-**Description**  
 批量设置多个模块信息
 
-**Parameters**  
-- `self`
-- `modules_info` (Dict[str): 模块信息字典
-- `Dict[str`
-- `Any]]`
+:param modules_info: 模块信息字典
 
-**Returns**
-
-- Type: `None`
-
-### `get_all_modules(self) -> Dict[str, Dict[str, Any]]`
+:example:
+>>> mods.set_all_modules({
+>>>     "Module1": {"version": "1.0", "status": True},
+>>>     "Module2": {"version": "2.0", "status": False}
+>>> })
 
 
+##### `get_all_modules`
 
-**Description**  
 获取所有模块信息
-        
-        :return: 模块信息字典
-        
-        :example:
-        >>> all_modules = mods.get_all_modules()
-        >>> for name, info in all_modules.items():
-        >>>     print(f"{name}: {info.get('status')}")
 
-**Parameters**  
-- `self`
+:return: 模块信息字典
 
-**Returns**
-
-- Type: `Dict[str, Dict[str, Any]]`
-- Description: 模块信息字典
-
-### `update_module(self, module_name: str, module_info: Dict[str, Any]) -> None`
+:example:
+>>> all_modules = mods.get_all_modules()
+>>> for name, info in all_modules.items():
+>>>     print(f"{name}: {info.get('status')}")
 
 
+##### `update_module`
 
-**Description**  
 更新模块信息
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
-- `module_info` (Dict[str): 完整的模块信息字典
-- `Any]`
-
-**Returns**
-
-- Type: `None`
-
-### `remove_module(self, module_name: str) -> bool`
+:param module_name: 模块名称
+:param module_info: 完整的模块信息字典
 
 
+##### `remove_module`
 
-**Description**  
 移除模块
 
-**Parameters**  
-- `self`
-- `module_name` (str): 模块名称
+:param module_name: 模块名称
+:return: 是否成功移除
 
-**Returns**
-
-- Type: `bool`
-- Description: 是否成功移除
-
-### `update_prefixes(self, module_prefix: Optional[str] = None, status_prefix: Optional[str] = None) -> None`
+:example:
+>>> if mods.remove_module("OldModule"):
+>>>     print("模块已移除")
 
 
+##### `update_prefixes`
 
-**Description**  
 更新模块前缀配置
 
-**Parameters**  
-- `self`
-- `module_prefix` (Optional[str]) [optional, default: None]: 新的模块数据前缀(可选)
-- `status_prefix` (Optional[str]) [optional, default: None]: 新的模块状态前缀(可选)
+:param module_prefix: 新的模块数据前缀(可选)
+:param status_prefix: 新的模块状态前缀(可选)
 
-**Returns**
-
-- Type: `None`
+:example:
+>>> # 更新模块前缀
+>>> mods.update_prefixes(
+>>>     module_prefix="custom.module.data:",
+>>>     status_prefix="custom.module.status:"
+>>> )
 
