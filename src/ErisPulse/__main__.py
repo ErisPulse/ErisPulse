@@ -47,7 +47,7 @@ from typing import List, Dict, Tuple, Optional
 from importlib.metadata import version, PackageNotFoundError
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from . import shellprint, Shell_Printer
+from .Core.shellprint import shellprint, Shell_Printer
 
 class PyPIManager:
     """管理PyPI上的ErisPulse模块和适配器"""
@@ -247,7 +247,7 @@ def run_script(script_path: str, reload: bool = False):
 
 def legacy_command(args):
     """旧版模块管理命令"""
-    from ErisPulse.legacy import LegacyManager
+    from ErisPulse.CLI.legacy import LegacyManager
     legacy = LegacyManager()
     legacy.handle(args)
 
