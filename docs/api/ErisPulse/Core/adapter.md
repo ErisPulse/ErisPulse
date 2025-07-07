@@ -170,7 +170,7 @@ ErisPulse 适配器系统
     
 :example:
 >>> await adapter.send("user", "123", "Hello")
->>> await adapter.send("group", "456", "Hello", method="Notice")
+>>> await adapter.send("group", "456", "Hello", method="Markdown")
 
 
 ### `AdapterManager`
