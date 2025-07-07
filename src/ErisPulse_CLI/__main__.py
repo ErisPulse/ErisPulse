@@ -56,10 +56,10 @@ import fnmatch
 import asyncio
 import subprocess
 import json
-import json
 from ErisPulse.Core import env, mods
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from importlib.metadata import version, PackageNotFoundError
 
 class Shell_Printer:
     # ANSI 颜色代码
@@ -222,6 +222,12 @@ class Shell_Printer:
     def status(cls, msg, success=True):
         symbol = f"{cls.GREEN}✓" if success else f"{cls.RED}✗"
         print(f"\r{symbol}{cls.RESET} {msg}")
+
+def get_erispulse_version():
+    try:
+        return version("ErisPulse")
+    except PackageNotFoundError:
+        return "unknown version"
 
 shellprint = Shell_Printer()
 
@@ -1061,6 +1067,8 @@ def main():
     parser._positionals.title = f"{Shell_Printer.BOLD}{Shell_Printer.CYAN}基本命令{Shell_Printer.RESET}"
     parser._optionals.title = f"{Shell_Printer.BOLD}{Shell_Printer.MAGENTA}可选参数{Shell_Printer.RESET}"
     
+    parser.add_argument("--version", action="store_true", help="show version information and exit")
+    
     subparsers = parser.add_subparsers(
         dest='command', 
         title='可用的命令',
@@ -1089,7 +1097,7 @@ def main():
         if name in ['install']:
             cmd.add_argument('--force', action='store_true', help='强制重新安装模块')
         return cmd
-    
+
     enable_parser = add_module_command('enable', '启用指定模块')
     disable_parser = add_module_command('disable', '禁用指定模块')
     uninstall_parser = add_module_command('uninstall', '删除指定模块')
@@ -1134,8 +1142,10 @@ def main():
         init_module()
         print(f"{Shell_Printer.GREEN}模块列表初始化完成{Shell_Printer.RESET}")
     
-    # 处理命令
-    if args.command == 'enable':
+    if args.version:
+        print(f"{Shell_Printer.GREEN}ErisPulse {get_erispulse_version()}{Shell_Printer.RESET}")
+        sys.exit(0)
+    elif args.command == 'enable':
         for module_name in args.module_names:
             module_name = module_name.strip()
             if not module_name:
