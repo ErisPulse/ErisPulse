@@ -19,4 +19,4 @@ email = ["your@mail.com"]
 "homepage" = "https://github.com/yourname/MyAdapter"
 
 [project.entry-points]
-"erispulse-adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }
+"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }

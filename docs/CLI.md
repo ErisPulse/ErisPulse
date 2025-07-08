@@ -11,10 +11,10 @@ CLI注册了以下命令:
  | 名称  |
  | --------- |
  | ep       |
- | ep-cli   |
- | eriepulse-cli  |
  | epsdk    |
-
+ | ep-cli   |
+ | epsdk-cli    |
+ 
 以下是对应的子命令列表：
 ---
 

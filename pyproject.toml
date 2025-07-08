@@ -42,6 +42,7 @@ ep-init = "ErisPulse.__init__:init"
 epsdk = "ErisPulse.__main__:main"
 ep = "ErisPulse.__main__:main"
 ep-cli = "ErisPulse.__main__:main"
+epsdk-cli = "ErisPulse.__main__:main"
 
 [tool.hatch]
 project.root = "src"
