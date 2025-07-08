@@ -4,7 +4,7 @@ from ErisPulse.Core import BaseAdapter
 # from ErisPulse import sdk
 # from ErisPulse.Core import logger, env, raiserr, adapter
 
-class Main(BaseAdapter):
+class MyAdapter(BaseAdapter):
     def __init__(self, sdk):    # 这里也可以不接受sdk参数
         self.sdk = sdk
         self.env = self.sdk.env
