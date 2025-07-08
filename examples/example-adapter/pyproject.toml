@@ -19,4 +19,6 @@ email = ["your@mail.com"]
 "homepage" = "https://github.com/yourname/MyAdapter"
 
 [project.entry-points]
+"erispulse.module" = { "MyModule" = "MyModule:Main" }
 "erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }
+"erispulse.event_tools" = { "MyAdapterEventTools" = "MyAdapter:MyAdapterEventParser" }
