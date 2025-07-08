@@ -1,1 +1,1 @@
-from .Core import MyAdapter, MyAdapterEventParser
+from .Core import MyAdapter
