@@ -16,8 +16,7 @@ dependencies = [
 "homepage" = "https://github.com/yourname/MyAdapter"
 
 [project.entry-points]
-"erispulse.module" = { "MyAdapterEventTools" = "MyAdapter:MyAdapterEventParser"}
-"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }
+"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
 
 # 显式的添加ErisPulse模块依赖
 [tool.erispulse.dependencies]
