@@ -35,41 +35,21 @@
 
 ---
 
-## 安装指南
+## 快速开始
 
-我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链，提供更快速可靠的安装体验。
+### 一键安装脚本
 
-> ℹ️ **uv** 是由 Astral 开发的新一代 Python 包管理工具，比传统 pip 快 10-100 倍，并具有更好的依赖解析能力。
+我们提供了一键安装脚本，支持所有主流平台：
 
-### 1. 安装 uv
+#### Windows (PowerShell):
 
-#### 通用方法 (pip):
-```bash
-pip install uv
+```powershell
+irm https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.ps1 | iex
 ```
 
 #### macOS/Linux:
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-#### Windows (PowerShell):
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-验证安装:
-```bash
-uv --version
-```
-
-### 2. 安装 ErisPulse
-
-```bash
-uv python install 3.12          # 安装 Python 3.12
-uv venv                         # 创建虚拟环境
-source .venv/bin/activate       # 激活环境 (Windows: .venv\Scripts\activate)
-uv pip install ErisPulse --upgrade  # 安装框架
+curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | bash
 ```
 
 ---
