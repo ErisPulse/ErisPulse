@@ -30,8 +30,6 @@ class MyAdapter(BaseAdapter):
                     "token": ""
                 }
             })
-            self.logger.error("已生成对应的配置内容到你的env.py中, 建议修改后再次运行")
-            
     class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
@@ -76,62 +74,106 @@ class MyAdapter(BaseAdapter):
 
 class MyAdapterEventParser(EventDataBase):
     """
-    事件处理工具
+    平台事件解析器
     
-    继承自 EventDataBase 类，用于处理事件数据。
+    将MyAdapter原始事件数据转换为统一格式
     
-    :param event: 事件数据
-    :type event: Dict[str, Any]
 
-    继承类部分会接受并定义一个名为 self.event 的属性，用于存储事件数据
+    用法示例：
+    >>> event = MyAdapterEventParser(raw_event)
+    >>> print(f"收到来自 {event.user_id} 的消息: {event.content}")
+    >>> if event.is_bot: 
+    >>>     print("注意：此消息来自机器人")
     """
+
+    # ----- 核心属性实现 -----
     @property
     def platform(self) -> str:
-        # 这里你需要返回事件平台
-        return "MyAdapter"
+        """平台标识符"""
+        return "my_adapter"
     
     @property
     def type(self) -> str:
-        # 这里你需要返回事件的类型(如果你在Adapter进行了事件映射, 这里需要返回映射后的类型)
-        type = self.event.get("type")
-        return type
+        """事件主类型（转换平台特有事件类型为通用类型）"""
+        mapping = {
+            "msg": "message",
+            "msg_edit": "message_update",
+            "join": "guild_member_add",
+            "cmd": "command"
+        }
+        return mapping.get(self.event.get("event_type"), "unknown")
     
     @property
-    def content(self) -> str:
-        # 这里你需要返回事件中的文本内容
-        message_text = self.event.get("message", {}).get("text", "")
-        return message_text
+    def timestamp(self) -> float:
+        """精确到毫秒的时间戳"""
+        return self.event["timestamp"] / 1000  # 转换毫秒为秒
+
+    # ----- 消息相关增强实现 -----
+    @property
+    def content(self) -> Optional[str]:
+        """支持嵌套消息结构"""
+        if 'message' in self.event:
+            return self.event['message'].get('text')
+        return None
     
     @property
-    def sender_type(self) -> str:
-        # 这里你需要返回事件发送者类型
-        sender_type = self.event.get("sender_type")
-        return sender_type
+    def message_id(self) -> Optional[str]:
+        """复合型消息ID（平台标识+消息ID）"""
+        if 'message' in self.event:
+            return f"{self.platform}_{self.event['message']['id']}"
+        return None
+
+    # ----- 用户相关增强实现 -----
     @property
-    def sender_name(self) -> str:
-        # 这里你需要返回事件发送者名称
-        sender_name = self.event.get("sender_name")
-        return sender_name
-    @property
-    def user_id(self) -> str:
-        # 这里你需要返回事件发送者ID
-        user_id = self.event.get("user_id")
-        return user_id
+    def user_id(self) -> Optional[str]:
+        """支持不同事件源的用户字段"""
+        if 'user' in self.event:
+            return self.event['user']['id']
+        elif 'sender' in self.event:
+            return self.event['sender']['uid']
+        return None
     
     @property
-    def group_id(self) -> str:
-        # 这里你需要返回事件发送群组ID
-        group_id = self.event.get("group_id")
-        return group_id
+    def is_bot(self) -> bool:
+        """检查机器人标识字段"""
+        user_flags = self.event.get('user', {}).get('flags', 0)
+        return bool(user_flags & 0x1)  # 使用位掩码检查bot标志
+    
+    # ----- 群组相关增强实现 -----
+    @property
+    def guild_id(self) -> Optional[str]:
+        """转换平台特有的群组标识"""
+        return self.event.get('group', {}).get('gid')
     
     @property
     def channel_id(self) -> Optional[str]:
-        # 这里你需要返回事件发送频道ID | 这不是一个必须实现的属性，如果你的适配器不支持频道消息，可以不实现这个属性
-        channel_id = self.event.get("channel_id")
-        return channel_id
+        """转换平台特有的频道标识"""
+        return self.event.get('channel', {}).get('cid')
+
+    # ----- 高级特性实现 -----
+    @property
+    def references(self) -> Optional[Dict]:
+        """解析消息引用/回复"""
+        if 'reference' in self.event.get('message', {}):
+            ref = self.event['message']['reference']
+            return {
+                "message_id": ref["msg_id"],
+                "user_id": ref["author_id"],
+                "content_preview": ref.get("preview", "")
+            }
+        return None
     
     @property
-    def message_id(self) -> str:
-        # 这里你需要返回事件消息ID
-        message_id = self.event.get("message_id")
-        return message_id
+    def attachments(self) -> List[Dict]:
+        """统一附件格式"""
+        attachments = []
+        for attach in self.event.get('message', {}).get('attachments', []):
+            attachments.append({
+                "type": attach["file_type"],
+                "name": attach["file_name"],
+                "url": attach["download_url"],
+                "base64": attach["base64_content"] if attach["file_type"] == "image" else None,
+                "size": attach["file_size"]
+            })
+        return attachments
+    

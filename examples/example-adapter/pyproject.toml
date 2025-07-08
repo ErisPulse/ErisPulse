@@ -5,15 +5,12 @@ description = "MyAdapter是一个非常酷的平台，这个适配器可以帮�
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 # 可以直接依赖对应的ErisPulse模块包名
 dependencies = [
     
 ]
-
-[project.authors]
-name = ["yourname"]
-email = ["your@mail.com"]
 
 [project.urls]
 "homepage" = "https://github.com/yourname/MyAdapter"
@@ -21,3 +18,8 @@ email = ["your@mail.com"]
 [project.entry-points]
 "erispulse.module" = { "MyAdapterEventTools" = "MyAdapter:MyAdapterEventParser"}
 "erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }
+
+# 显式的添加ErisPulse模块依赖
+[tool.erispulse.dependencies]
+requires = []
+optional = []
