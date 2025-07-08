@@ -3,6 +3,8 @@ from ErisPulse import sdk
 from importlib.metadata import version
 import sys
 from typing import Optional
+import time
+from pathlib import Path
 
 # 颜色定义
 class Colors:
@@ -69,6 +71,72 @@ async def test_logger():
     sdk.logger.info(f"这条日志将保存到文件: {log_file}")
     
     print(f"\n{Colors.GREEN}日志测试完成，请查看控制台和文件 {log_file} 的输出{Colors.END}")
+async def test_env_sync():
+    """测试env.py配置同步功能"""
+    print(f"\n{Colors.YELLOW}=== env.py 配置同步测试 ==={Colors.END}")
+    
+    # 测试1: 基本同步
+    print(f"\n{Colors.CYAN}测试1: 基本键值同步{Colors.END}")
+    test_key = "TEST_SYNC_KEY"
+    test_value = "sync_value_" + str(int(time.time()))
+    
+    print(f"{Colors.YELLOW}操作: 设置 {test_key} = {test_value}{Colors.END}")
+    sdk.env.setConfig(test_key, test_value)
+    
+    # 验证env.py是否更新
+    env_file = Path("env.py")
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            content = f.read()
+            if f"{test_key} = {repr(test_value)}" in content:
+                print(f"{Colors.GREEN}✓ env.py 同步成功{Colors.END}")
+            else:
+                print(f"{Colors.RED}✗ env.py 未找到配置项{Colors.END}")
+    else:
+        print(f"{Colors.RED}✗ env.py 文件不存在{Colors.END}")
+    
+    # 测试2: 复杂结构同步
+    print(f"\n{Colors.CYAN}测试2: 复杂结构同步{Colors.END}")
+    complex_key = "COMPLEX_CONFIG"
+    complex_value = {
+        "database": {
+            "host": "localhost",
+            "port": 5432,
+            "tables": ["users", "logs"]
+        },
+        "debug": True
+    }
+    
+    print(f"{Colors.YELLOW}操作: 设置复杂配置 {complex_key}{Colors.END}")
+    sdk.env.setConfig(complex_key, complex_value)
+    
+    # 验证格式
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            content = f.read()
+            if f"{complex_key} = {{\n    \"database\"" in content:
+                print(f"{Colors.GREEN}✓ 复杂结构格式化正确{Colors.END}")
+            else:
+                print(f"{Colors.RED}✗ 复杂结构格式化异常{Colors.END}")
+    
+    # 测试3: 特殊字符处理
+    print(f"\n{Colors.CYAN}测试3: 特殊字符处理{Colors.END}")
+    special_key = "SPECIAL_CHARS"
+    special_value = "line1\nline2\t制表符\\转义符"
+    
+    print(f"{Colors.YELLOW}操作: 设置含特殊字符的配置{Colors.END}")
+    sdk.env.setConfig(special_key, special_value)
+    
+    # 验证转义
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            line = next((l for l in f.readlines() if l.startswith(special_key)), None)
+            if r"\n" in line and r"\t" in line:
+                print(f"{Colors.GREEN}✓ 特殊字符转义正确{Colors.END}")
+            else:
+                print(f"{Colors.RED}✗ 特殊字符转义失败{Colors.END}")
+    
+    input(f"\n{Colors.YELLOW}按回车键返回...{Colors.END}")
 
 async def test_env():
     """测试环境配置功能"""
@@ -79,7 +147,8 @@ async def test_env():
         print(f"{Colors.BLUE}3. 从文件加载配置项{Colors.END}")
         print(f"{Colors.BLUE}4. 测试事务操作{Colors.END}")
         print(f"{Colors.BLUE}5. 测试快照管理{Colors.END}")
-        print(f"{Colors.BLUE}6. 返回主菜单{Colors.END}")
+        print(f"{Colors.BLUE}6. 测试env.py同步功能{Colors.END}")
+        print(f"{Colors.BLUE}7. 返回主菜单{Colors.END}")
         
         try:
             choice = input(f"{Colors.GREEN}请选择测试项目(1-6): {Colors.END}").strip()
@@ -146,6 +215,9 @@ async def test_env():
                     sdk.logger.error(f"快照测试失败: {e}")
                 
             elif choice == "6":
+                await test_env_sync()
+                
+            elif choice == "7":
                 break
                 
             else:
