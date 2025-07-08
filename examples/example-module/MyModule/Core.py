@@ -26,8 +26,7 @@ class Main:
                 },
                 "key6": True
             })
-            self.logger.error("已生成对应的配置内容到你的env.py中, 建议修改后再次运行")
-
+            
     def hello(self):
         self.logger.info("Hello World!")
         # 其它模块可以通过 sdk.MyModule.hello() 调用此方法
