@@ -111,7 +111,7 @@ class EventDataBase:
         self.event = event
 
     @property
-    def type(self) -> str:
+    def message_type(self) -> str:
         """
         获取事件类型
         
@@ -122,15 +122,15 @@ class EventDataBase:
         raise NotImplementedError("事件处理工具必须实现事件 type 属性")
     
     @property
-    def content(self) -> str:
+    def message_text(self) -> str:
         """
-        获取事件内容
+        获取事件中的消息内容
         
         :return: 事件内容
         :example:
-        >>> return self.event.get("content")
+        >>> return self.event.get("message_text")
         """
-        raise NotImplementedError("事件处理工具必须实现事件 content 属性")
+        raise NotImplementedError("事件处理工具必须实现事件 message_text 属性")
     
     @property
     def sender_type(self) -> str:
