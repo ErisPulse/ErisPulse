@@ -109,7 +109,17 @@ class EventDataBase:
         if not isinstance(event, dict):
             raise TypeError("event 事件数据必须是字典类型")
         self.event = event
-
+    @property
+    def platform(self) -> str:
+        """
+        获取事件平台
+        
+        :return: 事件平台
+        :example:
+        >>> return "yunhu"
+        """
+        raise NotImplementedError("事件处理工具必须实现 platform 属性")
+    
     @property
     def message_type(self) -> str:
         """
@@ -122,15 +132,15 @@ class EventDataBase:
         raise NotImplementedError("事件处理工具必须实现事件 type 属性")
     
     @property
-    def message_text(self) -> str:
+    def content(self) -> str:
         """
         获取事件中的消息内容
         
         :return: 事件内容
         :example:
-        >>> return self.event.get("message_text")
+        >>> return self.event.get("content")
         """
-        raise NotImplementedError("事件处理工具必须实现事件 message_text 属性")
+        raise NotImplementedError("事件处理工具必须实现事件 content 属性")
     
     @property
     def sender_type(self) -> str:
