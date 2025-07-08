@@ -56,6 +56,101 @@ ErisPulse 适配器系统
 :raises AttributeError: 当方法不存在时抛出
 
 
+### `EventDataBase`
+
+事件处理工具基类
+
+事件处理工具基类，用于获取事件内
+
+
+#### 方法
+
+##### `__init__`
+
+初始化事件处理工具
+
+:param event: 事件数据
+
+
+##### `platform`
+
+获取事件平台
+
+:return: 事件平台
+:example:
+>>> return "yunhu"
+
+
+##### `message_type`
+
+获取事件类型
+
+:return: 事件类型
+:example:
+>>> return self.event.get("type")
+
+
+##### `content`
+
+获取事件中的消息内容
+
+:return: 事件内容
+:example:
+>>> return self.event.get("content")
+
+
+##### `sender_type`
+
+获取事件发送者类型
+
+:return: 事件发送者类型
+:example:
+>>> return self.event.get("sender_type")
+
+
+##### `user_id`
+
+获取事件用户ID
+
+:return: 用户ID
+:example:
+>>> return self.event.get("user_id")
+
+
+##### `group_id`
+
+获取事件群组ID
+
+:return: 群组ID
+:example:
+>>> return self.event.get("group_id")
+
+
+##### `channel_id`
+
+获取事件发生的频道ID 可选实现
+
+:return: 频道ID字符串或None
+
+
+##### `message_id`
+
+获取事件消息ID
+
+:return: 消息ID
+:example:
+>>> return self.event.get("message_id")
+
+
+##### `raw`
+
+获取原始事件数据
+
+:return: 原始事件数据
+:example:
+>>> return self.event
+
+
 ### `BaseAdapter`
 
 适配器基类
