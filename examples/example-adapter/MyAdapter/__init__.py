@@ -1,2 +1,1 @@
-from .Core import MyAdapter
-from .EventDataBase import MyAdapterEventParser
+from .Core import MyAdapter, MyAdapterEventParser
