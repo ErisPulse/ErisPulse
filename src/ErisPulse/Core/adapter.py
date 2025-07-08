@@ -7,11 +7,14 @@ ErisPulse 适配器系统
 1. 适配器必须继承BaseAdapter并实现必要方法
 2. 使用SendDSL实现链式调用风格的消息发送接口
 3. 适配器管理器支持多平台适配器的注册和生命周期管理
+4. 支持OneBot12协议的事件处理
 {!--< /tips >!--}
 """
 
 import functools
 import asyncio
+import uuid
+import time
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set, 
     Union, Awaitable, TypeVar, Generic, Tuple, Coroutine, FrozenSet
@@ -92,121 +95,6 @@ class SendDSLBase:
             )
         return wrapper
 
-class EventDataBase:
-    """
-    事件处理工具基类
-
-    事件处理工具基类，用于获取事件内
-    
-    """
-
-    def __init__(self, event: Dict[str, Any]):
-        """
-        初始化事件处理工具
-
-        :param event: 事件数据
-        """
-        if not isinstance(event, dict):
-            raise TypeError("event 事件数据必须是字典类型")
-        self.event = event
-    @property
-    def platform(self) -> str:
-        """
-        获取事件平台
-        
-        :return: 事件平台
-        :example:
-        >>> return "yunhu"
-        """
-        raise NotImplementedError("事件处理工具必须实现 platform 属性")
-    
-    @property
-    def message_type(self) -> str:
-        """
-        获取事件类型
-        
-        :return: 事件类型
-        :example:
-        >>> return self.event.get("type")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 type 属性")
-    
-    @property
-    def content(self) -> str:
-        """
-        获取事件中的消息内容
-        
-        :return: 事件内容
-        :example:
-        >>> return self.event.get("content")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 content 属性")
-    
-    @property
-    def sender_type(self) -> str:
-        """
-        获取事件发送者类型
-        
-        :return: 事件发送者类型
-        :example:
-        >>> return self.event.get("sender_type")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 sender_type 属性")
-
-    @property
-    def user_id(self) -> str:
-        """
-        获取事件用户ID
-        
-        :return: 用户ID
-        :example:
-        >>> return self.event.get("user_id")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 user_id 属性")
-    
-    @property
-    def group_id(self) -> str:
-        """
-        获取事件群组ID
-        
-        :return: 群组ID
-        :example:
-        >>> return self.event.get("group_id")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 group_id 属性")
-    
-    @property
-    def channel_id(self) -> Optional[str]:
-        """
-        获取事件发生的频道ID 可选实现
-        
-        :return: 频道ID字符串或None
-        """
-        return None
-    
-    @property
-    def message_id(self) -> str:
-        """
-        获取事件消息ID
-        
-        :return: 消息ID
-        :example:
-        >>> return self.event.get("message_id")
-        """
-        raise NotImplementedError("事件处理工具必须实现事件 message_id 属性")
-    
-    @property
-    def raw(self) -> Dict[str, Any]:
-        """
-        获取原始事件数据
-        
-        :return: 原始事件数据
-        :example:
-        >>> return self.event
-        """
-        return self.event
-
-
 
 class BaseAdapter:
     """
@@ -218,6 +106,7 @@ class BaseAdapter:
     1. 必须实现call_api, start和shutdown方法
     2. 可以自定义Send类实现平台特定的消息发送逻辑
     3. 通过on装饰器注册事件处理器
+    4. 支持OneBot12协议的事件处理
     {!--< /tips >!--}
     """
     
@@ -254,7 +143,8 @@ class BaseAdapter:
         """
         初始化适配器
         """
-        self._handlers = defaultdict(list)
+        self._handlers = defaultdict(list)  # 原生事件处理器
+        self._onebot_handlers = defaultdict(list)  # OneBot12事件处理器
         self._middlewares = []
         # 绑定当前适配器的 Send 实例
         self.Send = self.__class__.Send(self)
@@ -276,6 +166,26 @@ class BaseAdapter:
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
             self._handlers[event_type].append(wrapper)
+            return wrapper
+        return decorator
+
+    def on_CoverOneBot12(self, event_type: str = "*") -> Callable[[Callable], Callable]:
+        """
+        OneBot12协议事件监听装饰器
+        
+        :param event_type: OneBot12事件类型
+        :return: 装饰器函数
+        
+        :example:
+        >>> @adapter.on_CoverOneBot12("message")
+        >>> async def handle_onebot_message(data):
+        >>>     print(f"收到OneBot12消息: {data}")
+        """
+        def decorator(func: Callable) -> Callable:
+            @functools.wraps(func)
+            async def wrapper(*args, **kwargs):
+                return await func(*args, **kwargs)
+            self._onebot_handlers[event_type].append(wrapper)
             return wrapper
         return decorator
 
@@ -355,7 +265,7 @@ class BaseAdapter:
         
     async def emit(self, event_type: str, data: Any) -> None:
         """
-        触发事件
+        触发原生协议事件
         
         :param event_type: 事件类型
         :param data: 事件数据
@@ -375,6 +285,35 @@ class BaseAdapter:
         # 触发通配符 "*" 的处理器
         for handler in self._handlers.get("*", []):
             await handler(data)
+
+    async def emit_onebot12(self, event_type: str, onebot_data: Dict) -> None:
+        """
+        手动提交OneBot12协议事件
+        
+        :param event_type: OneBot12事件类型
+        :param onebot_data: 符合OneBot12标准的事件数据
+        
+        :example:
+        >>> await adapter.emit_onebot12("message", {
+        >>>     "id": "123",
+        >>>     "time": 1620000000,
+        >>>     "type": "message",
+        >>>     "detail_type": "private",
+        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
+        >>> })
+        """
+        # 先执行中间件
+        for middleware in self._middlewares:
+            onebot_data = await middleware(onebot_data)
+
+        # 触发OneBot12事件处理器
+        if event_type in self._onebot_handlers:
+            for handler in self._onebot_handlers[event_type]:
+                await handler(onebot_data)
+
+        # 触发通配符 "*" 的处理器
+        for handler in self._onebot_handlers.get("*", []):
+            await handler(onebot_data)
 
     async def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> Any:
         """
@@ -601,4 +540,3 @@ class AdapterManager:
 AdapterFather = BaseAdapter
 adapter = AdapterManager()
 SendDSL = SendDSLBase
-EventDataBase = EventDataBase
