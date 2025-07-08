@@ -13,6 +13,7 @@ ErisPulse SDK 主模块
 import os
 import sys
 import toml
+import inspect
 import importlib.metadata
 from typing import Dict, List, Tuple, Optional, Set, Type, Any
 from pathlib import Path
@@ -547,7 +548,16 @@ class ModuleInitializer:
             
             try:
                 if mods.get_module_status(meta_name):
-                    module_main = module_obj.Main(sdk)
+                    # 获取Main类的__init__参数信息
+                    init_signature = inspect.signature(module_obj.Main.__init__)
+                    params = init_signature.parameters
+                    
+                    # 根据参数决定是否传入sdk
+                    if 'sdk' in params:
+                        module_main = module_obj.Main(sdk)
+                    else:
+                        module_main = module_obj.Main()
+                    
                     setattr(module_main, "moduleInfo", module_obj.moduleInfo)
                     setattr(sdk, meta_name, module_main)
                     logger.debug(f"模块 {meta_name} 初始化完成")
@@ -555,7 +565,6 @@ class ModuleInitializer:
                 logger.error(f"模块 {meta_name} 初始化失败: {e}")
                 success = False
         return success
-
 
 def init_progress() -> Tuple[bool, bool]:
     """
