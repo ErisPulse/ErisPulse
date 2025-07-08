@@ -12,7 +12,11 @@ class MyAdapterEventParser(EventDataBase):
 
     继承类部分会接受并定义一个名为 self.event 的属性，用于存储事件数据
     """
-
+    @property
+    def platform(self) -> str:
+        # 这里你需要返回事件平台
+        return "MyAdapter"
+    
     @property
     def type(self) -> str:
         # 这里你需要返回事件的类型(如果你在Adapter进行了事件映射, 这里需要返回映射后的类型)
@@ -20,7 +24,7 @@ class MyAdapterEventParser(EventDataBase):
         return type
     
     @property
-    def message_text(self) -> str:
+    def content(self) -> str:
         # 这里你需要返回事件中的文本内容
         message_text = self.event.get("message", {}).get("text", "")
         return message_text
@@ -30,7 +34,11 @@ class MyAdapterEventParser(EventDataBase):
         # 这里你需要返回事件发送者类型
         sender_type = self.event.get("sender_type")
         return sender_type
-
+    @property
+    def sender_name(self) -> str:
+        # 这里你需要返回事件发送者名称
+        sender_name = self.event.get("sender_name")
+        return sender_name
     @property
     def user_id(self) -> str:
         # 这里你需要返回事件发送者ID
