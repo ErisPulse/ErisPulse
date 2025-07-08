@@ -14,7 +14,7 @@ class Main(BaseAdapter):
         self.load_config()
     # 加载配置方法，你需要在这里进行必要的配置加载逻辑
     def load_config(self):
-        self.config = self.env.get("MyAdapter", {})
+        self.config = self.env.getConfig("MyAdapter", {})
 
         if self.config is None:
             self.logger.error("请在env.py中添加MyAdapter配置")
