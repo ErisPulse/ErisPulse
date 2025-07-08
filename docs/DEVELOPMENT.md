@@ -3,87 +3,129 @@
 > 本指南从开发者角度出发，帮助你快速理解并接入 **ErisPulse** 框架，进行模块和适配器的开发。
 
 ---
-## 一、使用 SDK 功能
+## 一、了解工作原理
 
-通过 `from ErisPulse import sdk` 可以引入 sdk 提供的关键对象集合
+### 核心对象
 
-当然你也可以通过 `from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter` 直接获取核心模块对象
+你可以通过 `from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter, EventDataBase` 直接获取核心模块对象
 
-### SDK 提供的核心对象
+当然, 为了保持兼容性，你也可以通过 `sdk` 获取 SDK 对象，并使用 `sdk.<核心模块名>` 访问核心模块对象, 乃至使用三方模块重写SDK功能!
 
 | 名称 | 用途 |
 |------|------|
-| `sdk.env` | 获取/设置全局配置 |
-| `sdk.mods` | 管理模块 |
-| `sdk.logger` | 日志记录器 |
-| `sdk.raiserr` | 错误管理器 |
-| `sdk.util` | 工具函数（缓存、重试等） |
-| `sdk.adapter` | 获取其他适配器实例 |
-| `sdk.BaseAdapter` | 适配器基类 |
+| `sdk` | SDK对象 |
+| `env`/`sdk.env` | 获取/设置全局配置 |
+| `mods`/`sdk.mods` | 模块管理器 |
+| `logger`/`sdk.logger` | 日志记录器 |
+| `raiserr`/`sdk.raiserr` | 错误管理器 |
+| `util`/`sdk.util` | 工具函数（缓存、重试等） |
+| `adapter`/`sdk.adapter` | 获取其他适配器实例 |
+| `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
+| `EventDataBase`/`sdk.EventDataBase` | 事件数据处理基类 |
 
+### 模块调用
+
+ErisPulse 框架提供了一个 `sdk` 对象, 所有模块都会被注册在 `sdk` 对象中
+
+例如一个模块的结构是:
+```python
+class MyModule:
+    def __init__(self, sdk):    # 注: 这里也可以不传入 sdk 参数 | 你可以直接 from ErisPulse import sdk 来获得sdk对象
+        self.sdk = sdk
+        self.logger = sdk.logger
+    def hello(self):
+        self.logger.info("hello world")
+        return "hello world"
+```
+
+这时候你可以在 `main.py` 中这样调用:
+```python
+from ErisPulse import sdk
+
+sdk.init()
+
+sdk.MyModule.hello()
+```
+这样就可以调用到模块中的方法了, 当然任何地方都可以调用模块中的方法, 只要它被加载到了 `sdk` 对象中
+这样就可以调用到模块中的方法了, 当然任何地方都可以调用模块中的方法, 只要它被加载到了 `sdk` 对象中
+
+通过 `sdk.<ModuleName>` 访问其他模块实例：
+```python
+other_module = sdk.OtherModule
+result = other_module.some_method()
+```
+
+---
+
+适配器的使用: 
+```python
+from ErisPulse import sdk
+
+async def main():
+    sdk.init()
+
+    await sdk.adapter.startup("MyAdapter")  # 这里不指定适配器名称的话, 会自动选择启动所有被注册到 `adapter`/`sdk.adapter` 中的适配器
+
+    MyAdapter = sdk.adapter.get("MyAdapter")
+
+    @MyAdapter.on("message")
+    async def on_message(data):
+        sdk.MyAdapterEvent(data)
+        sender_type = sdk.MyAdapterEvent.sender_type()
+        sender_id = sdk.MyAdapterEvent.sender_id()
+
+    type, id = "Guild", "1234567890"
+    await MyAdapter.Send.To(type, id).Text("Hello World!")  # 这里使用了DSL风格的调用, 在以后的章节中会详细介绍
+```
+
+通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
+```python
+adapter = sdk.adapter.AdapterName
+result = adapter.some_method()
+```
+
+### 核心对象功能示例
 
 #### 日志记录：
 
 ```python
+from ErisPulse.Core import logger
+
 #  设置单个模块日志级别
-sdk.logger.set_module_level("MyModule", "DEBUG")
+logger.set_module_level("MyModule", "DEBUG")
 
 #  单次保持所有模块日志历史到文件
-sdk.logger.save_logs("log.txt")
+logger.save_logs("log.txt")
 
 #  各等级日志
-sdk.logger.debug("调试信息")
-sdk.logger.info("运行状态")
-sdk.logger.warning("警告信息")
-sdk.logger.error("错误信息")
-sdk.logger.critical("致命错误")    # 会触发程序崩溃
+logger.debug("调试信息")
+logger.info("运行状态")
+logger.warning("警告信息")
+logger.error("错误信息")
+logger.critical("致命错误")    # 会触发程序崩溃
 ```
 
 #### env配置模块：
 
 ```python
+from ErisPulse.Core import env
+
 # 设置配置项
-sdk.env.set("my_config_key", "new_value")
+env.set("my_config_key", "new_value")
 
 # 获取配置项
-config_value = sdk.env.get("my_config_key", "default_value")
+config_value = env.get("my_config_key", "default_value")
 
 # 删除配置项
-sdk.env.delete("my_config_key")
-
-# 获取所有配置项(不建议，性能浪费)
-all_config = sdk.env.get_all_keys()
-
-# 批量操作
-sdk.env.set_multi({
-    'config1': 'value1',
-    'config2': {'data': [1,2,3]},
-    'config3': True
-})
-
-values = sdk.env.get_multi(['config1', 'config2'])
-sdk.env.delete_multi(['old_key1', 'old_key2'])
+env.delete("my_config_key")
 
 # 事务使用
-with sdk.env.transaction():
-    sdk.env.set('important_key', 'value')
-    sdk.env.delete('temp_key')
+with env.transaction():
+    env.set('important_key', 'value')
+    env.delete('temp_key')
     # 如果出现异常会自动回滚
 
-# 快照管理
-# 创建重要操作前的快照
-snapshot_path = sdk.env.snapshot('before_update')
-
-# 恢复数据库状态
-sdk.env.restore('before_update')
-
-# 自动快照(默认每小时)
-sdk.env.set_snapshot_interval(3600)  # 设置自动快照间隔(秒)
-
-# 性能提示：
-# - 批量操作比单次操作更高效
-# - 事务可以保证多个操作的安全性
-# - 快照适合在重大变更前创建
+# 其它深入操作请阅读API文档
 ```
 
 须知：
@@ -101,11 +143,13 @@ self.band_words = a + b
 #### 注册自定义错误类型：
 
 ```python
+from ErisPulse.Core import raiserr
+
 #  注册一个自定义错误类型
-sdk.raiserr.register("MyCustomError", doc="这是一个自定义错误")
+raiserr.register("MyCustomError", doc="这是一个自定义错误")
 
 #  获取错误信息
-error_info = sdk.raiserr.info("MyCustomError")
+error_info = raiserr.info("MyCustomError")
 if error_info:
     print(f"错误类型: {error_info['type']}")
     print(f"文档描述: {error_info['doc']}")
@@ -114,52 +158,36 @@ else:
     print("未找到该错误类型")
 
 #  抛出一个自定义错误
-sdk.raiserr.MyCustomError("发生了一个错误")
+raiserr.MyCustomError("发生了一个错误")
 
 ```
 
 #### 工具函数：
 
 ```python
+from ErisPulse import util
+
 # 工具函数装饰器：自动重试指定次数
-@sdk.util.retry(max_attempts=3, delay=1)
+@util.retry(max_attempts=3, delay=1)
 async def my_retry_function():
     # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
     ...
 
 # 缓存装饰器：缓存函数调用结果（基于参数）
-@sdk.util.cache
+@util.cache
 def get_expensive_result(param):
     # 第一次调用后，相同参数将直接返回缓存结果
     ...
 
 # 异步执行装饰器：将同步函数放入线程池中异步执行
-@sdk.util.run_in_executor
+@util.run_in_executor
 def sync_task():
     # 此函数将在独立线程中运行，避免阻塞事件循环
     ...
 
 # 在同步函数中调用异步任务
-sdk.util.ExecAsync(sync_task)
+util.ExecAsync(sync_task)
 
-```
-
----
-
-### 5. 模块间通信
-
-通过 `sdk.<ModuleName>` 访问其他模块实例：
-
-```python
-other_module = sdk.OtherModule
-result = other_module.some_method()
-```
-
-### 6. 适配器的方法调用
-通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
-```python
-adapter = sdk.adapter.AdapterName
-result = adapter.some_method()
 ```
 
 ## 二、模块开发
@@ -415,7 +443,7 @@ if __name__ == "__main__":
 - **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
 
 #### 2. 异常处理与日志记录
-- **统一异常处理机制**：结合 `sdk.raiserr` 注册自定义错误类型，提供清晰的错误信息。
+- **统一异常处理机制**：结合 `raiserr` 注册自定义错误类型，提供清晰的错误信息。
 - **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
 
 #### 3. 模块化与解耦设计

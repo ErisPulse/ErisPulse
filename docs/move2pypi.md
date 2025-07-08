@@ -103,11 +103,14 @@ print(hasattr(sdk, 'my_module'))  # 应该返回True
 
 ## 注意事项
 **适配器迁移**：
-适配器迁移方式类似，使用`erispulse-adapter`作为entry-point组名：
+适配器迁移方式类似，使用`erispulse-adapter`作为entry-point组名, 但是有特殊要求：
+
+强烈推荐创建一个事件解析模块，用于处理适配器事件(这是推荐做法, 虽然您也可以不做,但这会使得该适配器的模块适性变得很差)
 
 ```toml
 [project.entry-points]
-"erispulse-adapter" = { "my_adapter" = "my_adapter.core:MyPlatformAdapter" }
+"erispulse.module" = { "MyAdapterEventTools" = "MyAdapter:MyAdapterEventParser"}
+"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyPlatformAdapter" }
 ```
 
 ## FAQ
