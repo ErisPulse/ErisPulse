@@ -110,7 +110,6 @@ class EnvManager:
             else:
                 from . import logger
                 logger.error(f"数据库操作错误: {e}")
-
     def get_all_keys(self) -> List[str]:
         """
         获取所有配置项的键名
@@ -125,7 +124,6 @@ class EnvManager:
             cursor = conn.cursor()
             cursor.execute("SELECT key FROM config")
             return [row[0] for row in cursor.fetchall()]
-
     def set(self, key: str, value: Any) -> bool:
         """
         设置配置项的值
@@ -181,7 +179,28 @@ class EnvManager:
             return True
         except Exception as e:
             return False
+    def getConfig(self, key: str, default: Any = None) -> Any:
+        """
+        获取配置项
+        :param key: 配置项的键
+        :return: 配置项的值
+        """
 
+        # TODO: 日后添加对应的模块/适配器配置
+        return self.get(key, default)
+    
+    def setConfig(self, key: str, value: Any) -> bool:
+        """
+        设置模块/适配器配置
+
+        :param key: 配置项键名
+        :param value: 配置项键值
+
+        :return: 操作是否成功
+        """
+        # TODO: 日后添加对应的模块/适配器配置 | 并写入env.py
+        return self.set(key, value)
+    
     def delete(self, key: str) -> bool:
         """
         删除配置项
