@@ -92,6 +92,111 @@ class SendDSLBase:
             )
         return wrapper
 
+class EventDataBase:
+    """
+    事件处理工具基类
+
+    事件处理工具基类，用于获取事件内
+    
+    """
+
+    def __init__(self, event: Dict[str, Any]):
+        """
+        初始化事件处理工具
+
+        :param event: 事件数据
+        """
+        if not isinstance(event, dict):
+            raise TypeError("event 事件数据必须是字典类型")
+        self.event = event
+
+    @property
+    def type(self) -> str:
+        """
+        获取事件类型
+        
+        :return: 事件类型
+        :example:
+        >>> return self.event.get("type")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 type 属性")
+    
+    @property
+    def content(self) -> str:
+        """
+        获取事件内容
+        
+        :return: 事件内容
+        :example:
+        >>> return self.event.get("content")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 content 属性")
+    
+    @property
+    def sender_type(self) -> str:
+        """
+        获取事件发送者类型
+        
+        :return: 事件发送者类型
+        :example:
+        >>> return self.event.get("sender_type")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 sender_type 属性")
+
+    @property
+    def user_id(self) -> str:
+        """
+        获取事件用户ID
+        
+        :return: 用户ID
+        :example:
+        >>> return self.event.get("user_id")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 user_id 属性")
+    
+    @property
+    def group_id(self) -> str:
+        """
+        获取事件群组ID
+        
+        :return: 群组ID
+        :example:
+        >>> return self.event.get("group_id")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 group_id 属性")
+    
+    @property
+    def channel_id(self) -> Optional[str]:
+        """
+        获取事件发生的频道ID 可选实现
+        
+        :return: 频道ID字符串或None
+        """
+        return None
+    
+    @property
+    def message_id(self) -> str:
+        """
+        获取事件消息ID
+        
+        :return: 消息ID
+        :example:
+        >>> return self.event.get("message_id")
+        """
+        raise NotImplementedError("事件处理工具必须实现事件 message_id 属性")
+    
+    @property
+    def raw(self) -> Dict[str, Any]:
+        """
+        获取原始事件数据
+        
+        :return: 原始事件数据
+        :example:
+        >>> return self.event
+        """
+        return self.event
+
+
 
 class BaseAdapter:
     """
@@ -486,3 +591,4 @@ class AdapterManager:
 AdapterFather = BaseAdapter
 adapter = AdapterManager()
 SendDSL = SendDSLBase
+EventDataBase = EventDataBase
