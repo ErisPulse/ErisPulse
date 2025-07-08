@@ -47,7 +47,6 @@ sdk.init()
 sdk.MyModule.hello()
 ```
 这样就可以调用到模块中的方法了, 当然任何地方都可以调用模块中的方法, 只要它被加载到了 `sdk` 对象中
-这样就可以调用到模块中的方法了, 当然任何地方都可以调用模块中的方法, 只要它被加载到了 `sdk` 对象中
 
 通过 `sdk.<ModuleName>` 访问其他模块实例：
 ```python
@@ -194,54 +193,67 @@ util.ExecAsync(sync_task)
 
 ### 1. 目录结构
 
-一个标准模块应包含以下两个核心文件：
+一个标准模块包应该是：
 
 ```
 MyModule/
-├── __init__.py    # 模块入口
-└── Core.py        # 核心逻辑
+├── pyproject.toml    # 项目配置
+├── README.md         # 项目说明
+├── LICENSE           # 许可证文件
+└── MyModule/
+    ├── __init__.py  # 模块入口
+    └── Core.py      # 核心逻辑
 ```
 
-### 2. `__init__.py` 文件
+### 2. `pyproject.toml` 文件
+模块的配置文件, 包括模块信息、依赖项、模块/适配器入口点等信息
 
-该文件必须定义 `moduleInfo` 字典，并导入 `Main` 类：
+```toml
+[project]
+name = "ErisPulse-MyModule"     # 模块名称, 建议使用 ErisPulse-<模块名称> 的格式命名
+version = "1.0.0"
+description = "一个非常哇塞的模块"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+# 可以直接依赖对应的ErisPulse模块的python包名
+dependencies = [
+    
+]
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyModule"
+
+[project.entry-points]
+"erispulse.module" = { "MyModule" = "MyModule:Main" }
+
+# 显式的添加ErisPulse模块依赖
+[tool.erispulse.dependencies]
+requires = []
+optional = []
+```
+
+### 3. `MyModule/__init__.py` 文件
+
+顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
+
+示例这里导入了模块核心逻辑
 
 ```python
-moduleInfo = {
-    "meta": {
-        "name": "MyModule",
-        "version": "1.0.0",
-        "description": "我的功能模块",
-        "author": "开发者",
-        "license": "MIT"
-    },
-    "dependencies": {
-        "requires": [],       # 必须依赖的其他模块
-        "optional": [         # 可选依赖模块列表（满足其中一个即可）
-            "可选模块",
-            ["可选模块"],
-            ["可选组依赖模块1", "可选组依赖模块2"]
-        ],
-        "pip": []             # 第三方 pip 包依赖
-    }
-}
-
 from .Core import Main
 ```
 
-其中, 可选依赖支持组依赖：
-- 可选模块与组依赖模块（如 `["组依赖模块1", "组依赖模块2"]` 和 `["组依赖模块3", "组依赖模块4"]`）构成“或”关系，即满足其中一组即可。
-- 组依赖模块以数组形式表示，视为一个整体（例如：`组依赖模块1 + 组依赖模块2` 和 `可选模块` 中任意一组存在即符合要求）。
-
-> ⚠️ 注意：模块名必须唯一，避免与其他模块冲突。
-
 ---
 
-### 3. `Core.py` 文件
+### 3. `MyModule/Core.py` 文件
 
-实现模块主类 `Main`，构造函数必须接收 `sdk` 参数：
+实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的，但推荐传入
 
 ```python
+# 这也是一种可选的获取 `sdk`对象 的方式
+# from ErisPulse import sdk
+
 class Main:
     def __init__(self, sdk):
         self.sdk = sdk
@@ -266,6 +278,9 @@ sdk.MyModule.print_hello()
 # 运行模块主程序（推荐使用CLI命令）
 # epsdk run main.py --reload
 ```
+### 4. `LICENSE` 文件
+`LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
+
 ---
 
 ## 三、平台适配器开发（Adapter）
@@ -276,54 +291,85 @@ sdk.MyModule.print_hello()
 
 ```
 MyAdapter/
-├── __init__.py    # 模块入口
-└── Core.py        # 适配器逻辑
+├── pyproject.toml
+├── README.md
+├── LICENSE
+└── MyAdapter/
+    ├── __init__.py
+    └── Core.py
 ```
 
-### 2. `__init__.py` 文件
+### 2. `pyproject.toml` 文件
+```toml
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "MyAdapter是一个非常酷的平台，这个适配器可以帮你绽放更亮的光芒"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
 
-同样需定义 `moduleInfo` 并导入 `Main` 类：
+# 可以直接依赖对应的ErisPulse模块包名
+dependencies = [
+    
+]
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyAdapter"
+
+[project.entry-points]
+"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
+
+# 显式的添加ErisPulse模块依赖
+[tool.erispulse.dependencies]
+requires = []
+optional = []
+```
+
+### 3. `MyAdapter/__init__.py` 文件
+
+顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
+
+示例这里导入了模块核心逻辑
 
 ```python
-moduleInfo = {
-    "meta": {
-        "name": "MyAdapter",
-        "version": "1.0.0",
-        "description": "我的平台适配器",
-        "author": "开发者",
-        "license": "MIT"
-    },
-    "dependencies": {
-        "requires": [],
-        "optional": [],
-        "pip": ["aiohttp"]
-    }
-}
-
-from .Core import Main, MyPlatformAdapter
-
-adapterInfo = {
-    "myplatform": MyPlatformAdapter,
-}
+from .Core import MyAdapter
 ```
 
-### 3. `Core.py`
-实现适配器主类 `Main`，并提供适配器类继承 `sdk.BaseAdapter`：
+### 4. `MyAdapter/Core.py`
+实现适配器主类 `MyAdapter`，并提供适配器类继承 `BaseAdapter`, 实现嵌套类Send以实现例如 Send.To(type, id).Text("hello world") 的语法
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core import BaseAdapter
 
-class Main:
-    def __init__(self, sdk):
+class MyAdapter(BaseAdapter):
+    def __init__(self):    # 适配器有显式的导入sdk对象, 所以您不需导入sdk对象
         self.sdk = sdk
-        self.logger = sdk.logger
-        #   这里是模块的初始化类，当然你也可以在这里进行一些方法提供
-        #   在这里的方法可以通过 sdk.<模块名>.<方法名> 访问
-        #   如果该模块专精于Adapter，那么本类不建议提供方法
-        #   在 MyPlatformAdapter 中的方法可以使用 sdk.adapter.<适配器注册名>.<方法名> 访问
+        self.env = self.sdk.env
+        self.logger = self.sdk.logger
+        
+        self.logger.info("MyModule 初始化完成")
+        self.load_config()
+    # 加载配置方法，你需要在这里进行必要的配置加载逻辑
+    def load_config(self):
+        self.config = self.env.getConfig("MyAdapter", {})
 
-class MyPlatformAdapter(sdk.BaseAdapter):
-    class Send(sdk.BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
+        if self.config is None:
+            self.logger.error("请在env.py中添加MyAdapter配置")
+            self.env.setConfig("MyAdapter", {
+                "mode": "server",
+                "server": {
+                    "host": "127.0.0.1",
+                    "port": 8080
+                },
+                "client": {
+                    "url": "http://127.0.0.1:8080",
+                    "token": ""
+                }
+            })
+    class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
         # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
@@ -350,18 +396,19 @@ class MyPlatformAdapter(sdk.BaseAdapter):
                 )
             )
 
-    #   这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
-    #   因为这是必须继承的方法
+    # 这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
+    # 因为这是必须继承的方法
     async def call_api(self, endpoint: str, **params):
         raise NotImplementedError()
 
-    #   启动方法，你需要在这里定义你的adapter启动时候的逻辑
+    # 适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.setup() 来启动所有适配器，
+    # 当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
+    # 启动方法，你需要在这里定义你的adapter启动时候的逻辑
     async def start(self):
         raise NotImplementedError()
-    #   停止方法，你需要在这里进行必要的释放资源等逻辑
+    # 停止方法，你需要在这里进行必要的释放资源等逻辑
     async def shutdown(self):
         raise NotImplementedError()
-    #  适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.update() 来启动所有适配器，当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
 ```
 ### 接口规范说明
 
@@ -395,7 +442,7 @@ class MyPlatformAdapter(sdk.BaseAdapter):
 每个适配器可定义一组链式调用风格的方法，例如：
 
 ```python
-class Send(super().Send):
+class Send((BaseAdapter.Send):
     def Text(self, text: str):
         return asyncio.create_task(
             self._adapter.call_api(...)
@@ -416,6 +463,7 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 > 建议方法名首字母大写，保持命名统一。
 
 ---
+
 ### 四、最简 main.py 示例
 ```python
 from ErisPulse import sdk
@@ -436,7 +484,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### 四、开发建议
+### 五、开发建议
 
 #### 1. 使用异步编程模型
 - **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
@@ -457,9 +505,3 @@ if __name__ == "__main__":
 #### 5. 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
----
-
-## 五、提交到官方源
-
-如果你希望将你的模块或适配器加入 ErisPulse 官方模块仓库，请参考 [模块源贡献](https://github.com/ErisPulse/ErisPulse-ModuleRepo)。
