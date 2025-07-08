@@ -77,6 +77,23 @@ ErisPulse 环境配置模块
 >>> })
 
 
+##### `getConfig`
+
+获取配置项
+:param key: 配置项的键
+:return: 配置项的值
+
+
+##### `setConfig`
+
+设置模块/适配器配置
+
+:param key: 配置项键名
+:param value: 配置项键值
+
+:return: 操作是否成功
+
+
 ##### `delete`
 
 删除配置项
