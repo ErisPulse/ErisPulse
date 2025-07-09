@@ -65,35 +65,35 @@ class SendDSLBase:
 
         return self.__class__(self._adapter, target_type, target_id)
 
-    def __getattr__(self, name: str) -> Callable[..., Awaitable[Any]]:
-        """
-        动态获取消息发送方法
+    # def __getattr__(self, name: str) -> Callable[..., Awaitable[Any]]:
+    #     """
+    #     动态获取消息发送方法
         
-        :param name: 方法名
-        :return: 消息发送函数
+    #     :param name: 方法名
+    #     :return: 消息发送函数
         
-        :raises AttributeError: 当方法不存在时抛出
-        """
-        def wrapper(*args, **kwargs) -> Awaitable[Any]:
-            """
-            消息发送包装函数
+    #     :raises AttributeError: 当方法不存在时抛出
+    #     """
+    #     def wrapper(*args, **kwargs) -> Awaitable[Any]:
+    #         """
+    #         消息发送包装函数
             
-            :param args: 位置参数
-            :param kwargs: 关键字参数
-            :return: 异步任务
-            """
-            return asyncio.create_task(
-                self._adapter._real_send(
-                    target_type=self._target_type,
-                    target_id=self._target_id,
-                    action=name,
-                    data={
-                        "args": args,
-                        "kwargs": kwargs
-                    }
-                )
-            )
-        return wrapper
+    #         :param args: 位置参数
+    #         :param kwargs: 关键字参数
+    #         :return: 异步任务
+    #         """
+    #         return asyncio.create_task(
+    #             self._adapter._real_send(
+    #                 target_type=self._target_type,
+    #                 target_id=self._target_id,
+    #                 action=name,
+    #                 data={
+    #                     "args": args,
+    #                     "kwargs": kwargs
+    #                 }
+    #             )
+    #         )
+    #     return wrapper
 
 
 class BaseAdapter:
