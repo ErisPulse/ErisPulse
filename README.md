@@ -26,17 +26,6 @@
 
 ## 快速开始
 
-### 框架选型指南
-
-| 需求 | 推荐框架 | 理由 |
-|------|---------|------|
-| 轻量化/底层模块化 | [Framer](https://github.com/FramerOrg/Framer) | 高度解耦的模块化设计 |
-| 全功能机器人开发 | ErisPulse | 开箱即用的完整解决方案 |
-
----
-
-## 快速开始
-
 ### 一键安装脚本
 
 我们提供了一键安装脚本，支持所有主流平台：
@@ -49,7 +38,15 @@ irm https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/i
 
 #### macOS/Linux:
 ```bash
-curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | bash
+# 下载安装脚本
+curl -o install.sh https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh
+# 添加执行权限
+chmod +x install.sh
+# 执行安装脚本
+./install.sh
+
+# 或者使用更可靠的方式(需要确认服务器支持)
+curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
 ```
 
 ---
