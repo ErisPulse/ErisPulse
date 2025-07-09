@@ -33,7 +33,8 @@
 #### Windows (PowerShell):
 
 ```powershell
-irm https://get.erisdev.com/install.ps1 -UseBasicParsing | iex
+$script = [System.Text.Encoding]::UTF8.GetString((irm https://get.erisdev.com/install.ps1 -UseBasicParsing))
+Invoke-Expression $script
 ```
 
 #### macOS/Linux:
