@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-ErisPulse 安装脚本 - PowerShell 专用版
+ErisPulse 安装脚本 - PowerShell
 
 .DESCRIPTION
 此脚本将自动检测并安装 ErisPulse 所需的环境，包括：
@@ -13,16 +13,25 @@ ErisPulse 安装脚本 - PowerShell 专用版
 需要 PowerShell 5.1 或更高版本
 #>
 
-# 颜色定义
-$ESC = [char]27
-$RED = "$ESC[31m"
-$GREEN = "$ESC[32m"
-$YELLOW = "$ESC[33m"
-$BLUE = "$ESC[34m"
-$NC = "$ESC[0m"
-
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
+
+try {
+    $null = chcp 65001
+} catch {
+    Write-Warning "无法更改控制台代码页，可能影响非ASCII字符显示"
+}
+
+$ESC = [char]27
+if ($Host.UI.SupportsVirtualTerminal) {
+    $RED = "$ESC[31m"
+    $GREEN = "$ESC[32m"
+    $YELLOW = "$ESC[33m"
+    $BLUE = "$ESC[34m"
+    $NC = "$ESC[0m"
+} else {
+    $RED = $GREEN = $YELLOW = $BLUE = $NC = ""
+}
 
 # 函数：检测Python版本是否符合要求
 function Test-PythonVersion {
