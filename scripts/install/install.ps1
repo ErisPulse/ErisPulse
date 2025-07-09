@@ -13,6 +13,8 @@ ErisPulse 安装脚本 - PowerShell
 需要 PowerShell 5.1 或更高版本
 #>
 
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 $ESC = [char]27
 if ($Host.UI.SupportsVirtualTerminal) {
     $RED = "$ESC[31m"
