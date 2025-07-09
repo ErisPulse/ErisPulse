@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 ErisPulse 安装脚本 - PowerShell
 
