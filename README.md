@@ -47,7 +47,7 @@ chmod +x install.sh
 ```
 > 或者使用更可靠的方式(需要确认服务器支持)
 ```bash
-curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
+curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
 ```
 
 ---
