@@ -44,7 +44,7 @@
 #### Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.ps1 | iex
+irm https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.ps1 -UseBasicParsing | iex
 ```
 
 #### macOS/Linux:
