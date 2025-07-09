@@ -44,8 +44,9 @@ curl -o install.sh https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/sc
 chmod +x install.sh
 # 执行安装脚本
 ./install.sh
-
-# 或者使用更可靠的方式(需要确认服务器支持)
+```
+> 或者使用更可靠的方式(需要确认服务器支持)
+```bash
 curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
 ```
 
