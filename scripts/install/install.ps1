@@ -1,19 +1,19 @@
 <#
 .SYNOPSIS
-ErisPulse °²×°½Å±¾ - PowerShell ×¨ÓÃ°æ
+ErisPulse å®‰è£…è„šæœ¬ - PowerShell ä¸“ç”¨ç‰ˆ
 
 .DESCRIPTION
-´Ë½Å±¾½«×Ô¶¯¼ì²â²¢°²×° ErisPulse ËùĞèµÄ»·¾³£¬°üÀ¨£º
-1. °²×° uv (Python »·¾³¹ÜÀí¹¤¾ß)
-2. °²×° Python 3.12 (Í¨¹ı uv)
-3. ´´½¨ĞéÄâ»·¾³
-4. °²×° ErisPulse ¿ò¼Ü
+æ­¤è„šæœ¬å°†è‡ªåŠ¨æ£€æµ‹å¹¶å®‰è£… ErisPulse æ‰€éœ€çš„ç¯å¢ƒï¼ŒåŒ…æ‹¬ï¼š
+1. å®‰è£… uv (Python ç¯å¢ƒç®¡ç†å·¥å…·)
+2. å®‰è£… Python 3.12 (é€šè¿‡ uv)
+3. åˆ›å»ºè™šæ‹Ÿç¯å¢ƒ
+4. å®‰è£… ErisPulse æ¡†æ¶
 
 .NOTES
-ĞèÒª PowerShell 5.1 »ò¸ü¸ß°æ±¾
+éœ€è¦ PowerShell 5.1 æˆ–æ›´é«˜ç‰ˆæœ¬
 #>
 
-# ÑÕÉ«¶¨Òå
+# é¢œè‰²å®šä¹‰
 $ESC = [char]27
 $RED = "$ESC[31m"
 $GREEN = "$ESC[32m"
@@ -21,7 +21,7 @@ $YELLOW = "$ESC[33m"
 $BLUE = "$ESC[34m"
 $NC = "$ESC[0m"
 
-# º¯Êı£º¼ì²âPython°æ±¾ÊÇ·ñ·ûºÏÒªÇó
+# å‡½æ•°ï¼šæ£€æµ‹Pythonç‰ˆæœ¬æ˜¯å¦ç¬¦åˆè¦æ±‚
 function Test-PythonVersion {
     try {
         $pythonVersion = (python --version 2>&1 | Out-String).Trim()
@@ -37,21 +37,21 @@ function Test-PythonVersion {
     }
 }
 
-# º¯Êı£º°²×°uv
+# å‡½æ•°ï¼šå®‰è£…uv
 function Install-UV {
-    Write-Host "${YELLOW}ÕıÔÚ°²×° uv...${NC}"
+    Write-Host "${YELLOW}æ­£åœ¨å®‰è£… uv...${NC}"
     
-    # ¼ì²éÊÇ·ñÒÑ°²×°
+    # æ£€æŸ¥æ˜¯å¦å·²å®‰è£…
     if (Get-Command uv -ErrorAction SilentlyContinue) {
-        Write-Host "${GREEN}uv ÒÑ°²×°${NC}"
+        Write-Host "${GREEN}uv å·²å®‰è£…${NC}"
         return
     }
     
-    # °²×°uv
+    # å®‰è£…uv
     try {
         Invoke-RestMethod -Uri "https://astral.sh/uv/install.ps1" | Invoke-Expression
         if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-            # Èç¹û²»ÔÚPATHÖĞ£¬³¢ÊÔÌí¼Óµ½PATH
+            # å¦‚æœä¸åœ¨PATHä¸­ï¼Œå°è¯•æ·»åŠ åˆ°PATH
             $uvPath = Join-Path $HOME ".cargo\bin"
             if (Test-Path $uvPath) {
                 $env:PATH = "$uvPath;$env:PATH"
@@ -59,143 +59,143 @@ function Install-UV {
         }
         
         if (Get-Command uv -ErrorAction SilentlyContinue) {
-            Write-Host "${GREEN}uv °²×°³É¹¦${NC}"
+            Write-Host "${GREEN}uv å®‰è£…æˆåŠŸ${NC}"
         } else {
-            throw "uv °²×°ºóÈÔ²»¿ÉÓÃ"
+            throw "uv å®‰è£…åä»ä¸å¯ç”¨"
         }
     } catch {
-        Write-Host "${RED}uv °²×°Ê§°Ü: $_${NC}"
+        Write-Host "${RED}uv å®‰è£…å¤±è´¥: $_${NC}"
         exit 1
     }
 }
 
-# º¯Êı£ºÊ¹ÓÃuv°²×°Python 3.12
+# å‡½æ•°ï¼šä½¿ç”¨uvå®‰è£…Python 3.12
 function Install-PythonWithUV {
-    Write-Host "${YELLOW}ÕıÔÚÊ¹ÓÃ uv °²×° Python 3.12...${NC}"
+    Write-Host "${YELLOW}æ­£åœ¨ä½¿ç”¨ uv å®‰è£… Python 3.12...${NC}"
     
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "${RED}´íÎó: uv Î´°²×°${NC}"
+        Write-Host "${RED}é”™è¯¯: uv æœªå®‰è£…${NC}"
         exit 1
     }
     
     try {
         uv python install 3.12
         if ($LASTEXITCODE -ne 0) {
-            throw "uv python install ÃüÁîÖ´ĞĞÊ§°Ü"
+            throw "uv python install å‘½ä»¤æ‰§è¡Œå¤±è´¥"
         }
         
-        # ¼ì²éPythonÊÇ·ñ°²×°³É¹¦
+        # æ£€æŸ¥Pythonæ˜¯å¦å®‰è£…æˆåŠŸ
         $pythonPath = uv python find 3.12
         if (-not $pythonPath) {
-            throw "ÎŞ·¨ÕÒµ½°²×°µÄPython 3.12"
+            throw "æ— æ³•æ‰¾åˆ°å®‰è£…çš„Python 3.12"
         }
         
-        # Ìí¼Óµ½PATH
+        # æ·»åŠ åˆ°PATH
         $pythonDir = Split-Path $pythonPath
         $env:PATH = "$pythonDir;$env:PATH"
         
-        Write-Host "${GREEN}Python 3.12 °²×°³É¹¦${NC}"
+        Write-Host "${GREEN}Python 3.12 å®‰è£…æˆåŠŸ${NC}"
     } catch {
-        Write-Host "${RED}Python 3.12 °²×°Ê§°Ü: $_${NC}"
+        Write-Host "${RED}Python 3.12 å®‰è£…å¤±è´¥: $_${NC}"
         exit 1
     }
 }
 
-# º¯Êı£º´´½¨ĞéÄâ»·¾³
+# å‡½æ•°ï¼šåˆ›å»ºè™šæ‹Ÿç¯å¢ƒ
 function New-VirtualEnvironment {
-    Write-Host "${YELLOW}ÕıÔÚ´´½¨ĞéÄâ»·¾³...${NC}"
+    Write-Host "${YELLOW}æ­£åœ¨åˆ›å»ºè™šæ‹Ÿç¯å¢ƒ...${NC}"
     
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "${RED}´íÎó: uv Î´°²×°${NC}"
+        Write-Host "${RED}é”™è¯¯: uv æœªå®‰è£…${NC}"
         exit 1
     }
     
     try {
         uv venv
         if ($LASTEXITCODE -ne 0) {
-            throw "uv venv ÃüÁîÖ´ĞĞÊ§°Ü"
+            throw "uv venv å‘½ä»¤æ‰§è¡Œå¤±è´¥"
         }
         
-        # ¼¤»îĞéÄâ»·¾³
+        # æ¿€æ´»è™šæ‹Ÿç¯å¢ƒ
         $activatePath = Join-Path (Get-Location) ".venv\Scripts\Activate.ps1"
         if (Test-Path $activatePath) {
             . $activatePath
-            Write-Host "${GREEN}ĞéÄâ»·¾³´´½¨²¢¼¤»î³É¹¦${NC}"
+            Write-Host "${GREEN}è™šæ‹Ÿç¯å¢ƒåˆ›å»ºå¹¶æ¿€æ´»æˆåŠŸ${NC}"
         } else {
-            throw "ÎŞ·¨ÕÒµ½ĞéÄâ»·¾³¼¤»î½Å±¾"
+            throw "æ— æ³•æ‰¾åˆ°è™šæ‹Ÿç¯å¢ƒæ¿€æ´»è„šæœ¬"
         }
     } catch {
-        Write-Host "${RED}ĞéÄâ»·¾³´´½¨Ê§°Ü: $_${NC}"
+        Write-Host "${RED}è™šæ‹Ÿç¯å¢ƒåˆ›å»ºå¤±è´¥: $_${NC}"
         exit 1
     }
 }
 
-# º¯Êı£º°²×°ErisPulse
+# å‡½æ•°ï¼šå®‰è£…ErisPulse
 function Install-ErisPulse {
-    Write-Host "${YELLOW}ÕıÔÚ°²×° ErisPulse...${NC}"
+    Write-Host "${YELLOW}æ­£åœ¨å®‰è£… ErisPulse...${NC}"
     
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "${RED}´íÎó: uv Î´°²×°${NC}"
+        Write-Host "${RED}é”™è¯¯: uv æœªå®‰è£…${NC}"
         exit 1
     }
     
     try {
         uv pip install ErisPulse --upgrade
         if ($LASTEXITCODE -ne 0) {
-            throw "uv pip install ÃüÁîÖ´ĞĞÊ§°Ü"
+            throw "uv pip install å‘½ä»¤æ‰§è¡Œå¤±è´¥"
         }
         
-        Write-Host "${GREEN}ErisPulse °²×°³É¹¦${NC}"
+        Write-Host "${GREEN}ErisPulse å®‰è£…æˆåŠŸ${NC}"
     } catch {
-        Write-Host "${RED}ErisPulse °²×°Ê§°Ü: $_${NC}"
+        Write-Host "${RED}ErisPulse å®‰è£…å¤±è´¥: $_${NC}"
         exit 1
     }
 }
 
-# Ö÷°²×°Á÷³Ì
+# ä¸»å®‰è£…æµç¨‹
 function Main {
-    Write-Host "${BLUE}=== ErisPulse °²×°³ÌĞò ===${NC}"
+    Write-Host "${BLUE}=== ErisPulse å®‰è£…ç¨‹åº ===${NC}"
     
-    # ¼ì²éPython°æ±¾
+    # æ£€æŸ¥Pythonç‰ˆæœ¬
     $hasValidPython = Test-PythonVersion
     if ($hasValidPython) {
-        Write-Host "${GREEN}¼ì²âµ½·ûºÏÒªÇóµÄ Python °æ±¾${NC}"
-        $useCurrentPython = Read-Host "ÊÇ·ñ¼ÌĞøÊ¹ÓÃµ±Ç° Python °æ±¾£¿[Y/n]"
+        Write-Host "${GREEN}æ£€æµ‹åˆ°ç¬¦åˆè¦æ±‚çš„ Python ç‰ˆæœ¬${NC}"
+        $useCurrentPython = Read-Host "æ˜¯å¦ç»§ç»­ä½¿ç”¨å½“å‰ Python ç‰ˆæœ¬ï¼Ÿ[Y/n]"
         if ($useCurrentPython -match "^[nN]$") {
             $installPython = $true
         } else {
             $installPython = $false
         }
     } else {
-        Write-Host "${YELLOW}Î´¼ì²âµ½·ûºÏÒªÇóµÄ Python °æ±¾ (ĞèÒª 3.9+)${NC}"
+        Write-Host "${YELLOW}æœªæ£€æµ‹åˆ°ç¬¦åˆè¦æ±‚çš„ Python ç‰ˆæœ¬ (éœ€è¦ 3.9+)${NC}"
         $installPython = $true
     }
     
-    # °²×°uv
+    # å®‰è£…uv
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "${YELLOW}Î´¼ì²âµ½ uv °²×°${NC}"
-        $installUV = Read-Host "ÊÇ·ñ°²×° uv£¿[Y/n]"
+        Write-Host "${YELLOW}æœªæ£€æµ‹åˆ° uv å®‰è£…${NC}"
+        $installUV = Read-Host "æ˜¯å¦å®‰è£… uvï¼Ÿ[Y/n]"
         if ($installUV -match "^[nN]$") {
-            Write-Host "${RED}ĞèÒª uv ²ÅÄÜ¼ÌĞø°²×°${NC}"
+            Write-Host "${RED}éœ€è¦ uv æ‰èƒ½ç»§ç»­å®‰è£…${NC}"
             exit 1
         }
         Install-UV
     } else {
-        Write-Host "${GREEN}¼ì²âµ½ uv ÒÑ°²×°${NC}"
+        Write-Host "${GREEN}æ£€æµ‹åˆ° uv å·²å®‰è£…${NC}"
     }
     
-    # °²×°Python 3.12
+    # å®‰è£…Python 3.12
     if ($installPython) {
-        $installPythonChoice = Read-Host "ÊÇ·ñÊ¹ÓÃ uv °²×° Python 3.12£¿[Y/n]"
+        $installPythonChoice = Read-Host "æ˜¯å¦ä½¿ç”¨ uv å®‰è£… Python 3.12ï¼Ÿ[Y/n]"
         if ($installPythonChoice -match "^[nN]$") {
-            Write-Host "${RED}ĞèÒª Python 3.12 ²ÅÄÜ¼ÌĞø°²×°${NC}"
+            Write-Host "${RED}éœ€è¦ Python 3.12 æ‰èƒ½ç»§ç»­å®‰è£…${NC}"
             exit 1
         }
         Install-PythonWithUV
     }
     
-    # ´´½¨ĞéÄâ»·¾³
-    $createVenvChoice = Read-Host "ÊÇ·ñ´´½¨ĞéÄâ»·¾³£¿[Y/n]"
+    # åˆ›å»ºè™šæ‹Ÿç¯å¢ƒ
+    $createVenvChoice = Read-Host "æ˜¯å¦åˆ›å»ºè™šæ‹Ÿç¯å¢ƒï¼Ÿ[Y/n]"
     if (-not ($createVenvChoice -match "^[nN]$")) {
         New-VirtualEnvironment
     }
@@ -203,29 +203,29 @@ function Main {
     Install-ErisPulse
     
     Write-Host ""
-    Write-Host "${GREEN}=== °²×°Íê³É ===${NC}"
-    Write-Host "ÏÖÔÚÄú¿ÉÒÔ:"
-    Write-Host "1. ²é¿´°ïÖú: ${BLUE}epsdk -h${NC}"
-    Write-Host "2. ³õÊ¼»¯ĞÂÏîÄ¿: ${BLUE}epsdk init${NC}"
-    Write-Host "3. ¸üĞÂÔ´: ${BLUE}epsdk update${NC}"
-    Write-Host "4. °²×°Ä£¿é: ${BLUE}epsdk install Ä£¿éÃû${NC}"
-    Write-Host "5. ÔËĞĞÊ¾Àı³ÌĞò: ${BLUE}epsdk run main.py${NC}"
+    Write-Host "${GREEN}=== å®‰è£…å®Œæˆ ===${NC}"
+    Write-Host "ç°åœ¨æ‚¨å¯ä»¥:"
+    Write-Host "1. æŸ¥çœ‹å¸®åŠ©: ${BLUE}epsdk -h${NC}"
+    Write-Host "2. åˆå§‹åŒ–æ–°é¡¹ç›®: ${BLUE}epsdk init${NC}"
+    Write-Host "3. æ›´æ–°æº: ${BLUE}epsdk update${NC}"
+    Write-Host "4. å®‰è£…æ¨¡å—: ${BLUE}epsdk install æ¨¡å—å${NC}"
+    Write-Host "5. è¿è¡Œç¤ºä¾‹ç¨‹åº: ${BLUE}epsdk run main.py${NC}"
     Write-Host ""
-    Write-Host "${GREEN}=== Æô¶¯Ö¸ÄÏ ===${NC}"
-    Write-Host "1. ½øÈëÏîÄ¿Ä¿Â¼: ${BLUE}cd $(Get-Location)${NC}"
-    Write-Host "2. ¼¤»îĞéÄâ»·¾³: ${BLUE}.\.venv\Scripts\Activate.ps1${NC}"
-    Write-Host "3. ÔËĞĞ³ÌĞò: ${BLUE}epsdk run main.py${NC}"
+    Write-Host "${GREEN}=== å¯åŠ¨æŒ‡å— ===${NC}"
+    Write-Host "1. è¿›å…¥é¡¹ç›®ç›®å½•: ${BLUE}cd $(Get-Location)${NC}"
+    Write-Host "2. æ¿€æ´»è™šæ‹Ÿç¯å¢ƒ: ${BLUE}.\.venv\Scripts\Activate.ps1${NC}"
+    Write-Host "3. è¿è¡Œç¨‹åº: ${BLUE}epsdk run main.py${NC}"
     Write-Host ""
-    Write-Host "${YELLOW}×¢Òâ:${NC}"
-    Write-Host "- ÇëÈ·±£ÔÚ PowerShell ÖĞÔËĞĞÕâĞ©ÃüÁî"
-    Write-Host "- Èç¹ûÓöµ½È¨ÏŞÎÊÌâ£¬ÇëÏÈÖ´ĞĞ: ${BLUE}Set-ExecutionPolicy RemoteSigned -Scope CurrentUser${NC}"
-    Write-Host "- Ã¿´Î´ò¿ªĞÂÖÕ¶ËÊ±£¬ĞèÒªÖØĞÂ¼¤»îĞéÄâ»·¾³"
+    Write-Host "${YELLOW}æ³¨æ„:${NC}"
+    Write-Host "- è¯·ç¡®ä¿åœ¨ PowerShell ä¸­è¿è¡Œè¿™äº›å‘½ä»¤"
+    Write-Host "- å¦‚æœé‡åˆ°æƒé™é—®é¢˜ï¼Œè¯·å…ˆæ‰§è¡Œ: ${BLUE}Set-ExecutionPolicy RemoteSigned -Scope CurrentUser${NC}"
+    Write-Host "- æ¯æ¬¡æ‰“å¼€æ–°ç»ˆç«¯æ—¶ï¼Œéœ€è¦é‡æ–°æ¿€æ´»è™šæ‹Ÿç¯å¢ƒ"
 }
 
 $executionPolicy = Get-ExecutionPolicy
 if ($executionPolicy -eq "Restricted") {
-    Write-Host "${YELLOW}µ±Ç°Ö´ĞĞ²ßÂÔÎª Restricted£¬½¨ÒéÉèÖÃÎª RemoteSigned${NC}"
-    $changePolicy = Read-Host "ÊÇ·ñÒª¸ü¸ÄÖ´ĞĞ²ßÂÔ£¿[Y/n]"
+    Write-Host "${YELLOW}å½“å‰æ‰§è¡Œç­–ç•¥ä¸º Restrictedï¼Œå»ºè®®è®¾ç½®ä¸º RemoteSigned${NC}"
+    $changePolicy = Read-Host "æ˜¯å¦è¦æ›´æ”¹æ‰§è¡Œç­–ç•¥ï¼Ÿ[Y/n]"
     if ($changePolicy -notmatch "^[nN]$") {
         Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
     }
