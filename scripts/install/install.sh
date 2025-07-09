@@ -122,7 +122,12 @@ if [ ! -d ".venv" ]; then
     exit 1
 fi
 
-source .venv/bin/activate
+# 检测操作系统类型
+if [ "$(uname)" = "Linux" ]; then
+    source "$(dirname "$0")/.venv/bin/activate"
+else
+    source .venv/bin/activate
+fi
 
 echo "启动 ErisPulse 机器人..."
 epsdk run main.py "$@"
@@ -141,7 +146,12 @@ if [ ! -d ".venv" ]; then
 fi
 
 echo "激活虚拟环境..."
-source .venv/bin/activate
+# 检测操作系统类型
+if [ "$(uname)" = "Linux" ]; then
+    source "$(dirname "$0")/.venv/bin/activate"
+else
+    source .venv/bin/activate
+fi
 
 echo "虚拟环境已激活，输入 exit 退出"
 exec "$SHELL"
