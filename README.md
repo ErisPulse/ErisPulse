@@ -33,13 +33,13 @@
 #### Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.ps1 -UseBasicParsing | iex
+irm https://get.erisdev.com/install.ps1 -UseBasicParsing | iex
 ```
 
 #### macOS/Linux:
 ```bash
 # 下载安装脚本
-curl -o install.sh https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh
+curl -o install.sh https://get.erisdev.com/install.sh
 # 添加执行权限
 chmod +x install.sh
 # 执行安装脚本
@@ -47,7 +47,7 @@ chmod +x install.sh
 ```
 > 或者使用更可靠的方式(需要确认服务器支持)
 ```bash
-curl -sSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
+curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
 ```
 
 ---
