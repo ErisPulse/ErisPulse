@@ -176,6 +176,7 @@ class PyPIManager:
             return False
 
 class ReloadHandler(FileSystemEventHandler):
+    """热重载处理器"""
     def __init__(self, script_path, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.script_path = script_path
@@ -194,7 +195,6 @@ class ReloadHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         now = time.time()
-        # 1秒后再次触发
         if now - self.last_reload < 1.0:
             return
             
@@ -203,6 +203,7 @@ class ReloadHandler(FileSystemEventHandler):
             self.start_process()
 
 def start_reloader(script_path):
+    """启动热重载监视器"""
     project_root = os.path.dirname(os.path.abspath(__file__))
     watch_dirs = [
         os.path.dirname(os.path.abspath(script_path)),
@@ -227,6 +228,22 @@ def start_reloader(script_path):
         if handler.process:
             handler.process.terminate()
     observer.join()
+
+def run_script(script_path: str, reload: bool = False):
+    """运行指定脚本"""
+    if not os.path.exists(script_path):
+        shellprint.panel(f"找不到指定文件: {script_path}", "错误", "error")
+        return
+
+    if reload:
+        start_reloader(script_path)
+    else:
+        shellprint.panel(f"运行脚本: {Shell_Printer.BOLD}{script_path}{Shell_Printer.RESET}", "执行", "info")
+        import runpy
+        try:
+            runpy.run_path(script_path, run_name="__main__")
+        except KeyboardInterrupt:
+            shellprint.panel("脚本执行已中断", "中断", "info")
 
 def legacy_command(args):
     """旧版模块管理命令"""
