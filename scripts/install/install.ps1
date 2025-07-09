@@ -1,4 +1,5 @@
-﻿<#
+﻿[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+<#
 .SYNOPSIS
 ErisPulse 安装脚本 - PowerShell
 
