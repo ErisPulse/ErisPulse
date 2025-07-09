@@ -15,8 +15,8 @@ import shutil
 import fnmatch
 import subprocess
 from typing import Dict, List, Optional
-from ..Core import env, mods
-from ..Core.shellprint import shellprint, Shell_Printer
+from .Core import env, mods
+from .Core.shellprint import shellprint, Shell_Printer
 
 class LegacyManager:
     """旧版模块管理器"""
@@ -772,7 +772,7 @@ class LegacyManager:
         all_modules = mods.get_all_modules()
         if not all_modules:
             shellprint.panel("未在数据库中发现注册模块,正在初始化模块列表...", "提示", "info")
-            from .. import init as init_module
+            from . import init as init_module
             init_module()
             all_modules = mods.get_all_modules()
             
