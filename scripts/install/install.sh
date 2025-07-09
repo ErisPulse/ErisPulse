@@ -88,9 +88,7 @@ create_virtualenv() {
         exit 1
     fi
     
-    source .venv/bin/activate
-    
-    echo -e "${GREEN}虚拟环境创建并激活成功${NC}"
+    echo -e "${GREEN}虚拟环境创建成功${NC}"
 }
 
 install_erispulse() {
@@ -122,7 +120,12 @@ if [ ! -d ".venv" ]; then
     exit 1
 fi
 
-source .venv/bin/activate
+# 检测操作系统类型
+if [ "$(uname)" = "Linux" ]; then
+    source "$(dirname "$0")/.venv/bin/activate"
+else
+    source .venv/bin/activate
+fi
 
 echo "启动 ErisPulse 机器人..."
 epsdk run main.py "$@"
@@ -141,7 +144,12 @@ if [ ! -d ".venv" ]; then
 fi
 
 echo "激活虚拟环境..."
-source .venv/bin/activate
+# 检测操作系统类型
+if [ "$(uname)" = "Linux" ]; then
+    source "$(dirname "$0")/.venv/bin/activate"
+else
+    source .venv/bin/activate
+fi
 
 echo "虚拟环境已激活，输入 exit 退出"
 exec "$SHELL"
@@ -214,6 +222,18 @@ main() {
     echo -e "- 虚拟环境就像'独立的工作空间'，所有安装的包都在里面"
     echo -e "- 如果移动项目文件夹，需要重新运行安装脚本"
     echo -e "- 更新框架使用: ${BLUE}uv pip install ErisPulse --upgrade${NC}"
+    
+    if [ -d ".venv" ]; then
+        echo -e "\n${YELLOW}正在激活虚拟环境...${NC}"
+        if [ "$(uname)" = "Linux" ]; then
+            source "$(pwd)/.venv/bin/activate"
+        else
+            source .venv/bin/activate
+        fi
+        echo -e "${GREEN}虚拟环境已激活${NC}"
+        echo -e "${YELLOW}当前Python路径: ${BLUE}$(which python)${NC}"
+        echo -e "下次激活环境请使用 ${BLUE}./activate.sh${NC}"
+    fi
 }
 
 if [ "$(id -u)" -eq 0 ]; then
