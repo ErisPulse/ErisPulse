@@ -169,7 +169,7 @@ class BaseAdapter:
             return wrapper
         return decorator
 
-    def on_CoverOneBot12(self, event_type: str = "*") -> Callable[[Callable], Callable]:
+    def on_OneBot12(self, event_type: str = "*") -> Callable[[Callable], Callable]:
         """
         OneBot12协议事件监听装饰器
         
@@ -177,9 +177,9 @@ class BaseAdapter:
         :return: 装饰器函数
         
         :example:
-        >>> @adapter.on_CoverOneBot12("message")
+        >>> @adapter.on_OneBot12("message")
         >>> async def handle_onebot_message(data):
-        >>>     print(f"收到OneBot12消息: {data}")
+        >>>     print(f"收到OneBot12兼容消息: {data}")
         """
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
@@ -288,7 +288,7 @@ class BaseAdapter:
 
     async def emit_onebot12(self, event_type: str, onebot_data: Dict) -> None:
         """
-        手动提交OneBot12协议事件
+        提交OneBot12协议事件
         
         :param event_type: OneBot12事件类型
         :param onebot_data: 符合OneBot12标准的事件数据
