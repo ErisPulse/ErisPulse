@@ -1,18 +1,17 @@
-﻿[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-<#
+﻿<#
 .SYNOPSIS
 ErisPulse 安装脚本 - PowerShell
 
 .DESCRIPTION
-此脚本将自动检测并安装 ErisPulse 所需的环境，包括：
-1. 安装 uv (Python 环境管理工具)
-2. 安装 Python 3.12 (通过 uv)
-3. 创建虚拟环境
-4. 安装 ErisPulse 框架
-
-.NOTES
-需要 PowerShell 5.1 或更高版本
+此脚本将自动检测并安装 ErisPulse 所需的环境：
+- 安装 uv (Python 环境管理工具)
+- 安装 Python 3.12 (通过 uv)
+- 创建虚拟环境
+- 安装 ErisPulse 框架
 #>
+
+
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ESC = [char]27
 if ($Host.UI.SupportsVirtualTerminal) {
