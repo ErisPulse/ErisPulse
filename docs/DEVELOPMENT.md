@@ -128,7 +128,7 @@ with env.transaction():
 ```
 
 须知：
-模块在env.py中的定义的配置项是硬加载的，每次重启都会被重新加载覆盖原来的key值，不会保留之前的配置；所以谨慎使用您的env.py中的配置项进行任何存储行为！
+模块在env.py中的定义的配置项是硬加载的，每次重启都会被重新加载覆盖原来的key值，不会保留之前的配置；所以谨慎使用你的env.py中的配置项进行任何存储行为！
 如，一个屏蔽词模块在env.py中存储着全局屏蔽词列表，如果使用env.py中的配置项存储，那么每次重启都会丢失屏蔽词列表，导致屏蔽词失效！
 这时建议的方法是：使用一个全新的key存储，每次初始化的时候使用类似以下代码获取配置项：
 ```python
@@ -345,7 +345,7 @@ from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):    # 适配器有显式的导入sdk对象, 所以您不需导入sdk对象
+    def __init__(self):    # 适配器有显式的导入sdk对象, 所以不需导入sdk对象
         self.sdk = sdk
         self.env = self.sdk.env
         self.logger = self.sdk.logger
@@ -402,7 +402,7 @@ class MyAdapter(BaseAdapter):
         raise NotImplementedError()
 
     # 适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.setup() 来启动所有适配器，
-    # 当然在底层捕捉到您adapter的错误时我们会尝试停止适配器再进行重启等操作
+    # 当然在底层捕捉到adapter的错误时我们会尝试停止适配器再进行重启等操作
     # 启动方法，你需要在这里定义你的adapter启动时候的逻辑
     async def start(self):
         raise NotImplementedError()
@@ -430,7 +430,7 @@ class MyAdapter(BaseAdapter):
 | `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
 
 - 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
-- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到您提交到adapter的事件。
+- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到你提交到adapter的事件。
 
 > ⚠️ 注意：
 > - 适配器类必须继承 `sdk.BaseAdapter`；

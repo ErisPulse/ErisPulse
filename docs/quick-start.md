@@ -8,7 +8,7 @@ pip install ErisPulse
 ```
 
 ### 更先进的安装方法
-> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以您需要先安装 uv。
+> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以需要先安装 uv。
 
 ### 1. 安装 uv
 
@@ -67,7 +67,7 @@ epsdk init
 你可以通过 CLI 安装所需模块：
 
 ```bash
-# 一般情况下,您需要先更新源: epsdk update
+# 一般情况下,需要先更新源: epsdk update
 epsdk install YunhuAdapter OneBotAdapter AIChat
 ```
 
