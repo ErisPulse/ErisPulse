@@ -10,7 +10,6 @@ ErisPulse 安装脚本 - PowerShell
 - 安装 ErisPulse 框架
 #>
 
-
 [System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ESC = [char]27
