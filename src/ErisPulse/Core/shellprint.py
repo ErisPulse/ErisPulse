@@ -1,3 +1,4 @@
+import sys
 
 class Shell_Printer:
     # ANSI 颜色代码
@@ -12,6 +13,13 @@ class Shell_Printer:
     WHITE = "\033[97m"
     DIM = "\033[2m"
     UNDERLINE = "\033[4m"
+    BG_BLUE = "\033[44m"
+    BG_GREEN = "\033[42m"
+    BG_YELLOW = "\033[43m"
+    BG_RED = "\033[41m"
+
+    def __init__(self):
+        pass
 
     @classmethod
     def _get_color(cls, level):
@@ -27,13 +35,14 @@ class Shell_Printer:
     @classmethod
     def panel(cls, msg: str, title: str = None, level: str = "info") -> None:
         color = cls._get_color(level)
-        width = min(80, max(60, len(msg.split('\n')[0]) + 10))
+        width = 70
         border_char = "─" * width
         
         if level == "error":
             border_char = "═" * width
             msg = f"{cls.RED}✗ {msg}{cls.RESET}"
         elif level == "warning":
+            border_char = "─" * width
             msg = f"{cls.YELLOW}⚠ {msg}{cls.RESET}"
         
         title_line = ""
@@ -60,10 +69,18 @@ class Shell_Printer:
             else:
                 lines.append(f"{cls.DIM}│{cls.RESET} {line.ljust(width-4)} {cls.DIM}│{cls.RESET}")
         
+        if level == "error":
+            border_style = "╘"
+        elif level == "warning":
+            border_style = "╧"
+        else:
+            border_style = "└"
+        bottom_border = f"{cls.DIM}{border_style}{border_char}┘{cls.RESET}"
+        
         panel = f"{title_line}"
         panel += f"{cls.DIM}├{border_char}┤{cls.RESET}\n"
         panel += "\n".join(lines) + "\n"
-        panel += f"{cls.DIM}└{border_char}┘{cls.RESET}\n"
+        panel += f"{bottom_border}\n"
         
         print(panel)
 
@@ -97,6 +114,16 @@ class Shell_Printer:
         print(f"{cls.DIM}{bottom_border}{cls.RESET}")
 
     @classmethod
+    def progress_bar(cls, current, total, prefix="", suffix="", length=50):
+        filled_length = int(length * current // total)
+        percent = min(100.0, 100 * (current / float(total)))
+        bar = f"{cls.GREEN}{'█' * filled_length}{cls.WHITE}{'░' * (length - filled_length)}{cls.RESET}"
+        sys.stdout.write(f"\r{cls.BOLD}{prefix}{cls.RESET} {bar} {cls.BOLD}{percent:.1f}%{cls.RESET} {suffix}")
+        sys.stdout.flush()
+        if current == total:
+            print()
+
+    @classmethod
     def confirm(cls, msg, default=False) -> bool:
         yes_options = {'y', 'yes'}
         no_options = {'n', 'no'}
@@ -112,6 +139,23 @@ class Shell_Printer:
             if ans in no_options:
                 return False
             print(f"{cls.YELLOW}请输入 'y' 或 'n'{cls.RESET}")
+
+    @classmethod
+    def ask(cls, msg, choices=None, default="") -> str:
+        prompt = f"{cls.BOLD}{msg}{cls.RESET}"
+        if choices:
+            prompt += f" ({cls.CYAN}{'/'.join(choices)}{cls.RESET})"
+        if default:
+            prompt += f" [{cls.BLUE}默认: {default}{cls.RESET}]"
+        prompt += ": "
+        
+        while True:
+            ans = input(prompt).strip()
+            if not ans and default:
+                return default
+            if not choices or ans in choices:
+                return ans
+            print(f"{cls.YELLOW}请输入有效选项: {', '.join(choices)}{cls.RESET}")
 
     @classmethod
     def status(cls, msg, success=True):
