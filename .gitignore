@@ -208,3 +208,4 @@ pyvenv.cfg
 # erispulse
 my_bot
 modules
+config.toml
