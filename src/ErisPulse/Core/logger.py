@@ -27,7 +27,7 @@ class Logger:
             return False
 
     def set_module_level(self, module_name: str, level: str) -> bool:
-        from .db import env
+        from .env import env
         if not env.get_module_status(module_name):
             self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
             return False
