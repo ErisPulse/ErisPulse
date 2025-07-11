@@ -30,7 +30,7 @@ class ModuleManager:
     DEFAULT_STATUS_PREFIX = "erispulse.module.status:"
 
     def __init__(self):
-        from .db import env
+        from .env import env
         self.env = env
         self._ensure_prefixes()
 
