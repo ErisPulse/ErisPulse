@@ -60,160 +60,149 @@ for error, doc in BaseErrors.items():
     raiserr.register(error, doc=doc)
 
 
-class PyPIModuleLoader:
+class AdapterLoader:
     """
-    PyPI包模块加载器
-
-    依赖entry-points加载PyPI包中的模块和适配器
+    适配器加载器
     
-    {!--< tips >!--} 
-    请使用"pyproject.toml"进行ep-pypi包加载
+    专门用于从PyPI包加载和初始化适配器
+
+    {!--< tips >!--}
+    1. 适配器必须通过entry-points机制注册到erispulse.adapter组
+    2. 适配器类必须继承BaseAdapter
     {!--< /tips >!--}
     """
     
     @staticmethod
     def load() -> Tuple[Dict[str, object], List[str], List[str]]:
         """
-        从PyPI包entry-points加载模块
+        从PyPI包entry-points加载适配器
 
         :return: 
-            Dict[str, object]: 模块对象字典
-            List[str]: 启用的模块列表
-            List[str]: 停用的模块列表
+            Dict[str, object]: 适配器对象字典 {适配器名: 模块对象}
+            List[str]: 启用的适配器名称列表
+            List[str]: 停用的适配器名称列表
             
-        :raises ImportError: 当无法加载模块时抛出
+        :raises ImportError: 当无法加载适配器时抛出
         """
-        module_objs = {}
-        enabled_modules = []
-        disabled_modules = []
+        adapter_objs = {}
+        enabled_adapters = []
+        disabled_adapters = []
         
         try:
-            # 加载模块entry-points
+            # 加载适配器entry-points
             entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
-                module_entries = entry_points.select(group='erispulse.module')
                 adapter_entries = entry_points.select(group='erispulse.adapter')
             else:
-                module_entries = entry_points.get('erispulse.module', [])
                 adapter_entries = entry_points.get('erispulse.adapter', [])
-            
-            # 处理模块
-            for entry_point in module_entries:
-                module_objs, enabled_modules, disabled_modules = PyPIModuleLoader._process_entry_point(
-                    entry_point, module_objs, enabled_modules, disabled_modules, is_adapter=False)
             
             # 处理适配器
             for entry_point in adapter_entries:
-                module_objs, enabled_modules, disabled_modules = PyPIModuleLoader._process_entry_point(
-                    entry_point, module_objs, enabled_modules, disabled_modules, is_adapter=True)
+                adapter_objs, enabled_adapters, disabled_adapters = AdapterLoader._process_adapter(
+                    entry_point, adapter_objs, enabled_adapters, disabled_adapters)
                     
         except Exception as e:
-            logger.error(f"加载PyPI包entry-points失败: {e}")
-            raise ImportError(f"无法加载PyPI模块: {e}")
+            logger.error(f"加载适配器entry-points失败: {e}")
+            raise ImportError(f"无法加载适配器: {e}")
             
-        return module_objs, enabled_modules, disabled_modules
+        return adapter_objs, enabled_adapters, disabled_adapters
     
     @staticmethod
-    def _process_entry_point(
+    def _process_adapter(
         entry_point: Any,
-        module_objs: Dict[str, object],
-        enabled_modules: List[str],
-        disabled_modules: List[str],
-        is_adapter: bool = False
+        adapter_objs: Dict[str, object],
+        enabled_adapters: List[str],
+        disabled_adapters: List[str]
     ) -> Tuple[Dict[str, object], List[str], List[str]]:
         """
         {!--< internal-use >!--}
-        处理单个entry-point
+        处理单个适配器entry-point
         
         :param entry_point: entry-point对象
-        :param module_objs: 模块对象字典
-        :param enabled_modules: 启用的模块列表
-        :param disabled_modules: 停用的模块列表
-        :param is_adapter: 是否为适配器 (默认: False)
+        :param adapter_objs: 适配器对象字典
+        :param enabled_adapters: 启用的适配器列表
+        :param disabled_adapters: 停用的适配器列表
         
         :return: 
-            Dict[str, object]: 模块对象字典
-            List[str]: 启用的模块列表
-            List[str]: 停用的模块列表
+            Dict[str, object]: 更新后的适配器对象字典
+            List[str]: 更新后的启用适配器列表 
+            List[str]: 更新后的禁用适配器列表
             
-        :raises ImportError: 当模块加载失败时抛出
+        :raises ImportError: 当适配器加载失败时抛出
         """
         try:
             loaded_obj = entry_point.load()
-            module_obj = sys.modules[loaded_obj.__module__]
+            adapter_obj = sys.modules[loaded_obj.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
             
             # 从pyproject.toml读取依赖配置
-            requires, optional, pip_deps = PyPIModuleLoader._read_dependencies(dist)
+            requires, optional, pip_deps = AdapterLoader._read_dependencies(dist)
             
             # 自动推断依赖
-            auto_requires = PyPIModuleLoader._infer_dependencies(dist)
+            auto_requires = AdapterLoader._infer_dependencies(dist)
             
             # 合并显式和自动推断的依赖
             all_requires = list(set(requires + list(auto_requires)))
             
-            # 创建moduleInfo
-            module_info = {
+            # 创建adapterInfo
+            adapter_info = {
                 "meta": {
                     "name": entry_point.name,
-                    "version": getattr(module_obj, "__version__", dist.version if dist else "1.0.0"),
-                    "description": getattr(module_obj, "__description__", ""),
-                    "author": getattr(module_obj, "__author__", ""),
-                    "license": getattr(module_obj, "__license__", ""),
+                    "version": getattr(adapter_obj, "__version__", dist.version if dist else "1.0.0"),
+                    "description": getattr(adapter_obj, "__description__", ""),
+                    "author": getattr(adapter_obj, "__author__", ""),
+                    "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name
                 },
                 "dependencies": {
                     "requires": all_requires,
                     "optional": optional,
                     "pip": pip_deps
-                }
+                },
+                "adapter_class": loaded_obj
             }
             
-            # 适配器特殊处理
-            if is_adapter:
-                if not hasattr(module_obj, 'adapterInfo'):
-                    module_obj.adapterInfo = {}
-                
-                # 检查是否已经加载过这个适配器类
-                adapter_class = loaded_obj
-                existing_instance = None
-                for existing_module in module_objs.values():
-                    if hasattr(existing_module, 'adapterInfo'):
-                        for existing_adapter in existing_module.adapterInfo.values():
-                            if isinstance(existing_adapter, type) and existing_adapter == adapter_class:
-                                existing_instance = existing_adapter
-                                break
-                
-                # 如果已经存在实例，则复用
-                if existing_instance is not None:
-                    module_obj.adapterInfo[entry_point.name] = existing_instance
-                else:
-                    module_obj.adapterInfo[entry_point.name] = adapter_class
+            # 检查是否已经加载过这个适配器类
+            existing_instance = None
+            for existing_adapter in adapter_objs.values():
+                if hasattr(existing_adapter, 'adapterInfo'):
+                    for existing_adapter_info in existing_adapter.adapterInfo.values():
+                        if isinstance(existing_adapter_info, dict) and existing_adapter_info["adapter_class"] == loaded_obj:
+                            existing_instance = existing_adapter_info["adapter_class"]
+                            break
             
-            module_obj.moduleInfo = module_info
+            # 如果已经存在实例，则复用
+            if existing_instance is not None:
+                adapter_info["adapter_class"] = existing_instance
             
-            # 检查模块状态
+            if not hasattr(adapter_obj, 'adapterInfo'):
+                adapter_obj.adapterInfo = {}
+                
+            adapter_obj.adapterInfo[entry_point.name] = adapter_info
+            
+            # 检查适配器状态
             meta_name = entry_point.name
             stored_info = mods.get_module(meta_name) or {
                 "status": True,
-                "info": module_info
+                "info": adapter_info
             }
             mods.set_module(meta_name, stored_info)
             
             if not stored_info.get('status', True):
-                disabled_modules.append(meta_name)
-                logger.warning(f"{'适配器' if is_adapter else '模块'} {meta_name} 已禁用，跳过加载")
-                return module_objs, enabled_modules, disabled_modules
+                disabled_adapters.append(meta_name)
+                logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
+                return adapter_objs, enabled_adapters, disabled_adapters
                 
-            module_objs[meta_name] = module_obj
-            enabled_modules.append(meta_name)
-            logger.debug(f"从PyPI包加载{'适配器' if is_adapter else '模块'}: {meta_name}")
+            adapter_objs[meta_name] = adapter_obj
+            enabled_adapters.append(meta_name)
+            logger.debug(f"从PyPI包加载适配器: {meta_name}")
             
         except Exception as e:
-            logger.warning(f"从entry-point加载{'适配器' if is_adapter else '模块'} {entry_point.name} 失败: {e}")
-            raise ImportError(f"无法加载模块 {entry_point.name}: {e}")
+            logger.warning(f"从entry-point加载适配器 {entry_point.name} 失败: {e}")
+            raise ImportError(f"无法加载适配器 {entry_point.name}: {e}")
             
-        return module_objs, enabled_modules, disabled_modules
+        return adapter_objs, enabled_adapters, disabled_adapters
+    
     @staticmethod
     def _read_dependencies(dist: Any) -> Tuple[List[str], List[str], List[str]]:
         """
@@ -274,57 +263,232 @@ class PyPIModuleLoader:
                     continue
         return auto_requires
 
+
+class ModuleLoader:
+    """
+    模块加载器
+    
+    专门用于从PyPI包加载和初始化普通模块
+
+    {!--< tips >!--}
+    1. 模块必须通过entry-points机制注册到erispulse.module组
+    2. 模块类名应与entry-point名称一致
+    {!--< /tips >!--}
+    """
+    
+    @staticmethod
+    def load() -> Tuple[Dict[str, object], List[str], List[str]]:
+        """
+        从PyPI包entry-points加载模块
+
+        :return: 
+            Dict[str, object]: 模块对象字典 {模块名: 模块对象}
+            List[str]: 启用的模块名称列表
+            List[str]: 停用的模块名称列表
+            
+        :raises ImportError: 当无法加载模块时抛出
+        """
+        module_objs = {}
+        enabled_modules = []
+        disabled_modules = []
+        
+        try:
+            # 加载模块entry-points
+            entry_points = importlib.metadata.entry_points()
+            if hasattr(entry_points, 'select'):
+                module_entries = entry_points.select(group='erispulse.module')
+            else:
+                module_entries = entry_points.get('erispulse.module', [])
+            
+            # 处理模块
+            for entry_point in module_entries:
+                module_objs, enabled_modules, disabled_modules = ModuleLoader._process_module(
+                    entry_point, module_objs, enabled_modules, disabled_modules)
+                    
+        except Exception as e:
+            logger.error(f"加载模块entry-points失败: {e}")
+            raise ImportError(f"无法加载模块: {e}")
+            
+        return module_objs, enabled_modules, disabled_modules
+    
+    @staticmethod
+    def _process_module(
+        entry_point: Any,
+        module_objs: Dict[str, object],
+        enabled_modules: List[str],
+        disabled_modules: List[str]
+    ) -> Tuple[Dict[str, object], List[str], List[str]]:
+        """
+        {!--< internal-use >!--}
+        处理单个模块entry-point
+        
+        :param entry_point: entry-point对象
+        :param module_objs: 模块对象字典
+        :param enabled_modules: 启用的模块列表
+        :param disabled_modules: 停用的模块列表
+        
+        :return: 
+            Dict[str, object]: 更新后的模块对象字典
+            List[str]: 更新后的启用模块列表 
+            List[str]: 更新后的禁用模块列表
+            
+        :raises ImportError: 当模块加载失败时抛出
+        """
+        try:
+            loaded_obj = entry_point.load()
+            module_obj = sys.modules[loaded_obj.__module__]
+            dist = importlib.metadata.distribution(entry_point.dist.name)
+            
+            # 从pyproject.toml读取依赖配置
+            requires, optional, pip_deps = ModuleLoader._read_dependencies(dist)
+            
+            # 自动推断依赖
+            auto_requires = ModuleLoader._infer_dependencies(dist)
+            
+            # 合并显式和自动推断的依赖
+            all_requires = list(set(requires + list(auto_requires)))
+            
+            # 创建moduleInfo
+            module_info = {
+                "meta": {
+                    "name": entry_point.name,
+                    "version": getattr(module_obj, "__version__", dist.version if dist else "1.0.0"),
+                    "description": getattr(module_obj, "__description__", ""),
+                    "author": getattr(module_obj, "__author__", ""),
+                    "license": getattr(module_obj, "__license__", ""),
+                    "package": entry_point.dist.name
+                },
+                "dependencies": {
+                    "requires": all_requires,
+                    "optional": optional,
+                    "pip": pip_deps
+                }
+            }
+            
+            module_obj.moduleInfo = module_info
+            
+            # 检查模块状态
+            meta_name = entry_point.name
+            stored_info = mods.get_module(meta_name) or {
+                "status": True,
+                "info": module_info
+            }
+            mods.set_module(meta_name, stored_info)
+            
+            if not stored_info.get('status', True):
+                disabled_modules.append(meta_name)
+                logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
+                return module_objs, enabled_modules, disabled_modules
+                
+            module_objs[meta_name] = module_obj
+            enabled_modules.append(meta_name)
+            logger.debug(f"从PyPI包加载模块: {meta_name}")
+            
+        except Exception as e:
+            logger.warning(f"从entry-point加载模块 {entry_point.name} 失败: {e}")
+            raise ImportError(f"无法加载模块 {entry_point.name}: {e}")
+            
+        return module_objs, enabled_modules, disabled_modules
+    
+    @staticmethod
+    def _read_dependencies(dist: Any) -> Tuple[List[str], List[str], List[str]]:
+        """同AdapterLoader._read_dependencies"""
+        requires = []
+        optional = []
+        pip_deps = []
+        
+        if dist is not None:
+            pyproject = dist.read_text("pyproject.toml")
+            if pyproject:
+                try:
+                    config = toml.loads(pyproject)
+                    # 读取erispulse依赖
+                    erispulse_deps = config.get("tool", {}).get("erispulse", {}).get("dependencies", {})
+                    requires = erispulse_deps.get("requires", [])
+                    optional = erispulse_deps.get("optional", [])
+                    # 读取项目依赖作为pip依赖
+                    project_deps = config.get("project", {}).get("dependencies", [])
+                    pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
+                except Exception as e:
+                    logger.warning(f"解析 {dist.name} 的pyproject.toml失败: {e}")
+                    raise toml.TomlDecodeError(f"无法解析pyproject.toml: {e}")
+        return requires, optional, pip_deps
+    
+    @staticmethod
+    def _infer_dependencies(dist: Any) -> Set[str]:
+        """同AdapterLoader._infer_dependencies"""
+        auto_requires = set()
+        if dist is not None:
+            for dep in (dist.requires or []):
+                dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
+                try:
+                    dep_dist = importlib.metadata.distribution(dep_name)
+                    if dep_dist:
+                        for ep in dep_dist.entry_points:
+                            if ep.group in ('erispulse.module', 'erispulse.adapter'):
+                                auto_requires.add(ep.name)
+                except:
+                    continue
+        return auto_requires
+
+
 class ModuleInitializer:
     """
     模块初始化器
 
+    负责协调适配器和模块的初始化流程
+
     {!--< tips >!--}
-    该类用于初始化模块的总类, 用于初始化所有模块
+    1. 初始化顺序：适配器 → 模块
+    2. 模块初始化前会先解析依赖关系
     {!--< /tips >!--}
     """
     
     @staticmethod
     def init() -> bool:
         """
-        初始化所有模块
+        初始化所有模块和适配器
         
         执行步骤:
-        1. 从PyPI包加载模块
-        2. 解析模块依赖关系并进行拓扑排序
-        3. 注册模块适配器
-        4. 初始化各模块
+        1. 从PyPI包加载适配器
+        2. 从PyPI包加载模块
+        3. 解析模块依赖关系并进行拓扑排序
+        4. 注册适配器
+        5. 初始化各模块
         
-        :return: bool: 模块初始化是否成功
-        
-        {!--< tips >!--}
-        1. 此方法是SDK初始化的入口点
-        2. 如果初始化失败会抛出InitError异常
-        3. 初始化过程会自动处理模块依赖关系
-        {!--< /tips >!--}
+        :return: bool: 初始化是否成功
         
         :raises InitError: 当初始化失败时抛出
         """
         logger.info("[Init] SDK 正在初始化...")
         
         try:
-            module_objs, enabled_modules, disabled_modules = PyPIModuleLoader.load()
-            logger.info(f"[Init] 从包加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
+            # 1. 先加载适配器
+            adapter_objs, enabled_adapters, disabled_adapters = AdapterLoader.load()
+            logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
+            
+            # 2. 再加载模块
+            module_objs, enabled_modules, disabled_modules = ModuleLoader.load()
+            logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
             
             if os.path.join(os.path.dirname(__file__), "modules"):
                 logger.warning("[Warning] 你的项目使用了已经弃用的模块加载方式, 请尽快使用 PyPI 模块加载方式代替")
-
-            if not enabled_modules:
-                logger.warning("[Init] 没有找到可用的模块")
+            
+            if not enabled_modules and not enabled_adapters:
+                logger.warning("[Init] 没有找到可用的模块和适配器")
                 return True
             
+            # 3. 解析依赖关系
             logger.debug(f"[Init] 开始解析 {len(enabled_modules)} 个模块的依赖关系...")
             sorted_modules = ModuleInitializer._resolve_dependencies(enabled_modules, module_objs)
             logger.info(f"[Init] 模块加载顺序(拓扑排序): {', '.join(sorted_modules)}")
             
+            # 4. 注册适配器
             logger.debug("[Init] 正在注册适配器...")
-            if not ModuleInitializer._register_adapters(sorted_modules, module_objs):
+            if not ModuleInitializer._register_adapters(enabled_adapters, adapter_objs):
                 return False
             
+            # 5. 初始化模块
             logger.debug("[Init] 正在初始化模块...")
             success = ModuleInitializer._initialize_modules(sorted_modules, module_objs)
             logger.info(f"[Init] SDK初始化{'成功' if success else '失败'}")
@@ -345,6 +509,8 @@ class ModuleInitializer:
         :param module_objs: 模块对象字典
         
         :return: List[str]: 拓扑排序后的模块列表
+        
+        :raises CycleDependencyError: 当检测到循环依赖时抛出
         """
         dependencies = {}
         package_deps = {}
@@ -386,13 +552,13 @@ class ModuleInitializer:
         return sorted_modules
     
     @staticmethod
-    def _register_adapters(modules: List[str], module_objs: Dict[str, Any]) -> bool:
+    def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
         """
         {!--< internal-use >!--}
         注册适配器
         
-        :param modules: 模块名称列表
-        :param module_objs: 模块对象字典
+        :param adapters: 适配器名称列表
+        :param adapter_objs: 适配器对象字典
         
         :return: bool: 适配器注册是否成功
         """
@@ -402,17 +568,18 @@ class ModuleInitializer:
         # 存储已注册的适配器类到实例的映射
         registered_classes = {}
 
-        for module_name in modules:
-            module_obj = module_objs[module_name]
-            meta_name = module_obj.moduleInfo["meta"]["name"]
+        for adapter_name in adapters:
+            adapter_obj = adapter_objs[adapter_name]
             
             try:
-                if hasattr(module_obj, "adapterInfo") and isinstance(module_obj.adapterInfo, dict):
-                    for platform, adapter_class in module_obj.adapterInfo.items():
+                if hasattr(adapter_obj, "adapterInfo") and isinstance(adapter_obj.adapterInfo, dict):
+                    for platform, adapter_info in adapter_obj.adapterInfo.items():
                         # 如果这个平台已经注册过，跳过
                         if platform in platform_to_adapter:
                             continue
                             
+                        adapter_class = adapter_info["adapter_class"]
+                        
                         # 检查是否已经注册过这个适配器类
                         if adapter_class in registered_classes:
                             # 获取已注册的实例
@@ -428,11 +595,12 @@ class ModuleInitializer:
                         
                         # 记录平台到适配器的映射
                         platform_to_adapter[platform] = adapter_class
-                        logger.info(f"模块 {meta_name} 注册适配器: {platform}")
+                        logger.info(f"注册适配器: {platform}")
             except Exception as e:
-                logger.error(f"模块 {meta_name} 适配器注册失败: {e}")
+                logger.error(f"适配器 {adapter_name} 注册失败: {e}")
                 success = False
         return success
+    
     @staticmethod
     def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
         """
@@ -452,7 +620,7 @@ class ModuleInitializer:
             try:
                 if mods.get_module_status(meta_name):
                     # 获取entry point中指定的类对象
-                    module_class = module_obj.adapterInfo.get(meta_name) if hasattr(module_obj, 'adapterInfo') else getattr(module_obj, meta_name)
+                    module_class = getattr(module_obj, meta_name)
                     
                     # 获取类的__init__参数信息
                     init_signature = inspect.signature(module_class.__init__)
@@ -472,16 +640,19 @@ class ModuleInitializer:
                 success = False
         return success
 
-def init_progress() -> Tuple[bool, bool]:
+
+def init_progress() -> bool:
     """
     初始化项目环境文件
+    
+    1. 检查并创建main.py入口文件
+    2. 确保基础目录结构存在
 
-    :return: 
-        bool: 项目环境文件是否初始化成功(文件已存在时返回False)
+    :return: bool: 是否创建了新的main.py文件
     
     {!--< tips >!--}
-    1. 如果文件已存在，函数会返回False
-    2. 此函数通常由SDK内部调用，不建议直接使用
+    1. 如果main.py已存在则不会覆盖
+    2. 此方法通常由SDK内部调用
     {!--< /tips >!--}
     """
     main_file = Path("main.py")
@@ -519,7 +690,7 @@ if __name__ == "__main__":
         return main_init
     except Exception as e:
         sdk.logger.error(f"无法初始化项目环境: {e}")
-        return False, False
+        return False
 
 
 def _prepare_environment() -> bool:
@@ -527,10 +698,9 @@ def _prepare_environment() -> bool:
     {!--< internal-use >!--}
     准备运行环境
     
-    1. 初始化项目环境文件(env.py)
-    2. 初始化项目入口文件(main.py)
-    3. 加载环境变量
-    
+    1. 初始化项目环境文件
+    2. 加载环境变量配置
+
     :return: bool: 环境准备是否成功
     """
     logger.info("[Init] 准备初始化环境...")
@@ -544,14 +714,15 @@ def _prepare_environment() -> bool:
         logger.error(f"环境准备失败: {e}")
         return False
 
+
 def init() -> bool:
     """
     SDK初始化入口
     
     执行步骤:
-    1. 准备运行环境(创建main.py)
-    2. 初始化所有模块
-    
+    1. 准备运行环境
+    2. 初始化所有模块和适配器
+
     :return: bool: SDK初始化是否成功
     
     {!--< tips >!--}
