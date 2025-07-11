@@ -460,7 +460,6 @@ class AdapterManager:
                 try:
                     await adapter.start()
                     self._started_instances.add(adapter)
-                    sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已启动")
                     return
                 except Exception as e:
                     retry_count += 1

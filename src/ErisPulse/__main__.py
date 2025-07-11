@@ -244,13 +244,6 @@ def run_script(script_path: str, reload: bool = False):
             runpy.run_path(script_path, run_name="__main__")
         except KeyboardInterrupt:
             shellprint.panel("脚本执行已中断", "中断", "info")
-
-def legacy_command(args):
-    """旧版模块管理命令"""
-    from .legacy import LegacyManager
-    legacy = LegacyManager()
-    legacy.handle(args)
-
 def get_erispulse_version():
     try:
         return version("ErisPulse")
@@ -301,38 +294,7 @@ def main():
     run_parser = subparsers.add_parser('run', help='运行指定主程序')
     run_parser.add_argument('script', type=str, help='要运行的主程序路径')
     run_parser.add_argument('--reload', action='store_true', help='启用热重载模式')
-    
-    # 旧版命令
-    legacy_parser = subparsers.add_parser('legacy', help='旧版模块管理命令')
-    legacy_subparsers = legacy_parser.add_subparsers(dest='legacy_command')
-    
-    # 旧版子命令
-    legacy_enable = legacy_subparsers.add_parser('enable', help='启用模块')
-    legacy_enable.add_argument('module', type=str, help='模块名称')
-    
-    legacy_disable = legacy_subparsers.add_parser('disable', help='禁用模块')
-    legacy_disable.add_argument('module', type=str, help='模块名称')
-    
-    legacy_install = legacy_subparsers.add_parser('install', help='安装模块')
-    legacy_install.add_argument('module', type=str, help='模块名称或路径')
-    legacy_install.add_argument('--force', action='store_true', help='强制重新安装')
-    
-    legacy_uninstall = legacy_subparsers.add_parser('uninstall', help='卸载模块')
-    legacy_uninstall.add_argument('module', type=str, help='模块名称')
-    
-    legacy_update = legacy_subparsers.add_parser('update', help='更新模块列表')
-    
-    legacy_upgrade = legacy_subparsers.add_parser('upgrade', help='升级模块')
-    legacy_upgrade.add_argument('--force', action='store_true', help='跳过确认直接升级')
-    
-    legacy_origin = legacy_subparsers.add_parser('origin', help='管理模块源')
-    legacy_origin_sub = legacy_origin.add_subparsers(dest='origin_command')
-    legacy_origin_add = legacy_origin_sub.add_parser('add', help='添加源')
-    legacy_origin_add.add_argument('url', type=str, help='源URL')
-    legacy_origin_list = legacy_origin_sub.add_parser('list', help='列出源')
-    legacy_origin_del = legacy_origin_sub.add_parser('del', help='删除源')
-    legacy_origin_del.add_argument('url', type=str, help='源URL')
-    
+
     args = parser.parse_args()
     
     if args.version:
@@ -397,10 +359,7 @@ def main():
                 
         elif args.command == "run":
             run_script(args.script, args.reload)
-            
-        elif args.command == "legacy":
-            legacy_command(args)
-            
+
     except Exception as e:
         shellprint.panel(f"执行命令时出错: {e}", "错误", "error")
 
