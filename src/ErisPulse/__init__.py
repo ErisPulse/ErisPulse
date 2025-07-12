@@ -613,14 +613,30 @@ class ModuleInitializer:
         :return: bool: 模块初始化是否成功
         """
         success = True
+        entry_points = importlib.metadata.entry_points()
+        if hasattr(entry_points, 'select'):
+            module_entries = entry_points.select(group='erispulse.module')
+        else:
+            module_entries = entry_points.get('erispulse.module', [])
+        
+        # 创建模块名到entry-point的映射
+        module_entry_map = {entry.name: entry for entry in module_entries}
+        
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
             try:
                 if mods.get_module_status(meta_name):
-                    # 获取entry point中指定的类对象
-                    module_class = getattr(module_obj, meta_name)
+                    # 获取entry point中指定的类名
+                    entry_point = module_entry_map.get(meta_name)
+                    if not entry_point:
+                        logger.error(f"找不到模块 {meta_name} 的entry-point")
+                        success = False
+                        continue
+                        
+                    # 获取entry-point中指定的类对象
+                    module_class = entry_point.load()
                     
                     # 获取类的__init__参数信息
                     init_signature = inspect.signature(module_class.__init__)
@@ -639,7 +655,6 @@ class ModuleInitializer:
                 logger.error(f"模块 {meta_name} 初始化失败: {e}")
                 success = False
         return success
-
 
 def init_progress() -> bool:
     """
