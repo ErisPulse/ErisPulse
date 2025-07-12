@@ -48,7 +48,7 @@ curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmo
 ### 克隆项目并进入目录
 
 ```bash
-git clone https://github.com/ErisPulse/ErisPulse.git
+git clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git
 cd ErisPulse
 ```
 
