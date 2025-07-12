@@ -6,7 +6,7 @@ ErisPulse SDK 主模块
 {!--< tips >!--}
 1. 使用前请确保已正确安装所有依赖
 2. 调用sdk.init()进行初始化
-3. 模块加载顺序由依赖关系决定
+3. 模块加载采用懒加载机制
 {!--< /tips >!--}
 """
 
@@ -15,7 +15,7 @@ import sys
 import toml
 import inspect
 import importlib.metadata
-from typing import Dict, List, Tuple, Optional, Set, Type, Any
+from typing import Dict, List, Tuple, Optional, Set, Type, Any, Callable
 from pathlib import Path
 
 # BaseModules: SDK核心模块
@@ -47,10 +47,8 @@ BaseErrors = {
     "ExternalError": "外部捕获异常",
     "CaughtExternalError": "捕获的非SDK抛出的异常",
     "InitError": "SDK初始化错误",
-    "MissingDependencyError": "缺少依赖错误",
-    "InvalidDependencyError": "依赖无效错误",
-    "CycleDependencyError": "依赖循环错误",
-    "ModuleLoadError": "模块加载错误"
+    "ModuleLoadError": "模块加载错误",
+    "LazyLoadError": "懒加载错误"
 }
 
 for module, moduleObj in BaseModules.items():
@@ -58,6 +56,67 @@ for module, moduleObj in BaseModules.items():
 
 for error, doc in BaseErrors.items():
     raiserr.register(error, doc=doc)
+
+
+class LazyModule:
+    """
+    懒加载模块包装器
+    
+    当模块第一次被访问时才进行实例化
+    
+    {!--< tips >!--}
+    1. 模块的实际实例化会在第一次属性访问时进行
+    2. 依赖模块会在被使用时自动初始化
+    {!--< /tips >!--}
+    """
+    
+    def __init__(self, module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any]):
+        """
+        初始化懒加载包装器
+        
+        :param module_name: 模块名称
+        :param module_class: 模块类
+        :param sdk_ref: SDK引用
+        :param module_info: 模块信息字典
+        """
+        self._module_name = module_name
+        self._module_class = module_class
+        self._sdk_ref = sdk_ref
+        self._module_info = module_info
+        self._instance = None
+        self._initialized = False
+    
+    def _initialize(self):
+        """实际初始化模块"""
+        try:
+            # 获取类的__init__参数信息
+            init_signature = inspect.signature(self._module_class.__init__)
+            params = init_signature.parameters
+            
+            # 根据参数决定是否传入sdk
+            if 'sdk' in params:
+                self._instance = self._module_class(self._sdk_ref)
+            else:
+                self._instance = self._module_class()
+            
+            setattr(self._instance, "moduleInfo", self._module_info)
+            self._initialized = True
+            logger.debug(f"模块 {self._module_name} 初始化完成")
+        except Exception as e:
+            logger.error(f"模块 {self._module_name} 初始化失败: {e}")
+            raise raiserr.LazyLoadError(f"无法初始化模块 {self._module_name}: {e}")
+    
+    def __getattr__(self, name: str) -> Any:
+        """属性访问时触发初始化"""
+        if not self._initialized:
+            self._initialize()
+        return getattr(self._instance, name)
+    
+    def __call__(self, *args, **kwargs) -> Any:
+        """调用时触发初始化"""
+        if not self._initialized:
+            self._initialize()
+        return self._instance(*args, **kwargs)
 
 
 class AdapterLoader:
@@ -69,6 +128,7 @@ class AdapterLoader:
     {!--< tips >!--}
     1. 适配器必须通过entry-points机制注册到erispulse.adapter组
     2. 适配器类必须继承BaseAdapter
+    3. 适配器不适用懒加载
     {!--< /tips >!--}
     """
     
@@ -135,15 +195,6 @@ class AdapterLoader:
             adapter_obj = sys.modules[loaded_obj.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
             
-            # 从pyproject.toml读取依赖配置
-            requires, optional, pip_deps = AdapterLoader._read_dependencies(dist)
-            
-            # 自动推断依赖
-            auto_requires = AdapterLoader._infer_dependencies(dist)
-            
-            # 合并显式和自动推断的依赖
-            all_requires = list(set(requires + list(auto_requires)))
-            
             # 创建adapterInfo
             adapter_info = {
                 "meta": {
@@ -153,11 +204,6 @@ class AdapterLoader:
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name
-                },
-                "dependencies": {
-                    "requires": all_requires,
-                    "optional": optional,
-                    "pip": pip_deps
                 },
                 "adapter_class": loaded_obj
             }
@@ -202,66 +248,6 @@ class AdapterLoader:
             raise ImportError(f"无法加载适配器 {entry_point.name}: {e}")
             
         return adapter_objs, enabled_adapters, disabled_adapters
-    
-    @staticmethod
-    def _read_dependencies(dist: Any) -> Tuple[List[str], List[str], List[str]]:
-        """
-        {!--< internal-use >!--}
-        从pyproject.toml读取依赖配置
-
-        :param dist: 包分发对象
-        
-        :return: 
-            List[str]: 必选依赖列表
-            List[str]: 可选依赖列表 
-            List[str]: pip依赖列表
-            
-        :raises toml.TomlDecodeError: 当toml解析失败时抛出
-        """
-        requires = []
-        optional = []
-        pip_deps = []
-        
-        if dist is not None:
-            pyproject = dist.read_text("pyproject.toml")
-            if pyproject:
-                try:
-                    config = toml.loads(pyproject)
-                    # 读取erispulse依赖
-                    erispulse_deps = config.get("tool", {}).get("erispulse", {}).get("dependencies", {})
-                    requires = erispulse_deps.get("requires", [])
-                    optional = erispulse_deps.get("optional", [])
-                    # 读取项目依赖作为pip依赖
-                    project_deps = config.get("project", {}).get("dependencies", [])
-                    pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
-                except Exception as e:
-                    logger.warning(f"解析 {dist.name} 的pyproject.toml失败: {e}")
-                    raise toml.TomlDecodeError(f"无法解析pyproject.toml: {e}")
-        return requires, optional, pip_deps
-    
-    @staticmethod
-    def _infer_dependencies(dist: Any) -> Set[str]:
-        """
-        {!--< internal-use >!--}
-        自动推断依赖
-        
-        :param dist: 包分发对象
-        
-        :return: Set[str]: 自动推断的依赖集合
-        """
-        auto_requires = set()
-        if dist is not None:
-            for dep in (dist.requires or []):
-                dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
-                try:
-                    dep_dist = importlib.metadata.distribution(dep_name)
-                    if dep_dist:
-                        for ep in dep_dist.entry_points:
-                            if ep.group in ('erispulse.module', 'erispulse.adapter'):
-                                auto_requires.add(ep.name)
-                except:
-                    continue
-        return auto_requires
 
 
 class ModuleLoader:
@@ -339,14 +325,8 @@ class ModuleLoader:
             module_obj = sys.modules[loaded_obj.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
             
-            # 从pyproject.toml读取依赖配置
-            requires, optional, pip_deps = ModuleLoader._read_dependencies(dist)
-            
-            # 自动推断依赖
-            auto_requires = ModuleLoader._infer_dependencies(dist)
-            
-            # 合并显式和自动推断的依赖
-            all_requires = list(set(requires + list(auto_requires)))
+            # 从pyproject.toml读取加载策略
+            lazy_load = ModuleLoader._should_lazy_load(dist)
             
             # 创建moduleInfo
             module_info = {
@@ -356,13 +336,10 @@ class ModuleLoader:
                     "description": getattr(module_obj, "__description__", ""),
                     "author": getattr(module_obj, "__author__", ""),
                     "license": getattr(module_obj, "__license__", ""),
-                    "package": entry_point.dist.name
+                    "package": entry_point.dist.name,
+                    "lazy_load": lazy_load
                 },
-                "dependencies": {
-                    "requires": all_requires,
-                    "optional": optional,
-                    "pip": pip_deps
-                }
+                "module_class": loaded_obj
             }
             
             module_obj.moduleInfo = module_info
@@ -391,46 +368,23 @@ class ModuleLoader:
         return module_objs, enabled_modules, disabled_modules
     
     @staticmethod
-    def _read_dependencies(dist: Any) -> Tuple[List[str], List[str], List[str]]:
-        """同AdapterLoader._read_dependencies"""
-        requires = []
-        optional = []
-        pip_deps = []
+    def _should_lazy_load(module_class: Type) -> bool:
+        """
+        检查模块是否应该懒加载
         
-        if dist is not None:
-            pyproject = dist.read_text("pyproject.toml")
-            if pyproject:
-                try:
-                    config = toml.loads(pyproject)
-                    # 读取erispulse依赖
-                    erispulse_deps = config.get("tool", {}).get("erispulse", {}).get("dependencies", {})
-                    requires = erispulse_deps.get("requires", [])
-                    optional = erispulse_deps.get("optional", [])
-                    # 读取项目依赖作为pip依赖
-                    project_deps = config.get("project", {}).get("dependencies", [])
-                    pip_deps = [dep.split(';')[0].strip() for dep in project_deps]
-                except Exception as e:
-                    logger.warning(f"解析 {dist.name} 的pyproject.toml失败: {e}")
-                    raise toml.TomlDecodeError(f"无法解析pyproject.toml: {e}")
-        return requires, optional, pip_deps
-    
-    @staticmethod
-    def _infer_dependencies(dist: Any) -> Set[str]:
-        """同AdapterLoader._infer_dependencies"""
-        auto_requires = set()
-        if dist is not None:
-            for dep in (dist.requires or []):
-                dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
-                try:
-                    dep_dist = importlib.metadata.distribution(dep_name)
-                    if dep_dist:
-                        for ep in dep_dist.entry_points:
-                            if ep.group in ('erispulse.module', 'erispulse.adapter'):
-                                auto_requires.add(ep.name)
-                except:
-                    continue
-        return auto_requires
-
+        :param module_class: 模块类
+        :return: bool: 如果返回 False，则立即加载；否则懒加载
+        """
+        # 检查模块是否定义了 should_eager_load() 方法
+        if hasattr(module_class, "should_eager_load"):
+            try:
+                # 调用静态方法，如果返回 True，则禁用懒加载（立即加载）
+                return not module_class.should_eager_load()
+            except Exception as e:
+                logger.warning(f"调用模块 {module_class.__name__} 的 should_eager_load() 失败: {e}")
+        
+        # 默认启用懒加载
+        return True
 
 class ModuleInitializer:
     """
@@ -440,7 +394,7 @@ class ModuleInitializer:
 
     {!--< tips >!--}
     1. 初始化顺序：适配器 → 模块
-    2. 模块初始化前会先解析依赖关系
+    2. 模块初始化采用懒加载机制
     {!--< /tips >!--}
     """
     
@@ -452,13 +406,11 @@ class ModuleInitializer:
         执行步骤:
         1. 从PyPI包加载适配器
         2. 从PyPI包加载模块
-        3. 解析模块依赖关系并进行拓扑排序
+        3. 预记录所有模块信息
         4. 注册适配器
         5. 初始化各模块
         
         :return: bool: 初始化是否成功
-        
-        :raises InitError: 当初始化失败时抛出
         """
         logger.info("[Init] SDK 正在初始化...")
         
@@ -478,10 +430,9 @@ class ModuleInitializer:
                 logger.warning("[Init] 没有找到可用的模块和适配器")
                 return True
             
-            # 3. 解析依赖关系
-            logger.debug(f"[Init] 开始解析 {len(enabled_modules)} 个模块的依赖关系...")
-            sorted_modules = ModuleInitializer._resolve_dependencies(enabled_modules, module_objs)
-            logger.info(f"[Init] 模块加载顺序(拓扑排序): {', '.join(sorted_modules)}")
+            # 3. 预记录所有模块信息到SDK属性中
+            logger.debug("[Init] 正在预记录模块信息...")
+            ModuleInitializer._pre_register_modules(enabled_modules, module_objs)
             
             # 4. 注册适配器
             logger.debug("[Init] 正在注册适配器...")
@@ -490,7 +441,7 @@ class ModuleInitializer:
             
             # 5. 初始化模块
             logger.debug("[Init] 正在初始化模块...")
-            success = ModuleInitializer._initialize_modules(sorted_modules, module_objs)
+            success = ModuleInitializer._initialize_modules(enabled_modules, module_objs)
             logger.info(f"[Init] SDK初始化{'成功' if success else '失败'}")
             return success
             
@@ -500,56 +451,20 @@ class ModuleInitializer:
             return False
     
     @staticmethod
-    def _resolve_dependencies(modules: List[str], module_objs: Dict[str, Any]) -> List[str]:
+    def _pre_register_modules(modules: List[str], module_objs: Dict[str, Any]) -> None:
         """
-        {!--< internal-use >!--}
-        解析模块依赖关系并进行拓扑排序
+        预记录所有模块信息到SDK属性中
         
-        :param modules: 模块名称列表
-        :param module_objs: 模块对象字典
-        
-        :return: List[str]: 拓扑排序后的模块列表
-        
-        :raises CycleDependencyError: 当检测到循环依赖时抛出
+        确保所有模块在初始化前都已在SDK中注册
         """
-        dependencies = {}
-        package_deps = {}
-        
-        # 构建包名到模块名的映射
-        pkg_to_mod = {}
-        for mod_name in modules:
-            pkg_name = module_objs[mod_name].moduleInfo["meta"].get("package")
-            if pkg_name:
-                pkg_to_mod[pkg_name] = mod_name
-        
         for module_name in modules:
             module_obj = module_objs[module_name]
-            req_deps = module_obj.moduleInfo.get("dependencies", {}).get("requires", [])
-            opt_deps = module_obj.moduleInfo.get("dependencies", {}).get("optional", [])
-            available_opt = [dep for dep in opt_deps if dep in modules]
+            meta_name = module_obj.moduleInfo["meta"]["name"]
             
-            # 添加包级别的依赖
-            pkg_deps = []
-            pkg_name = module_obj.moduleInfo["meta"].get("package")
-            if pkg_name:
-                try:
-                    dist = importlib.metadata.distribution(pkg_name)
-                    for dep in (dist.requires or []):
-                        dep_name = dep.split(';')[0].strip().split('>')[0].split('<')[0].split('=')[0].split('~')[0]
-                        if dep_name in pkg_to_mod:
-                            pkg_deps.append(pkg_to_mod[dep_name])
-                except:
-                    pass
-            
-            dependencies[module_name] = list(set(req_deps + available_opt + pkg_deps))
-            
-        sorted_modules = sdk.util.topological_sort(modules, dependencies, raiserr.CycleDependencyError)
-        env.set('module_dependencies', {
-            'modules': sorted_modules,
-            'dependencies': dependencies,
-            'package_mapping': pkg_to_mod
-        })
-        return sorted_modules
+            # 即使模块是懒加载的，也先在SDK中创建占位符
+            if not hasattr(sdk, meta_name):
+                setattr(sdk, meta_name, None)
+                logger.debug(f"预注册模块: {meta_name}")
     
     @staticmethod
     def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
@@ -613,49 +528,73 @@ class ModuleInitializer:
         :return: bool: 模块初始化是否成功
         """
         success = True
-        entry_points = importlib.metadata.entry_points()
-        if hasattr(entry_points, 'select'):
-            module_entries = entry_points.select(group='erispulse.module')
-        else:
-            module_entries = entry_points.get('erispulse.module', [])
         
-        # 创建模块名到entry-point的映射
-        module_entry_map = {entry.name: entry for entry in module_entries}
+        try:
+            entry_points = importlib.metadata.entry_points()
+            if hasattr(entry_points, 'select'):
+                module_entries = entry_points.select(group='erispulse.module')
+                module_entry_map = {entry.name: entry for entry in module_entries}
+            else:
+                module_entries = entry_points.get('erispulse.module', [])
+                module_entry_map = {entry.name: entry for entry in module_entries}
+        except Exception as e:
+            logger.error(f"获取 entry_points 失败: {e}")
+            return False
         
+        # 第一次遍历：创建所有模块的占位符
+        for module_name in modules:
+            module_obj = module_objs[module_name]
+            meta_name = module_obj.moduleInfo["meta"]["name"]
+            
+            if not mods.get_module_status(meta_name):
+                continue
+                
+            entry_point = module_entry_map.get(meta_name)
+            if not entry_point:
+                logger.error(f"找不到模块 {meta_name} 的 entry-point")
+                success = False
+                continue
+            
+            # 创建模块占位符
+            if not hasattr(sdk, meta_name):
+                setattr(sdk, meta_name, None)
+        
+        # 第二次遍历：实际初始化模块
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
             try:
-                if mods.get_module_status(meta_name):
-                    # 获取entry point中指定的类名
-                    entry_point = module_entry_map.get(meta_name)
-                    if not entry_point:
-                        logger.error(f"找不到模块 {meta_name} 的entry-point")
-                        success = False
-                        continue
-                        
-                    # 获取entry-point中指定的类对象
-                    module_class = entry_point.load()
-                    
-                    # 获取类的__init__参数信息
+                if not mods.get_module_status(meta_name):
+                    continue
+                
+                entry_point = module_entry_map.get(meta_name)
+                if not entry_point:
+                    continue
+                
+                module_class = entry_point.load()
+                lazy_load = ModuleLoader._should_lazy_load(module_class)
+                
+                if lazy_load:
+                    lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
+                    setattr(sdk, meta_name, lazy_module)
+                else:
                     init_signature = inspect.signature(module_class.__init__)
-                    params = init_signature.parameters
-                    
-                    # 根据参数决定是否传入sdk
-                    if 'sdk' in params:
-                        module_instance = module_class(sdk)
+                    if 'sdk' in init_signature.parameters:
+                        instance = module_class(sdk)
                     else:
-                        module_instance = module_class()
+                        instance = module_class()
                     
-                    setattr(module_instance, "moduleInfo", module_obj.moduleInfo)
-                    setattr(sdk, meta_name, module_instance)
-                    logger.debug(f"模块 {meta_name} 初始化完成")
+                    setattr(instance, "moduleInfo", module_obj.moduleInfo)
+                    setattr(sdk, meta_name, instance)
+                    logger.debug(f"模块 {meta_name} 已初始化")
+                    
             except Exception as e:
-                logger.error(f"模块 {meta_name} 初始化失败: {e}")
+                logger.error(f"初始化模块 {meta_name} 失败: {e}")
                 success = False
+        
         return success
-
+    
 def init_progress() -> bool:
     """
     初始化项目环境文件
@@ -753,4 +692,34 @@ def init() -> bool:
     return ModuleInitializer.init()
 
 
+def load_module(module_name: str) -> bool:
+    """
+    手动加载指定模块
+    
+    :param module_name: 要加载的模块名称
+    :return: bool: 加载是否成功
+    
+    {!--< tips >!--}
+    1. 可用于手动触发懒加载模块的初始化
+    2. 如果模块不存在或已加载会返回False
+    {!--< /tips >!--}
+    """
+    try:
+        module = getattr(sdk, module_name, None)
+        if isinstance(module, LazyModule):
+            # 触发懒加载模块的初始化
+            module._initialize()
+            return True
+        elif module is not None:
+            logger.warning(f"模块 {module_name} 已经加载")
+            return False
+        else:
+            logger.error(f"模块 {module_name} 不存在")
+            return False
+    except Exception as e:
+        logger.error(f"加载模块 {module_name} 失败: {e}")
+        return False
+
+
 sdk.init = init
+sdk.load_module = load_module
