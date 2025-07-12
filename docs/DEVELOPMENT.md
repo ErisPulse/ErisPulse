@@ -127,18 +127,6 @@ with env.transaction():
 # 其它深入操作请阅读API文档
 ```
 
-须知：
-模块在env.py中的定义的配置项是硬加载的，每次重启都会被重新加载覆盖原来的key值，不会保留之前的配置；所以谨慎使用你的env.py中的配置项进行任何存储行为！
-如，一个屏蔽词模块在env.py中存储着全局屏蔽词列表，如果使用env.py中的配置项存储，那么每次重启都会丢失屏蔽词列表，导致屏蔽词失效！
-这时建议的方法是：使用一个全新的key存储，每次初始化的时候使用类似以下代码获取配置项：
-```python
-a = env.get("模块在env.py中存储的key", "default_value")
-b = env.get("一个用来存储动态屏蔽词的全新的key", "default_value")
-
-# 那么我们使用的屏蔽词列表为：
-self.band_words = a + b
-```
-
 #### 注册自定义错误类型：
 
 ```python
@@ -357,7 +345,7 @@ class MyAdapter(BaseAdapter):
         self.config = self.env.getConfig("MyAdapter", {})
 
         if self.config is None:
-            self.logger.error("请在env.py中添加MyAdapter配置")
+            # 这里默认配置会生成到用户的 config.toml 文件中
             self.env.setConfig("MyAdapter", {
                 "mode": "server",
                 "server": {
