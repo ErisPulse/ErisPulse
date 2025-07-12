@@ -303,7 +303,7 @@ class AdapterManager:
     1. 通过register方法注册适配器
     2. 通过startup方法启动适配器
     3. 通过shutdown方法关闭所有适配器
-    4. 可以直接通过adapter.on注册全局事件处理器
+    4. 通过on装饰器注册OneBot12协议事件处理器
     {!--< /tips >!--}
     """
     
@@ -313,104 +313,97 @@ class AdapterManager:
         self._platform_to_instance: Dict[str, BaseAdapter] = {}
         self._started_instances: Set[BaseAdapter] = set()
         
-        # 全局事件处理器
-        self._global_handlers = defaultdict(list)
-        self._global_onebot_handlers = defaultdict(list)
-        self._global_middlewares = []
-    def on(self, event_type: str = "*", *, raw: bool = False) -> Callable[[Callable], Callable]:
+        # OneBot12事件处理器
+        self._onebot_handlers = defaultdict(list)
+        self._onebot_middlewares = []
+
+    @property
+    def Adapter(self) -> Type[BaseAdapter]:
         """
-        全局事件监听装饰器
+        获取BaseAdapter类，用于访问原始事件监听
         
-        :param event_type: 事件类型
-        :param raw: 是否监听原始事件(默认False即监听OneBot12事件)
-        """
-        def decorator(func: Callable) -> Callable:
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                return await func(*args, **kwargs)
-            
-            if raw:
-                self._global_handlers[event_type].append(wrapper)
-            else:
-                self._global_onebot_handlers[event_type].append(wrapper)
-            return wrapper
-        return decorator
-    def on(self, event_type: str = "*", *, raw: bool = False) -> Callable[[Callable], Callable]:
-        """
-        全局事件监听装饰器
+        :return: BaseAdapter类
         
-        :param event_type: 事件类型，默认"*"表示所有事件
-        :param raw: 是否监听原始协议事件，默认为False
+        :example:
+        >>> @sdk.adapter.Adapter.on("raw_event")
+        >>> async def handle_raw(data):
+        >>>     print("收到原始事件:", data)
+        """
+        return BaseAdapter
+
+    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
+        """
+        OneBot12协议事件监听装饰器
+        
+        :param event_type: OneBot12事件类型
         :return: 装饰器函数
         
         :example:
-        >>> # 监听所有适配器的OneBot12事件
-        >>> @adapter.on("message")
+        >>> @sdk.adapter.on("message")
         >>> async def handle_message(data):
-        >>>     print(f"收到OneBot12兼容消息: {data}")
-
-        >>>
-        >>> # 监听所有适配器的原生事件
-        >>> @adapter.on("message", raw=True)
-        >>> async def handle_onebot_message(data):
-        >>>     print(f"收到消息: {data}")
+        >>>     print(f"收到OneBot12消息: {data}")
         """
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
             
-            if raw:
-                self._global_handlers[event_type].append(wrapper)
-            else:
-                self._global_onebot_handlers[event_type].append(wrapper)
+            self._onebot_handlers[event_type].append(wrapper)
             return wrapper
         return decorator
 
     def middleware(self, func: Callable) -> Callable:
         """
-        添加全局中间件处理器
+        添加OneBot12中间件处理器
         
         :param func: 中间件函数
         :return: 中间件函数
         
         :example:
-        >>> @adapter.middleware
-        >>> async def log_middleware(data):
-        >>>     print(f"处理数据: {data}")
+        >>> @sdk.adapter.middleware
+        >>> async def onebot_middleware(data):
+        >>>     print("处理OneBot12数据:", data)
         >>>     return data
         """
-        self._global_middlewares.append(func)
+        self._onebot_middlewares.append(func)
         return func
 
-    async def _dispatch_event(self, adapter_instance: BaseAdapter, event_type: str, data: Any, is_onebot12: bool = True):
+    async def emit(self, data: Any) -> None:
         """
-        分发事件到全局和适配器特定的处理器
+        提交OneBot12协议事件到指定平台
         
-        :param is_onebot12: 是否为OneBot12格式事件 (默认True)
+        :param platform: 平台名称
+        :param event_type: OneBot12事件类型
+        :param data: 符合OneBot12标准的事件数据
+        
+        :raises ValueError: 当平台未注册时抛出
+            
+        :example:
+        >>> await sdk.adapter.emit("MyPlatform", "message", {
+        >>>     "id": "123",
+        >>>     "time": 1620000000,
+        >>>     "type": "message",
+        >>>     "detail_type": "private",
+        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
+        >>> })
         """
-        # 先执行全局中间件
+        platform = data.get("platform", "unknown")
+        event_type = data.get("type", "unknown")
+
+        if platform not in self._adapters:
+            raise ValueError(f"平台 {platform} 未注册")
+        
+        # 先执行OneBot12中间件
         processed_data = data
-        for middleware in self._global_middlewares:
-            processed_data = await middleware(processed_data)
-        
-        # 执行适配器特定的中间件
-        for middleware in adapter_instance._middlewares:
+        for middleware in self._onebot_middlewares:
             processed_data = await middleware(processed_data)
 
-        # 分发到全局处理器
-        global_handlers = self._global_handlers if not is_onebot12 else self._global_onebot_handlers
-        if event_type in global_handlers:
-            for handler in global_handlers[event_type]:
+        # 分发到OneBot12事件处理器
+        if event_type in self._onebot_handlers:
+            for handler in self._onebot_handlers[event_type]:
                 await handler(processed_data)
-        for handler in global_handlers.get("*", []):
+        for handler in self._onebot_handlers.get("*", []):
             await handler(processed_data)
-
-        # 分发到适配器特定的处理器
-        if is_onebot12:
-            await adapter_instance.emit_onebot12(event_type, processed_data)
-        else:
-            await adapter_instance.emit(event_type, processed_data)
 
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
         """
