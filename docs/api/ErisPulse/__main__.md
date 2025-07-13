@@ -48,11 +48,6 @@ epsdk run main.py --reload
 运行指定脚本
 
 
-### `legacy_command`
-
-旧版模块管理命令
-
-
 ## 类
 
 ### `PyPIManager`

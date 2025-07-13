@@ -8,6 +8,7 @@ ErisPulse 适配器系统
 1. 适配器必须继承BaseAdapter并实现必要方法
 2. 使用SendDSL实现链式调用风格的消息发送接口
 3. 适配器管理器支持多平台适配器的注册和生命周期管理
+4. 支持OneBot12协议的事件处理
 
 ## 类
 
@@ -46,111 +47,6 @@ ErisPulse 适配器系统
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
 
 
-##### `__getattr__`
-
-动态获取消息发送方法
-
-:param name: 方法名
-:return: 消息发送函数
-
-:raises AttributeError: 当方法不存在时抛出
-
-
-### `EventDataBase`
-
-事件处理工具基类
-
-事件处理工具基类，用于获取事件内
-
-
-#### 方法
-
-##### `__init__`
-
-初始化事件处理工具
-
-:param event: 事件数据
-
-
-##### `platform`
-
-获取事件平台
-
-:return: 事件平台
-:example:
->>> return "yunhu"
-
-
-##### `message_type`
-
-获取事件类型
-
-:return: 事件类型
-:example:
->>> return self.event.get("type")
-
-
-##### `content`
-
-获取事件中的消息内容
-
-:return: 事件内容
-:example:
->>> return self.event.get("content")
-
-
-##### `sender_type`
-
-获取事件发送者类型
-
-:return: 事件发送者类型
-:example:
->>> return self.event.get("sender_type")
-
-
-##### `user_id`
-
-获取事件用户ID
-
-:return: 用户ID
-:example:
->>> return self.event.get("user_id")
-
-
-##### `group_id`
-
-获取事件群组ID
-
-:return: 群组ID
-:example:
->>> return self.event.get("group_id")
-
-
-##### `channel_id`
-
-获取事件发生的频道ID 可选实现
-
-:return: 频道ID字符串或None
-
-
-##### `message_id`
-
-获取事件消息ID
-
-:return: 消息ID
-:example:
->>> return self.event.get("message_id")
-
-
-##### `raw`
-
-获取原始事件数据
-
-:return: 原始事件数据
-:example:
->>> return self.event
-
-
 ### `BaseAdapter`
 
 适配器基类
@@ -161,6 +57,7 @@ ErisPulse 适配器系统
 1. 必须实现call_api, start和shutdown方法
 2. 可以自定义Send类实现平台特定的消息发送逻辑
 3. 通过on装饰器注册事件处理器
+4. 支持OneBot12协议的事件处理
 
 
 #### 方法
@@ -172,9 +69,10 @@ ErisPulse 适配器系统
 
 ##### `on`
 
-事件监听装饰器
+适配器事件监听装饰器
 
-:param event_type: 事件类型，默认"*"表示所有事件
+:param event_type: 事件类型
+:param onebot12: 是否监听OneBot12协议事件
 :return: 装饰器函数
 
 :example:
@@ -241,13 +139,30 @@ ErisPulse 适配器系统
 
 ##### `emit`
 
-触发事件
+触发原生协议事件
 
 :param event_type: 事件类型
 :param data: 事件数据
 
 :example:
 >>> await adapter.emit("message", {"text": "Hello"})
+
+
+##### `emit_onebot12`
+
+提交OneBot12协议事件
+
+:param event_type: OneBot12事件类型
+:param onebot_data: 符合OneBot12标准的事件数据
+
+:example:
+>>> await adapter.emit_onebot12("message", {
+>>>     "id": "123",
+>>>     "time": 1620000000,
+>>>     "type": "message",
+>>>     "detail_type": "private",
+>>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
+>>> })
 
 
 ##### `send`
@@ -278,9 +193,69 @@ ErisPulse 适配器系统
 1. 通过register方法注册适配器
 2. 通过startup方法启动适配器
 3. 通过shutdown方法关闭所有适配器
+4. 通过on装饰器注册OneBot12协议事件处理器
 
 
 #### 方法
+
+##### `Adapter`
+
+获取BaseAdapter类，用于访问原始事件监听
+
+:return: BaseAdapter类
+
+:example:
+>>> @sdk.adapter.Adapter.on("raw_event")
+>>> async def handle_raw(data):
+>>>     print("收到原始事件:", data)
+
+
+##### `on`
+
+OneBot12协议事件监听装饰器
+
+:param event_type: OneBot12事件类型
+:return: 装饰器函数
+
+:example:
+>>> @sdk.adapter.on("message")
+>>> async def handle_message(data):
+>>>     print(f"收到OneBot12消息: {data}")
+
+
+##### `middleware`
+
+添加OneBot12中间件处理器
+
+:param func: 中间件函数
+:return: 中间件函数
+
+:example:
+>>> @sdk.adapter.middleware
+>>> async def onebot_middleware(data):
+>>>     print("处理OneBot12数据:", data)
+>>>     return data
+
+
+##### `emit`
+
+提交OneBot12协议事件到指定平台
+
+:param platform: 平台名称
+:param event_type: OneBot12事件类型
+:param data: 符合OneBot12标准的事件数据
+
+:raises ValueError: 当平台未注册时抛出
+    
+:example:
+>>> await sdk.adapter.emit("MyPlatform", "message", {
+>>>     "id": "123",
+>>>     "time": 1620000000,
+>>>     "type": "message",
+>>>     "detail_type": "private",
+>>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
+>>> })
+
 
 ##### `register`
 
