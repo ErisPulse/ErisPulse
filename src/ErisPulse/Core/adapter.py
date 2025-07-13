@@ -485,13 +485,11 @@ class AdapterManager:
         ssl_key = server_config.get("ssl_keyfile", None)
 
         # 启动服务器
-        asyncio.create_task(
-            adapter_server.start(
-                host=host,
-                port=port,
-                ssl_certfile=ssl_cert,
-                ssl_keyfile=ssl_key
-            )
+        await adapter_server.start(
+            host=host,
+            port=port,
+            ssl_certfile=ssl_cert,
+            ssl_keyfile=ssl_key
         )
         # 已经被调度过的 adapter 实例集合（防止重复调度）
         scheduled_adapters = set()
@@ -565,6 +563,9 @@ class AdapterManager:
         """
         for adapter in self._adapters.values():
             await adapter.shutdown()
+        
+        from .server import adapter_server
+        adapter_server.stop()
 
     def get(self, platform: str) -> Optional[BaseAdapter]:
         """
