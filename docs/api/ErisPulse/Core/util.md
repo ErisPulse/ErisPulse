@@ -25,35 +25,6 @@ ErisPulse 工具函数集合
 
 #### 方法
 
-##### `topological_sort`
-
-拓扑排序依赖关系
-
-:param elements: 元素列表
-:param dependencies: 依赖关系字典
-:param error: 错误类型(当发现循环依赖时抛出)
-:return: 排序后的元素列表
-
-:raises error: 当发现循环依赖时抛出
-
-:example:
->>> sorted_modules = util.topological_sort(
->>>     modules, 
->>>     dependencies,
->>>     raiserr.CycleDependencyError
->>> )
-
-
-##### `show_topology`
-
-可视化模块依赖关系
-
-:return: 依赖关系字符串表示
-
-:example:
->>> print(util.show_topology())
-
-
 ##### `ExecAsync`
 
 异步执行函数
