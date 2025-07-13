@@ -74,11 +74,50 @@ class AdapterServer:
             列出所有已注册路由
             
             :return: 
-                Dict[str, Any]: 包含所有路由信息的字典
+                Dict[str, Any]: 包含所有路由信息的字典，格式为:
+                {
+                    "http_routes": [
+                        {
+                            "path": "/adapter1/route1",
+                            "adapter": "adapter1",
+                            "methods": ["POST"]
+                        },
+                        ...
+                    ],
+                    "websocket_routes": [
+                        {
+                            "path": "/adapter1/ws",
+                            "adapter": "adapter1",
+                            "requires_auth": true
+                        },
+                        ...
+                    ],
+                    "base_url": self.base_url
+                }
             """
+            http_routes = []
+            for adapter, routes in self._webhook_routes.items():
+                for path, handler in routes.items():
+                    route = self.app.router.routes[-1]  # 获取最后添加的路由
+                    if isinstance(route, APIRoute) and route.path == path:
+                        http_routes.append({
+                            "path": path,
+                            "adapter": adapter,
+                            "methods": route.methods
+                        })
+            
+            websocket_routes = []
+            for adapter, routes in self._websocket_routes.items():
+                for path, (handler, auth_handler) in routes.items():
+                    websocket_routes.append({
+                        "path": path,
+                        "adapter": adapter,
+                        "requires_auth": auth_handler is not None
+                    })
+            
             return {
-                "http_routes": list(self._webhook_routes.keys()),
-                "websocket_routes": list(self._websocket_routes.keys()),
+                "http_routes": http_routes,
+                "websocket_routes": websocket_routes,
                 "base_url": self.base_url
             }
 
@@ -234,5 +273,4 @@ class AdapterServer:
             self._server_task = None
 
 
-# 全局服务器实例
 adapter_server = AdapterServer()
