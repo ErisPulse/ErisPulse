@@ -29,10 +29,14 @@ ErisPulse 框架提供了一个 `sdk` 对象, 所有模块都会被注册在 `sd
 
 例如一个模块的结构是:
 ```python
+# from ErisPulse import sdk
+# from ErisPulse.Core import logger 
+
 class MyModule:
     def __init__(self, sdk):    # 注: 这里也可以不传入 sdk 参数 | 你可以直接 from ErisPulse import sdk 来获得sdk对象
         self.sdk = sdk
         self.logger = sdk.logger
+
     def hello(self):
         self.logger.info("hello world")
         return "hello world"
@@ -124,6 +128,11 @@ with env.transaction():
     env.delete('temp_key')
     # 如果出现异常会自动回滚
 
+# 获取模块配置
+# 如果模块未注册，则返回None | 不支持设置默认值
+env.getConfig("MyModule")
+env.setConfig("MyModule", "MyConfig")
+
 # 其它深入操作请阅读API文档
 ```
 
@@ -205,7 +214,6 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
-# 可以直接依赖对应的ErisPulse模块的python包名
 dependencies = [
     
 ]
@@ -216,10 +224,6 @@ dependencies = [
 [project.entry-points]
 "erispulse.module" = { "MyModule" = "MyModule:Main" }
 
-# 显式的添加ErisPulse模块依赖
-[tool.erispulse.dependencies]
-requires = []
-optional = []
 ```
 
 ### 3. `MyModule/__init__.py` 文件
@@ -251,6 +255,17 @@ class Main:
         self.raiserr = sdk.raiserr
 
         self.logger.info("模块已加载")
+        self.config = self._get_config()
+
+    def _get_config(self):
+        config = env.getConfig("MyModule")
+        if not config:
+            default_config = {
+                "my_config_key": "default_value"
+            }
+            env.setConfig("MyModule", default_config)
+            return default_config
+        return config
 
     def print_hello(self):
         self.logger.info("Hello World!")
@@ -298,7 +313,6 @@ requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
-# 可以直接依赖对应的ErisPulse模块包名
 dependencies = [
     
 ]
@@ -309,10 +323,6 @@ dependencies = [
 [project.entry-points]
 "erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
 
-# 显式的添加ErisPulse模块依赖
-[tool.erispulse.dependencies]
-requires = []
-optional = []
 ```
 
 ### 3. `MyAdapter/__init__.py` 文件
@@ -339,24 +349,18 @@ class MyAdapter(BaseAdapter):
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
-        self.load_config()
-    # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-    def load_config(self):
-        self.config = self.env.getConfig("MyAdapter", {})
+        self.config = self._get_config()
 
-        if self.config is None:
+    def _get_config(self):
+        # 加载配置方法，你需要在这里进行必要的配置加载逻辑
+        config = self.env.getConfig("MyAdapter", {})
+
+        if config is None:
+            default_config = {...}
             # 这里默认配置会生成到用户的 config.toml 文件中
-            self.env.setConfig("MyAdapter", {
-                "mode": "server",
-                "server": {
-                    "host": "127.0.0.1",
-                    "port": 8080
-                },
-                "client": {
-                    "url": "http://127.0.0.1:8080",
-                    "token": ""
-                }
-            })
+            self.env.setConfig("MyAdapter", default_config)
+            return default_config
+        return config
     class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
