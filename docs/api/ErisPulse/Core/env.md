@@ -1,4 +1,4 @@
-# `ErisPulse/Core/db` 模块
+# `ErisPulse/Core/env` 模块
 
 ErisPulse 环境配置模块
 
@@ -79,18 +79,17 @@ ErisPulse 环境配置模块
 
 ##### `getConfig`
 
-获取配置项
-:param key: 配置项的键
+获取模块/适配器配置项
+:param key: 配置项的键(支持点分隔符如"module.sub.key")
+:param default: 默认值
 :return: 配置项的值
 
 
 ##### `setConfig`
 
 设置模块/适配器配置
-
-:param key: 配置项键名
-:param value: 配置项键值
-
+:param key: 配置项键名(支持点分隔符如"module.sub.key")
+:param value: 配置项值
 :return: 操作是否成功
 
 
