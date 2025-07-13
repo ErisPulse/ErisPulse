@@ -12,6 +12,8 @@ ErisPulse SDK 主模块
 
 import os
 import sys
+import importlib
+import asyncio
 import toml
 import inspect
 import importlib.metadata
@@ -25,6 +27,7 @@ from .Core import logger
 from .Core import env
 from .Core import mods
 from .Core import adapter, AdapterFather, SendDSL
+from .Core import adapter_server
 
 # 确保windows下的shell能正确显示颜色
 os.system('')
@@ -689,6 +692,33 @@ def init() -> bool:
     """
     if not _prepare_environment():
         return False
+    server_config = env.getConfig("Server")
+
+    if server_config is None:
+        server_config = {
+            "host": "0.0.0.0",
+            "port": 8000,
+            "ssl_certfile": None,
+            "ssl_keyfile": None
+        }
+        env.setConfig("Server", server_config)
+        logger.info("已创建服务器配置")
+    
+    host = server_config["host"]
+    port = server_config["port"]
+    ssl_cert = server_config.get("ssl_certfile", None)
+    ssl_key = server_config.get("ssl_keyfile", None)
+
+    # 启动服务器
+    asyncio.create_task(
+        sdk.adapter_server.start(
+            host=host,
+            port=port,
+            ssl_certfile=ssl_cert,
+            ssl_keyfile=ssl_key
+        )
+    )
+
     return ModuleInitializer.init()
 
 
