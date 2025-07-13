@@ -4,6 +4,7 @@ from .logger import logger
 from .mods import mods
 from .raiserr import raiserr
 from .util import util
+from .server import adapter_server
 
 __all__ = [
     'AdapterFather',
@@ -13,5 +14,6 @@ __all__ = [
     'logger',
     'mods',
     'raiserr',
-    'util'
+    'util',
+    'adapter_server'
 ]
