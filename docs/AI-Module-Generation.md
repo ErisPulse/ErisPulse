@@ -40,80 +40,14 @@
 
 并且将刚刚下载的 `ErisPulseDevelop.md` 作为附件发送给 AI。
 
-### AI 输出示例：
-
-```python
-# __init__.py
-moduleInfo = {
-    "meta": {
-        "name": "WeatherBot",
-        "version": "1.0.0",
-        "description": "天气查询模块",
-        "author": "YourName",
-        "license": "MIT"
-    },
-    "dependencies": {
-        "requires": [
-            "YunhuAdapter"
-        ],
-        "optional": [],
-        "pip": ["aiohttp"]
-    }
-}
-
-from .Core import Main
-```
-
-```python
-# Core.py
-import aiohttp
-import time
-
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-
-        @sdk.adapter.Yunhu.on("command")
-        async def handle_weather(data):
-            if data.event.message.commandName.lower() == "weather":
-                city = data.event.message.content.text.strip()
-                chat_type = data.event.chatType
-                sender_type = "group" if chat_type == "group" else "user"
-                sender_id = data.chat.chatId if chat_type == "group" else data.event.sender.senderId
-
-                if not city:
-                    await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text("请指定城市名称，例如：/weather 上海")
-                    return
-                await self.reply_weather(sender_type, sender_id, city)
-
-    @sdk.util.cache
-    async def get_weather_data(self, city: str):
-        api_key = self.env.get("WEATHER_API_KEY")
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                else:
-                    raise Exception("无法获取天气信息")
-
-    async def reply_weather(self, sender_type, sender_id, city):
-        try:
-            data = await self.get_weather_data(city)
-            temperature = data["main"]["temp"] - 273.15
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"{city} 的温度是 {temperature:.1f}℃")
-        except Exception as e:
-            self.logger.error(f"获取天气失败: {e}")
-            await self.sdk.adapter.Yunhu.Send.To(sender_type, sender_id).Text(f"获取天气失败，请稍后再试。")
-```
 
 ## 常见问题
 
+Q: 推荐如何生成模块？
+A: 使用你的 `IDE` 寻找一个AICoder，确保这个AICoder可以直接操作文件（当然，这只是推荐做法，你也可以直接按照AI给出的结构手动创建项目）。并且确保您的模型有足够的能力。
+
 Q: 如何测试生成的模块？  
-A: 将生成的代码放入ErisPulse项目(初始化过的你自己的项目内会有这个文件夹)的modules目录，重启服务即可加载测试。
+A: 使用 pypi 包的形式安装到python环境，确保AI为你生成了包括 `pyproject.toml` 在内的python包配置文件和相应的代码。然后使用 `pip install -e .` 安装到python环境。
 
 Q: 生成的代码不符合我的需求怎么办？  
 A: 可以调整需求描述后重新生成，或直接在生成代码基础上进行修改。
