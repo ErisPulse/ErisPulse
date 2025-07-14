@@ -3,6 +3,8 @@ from ErisPulse import sdk
 from importlib.metadata import version
 import sys
 from typing import Optional
+import time
+from pathlib import Path
 
 # 颜色定义
 class Colors:
@@ -69,14 +71,14 @@ async def test_logger():
     sdk.logger.info(f"这条日志将保存到文件: {log_file}")
     
     print(f"\n{Colors.GREEN}日志测试完成，请查看控制台和文件 {log_file} 的输出{Colors.END}")
-
+    
 async def test_env():
     """测试环境配置功能"""
     while True:
         print(f"\n{Colors.CYAN}--- 环境配置测试 ---{Colors.END}")
         print(f"{Colors.BLUE}1. 设置/获取单个配置项{Colors.END}")
         print(f"{Colors.BLUE}2. 批量设置/获取配置项{Colors.END}") 
-        print(f"{Colors.BLUE}3. 从文件加载配置项{Colors.END}")
+        print(f"{Colors.BLUE}3. 测试配置管理{Colors.END}")
         print(f"{Colors.BLUE}4. 测试事务操作{Colors.END}")
         print(f"{Colors.BLUE}5. 测试快照管理{Colors.END}")
         print(f"{Colors.BLUE}6. 返回主菜单{Colors.END}")
@@ -101,13 +103,15 @@ async def test_env():
                 print(f"{Colors.GREEN}批量读取结果: {sdk.env.get_multi(list(items.keys()))}{Colors.END}")
                 
             elif choice == "3":
-                print(f"\n{Colors.YELLOW}--- 文件加载配置测试 ---{Colors.END}")
-                file_path = input(f"{Colors.GREEN}请输入配置文件路径(默认: env_config.py): {Colors.END}") or "env_config.py"
-                try:
-                    sdk.env.load_env_file(file_path)
-                    print(f"{Colors.GREEN}成功从 {file_path} 加载配置{Colors.END}")
-                except Exception as e:
-                    print(f"{Colors.RED}加载配置文件失败: {e}{Colors.END}")
+                print(f"\n{Colors.YELLOW}--- 测试配置管理 ---{Colors.END}")
+                config_key = input(f"{Colors.GREEN}请输入配置项key: {Colors.END}") or None
+                config_value = input(f"{Colors.GREEN}请输入配置项value: {Colors.END}") or None
+                if config_key and config_value:
+                    sdk.env.setConfig(config_key, config_value)
+                    print(f"{Colors.GREEN}已设置 {config_key}={config_value}{Colors.END}")
+                    print(f"{Colors.GREEN}读取测试: {config_key} = {sdk.env.getConfig(config_key)}{Colors.END}")
+                else:
+                    print(f"{Colors.RED}请设置配置项key和value{Colors.END}")
                     
             elif choice == "4":
                 print(f"\n{Colors.YELLOW}--- 事务操作测试 ---{Colors.END}")

@@ -1,6 +1,7 @@
 # dev gnore ignore file for Python projects
 main.py
-env.py
+venvs
+config.toml
 adapters
 uv.lock
 snapshots/
@@ -209,3 +210,4 @@ pyvenv.cfg
 # erispulse
 my_bot
 modules
+config.toml
