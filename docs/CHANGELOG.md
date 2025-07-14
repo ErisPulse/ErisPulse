@@ -15,6 +15,11 @@
 
 ### 新增
 - 新增统一的底层适配器服务器统一管理，支持 webhook/websocket 模式
+- 添加 `server` 核心模块
+- 新增 `list-remote` 命令
+
+### 变更
+- install 命令添加了对于远程package映射表的安装支持
 
 ---
 
