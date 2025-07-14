@@ -1,5 +1,6 @@
 # dev gnore ignore file for Python projects
 main.py
+venvs
 config.toml
 adapters
 uv.lock
