@@ -59,10 +59,10 @@ if __name__ == "__main__":
     api_directory = "docs/api"
     
     additional_documents = [
-        "docs/ADAPTERS.md",
-        "docs/Conversion-Standard​.md",
+        "docs/UseCore.md",
         "docs/DEVELOPMENT.md",
-        "docs/UseCore.md"
+        "docs/ADAPTERS.md",
+        "docs/Conversion-Standard​.md"
     ]
     
     # 输出文件路径
