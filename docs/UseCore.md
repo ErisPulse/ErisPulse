@@ -210,8 +210,10 @@ async def on_message(data):
     
     # 获取哪个平台
     platform = data.get("platform")
-    detail_type = data.get("detail_type", "private")
-    datail_id = data.get("user_id") if detail_type == "private" else data.get("group_id")
+
+    # 发送的类型不能是 类似于 private 的类型，而是使用 "user" / "group" / other
+    detail_type = "user" if data.get("detail_type") == "private" else "group"
+    datail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
 
     echo_text = data.get("alt_message")
 
