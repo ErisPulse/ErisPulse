@@ -1,0 +1,24 @@
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "MyAdapter是一个非常酷的平台，这个适配器可以帮你绽放更亮的光芒"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+
+# 可以直接依赖对应的ErisPulse模块包名
+dependencies = [
+    
+]
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyAdapter"
+
+[project.entry-points]
+"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
+
+# 显式的添加ErisPulse模块依赖
+[tool.erispulse.dependencies]
+requires = []
+optional = []
