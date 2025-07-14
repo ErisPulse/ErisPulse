@@ -130,6 +130,18 @@ with env.transaction():
 # 如果模块未注册，则返回None | 不支持设置默认值
 env.getConfig("MyModule")
 env.setConfig("MyModule", "MyConfig")
+# 这里的建议使用是，先获取 "MyModule" 模块的配置项，如果为空，则设置 "MyModule" 模块的配置项为 默认需要生成的默认配置（被生成到用户的项目下的config.toml）
+
+# 标准的示例:
+def _getConfig():
+    config = env.getConfig("MyModule")
+    if config is None:
+        defaultConfig = {
+            "MyKey": "MyValue"
+        }
+        env.setConfig("MyModule", defaultConfig)
+        return defaultConfig
+    return config
 
 # 其它深入操作请阅读API文档
 ```
