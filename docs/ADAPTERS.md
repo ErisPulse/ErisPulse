@@ -7,7 +7,31 @@ ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处�
 - **OneBotAdapter**
 - **YunhuAdapter**
 
-每个适配器都实现了标准化的事件映射、消息发送方法和生命周期管理。以下将详细介绍现有适配器的功能、支持的方法以及推荐的开发实践。
+每个适配器都实现了对于 OneBot12 协议的转换、消息发送方法和生命周期管理。以下将介绍使用时的事件内容以及一些适配器的拓展部分
+
+OneBot12 协议标准：https://12.onebot.dev/
+示例标准格式：
+
+```json
+{
+  "id": "event_123",
+  "time": 1752241220,
+  "type": "message",
+  "detail_type": "group",
+  "platform": "yunhu",
+  "self": {"platform": "yunhu", "user_id": "bot_123"},
+  "message_id": "msg_abc",
+  "message": [
+    {
+      "type": "text",
+      "data": {"text": "你好"}
+    }
+  ],
+  "alt_message": "你好",
+  "user_id": "user_456",
+  "group_id": "group_789"
+}
+```
 
 ---
 
@@ -15,19 +39,6 @@ ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处�
 
 ### 1. YunhuAdapter
 YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
-
-#### 支持的事件类型
-
-| 官方事件命名                  | 映射名称       | 说明                     |
-|-------------------------------|----------------|--------------------------|
-| `message.receive.normal`      | `message`      | 普通消息                 |
-| `message.receive.instruction` | `command`      | 指令消息                 |
-| `bot.followed`                | `follow`       | 用户关注机器人           |
-| `bot.unfollowed`              | `unfollow`     | 用户取消关注机器人       |
-| `group.join`                  | `group_join`   | 用户加入群组             |
-| `group.leave`                 | `group_leave`  | 用户离开群组             |
-| `button.report.inline`        | `button_click` | 按钮点击事件             |
-| `bot.shortcut.menu`           | `shortcut_menu`| 快捷菜单触发事件         |
 
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
@@ -106,259 +117,101 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 }
 ```
 
-#### env.py 配置示例
+#### OneBot12协议转换说明
+云湖事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在一些差异，你需要阅读以下内容：
+需要 platform=="yunhu" 检测再使用本平台特性
+
+##### 核心差异点
+1. 特有事件类型：
+    - 表单（如表单指令）：yunhu_form
+    - 按钮点击：yunhu_button_click
+    - 机器人设置：yunhu_bot_setting
+    - 快捷菜单：yunhu_shortcut_menu
+2. 扩展字段：
+    - 所有特有字段均以yunhu_前缀标识
+    - 保留原始数据在yunhu_raw字段
+    - 私聊中self.user_id表示机器人ID
+
+3. 特殊字段示例：
 ```python
-sdk.env.set("YunhuAdapter", {
-    "token": "",       # 机器人 Token
-    "mode": "server",  # server / polling (polling使用社区脚本支持)
-    "server": {
-        "host": "0.0.0.0",
-        "port": 25888,
-        "path": "/yunhu/webhook"
-    },
-    "polling": {
-        "url": "https://example.com/",
-    }
-})
-```
-> **注意：**
-> - 云湖适配器使用 `server` 模式时，需要配置 `server` 字段；使用 `polling` 模式时，需要配置 `polling` 字段。
-> - 云湖需要在控制台指向我们开启的 `server` 地址，否则无法正常接收消息。
-
-#### 数据格式示例
-云湖目前有9种事件会推送给机器人：
-
-|事件字段名称|事件用途|
-|:---:|:---:|
-|message.receive.normal|普通消息|
-|message.receive.instruction|指令消息|
-|group.join|用户加群|
-|group.leave|用户退群|
-|bot.followed|机器人关注|
-|bot.unfollowed|机器人取关|
-|bot.shortcut.menu|快捷菜单|
-|button.report.inline|按钮汇报|
-
-每个事件的触发条件以及数据结构如下：
-
-##### 普通消息事件
-当用户向机器人或机器人所在的群聊发送消息，且没有选择指令时，将会触发该事件。
-```json
+# 表单命令
 {
-  "version": "1.0",
-  "header": 
-    "eventId": "c192ccc83d5147f2859ca77bcfafc9f9",
-    "eventType": "message.receive.normal",
-    "eventTime": 1748613099002
-  }
-  "event": {
-    "sender": 
-      "senderId": "6300451",
-      "senderType": "user",
-      "senderUserLevel": "owner",
-      "senderNickname": "ShanFish"
-    },
-    "chat": {
-      "chatId": "49871624",
-      "chatType": "bot"
-    },
-    "message": {
-      "msgId": "5c887bc0a82244c7969c08000f5b3ae8",
-      "parentId": "",
-      "sendTime": 1748613098989,
-      "chatId": "49871624",
-      "chatType": "bot",
-      "contentType": "text",
-      "content": {
-        "text": "你好"
+  "type": "yunhu_form",
+  "data": {
+    "id": "1766",
+    "name": "123123",
+    "fields": [
+      {
+        "id": "abgapt",
+        "type": "textarea",
+        "value": ""
       },
-      "instructionId": 0,
-      "instructionName": "",
-      "commandId": 0,
-      "comandName": ""
+      {
+        "id": "mnabyo", 
+        "type": "select",
+        "value": ""
+      }
+    ]
+  },
+  "yunhu_command": {
+    "name": "123123",
+    "id": "1766",
+    "form": {
+      "abgapt": {
+        "id": "abgapt",
+        "type": "textarea",
+        "value": ""
+      },
+      "mnabyo": {
+        "id": "mnabyo",
+        "type": "select",
+        "value": ""
+      }
     }
   }
 }
-```
-##### 指令消息事件
-当用户点击聊天栏的"/"图标时，将列出该机器人/群聊可用的所有指令。用户发送带有指令的消息后，将会触发该事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "ee74aded326b4578959073fe88f0076a",
-        "eventType": "message.receive.instruction",
-        "eventTime": 1749442433069
-    },
-    "event": {
-        "sender": {
-            "senderId": "6300451",
-            "senderType": "user",
-            "senderUserLevel": "owner",
-            "senderNickname": "ShanFish"
-        },
-        "chat": {
-            "chatId": "49871624",
-            "chatType": "bot"
-        },
-        "message": {
-            "msgId": "1d879c6ec68c4c52b78f87d83084955e",
-            "parentId": "",
-            "sendTime": 1749442433057,
-            "chatId": "49871624",
-            "chatType": "bot",
-            "contentType": "text",
-            "content": {
-                "text": "/抽奖信息",
-                "menu": {}
-            },
-            "instructionId": 1505,
-            "instructionName": "抽奖信息",
-            "commandId": 1505,
-            "commandName": "抽奖信息"
-        }
-    }
-}
-```
-##### 用户加群/退群事件
-当用户加入机器人所在的群聊后，将会触发该事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "d5429cb5e4654fbcaeee9e4adb244741",
-        "eventType": "group.join",  // 或 group.leave
-        "eventTime": 1749442891943
-    },
-    "event": {
-        "time": 1749442891843,
-        "chatId": "985140593",
-        "chatType": "group",
-        "userId": "3707697",
-        "nickname": "ShanFishApp",
-        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=b19c8978f4e0d9e43a8aec4f1e3c82ef&t=68466f5b"
-    }
-}
-```
-##### 用户关注/取关机器人事件
-当用户在机器人ID或机器人推荐处添加机器人后，将会触发该事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "3fe280a400f9460daa03a642d1fad39b",
-        "eventType": "bot.followed", // 或 bot.unfollowed
-        "eventTime": 1749443049592
-    },
-    "event": {
-        "time": 1749443049580,
-        "chatId": "49871624",
-        "chatType": "bot",
-        "userId": "3707697",
-        "nickname": "ShanFishApp",
-        "avatarUrl": "https://chat-storage1.jwznb.com/defalut-avatars/Ma%20Rainey.png?sign=33bb173f1b22ed0e44da048b175767c6&t=68466ff9"
-    }
-}
-```
-##### 按钮汇报事件
-机器人可以发送带按钮的消息。当用户按下按钮actionType为3(汇报类按钮)的按钮时，将会触发该事件。
-```json
-{
-    "version": "1.0",
-    "header": {
-        "eventId": "0d6d269ff7f046828c8562f905f9ee08",
-        "eventType": "button.report.inline",
-        "eventTime": 1749446185273
-    },
-    "event": {
-        "time": 1749446185268,
-        "msgId": "1838c3dd84474e9e9e1e00ca64e72065",
-        "recvId": "6300451",
-        "recvType": "user",
-        "userId": "6300451",
-        "value": "xxxx"
-    }
-}
-```
 
-##### 快捷菜单事件
-当用户点击了开发者自行配置的快捷菜单时，且该快捷菜单类型为普通菜单，将会触发本事件。
-```json
+# 按钮事件
 {
-    "version": "1.0",
-    "header": {
-        "eventId": "93d0e36ce0334da58448409fd0527590",
-        "eventType": "bot.shortcut.menu",
-        "eventTime": 1749445822197
-    },
-    "event": {
-        "botId": "49871624",
-        "menuId": "HNH1LDHF",
-        "menuType": 1,
-        "menuAction": 1,
-        "chatId": "985140593",
-        "chatType": "group",
-        "senderType": "user",
-        "senderId": "6300451",
-        "sendTime": 1749445822
-    }
+  "detail_type": "yunhu_button_click",
+  "yunhu_button": {
+    "id": "",
+    "value": "test_button_value"
+  }
 }
 
-```
+# 机器人设置
+{
+  "detail_type": "yunhu_bot_setting",
+  "yunhu_setting": {
+    "lokola": {
+      "id": "lokola",
+      "type": "radio",
+      "value": ""
+    },
+    "ngcezg": {
+      "id": "ngcezg",
+      "type": "input",
+      "value": null
+    }
+  }
+}
 
-
-#### 注意：`chat` 与 `sender` 的误区
-
-##### 常见问题：
-
-| 字段 | 含义 |
-|------|------|
-| `data.get("event", {}).get("chat", {}).get("chatType", "")` | 当前聊天类型（`user`/`bot` 或 `group`） |
-| `data.get("event", {}).get("sender", {}).get("senderType", "")` | 发送者类型（通常为 `user`） |
-| `data.get("event", {}).get("sender", {}).get("senderId", "")` | 发送者唯一 ID |
-
-> **注意：**  
-> - 使用 `chatType` 判断消息是私聊还是群聊  
-> - 群聊使用 `chatId`，私聊使用 `senderId` 作为目标地址  
-> - `senderType` 通常为 `"user"`，不能用于判断是否为群消息  
-
----
-
-##### 示例代码：
-
-```python
-@sdk.adapter.Yunhu.on("message")
-async def handle_message(data):
-    if data.get("event", {}).get("chat", {}).get("chatType", "") == "group":
-        targetId = data.get("event", {}).get("chat", {}).get("chatId", "")
-        targeType = "group"
-    else:
-        targetId = data.get("event", {}).get("sender", {}).get("senderId", "")
-        targeType = "user"
-
-    await sdk.adapter.Yunhu.Send.To(targeType, targetId).Text("收到你的消息！")
+# 快捷菜单
+{
+  "detail_type": "yunhu_shortcut_menu", 
+  "yunhu_menu": {
+    "id": "B4X00M5B",
+    "type": 1,
+    "action": 1
+  }
+}
 ```
 
 ---
 
 ### 2. TelegramAdapter
 TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
-
-#### 支持的事件类型
-
-| Telegram 原生事件       | 映射名称           | 说明                     |
-|-------------------------|--------------------|--------------------------|
-| `message`               | `message`          | 普通消息                 |
-| `edited_message`        | `message_edit`     | 消息被编辑               |
-| `channel_post`          | `channel_post`     | 频道发布消息             |
-| `edited_channel_post`   | `channel_post_edit`| 频道消息被编辑           |
-| `inline_query`          | `inline_query`     | 内联查询                 |
-| `chosen_inline_result`  | `chosen_inline_result` | 内联结果被选择       |
-| `callback_query`        | `callback_query`   | 回调查询（按钮点击）     |
-| `shipping_query`        | `shipping_query`   | 配送信息查询             |
-| `pre_checkout_query`    | `pre_checkout_query` | 支付预检查询           |
-| `poll`                  | `poll`             | 投票创建                 |
-| `poll_answer`           | `poll_answer`      | 投票响应                 |
 
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
@@ -409,19 +262,64 @@ sdk.env.set("TelegramAdapter", {
 #### 数据格式示例
 > 略: 使用你了解的 TG 事件数据格式即可,这里不进行演示
 
+#### OneBot12协议转换说明
+Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在以下差异：
+
+##### 核心差异点
+1. 特有事件类型：
+   - 内联查询：telegram_inline_query
+   - 回调查询：telegram_callback_query
+   - 投票事件：telegram_poll
+   - 投票答案：telegram_poll_answer
+
+2. 扩展字段：
+   - 所有特有字段均以telegram_前缀标识
+   - 保留原始数据在telegram_raw字段
+   - 频道消息使用detail_type="channel"
+
+3. 特殊字段示例：
+```python
+# 回调查询事件
+{
+  "type": "notice",
+  "detail_type": "telegram_callback_query",
+  "user_id": "123456",
+  "telegram_callback": {
+    "id": "cb_123",
+    "data": "callback_data",
+    "message_id": "msg_456"
+  }
+}
+
+# 内联查询事件
+{
+  "type": "notice",
+  "detail_type": "telegram_inline_query",
+  "user_id": "789012",
+  "telegram_inline": {
+    "id": "iq_789",
+    "query": "search_text",
+    "offset": "0"
+  }
+}
+
+# 频道消息
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message_id": "msg_345",
+  "channel_id": "channel_123",
+  "telegram_channel": {
+    "title": "News Channel",
+    "username": "news_official"
+  }
+}
+```
+
 ---
 
 ### 3. OneBotAdapter
 OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
-
-#### 支持的事件类型
-
-| OneBot 原生事件       | 映射名称           | 说明                     |
-|-----------------------|--------------------|--------------------------|
-| `message`             | `message`          | 消息事件                 |
-| `notice`              | `notice`           | 通知类事件（如群成员变动）|
-| `request`             | `request`          | 请求类事件（如加群请求） |
-| `meta_event`          | `meta_event`       | 元事件（如心跳包）       |
 
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
@@ -439,25 +337,60 @@ await onebot.Send.To("group", group_id).Text("Hello World!")
 - `.Edit(message_id: int, new_text: str)`：编辑消息。
 - `.Batch(target_ids: List[str], text: str)`：批量发送消息。
 
-#### env.py 配置示例
-```python
-sdk.env.set("OneBotAdapter", {
-    "mode": "client", # 或者 "server"
-    "server": {
-        "host": "127.0.0.1",
-        "port": 8080,
-        "path": "/",
-        "token": ""
-    },
-    "client": {
-        "url": "ws://127.0.0.1:3001",
-        "token": ""
-    }
-})
-```
 
 #### 数据格式示例
 > 略: 使用你了解的 OneBot v11 事件数据格式即可,这里不进行演示
+#### OneBot12协议转换说明
+OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在以下差异：
+
+##### 核心差异点
+1. 特有事件类型：
+   - CQ码扩展事件：onebot11_cq_{type}
+   - 荣誉变更事件：onebot11_honor
+   - 戳一戳事件：onebot11_poke
+
+2. 扩展字段：
+   - 所有特有字段均以onebot11_前缀标识
+   - 保留原始CQ码消息在onebot11_raw_message字段
+   - 保留原始事件数据在onebot11_raw字段
+
+3. 特殊字段示例：
+```python
+# 荣誉变更事件
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "onebot11_honor_type": "talkative",
+  "onebot11_operation": "set"
+}
+
+# 戳一戳事件
+{
+  "type": "notice",
+  "detail_type": "onebot11_poke",
+  "group_id": "123456",
+  "user_id": "789012",
+  "target_id": "345678",
+  "onebot11_poke_type": "normal"
+}
+
+# CQ码消息段
+{
+  "type": "message",
+  "message": [
+    {
+      "type": "onebot11_face",
+      "data": {"id": "123"}
+    },
+    {
+      "type": "onebot11_shake",
+      "data": {} 
+    }
+  ]
+}
+```
 
 ---
 
@@ -474,35 +407,6 @@ await sdk.adapter.startup()
 await sdk.adapter.shutdown()
 ```
 确保资源释放，关闭 WebSocket 连接或其他网络资源。
-
----
-
-## 开发者指南
-
-### 如何编写新的 Adapter
-1. **继承 BaseAdapter**  
-   所有适配器需继承 `sdk.BaseAdapter` 类，并实现以下方法：
-   - `start()`：启动适配器。
-   - `shutdown()`：关闭适配器。
-   - `call_api(endpoint: str, **params)`：调用底层 API。
-
-2. **定义 Send 方法**  
-   使用链式语法实现消息发送逻辑，推荐参考现有适配器的实现。
-
-3. **注册事件映射**  
-   在 `_setup_event_mapping()` 方法中定义事件映射表。
-
-4. **测试与调试**  
-   编写单元测试验证适配器的功能完整性，并在不同环境下进行充分测试。
-
-### 推荐的文档结构
-新适配器的文档应包含以下内容：
-- **简介**：适配器的功能和适用场景。
-- **事件映射表**：列出支持的事件及其映射名称。
-- **发送方法**：详细说明支持的消息类型和使用示例。
-- **数据格式**：展示典型事件的 JSON 数据格式。
-- **配置说明**：列出适配器所需的配置项及默认值。
-- **注意事项**：列出开发和使用过程中需要注意的事项。
 
 ---
 
