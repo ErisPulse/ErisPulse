@@ -8,7 +8,7 @@ pip install ErisPulse
 ```
 
 ### 更先进的安装方法
-> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以您需要先安装 uv。
+> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以需要先安装 uv。
 
 ### 1. 安装 uv
 
@@ -32,13 +32,13 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 uv --version
 ```
 
-### 2. 创建虚拟环境,并安装 ErisPulse
+### 2. 创建虚拟环境,并安装 ErisPulse 及官方CLI
 
 ```bash
 uv python install 3.12              # 安装 Python 3.12
 uv venv                             # 创建虚拟环境
 source .venv/bin/activate           # 激活环境 (Windows: .venv\Scripts\activate)
-uv pip install ErisPulse --upgrade  # 安装框架
+uv pip install ErisPulse[cli] --upgrade  # 安装框架
 ```
 
 ---
@@ -67,7 +67,7 @@ epsdk init
 你可以通过 CLI 安装所需模块：
 
 ```bash
-# 一般情况下,您需要先更新源: epsdk update
+# 一般情况下,需要先更新源: epsdk update
 epsdk install YunhuAdapter OneBotAdapter AIChat
 ```
 
