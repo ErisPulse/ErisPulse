@@ -43,6 +43,8 @@ import sys
 import os
 import time
 import json
+import asyncio
+from urllib.parse import urlparse
 from typing import List, Dict, Tuple, Optional
 from importlib.metadata import version, PackageNotFoundError
 from watchdog.observers import Observer
@@ -52,9 +54,50 @@ from .Core.shellprint import shellprint, Shell_Printer
 class PyPIManager:
     """管理PyPI上的ErisPulse模块和适配器"""
     
+    REMOTE_SOURCES = [
+        "https://erisdev.com/packages.json",
+        "https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/packages.json"
+    ]
+    
+    @staticmethod
+    async def get_remote_packages() -> dict:
+        import aiohttp
+        from aiohttp import ClientError, ClientTimeout
+        
+        timeout = ClientTimeout(total=5)
+        last_error = None
+        
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(PyPIManager.REMOTE_SOURCES[0]) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return {
+                            "modules": data.get("modules", {}),
+                            "adapters": data.get("adapters", {})
+                        }
+        except (ClientError, asyncio.TimeoutError) as e:
+            last_error = e
+            shellprint.panel(f"官方源请求失败，尝试备用源: {e}", "警告", "warning")
+        
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(PyPIManager.REMOTE_SOURCES[1]) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return {
+                            "modules": data.get("modules", {}),
+                            "adapters": data.get("adapters", {})
+                        }
+        except (ClientError, asyncio.TimeoutError) as e:
+            last_error = e
+            
+        if last_error:
+            shellprint.panel(f"获取远程模块列表失败: {last_error}", "错误", "error")
+        return {"modules": {}, "adapters": {}}
+    
     @staticmethod
     def search_packages(query: str) -> List[Dict[str, str]]:
-        """搜索PyPI上的ErisPulse相关包"""
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "pip", "search", query],
@@ -77,7 +120,6 @@ class PyPIManager:
     
     @staticmethod
     def get_installed_packages() -> Dict[str, Dict[str, str]]:
-        """获取已安装的ErisPulse模块和适配器"""
         packages = {
             "modules": {},
             "adapters": {}
@@ -108,7 +150,6 @@ class PyPIManager:
     
     @staticmethod
     def install_package(package_name: str, upgrade: bool = False) -> bool:
-        """安装或升级PyPI包"""
         try:
             cmd = [sys.executable, "-m", "pip", "install"]
             if upgrade:
@@ -127,7 +168,6 @@ class PyPIManager:
     
     @staticmethod
     def uninstall_package(package_name: str) -> bool:
-        """卸载PyPI包"""
         try:
             shellprint.status(f"正在卸载 {package_name}...")
             result = subprocess.run(
@@ -144,7 +184,6 @@ class PyPIManager:
     
     @staticmethod
     def upgrade_all() -> bool:
-        """升级所有ErisPulse相关包"""
         try:
             installed = PyPIManager.get_installed_packages()
             all_packages = set()
@@ -176,7 +215,6 @@ class PyPIManager:
             return False
 
 class ReloadHandler(FileSystemEventHandler):
-    """热重载处理器"""
     def __init__(self, script_path, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.script_path = script_path
@@ -203,7 +241,6 @@ class ReloadHandler(FileSystemEventHandler):
             self.start_process()
 
 def start_reloader(script_path):
-    """启动热重载监视器"""
     project_root = os.path.dirname(os.path.abspath(__file__))
     watch_dirs = [
         os.path.dirname(os.path.abspath(script_path)),
@@ -230,7 +267,6 @@ def start_reloader(script_path):
     observer.join()
 
 def run_script(script_path: str, reload: bool = False):
-    """运行指定脚本"""
     if not os.path.exists(script_path):
         shellprint.panel(f"找不到指定文件: {script_path}", "错误", "error")
         return
@@ -286,6 +322,10 @@ def main():
     list_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'all'], default='all', 
                            help='列出类型 (modules: 仅模块, adapters: 仅适配器, all: 全部)')
     
+    # 远程列表命令
+    list_remote_parser = subparsers.add_parser('list-remote', help='列出远程可用的模块和适配器')
+    list_remote_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'all'], default='all',
+                                  help='列出类型 (modules: 仅模块, adapters: 仅适配器, all: 全部)')
     # 升级命令
     upgrade_parser = subparsers.add_parser('upgrade', help='升级所有模块/适配器')
     upgrade_parser.add_argument('--force', '-f', action='store_true', help='跳过确认直接升级')
@@ -320,7 +360,29 @@ def main():
                 shellprint.panel(f"未找到匹配 '{args.query}' 的ErisPulse包", "提示", "info")
                 
         elif args.command == "install":
-            PyPIManager.install_package(args.package, args.upgrade)
+            import asyncio
+            # 首先检查是否是远程模块/适配器的简称
+            remote_packages = asyncio.run(PyPIManager.get_remote_packages())
+            full_package_name = None
+            
+            # 检查模块
+            if args.package in remote_packages["modules"]:
+                full_package_name = remote_packages["modules"][args.package]["package"]
+            # 检查适配器
+            elif args.package in remote_packages["adapters"]:
+                full_package_name = remote_packages["adapters"][args.package]["package"]
+            
+            # 如果找到远程包，使用完整包名安装
+            if full_package_name:
+                shellprint.panel(
+                    f"找到远程包: {Shell_Printer.BOLD}{args.package}{Shell_Printer.RESET} → {Shell_Printer.BLUE}{full_package_name}{Shell_Printer.RESET}",
+                    "信息",
+                    "info"
+                )
+                PyPIManager.install_package(full_package_name, args.upgrade)
+            else:
+                # 否则按原样安装
+                PyPIManager.install_package(args.package, args.upgrade)
             
         elif args.command == "uninstall":
             PyPIManager.uninstall_package(args.package)
@@ -359,6 +421,39 @@ def main():
                 
         elif args.command == "run":
             run_script(args.script, args.reload)
+            
+        elif args.command == "list-remote":
+            import asyncio
+            try:
+                remote_packages = asyncio.run(PyPIManager.get_remote_packages())
+                
+                if args.type in ["modules", "all"] and remote_packages["modules"]:
+                    rows = [
+                        [
+                            f"{Shell_Printer.GREEN}{name}{Shell_Printer.RESET}",
+                            f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
+                            info["version"],
+                            info["description"]
+                        ] for name, info in remote_packages["modules"].items()
+                    ]
+                    shellprint.table(["模块名", "包名", "版本", "描述"], rows, "远程模块", "info")
+                    
+                if args.type in ["adapters", "all"] and remote_packages["adapters"]:
+                    rows = [
+                        [
+                            f"{Shell_Printer.YELLOW}{name}{Shell_Printer.RESET}",
+                            f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
+                            info["version"],
+                            info["description"]
+                        ] for name, info in remote_packages["adapters"].items()
+                    ]
+                    shellprint.table(["适配器名", "包名", "版本", "描述"], rows, "远程适配器", "info")
+                    
+                if not remote_packages["modules"] and not remote_packages["adapters"]:
+                    shellprint.panel("没有找到远程模块或适配器", "提示", "info")
+                    
+            except Exception as e:
+                shellprint.panel(f"获取远程列表失败: {e}", "错误", "error")
 
     except Exception as e:
         shellprint.panel(f"执行命令时出错: {e}", "错误", "error")
