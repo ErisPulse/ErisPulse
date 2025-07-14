@@ -1,44 +1,57 @@
 # ErisPulse 官方 CLI 命令手册
-> 当前文档仅针对使用 ErisPulse 默认安装的官方cli进行说明
 
-## 模块管理
-**说明**：
-- `--init`参数：执行命令前先初始化模块状态
-- 支持通配符批量启用/禁用/安装/卸载模块
+## 命令概述
 
-CLI注册了以下命令:
----
- | 名称  |
- | --------- |
- | ep       |
- | epsdk    |
- | ep-cli   |
- | epsdk-cli    |
- 
-以下是对应的子命令列表：
----
+ErisPulse CLI 提供以下命令组：
+
+## 命令参考
+
+### 包管理命令
 
 | 命令       | 参数                      | 描述                                  | 示例                          |
 |------------|---------------------------|---------------------------------------|-------------------------------|
-| `enable`   | `<module> [--init]`       | 激活指定模块                          | `epsdk enable chatgpt --init`       |
-| `disable`  | `<module> [--init]`       | 停用指定模块                          | `epsdk disable weather`             |
-| `list`     | `[--module=<name>] [--init]` | 列出模块（可筛选）                   | `epsdk list --module=payment`       |
-| `update`   | -                         | 更新模块索引                           | `epsdk update`                      |
-| `upgrade`  | `[--force] [--init]`      | 升级模块（`--force` 强制覆盖）        | `epsdk upgrade --force --init`      |
-| `install`  | `<module...> [--init]`    | 安装一个或多个模块（空格分隔），支持本地目录路径 | `epsdk install YunhuAdapter OpenAI`<br>`epsdk install .`<br>`epsdk install /path/to/module` |
-| `uninstall`| `<module> [--init]`       | 移除指定模块                          | `epsdk uninstall old-module --init` |
-| `init`    | -                         | 初始化sdk | `epsdk init`                        |
-| `run` | `<script> [--reload]` | 运行指定脚本（支持热重载） | `epsdk run main.py --reload` |
+| `search`   | `<query>`                 | 搜索PyPI上的ErisPulse模块             | `epsdk search ErisPulse-YunhuAdapter`        |
+| `install`  | `<package> [--upgrade]`   | 安装模块/适配器包                     | `epsdk install Yunhu`  |
+| `uninstall`| `<package>`               | 卸载模块/适配器包                     | `epsdk uninstall old-module`  |
+| `upgrade`  | `[--force]`               | 升级所有模块/适配器                   | `epsdk upgrade --force`       |
 
-源管理
----
-| 命令 | 参数 | 描述 | 示例 |
-|------|------|------|------|
-| `origin add` | `<url>` | 添加源 | `epsdk origin add https://erisdev.com/map.json` |
-| `origin list` | - | 源列表 | `epsdk origin list` |
-| `origin del` | `<url>` | 删除源 | `epsdk origin del https://erisdev.com/map.json` |
+### 信息查询命令
 
----
+| 命令          | 参数                      | 描述                                  | 示例                          |
+|---------------|---------------------------|---------------------------------------|-------------------------------|
+| `list`        | `[--type=<type>]`         | 列出已安装的模块/适配器               | `epsdk list --type=modules`   |
+|               |                           | `--type`: `modules`/`adapters`/`all`  | `epsdk list -t adapters`      |
+| `list-remote` | `[--type=<type>]`         | 列出远程可用的模块和适配器            | `epsdk list-remote`           |
+
+### 运行控制命令
+
+| 命令       | 参数                      | 描述                                  | 示例                          |
+|------------|---------------------------|---------------------------------------|-------------------------------|
+| `run`      | `<script> [--reload]`      | 运行指定脚本                          | `epsdk run main.py`           |
+|            |                           | `--reload`: 启用热重载模式            | `epsdk run app.py --reload`   |
+
+## 高级用法
+
+### 安装远程模块
+CLI会自动检查远程仓库中的模块简称：
+```bash
+# 安装远程模块("Yunhu" 是远程适配器 "ErisPulse-YunhuAdapter" 的简称)
+epsdk install Yunhu
+```
+
+### 批量升级
+强制升级所有模块(跳过确认):
+```bash
+epsdk upgrade --force
+```
+
+### 开发模式运行
+使用热重载运行脚本，自动检测文件变化:
+```bash
+epsdk run dev.py --reload
+```
+
 
 ## 反馈与支持
+
 如遇到 CLI 使用问题，请在 GitHub Issues 提交反馈。
