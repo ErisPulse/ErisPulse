@@ -7,7 +7,8 @@
 | 文件名 | 作用 |
 |--------|------|
 | ADAPTERS.md | 平台适配器说明，包括事件监听和消息发送方式 |
-| Conversion-Standard.md | 数据转换标准说明 |
+| event-conversion.md | 适配器数据转换标准说明 |
+| api-response.md | 适配器API响应标准说明 |
 | DEVELOPMENT.md | 模块结构定义、入口文件格式、Main 类规范 |
 | UseCore.md | 核心功能使用说明 |
 | API文档 | 自动生成的API参考文档 |
@@ -582,7 +583,41 @@ OneBot12 协议标准：https://12.onebot.dev/
   ],
   "alt_message": "你好",
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789"
+}
+```
+
+> - 对于 发送消息的接口，`Send.To(recvType, recvId)` ，返回的格式是 OneBot12 标准格式 但是有一些区别：
+> - 我们在返回数据中添加了 `message_id` 和 `{platform_name}_raw` 字段
+> - 其中 `message_id` 在一些批量操作时会安装顺序依次排列到list中，但一般情况下是string类型，而 `{platform_name}_raw` 则是原始响应数据
+
+### 成功响应示例
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {
+        "message_id": "1234",
+        "time": 1632847927.599013
+    },
+    "message_id": "1234",
+    "message": "",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+### 失败响应示例
+```json
+{
+    "status": "failed",
+    "retcode": 10003,
+    "data": null,
+    "message_id": "",
+    "message": "缺少必要参数: user_id",
+    "echo": "1234",
+    "telegram_raw": {...}
 }
 ```
 
@@ -653,36 +688,6 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```
 > **注意：**
 > - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制***和**跳转URL**均无法收到推送。
-
-#### 主要方法返回值示例(Send.To(Type, ID).)
-1. .Text/.Html/Markdown/.Image/.Video/.File
-```json
-{
-  "code": 1,
-  "data": {
-    "messageInfo": {
-      "msgId": "65a314006db348be97a09eb065985d2d",
-      "recvId": "5197892",
-      "recvType": "user"
-    }
-  },
-  "msg": "success"
-}
-```
-
-2. .Batch
-```json
-{
-    "code": 1,
-    "data": {
-        "successCount": 1,
-        "successList": [
-            {"msgId": "65a314006db348be97a09eb065985d2d", "recvId": "5197892", "recvType": "user"}
-        ]
-    },
-    "msg": "success"
-}
-```
 
 #### OneBot12协议转换说明
 云湖事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在一些差异，你需要阅读以下内容：
@@ -851,6 +856,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "type": "notice",
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
+  "user_nickname": "YingXinche",
   "telegram_callback": {
     "id": "cb_123",
     "data": "callback_data",
@@ -863,6 +869,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "type": "notice",
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
+  "user_nickname": "YingXinche",
   "telegram_inline": {
     "id": "iq_789",
     "query": "search_text",
@@ -1002,7 +1009,121 @@ ErisPulse 项目：
 
 <!--- End of ADAPTERS.md -->
 
-<!-- Conversion-Standard​.md -->
+<!-- api-response.md -->
+
+# ErisPulse 适配器标准化返回规范
+
+## 1. 说明
+为什么会有这个规范？
+
+ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中定义了消息发送的返回结构，因此ErisPulse的适配器也需要遵循这个标准。
+
+但ErisPulse的协议有一些特殊性定义:
+- 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
+- 2. 返回内容中需要添加 {platform_name}_raw 字段，用于存放原始响应数据
+
+## 2. 基础返回结构
+所有动作响应必须包含以下基础字段：
+
+| 字段名 | 数据类型 | 必选 | 说明 |
+|-------|---------|------|------|
+| status | string | 是 | 执行状态，必须是"ok"或"failed" |
+| retcode | int64 | 是 | 返回码，遵循OneBot12返回码规则 |
+| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
+| message_id | string | 是 | 消息ID，用于标识消息, 没有则为空字符串 |
+| message | string | 是 | 错误信息，成功时为空字符串 |
+| {platform_name}_raw | any | 否 | 原始响应数据 |
+
+可选字段：
+| 字段名 | 数据类型 | 必选 | 说明 |
+|-------|---------|------|------|
+| echo | string | 否 | 当请求中包含echo字段时，原样返回 |
+
+## 3. 完整字段规范
+
+### 3.1 通用字段
+
+#### 成功响应示例
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {
+        "message_id": "1234",
+        "time": 1632847927.599013
+    },
+    "message_id": "1234",
+    "message": "",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+#### 失败响应示例
+```json
+{
+    "status": "failed",
+    "retcode": 10003,
+    "data": null,
+    "message_id": "",
+    "message": "缺少必要参数: user_id",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+### 3.2 返回码规范
+
+#### 0 成功（OK）
+- 0: 成功（OK）
+
+#### 1xxxx 动作请求错误（Request Error）
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 10001 | Bad Request | 无效的动作请求 |
+| 10002 | Unsupported Action | 不支持的动作请求 |
+| 10003 | Bad Param | 无效的动作请求参数 |
+| 10004 | Unsupported Param | 不支持的动作请求参数 |
+| 10005 | Unsupported Segment | 不支持的消息段类型 |
+| 10006 | Bad Segment Data | 无效的消息段参数 |
+| 10007 | Unsupported Segment Data | 不支持的消息段参数 |
+| 10101 | Who Am I | 未指定机器人账号 |
+| 10102 | Unknown Self | 未知的机器人账号 |
+
+#### 2xxxx 动作处理器错误（Handler Error）
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 20001 | Bad Handler | 动作处理器实现错误 |
+| 20002 | Internal Handler Error | 动作处理器运行时抛出异常 |
+
+#### 3xxxx 动作执行错误（Execution Error）
+| 错误码范围 | 错误类型 | 说明 |
+|-----------|---------|------|
+| 31xxx | Database Error | 数据库错误 |
+| 32xxx | Filesystem Error | 文件系统错误 |
+| 33xxx | Network Error | 网络错误 |
+| 34xxx | Platform Error | 机器人平台错误 |
+| 35xxx | Logic Error | 动作逻辑错误 |
+| 36xxx | I Am Tired | 实现决定罢工 |
+
+#### 保留错误段
+- 4xxxx、5xxxx: 保留段，不应使用
+- 6xxxx～9xxxx: 其他错误段，供实现自定义使用
+
+## 4. 实现要求
+1. 所有响应必须包含status、retcode、data和message字段
+2. 当请求中包含非空echo字段时，响应必须包含相同值的echo字段
+3. 返回码必须严格遵循OneBot12规范
+4. 错误信息(message)应当是人类可读的描述
+
+## 5. 注意事项
+- 对于3xxxx错误码，低三位可由实现自行定义
+- 避免使用保留错误段(4xxxx、5xxxx)
+- 错误信息应当简洁明了，便于调试
+
+<!--- End of api-response.md -->
+
+<!-- event-conversion.md -->
 
 # ErisPulse 适配器标准化转换规范
 
@@ -1031,6 +1152,9 @@ ErisPulse 项目：
 |message_id|消息事件|"msg_123"|
 |user_id|涉及用户|"user_456"|
 |group_id|群组事件|"group_789"|
+
+### 2.3 非标准字段（非必须，但建议实现）
+|user_nickname|涉及用户|"用户昵称"|
 
 ## 3. 完整事件模板
 ### 3.1 消息事件 (message)
@@ -1066,6 +1190,7 @@ ErisPulse 项目：
   ],
   "alt_message": "你好[图片]",
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "yunhu_raw": {...},
   "yunhu_command": {
@@ -1088,6 +1213,7 @@ ErisPulse 项目：
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "operator_id": "",
   "yunhu_raw": {...},
@@ -1106,6 +1232,7 @@ ErisPulse 项目：
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
 }
@@ -1199,7 +1326,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 - 特殊字符测试（消息内容含emoji/特殊符号）
 - 压力测试（连续事件转换）
 
-<!--- End of Conversion-Standard​.md -->
+<!--- End of event-conversion.md -->
 
 <!-- API文档 -->
 
