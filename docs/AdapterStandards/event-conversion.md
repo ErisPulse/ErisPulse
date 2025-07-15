@@ -26,6 +26,9 @@
 |user_id|涉及用户|"user_456"|
 |group_id|群组事件|"group_789"|
 
+### 2.3 非标准字段（非必须，但建议实现）
+|user_nickname|涉及用户|"用户昵称"|
+
 ## 3. 完整事件模板
 ### 3.1 消息事件 (message)
 ```json
@@ -60,6 +63,7 @@
   ],
   "alt_message": "你好[图片]",
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "yunhu_raw": {...},
   "yunhu_command": {
@@ -82,6 +86,7 @@
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "operator_id": "",
   "yunhu_raw": {...},
@@ -100,6 +105,7 @@
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
 }
