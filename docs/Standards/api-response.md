@@ -5,6 +5,10 @@
 
 ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中定义了消息发送的返回结构，因此ErisPulse的适配器也需要遵循这个标准。
 
+但ErisPulse的协议有一些特殊性定义:
+- 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
+- 2. 返回内容中需要添加 {platform_name}_raw 字段，用于存放原始响应数据
+
 ## 2. 基础返回结构
 所有动作响应必须包含以下基础字段：
 
@@ -13,7 +17,9 @@ ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中�
 | status | string | 是 | 执行状态，必须是"ok"或"failed" |
 | retcode | int64 | 是 | 返回码，遵循OneBot12返回码规则 |
 | data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
+| message_id | string | 是 | 消息ID，用于标识消息, 没有则为空字符串 |
 | message | string | 是 | 错误信息，成功时为空字符串 |
+| {platform_name}_raw | any | 否 | 原始响应数据 |
 
 可选字段：
 | 字段名 | 数据类型 | 必选 | 说明 |
@@ -33,8 +39,10 @@ ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中�
         "message_id": "1234",
         "time": 1632847927.599013
     },
+    "message_id": "1234",
     "message": "",
-    "echo": "1234"
+    "echo": "1234",
+    "telegram_raw": {...}
 }
 ```
 
@@ -44,8 +52,10 @@ ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中�
     "status": "failed",
     "retcode": 10003,
     "data": null,
+    "message_id": "",
     "message": "缺少必要参数: user_id",
-    "echo": "1234"
+    "echo": "1234",
+    "telegram_raw": {...}
 }
 ```
 
