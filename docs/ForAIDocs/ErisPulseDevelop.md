@@ -148,6 +148,18 @@ with env.transaction():
 # 如果模块未注册，则返回None | 不支持设置默认值
 env.getConfig("MyModule")
 env.setConfig("MyModule", "MyConfig")
+# 这里的建议使用是，先获取 "MyModule" 模块的配置项，如果为空，则设置 "MyModule" 模块的配置项为 默认需要生成的默认配置（被生成到用户的项目下的config.toml）
+
+# 标准的示例:
+def _getConfig():
+    config = env.getConfig("MyModule")
+    if config is None:
+        defaultConfig = {
+            "MyKey": "MyValue"
+        }
+        env.setConfig("MyModule", defaultConfig)
+        return defaultConfig
+    return config
 
 # 其它深入操作请阅读API文档
 ```
@@ -216,8 +228,10 @@ async def on_message(data):
     
     # 获取哪个平台
     platform = data.get("platform")
-    detail_type = data.get("detail_type", "private")
-    datail_id = data.get("user_id") if detail_type == "private" else data.get("group_id")
+
+    # 发送的类型不能是 类似于 private 的类型，而是使用 "user" / "group" / other
+    detail_type = "user" if data.get("detail_type") == "private" else "group"
+    datail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
 
     echo_text = data.get("alt_message")
 
@@ -575,6 +589,20 @@ OneBot12 协议标准：https://12.onebot.dev/
 ---
 
 ## 适配器功能概述
+
+### 0. 适配器规则
+#### 发送消息的注意事项：
+例如中的接受者类型不允许例如 "private" 的格式，请使用 "user" / "group" / other，应该加以判断，如果是 "private" 则使用 "user"
+
+
+在消息发送接口 `Send.To(recvType, recvId).Text` 中，接收者类型（`recvType`）参数应使用规范的标识符格式。具体规则如下：
+
+**标准接收者类型**：
+ - 用户私聊：使用 `"user"`
+ - 群组聊天：使用 `"group"`
+ - 其他类型：使用对应平台定义的规范标识符
+
+应该加以判断，如果是 "private" 则使用 "user" 作为接收者类型，而不是 "private"。
 
 ### 1. YunhuAdapter
 YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
