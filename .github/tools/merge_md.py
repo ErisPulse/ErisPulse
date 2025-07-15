@@ -17,7 +17,8 @@ def merge_markdown_files(api_dir, additional_files, output_file):
         outfile.write("| 文件名 | 作用 |\n")
         outfile.write("|--------|------|\n")
         outfile.write("| ADAPTERS.md | 平台适配器说明，包括事件监听和消息发送方式 |\n")
-        outfile.write("| Conversion-Standard.md | 数据转换标准说明 |\n")
+        outfile.write("| event-conversion.md | 适配器数据转换标准说明 |\n")
+        outfile.write("| api-response.md | 适配器API响应标准说明 |\n")
         outfile.write("| DEVELOPMENT.md | 模块结构定义、入口文件格式、Main 类规范 |\n")
         outfile.write("| UseCore.md | 核心功能使用说明 |\n")
         outfile.write("| API文档 | 自动生成的API参考文档 |\n\n")
@@ -62,7 +63,8 @@ if __name__ == "__main__":
         "docs/UseCore.md",
         "docs/DEVELOPMENT.md",
         "docs/ADAPTERS.md",
-        "docs/Conversion-Standard​.md"
+        "docs/AdapterStandards/api-response.md",
+        "docs/AdapterStandards/event-conversion.md",
     ]
     
     # 输出文件路径
