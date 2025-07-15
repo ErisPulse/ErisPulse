@@ -63,6 +63,7 @@
   ],
   "alt_message": "你好[图片]",
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "yunhu_raw": {...},
   "yunhu_command": {
@@ -85,6 +86,7 @@
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789",
   "operator_id": "",
   "yunhu_raw": {...},
@@ -103,6 +105,7 @@
     "user_id": "bot_123"
   },
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
 }

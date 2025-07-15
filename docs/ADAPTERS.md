@@ -29,6 +29,7 @@ OneBot12 协议标准：https://12.onebot.dev/
   ],
   "alt_message": "你好",
   "user_id": "user_456",
+  "user_nickname": "YingXinche",
   "group_id": "group_789"
 }
 ```
@@ -298,6 +299,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "type": "notice",
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
+  "user_nickname": "YingXinche",
   "telegram_callback": {
     "id": "cb_123",
     "data": "callback_data",
@@ -310,6 +312,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "type": "notice",
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
+  "user_nickname": "YingXinche",
   "telegram_inline": {
     "id": "iq_789",
     "query": "search_text",
