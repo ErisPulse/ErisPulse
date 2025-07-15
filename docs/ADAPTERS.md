@@ -34,6 +34,39 @@ OneBot12 协议标准：https://12.onebot.dev/
 }
 ```
 
+> - 对于 发送消息的接口，`Send.To(recvType, recvId)` ，返回的格式是 OneBot12 标准格式 但是有一些区别：
+> - 我们在返回数据中添加了 `message_id` 和 `{platform_name}_raw` 字段
+> - 其中 `message_id` 在一些批量操作时会安装顺序依次排列到list中，但一般情况下是string类型，而 `{platform_name}_raw` 则是原始响应数据
+
+### 成功响应示例
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {
+        "message_id": "1234",
+        "time": 1632847927.599013
+    },
+    "message_id": "1234",
+    "message": "",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
+### 失败响应示例
+```json
+{
+    "status": "failed",
+    "retcode": 10003,
+    "data": null,
+    "message_id": "",
+    "message": "缺少必要参数: user_id",
+    "echo": "1234",
+    "telegram_raw": {...}
+}
+```
+
 ---
 
 ## 适配器功能概述
@@ -101,36 +134,6 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```
 > **注意：**
 > - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制***和**跳转URL**均无法收到推送。
-
-#### 主要方法返回值示例(Send.To(Type, ID).)
-1. .Text/.Html/Markdown/.Image/.Video/.File
-```json
-{
-  "code": 1,
-  "data": {
-    "messageInfo": {
-      "msgId": "65a314006db348be97a09eb065985d2d",
-      "recvId": "5197892",
-      "recvType": "user"
-    }
-  },
-  "msg": "success"
-}
-```
-
-2. .Batch
-```json
-{
-    "code": 1,
-    "data": {
-        "successCount": 1,
-        "successList": [
-            {"msgId": "65a314006db348be97a09eb065985d2d", "recvId": "5197892", "recvType": "user"}
-        ]
-    },
-    "msg": "success"
-}
-```
 
 #### OneBot12协议转换说明
 云湖事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在一些差异，你需要阅读以下内容：
