@@ -37,6 +37,20 @@ OneBot12 协议标准：https://12.onebot.dev/
 
 ## 适配器功能概述
 
+### 0. 适配器规则
+#### 发送消息的注意事项：
+例如中的接受者类型不允许例如 "private" 的格式，请使用 "user" / "group" / other，应该加以判断，如果是 "private" 则使用 "user"
+
+
+在消息发送接口 `Send.To(recvType, recvId).Text` 中，接收者类型（`recvType`）参数应使用规范的标识符格式。具体规则如下：
+
+**标准接收者类型**：
+ - 用户私聊：使用 `"user"`
+ - 群组聊天：使用 `"group"`
+ - 其他类型：使用对应平台定义的规范标识符
+
+应该加以判断，如果是 "private" 则使用 "user" 作为接收者类型，而不是 "private"。
+
 ### 1. YunhuAdapter
 YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
 
