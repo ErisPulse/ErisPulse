@@ -1,16 +1,25 @@
-# `ErisPulse/Core/adapter` 模块
+# 📦 `ErisPulse.Core.adapter` 模块
+
+*自动生成于 2025-07-16 15:34:26*
+
+---
+
+## 模块概述
 
 ErisPulse 适配器系统
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-> **提示**：
+💡 **提示**：
+
 1. 适配器必须继承BaseAdapter并实现必要方法
 2. 使用SendDSL实现链式调用风格的消息发送接口
 3. 适配器管理器支持多平台适配器的注册和生命周期管理
 4. 支持OneBot12协议的事件处理
 
-## 类
+---
+
+## 🏛️ 类
 
 ### `SendDSLBase`
 
@@ -18,12 +27,13 @@ ErisPulse 适配器系统
 
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
-> **提示**：
+💡 **提示**：
+
 1. 子类应实现具体的消息发送方法(如Text, Image等)
 2. 通过__getattr__实现动态方法调用
 
 
-#### 方法
+#### 🧰 方法
 
 ##### `__init__`
 
@@ -33,6 +43,7 @@ ErisPulse 适配器系统
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
 
+---
 
 ##### `To`
 
@@ -46,6 +57,7 @@ ErisPulse 适配器系统
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
 
+---
 
 ### `BaseAdapter`
 
@@ -53,33 +65,30 @@ ErisPulse 适配器系统
 
 提供与外部平台交互的标准接口，子类必须实现必要方法
 
-> **提示**：
+💡 **提示**：
+
 1. 必须实现call_api, start和shutdown方法
 2. 可以自定义Send类实现平台特定的消息发送逻辑
 3. 通过on装饰器注册事件处理器
 4. 支持OneBot12协议的事件处理
 
 
-#### 方法
+#### 🧰 方法
 
 ##### `__init__`
 
 初始化适配器
 
+---
 
 ##### `on`
 
 适配器事件监听装饰器
 
 :param event_type: 事件类型
-:param onebot12: 是否监听OneBot12协议事件
 :return: 装饰器函数
 
-:example:
->>> @adapter.on("message")
->>> async def handle_message(data):
->>>     print(f"收到消息: {data}")
-
+---
 
 ##### `middleware`
 
@@ -94,50 +103,36 @@ ErisPulse 适配器系统
 >>>     print(f"处理数据: {data}")
 >>>     return data
 
+---
 
-##### `call_api`
+##### 🔹 `async` `call_api`
 
 调用平台API的抽象方法
 
 :param endpoint: API端点
 :param params: API参数
 :return: API调用结果
+⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
 
-:raises NotImplementedError: 必须由子类实现
+---
 
-
-##### `start`
+##### 🔹 `async` `start`
 
 启动适配器的抽象方法
 
-:raises NotImplementedError: 必须由子类实现
+⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
 
+---
 
-##### `shutdown`
+##### 🔹 `async` `shutdown`
 
 关闭适配器的抽象方法
 
-:raises NotImplementedError: 必须由子类实现
+⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
 
+---
 
-##### `add_handler`
-
-添加事件处理器
-
-:param args: 参数列表
-    - 1个参数: 处理器函数(监听所有事件)
-    - 2个参数: 事件类型和处理器函数
-    
-:raises TypeError: 当参数数量无效时抛出
-    
-:example:
->>> # 监听所有事件
->>> adapter.add_handler(handle_all_events)
->>> # 监听特定事件
->>> adapter.add_handler("message", handle_message)
-
-
-##### `emit`
+##### 🔹 `async` `emit`
 
 触发原生协议事件
 
@@ -147,25 +142,9 @@ ErisPulse 适配器系统
 :example:
 >>> await adapter.emit("message", {"text": "Hello"})
 
+---
 
-##### `emit_onebot12`
-
-提交OneBot12协议事件
-
-:param event_type: OneBot12事件类型
-:param onebot_data: 符合OneBot12标准的事件数据
-
-:example:
->>> await adapter.emit_onebot12("message", {
->>>     "id": "123",
->>>     "time": 1620000000,
->>>     "type": "message",
->>>     "detail_type": "private",
->>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
->>> })
-
-
-##### `send`
+##### 🔹 `async` `send`
 
 发送消息的便捷方法
 
@@ -176,12 +155,13 @@ ErisPulse 适配器系统
     - method: 发送方法名(默认为"Text")
 :return: 发送结果
 
-:raises AttributeError: 当发送方法不存在时抛出
+⚠️ **可能抛出**: `AttributeError` - 当发送方法不存在时抛出
     
 :example:
 >>> await adapter.send("user", "123", "Hello")
 >>> await adapter.send("group", "456", "Hello", method="Markdown")
 
+---
 
 ### `AdapterManager`
 
@@ -189,14 +169,15 @@ ErisPulse 适配器系统
 
 管理多个平台适配器的注册、启动和关闭
 
-> **提示**：
+💡 **提示**：
+
 1. 通过register方法注册适配器
 2. 通过startup方法启动适配器
 3. 通过shutdown方法关闭所有适配器
 4. 通过on装饰器注册OneBot12协议事件处理器
 
 
-#### 方法
+#### 🧰 方法
 
 ##### `Adapter`
 
@@ -209,6 +190,7 @@ ErisPulse 适配器系统
 >>> async def handle_raw(data):
 >>>     print("收到原始事件:", data)
 
+---
 
 ##### `on`
 
@@ -222,6 +204,7 @@ OneBot12协议事件监听装饰器
 >>> async def handle_message(data):
 >>>     print(f"收到OneBot12消息: {data}")
 
+---
 
 ##### `middleware`
 
@@ -236,8 +219,9 @@ OneBot12协议事件监听装饰器
 >>>     print("处理OneBot12数据:", data)
 >>>     return data
 
+---
 
-##### `emit`
+##### 🔹 `async` `emit`
 
 提交OneBot12协议事件到指定平台
 
@@ -245,7 +229,7 @@ OneBot12协议事件监听装饰器
 :param event_type: OneBot12事件类型
 :param data: 符合OneBot12标准的事件数据
 
-:raises ValueError: 当平台未注册时抛出
+⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
     
 :example:
 >>> await sdk.adapter.emit("MyPlatform", "message", {
@@ -256,6 +240,7 @@ OneBot12协议事件监听装饰器
 >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
 >>> })
 
+---
 
 ##### `register`
 
@@ -265,19 +250,20 @@ OneBot12协议事件监听装饰器
 :param adapter_class: 适配器类
 :return: 注册是否成功
 
-:raises TypeError: 当适配器类无效时抛出
+⚠️ **可能抛出**: `TypeError` - 当适配器类无效时抛出
     
 :example:
 >>> adapter.register("MyPlatform", MyPlatformAdapter)
 
+---
 
-##### `startup`
+##### 🔹 `async` `startup`
 
 启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
-:raises ValueError: 当平台未注册时抛出
+⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
     
 :example:
 >>> # 启动所有适配器
@@ -285,14 +271,27 @@ OneBot12协议事件监听装饰器
 >>> # 启动指定适配器
 >>> await adapter.startup(["Platform1", "Platform2"])
 
+---
 
-##### `shutdown`
+##### 🔹 `async` `_run_adapter`
+
+⚠️ **内部方法**：
+
+运行适配器实例
+
+:param adapter: 适配器实例
+:param platform: 平台名称
+
+---
+
+##### 🔹 `async` `shutdown`
 
 关闭所有适配器
 
 :example:
 >>> await adapter.shutdown()
 
+---
 
 ##### `get`
 
@@ -304,6 +303,7 @@ OneBot12协议事件监听装饰器
 :example:
 >>> adapter = adapter.get("MyPlatform")
 
+---
 
 ##### `__getattr__`
 
@@ -312,11 +312,12 @@ OneBot12协议事件监听装饰器
 :param platform: 平台名称
 :return: 适配器实例
 
-:raises AttributeError: 当平台未注册时抛出
+⚠️ **可能抛出**: `AttributeError` - 当平台未注册时抛出
     
 :example:
 >>> adapter = adapter.MyPlatform
 
+---
 
 ##### `platforms`
 
@@ -327,3 +328,7 @@ OneBot12协议事件监听装饰器
 :example:
 >>> print("已注册平台:", adapter.platforms)
 
+---
+
+
+*文档最后更新于 2025-07-16 15:34:26*

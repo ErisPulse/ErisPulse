@@ -1,35 +1,58 @@
-# `ErisPulse/Core/server` 模块
+# 📦 `ErisPulse.Core.server` 模块
+
+*自动生成于 2025-07-16 15:34:26*
+
+---
+
+## 模块概述
 
 ErisPulse Adapter Server
 提供统一的适配器服务入口，支持HTTP和WebSocket路由
 
-> **提示**：
+💡 **提示**：
+
 1. 适配器只需注册路由，无需自行管理服务器
 2. WebSocket支持自定义认证逻辑
 3. 兼容FastAPI 0.68+ 版本
 
-## 类
+---
+
+## 🏛️ 类
 
 ### `AdapterServer`
 
 适配器服务器管理器
 
-> **提示**：
+💡 **提示**：
+
 核心功能：
 - HTTP/WebSocket路由注册
 - 生命周期管理
 - 统一错误处理
 
 
-#### 方法
+#### 🧰 方法
 
 ##### `__init__`
 
 初始化适配器服务器
 
-> **提示**：
+💡 **提示**：
+
 会自动创建FastAPI实例并设置核心路由
 
+---
+
+##### `_setup_core_routes`
+
+设置系统核心路由
+
+⚠️ **内部方法**：
+
+此方法仅供内部使用
+{!--< /internal-use >!--}
+
+---
 
 ##### `register_webhook`
 
@@ -40,11 +63,13 @@ ErisPulse Adapter Server
 :param handler: Callable 处理函数
 :param methods: List[str] HTTP方法列表(默认["POST"])
 
-:raises ValueError: 当路径已注册时抛出
+⚠️ **可能抛出**: `ValueError` - 当路径已注册时抛出
 
-> **提示**：
+💡 **提示**：
+
 路径会自动添加适配器前缀，如：/adapter_name/path
 
+---
 
 ##### `register_websocket`
 
@@ -55,11 +80,13 @@ ErisPulse Adapter Server
 :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
 :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 
-:raises ValueError: 当路径已注册时抛出
+⚠️ **可能抛出**: `ValueError` - 当路径已注册时抛出
 
-> **提示**：
+💡 **提示**：
+
 认证函数应返回布尔值，False将拒绝连接
 
+---
 
 ##### `get_app`
 
@@ -68,8 +95,9 @@ ErisPulse Adapter Server
 :return: 
     FastAPI: FastAPI应用实例
 
+---
 
-##### `start`
+##### 🔹 `async` `start`
 
 启动适配器服务器
 
@@ -78,13 +106,19 @@ ErisPulse Adapter Server
 :param ssl_certfile: Optional[str] SSL证书路径
 :param ssl_keyfile: Optional[str] SSL密钥路径
 
-:raises RuntimeError: 当服务器已在运行时抛出
+⚠️ **可能抛出**: `RuntimeError` - 当服务器已在运行时抛出
 
+---
 
-##### `stop`
+##### 🔹 `async` `stop`
 
 停止服务器
 
-> **提示**：
+💡 **提示**：
+
 会等待所有连接正常关闭
 
+---
+
+
+*文档最后更新于 2025-07-16 15:34:26*
