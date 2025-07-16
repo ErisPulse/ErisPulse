@@ -5,7 +5,6 @@
 
 ## 主要命令
 ### 包管理:
-    search: 搜索PyPI上的ErisPulse模块
     install: 安装模块/适配器包
     uninstall: 卸载模块/适配器包
     list: 列出已安装的模块/适配器
@@ -109,37 +108,6 @@ class PyPIManager:
         if last_error:
             shellprint.panel(f"获取远程模块列表失败: {last_error}", "错误", "error")
         return {"modules": {}, "adapters": {}}
-    
-    @staticmethod
-    def search_packages(query: str) -> List[Dict[str, str]]:
-        """
-        搜索PyPI上的ErisPulse包
-        
-        :param query: str 搜索关键词
-        :return: 
-            List[Dict[str, str]]: 搜索结果列表
-                - name: 包名
-                - description: 包描述
-        """
-        try:
-            result = subprocess.run(
-                [sys.executable, "-m", "pip", "search", query],
-                capture_output=True,
-                text=True
-            )
-            
-            packages = []
-            for line in result.stdout.split('\n'):
-                if "ErisPulse-" in line:
-                    parts = line.split(' ', 1)
-                    if len(parts) >= 1:
-                        name = parts[0].strip()
-                        desc = parts[1].strip() if len(parts) > 1 else ""
-                        packages.append({"name": name, "description": desc})
-            return packages
-        except Exception as e:
-            shellprint.panel(f"搜索PyPI包失败: {e}", "错误", "error")
-            return []
     
     @staticmethod
     def get_installed_packages() -> Dict[str, Dict[str, str]]:
@@ -414,11 +382,7 @@ def main():
         metavar=f"{Shell_Printer.GREEN}<命令>{Shell_Printer.RESET}",
         help='具体命令的帮助信息'
     )
-    
-    # 搜索命令
-    search_parser = subparsers.add_parser('search', help='搜索PyPI上的ErisPulse模块')
-    search_parser.add_argument('query', type=str, help='搜索关键词')
-    
+
     # 安装命令
     install_parser = subparsers.add_parser('install', help='安装模块/适配器包')
     install_parser.add_argument('package', type=str, help='要安装的包名')
@@ -457,20 +421,7 @@ def main():
         return
     
     try:
-        if args.command == "search":
-            packages = PyPIManager.search_packages(args.query)
-            if packages:
-                rows = [
-                    [
-                        f"{Shell_Printer.BLUE}{pkg['name']}{Shell_Printer.RESET}",
-                        pkg['description']
-                    ] for pkg in packages
-                ]
-                shellprint.table(["包名", "描述"], rows, "搜索结果", "info")
-            else:
-                shellprint.panel(f"未找到匹配 '{args.query}' 的ErisPulse包", "提示", "info")
-                
-        elif args.command == "install":
+        if args.command == "install":
             import asyncio
             # 首先检查是否是远程模块/适配器的简称
             remote_packages = asyncio.run(PyPIManager.get_remote_packages())
