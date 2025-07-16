@@ -71,7 +71,7 @@ class LazyModule:
     {!--< /tips >!--}
     """
     
-    def __init__(self, module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any]):
+    def __init__(self, module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any]) -> None:
         """
         初始化懒加载包装器
         
