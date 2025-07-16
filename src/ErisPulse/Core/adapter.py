@@ -96,7 +96,6 @@ class BaseAdapter:
             
             :param text: 文本内容
             :return: 异步任务
-            
             :example:
             >>> await adapter.Send.To("123").Text("Hello")
             """
@@ -122,13 +121,7 @@ class BaseAdapter:
         适配器事件监听装饰器
         
         :param event_type: 事件类型
-        :param onebot12: 是否监听OneBot12协议事件
         :return: 装饰器函数
-        
-        :example:
-        >>> @adapter.on("message")
-        >>> async def handle_message(data):
-        >>>     print(f"收到消息: {data}")
         """
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
@@ -162,7 +155,6 @@ class BaseAdapter:
         :param endpoint: API端点
         :param params: API参数
         :return: API调用结果
-        
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现call_api方法")
@@ -182,36 +174,6 @@ class BaseAdapter:
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现shutdown方法")
-
-    def add_handler(self, *args: Any) -> None:
-        """
-        添加事件处理器
-        
-        :param args: 参数列表
-            - 1个参数: 处理器函数(监听所有事件)
-            - 2个参数: 事件类型和处理器函数
-            
-        :raises TypeError: 当参数数量无效时抛出
-            
-        :example:
-        >>> # 监听所有事件
-        >>> adapter.add_handler(handle_all_events)
-        >>> # 监听特定事件
-        >>> adapter.add_handler("message", handle_message)
-        """
-        if len(args) == 1:
-            event_type = "*"
-            handler = args[0]
-        elif len(args) == 2:
-            event_type, handler = args
-        else:
-            raise TypeError("add_handler() 接受 1 个（监听所有事件）或 2 个参数（指定事件类型）")
-
-        @functools.wraps(handler)
-        async def wrapper(*handler_args, **handler_kwargs):
-            return await handler(*handler_args, **handler_kwargs)
-
-        self._handlers[event_type].append(wrapper)
         
     async def emit(self, event_type: str, data: Any) -> None:
         """
