@@ -13,11 +13,9 @@ ErisPulse SDK 主模块
 import os
 import sys
 import importlib
-import asyncio
-import toml
 import inspect
 import importlib.metadata
-from typing import Dict, List, Tuple, Optional, Set, Type, Any, Callable
+from typing import Dict, List, Tuple, Type, Any
 from pathlib import Path
 
 # BaseModules: SDK核心模块
@@ -77,10 +75,10 @@ class LazyModule:
         """
         初始化懒加载包装器
         
-        :param module_name: 模块名称
-        :param module_class: 模块类
-        :param sdk_ref: SDK引用
-        :param module_info: 模块信息字典
+        :param module_name: str 模块名称
+        :param module_class: Type 模块类
+        :param sdk_ref: Any SDK引用
+        :param module_info: Dict[str, Any] 模块信息字典
         """
         self._module_name = module_name
         self._module_class = module_class
@@ -90,7 +88,11 @@ class LazyModule:
         self._initialized = False
     
     def _initialize(self):
-        """实际初始化模块"""
+        """
+        实际初始化模块
+        
+        :raises LazyLoadError: 当模块初始化失败时抛出
+        """
         try:
             # 获取类的__init__参数信息
             init_signature = inspect.signature(self._module_class.__init__)
@@ -110,17 +112,37 @@ class LazyModule:
             raise raiserr.LazyLoadError(f"无法初始化模块 {self._module_name}: {e}")
     
     def __getattr__(self, name: str) -> Any:
-        """属性访问时触发初始化"""
+        """
+        属性访问时触发初始化
+        
+        :param name: str 要访问的属性名
+        :return: Any 模块属性值
+        """
         if not self._initialized:
             self._initialize()
         return getattr(self._instance, name)
     
     def __call__(self, *args, **kwargs) -> Any:
-        """调用时触发初始化"""
+        """
+        调用时触发初始化
+        
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: Any 模块调用结果
+        """
         if not self._initialized:
             self._initialize()
         return self._instance(*args, **kwargs)
+    
+    def __bool__(self) -> bool:
+        """
+        判断模块布尔值时触发初始化
 
+        :return: bool 模块布尔值
+        """
+        if not self._initialized:
+            self._initialize()
+        return bool(self._instance)
 
 class AdapterLoader:
     """
@@ -375,8 +397,8 @@ class ModuleLoader:
         """
         检查模块是否应该懒加载
         
-        :param module_class: 模块类
-        :return: bool: 如果返回 False，则立即加载；否则懒加载
+        :param module_class: Type 模块类
+        :return: bool 如果返回 False，则立即加载；否则懒加载
         """
         # 检查模块是否定义了 should_eager_load() 方法
         if hasattr(module_class, "should_eager_load"):
@@ -413,7 +435,8 @@ class ModuleInitializer:
         4. 注册适配器
         5. 初始化各模块
         
-        :return: bool: 初始化是否成功
+        :return: bool 初始化是否成功
+        :raises InitError: 当初始化失败时抛出
         """
         logger.info("[Init] SDK 正在初始化...")
         
@@ -458,7 +481,8 @@ class ModuleInitializer:
         """
         预记录所有模块信息到SDK属性中
         
-        确保所有模块在初始化前都已在SDK中注册
+        :param modules: List[str] 模块名称列表
+        :param module_objs: Dict[str, Any] 模块对象字典
         """
         for module_name in modules:
             module_obj = module_objs[module_name]
@@ -475,10 +499,10 @@ class ModuleInitializer:
         {!--< internal-use >!--}
         注册适配器
         
-        :param adapters: 适配器名称列表
-        :param adapter_objs: 适配器对象字典
+        :param adapters: List[str] 适配器名称列表
+        :param adapter_objs: Dict[str, Any] 适配器对象字典
         
-        :return: bool: 适配器注册是否成功
+        :return: bool 适配器注册是否成功
         """
         success = True
         # 存储平台名到适配器类的映射
@@ -525,10 +549,10 @@ class ModuleInitializer:
         {!--< internal-use >!--}
         初始化模块
         
-        :param modules: 模块名称列表
-        :param module_objs: 模块对象字典
+        :param modules: List[str] 模块名称列表
+        :param module_objs: Dict[str, Any] 模块对象字典
         
-        :return: bool: 模块初始化是否成功
+        :return: bool 模块初始化是否成功
         """
         success = True
         
@@ -605,7 +629,7 @@ def init_progress() -> bool:
     1. 检查并创建main.py入口文件
     2. 确保基础目录结构存在
 
-    :return: bool: 是否创建了新的main.py文件
+    :return: bool 是否创建了新的main.py文件
     
     {!--< tips >!--}
     1. 如果main.py已存在则不会覆盖
@@ -658,7 +682,7 @@ def _prepare_environment() -> bool:
     1. 初始化项目环境文件
     2. 加载环境变量配置
 
-    :return: bool: 环境准备是否成功
+    :return: bool 环境准备是否成功
     """
     logger.info("[Init] 准备初始化环境...")
     try:
@@ -680,7 +704,7 @@ def init() -> bool:
     1. 准备运行环境
     2. 初始化所有模块和适配器
 
-    :return: bool: SDK初始化是否成功
+    :return: bool SDK初始化是否成功
     
     {!--< tips >!--}
     1. 这是SDK的主要入口函数
@@ -700,8 +724,8 @@ def load_module(module_name: str) -> bool:
     """
     手动加载指定模块
     
-    :param module_name: 要加载的模块名称
-    :return: bool: 加载是否成功
+    :param module_name: str 要加载的模块名称
+    :return: bool 加载是否成功
     
     {!--< tips >!--}
     1. 可用于手动触发懒加载模块的初始化
