@@ -245,7 +245,7 @@ class AdapterServer:
 
         config = Config()
         config.bind = [f"{host}:{port}"]
-        # config.loglevel = "debug"
+        config.loglevel = "warning"
         
         if ssl_certfile and ssl_keyfile:
             config.certfile = ssl_certfile
