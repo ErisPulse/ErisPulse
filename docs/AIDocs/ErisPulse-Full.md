@@ -908,29 +908,36 @@ class MyAdapter(BaseAdapter):
             self.env.setConfig("MyAdapter", default_config)
             return default_config
         return config
+
     class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
-        # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
-        # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
-        # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
+        """
+        Send消息发送DSL，支持三种调用方式(继承的Send类包含了To方法，它会在用户调用时自动设置以下属性):
+        1. 指定类型和ID: To(type,id).Func() -> 设置_target_type和_target_id/_target_to
+           示例: Send.To("group",123).Text("hi")
+        2. 仅指定ID: To(id).Func() -> 只设置_target_id/_target_to
+           示例: Send.To("user@mail.com").Text("hi")
+        3. 直接调用: Func() -> 不设置目标属性
+           示例: Send.Text("broadcast")
+        """
         
-        # 可以重写Text方法提供平台特定实现
         def Text(self, text: str):
+            """发送文本消息（可重写实现）"""
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send",
                     content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
+                    recvId=self._target_id,    # 来自To()设置的属性
+                    recvType=self._target_type # 来自To(type,id)设置的属性
                 )
             )
             
-        # 添加新的消息类型
         def Image(self, file: bytes):
+            """发送图片消息"""
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send_image",
                     file=file,
-                    recvId=self._target_id,
+                    recvId=self._target_id,    # 自动使用To()设置的属性
                     recvType=self._target_type
                 )
             )
