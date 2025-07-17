@@ -96,7 +96,6 @@ class BaseAdapter:
             
             :param text: 文本内容
             :return: 异步任务
-            
             :example:
             >>> await adapter.Send.To("123").Text("Hello")
             """
@@ -113,33 +112,23 @@ class BaseAdapter:
         """
         初始化适配器
         """
-        self._handlers = defaultdict(list)  # 原生事件处理器
-        self._onebot_handlers = defaultdict(list)  # OneBot12事件处理器
+        self._handlers = defaultdict(list)
         self._middlewares = []
         self.Send = self.__class__.Send(self)
 
-    def on(self, event_type: str = "*", *, onebot12: bool = False) -> Callable[[Callable], Callable]:
+    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
         """
         适配器事件监听装饰器
         
         :param event_type: 事件类型
-        :param onebot12: 是否监听OneBot12协议事件
         :return: 装饰器函数
-        
-        :example:
-        >>> @adapter.on("message")
-        >>> async def handle_message(data):
-        >>>     print(f"收到消息: {data}")
         """
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
-            
-            if onebot12:
-                self._onebot_handlers[event_type].append(wrapper)
-            else:
-                self._handlers[event_type].append(wrapper)
+            self._handlers[event_type].append(wrapper)
+
             return wrapper
         return decorator
 
@@ -166,7 +155,6 @@ class BaseAdapter:
         :param endpoint: API端点
         :param params: API参数
         :return: API调用结果
-        
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现call_api方法")
@@ -186,36 +174,6 @@ class BaseAdapter:
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现shutdown方法")
-
-    def add_handler(self, *args: Any) -> None:
-        """
-        添加事件处理器
-        
-        :param args: 参数列表
-            - 1个参数: 处理器函数(监听所有事件)
-            - 2个参数: 事件类型和处理器函数
-            
-        :raises TypeError: 当参数数量无效时抛出
-            
-        :example:
-        >>> # 监听所有事件
-        >>> adapter.add_handler(handle_all_events)
-        >>> # 监听特定事件
-        >>> adapter.add_handler("message", handle_message)
-        """
-        if len(args) == 1:
-            event_type = "*"
-            handler = args[0]
-        elif len(args) == 2:
-            event_type, handler = args
-        else:
-            raise TypeError("add_handler() 接受 1 个（监听所有事件）或 2 个参数（指定事件类型）")
-
-        @functools.wraps(handler)
-        async def wrapper(*handler_args, **handler_kwargs):
-            return await handler(*handler_args, **handler_kwargs)
-
-        self._handlers[event_type].append(wrapper)
         
     async def emit(self, event_type: str, data: Any) -> None:
         """
@@ -239,35 +197,6 @@ class BaseAdapter:
         # 触发通配符 "*" 的处理器
         for handler in self._handlers.get("*", []):
             await handler(data)
-
-    async def emit_onebot12(self, event_type: str, onebot_data: Dict) -> None:
-        """
-        提交OneBot12协议事件
-        
-        :param event_type: OneBot12事件类型
-        :param onebot_data: 符合OneBot12标准的事件数据
-        
-        :example:
-        >>> await adapter.emit_onebot12("message", {
-        >>>     "id": "123",
-        >>>     "time": 1620000000,
-        >>>     "type": "message",
-        >>>     "detail_type": "private",
-        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
-        >>> })
-        """
-        # 先执行中间件
-        for middleware in self._middlewares:
-            onebot_data = await middleware(onebot_data)
-
-        # 触发OneBot12事件处理器
-        if event_type in self._onebot_handlers:
-            for handler in self._onebot_handlers[event_type]:
-                await handler(onebot_data)
-
-        # 触发通配符 "*" 的处理器
-        for handler in self._onebot_handlers.get("*", []):
-            await handler(onebot_data)
 
     async def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> Any:
         """
