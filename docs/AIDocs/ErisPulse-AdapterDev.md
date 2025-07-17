@@ -170,7 +170,8 @@ MyAdapter/
 ├── LICENSE
 └── MyAdapter/
     ├── __init__.py
-    └── Core.py
+    ├── Core.py
+    └── Converter.py
 ```
 
 ### 2. `pyproject.toml` 文件
@@ -214,13 +215,19 @@ from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):    # 适配器有显式的导入sdk对象, 所以不需导入sdk对象
+    def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
         self.sdk = sdk
         self.env = self.sdk.env
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
         self.config = self._get_config()
+        self.converter = self._setup_converter()  # 获取转换器实例
+        self.convert = self.converter.convert
+
+    def _setup_converter(self):
+        from .Converter import MyPlatformConverter
+        return MyPlatformConverter()
 
     def _get_config(self):
         # 加载配置方法，你需要在这里进行必要的配置加载逻辑
@@ -326,6 +333,209 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 
 ---
 
+## 5. 事件转换与路由注册
+
+适配器需要处理平台原生事件并转换为OneBot12标准格式，同时需要向底层框架注册路由。以下是两种典型实现方式：
+
+### 5.1 WebSocket 方式实现
+
+```python
+async def _ws_handler(self, websocket: WebSocket):
+    """WebSocket连接处理器"""
+    self.connection = websocket
+    self.logger.info("客户端已连接")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                event = json.loads(data)
+                # 提交原生事件到适配器
+                # 原生事件需要通过指定平台来获取 比如 sdk.adapter.MyPlatform.on("事件类型")
+                self.emit(data.get("event_type"), data)
+
+                # 转换为OneBot12标准事件
+                onebot_event = self.convert(event)
+                if onebot_event:
+                    # 提交标准事件到框架 | 这里直接通过 sdk.adaoter.on("事件类型") 便可以获取到事件，但是需要判断字段里面的platform字段来区分适配器
+                    await self.sdk.adapter.emit(onebot_event)
+            except json.JSONDecodeError:
+                self.logger.error(f"JSON解析失败: {data}")
+    except WebSocketDisconnect:
+        self.logger.info("客户端断开连接")
+    finally:
+        self.connection = None
+
+async def start(self):
+    """注册WebSocket路由"""
+    adapter_server.register_websocket(
+        adapter_name="myplatform",  # 适配器名称
+        path="/ws",  # 路由路径
+        handler=self._ws_handler,  # 处理器
+        auth_handler=self._auth_handler  # 认证处理器(可选)
+    )
+```
+
+### 5.2 WebHook 方式实现
+
+```python
+async def _webhook_handler(self, request: Request):
+    """WebHook请求处理器"""
+    try:
+        data = await request.json()
+
+        # 提交原生事件到适配器
+        # 原生事件需要通过指定平台来获取 比如 sdk.adapter.MyPlatform.on("事件类型")
+        self.emit(data.get("event_type"), data)
+
+        # 转换为OneBot12标准事件
+        onebot_event = self.convert(data)=
+        if onebot_event:
+            # 提交标准事件到框架 | 这里直接通过 sdk.adaoter.on("事件类型") 便可以获取到事件，但是需要判断字段里面的platform字段来区分适配器
+            await self.sdk.adapter.emit(onebot_event)
+        return JSONResponse({"status": "ok"})
+    except Exception as e:
+        self.logger.error(f"处理WebHook失败: {str(e)}")
+        return JSONResponse({"status": "failed"}, status_code=400)
+
+async def start(self):
+    """注册WebHook路由"""
+    adapter_server.register_webhook(
+        adapter_name="myplatform",  # 适配器名称
+        path="/webhook",  # 路由路径
+        handler=self._webhook_handler,  # 处理器
+        methods=["POST"]  # 支持的HTTP方法
+    )
+```
+
+### 5.3 事件转换器实现
+
+适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式(具体实现请参考[事件转换标准文档](docs/AdapterStandards/EventConversion.md)：
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event: Dict) -> Optional[Dict]:
+        """将平台原生事件转换为OneBot12标准格式"""
+        if not isinstance(raw_event, dict):
+            return None
+
+        # 基础事件结构
+        onebot_event = {
+            "id": str(raw_event.get("event_id", uuid.uuid4())),
+            "time": int(time.time()),
+            "type": "",  # message/notice/request/meta_event
+            "detail_type": "",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event  # 保留原始数据
+        }
+
+        # 根据事件类型分发处理
+        event_type = raw_event.get("type")
+        if event_type == "message":
+            return self._handle_message(raw_event, onebot_event)
+        elif event_type == "notice":
+            return self._handle_notice(raw_event, onebot_event)
+        
+        return None
+```
+
+## 6. API响应标准
+
+适配器的`call_api`方法必须返回符合以下标准的响应结构：
+
+### 6.1 成功响应格式
+
+```python
+{
+    "status": "ok",  # 必须
+    "retcode": 0,  # 必须，0表示成功
+    "data": {  # 必须，成功时返回的数据
+        "message_id": "123456",  # 消息ID(如果有)
+        "time": 1632847927.599013  # 时间戳(如果有)
+    },
+    "message": "",  # 必须，成功时为空字符串
+    "message_id": "123456",  # 可选，消息ID
+    "echo": "1234",  # 可选，当请求中包含echo时返回
+    "myplatform_raw": {...}  # 可选，原始响应数据
+}
+```
+
+### 6.2 失败响应格式
+
+```python
+{
+    "status": "failed",  # 必须
+    "retcode": 10003,  # 必须，非0错误码
+    "data": None,  # 必须，失败时为null
+    "message": "缺少必要参数",  # 必须，错误描述
+    "message_id": "",  # 可选，失败时为空字符串
+    "echo": "1234",  # 可选，当请求中包含echo时返回
+    "myplatform_raw": {...}  # 可选，原始响应数据
+}
+```
+
+### 6.3 实现示例
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # 调用平台API
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        # 标准化响应
+        standardized = {
+            "status": "ok" if raw_response["success"] else "failed",
+            "retcode": 0 if raw_response["success"] else raw_response.get("code", 10001),
+            "data": raw_response.get("data"),
+            "message": raw_response.get("message", ""),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "myplatform_raw": raw_response
+        }
+        
+        if "echo" in params:
+            standardized["echo"] = params["echo"]
+            
+        return standardized
+        
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,  # 平台错误代码段
+            "data": None,
+            "message": str(e),
+            "message_id": ""
+        }
+```
+
+## 7. 错误代码规范
+
+适配器应遵循以下错误代码范围：
+
+| 代码范围 | 类型 | 说明 |
+|---------|------|------|
+| 0 | 成功 | 必须为0 |
+| 1xxxx | 请求错误 | 无效参数、不支持的操作等 |
+| 2xxxx | 处理器错误 | 适配器内部处理错误 |
+| 3xxxx | 执行错误 | 平台API调用错误 |
+| 34xxx | 平台错误 | 平台返回的错误 |
+
+建议在适配器中定义常量：
+
+```python
+class ErrorCode:
+    SUCCESS = 0
+    INVALID_PARAMS = 10003
+    UNSUPPORTED_ACTION = 10002
+    INTERNAL_ERROR = 20001
+    PLATFORM_ERROR = 34000
+```
+
+---
+
 ## 开发建议
 
 ### 1. 使用异步编程模型
@@ -350,7 +560,7 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 
 ---
 
-*文档最后更新于 2025-07-17 08:10:26*
+*文档最后更新于 2025-07-17 12:44:51*
 
 <!--- End of Adapter.md -->
 
