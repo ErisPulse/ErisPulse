@@ -490,7 +490,8 @@ class ModuleInitializer:
             module_objs, enabled_modules, disabled_modules = ModuleLoader.load()
             logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
             
-            if os.path.join(os.path.dirname(__file__), "modules"):
+            modules_dir = os.path.join(os.path.dirname(__file__), "modules")
+            if os.path.exists(modules_dir) and os.listdir(modules_dir):
                 logger.warning("[Warning] 你的项目使用了已经弃用的模块加载方式, 请尽快使用 PyPI 模块加载方式代替")
             
             if not enabled_modules and not enabled_adapters:
@@ -514,7 +515,7 @@ class ModuleInitializer:
             return False
     
     @staticmethod
-    def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> None:
+    def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
         """
         {!--< internal-use >!--}
         初始化模块
@@ -524,13 +525,14 @@ class ModuleInitializer:
         
         :return: bool 模块初始化是否成功
         """
+        # 第一阶段：将所有模块挂载到LazyModule代理上
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
             if hasattr(sdk, meta_name):
                 continue
-            
+                
             try:
                 entry_points = importlib.metadata.entry_points()
                 if hasattr(entry_points, 'select'):
@@ -543,29 +545,51 @@ class ModuleInitializer:
                 entry_point = module_entry_map.get(meta_name)
                 if entry_point:
                     module_class = entry_point.load()
-                    lazy_load = ModuleLoader._should_lazy_load(module_class)
                     
-                    if lazy_load:
-                        lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
-                        setattr(sdk, meta_name, lazy_module)
-                    else:
-                        init_signature = inspect.signature(module_class.__init__)
-                        if 'sdk' in init_signature.parameters:
-                            instance = module_class(sdk)
-                        else:
-                            instance = module_class()
-                        
-                        setattr(instance, "moduleInfo", module_obj.moduleInfo)
-                        setattr(sdk, meta_name, instance)
+                    # 创建LazyModule代理
+                    lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
+                    setattr(sdk, meta_name, lazy_module)
                     
                     logger.debug(f"预注册模块: {meta_name}")
-
-                return True
                     
             except Exception as e:
                 logger.error(f"预注册模块 {meta_name} 失败: {e}")
                 setattr(sdk, meta_name, None)
                 return False
+        
+        # 第二阶段：检查并初始化需要立即加载的模块
+        for module_name in modules:
+            module_obj = module_objs[module_name]
+            meta_name = module_obj.moduleInfo["meta"]["name"]
+            
+            if not hasattr(sdk, meta_name):
+                continue
+                
+            try:
+                entry_points = importlib.metadata.entry_points()
+                if hasattr(entry_points, 'select'):
+                    module_entries = entry_points.select(group='erispulse.module')
+                    module_entry_map = {entry.name: entry for entry in module_entries}
+                else:
+                    module_entries = entry_points.get('erispulse.module', [])
+                    module_entry_map = {entry.name: entry for entry in module_entries}
+                
+                entry_point = module_entry_map.get(meta_name)
+                if entry_point:
+                    module_class = entry_point.load()
+                    
+                    # 检查是否需要立即加载
+                    lazy_load = ModuleLoader._should_lazy_load(module_class)
+                    if not lazy_load:
+                        # 触发LazyModule的初始化
+                        getattr(sdk, meta_name)._initialize()
+                        logger.debug(f"立即初始化模块: {meta_name}")
+                        
+            except Exception as e:
+                logger.error(f"初始化模块 {meta_name} 失败: {e}")
+                return False
+                
+        return True
     
     @staticmethod
     def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:

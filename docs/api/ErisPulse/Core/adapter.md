@@ -1,6 +1,6 @@
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -42,6 +42,7 @@ ErisPulse 适配器系统
 :param adapter: 所属适配器实例
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
+:param _account_id: 发送账号(可选)
 
 ---
 
@@ -56,6 +57,19 @@ ErisPulse 适配器系统
 :example:
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+
+---
+
+##### `Using`
+
+设置发送账号
+
+:param _account_id: 发送账号
+:return: SendDSL实例
+
+:example:
+>>> adapter.Send.Using("bot1").To("123").Text("Hello")
+>>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
 
 ---
 
@@ -331,4 +345,4 @@ OneBot12协议事件监听装饰器
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
