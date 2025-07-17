@@ -877,6 +877,11 @@ from .Core import MyAdapter
 ```python
 from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.Core import adapter_server
+
+# 这里仅你使用 websocket 作为通信协议时需要 | 第一个作为参数的类型是 WebSocket, 第二个是 WebSocketDisconnect，当 ws 连接断开时触发你的捕捉
+# 一般来说你不用在依赖中添加 fastapi, 因为它已经内置在 ErisPulse 中了
+from fastapi import WebSocket, WebSocketDisconnect
 
 class MyAdapter(BaseAdapter):
     def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
