@@ -396,18 +396,8 @@ class AdapterManager:
         from .logger import logger
         from .server import adapter_server
 
-        server_config = env.getConfig("Server")
-
-        if server_config is None:
-            server_config = {
-                "host": "0.0.0.0",
-                "port": 8000,
-                "ssl_certfile": None,
-                "ssl_keyfile": None
-            }
-            env.setConfig("Server", server_config)
-            logger.info("已创建服务器配置")
-        
+        from . import _config
+        server_config = _config.get("server", {})
         host = server_config["host"]
         port = server_config["port"]
         ssl_cert = server_config.get("ssl_certfile", None)
@@ -494,7 +484,7 @@ class AdapterManager:
             await adapter.shutdown()
         
         from .server import adapter_server
-        adapter_server.stop()
+        await adapter_server.stop()
 
     def get(self, platform: str) -> Optional[BaseAdapter]:
         """
