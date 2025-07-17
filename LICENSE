@@ -22,8 +22,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-The documentation portion of this project references content from https://codeberg.org/ybr/yhwiki,
-licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 
-International License (CC BY-NC-ND 4.0).
+This SDK's core adapter standardization layer strictly follows OneBot12 specifications (https://12.onebot.dev/) for:
+- Event data normalization
+- API request/response formats
+- Message segment definitions
+- Metadata definitions
 
-Note: This license file has been updated to correct the upstream project reference.
+This ensures consistent behavior and interoperability across all adapter implementations.
