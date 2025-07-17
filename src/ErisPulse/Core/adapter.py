@@ -34,20 +34,22 @@ class SendDSLBase:
     {!--< /tips >!--}
     """
     
-    def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None):
+    def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None):
         """
         初始化DSL发送器
         
         :param adapter: 所属适配器实例
         :param target_type: 目标类型(可选)
         :param target_id: 目标ID(可选)
+        :param _account_id: 发送账号(可选)
         """
         self._adapter = adapter
         self._target_type = target_type
         self._target_id = target_id
         self._target_to = target_id
+        self._account = account_id
 
-    def To(self, target_type: str = None, target_id: str = None) -> 'SendDSL':
+    def To(self, target_type: str = None, target_id: Union[str, int] = None) -> 'SendDSL':
         """
         设置消息目标
         
@@ -63,7 +65,20 @@ class SendDSLBase:
             target_id = target_type
             target_type = None
 
-        return self.__class__(self._adapter, target_type, target_id)
+        return self.__class__(self._adapter, target_type, target_id, self._account_id)
+
+    def Using(self, account_id: Union[str, int]) -> 'SendDSL':
+        """
+        设置发送账号
+        
+        :param _account_id: 发送账号
+        :return: SendDSL实例
+        
+        :example:
+        >>> adapter.Send.Using("bot1").To("123").Text("Hello")
+        >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
+        """
+        return self.__class__(self._adapter, self._target_type, self._target_id, account_id)
 
 
 class BaseAdapter:
@@ -90,23 +105,18 @@ class BaseAdapter:
         {!--< /tips >!--}
         """
         
-        def Text(self, text: str) -> Awaitable[Any]:
+        def Example(self, text: str) -> Awaitable[Any]:
             """
-            基础文本消息发送方法
+            示例消息发送方法
             
             :param text: 文本内容
             :return: 异步任务
             :example:
-            >>> await adapter.Send.To("123").Text("Hello")
+            >>> await adapter.Send.To("123").Example("Hello")
             """
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
+            from .logger import logger
+            logger.debug(f"适配器 {self._adapter.__class__.__name__} 发送了实例类型的消息: {text}")
+            
         
     def __init__(self):
         """
