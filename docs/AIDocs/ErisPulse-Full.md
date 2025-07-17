@@ -258,6 +258,7 @@ util.ExecAsync(sync_task)
 > 基线协议：(OneBot12)[https://12.onebot.dev/] 
 > 
 > 本文档为**快速使用指南**，包含：
+> - 通用接口使用方法
 > - 各适配器支持的Send方法链式调用示例
 > - 平台特有的事件/消息格式说明
 > 
@@ -265,6 +266,48 @@ util.ExecAsync(sync_task)
 > - [适配器开发指南](docs/Development/Adapter.md)
 > - [事件转换标准](docs/AdapterStandards/event-conversion.md)  
 > - [API响应规范](docs/AdapterStandards/api-response.md)
+
+---
+
+## 通用接口
+
+### Send 链式调用
+所有适配器都支持以下标准调用方式：
+
+1. 指定类型和ID: `To(type,id).Func()`
+   ```python
+   await adapter.AdapterName.To("user", "U1001").Text("Hello")
+   ```
+2. 仅指定ID: `To(id).Func()`
+   ```python
+   await adapter.AdapterName.To("U1001").Text("Hello")
+   ```
+3. 指定发送账号: `Using(account_id)`
+   ```python
+   await adapter.AdapterName.Using("bot1").To("U1001").Text("Hello")
+   ```
+4. 直接调用: `Func()`
+   ```python
+   await adapter.AdapterName.Text("Broadcast message")
+   ```
+
+### 事件监听
+有两种事件监听方式：
+
+1. 平台原生事件监听：
+   ```python
+   @adapter.AdapterName.on("event_type")
+   async def handler(data):
+       print(f"收到原生事件: {data}")
+   ```
+
+2. OneBot12标准事件监听：
+   ```python
+   @adapter.on("event_type")  # 所有平台的标准事件
+   async def handler(data):
+       if data["platform"] == "yunhu":
+           print(f"收到云湖标准事件: {data}")
+   ```
 
 ---
 
@@ -911,12 +954,14 @@ class MyAdapter(BaseAdapter):
 
     class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         """
-        Send消息发送DSL，支持三种调用方式(继承的Send类包含了To方法，它会在用户调用时自动设置以下属性):
+        Send消息发送DSL，支持四种调用方式(继承的Send类包含了To和Using方法):
         1. 指定类型和ID: To(type,id).Func() -> 设置_target_type和_target_id/_target_to
            示例: Send.To("group",123).Text("hi")
-        2. 仅指定ID: To(id).Func() -> 只设置_target_id/_target_to
-           示例: Send.To("user@mail.com").Text("hi")
-        3. 直接调用: Func() -> 不设置目标属性
+        2. 指定发送账号: Using(account_id).Func() -> 设置_account_id
+           示例: Send.Using("bot1").Text("hi")
+        3. 组合使用: Using(account_id).To(type,id).Func()
+           示例: Send.Using("bot1").To("user","123").Text("hi")
+        4. 直接调用: Func() -> 不设置目标属性
            示例: Send.Text("broadcast")
         """
         
@@ -1001,11 +1046,29 @@ class Send((BaseAdapter.Send):
         )
 ```
 
-调用方式如下：
+调用方式支持以下组合：
 
+1. 指定发送账号和接收目标：
+```python
+sdk.adapter.MyPlatform.Send.Using("bot1").To("user", "U1001").Text("你好")
+```
+
+2. 仅指定接收目标：
 ```python
 sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 ```
+
+3. 仅指定发送账号：
+```python
+sdk.adapter.MyPlatform.Send.Using("bot1").Text("广播消息")
+```
+
+4. 直接调用：
+```python
+sdk.adapter.MyPlatform.Send.Text("广播消息")
+```
+
+`Using`方法用于指定发送账号，会设置`self._account_id`属性，可以在后续API调用中使用。
 
 ---
 
@@ -1576,7 +1639,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 
 # 📦 `ErisPulse.__init__` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -1907,13 +1970,13 @@ SDK初始化入口
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -2102,13 +2165,13 @@ PyPI包管理器
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -2453,13 +2516,13 @@ OneBot12协议事件监听装饰器
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -2745,13 +2808,13 @@ ErisPulse 环境配置模块
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -2833,13 +2896,13 @@ ErisPulse 日志系统
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -3022,13 +3085,13 @@ ErisPulse 模块管理器
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\raiserr.md
 
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -3132,13 +3195,13 @@ ErisPulse 错误管理系统
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\server.md
 
 # 📦 `ErisPulse.Core.server` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -3259,13 +3322,13 @@ ErisPulse Adapter Server
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 ## ErisPulse\Core\util.md
 
 # 📦 `ErisPulse.Core.util` 模块
 
-*自动生成于 2025-07-17 16:39:14*
+*自动生成于 2025-07-17 16:57:03*
 
 ---
 
@@ -3359,6 +3422,6 @@ ErisPulse 工具函数集合
 ---
 
 
-*文档最后更新于 2025-07-17 16:39:14*
+*文档最后更新于 2025-07-17 16:57:03*
 
 <!--- End of API文档 -->

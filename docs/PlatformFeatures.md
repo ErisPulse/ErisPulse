@@ -2,6 +2,7 @@
 > 基线协议：(OneBot12)[https://12.onebot.dev/] 
 > 
 > 本文档为**快速使用指南**，包含：
+> - 通用接口使用方法
 > - 各适配器支持的Send方法链式调用示例
 > - 平台特有的事件/消息格式说明
 > 
@@ -9,6 +10,48 @@
 > - [适配器开发指南](docs/Development/Adapter.md)
 > - [事件转换标准](docs/AdapterStandards/event-conversion.md)  
 > - [API响应规范](docs/AdapterStandards/api-response.md)
+
+---
+
+## 通用接口
+
+### Send 链式调用
+所有适配器都支持以下标准调用方式：
+
+1. 指定类型和ID: `To(type,id).Func()`
+   ```python
+   await adapter.AdapterName.To("user", "U1001").Text("Hello")
+   ```
+2. 仅指定ID: `To(id).Func()`
+   ```python
+   await adapter.AdapterName.To("U1001").Text("Hello")
+   ```
+3. 指定发送账号: `Using(account_id)`
+   ```python
+   await adapter.AdapterName.Using("bot1").To("U1001").Text("Hello")
+   ```
+4. 直接调用: `Func()`
+   ```python
+   await adapter.AdapterName.Text("Broadcast message")
+   ```
+
+### 事件监听
+有两种事件监听方式：
+
+1. 平台原生事件监听：
+   ```python
+   @adapter.AdapterName.on("event_type")
+   async def handler(data):
+       print(f"收到原生事件: {data}")
+   ```
+
+2. OneBot12标准事件监听：
+   ```python
+   @adapter.on("event_type")  # 所有平台的标准事件
+   async def handler(data):
+       if data["platform"] == "yunhu":
+           print(f"收到云湖标准事件: {data}")
+   ```
 
 ---
 
