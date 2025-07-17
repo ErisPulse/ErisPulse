@@ -1,17 +1,22 @@
-# ErisPulse Adapter 文档
+# ErisPulse PlatformFeatures 文档
+> 基线协议：(OneBot12)[https://12.onebot.dev/] 
+> 
+> 本文档为**快速使用指南**，包含：
+> - 各适配器支持的Send方法链式调用示例
+> - 平台特有的事件/消息格式说明
+> 
+> 正式适配器开发请参考：
+> - [适配器开发指南](docs/Development/Adapter.md)
+> - [事件转换标准](docs/AdapterStandards/event-conversion.md)  
+> - [API响应规范](docs/AdapterStandards/api-response.md)
 
-## 简介
-ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处理机制。目前支持的主要适配器包括：
+---
 
-- **TelegramAdapter**
-- **OneBotAdapter**
-- **YunhuAdapter**
+## 标准格式
+为方便参考，这里给出了简单的事件格式，如果需要详细信息，请参考上方的链接。
 
-每个适配器都实现了对于 OneBot12 协议的转换、消息发送方法和生命周期管理。以下将介绍使用时的事件内容以及一些适配器的拓展部分
-
-OneBot12 协议标准：https://12.onebot.dev/
-示例标准格式：
-
+### 标准事件格式
+所有适配器必须实现的事件转换格式：
 ```json
 {
   "id": "event_123",
@@ -22,10 +27,7 @@ OneBot12 协议标准：https://12.onebot.dev/
   "self": {"platform": "yunhu", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {
-      "type": "text",
-      "data": {"text": "你好"}
-    }
+    {"type": "text", "data": {"text": "你好"}}
   ],
   "alt_message": "你好",
   "user_id": "user_456",
@@ -34,56 +36,37 @@ OneBot12 协议标准：https://12.onebot.dev/
 }
 ```
 
-> - 对于 发送消息的接口，`Send.To(recvType, recvId)` ，返回的格式是 OneBot12 标准格式 但是有一些区别：
-> - 我们在返回数据中添加了 `message_id` 和 `{platform_name}_raw` 字段
-> - 其中 `message_id` 在一些批量操作时会安装顺序依次排列到list中，但一般情况下是string类型，而 `{platform_name}_raw` 则是原始响应数据
-
-### 成功响应示例
+### 标准响应格式
+#### 消息发送成功
 ```json
 {
-    "status": "ok",
-    "retcode": 0,
-    "data": {
-        "message_id": "1234",
-        "time": 1632847927.599013
-    },
+  "status": "ok",
+  "retcode": 0,
+  "data": {
     "message_id": "1234",
-    "message": "",
-    "echo": "1234",
-    "telegram_raw": {...}
+    "time": 1632847927.599013
+  },
+  "message_id": "1234",
+  "message": "",
+  "echo": "1234",
+  "{platform}_raw": {...}
 }
 ```
 
-### 失败响应示例
+#### 消息发送失败
 ```json
 {
-    "status": "failed",
-    "retcode": 10003,
-    "data": null,
-    "message_id": "",
-    "message": "缺少必要参数: user_id",
-    "echo": "1234",
-    "telegram_raw": {...}
+  "status": "failed",
+  "retcode": 10003,
+  "data": null,
+  "message_id": "",
+  "message": "缺少必要参数",
+  "echo": "1234",
+  "{platform}_raw": {...}
 }
 ```
 
 ---
-
-## 适配器功能概述
-
-### 0. 适配器规则
-#### 发送消息的注意事项：
-例如中的接受者类型不允许例如 "private" 的格式，请使用 "user" / "group" / other，应该加以判断，如果是 "private" 则使用 "user"
-
-
-在消息发送接口 `Send.To(recvType, recvId).Text` 中，接收者类型（`recvType`）参数应使用规范的标识符格式。具体规则如下：
-
-**标准接收者类型**：
- - 用户私聊：使用 `"user"`
- - 群组聊天：使用 `"group"`
- - 其他类型：使用对应平台定义的规范标识符
-
-应该加以判断，如果是 "private" 则使用 "user" 作为接收者类型，而不是 "private"。
 
 ### 1. YunhuAdapter
 YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
@@ -91,6 +74,9 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
 await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
@@ -111,7 +97,7 @@ Borard board_type 支持以下类型：
 - `local`：指定用户看板
 - `global`：全局看板
 
-#### 按钮参数说明
+##### 按钮参数说明
 `buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
 
 | 字段         | 类型   | 是否必填 | 说明                                                                 |
@@ -234,6 +220,9 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+telegram = adapter.get("telegram")
+
 await telegram.Send.To("user", user_id).Text("Hello World!")
 ```
 
@@ -338,12 +327,15 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 
 ---
 
-### 3. OneBotAdapter
-OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
+### 3. OneBot11Adapter
+OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+onebot = adapter.get("onebot11")
+
 await onebot.Send.To("group", group_id).Text("Hello World!")
 ```
 
@@ -414,22 +406,6 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 
 ---
 
-## 生命周期管理
-
-### 启动适配器
-```python
-await sdk.adapter.startup()
-```
-此方法会根据配置启动适配器，并初始化必要的连接。
-
-### 关闭适配器
-```python
-await sdk.adapter.shutdown()
-```
-确保资源释放，关闭 WebSocket 连接或其他网络资源。
-
----
-
 ## 参考链接
 ErisPulse 项目：
 - [主库](https://github.com/ErisPulse/ErisPulse/)
@@ -437,7 +413,7 @@ ErisPulse 项目：
 - [ErisPulse Telegram 适配器库](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
 - [ErisPulse OneBot 适配器库](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
-官方文档：
+相关官方文档：
 - [OneBot V11 协议文档](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API 官方文档](https://core.telegram.org/bots/api)
 - [云湖官方文档](https://www.yhchat.com/document/1-3)
