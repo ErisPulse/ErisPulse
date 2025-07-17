@@ -47,7 +47,7 @@ class SendDSLBase:
         self._target_type = target_type
         self._target_id = target_id
         self._target_to = target_id
-        self._account = account_id
+        self._account_id = account_id
 
     def To(self, target_type: str = None, target_id: Union[str, int] = None) -> 'SendDSL':
         """
