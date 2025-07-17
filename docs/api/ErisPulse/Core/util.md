@@ -1,15 +1,24 @@
-# `ErisPulse/Core/util` 模块
+# 📦 `ErisPulse.Core.util` 模块
+
+*自动生成于 2025-07-16 15:34:26*
+
+---
+
+## 模块概述
 
 ErisPulse 工具函数集合
 
 提供常用工具函数，包括拓扑排序、缓存装饰器、异步执行等实用功能。
 
-> **提示**：
+💡 **提示**：
+
 1. 使用@cache装饰器缓存函数结果
 2. 使用@run_in_executor在独立线程中运行同步函数
 3. 使用@retry实现自动重试机制
 
-## 类
+---
+
+## 🏛️ 类
 
 ### `Util`
 
@@ -17,13 +26,14 @@ ErisPulse 工具函数集合
 
 提供各种实用功能，简化开发流程
 
-> **提示**：
+💡 **提示**：
+
 1. 拓扑排序用于解决依赖关系
 2. 装饰器简化常见模式实现
 3. 异步执行提升性能
 
 
-#### 方法
+#### 🧰 方法
 
 ##### `ExecAsync`
 
@@ -37,6 +47,7 @@ ErisPulse 工具函数集合
 :example:
 >>> result = util.ExecAsync(my_async_func, arg1, arg2)
 
+---
 
 ##### `cache`
 
@@ -50,6 +61,7 @@ ErisPulse 工具函数集合
 >>> def expensive_operation(param):
 >>>     return heavy_computation(param)
 
+---
 
 ##### `run_in_executor`
 
@@ -64,6 +76,7 @@ ErisPulse 工具函数集合
 >>>     # 执行阻塞IO操作
 >>>     return result
 
+---
 
 ##### `retry`
 
@@ -78,3 +91,7 @@ ErisPulse 工具函数集合
 >>> def unreliable_operation():
 >>>     # 可能失败的操作
 
+---
+
+
+*文档最后更新于 2025-07-16 15:34:26*
