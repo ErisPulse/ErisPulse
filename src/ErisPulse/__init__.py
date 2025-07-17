@@ -155,114 +155,6 @@ class LazyModule:
             return str(self._instance)
         return str(self._instance)
     
-    def __repr__(self) -> str:
-        """
-        转换为字符串时触发初始化
-        
-        :return: str 模块字符串表示
-        """
-        if not self._initialized:
-            self._initialize()
-            return repr(self._instance)
-        return repr(self._instance)
-    
-    def __iter__(self):
-        """
-        迭代时触发初始化
-        
-        :return: Iterator 模块迭代器
-        """
-        if not self._initialized:
-            self._initialize()
-            return iter(self._instance)
-        return iter(self._instance)
-    
-    def __len__(self) -> int:
-        """
-        获取长度时触发初始化
-        
-        :return: int 模块长度
-        """
-        if not self._initialized:
-            self._initialize()
-            return len(self._instance)
-        return len(self._instance)
-    
-    def __contains__(self, item: Any) -> bool:
-        """
-        判断是否包含时触发初始化
-        
-        :param item: Any 要判断的元素
-        :return: bool 是否包含
-        """
-        if not self._initialized:
-            self._initialize()
-            return item in self._instance
-        return item in self._instance
-    
-    def __getitem__(self, key: Any) -> Any:
-        """
-        获取元素时触发初始化
-        
-        :param key: Any 元素键
-        :return: Any 元素值
-        """
-        if not self._initialized:
-            self._initialize()
-            return self._instance[key]
-        return self._instance[key]
-    
-    def __setitem__(self, key: Any, value: Any) -> None:
-        """
-        设置元素时触发初始化
-        
-        :param key: Any 元素键
-        :param value: Any 元素值
-        """
-        if not self._initialized:
-            self._initialize()
-            self._instance[key] = value
-    
-    def __delitem__(self, key: Any) -> None:
-        """
-        删除元素时触发初始化
-        
-        :param key: Any 元素键
-        """
-        if not self._initialized:
-            self._initialize()
-            del self._instance[key]
-    
-    def __del__(self):
-        """
-        对象被销毁时触发初始化
-        """
-        if not self._initialized:
-            self._initialize()
-            del self._instance
-    
-    def __enter__(self):
-        """
-        进入with语句时触发初始化
-        
-        :return: Any 模块实例
-        """
-        if not self._initialized:
-            self._initialize()
-        return self._instance
-    
-    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        """
-        退出with语句时触发初始化
-        
-        :param exc_type: Any 异常类型
-        :param exc_value: Any 异常值
-        :param traceback: Any 跟踪信息
-        """
-        if not self._initialized:
-            self._initialize()
-        del self._instance
-    
     # 确保模块在被赋值给变量后仍然能正确工作
     def __getattribute__(self, name: str) -> Any:
         try:
@@ -274,6 +166,24 @@ class LazyModule:
                 self._initialize()
                 return getattr(self._instance, name)
             raise
+        
+    def __copy__(self):
+        """
+        浅拷贝时返回自身，保持懒加载特性
+
+        :return: self
+        """
+        return self
+
+    def __deepcopy__(self, memo):
+        """
+        深拷贝时返回自身，保持懒加载特性
+
+        :param memo: memo
+        :return: self
+        """
+        return self
+
 
 class AdapterLoader:
     """
@@ -587,16 +497,12 @@ class ModuleInitializer:
                 logger.warning("[Init] 没有找到可用的模块和适配器")
                 return True
             
-            # 3. 预记录所有模块信息到SDK属性中
-            logger.debug("[Init] 正在预记录模块信息...")
-            ModuleInitializer._pre_register_modules(enabled_modules, module_objs)
-            
-            # 4. 注册适配器
+            # 3. 注册适配器
             logger.debug("[Init] 正在注册适配器...")
             if not ModuleInitializer._register_adapters(enabled_adapters, adapter_objs):
                 return False
             
-            # 5. 初始化模块
+            # 4. 初始化模块
             logger.debug("[Init] 正在初始化模块...")
             success = ModuleInitializer._initialize_modules(enabled_modules, module_objs)
             logger.info(f"[Init] SDK初始化{'成功' if success else '失败'}")
@@ -608,21 +514,58 @@ class ModuleInitializer:
             return False
     
     @staticmethod
-    def _pre_register_modules(modules: List[str], module_objs: Dict[str, Any]) -> None:
+    def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> None:
         """
-        预记录所有模块信息到SDK属性中
+        {!--< internal-use >!--}
+        初始化模块
         
         :param modules: List[str] 模块名称列表
         :param module_objs: Dict[str, Any] 模块对象字典
+        
+        :return: bool 模块初始化是否成功
         """
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
-            # 即使模块是懒加载的，也先在SDK中创建占位符
-            if not hasattr(sdk, meta_name):
+            if hasattr(sdk, meta_name):
+                continue
+            
+            try:
+                entry_points = importlib.metadata.entry_points()
+                if hasattr(entry_points, 'select'):
+                    module_entries = entry_points.select(group='erispulse.module')
+                    module_entry_map = {entry.name: entry for entry in module_entries}
+                else:
+                    module_entries = entry_points.get('erispulse.module', [])
+                    module_entry_map = {entry.name: entry for entry in module_entries}
+                
+                entry_point = module_entry_map.get(meta_name)
+                if entry_point:
+                    module_class = entry_point.load()
+                    lazy_load = ModuleLoader._should_lazy_load(module_class)
+                    
+                    if lazy_load:
+                        lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
+                        setattr(sdk, meta_name, lazy_module)
+                    else:
+                        init_signature = inspect.signature(module_class.__init__)
+                        if 'sdk' in init_signature.parameters:
+                            instance = module_class(sdk)
+                        else:
+                            instance = module_class()
+                        
+                        setattr(instance, "moduleInfo", module_obj.moduleInfo)
+                        setattr(sdk, meta_name, instance)
+                    
+                    logger.debug(f"预注册模块: {meta_name}")
+
+                return True
+                    
+            except Exception as e:
+                logger.error(f"预注册模块 {meta_name} 失败: {e}")
                 setattr(sdk, meta_name, None)
-                logger.debug(f"预注册模块: {meta_name}")
+                return False
     
     @staticmethod
     def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
@@ -672,85 +615,6 @@ class ModuleInitializer:
             except Exception as e:
                 logger.error(f"适配器 {adapter_name} 注册失败: {e}")
                 success = False
-        return success
-    
-    @staticmethod
-    def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
-        """
-        {!--< internal-use >!--}
-        初始化模块
-        
-        :param modules: List[str] 模块名称列表
-        :param module_objs: Dict[str, Any] 模块对象字典
-        
-        :return: bool 模块初始化是否成功
-        """
-        success = True
-        
-        try:
-            entry_points = importlib.metadata.entry_points()
-            if hasattr(entry_points, 'select'):
-                module_entries = entry_points.select(group='erispulse.module')
-                module_entry_map = {entry.name: entry for entry in module_entries}
-            else:
-                module_entries = entry_points.get('erispulse.module', [])
-                module_entry_map = {entry.name: entry for entry in module_entries}
-        except Exception as e:
-            logger.error(f"获取 entry_points 失败: {e}")
-            return False
-        
-        # 第一次遍历：创建所有模块的占位符
-        for module_name in modules:
-            module_obj = module_objs[module_name]
-            meta_name = module_obj.moduleInfo["meta"]["name"]
-            
-            if not mods.get_module_status(meta_name):
-                continue
-                
-            entry_point = module_entry_map.get(meta_name)
-            if not entry_point:
-                logger.error(f"找不到模块 {meta_name} 的 entry-point")
-                success = False
-                continue
-            
-            # 创建模块占位符
-            if not hasattr(sdk, meta_name):
-                setattr(sdk, meta_name, None)
-        
-        # 第二次遍历：实际初始化模块
-        for module_name in modules:
-            module_obj = module_objs[module_name]
-            meta_name = module_obj.moduleInfo["meta"]["name"]
-            
-            try:
-                if not mods.get_module_status(meta_name):
-                    continue
-                
-                entry_point = module_entry_map.get(meta_name)
-                if not entry_point:
-                    continue
-                
-                module_class = entry_point.load()
-                lazy_load = ModuleLoader._should_lazy_load(module_class)
-                
-                if lazy_load:
-                    lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
-                    setattr(sdk, meta_name, lazy_module)
-                else:
-                    init_signature = inspect.signature(module_class.__init__)
-                    if 'sdk' in init_signature.parameters:
-                        instance = module_class(sdk)
-                    else:
-                        instance = module_class()
-                    
-                    setattr(instance, "moduleInfo", module_obj.moduleInfo)
-                    setattr(sdk, meta_name, instance)
-                    logger.debug(f"模块 {meta_name} 已初始化")
-                    
-            except Exception as e:
-                logger.error(f"初始化模块 {meta_name} 失败: {e}")
-                success = False
-        
         return success
     
 def init_progress() -> bool:
