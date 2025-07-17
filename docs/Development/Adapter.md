@@ -1,113 +1,7 @@
-# ErisPulse 开发者指南
-本文档将介绍如何开发一个 ErisPulse 模块，另外你可以参考 `examples` 目录下的模块包
-
----
-
-## 一、模块开发
+# ErisPulse 适配器开发指南
 
 ### 1. 目录结构
-
-一个标准模块包应该是：
-
-```
-MyModule/
-├── pyproject.toml    # 项目配置
-├── README.md         # 项目说明
-├── LICENSE           # 许可证文件
-└── MyModule/
-    ├── __init__.py  # 模块入口
-    └── Core.py      # 核心逻辑
-```
-
-### 2. `pyproject.toml` 文件
-模块的配置文件, 包括模块信息、依赖项、模块/适配器入口点等信息
-
-```toml
-[project]
-name = "ErisPulse-MyModule"     # 模块名称, 建议使用 ErisPulse-<模块名称> 的格式命名
-version = "1.0.0"
-description = "一个非常哇塞的模块"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-dependencies = [
-    
-]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-[project.entry-points]
-"erispulse.module" = { "MyModule" = "MyModule:Main" }
-
-```
-
-### 3. `MyModule/__init__.py` 文件
-
-顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
-
-示例这里导入了模块核心逻辑
-
-```python
-from .Core import Main
-```
-
----
-
-### 3. `MyModule/Core.py` 文件
-
-实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的，但推荐传入
-
-```python
-# 这也是一种可选的获取 `sdk`对象 的方式
-# from ErisPulse import sdk
-
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-        self.raiserr = sdk.raiserr
-
-        self.logger.info("模块已加载")
-        self.config = self._get_config()
-
-    def _get_config(self):
-        config = env.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "my_config_key": "default_value"
-            }
-            env.setConfig("MyModule", default_config)
-            return default_config
-        return config
-
-    def print_hello(self):
-        self.logger.info("Hello World!")
-
-```
-
-- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
-```python
-# 这时候在其它地方可以访问到该模块
-from ErisPulse import sdk
-sdk.MyModule.print_hello()
-
-# 运行模块主程序（推荐使用CLI命令）
-# epsdk run main.py --reload
-```
-### 4. `LICENSE` 文件
-`LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
-
----
-
-## 二、平台适配器开发（Adapter）
-
-适配器用于对接不同平台的消息协议（如 Yunhu、OneBot 等），是框架与外部平台交互的核心组件。
-
-### 1. 目录结构
+一个标准的适配器包结构应该是：
 
 ```
 MyAdapter/
@@ -270,11 +164,9 @@ class Send((BaseAdapter.Send):
 sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 ```
 
-> 建议方法名首字母大写，保持命名统一。
-
 ---
 
-## 三、开发建议
+## 开发建议
 
 ### 1. 使用异步编程模型
 - **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
@@ -296,3 +188,6 @@ sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
+---
+
+*文档最后更新于 2025-07-17 08:10:26*

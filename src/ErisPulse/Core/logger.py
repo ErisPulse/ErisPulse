@@ -1,9 +1,32 @@
+"""
+ErisPulse 日志系统
+
+提供模块化日志记录功能，支持多级日志、模块过滤和内存存储。
+
+{!--< tips >!--}
+1. 支持按模块设置不同日志级别
+2. 日志可存储在内存中供后续分析
+3. 自动识别调用模块名称
+{!--< /tips >!--}
+"""
+
 import logging
 import inspect
 import datetime
 from typing import List, Dict, Any, Optional, Union, Type, Set, Tuple, FrozenSet
 
 class Logger:
+    """
+    日志管理器
+    
+    提供模块化日志记录和存储功能
+    
+    {!--< tips >!--}
+    1. 使用set_module_level设置模块日志级别
+    2. 使用get_logs获取历史日志
+    3. 支持标准日志级别(DEBUG, INFO等)
+    {!--< /tips >!--}
+    """
     def __init__(self):
         self._logs = {}
         self._module_levels = {}
@@ -16,6 +39,12 @@ class Logger:
             self._logger.addHandler(console_handler)
 
     def set_level(self, level: str) -> bool:
+        """
+        设置全局日志级别
+        
+        :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        :return: bool 设置是否成功
+        """
         try:
             level = level.upper()
             if hasattr(logging, level):
@@ -27,6 +56,13 @@ class Logger:
             return False
 
     def set_module_level(self, module_name: str, level: str) -> bool:
+        """
+        设置指定模块日志级别
+
+        :param module_name: 模块名称
+        :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        :return: bool 设置是否成功
+        """
         from .env import env
         if not env.get_module_status(module_name):
             self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
@@ -41,6 +77,12 @@ class Logger:
             return False
 
     def set_output_file(self, path) -> bool:
+        """
+        设置日志输出
+
+        :param path: 日志文件路径 Str/List
+        :return: bool 设置是否成功
+        """
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
@@ -58,7 +100,14 @@ class Logger:
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
                 return False
+            
     def save_logs(self, path) -> bool:
+        """
+        保存所有在内存中记录的日志
+        
+        :param path: 日志文件路径 Str/List
+        :return: bool 设置是否成功
+        """
         if self._logs == None:
             self._logger.warning("没有log记录可供保存。")
             return False
@@ -79,6 +128,12 @@ class Logger:
                 return False
 
     def get_logs(self, module_name: str = None) -> dict:
+        """
+        获取日志内容
+
+        :param module_name (可选): 模块名称
+        :return: dict 日志内容
+        """
         if module_name:
             return {module_name: self._logs.get(module_name, [])}
         return {k: v.copy() for k, v in self._logs.items()}
