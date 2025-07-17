@@ -559,13 +559,13 @@ class ModuleInitializer:
                         setattr(sdk, meta_name, instance)
                     
                     logger.debug(f"预注册模块: {meta_name}")
-
-                return True
                     
             except Exception as e:
                 logger.error(f"预注册模块 {meta_name} 失败: {e}")
                 setattr(sdk, meta_name, None)
                 return False
+            
+        return True
     
     @staticmethod
     def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
