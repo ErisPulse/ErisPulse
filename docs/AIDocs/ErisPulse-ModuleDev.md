@@ -738,7 +738,7 @@ sdk.MyModule.print_hello()
 
 # 📦 `ErisPulse.__init__` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -883,6 +883,31 @@ SDK初始化入口
 
 ---
 
+##### `__str__`
+
+转换为字符串时触发初始化
+
+:return: str 模块字符串表示
+
+---
+
+##### `__copy__`
+
+浅拷贝时返回自身，保持懒加载特性
+
+:return: self
+
+---
+
+##### `__deepcopy__`
+
+深拷贝时返回自身，保持懒加载特性
+
+:param memo: memo
+:return: self
+
+---
+
 ### `AdapterLoader`
 
 适配器加载器
@@ -1017,12 +1042,16 @@ SDK初始化入口
 
 ---
 
-##### `_pre_register_modules`
+##### `_initialize_modules`
 
-预记录所有模块信息到SDK属性中
+⚠️ **内部方法**：
+
+初始化模块
 
 :param modules: List[str] 模块名称列表
 :param module_objs: Dict[str, Any] 模块对象字典
+
+:return: bool 模块初始化是否成功
 
 ---
 
@@ -1039,27 +1068,14 @@ SDK初始化入口
 
 ---
 
-##### `_initialize_modules`
 
-⚠️ **内部方法**：
-
-初始化模块
-
-:param modules: List[str] 模块名称列表
-:param module_objs: Dict[str, Any] 模块对象字典
-
-:return: bool 模块初始化是否成功
-
----
-
-
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -1248,13 +1264,13 @@ PyPI包管理器
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -1296,6 +1312,7 @@ ErisPulse 适配器系统
 :param adapter: 所属适配器实例
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
+:param _account_id: 发送账号(可选)
 
 ---
 
@@ -1310,6 +1327,19 @@ ErisPulse 适配器系统
 :example:
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+
+---
+
+##### `Using`
+
+设置发送账号
+
+:param _account_id: 发送账号
+:return: SendDSL实例
+
+:example:
+>>> adapter.Send.Using("bot1").To("123").Text("Hello")
+>>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
 
 ---
 
@@ -1585,13 +1615,13 @@ OneBot12协议事件监听装饰器
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -1877,13 +1907,13 @@ ErisPulse 环境配置模块
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -1965,13 +1995,13 @@ ErisPulse 日志系统
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -2154,13 +2184,13 @@ ErisPulse 模块管理器
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\raiserr.md
 
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -2264,13 +2294,13 @@ ErisPulse 错误管理系统
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\server.md
 
 # 📦 `ErisPulse.Core.server` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -2391,13 +2421,13 @@ ErisPulse Adapter Server
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 ## ErisPulse\Core\util.md
 
 # 📦 `ErisPulse.Core.util` 模块
 
-*自动生成于 2025-07-16 15:34:26*
+*自动生成于 2025-07-17 16:39:14*
 
 ---
 
@@ -2491,6 +2521,6 @@ ErisPulse 工具函数集合
 ---
 
 
-*文档最后更新于 2025-07-16 15:34:26*
+*文档最后更新于 2025-07-17 16:39:14*
 
 <!--- End of API文档 -->
