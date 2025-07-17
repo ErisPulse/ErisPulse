@@ -39,11 +39,20 @@ class MyModule:
 ```
 
 ## 适配器使用
+- 适配器是ErisPulse的核心，负责与平台进行交互
+
+适配器事件分为两类：
+- 标准事件：平台转换为的标准事件，其格式为标准的 OneBot12 事件格式 | 需要判断接收到的消息的 `platform` 字段，来确定消息来自哪个平台
+- 原生事件：平台原生事件 通过 sdk.adapter.<Adapter>.on() 监听对应平台的原生事件
+适配器标准事件的拓展以及支持的消息发送类型，请参考 [PlatformFeatures.md](docs/PlatformFeatures.md)
+
+建议使用标准事件进行事件的处理，适配器会自动将原生事件转换为标准事件
+
 ```python
 # 启动适配器
 await sdk.adapter.startup("MyAdapter")  # 不指定名称则启动所有适配器
 
-# 事件监听示例
+# 监听底层的标准事件
 @adapter.on("message")
 async def on_message(data):
     platform = data.get("platform")

@@ -1,571 +1,181 @@
-# ErisPulse 开发文档合集
+# ErisPulse 模块开发文档
 
-本文件由多个开发文档合并而成，用于辅助 AI 理解 ErisPulse 的模块开发规范与 SDK 使用方式。
+本文件由多个开发文档合并而成，用于辅助 AI 理解 ErisPulse 的相关功能。
 
 ## 各文件对应内容说明
 
 | 文件名 | 作用 |
 |--------|------|
-| ADAPTERS.md | 平台适配器说明，包括事件监听和消息发送方式 |
-| event-conversion.md | 适配器数据转换标准说明 |
-| api-response.md | 适配器API响应标准说明 |
-| DEVELOPMENT.md | 模块结构定义、入口文件格式、Main 类规范 |
 | UseCore.md | 核心功能使用说明 |
-| API文档 | 自动生成的API参考文档 |
+| PlatformFeatures.md | 平台支持的发送类型及差异性说明 |
+| Module.md | 模块开发指南 |
 
 ## 合并内容开始
 
 <!-- UseCore.md -->
 
-# ErisPulse 核心模块工作原理
-本文档将介绍如何使用 ErisPulse 的核心模块以及如何使用它们
+# ErisPulse 核心模块使用指南
 
-## 一、了解工作原理
-
-### 核心对象
-
-你可以通过 `from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter, EventDataBase` 直接获取核心模块对象
-
-当然, 为了保持兼容性，你也可以通过 `sdk` 获取 SDK 对象，并使用 `sdk.<核心模块名>` 访问核心模块对象, 乃至使用三方模块重写SDK功能!
-
+## 核心模块
 | 名称 | 用途 |
 |------|------|
 | `sdk` | SDK对象 |
 | `env`/`sdk.env` | 获取/设置全局配置 |
 | `mods`/`sdk.mods` | 模块管理器 |
+| `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `raiserr`/`sdk.raiserr` | 错误管理器 |
 | `util`/`sdk.util` | 工具函数（缓存、重试等） |
-| `adapter`/`sdk.adapter` | 获取其他适配器实例 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
-| `EventDataBase`/`sdk.EventDataBase` | 事件数据处理基类 |
 
-### 模块调用
-
-ErisPulse 框架提供了一个 `sdk` 对象, 所有模块都会被注册在 `sdk` 对象中
-
-例如一个模块的结构是:
 ```python
-# from ErisPulse import sdk
-# from ErisPulse.Core import logger 
+# 直接导入方式
+from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter
+
+# 通过SDK对象方式
+from ErisPulse import sdk
+sdk.env  # 等同于直接导入的env
+```
+
+## 模块系统架构
+- 所有模块通过`sdk`对象统一管理
+- 模块间可通过`sdk.<ModuleName>`互相调用
+- 模块基础结构示例：
+```python
+from ErisPulse import sdk
 
 class MyModule:
-    def __init__(self, sdk):    # 注: 这里也可以不传入 sdk 参数 | 你可以直接 from ErisPulse import sdk 来获得sdk对象
+    def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
-
+        
     def hello(self):
         self.logger.info("hello world")
         return "hello world"
 ```
 
-这时候你可以在 `main.py` 中这样调用:
+## 适配器使用
+- 适配器是ErisPulse的核心，负责与平台进行交互
+
+适配器事件分为两类：
+- 标准事件：平台转换为的标准事件，其格式为标准的 OneBot12 事件格式 | 需要判断接收到的消息的 `platform` 字段，来确定消息来自哪个平台
+- 原生事件：平台原生事件 通过 sdk.adapter.<Adapter>.on() 监听对应平台的原生事件
+适配器标准事件的拓展以及支持的消息发送类型，请参考 [PlatformFeatures.md](docs/PlatformFeatures.md)
+
+建议使用标准事件进行事件的处理，适配器会自动将原生事件转换为标准事件
+
 ```python
-from ErisPulse import sdk
+# 启动适配器
+await sdk.adapter.startup("MyAdapter")  # 不指定名称则启动所有适配器
 
-sdk.init()
-
-sdk.MyModule.hello()
-```
-这样就可以调用到模块中的方法了, 当然任何地方都可以调用模块中的方法, 只要它被加载到了 `sdk` 对象中
-
-通过 `sdk.<ModuleName>` 访问其他模块实例：
-```python
-other_module = sdk.OtherModule
-result = other_module.some_method()
-```
-
----
-
-适配器的使用: 
-```python
-from ErisPulse import sdk
-
-async def main():
-    sdk.init()
-
-    await sdk.adapter.startup("MyAdapter")  # 这里不指定适配器名称的话, 会自动选择启动所有被注册到 `adapter`/`sdk.adapter` 中的适配器
-
-    MyAdapter = sdk.adapter.get("MyAdapter")
-
-    @MyAdapter.on("message")
-    async def on_message(data):
-        sdk.MyAdapterEvent(data)
-        sender_type = sdk.MyAdapterEvent.sender_type()
-        sender_id = sdk.MyAdapterEvent.sender_id()
-
-    type, id = "Guild", "1234567890"
-    await MyAdapter.Send.To(type, id).Text("Hello World!")  # 这里使用了DSL风格的调用, 在以后的章节中会详细介绍
+# 监听底层的标准事件
+@adapter.on("message")
+async def on_message(data):
+    platform = data.get("platform")
+    detail_type = "user" if data.get("detail_type") == "private" else "group"
+    detail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
+    
+    if hasattr(adapter, platform):
+        await getattr(adapter, platform).To(detail_type, detail_id).Text(data.get("alt_message"))
 ```
 
-通过 `sdk.adapter.<AdapterName>` 访问适配器实例：
+## 核心模块功能详解
+
+### 1. 日志模块(logger)
 ```python
-adapter = sdk.adapter.AdapterName
-result = adapter.some_method()
-```
+logger.set_module_level("MyModule", "DEBUG")  # 设置模块日志级别
+logger.save_logs("log.txt")  # 保存日志到文件
 
-## 二、核心对象功能示例
-
-### 日志记录：
-
-```python
-from ErisPulse.Core import logger
-
-#  设置单个模块日志级别
-logger.set_module_level("MyModule", "DEBUG")
-
-#  单次保持所有模块日志历史到文件
-logger.save_logs("log.txt")
-
-#  各等级日志
+# 日志级别
 logger.debug("调试信息")
 logger.info("运行状态")
 logger.warning("警告信息")
 logger.error("错误信息")
-logger.critical("致命错误")    # 会触发程序崩溃
+logger.critical("致命错误")  # 会触发程序崩溃
 ```
 
-### env配置模块：
-
+### 2. 环境配置(env)
 ```python
-from ErisPulse.Core import env
+# 数据库配置操作
+env.set("key", "value")  # 设置配置项
+value = env.get("key", "default")  # 获取配置项
+env.delete("key")  # 删除配置项
 
-# 设置配置项
-env.set("my_config_key", "new_value")
-
-# 获取配置项
-config_value = env.get("my_config_key", "default_value")
-
-# 删除配置项
-env.delete("my_config_key")
-
-# 事务使用
+# 事务操作
 with env.transaction():
     env.set('important_key', 'value')
-    env.delete('temp_key')
-    # 如果出现异常会自动回滚
+    env.delete('temp_key')  # 异常时自动回滚
 
-# 获取模块配置
-# 如果模块未注册，则返回None | 不支持设置默认值
-env.getConfig("MyModule")
-env.setConfig("MyModule", "MyConfig")
-# 这里的建议使用是，先获取 "MyModule" 模块的配置项，如果为空，则设置 "MyModule" 模块的配置项为 默认需要生成的默认配置（被生成到用户的项目下的config.toml）
-
-# 标准的示例:
-def _getConfig():
-    config = env.getConfig("MyModule")
-    if config is None:
-        defaultConfig = {
-            "MyKey": "MyValue"
-        }
-        env.setConfig("MyModule", defaultConfig)
-        return defaultConfig
-    return config
-
-# 其它深入操作请阅读API文档
+# 模块配置操作（读写config.toml）
+module_config = env.getConfig("MyModule")  # 获取模块配置
+if module_config is None:
+    env.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-### 注册自定义错误类型：
-
+### 3. 错误管理(raiserr)
 ```python
-from ErisPulse.Core import raiserr
+# 注册自定义错误
+raiserr.register("MyCustomError", doc="自定义错误说明")
 
-#  注册一个自定义错误类型
-raiserr.register("MyCustomError", doc="这是一个自定义错误")
-
-#  获取错误信息
+# 获取错误信息
 error_info = raiserr.info("MyCustomError")
-if error_info:
-    print(f"错误类型: {error_info['type']}")
-    print(f"文档描述: {error_info['doc']}")
-    print(f"错误类: {error_info['class']}")
-else:
-    print("未找到该错误类型")
 
-#  抛出一个自定义错误
-raiserr.MyCustomError("发生了一个错误")
-
+# 抛出错误
+raiserr.MyCustomError("错误描述")
 ```
 
-### 工具函数：
-
+### 4. 工具函数(util)
 ```python
-from ErisPulse import util
-
-# 工具函数装饰器：自动重试指定次数
+# 自动重试
 @util.retry(max_attempts=3, delay=1)
-async def my_retry_function():
-    # 此函数会在异常时自动重试 3 次，每次间隔 1 秒
+async def unreliable_function():
     ...
 
-# 缓存装饰器：缓存函数调用结果（基于参数）
+# 结果缓存
 @util.cache
-def get_expensive_result(param):
-    # 第一次调用后，相同参数将直接返回缓存结果
+def expensive_operation(param):
     ...
 
-# 异步执行装饰器：将同步函数放入线程池中异步执行
+# 异步执行
 @util.run_in_executor
 def sync_task():
-    # 此函数将在独立线程中运行，避免阻塞事件循环
     ...
 
-# 在同步函数中调用异步任务
+# 同步调用异步
 util.ExecAsync(sync_task)
-
 ```
 
-## 监听适配器事件以及使用适配器
+## 建议
+1. 模块配置应使用`getConfig/setConfig`操作config.toml
+2. 持久信息存储使用`get/set`操作数据库
+3. 关键操作使用事务保证原子性
+> 其中，1-2 步骤可以实现配合，比如硬配置让用户设置后，和数据库中的配置进行合并，实现配置的动态更新
 
-你可以使用以下代码监听被转换为OneBot12的事件
-（你可以参考 Adapter.md 文档获取更多信息）
-```python
-from ErisPulse import sdk
-from ErisPulse.Core import adapter
-
-@adapter.on("message")
-async def on_message(data):
-    # 处理消息, 几乎所有适配器都实现了 Text 发送方法，所有这里示例发送获取到的文本消息
-    
-    # 获取哪个平台
-    platform = data.get("platform")
-
-    # 发送的类型不能是 类似于 private 的类型，而是使用 "user" / "group" / other
-    detail_type = "user" if data.get("detail_type") == "private" else "group"
-    datail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
-
-    echo_text = data.get("alt_message")
-
-    # 获取适配器, 并且调用对应的发送方法
-    if hasattr(adapter, platform):
-        await getattr(adapter, platform).To("user" if detail_type == "private" else "group", datail_id).Text(echo_text)
-
-```
-
-> 更多使用请查看 [docs/api/](docs/api/) 目录
+更多详细信息请参考[API文档](docs/api/)
 
 <!--- End of UseCore.md -->
 
-<!-- DEVELOPMENT.md -->
+<!-- PlatformFeatures.md -->
 
-# ErisPulse 开发者指南
-本文档将介绍如何开发一个 ErisPulse 模块，另外你可以参考 `examples` 目录下的模块包
-
----
-
-## 一、模块开发
-
-### 1. 目录结构
-
-一个标准模块包应该是：
-
-```
-MyModule/
-├── pyproject.toml    # 项目配置
-├── README.md         # 项目说明
-├── LICENSE           # 许可证文件
-└── MyModule/
-    ├── __init__.py  # 模块入口
-    └── Core.py      # 核心逻辑
-```
-
-### 2. `pyproject.toml` 文件
-模块的配置文件, 包括模块信息、依赖项、模块/适配器入口点等信息
-
-```toml
-[project]
-name = "ErisPulse-MyModule"     # 模块名称, 建议使用 ErisPulse-<模块名称> 的格式命名
-version = "1.0.0"
-description = "一个非常哇塞的模块"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-dependencies = [
-    
-]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-[project.entry-points]
-"erispulse.module" = { "MyModule" = "MyModule:Main" }
-
-```
-
-### 3. `MyModule/__init__.py` 文件
-
-顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
-
-示例这里导入了模块核心逻辑
-
-```python
-from .Core import Main
-```
+# ErisPulse PlatformFeatures 文档
+> 基线协议：(OneBot12)[https://12.onebot.dev/] 
+> 
+> 本文档为**快速使用指南**，包含：
+> - 各适配器支持的Send方法链式调用示例
+> - 平台特有的事件/消息格式说明
+> 
+> 正式适配器开发请参考：
+> - [适配器开发指南](docs/Development/Adapter.md)
+> - [事件转换标准](docs/AdapterStandards/event-conversion.md)  
+> - [API响应规范](docs/AdapterStandards/api-response.md)
 
 ---
 
-### 3. `MyModule/Core.py` 文件
+## 标准格式
+为方便参考，这里给出了简单的事件格式，如果需要详细信息，请参考上方的链接。
 
-实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的，但推荐传入
-
-```python
-# 这也是一种可选的获取 `sdk`对象 的方式
-# from ErisPulse import sdk
-
-class Main:
-    def __init__(self, sdk):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        self.env = sdk.env
-        self.util = sdk.util
-        self.raiserr = sdk.raiserr
-
-        self.logger.info("模块已加载")
-        self.config = self._get_config()
-
-    def _get_config(self):
-        config = env.getConfig("MyModule")
-        if not config:
-            default_config = {
-                "my_config_key": "default_value"
-            }
-            env.setConfig("MyModule", default_config)
-            return default_config
-        return config
-
-    def print_hello(self):
-        self.logger.info("Hello World!")
-
-```
-
-- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
-```python
-# 这时候在其它地方可以访问到该模块
-from ErisPulse import sdk
-sdk.MyModule.print_hello()
-
-# 运行模块主程序（推荐使用CLI命令）
-# epsdk run main.py --reload
-```
-### 4. `LICENSE` 文件
-`LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
-
----
-
-## 二、平台适配器开发（Adapter）
-
-适配器用于对接不同平台的消息协议（如 Yunhu、OneBot 等），是框架与外部平台交互的核心组件。
-
-### 1. 目录结构
-
-```
-MyAdapter/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-└── MyAdapter/
-    ├── __init__.py
-    └── Core.py
-```
-
-### 2. `pyproject.toml` 文件
-```toml
-[project]
-name = "ErisPulse-MyAdapter"
-version = "1.0.0"
-description = "MyAdapter是一个非常酷的平台，这个适配器可以帮你绽放更亮的光芒"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-
-dependencies = [
-    
-]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyAdapter"
-
-[project.entry-points]
-"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
-
-```
-
-### 3. `MyAdapter/__init__.py` 文件
-
-顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
-
-示例这里导入了模块核心逻辑
-
-```python
-from .Core import MyAdapter
-```
-
-### 4. `MyAdapter/Core.py`
-实现适配器主类 `MyAdapter`，并提供适配器类继承 `BaseAdapter`, 实现嵌套类Send以实现例如 Send.To(type, id).Text("hello world") 的语法
-
-```python
-from ErisPulse import sdk
-from ErisPulse.Core import BaseAdapter
-
-class MyAdapter(BaseAdapter):
-    def __init__(self):    # 适配器有显式的导入sdk对象, 所以不需导入sdk对象
-        self.sdk = sdk
-        self.env = self.sdk.env
-        self.logger = self.sdk.logger
-        
-        self.logger.info("MyModule 初始化完成")
-        self.config = self._get_config()
-
-    def _get_config(self):
-        # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-        config = self.env.getConfig("MyAdapter", {})
-
-        if config is None:
-            default_config = {...}
-            # 这里默认配置会生成到用户的 config.toml 文件中
-            self.env.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
-    class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
-        # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
-        # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
-        # 或者说你不需要用户的To，那么用户也可以直接使用 Send.Func(text) 的方式直接调用这里的方法
-        
-        # 可以重写Text方法提供平台特定实现
-        def Text(self, text: str):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-            
-        # 添加新的消息类型
-        def Image(self, file: bytes):
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_image",
-                    file=file,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-
-    # 这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
-    # 因为这是必须继承的方法
-    async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError()
-
-    # 适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.setup() 来启动所有适配器，
-    # 当然在底层捕捉到adapter的错误时我们会尝试停止适配器再进行重启等操作
-    # 启动方法，你需要在这里定义你的adapter启动时候的逻辑
-    async def start(self):
-        raise NotImplementedError()
-    # 停止方法，你需要在这里进行必要的释放资源等逻辑
-    async def shutdown(self):
-        raise NotImplementedError()
-```
-### 接口规范说明
-
-#### 必须实现的方法
-
-| 方法 | 描述 |
-|------|------|
-| `call_api(endpoint: str, **params)` | 调用平台 API |
-| `start()` | 启动适配器 |
-| `shutdown()` | 关闭适配器资源 |
-
-#### 可选实现的方法
-
-| 方法 | 描述 |
-|------|------|
-| `on(event_type: str)` | 注册事件处理器 |
-| `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
-| `middleware(func: Callable)` | 添加中间件处理传入数据 |
-| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
-
-- 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
-- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到你提交到adapter的事件。
-
-> ⚠️ 注意：
-> - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
-> - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
-> - To中的接受者类型不允许例如 "private" 的格式，当然这是一个规范，但为了兼容性，请使用 "user" / "group" / other
-
-### 4. DSL 风格消息接口（SendDSL）
-
-每个适配器可定义一组链式调用风格的方法，例如：
-
-```python
-class Send((BaseAdapter.Send):
-    def Text(self, text: str):
-        return asyncio.create_task(
-            self._adapter.call_api(...)
-        )
-
-    def Image(self, file: bytes):
-        return asyncio.create_task(
-            self._upload_file_and_call_api(...)
-        )
-```
-
-调用方式如下：
-
-```python
-sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
-```
-
-> 建议方法名首字母大写，保持命名统一。
-
----
-
-## 三、开发建议
-
-### 1. 使用异步编程模型
-- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
-- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
-
-### 2. 异常处理与日志记录
-- **统一异常处理机制**：结合 `raiserr` 注册自定义错误类型，提供清晰的错误信息。
-- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
-
-### 3. 模块化与解耦设计
-- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
-- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
-
-### 4. 性能优化
-- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
-- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
-
-### 5. 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
-- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
-
-
-<!--- End of DEVELOPMENT.md -->
-
-<!-- ADAPTERS.md -->
-
-# ErisPulse Adapter 文档
-
-## 简介
-ErisPulse 的 Adapter 系统旨在为不同的通信协议提供统一事件处理机制。目前支持的主要适配器包括：
-
-- **TelegramAdapter**
-- **OneBotAdapter**
-- **YunhuAdapter**
-
-每个适配器都实现了对于 OneBot12 协议的转换、消息发送方法和生命周期管理。以下将介绍使用时的事件内容以及一些适配器的拓展部分
-
-OneBot12 协议标准：https://12.onebot.dev/
-示例标准格式：
-
+### 标准事件格式
+所有适配器必须实现的事件转换格式：
 ```json
 {
   "id": "event_123",
@@ -576,10 +186,7 @@ OneBot12 协议标准：https://12.onebot.dev/
   "self": {"platform": "yunhu", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {
-      "type": "text",
-      "data": {"text": "你好"}
-    }
+    {"type": "text", "data": {"text": "你好"}}
   ],
   "alt_message": "你好",
   "user_id": "user_456",
@@ -588,56 +195,37 @@ OneBot12 协议标准：https://12.onebot.dev/
 }
 ```
 
-> - 对于 发送消息的接口，`Send.To(recvType, recvId)` ，返回的格式是 OneBot12 标准格式 但是有一些区别：
-> - 我们在返回数据中添加了 `message_id` 和 `{platform_name}_raw` 字段
-> - 其中 `message_id` 在一些批量操作时会安装顺序依次排列到list中，但一般情况下是string类型，而 `{platform_name}_raw` 则是原始响应数据
-
-### 成功响应示例
+### 标准响应格式
+#### 消息发送成功
 ```json
 {
-    "status": "ok",
-    "retcode": 0,
-    "data": {
-        "message_id": "1234",
-        "time": 1632847927.599013
-    },
+  "status": "ok",
+  "retcode": 0,
+  "data": {
     "message_id": "1234",
-    "message": "",
-    "echo": "1234",
-    "telegram_raw": {...}
+    "time": 1632847927.599013
+  },
+  "message_id": "1234",
+  "message": "",
+  "echo": "1234",
+  "{platform}_raw": {...}
 }
 ```
 
-### 失败响应示例
+#### 消息发送失败
 ```json
 {
-    "status": "failed",
-    "retcode": 10003,
-    "data": null,
-    "message_id": "",
-    "message": "缺少必要参数: user_id",
-    "echo": "1234",
-    "telegram_raw": {...}
+  "status": "failed",
+  "retcode": 10003,
+  "data": null,
+  "message_id": "",
+  "message": "缺少必要参数",
+  "echo": "1234",
+  "{platform}_raw": {...}
 }
 ```
 
 ---
-
-## 适配器功能概述
-
-### 0. 适配器规则
-#### 发送消息的注意事项：
-例如中的接受者类型不允许例如 "private" 的格式，请使用 "user" / "group" / other，应该加以判断，如果是 "private" 则使用 "user"
-
-
-在消息发送接口 `Send.To(recvType, recvId).Text` 中，接收者类型（`recvType`）参数应使用规范的标识符格式。具体规则如下：
-
-**标准接收者类型**：
- - 用户私聊：使用 `"user"`
- - 群组聊天：使用 `"group"`
- - 其他类型：使用对应平台定义的规范标识符
-
-应该加以判断，如果是 "private" 则使用 "user" 作为接收者类型，而不是 "private"。
 
 ### 1. YunhuAdapter
 YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功能模块，提供统一的事件处理和消息操作接口。
@@ -645,6 +233,9 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
 await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
@@ -665,7 +256,7 @@ Borard board_type 支持以下类型：
 - `local`：指定用户看板
 - `global`：全局看板
 
-#### 按钮参数说明
+##### 按钮参数说明
 `buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
 
 | 字段         | 类型   | 是否必填 | 说明                                                                 |
@@ -788,6 +379,9 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+telegram = adapter.get("telegram")
+
 await telegram.Send.To("user", user_id).Text("Hello World!")
 ```
 
@@ -892,12 +486,15 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 
 ---
 
-### 3. OneBotAdapter
-OneBotAdapter 是基于 OneBot V11 协议构建的适配器，适用于与 go-cqhttp 等服务端交互。
+### 3. OneBot11Adapter
+OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 #### 支持的消息发送类型
 所有发送方法均通过链式语法实现，例如：
 ```python
+from ErisPulse.Core import adapter
+onebot = adapter.get("onebot11")
+
 await onebot.Send.To("group", group_id).Text("Hello World!")
 ```
 
@@ -968,22 +565,6 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 
 ---
 
-## 生命周期管理
-
-### 启动适配器
-```python
-await sdk.adapter.startup()
-```
-此方法会根据配置启动适配器，并初始化必要的连接。
-
-### 关闭适配器
-```python
-await sdk.adapter.shutdown()
-```
-确保资源释放，关闭 WebSocket 连接或其他网络资源。
-
----
-
 ## 参考链接
 ErisPulse 项目：
 - [主库](https://github.com/ErisPulse/ErisPulse/)
@@ -991,7 +572,7 @@ ErisPulse 项目：
 - [ErisPulse Telegram 适配器库](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
 - [ErisPulse OneBot 适配器库](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
-官方文档：
+相关官方文档：
 - [OneBot V11 协议文档](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API 官方文档](https://core.telegram.org/bots/api)
 - [云湖官方文档](https://www.yhchat.com/document/1-3)
@@ -1007,330 +588,151 @@ ErisPulse 项目：
 
 感谢您的支持！
 
-<!--- End of ADAPTERS.md -->
+<!--- End of PlatformFeatures.md -->
 
-<!-- api-response.md -->
+<!-- Module.md -->
 
-# ErisPulse 适配器标准化返回规范
+# ErisPulse 模块开发指南
 
-## 1. 说明
-为什么会有这个规范？
+## 1. 模块结构
+一个标准的模块包结构应该是：
 
-ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中定义了消息发送的返回结构，因此ErisPulse的适配器也需要遵循这个标准。
-
-但ErisPulse的协议有一些特殊性定义:
-- 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
-- 2. 返回内容中需要添加 {platform_name}_raw 字段，用于存放原始响应数据
-
-## 2. 基础返回结构
-所有动作响应必须包含以下基础字段：
-
-| 字段名 | 数据类型 | 必选 | 说明 |
-|-------|---------|------|------|
-| status | string | 是 | 执行状态，必须是"ok"或"failed" |
-| retcode | int64 | 是 | 返回码，遵循OneBot12返回码规则 |
-| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
-| message_id | string | 是 | 消息ID，用于标识消息, 没有则为空字符串 |
-| message | string | 是 | 错误信息，成功时为空字符串 |
-| {platform_name}_raw | any | 否 | 原始响应数据 |
-
-可选字段：
-| 字段名 | 数据类型 | 必选 | 说明 |
-|-------|---------|------|------|
-| echo | string | 否 | 当请求中包含echo字段时，原样返回 |
-
-## 3. 完整字段规范
-
-### 3.1 通用字段
-
-#### 成功响应示例
-```json
-{
-    "status": "ok",
-    "retcode": 0,
-    "data": {
-        "message_id": "1234",
-        "time": 1632847927.599013
-    },
-    "message_id": "1234",
-    "message": "",
-    "echo": "1234",
-    "telegram_raw": {...}
-}
+```
+MyModule/
+├── pyproject.toml    # 项目配置
+├── README.md         # 项目说明
+├── LICENSE           # 许可证文件
+└── MyModule/
+    ├── __init__.py  # 模块入口
+    └── Core.py      # 核心逻辑(只是推荐结构使用Core.py | 只要模块入口使用正确，你可以使用任何你喜欢的文件名)
 ```
 
-#### 失败响应示例
-```json
-{
-    "status": "failed",
-    "retcode": 10003,
-    "data": null,
-    "message_id": "",
-    "message": "缺少必要参数: user_id",
-    "echo": "1234",
-    "telegram_raw": {...}
-}
+## 2. `pyproject.toml` 文件
+模块的配置文件, 包括模块信息、依赖项、模块/适配器入口点等信息
+
+```toml
+[project]
+name = "ErisPulse-MyModule"     # 模块名称, 建议使用 ErisPulse-<模块名称> 的格式命名
+version = "1.0.0"
+description = "一个非常哇塞的模块"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+dependencies = [
+    
+]
+
+# 模块主页, 用于在模块管理器中显示模块信息 | 尽量使用仓库地址，以便模块商店显示文档时指定为仓库的 README.md 文件
+[project.urls]
+"homepage" = "https://github.com/yourname/MyModule"
+
+# 模块入口点，用于指定模块的入口类 当然也可以在一个包中定义多个模块，但并不建议这样做
+[project.entry-points]
+"erispulse.module" = { "MyModule" = "MyModule:Main" }
+
 ```
 
-### 3.2 返回码规范
+## 3. `MyModule/__init__.py` 文件
 
-#### 0 成功（OK）
-- 0: 成功（OK）
+顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
 
-#### 1xxxx 动作请求错误（Request Error）
-| 错误码 | 错误名 | 说明 |
-|-------|-------|------|
-| 10001 | Bad Request | 无效的动作请求 |
-| 10002 | Unsupported Action | 不支持的动作请求 |
-| 10003 | Bad Param | 无效的动作请求参数 |
-| 10004 | Unsupported Param | 不支持的动作请求参数 |
-| 10005 | Unsupported Segment | 不支持的消息段类型 |
-| 10006 | Bad Segment Data | 无效的消息段参数 |
-| 10007 | Unsupported Segment Data | 不支持的消息段参数 |
-| 10101 | Who Am I | 未指定机器人账号 |
-| 10102 | Unknown Self | 未知的机器人账号 |
+示例这里导入了模块核心逻辑
 
-#### 2xxxx 动作处理器错误（Handler Error）
-| 错误码 | 错误名 | 说明 |
-|-------|-------|------|
-| 20001 | Bad Handler | 动作处理器实现错误 |
-| 20002 | Internal Handler Error | 动作处理器运行时抛出异常 |
-
-#### 3xxxx 动作执行错误（Execution Error）
-| 错误码范围 | 错误类型 | 说明 |
-|-----------|---------|------|
-| 31xxx | Database Error | 数据库错误 |
-| 32xxx | Filesystem Error | 文件系统错误 |
-| 33xxx | Network Error | 网络错误 |
-| 34xxx | Platform Error | 机器人平台错误 |
-| 35xxx | Logic Error | 动作逻辑错误 |
-| 36xxx | I Am Tired | 实现决定罢工 |
-
-#### 保留错误段
-- 4xxxx、5xxxx: 保留段，不应使用
-- 6xxxx～9xxxx: 其他错误段，供实现自定义使用
-
-## 4. 实现要求
-1. 所有响应必须包含status、retcode、data和message字段
-2. 当请求中包含非空echo字段时，响应必须包含相同值的echo字段
-3. 返回码必须严格遵循OneBot12规范
-4. 错误信息(message)应当是人类可读的描述
-
-## 5. 注意事项
-- 对于3xxxx错误码，低三位可由实现自行定义
-- 避免使用保留错误段(4xxxx、5xxxx)
-- 错误信息应当简洁明了，便于调试
-
-<!--- End of api-response.md -->
-
-<!-- event-conversion.md -->
-
-# ErisPulse 适配器标准化转换规范
-
-## 1. 核心原则
-1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
-2. 明确扩展：平台特有功能必须添加 {platform}_ 前缀（如 yunhu_form）
-3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中
-4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
-5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
-
-## 2. 基础字段规范
-### 2.1 必填字段（所有事件）
-|字段|类型|要求|
-|-|-|-|
-|id|string|必须存在，原始事件无ID时使用UUID生成|
-|time|int|10位秒级时间戳（毫秒级需转换）|
-|type|string|必须为 message/notice/request 之一|
-|platform|string|必须与适配器注册名完全一致|
-|self|object|必须包含 platform 和 user_id|
-
-### 2.2 条件字段
-|字段|触发条件|示例|
-|-|-|-|
-|detail_type|所有事件必须|"group"/"private"|
-|sub_type|需要细分时|"invite"/"leave"|
-|message_id|消息事件|"msg_123"|
-|user_id|涉及用户|"user_456"|
-|group_id|群组事件|"group_789"|
-
-### 2.3 非标准字段（非必须，但建议实现）
-|user_nickname|涉及用户|"用户昵称"|
-
-## 3. 完整事件模板
-### 3.1 消息事件 (message)
-```json
-{
-  "id": "event_123",
-  "time": 1752241220,
-  "type": "message",
-  "detail_type": "group",
-  "sub_type": "",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "message_id": "msg_abc",
-  "message": [
-    {
-      "type": "text",
-      "data": {"text": "你好"}
-    },
-    {
-      "type": "image",
-      "data": {
-        "file_id": "img_xyz",
-        "url": "https://example.com/image.jpg",
-        "file_name": "example.jpg",
-        "size": 102400,
-        "width": 800,
-        "height": 600
-      }
-    }
-  ],
-  "alt_message": "你好[图片]",
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "yunhu_raw": {...},
-  "yunhu_command": {
-    "name": "抽奖",
-    "args": "超级大奖"
-  }
-}
-```
-### 3.2 通知事件 (notice)
-```json
-{
-  "id": "event_456",
-  "time": 1752241221,
-  "type": "notice",
-  "detail_type": "group_member_increase",
-  "sub_type": "invite",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "operator_id": "",
-  "yunhu_raw": {...},
-}
-```
-### 3.3 请求事件 (request)
-```json
-{
-  "id": "event_789",
-  "time": 1752241222,
-  "type": "request",
-  "detail_type": "friend",
-  "platform": "onebot11",
-  "self": {
-    "platform": "onebot11",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "comment": "请加好友",
-  "onebot11_raw": {...},
-}
-```
-## 4. 消息段标准
-### 4.1 通用消息段
-|类型|必填字段|扩展字段|
-|-|-|-|
-|text|text|-|
-|image|url|file_name, size, width, height|
-|video|url|duration, file_name|
-|file|url|size, file_name|
-
-## 5. 错误处理规范
-### 5.1 字段缺失处理
 ```python
-def safe_get(data: dict, key: str, default=None):
-    """安全获取字段并记录警告"""
-    if key not in data:
-        logger.warning(f"Missing field '{key}' in {data.get('eventType', 'unknown')}")
-    return data.get(key, default)
+from .Core import Main
 ```
-### 5.2 未知事件处理
-```json
-{
-  "id": "event_999",
-  "time": 1752241223,
-  "type": "unknown",
-  "platform": "yunhu",
-  "yunhu_raw": {...},
-  "warning": "Unsupported event type: special_event",
-  "alt_message": "This event type is not supported by this system."
-}
-```
-## 6. 时间戳转换标准
-```python
-def convert_timestamp(ts: Any) -> int:
-    """标准化时间戳处理"""
-    if isinstance(ts, str):
-        if len(ts) == 13:  # 毫秒级
-            return int(ts) // 1000
-        return int(ts)
-    elif isinstance(ts, (int, float)):
-        if ts > 9999999999:  # 毫秒级
-            return int(ts // 1000)
-        return int(ts)
-    return int(time.time())  # 默认当前时间
-```
-## 7. 适配器实现检查清单
-- [ ] 所有标准字段已正确映射
-- [ ] 平台特有字段已添加前缀
-- [ ] 时间戳已转换为10位秒级
-- [ ] 原始数据保存在 {platform}_raw
-- [ ] 消息段的 alt_message 已生成
-- [ ] 所有事件类型已通过单元测试
-- [ ] 文档包含完整示例和说明
-## 8. 最佳实践示例
-### 云湖表单消息处理
-```python
-def _convert_form_message(self, raw_form: dict) -> dict:
-    """转换表单消息为标准格式"""
-    return {
-        "type": "yunhu_form",
-        "data": {
-            "id": raw_form.get("formId"),
-            "fields": [
-                {
-                    "id": field.get("fieldId"),
-                    "type": field.get("fieldType"),
-                    "label": field.get("label"),
-                    "value": field.get("value")
-                }
-                for field in raw_form.get("fields", [])
-            ]
-        }
-    }
-```
-### 消息ID生成规则
-```python
-def generate_message_id(platform: str, raw_id: str) -> str:
-    """标准化消息ID格式"""
-    return f"{platform}_msg_{raw_id}" if raw_id else f"{platform}_msg_{uuid.uuid4()}"
-```
-本规范确保所有适配器：
-1. 保持与OneBot12的完全兼容性
-2. 平台特有功能可识别且不冲突
-3. 转换过程可追溯（通过_raw字段）
-4. 数据类型和格式统一
-建议配合自动化测试验证所有转换场景，特别是：
-- 边界值测试（如空消息、超大文件）
-- 特殊字符测试（消息内容含emoji/特殊符号）
-- 压力测试（连续事件转换）
 
-<!--- End of event-conversion.md -->
+---
+
+## 3. `MyModule/Core.py` 文件
+
+实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的，但推荐传入
+
+```python
+# 这也是一种可选的获取 `sdk`对象 的方式
+# from ErisPulse import sdk
+
+class Main:
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        self.env = sdk.env
+        self.util = sdk.util
+        self.raiserr = sdk.raiserr
+
+        self.logger.info("模块已加载")
+        self.config = self._get_config()
+
+    # 从环境变量中获取配置, 如果不存在则使用默认值
+    def _get_config(self):
+        config = env.getConfig("MyModule")
+        if not config:
+            default_config = {
+                "my_config_key": "default_value"
+            }
+            env.setConfig("MyModule", default_config)
+            self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
+            return default_config
+        return config
+
+    def print_hello(self):
+        self.logger.info("Hello World!")
+
+```
+
+- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
+```python
+# 这时候在其它地方可以访问到该模块
+from ErisPulse import sdk
+sdk.MyModule.print_hello()
+
+# 运行模块主程序（推荐使用CLI命令）
+# epsdk run main.py --reload
+```
+## 4. `LICENSE` 文件
+`LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
+
+---
+
+## 开发建议
+
+### 1. 使用异步编程模型
+- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
+- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
+
+### 2. 异常处理与日志记录
+- **统一异常处理机制**：结合 `raiserr` 注册自定义错误类型，提供清晰的错误信息。
+- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
+
+### 3. 模块化与解耦设计
+- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
+- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
+
+### 4. 性能优化
+- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
+- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
+
+### 5. 安全与隐私
+- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
+- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
+
+---
+
+*文档最后更新于 2025-07-17 07:12:26*
+
+<!--- End of Module.md -->
 
 <!-- API文档 -->
 
 # API参考
+
+## README.md
+
+# ErisPulse API 文档
+
+这个文档的内容是由 ErisPulse 核心模块API生成器 自动生成的。它们包含所有核心模块的API文档。
+
 
 ## ErisPulse\__init__.md
 
