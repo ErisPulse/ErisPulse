@@ -17,3 +17,17 @@ __all__ = [
     'util',
     'adapter_server'
 ]
+
+_config = env.getConfig("ErisPulse")
+
+if _config is None:
+    defaultConfig = {
+        "server": {
+            "host": "0.0.0.0",
+            "port": 8000,
+            "ssl_certfile": None,
+            "ssl_keyfile": None
+        }
+    }
+    env.setConfig("ErisPulse", defaultConfig)
+    _config = defaultConfig
