@@ -143,6 +143,137 @@ class LazyModule:
         if not self._initialized:
             self._initialize()
         return bool(self._instance)
+    
+    def __str__(self) -> str:
+        """
+        转换为字符串时触发初始化
+        
+        :return: str 模块字符串表示
+        """
+        if not self._initialized:
+            self._initialize()
+            return str(self._instance)
+        return str(self._instance)
+    
+    def __repr__(self) -> str:
+        """
+        转换为字符串时触发初始化
+        
+        :return: str 模块字符串表示
+        """
+        if not self._initialized:
+            self._initialize()
+            return repr(self._instance)
+        return repr(self._instance)
+    
+    def __iter__(self):
+        """
+        迭代时触发初始化
+        
+        :return: Iterator 模块迭代器
+        """
+        if not self._initialized:
+            self._initialize()
+            return iter(self._instance)
+        return iter(self._instance)
+    
+    def __len__(self) -> int:
+        """
+        获取长度时触发初始化
+        
+        :return: int 模块长度
+        """
+        if not self._initialized:
+            self._initialize()
+            return len(self._instance)
+        return len(self._instance)
+    
+    def __contains__(self, item: Any) -> bool:
+        """
+        判断是否包含时触发初始化
+        
+        :param item: Any 要判断的元素
+        :return: bool 是否包含
+        """
+        if not self._initialized:
+            self._initialize()
+            return item in self._instance
+        return item in self._instance
+    
+    def __getitem__(self, key: Any) -> Any:
+        """
+        获取元素时触发初始化
+        
+        :param key: Any 元素键
+        :return: Any 元素值
+        """
+        if not self._initialized:
+            self._initialize()
+            return self._instance[key]
+        return self._instance[key]
+    
+    def __setitem__(self, key: Any, value: Any) -> None:
+        """
+        设置元素时触发初始化
+        
+        :param key: Any 元素键
+        :param value: Any 元素值
+        """
+        if not self._initialized:
+            self._initialize()
+            self._instance[key] = value
+    
+    def __delitem__(self, key: Any) -> None:
+        """
+        删除元素时触发初始化
+        
+        :param key: Any 元素键
+        """
+        if not self._initialized:
+            self._initialize()
+            del self._instance[key]
+    
+    def __del__(self):
+        """
+        对象被销毁时触发初始化
+        """
+        if not self._initialized:
+            self._initialize()
+            del self._instance
+    
+    def __enter__(self):
+        """
+        进入with语句时触发初始化
+        
+        :return: Any 模块实例
+        """
+        if not self._initialized:
+            self._initialize()
+        return self._instance
+    
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """
+        退出with语句时触发初始化
+        
+        :param exc_type: Any 异常类型
+        :param exc_value: Any 异常值
+        :param traceback: Any 跟踪信息
+        """
+        if not self._initialized:
+            self._initialize()
+        del self._instance
+    
+    # 确保模块在被赋值给变量后仍然能正确工作
+    def __getattribute__(self, name: str) -> Any:
+        try:
+            # 首先尝试获取常规属性
+            return super().__getattribute__(name)
+        except AttributeError:
+            # 如果常规属性不存在，触发初始化
+            if name != '_initialized' and not self._initialized:
+                self._initialize()
+                return getattr(self._instance, name)
+            raise
 
 class AdapterLoader:
     """
