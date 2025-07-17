@@ -84,7 +84,8 @@ class PyPIManager:
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(PyPIManager.REMOTE_SOURCES[0]) as response:
                     if response.status == 200:
-                        data = await response.json()
+                        data = await response.text()
+                        data = json.loads(data)
                         return {
                             "modules": data.get("modules", {}),
                             "adapters": data.get("adapters", {})
@@ -97,7 +98,8 @@ class PyPIManager:
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(PyPIManager.REMOTE_SOURCES[1]) as response:
                     if response.status == 200:
-                        data = await response.json()
+                        data = await response.text()
+                        data = json.loads(data)
                         return {
                             "modules": data.get("modules", {}),
                             "adapters": data.get("adapters", {})
