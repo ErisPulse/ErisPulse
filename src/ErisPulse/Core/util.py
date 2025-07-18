@@ -87,11 +87,8 @@ class Util:
             try:
                 return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
             except Exception as e:
-                from . import logger, raiserr
+                from . import logger
                 logger.error(f"线程内发生未处理异常:\n{''.join(traceback.format_exc())}")
-                raiserr.CaughtExternalError(
-                    f"检测到线程内异常，请优先使用 sdk.raiserr 抛出错误。\n原始异常: {type(e).__name__}: {e}"
-                )
         return wrapper
 
     def retry(self, max_attempts: int = 3, delay: int = 1) -> Callable:

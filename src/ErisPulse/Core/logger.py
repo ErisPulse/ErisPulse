@@ -189,8 +189,6 @@ class Logger:
         if self._get_effective_level(caller_module) <= logging.CRITICAL:
             self._save_in_memory(caller_module, msg)
             self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
-            from .raiserr import raiserr
-            raiserr.register("CriticalError", doc="发生致命错误")
-            raiserr.CriticalError(f"程序发生致命错误：{msg}", exit=True)
+            raise Exception(msg)
 
 logger = Logger()
