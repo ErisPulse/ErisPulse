@@ -21,7 +21,6 @@ from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
 from typing import List, Dict, Optional, Any, Set, Tuple, Union, Type, FrozenSet
-from .raiserr import raiserr
 
 class EnvManager:
     """
@@ -370,22 +369,10 @@ class EnvManager:
         try:
             time_diff = current_time - self._last_snapshot_time
             if not isinstance(time_diff, (int, float)):
-                raiserr.register(
-                    "ErisPulseEnvTimeDiffTypeError",
-                    doc = "时间差应为数值类型",
-                )
-                raiserr.ErisPulseEnvTimeDiffTypeError(
-                    f"时间差应为数值类型，实际为: {type(time_diff)}"
-                )
+                raise ValueError("时间差应为数值类型")
 
             if not isinstance(self._snapshot_interval, (int, float)):
-                raiserr.register(
-                    "ErisPulseEnvSnapshotIntervalTypeError",
-                    doc = "快照间隔应为数值类型",
-                )
-                raiserr.ErisPulseEnvSnapshotIntervalTypeError(
-                    f"快照间隔应为数值类型，实际为: {type(self._snapshot_interval)}"
-                )
+                raise ValueError("快照间隔应为数值类型")
                 
             if time_diff > self._snapshot_interval:
                 self._last_snapshot_time = current_time
