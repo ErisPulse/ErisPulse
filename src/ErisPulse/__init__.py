@@ -44,20 +44,8 @@ BaseModules = {
     "BaseAdapter": AdapterFather
 }
 
-BaseErrors = {
-    "ExternalError": "外部捕获异常",
-    "CaughtExternalError": "捕获的非SDK抛出的异常",
-    "InitError": "SDK初始化错误",
-    "ModuleLoadError": "模块加载错误",
-    "LazyLoadError": "懒加载错误"
-}
-
 for module, moduleObj in BaseModules.items():
     setattr(sdk, module, moduleObj)
-
-for error, doc in BaseErrors.items():
-    raiserr.register(error, doc=doc)
-
 
 class LazyModule:
     """
@@ -109,7 +97,7 @@ class LazyModule:
             logger.debug(f"模块 {self._module_name} 初始化完成")
         except Exception as e:
             logger.error(f"模块 {self._module_name} 初始化失败: {e}")
-            raise raiserr.LazyLoadError(f"无法初始化模块 {self._module_name}: {e}")
+            raise 
     
     def __getattr__(self, name: str) -> Any:
         """
@@ -511,7 +499,6 @@ class ModuleInitializer:
             
         except Exception as e:
             logger.critical(f"SDK初始化严重错误: {e}")
-            raiserr.InitError(f"sdk初始化失败: {e}", exit=True)
             return False
     
     @staticmethod
@@ -733,6 +720,7 @@ def init() -> bool:
     
     :raises InitError: 当初始化失败时抛出
     """
+    
     if not _prepare_environment():
         return False
 
