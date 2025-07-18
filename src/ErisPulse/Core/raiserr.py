@@ -1,12 +1,12 @@
 """
 ErisPulse 错误管理系统
 
-提供错误类型注册、抛出和管理功能，集成全局异常处理。支持自定义错误类型、错误链追踪和全局异常捕获。
+提供全局异常捕获功能。不再推荐使用自定义错误注册功能。
 
 {!--< tips >!--}
-1. 使用register注册自定义错误类型
-2. 通过info获取错误信息
-3. 自动捕获未处理异常
+1. 请使用Python原生异常抛出方法
+2. 系统会自动捕获并格式化所有未处理异常
+3. 注册功能已标记为弃用，将在未来版本移除
 {!--< /tips >!--}
 """
 
@@ -19,12 +19,11 @@ class Error:
     """
     错误管理器
     
-    提供错误类型注册和抛出功能
+    {!--< deprecated >!--} 请使用Python原生异常抛出方法 | 2025-07-18
     
     {!--< tips >!--}
-    1. 通过register方法注册自定义错误类型
-    2. 通过动态属性访问抛出错误
-    3. 通过info方法获取错误信息
+    1. 注册功能将在未来版本移除
+    2. 请直接使用raise Exception("message")方式抛出异常
     {!--< /tips >!--}
     """
     
@@ -35,16 +34,12 @@ class Error:
         """
         注册新的错误类型
         
+        {!--< deprecated >!--} 请使用Python原生异常抛出方法 | 2025-07-18
+        
         :param name: 错误类型名称
         :param doc: 错误描述文档
         :param base: 基础异常类
         :return: 注册的错误类
-        
-        :example:
-        >>> # 注册简单错误
-        >>> raiserr.register("SimpleError", "简单的错误类型")
-        >>> # 注册自定义基类的错误
-        >>> raiserr.register("AdvancedError", "高级错误", CustomBaseError)
         """
         if name not in self._types:
             err_cls = type(name, (base,), {"__doc__": doc})
@@ -54,6 +49,8 @@ class Error:
     def __getattr__(self, name: str) -> Callable[..., None]:
         """
         动态获取错误抛出函数
+        
+        {!--< deprecated >!--} 请使用Python原生异常抛出方法 | 2025-07-18
         
         :param name: 错误类型名称
         :return: 错误抛出函数
@@ -85,14 +82,10 @@ class Error:
         """
         获取错误信息
         
+        {!--< deprecated >!--} 此功能将在未来版本移除 | 2025-07-18
+        
         :param name: 错误类型名称(可选)
         :return: 错误信息字典
-        
-        :example:
-        >>> # 获取特定错误信息
-        >>> error_info = raiserr.info("SimpleError")
-        >>> # 获取所有错误信息
-        >>> all_errors = raiserr.info()
         """
         result = {}
         for err_name, err_cls in self._types.items():
@@ -119,34 +112,65 @@ class Error:
 
 raiserr = Error()
 
-# 全局异常处理器
 def global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any) -> None:
     """
-    {!--< internal-use >!--}
     全局异常处理器
     
     :param exc_type: 异常类型
     :param exc_value: 异常值
     :param exc_traceback: 追踪信息
     """
-    error_message = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    raiserr.ExternalError(
-        f"{exc_type.__name__}: {exc_value}\nTraceback:\n{error_message}"
-    )
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    RESET = '\033[0m'
     
+    error_title = f"{RED}{exc_type.__name__}{RESET}: {YELLOW}{exc_value}{RESET}"
+    traceback_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    
+    colored_traceback = []
+    for line in traceback_lines:
+        if "File " in line and ", line " in line:
+            parts = line.split(', line ')
+            colored_line = f"{BLUE}{parts[0]}{RESET}, line {parts[1]}"
+            colored_traceback.append(colored_line)
+        else:
+            colored_traceback.append(f"{RED}{line}{RESET}")
+    
+    full_error = f"{error_title}\n{RED}Traceback:{RESET}\n{''.join(colored_traceback)}"
+    
+    sys.stderr.write(full_error)
+
 def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any]) -> None:
     """
-    {!--< internal-use >!--}
     异步异常处理器
     
     :param loop: 事件循环
     :param context: 上下文字典
     """
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    RESET = '\033[0m'
+    
     exception = context.get('exception')
-    tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__))
-    raiserr.ExternalError(
-        f"{type(exception).__name__}: {exception}\nTraceback:\n{tb}"
-    )
+    if exception:
+        tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+        
+        colored_tb = []
+        for line in tb.split('\n'):
+            if "File " in line and ", line " in line:
+                parts = line.split(', line ')
+                colored_line = f"{BLUE}{parts[0]}{RESET}, line {parts[1]}"
+                colored_tb.append(colored_line)
+            else:
+                colored_tb.append(f"{RED}{line}{RESET}")
+        
+        error_msg = f"{RED}{type(exception).__name__}{RESET}: {YELLOW}{exception}{RESET}\n{RED}Traceback:{RESET}\n{'\n'.join(colored_tb)}"
+        sys.stderr.write(error_msg)
+    else:
+        msg = context.get('message', 'Unknown async error')
+        sys.stderr.write(f"{RED}Async Error{RESET}: {YELLOW}{msg}{RESET}")
 
 sys.excepthook = global_exception_handler
 asyncio.get_event_loop().set_exception_handler(async_exception_handler)
