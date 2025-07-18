@@ -10,7 +10,6 @@ ErisPulse CLI 提供以下命令组：
 
 | 命令       | 参数                      | 描述                                  | 示例                          |
 |------------|---------------------------|---------------------------------------|-------------------------------|
-| `search`   | `<query>`                 | 搜索PyPI上的ErisPulse模块             | `epsdk search ErisPulse-YunhuAdapter`        |
 | `install`  | `<package> [--upgrade]`   | 安装模块/适配器包                     | `epsdk install Yunhu`  |
 | `uninstall`| `<package>`               | 卸载模块/适配器包                     | `epsdk uninstall old-module`  |
 | `upgrade`  | `[--force]`               | 升级所有模块/适配器                   | `epsdk upgrade --force`       |
