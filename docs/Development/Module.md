@@ -69,6 +69,11 @@ class Main:
         self.logger.info("模块已加载")
         self.config = self._get_config()
 
+    @staticmethod
+    def should_eager_load(self):
+        # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
+        return False
+
     # 从环境变量中获取配置, 如果不存在则使用默认值
     def _get_config(self):
         config = env.getConfig("MyModule")
