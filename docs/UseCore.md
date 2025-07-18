@@ -8,13 +8,12 @@
 | `mods`/`sdk.mods` | 模块管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
-| `raiserr`/`sdk.raiserr` | 错误管理器 |
 | `util`/`sdk.util` | 工具函数（缓存、重试等） |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import env, mods, logger, raiserr, util, adapter, BaseAdapter
+from ErisPulse.Core import env, mods, logger, util, adapter, BaseAdapter
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -96,19 +95,7 @@ if module_config is None:
     env.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-### 3. 错误管理(raiserr)
-```python
-# 注册自定义错误
-raiserr.register("MyCustomError", doc="自定义错误说明")
-
-# 获取错误信息
-error_info = raiserr.info("MyCustomError")
-
-# 抛出错误
-raiserr.MyCustomError("错误描述")
-```
-
-### 4. 工具函数(util)
+### 3. 工具函数(util)
 ```python
 # 自动重试
 @util.retry(max_attempts=3, delay=1)
