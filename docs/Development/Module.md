@@ -65,7 +65,6 @@ class Main:
         self.logger = sdk.logger
         self.env = sdk.env
         self.util = sdk.util
-        self.raiserr = sdk.raiserr
 
         self.logger.info("模块已加载")
         self.config = self._get_config()
@@ -108,7 +107,7 @@ sdk.MyModule.print_hello()
 - **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
 
 ### 2. 异常处理与日志记录
-- **统一异常处理机制**：结合 `raiserr` 注册自定义错误类型，提供清晰的错误信息。
+- **统一异常处理机制**：直接 `raise` 异常，上层会自动捕获并记录日志。
 - **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
 
 ### 3. 模块化与解耦设计
