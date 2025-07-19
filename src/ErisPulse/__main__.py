@@ -432,6 +432,29 @@ def main():
         metavar="<命令>",
     )
 
+    # 在main()函数中修改第三方命令加载部分
+    try:
+        entry_points = importlib.metadata.entry_points()
+        if hasattr(entry_points, 'select'):
+            cli_entries = entry_points.select(group='erispulse.cli')
+        else:
+            cli_entries = entry_points.get('erispulse.cli', [])
+        
+        for entry in cli_entries:
+            try:
+                cli_func = entry.load()
+                if callable(cli_func):
+                    # 直接调用函数并传入subparsers和console
+                    cli_func(subparsers, console)
+                else:
+                    console.print(f"[yellow]模块 {entry.name} 的入口点不是可调用对象[/]")
+            except Exception as e:
+                console.print(f"[red]加载第三方命令 {entry.name} 失败: {e}[/]")
+                import traceback
+                console.print(traceback.format_exc())
+    except Exception as e:
+        console.print(f"[yellow]加载第三方CLI命令失败: {e}[/]", style="warning")
+
     # 安装命令
     install_parser = subparsers.add_parser('install', help='安装模块/适配器包')
     install_parser.add_argument('package', type=str, help='要安装的包名')
@@ -477,6 +500,8 @@ def main():
         parser.print_help()
     
     try:
+        if hasattr(args, 'func'):
+            args.func(args)
         if args.command == "install":
             import asyncio
             # 首先检查是否是远程模块/适配器的简称
