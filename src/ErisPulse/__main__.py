@@ -1,30 +1,3 @@
-"""
-# CLI 入口
-
-提供命令行界面(CLI)用于包管理和启动入口。
-
-## 主要命令
-### 包管理:
-    install: 安装模块/适配器包
-    uninstall: 卸载模块/适配器包
-    list: 列出已安装的模块/适配器
-    list-remote: 列出远程PyPI上的ErisPulse模块和适配器
-    upgrade: 升级所有模块/适配器
-
-### 启动:
-    run: 运行脚本
-    --reload: 启用热重载
-
-### 示例用法:
-```
-# 安装模块
-epsdk install Yunhu
-
-# 启用热重载
-epsdk run main.py --reload
-```
-"""
-
 import argparse
 import importlib.metadata
 import subprocess
@@ -38,21 +11,56 @@ from typing import List, Dict, Tuple, Optional
 from importlib.metadata import version, PackageNotFoundError
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from .Core.shellprint import shellprint, Shell_Printer
+
+# Rich console setup
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.progress import Progress, BarColumn, TextColumn
+from rich.prompt import Confirm, Prompt
+from rich.text import Text
+from rich.box import SIMPLE, ROUNDED, DOUBLE
+from rich.style import Style
+from rich.theme import Theme
+from rich.layout import Layout
+from rich.live import Live
+
+theme = Theme({
+    "info": "cyan",
+    "success": "green",
+    "warning": "yellow",
+    "error": "red",
+    "title": "magenta",
+    "default": "default",
+    "progress": "green",
+    "progress.remaining": "white",
+})
+
+# 确保在Windows上启用颜色
+import sys
+if sys.platform == "win32":
+    from colorama import init
+    init()
+
+theme = Theme({
+    "info": "cyan",
+    "success": "green",
+    "warning": "yellow",
+    "error": "red",
+    "title": "magenta",
+    "default": "default",
+    "progress": "green",
+    "progress.remaining": "white",
+})
+
+console = Console(theme=theme, color_system="auto", force_terminal=True)
 
 class PyPIManager:
     """
     PyPI包管理器
     
     负责与PyPI交互，包括搜索、安装、卸载和升级ErisPulse模块/适配器
-
-    {!--< tips >!--}
-    1. 支持多个远程源作为备份
-    2. 自动区分模块和适配器
-    3. 提供详细的错误处理
-    {!--< /tips >!--}
     """
-
     REMOTE_SOURCES = [
         "https://erisdev.com/packages.json",
         "https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/packages.json"
@@ -73,7 +81,6 @@ class PyPIManager:
         :raises ClientError: 当网络请求失败时抛出
         :raises asyncio.TimeoutError: 当请求超时时抛出
         """
-
         import aiohttp
         from aiohttp import ClientError, ClientTimeout
         
@@ -92,7 +99,11 @@ class PyPIManager:
                         }
         except (ClientError, asyncio.TimeoutError) as e:
             last_error = e
-            shellprint.panel(f"官方源请求失败，尝试备用源: {e}", "警告", "warning")
+            console.print(Panel(
+                f"官方源请求失败，尝试备用源: {e}",
+                title="警告",
+                style="warning"
+            ))
         
         try:
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -108,7 +119,11 @@ class PyPIManager:
             last_error = e
             
         if last_error:
-            shellprint.panel(f"获取远程模块列表失败: {last_error}", "错误", "error")
+            console.print(Panel(
+                f"获取远程模块列表失败: {last_error}",
+                title="错误",
+                style="error"
+            ))
         return {"modules": {}, "adapters": {}}
     
     @staticmethod
@@ -145,33 +160,81 @@ class PyPIManager:
                                 "summary": dist.metadata["Summary"]
                             }
         except Exception as e:
-            shellprint.panel(f"获取已安装包信息失败: {e}", "错误", "error")
+            console.print(Panel(
+                f"获取已安装包信息失败: {e}",
+                title="错误",
+                style="error"
+            ))
         
         return packages
     
     @staticmethod
-    def install_package(package_name: str, upgrade: bool = False) -> bool:
+    def uv_install_package(package_name: str, upgrade: bool = False) -> bool:
         """
-        安装指定包
+        优先使用uv安装包
         
         :param package_name: str 要安装的包名
         :param upgrade: bool 是否升级已安装的包 (默认: False)
         :return: bool 安装是否成功
         """
         try:
+            # 检查uv是否可用
+            uv_check = subprocess.run(["uv", "--version"], capture_output=True)
+            if uv_check.returncode != 0:
+                return False  # uv不可用
+            
+            cmd = ["uv", "pip", "install"]
+            if upgrade:
+                cmd.append("--upgrade")
+            cmd.append(package_name)
+            
+            with console.status(f"使用uv安装 {package_name}..."):
+                result = subprocess.run(cmd, check=True)
+                return result.returncode == 0
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
+    
+    @staticmethod
+    def install_package(package_name: str, upgrade: bool = False) -> bool:
+        """
+        安装指定包 (修改后优先尝试uv)
+        
+        :param package_name: str 要安装的包名
+        :param upgrade: bool 是否升级已安装的包 (默认: False)
+        :return: bool 安装是否成功
+        """
+        # 优先尝试uv安装
+        if PyPIManager.uv_install_package(package_name, upgrade):
+            console.print(Panel(
+                f"包 {package_name} 安装成功 (使用uv)",
+                title="成功",
+                style="success"
+            ))
+            return True
+            
+        # 回退到pip安装
+        try:
             cmd = [sys.executable, "-m", "pip", "install"]
             if upgrade:
                 cmd.append("--upgrade")
             cmd.append(package_name)
             
-            shellprint.status(f"正在安装 {package_name}...")
-            result = subprocess.run(cmd, check=True)
-            if result.returncode == 0:
-                shellprint.panel(f"包 {package_name} 安装成功", "成功", "success")
-                return True
-            return False
+            with console.status(f"使用pip安装 {package_name}..."):
+                result = subprocess.run(cmd, check=True)
+                if result.returncode == 0:
+                    console.print(Panel(
+                        f"包 {package_name} 安装成功",
+                        title="成功",
+                        style="success"
+                    ))
+                    return True
+                return False
         except subprocess.CalledProcessError as e:
-            shellprint.panel(f"安装包 {package_name} 失败: {e}", "错误", "error")
+            console.print(Panel(
+                f"安装包 {package_name} 失败: {e}",
+                title="错误",
+                style="error"
+            ))
             return False
     
     @staticmethod
@@ -183,17 +246,25 @@ class PyPIManager:
         :return: bool 卸载是否成功
         """
         try:
-            shellprint.status(f"正在卸载 {package_name}...")
-            result = subprocess.run(
-                [sys.executable, "-m", "pip", "uninstall", "-y", package_name],
-                check=True
-            )
-            if result.returncode == 0:
-                shellprint.panel(f"包 {package_name} 卸载成功", "成功", "success")
-                return True
-            return False
+            with console.status(f"正在卸载 {package_name}..."):
+                result = subprocess.run(
+                    [sys.executable, "-m", "pip", "uninstall", "-y", package_name],
+                    check=True
+                )
+                if result.returncode == 0:
+                    console.print(Panel(
+                        f"包 {package_name} 卸载成功",
+                        title="成功",
+                        style="success"
+                    ))
+                    return True
+                return False
         except subprocess.CalledProcessError as e:
-            shellprint.panel(f"卸载包 {package_name} 失败: {e}", "错误", "error")
+            console.print(Panel(
+                f"卸载包 {package_name} 失败: {e}",
+                title="错误",
+                style="error"
+            ))
             return False
     
     @staticmethod
@@ -202,11 +273,6 @@ class PyPIManager:
         升级所有已安装的ErisPulse包
         
         :return: bool 升级是否成功
-        
-        {!--< tips >!--}
-        1. 会先列出所有可升级的包
-        2. 需要用户确认才会执行升级
-        {!--< /tips >!--}
         """
         try:
             installed = PyPIManager.get_installed_packages()
@@ -217,17 +283,21 @@ class PyPIManager:
                     all_packages.add(pkg_info["package"])
             
             if not all_packages:
-                shellprint.panel("没有找到可升级的ErisPulse包", "提示", "info")
+                console.print(Panel(
+                    "没有找到可升级的ErisPulse包",
+                    title="提示",
+                    style="info"
+                ))
                 return False
                 
-            shellprint.panel(
+            console.print(Panel(
                 f"找到 {len(all_packages)} 个可升级的包:\n" + 
                 "\n".join(f"  - {pkg}" for pkg in all_packages),
-                "升级列表",
-                "info"
-            )
+                title="升级列表",
+                style="info"
+            ))
             
-            if not shellprint.confirm("确认升级所有包吗？", default=False):
+            if not Confirm.ask("确认升级所有包吗？", default=False):
                 return False
                 
             for pkg in all_packages:
@@ -235,7 +305,11 @@ class PyPIManager:
                 
             return True
         except Exception as e:
-            shellprint.panel(f"升级包失败: {e}", "错误", "error")
+            console.print(Panel(
+                f"升级包失败: {e}",
+                title="错误",
+                style="error"
+            ))
             return False
 
 class ReloadHandler(FileSystemEventHandler):
@@ -243,12 +317,6 @@ class ReloadHandler(FileSystemEventHandler):
     热重载处理器
     
     监控文件变化并自动重启脚本
-
-    {!--< tips >!--}
-    1. 基于watchdog实现文件监控
-    2. 有1秒的防抖延迟
-    3. 会终止旧进程并启动新进程
-    {!--< /tips >!--}
     """
     def __init__(self, script_path, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -260,14 +328,12 @@ class ReloadHandler(FileSystemEventHandler):
     def start_process(self):
         """
         启动/重启被监控的进程
-        
-        {!--< internal-use >!--}
         """
         if self.process:
             self.process.terminate()
             self.process.wait()
             
-        shellprint.status(f"启动进程: {self.script_path}")
+        console.print(f"[bold green]启动进程:[/] {self.script_path}")
         self.process = subprocess.Popen([sys.executable, self.script_path])
         self.last_reload = time.time()
 
@@ -282,7 +348,7 @@ class ReloadHandler(FileSystemEventHandler):
             return
             
         if event.src_path.endswith(".py"):
-            print(f"\n{Shell_Printer.CYAN}[热重载] 检测到文件变动: {event.src_path}{Shell_Printer.RESET}")
+            console.print(f"\n[cyan][热重载] 检测到文件变动: {event.src_path}[/]")
             self.start_process()
 
 def start_reloader(script_path):
@@ -290,11 +356,6 @@ def start_reloader(script_path):
     启动热重载监控
     
     :param script_path: str 要监控的脚本路径
-    
-    {!--< tips >!--}
-    1. 监控脚本所在目录和modules目录
-    2. 按Ctrl+C可停止监控
-    {!--< /tips >!--}
     """
     project_root = os.path.dirname(os.path.abspath(__file__))
     watch_dirs = [
@@ -310,8 +371,8 @@ def start_reloader(script_path):
             observer.schedule(handler, d, recursive=True)
 
     observer.start()
-    print(f"\n{Shell_Printer.GREEN}{Shell_Printer.BOLD}[热重载] 已启动{Shell_Printer.RESET}")
-    print(f"{Shell_Printer.DIM}监控目录: {', '.join(watch_dirs)}{Shell_Printer.RESET}\n")
+    console.print("\n[bold green][热重载] 已启动[/]")
+    console.print(f"[dim]监控目录: {', '.join(watch_dirs)}[/]\n")
     try:
         while True:
             time.sleep(1)
@@ -331,18 +392,47 @@ def run_script(script_path: str, reload: bool = False):
     :raises FileNotFoundError: 当脚本不存在时抛出
     """
     if not os.path.exists(script_path):
-        shellprint.panel(f"找不到指定文件: {script_path}", "错误", "error")
+        console.print(Panel(
+            f"找不到指定文件: {script_path}",
+            title="错误",
+            style="error"
+        ))
         return
 
     if reload:
         start_reloader(script_path)
     else:
-        shellprint.panel(f"运行脚本: {Shell_Printer.BOLD}{script_path}{Shell_Printer.RESET}", "执行", "info")
+        console.print(Panel(
+            f"运行脚本: [bold]{script_path}[/]",
+            title="执行",
+            style="info"
+        ))
         import runpy
+        first_interrupt = True
         try:
             runpy.run_path(script_path, run_name="__main__")
         except KeyboardInterrupt:
-            shellprint.panel("脚本执行已中断", "中断", "info")
+            if first_interrupt:
+                console.print(Panel(
+                    "正在安全关闭，如果需要强制关闭请再次点击",
+                    title="中断",
+                    style="warning"
+                ))
+                first_interrupt = False
+                try:
+                    runpy.run_path(script_path, run_name="__main__")
+                except KeyboardInterrupt:
+                    console.print(Panel(
+                        "脚本执行已强制中断",
+                        title="中断",
+                        style="error"
+                    ))
+            else:
+                console.print(Panel(
+                    "脚本执行已强制中断",
+                    title="中断",
+                    style="error"
+                ))
 
 def get_erispulse_version():
     """
@@ -360,29 +450,21 @@ def main():
     CLI主入口
     
     解析命令行参数并执行相应命令
-    
-    {!--< tips >!--}
-    1. 使用argparse处理命令行参数
-    2. 支持彩色输出和表格显示
-    3. 提供详细的错误处理
-    {!--< /tips >!--}
     """
     
     parser = argparse.ArgumentParser(
         prog="epsdk",
         formatter_class=argparse.RawTextHelpFormatter,
-        description=f"{Shell_Printer.BOLD}ErisPulse SDK 命令行工具 {get_erispulse_version()}{Shell_Printer.RESET}"
+        description=f"ErisPulse SDK 命令行工具 {get_erispulse_version()}"
     )
-    parser._positionals.title = f"{Shell_Printer.BOLD}{Shell_Printer.CYAN}基本命令{Shell_Printer.RESET}"
-    parser._optionals.title = f"{Shell_Printer.BOLD}{Shell_Printer.MAGENTA}可选参数{Shell_Printer.RESET}"
+    parser._positionals.title = "基本"
+    parser._optionals.title = "可选"
     
-    parser.add_argument("--version", action="store_true", help="显示版本信息并退出")
+    parser.add_argument("--version", action="store_true", help="显示版本信息")
     
     subparsers = parser.add_subparsers(
         dest='command', 
-        title='可用的命令',
-        metavar=f"{Shell_Printer.GREEN}<命令>{Shell_Printer.RESET}",
-        help='具体命令的帮助信息'
+        metavar="<命令>",
     )
 
     # 安装命令
@@ -394,6 +476,14 @@ def main():
     uninstall_parser = subparsers.add_parser('uninstall', help='卸载模块/适配器包')
     uninstall_parser.add_argument('package', type=str, help='要卸载的包名')
     
+    # 启用命令
+    enable_parser = subparsers.add_parser('enable', help='启用模块')
+    enable_parser.add_argument('module', type=str, help='要启用的模块名')
+
+    # 禁用命令
+    disable_parser = subparsers.add_parser('disable', help='禁用模块')
+    disable_parser.add_argument('module', type=str, help='要禁用的模块名')
+
     # 列表命令
     list_parser = subparsers.add_parser('list', help='列出已安装的模块/适配器')
     list_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'all'], default='all', 
@@ -411,16 +501,15 @@ def main():
     run_parser = subparsers.add_parser('run', help='运行指定主程序')
     run_parser.add_argument('script', type=str, help='要运行的主程序路径')
     run_parser.add_argument('--reload', action='store_true', help='启用热重载模式')
-
+    
     args = parser.parse_args()
     
     if args.version:
-        print(f"{Shell_Printer.GREEN}ErisPulse {get_erispulse_version()}{Shell_Printer.RESET}")
+        console.print(f"[green]ErisPulse {get_erispulse_version()}[/]")
         return
         
     if not args.command:
         parser.print_help()
-        return
     
     try:
         if args.command == "install":
@@ -438,11 +527,11 @@ def main():
             
             # 如果找到远程包，使用完整包名安装
             if full_package_name:
-                shellprint.panel(
-                    f"找到远程包: {Shell_Printer.BOLD}{args.package}{Shell_Printer.RESET} → {Shell_Printer.BLUE}{full_package_name}{Shell_Printer.RESET}",
-                    "信息",
-                    "info"
-                )
+                console.print(Panel(
+                    f"找到远程包: [bold]{args.package}[/] → [blue]{full_package_name}[/]",
+                    title="信息",
+                    style="info"
+                ))
                 PyPIManager.install_package(full_package_name, args.upgrade)
             else:
                 # 否则按原样安装
@@ -450,37 +539,77 @@ def main():
             
         elif args.command == "uninstall":
             PyPIManager.uninstall_package(args.package)
-            
+
+        elif args.command == "enable":
+            from ErisPulse.Core import mods
+            installed = PyPIManager.get_installed_packages()
+            if args.module not in installed["modules"]:
+                console.print(Panel(
+                    f"模块 [red]{args.module}[/] 不存在或未安装",
+                    title="错误",
+                    style="error"
+                ))
+            else:
+                mods.set_module_status(args.module, True)
+                console.print(Panel(
+                    f"模块 [green]{args.module}[/] 已启用",
+                    title="成功",
+                    style="success"
+                ))
+                
+        elif args.command == "disable":
+            from ErisPulse.Core import mods
+            installed = PyPIManager.get_installed_packages()
+            if args.module not in installed["modules"]:
+                console.print(Panel(
+                    f"模块 [red]{args.module}[/] 不存在或未安装",
+                    title="错误",
+                    style="error"
+                ))
+            else:
+                mods.set_module_status(args.module, False)
+                console.print(Panel(
+                    f"模块 [yellow]{args.module}[/] 已禁用",
+                    title="成功",
+                    style="warning"
+                ))
+                
         elif args.command == "list":
             installed = PyPIManager.get_installed_packages()
             
             if args.type in ["modules", "all"] and installed["modules"]:
-                rows = [
-                    [
-                        f"{Shell_Printer.GREEN}{name}{Shell_Printer.RESET}",
-                        f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
-                        info["version"],
-                        info["summary"]
-                    ] for name, info in installed["modules"].items()
-                ]
-                shellprint.table(["模块名", "包名", "版本", "描述"], rows, "已安装模块", "info")
+                table = Table(title="已安装模块", box=SIMPLE)
+                table.add_column("模块名", style="green")
+                table.add_column("包名", style="blue")
+                table.add_column("版本")
+                table.add_column("描述")
+                
+                for name, info in installed["modules"].items():
+                    table.add_row(name, info["package"], info["version"], info["summary"])
+                
+                console.print(table)
                 
             if args.type in ["adapters", "all"] and installed["adapters"]:
-                rows = [
-                    [
-                        f"{Shell_Printer.YELLOW}{name}{Shell_Printer.RESET}",
-                        f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
-                        info["version"],
-                        info["summary"]
-                    ] for name, info in installed["adapters"].items()
-                ]
-                shellprint.table(["适配器名", "包名", "版本", "描述"], rows, "已安装适配器", "info")
+                table = Table(title="已安装适配器", box=SIMPLE)
+                table.add_column("适配器名", style="yellow")
+                table.add_column("包名", style="blue")
+                table.add_column("版本")
+                table.add_column("描述")
+                
+                for name, info in installed["adapters"].items():
+                    table.add_row(name, info["package"], info["version"], info["summary"])
+                
+                console.print(table)
                 
             if not installed["modules"] and not installed["adapters"]:
-                shellprint.panel("没有安装任何ErisPulse模块或适配器", "提示", "info")
+                console.print(Panel(
+                    "没有安装任何ErisPulse模块或适配器",
+                    title="提示",
+                    style="info"
+                ))
                 
         elif args.command == "upgrade":
-            if args.force or shellprint.confirm("确定要升级所有ErisPulse模块和适配器吗？", default=False):
+            if args.force or Confirm.ask("确定要升级所有ErisPulse模块和适配器吗？", default=False):
                 PyPIManager.upgrade_all()
                 
         elif args.command == "run":
@@ -492,35 +621,51 @@ def main():
                 remote_packages = asyncio.run(PyPIManager.get_remote_packages())
                 
                 if args.type in ["modules", "all"] and remote_packages["modules"]:
-                    rows = [
-                        [
-                            f"{Shell_Printer.GREEN}{name}{Shell_Printer.RESET}",
-                            f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
-                            info["version"],
-                            info["description"]
-                        ] for name, info in remote_packages["modules"].items()
-                    ]
-                    shellprint.table(["模块名", "包名", "版本", "描述"], rows, "远程模块", "info")
+                    table = Table(title="远程模块", box=SIMPLE)
+                    table.add_column("模块名", style="green")
+                    table.add_column("包名", style="blue")
+                    table.add_column("版本")
+                    table.add_column("描述")
+                    
+                    for name, info in remote_packages["modules"].items():
+                        table.add_row(name, info["package"], info["version"], info["description"])
+                    
+                    console.print(table)
                     
                 if args.type in ["adapters", "all"] and remote_packages["adapters"]:
-                    rows = [
-                        [
-                            f"{Shell_Printer.YELLOW}{name}{Shell_Printer.RESET}",
-                            f"{Shell_Printer.BLUE}{info['package']}{Shell_Printer.RESET}",
-                            info["version"],
-                            info["description"]
-                        ] for name, info in remote_packages["adapters"].items()
-                    ]
-                    shellprint.table(["适配器名", "包名", "版本", "描述"], rows, "远程适配器", "info")
+                    table = Table(title="远程适配器", box=SIMPLE)
+                    table.add_column("适配器名", style="yellow")
+                    table.add_column("包名", style="blue")
+                    table.add_column("版本")
+                    table.add_column("描述")
+                    
+                    for name, info in remote_packages["adapters"].items():
+                        table.add_row(name, info["package"], info["version"], info["description"])
+                    
+                    console.print(table)
                     
                 if not remote_packages["modules"] and not remote_packages["adapters"]:
-                    shellprint.panel("没有找到远程模块或适配器", "提示", "info")
+                    console.print(Panel(
+                        "没有找到远程模块或适配器",
+                        title="提示",
+                        style="info"
+                    ))
                     
             except Exception as e:
-                shellprint.panel(f"获取远程列表失败: {e}", "错误", "error")
-
+                console.print(Panel(
+                    f"获取远程列表失败: {e}",
+                    title="错误",
+                    style="error"
+                ))
+        
+    except KeyboardInterrupt as e:
+        pass
     except Exception as e:
-        shellprint.panel(f"执行命令时出错: {e}", "错误", "error")
+        console.print(Panel(
+            f"执行命令时出错: {e}",
+            title="错误",
+            style="error"
+        ))
 
 if __name__ == "__main__":
     main()

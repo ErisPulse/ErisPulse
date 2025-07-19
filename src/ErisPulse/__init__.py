@@ -244,62 +244,47 @@ class AdapterLoader:
             
         :raises ImportError: 当适配器加载失败时抛出
         """
+        meta_name = entry_point.name
+        adapter_status = mods.get_module_status(meta_name)
+        logger.debug(f"适配器 {meta_name} 状态: {adapter_status}")
+        
+        if adapter_status is False:
+            disabled_adapters.append(meta_name)
+            logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
+            return adapter_objs, enabled_adapters, disabled_adapters
+            
         try:
-            loaded_obj = entry_point.load()
-            adapter_obj = sys.modules[loaded_obj.__module__]
+            loaded_class = entry_point.load()
+            adapter_obj = sys.modules[loaded_class.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
             
-            # 创建adapterInfo
             adapter_info = {
                 "meta": {
-                    "name": entry_point.name,
+                    "name": meta_name,
                     "version": getattr(adapter_obj, "__version__", dist.version if dist else "1.0.0"),
                     "description": getattr(adapter_obj, "__description__", ""),
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name
                 },
-                "adapter_class": loaded_obj
+                "adapter_class": loaded_class
             }
-            
-            # 检查是否已经加载过这个适配器类
-            existing_instance = None
-            for existing_adapter in adapter_objs.values():
-                if hasattr(existing_adapter, 'adapterInfo'):
-                    for existing_adapter_info in existing_adapter.adapterInfo.values():
-                        if isinstance(existing_adapter_info, dict) and existing_adapter_info["adapter_class"] == loaded_obj:
-                            existing_instance = existing_adapter_info["adapter_class"]
-                            break
-            
-            # 如果已经存在实例，则复用
-            if existing_instance is not None:
-                adapter_info["adapter_class"] = existing_instance
             
             if not hasattr(adapter_obj, 'adapterInfo'):
                 adapter_obj.adapterInfo = {}
                 
-            adapter_obj.adapterInfo[entry_point.name] = adapter_info
+            adapter_obj.adapterInfo[meta_name] = adapter_info
             
-            # 检查适配器状态
-            meta_name = entry_point.name
-            stored_info = mods.get_module(meta_name) or {
-                "status": True,
-                "info": adapter_info
-            }
-            mods.set_module(meta_name, stored_info)
-            
-            if not stored_info.get('status', True):
-                disabled_adapters.append(meta_name)
-                logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
-                return adapter_objs, enabled_adapters, disabled_adapters
+            # 存储适配器信息
+            mods.set_module(meta_name, adapter_info)
                 
             adapter_objs[meta_name] = adapter_obj
             enabled_adapters.append(meta_name)
-            logger.debug(f"从PyPI包加载适配器: {meta_name}")
+            logger.debug(f"从PyPI包发现适配器: {meta_name}")
             
         except Exception as e:
-            logger.warning(f"从entry-point加载适配器 {entry_point.name} 失败: {e}")
-            raise ImportError(f"无法加载适配器 {entry_point.name}: {e}")
+            logger.warning(f"从entry-point加载适配器 {meta_name} 失败: {e}")
+            raise ImportError(f"无法加载适配器 {meta_name}: {e}")
             
         return adapter_objs, enabled_adapters, disabled_adapters
 
@@ -374,18 +359,26 @@ class ModuleLoader:
             
         :raises ImportError: 当模块加载失败时抛出
         """
+        meta_name = entry_point.name
+        module_status = mods.get_module_status(meta_name)
+        logger.debug(f"模块 {meta_name} 状态: {module_status}")
+        
+        # 首先检查模块状态，如果明确为False则直接跳过
+        if module_status is False:
+            disabled_modules.append(meta_name)
+            logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
+            return module_objs, enabled_modules, disabled_modules
+            
         try:
             loaded_obj = entry_point.load()
             module_obj = sys.modules[loaded_obj.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
             
-            # 从pyproject.toml读取加载策略
-            lazy_load = ModuleLoader._should_lazy_load(dist)
+            lazy_load = ModuleLoader._should_lazy_load(loaded_obj)
             
-            # 创建moduleInfo
             module_info = {
                 "meta": {
-                    "name": entry_point.name,
+                    "name": meta_name,
                     "version": getattr(module_obj, "__version__", dist.version if dist else "1.0.0"),
                     "description": getattr(module_obj, "__description__", ""),
                     "author": getattr(module_obj, "__author__", ""),
@@ -398,26 +391,16 @@ class ModuleLoader:
             
             module_obj.moduleInfo = module_info
             
-            # 检查模块状态
-            meta_name = entry_point.name
-            stored_info = mods.get_module(meta_name) or {
-                "status": True,
-                "info": module_info
-            }
-            mods.set_module(meta_name, stored_info)
-            
-            if not stored_info.get('status', True):
-                disabled_modules.append(meta_name)
-                logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
-                return module_objs, enabled_modules, disabled_modules
+            # 存储模块信息
+            mods.set_module(meta_name, module_info)
                 
             module_objs[meta_name] = module_obj
             enabled_modules.append(meta_name)
             logger.debug(f"从PyPI包加载模块: {meta_name}")
             
         except Exception as e:
-            logger.warning(f"从entry-point加载模块 {entry_point.name} 失败: {e}")
-            raise ImportError(f"无法加载模块 {entry_point.name}: {e}")
+            logger.warning(f"从entry-point加载模块 {meta_name} 失败: {e}")
+            raise ImportError(f"无法加载模块 {meta_name}: {e}")
             
         return module_objs, enabled_modules, disabled_modules
     
@@ -512,7 +495,7 @@ class ModuleInitializer:
         
         :return: bool 模块初始化是否成功
         """
-        # 第一阶段：将所有模块挂载到LazyModule代理上
+        # 将所有模块挂载到LazyModule代理上
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
@@ -544,7 +527,7 @@ class ModuleInitializer:
                 setattr(sdk, meta_name, None)
                 return False
         
-        # 第二阶段：检查并初始化需要立即加载的模块
+        # 检查并初始化需要立即加载的模块
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
@@ -577,7 +560,6 @@ class ModuleInitializer:
                 return False
                 
         return True
-    
     @staticmethod
     def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
         """
@@ -590,9 +572,6 @@ class ModuleInitializer:
         :return: bool 适配器注册是否成功
         """
         success = True
-        # 存储平台名到适配器类的映射
-        platform_to_adapter = {}
-        # 存储已注册的适配器类到实例的映射
         registered_classes = {}
 
         for adapter_name in adapters:
@@ -601,28 +580,31 @@ class ModuleInitializer:
             try:
                 if hasattr(adapter_obj, "adapterInfo") and isinstance(adapter_obj.adapterInfo, dict):
                     for platform, adapter_info in adapter_obj.adapterInfo.items():
-                        # 如果这个平台已经注册过，跳过
-                        if platform in platform_to_adapter:
+                        if platform in sdk.adapter._adapters:
                             continue
                             
                         adapter_class = adapter_info["adapter_class"]
                         
-                        # 检查是否已经注册过这个适配器类
                         if adapter_class in registered_classes:
-                            # 获取已注册的实例
-                            existing_instance = registered_classes[adapter_class]
-                            # 将新平台名指向已有实例
-                            sdk.adapter._adapters[platform] = existing_instance
-                            sdk.adapter._platform_to_instance[platform] = existing_instance
+                            instance = registered_classes[adapter_class]
+                            # 改为直接操作适配器字典而不是调用register
+                            sdk.adapter._adapters[platform] = instance
+                            sdk.adapter._platform_to_instance[platform] = instance
+                            logger.debug(f"复用适配器实例 {adapter_class.__name__} 到平台别称 {platform}")
                         else:
-                            # 注册新适配器
-                            sdk.adapter.register(platform, adapter_class)
-                            # 记录已注册的类和实例
-                            registered_classes[adapter_class] = sdk.adapter._adapters[platform]
-                        
-                        # 记录平台到适配器的映射
-                        platform_to_adapter[platform] = adapter_class
-                        logger.info(f"注册适配器: {platform}")
+                            init_signature = inspect.signature(adapter_class.__init__)
+                            params = init_signature.parameters
+                            
+                            if 'sdk' in params:
+                                instance = adapter_class(sdk)
+                            else:
+                                instance = adapter_class()
+                            
+                            # 直接操作适配器字典
+                            sdk.adapter._adapters[platform] = instance
+                            sdk.adapter._platform_to_instance[platform] = instance
+                            registered_classes[adapter_class] = instance
+                            logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
             except Exception as e:
                 logger.error(f"适配器 {adapter_name} 注册失败: {e}")
                 success = False
