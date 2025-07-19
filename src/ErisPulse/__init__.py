@@ -27,9 +27,6 @@ from .Core import mods
 from .Core import adapter, AdapterFather, SendDSL
 from .Core import adapter_server
 
-# 确保windows下的shell能正确显示颜色
-os.system('')
-
 sdk = sys.modules[__name__]
 
 BaseModules = {
