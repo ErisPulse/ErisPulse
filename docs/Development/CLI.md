@@ -1,4 +1,5 @@
 # ErisPulse CLI 模块开发指南
+> 从 2.1.6 版本开始，ErisPulse支持第三方CLI模块，允许用户通过`epsdk`命令调用自定义的命令。
 
 ## 创建第三方CLI模块
 
