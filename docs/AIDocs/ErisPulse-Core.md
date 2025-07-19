@@ -19,12 +19,13 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
+确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
-> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以需要先安装 uv。
+> 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
 
 ### 1. 安装 uv
 
@@ -70,11 +71,9 @@ mkdir my_bot && cd my_bot
 2. 初始化 SDK 并生成配置文件：
 
 ```bsah
-epsdk init
-# 或 ep-init
+ep-init
 ```
-
-这将在当前目录下自动生成 `env.py` 配置模板文件, 以及最简程序入口 `main.py`。
+这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
 
 ---
 
@@ -518,36 +517,6 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 - `.DeleteMessage(message_id: int)`：删除指定消息。
 - `.GetChat()`：获取聊天信息。
 
-#### env.py 配置示例
-```python
-sdk.env.set("TelegramAdapter", {
-    # 必填：Telegram Bot Token
-    "token": "YOUR_BOT_TOKEN",
-
-    # Webhook 模式下的服务配置（如使用 webhook）
-    "server": {
-        "host": "127.0.0.1",            # 推荐监听本地，防止外网直连
-        "port": 8443,                   # 监听端口
-        "path": "/telegram/webhook"     # Webhook 路径
-    },
-    "webhook": {
-        "host": "example.com",          # Telegram API 监听地址（外部地址）
-        "port": 8443,                   # 监听端口
-        "path": "/telegram/webhook"     # Webhook 路径
-    }
-
-    # 启动模式: webhook 或 polling
-    "mode": "webhook",
-
-    # 可选：代理配置（用于连接 Telegram API）
-    "proxy": {
-        "host": "127.0.0.1",
-        "port": 1080,
-        "type": "socks5"  # 支持 socks4 / socks5
-    }
-})
-```
-
 #### 数据格式示例
 > 略: 使用你了解的 TG 事件数据格式即可,这里不进行演示
 
@@ -721,7 +690,7 @@ ErisPulse 项目：
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1066,13 +1035,13 @@ OneBot12协议事件监听装饰器
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1358,13 +1327,13 @@ ErisPulse 环境配置模块
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1446,13 +1415,13 @@ ErisPulse 日志系统
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1634,13 +1603,13 @@ ErisPulse 模块管理器
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## raiserr.md
 
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1733,13 +1702,13 @@ ErisPulse 错误管理系统
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## server.md
 
 # 📦 `ErisPulse.Core.server` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1860,13 +1829,13 @@ ErisPulse Adapter Server
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 ## util.md
 
 # 📦 `ErisPulse.Core.util` 模块
 
-*自动生成于 2025-07-19 13:32:12*
+*自动生成于 2025-07-19 19:31:39*
 
 ---
 
@@ -1960,6 +1929,6 @@ ErisPulse 工具函数集合
 ---
 
 
-*文档最后更新于 2025-07-19 13:32:12*
+*文档最后更新于 2025-07-19 19:31:39*
 
 <!--- End of API文档 -->
