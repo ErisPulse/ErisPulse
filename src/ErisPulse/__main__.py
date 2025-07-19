@@ -377,7 +377,7 @@ def start_reloader(script_path, reload_mode=False):
     observer.start()
     console.print("\n[bold green][热重载] 已启动[/]")
     mode_desc = "开发重载模式" if reload_mode else "配置监控模式"
-    console.print(f"[dim]模式: {mode_desc}, 监控目录: {', '.join(watch_dirs)}[/]\n")
+    console.print(f"[dim]模式: {mode_desc}\n监控目录: {', '.join(watch_dirs)}[/]\n")
     try:
         first_interrupt = True
         while True:
