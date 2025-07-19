@@ -1,17 +1,18 @@
 [project]
-name = "ErisPulse-MyModule"
+name = "ErisPulse-ExampleCLI"
 version = "1.0.0"
-description = "一个非常哇塞的模块"
+description = "ErisPulse CLI模块示例"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
+    "ErisPulse>=1.0.0"
 ]
 
 [project.urls]
 "homepage" = "https://github.com/yourname/MyModule"
 
 [project.entry-points]
-"erispulse.module" = { "MyModule" = "MyModule:Main" }
+"erispulse.cli" = { "example" = "my_cli_module:example_cli_register" }
