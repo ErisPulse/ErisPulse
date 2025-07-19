@@ -279,36 +279,6 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 - `.DeleteMessage(message_id: int)`：删除指定消息。
 - `.GetChat()`：获取聊天信息。
 
-#### env.py 配置示例
-```python
-sdk.env.set("TelegramAdapter", {
-    # 必填：Telegram Bot Token
-    "token": "YOUR_BOT_TOKEN",
-
-    # Webhook 模式下的服务配置（如使用 webhook）
-    "server": {
-        "host": "127.0.0.1",            # 推荐监听本地，防止外网直连
-        "port": 8443,                   # 监听端口
-        "path": "/telegram/webhook"     # Webhook 路径
-    },
-    "webhook": {
-        "host": "example.com",          # Telegram API 监听地址（外部地址）
-        "port": 8443,                   # 监听端口
-        "path": "/telegram/webhook"     # Webhook 路径
-    }
-
-    # 启动模式: webhook 或 polling
-    "mode": "webhook",
-
-    # 可选：代理配置（用于连接 Telegram API）
-    "proxy": {
-        "host": "127.0.0.1",
-        "port": 1080,
-        "type": "socks5"  # 支持 socks4 / socks5
-    }
-})
-```
-
 #### 数据格式示例
 > 略: 使用你了解的 TG 事件数据格式即可,这里不进行演示
 
