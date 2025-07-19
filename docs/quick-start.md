@@ -3,12 +3,13 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
+确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
-> 我们全面采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链, 所以需要先安装 uv。
+> 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
 
 ### 1. 安装 uv
 
@@ -54,11 +55,9 @@ mkdir my_bot && cd my_bot
 2. 初始化 SDK 并生成配置文件：
 
 ```bsah
-epsdk init
-# 或 ep-init
+ep-init
 ```
-
-这将在当前目录下自动生成 `env.py` 配置模板文件, 以及最简程序入口 `main.py`。
+这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
 
 ---
 
