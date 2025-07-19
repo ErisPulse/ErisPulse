@@ -7,9 +7,7 @@ requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
-# 可以直接依赖对应的ErisPulse模块包名
 dependencies = [
-    
 ]
 
 [project.urls]
@@ -17,8 +15,3 @@ dependencies = [
 
 [project.entry-points]
 "erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
-
-# 显式的添加ErisPulse模块依赖
-[tool.erispulse.dependencies]
-requires = []
-optional = []
