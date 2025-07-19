@@ -26,8 +26,8 @@ class ModuleManager:
     {!--< /tips >!--}
     """
     
-    DEFAULT_MODULE_PREFIX = "erispulse.module.data:"
-    DEFAULT_STATUS_PREFIX = "erispulse.module.status:"
+    DEFAULT_MODULE_PREFIX = "erispulse.data.modules.info:"
+    DEFAULT_STATUS_PREFIX = "erispulse.data.modules.status:"
 
     def __init__(self):
         from .env import env
@@ -75,12 +75,9 @@ class ModuleManager:
         >>> # 禁用模块
         >>> mods.set_module_status("MyModule", False)
         """
+        from .logger import logger
         self.env.set(f"{self.status_prefix}{module_name}", bool(status))
-
-        module_info = self.get_module(module_name)
-        if module_info:
-            module_info["status"] = bool(status)
-            self.env.set(f"{self.module_prefix}{module_name}", module_info)
+        logger.debug(f"模块 {module_name} 状态已设置为 {status}")
 
     def get_module_status(self, module_name: str) -> bool:
         """
@@ -95,7 +92,7 @@ class ModuleManager:
         """
         status = self.env.get(f"{self.status_prefix}{module_name}", True)
         if isinstance(status, str):
-            return status.lower() == 'true'
+            return status.lower() not in ('false', '0', 'no', 'off')
         return bool(status)
 
     def set_module(self, module_name: str, module_info: Dict[str, Any]) -> None:
@@ -109,11 +106,9 @@ class ModuleManager:
         >>> mods.set_module("MyModule", {
         >>>     "version": "1.0.0",
         >>>     "description": "我的模块",
-        >>>     "status": True
         >>> })
         """
         self.env.set(f"{self.module_prefix}{module_name}", module_info)
-        self.set_module_status(module_name, module_info.get('status', True))
 
     def get_module(self, module_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -164,8 +159,6 @@ class ModuleManager:
                 module_name = key[prefix_len:]
                 module_info = self.get_module(module_name)
                 if module_info:
-                    status = self.get_module_status(module_name)
-                    module_info['status'] = bool(status)
                     modules_info[module_name] = module_info
         return modules_info
 
