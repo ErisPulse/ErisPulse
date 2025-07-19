@@ -33,6 +33,7 @@ classifiers = [
 dependencies = [
     "pip",
     "rich",
+    "colorama",
     "keyboard",
     "aiohttp",
     "watchdog",
