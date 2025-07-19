@@ -8,7 +8,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "ErisPulse>=1.0.0"
+    "ErisPulse>=2.1.6"
 ]
 
 [project.urls]
