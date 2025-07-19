@@ -25,17 +25,6 @@ from rich.theme import Theme
 from rich.layout import Layout
 from rich.live import Live
 
-theme = Theme({
-    "info": "cyan",
-    "success": "green",
-    "warning": "yellow",
-    "error": "red",
-    "title": "magenta",
-    "default": "default",
-    "progress": "green",
-    "progress.remaining": "white",
-})
-
 # 确保在Windows上启用颜色
 import sys
 if sys.platform == "win32":
@@ -318,11 +307,12 @@ class ReloadHandler(FileSystemEventHandler):
     
     监控文件变化并自动重启脚本
     """
-    def __init__(self, script_path, *args, **kwargs):
+    def __init__(self, script_path, reload_mode=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.script_path = script_path
         self.process = None
         self.last_reload = time.time()
+        self.reload_mode = reload_mode
         self.start_process()
 
     def start_process(self):
@@ -347,49 +337,19 @@ class ReloadHandler(FileSystemEventHandler):
         if now - self.last_reload < 1.0:
             return
             
-        if event.src_path.endswith(".py"):
-            console.print(f"\n[cyan][热重载] 检测到文件变动: {event.src_path}[/]")
+        if event.src_path.endswith(".py") and self.reload_mode:
+            console.print(f"\n[cyan][热重载] 文件发生变动: {event.src_path}[/]")
+            self.start_process()
+        elif event.src_path.endswith("config.toml"):
+            console.print(f"\n[cyan][热重载] 配置发生变动: {event.src_path}[/]")
             self.start_process()
 
-def start_reloader(script_path):
+def start_reloader(script_path, reload_mode=False):
     """
     启动热重载监控
     
     :param script_path: str 要监控的脚本路径
-    """
-    project_root = os.path.dirname(os.path.abspath(__file__))
-    watch_dirs = [
-        os.path.dirname(os.path.abspath(script_path)),
-        os.path.join(project_root, "modules")
-    ]
-
-    handler = ReloadHandler(script_path)
-    observer = Observer()
-
-    for d in watch_dirs:
-        if os.path.exists(d):
-            observer.schedule(handler, d, recursive=True)
-
-    observer.start()
-    console.print("\n[bold green][热重载] 已启动[/]")
-    console.print(f"[dim]监控目录: {', '.join(watch_dirs)}[/]\n")
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-        if handler.process:
-            handler.process.terminate()
-    observer.join()
-
-def run_script(script_path: str, reload: bool = False):
-    """
-    运行指定脚本
-    
-    :param script_path: str 要运行的脚本路径
-    :param reload: bool 是否启用热重载 (默认: False)
-    
-    :raises FileNotFoundError: 当脚本不存在时抛出
+    :param reload_mode: bool 是否启用完整重载模式 (默认: False)
     """
     if not os.path.exists(script_path):
         console.print(Panel(
@@ -398,41 +358,46 @@ def run_script(script_path: str, reload: bool = False):
             style="error"
         ))
         return
+    watch_dirs = [
+        os.path.dirname(os.path.abspath(script_path)),
+    ]
 
-    if reload:
-        start_reloader(script_path)
-    else:
-        console.print(Panel(
-            f"运行脚本: [bold]{script_path}[/]",
-            title="执行",
-            style="info"
-        ))
-        import runpy
-        first_interrupt = True
-        try:
-            runpy.run_path(script_path, run_name="__main__")
-        except KeyboardInterrupt:
-            if first_interrupt:
-                console.print(Panel(
-                    "正在安全关闭，如果需要强制关闭请再次点击",
-                    title="中断",
-                    style="warning"
-                ))
-                first_interrupt = False
-                try:
-                    runpy.run_path(script_path, run_name="__main__")
-                except KeyboardInterrupt:
-                    console.print(Panel(
-                        "脚本执行已强制中断",
-                        title="中断",
-                        style="error"
-                    ))
+    handler = ReloadHandler(script_path, reload_mode)
+    observer = Observer()
+
+    for d in watch_dirs:
+        if os.path.exists(d):
+            if reload_mode:
+                # 完整重载模式：监控所有.py文件
+                observer.schedule(handler, d, recursive=True)
             else:
-                console.print(Panel(
-                    "脚本执行已强制中断",
-                    title="中断",
-                    style="error"
-                ))
+                # 普通模式：只监控config.toml
+                observer.schedule(handler, d, recursive=False)
+
+    observer.start()
+    console.print("\n[bold green][热重载] 已启动[/]")
+    mode_desc = "开发重载模式" if reload_mode else "配置监控模式"
+    console.print(f"[dim]模式: {mode_desc}, 监控目录: {', '.join(watch_dirs)}[/]\n")
+    try:
+        first_interrupt = True
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        if first_interrupt:
+            first_interrupt = False
+            console.print("\n[bold green]正在安全关闭热重载...[/]")
+            console.print("[bold red]再次按下Ctrl+C以强制关闭[/]")
+            try:
+                observer.stop()
+                if handler.process:
+                    handler.process.terminate()
+                observer.join()
+            except KeyboardInterrupt:
+                console.print("[bold red]强制关闭热重载[/]")
+                raise
+        else:
+            console.print(Panel("[bold red]强制关闭热重载[/]"))
+            raise
 
 def get_erispulse_version():
     """
@@ -613,8 +578,7 @@ def main():
                 PyPIManager.upgrade_all()
                 
         elif args.command == "run":
-            run_script(args.script, args.reload)
-            
+            start_reloader(args.script, args.reload)
         elif args.command == "list-remote":
             import asyncio
             try:
