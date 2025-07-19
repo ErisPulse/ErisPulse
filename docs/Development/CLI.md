@@ -71,7 +71,7 @@ def my_command_register(subparsers: Any, console: Any) -> None:
 [project]
 name = "your-module-name"
 version = "1.0.0"
-dependencies = ["ErisPulse>=1.0.0"]
+dependencies = ["ErisPulse>=2.1.6"]
 
 [project.entry-points."erispulse.cli"]
 "yourcommand" = "my_cli_module:your_command_register"
