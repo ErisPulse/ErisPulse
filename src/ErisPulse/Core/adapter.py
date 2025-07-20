@@ -403,7 +403,7 @@ class AdapterManager:
             platforms = list(self._adapters.keys())
 
         from .server import adapter_server
-        from .core_config import get_server_config
+        from .config import get_server_config
         server_config = get_server_config()
         host = server_config["host"]
         port = server_config["port"]
