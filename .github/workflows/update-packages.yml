@@ -1,0 +1,113 @@
+name: 🎀 艾莉丝的模块仓库更新魔法 ~
+
+# 当有新的模块/适配器/CLI扩展提交时自动更新仓库
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate-and-update:
+    # 只处理带有特定标签的issue
+    if: |
+      contains(github.event.issue.labels.*.name, 'module-submit') ||
+      contains(github.event.issue.labels.*.name, 'adapter-submit') ||
+      contains(github.event.issue.labels.*.name, 'cli-submit')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出魔法书
+        uses: actions/checkout@v4
+        with:
+          repository: ErisPulse/ErisPulse-ModuleRepo
+          token: ${{ secrets.REPO_UPDATE_TOKEN }}
+          path: module-repo
+
+      - name: 解析提交内容
+        id: parse_issue
+        run: |
+          echo "✨ 正在解析魔法卷轴..."
+          BODY="${{ github.event.issue.body }}"
+          
+          # 提取基本信息
+          NAME=$(echo "$BODY" | grep -oP '名称[:：]\s*\K.*')
+          VERSION=$(echo "$BODY" | grep -oP '版本[:：]\s*\K.*')
+          AUTHOR=$(echo "$BODY" | grep -oP '作者[:：]\s*\K.*')
+          DESC=$(echo "$BODY" | grep -oP '描述[:：]\s*\K.*')
+          REPO=$(echo "$BODY" | grep -oP '仓库[:：]\s*\K.*')
+          TYPE=$(echo "$BODY" | grep -oP '类型[:：]\s*\K.*')
+
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "desc=$DESC" >> $GITHUB_OUTPUT
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+
+          if [ -z "$NAME" ] || [ -z "$VERSION" ] || [ -z "$AUTHOR" ] || [ -z "$DESC" ] || [ -z "$REPO" ] || [ -z "$TYPE" ]; then
+            echo "💢 魔法卷轴不完整!"
+            exit 1
+          fi
+
+      - name: 更新魔法书
+        run: |
+          cd module-repo
+          echo "📖 正在更新魔法书..."
+
+          # 根据类型更新不同的部分
+          if [ "${{ steps.parse_issue.outputs.type }}" == "模块" ]; then
+            jq --arg name "${{ steps.parse_issue.outputs.name }}" \
+               --argjson entry "$(jq -n \
+                 --arg pkg "ErisPulse-${{ steps.parse_issue.outputs.name }}" \
+                 --arg ver "${{ steps.parse_issue.outputs.version }}" \
+                 --arg author "${{ steps.parse_issue.outputs.author }}" \
+                 --arg desc "${{ steps.parse_issue.outputs.desc }}" \
+                 --arg repo "${{ steps.parse_issue.outputs.repo }}" \
+                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, min_sdk_version: "2.0.0", official: false}')" \
+               '.modules[$name] = $entry' packages.json > temp.json
+          elif [ "${{ steps.parse_issue.outputs.type }}" == "适配器" ]; then
+            jq --arg name "${{ steps.parse_issue.outputs.name }}" \
+               --argjson entry "$(jq -n \
+                 --arg pkg "ErisPulse-${{ steps.parse_issue.outputs.name }}Adapter" \
+                 --arg ver "${{ steps.parse_issue.outputs.version }}" \
+                 --arg desc "${{ steps.parse_issue.outputs.desc }}" \
+                 --arg repo "${{ steps.parse_issue.outputs.repo }}" \
+                 '{package: $pkg, version: $ver, description: $desc, repository: $repo, official: false}')" \
+               '.adapters[$name] = $entry' packages.json > temp.json
+          else
+            jq --arg name "${{ steps.parse_issue.outputs.name }}" \
+               --argjson entry "$(jq -n \
+                 --arg pkg "ErisPulse-${{ steps.parse_issue.outputs.name }}" \
+                 --arg ver "${{ steps.parse_issue.outputs.version }}" \
+                 --arg author "${{ steps.parse_issue.outputs.author }}" \
+                 --arg desc "${{ steps.parse_issue.outputs.desc }}" \
+                 --arg repo "${{ steps.parse_issue.outputs.repo }}" \
+                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, min_sdk_version: "2.0.0", official: false}')" \
+               '.cli[$name] = $entry' packages.json > temp.json
+          fi
+
+          mv temp.json packages.json
+
+      - name: 提交魔法更新
+        run: |
+          cd module-repo
+          git config --global user.name "ErisPulse Bot"
+          git config --global user.email "bot@erispulse.github"
+          
+          git add packages.json
+          git commit -m "✨ [Bot] 更新${{ steps.parse_issue.outputs.type }}: ${{ steps.parse_issue.outputs.name }}"
+          git push
+
+      - name: 关闭魔法卷轴
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            })
