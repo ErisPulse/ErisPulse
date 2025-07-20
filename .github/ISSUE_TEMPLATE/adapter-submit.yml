@@ -37,6 +37,13 @@ body:
       placeholder: "https://github.com/ErisPulse/ErisPulse-TelegramAdapter"
     validations:
       required: true
+  - type: input
+    attributes:
+      label: "PyPI包名"
+      description: "适配器在PyPI上的包名"
+      placeholder: "erispulse-telegram-adapter"
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: "类型"
