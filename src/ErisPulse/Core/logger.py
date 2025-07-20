@@ -14,6 +14,8 @@ import logging
 import inspect
 import datetime
 from typing import List, Dict, Any, Optional, Union, Type, Set, Tuple, FrozenSet
+from rich.logging import RichHandler
+from rich.console import Console
 
 class Logger:
     """
@@ -35,8 +37,13 @@ class Logger:
         self._logger.setLevel(logging.DEBUG)
         self._file_handler = None
         if not self._logger.handlers:
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(logging.Formatter("%(message)s"))
+            console_handler = RichHandler(
+                console=Console(),
+                show_time=False,
+                show_level=True,
+                show_path=False,
+                markup=True
+            )
             self._logger.addHandler(console_handler)
         self._setup_config()
             
@@ -109,7 +116,8 @@ class Logger:
         for p in path:
             try:
                 file_handler = logging.FileHandler(p, encoding='utf-8')
-                file_handler.setFormatter(logging.Formatter("%(message)s"))
+                # 使用自定义格式化器去除rich markup标签
+                file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
                 self._logger.addHandler(file_handler)
                 self._logger.info(f"日志输出已设置到文件: {p}")
                 return True
@@ -160,7 +168,7 @@ class Logger:
         
         # 检查日志数量是否超过限制
         if len(self._logs[ModuleName]) >= self._max_logs:
-            self._logs[ModuleName].pop(0)  # 移除最早的日志
+            self._logs[ModuleName].pop(0)
             
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
