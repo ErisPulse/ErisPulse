@@ -12,24 +12,26 @@ class MyAdapter(BaseAdapter):
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
-        self.load_config()
+        self.config = self._load_config()
+    
     # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-    def load_config(self):
-        self.config = self.env.getConfig("MyAdapter", {})
-
-        if self.config is None:
-            self.logger.error("请在env.py中添加MyAdapter配置")
-            self.env.setConfig("MyAdapter", {
+    def _load_config(self):
+        _config = self.env.getConfig("MyAdapter", {})
+        if _config is None:
+            default_config = {
                 "mode": "server",
                 "server": {
-                    "host": "127.0.0.1",
-                    "port": 8080
+                    "path": "/webhook",
                 },
                 "client": {
                     "url": "http://127.0.0.1:8080",
                     "token": ""
                 }
-            })
+            }
+            self.env.setConfig("MyAdapter", default_config)
+            return default_config
+        return _config
+    
     class Send(BaseAdapter.Send):  # 继承BaseAdapter内置的Send类
         # 底层SendDSL中提供了To方法，用户调用的时候类会被定义 `self._target_type` 和 `self._target_id`/`self._target_to` 三个属性
         # 当你只需要一个接受的To时，例如 mail 的To只是一个邮箱，那么你可以使用 `self.To(email)`，这时只会有 `self._target_id`/`self._target_to` 两个属性被定义
