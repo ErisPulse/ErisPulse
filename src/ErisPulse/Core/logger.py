@@ -14,6 +14,8 @@ import logging
 import inspect
 import datetime
 from typing import List, Dict, Any, Optional, Union, Type, Set, Tuple, FrozenSet
+from rich.logging import RichHandler
+from rich.console import Console
 
 class Logger:
     """
@@ -28,15 +30,36 @@ class Logger:
     {!--< /tips >!--}
     """
     def __init__(self):
+        self._max_logs = 1000
         self._logs = {}
         self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
         self._logger.setLevel(logging.DEBUG)
         self._file_handler = None
         if not self._logger.handlers:
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(logging.Formatter("%(message)s"))
+            console_handler = RichHandler(
+                console=Console(),
+                show_time=False,
+                show_level=True,
+                show_path=False,
+                markup=True
+            )
             self._logger.addHandler(console_handler)
+        self._setup_config()
+            
+    def set_memory_limit(self, limit: int) -> bool:
+        """
+        设置日志内存存储上限
+        
+        :param limit: 日志存储上限
+        :return: bool 设置是否成功
+        """
+        if limit > 0:
+            self._max_logs = limit
+            return True
+        else:
+            self._logger.warning("日志存储上限必须大于0。")
+            return False
 
     def set_level(self, level: str) -> bool:
         """
@@ -63,8 +86,8 @@ class Logger:
         :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
         :return: bool 设置是否成功
         """
-        from .env import env
-        if not env.get_module_status(module_name):
+        from .mods import mods
+        if not mods.get_module_status(module_name):
             self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
             return False
         level = level.upper()
@@ -93,7 +116,8 @@ class Logger:
         for p in path:
             try:
                 file_handler = logging.FileHandler(p, encoding='utf-8')
-                file_handler.setFormatter(logging.Formatter("%(message)s"))
+                # 使用自定义格式化器去除rich markup标签
+                file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
                 self._logger.addHandler(file_handler)
                 self._logger.info(f"日志输出已设置到文件: {p}")
                 return True
@@ -141,9 +165,26 @@ class Logger:
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
             self._logs[ModuleName] = []
+        
+        # 检查日志数量是否超过限制
+        if len(self._logs[ModuleName]) >= self._max_logs:
+            self._logs[ModuleName].pop(0)
+            
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
+
+    def _setup_config(self):
+        from .env import env
+        _config = env.getConfig("ErisPulse")
+        if "logger" in _config:
+            logger_config = _config["logger"]
+            if "level" in logger_config:
+                self.set_level(logger_config["level"])
+            if "log_files" in logger_config and logger_config["log_files"]:
+                self.set_output_file(logger_config["log_files"])
+            if "memory_limit" in logger_config:
+                self.set_memory_limit(logger_config["memory_limit"])
 
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)

@@ -29,7 +29,29 @@ if _config is None:
             "port": 8000,
             "ssl_certfile": None,
             "ssl_keyfile": None
+        },
+        "logger": {
+            "level": "INFO",
+            "log_files": [],
+            "memory_limit": 1000
         }
     }
     env.setConfig("ErisPulse", defaultConfig)
     _config = defaultConfig
+
+if _config.get("server") is None:
+    _config["server"] = {
+        "host": "0.0.0.0",
+        "port": 8000,
+        "ssl_certfile": None,
+        "ssl_keyfile": None
+    }
+    env.setConfig("ErisPulse", _config)
+    
+if _config.get("logger") is None:
+    _config["logger"] = {
+        "level": "INFO",
+        "log_files": [],
+        "memory_limit": 1000
+    }
+    env.setConfig("ErisPulse", _config)
