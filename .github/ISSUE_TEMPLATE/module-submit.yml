@@ -44,6 +44,13 @@ body:
       placeholder: "https://github.com/shanfishapp/ErisPulse-Weather"
     validations:
       required: true
+  - type: input
+    attributes:
+      label: "PyPI包名"
+      description: "模块在PyPI上的包名"
+      placeholder: "erispulse-weather"
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: "类型"
