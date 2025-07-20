@@ -3,7 +3,11 @@ name: 🎀 艾莉丝的模块仓库更新魔法 ~
 # 当有新的模块/适配器/CLI扩展提交时自动更新仓库
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, labeled]
+    
+# 添加调试日志
+env:
+  DEBUG: true
 
 permissions:
   contents: write
@@ -11,12 +15,25 @@ permissions:
 
 jobs:
   validate-and-update:
-    # 只处理带有特定标签的issue
-    if: |
-      contains(github.event.issue.labels.*.name, 'module-submit') ||
-      contains(github.event.issue.labels.*.name, 'adapter-submit') ||
-      contains(github.event.issue.labels.*.name, 'cli-submit')
     runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🎀 调试 - 打印工作流上下文
+        run: |
+          echo "===== 工作流调试信息 ====="
+          echo "事件类型: ${{ github.event.action }}"
+          echo "Issue 编号: ${{ github.event.issue.number }}"
+          echo "Issue 标题: ${{ github.event.issue.title }}"
+          echo "Issue 标签: ${{ toJson(github.event.issue.labels) }}"
+          echo "条件判断结果: ${{ contains(github.event.issue.labels.*.name, 'module-submit') || contains(github.event.issue.labels.*.name, 'adapter-submit') || contains(github.event.issue.labels.*.name, 'cli-submit') }}"
+          echo "========================="
+          
+      # 只处理带有特定标签的issue
+      - name: 🎀 检查标签
+        if: |
+          contains(github.event.issue.labels.*.name, 'module-submit') ||
+          contains(github.event.issue.labels.*.name, 'adapter-submit') ||
+          contains(github.event.issue.labels.*.name, 'cli-submit')
 
     steps:
       - name: 检出魔法书
