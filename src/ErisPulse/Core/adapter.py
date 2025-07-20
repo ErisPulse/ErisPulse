@@ -402,17 +402,14 @@ class AdapterManager:
         if platforms is None:
             platforms = list(self._adapters.keys())
 
-        from .env import env
-        from .logger import logger
         from .server import adapter_server
-
-        from . import _config
-        server_config = _config.get("server", {})
+        from .core_config import get_server_config
+        server_config = get_server_config()
         host = server_config["host"]
         port = server_config["port"]
         ssl_cert = server_config.get("ssl_certfile", None)
         ssl_key = server_config.get("ssl_keyfile", None)
-
+        
         # 启动服务器
         await adapter_server.start(
             host=host,

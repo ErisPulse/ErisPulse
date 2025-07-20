@@ -119,7 +119,6 @@ class Logger:
                 # 使用自定义格式化器去除rich markup标签
                 file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
                 self._logger.addHandler(file_handler)
-                self._logger.info(f"日志输出已设置到文件: {p}")
                 return True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
@@ -175,17 +174,15 @@ class Logger:
         self._logs[ModuleName].append(msg)
 
     def _setup_config(self):
-        from .env import env
-        _config = env.getConfig("ErisPulse")
-        if "logger" in _config:
-            logger_config = _config["logger"]
-            if "level" in logger_config:
-                self.set_level(logger_config["level"])
-            if "log_files" in logger_config and logger_config["log_files"]:
-                self.set_output_file(logger_config["log_files"])
-            if "memory_limit" in logger_config:
-                self.set_memory_limit(logger_config["memory_limit"])
-
+        from .core_config import get_logger_config
+        logger_config = get_logger_config()
+        if "level" in logger_config:
+            self.set_level(logger_config["level"])
+        if "log_files" in logger_config and logger_config["log_files"]:
+            self.set_output_file(logger_config["log_files"])
+        if "memory_limit" in logger_config:
+            self.set_memory_limit(logger_config["memory_limit"])
+    
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
 
