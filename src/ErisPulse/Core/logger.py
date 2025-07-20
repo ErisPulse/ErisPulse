@@ -28,7 +28,7 @@ class Logger:
     {!--< /tips >!--}
     """
     def __init__(self):
-        from .env import env
+        self._max_logs = 1000
         self._logs = {}
         self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
@@ -38,10 +38,21 @@ class Logger:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(logging.Formatter("%(message)s"))
             self._logger.addHandler(console_handler)
+        self._setup_config()
+            
+    def set_memory_limit(self, limit: int) -> bool:
+        """
+        设置日志内存存储上限
         
-        config = env.getConfig("ErisPulse")
-        self._max_logs = config.get("logger", {}).get("memory_limit", 1000)
-        print(self._max_logs)
+        :param limit: 日志存储上限
+        :return: bool 设置是否成功
+        """
+        if limit > 0:
+            self._max_logs = limit
+            return True
+        else:
+            self._logger.warning("日志存储上限必须大于0。")
+            return False
 
     def set_level(self, level: str) -> bool:
         """
@@ -154,6 +165,18 @@ class Logger:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
+
+    def _setup_config(self):
+        from .env import env
+        _config = env.getConfig("ErisPulse")
+        if "logger" in _config:
+            logger_config = _config["logger"]
+            if "level" in logger_config:
+                self.set_level(logger_config["level"])
+            if "log_files" in logger_config and logger_config["log_files"]:
+                self.set_output_file(logger_config["log_files"])
+            if "memory_limit" in logger_config:
+                self.set_memory_limit(logger_config["memory_limit"])
 
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
