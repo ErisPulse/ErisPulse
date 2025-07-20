@@ -1,0 +1,47 @@
+name: 🌉 提交新适配器
+description: 向ErisPulse模块仓库添加新适配器
+title: "[适配器提交] 适配器名称"
+labels: ["adapter-submit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎀 艾莉丝的适配器提交魔法 ~
+
+        请填写以下信息来提交你的适配器到ErisPulse模块仓库
+  - type: input
+    attributes:
+      label: "名称"
+      description: "适配器名称（英文，不含Adapter后缀）"
+      placeholder: "Telegram"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "版本"
+      description: "适配器版本号（遵循语义化版本规范）"
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "描述"
+      description: "适配器功能描述"
+      placeholder: "Telegram协议适配器"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "仓库"
+      description: "适配器源代码仓库URL"
+      placeholder: "https://github.com/ErisPulse/ErisPulse-TelegramAdapter"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: "类型"
+      description: "选择提交类型"
+      options:
+        - "适配器"
+    validations:
+      required: true
