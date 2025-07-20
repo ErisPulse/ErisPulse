@@ -28,6 +28,7 @@ class Logger:
     {!--< /tips >!--}
     """
     def __init__(self):
+        from .env import env
         self._logs = {}
         self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
@@ -37,6 +38,10 @@ class Logger:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(logging.Formatter("%(message)s"))
             self._logger.addHandler(console_handler)
+        
+        config = env.getConfig("ErisPulse")
+        self._max_logs = config.get("logger", {}).get("memory_limit", 1000)
+        print(self._max_logs)
 
     def set_level(self, level: str) -> bool:
         """
@@ -141,6 +146,11 @@ class Logger:
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
             self._logs[ModuleName] = []
+        
+        # 检查日志数量是否超过限制
+        if len(self._logs[ModuleName]) >= self._max_logs:
+            self._logs[ModuleName].pop(0)  # 移除最早的日志
+            
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
