@@ -137,7 +137,10 @@ def global_exception_handler(exc_type: Type[Exception], exc_value: Exception, ex
         else:
             colored_traceback.append(f"{RED}{line}{RESET}")
     
-    full_error = f"{error_title}\n{RED}Traceback:{RESET}\n{''.join(colored_traceback)}"
+    full_error = f"""
+{error_title}
+{RED}Traceback:{RESET}
+{colored_traceback}"""
     
     sys.stderr.write(full_error)
 
@@ -166,7 +169,9 @@ def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, 
             else:
                 colored_tb.append(f"{RED}{line}{RESET}")
         
-        error_msg = f"{RED}{type(exception).__name__}{RESET}: {YELLOW}{exception}{RESET}\n{RED}Traceback:{RESET}\n{'\n'.join(colored_tb)}"
+        error_msg = f"""{RED}{type(exception).__name__}{RESET}: {YELLOW}{exception}{RESET}
+{RED}Traceback:{RESET}
+{colored_tb}"""
         sys.stderr.write(error_msg)
     else:
         msg = context.get('message', 'Unknown async error')
