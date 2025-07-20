@@ -38,6 +38,7 @@ jobs:
           AUTHOR=$(echo "$BODY" | grep -oP '作者[:：]\s*\K.*')
           DESC=$(echo "$BODY" | grep -oP '描述[:：]\s*\K.*')
           REPO=$(echo "$BODY" | grep -oP '仓库[:：]\s*\K.*')
+          PYPI=$(echo "$BODY" | grep -oP 'PyPI包名[:：]\s*\K.*')
           TYPE=$(echo "$BODY" | grep -oP '类型[:：]\s*\K.*')
 
           echo "name=$NAME" >> $GITHUB_OUTPUT
@@ -45,9 +46,10 @@ jobs:
           echo "author=$AUTHOR" >> $GITHUB_OUTPUT
           echo "desc=$DESC" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
+          echo "pypi=$PYPI" >> $GITHUB_OUTPUT
           echo "type=$TYPE" >> $GITHUB_OUTPUT
 
-          if [ -z "$NAME" ] || [ -z "$VERSION" ] || [ -z "$AUTHOR" ] || [ -z "$DESC" ] || [ -z "$REPO" ] || [ -z "$TYPE" ]; then
+          if [ -z "$NAME" ] || [ -z "$VERSION" ] || [ -z "$AUTHOR" ] || [ -z "$DESC" ] || [ -z "$REPO" ] || [ -z "$PYPI" ] || [ -z "$TYPE" ]; then
             echo "💢 魔法卷轴不完整!"
             exit 1
           fi
@@ -66,7 +68,8 @@ jobs:
                  --arg author "${{ steps.parse_issue.outputs.author }}" \
                  --arg desc "${{ steps.parse_issue.outputs.desc }}" \
                  --arg repo "${{ steps.parse_issue.outputs.repo }}" \
-                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, min_sdk_version: "2.0.0", official: false}')" \
+                 --arg pypi "${{ steps.parse_issue.outputs.pypi }}" \
+                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, pypi_package: $pypi, min_sdk_version: "2.0.0", official: false}')" \
                '.modules[$name] = $entry' packages.json > temp.json
           elif [ "${{ steps.parse_issue.outputs.type }}" == "适配器" ]; then
             jq --arg name "${{ steps.parse_issue.outputs.name }}" \
@@ -75,7 +78,8 @@ jobs:
                  --arg ver "${{ steps.parse_issue.outputs.version }}" \
                  --arg desc "${{ steps.parse_issue.outputs.desc }}" \
                  --arg repo "${{ steps.parse_issue.outputs.repo }}" \
-                 '{package: $pkg, version: $ver, description: $desc, repository: $repo, official: false}')" \
+                 --arg pypi "${{ steps.parse_issue.outputs.pypi }}" \
+                 '{package: $pkg, version: $ver, description: $desc, repository: $repo, pypi_package: $pypi, official: false}')" \
                '.adapters[$name] = $entry' packages.json > temp.json
           else
             jq --arg name "${{ steps.parse_issue.outputs.name }}" \
@@ -85,7 +89,8 @@ jobs:
                  --arg author "${{ steps.parse_issue.outputs.author }}" \
                  --arg desc "${{ steps.parse_issue.outputs.desc }}" \
                  --arg repo "${{ steps.parse_issue.outputs.repo }}" \
-                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, min_sdk_version: "2.0.0", official: false}')" \
+                 --arg pypi "${{ steps.parse_issue.outputs.pypi }}" \
+                 '{package: $pkg, version: $ver, author: $author, description: $desc, repository: $repo, pypi_package: $pypi, min_sdk_version: "2.0.0", official: false}')" \
                '.cli[$name] = $entry' packages.json > temp.json
           fi
 
