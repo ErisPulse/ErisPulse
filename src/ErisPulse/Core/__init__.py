@@ -55,10 +55,3 @@ if _config.get("logger") is None:
         "memory_limit": 1000
     }
     env.setConfig("ErisPulse", _config)
-
-if "logger" in _config:
-    logger_config = _config["logger"]
-    if "level" in logger_config:
-        logger.set_level(logger_config["level"])
-    if "log_files" in logger_config and logger_config["log_files"]:
-        logger.set_output_file(logger_config["log_files"])
