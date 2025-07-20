@@ -9,23 +9,22 @@ class Main:
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
-        self.load_config()
-
-    def load_config(self):
-        self.config = self.env.getConfig("MyModule", {})
-
-        if self.config is None:
-            self.logger.error("无法加载配置文件")
-
-            self.env.setConfig("MyModule", {
-                "key1": "value1",
-                "key2": ["value2", "value3"],
+        self.config = self._load_config()
+    
+    # 加载配置方法，你需要在这里进行必要的配置加载逻辑
+    def _load_config(self):
+        _config = self.env.getConfig("MyModule", {})
+        if _config is None:
+            default_config = {
+                "key": "value",
+                "key2": [1, 2, 3],
                 "key3": {
-                    "key4": "value4",
-                    "key5": "value5"
-                },
-                "key6": True
-            })
+                    "key4": "value4"
+                }
+            }
+            self.env.setConfig("MyModule", default_config)
+            return default_config
+        return _config
             
     def hello(self):
         self.logger.info("Hello World!")
