@@ -486,8 +486,8 @@ def main():
     upgrade_parser.add_argument('--force', '-f', action='store_true', help='跳过确认直接升级')
     
     # 运行命令
-    run_parser = subparsers.add_parser('run', help='运行指定主程序')
-    run_parser.add_argument('script', type=str, help='要运行的主程序路径')
+    run_parser = subparsers.add_parser('run', help='运行指定主程序(默认为main.py)')
+    run_parser.add_argument('script', type=str, nargs='?', help='要运行的主程序路径(可选，默认为main.py)')
     run_parser.add_argument('--reload', action='store_true', help='启用热重载模式')
     
     args = parser.parse_args()
@@ -603,6 +603,16 @@ def main():
                 PyPIManager.upgrade_all()
                 
         elif args.command == "run":
+            if not hasattr(args, 'script') or not args.script:
+                if not os.path.exists("config.toml") or not os.path.isfile("main.py"):
+                    from ErisPulse import sdk
+                    sdk.init()
+                args.script = "main.py"
+                console.print(Panel(
+                    "未指定主程序，运行入口点为 [bold]main.py[/]",
+                    title="提示",
+                    style="info"
+                ))
             start_reloader(args.script, args.reload)
         elif args.command == "list-remote":
             import asyncio
@@ -646,7 +656,14 @@ def main():
                     title="错误",
                     style="error"
                 ))
-        
+        elif args.command == "init":
+            from ErisPulse import sdk
+            sdk.init()
+            console.print(Panel(
+                "初始化完成",
+                title="成功",
+                style="success"
+            ))
     except KeyboardInterrupt as e:
         pass
     except Exception as e:
