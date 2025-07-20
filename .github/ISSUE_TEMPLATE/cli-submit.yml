@@ -1,0 +1,54 @@
+name: 🖥️ 提交CLI扩展
+description: 向ErisPulse模块仓库添加CLI扩展
+title: "[CLI扩展] 扩展名称"
+labels: ["cli-submit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎀 艾莉丝的CLI扩展提交魔法 ~
+
+        请填写以下信息来提交你的CLI扩展到ErisPulse模块仓库
+  - type: input
+    attributes:
+      label: "名称"
+      description: "扩展名称（英文，不含ErisPulse-前缀）"
+      placeholder: "Deploy"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "版本"
+      description: "扩展版本号（遵循语义化版本规范）"
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "作者"
+      description: "扩展作者或团队名称"
+      placeholder: "ErisPulse Team"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "描述"
+      description: "扩展功能描述"
+      placeholder: "提供部署相关的CLI命令"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "仓库"
+      description: "扩展源代码仓库URL"
+      placeholder: "https://github.com/ErisPulse/ErisPulse-Deploy"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: "类型"
+      description: "选择提交类型"
+      options:
+        - "CLI扩展"
+    validations:
+      required: true
