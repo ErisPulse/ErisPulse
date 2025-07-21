@@ -42,7 +42,7 @@ class Logger:
                 show_time=False,
                 show_level=True,
                 show_path=False,
-                markup=True
+                markup=False
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
