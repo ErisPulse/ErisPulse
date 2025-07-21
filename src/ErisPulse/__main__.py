@@ -474,13 +474,13 @@ def main():
 
     # 列表命令
     list_parser = subparsers.add_parser('list', help='列出已安装的模块/适配器')
-    list_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'all'], default='all', 
-                           help='列出类型 (modules: 仅模块, adapters: 仅适配器, all: 全部)')
+    list_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'cli', 'all'], default='all', 
+                           help='列出类型 (modules: 仅模块, adapters: 仅适配器, cli: 仅CLI扩展, all: 全部)')
     
     # 远程列表命令
     list_remote_parser = subparsers.add_parser('list-remote', help='列出远程可用的模块和适配器')
-    list_remote_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'all'], default='all',
-                                  help='列出类型 (modules: 仅模块, adapters: 仅适配器, all: 全部)')
+    list_remote_parser.add_argument('--type', '-t', choices=['modules', 'adapters', 'cli', 'all'], default='all',
+                                  help='列出类型 (modules: 仅模块, adapters: 仅适配器, cli: 仅CLI扩展, all: 全部)')
     # 升级命令
     upgrade_parser = subparsers.add_parser('upgrade', help='升级所有模块/适配器')
     upgrade_parser.add_argument('--force', '-f', action='store_true', help='跳过确认直接升级')
@@ -567,6 +567,25 @@ def main():
         elif args.command == "list":
             installed = PyPIManager.get_installed_packages()
             
+            # 获取已安装的CLI扩展
+            cli_extensions = {}
+            try:
+                entry_points = importlib.metadata.entry_points()
+                if hasattr(entry_points, 'select'):
+                    cli_entries = entry_points.select(group='erispulse.cli')
+                else:
+                    cli_entries = entry_points.get('erispulse.cli', [])
+                
+                for entry in cli_entries:
+                    dist = entry.dist
+                    cli_extensions[entry.name] = {
+                        "package": dist.metadata["Name"],
+                        "version": dist.version,
+                        "summary": dist.metadata["Summary"]
+                    }
+            except Exception as e:
+                console.print(f"[yellow]获取CLI扩展信息失败: {e}[/]", style="warning")
+            
             if args.type in ["modules", "all"] and installed["modules"]:
                 table = Table(title="已安装模块", box=SIMPLE)
                 table.add_column("模块名", style="green")
@@ -591,9 +610,20 @@ def main():
                 
                 console.print(table)
                 
-            if not installed["modules"] and not installed["adapters"]:
+                if cli_extensions and args.type in ["cli", "all"]:
+                    table = Table(title="已安装CLI扩展", box=SIMPLE)
+                    table.add_column("命令名", style="magenta")
+                    table.add_column("包名", style="blue")
+                    table.add_column("版本")
+                    table.add_column("描述")
+                    
+                    for name, info in cli_extensions.items():
+                        table.add_row(name, info["package"], info["version"], info["summary"])
+                console.print(table)
+                
+            if not installed["modules"] and not installed["adapters"] and not cli_extensions:
                 console.print(Panel(
-                    "没有安装任何ErisPulse模块或适配器",
+                    "没有安装任何ErisPulse模块、适配器或CLI扩展",
                     title="提示",
                     style="info"
                 ))
@@ -642,10 +672,26 @@ def main():
                         table.add_row(name, info["package"], info["version"], info["description"])
                     
                     console.print(table)
+                
+                # 展示远程CLI扩展
+                if "cli_extensions" in remote_packages and args.type in ["cli", "all"] and remote_packages["cli_extensions"]:
+                    table = Table(title="远程CLI扩展", box=SIMPLE)
+                    table.add_column("命令名", style="magenta")
+                    table.add_column("包名", style="blue")
+                    table.add_column("版本")
+                    table.add_column("描述")
                     
-                if not remote_packages["modules"] and not remote_packages["adapters"]:
+                    for name, info in remote_packages["cli_extensions"].items():
+                        commands = info.get("command", [])
+                        command_str = ", ".join(commands) if isinstance(commands, list) else str(commands)
+                        table.add_row(command_str, info["package"], info["version"], info["description"])
+                    
+                    console.print(table)
+                    
+                if not remote_packages["modules"] and not remote_packages["adapters"] and \
+                   (not "cli_extensions" in remote_packages or not remote_packages["cli_extensions"]):
                     console.print(Panel(
-                        "没有找到远程模块或适配器",
+                        "没有找到远程模块、适配器或CLI扩展",
                         title="提示",
                         style="info"
                     ))
