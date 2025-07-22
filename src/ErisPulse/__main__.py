@@ -329,7 +329,7 @@ class PackageManager:
         
         :raises KeyboardInterrupt: 用户取消操作时抛出
         """
-        installed = self.package_manager.get_installed_packages()
+        installed = self.get_installed_packages()
         all_packages = set()
         
         for pkg_type in ["modules", "adapters", "cli_extensions"]:
@@ -1027,7 +1027,7 @@ class CLI:
                     
             elif args.command == "init":
                 from ErisPulse import sdk
-                sdk.init(force=args.force)
+                sdk.init()
                 console.print("[success]ErisPulse项目初始化完成[/]")
                 
         except KeyboardInterrupt:
