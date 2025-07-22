@@ -1,8 +1,12 @@
-#!/usr/bin/env python3
 """
 ErisPulse SDK 命令行工具
 
-一个功能强大的模块化系统管理工具，用于管理ErisPulse生态系统中的模块、适配器和扩展。
+提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
+
+{!--< tips >!--}
+1. 需要Python 3.8+环境
+2. Windows平台需要colorama支持ANSI颜色
+{!--< /tips >!--}
 """
 
 import argparse
@@ -33,16 +37,20 @@ from rich.layout import Layout
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.highlighter import RegexHighlighter
-from rich.logging import RichHandler
 
 # 确保在Windows上启用颜色
 if sys.platform == "win32":
     from colorama import init
     init()
 
-# 自定义高亮器
 class CommandHighlighter(RegexHighlighter):
-    """高亮CLI命令和参数"""
+    """
+    高亮CLI命令和参数
+    
+    {!--< tips >!--}
+    使用正则表达式匹配命令行参数和选项
+    {!--< /tips >!--}
+    """
     highlights = [
         r"(?P<switch>\-\-?\w+)",
         r"(?P<option>\[\w+\])",
@@ -79,7 +87,12 @@ class PackageManager:
     """
     ErisPulse包管理器
     
-    负责与包仓库交互，包括搜索、安装、卸载和升级ErisPulse组件
+    提供包安装、卸载、升级和查询功能
+    
+    {!--< tips >!--}
+    1. 支持本地和远程包管理
+    2. 包含1小时缓存机制
+    {!--< /tips >!--}
     """
     REMOTE_SOURCES = [
         "https://erisdev.com/packages.json",
@@ -89,11 +102,20 @@ class PackageManager:
     CACHE_EXPIRY = 3600  # 1小时缓存
     
     def __init__(self):
+        """初始化包管理器"""
         self._cache = {}
         self._cache_time = {}
         
     async def _fetch_remote_packages(self, url: str) -> Optional[dict]:
-        """从指定URL获取远程包数据"""
+        """
+        从指定URL获取远程包数据
+        
+        :param url: 远程包数据URL
+        :return: 解析后的JSON数据，失败返回None
+        
+        :raises ClientError: 网络请求失败时抛出
+        :raises JSONDecodeError: JSON解析失败时抛出
+        """
         import aiohttp
         from aiohttp import ClientError, ClientTimeout
         
@@ -114,6 +136,13 @@ class PackageManager:
         
         :param force_refresh: 是否强制刷新缓存
         :return: 包含模块和适配器的字典
+        
+        :return:
+            dict: {
+                "modules": {模块名: 模块信息},
+                "adapters": {适配器名: 适配器信息},
+                "cli_extensions": {扩展名: 扩展信息}
+            }
         """
         # 检查缓存
         cache_key = "remote_packages"
@@ -143,6 +172,13 @@ class PackageManager:
         获取已安装的包信息
         
         :return: 已安装包字典，包含模块、适配器和CLI扩展
+        
+        :return:
+            dict: {
+                "modules": {模块名: 模块信息},
+                "adapters": {适配器名: 适配器信息},
+                "cli_extensions": {扩展名: 扩展信息}
+            }
         """
         packages = {
             "modules": {},
@@ -193,7 +229,14 @@ class PackageManager:
         return packages
     
     def _is_module_enabled(self, module_name: str) -> bool:
-        """检查模块是否启用"""
+        """
+        检查模块是否启用
+        
+        :param module_name: 模块名称
+        :return: 模块是否启用
+        
+        :raises ImportError: 核心模块不可用时抛出
+        """
         try:
             from ErisPulse.Core import mods
             return mods.get_module_status(module_name)
@@ -203,7 +246,13 @@ class PackageManager:
             return False
     
     def _run_pip_command(self, args: List[str], description: str) -> bool:
-        """运行pip命令并显示进度"""
+        """
+        执行pip命令
+        
+        :param args: pip命令参数列表
+        :param description: 进度条描述
+        :return: 命令是否成功执行
+        """
         with Progress(
             TextColumn(f"[progress.description]{description}"),
             BarColumn(complete_style="progress.download"),
@@ -277,8 +326,10 @@ class PackageManager:
         升级所有已安装的ErisPulse包
         
         :return: 升级是否成功
+        
+        :raises KeyboardInterrupt: 用户取消操作时抛出
         """
-        installed = self.get_installed_packages()
+        installed = self.package_manager.get_installed_packages()
         all_packages = set()
         
         for pkg_type in ["modules", "adapters", "cli_extensions"]:
@@ -315,11 +366,23 @@ class PackageManager:
 
 class ReloadHandler(FileSystemEventHandler):
     """
-    热重载处理器
+    文件系统事件处理器
     
-    监控文件变化并自动重启入口
+    实现热重载功能，监控文件变化并重启进程
+    
+    {!--< tips >!--}
+    1. 支持.py文件修改重载
+    2. 支持配置文件修改重载
+    {!--< /tips >!--}
     """
+
     def __init__(self, script_path: str, reload_mode: bool = False):
+        """
+        初始化处理器
+        
+        :param script_path: 要监控的脚本路径
+        :param reload_mode: 是否启用重载模式
+        """
         super().__init__()
         self.script_path = os.path.abspath(script_path)
         self.process = None
@@ -329,7 +392,7 @@ class ReloadHandler(FileSystemEventHandler):
         self.watched_files = set()
 
     def start_process(self):
-        """启动/重启被监控的进程"""
+        """启动监控进程"""
         if self.process:
             self._terminate_process()
             
@@ -347,7 +410,11 @@ class ReloadHandler(FileSystemEventHandler):
             raise
 
     def _terminate_process(self):
-        """安全终止当前进程"""
+        """
+        终止当前进程
+        
+        :raises subprocess.TimeoutExpired: 进程终止超时时抛出
+        """
         try:
             self.process.terminate()
             # 等待最多2秒让进程正常退出
@@ -360,7 +427,11 @@ class ReloadHandler(FileSystemEventHandler):
             console.print(f"[error]终止进程时出错: {e}[/]")
 
     def on_modified(self, event):
-        """文件修改事件处理"""
+        """
+        文件修改事件处理
+        
+        :param event: 文件系统事件
+        """
         now = time.time()
         if now - self.last_reload < 1.0:  # 防抖
             return
@@ -371,22 +442,41 @@ class ReloadHandler(FileSystemEventHandler):
             self._handle_reload(event, "配置变动")
 
     def _handle_reload(self, event, reason: str):
-        """处理重载逻辑"""
+        """
+        处理重载逻辑
+        
+        :param event: 文件系统事件
+        :param reason: 重载原因描述
+        """
         console.print(f"\n[reload]{reason}: [path]{event.src_path}[/][/]")
         self._terminate_process()
         self.start_process()
 
 class CLI:
-    """主CLI应用程序"""
+    """
+    ErisPulse命令行接口
+    
+    提供完整的命令行交互功能
+    
+    {!--< tips >!--}
+    1. 支持动态加载第三方命令
+    2. 支持模块化子命令系统
+    {!--< /tips >!--}
+    """
     
     def __init__(self):
+        """初始化CLI"""
         self.parser = self._create_parser()
         self.package_manager = PackageManager()
         self.observer = None
         self.handler = None
         
     def _create_parser(self) -> argparse.ArgumentParser:
-        """创建参数解析器"""
+        """
+        创建命令行参数解析器
+        
+        :return: 配置好的ArgumentParser实例
+        """
         parser = argparse.ArgumentParser(
             prog="epsdk",
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -563,7 +653,13 @@ class CLI:
         return parser
     
     def _load_external_commands(self, subparsers):
-        """加载第三方CLI命令"""
+        """
+        加载第三方CLI命令
+        
+        :param subparsers: 子命令解析器
+        
+        :raises ImportError: 加载命令失败时抛出
+        """
         try:
             entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
@@ -593,7 +689,12 @@ class CLI:
         ))
     
     def _print_installed_packages(self, pkg_type: str, outdated_only: bool = False):
-        """打印已安装的包列表"""
+        """
+        打印已安装包信息
+        
+        :param pkg_type: 包类型 (modules/adapters/cli/all)
+        :param outdated_only: 是否只显示可升级的包
+        """
         installed = self.package_manager.get_installed_packages()
         
         if pkg_type == "modules" and installed["modules"]:
@@ -672,7 +773,11 @@ class CLI:
             console.print(table)
     
     def _print_remote_packages(self, pkg_type: str):
-        """打印远程包列表"""
+        """
+        打印远程包信息
+        
+        :param pkg_type: 包类型 (modules/adapters/cli/all)
+        """
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         
         if pkg_type == "modules" and remote_packages["modules"]:
@@ -739,7 +844,13 @@ class CLI:
             console.print(table)
     
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
-        """检查包是否有更新"""
+        """
+        检查包是否过时
+        
+        :param package_name: 包名
+        :param current_version: 当前版本
+        :return: 是否有新版本可用
+        """
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         
         # 检查模块
@@ -760,7 +871,12 @@ class CLI:
         return False
     
     def _resolve_package_name(self, short_name: str) -> Optional[str]:
-        """解析模块/适配器简称到完整包名"""
+        """
+        解析简称到完整包名
+        
+        :param short_name: 模块/适配器简称
+        :return: 完整包名，未找到返回None
+        """
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         
         # 检查模块
@@ -774,7 +890,12 @@ class CLI:
         return None
     
     def _setup_watchdog(self, script_path: str, reload_mode: bool):
-        """设置文件监控"""
+        """
+        设置文件监控
+        
+        :param script_path: 要监控的脚本路径
+        :param reload_mode: 是否启用重载模式
+        """
         watch_dirs = [
             os.path.dirname(os.path.abspath(script_path)),
         ]
@@ -814,17 +935,13 @@ class CLI:
             self.observer.join()
     
     def run(self):
-        """运行CLI应用程序"""
-        args = self.parser.parse_args()
+        """
+        运行CLI
         
-        # 设置日志级别
-        if args.verbose >= 3:
-            import logging
-            logging.basicConfig(
-                level=logging.DEBUG,
-                format="%(message)s",
-                handlers=[RichHandler(console=console)]
-            )
+        :raises KeyboardInterrupt: 用户中断时抛出
+        :raises Exception: 命令执行失败时抛出
+        """
+        args = self.parser.parse_args()
         
         if args.version:
             self._print_version()
@@ -925,7 +1042,14 @@ class CLI:
             sys.exit(1)
 
 def main():
-    """主入口"""
+    """
+    CLI入口点
+    
+    {!--< tips >!--}
+    1. 创建CLI实例并运行
+    2. 处理全局异常
+    {!--< /tips >!--}
+    """
     cli = CLI()
     cli.run()
 
