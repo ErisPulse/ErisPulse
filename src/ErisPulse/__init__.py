@@ -10,6 +10,9 @@ ErisPulse SDK 主模块
 {!--< /tips >!--}
 """
 
+__version__ = "2.1.13rc3"
+__author__  = "ErisPulse"
+
 import os
 import sys
 import importlib
