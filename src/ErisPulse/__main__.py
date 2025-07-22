@@ -344,61 +344,6 @@ class ReloadHandler(FileSystemEventHandler):
             console.print(f"\n[cyan][热重载] 配置发生变动: {event.src_path}[/]")
             self.start_process()
 
-def start_reloader(script_path, reload_mode=False):
-    """
-    启动热重载监控
-    
-    :param script_path: str 要监控的脚本路径
-    :param reload_mode: bool 是否启用完整重载模式 (默认: False)
-    """
-    if not os.path.exists(script_path):
-        console.print(Panel(
-            f"找不到指定文件: {script_path}",
-            title="错误",
-            style="error"
-        ))
-        return
-    watch_dirs = [
-        os.path.dirname(os.path.abspath(script_path)),
-    ]
-
-    handler = ReloadHandler(script_path, reload_mode)
-    observer = Observer()
-
-    for d in watch_dirs:
-        if os.path.exists(d):
-            if reload_mode:
-                # 完整重载模式：监控所有.py文件
-                observer.schedule(handler, d, recursive=True)
-            else:
-                # 普通模式：只监控config.toml
-                observer.schedule(handler, d, recursive=False)
-
-    observer.start()
-    console.print("\n[bold green][热重载] 已启动[/]")
-    mode_desc = "开发重载模式" if reload_mode else "配置监控模式"
-    console.print(f"[dim]模式: {mode_desc}\n监控目录: {', '.join(watch_dirs)}[/]\n")
-    try:
-        first_interrupt = True
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        if first_interrupt:
-            first_interrupt = False
-            console.print("\n[bold green]正在安全关闭热重载...[/]")
-            console.print("[bold red]再次按下Ctrl+C以强制关闭[/]")
-            try:
-                observer.stop()
-                if handler.process:
-                    handler.process.terminate()
-                observer.join()
-            except KeyboardInterrupt:
-                console.print("[bold red]强制关闭热重载[/]")
-                raise
-        else:
-            console.print(Panel("[bold red]强制关闭热重载[/]"))
-            raise
-
 def get_erispulse_version():
     """
     获取当前安装的ErisPulse版本
@@ -633,17 +578,67 @@ def main():
                 PyPIManager.upgrade_all()
                 
         elif args.command == "run":
-            if not hasattr(args, 'script') or not args.script:
+            script_path = args.script
+            reload_mode = args.reload
+
+            if not hasattr(args, 'script') or not reload_mode:
                 if not os.path.exists("config.toml") or not os.path.isfile("main.py"):
                     from ErisPulse import sdk
                     sdk.init()
-                args.script = "main.py"
+                script_path = "main.py"
                 console.print(Panel(
                     "未指定主程序，运行入口点为 [bold]main.py[/]",
                     title="提示",
                     style="info"
                 ))
-            start_reloader(args.script, args.reload)
+            if not os.path.exists(script_path):
+                console.print(Panel(
+                    f"找不到指定文件: {script_path}",
+                    title="错误",
+                    style="error"
+                ))
+                return
+            
+            watch_dirs = [
+                os.path.dirname(os.path.abspath(script_path)),
+            ]
+
+            handler = ReloadHandler(script_path, reload_mode)
+            observer = Observer()
+
+            for d in watch_dirs:
+                if os.path.exists(d):
+                    if reload_mode:
+                        # 完整重载模式：监控所有.py文件
+                        observer.schedule(handler, d, recursive=True)
+                    else:
+                        # 普通模式：只监控config.toml
+                        observer.schedule(handler, d, recursive=False)
+
+            observer.start()
+            console.print("\n[bold green][热重载] 已启动[/]")
+            mode_desc = "开发重载模式" if reload_mode else "配置监控模式"
+            console.print(f"[dim]模式: {mode_desc}\n监控目录: {', '.join(watch_dirs)}[/]\n")
+            try:
+                first_interrupt = True
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                if first_interrupt:
+                    first_interrupt = False
+                    console.print("\n[bold green]正在安全关闭热重载...[/]")
+                    console.print("[bold red]再次按下Ctrl+C以强制关闭[/]")
+                    try:
+                        observer.stop()
+                        if handler.process:
+                            handler.process.terminate()
+                        observer.join()
+                    except KeyboardInterrupt:
+                        console.print("[bold red]强制关闭热重载[/]")
+                        raise
+                else:
+                    console.print(Panel("[bold red]强制关闭热重载[/]"))
+                    raise
         elif args.command == "list-remote":
             import asyncio
             try:
