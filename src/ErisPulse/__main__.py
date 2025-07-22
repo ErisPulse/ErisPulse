@@ -329,7 +329,7 @@ class PackageManager:
         
         :raises KeyboardInterrupt: 用户取消操作时抛出
         """
-        installed = self.package_manager.get_installed_packages()
+        installed = self.get_installed_packages()
         all_packages = set()
         
         for pkg_type in ["modules", "adapters", "cli_extensions"]:
@@ -652,6 +652,22 @@ class CLI:
         
         return parser
     
+    def _get_external_commands(self) -> List[str]:
+        """
+        获取所有已注册的第三方命令名称
+        
+        :return: 第三方命令名称列表
+        """
+        try:
+            entry_points = importlib.metadata.entry_points()
+            if hasattr(entry_points, 'select'):
+                cli_entries = entry_points.select(group='erispulse.cli')
+            else:
+                cli_entries = entry_points.get('erispulse.cli', [])
+            return [entry.name for entry in cli_entries]
+        except Exception:
+            return []
+
     def _load_external_commands(self, subparsers):
         """
         加载第三方CLI命令
@@ -1027,8 +1043,28 @@ class CLI:
                     
             elif args.command == "init":
                 from ErisPulse import sdk
-                sdk.init(force=args.force)
+                sdk.init()
                 console.print("[success]ErisPulse项目初始化完成[/]")
+                
+            # 处理第三方命令
+            elif args.command in self._get_external_commands():
+                # 获取第三方命令的处理函数并执行
+                entry_points = importlib.metadata.entry_points()
+                if hasattr(entry_points, 'select'):
+                    cli_entries = entry_points.select(group='erispulse.cli')
+                else:
+                    cli_entries = entry_points.get('erispulse.cli', [])
+                
+                for entry in cli_entries:
+                    if entry.name == args.command:
+                        cli_func = entry.load()
+                        if callable(cli_func):
+                            # 创建一个新的解析器来解析第三方命令的参数
+                            subparser = self.parser._subparsers._group_actions[0].choices[args.command]
+                            parsed_args = subparser.parse_args(sys.argv[2:])
+                            # 调用第三方命令处理函数
+                            parsed_args.func(parsed_args)
+                        break
                 
         except KeyboardInterrupt:
             console.print("\n[warning]操作被用户中断[/]")
