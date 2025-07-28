@@ -1,41 +1,38 @@
 # 📦 `ErisPulse.Core.logger` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 日志系统
 
 提供模块化日志记录功能，支持多级日志、模块过滤和内存存储。
 
-💡 **提示**：
-
-1. 支持按模块设置不同日志级别
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持按模块设置不同日志级别
 2. 日志可存储在内存中供后续分析
-3. 自动识别调用模块名称
+3. 自动识别调用模块名称</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `Logger`
+### `class Logger`
 
 日志管理器
 
 提供模块化日志记录和存储功能
 
-💡 **提示**：
-
-1. 使用set_module_level设置模块日志级别
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用set_module_level设置模块日志级别
 2. 使用get_logs获取历史日志
-3. 支持标准日志级别(DEBUG, INFO等)
+3. 支持标准日志级别(DEBUG, INFO等)</p></div>
 
 
 #### 🧰 方法
 
-##### `set_memory_limit`
+##### `set_memory_limit(limit: int)`
 
 设置日志内存存储上限
 
@@ -44,7 +41,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_level`
+##### `set_level(level: str)`
 
 设置全局日志级别
 
@@ -53,7 +50,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_module_level`
+##### `set_module_level(module_name: str, level: str)`
 
 设置指定模块日志级别
 
@@ -63,7 +60,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_output_file`
+##### `set_output_file(path)`
 
 设置日志输出
 
@@ -72,7 +69,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `save_logs`
+##### `save_logs(path)`
 
 保存所有在内存中记录的日志
 
@@ -81,7 +78,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `get_logs`
+##### `get_logs(module_name: str = None)`
 
 获取日志内容
 
@@ -90,5 +87,4 @@ ErisPulse 日志系统
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
