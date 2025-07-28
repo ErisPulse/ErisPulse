@@ -385,29 +385,7 @@ class EnvManager:
             return True
         except Exception as e:
             return False
-            
-    def load_env_file(self) -> bool:
-        """
-        加载env.py文件中的配置项
         
-        :return: 操作是否成功
-        
-        :example:
-        >>> env.load_env_file()  # 加载env.py中的配置
-        """
-        try:
-            env_file = Path("env.py")
-            if env_file.exists():
-                spec = importlib.util.spec_from_file_location("env_module", env_file)
-                env_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(env_module)
-                for key, value in vars(env_module).items():
-                    if not key.startswith("__") and isinstance(value, (dict, list, str, int, float, bool)):
-                        self.set(key, value)
-            return True
-        except Exception as e:
-            return False
-            
     def __getattr__(self, key: str) -> Any:
         """
         通过属性访问配置项
