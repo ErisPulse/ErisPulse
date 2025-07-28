@@ -1,41 +1,38 @@
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 适配器系统
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-💡 **提示**：
-
-1. 适配器必须继承BaseAdapter并实现必要方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器必须继承BaseAdapter并实现必要方法
 2. 使用SendDSL实现链式调用风格的消息发送接口
 3. 适配器管理器支持多平台适配器的注册和生命周期管理
-4. 支持OneBot12协议的事件处理
+4. 支持OneBot12协议的事件处理</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `SendDSLBase`
+### `class SendDSLBase`
 
 消息发送DSL基类
 
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
-💡 **提示**：
-
-1. 子类应实现具体的消息发送方法(如Text, Image等)
-2. 通过__getattr__实现动态方法调用
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 子类应实现具体的消息发送方法(如Text, Image等)
+2. 通过__getattr__实现动态方法调用</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
 
 初始化DSL发送器
 
@@ -46,7 +43,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### `To`
+##### `To(target_type: str = None, target_id: Union[str, int] = None)`
 
 设置消息目标
 
@@ -54,48 +51,54 @@ ErisPulse 适配器系统
 :param target_id: 目标ID(可选)
 :return: SendDSL实例
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+```
+</details>
 
 ---
 
-##### `Using`
+##### `Using(account_id: Union[str, int])`
 
 设置发送账号
 
 :param _account_id: 发送账号
 :return: SendDSL实例
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.Send.Using("bot1").To("123").Text("Hello")
 >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
+```
+</details>
 
 ---
 
-### `BaseAdapter`
+### `class BaseAdapter`
 
 适配器基类
 
 提供与外部平台交互的标准接口，子类必须实现必要方法
 
-💡 **提示**：
-
-1. 必须实现call_api, start和shutdown方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 必须实现call_api, start和shutdown方法
 2. 可以自定义Send类实现平台特定的消息发送逻辑
 3. 通过on装饰器注册事件处理器
-4. 支持OneBot12协议的事件处理
+4. 支持OneBot12协议的事件处理</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__()`
 
 初始化适配器
 
 ---
 
-##### `on`
+##### `on(event_type: str = '*')`
 
 适配器事件监听装饰器
 
@@ -104,61 +107,69 @@ ErisPulse 适配器系统
 
 ---
 
-##### `middleware`
+##### `middleware(func: Callable)`
 
 添加中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @adapter.middleware
 >>> async def log_middleware(data):
 >>>     print(f"处理数据: {data}")
 >>>     return data
+```
+</details>
 
 ---
 
-##### 🔹 `async` `call_api`
+##### 🔷 `async call_api(endpoint: str)`
 
 调用平台API的抽象方法
 
 :param endpoint: API端点
 :param params: API参数
 :return: API调用结果
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `start`
+##### 🔷 `async start()`
 
 启动适配器的抽象方法
 
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `shutdown`
+##### 🔷 `async shutdown()`
 
 关闭适配器的抽象方法
 
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `emit`
+##### 🔷 `async emit(event_type: str, data: Any)`
 
 触发原生协议事件
 
 :param event_type: 事件类型
 :param data: 事件数据
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.emit("message", {"text": "Hello"})
+```
+</details>
 
 ---
 
-##### 🔹 `async` `send`
+##### 🔷 `async send(target_type: str, target_id: str, message: Any)`
 
 发送消息的便捷方法
 
@@ -169,73 +180,87 @@ ErisPulse 适配器系统
     - method: 发送方法名(默认为"Text")
 :return: 发送结果
 
-⚠️ **可能抛出**: `AttributeError` - 当发送方法不存在时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当发送方法不存在时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.send("user", "123", "Hello")
 >>> await adapter.send("group", "456", "Hello", method="Markdown")
+```
+</details>
 
 ---
 
-### `AdapterManager`
+### `class AdapterManager`
 
 适配器管理器
 
 管理多个平台适配器的注册、启动和关闭
 
-💡 **提示**：
-
-1. 通过register方法注册适配器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过register方法注册适配器
 2. 通过startup方法启动适配器
 3. 通过shutdown方法关闭所有适配器
-4. 通过on装饰器注册OneBot12协议事件处理器
+4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
 
 
 #### 🧰 方法
 
-##### `Adapter`
+##### `Adapter()`
 
 获取BaseAdapter类，用于访问原始事件监听
 
 :return: BaseAdapter类
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.Adapter.on("raw_event")
 >>> async def handle_raw(data):
 >>>     print("收到原始事件:", data)
+```
+</details>
 
 ---
 
-##### `on`
+##### `on(event_type: str = '*')`
 
 OneBot12协议事件监听装饰器
 
 :param event_type: OneBot12事件类型
 :return: 装饰器函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.on("message")
 >>> async def handle_message(data):
 >>>     print(f"收到OneBot12消息: {data}")
+```
+</details>
 
 ---
 
-##### `middleware`
+##### `middleware(func: Callable)`
 
 添加OneBot12中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.middleware
 >>> async def onebot_middleware(data):
 >>>     print("处理OneBot12数据:", data)
 >>>     return data
+```
+</details>
 
 ---
 
-##### 🔹 `async` `emit`
+##### 🔷 `async emit(data: Any)`
 
 提交OneBot12协议事件到指定平台
 
@@ -243,9 +268,11 @@ OneBot12协议事件监听装饰器
 :param event_type: OneBot12事件类型
 :param data: 符合OneBot12标准的事件数据
 
-⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await sdk.adapter.emit("MyPlatform", "message", {
 >>>     "id": "123",
 >>>     "time": 1620000000,
@@ -253,10 +280,12 @@ OneBot12协议事件监听装饰器
 >>>     "detail_type": "private",
 >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
 >>> })
+```
+</details>
 
 ---
 
-##### `register`
+##### `register(platform: str, adapter_class: Type[BaseAdapter])`
 
 注册新的适配器类
 
@@ -264,33 +293,40 @@ OneBot12协议事件监听装饰器
 :param adapter_class: 适配器类
 :return: 注册是否成功
 
-⚠️ **可能抛出**: `TypeError` - 当适配器类无效时抛出
+<dt>异常</dt><dd><code>TypeError</code> 当适配器类无效时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.register("MyPlatform", MyPlatformAdapter)
+```
+</details>
 
 ---
 
-##### 🔹 `async` `startup`
+##### 🔷 `async startup(platforms: List[str] = None)`
 
 启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
-⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 启动所有适配器
 >>> await adapter.startup()
 >>> # 启动指定适配器
 >>> await adapter.startup(["Platform1", "Platform2"])
+```
+</details>
 
 ---
 
-##### 🔹 `async` `_run_adapter`
+##### 🔷 `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 运行适配器实例
 
 :param adapter: 适配器实例
@@ -298,51 +334,66 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔹 `async` `shutdown`
+##### 🔷 `async shutdown()`
 
 关闭所有适配器
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.shutdown()
+```
+</details>
 
 ---
 
-##### `get`
+##### `get(platform: str)`
 
 获取指定平台的适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例或None
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter = adapter.get("MyPlatform")
+```
+</details>
 
 ---
 
-##### `__getattr__`
+##### `__getattr__(platform: str)`
 
 通过属性访问获取适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例
 
-⚠️ **可能抛出**: `AttributeError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter = adapter.MyPlatform
+```
+</details>
 
 ---
 
-##### `platforms`
+##### `platforms()`
 
 获取所有已注册的平台列表
 
 :return: 平台名称列表
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> print("已注册平台:", adapter.platforms)
+```
+</details>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>

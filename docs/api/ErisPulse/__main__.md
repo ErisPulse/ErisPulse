@@ -1,79 +1,72 @@
 # 📦 `ErisPulse.__main__` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse SDK 命令行工具
 
 提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
 
-💡 **提示**：
-
-1. 需要Python 3.8+环境
-2. Windows平台需要colorama支持ANSI颜色
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 需要Python 3.8+环境
+2. Windows平台需要colorama支持ANSI颜色</p></div>
 
 ---
 
 ## 🛠️ 函数
 
-### `main`
+### `main()`
 
 CLI入口点
 
-💡 **提示**：
-
-1. 创建CLI实例并运行
-2. 处理全局异常
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 创建CLI实例并运行
+2. 处理全局异常</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `CommandHighlighter`
+### `class CommandHighlighter(RegexHighlighter)`
 
 高亮CLI命令和参数
 
-💡 **提示**：
-
-使用正则表达式匹配命令行参数和选项
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
 
 
-### `PackageManager`
+### `class PackageManager`
 
 ErisPulse包管理器
 
 提供包安装、卸载、升级和查询功能
 
-💡 **提示**：
-
-1. 支持本地和远程包管理
-2. 包含1小时缓存机制
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持本地和远程包管理
+2. 包含1小时缓存机制</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__()`
 
 初始化包管理器
 
 ---
 
-##### 🔹 `async` `_fetch_remote_packages`
+##### 🔷 `async _fetch_remote_packages(url: str)`
 
 从指定URL获取远程包数据
 
 :param url: 远程包数据URL
 :return: 解析后的JSON数据，失败返回None
 
-⚠️ **可能抛出**: `ClientError` - 网络请求失败时抛出
-⚠️ **可能抛出**: `JSONDecodeError` - JSON解析失败时抛出
+<dt>异常</dt><dd><code>ClientError</code> 网络请求失败时抛出</dd>
+<dt>异常</dt><dd><code>JSONDecodeError</code> JSON解析失败时抛出</dd>
 
 ---
 
-##### 🔹 `async` `get_remote_packages`
+##### 🔷 `async get_remote_packages(force_refresh: bool = False)`
 
 获取远程包列表，带缓存机制
 
@@ -89,7 +82,7 @@ ErisPulse包管理器
 
 ---
 
-##### `get_installed_packages`
+##### `get_installed_packages()`
 
 获取已安装的包信息
 
@@ -104,18 +97,18 @@ ErisPulse包管理器
 
 ---
 
-##### `_is_module_enabled`
+##### `_is_module_enabled(module_name: str)`
 
 检查模块是否启用
 
 :param module_name: 模块名称
 :return: 模块是否启用
 
-⚠️ **可能抛出**: `ImportError` - 核心模块不可用时抛出
+<dt>异常</dt><dd><code>ImportError</code> 核心模块不可用时抛出</dd>
 
 ---
 
-##### `_run_pip_command`
+##### `_run_pip_command(args: List[str], description: str)`
 
 执行pip命令
 
@@ -125,7 +118,7 @@ ErisPulse包管理器
 
 ---
 
-##### `install_package`
+##### `install_package(package_name: str, upgrade: bool = False)`
 
 安装指定包
 
@@ -135,7 +128,7 @@ ErisPulse包管理器
 
 ---
 
-##### `uninstall_package`
+##### `uninstall_package(package_name: str)`
 
 卸载指定包
 
@@ -144,31 +137,29 @@ ErisPulse包管理器
 
 ---
 
-##### `upgrade_all`
+##### `upgrade_all()`
 
 升级所有已安装的ErisPulse包
 
 :return: 升级是否成功
 
-⚠️ **可能抛出**: `KeyboardInterrupt` - 用户取消操作时抛出
+<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户取消操作时抛出</dd>
 
 ---
 
-### `ReloadHandler`
+### `class ReloadHandler(FileSystemEventHandler)`
 
 文件系统事件处理器
 
 实现热重载功能，监控文件变化并重启进程
 
-💡 **提示**：
-
-1. 支持.py文件修改重载
-2. 支持配置文件修改重载
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持.py文件修改重载
+2. 支持配置文件修改重载</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__(script_path: str, reload_mode: bool = False)`
 
 初始化处理器
 
@@ -177,13 +168,13 @@ ErisPulse包管理器
 
 ---
 
-##### `start_process`
+##### `start_process()`
 
 启动监控进程
 
 ---
 
-##### `_terminate_process`
+##### `_terminate_process()`
 
 终止当前进程
 
@@ -191,7 +182,7 @@ ErisPulse包管理器
 
 ---
 
-##### `on_modified`
+##### `on_modified(event)`
 
 文件修改事件处理
 
@@ -199,7 +190,7 @@ ErisPulse包管理器
 
 ---
 
-##### `_handle_reload`
+##### `_handle_reload(event, reason: str)`
 
 处理重载逻辑
 
@@ -208,27 +199,25 @@ ErisPulse包管理器
 
 ---
 
-### `CLI`
+### `class CLI`
 
 ErisPulse命令行接口
 
 提供完整的命令行交互功能
 
-💡 **提示**：
-
-1. 支持动态加载第三方命令
-2. 支持模块化子命令系统
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持动态加载第三方命令
+2. 支持模块化子命令系统</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__()`
 
 初始化CLI
 
 ---
 
-##### `_create_parser`
+##### `_create_parser()`
 
 创建命令行参数解析器
 
@@ -236,23 +225,31 @@ ErisPulse命令行接口
 
 ---
 
-##### `_load_external_commands`
+##### `_get_external_commands()`
+
+获取所有已注册的第三方命令名称
+
+:return: 第三方命令名称列表
+
+---
+
+##### `_load_external_commands(subparsers)`
 
 加载第三方CLI命令
 
 :param subparsers: 子命令解析器
 
-⚠️ **可能抛出**: `ImportError` - 加载命令失败时抛出
+<dt>异常</dt><dd><code>ImportError</code> 加载命令失败时抛出</dd>
 
 ---
 
-##### `_print_version`
+##### `_print_version()`
 
 打印版本信息
 
 ---
 
-##### `_print_installed_packages`
+##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
 
 打印已安装包信息
 
@@ -261,7 +258,7 @@ ErisPulse命令行接口
 
 ---
 
-##### `_print_remote_packages`
+##### `_print_remote_packages(pkg_type: str)`
 
 打印远程包信息
 
@@ -269,7 +266,7 @@ ErisPulse命令行接口
 
 ---
 
-##### `_is_package_outdated`
+##### `_is_package_outdated(package_name: str, current_version: str)`
 
 检查包是否过时
 
@@ -279,7 +276,7 @@ ErisPulse命令行接口
 
 ---
 
-##### `_resolve_package_name`
+##### `_resolve_package_name(short_name: str)`
 
 解析简称到完整包名
 
@@ -288,7 +285,7 @@ ErisPulse命令行接口
 
 ---
 
-##### `_setup_watchdog`
+##### `_setup_watchdog(script_path: str, reload_mode: bool)`
 
 设置文件监控
 
@@ -297,20 +294,19 @@ ErisPulse命令行接口
 
 ---
 
-##### `_cleanup`
+##### `_cleanup()`
 
 清理资源
 
 ---
 
-##### `run`
+##### `run()`
 
 运行CLI
 
-⚠️ **可能抛出**: `KeyboardInterrupt` - 用户中断时抛出
-⚠️ **可能抛出**: `Exception` - 命令执行失败时抛出
+<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户中断时抛出</dd>
+<dt>异常</dt><dd><code>Exception</code> 命令执行失败时抛出</dd>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>

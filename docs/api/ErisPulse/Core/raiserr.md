@@ -1,26 +1,25 @@
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-*自动生成于 2025-07-22 16:35:32*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 错误管理系统
 
 提供全局异常捕获功能。不再推荐使用自定义错误注册功能。
 
-💡 **提示**：
-
-1. 请使用Python原生异常抛出方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 请使用Python原生异常抛出方法
 2. 系统会自动捕获并格式化所有未处理异常
-3. 注册功能已标记为弃用，将在未来版本移除
+3. 注册功能已标记为弃用，将在未来版本移除</p></div>
 
 ---
 
 ## 🛠️ 函数
 
-### `global_exception_handler`
+### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 全局异常处理器
 
@@ -30,7 +29,7 @@ ErisPulse 错误管理系统
 
 ---
 
-### `async_exception_handler`
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
 
 异步异常处理器
 
@@ -41,25 +40,23 @@ ErisPulse 错误管理系统
 
 ## 🏛️ 类
 
-### `Error`
+### `class Error`
 
 错误管理器
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
-💡 **提示**：
-
-1. 注册功能将在未来版本移除
-2. 请直接使用raise Exception("message")方式抛出异常
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 注册功能将在未来版本移除
+2. 请直接使用raise Exception("message")方式抛出异常</p></div>
 
 
 #### 🧰 方法
 
-##### `register`
+##### `register(name: str, doc: str = '', base: Type[Exception] = Exception)`
 
 注册新的错误类型
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
 :param name: 错误类型名称
 :param doc: 错误描述文档
@@ -68,29 +65,28 @@ ErisPulse 错误管理系统
 
 ---
 
-##### `__getattr__`
+##### `__getattr__(name: str)`
 
 动态获取错误抛出函数
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
 :param name: 错误类型名称
 :return: 错误抛出函数
 
-⚠️ **可能抛出**: `AttributeError` - 当错误类型未注册时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当错误类型未注册时抛出</dd>
 
 ---
 
-##### `info`
+##### `info(name: Optional[str] = None)`
 
 获取错误信息
 
-⚠️ **已弃用**：此功能将在未来版本移除 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>此功能将在未来版本移除 | 2025-07-18</p></div>
 
 :param name: 错误类型名称(可选)
 :return: 错误信息字典
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:32*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>

@@ -811,42 +811,39 @@ ErisPulse 项目：
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 适配器系统
 
 提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 
-💡 **提示**：
-
-1. 适配器必须继承BaseAdapter并实现必要方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器必须继承BaseAdapter并实现必要方法
 2. 使用SendDSL实现链式调用风格的消息发送接口
 3. 适配器管理器支持多平台适配器的注册和生命周期管理
-4. 支持OneBot12协议的事件处理
+4. 支持OneBot12协议的事件处理</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `SendDSLBase`
+### `class SendDSLBase`
 
 消息发送DSL基类
 
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
-💡 **提示**：
-
-1. 子类应实现具体的消息发送方法(如Text, Image等)
-2. 通过__getattr__实现动态方法调用
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 子类应实现具体的消息发送方法(如Text, Image等)
+2. 通过__getattr__实现动态方法调用</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
 
 初始化DSL发送器
 
@@ -857,7 +854,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### `To`
+##### `To(target_type: str = None, target_id: Union[str, int] = None)`
 
 设置消息目标
 
@@ -865,48 +862,54 @@ ErisPulse 适配器系统
 :param target_id: 目标ID(可选)
 :return: SendDSL实例
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.Send.To("user", "123").Text("Hello")
 >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+```
+</details>
 
 ---
 
-##### `Using`
+##### `Using(account_id: Union[str, int])`
 
 设置发送账号
 
 :param _account_id: 发送账号
 :return: SendDSL实例
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.Send.Using("bot1").To("123").Text("Hello")
 >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
+```
+</details>
 
 ---
 
-### `BaseAdapter`
+### `class BaseAdapter`
 
 适配器基类
 
 提供与外部平台交互的标准接口，子类必须实现必要方法
 
-💡 **提示**：
-
-1. 必须实现call_api, start和shutdown方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 必须实现call_api, start和shutdown方法
 2. 可以自定义Send类实现平台特定的消息发送逻辑
 3. 通过on装饰器注册事件处理器
-4. 支持OneBot12协议的事件处理
+4. 支持OneBot12协议的事件处理</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__()`
 
 初始化适配器
 
 ---
 
-##### `on`
+##### `on(event_type: str = '*')`
 
 适配器事件监听装饰器
 
@@ -915,61 +918,69 @@ ErisPulse 适配器系统
 
 ---
 
-##### `middleware`
+##### `middleware(func: Callable)`
 
 添加中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @adapter.middleware
 >>> async def log_middleware(data):
 >>>     print(f"处理数据: {data}")
 >>>     return data
+```
+</details>
 
 ---
 
-##### 🔹 `async` `call_api`
+##### 🔷 `async call_api(endpoint: str)`
 
 调用平台API的抽象方法
 
 :param endpoint: API端点
 :param params: API参数
 :return: API调用结果
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `start`
+##### 🔷 `async start()`
 
 启动适配器的抽象方法
 
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `shutdown`
+##### 🔷 `async shutdown()`
 
 关闭适配器的抽象方法
 
-⚠️ **可能抛出**: `NotImplementedError` - 必须由子类实现
+<dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
 ---
 
-##### 🔹 `async` `emit`
+##### 🔷 `async emit(event_type: str, data: Any)`
 
 触发原生协议事件
 
 :param event_type: 事件类型
 :param data: 事件数据
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.emit("message", {"text": "Hello"})
+```
+</details>
 
 ---
 
-##### 🔹 `async` `send`
+##### 🔷 `async send(target_type: str, target_id: str, message: Any)`
 
 发送消息的便捷方法
 
@@ -980,73 +991,87 @@ ErisPulse 适配器系统
     - method: 发送方法名(默认为"Text")
 :return: 发送结果
 
-⚠️ **可能抛出**: `AttributeError` - 当发送方法不存在时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当发送方法不存在时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.send("user", "123", "Hello")
 >>> await adapter.send("group", "456", "Hello", method="Markdown")
+```
+</details>
 
 ---
 
-### `AdapterManager`
+### `class AdapterManager`
 
 适配器管理器
 
 管理多个平台适配器的注册、启动和关闭
 
-💡 **提示**：
-
-1. 通过register方法注册适配器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过register方法注册适配器
 2. 通过startup方法启动适配器
 3. 通过shutdown方法关闭所有适配器
-4. 通过on装饰器注册OneBot12协议事件处理器
+4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
 
 
 #### 🧰 方法
 
-##### `Adapter`
+##### `Adapter()`
 
 获取BaseAdapter类，用于访问原始事件监听
 
 :return: BaseAdapter类
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.Adapter.on("raw_event")
 >>> async def handle_raw(data):
 >>>     print("收到原始事件:", data)
+```
+</details>
 
 ---
 
-##### `on`
+##### `on(event_type: str = '*')`
 
 OneBot12协议事件监听装饰器
 
 :param event_type: OneBot12事件类型
 :return: 装饰器函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.on("message")
 >>> async def handle_message(data):
 >>>     print(f"收到OneBot12消息: {data}")
+```
+</details>
 
 ---
 
-##### `middleware`
+##### `middleware(func: Callable)`
 
 添加OneBot12中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @sdk.adapter.middleware
 >>> async def onebot_middleware(data):
 >>>     print("处理OneBot12数据:", data)
 >>>     return data
+```
+</details>
 
 ---
 
-##### 🔹 `async` `emit`
+##### 🔷 `async emit(data: Any)`
 
 提交OneBot12协议事件到指定平台
 
@@ -1054,9 +1079,11 @@ OneBot12协议事件监听装饰器
 :param event_type: OneBot12事件类型
 :param data: 符合OneBot12标准的事件数据
 
-⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await sdk.adapter.emit("MyPlatform", "message", {
 >>>     "id": "123",
 >>>     "time": 1620000000,
@@ -1064,10 +1091,12 @@ OneBot12协议事件监听装饰器
 >>>     "detail_type": "private",
 >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
 >>> })
+```
+</details>
 
 ---
 
-##### `register`
+##### `register(platform: str, adapter_class: Type[BaseAdapter])`
 
 注册新的适配器类
 
@@ -1075,33 +1104,40 @@ OneBot12协议事件监听装饰器
 :param adapter_class: 适配器类
 :return: 注册是否成功
 
-⚠️ **可能抛出**: `TypeError` - 当适配器类无效时抛出
+<dt>异常</dt><dd><code>TypeError</code> 当适配器类无效时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter.register("MyPlatform", MyPlatformAdapter)
+```
+</details>
 
 ---
 
-##### 🔹 `async` `startup`
+##### 🔷 `async startup(platforms: List[str] = None)`
 
 启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
-⚠️ **可能抛出**: `ValueError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 启动所有适配器
 >>> await adapter.startup()
 >>> # 启动指定适配器
 >>> await adapter.startup(["Platform1", "Platform2"])
+```
+</details>
 
 ---
 
-##### 🔹 `async` `_run_adapter`
+##### 🔷 `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 运行适配器实例
 
 :param adapter: 适配器实例
@@ -1109,64 +1145,80 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔹 `async` `shutdown`
+##### 🔷 `async shutdown()`
 
 关闭所有适配器
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> await adapter.shutdown()
+```
+</details>
 
 ---
 
-##### `get`
+##### `get(platform: str)`
 
 获取指定平台的适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例或None
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter = adapter.get("MyPlatform")
+```
+</details>
 
 ---
 
-##### `__getattr__`
+##### `__getattr__(platform: str)`
 
 通过属性访问获取适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例
 
-⚠️ **可能抛出**: `AttributeError` - 当平台未注册时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当平台未注册时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> adapter = adapter.MyPlatform
+```
+</details>
 
 ---
 
-##### `platforms`
+##### `platforms()`
 
 获取所有已注册的平台列表
 
 :return: 平台名称列表
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> print("已注册平台:", adapter.platforms)
+```
+</details>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
+
 
 ErisPulse 配置中心
 
@@ -1177,7 +1229,7 @@ ErisPulse 配置中心
 
 ## 🛠️ 函数
 
-### `_ensure_config_structure`
+### `_ensure_config_structure(config: Dict[str, Any])`
 
 确保配置结构完整，补全缺失的配置项
 
@@ -1186,7 +1238,7 @@ ErisPulse 配置中心
 
 ---
 
-### `get_config`
+### `get_config()`
 
 获取当前配置，自动补全缺失的配置项并保存
 
@@ -1194,7 +1246,7 @@ ErisPulse 配置中心
 
 ---
 
-### `update_config`
+### `update_config(new_config: Dict[str, Any])`
 
 更新配置，自动补全缺失的配置项
 
@@ -1203,7 +1255,7 @@ ErisPulse 配置中心
 
 ---
 
-### `get_server_config`
+### `get_server_config()`
 
 获取服务器配置，确保结构完整
 
@@ -1211,7 +1263,7 @@ ErisPulse 配置中心
 
 ---
 
-### `get_logger_config`
+### `get_logger_config()`
 
 获取日志配置，确保结构完整
 
@@ -1219,57 +1271,52 @@ ErisPulse 配置中心
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 环境配置模块
 
 提供键值存储、事务支持、快照和恢复功能，用于管理框架配置数据。基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
-💡 **提示**：
-
-1. 支持JSON序列化存储复杂数据类型
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
-3. 自动快照功能防止数据丢失
+3. 自动快照功能防止数据丢失</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `EnvManager`
+### `class EnvManager`
 
 环境配置管理器
 
 单例模式实现，提供配置的增删改查、事务和快照管理
 
-💡 **提示**：
-
-1. 使用get/set方法操作配置项
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用get/set方法操作配置项
 2. 使用transaction上下文管理事务
-3. 使用snapshot/restore管理数据快照
+3. 使用snapshot/restore管理数据快照</p></div>
 
 
 #### 🧰 方法
 
-##### `_init_db`
+##### `_init_db()`
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 初始化数据库
 
 ---
 
-##### `get`
+##### `get(key: str, default: Any = None)`
 
 获取配置项的值
 
@@ -1277,25 +1324,33 @@ ErisPulse 环境配置模块
 :param default: 默认值(当键不存在时返回)
 :return: 配置项的值
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> timeout = env.get("network.timeout", 30)
 >>> user_settings = env.get("user.settings", {})
+```
+</details>
 
 ---
 
-##### `get_all_keys`
+##### `get_all_keys()`
 
 获取所有配置项的键名
 
 :return: 键名列表
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> all_keys = env.get_all_keys()
 >>> print(f"共有 {len(all_keys)} 个配置项")
+```
+</details>
 
 ---
 
-##### `set`
+##### `set(key: str, value: Any)`
 
 设置配置项的值
 
@@ -1303,29 +1358,37 @@ ErisPulse 环境配置模块
 :param value: 配置项的值
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.set("app.name", "MyApp")
 >>> env.set("user.settings", {"theme": "dark"})
+```
+</details>
 
 ---
 
-##### `set_multi`
+##### `set_multi(items: Dict[str, Any])`
 
 批量设置多个配置项
 
 :param items: 键值对字典
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.set_multi({
 >>>     "app.name": "MyApp",
 >>>     "app.version": "1.0.0",
 >>>     "app.debug": True
 >>> })
+```
+</details>
 
 ---
 
-##### `getConfig`
+##### `getConfig(key: str, default: Any = None)`
 
 获取模块/适配器配置项
 :param key: 配置项的键(支持点分隔符如"module.sub.key")
@@ -1334,7 +1397,7 @@ ErisPulse 环境配置模块
 
 ---
 
-##### `setConfig`
+##### `setConfig(key: str, value: Any)`
 
 设置模块/适配器配置
 :param key: 配置项键名(支持点分隔符如"module.sub.key")
@@ -1343,217 +1406,264 @@ ErisPulse 环境配置模块
 
 ---
 
-##### `delete`
+##### `delete(key: str)`
 
 删除配置项
 
 :param key: 配置项键名
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.delete("temp.session")
+```
+</details>
 
 ---
 
-##### `delete_multi`
+##### `delete_multi(keys: List[str])`
 
 批量删除多个配置项
 
 :param keys: 键名列表
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.delete_multi(["temp.key1", "temp.key2"])
+```
+</details>
 
 ---
 
-##### `get_multi`
+##### `get_multi(keys: List[str])`
 
 批量获取多个配置项的值
 
 :param keys: 键名列表
 :return: 键值对字典
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> settings = env.get_multi(["app.name", "app.version"])
+```
+</details>
 
 ---
 
-##### `transaction`
+##### `transaction()`
 
 创建事务上下文
 
 :return: 事务上下文管理器
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> with env.transaction():
 >>>     env.set("key1", "value1")
 >>>     env.set("key2", "value2")
+```
+</details>
 
 ---
 
-##### `_check_auto_snapshot`
+##### `_check_auto_snapshot()`
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 检查并执行自动快照
 
 ---
 
-##### `set_snapshot_interval`
+##### `set_snapshot_interval(seconds: int)`
 
 设置自动快照间隔
 
 :param seconds: 间隔秒数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 每30分钟自动快照
 >>> env.set_snapshot_interval(1800)
+```
+</details>
 
 ---
 
-##### `clear`
+##### `clear()`
 
 清空所有配置项
 
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.clear()  # 清空所有配置
+```
+</details>
 
 ---
 
-##### `load_env_file`
+##### `load_env_file()`
 
 加载env.py文件中的配置项
 
 :return: 操作是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.load_env_file()  # 加载env.py中的配置
+```
+</details>
 
 ---
 
-##### `__getattr__`
+##### `__getattr__(key: str)`
 
 通过属性访问配置项
 
 :param key: 配置项键名
 :return: 配置项的值
 
-⚠️ **可能抛出**: `KeyError` - 当配置项不存在时抛出
+<dt>异常</dt><dd><code>KeyError</code> 当配置项不存在时抛出</dd>
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> app_name = env.app_name
+```
+</details>
 
 ---
 
-##### `__setattr__`
+##### `__setattr__(key: str, value: Any)`
 
 通过属性设置配置项
 
 :param key: 配置项键名
 :param value: 配置项的值
     
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.app_name = "MyApp"
+```
+</details>
 
 ---
 
-##### `snapshot`
+##### `snapshot(name: Optional[str] = None)`
 
 创建数据库快照
 
 :param name: 快照名称(可选)
 :return: 快照文件路径
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 创建命名快照
 >>> snapshot_path = env.snapshot("before_update")
 >>> # 创建时间戳快照
 >>> snapshot_path = env.snapshot()
+```
+</details>
 
 ---
 
-##### `restore`
+##### `restore(snapshot_name: str)`
 
 从快照恢复数据库
 
 :param snapshot_name: 快照名称或路径
 :return: 恢复是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.restore("before_update")
+```
+</details>
 
 ---
 
-##### `list_snapshots`
+##### `list_snapshots()`
 
 列出所有可用的快照
 
 :return: 快照信息列表(名称, 创建时间, 大小)
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> for name, date, size in env.list_snapshots():
 >>>     print(f"{name} - {date} ({size} bytes)")
+```
+</details>
 
 ---
 
-##### `delete_snapshot`
+##### `delete_snapshot(snapshot_name: str)`
 
 删除指定的快照
 
 :param snapshot_name: 快照名称
 :return: 删除是否成功
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> env.delete_snapshot("old_backup")
+```
+</details>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 日志系统
 
 提供模块化日志记录功能，支持多级日志、模块过滤和内存存储。
 
-💡 **提示**：
-
-1. 支持按模块设置不同日志级别
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持按模块设置不同日志级别
 2. 日志可存储在内存中供后续分析
-3. 自动识别调用模块名称
+3. 自动识别调用模块名称</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `Logger`
+### `class Logger`
 
 日志管理器
 
 提供模块化日志记录和存储功能
 
-💡 **提示**：
-
-1. 使用set_module_level设置模块日志级别
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用set_module_level设置模块日志级别
 2. 使用get_logs获取历史日志
-3. 支持标准日志级别(DEBUG, INFO等)
+3. 支持标准日志级别(DEBUG, INFO等)</p></div>
 
 
 #### 🧰 方法
 
-##### `set_memory_limit`
+##### `set_memory_limit(limit: int)`
 
 设置日志内存存储上限
 
@@ -1562,7 +1672,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_level`
+##### `set_level(level: str)`
 
 设置全局日志级别
 
@@ -1571,7 +1681,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_module_level`
+##### `set_module_level(module_name: str, level: str)`
 
 设置指定模块日志级别
 
@@ -1581,7 +1691,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `set_output_file`
+##### `set_output_file(path)`
 
 设置日志输出
 
@@ -1590,7 +1700,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `save_logs`
+##### `save_logs(path)`
 
 保存所有在内存中记录的日志
 
@@ -1599,7 +1709,7 @@ ErisPulse 日志系统
 
 ---
 
-##### `get_logs`
+##### `get_logs(module_name: str = None)`
 
 获取日志内容
 
@@ -1608,57 +1718,52 @@ ErisPulse 日志系统
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-*自动生成于 2025-07-22 16:35:31*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 模块管理器
 
 提供模块的注册、状态管理和依赖关系处理功能。支持模块的启用/禁用、版本控制和依赖解析。
 
-💡 **提示**：
-
-1. 使用模块前缀区分不同模块的配置
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用模块前缀区分不同模块的配置
 2. 支持模块状态持久化存储
-3. 自动处理模块间的依赖关系
+3. 自动处理模块间的依赖关系</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `ModuleManager`
+### `class ModuleManager`
 
 模块管理器
 
 管理所有模块的注册、状态和依赖关系
 
-💡 **提示**：
-
-1. 通过set_module/get_module管理模块信息
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过set_module/get_module管理模块信息
 2. 通过set_module_status/get_module_status控制模块状态
-3. 通过set_all_modules/get_all_modules批量操作模块
+3. 通过set_all_modules/get_all_modules批量操作模块</p></div>
 
 
 #### 🧰 方法
 
-##### `_ensure_prefixes`
+##### `_ensure_prefixes()`
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 确保模块前缀配置存在
 
 ---
 
-##### `module_prefix`
+##### `module_prefix()`
 
 获取模块数据前缀
 
@@ -1666,7 +1771,7 @@ ErisPulse 模块管理器
 
 ---
 
-##### `status_prefix`
+##### `status_prefix()`
 
 获取模块状态前缀
 
@@ -1674,91 +1779,115 @@ ErisPulse 模块管理器
 
 ---
 
-##### `set_module_status`
+##### `set_module_status(module_name: str, status: bool)`
 
 设置模块启用状态
 
 :param module_name: 模块名称
 :param status: 启用状态
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 启用模块
 >>> mods.set_module_status("MyModule", True)
 >>> # 禁用模块
 >>> mods.set_module_status("MyModule", False)
+```
+</details>
 
 ---
 
-##### `get_module_status`
+##### `get_module_status(module_name: str)`
 
 获取模块启用状态
 
 :param module_name: 模块名称
 :return: 模块是否启用
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> if mods.get_module_status("MyModule"):
 >>>     print("模块已启用")
+```
+</details>
 
 ---
 
-##### `set_module`
+##### `set_module(module_name: str, module_info: Dict[str, Any])`
 
 设置模块信息
 
 :param module_name: 模块名称
 :param module_info: 模块信息字典
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> mods.set_module("MyModule", {
 >>>     "version": "1.0.0",
 >>>     "description": "我的模块",
 >>> })
+```
+</details>
 
 ---
 
-##### `get_module`
+##### `get_module(module_name: str)`
 
 获取模块信息
 
 :param module_name: 模块名称
 :return: 模块信息字典或None
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> module_info = mods.get_module("MyModule")
 >>> if module_info:
 >>>     print(f"模块版本: {module_info.get('version')}")
+```
+</details>
 
 ---
 
-##### `set_all_modules`
+##### `set_all_modules(modules_info: Dict[str, Dict[str, Any]])`
 
 批量设置多个模块信息
 
 :param modules_info: 模块信息字典
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> mods.set_all_modules({
 >>>     "Module1": {"version": "1.0", "status": True},
 >>>     "Module2": {"version": "2.0", "status": False}
 >>> })
+```
+</details>
 
 ---
 
-##### `get_all_modules`
+##### `get_all_modules()`
 
 获取所有模块信息
 
 :return: 模块信息字典
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> all_modules = mods.get_all_modules()
 >>> for name, info in all_modules.items():
 >>>     print(f"{name}: {info.get('status')}")
+```
+</details>
 
 ---
 
-##### `update_module`
+##### `update_module(module_name: str, module_info: Dict[str, Any])`
 
 更新模块信息
 
@@ -1767,63 +1896,69 @@ ErisPulse 模块管理器
 
 ---
 
-##### `remove_module`
+##### `remove_module(module_name: str)`
 
 移除模块
 
 :param module_name: 模块名称
 :return: 是否成功移除
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> if mods.remove_module("OldModule"):
 >>>     print("模块已移除")
+```
+</details>
 
 ---
 
-##### `update_prefixes`
+##### `update_prefixes(module_prefix: Optional[str] = None, status_prefix: Optional[str] = None)`
 
 更新模块前缀配置
 
 :param module_prefix: 新的模块数据前缀(可选)
 :param status_prefix: 新的模块状态前缀(可选)
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> # 更新模块前缀
 >>> mods.update_prefixes(
 >>>     module_prefix="custom.module.data:",
 >>>     status_prefix="custom.module.status:"
 >>> )
+```
+</details>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:31*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## raiserr.md
 
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-*自动生成于 2025-07-22 16:35:32*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 错误管理系统
 
 提供全局异常捕获功能。不再推荐使用自定义错误注册功能。
 
-💡 **提示**：
-
-1. 请使用Python原生异常抛出方法
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 请使用Python原生异常抛出方法
 2. 系统会自动捕获并格式化所有未处理异常
-3. 注册功能已标记为弃用，将在未来版本移除
+3. 注册功能已标记为弃用，将在未来版本移除</p></div>
 
 ---
 
 ## 🛠️ 函数
 
-### `global_exception_handler`
+### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
 
 全局异常处理器
 
@@ -1833,7 +1968,7 @@ ErisPulse 错误管理系统
 
 ---
 
-### `async_exception_handler`
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
 
 异步异常处理器
 
@@ -1844,25 +1979,23 @@ ErisPulse 错误管理系统
 
 ## 🏛️ 类
 
-### `Error`
+### `class Error`
 
 错误管理器
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
-💡 **提示**：
-
-1. 注册功能将在未来版本移除
-2. 请直接使用raise Exception("message")方式抛出异常
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 注册功能将在未来版本移除
+2. 请直接使用raise Exception("message")方式抛出异常</p></div>
 
 
 #### 🧰 方法
 
-##### `register`
+##### `register(name: str, doc: str = '', base: Type[Exception] = Exception)`
 
 注册新的错误类型
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
 :param name: 错误类型名称
 :param doc: 错误描述文档
@@ -1871,92 +2004,85 @@ ErisPulse 错误管理系统
 
 ---
 
-##### `__getattr__`
+##### `__getattr__(name: str)`
 
 动态获取错误抛出函数
 
-⚠️ **已弃用**：请使用Python原生异常抛出方法 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
 
 :param name: 错误类型名称
 :return: 错误抛出函数
 
-⚠️ **可能抛出**: `AttributeError` - 当错误类型未注册时抛出
+<dt>异常</dt><dd><code>AttributeError</code> 当错误类型未注册时抛出</dd>
 
 ---
 
-##### `info`
+##### `info(name: Optional[str] = None)`
 
 获取错误信息
 
-⚠️ **已弃用**：此功能将在未来版本移除 | 2025-07-18
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>此功能将在未来版本移除 | 2025-07-18</p></div>
 
 :param name: 错误类型名称(可选)
 :return: 错误信息字典
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:32*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## server.md
 
 # 📦 `ErisPulse.Core.server` 模块
 
-*自动生成于 2025-07-22 16:35:32*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse Adapter Server
 提供统一的适配器服务入口，支持HTTP和WebSocket路由
 
-💡 **提示**：
-
-1. 适配器只需注册路由，无需自行管理服务器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器只需注册路由，无需自行管理服务器
 2. WebSocket支持自定义认证逻辑
-3. 兼容FastAPI 0.68+ 版本
+3. 兼容FastAPI 0.68+ 版本</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `AdapterServer`
+### `class AdapterServer`
 
 适配器服务器管理器
 
-💡 **提示**：
-
-核心功能：
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>核心功能：
 - HTTP/WebSocket路由注册
 - 生命周期管理
-- 统一错误处理
+- 统一错误处理</p></div>
 
 
 #### 🧰 方法
 
-##### `__init__`
+##### `__init__()`
 
 初始化适配器服务器
 
-💡 **提示**：
-
-会自动创建FastAPI实例并设置核心路由
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>会自动创建FastAPI实例并设置核心路由</p></div>
 
 ---
 
-##### `_setup_core_routes`
+##### `_setup_core_routes()`
 
 设置系统核心路由
 
-⚠️ **内部方法**：
-
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 此方法仅供内部使用
 {!--< /internal-use >!--}
 
 ---
 
-##### `register_webhook`
+##### `register_webhook(adapter_name: str, path: str, handler: Callable, methods: List[str] = ['POST'])`
 
 注册HTTP路由
 
@@ -1965,15 +2091,13 @@ ErisPulse Adapter Server
 :param handler: Callable 处理函数
 :param methods: List[str] HTTP方法列表(默认["POST"])
 
-⚠️ **可能抛出**: `ValueError` - 当路径已注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当路径已注册时抛出</dd>
 
-💡 **提示**：
-
-路径会自动添加适配器前缀，如：/adapter_name/path
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>路径会自动添加适配器前缀，如：/adapter_name/path</p></div>
 
 ---
 
-##### `register_websocket`
+##### `register_websocket(adapter_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None)`
 
 注册WebSocket路由
 
@@ -1982,15 +2106,13 @@ ErisPulse Adapter Server
 :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
 :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 
-⚠️ **可能抛出**: `ValueError` - 当路径已注册时抛出
+<dt>异常</dt><dd><code>ValueError</code> 当路径已注册时抛出</dd>
 
-💡 **提示**：
-
-认证函数应返回布尔值，False将拒绝连接
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>认证函数应返回布尔值，False将拒绝连接</p></div>
 
 ---
 
-##### `get_app`
+##### `get_app()`
 
 获取FastAPI应用实例
 
@@ -1999,7 +2121,7 @@ ErisPulse Adapter Server
 
 ---
 
-##### 🔹 `async` `start`
+##### 🔷 `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
 
 启动适配器服务器
 
@@ -2008,63 +2130,57 @@ ErisPulse Adapter Server
 :param ssl_certfile: Optional[str] SSL证书路径
 :param ssl_keyfile: Optional[str] SSL密钥路径
 
-⚠️ **可能抛出**: `RuntimeError` - 当服务器已在运行时抛出
+<dt>异常</dt><dd><code>RuntimeError</code> 当服务器已在运行时抛出</dd>
 
 ---
 
-##### 🔹 `async` `stop`
+##### 🔷 `async stop()`
 
 停止服务器
 
-💡 **提示**：
-
-会等待所有连接正常关闭
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>会等待所有连接正常关闭</p></div>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:32*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 ## util.md
 
 # 📦 `ErisPulse.Core.util` 模块
 
-*自动生成于 2025-07-22 16:35:32*
+<sup>自动生成于 2025-07-28 05:47:33</sup>
 
 ---
 
 ## 模块概述
 
+
 ErisPulse 工具函数集合
 
 提供常用工具函数，包括拓扑排序、缓存装饰器、异步执行等实用功能。
 
-💡 **提示**：
-
-1. 使用@cache装饰器缓存函数结果
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用@cache装饰器缓存函数结果
 2. 使用@run_in_executor在独立线程中运行同步函数
-3. 使用@retry实现自动重试机制
+3. 使用@retry实现自动重试机制</p></div>
 
 ---
 
 ## 🏛️ 类
 
-### `Util`
+### `class Util`
 
 工具函数集合
 
 提供各种实用功能，简化开发流程
 
-💡 **提示**：
-
-1. 拓扑排序用于解决依赖关系
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 拓扑排序用于解决依赖关系
 2. 装饰器简化常见模式实现
-3. 异步执行提升性能
+3. 异步执行提升性能</p></div>
 
 
 #### 🧰 方法
 
-##### `ExecAsync`
+##### `ExecAsync(async_func: Callable)`
 
 异步执行函数
 
@@ -2073,41 +2189,53 @@ ErisPulse 工具函数集合
 :param kwargs: 关键字参数
 :return: 函数执行结果
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> result = util.ExecAsync(my_async_func, arg1, arg2)
+```
+</details>
 
 ---
 
-##### `cache`
+##### `cache(func: Callable)`
 
 缓存装饰器
 
 :param func: 被装饰函数
 :return: 装饰后的函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @util.cache
 >>> def expensive_operation(param):
 >>>     return heavy_computation(param)
+```
+</details>
 
 ---
 
-##### `run_in_executor`
+##### `run_in_executor(func: Callable)`
 
 在独立线程中执行同步函数的装饰器
 
 :param func: 被装饰的同步函数
 :return: 可等待的协程函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @util.run_in_executor
 >>> def blocking_io():
 >>>     # 执行阻塞IO操作
 >>>     return result
+```
+</details>
 
 ---
 
-##### `retry`
+##### `retry(max_attempts: int = 3, delay: int = 1)`
 
 自动重试装饰器
 
@@ -2115,14 +2243,17 @@ ErisPulse 工具函数集合
 :param delay: 重试间隔(秒) (默认: 1)
 :return: 装饰器函数
 
-:example:
+<details class='example'><summary>示例</summary>
+
+```python
 >>> @util.retry(max_attempts=5, delay=2)
 >>> def unreliable_operation():
 >>>     # 可能失败的操作
+```
+</details>
 
 ---
 
-
-*文档最后更新于 2025-07-22 16:35:32*
+<sub>文档最后更新于 2025-07-28 05:47:33</sub>
 
 <!--- End of API文档 -->
