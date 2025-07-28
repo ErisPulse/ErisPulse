@@ -188,26 +188,38 @@ class PackageManager:
         
         try:
             # 查找模块和适配器
-            for dist in importlib.metadata.distributions():
-                if "ErisPulse-" in dist.metadata["Name"]:
-                    entry_points = dist.entry_points
-                    for ep in entry_points:
-                        if ep.group == "erispulse.module":
-                            packages["modules"][ep.name] = {
-                                "package": dist.metadata["Name"],
-                                "version": dist.version,
-                                "summary": dist.metadata["Summary"],
-                                "enabled": self._is_module_enabled(ep.name)
-                            }
-                        elif ep.group == "erispulse.adapter":
-                            packages["adapters"][ep.name] = {
-                                "package": dist.metadata["Name"],
-                                "version": dist.version,
-                                "summary": dist.metadata["Summary"]
-                            }
+            entry_points = importlib.metadata.entry_points()
+            
+            # 处理模块
+            if hasattr(entry_points, 'select'):
+                module_entries = entry_points.select(group='erispulse.module')
+            else:
+                module_entries = entry_points.get('erispulse.module', [])
+            
+            for entry in module_entries:
+                dist = entry.dist
+                packages["modules"][entry.name] = {
+                    "package": dist.metadata["Name"],
+                    "version": dist.version,
+                    "summary": dist.metadata["Summary"],
+                    "enabled": self._is_module_enabled(entry.name)
+                }
+            
+            # 处理适配器
+            if hasattr(entry_points, 'select'):
+                adapter_entries = entry_points.select(group='erispulse.adapter')
+            else:
+                adapter_entries = entry_points.get('erispulse.adapter', [])
+            
+            for entry in adapter_entries:
+                dist = entry.dist
+                packages["adapters"][entry.name] = {
+                    "package": dist.metadata["Name"],
+                    "version": dist.version,
+                    "summary": dist.metadata["Summary"]
+                }
             
             # 查找CLI扩展
-            entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
                 cli_entries = entry_points.select(group='erispulse.cli')
             else:
@@ -222,9 +234,9 @@ class PackageManager:
                 }
                 
         except Exception as e:
-            console.print(f"[error]获取已安装包信息失败: {e}[/]")
+            print(f"[error] 获取已安装包信息失败: {e}")
             import traceback
-            console.print(traceback.format_exc())
+            print(traceback.format_exc())
         
         return packages
     
