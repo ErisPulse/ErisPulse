@@ -70,7 +70,7 @@ class Main:
         self.config = self._get_config()
 
     @staticmethod
-    def should_eager_load(self):
+    def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
 
