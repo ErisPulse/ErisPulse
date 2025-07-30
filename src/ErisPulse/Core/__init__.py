@@ -5,6 +5,7 @@ from .mods import mods
 from .raiserr import raiserr
 from .util import util
 from .server import adapter_server
+from .config import config
 BaseAdapter = AdapterFather
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     'mods',
     'raiserr',
     'util',
-    'adapter_server'
+    'adapter_server',
+    'config'
 ]
