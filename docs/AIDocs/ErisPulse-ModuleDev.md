@@ -785,7 +785,7 @@ class Main:
         self.config = self._get_config()
 
     @staticmethod
-    def should_eager_load(self):
+    def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
 
@@ -852,18 +852,11 @@ sdk.MyModule.print_hello()
 
 # API参考
 
-## README.md
-
-# ErisPulse API 文档
-
-这个文档的内容是由 ErisPulse 核心模块API生成器 自动生成的。它们包含所有核心模块的API文档。
-
-
 ## ErisPulse\__init__.md
 
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-07-28 05:47:32</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -1173,13 +1166,13 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:32</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -1488,13 +1481,13 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -1890,13 +1883,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -1954,13 +1947,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2192,21 +2185,6 @@ ErisPulse 环境配置模块
 
 ---
 
-##### `load_env_file()`
-
-加载env.py文件中的配置项
-
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.load_env_file()  # 加载env.py中的配置
-```
-</details>
-
----
-
 ##### `__getattr__(key: str)`
 
 通过属性访问配置项
@@ -2308,13 +2286,13 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2401,13 +2379,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2616,13 +2594,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\raiserr.md
 
 # 📦 `ErisPulse.Core.raiserr` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2711,13 +2689,13 @@ ErisPulse 错误管理系统
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\server.md
 
 # 📦 `ErisPulse.Core.server` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2825,13 +2803,13 @@ ErisPulse Adapter Server
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 ## ErisPulse\Core\util.md
 
 # 📦 `ErisPulse.Core.util` 模块
 
-<sup>自动生成于 2025-07-28 05:47:33</sup>
+<sup>自动生成于 2025-07-30 20:01:38</sup>
 
 ---
 
@@ -2937,6 +2915,6 @@ ErisPulse 工具函数集合
 
 ---
 
-<sub>文档最后更新于 2025-07-28 05:47:33</sub>
+<sub>文档最后更新于 2025-07-30 20:01:38</sub>
 
 <!--- End of API文档 -->
