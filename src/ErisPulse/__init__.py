@@ -27,11 +27,15 @@ from .Core import env
 from .Core import mods
 from .Core import adapter, AdapterFather, SendDSL
 from .Core import router, adapter_server
+from .Core import exceptions
+from .Core import config
 
 sdk = sys.modules[__name__]
 
 BaseModules = {
     "logger": logger,
+    "config": config,
+    "exceptions": exceptions,
     "env": env,
     "mods": mods,
     "adapter": adapter,
@@ -41,6 +45,12 @@ BaseModules = {
     "AdapterFather": AdapterFather,
     "BaseAdapter": AdapterFather
 }
+
+import asyncio
+
+asyncio_loop = asyncio.get_event_loop()
+
+exceptions.setup_async_loop(asyncio_loop)
 
 for module, moduleObj in BaseModules.items():
     setattr(sdk, module, moduleObj)
