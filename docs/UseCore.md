@@ -96,10 +96,29 @@ if module_config is None:
     config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
+### 4. 异常处理模块(exceptions)
+```python
+# ErisPulse提供了统一的异常处理机制，可以自动捕获和格式化异常信息
+# 对于异步代码，可以为特定事件循环设置异常处理器
+
+import asyncio
+from ErisPulse.Core import exceptions
+
+# 为当前运行的事件循环设置异常处理器
+loop = asyncio.get_running_loop()
+exceptions.setup_async_loop(loop)
+
+# 或者不传参数，自动获取当前事件循环 || 但不建议这么做，因为运行主程序时可能使用了其他的异步库
+exceptions.setup_async_loop()
+
+# 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
+```
+
 ### 建议
 1. 模块配置应使用`getConfig/setConfig`操作config.toml
 2. 持久信息存储使用`get/set`操作数据库
 3. 关键操作使用事务保证原子性
+4. 对于自定义事件循环，使用`exceptions.setup_async_loop()`方法确保异常被正确处理
 > 其中，1-2 步骤可以实现配合，比如硬配置让用户设置后，和数据库中的配置进行合并，实现配置的动态更新
 
 更多详细信息请参考[API文档](docs/api/)
