@@ -18,7 +18,7 @@ from typing import (
     Union, Awaitable
 )
 from collections import defaultdict
-
+from .logger import logger
 
 class SendDSLBase:
     """
@@ -112,7 +112,6 @@ class BaseAdapter:
             :example:
             >>> await adapter.Send.To("123").Example("Hello")
             """
-            from .logger import logger
             logger.debug(f"适配器 {self._adapter.__class__.__name__} 发送了实例类型的消息: {text}")
             
         
@@ -376,7 +375,7 @@ class AdapterManager:
             for name in set(combinations):
                 setattr(self, name, instance)
         else:
-            self.logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
+            logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
             setattr(self, platform.lower(), instance)
             setattr(self, platform.upper(), instance)
             setattr(self, platform.capitalize(), instance)
@@ -405,12 +404,12 @@ class AdapterManager:
             if platform not in self._adapters:
                 raise ValueError(f"平台 {platform} 未注册")
         
-        self.logger.info(f"启动适配器 {platforms}")
+        logger.info(f"启动适配器 {platforms}")
 
-        # 启动OneBot服务
         from .router import adapter_server
-        from .config import get_server_config
+        from .erispulse_config import get_server_config
         server_config = get_server_config()
+
         host = server_config["host"]
         port = server_config["port"]
         ssl_cert = server_config.get("ssl_certfile", None)
@@ -447,16 +446,14 @@ class AdapterManager:
         :param adapter: 适配器实例
         :param platform: 平台名称
         """
-        from .. import sdk
 
-        # 加锁防止并发启动
         if not getattr(adapter, "_starting_lock", None):
             adapter._starting_lock = asyncio.Lock()
 
         async with adapter._starting_lock:
             # 再次确认是否已经被启动
             if adapter in self._started_instances:
-                sdk.logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过")
+                logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过")
                 return
 
             retry_count = 0
@@ -470,12 +467,12 @@ class AdapterManager:
                     return
                 except Exception as e:
                     retry_count += 1
-                    sdk.logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+                    logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
 
                     try:
                         await adapter.shutdown()
                     except Exception as stop_err:
-                        sdk.logger.warning(f"停止适配器失败: {stop_err}")
+                        logger.warning(f"停止适配器失败: {stop_err}")
 
                     # 计算等待时间
                     if retry_count <= len(backoff_intervals):
@@ -483,7 +480,7 @@ class AdapterManager:
                     else:
                         wait_time = fixed_delay
 
-                    sdk.logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
+                    logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
 
     async def shutdown(self) -> None:
