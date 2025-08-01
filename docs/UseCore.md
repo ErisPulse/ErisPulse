@@ -73,6 +73,20 @@ logger.info("运行状态")
 logger.warning("警告信息")
 logger.error("错误信息")
 logger.critical("致命错误")  # 会触发程序崩溃
+
+# 子模块日志记录
+# 使用 get_child 方法创建子模块日志记录器，便于更好地组织和识别日志来源
+network_logger = logger.get_child("Network")
+network_logger.info("网络模块初始化完成")
+
+# 支持多级子模块
+http_logger = network_logger.get_child("HTTP")
+http_logger.debug("发送HTTP请求")
+
+# 子模块日志记录器使用与主日志记录器相同的配置和功能
+# 所有配置操作仍然通过主 logger 对象进行
+logger.set_module_level("MyModule", "INFO")  # 影响所有相关子模块
+logger.set_output_file("app.log")  # 所有日志都会输出到指定文件
 ```
 
 ### 2. 环境配置(env)
