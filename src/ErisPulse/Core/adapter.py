@@ -13,11 +13,9 @@ ErisPulse 适配器系统
 
 import functools
 import asyncio
-import uuid
-import time
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set, 
-    Union, Awaitable, TypeVar, Generic, Tuple, Coroutine, FrozenSet
+    Union, Awaitable
 )
 from collections import defaultdict
 
@@ -401,8 +399,16 @@ class AdapterManager:
         """
         if platforms is None:
             platforms = list(self._adapters.keys())
+        if not isinstance(platforms, list):
+            platforms = [platforms]
+        for platform in platforms:
+            if platform not in self._adapters:
+                raise ValueError(f"平台 {platform} 未注册")
+        
+        self.logger.info(f"启动适配器 {platforms}")
 
-        from .server import adapter_server
+        # 启动OneBot服务
+        from .router import adapter_server
         from .config import get_server_config
         server_config = get_server_config()
         host = server_config["host"]
@@ -490,7 +496,7 @@ class AdapterManager:
         for adapter in self._adapters.values():
             await adapter.shutdown()
         
-        from .server import adapter_server
+        from .router import adapter_server
         await adapter_server.stop()
 
     def get(self, platform: str) -> Optional[BaseAdapter]:
