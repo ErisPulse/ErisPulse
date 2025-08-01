@@ -22,7 +22,6 @@ from typing import Dict, List, Tuple, Type, Any
 from pathlib import Path
 
 # BaseModules: SDK核心模块
-from .Core import exceptions
 from .Core import logger
 from .Core import env
 from .Core import mods
@@ -33,7 +32,6 @@ sdk = sys.modules[__name__]
 
 BaseModules = {
     "logger": logger,
-    "raiserr": exceptions,
     "env": env,
     "mods": mods,
     "adapter": adapter,
@@ -667,8 +665,7 @@ def _prepare_environment() -> bool:
     {!--< internal-use >!--}
     准备运行环境
     
-    1. 初始化项目环境文件
-    2. 加载环境变量配置
+    初始化项目环境文件
 
     :return: bool 环境准备是否成功
     """
@@ -677,12 +674,10 @@ def _prepare_environment() -> bool:
         main_init = init_progress()
         if main_init:
             logger.info("[Init] 项目入口已生成, 你可以在 main.py 中编写一些代码")
-        env.load_env_file()
         return True
     except Exception as e:
         logger.error(f"环境准备失败: {e}")
         return False
-
 
 def init() -> bool:
     """
