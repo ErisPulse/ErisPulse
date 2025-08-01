@@ -1,6 +1,6 @@
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -38,8 +38,7 @@ ErisPulse SDK 主模块
 <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 准备运行环境
 
-1. 初始化项目环境文件
-2. 加载环境变量配置
+初始化项目环境文件
 
 :return: bool 环境准备是否成功
 
@@ -310,4 +309,4 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>

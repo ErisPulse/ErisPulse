@@ -204,13 +204,33 @@ if module_config is None:
     config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
+### 4. 异常处理模块(exceptions)
+```python
+# ErisPulse提供了统一的异常处理机制，可以自动捕获和格式化异常信息
+# 对于异步代码，可以为特定事件循环设置异常处理器
+
+import asyncio
+from ErisPulse.Core import exceptions
+
+# 为当前运行的事件循环设置异常处理器
+loop = asyncio.get_running_loop()
+exceptions.setup_async_loop(loop)
+
+# 或者不传参数，自动获取当前事件循环 || 但不建议这么做，因为运行主程序时可能使用了其他的异步库
+exceptions.setup_async_loop()
+
+# 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
+```
+
 ### 建议
 1. 模块配置应使用`getConfig/setConfig`操作config.toml
 2. 持久信息存储使用`get/set`操作数据库
 3. 关键操作使用事务保证原子性
+4. 对于自定义事件循环，使用`exceptions.setup_async_loop()`方法确保异常被正确处理
 > 其中，1-2 步骤可以实现配合，比如硬配置让用户设置后，和数据库中的配置进行合并，实现配置的动态更新
 
 更多详细信息请参考[API文档](docs/api/)
+
 
 <!--- End of UseCore.md -->
 
@@ -795,7 +815,7 @@ ErisPulse 项目：
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1191,13 +1211,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1211,57 +1231,13 @@ ErisPulse 配置中心
 
 ---
 
-## 🛠️ 函数
-
-### `_ensure_config_structure(config: Dict[str, Any])`
-
-确保配置结构完整，补全缺失的配置项
-
-:param config: 当前配置
-:return: 补全后的完整配置
-
----
-
-### `get_config()`
-
-获取当前配置，自动补全缺失的配置项并保存
-
-:return: 完整的配置字典
-
----
-
-### `update_config(new_config: Dict[str, Any])`
-
-更新配置，自动补全缺失的配置项
-
-:param new_config: 新的配置字典
-:return: 是否更新成功
-
----
-
-### `get_server_config()`
-
-获取服务器配置，确保结构完整
-
-:return: 服务器配置字典
-
----
-
-### `get_logger_config()`
-
-获取日志配置，确保结构完整
-
-:return: 日志配置字典
-
----
-
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1594,13 +1570,76 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+
+## erispulse_config.md
+
+# 📦 `ErisPulse.Core.erispulse_config` 模块
+
+<sup>自动生成于 2025-08-02 01:50:12</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 框架配置管理
+
+专门管理 ErisPulse 框架自身的配置项。
+
+---
+
+## 🛠️ 函数
+
+### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
+
+确保 ErisPulse 配置结构完整，补全缺失的配置项
+
+:param config_dict: 当前配置
+:return: 补全后的完整配置
+
+---
+
+### `get_erispulse_config()`
+
+获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+
+:return: 完整的 ErisPulse 配置字典
+
+---
+
+### `update_erispulse_config(new_config: Dict[str, Any])`
+
+更新 ErisPulse 配置，自动补全缺失的配置项
+
+:param new_config: 新的配置字典
+:return: 是否更新成功
+
+---
+
+### `get_server_config()`
+
+获取服务器配置，确保结构完整
+
+:return: 服务器配置字典
+
+---
+
+### `get_logger_config()`
+
+获取日志配置，确保结构完整
+
+:return: 日志配置字典
+
+---
+
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## exceptions.md
 
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1634,50 +1673,21 @@ ErisPulse 全局异常处理系统
 
 ---
 
-### `setup_async_exception_handler(loop: asyncio.AbstractEventLoop = None)`
+### `setup_async_loop(loop: asyncio.AbstractEventLoop = None)`
 
-设置异步异常处理器
+为指定的事件循环设置异常处理器
 
-:param loop: 事件循环，如果为None则使用当前事件循环
-
----
-
-## 🏛️ 类
-
-### `class ExceptionHandler`
-
-异常处理器类
-
-
-#### 🧰 方法
-
-##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
-
-格式化异常信息
-
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
-:return: 格式化后的异常信息
+:param loop: 事件循环实例，如果为None则使用当前事件循环
 
 ---
 
-##### `format_async_exception(exception: Exception)`
-
-格式化异步异常信息
-
-:param exception: 异常对象
-:return: 格式化后的异常信息
-
----
-
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1764,13 +1774,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -1979,13 +1989,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 ## router.md
 
 # 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -2093,6 +2103,6 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
 
 <!--- End of API文档 -->
