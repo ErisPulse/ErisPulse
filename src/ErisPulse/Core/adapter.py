@@ -13,11 +13,9 @@ ErisPulse 适配器系统
 
 import functools
 import asyncio
-import uuid
-import time
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set, 
-    Union, Awaitable, TypeVar, Generic, Tuple, Coroutine, FrozenSet
+    Union, Awaitable
 )
 from collections import defaultdict
 
