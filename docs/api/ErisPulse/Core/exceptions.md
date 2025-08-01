@@ -1,6 +1,6 @@
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-01 14:55:50</sup>
+<sup>自动生成于 2025-08-02 01:50:12</sup>
 
 ---
 
@@ -34,41 +34,12 @@ ErisPulse 全局异常处理系统
 
 ---
 
-### `setup_async_exception_handler(loop: asyncio.AbstractEventLoop = None)`
+### `setup_async_loop(loop: asyncio.AbstractEventLoop = None)`
 
-设置异步异常处理器
+为指定的事件循环设置异常处理器
 
-:param loop: 事件循环，如果为None则使用当前事件循环
-
----
-
-## 🏛️ 类
-
-### `class ExceptionHandler`
-
-异常处理器类
-
-
-#### 🧰 方法
-
-##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
-
-格式化异常信息
-
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
-:return: 格式化后的异常信息
+:param loop: 事件循环实例，如果为None则使用当前事件循环
 
 ---
 
-##### `format_async_exception(exception: Exception)`
-
-格式化异步异常信息
-
-:param exception: 异常对象
-:return: 格式化后的异常信息
-
----
-
-<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+<sub>文档最后更新于 2025-08-02 01:50:12</sub>
