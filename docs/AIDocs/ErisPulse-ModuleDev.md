@@ -89,6 +89,20 @@ logger.info("运行状态")
 logger.warning("警告信息")
 logger.error("错误信息")
 logger.critical("致命错误")  # 会触发程序崩溃
+
+# 子模块日志记录
+# 使用 get_child 方法创建子模块日志记录器，便于更好地组织和识别日志来源
+network_logger = logger.get_child("Network")
+network_logger.info("网络模块初始化完成")
+
+# 支持多级子模块
+http_logger = network_logger.get_child("HTTP")
+http_logger.debug("发送HTTP请求")
+
+# 子模块日志记录器使用与主日志记录器相同的配置和功能
+# 所有配置操作仍然通过主 logger 对象进行
+logger.set_module_level("MyModule", "INFO")  # 影响所有相关子模块
+logger.set_output_file("app.log")  # 所有日志都会输出到指定文件
 ```
 
 ### 2. 环境配置(env)
@@ -1051,7 +1065,7 @@ class Main:
 
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -1360,13 +1374,13 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -1675,13 +1689,13 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2077,13 +2091,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2097,13 +2111,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2436,13 +2450,13 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\erispulse_config.md
 
 # 📦 `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2499,13 +2513,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\exceptions.md
 
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2547,13 +2561,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2640,13 +2654,49 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+##### `get_child(child_name: str = None)`
+
+获取子日志记录器
+
+:param child_name: 子模块名称(可选)
+:return: LoggerChild 子日志记录器实例
+
+---
+
+### `class LoggerChild`
+
+子日志记录器
+
+用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
+
+
+#### 🧰 方法
+
+##### `__init__(parent_logger: Logger, name: str)`
+
+初始化子日志记录器
+
+:param parent_logger: 父日志记录器实例
+:param name: 子日志记录器名称
+
+---
+
+##### `get_child(child_name: str)`
+
+获取子日志记录器的子记录器
+
+:param child_name: 子模块名称
+:return: LoggerChild 子日志记录器实例
+
+---
+
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2855,13 +2905,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 ## ErisPulse\Core\router.md
 
 # 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-02 01:50:12</sup>
+<sup>自动生成于 2025-08-02 05:03:23</sup>
 
 ---
 
@@ -2969,6 +3019,6 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 01:50:12</sub>
+<sub>文档最后更新于 2025-08-02 05:03:23</sub>
 
 <!--- End of API文档 -->
