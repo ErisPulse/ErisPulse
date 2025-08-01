@@ -1,4 +1,5 @@
-﻿<#
+﻿# install.ps1
+<#
 .SYNOPSIS
 ErisPulse 安装脚本 - PowerShell
 
@@ -18,9 +19,12 @@ if ($Host.UI.SupportsVirtualTerminal) {
     $GREEN = "$ESC[32m"
     $YELLOW = "$ESC[33m"
     $BLUE = "$ESC[34m"
+    $MAGENTA = "$ESC[35m"
+    $CYAN = "$ESC[36m"
+    $BOLD = "$ESC[1m"
     $NC = "$ESC[0m"
 } else {
-    $RED = $GREEN = $YELLOW = $BLUE = $NC = ""
+    $RED = $GREEN = $YELLOW = $BLUE = $MAGENTA = $CYAN = $BOLD = $NC = ""
 }
 
 # 函数：检测Python版本是否符合要求
@@ -51,13 +55,14 @@ function Install-UV {
     
     # 安装uv
     try {
-        Invoke-RestMethod -Uri "https://astral.sh/uv/install.ps1" | Invoke-Expression
-        if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-            # 如果不在PATH中，尝试添加到PATH
-            $uvPath = Join-Path $HOME ".cargo\bin"
-            if (Test-Path $uvPath) {
-                $env:PATH = "$uvPath;$env:PATH"
-            }
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex "& {$(irm https://astral.sh/uv/install.ps1)} -NoModifyPath"
+        
+        # 添加到当前会话的PATH
+        $uvPath = Join-Path $HOME ".cargo\bin"
+        if (Test-Path $uvPath) {
+            $env:PATH = "$uvPath;$env:PATH"
         }
         
         if (Get-Command uv -ErrorAction SilentlyContinue) {
@@ -67,6 +72,7 @@ function Install-UV {
         }
     } catch {
         Write-Host "${RED}uv 安装失败: $_${NC}"
+        Write-Host "${YELLOW}请手动访问 https://github.com/astral-sh/uv 安装 uv${NC}"
         exit 1
     }
 }
@@ -134,6 +140,10 @@ function New-VirtualEnvironment {
 
 # 函数：安装ErisPulse
 function Install-ErisPulse {
+    param(
+        [string]$Version = ""
+    )
+    
     Write-Host "${YELLOW}正在安装 ErisPulse...${NC}"
     
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
@@ -141,8 +151,15 @@ function Install-ErisPulse {
         exit 1
     }
     
+    $installCmd = "uv pip install ErisPulse"
+    if ($Version) {
+        $installCmd += "==$Version"
+    } else {
+        $installCmd += " --upgrade"
+    }
+    
     try {
-        uv pip install ErisPulse --upgrade
+        Invoke-Expression $installCmd
         if ($LASTEXITCODE -ne 0) {
             throw "uv pip install 命令执行失败"
         }
@@ -154,9 +171,88 @@ function Install-ErisPulse {
     }
 }
 
+# 函数：创建启动脚本
+function New-StartupScripts {
+    Write-Host "${YELLOW}正在创建启动脚本...${NC}"
+    
+    # 创建 start.ps1
+    $startScript = @'
+# ErisPulse 快速启动脚本
+param(
+    [string[]]$Arguments = @()
+)
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+Set-Location $scriptPath
+
+if (-not (Test-Path ".venv")) {
+    Write-Host "错误: 虚拟环境不存在，请先运行安装脚本"
+    exit 1
+}
+
+# 激活虚拟环境
+$activatePath = Join-Path $scriptPath ".venv\Scripts\Activate.ps1"
+if (Test-Path $activatePath) {
+    . $activatePath
+} else {
+    Write-Host "错误: 无法找到虚拟环境激活脚本"
+    exit 1
+}
+
+Write-Host "启动 ErisPulse 机器人..."
+epsdk run main.py @Arguments
+'@
+
+    # 创建 activate.ps1
+    $activateScript = @'
+# ErisPulse 虚拟环境激活脚本
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+Set-Location $scriptPath
+
+if (-not (Test-Path ".venv")) {
+    Write-Host "错误: 虚拟环境不存在，请先运行安装脚本"
+    exit 1
+}
+
+# 激活虚拟环境
+$activatePath = Join-Path $scriptPath ".venv\Scripts\Activate.ps1"
+if (Test-Path $activatePath) {
+    . $activatePath
+    Write-Host "虚拟环境已激活"
+    Write-Host "Python 路径: $(python --version)"
+    Write-Host "输入 'exit' 退出虚拟环境"
+} else {
+    Write-Host "错误: 无法找到虚拟环境激活脚本"
+    exit 1
+}
+'@
+
+    try {
+        $startScript | Out-File -FilePath "start.ps1" -Encoding UTF8
+        $activateScript | Out-File -FilePath "activate.ps1" -Encoding UTF8
+        
+        # 设置执行权限
+        Unblock-File "start.ps1"
+        Unblock-File "activate.ps1"
+        
+        Write-Host "${GREEN}启动脚本创建成功${NC}"
+    } catch {
+        Write-Host "${RED}启动脚本创建失败: $_${NC}"
+    }
+}
+
+# 函数：显示版本信息
+function Show-VersionInfo {
+    Write-Host "${BLUE}${BOLD}ErisPulse 安装程序${NC}"
+    Write-Host "${CYAN}版本: 2.1.14dev2${NC}"
+    Write-Host "${CYAN}发布日期: 2025/08/02${NC}"
+    Write-Host ""
+}
+
 # 主安装流程
 function Main {
-    Write-Host "${BLUE}=== ErisPulse 安装程序 ===${NC}"
+    Show-VersionInfo
     
     # 检查Python版本
     $hasValidPython = Test-PythonVersion
@@ -202,10 +298,15 @@ function Main {
         New-VirtualEnvironment
     }
     
-    Install-ErisPulse
+    # 询问安装版本
+    $versionChoice = Read-Host "请输入要安装的 ErisPulse 版本 (留空安装最新版)"
+    Install-ErisPulse -Version $versionChoice
+    
+    # 创建启动脚本
+    New-StartupScripts
     
     Write-Host ""
-    Write-Host "${GREEN}=== 安装完成 ===${NC}"
+    Write-Host "${GREEN}${BOLD}=== 安装完成 ===${NC}"
     Write-Host "现在您可以:"
     Write-Host "1. 查看帮助: ${BLUE}epsdk -h${NC}"
     Write-Host "2. 初始化新项目: ${BLUE}epsdk init${NC}"
@@ -213,15 +314,17 @@ function Main {
     Write-Host "4. 安装模块: ${BLUE}epsdk install 模块名${NC}"
     Write-Host "5. 运行示例程序: ${BLUE}epsdk run main.py${NC}"
     Write-Host ""
-    Write-Host "${GREEN}=== 启动指南 ===${NC}"
+    Write-Host "${GREEN}${BOLD}=== 启动指南 ===${NC}"
     Write-Host "1. 进入项目目录: ${BLUE}cd $(Get-Location)${NC}"
-    Write-Host "2. 激活虚拟环境: ${BLUE}.\.venv\Scripts\Activate.ps1${NC}"
-    Write-Host "3. 运行程序: ${BLUE}epsdk run main.py${NC}"
+    Write-Host "2. 快速启动: ${BLUE}.\start.ps1${NC}"
+    Write-Host "3. 激活环境: ${BLUE}.\activate.ps1${NC}"
+    Write-Host "4. 运行程序: ${BLUE}epsdk run main.py${NC}"
     Write-Host ""
-    Write-Host "${YELLOW}注意:${NC}"
+    Write-Host "${YELLOW}${BOLD}注意:${NC}"
     Write-Host "- 请确保在 PowerShell 中运行这些命令"
     Write-Host "- 如果遇到权限问题，请先执行: ${BLUE}Set-ExecutionPolicy RemoteSigned -Scope CurrentUser${NC}"
     Write-Host "- 每次打开新终端时，需要重新激活虚拟环境"
+    Write-Host "- 使用 ${BLUE}uv pip install ErisPulse --upgrade${NC} 更新框架"
 }
 
 $executionPolicy = Get-ExecutionPolicy

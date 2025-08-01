@@ -5,7 +5,17 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+show_version_info() {
+    echo -e "${BLUE}${BOLD}ErisPulse 安装程序${NC}"
+    echo -e "${CYAN}版本: 2.1.14dev2${NC}"
+    echo -e "${CYAN}发布日期: 2025/08/02${NC}"
+    echo ""
+}
 
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -42,6 +52,7 @@ install_uv() {
     
     if ! command_exists uv; then
         echo -e "${RED}uv 安装失败${NC}"
+        echo -e "${YELLOW}请手动访问 https://github.com/astral-sh/uv 安装 uv${NC}"
         exit 1
     fi
     
@@ -92,6 +103,7 @@ create_virtualenv() {
 }
 
 install_erispulse() {
+    local version=$1
     echo -e "${YELLOW}正在安装 ErisPulse...${NC}"
     
     if ! command_exists uv; then
@@ -99,7 +111,12 @@ install_erispulse() {
         exit 1
     fi
     
-    uv pip install ErisPulse --upgrade
+    if [ -n "$version" ]; then
+        uv pip install "ErisPulse==$version"
+    else
+        uv pip install ErisPulse --upgrade
+    fi
+    
     if [ $? -ne 0 ]; then
         echo -e "${RED}ErisPulse 安装失败${NC}"
         exit 1
@@ -109,6 +126,9 @@ install_erispulse() {
 }
 
 create_startup_scripts() {
+    echo -e "${YELLOW}正在创建启动脚本...${NC}"
+    
+    # 创建 start.sh
     cat > start.sh << 'EOF'
 #!/bin/bash
 # ErisPulse 快速启动脚本
@@ -131,10 +151,10 @@ echo "启动 ErisPulse 机器人..."
 epsdk run main.py "$@"
 EOF
 
-    # 创建激活脚本
+    # 创建 activate.sh
     cat > activate.sh << 'EOF'
 #!/bin/bash
-# 激活虚拟环境脚本
+# ErisPulse 虚拟环境激活脚本
 
 cd "$(dirname "$0")"
 
@@ -151,17 +171,19 @@ else
     source .venv/bin/activate
 fi
 
-echo "虚拟环境已激活，输入 exit 退出"
+echo "虚拟环境已激活"
+echo "Python 路径: $(which python)"
+echo "输入 exit 退出虚拟环境"
 exec "$SHELL"
 EOF
 
     chmod +x start.sh activate.sh
     
-    echo -e "${GREEN}快捷脚本创建成功${NC}"
+    echo -e "${GREEN}启动脚本创建成功${NC}"
 }
 
 main() {
-    echo -e "${BLUE}=== ErisPulse 安装程序 ===${NC}"
+    show_version_info
     
     if check_python_version; then
         echo -e "${GREEN}检测到符合要求的 Python 版本${NC}"
@@ -202,22 +224,24 @@ main() {
         create_virtualenv
     fi
     
-    install_erispulse
+    read -p "请输入要安装的 ErisPulse 版本 (留空安装最新版): " erispulse_version
+    install_erispulse "$erispulse_version"
     
     create_startup_scripts
     
-    echo -e "\n${GREEN}=== 安装完成 ===${NC}"
+    echo -e "\n${GREEN}${BOLD}=== 安装完成 ===${NC}"
     echo -e "常用命令:"
     echo -e "1. 查看帮助: ${BLUE}epsdk -h${NC}"
     echo -e "2. 初始化项目: ${BLUE}epsdk init${NC}"
     echo -e "3. 更新资源: ${BLUE}epsdk update${NC}"
     echo -e "4. 安装模块: ${BLUE}epsdk install 模块名${NC}"
     echo -e "5. 运行示例: ${BLUE}epsdk run main.py${NC}"
-    echo -e "\n${GREEN}=== 快速启动指南 ===${NC}"
+    echo -e "\n${GREEN}${BOLD}=== 快速启动指南 ===${NC}"
     echo -e "1. 进入项目目录: ${BLUE}cd $(pwd)${NC}"
-    echo -e "2. 启动机器人: ${BLUE}./start.sh${NC}"
-    echo -e "3. 进入开发环境: ${BLUE}./activate.sh${NC}"
-    echo -e "\n${YELLOW}提示:${NC}"
+    echo -e "2. 快速启动: ${BLUE}./start.sh${NC}"
+    echo -e "3. 激活环境: ${BLUE}./activate.sh${NC}"
+    echo -e "4. 运行程序: ${BLUE}epsdk run main.py${NC}"
+    echo -e "\n${YELLOW}${BOLD}提示:${NC}"
     echo -e "- 每次打开新终端时，需要先进入项目目录"
     echo -e "- 虚拟环境就像'独立的工作空间'，所有安装的包都在里面"
     echo -e "- 如果移动项目文件夹，需要重新运行安装脚本"
