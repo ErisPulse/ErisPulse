@@ -53,7 +53,7 @@ from .Core import MyAdapter
 ```python
 from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import adapter_server
+from ErisPulse.Core import router
 
 # 这里仅你使用 websocket 作为通信协议时需要 | 第一个作为参数的类型是 WebSocket, 第二个是 WebSocketDisconnect，当 ws 连接断开时触发你的捕捉
 # 一般来说你不用在依赖中添加 fastapi, 因为它已经内置在 ErisPulse 中了
@@ -240,8 +240,9 @@ async def _ws_handler(self, websocket: WebSocket):
 
 async def start(self):
     """注册WebSocket路由"""
-    adapter_server.register_websocket(
-        adapter_name="myplatform",  # 适配器名称
+    from ErisPulse.Core import router
+    router.register_websocket(
+        module_name="myplatform",  # 适配器名
         path="/ws",  # 路由路径
         handler=self._ws_handler,  # 处理器
         auth_handler=self._auth_handler  # 认证处理器(可选)
@@ -272,8 +273,9 @@ async def _webhook_handler(self, request: Request):
 
 async def start(self):
     """注册WebHook路由"""
-    adapter_server.register_webhook(
-        adapter_name="myplatform",  # 适配器名称
+    from ErisPulse.Core import router
+    router.register_http_route(
+        module_name="myplatform",  # 适配器名
         path="/webhook",  # 路由路径
         handler=self._webhook_handler,  # 处理器
         methods=["POST"]  # 支持的HTTP方法
@@ -423,8 +425,8 @@ class ErrorCode:
 - **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
 
 ### 4. 性能优化
-- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
-- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
+- **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
+- **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
 
 ### 5. 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
@@ -432,4 +434,4 @@ class ErrorCode:
 
 ---
 
-*文档最后更新于 2025-07-17 12:44:51*
+*文档最后更新于 2025-08-11 14:43:21*

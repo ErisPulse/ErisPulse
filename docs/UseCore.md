@@ -4,38 +4,26 @@
 | 名称 | 用途 |
 |------|------|
 | `sdk` | SDK对象 |
-| `env`/`sdk.env` | 获取/设置全局配置 |
+| `env`/`sdk.env` | 获取/设置数据库配置 |
+| `config`/`sdk.config` | 获取/设置模块配置 |
 | `mods`/`sdk.mods` | 模块管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
-| `util`/`sdk.util` | 工具函数（缓存、重试等） |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import env, mods, logger, util, adapter, BaseAdapter
+from ErisPulse.Core import env, mods, logger, adapter, BaseAdapter
 
 # 通过SDK对象方式
 from ErisPulse import sdk
 sdk.env  # 等同于直接导入的env
 ```
 
-## 模块系统架构
+## 模块使用
 - 所有模块通过`sdk`对象统一管理
-- 模块间可通过`sdk.<ModuleName>`互相调用
-- 模块基础结构示例：
-```python
-from ErisPulse import sdk
-
-class MyModule:
-    def __init__(self):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        
-    def hello(self):
-        self.logger.info("hello world")
-        return "hello world"
-```
+- 每个模块拥有独立命名空间，使用`sdk`进行调用
+- 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
 
 ## 适配器使用
 - 适配器是ErisPulse的核心，负责与平台进行交互
@@ -50,17 +38,27 @@ class MyModule:
 ```python
 # 启动适配器
 await sdk.adapter.startup("MyAdapter")  # 不指定名称则启动所有适配器
+# 另外可以传入列表，例如 sdk.adapter.startup(["Telegram", "Yunhu"])
 
-# 监听底层的标准事件
+# 监听 OneBot12 标准事件
 @adapter.on("message")
 async def on_message(data):
     platform = data.get("platform")
     detail_type = "user" if data.get("detail_type") == "private" else "group"
     detail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
-    
+    Sender = None
+
     if hasattr(adapter, platform):
-        await getattr(adapter, platform).To(detail_type, detail_id).Text(data.get("alt_message"))
+        Sender = getattr(adapter, platform).To(detail_type, detail_id)
+    
+    Sender.Text(data.get("alt_message"))
+
+# 监听平台原生事件
+@adapter.Telegram.on("message")
+async def on_raw_message(data):
+    # Do something ...
 ```
+平台原生事件监听并不建议使用，因为格式不保证与 OneBot12 兼容，另外 OneBot12 的标准事件规定了一个拓展字段 `{{platform}}_raw` 用于传输平台原生数据
 
 ## 核心模块功能详解
 
@@ -88,35 +86,17 @@ env.delete("key")  # 删除配置项
 with env.transaction():
     env.set('important_key', 'value')
     env.delete('temp_key')  # 异常时自动回滚
-
-# 模块配置操作（读写config.toml）
-module_config = env.getConfig("MyModule")  # 获取模块配置
-if module_config is None:
-    env.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-### 3. 工具函数(util)
+### 3. 配置模块(config)
 ```python
-# 自动重试
-@util.retry(max_attempts=3, delay=1)
-async def unreliable_function():
-    ...
-
-# 结果缓存
-@util.cache
-def expensive_operation(param):
-    ...
-
-# 异步执行
-@util.run_in_executor
-def sync_task():
-    ...
-
-# 同步调用异步
-util.ExecAsync(sync_task)
+# 模块配置操作（读写config.toml）
+module_config = config.getConfig("MyModule")  # 获取模块配置
+if module_config is None:
+    config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-## 建议
+### 建议
 1. 模块配置应使用`getConfig/setConfig`操作config.toml
 2. 持久信息存储使用`get/set`操作数据库
 3. 关键操作使用事务保证原子性
