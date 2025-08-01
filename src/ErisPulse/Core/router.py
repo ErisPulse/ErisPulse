@@ -1,6 +1,8 @@
+# router.py (新文件名)
 """
-ErisPulse Adapter Server
-提供统一的适配器服务入口，支持HTTP和WebSocket路由
+ErisPulse 路由系统
+
+提供统一的HTTP和WebSocket路由管理，支持多适配器路由注册和生命周期管理。
 
 {!--< tips >!--}
 1. 适配器只需注册路由，无需自行管理服务器
@@ -19,9 +21,9 @@ from hypercorn.config import Config
 from hypercorn.asyncio import serve
 
 
-class AdapterServer:
+class RouterManager:
     """
-    适配器服务器管理器
+    路由管理器
     
     {!--< tips >!--}
     核心功能：
@@ -33,18 +35,18 @@ class AdapterServer:
 
     def __init__(self):
         """
-        初始化适配器服务器
+        初始化路由管理器
         
         {!--< tips >!--}
         会自动创建FastAPI实例并设置核心路由
         {!--< /tips >!--}
         """
         self.app = FastAPI(
-            title="ErisPulse Adapter Server",
-            description="统一适配器服务入口点",
+            title="ErisPulse Router",
+            description="统一路由管理入口点",
             version="1.0.0"
         )
-        self._webhook_routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
+        self._http_routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
         self._websocket_routes: Dict[str, Dict[str, Tuple[Callable, Optional[Callable]]]] = defaultdict(dict)
         self.base_url = ""
         self._server_task: Optional[asyncio.Task] = None
@@ -66,7 +68,7 @@ class AdapterServer:
             :return: 
                 Dict[str, str]: 包含服务状态的字典
             """
-            return {"status": "ok", "service": "ErisPulse Adapter Server"}
+            return {"status": "ok", "service": "ErisPulse Router"}
             
         @self.app.get("/routes")
         async def list_routes() -> Dict[str, Any]:
@@ -74,36 +76,23 @@ class AdapterServer:
             列出所有已注册路由
             
             :return: 
-                Dict[str, Any]: 包含所有路由信息的字典，格式为:
-                {
-                    "http_routes": [
-                        {
-                            "path": "/adapter1/route1",
-                            "adapter": "adapter1",
-                            "methods": ["POST"]
-                        },
-                        ...
-                    ],
-                    "websocket_routes": [
-                        {
-                            "path": "/adapter1/ws",
-                            "adapter": "adapter1",
-                            "requires_auth": true
-                        },
-                        ...
-                    ],
-                    "base_url": self.base_url
-                }
+                Dict[str, Any]: 包含所有路由信息的字典
             """
             http_routes = []
-            for adapter, routes in self._webhook_routes.items():
+            for adapter, routes in self._http_routes.items():
                 for path, handler in routes.items():
-                    route = self.app.router.routes[-1]  # 获取最后添加的路由
-                    if isinstance(route, APIRoute) and route.path == path:
+                    # 查找对应的路由对象
+                    route_obj = None
+                    for route in self.app.router.routes:
+                        if isinstance(route, APIRoute) and route.path == path:
+                            route_obj = route
+                            break
+                    
+                    if route_obj:
                         http_routes.append({
                             "path": path,
                             "adapter": adapter,
-                            "methods": route.methods
+                            "methods": list(route_obj.methods)
                         })
             
             websocket_routes = []
@@ -121,9 +110,9 @@ class AdapterServer:
                 "base_url": self.base_url
             }
 
-    def register_webhook(
+    def register_http_route(
         self, 
-        adapter_name: str,
+        module_name: str,
         path: str,
         handler: Callable,
         methods: List[str] = ["POST"]
@@ -131,35 +120,37 @@ class AdapterServer:
         """
         注册HTTP路由
         
-        :param adapter_name: str 适配器名称
-        :param path: str 路由路径(如"/message")
+        :param module_name: str 模块名称
+        :param path: str 路由路径
         :param handler: Callable 处理函数
         :param methods: List[str] HTTP方法列表(默认["POST"])
         
         :raises ValueError: 当路径已注册时抛出
-        
-        {!--< tips >!--}
-        路径会自动添加适配器前缀，如：/adapter_name/path
-        {!--< /tips >!--}
         """
-        full_path = f"/{adapter_name}{path}"
+        full_path = f"/{module_name}{path}"
         
-        if full_path in self._webhook_routes[adapter_name]:
+        if full_path in self._http_routes[module_name]:
             raise ValueError(f"路径 {full_path} 已注册")
             
         route = APIRoute(
             path=full_path,
             endpoint=handler,
             methods=methods,
-            name=f"{adapter_name}{path}"
+            name=f"{module_name}_{path.replace('/', '_')}"
         )
         self.app.router.routes.append(route)
-        self._webhook_routes[adapter_name][full_path] = handler
+        self._http_routes[module_name][full_path] = handler
         logger.info(f"注册HTTP路由: {self.base_url}{full_path} 方法: {methods}")
+
+    def register_webhook(self, *args, **kwargs) -> None:
+        """
+        兼容性方法：注册HTTP路由（适配器旧接口）
+        """
+        return self.register_http_route(*args, **kwargs)
 
     def register_websocket(
         self,
-        adapter_name: str,
+        module_name: str,
         path: str,
         handler: Callable[[WebSocket], Awaitable[Any]],
         auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None,
@@ -167,29 +158,21 @@ class AdapterServer:
         """
         注册WebSocket路由
         
-        :param adapter_name: str 适配器名称
-        :param path: str WebSocket路径(如"/ws")
+        :param module_name: str 模块名称
+        :param path: str WebSocket路径
         :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
         :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
         
         :raises ValueError: 当路径已注册时抛出
-        
-        {!--< tips >!--}
-        认证函数应返回布尔值，False将拒绝连接
-        {!--< /tips >!--}
         """
-        full_path = f"/{adapter_name}{path}"
+        full_path = f"/{module_name}{path}"
         
-        if full_path in self._websocket_routes[adapter_name]:
+        if full_path in self._websocket_routes[module_name]:
             raise ValueError(f"WebSocket路径 {full_path} 已注册")
             
         async def websocket_endpoint(websocket: WebSocket) -> None:
             """
             WebSocket端点包装器
-            
-            {!--< internal-use >!--}
-            处理连接生命周期和错误处理
-            {!--< /internal-use >!--}
             """
             await websocket.accept()
             
@@ -209,17 +192,16 @@ class AdapterServer:
         self.app.add_api_websocket_route(
             path=full_path,
             endpoint=websocket_endpoint,
-            name=f"{adapter_name}{path}"
+            name=f"{module_name}_{path.replace('/', '_')}"
         )
-        self._websocket_routes[adapter_name][full_path] = (handler, auth_handler)
+        self._websocket_routes[module_name][full_path] = (handler, auth_handler)
         logger.info(f"注册WebSocket: {self.base_url}{full_path} {'(需认证)' if auth_handler else ''}")
 
     def get_app(self) -> FastAPI:
         """
         获取FastAPI应用实例
         
-        :return: 
-            FastAPI: FastAPI应用实例
+        :return: FastAPI应用实例
         """
         return self.app
 
@@ -231,7 +213,7 @@ class AdapterServer:
         ssl_keyfile: Optional[str] = None
     ) -> None:
         """
-        启动适配器服务器
+        启动路由服务器
         
         :param host: str 监听地址(默认"0.0.0.0")
         :param port: int 监听端口(默认8000)
@@ -252,25 +234,24 @@ class AdapterServer:
             config.keyfile = ssl_keyfile
         
         self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
-        logger.info(f"启动服务器 {self.base_url}")
+        logger.info(f"启动路由服务器 {self.base_url}")
         
         self._server_task = asyncio.create_task(serve(self.app, config))
 
     async def stop(self) -> None:
         """
         停止服务器
-        
-        {!--< tips >!--}
-        会等待所有连接正常关闭
-        {!--< /tips >!--}
         """
         if self._server_task:
             self._server_task.cancel()
             try:
                 await self._server_task
             except asyncio.CancelledError:
-                logger.info("服务器已停止")
+                logger.info("路由服务器已停止")
             self._server_task = None
 
+# 主要实例
+router = RouterManager()
 
-adapter_server = AdapterServer()
+# 兼容性实例
+adapter_server = router

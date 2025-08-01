@@ -20,19 +20,19 @@
 
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
-   await adapter.AdapterName.To("user", "U1001").Text("Hello")
+   await adapter.AdapterName.Send.To("user", "U1001").Text("Hello")
    ```
 2. 仅指定ID: `To(id).Func()`
    ```python
-   await adapter.AdapterName.To("U1001").Text("Hello")
+   await adapter.AdapterName.Send.To("U1001").Text("Hello")
    ```
 3. 指定发送账号: `Using(account_id)`
    ```python
-   await adapter.AdapterName.Using("bot1").To("U1001").Text("Hello")
+   await adapter.AdapterName.Send.Using("bot1").To("U1001").Text("Hello")
    ```
 4. 直接调用: `Func()`
    ```python
-   await adapter.AdapterName.Text("Broadcast message")
+   await adapter.AdapterName.Send.Text("Broadcast message")
    ```
 
 ### 事件监听
@@ -40,17 +40,21 @@
 
 1. 平台原生事件监听：
    ```python
+   from ErisPulse.Core import adapter, logger
+   
    @adapter.AdapterName.on("event_type")
    async def handler(data):
-       print(f"收到原生事件: {data}")
+       logger.info(f"收到原生事件: {data}")
    ```
 
 2. OneBot12标准事件监听：
    ```python
+   from ErisPulse.Core import adapter, logger
+
    @adapter.on("event_type")  # 所有平台的标准事件
    async def handler(data):
        if data["platform"] == "yunhu":
-           print(f"收到云湖标准事件: {data}")
+           logger.info(f"收到云湖标准事件: {data}")
    ```
 
 ---

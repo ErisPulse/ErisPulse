@@ -19,7 +19,6 @@ import json
 import asyncio
 from urllib.parse import urlparse
 from typing import List, Dict, Tuple, Optional, Callable, Any
-from importlib.metadata import version, PackageNotFoundError
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 

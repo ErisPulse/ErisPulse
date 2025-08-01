@@ -10,7 +10,7 @@ ErisPulse SDK 主模块
 {!--< /tips >!--}
 """
 
-__version__ = "2.1.13rc3"
+__version__ = "2.1.14dev1"
 __author__  = "ErisPulse"
 
 import os
@@ -22,23 +22,23 @@ from typing import Dict, List, Tuple, Type, Any
 from pathlib import Path
 
 # BaseModules: SDK核心模块
-from .Core import util
-from .Core import raiserr
+from .Core import exceptions
 from .Core import logger
 from .Core import env
 from .Core import mods
 from .Core import adapter, AdapterFather, SendDSL
-from .Core import adapter_server
+from .Core import router, adapter_server
 
 sdk = sys.modules[__name__]
 
 BaseModules = {
-    "util": util,
     "logger": logger,
-    "raiserr": raiserr,
+    "raiserr": exceptions,
     "env": env,
     "mods": mods,
     "adapter": adapter,
+    "router": router,
+    "adapter_server": adapter_server,
     "SendDSL": SendDSL,
     "AdapterFather": AdapterFather,
     "BaseAdapter": AdapterFather
