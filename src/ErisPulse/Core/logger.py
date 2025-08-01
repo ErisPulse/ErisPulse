@@ -56,6 +56,10 @@ class Logger:
         """
         if limit > 0:
             self._max_logs = limit
+            # 更新所有已存在的日志列表大小
+            for module_name in self._logs:
+                while len(self._logs[module_name]) > self._max_logs:
+                    self._logs[module_name].pop(0)
             return True
         else:
             self._logger.warning("日志存储上限必须大于0。")
@@ -198,6 +202,20 @@ class Logger:
             module_name = "ErisPulse"
         return module_name
 
+    def get_child(self, child_name: str = None):
+        """
+        获取子日志记录器
+        
+        :param child_name: 子模块名称(可选)
+        :return: LoggerChild 子日志记录器实例
+        """
+        caller_module = self._get_caller()
+        if child_name:
+            full_module_name = f"{caller_module}.{child_name}"
+        else:
+            full_module_name = caller_module
+        return LoggerChild(self, full_module_name)
+
     def debug(self, msg, *args, **kwargs):
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.DEBUG:
@@ -228,5 +246,60 @@ class Logger:
             self._save_in_memory(caller_module, msg)
             self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
             raise Exception(msg)
+
+
+class LoggerChild:
+    """
+    子日志记录器
+    
+    用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
+    """
+    
+    def __init__(self, parent_logger: Logger, name: str):
+        """
+        初始化子日志记录器
+        
+        :param parent_logger: 父日志记录器实例
+        :param name: 子日志记录器名称
+        """
+        self._parent = parent_logger
+        self._name = name
+        
+    def debug(self, msg, *args, **kwargs):
+        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.DEBUG:
+            self._parent._save_in_memory(self._name, msg)
+            self._parent._logger.debug(f"[{self._name}] {msg}", *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.INFO:
+            self._parent._save_in_memory(self._name, msg)
+            self._parent._logger.info(f"[{self._name}] {msg}", *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.WARNING:
+            self._parent._save_in_memory(self._name, msg)
+            self._parent._logger.warning(f"[{self._name}] {msg}", *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.ERROR:
+            self._parent._save_in_memory(self._name, msg)
+            self._parent._logger.error(f"[{self._name}] {msg}", *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.CRITICAL:
+            self._parent._save_in_memory(self._name, msg)
+            self._parent._logger.critical(f"[{self._name}] {msg}", *args, **kwargs)
+            raise Exception(msg)
+
+    def get_child(self, child_name: str):
+        """
+        获取子日志记录器的子记录器
+        
+        :param child_name: 子模块名称
+        :return: LoggerChild 子日志记录器实例
+        """
+        full_child_name = f"{self._name}.{child_name}"
+        return LoggerChild(self._parent, full_child_name)
+
 
 logger = Logger()
