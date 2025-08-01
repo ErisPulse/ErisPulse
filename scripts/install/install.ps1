@@ -245,7 +245,7 @@ if (Test-Path $activatePath) {
 # 函数：显示版本信息
 function Show-VersionInfo {
     Write-Host "${BLUE}${BOLD}ErisPulse 安装程序${NC}"
-    Write-Host "${CYAN}版本: 2.1.14dev2${NC}"
+    Write-Host "${CYAN}版本: 2.1.14-alpha.1${NC}"
     Write-Host "${CYAN}发布日期: 2025/08/02${NC}"
     Write-Host ""
 }
