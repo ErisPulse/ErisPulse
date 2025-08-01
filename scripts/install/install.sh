@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 show_version_info() {
     echo -e "${BLUE}${BOLD}ErisPulse 安装程序${NC}"
-    echo -e "${CYAN}版本: 2.1.14dev2${NC}"
+    echo -e "${CYAN}版本: 2.1.14-alpha.1${NC}"
     echo -e "${CYAN}发布日期: 2025/08/02${NC}"
     echo ""
 }
