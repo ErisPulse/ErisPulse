@@ -13,14 +13,10 @@ ErisPulse 环境配置模块
 import os
 import json
 import sqlite3
-import importlib.util
 import shutil
 import time
-import toml
-from pathlib import Path
 from datetime import datetime
-from functools import lru_cache
-from typing import List, Dict, Optional, Any, Set, Tuple, Union, Type, FrozenSet
+from typing import List, Dict, Optional, Any, Tuple, Type
 
 class EnvManager:
     """
@@ -39,7 +35,6 @@ class EnvManager:
     db_path = os.path.join(os.path.dirname(__file__), "../data/config.db")
     SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), "../data/snapshots")
     
-    CONFIG_FILE = "config.toml"
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -192,8 +187,6 @@ class EnvManager:
             from .config import config
             return config.getConfig(key, default)
         except Exception as e:
-            from . import logger
-            logger.error(f"读取配置文件 {self.CONFIG_FILE} 失败: {e}")
             return default
     
     def setConfig(self, key: str, value: Any) -> bool:
@@ -207,8 +200,6 @@ class EnvManager:
             from .config import config
             return config.setConfig(key, value)
         except Exception as e:
-            from . import logger
-            logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
             return False
 
     def delete(self, key: str) -> bool:
