@@ -21,38 +21,26 @@
 | 名称 | 用途 |
 |------|------|
 | `sdk` | SDK对象 |
-| `env`/`sdk.env` | 获取/设置全局配置 |
+| `env`/`sdk.env` | 获取/设置数据库配置 |
+| `config`/`sdk.config` | 获取/设置模块配置 |
 | `mods`/`sdk.mods` | 模块管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
-| `util`/`sdk.util` | 工具函数（缓存、重试等） |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import env, mods, logger, util, adapter, BaseAdapter
+from ErisPulse.Core import env, mods, logger, adapter, BaseAdapter
 
 # 通过SDK对象方式
 from ErisPulse import sdk
 sdk.env  # 等同于直接导入的env
 ```
 
-## 模块系统架构
+## 模块使用
 - 所有模块通过`sdk`对象统一管理
-- 模块间可通过`sdk.<ModuleName>`互相调用
-- 模块基础结构示例：
-```python
-from ErisPulse import sdk
-
-class MyModule:
-    def __init__(self):
-        self.sdk = sdk
-        self.logger = sdk.logger
-        
-    def hello(self):
-        self.logger.info("hello world")
-        return "hello world"
-```
+- 每个模块拥有独立命名空间，使用`sdk`进行调用
+- 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
 
 ## 适配器使用
 - 适配器是ErisPulse的核心，负责与平台进行交互
@@ -67,17 +55,27 @@ class MyModule:
 ```python
 # 启动适配器
 await sdk.adapter.startup("MyAdapter")  # 不指定名称则启动所有适配器
+# 另外可以传入列表，例如 sdk.adapter.startup(["Telegram", "Yunhu"])
 
-# 监听底层的标准事件
+# 监听 OneBot12 标准事件
 @adapter.on("message")
 async def on_message(data):
     platform = data.get("platform")
     detail_type = "user" if data.get("detail_type") == "private" else "group"
     detail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
-    
+    Sender = None
+
     if hasattr(adapter, platform):
-        await getattr(adapter, platform).To(detail_type, detail_id).Text(data.get("alt_message"))
+        Sender = getattr(adapter, platform).To(detail_type, detail_id)
+    
+    Sender.Text(data.get("alt_message"))
+
+# 监听平台原生事件
+@adapter.Telegram.on("message")
+async def on_raw_message(data):
+    # Do something ...
 ```
+平台原生事件监听并不建议使用，因为格式不保证与 OneBot12 兼容，另外 OneBot12 的标准事件规定了一个拓展字段 `{{platform}}_raw` 用于传输平台原生数据
 
 ## 核心模块功能详解
 
@@ -105,35 +103,17 @@ env.delete("key")  # 删除配置项
 with env.transaction():
     env.set('important_key', 'value')
     env.delete('temp_key')  # 异常时自动回滚
-
-# 模块配置操作（读写config.toml）
-module_config = env.getConfig("MyModule")  # 获取模块配置
-if module_config is None:
-    env.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-### 3. 工具函数(util)
+### 3. 配置模块(config)
 ```python
-# 自动重试
-@util.retry(max_attempts=3, delay=1)
-async def unreliable_function():
-    ...
-
-# 结果缓存
-@util.cache
-def expensive_operation(param):
-    ...
-
-# 异步执行
-@util.run_in_executor
-def sync_task():
-    ...
-
-# 同步调用异步
-util.ExecAsync(sync_task)
+# 模块配置操作（读写config.toml）
+module_config = config.getConfig("MyModule")  # 获取模块配置
+if module_config is None:
+    config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
 ```
 
-## 建议
+### 建议
 1. 模块配置应使用`getConfig/setConfig`操作config.toml
 2. 持久信息存储使用`get/set`操作数据库
 3. 关键操作使用事务保证原子性
@@ -200,7 +180,7 @@ from .Core import MyAdapter
 ```python
 from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import adapter_server
+from ErisPulse.Core import router
 
 # 这里仅你使用 websocket 作为通信协议时需要 | 第一个作为参数的类型是 WebSocket, 第二个是 WebSocketDisconnect，当 ws 连接断开时触发你的捕捉
 # 一般来说你不用在依赖中添加 fastapi, 因为它已经内置在 ErisPulse 中了
@@ -387,8 +367,9 @@ async def _ws_handler(self, websocket: WebSocket):
 
 async def start(self):
     """注册WebSocket路由"""
-    adapter_server.register_websocket(
-        adapter_name="myplatform",  # 适配器名称
+    from ErisPulse.Core import router
+    router.register_websocket(
+        module_name="myplatform",  # 适配器名
         path="/ws",  # 路由路径
         handler=self._ws_handler,  # 处理器
         auth_handler=self._auth_handler  # 认证处理器(可选)
@@ -419,8 +400,9 @@ async def _webhook_handler(self, request: Request):
 
 async def start(self):
     """注册WebHook路由"""
-    adapter_server.register_webhook(
-        adapter_name="myplatform",  # 适配器名称
+    from ErisPulse.Core import router
+    router.register_http_route(
+        module_name="myplatform",  # 适配器名
         path="/webhook",  # 路由路径
         handler=self._webhook_handler,  # 处理器
         methods=["POST"]  # 支持的HTTP方法
@@ -570,8 +552,8 @@ class ErrorCode:
 - **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
 
 ### 4. 性能优化
-- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
-- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
+- **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
+- **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
 
 ### 5. 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
@@ -579,7 +561,7 @@ class ErrorCode:
 
 ---
 
-*文档最后更新于 2025-07-17 12:44:51*
+*文档最后更新于 2025-08-11 14:43:21*
 
 <!--- End of Adapter.md -->
 
@@ -912,7 +894,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -1222,13 +1204,13 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -1537,13 +1519,13 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -1939,13 +1921,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\Core\config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -2003,13 +1985,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -2342,13 +2324,90 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
+
+## ErisPulse\Core\exceptions.md
+
+# 📦 `ErisPulse.Core.exceptions` 模块
+
+<sup>自动生成于 2025-08-01 14:55:50</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 全局异常处理系统
+
+提供统一的异常捕获和格式化功能，支持同步和异步代码的异常处理。
+
+---
+
+## 🛠️ 函数
+
+### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+全局异常处理器
+
+:param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+
+---
+
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
+
+异步异常处理器
+
+:param loop: 事件循环
+:param context: 上下文字典
+
+---
+
+### `setup_async_exception_handler(loop: asyncio.AbstractEventLoop = None)`
+
+设置异步异常处理器
+
+:param loop: 事件循环，如果为None则使用当前事件循环
+
+---
+
+## 🏛️ 类
+
+### `class ExceptionHandler`
+
+异常处理器类
+
+
+#### 🧰 方法
+
+##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+格式化异常信息
+
+:param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+:return: 格式化后的异常信息
+
+---
+
+##### `format_async_exception(exception: Exception)`
+
+格式化异步异常信息
+
+:param exception: 异常对象
+:return: 格式化后的异常信息
+
+---
+
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -2435,13 +2494,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
@@ -2650,116 +2709,22 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
-## ErisPulse\Core\raiserr.md
+## ErisPulse\Core\router.md
 
-# 📦 `ErisPulse.Core.raiserr` 模块
+# 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-07-30 20:01:38</sup>
-
----
-
-## 模块概述
-
-
-ErisPulse 错误管理系统
-
-提供全局异常捕获功能。不再推荐使用自定义错误注册功能。
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 请使用Python原生异常抛出方法
-2. 系统会自动捕获并格式化所有未处理异常
-3. 注册功能已标记为弃用，将在未来版本移除</p></div>
-
----
-
-## 🛠️ 函数
-
-### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
-
-全局异常处理器
-
-:param exc_type: 异常类型
-:param exc_value: 异常值
-:param exc_traceback: 追踪信息
-
----
-
-### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
-
-异步异常处理器
-
-:param loop: 事件循环
-:param context: 上下文字典
-
----
-
-## 🏛️ 类
-
-### `class Error`
-
-错误管理器
-
-<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 注册功能将在未来版本移除
-2. 请直接使用raise Exception("message")方式抛出异常</p></div>
-
-
-#### 🧰 方法
-
-##### `register(name: str, doc: str = '', base: Type[Exception] = Exception)`
-
-注册新的错误类型
-
-<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
-
-:param name: 错误类型名称
-:param doc: 错误描述文档
-:param base: 基础异常类
-:return: 注册的错误类
-
----
-
-##### `__getattr__(name: str)`
-
-动态获取错误抛出函数
-
-<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用Python原生异常抛出方法 | 2025-07-18</p></div>
-
-:param name: 错误类型名称
-:return: 错误抛出函数
-
-<dt>异常</dt><dd><code>AttributeError</code> 当错误类型未注册时抛出</dd>
-
----
-
-##### `info(name: Optional[str] = None)`
-
-获取错误信息
-
-<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>此功能将在未来版本移除 | 2025-07-18</p></div>
-
-:param name: 错误类型名称(可选)
-:return: 错误信息字典
-
----
-
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
-
-## ErisPulse\Core\server.md
-
-# 📦 `ErisPulse.Core.server` 模块
-
-<sup>自动生成于 2025-07-30 20:01:38</sup>
+<sup>自动生成于 2025-08-01 14:55:50</sup>
 
 ---
 
 ## 模块概述
 
 
-ErisPulse Adapter Server
-提供统一的适配器服务入口，支持HTTP和WebSocket路由
+ErisPulse 路由系统
+
+提供统一的HTTP和WebSocket路由管理，支持多适配器路由注册和生命周期管理。
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器只需注册路由，无需自行管理服务器
 2. WebSocket支持自定义认证逻辑
@@ -2769,9 +2734,9 @@ ErisPulse Adapter Server
 
 ## 🏛️ 类
 
-### `class AdapterServer`
+### `class RouterManager`
 
-适配器服务器管理器
+路由管理器
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>核心功能：
 - HTTP/WebSocket路由注册
@@ -2783,7 +2748,7 @@ ErisPulse Adapter Server
 
 ##### `__init__()`
 
-初始化适配器服务器
+初始化路由管理器
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>会自动创建FastAPI实例并设置核心路由</p></div>
 
@@ -2799,33 +2764,35 @@ ErisPulse Adapter Server
 
 ---
 
-##### `register_webhook(adapter_name: str, path: str, handler: Callable, methods: List[str] = ['POST'])`
+##### `register_http_route(module_name: str, path: str, handler: Callable, methods: List[str] = ['POST'])`
 
 注册HTTP路由
 
-:param adapter_name: str 适配器名称
-:param path: str 路由路径(如"/message")
+:param module_name: str 模块名称
+:param path: str 路由路径
 :param handler: Callable 处理函数
 :param methods: List[str] HTTP方法列表(默认["POST"])
 
 <dt>异常</dt><dd><code>ValueError</code> 当路径已注册时抛出</dd>
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>路径会自动添加适配器前缀，如：/adapter_name/path</p></div>
+---
+
+##### `register_webhook()`
+
+兼容性方法：注册HTTP路由（适配器旧接口）
 
 ---
 
-##### `register_websocket(adapter_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None)`
+##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None)`
 
 注册WebSocket路由
 
-:param adapter_name: str 适配器名称
-:param path: str WebSocket路径(如"/ws")
+:param module_name: str 模块名称
+:param path: str WebSocket路径
 :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
 :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 
 <dt>异常</dt><dd><code>ValueError</code> 当路径已注册时抛出</dd>
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>认证函数应返回布尔值，False将拒绝连接</p></div>
 
 ---
 
@@ -2833,14 +2800,13 @@ ErisPulse Adapter Server
 
 获取FastAPI应用实例
 
-:return: 
-    FastAPI: FastAPI应用实例
+:return: FastAPI应用实例
 
 ---
 
 ##### 🔷 `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
 
-启动适配器服务器
+启动路由服务器
 
 :param host: str 监听地址(默认"0.0.0.0")
 :param port: int 监听端口(默认8000)
@@ -2855,122 +2821,8 @@ ErisPulse Adapter Server
 
 停止服务器
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>会等待所有连接正常关闭</p></div>
-
 ---
 
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
-
-## ErisPulse\Core\util.md
-
-# 📦 `ErisPulse.Core.util` 模块
-
-<sup>自动生成于 2025-07-30 20:01:38</sup>
-
----
-
-## 模块概述
-
-
-ErisPulse 工具函数集合
-
-提供常用工具函数，包括拓扑排序、缓存装饰器、异步执行等实用功能。
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用@cache装饰器缓存函数结果
-2. 使用@run_in_executor在独立线程中运行同步函数
-3. 使用@retry实现自动重试机制</p></div>
-
----
-
-## 🏛️ 类
-
-### `class Util`
-
-工具函数集合
-
-提供各种实用功能，简化开发流程
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 拓扑排序用于解决依赖关系
-2. 装饰器简化常见模式实现
-3. 异步执行提升性能</p></div>
-
-
-#### 🧰 方法
-
-##### `ExecAsync(async_func: Callable)`
-
-异步执行函数
-
-:param async_func: 异步函数
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: 函数执行结果
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> result = util.ExecAsync(my_async_func, arg1, arg2)
-```
-</details>
-
----
-
-##### `cache(func: Callable)`
-
-缓存装饰器
-
-:param func: 被装饰函数
-:return: 装饰后的函数
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> @util.cache
->>> def expensive_operation(param):
->>>     return heavy_computation(param)
-```
-</details>
-
----
-
-##### `run_in_executor(func: Callable)`
-
-在独立线程中执行同步函数的装饰器
-
-:param func: 被装饰的同步函数
-:return: 可等待的协程函数
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> @util.run_in_executor
->>> def blocking_io():
->>>     # 执行阻塞IO操作
->>>     return result
-```
-</details>
-
----
-
-##### `retry(max_attempts: int = 3, delay: int = 1)`
-
-自动重试装饰器
-
-:param max_attempts: 最大重试次数 (默认: 3)
-:param delay: 重试间隔(秒) (默认: 1)
-:return: 装饰器函数
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> @util.retry(max_attempts=5, delay=2)
->>> def unreliable_operation():
->>>     # 可能失败的操作
-```
-</details>
-
----
-
-<sub>文档最后更新于 2025-07-30 20:01:38</sub>
+<sub>文档最后更新于 2025-08-01 14:55:50</sub>
 
 <!--- End of API文档 -->

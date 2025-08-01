@@ -1,3 +1,5 @@
+您说得对！模块也应该能够注册路由。让我更新模块开发指南，添加关于路由注册的部分：
+
 # ErisPulse 模块开发指南
 
 ## 1. 模块结构
@@ -51,20 +53,18 @@ from .Core import Main
 
 ---
 
-## 3. `MyModule/Core.py` 文件
+## 4. `MyModule/Core.py` 文件
 
-实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的，但推荐传入
+实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的
 
 ```python
-# 这也是一种可选的获取 `sdk`对象 的方式
-# from ErisPulse import sdk
+from ErisPulse import sdk
 
 class Main:
-    def __init__(self, sdk):
+    def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
         self.env = sdk.env
-        self.util = sdk.util
 
         self.logger.info("模块已加载")
         self.config = self._get_config()
@@ -76,12 +76,12 @@ class Main:
 
     # 从环境变量中获取配置, 如果不存在则使用默认值
     def _get_config(self):
-        config = env.getConfig("MyModule")
+        config = self.env.getConfig("MyModule")
         if not config:
             default_config = {
                 "my_config_key": "default_value"
             }
-            env.setConfig("MyModule", default_config)
+            self.env.setConfig("MyModule", default_config)
             self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
@@ -100,7 +100,198 @@ sdk.MyModule.print_hello()
 # 运行模块主程序（推荐使用CLI命令）
 # epsdk run main.py --reload
 ```
-## 4. `LICENSE` 文件
+
+## 5. 模块路由注册
+
+从 ErisPulse 2.1.15 版本开始，模块也可以注册自己的 HTTP/WebSocket 路由，用于提供 Web API 或实时通信功能。
+
+### 5.1 HTTP 路由注册
+
+模块可以注册 HTTP 路由来提供 REST API 接口：
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+class Main:
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        self.env = sdk.env
+        
+        # 注册模块路由
+        self._register_routes()
+        
+    def _register_routes(self):
+        """注册模块路由"""
+        
+        # 注册 HTTP GET 路由
+        async def get_info():
+            return {
+                "module": "MyModule", 
+                "version": "1.0.0",
+                "status": "running"
+            }
+        
+        # 注册 HTTP POST 路由
+        async def process_data(request: Request):
+            data = await request.json()
+            # 处理数据逻辑
+            return {"result": "success", "received": data}
+        
+        # 使用 router 注册路由
+        self.sdk.router.register_http_route(
+            module_name="MyModule",
+            path="/info",
+            handler=get_info,
+            methods=["GET"]
+        )
+        
+        self.sdk.router.register_http_route(
+            module_name="MyModule", 
+            path="/process",
+            handler=process_data,
+            methods=["POST"]
+        )
+        
+        self.logger.info("模块路由注册完成")
+```
+
+### 5.2 WebSocket 路由注册
+
+模块也可以注册 WebSocket 路由来实现实时通信功能：
+
+```python
+from ErisPulse import sdk
+from fastapi import WebSocket, WebSocketDisconnect
+
+class Main:
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        self.env = sdk.env
+        self._connections = set()
+        
+        # 注册 WebSocket 路由
+        self._register_websocket_routes()
+        
+    def _register_websocket_routes(self):
+        """注册 WebSocket 路由"""
+        
+        async def websocket_handler(websocket: WebSocket):
+            """WebSocket 连接处理器"""
+            await websocket.accept()
+            self._connections.add(websocket)
+            self.logger.info(f"新的 WebSocket 连接: {websocket.client}")
+            
+            try:
+                while True:
+                    data = await websocket.receive_text()
+                    # 处理接收到的消息
+                    response = f"收到消息: {data}"
+                    await websocket.send_text(response)
+                    
+                    # 广播给所有连接
+                    await self._broadcast(f"广播: {data}")
+                    
+            except WebSocketDisconnect:
+                self.logger.info(f"WebSocket 连接断开: {websocket.client}")
+            finally:
+                self._connections.discard(websocket)
+        
+        async def auth_handler(websocket: WebSocket) -> bool:
+            """WebSocket 认证处理器（可选）"""
+            # 实现认证逻辑
+            token = websocket.headers.get("authorization")
+            return token == "Bearer valid-token"  # 简单示例
+        
+        # 注册 WebSocket 路由
+        self.sdk.router.register_websocket(
+            module_name="MyModule",
+            path="/ws",
+            handler=websocket_handler,
+            auth_handler=auth_handler  # 可选
+        )
+        
+        self.logger.info("WebSocket 路由注册完成")
+    
+    async def _broadcast(self, message: str):
+        """向所有连接广播消息"""
+        disconnected = set()
+        for connection in self._connections:
+            try:
+                await connection.send_text(message)
+            except:
+                disconnected.add(connection)
+        
+        # 移除断开的连接
+        for conn in disconnected:
+            self._connections.discard(conn)
+```
+
+### 5.3 路由使用说明
+
+注册的路由将自动添加模块名称作为前缀：
+
+- HTTP 路由 `/info` 将可通过 `/MyModule/info` 访问
+- WebSocket 路由 `/ws` 将可通过 `/MyModule/ws` 访问
+
+可以通过以下方式访问：
+```
+GET http://localhost:8000/MyModule/info
+POST http://localhost:8000/MyModule/process
+
+WebSocket 连接: ws://localhost:8000/MyModule/ws
+```
+
+### 5.4 路由最佳实践
+
+1. **路由命名规范**：
+   - 使用清晰、描述性的路径名
+   - 遵循 RESTful API 设计原则
+   - 避免与其他模块的路由冲突
+
+2. **安全性考虑**：
+   - 为敏感操作实现认证机制
+   - 对用户输入进行验证和过滤
+   - 使用 HTTPS（在生产环境中）
+
+3. **错误处理**：
+   - 实现适当的错误处理和响应格式
+   - 记录关键操作日志
+   - 提供有意义的错误信息
+
+```python
+from ErisPulse import sdk
+from fastapi import HTTPException
+
+class Main:
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger
+        self.env = sdk.env
+        self._register_routes()
+        
+    def _register_routes(self):
+        async def get_item(item_id: int):
+            """获取项目信息"""
+            if item_id < 0:
+                raise HTTPException(status_code=400, detail="无效的项目ID")
+            
+            # 模拟数据获取
+            item = {"id": item_id, "name": f"Item {item_id}"}
+            self.logger.info(f"获取项目: {item}")
+            return item
+        
+        self.sdk.router.register_http_route(
+            module_name="MyModule",
+            path="/items/{item_id}",
+            handler=get_item,
+            methods=["GET"]
+        )
+```
+
+## 6. `LICENSE` 文件
 `LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
 
 ---
@@ -120,8 +311,8 @@ sdk.MyModule.print_hello()
 - **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
 
 ### 4. 性能优化
-- **缓存机制**：利用 `@sdk.util.cache` 缓存频繁调用的结果。
-- **资源复用**：连接池、线程池等应尽量复用，避免重复创建销毁开销。
+- **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
+- **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
 
 ### 5. 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
@@ -129,4 +320,4 @@ sdk.MyModule.print_hello()
 
 ---
 
-*文档最后更新于 2025-07-17 07:12:26*
+*文档最后更新于 2025-08-11 14:53:51*
