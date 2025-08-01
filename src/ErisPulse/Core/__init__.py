@@ -4,6 +4,8 @@ from .logger import logger
 from .mods import mods
 from .router import router, adapter_server
 from .config import config
+from . import exceptions
+
 BaseAdapter = AdapterFather
 
 __all__ = [
