@@ -224,6 +224,7 @@ class MyAdapter(BaseAdapter):
     def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
         self.sdk = sdk
         self.env = self.sdk.env
+        self.config = self.sdk.config
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
@@ -237,12 +238,12 @@ class MyAdapter(BaseAdapter):
 
     def _get_config(self):
         # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-        config = self.env.getConfig("MyAdapter", {})
+        config = self.config.getConfig("MyAdapter", {})
 
         if config is None:
             default_config = {...}
             # 这里默认配置会生成到用户的 config.toml 文件中
-            self.env.setConfig("MyAdapter", default_config)
+            self.config.setConfig("MyAdapter", default_config)
             return default_config
         return config
 
