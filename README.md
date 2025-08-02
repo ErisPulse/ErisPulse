@@ -118,6 +118,10 @@ epsdk run your_script.py --reload
 4. **文档改进**  
    帮助完善文档和示例代码
 
+[加入社区讨论 →](https://github.com/ErisPulse/ErisPulse/discussions)
+
 ---
 
-[加入社区讨论 →](https://github.com/ErisPulse/ErisPulse/discussions)
+[![](https://starchart.cc/ErisPulse/ErisPulse.svg?variant=adaptive)](https://starchart.cc/ErisPulse/ErisPulse)
+
+
