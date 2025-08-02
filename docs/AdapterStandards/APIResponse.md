@@ -3,7 +3,7 @@
 ## 1. 说明
 为什么会有这个规范？
 
-ErisPulse的适配器需要与OneBot12标准进行对接，而OneBot12标准中定义了消息发送的返回结构，因此ErisPulse的适配器也需要遵循这个标准。
+为了确保各平台发送接口返回统一性与OneBot12兼容性，ErisPulse适配器在API响应格式上采用了OneBot12定义的消息发送返回结构标准。
 
 但ErisPulse的协议有一些特殊性定义:
 - 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
