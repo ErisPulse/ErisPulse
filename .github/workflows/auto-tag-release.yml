@@ -1,4 +1,4 @@
-name: 🎀 艾莉丝的版本标签魔法 ~
+name: 🎀🎀🎀 艾莉丝的版本标签魔法 ~
 
 permissions:
   contents: write
@@ -33,12 +33,16 @@ jobs:
 
           commit_msg=$(git log -1 --pretty=%B)
           commit_short=$(git rev-parse --short HEAD)
+          commit_author=$(git log -1 --pretty=%an)
+          commit_email=$(git log -1 --pretty=%ae)
           echo "commit_short=$commit_short" >> $GITHUB_OUTPUT
+          echo "commit_author=$commit_author" >> $GITHUB_OUTPUT
+          echo "commit_email=$commit_email" >> $GITHUB_OUTPUT
           echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
           echo "$commit_msg" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 获取变更文件列表
+      - name: 获取变更文件列表和贡献者
         id: changed_files
         shell: bash
         run: |
@@ -52,14 +56,20 @@ jobs:
           echo "before=$before" >> $GITHUB_OUTPUT
           echo "after=$after" >> $GITHUB_OUTPUT
 
+          # 获取变更文件列表
           files=$(git diff --name-only $before..$after | head -n 50 | xargs)
           file_count=$(git diff --name-only $before..$after | wc -l)
 
           if [ "$file_count" -gt 50 ]; then
             files="$files ..."
           fi
-
           echo "files=$files" >> $GITHUB_OUTPUT
+
+          # 获取贡献者列表
+          contributors=$(git log $before..$after --format="%an <%ae>" | sort -u)
+          echo "contributors<<EOF" >> $GITHUB_OUTPUT
+          echo "$contributors" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 施展版本魔法
         env:
@@ -68,19 +78,37 @@ jobs:
         run: |
           version="${{ steps.info.outputs.version }}"
           commit_short="${{ steps.info.outputs.commit_short }}"
+          commit_author="${{ steps.info.outputs.commit_author }}"
+          commit_email="${{ steps.info.outputs.commit_email }}"
           commit_msg="${{ steps.info.outputs.commit_msg }}"
           is_dev="${{ steps.info.outputs.is_dev }}"
+          contributors="${{ steps.changed_files.outputs.contributors }}"
           tag_name="v$version"
           
+          # 构建发布说明
           if [ -f "docs/CHANGELOG.md" ]; then
             changelog=$(sed -n "/^## \[$version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
           fi
+          
           if [ -z "$changelog" ]; then
-            changelog="### ✨ 魔法更新\n\n- $commit_msg ($commit_short)"
+            changelog="### ✨✨ 魔法更新\n\n- $commit_msg ($commit_short)\n\n"
+          else
+            changelog="$changelog\n\n"
           fi
+          
+          # 添加贡献者信息
+          changelog="${changelog}### 🧙‍♀️ 魔法贡献者\n\n"
+          while IFS= read -r contributor; do
+            changelog="${changelog}- ${contributor}\n"
+          done <<< "$contributors"
+          
+          # 添加提交信息
+          changelog="${changelog}\n### 📜 魔法卷轴更新\n\n"
+          changelog="${changelog}- 最新提交: $commit_msg (by $commit_author, $commit_short)\n"
+          changelog="${changelog}- 变更文件: ${{ steps.changed_files.outputs.files }}\n"
 
           if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-            echo "🎀 施加新的魔法印记..."
+            echo "🎀🎀 施加新的魔法印记..."
             git tag "$tag_name"
             git push origin "$tag_name"
           fi
@@ -97,3 +125,4 @@ jobs:
               --prerelease=$is_dev
             echo "✨ 已发布新的魔法版本 $tag_name"
           fi
+          
