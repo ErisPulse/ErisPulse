@@ -76,12 +76,12 @@ class MyAdapter(BaseAdapter):
 
     def _get_config(self):
         # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-        config = self.config.getConfig("MyAdapter", {})
+        config = self.sdk.config.getConfig("MyAdapter", {})
 
         if config is None:
             default_config = {...}
             # 这里默认配置会生成到用户的 config.toml 文件中
-            self.config.setConfig("MyAdapter", default_config)
+            self.sdk.config.setConfig("MyAdapter", default_config)
             return default_config
         return config
 
