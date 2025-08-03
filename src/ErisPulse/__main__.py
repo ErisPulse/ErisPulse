@@ -454,12 +454,44 @@ class ReloadHandler(FileSystemEventHandler):
 
     def _handle_reload(self, event, reason: str):
         """
-        处理重载逻辑
-        
+        处理热重载逻辑
         :param event: 文件系统事件
-        :param reason: 重载原因描述
+        :param reason: 重载原因
         """
-        console.print(f"\n[reload]{reason}: [path]{event.src_path}[/][/]")
+        from ErisPulse.Core import adapter, logger
+        # 在重载前确保所有适配器正确停止
+        try:
+            # 检查适配器是否正在运行
+            if hasattr(adapter, '_started_instances') and adapter._started_instances:
+                logger.info("正在停止适配器...")
+                # 创建新的事件循环来运行异步停止操作
+                import asyncio
+                import threading
+                
+                # 如果在主线程中
+                if threading.current_thread() is threading.main_thread():
+                    try:
+                        # 尝试获取当前事件循环
+                        loop = asyncio.get_running_loop()
+                        # 在新线程中运行适配器停止
+                        stop_thread = threading.Thread(target=lambda: asyncio.run(adapter.shutdown()))
+                        stop_thread.start()
+                        stop_thread.join(timeout=10)  # 最多等待10秒
+                    except RuntimeError:
+                        # 没有运行中的事件循环
+                        asyncio.run(adapter.shutdown())
+                else:
+                    # 在非主线程中，创建新的事件循环
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    new_loop.run_until_complete(adapter.shutdown())
+                
+                logger.info("适配器已停止")
+        except Exception as e:
+            logger.warning(f"停止适配器时出错: {e}")
+        
+        # 原有的重载逻辑
+        logger.info(f"检测到文件变更 ({reason})，正在重启...")
         self._terminate_process()
         self.start_process()
 
@@ -1046,9 +1078,10 @@ class CLI:
                 
                 try:
                     while True:
-                        time.sleep(1)
+                        time.sleep(0.5)
                 except KeyboardInterrupt:
                     console.print("\n[info]正在安全关闭...[/]")
+                    self._cleanup_adapters()
                     self._cleanup()
                     console.print("[success]已安全退出[/]")
                     
@@ -1087,6 +1120,44 @@ class CLI:
                 console.print(traceback.format_exc())
             self._cleanup()
             sys.exit(1)
+    
+    def _cleanup_adapters(self):
+        """
+        清理适配器资源
+        """
+        from ErisPulse import adapter, logger
+        try:
+            import asyncio
+            import threading
+            
+            # 检查是否有正在运行的适配器
+            if (hasattr(adapter, '_started_instances') and 
+                adapter._started_instances):
+                
+                logger.info("正在停止所有适配器...")
+                
+                if threading.current_thread() is threading.main_thread():
+                    try:
+                        loop = asyncio.get_running_loop()
+                        if loop.is_running():
+                            # 在新线程中运行
+                            stop_thread = threading.Thread(
+                                target=lambda: asyncio.run(adapter.shutdown())
+                            )
+                            stop_thread.start()
+                            stop_thread.join(timeout=5)
+                        else:
+                            asyncio.run(adapter.shutdown())
+                    except RuntimeError:
+                        asyncio.run(adapter.shutdown())
+                else:
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    new_loop.run_until_complete(adapter.shutdown())
+                    
+                logger.info("适配器已全部停止")
+        except Exception as e:
+            logger.error(f"清理适配器资源时出错: {e}")
 
 def main():
     """
