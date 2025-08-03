@@ -5,17 +5,26 @@
 [![FramerOrg](https://img.shields.io/badge/合作伙伴-FramerOrg-blue?style=flat-square)](https://github.com/FramerOrg)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 
-> 文档站: 
+## 文档站
+
 [![Docs-Main](https://img.shields.io/badge/docs-main_site-blue?style=flat-square)](https://www.erisdev.com/#docs)
 [![Docs-CF Pages](https://img.shields.io/badge/docs-cloudflare-blue?style=flat-square)](https://erispulse.pages.dev/#docs)
 [![Docs-GitHub](https://img.shields.io/badge/docs-github-blue?style=flat-square)](https://erispulse.github.io/#docs)
 [![Docs-Netlify](https://img.shields.io/badge/docs-netlify-blue?style=flat-square)](https://erispulse.netlify.app/#docs)
 
+## 模块市场
+
+[![Market-Main](https://img.shields.io/badge/market-erisdev-blue?style=flat-square)](https://www.erisdev.com/#market)
+[![Market-CF Pages](https://img.shields.io/badge/market-cloudflare-blue?style=flat-square)](https://erispulse.pages.dev/#market)
+[![Market-GitHub](https://img.shields.io/badge/market-github-blue?style=flat-square)](https://erispulse.github.io/#market)
+[![Market-Netlify](https://img.shields.io/badge/market-netlify-blue?style=flat-square)](https://erispulse.netlify.app/#market)
+
+---
 
 ## 核心特性
 
 | 特性 | 描述 |
-|------|------|
+|:-----|:-----|
 | **异步架构** | 完全基于 async/await 的异步设计 |
 | **模块化系统** | 灵活的插件和模块管理 |
 | **热重载** | 开发时自动重载，无需重启 |
@@ -37,6 +46,7 @@ irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -Execut
 ```
 
 #### macOS/Linux:
+
 ```bash
 curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmod +x install.sh && ./install.sh
 ```
@@ -45,14 +55,14 @@ curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmo
 
 ## 测试与开发
 
-### 克隆项目并进入目录
+### 1. 克隆项目并进入目录
 
 ```bash
 git clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git
 cd ErisPulse
 ```
 
-### 使用 `uv` 同步项目环境
+### 2. 使用 `uv` 同步项目环境
 
 ```bash
 uv sync
@@ -64,15 +74,15 @@ source .venv/bin/activate
 
 > `ErisPulse` 目前正在使用 `python3.13` 进行开发(所以您同步环境时会自动安装 `3.13`)，但也可以使用其他版本(版本不应低于 `3.10`)。
 
-### 安装依赖并开始
+### 3. 安装依赖并开始
 
 ```bash
 uv pip install -e .
 ```
 
-这将以“开发模式”安装 SDK，所有本地修改都会立即生效。
+这将以"开发模式"安装 SDK，所有本地修改都会立即生效。
 
-### 验证安装
+### 4. 验证安装
 
 运行以下命令确认 SDK 正常加载：
 
@@ -80,7 +90,7 @@ uv pip install -e .
 python -c "from ErisPulse import sdk; sdk.init()"
 ```
 
-### 运行测试
+### 5. 运行测试
 
 我们提供了一个交互式测试脚本，可以帮助您快速验证SDK功能：
 
@@ -95,14 +105,15 @@ uv run devs/test.py
 - 工具函数测试
 - 适配器功能测试
 
-### 开发模式 (热重载)
+### 6. 开发模式 (热重载)
+
 ```bash
 epsdk run your_script.py --reload
 ```
 
 ---
 
-## 🤝 贡献指南
+## 贡献指南
 
 我们欢迎各种形式的贡献，包括但不限于:
 
