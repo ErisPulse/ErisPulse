@@ -178,21 +178,31 @@ exceptions.setup_async_loop()
 ### Send 链式调用
 所有适配器都支持以下标准调用方式：
 
+> **注意：** 文档中的 `<AdapterName>` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。例如：`adapter.yunhu.Send.To(...)`。
+
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
-   await adapter.AdapterName.Send.To("user", "U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.To("user", "U1001").Text("Hello")
+   # 例如：
+   await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
    ```
 2. 仅指定ID: `To(id).Func()`
    ```python
-   await adapter.AdapterName.Send.To("U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.To("U1001").Text("Hello")
+   # 例如：
+   await adapter.telegram.Send.To("U1001").Text("Hello")
    ```
 3. 指定发送账号: `Using(account_id)`
    ```python
-   await adapter.AdapterName.Send.Using("bot1").To("U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.Using("bot1").To("U1001").Text("Hello")
+   # 例如：
+   await adapter.onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
 4. 直接调用: `Func()`
    ```python
-   await adapter.AdapterName.Send.Text("Broadcast message")
+   await adapter.<AdapterName>.Send.Text("Broadcast message")
+   # 例如：
+   await adapter.email.Send.Text("Broadcast message")
    ```
 
 ### 事件监听
@@ -202,7 +212,7 @@ exceptions.setup_async_loop()
    ```python
    from ErisPulse.Core import adapter, logger
    
-   @adapter.AdapterName.on("event_type")
+   @adapter.<AdapterName>.on("event_type")
    async def handler(data):
        logger.info(f"收到原生事件: {data}")
    ```
@@ -295,7 +305,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Video(file: bytes, buttons: List = None)`：发送视频消息。
 - `.File(file: bytes, buttons: List = None)`：发送文件消息。
 - `.Batch(target_ids: List[str], message: str)`：批量发送消息。
-- `.Edit(msg_id: str, text: str)`：编辑已有消息。
+- `.Edit(msg_id: str, text: str, buttons: List = None)`：编辑已有消息。
 - `.Recall(msg_id: str)`：撤回消息。
 - `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
 - `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
@@ -809,12 +819,12 @@ class Main:
 
     # 从环境变量中获取配置, 如果不存在则使用默认值
     def _get_config(self):
-        config = self.env.getConfig("MyModule")
+        config = self.config.getConfig("MyModule")
         if not config:
             default_config = {
                 "my_config_key": "default_value"
             }
-            self.env.setConfig("MyModule", default_config)
+            self.config.setConfig("MyModule", default_config)
             self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
@@ -1065,7 +1075,7 @@ class Main:
 
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -1374,13 +1384,13 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -1689,13 +1699,13 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2091,13 +2101,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2111,13 +2121,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2450,13 +2460,13 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\erispulse_config.md
 
 # 📦 `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2513,13 +2523,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\exceptions.md
 
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2561,13 +2571,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2690,13 +2700,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -2905,13 +2915,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 ## ErisPulse\Core\router.md
 
 # 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-02 05:03:23</sup>
+<sup>自动生成于 2025-08-03 22:43:59</sup>
 
 ---
 
@@ -3019,6 +3029,6 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-02 05:03:23</sub>
+<sub>文档最后更新于 2025-08-03 22:43:59</sub>
 
 <!--- End of API文档 -->

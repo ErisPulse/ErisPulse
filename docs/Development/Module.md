@@ -76,12 +76,12 @@ class Main:
 
     # 从环境变量中获取配置, 如果不存在则使用默认值
     def _get_config(self):
-        config = self.env.getConfig("MyModule")
+        config = self.config.getConfig("MyModule")
         if not config:
             default_config = {
                 "my_config_key": "default_value"
             }
-            self.env.setConfig("MyModule", default_config)
+            self.config.setConfig("MyModule", default_config)
             self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
