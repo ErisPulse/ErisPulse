@@ -18,21 +18,31 @@
 ### Send 链式调用
 所有适配器都支持以下标准调用方式：
 
+> **注意：** 文档中的 `<AdapterName>` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。例如：`adapter.yunhu.Send.To(...)`。
+
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
-   await adapter.AdapterName.Send.To("user", "U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.To("user", "U1001").Text("Hello")
+   # 例如：
+   await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
    ```
 2. 仅指定ID: `To(id).Func()`
    ```python
-   await adapter.AdapterName.Send.To("U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.To("U1001").Text("Hello")
+   # 例如：
+   await adapter.telegram.Send.To("U1001").Text("Hello")
    ```
 3. 指定发送账号: `Using(account_id)`
    ```python
-   await adapter.AdapterName.Send.Using("bot1").To("U1001").Text("Hello")
+   await adapter.<AdapterName>.Send.Using("bot1").To("U1001").Text("Hello")
+   # 例如：
+   await adapter.onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
 4. 直接调用: `Func()`
    ```python
-   await adapter.AdapterName.Send.Text("Broadcast message")
+   await adapter.<AdapterName>.Send.Text("Broadcast message")
+   # 例如：
+   await adapter.email.Send.Text("Broadcast message")
    ```
 
 ### 事件监听
@@ -42,7 +52,7 @@
    ```python
    from ErisPulse.Core import adapter, logger
    
-   @adapter.AdapterName.on("event_type")
+   @adapter.<AdapterName>.on("event_type")
    async def handler(data):
        logger.info(f"收到原生事件: {data}")
    ```
@@ -135,7 +145,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.Video(file: bytes, buttons: List = None)`：发送视频消息。
 - `.File(file: bytes, buttons: List = None)`：发送文件消息。
 - `.Batch(target_ids: List[str], message: str)`：批量发送消息。
-- `.Edit(msg_id: str, text: str)`：编辑已有消息。
+- `.Edit(msg_id: str, text: str, buttons: List = None)`：编辑已有消息。
 - `.Recall(msg_id: str)`：撤回消息。
 - `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
 - `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
