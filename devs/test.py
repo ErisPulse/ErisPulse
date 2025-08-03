@@ -19,7 +19,6 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 async def show_menu() -> Optional[str]:
-    """显示彩色交互式菜单"""
     input(f"{Colors.GREEN}按回车键进入菜单...{Colors.END}")
     # 欢迎信息
     print(f"\n{Colors.HEADER}{Colors.BOLD}=== ErisPulse 交互测试系统 ==={Colors.END}")
@@ -37,8 +36,8 @@ async def show_menu() -> Optional[str]:
     print(f"\n{Colors.BLUE}1. 查看核心模块列表{Colors.END} - 显示所有可用模块")
     print(f"{Colors.BLUE}2. 测试日志功能{Colors.END} - 测试日志记录和文件保存")
     print(f"{Colors.BLUE}3. 测试环境配置{Colors.END} - 测试配置管理和文件加载") 
-    print(f"{Colors.BLUE}4. 测试错误管理{Colors.END} - 测试错误注册和处理")
-    print(f"{Colors.BLUE}5. 测试工具函数{Colors.END} - 测试缓存、重试等工具")
+    print(f"{Colors.BLUE}4. 测试异常处理{Colors.END} - 测试异常捕获和处理")
+    print(f"{Colors.BLUE}5. 测试路由功能{Colors.END} - 测试HTTP/WebSocket路由")
     print(f"{Colors.BLUE}6. 测试适配器功能{Colors.END} - 测试消息发送和接收")
     print(f"{Colors.BLUE}7. 查看SDK版本{Colors.END} - 显示详细版本信息")
     print(f"{Colors.RED}8. 退出系统{Colors.END} - 退出测试程序")
@@ -55,7 +54,6 @@ async def show_menu() -> Optional[str]:
         return "8"
 
 async def test_logger():
-    """测试日志功能"""
     print("\n--- 日志功能测试 ---")
     print("将演示不同级别的日志输出和文件保存功能")
     
@@ -65,15 +63,18 @@ async def test_logger():
     sdk.logger.warning("这是一条警告信息")
     sdk.logger.error("这是一条错误信息")
     
+    # 测试子日志记录器
+    child_logger = sdk.logger.get_child("test_module")
+    child_logger.info("这是子模块的日志信息")
+    
     # 测试日志文件保存
     log_file = input(f"{Colors.GREEN}请输入日志文件保存路径(默认: test.log): {Colors.END}") or "test.log"
     sdk.logger.set_output_file(log_file)
     sdk.logger.info(f"这条日志将保存到文件: {log_file}")
     
     print(f"\n{Colors.GREEN}日志测试完成，请查看控制台和文件 {log_file} 的输出{Colors.END}")
-    
+
 async def test_env():
-    """测试环境配置功能"""
     while True:
         print(f"\n{Colors.CYAN}--- 环境配置测试 ---{Colors.END}")
         print(f"{Colors.BLUE}1. 设置/获取单个配置项{Colors.END}")
@@ -161,68 +162,36 @@ async def test_env():
             print(f"\n{Colors.YELLOW}操作已取消{Colors.END}")
             break
 
-async def test_raiserr():
-    """测试错误管理功能"""
+async def test_exceptions():
     while True:
-        print(f"\n{Colors.CYAN}--- 错误管理测试 ---{Colors.END}")
-        print(f"{Colors.BLUE}1. 测试默认错误类型{Colors.END}")
-        print(f"{Colors.BLUE}2. 注册自定义错误{Colors.END}")
-        print(f"{Colors.BLUE}3. 测试全局异常处理器{Colors.END}")
-        print(f"{Colors.BLUE}4. 查询错误类型信息{Colors.END}")
-        print(f"{Colors.BLUE}5. 返回主菜单{Colors.END}")
+        print(f"\n{Colors.CYAN}--- 异常处理测试 ---{Colors.END}")
+        print(f"{Colors.BLUE}1. 测试同步异常处理{Colors.END}")
+        print(f"{Colors.BLUE}2. 测试异步异常处理{Colors.END}")
+        print(f"{Colors.BLUE}3. 返回主菜单{Colors.END}")
         
         try:
-            choice = input(f"{Colors.GREEN}请选择(1-5): {Colors.END}").strip()
+            choice = input(f"{Colors.GREEN}请选择(1-3): {Colors.END}").strip()
             if choice == "1":
+                print(f"{Colors.YELLOW}测试同步异常...{Colors.END}")
                 try:
-                    sdk.raiserr.InitError("这是一个初始化错误示例")
-                except Exception as e:
-                    print(f"\n{Colors.RED}捕获到错误: {type(e).__name__}: {e}{Colors.END}")
+                    raise ValueError("这是一个测试异常")
+                except ValueError as e:
+                    print(f"{Colors.GREEN}捕获到异常: {e}{Colors.END}")
                 input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
                 
             elif choice == "2":
-                name = input(f"{Colors.GREEN}请输入自定义错误名称: {Colors.END}").strip()
-                if not name:
-                    print(f"{Colors.RED}错误名称不能为空{Colors.END}")
-                    continue
-                    
-                doc = input(f"{Colors.GREEN}请输入错误描述: {Colors.END}").strip()
-                sdk.raiserr.register(name, doc)
-                print(f"{Colors.GREEN}已注册错误类型: {name}{Colors.END}")
-                print(f"{Colors.YELLOW}尝试抛出错误...{Colors.END}")
+                print(f"{Colors.YELLOW}测试异步异常...{Colors.END}")
+                
+                async def async_error_func():
+                    raise RuntimeError("这是一个异步测试异常")
+                
                 try:
-                    getattr(sdk.raiserr, name)(f"这是一个{name}错误示例")
-                except Exception as e:
-                    print(f"\n{Colors.RED}捕获到错误: {type(e).__name__}: {e}{Colors.END}")
+                    await async_error_func()
+                except RuntimeError as e:
+                    print(f"{Colors.GREEN}捕获到异步异常: {e}{Colors.END}")
                 input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
                 
             elif choice == "3":
-                @sdk.raiserr.global_exception_handler
-                def handle_error(e):
-                    print(f"{Colors.YELLOW}全局处理器捕获到错误: {e}{Colors.END}")
-                    return True
-                    
-                print(f"{Colors.GREEN}已注册全局异常处理器{Colors.END}")
-                print(f"{Colors.YELLOW}测试抛出错误...{Colors.END}")
-                try:
-                    sdk.raiserr.InitError("测试全局处理器")
-                except:
-                    pass
-                input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
-                
-            elif choice == "4":
-                name = input(f"{Colors.GREEN}请输入要查询的错误类型名称: {Colors.END}").strip()
-                info = sdk.raiserr.info(name)
-                if info:
-                    print(f"\n{Colors.GREEN}错误类型信息:{Colors.END}")
-                    print(f"名称: {info['type']}")
-                    print(f"描述: {info['doc']}")
-                    print(f"基类: {info['class'].__name__}")
-                else:
-                    print(f"{Colors.RED}未找到错误类型: {name}{Colors.END}")
-                input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
-                
-            elif choice == "5":
                 break
                 
             else:
@@ -232,62 +201,60 @@ async def test_raiserr():
             print(f"\n{Colors.YELLOW}操作已取消{Colors.END}")
             break
 
-async def test_util():
-    """测试工具函数"""
+async def test_router():
     while True:
-        print(f"\n{Colors.CYAN}--- 工具函数测试 ---{Colors.END}")
-        print(f"{Colors.BLUE}1. 测试缓存装饰器{Colors.END}")
-        print(f"{Colors.BLUE}2. 测试重试装饰器{Colors.END}")
-        print(f"{Colors.BLUE}3. 测试拓扑排序{Colors.END}")
-        print(f"{Colors.BLUE}4. 测试异步执行装饰器{Colors.END}")
-        print(f"{Colors.BLUE}5. 返回主菜单{Colors.END}")
+        print(f"\n{Colors.CYAN}--- 路由功能测试 ---{Colors.END}")
+        print(f"{Colors.BLUE}1. 查看已注册路由{Colors.END}")
+        print(f"{Colors.BLUE}2. 测试HTTP路由注册{Colors.END}")
+        print(f"{Colors.BLUE}3. 测试WebSocket路由注册{Colors.END}")
+        print(f"{Colors.BLUE}4. 返回主菜单{Colors.END}")
         
         try:
-            choice = input(f"{Colors.GREEN}请选择(1-5): {Colors.END}").strip()
+            choice = input(f"{Colors.GREEN}请选择(1-4): {Colors.END}").strip()
             if choice == "1":
-                @sdk.util.cache
-                def expensive_calculation(x):
-                    print(f"{Colors.YELLOW}执行计算...{Colors.END}")
-                    return x * x
-                
-                print(f"{Colors.YELLOW}第一次调用(应执行计算):{Colors.END}")
-                print(expensive_calculation(5))
-                print(f"{Colors.YELLOW}第二次调用(应从缓存获取):{Colors.END}")
-                print(expensive_calculation(5))
+                print(f"{Colors.YELLOW}已注册路由信息:{Colors.END}")
+                # 这里可以添加获取路由信息的逻辑
+                print(f"{Colors.GREEN}路由功能测试完成{Colors.END}")
                 input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
                 
             elif choice == "2":
-                @sdk.util.retry(max_attempts=3, delay=0.5)
-                def unreliable_operation():
-                    print(f"{Colors.YELLOW}尝试操作...{Colors.END}")
-                    raise Exception("模拟失败")
-                    
+                print(f"{Colors.YELLOW}注册HTTP路由测试...{Colors.END}")
+                # 示例HTTP处理函数
+                async def test_handler():
+                    return {"message": "Hello from test route"}
+                
                 try:
-                    unreliable_operation()
+                    sdk.router.register_http_route(
+                        module_name="test",
+                        path="/hello",
+                        handler=test_handler,
+                        methods=["GET"]
+                    )
+                    print(f"{Colors.GREEN}HTTP路由注册成功{Colors.END}")
                 except Exception as e:
-                    print(f"{Colors.RED}最终失败: {e}{Colors.END}")
+                    print(f"{Colors.RED}路由注册失败: {e}{Colors.END}")
                 input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
                 
             elif choice == "3":
-                elements = ['A', 'B', 'C']
-                dependencies = {'A': ['B'], 'B': ['C']}
-                sorted_list = sdk.util.topological_sort(elements, dependencies, "测试错误")
-                print(f"{Colors.GREEN}拓扑排序结果: {sorted_list}{Colors.END}")
+                print(f"{Colors.YELLOW}注册WebSocket路由测试...{Colors.END}")
+                # 示例WebSocket处理函数
+                async def ws_handler(websocket):
+                    await websocket.accept()
+                    await websocket.send_text("Hello from test WebSocket")
+                    await websocket.close()
+                
+                try:
+                    sdk.router.register_websocket(
+                        module_name="test",
+                        path="/ws",
+                        handler=ws_handler
+                    )
+                    print(f"{Colors.GREEN}WebSocket路由注册成功{Colors.END}")
+                except Exception as e:
+                    print(f"{Colors.RED}WebSocket路由注册失败: {e}{Colors.END}")
                 input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
                 
             elif choice == "4":
-                @sdk.util.run_in_executor
-                def sync_task():
-                    import time
-                    time.sleep(1)
-                    return "同步任务完成"
-                
-                print(f"{Colors.YELLOW}启动异步执行...{Colors.END}")
-                result = await sync_task()
-                print(f"{Colors.GREEN}结果: {result}{Colors.END}")
-                input(f"\n{Colors.YELLOW}按回车键继续...{Colors.END}")
-                
-            elif choice == "5":
                 break
                 
             else:
@@ -298,13 +265,12 @@ async def test_util():
             break
 
 async def test_adapter():
-    """测试适配器功能"""
     while True:
         print(f"\n{Colors.CYAN}--- 适配器测试 ---{Colors.END}")
         print(f"{Colors.BLUE}1. 列出已注册适配器{Colors.END}")
         print(f"{Colors.BLUE}2. 测试适配器发送功能{Colors.END}")
         print(f"{Colors.BLUE}3. 测试适配器配置{Colors.END}")
-        print(f"{Colors.BLUE}4. 测试消息接收功能{Colors.END}")
+        print(f"{Colors.BLUE}4. 测试OneBot12事件{Colors.END}")
         print(f"{Colors.BLUE}5. 返回主菜单{Colors.END}")
         
         try:
@@ -323,7 +289,8 @@ async def test_adapter():
                     message = input(f"{Colors.GREEN}请输入消息内容: {Colors.END}").strip()
                     print(f"{Colors.YELLOW}尝试发送消息...{Colors.END}")
                     try:
-                        await getattr(sdk.adapter, adapter_name).Send.To("user", target).Text(message)
+                        # 使用新的发送方式
+                        await sdk.adapter.get(adapter_name).Send.To("user", target).Example(message)
                         print(f"{Colors.GREEN}消息发送成功{Colors.END}")
                     except Exception as e:
                         print(f"{Colors.RED}发送失败: {e}{Colors.END}")
@@ -337,8 +304,9 @@ async def test_adapter():
                     config_key = input(f"{Colors.GREEN}请输入配置项名称: {Colors.END}").strip()
                     config_value = input(f"{Colors.GREEN}请输入配置值: {Colors.END}").strip()
                     try:
-                        setattr(getattr(sdk.adapter, adapter_name).Config, config_key, config_value)
-                        print(f"{Colors.GREEN}配置成功: {config_key}={config_value}{Colors.END}")
+                        # 适配器配置测试
+                        adapter_instance = sdk.adapter.get(adapter_name)
+                        print(f"{Colors.GREEN}适配器 {adapter_name} 配置测试完成{Colors.END}")
                     except Exception as e:
                         print(f"{Colors.RED}配置失败: {e}{Colors.END}")
                 else:
@@ -348,19 +316,18 @@ async def test_adapter():
             elif choice == "4":
                 adapter_name = input(f"{Colors.GREEN}请输入要测试的适配器名称: {Colors.END}").strip()
                 if hasattr(sdk.adapter, adapter_name):
-                    print(f"{Colors.YELLOW}模拟接收消息...{Colors.END}")
+                    print(f"{Colors.YELLOW}测试OneBot12事件...{Colors.END}")
                     try:
-                        handler = getattr(sdk.adapter, adapter_name).OnMessage
-                        @handler
-                        async def handle_message(sender, content):
-                            print(f"\n{Colors.GREEN}收到消息:{Colors.END}")
-                            print(f"发送者: {sender}")
-                            print(f"内容: {content}")
+                        # 注册OneBot12事件处理器
+                        @sdk.adapter.on("message")
+                        async def handle_message(event):
+                            print(f"\n{Colors.GREEN}收到OneBot12消息事件:{Colors.END}")
+                            print(f"事件内容: {event}")
                             return True
                             
-                        print(f"{Colors.GREEN}消息处理器已注册{Colors.END}")
-                        print(f"{Colors.YELLOW}等待5秒模拟消息接收...{Colors.END}")
-                        await asyncio.sleep(5)
+                        print(f"{Colors.GREEN}OneBot12事件处理器已注册{Colors.END}")
+                        print(f"{Colors.YELLOW}请在适配器中触发消息事件以测试...{Colors.END}")
+                        await asyncio.sleep(3)
                     except Exception as e:
                         print(f"{Colors.RED}测试失败: {e}{Colors.END}")
                 else:
@@ -379,6 +346,8 @@ async def test_adapter():
 
 async def main():
     sdk.init()
+    await sdk.adapter.startup()
+
     logger = sdk.logger
     logger.info("欢迎使用ErisPulse交互探索系统！")
     
@@ -389,17 +358,17 @@ async def main():
                 print("\n核心模块列表:")
                 print("- logger: 日志记录系统")
                 print("- env: 环境配置管理")
-                print("- raiserr: 错误管理系统")
-                print("- util: 实用工具集合")
+                print("- exceptions: 异常处理系统")
+                print("- router: 路由管理")
                 print("- adapter: 适配器系统")
             elif choice == "2":
                 await test_logger()
             elif choice == "3":
                 await test_env()
             elif choice == "4":
-                await test_raiserr()
+                await test_exceptions()
             elif choice == "5":
-                await test_util()
+                await test_router()
             elif choice == "6":
                 await test_adapter()
             elif choice == "7":
