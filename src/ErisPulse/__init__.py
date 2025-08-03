@@ -10,12 +10,13 @@ ErisPulse SDK 主模块
 {!--< /tips >!--}
 """
 
-__version__ = "2.1.14dev1"
+__version__ = "2.1.14"
 __author__  = "ErisPulse"
 
 import os
 import sys
 import importlib
+import asyncio
 import inspect
 import importlib.metadata
 from typing import Dict, List, Tuple, Type, Any
@@ -45,8 +46,6 @@ BaseModules = {
     "AdapterFather": AdapterFather,
     "BaseAdapter": AdapterFather
 }
-
-import asyncio
 
 asyncio_loop = asyncio.get_event_loop()
 
