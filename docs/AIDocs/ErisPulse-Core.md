@@ -266,11 +266,33 @@ exceptions.setup_async_loop()
 ---
 
 ## 通用接口
-
 ### Send 链式调用
-所有适配器都支持以下标准调用方式：
-
 > **注意：** 文档中的 `<AdapterName>` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。例如：`adapter.yunhu.Send.To(...)`。
+>
+> 同样的，我们更建议你尝试使用
+> ```python
+> from ErisPulse.Core import adapter
+> adapter = adapter.get("yunhu")
+>
+> adapter.Send.To(...)
+> ```
+
+Send DSL 的方法返回 `asyncio.Task` 对象，这意味着你可以选择是否立即等待结果：
+
+```python
+# 不等待结果，消息在后台发送
+task = adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
+
+# 如果需要获取发送结果，稍后可以等待
+result = await task
+
+# 等待结果并赋值
+result = await adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
+```
+
+> 返回的 Task 维护了协程的完整状态机，因此可以将其存储在变量中可以供后续使用。
+
+所有适配器都支持以下标准调用方式：
 
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
@@ -278,24 +300,49 @@ exceptions.setup_async_loop()
    # 例如：
    await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
    ```
+
 2. 仅指定ID: `To(id).Func()`
    ```python
    await adapter.<AdapterName>.Send.To("U1001").Text("Hello")
    # 例如：
    await adapter.telegram.Send.To("U1001").Text("Hello")
    ```
+
 3. 指定发送账号: `Using(account_id)`
    ```python
    await adapter.<AdapterName>.Send.Using("bot1").To("U1001").Text("Hello")
    # 例如：
    await adapter.onebot11.Send.Using("bot1").To("U1001").Text("Hello")
    ```
+
 4. 直接调用: `Func()`
    ```python
    await adapter.<AdapterName>.Send.Text("Broadcast message")
    # 例如：
    await adapter.email.Send.Text("Broadcast message")
    ```
+
+#### 使用场景示例
+
+```python
+# 场景1：不需要确认发送结果（推荐用于大多数情况）
+adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 场景2：需要处理发送结果
+result = await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 场景3：批量发送，稍后统一处理结果
+tasks = []
+user_ids = ["U1001", "U1002", "U1003"]
+for i in user_ids:
+    task = adapter.yunhu.Send.To("user", i).Text("Hello")
+    tasks.append(task)
+
+# 等待所有发送完成
+results = await asyncio.gather(*tasks)
+```
+
+> **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
 
 ### 事件监听
 有两种事件监听方式：
@@ -839,7 +886,7 @@ ErisPulse 项目：
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1235,13 +1282,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1255,13 +1302,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1594,13 +1641,13 @@ ErisPulse 环境配置模块
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## erispulse_config.md
 
 # 📦 `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1657,13 +1704,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## exceptions.md
 
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1705,13 +1752,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -1834,13 +1881,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -2049,13 +2096,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 ## router.md
 
 # 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-03 22:43:59</sup>
+<sup>自动生成于 2025-08-09 21:50:50</sup>
 
 ---
 
@@ -2163,6 +2210,6 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-03 22:43:59</sub>
+<sub>文档最后更新于 2025-08-09 21:50:50</sub>
 
 <!--- End of API文档 -->
