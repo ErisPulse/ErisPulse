@@ -95,7 +95,7 @@ class PackageManager:
     """
     REMOTE_SOURCES = [
         "https://erisdev.com/packages.json",
-        "https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/packages.json"
+        "https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json"
     ]
     
     CACHE_EXPIRY = 3600  # 1小时缓存
