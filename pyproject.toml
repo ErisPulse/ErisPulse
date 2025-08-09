@@ -11,8 +11,7 @@ requires-python = ">=3.8"
 license = { file = "LICENSE" }
 
 authors = [
-    { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" },
-    { name = "runoneall", email = "runoobsteve@gmail.com" }
+    { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" }
 ]
 
 classifiers = [
