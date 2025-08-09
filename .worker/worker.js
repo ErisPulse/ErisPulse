@@ -6,27 +6,49 @@ async function handleRequest(request) {
   const url = new URL(request.url)
   const path = url.pathname
 
-  if (path === '/') {
+  // 标准化路径
+  const normalizedPath = path.replace(/^\/+/, '/');
+
+  if (normalizedPath === '/') {
     return Response.redirect('https://www.erisdev.com', 301)
   }
 
   let response
 
-  if (path === '/refresh-map') {
-    response = await refreshMapCache()
-  } else if (path === '/packages.json') {
-    // 特殊处理 /packages.json 路径
+  if (normalizedPath === '/packages.json') {
     response = await fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json', {
       cf: {
         cacheEverything: true,
         cacheTtl: 14400 // 缓存 4 小时
       }
     })
+  } else if (normalizedPath === '/map.json') {
+    response = await fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/map.json', {
+      cf: {
+        cacheEverything: true,
+        cacheTtl: 14400
+      }
+    })
+  } else if (normalizedPath.startsWith('/archived/modules/')) {
+    const modulePath = normalizedPath.replace('/archived/modules', '');
+    response = await fetch(`https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/archived/modules${modulePath}`, {
+      cf: {
+        cacheEverything: true,
+        cacheTtl: 14400
+      }
+    });
+  } else if (normalizedPath === '/purge-cache' && request.method === 'POST') {
+    response = await purgeCache()
   } else {
-    response = await mirrorToRepo(path, request)
+    response = new Response(JSON.stringify({ error: 'Not Found' }), {
+      status: 404,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   }
 
-  if (isJsonPath(path)) {
+  if (normalizedPath.endsWith('.json')) {
     const newHeaders = new Headers(response.headers)
     newHeaders.set('Content-Type', 'application/json')
     response = new Response(response.body, {
@@ -38,53 +60,36 @@ async function handleRequest(request) {
   return response
 }
 
-function isJsonPath(path) {
-  return path.endsWith('.json') || path === '/map.json' || path === '//map.json' || path === '/packages.json'
-}
-
-async function mirrorToRepo(path, request) {
-  const githubUrl = `https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main${path}`
-
-  let response = await fetch(githubUrl, {
-    cf: {
-      cacheEverything: true,
-      cacheTtl: 14400 // 缓存 4 小时
-    }
-  })
-
-  if (response.status === 404 && !path.endsWith('.zip')) {
-    const zipResponse = await fetch(`${githubUrl}.zip`, {
-      cf: {
-        cacheEverything: true,
-        cacheTtl: 14400
+async function purgeCache() {
+  try {
+    const cache = caches.default;
+    
+    const packagesUrl = 'https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json';
+    await cache.delete(new Request(packagesUrl));
+    const mapUrl = 'https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/map.json';
+    await cache.delete(new Request(mapUrl));
+    
+    // 注意：这里无法精确清除所有 archived/modules 下的缓存项
+    // 因为 Cloudflare Workers 不支持通配符删除缓存
+    
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Cache purged successfully' 
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
       }
-    })
-    response = zipResponse
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message 
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
-
-  return response
-}
-
-async function refreshMapCache() {
-  const cacheUrl = 'https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/map.json'
-
-  const cacheKey = new Request(cacheUrl)
-  const cache = caches.default
-
-  await cache.delete(cacheKey)
-
-  const response = await fetch(cacheUrl, {
-    cf: {
-      cacheEverything: true,
-      cacheTtl: 14400
-    }
-  })
-
-  return new Response(JSON.stringify({ message: 'GitHub map.json cache refreshed' }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store'
-    }
-  })
 }
