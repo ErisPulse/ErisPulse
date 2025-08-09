@@ -2,6 +2,8 @@ addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
+const PURGE_PASSWORD = 'your_secure_password_here';
+
 async function handleRequest(request) {
   const url = new URL(request.url)
   const path = url.pathname
@@ -15,14 +17,18 @@ async function handleRequest(request) {
 
   let response
 
-  if (normalizedPath === '/packages.json') {
+  if ( normalizedPath === '/packages.json' || 
+       normalizedPath === '/packages' || 
+       normalizedPath === '/packages.json/') {
     response = await fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json', {
       cf: {
         cacheEverything: true,
         cacheTtl: 14400 // 缓存 4 小时
       }
     })
-  } else if (normalizedPath === '/map.json') {
+  } else if ( normalizedPath === '/map.json' ||
+              normalizedPath === '/map' ||
+              normalizedPath === '/map.json/') {
     response = await fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse-ModuleRepo/main/map.json', {
       cf: {
         cacheEverything: true,
@@ -37,8 +43,22 @@ async function handleRequest(request) {
         cacheTtl: 14400
       }
     });
-  } else if (normalizedPath === '/purge-cache' && request.method === 'POST') {
-    response = await purgeCache()
+  } else if (normalizedPath.startsWith('/purge-cache/')) {
+    // 检查密码
+    const password = normalizedPath.split('/')[2];
+    if (password === PURGE_PASSWORD) {
+      response = await purgeCache()
+    } else {
+      response = new Response(JSON.stringify({ 
+        error: 'Unauthorized', 
+        message: 'Invalid password'
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    }
   } else {
     response = new Response(JSON.stringify({ error: 'Not Found' }), {
       status: 404,
@@ -48,7 +68,10 @@ async function handleRequest(request) {
     })
   }
 
-  if (normalizedPath.endsWith('.json')) {
+  if (normalizedPath.endsWith('.json') || 
+      normalizedPath === '/packages' || 
+      normalizedPath === '/map' ||
+      normalizedPath.startsWith('/purge-cache/')) {
     const newHeaders = new Headers(response.headers)
     newHeaders.set('Content-Type', 'application/json')
     response = new Response(response.body, {
