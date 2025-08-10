@@ -132,3 +132,7 @@ epsdk run your_script.py --reload
 ---
 
 [加入社区讨论 →](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+[![](https://starchart.cc/ErisPulse/ErisPulse.svg?variant=adaptive)](https://starchart.cc/ErisPulse/ErisPulse)
