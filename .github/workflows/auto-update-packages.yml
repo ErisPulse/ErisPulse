@@ -2,6 +2,7 @@ name: 🌟 艾莉丝的包管理魔法阵 ~
 
 permissions:
   contents: write
+  pull-requests: write
 
 on:
   schedule:
@@ -66,14 +67,42 @@ jobs:
           🌟 自动更新了模块版本信息
           📖 更多详情请查看 packages.json"
 
-      - name: 传送魔法成果
+      - name: 创建魔法传送门（Pull Request）
         if: steps.update.outputs.has_updates == 'true'
         run: |
-          echo "🎀 艾莉丝要把更新传送到主世界了哦~"
-          git push origin main
-          echo "✨ 传送成功! 主世界的模块信息已经是最新的了!"
+          echo "🎀 艾莉丝要创建一个魔法传送门来提交更新哦~"
+          
+          # 推送到新的分支
+          branch_name="auto-update-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b $branch_name
+          git push origin $branch_name
+          
+          # 创建 Pull Request
+          gh pr create \
+            --title "✨ 艾莉丝的每日版本更新魔法" \
+            --body "🌟 艾莉丝自动更新了 packages.json 中的模块版本信息
+                  
+                  请检查更新内容并合并此 Pull Request。
+                  
+                  📖 更新详情：
+                  - 更新时间: $(date)
+                  - 更新模块数: $(git diff packages.json | grep '"version":' | wc -l)" \
+            --base main \
+            --head $branch_name
+          
+          echo "✨ 魔法传送门创建成功! 请检查并合并 Pull Request~"
 
       - name: 💤 今天的魔法工作完成
+        if: steps.update.outputs.has_updates == 'true'
         run: |
           echo "🌟 艾莉丝今天也努力完成了版本更新的魔法呢!"
+          echo "🌙 请记得检查并合并创建的 Pull Request 哦~"
+          echo "💫 明天再见啦~"
+
+      - name: 无更新时的安慰信息
+        if: steps.update.outputs.has_updates != 'true'
+        run: |
+          echo "✨ 今天没有发现需要更新的模块呢~"
+          echo "🌟 艾莉丝会继续守护着我们的魔法世界!"
           echo "🌙 明天再见啦~"
+          
