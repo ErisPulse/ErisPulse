@@ -1,15 +1,17 @@
 {
-    "last_updated": "2025-07-21T02:05:00Z",
+    "last_updated": "2025-08-10T03:28:51Z",
     "modules": {
         "ErisPulse": {
             "package": "ErisPulse",
-            "version": "2.1.13",
+            "version": "2.1.14",
             "author": "ErisPulse Team",
             "description": "更新ErisPulse",
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/ErisPulse/ErisPulse",
             "official": true,
-            "tags": ["ErisPulse"]
+            "tags": [
+                "ErisPulse"
+            ]
         },
         "XiaomiMarathon": {
             "package": "ErisPulse-XiaomiMarathon",
@@ -19,17 +21,23 @@
             "min_sdk_version": "2.1.10",
             "repository": "https://github.com/wsu2059q/ErisPulse-XiaomiMarathon",
             "official": false,
-            "tags": ["小米马拉松", "小米"]
+            "tags": [
+                "小米马拉松",
+                "小米"
+            ]
         },
         "GitHubParser": {
             "package": "ErisPulse-GitHubParser",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "author": "wsu2059q",
             "description": "GitHub链接解析模块，自动解析消息中的仓库/Issue/PR信息并以最佳格式展示",
             "min_sdk_version": "2.1.10",
             "repository": "https://github.com/wsu2059q/ErisPulse-GitHubParser",
             "official": false,
-            "tags": ["github", "解析"]
+            "tags": [
+                "github",
+                "解析"
+            ]
         },
         "Weather": {
             "package": "ErisPulse-Weather",
@@ -39,17 +47,23 @@
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/shanfishapp/ErisPulse-Weather",
             "official": false,
-            "tags": ["天气", "Weather"]
+            "tags": [
+                "天气",
+                "Weather"
+            ]
         },
         "AIChat": {
             "package": "ErisPulse-AIChat",
-            "version": "3.0.3",
+            "version": "3.0.4",
             "author": "wsu2059q",
             "description": "AIChat 聊天机器人模块",
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/wsu2059q/ErisPulse-AIChat",
             "official": false,
-            "tags": ["AIChat", "AI"]
+            "tags": [
+                "AIChat",
+                "AI"
+            ]
         },
         "OpenAI": {
             "package": "ErisPulse-OpenAI",
@@ -59,7 +73,10 @@
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/ErisPulse/ErisPulse-OpenAI",
             "official": true,
-            "tags": ["OpenAI", "AI"]
+            "tags": [
+                "OpenAI",
+                "AI"
+            ]
         },
         "SeTu": {
             "package": "ErisPulse-SeTu",
@@ -69,7 +86,10 @@
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/shanfishapp/ErisPulse-GetSeTu",
             "official": false,
-            "tags": ["色图", "SeTu"]
+            "tags": [
+                "色图",
+                "SeTu"
+            ]
         },
         "SystemStatus": {
             "package": "ErisPulse-SystemStatus",
@@ -79,7 +99,10 @@
             "min_sdk_version": "2.0.0",
             "repository": "https://github.com/shanfishapp/ErisPulse-SystemStatus",
             "official": false,
-            "tags": ["system-info", "api"]
+            "tags": [
+                "system-info",
+                "api"
+            ]
         },
         "ServerStatusMonitor": {
             "package": "ErisPulse-ServerStatusMonitor",
@@ -99,25 +122,34 @@
             "description": "云湖协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-YunhuAdapter",
             "official": true,
-            "tags": ["adapter", "yunhu"]
+            "tags": [
+                "adapter",
+                "yunhu"
+            ]
         },
-        "OneBot11": { 
+        "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
             "version": "3.1.0",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
-            "tags": ["adapter", "onebot11"]
+            "tags": [
+                "adapter",
+                "onebot11"
+            ]
         },
-        "Telegram": { 
+        "Telegram": {
             "package": "ErisPulse-TelegramAdapter",
             "author": "wsu2059q",
             "version": "3.1.1",
             "description": "Telgram协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-TelgramAdapter",
             "official": true,
-            "tags": ["adapter", "telgram"]
+            "tags": [
+                "adapter",
+                "telgram"
+            ]
         },
         "Email": {
             "package": "ErisPulse-EmailAdapter",
@@ -126,7 +158,11 @@
             "description": "支持在 ErisPulse 生态系统中以事件形式收发电子邮件。",
             "repository": "https://github.com/ErisPulse/ErisPulse-EmailAdapter",
             "official": true,
-            "tags": ["adapter", "mail", "email"]
+            "tags": [
+                "adapter",
+                "mail",
+                "email"
+            ]
         }
     },
     "cli_extensions": {
@@ -138,7 +174,11 @@
             "min_sdk_version": "2.1.6",
             "repository": "https://github.com/ErisPulse/ErisPulse-Scaffold",
             "official": true,
-            "tags": ["cli", "脚手架", "Scaffold"],
+            "tags": [
+                "cli",
+                "脚手架",
+                "Scaffold"
+            ],
             "command": [
                 "scaffold"
             ]
