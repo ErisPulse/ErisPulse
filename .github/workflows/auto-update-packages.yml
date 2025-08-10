@@ -69,6 +69,9 @@ jobs:
 
       - name: 创建魔法传送门（Pull Request）
         if: steps.update.outputs.has_updates == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🎀 艾莉丝要创建一个魔法传送门来提交更新哦~"
           
@@ -76,6 +79,9 @@ jobs:
           branch_name="auto-update-$(date +%Y%m%d-%H%M%S)"
           git checkout -b $branch_name
           git push origin $branch_name
+          
+          # 等待几秒确保分支推送完成
+          sleep 5
           
           # 创建 Pull Request
           gh pr create \
@@ -105,4 +111,3 @@ jobs:
           echo "✨ 今天没有发现需要更新的模块呢~"
           echo "🌟 艾莉丝会继续守护着我们的魔法世界!"
           echo "🌙 明天再见啦~"
-          
