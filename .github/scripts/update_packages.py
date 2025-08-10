@@ -9,7 +9,7 @@
 import json
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 
 # 魔法咒语准备
@@ -73,8 +73,7 @@ def update_packages():
         print(f"无法打开 packages.json 魔法书: {e}")
         return
     
-    # 更新时间戳
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    current_time = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     packages['last_updated'] = current_time
     print(f"更新时间戳: {current_time}")
     
