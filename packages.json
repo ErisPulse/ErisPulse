@@ -26,6 +26,22 @@
                 "小米"
             ]
         },
+        "InfoStats": {
+            "package": "ErisPulse-InfoStats",
+            "version": "1.0.0",
+            "author": "wsu2059q",
+            "description": "信息统计模块，用于监听和统计事件",
+            "min_sdk_version": "2.1.14-alpha.1",
+            "repository": "https://github.com/wsu2059q/ErisPulse-InfoStats",
+            "official": true,
+            "tags": [
+                "统计",
+                "monitoring",
+                "analytics",
+                "事件跟踪",
+                "data-analysis"
+            ]
+        },
         "GitHubParser": {
             "package": "ErisPulse-GitHubParser",
             "version": "1.0.1",
