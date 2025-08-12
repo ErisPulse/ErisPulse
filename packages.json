@@ -13,6 +13,19 @@
                 "ErisPulse"
             ]
         },
+        "InfoQuery": {
+            "package": "ErisPulse-InfoQuery",
+            "version": "1.0.0",
+            "author": "wsu2059q",
+            "description": "信息统计查询模块，用于查询InfoStats收集的统计数据",
+            "min_sdk_version": "2.1.14-alpha.1",
+            "repository": "https://github.com/wsu2059q/ErisPulse-InfoQuery",
+            "official": false,
+            "tags": [
+            "信息查询",
+            "InfoStats"
+            ]
+        },
         "XiaomiMarathon": {
             "package": "ErisPulse-XiaomiMarathon",
             "version": "1.0.0",
