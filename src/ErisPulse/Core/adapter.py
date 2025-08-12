@@ -546,3 +546,9 @@ class AdapterManager:
 AdapterFather = BaseAdapter
 adapter = AdapterManager()
 SendDSL = SendDSLBase
+
+__all__ = [
+    "AdapterFather",
+    "adapter",
+    "SendDSL"
+]
