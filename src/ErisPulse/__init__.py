@@ -24,6 +24,7 @@ from pathlib import Path
 
 # BaseModules: SDK核心模块
 from .Core import logger
+from .Core import storage
 from .Core import env
 from .Core import mods
 from .Core import adapter, AdapterFather, SendDSL
@@ -37,6 +38,7 @@ BaseModules = {
     "logger": logger,
     "config": config,
     "exceptions": exceptions,
+    "storage": storage,
     "env": env,
     "mods": mods,
     "adapter": adapter,

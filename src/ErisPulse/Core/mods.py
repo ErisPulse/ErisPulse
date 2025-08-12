@@ -30,8 +30,8 @@ class ModuleManager:
     DEFAULT_STATUS_PREFIX = "erispulse.data.modules.status:"
 
     def __init__(self):
-        from .env import env
-        self.env = env
+        from .storage import storage
+        self.storage = storage
         self._ensure_prefixes()
 
     def _ensure_prefixes(self) -> None:
@@ -39,10 +39,10 @@ class ModuleManager:
         {!--< internal-use >!--}
         确保模块前缀配置存在
         """
-        if not self.env.get("erispulse.system.module_prefix"):
-            self.env.set("erispulse.system.module_prefix", self.DEFAULT_MODULE_PREFIX)
-        if not self.env.get("erispulse.system.status_prefix"):
-            self.env.set("erispulse.system.status_prefix", self.DEFAULT_STATUS_PREFIX)
+        if not self.storage.get("erispulse.system.module_prefix"):
+            self.storage.set("erispulse.system.module_prefix", self.DEFAULT_MODULE_PREFIX)
+        if not self.storage.get("erispulse.system.status_prefix"):
+            self.storage.set("erispulse.system.status_prefix", self.DEFAULT_STATUS_PREFIX)
 
     @property
     def module_prefix(self) -> str:
@@ -51,7 +51,7 @@ class ModuleManager:
         
         :return: 模块数据前缀字符串
         """
-        return self.env.get("erispulse.system.module_prefix")
+        return self.storage.get("erispulse.system.module_prefix")
 
     @property
     def status_prefix(self) -> str:
@@ -60,7 +60,7 @@ class ModuleManager:
         
         :return: 模块状态前缀字符串
         """
-        return self.env.get("erispulse.system.status_prefix")
+        return self.storage.get("erispulse.system.status_prefix")
 
     def set_module_status(self, module_name: str, status: bool) -> None:
         """
@@ -76,7 +76,7 @@ class ModuleManager:
         >>> mods.set_module_status("MyModule", False)
         """
         from .logger import logger
-        self.env.set(f"{self.status_prefix}{module_name}", bool(status))
+        self.storage.set(f"{self.status_prefix}{module_name}", bool(status))
         logger.debug(f"模块 {module_name} 状态已设置为 {status}")
 
     def get_module_status(self, module_name: str) -> bool:
@@ -90,7 +90,7 @@ class ModuleManager:
         >>> if mods.get_module_status("MyModule"):
         >>>     print("模块已启用")
         """
-        status = self.env.get(f"{self.status_prefix}{module_name}", True)
+        status = self.storage.get(f"{self.status_prefix}{module_name}", True)
         if isinstance(status, str):
             return status.lower() not in ('false', '0', 'no', 'off')
         return bool(status)
@@ -108,7 +108,7 @@ class ModuleManager:
         >>>     "description": "我的模块",
         >>> })
         """
-        self.env.set(f"{self.module_prefix}{module_name}", module_info)
+        self.storage.set(f"{self.module_prefix}{module_name}", module_info)
 
     def get_module(self, module_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -122,7 +122,7 @@ class ModuleManager:
         >>> if module_info:
         >>>     print(f"模块版本: {module_info.get('version')}")
         """
-        return self.env.get(f"{self.module_prefix}{module_name}")
+        return self.storage.get(f"{self.module_prefix}{module_name}")
 
     def set_all_modules(self, modules_info: Dict[str, Dict[str, Any]]) -> None:
         """
@@ -151,7 +151,7 @@ class ModuleManager:
         >>>     print(f"{name}: {info.get('status')}")
         """
         modules_info = {}
-        all_keys = self.env.get_all_keys()
+        all_keys = self.storage.get_all_keys()
         prefix_len = len(self.module_prefix)
 
         for key in all_keys:
@@ -185,9 +185,9 @@ class ModuleManager:
         module_key = f"{self.module_prefix}{module_name}"
         status_key = f"{self.status_prefix}{module_name}"
 
-        if self.env.get(module_key) is not None:
-            self.env.delete(module_key)
-            self.env.delete(status_key)
+        if self.storage.get(module_key) is not None:
+            self.storage.delete(module_key)
+            self.storage.delete(status_key)
             return True
         return False
 
@@ -208,12 +208,16 @@ class ModuleManager:
         if module_prefix:
             if not module_prefix.endswith(':'):
                 module_prefix += ':'
-            self.env.set("erispulse.system.module_prefix", module_prefix)
+            self.storage.set("erispulse.system.module_prefix", module_prefix)
 
         if status_prefix:
             if not status_prefix.endswith(':'):
                 status_prefix += ':'
-            self.env.set("erispulse.system.status_prefix", status_prefix)
+            self.storage.set("erispulse.system.status_prefix", status_prefix)
 
 
 mods = ModuleManager()
+
+__all__ = [
+    "mods",
+]
