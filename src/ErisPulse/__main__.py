@@ -256,13 +256,76 @@ class PackageManager:
         except Exception:
             return False
     
-    def _run_pip_command(self, args: List[str], description: str) -> bool:
+    def _normalize_name(self, name: str) -> str:
         """
-        执行pip命令
+        标准化包名，统一转为小写以实现大小写不敏感比较
+        
+        :param name: 原始名称
+        :return: 标准化后的名称
+        """
+        return name.lower().strip()
+    
+    async def _find_package_by_alias(self, alias: str) -> Optional[str]:
+        """
+        通过别名查找实际包名（大小写不敏感）
+        
+        :param alias: 包别名
+        :return: 实际包名，未找到返回None
+        """
+        normalized_alias = self._normalize_name(alias)
+        remote_packages = await self.get_remote_packages()
+        
+        # 检查模块
+        for name, info in remote_packages["modules"].items():
+            if self._normalize_name(name) == normalized_alias:
+                return info["package"]
+                
+        # 检查适配器
+        for name, info in remote_packages["adapters"].items():
+            if self._normalize_name(name) == normalized_alias:
+                return info["package"]
+                
+        # 检查CLI扩展
+        for name, info in remote_packages.get("cli_extensions", {}).items():
+            if self._normalize_name(name) == normalized_alias:
+                return info["package"]
+                
+        return None
+    
+    def _find_installed_package_by_name(self, name: str) -> Optional[str]:
+        """
+        在已安装包中查找实际包名（大小写不敏感）
+        
+        :param name: 包名或别名
+        :return: 实际包名，未找到返回None
+        """
+        normalized_name = self._normalize_name(name)
+        installed = self.get_installed_packages()
+        
+        # 在已安装的模块中查找
+        for module_info in installed["modules"].values():
+            if self._normalize_name(module_info["package"]) == normalized_name:
+                return module_info["package"]
+                    
+        # 在已安装的适配器中查找
+        for adapter_info in installed["adapters"].values():
+            if self._normalize_name(adapter_info["package"]) == normalized_name:
+                return adapter_info["package"]
+                    
+        # 在已安装的CLI扩展中查找
+        for cli_info in installed["cli_extensions"].values():
+            if self._normalize_name(cli_info["package"]) == normalized_name:
+                return cli_info["package"]
+                
+        return None
+
+    def _run_pip_command_with_output(self, args: List[str], description: str) -> Tuple[bool, str, str]:
+        """
+        执行pip命令并捕获输出
         
         :param args: pip命令参数列表
         :param description: 进度条描述
-        :return: 命令是否成功执行
+        :return: (是否成功, 标准输出, 标准错误)
         """
         with Progress(
             TextColumn(f"[progress.description]{description}"),
@@ -279,56 +342,126 @@ class PackageManager:
                     universal_newlines=True
                 )
                 
+                stdout_lines = []
+                stderr_lines = []
+                
+                # 实时读取输出
                 while True:
-                    output = process.stdout.readline()
-                    if output == '' and process.poll() is not None:
-                        break
-                    if output:
+                    stdout_line = process.stdout.readline()
+                    stderr_line = process.stderr.readline()
+                    
+                    if stdout_line:
+                        stdout_lines.append(stdout_line)
                         progress.update(task, advance=1)
                         
-                return process.returncode == 0
+                    if stderr_line:
+                        stderr_lines.append(stderr_line)
+                        progress.update(task, advance=1)
+                        
+                    if stdout_line == '' and stderr_line == '' and process.poll() is not None:
+                        break
+                        
+                stdout = ''.join(stdout_lines)
+                stderr = ''.join(stderr_lines)
+                
+                return process.returncode == 0, stdout, stderr
             except subprocess.CalledProcessError as e:
                 console.print(f"[error]命令执行失败: {e}[/]")
-                return False
+                return False, "", str(e)
     
-    def install_package(self, package_name: str, upgrade: bool = False) -> bool:
+    def install_package(self, package_name: str, upgrade: bool = False, pre: bool = False) -> bool:
         """
         安装指定包
         
-        :param package_name: 要安装的包名
+        :param package_name: 要安装的包名或别名
         :param upgrade: 是否升级已安装的包
+        :param pre: 是否包含预发布版本
         :return: 安装是否成功
         """
+        # 首先尝试通过别名查找实际包名
+        actual_package = asyncio.run(self._find_package_by_alias(package_name))
+        
+        if actual_package:
+            console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]") 
+            package_name = actual_package
+        else:
+            console.print(f"[info]未找到别名，将直接安装: [package]{package_name}[/][/]")
+
+        # 构建pip命令
         cmd = ["install"]
         if upgrade:
             cmd.append("--upgrade")
+        if pre:
+            cmd.append("--pre")
         cmd.append(package_name)
         
-        success = self._run_pip_command(cmd, f"安装 {package_name}")
+        # 执行安装命令
+        success, stdout, stderr = self._run_pip_command_with_output(cmd, f"安装 {package_name}")
         
         if success:
-            console.print(f"[success]包 {package_name} 安装成功[/]")
+            console.print(Panel(
+                f"[success]包 {package_name} 安装成功[/]\n\n"
+                f"[dim]{stdout}[/]",
+                title="安装完成",
+                border_style="success"
+            ))
         else:
-            console.print(f"[error]包 {package_name} 安装失败[/]")
+            console.print(Panel(
+                f"[error]包 {package_name} 安装失败[/]\n\n"
+                f"[dim]{stderr}[/]",
+                title="安装失败",
+                border_style="error"
+            ))
             
         return success
     
     def uninstall_package(self, package_name: str) -> bool:
         """
-        卸载指定包
+        卸载指定包（支持别名）
         
-        :param package_name: 要卸载的包名
+        :param package_name: 要卸载的包名或别名
         :return: 卸载是否成功
         """
-        success = self._run_pip_command(
+        # 首先尝试通过别名查找实际包名
+        actual_package = asyncio.run(self._find_package_by_alias(package_name))
+        
+        if actual_package:
+            console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]") 
+            package_name = actual_package
+        else:
+            # 如果找不到别名映射，检查是否是已安装的包
+            installed_package = self._find_installed_package_by_name(package_name)
+            if installed_package:
+                package_name = installed_package
+                console.print(f"[info]找到已安装包: [bold]{package_name}[/][/]") 
+            else:
+                console.print(f"[warning]未找到别名映射，将尝试直接卸载: [package]{package_name}[/][/]")
+
+        # 确认卸载操作
+        if not Confirm.ask(f"确认卸载包 [package]{package_name}[/] 吗？", default=False):
+            console.print("[info]操作已取消[/]")
+            return False
+
+        # 执行卸载命令
+        success, stdout, stderr = self._run_pip_command_with_output(
             ["uninstall", "-y", package_name],
             f"卸载 {package_name}"
         )
         
         if success:
-            console.print(f"[success]包 {package_name} 卸载成功[/]")
+            console.print(Panel(
+                f"[success]包 {package_name} 卸载成功[/]\n\n"
+                f"[dim]{stdout}[/]",
+                title="卸载完成",
+                border_style="success"
+            ))
         else:
-            console.print(f"[error]包 {package_name} 卸载失败[/]")
+            console.print(Panel(
+                f"[error]包 {package_name} 卸载失败[/]\n\n"
+                f"[dim]{stderr}[/]",
+                title="卸载失败",
+                border_style="error"
+            ))
             
         return success
     
@@ -374,6 +507,90 @@ class PackageManager:
             return False
             
         return True
+
+    def upgrade_package(self, package_name: str, pre: bool = False) -> bool:
+        """
+        升级指定包
+        
+        :param package_name: 要升级的包名或别名
+        :param pre: 是否包含预发布版本
+        :return: 升级是否成功
+        """
+        # 首先尝试通过别名查找实际包名
+        actual_package = asyncio.run(self._find_package_by_alias(package_name))
+        
+        if actual_package:
+            console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]") 
+            package_name = actual_package
+
+        # 构建pip命令
+        cmd = ["install", "--upgrade"]
+        if pre:
+            cmd.append("--pre")
+        cmd.append(package_name)
+        
+        # 执行升级命令
+        success, stdout, stderr = self._run_pip_command_with_output(cmd, f"升级 {package_name}")
+        
+        if success:
+            console.print(Panel(
+                f"[success]包 {package_name} 升级成功[/]\n\n"
+                f"[dim]{stdout}[/]",
+                title="升级完成",
+                border_style="success"
+            ))
+        else:
+            console.print(Panel(
+                f"[error]包 {package_name} 升级失败[/]\n\n"
+                f"[dim]{stderr}[/]",
+                title="升级失败",
+                border_style="error"
+            ))
+            
+        return success
+
+    def search_package(self, query: str) -> Dict[str, List[Dict[str, str]]]:
+        """
+        搜索包（本地和远程）
+        
+        :param query: 搜索关键词
+        :return: 匹配的包信息
+        """
+        normalized_query = self._normalize_name(query)
+        results = {"installed": [], "remote": []}
+        
+        # 搜索已安装的包
+        installed = self.get_installed_packages()
+        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+            for name, info in installed[pkg_type].items():
+                if (normalized_query in self._normalize_name(name) or 
+                    normalized_query in self._normalize_name(info["package"]) or
+                    normalized_query in self._normalize_name(info["summary"])):
+                    results["installed"].append({
+                        "type": pkg_type[:-1] if pkg_type.endswith("s") else pkg_type,  # 移除复数s
+                        "name": name,
+                        "package": info["package"],
+                        "version": info["version"],
+                        "summary": info["summary"]
+                    })
+        
+        # 搜索远程包
+        remote = asyncio.run(self.get_remote_packages())
+        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+            for name, info in remote[pkg_type].items():
+                if (normalized_query in self._normalize_name(name) or 
+                    normalized_query in self._normalize_name(info["package"]) or
+                    normalized_query in self._normalize_name(info.get("description", "")) or
+                    normalized_query in self._normalize_name(info.get("summary", ""))):
+                    results["remote"].append({
+                        "type": pkg_type[:-1] if pkg_type.endswith("s") else pkg_type,  # 移除复数s
+                        "name": name,
+                        "package": info["package"],
+                        "version": info["version"],
+                        "summary": info.get("description", info.get("summary", ""))
+                    })
+        
+        return results
 
 class ReloadHandler(FileSystemEventHandler):
     """
@@ -657,6 +874,31 @@ class CLI:
             action='store_true',
             help='跳过确认直接升级'
         )
+        upgrade_parser.add_argument(
+            '--pre',
+            action='store_true',
+            help='包含预发布版本'
+        )
+        
+        # 搜索命令
+        search_parser = subparsers.add_parser(
+            'search',
+            help='搜索模块/适配器包'
+        )
+        search_parser.add_argument(
+            'query',
+            help='搜索关键词'
+        )
+        search_parser.add_argument(
+            '--installed', '-i',
+            action='store_true',
+            help='仅搜索已安装的包'
+        )
+        search_parser.add_argument(
+            '--remote', '-r',
+            action='store_true',
+            help='仅搜索远程包'
+        )
         
         # 运行命令
         run_parser = subparsers.add_parser(
@@ -931,22 +1173,84 @@ class CLI:
     
     def _resolve_package_name(self, short_name: str) -> Optional[str]:
         """
-        解析简称到完整包名
+        解析简称到完整包名（大小写不敏感）
         
         :param short_name: 模块/适配器简称
         :return: 完整包名，未找到返回None
         """
+        normalized_name = self.package_manager._normalize_name(short_name)
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         
         # 检查模块
-        if short_name in remote_packages["modules"]:
-            return remote_packages["modules"][short_name]["package"]
-            
+        for name, info in remote_packages["modules"].items():
+            if self.package_manager._normalize_name(name) == normalized_name:
+                return info["package"]
+                
         # 检查适配器
-        if short_name in remote_packages["adapters"]:
-            return remote_packages["adapters"][short_name]["package"]
-            
+        for name, info in remote_packages["adapters"].items():
+            if self.package_manager._normalize_name(name) == normalized_name:
+                return info["package"]
+                
         return None
+    
+    def _print_search_results(self, query: str, results: Dict[str, List[Dict[str, str]]]):
+        """
+        打印搜索结果
+        
+        :param query: 搜索关键词
+        :param results: 搜索结果
+        """
+        if not results["installed"] and not results["remote"]:
+            console.print(f"[info]未找到与 '[bold]{query}[/]' 匹配的包[/]")
+            return
+
+        # 打印已安装的包
+        if results["installed"]:
+            table = Table(
+                title="已安装的包",
+                box=SIMPLE,
+                header_style="info"
+            )
+            table.add_column("类型")
+            table.add_column("名称")
+            table.add_column("包名")
+            table.add_column("版本")
+            table.add_column("描述")
+            
+            for item in results["installed"]:
+                table.add_row(
+                    item["type"],
+                    item["name"],
+                    item["package"],
+                    item["version"],
+                    item["summary"]
+                )
+            
+            console.print(table)
+        
+        # 打印远程包
+        if results["remote"]:
+            table = Table(
+                title="远程包",
+                box=SIMPLE,
+                header_style="info"
+            )
+            table.add_column("类型")
+            table.add_column("名称")
+            table.add_column("包名")
+            table.add_column("版本")
+            table.add_column("描述")
+            
+            for item in results["remote"]:
+                table.add_row(
+                    item["type"],
+                    item["name"],
+                    item["package"],
+                    item["version"],
+                    item["summary"]
+                )
+            
+            console.print(table)
     
     def _setup_watchdog(self, script_path: str, reload_mode: bool):
         """
@@ -1012,16 +1316,19 @@ class CLI:
             
         try:
             if args.command == "install":
-                full_package = self._resolve_package_name(args.package)
-                if full_package:
-                    console.print(f"[info]找到远程包: [bold]{args.package}[/] → [package]{full_package}[/][/]")
-                    self.package_manager.install_package(full_package, args.upgrade)
-                else:
-                    self.package_manager.install_package(args.package, args.upgrade)
+                success = self.package_manager.install_package(
+                    args.package, 
+                    upgrade=args.upgrade,
+                    pre=args.pre
+                )
+                if not success:
+                    sys.exit(1)
                     
             elif args.command == "uninstall":
-                self.package_manager.uninstall_package(args.package)
-                
+                success = self.package_manager.uninstall_package(args.package)
+                if not success:
+                    sys.exit(1)
+                    
             elif args.command == "module":
                 from ErisPulse.Core import mods
                 installed = self.package_manager.get_installed_packages()
@@ -1062,11 +1369,29 @@ class CLI:
                     
             elif args.command == "upgrade":
                 if args.package:
-                    self.package_manager.install_package(args.package, upgrade=True)
+                    success = self.package_manager.upgrade_package(
+                        args.package,
+                        pre=args.pre
+                    )
+                    if not success:
+                        sys.exit(1)
                 else:
-                    if args.force or Confirm.ask("确定要升级所有ErisPulse组件吗？"):
-                        self.package_manager.upgrade_all()
-                        
+                    if args.force or Confirm.ask("确定要升级所有ErisPulse组件吗？", default=False):
+                        success = self.package_manager.upgrade_all()
+                        if not success:
+                            sys.exit(1)
+                            
+            elif args.command == "search":
+                results = self.package_manager.search_package(args.query)
+                
+                # 根据选项过滤结果
+                if args.installed:
+                    results["remote"] = []
+                elif args.remote:
+                    results["installed"] = []
+                    
+                self._print_search_results(args.query, results)
+                    
             elif args.command == "run":
                 script = args.script or "main.py"
                 if not os.path.exists(script):
