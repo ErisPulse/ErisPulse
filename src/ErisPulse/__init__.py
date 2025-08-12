@@ -646,7 +646,12 @@ from ErisPulse import sdk
 
 async def main():
     try:
-        sdk.init()
+        isInit = await sdk.init_task()
+        
+        if not isInit:
+            sdk.logger.error("ErisPulse 初始化失败，请检查日志")
+            return
+        
         await sdk.adapter.startup()
         
         # 保持程序运行(不建议修改)
@@ -698,26 +703,29 @@ def init() -> bool:
     """
     SDK初始化入口
     
-    执行步骤:
-    1. 准备运行环境
-    2. 初始化所有模块和适配器
-
     :return: bool SDK初始化是否成功
-    
-    {!--< tips >!--}
-    1. 这是SDK的主要入口函数
-    2. 如果初始化失败会抛出InitError异常
-    3. 建议在main.py中调用此函数
-    {!--< /tips >!--}
-    
-    :raises InitError: 当初始化失败时抛出
     """
-    
     if not _prepare_environment():
         return False
-
     return ModuleInitializer.init()
 
+def init_task() -> asyncio.Task:
+    """
+    SDK初始化入口，返回Task对象
+    
+    :return: asyncio.Task 初始化任务
+    """
+    async def _async_init():
+        if not _prepare_environment():
+            return False
+        return ModuleInitializer.init()
+    
+    try:
+        return asyncio.create_task(_async_init())
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop.create_task(_async_init())
 
 def load_module(module_name: str) -> bool:
     """
