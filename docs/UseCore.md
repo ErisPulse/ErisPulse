@@ -4,7 +4,7 @@
 | 名称 | 用途 |
 |------|------|
 | `sdk` | SDK对象 |
-| `env`/`sdk.env` | 获取/设置数据库配置 |
+| `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
 | `mods`/`sdk.mods` | 模块管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
@@ -13,11 +13,11 @@
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import env, mods, logger, adapter, BaseAdapter
+from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter
 
 # 通过SDK对象方式
 from ErisPulse import sdk
-sdk.env  # 等同于直接导入的env
+sdk.storage  # 等同于直接导入的storage
 ```
 
 ## 模块使用
@@ -89,17 +89,17 @@ logger.set_module_level("MyModule", "INFO")  # 影响所有相关子模块
 logger.set_output_file("app.log")  # 所有日志都会输出到指定文件
 ```
 
-### 2. 环境配置(env)
+### 2. 持久化数据存储(storage)
 ```python
 # 数据库配置操作
-env.set("key", "value")  # 设置配置项
-value = env.get("key", "default")  # 获取配置项
-env.delete("key")  # 删除配置项
+storage.set("key", "value")  # 设置配置项
+value = storage.get("key", "default")  # 获取配置项
+storage.delete("key")  # 删除配置项
 
 # 事务操作
-with env.transaction():
-    env.set('important_key', 'value')
-    env.delete('temp_key')  # 异常时自动回滚
+with storage.transaction():
+    storage.set('important_key', 'value')
+    storage.delete('temp_key')  # 异常时自动回滚
 ```
 
 ### 3. 配置模块(config)

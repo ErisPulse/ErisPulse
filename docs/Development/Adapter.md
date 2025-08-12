@@ -62,7 +62,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 class MyAdapter(BaseAdapter):
     def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
         self.sdk = sdk
-        self.env = self.sdk.env
+        self.storage = self.sdk.storage
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")

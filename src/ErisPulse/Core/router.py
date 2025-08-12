@@ -255,3 +255,8 @@ router = RouterManager()
 
 # 兼容性实例
 adapter_server = router
+
+__all__ = [
+    "router",
+    "adapter_server"
+]
