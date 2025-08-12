@@ -72,3 +72,7 @@ class ConfigManager:
             return False
 
 config = ConfigManager()
+
+__all__ = [
+    "config"
+]
