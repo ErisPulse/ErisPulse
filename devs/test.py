@@ -74,7 +74,7 @@ async def test_logger():
     
     print(f"\n{Colors.GREEN}日志测试完成，请查看控制台和文件 {log_file} 的输出{Colors.END}")
 
-async def test_env():
+async def test_storage():
     while True:
         print(f"\n{Colors.CYAN}--- 环境配置测试 ---{Colors.END}")
         print(f"{Colors.BLUE}1. 设置/获取单个配置项{Colors.END}")
@@ -91,36 +91,36 @@ async def test_env():
                 print(f"\n{Colors.YELLOW}--- 单个配置项测试 ---{Colors.END}")
                 key = input(f"{Colors.GREEN}请输入配置项名称: {Colors.END}").strip()
                 value = input(f"{Colors.GREEN}请输入{key}的值: {Colors.END}").strip()
-                sdk.env.set(key, value)
+                sdk.storage.set(key, value)
                 print(f"{Colors.GREEN}已设置 {key}={value}{Colors.END}")
-                print(f"{Colors.GREEN}读取测试: {key} = {sdk.env.get(key)}{Colors.END}")
+                print(f"{Colors.GREEN}读取测试: {key} = {sdk.storage.get(key)}{Colors.END}")
                 
             elif choice == "2":
                 print(f"\n{Colors.YELLOW}--- 批量配置项测试 ---{Colors.END}")
                 count = input(f"{Colors.GREEN}请输入要批量设置的配置项数量(默认3): {Colors.END}") or "3"
                 items = {f"test_key_{i}": f"value_{i}" for i in range(1, int(count)+1)}
-                sdk.env.set_multi(items)
+                sdk.storage.set_multi(items)
                 print(f"{Colors.GREEN}已批量设置 {len(items)} 个配置项{Colors.END}")
-                print(f"{Colors.GREEN}批量读取结果: {sdk.env.get_multi(list(items.keys()))}{Colors.END}")
+                print(f"{Colors.GREEN}批量读取结果: {sdk.storage.get_multi(list(items.keys()))}{Colors.END}")
                 
             elif choice == "3":
                 print(f"\n{Colors.YELLOW}--- 测试配置管理 ---{Colors.END}")
                 config_key = input(f"{Colors.GREEN}请输入配置项key: {Colors.END}") or None
                 config_value = input(f"{Colors.GREEN}请输入配置项value: {Colors.END}") or None
                 if config_key and config_value:
-                    sdk.env.setConfig(config_key, config_value)
+                    sdk.storage.setConfig(config_key, config_value)
                     print(f"{Colors.GREEN}已设置 {config_key}={config_value}{Colors.END}")
-                    print(f"{Colors.GREEN}读取测试: {config_key} = {sdk.env.getConfig(config_key)}{Colors.END}")
+                    print(f"{Colors.GREEN}读取测试: {config_key} = {sdk.storage.getConfig(config_key)}{Colors.END}")
                 else:
                     print(f"{Colors.RED}请设置配置项key和value{Colors.END}")
                     
             elif choice == "4":
                 print(f"\n{Colors.YELLOW}--- 事务操作测试 ---{Colors.END}")
                 print(f"{Colors.YELLOW}开始事务...{Colors.END}")
-                with sdk.env.transaction():
-                    sdk.env.set("tx_key1", "value1")
-                    sdk.env.set("tx_key2", "value2")
-                    print(f"{Colors.GREEN}事务中设置的值: tx_key1={sdk.env.get('tx_key1')}{Colors.END}")
+                with sdk.storage.transaction():
+                    sdk.storage.set("tx_key1", "value1")
+                    sdk.storage.set("tx_key2", "value2")
+                    print(f"{Colors.GREEN}事务中设置的值: tx_key1={sdk.storage.get('tx_key1')}{Colors.END}")
                 print(f"{Colors.GREEN}事务提交成功{Colors.END}")
                 
             elif choice == "5":
@@ -128,11 +128,11 @@ async def test_env():
                 try:
                     # 测试创建快照
                     snapshot_name = input(f"{Colors.GREEN}请输入快照名称(默认: test_snapshot): {Colors.END}") or "test_snapshot"
-                    snapshot_path = sdk.env.snapshot(snapshot_name)
+                    snapshot_path = sdk.storage.snapshot(snapshot_name)
                     print(f"{Colors.GREEN}✓ 快照创建成功: {snapshot_path}{Colors.END}")
                     
                     # 测试列出快照
-                    snapshots = sdk.env.list_snapshots()
+                    snapshots = sdk.storage.list_snapshots()
                     print(f"\n{Colors.CYAN}当前可用快照:{Colors.END}")
                     for i, (name, date, size) in enumerate(snapshots, 1):
                         print(f"{i}. {name} - {date.strftime('%Y-%m-%d %H:%M:%S')} ({size/1024:.1f} KB)")
@@ -142,7 +142,7 @@ async def test_env():
                         restore_choice = input(f"\n{Colors.GREEN}是否要测试恢复快照?(y/n): {Colors.END}").lower()
                         if restore_choice == 'y':
                             snap_name = snapshots[0][0]  # 取第一个快照
-                            if sdk.env.restore(snap_name):
+                            if sdk.storage.restore(snap_name):
                                 print(f"{Colors.GREEN}✓ 快照恢复成功: {snap_name}{Colors.END}")
                             else:
                                 print(f"{Colors.RED}✗ 快照恢复失败{Colors.END}")
@@ -357,14 +357,14 @@ async def main():
             if choice == "1":
                 print("\n核心模块列表:")
                 print("- logger: 日志记录系统")
-                print("- env: 环境配置管理")
+                print("- storage: 数据存储系统")
                 print("- exceptions: 异常处理系统")
                 print("- router: 路由管理")
                 print("- adapter: 适配器系统")
             elif choice == "2":
                 await test_logger()
             elif choice == "3":
-                await test_env()
+                await test_storage()
             elif choice == "4":
                 await test_exceptions()
             elif choice == "5":
