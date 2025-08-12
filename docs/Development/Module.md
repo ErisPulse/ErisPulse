@@ -64,7 +64,7 @@ class Main:
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
-        self.env = sdk.env
+        self.storage = sdk.storage
 
         self.logger.info("模块已加载")
         self.config = self._get_config()
@@ -117,7 +117,7 @@ class Main:
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
-        self.env = sdk.env
+        self.storage = sdk.storage
         
         # 注册模块路由
         self._register_routes()
@@ -169,7 +169,7 @@ class Main:
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
-        self.env = sdk.env
+        self.storage = sdk.storage
         self._connections = set()
         
         # 注册 WebSocket 路由
@@ -269,7 +269,7 @@ class Main:
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger
-        self.env = sdk.env
+        self.storage = sdk.storage
         self._register_routes()
         
     def _register_routes(self):
