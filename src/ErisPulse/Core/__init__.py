@@ -1,4 +1,5 @@
 from .adapter import AdapterFather, SendDSL, adapter
+from .storage import storage
 from .env import env
 from .logger import logger
 from .mods import mods
@@ -13,6 +14,7 @@ __all__ = [
     'AdapterFather',
     'SendDSL',
     'adapter',
+    'storage',
     'env',
     'logger',
     'mods',

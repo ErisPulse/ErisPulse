@@ -21,7 +21,7 @@
 | 名称 | 用途 |
 |------|------|
 | `sdk` | SDK对象 |
-| `env`/`sdk.env` | 获取/设置数据库配置 |
+| `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
 | `mods`/`sdk.mods` | 模块管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
@@ -30,11 +30,11 @@
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import env, mods, logger, adapter, BaseAdapter
+from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter
 
 # 通过SDK对象方式
 from ErisPulse import sdk
-sdk.env  # 等同于直接导入的env
+sdk.storage  # 等同于直接导入的storage
 ```
 
 ## 模块使用
@@ -106,17 +106,17 @@ logger.set_module_level("MyModule", "INFO")  # 影响所有相关子模块
 logger.set_output_file("app.log")  # 所有日志都会输出到指定文件
 ```
 
-### 2. 环境配置(env)
+### 2. 持久化数据存储(storage)
 ```python
 # 数据库配置操作
-env.set("key", "value")  # 设置配置项
-value = env.get("key", "default")  # 获取配置项
-env.delete("key")  # 删除配置项
+storage.set("key", "value")  # 设置配置项
+value = storage.get("key", "default")  # 获取配置项
+storage.delete("key")  # 删除配置项
 
 # 事务操作
-with env.transaction():
-    env.set('important_key', 'value')
-    env.delete('temp_key')  # 异常时自动回滚
+with storage.transaction():
+    storage.set('important_key', 'value')
+    storage.delete('temp_key')  # 异常时自动回滚
 ```
 
 ### 3. 配置模块(config)
@@ -223,7 +223,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 class MyAdapter(BaseAdapter):
     def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
         self.sdk = sdk
-        self.env = self.sdk.env
+        self.storage = self.sdk.storage
         self.logger = self.sdk.logger
         
         self.logger.info("MyModule 初始化完成")
@@ -928,7 +928,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 
 # 📦 `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -1237,13 +1237,13 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\__main__.md
 
 # 📦 `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -1557,13 +1557,13 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\adapter.md
 
 # 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -1959,13 +1959,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\config.md
 
 # 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -1979,352 +1979,35 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\env.md
 
 # 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
 ## 模块概述
 
 
-ErisPulse 环境配置模块
+ErisPulse 环境模块 (已弃用)
 
-提供键值存储、事务支持、快照和恢复功能，用于管理框架配置数据。基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+此模块已重命名为 storage，为保持向后兼容性而保留。
+建议使用 from ErisPulse.Core import storage 替代 from ErisPulse.Core import env
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持JSON序列化存储复杂数据类型
-2. 提供事务支持确保数据一致性
-3. 自动快照功能防止数据丢失</p></div>
-
----
-
-## 🏛️ 类
-
-### `class EnvManager`
-
-环境配置管理器
-
-单例模式实现，提供配置的增删改查、事务和快照管理
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用get/set方法操作配置项
-2. 使用transaction上下文管理事务
-3. 使用snapshot/restore管理数据快照</p></div>
-
-
-#### 🧰 方法
-
-##### `_init_db()`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-初始化数据库
+<div class='admonition attention'><p class='admonition-title'>已弃用</p><p>请使用 storage 模块替代</p></div>
 
 ---
 
-##### `get(key: str, default: Any = None)`
-
-获取配置项的值
-
-:param key: 配置项键名
-:param default: 默认值(当键不存在时返回)
-:return: 配置项的值
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> timeout = env.get("network.timeout", 30)
->>> user_settings = env.get("user.settings", {})
-```
-</details>
-
----
-
-##### `get_all_keys()`
-
-获取所有配置项的键名
-
-:return: 键名列表
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> all_keys = env.get_all_keys()
->>> print(f"共有 {len(all_keys)} 个配置项")
-```
-</details>
-
----
-
-##### `set(key: str, value: Any)`
-
-设置配置项的值
-
-:param key: 配置项键名
-:param value: 配置项的值
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.set("app.name", "MyApp")
->>> env.set("user.settings", {"theme": "dark"})
-```
-</details>
-
----
-
-##### `set_multi(items: Dict[str, Any])`
-
-批量设置多个配置项
-
-:param items: 键值对字典
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.set_multi({
->>>     "app.name": "MyApp",
->>>     "app.version": "1.0.0",
->>>     "app.debug": True
->>> })
-```
-</details>
-
----
-
-##### `getConfig(key: str, default: Any = None)`
-
-获取模块/适配器配置项
-:param key: 配置项的键(支持点分隔符如"module.sub.key")
-:param default: 默认值
-:return: 配置项的值
-
----
-
-##### `setConfig(key: str, value: Any)`
-
-设置模块/适配器配置
-:param key: 配置项键名(支持点分隔符如"module.sub.key")
-:param value: 配置项值
-:return: 操作是否成功
-
----
-
-##### `delete(key: str)`
-
-删除配置项
-
-:param key: 配置项键名
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.delete("temp.session")
-```
-</details>
-
----
-
-##### `delete_multi(keys: List[str])`
-
-批量删除多个配置项
-
-:param keys: 键名列表
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.delete_multi(["temp.key1", "temp.key2"])
-```
-</details>
-
----
-
-##### `get_multi(keys: List[str])`
-
-批量获取多个配置项的值
-
-:param keys: 键名列表
-:return: 键值对字典
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> settings = env.get_multi(["app.name", "app.version"])
-```
-</details>
-
----
-
-##### `transaction()`
-
-创建事务上下文
-
-:return: 事务上下文管理器
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> with env.transaction():
->>>     env.set("key1", "value1")
->>>     env.set("key2", "value2")
-```
-</details>
-
----
-
-##### `_check_auto_snapshot()`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-检查并执行自动快照
-
----
-
-##### `set_snapshot_interval(seconds: int)`
-
-设置自动快照间隔
-
-:param seconds: 间隔秒数
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> # 每30分钟自动快照
->>> env.set_snapshot_interval(1800)
-```
-</details>
-
----
-
-##### `clear()`
-
-清空所有配置项
-
-:return: 操作是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.clear()  # 清空所有配置
-```
-</details>
-
----
-
-##### `__getattr__(key: str)`
-
-通过属性访问配置项
-
-:param key: 配置项键名
-:return: 配置项的值
-
-<dt>异常</dt><dd><code>KeyError</code> 当配置项不存在时抛出</dd>
-    
-<details class='example'><summary>示例</summary>
-
-```python
->>> app_name = env.app_name
-```
-</details>
-
----
-
-##### `__setattr__(key: str, value: Any)`
-
-通过属性设置配置项
-
-:param key: 配置项键名
-:param value: 配置项的值
-    
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.app_name = "MyApp"
-```
-</details>
-
----
-
-##### `snapshot(name: Optional[str] = None)`
-
-创建数据库快照
-
-:param name: 快照名称(可选)
-:return: 快照文件路径
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> # 创建命名快照
->>> snapshot_path = env.snapshot("before_update")
->>> # 创建时间戳快照
->>> snapshot_path = env.snapshot()
-```
-</details>
-
----
-
-##### `restore(snapshot_name: str)`
-
-从快照恢复数据库
-
-:param snapshot_name: 快照名称或路径
-:return: 恢复是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.restore("before_update")
-```
-</details>
-
----
-
-##### `list_snapshots()`
-
-列出所有可用的快照
-
-:return: 快照信息列表(名称, 创建时间, 大小)
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> for name, date, size in env.list_snapshots():
->>>     print(f"{name} - {date} ({size} bytes)")
-```
-</details>
-
----
-
-##### `delete_snapshot(snapshot_name: str)`
-
-删除指定的快照
-
-:param snapshot_name: 快照名称
-:return: 删除是否成功
-
-<details class='example'><summary>示例</summary>
-
-```python
->>> env.delete_snapshot("old_backup")
-```
-</details>
-
----
-
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\erispulse_config.md
 
 # 📦 `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -2381,13 +2064,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\exceptions.md
 
 # 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -2429,13 +2112,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\logger.md
 
 # 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -2558,13 +2241,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\mods.md
 
 # 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -2773,13 +2456,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 ## ErisPulse\Core\router.md
 
 # 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-09 21:50:50</sup>
+<sup>自动生成于 2025-08-12 17:41:58</sup>
 
 ---
 
@@ -2887,6 +2570,346 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-09 21:50:50</sub>
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+
+## ErisPulse\Core\storage.md
+
+# 📦 `ErisPulse.Core.storage` 模块
+
+<sup>自动生成于 2025-08-12 17:41:58</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 存储管理模块
+
+提供键值存储、事务支持、快照和恢复功能，用于管理框架运行时数据。
+基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持JSON序列化存储复杂数据类型
+2. 提供事务支持确保数据一致性
+3. 自动快照功能防止数据丢失</p></div>
+
+---
+
+## 🏛️ 类
+
+### `class StorageManager`
+
+存储管理器
+
+单例模式实现，提供键值存储的增删改查、事务和快照管理
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用get/set方法操作存储项
+2. 使用transaction上下文管理事务
+3. 使用snapshot/restore管理数据快照</p></div>
+
+
+#### 🧰 方法
+
+##### `_init_db()`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+初始化数据库
+
+---
+
+##### `get(key: str, default: Any = None)`
+
+获取存储项的值
+
+:param key: 存储项键名
+:param default: 默认值(当键不存在时返回)
+:return: 存储项的值
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> timeout = storage.get("network.timeout", 30)
+>>> user_settings = storage.get("user.settings", {})
+```
+</details>
+
+---
+
+##### `get_all_keys()`
+
+获取所有存储项的键名
+
+:return: 键名列表
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> all_keys = storage.get_all_keys()
+>>> print(f"共有 {len(all_keys)} 个存储项")
+```
+</details>
+
+---
+
+##### `set(key: str, value: Any)`
+
+设置存储项的值
+
+:param key: 存储项键名
+:param value: 存储项的值
+:return: 操作是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.set("app.name", "MyApp")
+>>> storage.set("user.settings", {"theme": "dark"})
+```
+</details>
+
+---
+
+##### `set_multi(items: Dict[str, Any])`
+
+批量设置多个存储项
+
+:param items: 键值对字典
+:return: 操作是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.set_multi({
+>>>     "app.name": "MyApp",
+>>>     "app.version": "1.0.0",
+>>>     "app.debug": True
+>>> })
+```
+</details>
+
+---
+
+##### `getConfig(key: str, default: Any = None)`
+
+获取模块/适配器配置项（委托给config模块）
+:param key: 配置项的键(支持点分隔符如"module.sub.key")
+:param default: 默认值
+:return: 配置项的值
+
+---
+
+##### `setConfig(key: str, value: Any)`
+
+设置模块/适配器配置（委托给config模块）
+:param key: 配置项键名(支持点分隔符如"module.sub.key")
+:param value: 配置项值
+:return: 操作是否成功
+
+---
+
+##### `delete(key: str)`
+
+删除存储项
+
+:param key: 存储项键名
+:return: 操作是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.delete("temp.session")
+```
+</details>
+
+---
+
+##### `delete_multi(keys: List[str])`
+
+批量删除多个存储项
+
+:param keys: 键名列表
+:return: 操作是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.delete_multi(["temp.key1", "temp.key2"])
+```
+</details>
+
+---
+
+##### `get_multi(keys: List[str])`
+
+批量获取多个存储项的值
+
+:param keys: 键名列表
+:return: 键值对字典
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> settings = storage.get_multi(["app.name", "app.version"])
+```
+</details>
+
+---
+
+##### `transaction()`
+
+创建事务上下文
+
+:return: 事务上下文管理器
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> with storage.transaction():
+>>>     storage.set("key1", "value1")
+>>>     storage.set("key2", "value2")
+```
+</details>
+
+---
+
+##### `_check_auto_snapshot()`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+检查并执行自动快照
+
+---
+
+##### `set_snapshot_interval(seconds: int)`
+
+设置自动快照间隔
+
+:param seconds: 间隔秒数
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> # 每30分钟自动快照
+>>> storage.set_snapshot_interval(1800)
+```
+</details>
+
+---
+
+##### `clear()`
+
+清空所有存储项
+
+:return: 操作是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.clear()  # 清空所有存储
+```
+</details>
+
+---
+
+##### `__getattr__(key: str)`
+
+通过属性访问存储项
+
+:param key: 存储项键名
+:return: 存储项的值
+
+<dt>异常</dt><dd><code>KeyError</code> 当存储项不存在时抛出</dd>
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> app_name = storage.app_name
+```
+</details>
+
+---
+
+##### `__setattr__(key: str, value: Any)`
+
+通过属性设置存储项
+
+:param key: 存储项键名
+:param value: 存储项的值
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.app_name = "MyApp"
+```
+</details>
+
+---
+
+##### `snapshot(name: Optional[str] = None)`
+
+创建数据库快照
+
+:param name: 快照名称(可选)
+:return: 快照文件路径
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> # 创建命名快照
+>>> snapshot_path = storage.snapshot("before_update")
+>>> # 创建时间戳快照
+>>> snapshot_path = storage.snapshot()
+```
+</details>
+
+---
+
+##### `restore(snapshot_name: str)`
+
+从快照恢复数据库
+
+:param snapshot_name: 快照名称或路径
+:return: 恢复是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.restore("before_update")
+```
+</details>
+
+---
+
+##### `list_snapshots()`
+
+列出所有可用的快照
+
+:return: 快照信息列表(名称, 创建时间, 大小)
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> for name, date, size in storage.list_snapshots():
+>>>     print(f"{name} - {date} ({size} bytes)")
+```
+</details>
+
+---
+
+##### `delete_snapshot(snapshot_name: str)`
+
+删除指定的快照
+
+:param snapshot_name: 快照名称
+:return: 删除是否成功
+
+<details class='example'><summary>示例</summary>
+
+```python
+>>> storage.delete_snapshot("old_backup")
+```
+</details>
+
+---
+
+<sub>文档最后更新于 2025-08-12 17:41:58</sub>
 
 <!--- End of API文档 -->

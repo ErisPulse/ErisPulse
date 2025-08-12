@@ -303,3 +303,7 @@ class LoggerChild:
 
 
 logger = Logger()
+
+__all__ = [
+    "logger"
+]
