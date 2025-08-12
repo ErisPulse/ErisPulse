@@ -339,28 +339,44 @@ class PackageManager:
                     [sys.executable, "-m", "pip"] + args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    universal_newlines=True
+                    universal_newlines=True,
+                    bufsize=1  # 行缓冲
                 )
                 
                 stdout_lines = []
                 stderr_lines = []
                 
-                # 实时读取输出
-                while True:
-                    stdout_line = process.stdout.readline()
-                    stderr_line = process.stderr.readline()
-                    
-                    if stdout_line:
-                        stdout_lines.append(stdout_line)
-                        progress.update(task, advance=1)
-                        
-                    if stderr_line:
-                        stderr_lines.append(stderr_line)
-                        progress.update(task, advance=1)
-                        
-                    if stdout_line == '' and stderr_line == '' and process.poll() is not None:
-                        break
-                        
+                # 使用超时机制避免永久阻塞
+                import threading
+                import queue
+                
+                def read_output(pipe, lines_list):
+                    try:
+                        for line in iter(pipe.readline, ''):
+                            lines_list.append(line)
+                            progress.update(task, advance=5)  # 每行增加进度
+                        pipe.close()
+                    except Exception:
+                        pass
+                
+                stdout_thread = threading.Thread(target=read_output, args=(process.stdout, stdout_lines))
+                stderr_thread = threading.Thread(target=read_output, args=(process.stderr, stderr_lines))
+                
+                stdout_thread.start()
+                stderr_thread.start()
+                
+                # 等待进程结束，最多等待5分钟
+                try:
+                    process.wait(timeout=300)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+                    console.print("[warning]命令执行超时，已强制终止[/]")
+                    return False, "", "命令执行超时"
+                
+                stdout_thread.join(timeout=10)
+                stderr_thread.join(timeout=10)
+                
                 stdout = ''.join(stdout_lines)
                 stderr = ''.join(stderr_lines)
                 
@@ -368,7 +384,9 @@ class PackageManager:
             except subprocess.CalledProcessError as e:
                 console.print(f"[error]命令执行失败: {e}[/]")
                 return False, "", str(e)
-    
+            except Exception as e:
+                console.print(f"[error]执行过程中发生异常: {e}[/]")
+                return False, "", str(e)
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         """
@@ -813,34 +831,83 @@ class PackageManager:
         if target_version:
             package_spec += f"=={target_version}"
         
-        # 执行更新命令
-        success, stdout, stderr = self._run_pip_command_with_output(
-            ["install", "--upgrade", package_spec],
-            f"更新 ErisPulse SDK {f'到 {target_version}' if target_version else '到最新版本'}"
-        )
-        
-        if success:
-            new_version = target_version or "最新版本"
-            console.print(Panel(
-                f"[success]ErisPulse SDK 更新成功[/]\n"
-                f"  当前版本: [bold]{current_version}[/]\n"
-                f"  更新版本: [bold]{new_version}[/]\n\n"
-                f"[dim]{stdout}[/]",
-                title="更新完成",
-                border_style="success"
-            ))
+        # 检查是否在Windows上且尝试更新自身
+        if sys.platform == "win32":
+            # 构建更新脚本
+            update_script = f"""
+import time
+import subprocess
+import sys
+import os
+
+# 等待原进程结束
+time.sleep(2)
+
+# 执行更新命令
+try:
+    result = subprocess.run([
+        sys.executable, "-m", "pip", "install", "--upgrade", "{package_spec}"
+    ], capture_output=True, text=True, timeout=300)
+    
+    if result.returncode == 0:
+        print("更新成功!")
+        print(result.stdout)
+    else:
+        print("更新失败:")
+        print(result.stderr)
+except Exception as e:
+    print(f"更新过程中出错: {{e}}")
+
+# 清理临时脚本
+try:
+    os.remove(__file__)
+except:
+    pass
+"""
+            # 创建临时更新脚本
+            import tempfile
+            script_path = os.path.join(tempfile.gettempdir(), "epsdk_update.py")
+            with open(script_path, "w", encoding="utf-8") as f:
+                f.write(update_script)
             
-            if not target_version:
-                console.print("[info]请重新启动CLI以使用新版本[/]")
+            # 启动更新进程并退出当前进程
+            console.print("[info]正在启动更新进程...[/]")
+            console.print("[info]请稍后重新运行CLI以使用新版本[/]")
+            
+            subprocess.Popen([
+                sys.executable, script_path
+            ], creationflags=subprocess.CREATE_NEW_CONSOLE)
+            
+            return True
         else:
-            console.print(Panel(
-                f"[error]ErisPulse SDK 更新失败[/]\n\n"
-                f"[dim]{stderr}[/]",
-                title="更新失败",
-                border_style="error"
-            ))
+            # 非Windows平台
+            success, stdout, stderr = self._run_pip_command_with_output(
+                ["install", "--upgrade", package_spec],
+                f"更新 ErisPulse SDK {f'到 {target_version}' if target_version else '到最新版本'}"
+            )
             
-        return success
+            if success:
+                new_version = target_version or "最新版本"
+                console.print(Panel(
+                    f"[success]ErisPulse SDK 更新成功[/]\n"
+                    f"  当前版本: [bold]{current_version}[/]\n"
+                    f"  更新版本: [bold]{new_version}[/]\n\n"
+                    f"[dim]{stdout}[/]",
+                    title="更新完成",
+                    border_style="success"
+                ))
+                
+                if not target_version:
+                    console.print("[info]请重新启动CLI以使用新版本[/]")
+            else:
+                console.print(Panel(
+                    f"[error]ErisPulse SDK 更新失败[/]\n\n"
+                    f"[dim]{stderr}[/]",
+                    title="更新失败",
+                    border_style="error"
+                ))
+                
+            return success
 
 class ReloadHandler(FileSystemEventHandler):
     """
