@@ -1,5 +1,5 @@
 {
-    "last_updated": "2025-08-12T03:12:50Z",
+    "last_updated": "2025-08-13T03:15:33Z",
     "modules": {
         "ErisPulse": {
             "package": "ErisPulse",
@@ -22,8 +22,8 @@
             "repository": "https://github.com/wsu2059q/ErisPulse-InfoQuery",
             "official": false,
             "tags": [
-            "信息查询",
-            "InfoStats"
+                "信息查询",
+                "InfoStats"
             ]
         },
         "XiaomiMarathon": {
@@ -159,7 +159,7 @@
         "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
