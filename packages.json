@@ -13,6 +13,21 @@
                 "ErisPulse"
             ]
         },
+        "EditVideoPlayer": {
+            "package": "ErisPulse-EditVideoPlayer",
+            "version": "1.0.0",
+            "author": "wsu2059q",
+            "description": "一个通用的视频播放器模块，可将视频转换为点阵字符并在支持消息编辑的平台上播放",
+            "min_sdk_version": "2.1.14-alpha.1",
+            "repository": "https://github.com/wsu2059q/ErisPulse-EditVideoPlayer",
+            "official": false,
+            "tags": [
+                "player",
+                "视频播放",
+                "编辑消息",
+                "editor"
+            ]
+        },
         "InfoQuery": {
             "package": "ErisPulse-InfoQuery",
             "version": "1.0.0",
