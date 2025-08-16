@@ -188,7 +188,7 @@
             "author": "wsu2059q",
             "version": "3.2.1",
             "description": "Telgram协议适配模块",
-            "repository": "https://github.com/ErisPulse/ErisPulse-TelgramAdapter",
+            "repository": "https://github.com/ErisPulse/ErisPulse-TelegramAdapter",
             "official": true,
             "tags": [
                 "adapter",
