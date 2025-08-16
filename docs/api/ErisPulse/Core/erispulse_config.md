@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.erispulse_config` 模块
+# `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -13,7 +13,7 @@ ErisPulse 框架配置管理
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
 
@@ -57,4 +57,4 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
