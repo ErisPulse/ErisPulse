@@ -7,9 +7,13 @@ from .router import router, adapter_server
 from .config import config
 from . import exceptions
 
+from . import Event
+
 BaseAdapter = AdapterFather
 
 __all__ = [
+    'Event',
+    
     'BaseAdapter',
     'AdapterFather',
     'SendDSL',
