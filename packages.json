@@ -1,5 +1,5 @@
 {
-    "last_updated": "2025-08-12T03:12:50Z",
+    "last_updated": "2025-08-16T03:10:19Z",
     "modules": {
         "ErisPulse": {
             "package": "ErisPulse",
@@ -15,7 +15,7 @@
         },
         "EditVideoPlayer": {
             "package": "ErisPulse-EditVideoPlayer",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "author": "wsu2059q",
             "description": "一个通用的视频播放器模块，可将视频转换为点阵字符并在支持消息编辑的平台上播放",
             "min_sdk_version": "2.1.14-alpha.1",
@@ -37,8 +37,8 @@
             "repository": "https://github.com/wsu2059q/ErisPulse-InfoQuery",
             "official": false,
             "tags": [
-            "信息查询",
-            "InfoStats"
+                "信息查询",
+                "InfoStats"
             ]
         },
         "XiaomiMarathon": {
@@ -162,7 +162,7 @@
         "Yunhu": {
             "package": "ErisPulse-YunhuAdapter",
             "author": "wsu2059q",
-            "version": "3.1.0",
+            "version": "3.1.2",
             "description": "云湖协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-YunhuAdapter",
             "official": true,
@@ -174,7 +174,7 @@
         "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
@@ -186,7 +186,7 @@
         "Telegram": {
             "package": "ErisPulse-TelegramAdapter",
             "author": "wsu2059q",
-            "version": "3.1.1",
+            "version": "3.2.1",
             "description": "Telgram协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-TelegramAdapter",
             "official": true,
