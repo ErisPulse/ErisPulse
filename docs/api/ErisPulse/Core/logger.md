@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.logger` 模块
+# `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -17,7 +17,7 @@ ErisPulse 日志系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class Logger`
 
@@ -30,7 +30,7 @@ ErisPulse 日志系统
 3. 支持标准日志级别(DEBUG, INFO等)</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `set_memory_limit(limit: int)`
 
@@ -103,7 +103,7 @@ ErisPulse 日志系统
 用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(parent_logger: Logger, name: str)`
 
@@ -123,4 +123,4 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>

@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.mods` 模块
+# `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -17,7 +17,7 @@ ErisPulse 模块管理器
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class ModuleManager`
 
@@ -30,7 +30,7 @@ ErisPulse 模块管理器
 3. 通过set_all_modules/get_all_modules批量操作模块</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `_ensure_prefixes()`
 
@@ -209,4 +209,4 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
