@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.router` 模块
+# `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -17,7 +17,7 @@ ErisPulse 路由系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class RouterManager`
 
@@ -29,7 +29,7 @@ ErisPulse 路由系统
 - 统一错误处理</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -89,7 +89,7 @@ ErisPulse 路由系统
 
 ---
 
-##### 🔷 `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
+##### async `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
 
 启动路由服务器
 
@@ -102,10 +102,10 @@ ErisPulse 路由系统
 
 ---
 
-##### 🔷 `async stop()`
+##### async `async stop()`
 
 停止服务器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
