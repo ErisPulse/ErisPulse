@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.__main__` 模块
+# `ErisPulse.__main__` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -16,7 +16,7 @@ ErisPulse SDK 命令行工具
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `main()`
 
@@ -27,7 +27,7 @@ CLI入口点
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class CommandHighlighter(RegexHighlighter)`
 
@@ -46,7 +46,7 @@ ErisPulse包管理器
 2. 包含1小时缓存机制</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -54,7 +54,7 @@ ErisPulse包管理器
 
 ---
 
-##### 🔷 `async _fetch_remote_packages(url: str)`
+##### async `async _fetch_remote_packages(url: str)`
 
 从指定URL获取远程包数据
 
@@ -66,7 +66,7 @@ ErisPulse包管理器
 
 ---
 
-##### 🔷 `async get_remote_packages(force_refresh: bool = False)`
+##### async `async get_remote_packages(force_refresh: bool = False)`
 
 获取远程包列表，带缓存机制
 
@@ -108,31 +108,87 @@ ErisPulse包管理器
 
 ---
 
-##### `_run_pip_command(args: List[str], description: str)`
+##### `_normalize_name(name: str)`
 
-执行pip命令
+标准化包名，统一转为小写以实现大小写不敏感比较
 
-:param args: pip命令参数列表
-:param description: 进度条描述
-:return: 命令是否成功执行
+:param name: 原始名称
+:return: 标准化后的名称
 
 ---
 
-##### `install_package(package_name: str, upgrade: bool = False)`
+##### async `async _find_package_by_alias(alias: str)`
 
-安装指定包
+通过别名查找实际包名（大小写不敏感）
 
-:param package_name: 要安装的包名
+:param alias: 包别名
+:return: 实际包名，未找到返回None
+
+---
+
+##### `_find_installed_package_by_name(name: str)`
+
+在已安装包中查找实际包名（大小写不敏感）
+
+:param name: 包名或别名
+:return: 实际包名，未找到返回None
+
+---
+
+##### `_run_pip_command_with_output(args: List[str], description: str)`
+
+执行pip命令并捕获输出
+
+:param args: pip命令参数列表
+:param description: 进度条描述
+:return: (是否成功, 标准输出, 标准错误)
+
+---
+
+##### `_compare_versions(version1: str, version2: str)`
+
+比较两个版本号
+
+:param version1: 版本号1
+:param version2: 版本号2
+:return: 1 if version1 > version2, -1 if version1 < version2, 0 if equal
+
+---
+
+##### `_check_sdk_compatibility(min_sdk_version: str)`
+
+检查SDK版本兼容性
+
+:param min_sdk_version: 所需的最小SDK版本
+:return: (是否兼容, 当前版本信息)
+
+---
+
+##### async `async _get_package_info(package_name: str)`
+
+获取包的详细信息（包括min_sdk_version等）
+
+:param package_name: 包名或别名
+:return: 包信息字典
+
+---
+
+##### `install_package(package_names: List[str], upgrade: bool = False, pre: bool = False)`
+
+安装指定包（支持多个包）
+
+:param package_names: 要安装的包名或别名列表
 :param upgrade: 是否升级已安装的包
+:param pre: 是否包含预发布版本
 :return: 安装是否成功
 
 ---
 
-##### `uninstall_package(package_name: str)`
+##### `uninstall_package(package_names: List[str])`
 
-卸载指定包
+卸载指定包（支持多个包，支持别名）
 
-:param package_name: 要卸载的包名
+:param package_names: 要卸载的包名或别名列表
 :return: 卸载是否成功
 
 ---
@@ -147,6 +203,60 @@ ErisPulse包管理器
 
 ---
 
+##### `upgrade_package(package_names: List[str], pre: bool = False)`
+
+升级指定包（支持多个包）
+
+:param package_names: 要升级的包名或别名列表
+:param pre: 是否包含预发布版本
+:return: 升级是否成功
+
+---
+
+##### `search_package(query: str)`
+
+搜索包（本地和远程）
+
+:param query: 搜索关键词
+:return: 匹配的包信息
+
+---
+
+##### `get_installed_version()`
+
+获取当前安装的ErisPulse版本
+
+:return: 当前版本号
+
+---
+
+##### async `async get_pypi_versions()`
+
+从PyPI获取ErisPulse的所有可用版本
+
+:return: 版本信息列表
+
+---
+
+##### `_is_pre_release(version: str)`
+
+判断版本是否为预发布版本
+
+:param version: 版本号
+:return: 是否为预发布版本
+
+---
+
+##### `update_self(target_version: str = None, force: bool = False)`
+
+更新ErisPulse SDK本身
+
+:param target_version: 目标版本号，None表示更新到最新版本
+:param force: 是否强制更新
+:return: 更新是否成功
+
+---
+
 ### `class ReloadHandler(FileSystemEventHandler)`
 
 文件系统事件处理器
@@ -157,7 +267,7 @@ ErisPulse包管理器
 2. 支持配置文件修改重载</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(script_path: str, reload_mode: bool = False)`
 
@@ -208,7 +318,7 @@ ErisPulse命令行接口
 2. 支持模块化子命令系统</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -277,10 +387,28 @@ ErisPulse命令行接口
 
 ##### `_resolve_package_name(short_name: str)`
 
-解析简称到完整包名
+解析简称到完整包名（大小写不敏感）
 
 :param short_name: 模块/适配器简称
 :return: 完整包名，未找到返回None
+
+---
+
+##### `_print_search_results(query: str, results: Dict[str, List[Dict[str, str]]])`
+
+打印搜索结果
+
+:param query: 搜索关键词
+:param results: 搜索结果
+
+---
+
+##### `_print_version_list(versions: List[Dict[str, Any]], include_pre: bool = False)`
+
+打印版本列表
+
+:param versions: 版本信息列表
+:param include_pre: 是否包含预发布版本
 
 ---
 
@@ -314,4 +442,4 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
