@@ -10,10 +10,23 @@
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
+| `Event`/`sdk.Event` | 事件处理模块 |
+
+Event 模块包含以下子模块：
+
+| 子模块 | 用途 |
+|-------|------|
+| `Event.command` | 命令处理 |
+| `Event.message` | 消息事件处理 |
+| `Event.notice` | 通知事件处理 |
+| `Event.request` | 请求事件处理 |
+| `Event.meta` | 元事件处理 |
+| `Event.event_manager` | 事件管理器 |
+| `Event.exceptions` | 事件异常处理 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter
+from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter, Event
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -59,6 +72,168 @@ async def on_raw_message(data):
     # Do something ...
 ```
 平台原生事件监听并不建议使用，因为格式不保证与 OneBot12 兼容，另外 OneBot12 的标准事件规定了一个拓展字段 `{{platform}}_raw` 用于传输平台原生数据
+
+## 事件处理模块(Event)
+Event 模块提供了一套完整的事件处理机制，支持命令处理、消息处理、通知处理、请求处理和元事件处理等功能。
+
+### 命令处理
+```python
+from ErisPulse.Core.Event import command
+
+# 基本命令
+@command("hello", help="发送问候消息")
+async def hello_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    
+    # 发送回复消息
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text("Hello World!")
+
+# 带参数的命令
+@command("echo", help="回显消息", usage="/echo <内容>")
+async def echo_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    args = event["command"]["args"]
+    
+    if args:
+        message = " ".join(args)
+        adapter_instance = getattr(sdk.adapter, platform)
+        await adapter_instance.Send.To("user", user_id).Text(message)
+    else:
+        adapter_instance = getattr(sdk.adapter, platform)
+        await adapter_instance.Send.To("user", user_id).Text("请提供要回显的内容")
+
+# 带别名的命令
+@command(["help", "h"], help="显示帮助信息")
+async def help_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    help_text = command.help()
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text(help_text)
+```
+
+### 消息处理
+```python
+from ErisPulse.Core.Event import message
+
+# 处理所有消息
+@message.on_message()
+async def handle_message(event):
+    sdk.logger.info(f"收到消息: {event['alt_message']}")
+
+# 处理私聊消息
+@message.on_private_message()
+async def handle_private_message(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到私聊消息，来自用户: {user_id}")
+
+# 处理群聊消息
+@message.on_group_message()
+async def handle_group_message(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到群消息，群: {group_id}，用户: {user_id}")
+```
+
+### 通知处理
+```python
+from ErisPulse.Core.Event import notice
+
+# 处理好友添加通知
+@notice.on_friend_add()
+async def handle_friend_add(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"新好友添加: {user_id}")
+    
+    # 发送欢迎消息
+    platform = event["platform"]
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text("欢迎添加我为好友！")
+
+# 处理群成员增加通知
+@notice.on_group_increase()
+async def handle_group_increase(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"新成员加入群: {group_id}，用户: {user_id}")
+```
+
+### 请求处理
+```python
+from ErisPulse.Core.Event import request
+
+# 处理好友请求
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到好友请求，来自用户: {user_id}")
+```
+
+### 元事件处理
+```python
+from ErisPulse.Core.Event import meta
+
+# 处理连接事件
+@meta.on_connect()
+async def handle_connect(event):
+    platform = event["platform"]
+    sdk.logger.info(f"平台 {platform} 连接成功")
+```
+
+### 高级功能
+
+#### 优先级控制
+```python
+# 设置处理器优先级
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    # 高优先级处理器先执行
+    pass
+
+@message.on_message(priority=20)
+async def low_priority_handler(event):
+    # 低优先级处理器后执行
+    pass
+```
+
+#### 条件处理器
+```python
+# 定义条件函数
+def keyword_condition(event):
+    message_segments = event.get("message", [])
+    for segment in message_segments:
+        if segment.get("type") == "text":
+            text = segment.get("data", {}).get("text", "")
+            return "关键词" in text
+    return False
+
+# 注册条件处理器
+@message.on_message(condition=keyword_condition)
+async def keyword_handler(event):
+    # 只有消息包含"关键词"时才会执行
+    pass
+```
+
+#### 中间件
+```python
+from ErisPulse.Core.Event import event_manager
+
+# 全局中间件
+@event_manager.middleware
+async def logging_middleware(event):
+    sdk.logger.info(f"处理事件: {event.get('type')}")
+    return event
+
+# 局部中间件
+@command.handler.middleware
+async def command_middleware(event):
+    sdk.logger.info(f"处理命令: {event.get('command', {}).get('name')}")
+    return event
+```
 
 ## 核心模块功能详解
 
