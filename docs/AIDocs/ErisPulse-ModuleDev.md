@@ -1,18 +1,122 @@
 # ErisPulse 模块开发文档
 
-本文件由多个开发文档合并而成，用于辅助 AI 理解 ErisPulse 的相关功能。
+**生成时间**: 2025-08-16 23:27:59
+
+本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
+
+## 目录
+
+1. [快速开始指南](#quick-startmd)
+2. [核心功能使用说明](#UseCoremd)
+3. [平台支持的发送类型及差异性说明](#PlatformFeaturesmd)
+4. [模块开发指南](#Modulemd)
 
 ## 各文件对应内容说明
 
 | 文件名 | 作用 |
 |--------|------|
-| UseCore.md | 核心功能使用说明 |
-| PlatformFeatures.md | 平台支持的发送类型及差异性说明 |
-| Module.md | 模块开发指南 |
+| [quick-start.md](#quick-startmd) | 快速开始指南 |
+| [UseCore.md](#UseCoremd) | 核心功能使用说明 |
+| [PlatformFeatures.md](#PlatformFeaturesmd) | 平台支持的发送类型及差异性说明 |
+| [Module.md](#Modulemd) | 模块开发指南 |
 
-## 合并内容开始
+---
 
-<!-- UseCore.md -->
+<a id="quick-startmd"></a>
+## 快速开始指南
+
+# 快速开始
+
+## 安装ErisPulse
+
+### 使用 pip 安装
+确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+```bash
+pip install ErisPulse
+```
+
+### 更先进的安装方法
+> 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+
+### 1. 安装 uv
+
+#### 通用方法 (pip):
+```bash
+pip install uv
+```
+
+#### macOS/Linux:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+#### Windows (PowerShell):
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+验证安装:
+```bash
+uv --version
+```
+
+### 2. 创建虚拟环境,并安装 ErisPulse
+
+```bash
+uv python install 3.12              # 安装 Python 3.12
+uv venv                             # 创建虚拟环境
+source .venv/bin/activate           # 激活环境 (Windows: .venv\Scripts\activate)
+uv pip install ErisPulse --upgrade  # 安装框架
+```
+
+---
+
+## 初始化项目
+
+1. 创建项目目录并进入：
+
+```bash
+mkdir my_bot && cd my_bot
+```
+
+2. 初始化 SDK 并生成配置文件：
+
+```bsah
+ep-init
+```
+这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
+
+---
+
+## 安装模块
+
+你可以通过 CLI 安装所需模块：
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+你也可以手动编写模块逻辑，参考开发者文档进行模块开发。
+
+---
+
+## 运行你的机器人
+运行我们自动生成的程序入口：
+```bash
+epsdk run main.py
+```
+
+或者使用热重载模式（开发时推荐）：
+
+```bash
+epsdk run main.py --reload
+```
+
+
+---
+
+<a id="UseCoremd"></a>
+## 核心功能使用说明
 
 # ErisPulse 核心模块使用指南
 
@@ -154,9 +258,10 @@ exceptions.setup_async_loop()
 更多详细信息请参考[API文档](docs/api/)
 
 
-<!--- End of UseCore.md -->
+---
 
-<!-- PlatformFeatures.md -->
+<a id="PlatformFeaturesmd"></a>
+## 平台支持的发送类型及差异性说明
 
 # ErisPulse PlatformFeatures 文档
 > 基线协议：(OneBot12)[https://12.onebot.dev/] 
@@ -784,9 +889,10 @@ ErisPulse 项目：
 
 感谢您的支持！
 
-<!--- End of PlatformFeatures.md -->
+---
 
-<!-- Module.md -->
+<a id="Modulemd"></a>
+## 模块开发指南
 
 # ErisPulse 模块开发指南
 
@@ -1110,652 +1216,31 @@ class Main:
 
 *文档最后更新于 2025-08-11 14:53:51*
 
-<!--- End of Module.md -->
-
-<!-- API文档 -->
+---
 
 # API参考
 
-## ErisPulse\__init__.md
+## API文档目录
 
-# 📦 `ErisPulse.__init__` 模块
-
-<sup>自动生成于 2025-08-12 17:41:58</sup>
-
----
-
-## 模块概述
-
-
-ErisPulse SDK 主模块
-
-提供SDK核心功能模块加载和初始化功能
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用前请确保已正确安装所有依赖
-2. 调用sdk.init()进行初始化
-3. 模块加载采用懒加载机制</p></div>
+- [ErisPulse\Core\adapter.md](#ErisPulse_Core_adapter)
+- [ErisPulse\Core\config.md](#ErisPulse_Core_config)
+- [ErisPulse\Core\env.md](#ErisPulse_Core_env)
+- [ErisPulse\Core\erispulse_config.md](#ErisPulse_Core_erispulse_config)
+- [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
+- [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
+- [ErisPulse\Core\mods.md](#ErisPulse_Core_mods)
+- [ErisPulse\Core\router.md](#ErisPulse_Core_router)
+- [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
+- [ErisPulse\__init__.md](#ErisPulse___init__)
+- [ErisPulse\__main__.md](#ErisPulse___main__)
 
 ---
 
-## 🛠️ 函数
-
-### `init_progress()`
-
-初始化项目环境文件
-
-1. 检查并创建main.py入口文件
-2. 确保基础目录结构存在
-
-:return: bool 是否创建了新的main.py文件
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 如果main.py已存在则不会覆盖
-2. 此方法通常由SDK内部调用</p></div>
-
----
-
-### `_prepare_environment()`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-准备运行环境
-
-初始化项目环境文件
-
-:return: bool 环境准备是否成功
-
----
-
-### `init()`
-
-SDK初始化入口
-
-执行步骤:
-1. 准备运行环境
-2. 初始化所有模块和适配器
-
-:return: bool SDK初始化是否成功
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是SDK的主要入口函数
-2. 如果初始化失败会抛出InitError异常
-3. 建议在main.py中调用此函数</p></div>
-
-<dt>异常</dt><dd><code>InitError</code> 当初始化失败时抛出</dd>
-
----
-
-### `load_module(module_name: str)`
-
-手动加载指定模块
-
-:param module_name: str 要加载的模块名称
-:return: bool 加载是否成功
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 可用于手动触发懒加载模块的初始化
-2. 如果模块不存在或已加载会返回False</p></div>
-
----
-
-## 🏛️ 类
-
-### `class LazyModule`
-
-懒加载模块包装器
-
-当模块第一次被访问时才进行实例化
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块的实际实例化会在第一次属性访问时进行
-2. 依赖模块会在被使用时自动初始化</p></div>
-
-
-#### 🧰 方法
-
-##### `__init__(module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any])`
-
-初始化懒加载包装器
-
-:param module_name: str 模块名称
-:param module_class: Type 模块类
-:param sdk_ref: Any SDK引用
-:param module_info: Dict[str, Any] 模块信息字典
-
----
-
-##### `_initialize()`
-
-实际初始化模块
-
-<dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
-
----
-
-##### `__getattr__(name: str)`
-
-属性访问时触发初始化
-
-:param name: str 要访问的属性名
-:return: Any 模块属性值
-
----
-
-##### `__call__()`
-
-调用时触发初始化
-
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: Any 模块调用结果
-
----
-
-##### `__bool__()`
-
-判断模块布尔值时触发初始化
-
-:return: bool 模块布尔值
-
----
-
-##### `__str__()`
-
-转换为字符串时触发初始化
-
-:return: str 模块字符串表示
-
----
-
-##### `__copy__()`
-
-浅拷贝时返回自身，保持懒加载特性
-
-:return: self
-
----
-
-##### `__deepcopy__(memo)`
-
-深拷贝时返回自身，保持懒加载特性
-
-:param memo: memo
-:return: self
-
----
-
-### `class AdapterLoader`
-
-适配器加载器
-
-专门用于从PyPI包加载和初始化适配器
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器必须通过entry-points机制注册到erispulse.adapter组
-2. 适配器类必须继承BaseAdapter
-3. 适配器不适用懒加载</p></div>
-
-
-#### 🧰 方法
-
-##### `load()`
-
-从PyPI包entry-points加载适配器
-
-:return: 
-    Dict[str, object]: 适配器对象字典 {适配器名: 模块对象}
-    List[str]: 启用的适配器名称列表
-    List[str]: 停用的适配器名称列表
-    
-<dt>异常</dt><dd><code>ImportError</code> 当无法加载适配器时抛出</dd>
-
----
-
-##### `_process_adapter(entry_point: Any, adapter_objs: Dict[str, object], enabled_adapters: List[str], disabled_adapters: List[str])`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-处理单个适配器entry-point
-
-:param entry_point: entry-point对象
-:param adapter_objs: 适配器对象字典
-:param enabled_adapters: 启用的适配器列表
-:param disabled_adapters: 停用的适配器列表
-
-:return: 
-    Dict[str, object]: 更新后的适配器对象字典
-    List[str]: 更新后的启用适配器列表 
-    List[str]: 更新后的禁用适配器列表
-    
-<dt>异常</dt><dd><code>ImportError</code> 当适配器加载失败时抛出</dd>
-
----
-
-### `class ModuleLoader`
-
-模块加载器
-
-专门用于从PyPI包加载和初始化普通模块
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块必须通过entry-points机制注册到erispulse.module组
-2. 模块类名应与entry-point名称一致</p></div>
-
-
-#### 🧰 方法
-
-##### `load()`
-
-从PyPI包entry-points加载模块
-
-:return: 
-    Dict[str, object]: 模块对象字典 {模块名: 模块对象}
-    List[str]: 启用的模块名称列表
-    List[str]: 停用的模块名称列表
-    
-<dt>异常</dt><dd><code>ImportError</code> 当无法加载模块时抛出</dd>
-
----
-
-##### `_process_module(entry_point: Any, module_objs: Dict[str, object], enabled_modules: List[str], disabled_modules: List[str])`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-处理单个模块entry-point
-
-:param entry_point: entry-point对象
-:param module_objs: 模块对象字典
-:param enabled_modules: 启用的模块列表
-:param disabled_modules: 停用的模块列表
-
-:return: 
-    Dict[str, object]: 更新后的模块对象字典
-    List[str]: 更新后的启用模块列表 
-    List[str]: 更新后的禁用模块列表
-    
-<dt>异常</dt><dd><code>ImportError</code> 当模块加载失败时抛出</dd>
-
----
-
-##### `_should_lazy_load(module_class: Type)`
-
-检查模块是否应该懒加载
-
-:param module_class: Type 模块类
-:return: bool 如果返回 False，则立即加载；否则懒加载
-
----
-
-### `class ModuleInitializer`
-
-模块初始化器
-
-负责协调适配器和模块的初始化流程
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 初始化顺序：适配器 → 模块
-2. 模块初始化采用懒加载机制</p></div>
-
-
-#### 🧰 方法
-
-##### `init()`
-
-初始化所有模块和适配器
-
-执行步骤:
-1. 从PyPI包加载适配器
-2. 从PyPI包加载模块
-3. 预记录所有模块信息
-4. 注册适配器
-5. 初始化各模块
-
-:return: bool 初始化是否成功
-<dt>异常</dt><dd><code>InitError</code> 当初始化失败时抛出</dd>
-
----
-
-##### `_initialize_modules(modules: List[str], module_objs: Dict[str, Any])`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-初始化模块
-
-:param modules: List[str] 模块名称列表
-:param module_objs: Dict[str, Any] 模块对象字典
-
-:return: bool 模块初始化是否成功
-
----
-
-##### `_register_adapters(adapters: List[str], adapter_objs: Dict[str, Any])`
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-注册适配器
-
-:param adapters: List[str] 适配器名称列表
-:param adapter_objs: Dict[str, Any] 适配器对象字典
-
-:return: bool 适配器注册是否成功
-
----
-
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
-
-## ErisPulse\__main__.md
-
-# 📦 `ErisPulse.__main__` 模块
-
-<sup>自动生成于 2025-08-12 17:41:58</sup>
-
----
-
-## 模块概述
-
-
-ErisPulse SDK 命令行工具
-
-提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 需要Python 3.8+环境
-2. Windows平台需要colorama支持ANSI颜色</p></div>
-
----
-
-## 🛠️ 函数
-
-### `main()`
-
-CLI入口点
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 创建CLI实例并运行
-2. 处理全局异常</p></div>
-
----
-
-## 🏛️ 类
-
-### `class CommandHighlighter(RegexHighlighter)`
-
-高亮CLI命令和参数
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
-
-
-### `class PackageManager`
-
-ErisPulse包管理器
-
-提供包安装、卸载、升级和查询功能
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持本地和远程包管理
-2. 包含1小时缓存机制</p></div>
-
-
-#### 🧰 方法
-
-##### `__init__()`
-
-初始化包管理器
-
----
-
-##### 🔷 `async _fetch_remote_packages(url: str)`
-
-从指定URL获取远程包数据
-
-:param url: 远程包数据URL
-:return: 解析后的JSON数据，失败返回None
-
-<dt>异常</dt><dd><code>ClientError</code> 网络请求失败时抛出</dd>
-<dt>异常</dt><dd><code>JSONDecodeError</code> JSON解析失败时抛出</dd>
-
----
-
-##### 🔷 `async get_remote_packages(force_refresh: bool = False)`
-
-获取远程包列表，带缓存机制
-
-:param force_refresh: 是否强制刷新缓存
-:return: 包含模块和适配器的字典
-
-:return:
-    dict: {
-        "modules": {模块名: 模块信息},
-        "adapters": {适配器名: 适配器信息},
-        "cli_extensions": {扩展名: 扩展信息}
-    }
-
----
-
-##### `get_installed_packages()`
-
-获取已安装的包信息
-
-:return: 已安装包字典，包含模块、适配器和CLI扩展
-
-:return:
-    dict: {
-        "modules": {模块名: 模块信息},
-        "adapters": {适配器名: 适配器信息},
-        "cli_extensions": {扩展名: 扩展信息}
-    }
-
----
-
-##### `_is_module_enabled(module_name: str)`
-
-检查模块是否启用
-
-:param module_name: 模块名称
-:return: 模块是否启用
-
-<dt>异常</dt><dd><code>ImportError</code> 核心模块不可用时抛出</dd>
-
----
-
-##### `_run_pip_command(args: List[str], description: str)`
-
-执行pip命令
-
-:param args: pip命令参数列表
-:param description: 进度条描述
-:return: 命令是否成功执行
-
----
-
-##### `install_package(package_name: str, upgrade: bool = False)`
-
-安装指定包
-
-:param package_name: 要安装的包名
-:param upgrade: 是否升级已安装的包
-:return: 安装是否成功
-
----
-
-##### `uninstall_package(package_name: str)`
-
-卸载指定包
-
-:param package_name: 要卸载的包名
-:return: 卸载是否成功
-
----
-
-##### `upgrade_all()`
-
-升级所有已安装的ErisPulse包
-
-:return: 升级是否成功
-
-<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户取消操作时抛出</dd>
-
----
-
-### `class ReloadHandler(FileSystemEventHandler)`
-
-文件系统事件处理器
-
-实现热重载功能，监控文件变化并重启进程
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持.py文件修改重载
-2. 支持配置文件修改重载</p></div>
-
-
-#### 🧰 方法
-
-##### `__init__(script_path: str, reload_mode: bool = False)`
-
-初始化处理器
-
-:param script_path: 要监控的脚本路径
-:param reload_mode: 是否启用重载模式
-
----
-
-##### `start_process()`
-
-启动监控进程
-
----
-
-##### `_terminate_process()`
-
-终止当前进程
-
-:raises subprocess.TimeoutExpired: 进程终止超时时抛出
-
----
-
-##### `on_modified(event)`
-
-文件修改事件处理
-
-:param event: 文件系统事件
-
----
-
-##### `_handle_reload(event, reason: str)`
-
-处理热重载逻辑
-:param event: 文件系统事件
-:param reason: 重载原因
-
----
-
-### `class CLI`
-
-ErisPulse命令行接口
-
-提供完整的命令行交互功能
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持动态加载第三方命令
-2. 支持模块化子命令系统</p></div>
-
-
-#### 🧰 方法
-
-##### `__init__()`
-
-初始化CLI
-
----
-
-##### `_create_parser()`
-
-创建命令行参数解析器
-
-:return: 配置好的ArgumentParser实例
-
----
-
-##### `_get_external_commands()`
-
-获取所有已注册的第三方命令名称
-
-:return: 第三方命令名称列表
-
----
-
-##### `_load_external_commands(subparsers)`
-
-加载第三方CLI命令
-
-:param subparsers: 子命令解析器
-
-<dt>异常</dt><dd><code>ImportError</code> 加载命令失败时抛出</dd>
-
----
-
-##### `_print_version()`
-
-打印版本信息
-
----
-
-##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
-
-打印已安装包信息
-
-:param pkg_type: 包类型 (modules/adapters/cli/all)
-:param outdated_only: 是否只显示可升级的包
-
----
-
-##### `_print_remote_packages(pkg_type: str)`
-
-打印远程包信息
-
-:param pkg_type: 包类型 (modules/adapters/cli/all)
-
----
-
-##### `_is_package_outdated(package_name: str, current_version: str)`
-
-检查包是否过时
-
-:param package_name: 包名
-:param current_version: 当前版本
-:return: 是否有新版本可用
-
----
-
-##### `_resolve_package_name(short_name: str)`
-
-解析简称到完整包名
-
-:param short_name: 模块/适配器简称
-:return: 完整包名，未找到返回None
-
----
-
-##### `_setup_watchdog(script_path: str, reload_mode: bool)`
-
-设置文件监控
-
-:param script_path: 要监控的脚本路径
-:param reload_mode: 是否启用重载模式
-
----
-
-##### `_cleanup()`
-
-清理资源
-
----
-
-##### `run()`
-
-运行CLI
-
-<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户中断时抛出</dd>
-<dt>异常</dt><dd><code>Exception</code> 命令执行失败时抛出</dd>
-
----
-
-##### `_cleanup_adapters()`
-
-清理适配器资源
-
----
-
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
-
+<a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
-# 📦 `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -1773,7 +1258,7 @@ ErisPulse 适配器系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class SendDSLBase`
 
@@ -1785,7 +1270,7 @@ ErisPulse 适配器系统
 2. 通过__getattr__实现动态方法调用</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
 
@@ -1845,7 +1330,7 @@ ErisPulse 适配器系统
 4. 支持OneBot12协议的事件处理</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -1881,7 +1366,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async call_api(endpoint: str)`
+##### async `async call_api(endpoint: str)`
 
 调用平台API的抽象方法
 
@@ -1892,7 +1377,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async start()`
+##### async `async start()`
 
 启动适配器的抽象方法
 
@@ -1900,7 +1385,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async shutdown()`
+##### async `async shutdown()`
 
 关闭适配器的抽象方法
 
@@ -1908,7 +1393,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async emit(event_type: str, data: Any)`
+##### async `async emit(event_type: str, data: Any)`
 
 触发原生协议事件
 
@@ -1924,7 +1409,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async send(target_type: str, target_id: str, message: Any)`
+##### async `async send(target_type: str, target_id: str, message: Any)`
 
 发送消息的便捷方法
 
@@ -1959,7 +1444,7 @@ ErisPulse 适配器系统
 4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `Adapter()`
 
@@ -2015,7 +1500,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async emit(data: Any)`
+##### async `async emit(data: Any)`
 
 提交OneBot12协议事件到指定平台
 
@@ -2059,7 +1544,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async startup(platforms: List[str] = None)`
+##### async `async startup(platforms: List[str] = None)`
 
 启动指定的适配器
 
@@ -2079,7 +1564,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async _run_adapter(adapter: BaseAdapter, platform: str)`
+##### async `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
 <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 运行适配器实例
@@ -2089,7 +1574,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async shutdown()`
+##### async `async shutdown()`
 
 关闭所有适配器
 
@@ -2151,13 +1636,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
-# 📦 `ErisPulse.Core.config` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2171,13 +1656,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_env"></a>
 ## ErisPulse\Core\env.md
 
-# 📦 `ErisPulse.Core.env` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2193,13 +1678,13 @@ ErisPulse 环境模块 (已弃用)
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_erispulse_config"></a>
 ## ErisPulse\Core\erispulse_config.md
 
-# 📦 `ErisPulse.Core.erispulse_config` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2212,7 +1697,7 @@ ErisPulse 框架配置管理
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
 
@@ -2256,13 +1741,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
-# 📦 `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2275,7 +1760,7 @@ ErisPulse 全局异常处理系统
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
 
@@ -2304,13 +1789,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
-# 📦 `ErisPulse.Core.logger` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2327,7 +1812,7 @@ ErisPulse 日志系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class Logger`
 
@@ -2340,7 +1825,7 @@ ErisPulse 日志系统
 3. 支持标准日志级别(DEBUG, INFO等)</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `set_memory_limit(limit: int)`
 
@@ -2413,7 +1898,7 @@ ErisPulse 日志系统
 用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(parent_logger: Logger, name: str)`
 
@@ -2433,13 +1918,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_mods"></a>
 ## ErisPulse\Core\mods.md
 
-# 📦 `ErisPulse.Core.mods` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2456,7 +1941,7 @@ ErisPulse 模块管理器
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class ModuleManager`
 
@@ -2469,7 +1954,7 @@ ErisPulse 模块管理器
 3. 通过set_all_modules/get_all_modules批量操作模块</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `_ensure_prefixes()`
 
@@ -2648,13 +2133,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
-# 📦 `ErisPulse.Core.router` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2671,7 +2156,7 @@ ErisPulse 路由系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class RouterManager`
 
@@ -2683,7 +2168,7 @@ ErisPulse 路由系统
 - 统一错误处理</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -2743,7 +2228,7 @@ ErisPulse 路由系统
 
 ---
 
-##### 🔷 `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
+##### async `async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
 
 启动路由服务器
 
@@ -2756,19 +2241,19 @@ ErisPulse 路由系统
 
 ---
 
-##### 🔷 `async stop()`
+##### async `async stop()`
 
 停止服务器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
+<a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
-# 📦 `ErisPulse.Core.storage` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -2786,7 +2271,7 @@ ErisPulse 存储管理模块
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class StorageManager`
 
@@ -2799,7 +2284,7 @@ ErisPulse 存储管理模块
 3. 使用snapshot/restore管理数据快照</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `_init_db()`
 
@@ -3102,6 +2587,767 @@ ErisPulse 存储管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
 
-<!--- End of API文档 -->
+<a id="ErisPulse___init__"></a>
+## ErisPulse\__init__.md
+
+
+<sup>更新时间: 2025-08-16 23:19:11</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 主模块
+
+提供SDK核心功能模块加载和初始化功能
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用前请确保已正确安装所有依赖
+2. 调用sdk.init()进行初始化
+3. 模块加载采用懒加载机制</p></div>
+
+---
+
+## 函数列表
+
+### `init_progress()`
+
+初始化项目环境文件
+
+1. 检查并创建main.py入口文件
+2. 确保基础目录结构存在
+
+:return: bool 是否创建了新的main.py文件
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 如果main.py已存在则不会覆盖
+2. 此方法通常由SDK内部调用</p></div>
+
+---
+
+### `_prepare_environment()`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+准备运行环境
+
+初始化项目环境文件
+
+:return: bool 环境准备是否成功
+
+---
+
+### `init()`
+
+SDK初始化入口
+
+:return: bool SDK初始化是否成功
+
+---
+
+### `init_task()`
+
+SDK初始化入口，返回Task对象
+
+:return: asyncio.Task 初始化任务
+
+---
+
+### `load_module(module_name: str)`
+
+手动加载指定模块
+
+:param module_name: str 要加载的模块名称
+:return: bool 加载是否成功
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 可用于手动触发懒加载模块的初始化
+2. 如果模块不存在或已加载会返回False</p></div>
+
+---
+
+## 类列表
+
+### `class LazyModule`
+
+懒加载模块包装器
+
+当模块第一次被访问时才进行实例化
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块的实际实例化会在第一次属性访问时进行
+2. 依赖模块会在被使用时自动初始化</p></div>
+
+
+#### 方法列表
+
+##### `__init__(module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any])`
+
+初始化懒加载包装器
+
+:param module_name: str 模块名称
+:param module_class: Type 模块类
+:param sdk_ref: Any SDK引用
+:param module_info: Dict[str, Any] 模块信息字典
+
+---
+
+##### `_initialize()`
+
+实际初始化模块
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
+
+---
+
+##### `__getattr__(name: str)`
+
+属性访问时触发初始化
+
+:param name: str 要访问的属性名
+:return: Any 模块属性值
+
+---
+
+##### `__call__()`
+
+调用时触发初始化
+
+:param args: 位置参数
+:param kwargs: 关键字参数
+:return: Any 模块调用结果
+
+---
+
+##### `__bool__()`
+
+判断模块布尔值时触发初始化
+
+:return: bool 模块布尔值
+
+---
+
+##### `__str__()`
+
+转换为字符串时触发初始化
+
+:return: str 模块字符串表示
+
+---
+
+##### `__copy__()`
+
+浅拷贝时返回自身，保持懒加载特性
+
+:return: self
+
+---
+
+##### `__deepcopy__(memo)`
+
+深拷贝时返回自身，保持懒加载特性
+
+:param memo: memo
+:return: self
+
+---
+
+### `class AdapterLoader`
+
+适配器加载器
+
+专门用于从PyPI包加载和初始化适配器
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器必须通过entry-points机制注册到erispulse.adapter组
+2. 适配器类必须继承BaseAdapter
+3. 适配器不适用懒加载</p></div>
+
+
+#### 方法列表
+
+##### `load()`
+
+从PyPI包entry-points加载适配器
+
+:return: 
+    Dict[str, object]: 适配器对象字典 {适配器名: 模块对象}
+    List[str]: 启用的适配器名称列表
+    List[str]: 停用的适配器名称列表
+    
+<dt>异常</dt><dd><code>ImportError</code> 当无法加载适配器时抛出</dd>
+
+---
+
+##### `_process_adapter(entry_point: Any, adapter_objs: Dict[str, object], enabled_adapters: List[str], disabled_adapters: List[str])`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+处理单个适配器entry-point
+
+:param entry_point: entry-point对象
+:param adapter_objs: 适配器对象字典
+:param enabled_adapters: 启用的适配器列表
+:param disabled_adapters: 停用的适配器列表
+
+:return: 
+    Dict[str, object]: 更新后的适配器对象字典
+    List[str]: 更新后的启用适配器列表 
+    List[str]: 更新后的禁用适配器列表
+    
+<dt>异常</dt><dd><code>ImportError</code> 当适配器加载失败时抛出</dd>
+
+---
+
+### `class ModuleLoader`
+
+模块加载器
+
+专门用于从PyPI包加载和初始化普通模块
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块必须通过entry-points机制注册到erispulse.module组
+2. 模块类名应与entry-point名称一致</p></div>
+
+
+#### 方法列表
+
+##### `load()`
+
+从PyPI包entry-points加载模块
+
+:return: 
+    Dict[str, object]: 模块对象字典 {模块名: 模块对象}
+    List[str]: 启用的模块名称列表
+    List[str]: 停用的模块名称列表
+    
+<dt>异常</dt><dd><code>ImportError</code> 当无法加载模块时抛出</dd>
+
+---
+
+##### `_process_module(entry_point: Any, module_objs: Dict[str, object], enabled_modules: List[str], disabled_modules: List[str])`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+处理单个模块entry-point
+
+:param entry_point: entry-point对象
+:param module_objs: 模块对象字典
+:param enabled_modules: 启用的模块列表
+:param disabled_modules: 停用的模块列表
+
+:return: 
+    Dict[str, object]: 更新后的模块对象字典
+    List[str]: 更新后的启用模块列表 
+    List[str]: 更新后的禁用模块列表
+    
+<dt>异常</dt><dd><code>ImportError</code> 当模块加载失败时抛出</dd>
+
+---
+
+##### `_should_lazy_load(module_class: Type)`
+
+检查模块是否应该懒加载
+
+:param module_class: Type 模块类
+:return: bool 如果返回 False，则立即加载；否则懒加载
+
+---
+
+### `class ModuleInitializer`
+
+模块初始化器
+
+负责协调适配器和模块的初始化流程
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 初始化顺序：适配器 → 模块
+2. 模块初始化采用懒加载机制</p></div>
+
+
+#### 方法列表
+
+##### `init()`
+
+初始化所有模块和适配器
+
+执行步骤:
+1. 从PyPI包加载适配器
+2. 从PyPI包加载模块
+3. 预记录所有模块信息
+4. 注册适配器
+5. 初始化各模块
+
+:return: bool 初始化是否成功
+<dt>异常</dt><dd><code>InitError</code> 当初始化失败时抛出</dd>
+
+---
+
+##### `_initialize_modules(modules: List[str], module_objs: Dict[str, Any])`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+初始化模块
+
+:param modules: List[str] 模块名称列表
+:param module_objs: Dict[str, Any] 模块对象字典
+
+:return: bool 模块初始化是否成功
+
+---
+
+##### `_register_adapters(adapters: List[str], adapter_objs: Dict[str, Any])`
+
+<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+注册适配器
+
+:param adapters: List[str] 适配器名称列表
+:param adapter_objs: Dict[str, Any] 适配器对象字典
+
+:return: bool 适配器注册是否成功
+
+---
+
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
+
+<a id="ErisPulse___main__"></a>
+## ErisPulse\__main__.md
+
+
+<sup>更新时间: 2025-08-16 23:19:11</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 命令行工具
+
+提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 需要Python 3.8+环境
+2. Windows平台需要colorama支持ANSI颜色</p></div>
+
+---
+
+## 函数列表
+
+### `main()`
+
+CLI入口点
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 创建CLI实例并运行
+2. 处理全局异常</p></div>
+
+---
+
+## 类列表
+
+### `class CommandHighlighter(RegexHighlighter)`
+
+高亮CLI命令和参数
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
+
+
+### `class PackageManager`
+
+ErisPulse包管理器
+
+提供包安装、卸载、升级和查询功能
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持本地和远程包管理
+2. 包含1小时缓存机制</p></div>
+
+
+#### 方法列表
+
+##### `__init__()`
+
+初始化包管理器
+
+---
+
+##### async `async _fetch_remote_packages(url: str)`
+
+从指定URL获取远程包数据
+
+:param url: 远程包数据URL
+:return: 解析后的JSON数据，失败返回None
+
+<dt>异常</dt><dd><code>ClientError</code> 网络请求失败时抛出</dd>
+<dt>异常</dt><dd><code>JSONDecodeError</code> JSON解析失败时抛出</dd>
+
+---
+
+##### async `async get_remote_packages(force_refresh: bool = False)`
+
+获取远程包列表，带缓存机制
+
+:param force_refresh: 是否强制刷新缓存
+:return: 包含模块和适配器的字典
+
+:return:
+    dict: {
+        "modules": {模块名: 模块信息},
+        "adapters": {适配器名: 适配器信息},
+        "cli_extensions": {扩展名: 扩展信息}
+    }
+
+---
+
+##### `get_installed_packages()`
+
+获取已安装的包信息
+
+:return: 已安装包字典，包含模块、适配器和CLI扩展
+
+:return:
+    dict: {
+        "modules": {模块名: 模块信息},
+        "adapters": {适配器名: 适配器信息},
+        "cli_extensions": {扩展名: 扩展信息}
+    }
+
+---
+
+##### `_is_module_enabled(module_name: str)`
+
+检查模块是否启用
+
+:param module_name: 模块名称
+:return: 模块是否启用
+
+<dt>异常</dt><dd><code>ImportError</code> 核心模块不可用时抛出</dd>
+
+---
+
+##### `_normalize_name(name: str)`
+
+标准化包名，统一转为小写以实现大小写不敏感比较
+
+:param name: 原始名称
+:return: 标准化后的名称
+
+---
+
+##### async `async _find_package_by_alias(alias: str)`
+
+通过别名查找实际包名（大小写不敏感）
+
+:param alias: 包别名
+:return: 实际包名，未找到返回None
+
+---
+
+##### `_find_installed_package_by_name(name: str)`
+
+在已安装包中查找实际包名（大小写不敏感）
+
+:param name: 包名或别名
+:return: 实际包名，未找到返回None
+
+---
+
+##### `_run_pip_command_with_output(args: List[str], description: str)`
+
+执行pip命令并捕获输出
+
+:param args: pip命令参数列表
+:param description: 进度条描述
+:return: (是否成功, 标准输出, 标准错误)
+
+---
+
+##### `_compare_versions(version1: str, version2: str)`
+
+比较两个版本号
+
+:param version1: 版本号1
+:param version2: 版本号2
+:return: 1 if version1 > version2, -1 if version1 < version2, 0 if equal
+
+---
+
+##### `_check_sdk_compatibility(min_sdk_version: str)`
+
+检查SDK版本兼容性
+
+:param min_sdk_version: 所需的最小SDK版本
+:return: (是否兼容, 当前版本信息)
+
+---
+
+##### async `async _get_package_info(package_name: str)`
+
+获取包的详细信息（包括min_sdk_version等）
+
+:param package_name: 包名或别名
+:return: 包信息字典
+
+---
+
+##### `install_package(package_names: List[str], upgrade: bool = False, pre: bool = False)`
+
+安装指定包（支持多个包）
+
+:param package_names: 要安装的包名或别名列表
+:param upgrade: 是否升级已安装的包
+:param pre: 是否包含预发布版本
+:return: 安装是否成功
+
+---
+
+##### `uninstall_package(package_names: List[str])`
+
+卸载指定包（支持多个包，支持别名）
+
+:param package_names: 要卸载的包名或别名列表
+:return: 卸载是否成功
+
+---
+
+##### `upgrade_all()`
+
+升级所有已安装的ErisPulse包
+
+:return: 升级是否成功
+
+<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户取消操作时抛出</dd>
+
+---
+
+##### `upgrade_package(package_names: List[str], pre: bool = False)`
+
+升级指定包（支持多个包）
+
+:param package_names: 要升级的包名或别名列表
+:param pre: 是否包含预发布版本
+:return: 升级是否成功
+
+---
+
+##### `search_package(query: str)`
+
+搜索包（本地和远程）
+
+:param query: 搜索关键词
+:return: 匹配的包信息
+
+---
+
+##### `get_installed_version()`
+
+获取当前安装的ErisPulse版本
+
+:return: 当前版本号
+
+---
+
+##### async `async get_pypi_versions()`
+
+从PyPI获取ErisPulse的所有可用版本
+
+:return: 版本信息列表
+
+---
+
+##### `_is_pre_release(version: str)`
+
+判断版本是否为预发布版本
+
+:param version: 版本号
+:return: 是否为预发布版本
+
+---
+
+##### `update_self(target_version: str = None, force: bool = False)`
+
+更新ErisPulse SDK本身
+
+:param target_version: 目标版本号，None表示更新到最新版本
+:param force: 是否强制更新
+:return: 更新是否成功
+
+---
+
+### `class ReloadHandler(FileSystemEventHandler)`
+
+文件系统事件处理器
+
+实现热重载功能，监控文件变化并重启进程
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持.py文件修改重载
+2. 支持配置文件修改重载</p></div>
+
+
+#### 方法列表
+
+##### `__init__(script_path: str, reload_mode: bool = False)`
+
+初始化处理器
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+---
+
+##### `start_process()`
+
+启动监控进程
+
+---
+
+##### `_terminate_process()`
+
+终止当前进程
+
+:raises subprocess.TimeoutExpired: 进程终止超时时抛出
+
+---
+
+##### `on_modified(event)`
+
+文件修改事件处理
+
+:param event: 文件系统事件
+
+---
+
+##### `_handle_reload(event, reason: str)`
+
+处理热重载逻辑
+:param event: 文件系统事件
+:param reason: 重载原因
+
+---
+
+### `class CLI`
+
+ErisPulse命令行接口
+
+提供完整的命令行交互功能
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持动态加载第三方命令
+2. 支持模块化子命令系统</p></div>
+
+
+#### 方法列表
+
+##### `__init__()`
+
+初始化CLI
+
+---
+
+##### `_create_parser()`
+
+创建命令行参数解析器
+
+:return: 配置好的ArgumentParser实例
+
+---
+
+##### `_get_external_commands()`
+
+获取所有已注册的第三方命令名称
+
+:return: 第三方命令名称列表
+
+---
+
+##### `_load_external_commands(subparsers)`
+
+加载第三方CLI命令
+
+:param subparsers: 子命令解析器
+
+<dt>异常</dt><dd><code>ImportError</code> 加载命令失败时抛出</dd>
+
+---
+
+##### `_print_version()`
+
+打印版本信息
+
+---
+
+##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
+
+打印已安装包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli/all)
+:param outdated_only: 是否只显示可升级的包
+
+---
+
+##### `_print_remote_packages(pkg_type: str)`
+
+打印远程包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli/all)
+
+---
+
+##### `_is_package_outdated(package_name: str, current_version: str)`
+
+检查包是否过时
+
+:param package_name: 包名
+:param current_version: 当前版本
+:return: 是否有新版本可用
+
+---
+
+##### `_resolve_package_name(short_name: str)`
+
+解析简称到完整包名（大小写不敏感）
+
+:param short_name: 模块/适配器简称
+:return: 完整包名，未找到返回None
+
+---
+
+##### `_print_search_results(query: str, results: Dict[str, List[Dict[str, str]]])`
+
+打印搜索结果
+
+:param query: 搜索关键词
+:param results: 搜索结果
+
+---
+
+##### `_print_version_list(versions: List[Dict[str, Any]], include_pre: bool = False)`
+
+打印版本列表
+
+:param versions: 版本信息列表
+:param include_pre: 是否包含预发布版本
+
+---
+
+##### `_setup_watchdog(script_path: str, reload_mode: bool)`
+
+设置文件监控
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+---
+
+##### `_cleanup()`
+
+清理资源
+
+---
+
+##### `run()`
+
+运行CLI
+
+<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户中断时抛出</dd>
+<dt>异常</dt><dd><code>Exception</code> 命令执行失败时抛出</dd>
+
+---
+
+##### `_cleanup_adapters()`
+
+清理适配器资源
+
+---
+
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
+
+---
