@@ -102,7 +102,7 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
     try:
         module = ast.parse(source)
     except SyntaxError:
-        print(f"⚠️ 语法错误，跳过文件: {file_path}")
+        print(f"语法错误，跳过文件: {file_path}")
         return None, [], []
     
     # 提取模块文档
@@ -211,9 +211,9 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     content = []
     
     # 文档头部
-    content.append(f"""# 📦 `{module_path}` 模块
+    content.append(f"""# `{module_path}` 模块
 
-<sup>自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</sup>
+<sup>更新时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</sup>
 
 ---
 
@@ -229,9 +229,9 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     
     # 函数部分
     if functions:
-        content.append("## 🛠️ 函数\n")
+        content.append("## 函数列表\n")
         for func in functions:
-            async_marker = "🔷 " if func["is_async"] else ""
+            async_marker = "async " if func["is_async"] else ""
             content.append(f"""### {async_marker}`{func['signature']}`
 
 {func['doc']}
@@ -241,7 +241,7 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     
     # 类部分
     if classes:
-        content.append("## 🏛️ 类\n")
+        content.append("## 类列表\n")
         for cls in classes:
             content.append(f"""### `{cls['signature']}`
 
@@ -251,9 +251,9 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
             
             # 类方法
             if cls["methods"]:
-                content.append("#### 🧰 方法\n")
+                content.append("#### 方法列表\n")
                 for method in cls["methods"]:
-                    async_marker = "🔷 " if method["is_async"] else ""
+                    async_marker = "async " if method["is_async"] else ""
                     content.append(f"""##### {async_marker}`{method['signature']}`
 
 {method['doc']}
@@ -480,8 +480,8 @@ def generate_html(module_path: str, module_doc: Optional[str],
 <body>
     <header>
         <div class="container">
-            <h1>📦 <code>{module_path}</code> 模块</h1>
-            <p><small>自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p>
+            <h1>`{module_path}` 模块</h1>
+            <p><small>更新时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p>
         </div>
     </header>
     
@@ -498,18 +498,18 @@ def generate_html(module_path: str, module_doc: Optional[str],
     
     # 函数部分
     if functions:
-        html_content.append("</section>\n\n<section>\n<h2>🛠️ 函数</h2>\n")
+        html_content.append("</section>\n\n<section>\n<h2>函数列表</h2>\n")
         for func in functions:
-            async_marker = "🔷 " if func["is_async"] else ""
+            async_marker = "async " if func["is_async"] else ""
             html_content.append(f"""<article>
-    <h3>{async_marker}<code class="signature function-signature">{func['signature']}</code></h3>
+    <h3><code class="signature function-signature">{async_marker}{func['signature']}</code></h3>
     <div>{func['doc']}</div>
 </article>
 """)
     
     # 类部分
     if classes:
-        html_content.append("</section>\n\n<section>\n<h2>🏛️ 类</h2>\n")
+        html_content.append("</section>\n\n<section>\n<h2>类列表</h2>\n")
         for cls in classes:
             html_content.append(f"""<article>
     <h3><code class="signature class-signature">{cls['signature']}</code></h3>
@@ -518,11 +518,11 @@ def generate_html(module_path: str, module_doc: Optional[str],
             
             # 类方法
             if cls["methods"]:
-                html_content.append("<h4>🧰 方法</h4>\n")
+                html_content.append("<h4>方法列表</h4>\n")
                 for method in cls["methods"]:
-                    async_marker = "🔷 " if method["is_async"] else ""
+                    async_marker = "async " if method["is_async"] else ""
                     html_content.append(f"""<article>
-        <h5>{async_marker}<code class="signature method-signature">{method['signature']}</code></h5>
+        <h5><code class="signature method-signature">{async_marker}{method['signature']}</code></h5>
         <div>{method['doc']}</div>
     </article>
 """)
@@ -539,7 +539,7 @@ def generate_html(module_path: str, module_doc: Optional[str],
     </footer>
 </body>
 </html>""")
-    
+
     return "\n".join(html_content)
 
 def generate_api_docs(src_dir: str, output_dir: str, format: str = "markdown"):
@@ -568,7 +568,7 @@ def generate_api_docs(src_dir: str, output_dir: str, format: str = "markdown"):
                 
                 # 跳过没有文档的文件
                 if not module_doc and not classes and not functions:
-                    print(f"⏭️ 跳过无文档文件: {file_path}")
+                    print(f"跳过无文档文件: {file_path}")
                     continue
                 
                 # 生成内容
@@ -586,7 +586,7 @@ def generate_api_docs(src_dir: str, output_dir: str, format: str = "markdown"):
                 with open(output_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 
-                print(f"✅ 已生成: {output_path}")
+                print(f"已生成: {output_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="API文档生成器")
@@ -597,20 +597,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    print(f"""📁 源代码目录: {args.src}
-📂 输出目录: {args.output}
-📄 输出格式: {args.format}
-⏳ 正在生成API文档...""")
+    print(f"""源代码目录: {args.src}
+输出目录: {args.output}
+输出格式: {args.format}
+正在生成API文档...""")
     
     generate_api_docs(args.src, args.output, args.format)
     
-    print(f"""🎉 API文档生成完成！
-
-生成文档包含以下改进:
-✨ 更现代化的样式和布局
-📅 自动添加生成时间戳
-🔖 使用emoji图标提高可读性
-📝 优化了参数和返回值的显示方式
-📱 响应式设计，适配移动设备
-💡 改进了示例代码的展示方式
-""")
+    print(f"API文档生成完成！")
