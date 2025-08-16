@@ -9,7 +9,7 @@ echo_status = False
 async def test_command(event):
     platform = event["platform"]
     
-    if event.get("detail_type") == "group" or event.get("type") == "group":
+    if event.get("detail_type") == "group":
         type = "group"
         id = event["group_id"]
     else:
@@ -24,7 +24,7 @@ async def test_command(event):
 async def help_command(event):
     platform = event["platform"]
     
-    if event.get("detail_type") == "group" or event.get("type") == "group":
+    if event.get("detail_type") == "group":
         type = "group"
         id = event["group_id"]
     else:
@@ -38,7 +38,7 @@ async def help_command(event):
 async def echo_control_command(event):
     platform = event["platform"]
     
-    if event.get("detail_type") == "group" or event.get("type") == "group":
+    if event.get("detail_type") == "group":
         type = "group"
         id = event["group_id"]
     else:
