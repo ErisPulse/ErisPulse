@@ -95,15 +95,10 @@ async def hello_command(event):
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
-    args = event["command"]["args"]
+    alt_message = event["alt_message"]
     
-    if args:
-        message = " ".join(args)
-        adapter_instance = getattr(sdk.adapter, platform)
-        await adapter_instance.Send.To("user", user_id).Text(message)
-    else:
-        adapter_instance = getattr(sdk.adapter, platform)
-        await adapter_instance.Send.To("user", user_id).Text("请提供要回显的内容")
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text(alt_message)
 
 # 带别名的命令
 @command(["help", "h"], help="显示帮助信息")
