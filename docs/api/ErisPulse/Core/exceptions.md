@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.exceptions` 模块
+# `ErisPulse.Core.exceptions` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -13,7 +13,7 @@ ErisPulse 全局异常处理系统
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
 
@@ -42,4 +42,4 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>

@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.__init__` 模块
+# `ErisPulse.__init__` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -17,7 +17,7 @@ ErisPulse SDK 主模块
 
 ---
 
-## 🛠️ 函数
+## 函数列表
 
 ### `init_progress()`
 
@@ -48,17 +48,15 @@ ErisPulse SDK 主模块
 
 SDK初始化入口
 
-执行步骤:
-1. 准备运行环境
-2. 初始化所有模块和适配器
-
 :return: bool SDK初始化是否成功
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是SDK的主要入口函数
-2. 如果初始化失败会抛出InitError异常
-3. 建议在main.py中调用此函数</p></div>
+---
 
-<dt>异常</dt><dd><code>InitError</code> 当初始化失败时抛出</dd>
+### `init_task()`
+
+SDK初始化入口，返回Task对象
+
+:return: asyncio.Task 初始化任务
 
 ---
 
@@ -74,7 +72,7 @@ SDK初始化入口
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class LazyModule`
 
@@ -86,7 +84,7 @@ SDK初始化入口
 2. 依赖模块会在被使用时自动初始化</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any])`
 
@@ -170,7 +168,7 @@ SDK初始化入口
 3. 适配器不适用懒加载</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `load()`
 
@@ -214,7 +212,7 @@ SDK初始化入口
 2. 模块类名应与entry-point名称一致</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `load()`
 
@@ -267,7 +265,7 @@ SDK初始化入口
 2. 模块初始化采用懒加载机制</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `init()`
 
@@ -309,4 +307,4 @@ SDK初始化入口
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>

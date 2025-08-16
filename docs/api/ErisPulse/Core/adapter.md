@@ -1,6 +1,6 @@
-# 📦 `ErisPulse.Core.adapter` 模块
+# `ErisPulse.Core.adapter` 模块
 
-<sup>自动生成于 2025-08-12 17:41:58</sup>
+<sup>更新时间: 2025-08-16 23:19:11</sup>
 
 ---
 
@@ -18,7 +18,7 @@ ErisPulse 适配器系统
 
 ---
 
-## 🏛️ 类
+## 类列表
 
 ### `class SendDSLBase`
 
@@ -30,7 +30,7 @@ ErisPulse 适配器系统
 2. 通过__getattr__实现动态方法调用</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
 
@@ -90,7 +90,7 @@ ErisPulse 适配器系统
 4. 支持OneBot12协议的事件处理</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `__init__()`
 
@@ -126,7 +126,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async call_api(endpoint: str)`
+##### async `async call_api(endpoint: str)`
 
 调用平台API的抽象方法
 
@@ -137,7 +137,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async start()`
+##### async `async start()`
 
 启动适配器的抽象方法
 
@@ -145,7 +145,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async shutdown()`
+##### async `async shutdown()`
 
 关闭适配器的抽象方法
 
@@ -153,7 +153,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async emit(event_type: str, data: Any)`
+##### async `async emit(event_type: str, data: Any)`
 
 触发原生协议事件
 
@@ -169,7 +169,7 @@ ErisPulse 适配器系统
 
 ---
 
-##### 🔷 `async send(target_type: str, target_id: str, message: Any)`
+##### async `async send(target_type: str, target_id: str, message: Any)`
 
 发送消息的便捷方法
 
@@ -204,7 +204,7 @@ ErisPulse 适配器系统
 4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
 
 
-#### 🧰 方法
+#### 方法列表
 
 ##### `Adapter()`
 
@@ -260,7 +260,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async emit(data: Any)`
+##### async `async emit(data: Any)`
 
 提交OneBot12协议事件到指定平台
 
@@ -304,7 +304,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async startup(platforms: List[str] = None)`
+##### async `async startup(platforms: List[str] = None)`
 
 启动指定的适配器
 
@@ -324,7 +324,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async _run_adapter(adapter: BaseAdapter, platform: str)`
+##### async `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
 <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 运行适配器实例
@@ -334,7 +334,7 @@ OneBot12协议事件监听装饰器
 
 ---
 
-##### 🔷 `async shutdown()`
+##### async `async shutdown()`
 
 关闭所有适配器
 
@@ -396,4 +396,4 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-12 17:41:58</sub>
+<sub>文档最后更新于 2025-08-16 23:19:11</sub>
