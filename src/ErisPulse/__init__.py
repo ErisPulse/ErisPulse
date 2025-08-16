@@ -31,10 +31,12 @@ from .Core import adapter, AdapterFather, SendDSL
 from .Core import router, adapter_server
 from .Core import exceptions
 from .Core import config
+from .Core import Event
 
 sdk = sys.modules[__name__]
 
 BaseModules = {
+    "Event": Event,
     "logger": logger,
     "config": config,
     "exceptions": exceptions,
