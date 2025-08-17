@@ -7,7 +7,6 @@ ErisPulse 事件处理基础模块
 from .. import adapter, logger
 from typing import Callable, Any, Dict, List, Optional, Union
 import asyncio
-import functools
 
 class BaseEventHandler:
     """

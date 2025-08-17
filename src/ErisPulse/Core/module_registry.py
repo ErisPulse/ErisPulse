@@ -10,19 +10,18 @@ ErisPulse 模块管理器
 {!--< /tips >!--}
 """
 
-import json
 from typing import Dict, Optional, Any, List, Set, Tuple, Union, Type, FrozenSet
 
-class ModuleManager:
+class ModuleRegistry:
     """
-    模块管理器
+    ErisPulse 模块注册表
     
-    管理所有模块的注册、状态和依赖关系
+    管理所有模块的注册信息和启用状态
     
     {!--< tips >!--}
-    1. 通过set_module/get_module管理模块信息
-    2. 通过set_module_status/get_module_status控制模块状态
-    3. 通过set_all_modules/get_all_modules批量操作模块
+    1. 模块信息通过 set_module/get_module 管理
+    2. 模块状态通过 set_module_status/get_module_status 控制
+    3. 支持批量操作模块信息
     {!--< /tips >!--}
     """
     
@@ -66,14 +65,14 @@ class ModuleManager:
         """
         设置模块启用状态
         
-        :param module_name: 模块名称
-        :param status: 启用状态
+        :param module_name: [str] 模块名称
+        :param status: [bool] 启用状态 (True=启用, False=禁用)
         
         :example:
         >>> # 启用模块
-        >>> mods.set_module_status("MyModule", True)
+        >>> module_registry.set_module_status("MyModule", True)
         >>> # 禁用模块
-        >>> mods.set_module_status("MyModule", False)
+        >>> module_registry.set_module_status("MyModule", False)
         """
         from .logger import logger
         self.storage.set(f"{self.status_prefix}{module_name}", bool(status))
@@ -83,11 +82,11 @@ class ModuleManager:
         """
         获取模块启用状态
         
-        :param module_name: 模块名称
-        :return: 模块是否启用
+        :param module_name: [str] 模块名称
+        :return: [bool] 模块是否启用
         
         :example:
-        >>> if mods.get_module_status("MyModule"):
+        >>> if module_registry.get_module_status("MyModule"):
         >>>     print("模块已启用")
         """
         status = self.storage.get(f"{self.status_prefix}{module_name}", True)
@@ -97,15 +96,19 @@ class ModuleManager:
 
     def set_module(self, module_name: str, module_info: Dict[str, Any]) -> None:
         """
-        设置模块信息
+        注册或更新模块信息
         
-        :param module_name: 模块名称
-        :param module_info: 模块信息字典
+        :param module_name: [str] 模块名称
+        :param module_info: [Dict[str, Any]] 模块信息字典
+            必须包含 version 和 description 字段
         
         :example:
-        >>> mods.set_module("MyModule", {
+        >>> module_registry.set_module("MyModule", {
         >>>     "version": "1.0.0",
         >>>     "description": "我的模块",
+        >>>     "dependencies": [],
+        >>>     "author": "开发者",
+        >>>     "license": "MIT"
         >>> })
         """
         self.storage.set(f"{self.module_prefix}{module_name}", module_info)
@@ -114,11 +117,11 @@ class ModuleManager:
         """
         获取模块信息
         
-        :param module_name: 模块名称
-        :return: 模块信息字典或None
+        :param module_name: [str] 模块名称
+        :return: [Optional[Dict[str, Any]]] 模块信息字典或None
         
         :example:
-        >>> module_info = mods.get_module("MyModule")
+        >>> module_info = module_registry.get_module("MyModule")
         >>> if module_info:
         >>>     print(f"模块版本: {module_info.get('version')}")
         """
@@ -126,12 +129,13 @@ class ModuleManager:
 
     def set_all_modules(self, modules_info: Dict[str, Dict[str, Any]]) -> None:
         """
-        批量设置多个模块信息
+        批量设置模块信息
         
-        :param modules_info: 模块信息字典
+        :param modules_info: [Dict[str, Dict[str, Any]]] 模块信息字典
+            格式: {模块名: 模块信息}
         
         :example:
-        >>> mods.set_all_modules({
+        >>> module_registry.set_all_modules({
         >>>     "Module1": {"version": "1.0", "status": True},
         >>>     "Module2": {"version": "2.0", "status": False}
         >>> })
@@ -141,12 +145,12 @@ class ModuleManager:
 
     def get_all_modules(self) -> Dict[str, Dict[str, Any]]:
         """
-        获取所有模块信息
+        获取所有已注册模块信息
         
-        :return: 模块信息字典
+        :return: [Dict[str, Dict[str, Any]]] 所有模块信息字典
         
         :example:
-        >>> all_modules = mods.get_all_modules()
+        >>> all_modules = module_registry.get_all_modules()
         >>> for name, info in all_modules.items():
         >>>     print(f"{name}: {info.get('status')}")
         """
@@ -173,13 +177,13 @@ class ModuleManager:
 
     def remove_module(self, module_name: str) -> bool:
         """
-        移除模块
+        移除模块注册信息
         
-        :param module_name: 模块名称
-        :return: 是否成功移除
+        :param module_name: [str] 模块名称
+        :return: [bool] 是否成功移除
         
         :example:
-        >>> if mods.remove_module("OldModule"):
+        >>> if module_registry.remove_module("OldModule"):
         >>>     print("模块已移除")
         """
         module_key = f"{self.module_prefix}{module_name}"
@@ -193,14 +197,14 @@ class ModuleManager:
 
     def update_prefixes(self, module_prefix: Optional[str] = None, status_prefix: Optional[str] = None) -> None:
         """
-        更新模块前缀配置
+        更新模块存储前缀配置
         
-        :param module_prefix: 新的模块数据前缀(可选)
-        :param status_prefix: 新的模块状态前缀(可选)
+        :param module_prefix: [Optional[str]] 模块数据前缀 (默认: "erispulse.data.modules.info:")
+        :param status_prefix: [Optional[str]] 模块状态前缀 (默认: "erispulse.data.modules.status:")
         
         :example:
         >>> # 更新模块前缀
-        >>> mods.update_prefixes(
+        >>> module_registry.update_prefixes(
         >>>     module_prefix="custom.module.data:",
         >>>     status_prefix="custom.module.status:"
         >>> )
@@ -216,8 +220,8 @@ class ModuleManager:
             self.storage.set("erispulse.system.status_prefix", status_prefix)
 
 
-mods = ModuleManager()
+module_registry = ModuleRegistry()
 
 __all__ = [
-    "mods",
+    "module_registry",
 ]
