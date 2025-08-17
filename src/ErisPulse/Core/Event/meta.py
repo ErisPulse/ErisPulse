@@ -78,5 +78,4 @@ class MetaHandler:
             return func
         return decorator
 
-# 创建全局元事件处理器实例
 meta = MetaHandler()

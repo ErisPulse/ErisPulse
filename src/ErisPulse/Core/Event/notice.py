@@ -93,5 +93,4 @@ class NoticeHandler:
             return func
         return decorator
 
-# 创建全局通知处理器实例
 notice = NoticeHandler()
