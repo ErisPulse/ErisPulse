@@ -249,8 +249,8 @@ class PackageManager:
         :raises ImportError: 核心模块不可用时抛出
         """
         try:
-            from ErisPulse.Core import mods
-            return mods.get_module_status(module_name)
+            from ErisPulse.Core import module_registry
+            return module_registry.get_module_status(module_name)
         except ImportError:
             return True
         except Exception:
@@ -1718,21 +1718,21 @@ class CLI:
                     sys.exit(1)
                     
             elif args.command == "module":
-                from ErisPulse.Core import mods
+                from ErisPulse.Core import module_registry
                 installed = self.package_manager.get_installed_packages()
                 
                 if args.module_command == "enable":
                     if args.module not in installed["modules"]:
                         console.print(f"[error]模块 [bold]{args.module}[/] 不存在或未安装[/]")
                     else:
-                        mods.set_module_status(args.module, True)
+                        module_registry.set_module_status(args.module, True)
                         console.print(f"[success]模块 [bold]{args.module}[/] 已启用[/]")
                         
                 elif args.module_command == "disable":
                     if args.module not in installed["modules"]:
                         console.print(f"[error]模块 [bold]{args.module}[/] 不存在或未安装[/]")
                     else:
-                        mods.set_module_status(args.module, False)
+                        module_registry.set_module_status(args.module, False)
                         console.print(f"[warning]模块 [bold]{args.module}[/] 已禁用[/]")
                 else:
                     self.parser.parse_args(["module", "--help"])

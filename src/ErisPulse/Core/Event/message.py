@@ -6,7 +6,6 @@ ErisPulse 消息处理模块
 
 from .base import BaseEventHandler
 from .manager import event_manager
-from .. import adapter
 from typing import Callable, Dict, Any
 import asyncio
 
@@ -87,5 +86,4 @@ class MessageHandler:
             return func
         return decorator
 
-# 创建全局消息处理器实例
 message = MessageHandler()

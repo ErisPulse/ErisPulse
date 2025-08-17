@@ -6,9 +6,8 @@ ErisPulse 命令处理模块
 
 from .base import BaseEventHandler
 from .manager import event_manager
-from .. import adapter, config, logger
+from .. import config, logger
 from typing import Callable, Union, List, Dict, Any, Optional
-import re
 import asyncio
 
 class CommandHandler:
@@ -208,5 +207,4 @@ class CommandHandler:
                     help_lines.append(f"  {self.prefix}{cmd_name} - {help_text}")
             return "\n".join(help_lines)
 
-# 创建全局命令处理器实例
 command = CommandHandler()
