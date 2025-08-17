@@ -1,4 +1,3 @@
-from .. import adapter
 """
 ErisPulse 事件处理模块
 
