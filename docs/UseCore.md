@@ -6,8 +6,9 @@
 | `sdk` | SDK对象 |
 | `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
-| `mods`/`sdk.mods` | 模块管理器 |
+| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
+| `module`/`sdk.module` | 获取模块实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
@@ -27,7 +28,7 @@ Event 模块包含以下子模块：
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter, Event
+from ErisPulse.Core import storage, module_registry, logger, adapter, module, BaseAdapter, Event
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -388,26 +389,68 @@ exceptions.setup_async_loop()
 # 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
 ```
 
-### 5. 模块管理器(mods)
-```python
-# 模块状态管理
-mods.set_module_status("MyModule", True)  # 启用模块
-mods.set_module_status("MyModule", False)  # 禁用模块
-is_enabled = mods.get_module_status("MyModule")  # 获取模块状态
+### 5. 模块状态管理器(module_registry)
 
-# 模块信息管理
-mods.set_module("MyModule", {
+模块注册表用于管理所有模块的注册信息和启用状态。
+
+```python
+# 设置模块状态
+module_registry.set_module_status("MyModule", True)   # 启用模块
+module_registry.set_module_status("MyModule", False)  # 禁用模块
+
+# 获取模块状态
+is_enabled = module_registry.get_module_status("MyModule")  # 获取模块状态
+
+# 注册模块信息
+module_registry.set_module("MyModule", {
     "version": "1.0.0",
-    "description": "我的模块"
+    "description": "我的模块",
+    "dependencies": [],
+    "author": "开发者",
+    "license": "MIT"
 })
-module_info = mods.get_module("MyModule")
+
+# 获取模块信息
+module_info = module_registry.get_module("MyModule")
 
 # 批量操作
-mods.set_all_modules({
+module_registry.set_all_modules({
     "Module1": {"version": "1.0", "status": True},
     "Module2": {"version": "2.0", "status": False}
 })
-all_modules = mods.get_all_modules()    # 获取所有模块信息
+all_modules = module_registry.get_all_modules()    # 获取所有模块信息
+
+# 移除模块
+module_registry.remove_module("OldModule")
+```
+
+### 6. 模块管理器
+```python
+# 直接获取模块实例
+my_module = module.get("MyModule")
+
+# 通过属性访问获取模块实例
+my_module = module.MyModule
+
+# 检查模块是否存在
+if "MyModule" in module:
+    # 模块存在并且处于启用状态
+    pass
+
+# 检查模块是否启用
+if module.is_enabled("MyModule"):
+    # 模块已启用
+    pass
+
+# 获取模块信息
+info = module.get_info("MyModule")
+
+# 列出所有模块
+all_modules = module.list_modules()
+
+# 启用/禁用模块
+module.enable("MyModule")
+module.disable("MyModule")
 ```
 
 ## 配置管理

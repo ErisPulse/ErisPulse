@@ -63,5 +63,4 @@ class RequestHandler:
             return func
         return decorator
 
-# 创建全局请求处理器实例
 request = RequestHandler()

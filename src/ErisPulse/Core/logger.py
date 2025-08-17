@@ -90,8 +90,8 @@ class Logger:
         :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
         :return: bool 设置是否成功
         """
-        from .mods import mods
-        if not mods.get_module_status(module_name):
+        from .module_registry import module_registry
+        if not module_registry.get_module_status(module_name):
             self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
             return False
         level = level.upper()

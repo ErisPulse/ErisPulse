@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2025-08-17 07:10:55
+**生成时间**: 2025-08-17 09:01:39
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -128,8 +128,9 @@ epsdk run main.py --reload
 | `sdk` | SDK对象 |
 | `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
-| `mods`/`sdk.mods` | 模块管理器 |
+| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
+| `module`/`sdk.module` | 获取模块实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
@@ -149,7 +150,7 @@ Event 模块包含以下子模块：
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter, Event
+from ErisPulse.Core import storage, module_registry, logger, adapter, module, BaseAdapter, Event
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -510,26 +511,68 @@ exceptions.setup_async_loop()
 # 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
 ```
 
-### 5. 模块管理器(mods)
-```python
-# 模块状态管理
-mods.set_module_status("MyModule", True)  # 启用模块
-mods.set_module_status("MyModule", False)  # 禁用模块
-is_enabled = mods.get_module_status("MyModule")  # 获取模块状态
+### 5. 模块状态管理器(module_registry)
 
-# 模块信息管理
-mods.set_module("MyModule", {
+模块注册表用于管理所有模块的注册信息和启用状态。
+
+```python
+# 设置模块状态
+module_registry.set_module_status("MyModule", True)   # 启用模块
+module_registry.set_module_status("MyModule", False)  # 禁用模块
+
+# 获取模块状态
+is_enabled = module_registry.get_module_status("MyModule")  # 获取模块状态
+
+# 注册模块信息
+module_registry.set_module("MyModule", {
     "version": "1.0.0",
-    "description": "我的模块"
+    "description": "我的模块",
+    "dependencies": [],
+    "author": "开发者",
+    "license": "MIT"
 })
-module_info = mods.get_module("MyModule")
+
+# 获取模块信息
+module_info = module_registry.get_module("MyModule")
 
 # 批量操作
-mods.set_all_modules({
+module_registry.set_all_modules({
     "Module1": {"version": "1.0", "status": True},
     "Module2": {"version": "2.0", "status": False}
 })
-all_modules = mods.get_all_modules()    # 获取所有模块信息
+all_modules = module_registry.get_all_modules()    # 获取所有模块信息
+
+# 移除模块
+module_registry.remove_module("OldModule")
+```
+
+### 6. 模块管理器
+```python
+# 直接获取模块实例
+my_module = module.get("MyModule")
+
+# 通过属性访问获取模块实例
+my_module = module.MyModule
+
+# 检查模块是否存在
+if "MyModule" in module:
+    # 模块存在并且处于启用状态
+    pass
+
+# 检查模块是否启用
+if module.is_enabled("MyModule"):
+    # 模块已启用
+    pass
+
+# 获取模块信息
+info = module.get_info("MyModule")
+
+# 列出所有模块
+all_modules = module.list_modules()
+
+# 启用/禁用模块
+module.enable("MyModule")
+module.disable("MyModule")
 ```
 
 ## 配置管理
@@ -1351,7 +1394,8 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 - [ErisPulse\Core\erispulse_config.md](#ErisPulse_Core_erispulse_config)
 - [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
 - [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
-- [ErisPulse\Core\mods.md](#ErisPulse_Core_mods)
+- [ErisPulse\Core\module.md](#ErisPulse_Core_module)
+- [ErisPulse\Core\module_registry.md](#ErisPulse_Core_module_registry)
 - [ErisPulse\Core\router.md](#ErisPulse_Core_router)
 - [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
 - [ErisPulse\__init__.md](#ErisPulse___init__)
@@ -1363,14 +1407,16 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
 ## 模块概述
 
 
-该模块暂无概述信息。
+ErisPulse 事件处理模块
+
+提供统一的事件处理接口，支持命令、消息、通知、请求和元事件处理
 
 ---
 
@@ -1385,13 +1431,13 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1472,13 +1518,13 @@ ErisPulse 事件处理基础模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_cmd"></a>
 ## ErisPulse\Core\Event\cmd.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1568,13 +1614,13 @@ ErisPulse 命令处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1617,13 +1663,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_manager"></a>
 ## ErisPulse\Core\Event\manager.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1716,13 +1762,13 @@ ErisPulse 事件管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1788,13 +1834,13 @@ ErisPulse 消息处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1860,13 +1906,13 @@ ErisPulse 元事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -1941,13 +1987,13 @@ ErisPulse 通知处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2004,13 +2050,13 @@ ErisPulse 请求处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2406,13 +2452,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2426,13 +2472,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_env"></a>
 ## ErisPulse\Core\env.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2448,13 +2494,13 @@ ErisPulse 环境模块 (已弃用)
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_erispulse_config"></a>
 ## ErisPulse\Core\erispulse_config.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2511,13 +2557,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2559,13 +2605,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2688,13 +2734,124 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
-<a id="ErisPulse_Core_mods"></a>
-## ErisPulse\Core\mods.md
+<a id="ErisPulse_Core_module"></a>
+## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 模块管理模块
+
+提供便捷的模块访问接口
+
+---
+
+## 类列表
+
+### `class ModuleManager`
+
+模块管理器
+
+提供便捷的模块访问接口，支持获取模块实例、检查模块状态等操作
+
+
+#### 方法列表
+
+##### `get(module_name: str)`
+
+获取指定模块的实例
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Any</span> 模块实例或None</dd>
+
+---
+
+##### `exists(module_name: str)`
+
+检查模块是否存在
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否存在</dd>
+
+---
+
+##### `is_enabled(module_name: str)`
+
+检查模块是否启用
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否启用</dd>
+
+---
+
+##### `enable(module_name: str)`
+
+启用模块
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
+
+---
+
+##### `disable(module_name: str)`
+
+禁用模块
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
+
+---
+
+##### `list_modules()`
+
+列出所有模块信息
+
+<dt>返回值</dt><dd><span class='type-hint'>Dict[str, Dict[str, Any</span> ]] 模块信息字典</dd>
+
+---
+
+##### `get_info(module_name: str)`
+
+获取模块详细信息
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Optional[Dict[str, Any</span> ]] 模块信息字典</dd>
+
+---
+
+##### `__getattr__(module_name: str)`
+
+通过属性访问获取模块实例
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Any</span> 模块实例</dd>
+<dt>异常</dt><dd><code>AttributeError</code> 当模块不存在或未启用时</dd>
+
+---
+
+##### `__contains__(module_name: str)`
+
+检查模块是否存在且处于启用状态
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否存在且启用</dd>
+
+---
+
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+
+<a id="ErisPulse_Core_module_registry"></a>
+## ErisPulse\Core\module_registry.md
+
+
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -2713,15 +2870,15 @@ ErisPulse 模块管理器
 
 ## 类列表
 
-### `class ModuleManager`
+### `class ModuleRegistry`
 
-模块管理器
+ErisPulse 模块注册表
 
-管理所有模块的注册、状态和依赖关系
+管理所有模块的注册信息和启用状态
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过set_module/get_module管理模块信息
-2. 通过set_module_status/get_module_status控制模块状态
-3. 通过set_all_modules/get_all_modules批量操作模块</p></div>
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块信息通过 set_module/get_module 管理
+2. 模块状态通过 set_module_status/get_module_status 控制
+3. 支持批量操作模块信息</p></div>
 
 
 #### 方法列表
@@ -2753,16 +2910,16 @@ ErisPulse 模块管理器
 
 设置模块启用状态
 
-:param module_name: 模块名称
-:param status: 启用状态
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt><code>status</code> <span class='type-hint'>bool</span></dt><dd>启用状态 (True=启用, False=禁用)</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
 >>> # 启用模块
->>> mods.set_module_status("MyModule", True)
+>>> module_registry.set_module_status("MyModule", True)
 >>> # 禁用模块
->>> mods.set_module_status("MyModule", False)
+>>> module_registry.set_module_status("MyModule", False)
 ```
 </details>
 
@@ -2772,13 +2929,13 @@ ErisPulse 模块管理器
 
 获取模块启用状态
 
-:param module_name: 模块名称
-:return: 模块是否启用
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否启用</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> if mods.get_module_status("MyModule"):
+>>> if module_registry.get_module_status("MyModule"):
 >>>     print("模块已启用")
 ```
 </details>
@@ -2787,17 +2944,21 @@ ErisPulse 模块管理器
 
 ##### `set_module(module_name: str, module_info: Dict[str, Any])`
 
-设置模块信息
+注册或更新模块信息
 
-:param module_name: 模块名称
-:param module_info: 模块信息字典
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt><code>module_info</code> <span class='type-hint'>Dict[str, Any</span></dt><dd>] 模块信息字典</dd>
+    必须包含 version 和 description 字段
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> mods.set_module("MyModule", {
+>>> module_registry.set_module("MyModule", {
 >>>     "version": "1.0.0",
 >>>     "description": "我的模块",
+>>>     "dependencies": [],
+>>>     "author": "开发者",
+>>>     "license": "MIT"
 >>> })
 ```
 </details>
@@ -2808,13 +2969,13 @@ ErisPulse 模块管理器
 
 获取模块信息
 
-:param module_name: 模块名称
-:return: 模块信息字典或None
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Optional[Dict[str, Any</span> ]] 模块信息字典或None</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> module_info = mods.get_module("MyModule")
+>>> module_info = module_registry.get_module("MyModule")
 >>> if module_info:
 >>>     print(f"模块版本: {module_info.get('version')}")
 ```
@@ -2824,14 +2985,15 @@ ErisPulse 模块管理器
 
 ##### `set_all_modules(modules_info: Dict[str, Dict[str, Any]])`
 
-批量设置多个模块信息
+批量设置模块信息
 
-:param modules_info: 模块信息字典
+<dt><code>modules_info</code> <span class='type-hint'>Dict[str, Dict[str, Any</span></dt><dd>]] 模块信息字典</dd>
+    格式: {模块名: 模块信息}
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> mods.set_all_modules({
+>>> module_registry.set_all_modules({
 >>>     "Module1": {"version": "1.0", "status": True},
 >>>     "Module2": {"version": "2.0", "status": False}
 >>> })
@@ -2842,14 +3004,14 @@ ErisPulse 模块管理器
 
 ##### `get_all_modules()`
 
-获取所有模块信息
+获取所有已注册模块信息
 
-:return: 模块信息字典
+<dt>返回值</dt><dd><span class='type-hint'>Dict[str, Dict[str, Any</span> ]] 所有模块信息字典</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> all_modules = mods.get_all_modules()
+>>> all_modules = module_registry.get_all_modules()
 >>> for name, info in all_modules.items():
 >>>     print(f"{name}: {info.get('status')}")
 ```
@@ -2868,15 +3030,15 @@ ErisPulse 模块管理器
 
 ##### `remove_module(module_name: str)`
 
-移除模块
+移除模块注册信息
 
-:param module_name: 模块名称
-:return: 是否成功移除
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 是否成功移除</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> if mods.remove_module("OldModule"):
+>>> if module_registry.remove_module("OldModule"):
 >>>     print("模块已移除")
 ```
 </details>
@@ -2885,16 +3047,16 @@ ErisPulse 模块管理器
 
 ##### `update_prefixes(module_prefix: Optional[str] = None, status_prefix: Optional[str] = None)`
 
-更新模块前缀配置
+更新模块存储前缀配置
 
-:param module_prefix: 新的模块数据前缀(可选)
-:param status_prefix: 新的模块状态前缀(可选)
+<dt><code>module_prefix</code> <span class='type-hint'>Optional[str</span></dt><dd>] 模块数据前缀 (默认: "erispulse.data.modules.info:")</dd>
+<dt><code>status_prefix</code> <span class='type-hint'>Optional[str</span></dt><dd>] 模块状态前缀 (默认: "erispulse.data.modules.status:")</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
 >>> # 更新模块前缀
->>> mods.update_prefixes(
+>>> module_registry.update_prefixes(
 >>>     module_prefix="custom.module.data:",
 >>>     status_prefix="custom.module.status:"
 >>> )
@@ -2903,13 +3065,13 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -3017,13 +3179,13 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -3357,13 +3519,13 @@ ErisPulse 存储管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -3670,13 +3832,13 @@ SDK初始化入口，返回Task对象
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-08-17 04:11:37</sup>
+<sup>更新时间: 2025-08-17 09:01:35</sup>
 
 ---
 
@@ -4118,6 +4280,6 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-17 04:11:37</sub>
+<sub>文档最后更新于 2025-08-17 09:01:35</sub>
 
 ---
