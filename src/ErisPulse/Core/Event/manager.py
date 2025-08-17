@@ -4,7 +4,7 @@ ErisPulse 事件管理器
 提供全局事件管理功能，包括事件处理器创建、模块事件管理等
 """
 
-from .. import adapter, logger, mods
+from .. import logger
 from .base import BaseEventHandler
 from .exceptions import EventNotFoundException
 from typing import Dict, List, Optional, Callable, Any
@@ -124,5 +124,4 @@ class EventManager:
                     ]
             del self.module_events[module_name]
 
-# 全局事件管理器实例
 event_manager = EventManager()

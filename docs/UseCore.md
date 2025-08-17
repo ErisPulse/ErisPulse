@@ -6,8 +6,9 @@
 | `sdk` | SDK对象 |
 | `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
-| `mods`/`sdk.mods` | 模块管理器 |
+| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
+| `module`/`sdk.module` | 获取模块实例 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
@@ -27,7 +28,7 @@ Event 模块包含以下子模块：
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, mods, logger, adapter, BaseAdapter, Event
+from ErisPulse.Core import storage, module_registry, logger, adapter, module, BaseAdapter, Event
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -91,18 +92,48 @@ async def hello_command(event):
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text("Hello World!")
 
+async def send_reply(event: Dict[str, Any], message: Union[str, List[Dict]]) -> Any:
+    platform = event.get("platform")
+    if not platform:
+        logger.warning("事件中缺少 'platform' 字段")
+    
+    adapter_sender = getattr(adapter, platform, None)
+    if not adapter_sender:
+        logger.warning(f"适配器 {platform} 未注册")
+    
+    # 判断消息类型（群聊/频道/私聊）
+    if event.get("detail_type") == "group":
+        target_type = "group"
+        target_id = event.get("group_id")
+    elif event.get("detail_type") == "channel":
+        target_type = "channel"
+        target_id = event.get("channel_id") 
+    else:
+        target_type = "user"
+        target_id = event.get("user_id")
+    
+    # 发送消息
+    adapter_sender.Send.To(target_type, target_id).Text(message)
+
 # 带参数的命令
 @command("echo", help="回显消息", usage="/echo <内容>")
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
-    alt_message = event["alt_message"]
+
+    # 处理command时，我们会自动添加 "command" 字段, 所以他不是一个ob12标准字段
+    args = event["command"]["args"]
     
+    if not args:
+        await send_reply(event, "请提供要回显的内容")
+        return
+    
+    message = " ".join(args)
     adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text(alt_message)
+    await adapter_instance.Send.To("user", user_id).Text(message)
 
 # 带别名的命令
-@command(["help", "h"], help="显示帮助信息")
+@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
 async def help_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
@@ -110,6 +141,12 @@ async def help_command(event):
     
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text(help_text)
+
+# 命令组
+@command("admin.reload", group="admin", help="重新加载模块")
+async def reload_command(event):
+    # 管理员命令逻辑
+    pass
 ```
 
 ### 消息处理
@@ -133,6 +170,12 @@ async def handle_group_message(event):
     group_id = event["group_id"]
     user_id = event["user_id"]
     sdk.logger.info(f"收到群消息，群: {group_id}，用户: {user_id}")
+
+# 处理@消息
+@message.on_at_message()
+async def handle_at_message(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到@消息，来自用户: {user_id}")
 ```
 
 ### 通知处理
@@ -156,6 +199,19 @@ async def handle_group_increase(event):
     group_id = event["group_id"]
     user_id = event["user_id"]
     sdk.logger.info(f"新成员加入群: {group_id}，用户: {user_id}")
+
+# 处理好友删除通知
+@notice.on_friend_remove()
+async def handle_friend_remove(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"好友删除: {user_id}")
+
+# 处理群成员减少通知
+@notice.on_group_decrease()
+async def handle_group_decrease(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"群成员减少，群: {group_id}，用户: {user_id}")
 ```
 
 ### 请求处理
@@ -167,6 +223,13 @@ from ErisPulse.Core.Event import request
 async def handle_friend_request(event):
     user_id = event["user_id"]
     sdk.logger.info(f"收到好友请求，来自用户: {user_id}")
+
+# 处理群邀请请求
+@request.on_group_request()
+async def handle_group_request(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到群邀请请求，群: {group_id}，用户: {user_id}")
 ```
 
 ### 元事件处理
@@ -178,6 +241,18 @@ from ErisPulse.Core.Event import meta
 async def handle_connect(event):
     platform = event["platform"]
     sdk.logger.info(f"平台 {platform} 连接成功")
+
+# 处理断开连接事件
+@meta.on_disconnect()
+async def handle_disconnect(event):
+    platform = event["platform"]
+    sdk.logger.info(f"平台 {platform} 断开连接")
+
+# 处理心跳事件
+@meta.on_heartbeat()
+async def handle_heartbeat(event):
+    platform = event["platform"]
+    sdk.logger.debug(f"平台 {platform} 心跳")
 ```
 
 ### 高级功能
@@ -216,19 +291,23 @@ async def keyword_handler(event):
 
 #### 中间件
 ```python
-from ErisPulse.Core.Event import event_manager
+from ErisPulse.Core.Event import command, message, notice, request
 
-# 全局中间件
-@event_manager.middleware
-async def logging_middleware(event):
-    sdk.logger.info(f"处理事件: {event.get('type')}")
-    return event
-
-# 局部中间件
+# 命令触发中间件
 @command.handler.middleware
 async def command_middleware(event):
-    sdk.logger.info(f"处理命令: {event.get('command', {}).get('name')}")
+    sdk.logger.info(f"处理命令: {event.get('alt_message')}")
     return event
+
+# 消息触发中间件
+@message.handler.middleware
+async def message_middleware(event):
+    sdk.logger.info(f"处理消息: {event.get('alt_message')}")
+    return event
+
+# 其他中间件同理
+# ...
+
 ```
 
 ## 核心模块功能详解
@@ -271,6 +350,13 @@ storage.delete("key")  # 删除配置项
 with storage.transaction():
     storage.set('important_key', 'value')
     storage.delete('temp_key')  # 异常时自动回滚
+
+# 批量操作
+storage.set_multi({
+    "key1": "value1",
+    "key2": "value2"
+})
+storage.delete_multi(["key1", "key2"])
 ```
 
 ### 3. 配置模块(config)
@@ -279,6 +365,10 @@ with storage.transaction():
 module_config = config.getConfig("MyModule")  # 获取模块配置
 if module_config is None:
     config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
+
+# 嵌套配置访问
+nested_value = config.getConfig("MyModule.subkey.value", "default")
+config.setConfig("MyModule.subkey.value", "new_value")
 ```
 
 ### 4. 异常处理模块(exceptions)
@@ -299,11 +389,97 @@ exceptions.setup_async_loop()
 # 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
 ```
 
-### 建议
-1. 模块配置应使用`getConfig/setConfig`操作config.toml
-2. 持久信息存储使用`get/set`操作数据库
-3. 关键操作使用事务保证原子性
-4. 对于自定义事件循环，使用`exceptions.setup_async_loop()`方法确保异常被正确处理
-> 其中，1-2 步骤可以实现配合，比如硬配置让用户设置后，和数据库中的配置进行合并，实现配置的动态更新
+### 5. 模块状态管理器(module_registry)
+
+模块注册表用于管理所有模块的注册信息和启用状态。
+
+```python
+# 设置模块状态
+module_registry.set_module_status("MyModule", True)   # 启用模块
+module_registry.set_module_status("MyModule", False)  # 禁用模块
+
+# 获取模块状态
+is_enabled = module_registry.get_module_status("MyModule")  # 获取模块状态
+
+# 注册模块信息
+module_registry.set_module("MyModule", {
+    "version": "1.0.0",
+    "description": "我的模块",
+    "dependencies": [],
+    "author": "开发者",
+    "license": "MIT"
+})
+
+# 获取模块信息
+module_info = module_registry.get_module("MyModule")
+
+# 批量操作
+module_registry.set_all_modules({
+    "Module1": {"version": "1.0", "status": True},
+    "Module2": {"version": "2.0", "status": False}
+})
+all_modules = module_registry.get_all_modules()    # 获取所有模块信息
+
+# 移除模块
+module_registry.remove_module("OldModule")
+```
+
+### 6. 模块管理器
+```python
+# 直接获取模块实例
+my_module = module.get("MyModule")
+
+# 通过属性访问获取模块实例
+my_module = module.MyModule
+
+# 检查模块是否存在
+if "MyModule" in module:
+    # 模块存在并且处于启用状态
+    pass
+
+# 检查模块是否启用
+if module.is_enabled("MyModule"):
+    # 模块已启用
+    pass
+
+# 获取模块信息
+info = module.get_info("MyModule")
+
+# 列出所有模块
+all_modules = module.list_modules()
+
+# 启用/禁用模块
+module.enable("MyModule")
+module.disable("MyModule")
+```
+
+## 配置管理
+
+### 1. 命令前缀配置
+```toml
+[ErisPulse]
+[ErisPulse.event]
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = true
+
+[ErisPulse.event.message]
+ignore_self = true
+```
+
+### 2. 框架配置
+```toml
+[ErisPulse]
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+ssl_certfile = ""
+ssl_keyfile = ""
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = []
+memory_limit = 1000
+```
 
 更多详细信息请参考[API文档](docs/api/)
