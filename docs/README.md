@@ -4,6 +4,38 @@
 
 ## 文档目录
 
+```
+docs/
+├── README.md
+├── quick-start.md
+├── platform-features.md
+├── ai/
+│   ├── README.md
+│   ├── module-generation.md
+│   └── AIDocs/
+│       ├── ErisPulse-ModuleDev.md
+│       ├── ErisPulse-AdapterDev.md
+|       └── ErisPulse-Full.md
+├── core/
+│   ├── README.md
+│   ├── cli.md
+│   ├── concepts.md
+│   ├── modules.md
+│   ├── adapters.md
+│   ├── event-system.md
+│   └── best-practices.md
+├── development/
+│   ├── README.md
+│   ├── adapter.md
+│   ├── module.md
+│   └── cli.md
+├── standards/
+│   ├── README.md
+│   ├── event-conversion.md
+│   └── api-response.md
+└── api/ (自动生成的API文档)
+```
+
 ### 快速开始
 - [快速开始指南](quick-start.md)            - 安装和运行 ErisPulse 的入门指南
 - [各平台风格特性](platform-features.md)    - 各个适配器支持的发送方法，以及对于OneBot12的拓展字段介绍
@@ -13,7 +45,6 @@
 - 所有AI物料（注意，不推荐直接使用Full投喂给AI，除非这个模型具有强大的上下文能力）:
   - [模块开发物料](ai/AIDocs/ErisPulse-ModuleDev.md)
   - [适配器开发物料](ai/AIDocs/ErisPulse-AdapterDev.md)
-  - [核心模块开发物料](ai/AIDocs/ErisPulse-Core.md)
   - [物料集合](ai/AIDocs/ErisPulse-Full.md)
 
 ### 核心功能
