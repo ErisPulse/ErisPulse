@@ -10,9 +10,6 @@ ErisPulse SDK 主模块
 {!--< /tips >!--}
 """
 
-__version__ = "2.1.15-dev.4"
-__author__  = "ErisPulse"
-
 import os
 import sys
 import importlib
@@ -26,22 +23,32 @@ from pathlib import Path
 from .Core import logger
 from .Core import storage
 from .Core import env
-from .Core import mods
+from .Core import module_registry
 from .Core import adapter, AdapterFather, SendDSL
+from .Core import module
 from .Core import router, adapter_server
 from .Core import exceptions
 from .Core import config
+from .Core import Event
+
+try:
+    __version__ = importlib.metadata.version('ErisPulse')
+except importlib.metadata.PackageNotFoundError:
+    logger.critical("未找到ErisPulse版本信息，请检查是否正确安装ErisPulse")
+__author__  = "ErisPulse"
 
 sdk = sys.modules[__name__]
 
 BaseModules = {
+    "Event": Event,
     "logger": logger,
     "config": config,
     "exceptions": exceptions,
     "storage": storage,
     "env": env,
-    "mods": mods,
+    "module_registry": module_registry,
     "adapter": adapter,
+    "module": module,
     "router": router,
     "adapter_server": adapter_server,
     "SendDSL": SendDSL,
@@ -254,7 +261,7 @@ class AdapterLoader:
         :raises ImportError: 当适配器加载失败时抛出
         """
         meta_name = entry_point.name
-        adapter_status = mods.get_module_status(meta_name)
+        adapter_status = module_registry.get_module_status(meta_name)
         logger.debug(f"适配器 {meta_name} 状态: {adapter_status}")
         
         if adapter_status is False:
@@ -285,7 +292,7 @@ class AdapterLoader:
             adapter_obj.adapterInfo[meta_name] = adapter_info
             
             # 存储适配器信息
-            mods.set_module(meta_name, adapter_info)
+            module_registry.set_module(meta_name, adapter_info)
                 
             adapter_objs[meta_name] = adapter_obj
             enabled_adapters.append(meta_name)
@@ -369,7 +376,7 @@ class ModuleLoader:
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
-        module_status = mods.get_module_status(meta_name)
+        module_status = module_registry.get_module_status(meta_name)
         logger.debug(f"模块 {meta_name} 状态: {module_status}")
         
         # 首先检查模块状态，如果明确为False则直接跳过
@@ -401,7 +408,7 @@ class ModuleLoader:
             module_obj.moduleInfo = module_info
             
             # 存储模块信息
-            mods.set_module(meta_name, module_info)
+            module_registry.set_module(meta_name, module_info)
                 
             module_objs[meta_name] = module_obj
             enabled_modules.append(meta_name)
