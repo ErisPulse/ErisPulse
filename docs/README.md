@@ -13,6 +13,7 @@ docs/
 │   ├── README.md
 │   ├── module-generation.md
 │   └── AIDocs/
+│       ├── README.md
 │       ├── ErisPulse-ModuleDev.md
 │       ├── ErisPulse-AdapterDev.md
 │       ├── ErisPulse-Core.md
