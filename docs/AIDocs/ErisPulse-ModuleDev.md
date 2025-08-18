@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2025-08-18 22:00:44
+**生成时间**: 2025-08-18 23:22:15
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -397,7 +397,7 @@ async def hello_command(event):
     await adapter_instance.Send.To("user", user_id).Text("Hello World!")
 
 # 带参数的命令
-@command("echo", help="回显消息", usage="/echo <内容>")
+@command("echo", help="回显消息", usage="echo <内容>")
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
