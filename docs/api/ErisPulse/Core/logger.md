@@ -1,6 +1,6 @@
 # `ErisPulse.Core.logger` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -21,7 +21,7 @@ ErisPulse 日志系统
 
 ### `class Logger`
 
-日志管理器
+    日志管理器
 
 提供模块化日志记录和存储功能
 
@@ -29,98 +29,98 @@ ErisPulse 日志系统
 2. 使用get_logs获取历史日志
 3. 支持标准日志级别(DEBUG, INFO等)</p></div>
 
-
+    
 #### 方法列表
 
 ##### `set_memory_limit(limit: int)`
 
-设置日志内存存储上限
+    设置日志内存存储上限
 
 :param limit: 日志存储上限
 :return: bool 设置是否成功
 
----
-
+    ---
+    
 ##### `set_level(level: str)`
 
-设置全局日志级别
+    设置全局日志级别
 
 :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
 :return: bool 设置是否成功
 
----
-
+    ---
+    
 ##### `set_module_level(module_name: str, level: str)`
 
-设置指定模块日志级别
+    设置指定模块日志级别
 
 :param module_name: 模块名称
 :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
 :return: bool 设置是否成功
 
----
-
+    ---
+    
 ##### `set_output_file(path)`
 
-设置日志输出
+    设置日志输出
 
 :param path: 日志文件路径 Str/List
 :return: bool 设置是否成功
 
----
-
+    ---
+    
 ##### `save_logs(path)`
 
-保存所有在内存中记录的日志
+    保存所有在内存中记录的日志
 
 :param path: 日志文件路径 Str/List
 :return: bool 设置是否成功
 
----
-
+    ---
+    
 ##### `get_logs(module_name: str = None)`
 
-获取日志内容
+    获取日志内容
 
 :param module_name (可选): 模块名称
 :return: dict 日志内容
 
----
-
+    ---
+    
 ##### `get_child(child_name: str = None)`
 
-获取子日志记录器
+    获取子日志记录器
 
 :param child_name: 子模块名称(可选)
 :return: LoggerChild 子日志记录器实例
 
----
-
+    ---
+    
 ### `class LoggerChild`
 
-子日志记录器
+    子日志记录器
 
 用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
 
-
+    
 #### 方法列表
 
 ##### `__init__(parent_logger: Logger, name: str)`
 
-初始化子日志记录器
+    初始化子日志记录器
 
 :param parent_logger: 父日志记录器实例
 :param name: 子日志记录器名称
 
----
-
+    ---
+    
 ##### `get_child(child_name: str)`
 
-获取子日志记录器的子记录器
+    获取子日志记录器的子记录器
 
 :param child_name: 子模块名称
 :return: LoggerChild 子日志记录器实例
 
----
-
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+    ---
+    
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
