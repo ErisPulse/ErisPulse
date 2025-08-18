@@ -4,40 +4,6 @@
 
 ## 文档目录
 
-```
-docs/
-├── README.md
-├── quick-start.md
-├── platform-features.md
-├── ai/
-│   ├── README.md
-│   ├── module-generation.md
-│   └── AIDocs/
-│       ├── README.md
-│       ├── ErisPulse-ModuleDev.md
-│       ├── ErisPulse-AdapterDev.md
-│       ├── ErisPulse-Core.md
-|       └── ErisPulse-Full.md
-├── core/
-│   ├── README.md
-│   ├── cli.md
-│   ├── concepts.md
-│   ├── modules.md
-│   ├── adapters.md
-│   ├── event-system.md
-│   └── best-practices.md
-├── development/
-│   ├── README.md
-│   ├── adapter.md
-│   ├── module.md
-│   └── cli.md
-├── standards/
-│   ├── README.md
-│   ├── event-conversion.md
-│   └── api-response.md
-└── api/ (自动生成的API文档)
-```
-
 ### 快速开始
 - [快速开始指南](quick-start.md)            - 安装和运行 ErisPulse 的入门指南
 - [各平台风格特性](platform-features.md)    - 各个适配器支持的发送方法，以及对于OneBot12的拓展字段介绍
@@ -51,7 +17,7 @@ docs/
   - [物料集合](ai/AIDocs/ErisPulse-Full.md)
 
 ### 核心功能
-- [命令行接口](cli.md)              - 使用命令行界面管理 ErisPulse
+- [命令行接口](core/cli.md)              - 使用命令行界面管理 ErisPulse
 - [核心概念](core/concepts.md)      - ErisPulse 的基础架构和设计理念
 - [核心模块](core/modules.md)       - 存储、配置、日志等核心组件详解
 - [适配器系统](core/adapters.md)    - 平台适配器的使用和开发
