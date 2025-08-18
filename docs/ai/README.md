@@ -7,7 +7,6 @@
 - [AI 模块生成指南](module-generation.md) - 快速使用 AIDocs 生成一个 AI 模块/适配器
 - [模块开发物料](AIDocs/ErisPulse-ModuleDev.md) - 模块开发相关 AI 训练文档
 - [适配器开发物料](AIDocs/ErisPulse-AdapterDev.md) - 适配器开发相关 AI 训练文档
-- [核心模块开发物料](AIDocs/ErisPulse-Core.md) - 核心模块开发相关 AI 训练文档
 - [完整物料集合](AIDocs/ErisPulse-Full.md) - 所有开发物料的集合
 
 ## 使用说明
@@ -18,7 +17,6 @@ ErisPulse 提供了完整的 AI 辅助开发物料，帮助开发者快速理解
 
 1. **模块开发**：参考 [模块开发物料](AIDocs/ErisPulse-ModuleDev.md)
 2. **适配器开发**：参考 [适配器开发物料](AIDocs/ErisPulse-AdapterDev.md)
-3. **核心开发**：参考 [核心模块开发物料](AIDocs/ErisPulse-Core.md)
 
 ### 注意事项
 
