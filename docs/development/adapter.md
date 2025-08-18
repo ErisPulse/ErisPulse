@@ -150,7 +150,7 @@ class MyAdapter(BaseAdapter):
 |------|------|
 | `on(event_type: str)` | 注册事件处理器 |
 | `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
-| `middleware(func: Callable)` | 添加中间件处理传入数据 |
+| `middleware(func: Callable` | 添加中间件处理传入数据 |
 | `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
 
 - 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
@@ -284,7 +284,7 @@ async def start(self):
 
 ### 5.3 事件转换器实现
 
-适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[事件转换标准文档](docs/AdapterStandards/EventConversion.md)：
+适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[事件转换标准文档](docs/standards/event-conversion.md)：
 
 ```python
 class MyPlatformConverter:
@@ -431,7 +431,3 @@ class ErrorCode:
 ### 5. 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
----
-
-*文档最后更新于 2025-08-11 14:43:21*
