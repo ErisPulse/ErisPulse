@@ -1,6 +1,6 @@
-# `ErisPulse.Core.mods` 模块
+# `ErisPulse.Core.module_registry` 模块
 
-<sup>更新时间: 2025-08-16 23:19:11</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -19,15 +19,15 @@ ErisPulse 模块管理器
 
 ## 类列表
 
-### `class ModuleManager`
+### `class ModuleRegistry`
 
-模块管理器
+ErisPulse 模块注册表
 
-管理所有模块的注册、状态和依赖关系
+管理所有模块的注册信息和启用状态
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过set_module/get_module管理模块信息
-2. 通过set_module_status/get_module_status控制模块状态
-3. 通过set_all_modules/get_all_modules批量操作模块</p></div>
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块信息通过 set_module/get_module 管理
+2. 模块状态通过 set_module_status/get_module_status 控制
+3. 支持批量操作模块信息</p></div>
 
 
 #### 方法列表
@@ -59,16 +59,16 @@ ErisPulse 模块管理器
 
 设置模块启用状态
 
-:param module_name: 模块名称
-:param status: 启用状态
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt><code>status</code> <span class='type-hint'>bool</span></dt><dd>启用状态 (True=启用, False=禁用)</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
 >>> # 启用模块
->>> mods.set_module_status("MyModule", True)
+>>> module_registry.set_module_status("MyModule", True)
 >>> # 禁用模块
->>> mods.set_module_status("MyModule", False)
+>>> module_registry.set_module_status("MyModule", False)
 ```
 </details>
 
@@ -78,13 +78,13 @@ ErisPulse 模块管理器
 
 获取模块启用状态
 
-:param module_name: 模块名称
-:return: 模块是否启用
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否启用</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> if mods.get_module_status("MyModule"):
+>>> if module_registry.get_module_status("MyModule"):
 >>>     print("模块已启用")
 ```
 </details>
@@ -93,17 +93,21 @@ ErisPulse 模块管理器
 
 ##### `set_module(module_name: str, module_info: Dict[str, Any])`
 
-设置模块信息
+注册或更新模块信息
 
-:param module_name: 模块名称
-:param module_info: 模块信息字典
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt><code>module_info</code> <span class='type-hint'>Dict[str, Any</span></dt><dd>] 模块信息字典</dd>
+    必须包含 version 和 description 字段
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> mods.set_module("MyModule", {
+>>> module_registry.set_module("MyModule", {
 >>>     "version": "1.0.0",
 >>>     "description": "我的模块",
+>>>     "dependencies": [],
+>>>     "author": "开发者",
+>>>     "license": "MIT"
 >>> })
 ```
 </details>
@@ -114,13 +118,13 @@ ErisPulse 模块管理器
 
 获取模块信息
 
-:param module_name: 模块名称
-:return: 模块信息字典或None
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Optional[Dict[str, Any</span> ]] 模块信息字典或None</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> module_info = mods.get_module("MyModule")
+>>> module_info = module_registry.get_module("MyModule")
 >>> if module_info:
 >>>     print(f"模块版本: {module_info.get('version')}")
 ```
@@ -130,14 +134,15 @@ ErisPulse 模块管理器
 
 ##### `set_all_modules(modules_info: Dict[str, Dict[str, Any]])`
 
-批量设置多个模块信息
+批量设置模块信息
 
-:param modules_info: 模块信息字典
+<dt><code>modules_info</code> <span class='type-hint'>Dict[str, Dict[str, Any</span></dt><dd>]] 模块信息字典</dd>
+    格式: {模块名: 模块信息}
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> mods.set_all_modules({
+>>> module_registry.set_all_modules({
 >>>     "Module1": {"version": "1.0", "status": True},
 >>>     "Module2": {"version": "2.0", "status": False}
 >>> })
@@ -148,14 +153,14 @@ ErisPulse 模块管理器
 
 ##### `get_all_modules()`
 
-获取所有模块信息
+获取所有已注册模块信息
 
-:return: 模块信息字典
+<dt>返回值</dt><dd><span class='type-hint'>Dict[str, Dict[str, Any</span> ]] 所有模块信息字典</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> all_modules = mods.get_all_modules()
+>>> all_modules = module_registry.get_all_modules()
 >>> for name, info in all_modules.items():
 >>>     print(f"{name}: {info.get('status')}")
 ```
@@ -174,15 +179,15 @@ ErisPulse 模块管理器
 
 ##### `remove_module(module_name: str)`
 
-移除模块
+移除模块注册信息
 
-:param module_name: 模块名称
-:return: 是否成功移除
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 是否成功移除</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
->>> if mods.remove_module("OldModule"):
+>>> if module_registry.remove_module("OldModule"):
 >>>     print("模块已移除")
 ```
 </details>
@@ -191,16 +196,16 @@ ErisPulse 模块管理器
 
 ##### `update_prefixes(module_prefix: Optional[str] = None, status_prefix: Optional[str] = None)`
 
-更新模块前缀配置
+更新模块存储前缀配置
 
-:param module_prefix: 新的模块数据前缀(可选)
-:param status_prefix: 新的模块状态前缀(可选)
+<dt><code>module_prefix</code> <span class='type-hint'>Optional[str</span></dt><dd>] 模块数据前缀 (默认: "erispulse.data.modules.info:")</dd>
+<dt><code>status_prefix</code> <span class='type-hint'>Optional[str</span></dt><dd>] 模块状态前缀 (默认: "erispulse.data.modules.status:")</dd>
 
 <details class='example'><summary>示例</summary>
 
 ```python
 >>> # 更新模块前缀
->>> mods.update_prefixes(
+>>> module_registry.update_prefixes(
 >>>     module_prefix="custom.module.data:",
 >>>     status_prefix="custom.module.status:"
 >>> )
@@ -209,4 +214,4 @@ ErisPulse 模块管理器
 
 ---
 
-<sub>文档最后更新于 2025-08-16 23:19:11</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
