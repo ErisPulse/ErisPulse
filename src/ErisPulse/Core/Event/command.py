@@ -33,8 +33,11 @@ class CommandHandler:
         
         # 创建消息事件处理器
         self.handler = BaseEventHandler("message", "command")
+        
         # 注册消息处理器
-        self.handler.register(self._handle_message)
+        if not hasattr(self.handler, '_command_handler_registered') or not self.handler._command_handler_registered:
+            self.handler.register(self._handle_message)
+            self.handler._command_handler_registered = True
     
     def __call__(self, 
                  name: Union[str, List[str]] = None, 
