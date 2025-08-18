@@ -169,9 +169,7 @@ def generate_dev_documents():
     module_output = "docs/AIDocs/ErisPulse-ModuleDev.md"
     os.makedirs(os.path.dirname(module_output), exist_ok=True)
     merge_md_files(module_output, existing_module_files, "模块开发文档")
-    # 合并API文档
-    merge_api_docs("docs/api", module_output)
-    
+
     print(f"模块开发文档生成完成，已保存到: {module_output}")
     
     # 适配器开发文档
@@ -189,8 +187,6 @@ def generate_dev_documents():
     adapter_output = "docs/AIDocs/ErisPulse-AdapterDev.md"
     os.makedirs(os.path.dirname(adapter_output), exist_ok=True)
     merge_md_files(adapter_output, existing_adapter_files, "适配器开发文档")
-    # 合并API文档
-    merge_api_docs("docs/api", adapter_output)
     
     print(f"适配器开发文档生成完成，已保存到: {adapter_output}")
 
