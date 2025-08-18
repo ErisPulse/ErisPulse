@@ -23,12 +23,15 @@ Event 模块包含以下子模块：
 | `Event.notice` | 通知事件处理 |
 | `Event.request` | 请求事件处理 |
 | `Event.meta` | 元事件处理 |
-| `Event.event_manager` | 事件管理器 |
 | `Event.exceptions` | 事件异常处理 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, module_registry, logger, adapter, module, BaseAdapter, Event
+from ErisPulse.Core import (
+        storage, config, module_registry,
+        adapter, module, logger,
+        BaseAdapter, Event
+    )
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -36,8 +39,8 @@ sdk.storage  # 等同于直接导入的storage
 ```
 
 ## 模块使用
-- 所有模块通过`sdk`对象统一管理
-- 每个模块拥有独立命名空间，使用`sdk`进行调用
+- 所有模块通过 `sdk` 对象统一管理
+- 每个模块拥有独立命名空间，使用 `sdk` 进行调用
 - 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
 
 ## 适配器使用
@@ -92,36 +95,11 @@ async def hello_command(event):
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text("Hello World!")
 
-async def send_reply(event: Dict[str, Any], message: Union[str, List[Dict]]) -> Any:
-    platform = event.get("platform")
-    if not platform:
-        logger.warning("事件中缺少 'platform' 字段")
-    
-    adapter_sender = getattr(adapter, platform, None)
-    if not adapter_sender:
-        logger.warning(f"适配器 {platform} 未注册")
-    
-    # 判断消息类型（群聊/频道/私聊）
-    if event.get("detail_type") == "group":
-        target_type = "group"
-        target_id = event.get("group_id")
-    elif event.get("detail_type") == "channel":
-        target_type = "channel"
-        target_id = event.get("channel_id") 
-    else:
-        target_type = "user"
-        target_id = event.get("user_id")
-    
-    # 发送消息
-    adapter_sender.Send.To(target_type, target_id).Text(message)
-
 # 带参数的命令
 @command("echo", help="回显消息", usage="/echo <内容>")
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
-
-    # 处理command时，我们会自动添加 "command" 字段, 所以他不是一个ob12标准字段
     args = event["command"]["args"]
     
     if not args:
@@ -141,6 +119,23 @@ async def help_command(event):
     
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text(help_text)
+
+# 带权限检查的命令
+def is_admin(event):
+    # 检查是否为管理员
+    user_id = event.get("user_id")
+    return user_id in ["admin_id_1", "admin_id_2"]
+
+@command("admin", permission=is_admin, help="管理员命令")
+async def admin_command(event):
+    # 只有管理员才能执行
+    pass
+
+# 隐藏命令
+@command("secret", hidden=True, help="秘密命令")
+async def secret_command(event):
+    # 不会在帮助中显示
+    pass
 
 # 命令组
 @command("admin.reload", group="admin", help="重新加载模块")
@@ -289,27 +284,6 @@ async def keyword_handler(event):
     pass
 ```
 
-#### 中间件
-```python
-from ErisPulse.Core.Event import command, message, notice, request
-
-# 命令触发中间件
-@command.handler.middleware
-async def command_middleware(event):
-    sdk.logger.info(f"处理命令: {event.get('alt_message')}")
-    return event
-
-# 消息触发中间件
-@message.handler.middleware
-async def message_middleware(event):
-    sdk.logger.info(f"处理消息: {event.get('alt_message')}")
-    return event
-
-# 其他中间件同理
-# ...
-
-```
-
 ## 核心模块功能详解
 
 ### 1. 日志模块(logger)
@@ -389,42 +363,7 @@ exceptions.setup_async_loop()
 # 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
 ```
 
-### 5. 模块状态管理器(module_registry)
-
-模块注册表用于管理所有模块的注册信息和启用状态。
-
-```python
-# 设置模块状态
-module_registry.set_module_status("MyModule", True)   # 启用模块
-module_registry.set_module_status("MyModule", False)  # 禁用模块
-
-# 获取模块状态
-is_enabled = module_registry.get_module_status("MyModule")  # 获取模块状态
-
-# 注册模块信息
-module_registry.set_module("MyModule", {
-    "version": "1.0.0",
-    "description": "我的模块",
-    "dependencies": [],
-    "author": "开发者",
-    "license": "MIT"
-})
-
-# 获取模块信息
-module_info = module_registry.get_module("MyModule")
-
-# 批量操作
-module_registry.set_all_modules({
-    "Module1": {"version": "1.0", "status": True},
-    "Module2": {"version": "2.0", "status": False}
-})
-all_modules = module_registry.get_all_modules()    # 获取所有模块信息
-
-# 移除模块
-module_registry.remove_module("OldModule")
-```
-
-### 6. 模块管理器
+### 5. 模块管理器(module)
 ```python
 # 直接获取模块实例
 my_module = module.get("MyModule")
@@ -462,6 +401,7 @@ module.disable("MyModule")
 [ErisPulse.event.command]
 prefix = "/"
 case_sensitive = true
+allow_space_prefix = false
 
 [ErisPulse.event.message]
 ignore_self = true
