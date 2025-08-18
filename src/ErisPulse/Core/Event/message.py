@@ -29,6 +29,15 @@ class MessageHandler:
             return func
         return decorator
     
+    def remove_message_handler(self, handler: Callable) -> bool:
+        """
+        取消注册消息事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_private_message(self, priority: int = 0):
         """
         私聊消息事件装饰器
@@ -44,6 +53,15 @@ class MessageHandler:
             return func
         return decorator
     
+    def remove_private_message_handler(self, handler: Callable) -> bool:
+        """
+        取消注册私聊消息事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_group_message(self, priority: int = 0):
         """
         群聊消息事件装饰器
@@ -58,6 +76,15 @@ class MessageHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_group_message_handler(self, handler: Callable) -> bool:
+        """
+        取消注册群聊消息事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
     
     def on_at_message(self, priority: int = 0):
         """
@@ -80,5 +107,14 @@ class MessageHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_at_message_handler(self, handler: Callable) -> bool:
+        """
+        取消注册@消息事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
 
 message = MessageHandler()
