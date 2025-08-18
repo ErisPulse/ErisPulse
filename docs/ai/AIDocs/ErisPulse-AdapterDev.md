@@ -1,30 +1,38 @@
-# ErisPulse 完整开发文档
+# ErisPulse 适配器开发文档
 
-**生成时间**: 2025-08-18 22:00:44
+**生成时间**: 2025-08-19 05:51:17
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
 ## 目录
 
 1. [快速开始指南](#quick-startmd)
-2. [核心功能使用说明](#UseCoremd)
-3. [平台功能说明](#PlatformFeaturesmd)
-4. [模块开发指南](#Modulemd)
-5. [适配器开发指南](#Adaptermd)
-6. [API响应标准](#APIResponsemd)
-7. [事件转换标准](#EventConversionmd)
+2. [平台功能说明](#platform-featuresmd)
+3. [核心概念](#conceptsmd)
+4. [核心模块](#modulesmd)
+5. [适配器系统](#adaptersmd)
+6. [事件系统](#event-systemmd)
+7. [最佳实践](#best-practicesmd)
+8. [模块开发指南](#modulemd)
+9. [适配器开发指南](#adaptermd)
+10. [API响应标准](#api-responsemd)
+11. [事件转换标准](#event-conversionmd)
 
 ## 各文件对应内容说明
 
 | 文件名 | 作用 |
 |--------|------|
 | [quick-start.md](#quick-startmd) | 快速开始指南 |
-| [UseCore.md](#UseCoremd) | 核心功能使用说明 |
-| [PlatformFeatures.md](#PlatformFeaturesmd) | 平台功能说明 |
-| [Module.md](#Modulemd) | 模块开发指南 |
-| [Adapter.md](#Adaptermd) | 适配器开发指南 |
-| [APIResponse.md](#APIResponsemd) | API响应标准 |
-| [EventConversion.md](#EventConversionmd) | 事件转换标准 |
+| [platform-features.md](#platform-featuresmd) | 平台功能说明 |
+| [concepts.md](#conceptsmd) | 核心概念 |
+| [modules.md](#modulesmd) | 核心模块 |
+| [adapters.md](#adaptersmd) | 适配器系统 |
+| [event-system.md](#event-systemmd) | 事件系统 |
+| [best-practices.md](#best-practicesmd) | 最佳实践 |
+| [module.md](#modulemd) | 模块开发指南 |
+| [adapter.md](#adaptermd) | 适配器开发指南 |
+| [api-response.md](#api-responsemd) | API响应标准 |
+| [event-conversion.md](#event-conversionmd) | 事件转换标准 |
 
 ---
 
@@ -121,693 +129,7 @@ epsdk run main.py --reload
 
 ---
 
-<a id="UseCoremd"></a>
-## 核心功能使用说明
-
-# ErisPulse 核心模块使用指南
-
-## 核心模块
-| 名称 | 用途 |
-|------|------|
-| `sdk` | SDK对象 |
-| `storage`/`sdk.storage` | 获取/设置数据库配置 |
-| `config`/`sdk.config` | 获取/设置模块配置 |
-| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
-| `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
-| `module`/`sdk.module` | 获取模块实例 |
-| `logger`/`sdk.logger` | 日志记录器 |
-| `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
-| `Event`/`sdk.Event` | 事件处理模块 |
-
-> 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
-Event 模块包含以下子模块：
-
-| 子模块 | 用途 |
-|-------|------|
-| `Event.command` | 命令处理 |
-| `Event.message` | 消息事件处理 |
-| `Event.notice` | 通知事件处理 |
-| `Event.request` | 请求事件处理 |
-| `Event.meta` | 元事件处理 |
-| `Event.exceptions` | 事件异常处理 |
-
-```python
-# 直接导入方式
-from ErisPulse.Core import (
-        storage, config, module_registry,
-        adapter, module, logger,
-        BaseAdapter, Event
-    )
-
-# 通过SDK对象方式
-from ErisPulse import sdk
-sdk.storage  # 等同于直接导入的storage
-```
-
-## 模块使用
-- 所有模块通过 `sdk` 对象统一管理
-- 每个模块拥有独立命名空间，使用 `sdk` 进行调用
-- 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
-
-## 适配器使用
-- 适配器是ErisPulse的核心，负责与平台进行交互
-
-适配器事件分为两类：
-- 标准事件：平台转换为的标准事件，其格式为标准的 OneBot12 事件格式 | 需要判断接收到的消息的 `platform` 字段，来确定消息来自哪个平台
-- 原生事件：平台原生事件 通过 sdk.adapter.<Adapter>.on() 监听对应平台的原生事件
-
-建议使用标准事件进行事件的处理，适配器会自动将原生事件转换为标准事件
-
-### 通用接口
-#### Send 链式调用
-
-Send DSL 的方法返回 `asyncio.Task` 对象，这意味着你可以选择是否立即等待结果：
-
-```python
-# 不等待结果，消息在后台发送
-task = adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
-
-# 如果需要获取发送结果，稍后可以等待
-result = await task
-
-# 等待结果并赋值
-result = await adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
-```
-
-> 返回的 Task 维持了协程的完整状态机，因此可以将其存储在变量中供后续使用。
-
-所有适配器都支持以下标准调用方式：
-
-1. 指定类型和ID: `To(type,id).Func()`
-   ```python
-   await adapter.<AdapterName>.Send.To("user", "U1001").Text("Hello")
-   # 例如：
-   await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
-   ```
-
-2. 仅指定ID: `To(id).Func()`
-   ```python
-   await adapter.<AdapterName>.Send.To("U1001").Text("Hello")
-   # 例如：
-   await adapter.telegram.Send.To("U1001").Text("Hello")
-   ```
-
-3. 指定发送账号: `Using(account_id)`
-   ```python
-   await adapter.<AdapterName>.Send.Using("bot1").To("U1001").Text("Hello")
-   # 例如：
-   await adapter.onebot11.Send.Using("bot1").To("U1001").Text("Hello")
-   ```
-
-4. 直接调用: `Func()`
-   ```python
-   await adapter.<AdapterName>.Send.Text("Broadcast message")
-   # 例如：
-   await adapter.email.Send.Text("Broadcast message")
-   ```
-
-##### 使用场景示例
-
-```python
-# 场景1：不需要确认发送结果（推荐用于大多数情况）
-adapter.yunhu.Send.To("user", "U1001").Text("Hello")
-
-# 场景2：需要处理发送结果
-result = await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
-
-# 场景3：批量发送，稍后统一处理结果
-tasks = []
-user_ids = ["U1001", "U1002", "U1003"]
-for i in user_ids:
-    task = adapter.yunhu.Send.To("user", i).Text("Hello")
-    tasks.append(task)
-
-# 等待所有发送完成
-results = await asyncio.gather(*tasks)
-```
-
-> **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
-
-### 事件监听
-有三种事件监听方式：
-
-1. 平台原生事件监听：
-   ```python
-   from ErisPulse.Core import adapter, logger
-   
-   @adapter.<AdapterName>.on("event_type")
-   async def handler(data):
-       logger.info(f"收到原生事件: {data}")
-   ```
-
-2. OneBot12标准事件监听：
-   ```python
-   from ErisPulse.Core import adapter, logger
-
-   @adapter.on("event_type")  # 所有平台的标准事件
-   async def handler(data):
-       if data["platform"] == "yunhu":
-           logger.info(f"收到云湖标准事件: {data}")
-   ```
-
-3. 使用 `ErisPulse` 内置的 `Event` 模块进行事件监听（OneBot12标准事件）
-    ```python
-    from ErisPulse.Core.Event import message, command, notice, request
-
-    @message.on_message()
-    async def message_handler(event):
-      logger.info(f"收到消息事件: {event}")
-
-    @command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
-    async def help_handler(event):
-      logger.info(f"收到命令事件: {event}")
-
-    @notice.on_group_increase()
-    async def notice_handler(event):
-      logger.info(f"收到群成员增加事件: {event}")
-    
-    @request.on_friend_request()
-    async def request_handler(event):
-      logger.info(f"收到好友请求事件: {event}")
-
-    # 注意：这里仅是简单的示例，完整的内容请参考Event部分的api文档。或者查看UseCore文档查看一些更全的示例。
-    ```
-
-#### 事件监听的误区
-
-在开发模块时，经常会将事件处理函数定义为类的方法。如果直接在类方法上使用装饰器，可能会导致 `self` 参数无法正确传递，从而造成事件监听器注册失败。
-
-##### 常见错误示例：
-
-  ```python
-  from ErisPulse.Core.Event import message, command
-
-  class TestModule:
-      def __init__(self, sdk):
-          self.sdk = sdk
-          self.logger = sdk.logger.get_child(__name__)
-
-      @message.on_message()  # 错误：直接装饰实例方法
-      def on_message(self, event):
-          pass
-  ```
-
-##### 推荐做法：
-
-  ```python
-  from ErisPulse.Core.Event import message, command
-
-  class TestModule:
-      def __init__(self, sdk):
-          self.sdk = sdk
-          self.logger = sdk.logger.get_child(__name__)
-          self._register_events()  # 在初始化时注册事件监听器
-
-      def _register_events(self):
-          @message.on_message()
-          async def on_message(event):  # 注意：这里不使用 self 参数
-              # 如果需要访问实例属性，可以通过闭包访问 self
-              self.logger.info("收到消息")
-              pass
-  ```
-
-### 标准格式
-为方便参考，这里给出了简单的事件格式，如果需要详细信息，请参考上方的链接。
-
-#### 标准事件格式
-所有适配器必须实现的事件转换格式：
-```json
-{
-  "id": "event_123",
-  "time": 1752241220,
-  "type": "message",
-  "detail_type": "group",
-  "platform": "yunhu",
-  "self": {"platform": "yunhu", "user_id": "bot_123"},
-  "message_id": "msg_abc",
-  "message": [
-    {"type": "text", "data": {"text": "你好"}}
-  ],
-  "alt_message": "你好",
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789"
-}
-```
-
-#### 标准响应格式
-##### 消息发送成功
-```json
-{
-  "status": "ok",
-  "retcode": 0,
-  "data": {
-    "message_id": "1234",
-    "time": 1632847927.599013
-  },
-  "message_id": "1234",
-  "message": "",
-  "echo": "1234",
-  "{platform}_raw": {...}
-}
-```
-
-##### 消息发送失败
-```json
-{
-  "status": "failed",
-  "retcode": 10003,
-  "data": null,
-  "message_id": "",
-  "message": "缺少必要参数",
-  "echo": "1234",
-  "{platform}_raw": {...}
-}
-```
-
-## 事件处理模块(Event)
-Event 模块提供了一套完整的事件处理机制，支持命令处理、消息处理、通知处理、请求处理和元事件处理等功能。
-
-### 命令处理
-```python
-from ErisPulse.Core.Event import command
-
-# 基本命令
-@command("hello", help="发送问候消息")
-async def hello_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    
-    # 发送回复消息
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text("Hello World!")
-
-# 带参数的命令
-@command("echo", help="回显消息", usage="/echo <内容>")
-async def echo_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    args = event["command"]["args"]
-    
-    if not args:
-        await send_reply(event, "请提供要回显的内容")
-        return
-    
-    message = " ".join(args)
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text(message)
-
-# 带别名的命令
-@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
-async def help_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    help_text = command.help()
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text(help_text)
-
-# 带权限检查的命令
-def is_admin(event):
-    # 检查是否为管理员
-    user_id = event.get("user_id")
-    return user_id in ["admin_id_1", "admin_id_2"]
-
-@command("admin", permission=is_admin, help="管理员命令")
-async def admin_command(event):
-    # 只有管理员才能执行
-    pass
-
-# 隐藏命令
-@command("secret", hidden=True, help="秘密命令")
-async def secret_command(event):
-    # 不会在帮助中显示
-    pass
-
-# 命令组
-@command("admin.reload", group="admin", help="重新加载模块")
-async def reload_command(event):
-    # 管理员命令逻辑
-    pass
-
-# 等待用户回复的交互式命令
-@command("ask", help="询问用户信息")
-async def ask_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    detail_type = "group" if event.get("detail_type") == "group" else "user"
-    target_id = event.get("group_id") or user_id
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    
-    # 等待用户回复
-    reply_event = await command.wait_reply(
-        event, 
-        prompt="请输入您的姓名:", 
-        timeout=30.0
-    )
-    
-    if reply_event:
-        # 提取用户回复内容
-        user_reply = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                user_reply = segment.get("data", {}).get("text", "")
-                break
-        
-        if user_reply:
-            await adapter_instance.Send.To(detail_type, target_id).Text(f"您好，{user_reply}！")
-        else:
-            await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
-    else:
-        await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
-
-# 带验证和回调的高级交互命令
-@command("confirm", help="确认操作")
-async def confirm_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    detail_type = "group" if event.get("detail_type") == "group" else "user"
-    target_id = event.get("group_id") or user_id
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    
-    # 定义验证函数
-    def validate_yes_no(reply_event):
-        text_content = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                text_content = segment.get("data", {}).get("text", "").strip().lower()
-                break
-        return text_content in ["是", "否", "yes", "no", "y", "n"]
-    
-    # 定义回调函数
-    async def handle_confirmation(reply_event):
-        text_content = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                text_content = segment.get("data", {}).get("text", "").strip().lower()
-                break
-        
-        if text_content in ["是", "yes", "y"]:
-            await adapter_instance.Send.To(detail_type, target_id).Text("操作已确认！")
-        else:
-            await adapter_instance.Send.To(detail_type, target_id).Text("操作已取消。")
-    
-    # 等待用户确认
-    await command.wait_reply(
-        event,
-        prompt="您确定要执行此操作吗？请输入'是'或'否':",
-        timeout=30.0,
-        callback=handle_confirmation,
-        validator=validate_yes_no
-    )
-```
-
-### 消息处理
-```python
-from ErisPulse.Core.Event import message
-
-# 处理所有消息
-@message.on_message()
-async def handle_message(event):
-    sdk.logger.info(f"收到消息: {event['alt_message']}")
-
-# 处理私聊消息
-@message.on_private_message()
-async def handle_private_message(event):
-    user_id = event["user_id"]
-    sdk.logger.info(f"收到私聊消息，来自用户: {user_id}")
-
-# 处理群聊消息
-@message.on_group_message()
-async def handle_group_message(event):
-    group_id = event["group_id"]
-    user_id = event["user_id"]
-    sdk.logger.info(f"收到群消息，群: {group_id}，用户: {user_id}")
-
-# 处理@消息
-@message.on_at_message()
-async def handle_at_message(event):
-    user_id = event["user_id"]
-    sdk.logger.info(f"收到@消息，来自用户: {user_id}")
-```
-
-### 通知处理
-```python
-from ErisPulse.Core.Event import notice
-
-# 处理好友添加通知
-@notice.on_friend_add()
-async def handle_friend_add(event):
-    user_id = event["user_id"]
-    sdk.logger.info(f"新好友添加: {user_id}")
-    
-    # 发送欢迎消息
-    platform = event["platform"]
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text("欢迎添加我为好友！")
-
-# 处理群成员增加通知
-@notice.on_group_increase()
-async def handle_group_increase(event):
-    group_id = event["group_id"]
-    user_id = event["user_id"]
-    sdk.logger.info(f"新成员加入群: {group_id}，用户: {user_id}")
-
-# 处理好友删除通知
-@notice.on_friend_remove()
-async def handle_friend_remove(event):
-    user_id = event["user_id"]
-    sdk.logger.info(f"好友删除: {user_id}")
-
-# 处理群成员减少通知
-@notice.on_group_decrease()
-async def handle_group_decrease(event):
-    group_id = event["group_id"]
-    user_id = event["user_id"]
-    sdk.logger.info(f"群成员减少，群: {group_id}，用户: {user_id}")
-```
-
-### 请求处理
-```python
-from ErisPulse.Core.Event import request
-
-# 处理好友请求
-@request.on_friend_request()
-async def handle_friend_request(event):
-    user_id = event["user_id"]
-    sdk.logger.info(f"收到好友请求，来自用户: {user_id}")
-
-# 处理群邀请请求
-@request.on_group_request()
-async def handle_group_request(event):
-    group_id = event["group_id"]
-    user_id = event["user_id"]
-    sdk.logger.info(f"收到群邀请请求，群: {group_id}，用户: {user_id}")
-```
-
-### 元事件处理
-```python
-from ErisPulse.Core.Event import meta
-
-# 处理连接事件
-@meta.on_connect()
-async def handle_connect(event):
-    platform = event["platform"]
-    sdk.logger.info(f"平台 {platform} 连接成功")
-
-# 处理断开连接事件
-@meta.on_disconnect()
-async def handle_disconnect(event):
-    platform = event["platform"]
-    sdk.logger.info(f"平台 {platform} 断开连接")
-
-# 处理心跳事件
-@meta.on_heartbeat()
-async def handle_heartbeat(event):
-    platform = event["platform"]
-    sdk.logger.debug(f"平台 {platform} 心跳")
-```
-
-### 高级功能
-
-#### 优先级控制
-```python
-# 设置处理器优先级
-@message.on_message(priority=10)
-async def high_priority_handler(event):
-    # 高优先级处理器先执行
-    pass
-
-@message.on_message(priority=20)
-async def low_priority_handler(event):
-    # 低优先级处理器后执行
-    pass
-```
-
-#### 条件处理器
-```python
-# 定义条件函数
-def keyword_condition(event):
-    message_segments = event.get("message", [])
-    for segment in message_segments:
-        if segment.get("type") == "text":
-            text = segment.get("data", {}).get("text", "")
-            return "关键词" in text
-    return False
-
-# 注册条件处理器
-@message.on_message(condition=keyword_condition)
-async def keyword_handler(event):
-    # 只有消息包含"关键词"时才会执行
-    pass
-```
-
-## 核心模块功能详解
-
-### 1. 日志模块(logger)
-```python
-logger.set_module_level("MyModule", "DEBUG")  # 设置模块日志级别
-logger.save_logs("log.txt")  # 保存日志到文件
-
-# 日志级别
-logger.debug("调试信息")
-logger.info("运行状态")
-logger.warning("警告信息")
-logger.error("错误信息")
-logger.critical("致命错误")  # 会触发程序崩溃
-
-# 子模块日志记录
-# 使用 get_child 方法创建子模块日志记录器，便于更好地组织和识别日志来源
-network_logger = logger.get_child("Network")
-network_logger.info("网络模块初始化完成")
-
-# 支持多级子模块
-http_logger = network_logger.get_child("HTTP")
-http_logger.debug("发送HTTP请求")
-
-# 子模块日志记录器使用与主日志记录器相同的配置和功能
-# 所有配置操作仍然通过主 logger 对象进行
-logger.set_module_level("MyModule", "INFO")  # 影响所有相关子模块
-logger.set_output_file("app.log")  # 所有日志都会输出到指定文件
-```
-
-### 2. 持久化数据存储(storage)
-```python
-# 数据库配置操作
-storage.set("key", "value")  # 设置配置项
-value = storage.get("key", "default")  # 获取配置项
-storage.delete("key")  # 删除配置项
-
-# 事务操作
-with storage.transaction():
-    storage.set('important_key', 'value')
-    storage.delete('temp_key')  # 异常时自动回滚
-
-# 批量操作
-storage.set_multi({
-    "key1": "value1",
-    "key2": "value2"
-})
-storage.delete_multi(["key1", "key2"])
-```
-
-### 3. 配置模块(config)
-```python
-# 模块配置操作（读写config.toml）
-module_config = config.getConfig("MyModule")  # 获取模块配置
-if module_config is None:
-    config.setConfig("MyModule", {"MyKey": "MyValue"})  # 设置默认配置
-
-# 嵌套配置访问
-nested_value = config.getConfig("MyModule.subkey.value", "default")
-config.setConfig("MyModule.subkey.value", "new_value")
-```
-
-### 4. 异常处理模块(exceptions)
-```python
-# ErisPulse提供了统一的异常处理机制，可以自动捕获和格式化异常信息
-# 对于异步代码，可以为特定事件循环设置异常处理器
-
-import asyncio
-from ErisPulse.Core import exceptions
-
-# 为当前运行的事件循环设置异常处理器
-loop = asyncio.get_running_loop()
-exceptions.setup_async_loop(loop)
-
-# 或者不传参数，自动获取当前事件循环 || 但不建议这么做，因为运行主程序时可能使用了其他的异步库
-exceptions.setup_async_loop()
-
-# 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
-```
-
-### 5. 模块管理器(module)
-```python
-# 直接获取模块实例
-my_module = module.get("MyModule")
-
-# 通过属性访问获取模块实例
-my_module = module.MyModule
-
-# 检查模块是否存在
-if "MyModule" in module:
-    # 模块存在并且处于启用状态
-    pass
-
-# 检查模块是否启用
-if module.is_enabled("MyModule"):
-    # 模块已启用
-    pass
-
-# 获取模块信息
-info = module.get_info("MyModule")
-
-# 列出所有模块
-all_modules = module.list_modules()
-
-# 启用/禁用模块
-module.enable("MyModule")
-module.disable("MyModule")
-```
-
-## 配置管理
-
-### 1. 命令前缀配置
-```toml
-[ErisPulse]
-[ErisPulse.event]
-[ErisPulse.event.command]
-prefix = "/"
-case_sensitive = true
-allow_space_prefix = false
-
-[ErisPulse.event.message]
-ignore_self = true
-```
-
-### 2. 框架配置
-```toml
-[ErisPulse]
-[ErisPulse.server]
-host = "0.0.0.0"
-port = 8000
-ssl_certfile = ""
-ssl_keyfile = ""
-
-[ErisPulse.logger]
-level = "INFO"
-log_files = []
-memory_limit = 1000
-```
-
-更多详细信息请参考[API文档](docs/api/)
-
-
----
-
-<a id="PlatformFeaturesmd"></a>
+<a id="platform-featuresmd"></a>
 ## 平台功能说明
 
 # ErisPulse PlatformFeatures 文档
@@ -1282,7 +604,1107 @@ ErisPulse 项目：
 
 ---
 
-<a id="Modulemd"></a>
+<a id="conceptsmd"></a>
+## 核心概念
+
+# ErisPulse 的基础架构和设计理念
+
+## 设计理念
+- 模块化架构：通过模块化设计实现功能的解耦和复用
+- 事件驱动模型：基于事件驱动的架构提高系统的响应性和扩展性
+- 跨平台支持：通过适配器系统实现对多种平台的支持
+- 用户/AI体验优先：简化开发流程，提供友好的API接口
+
+## 核心组件
+```mermaid
+sequenceDiagram
+    participant P as 平台
+    participant A as 平台适配器
+    participant E as Event系统
+    participant M as 功能模块
+    participant AA as Adapter系统
+    
+    P->>A: 发送平台事件
+    A->>A: 转换为OneBot12标准事件
+    A->>AA: 提交事件到adapter.emit
+    AA->>AA: 执行OneBot12中间件
+    AA->>E: 分发到对应事件处理器
+    E->>E: 按优先级执行处理器
+    E->>M: 模块处理事件
+    M->>AA: 调用适配器发送响应
+    AA->>A: 调用平台API
+    A->>P: 发送响应到平台
+```
+
+## 工作流程
+1. **事件接收**：平台适配器接收来自平台的原始事件
+2. **事件标准化**：适配器将原始事件转换为OneBot12标准事件格式
+3. **事件提交**：通过`adapter.emit`方法将标准化事件提交到适配器系统
+4. **中间件处理**：执行注册的OneBot12中间件对事件进行预处理
+5. **事件分发**：适配器系统将事件分发到对应的事件处理器
+6. **事件处理**：Event系统按照优先级顺序执行注册的事件处理器
+7. **模块响应**：功能模块处理事件并生成响应
+8. **响应发送**：模块通过适配器系统发送响应到平台
+
+
+---
+
+<a id="modulesmd"></a>
+## 核心模块
+
+# ErisPulse 核心模块
+
+ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
+
+## 0. 核心模块概览
+
+| 名称 | 用途 |
+|------|------|
+| `sdk` | SDK对象 |
+| `storage`/`sdk.storage` | 获取/设置数据库配置 |
+| `config`/`sdk.config` | 获取/设置模块配置 |
+| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
+| `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
+| `module`/`sdk.module` | 获取模块实例 |
+| `logger`/`sdk.logger` | 日志记录器 |
+| `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
+| `Event`/`sdk.Event` | 事件处理模块 |
+
+> 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
+Event 模块包含以下子模块：
+
+| 子模块 | 用途 |
+|-------|------|
+| `Event.command` | 命令处理 |
+| `Event.message` | 消息事件处理 |
+| `Event.notice` | 通知事件处理 |
+| `Event.request` | 请求事件处理 |
+| `Event.meta` | 元事件处理 |
+| `Event.exceptions` | 事件异常处理 |
+
+```python
+# 直接导入方式
+from ErisPulse.Core import (
+        storage, config, module_registry,
+        adapter, module, logger,
+        BaseAdapter, Event
+    )
+
+# 通过SDK对象方式
+from ErisPulse import sdk
+sdk.storage  # 等同于直接导入的storage
+```
+
+## 1. 存储系统 (storage)
+
+基于 SQLite 的键值存储系统，支持复杂数据类型的持久化存储。
+
+### 主要功能
+
+- 键值存储：`storage.set(key, value)` / `storage.get(key, default)`
+- 事务支持：通过 `storage.transaction()` 上下文管理器
+- 数据快照和恢复
+- 自动备份机制
+- 批量操作：`storage.set_multi(dict)` / `storage.delete_multi(list)`
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 设置存储项
+sdk.storage.set("user.settings", {"theme": "dark", "language": "zh-CN"})
+
+# 获取存储项
+settings = sdk.storage.get("user.settings", {})
+
+# 使用事务
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+
+# 批量操作
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2"
+})
+sdk.storage.delete_multi(["key1", "key2"])
+```
+
+## 2. 配置管理 (config)
+
+TOML 格式配置文件管理器，用于管理模块和适配器配置。
+
+### 主要功能
+
+- 模块配置读取：`config.getConfig(key, default)`
+- 配置项设置：`config.setConfig(key, value)`
+- 支持嵌套配置结构
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 获取模块配置
+module_config = sdk.config.getConfig("MyModule", {})
+
+# 设置默认配置
+if not module_config:
+    default_config = {
+        "api_url": "https://api.example.com",
+        "timeout": 30
+    }
+    sdk.config.setConfig("MyModule", default_config)
+
+# 嵌套配置访问
+nested_value = sdk.config.getConfig("MyModule.subkey.value", "default")
+sdk.config.setConfig("MyModule.subkey.value", "new_value")
+```
+
+## 3. 日志系统 (logger)
+
+模块化日志系统，支持多级日志和内存存储。
+
+### 主要功能
+
+- 模块级日志级别控制
+- 内存日志存储
+- 文件日志输出
+- 丰富的日志格式
+- 子模块日志记录器
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 记录日志
+sdk.logger.info("模块已加载")
+sdk.logger.error("发生错误: %s", str(error))
+
+# 设置模块日志级别
+sdk.logger.set_module_level("MyModule", "DEBUG")
+
+# 获取子日志记录器
+child_logger = sdk.logger.get_child("submodule")
+child_logger.info("子模块日志")
+
+# 更多日志级别
+sdk.logger.debug("调试信息")
+sdk.logger.info("运行状态")
+sdk.logger.warning("警告信息")
+sdk.logger.error("错误信息")
+sdk.logger.critical("致命错误")  # 会触发程序崩溃
+
+# 保存日志到文件
+sdk.logger.save_logs("log.txt")
+sdk.logger.set_output_file("app.log")
+```
+
+## 4. 异常处理 (exceptions)
+
+统一的异常处理机制。
+
+### 主要功能
+
+- 全局异常捕获
+- 异步异常处理
+- 格式化的错误信息输出
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+import asyncio
+
+# 为事件循环设置异常处理器
+loop = asyncio.get_running_loop()
+sdk.exceptions.setup_async_loop(loop)
+```
+
+## 5. 模块管理 (module)
+
+模块管理系统，用于管理模块的启用/禁用状态。
+
+### 主要功能
+
+- 模块状态管理
+- 模块信息查询
+- 模块依赖处理
+- 模块启用/禁用
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 直接获取模块实例
+my_module = sdk.module.get("MyModule")
+
+# 通过属性访问获取模块实例
+my_module = sdk.module.MyModule
+
+# 检查模块是否存在且启用
+if "MyModule" in sdk.module:
+    sdk.module.MyModule.do_something()
+
+# 获取模块信息
+module_info = sdk.module.get_info("MyModule")
+
+# 列出所有模块
+all_modules = sdk.module.list_modules()
+
+# 启用/禁用模块
+sdk.module.enable("MyModule")
+sdk.module.disable("MyModule")
+```
+
+## 6. 适配器管理 (adapter)
+
+适配器管理系统，用于管理与不同平台的连接和交互。
+
+### 主要功能
+
+- 适配器实例管理
+- 事件监听注册
+- 消息发送接口
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 获取适配器实例
+adapter_instance = sdk.adapter.yunhu
+
+# 发送消息
+sdk.adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 监听事件
+@sdk.adapter.yunhu.on("message")
+async def handler(data):
+    sdk.logger.info(f"收到原生事件: {data}")
+
+# 监听标准事件
+@sdk.adapter.on("message")
+async def handler(data):
+    if data["platform"] == "yunhu":
+        sdk.logger.info(f"收到云湖标准事件: {data}")
+```
+
+## 7. 事件处理 (Event)
+> 更完整的事件处理示例，请参考 docs/core/event-system.md 文档
+
+事件处理模块，提供了一套完整的事件处理机制。
+
+### 主要功能
+
+- 命令处理
+- 消息事件处理
+- 通知事件处理
+- 请求事件处理
+- 元事件处理
+- 事件异常处理
+
+### 使用示例
+
+```python
+from ErisPulse.Core.Event import message, command, notice, request, meta
+
+# 消息事件处理
+@message.on_message()
+async def message_handler(event):
+    sdk.logger.info(f"收到消息事件: {event}")
+
+# 命令处理
+@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+async def help_handler(event):
+    sdk.logger.info(f"收到命令事件: {event}")
+
+# 通知事件处理
+@notice.on_group_increase()
+async def notice_handler(event):
+    sdk.logger.info(f"收到群成员增加事件: {event}")
+
+# 请求事件处理
+@request.on_friend_request()
+async def request_handler(event):
+    sdk.logger.info(f"收到好友请求事件: {event}")
+
+# 元事件处理
+@meta.on_connect()
+async def connect_handler(event):
+    sdk.logger.info(f"平台连接成功: {event['platform']}")
+```
+
+## 模块使用规范
+
+- 所有模块通过 `sdk` 对象统一管理
+- 每个模块拥有独立命名空间，使用 `sdk` 进行调用
+- 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
+
+## 配置管理
+
+### 1. 命令前缀配置
+```toml
+[ErisPulse]
+[ErisPulse.event]
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = true
+allow_space_prefix = false
+
+[ErisPulse.event.message]
+ignore_self = true
+```
+
+### 2. 框架配置
+```toml
+[ErisPulse]
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+ssl_certfile = ""
+ssl_keyfile = ""
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = []
+memory_limit = 1000
+```
+
+
+---
+
+<a id="adaptersmd"></a>
+## 适配器系统
+
+# ErisPulse 适配器系统
+
+适配器系统是 ErisPulse 实现跨平台支持的核心组件，负责将不同平台的事件转换为统一的 OneBot12 标准事件。
+
+## 适配器职责
+
+1. **事件转换**：将平台特定事件转换为 OneBot12 标准事件
+2. **响应发送**：将 OneBot12 标准响应转换为平台特定格式
+3. **连接管理**：管理与平台的连接和通信
+
+
+### 1. SendDSL 消息发送
+
+适配器通过 SendDSL 实现链式调用风格的消息发送接口：
+
+发送中间方法示例：
+```python
+from ErisPulse.Core import adapter
+
+my_platform = adapter.get("MyPlatform")
+
+# 指定会话类型和对应id的发送接口
+my_platform.To('user', '123').Example("hello world")
+
+# 仅指定id的接口（比如email可以仅指定一个ID）
+my_platform.To('123').Example("hello world")
+
+# 使用指定账号的发送接口
+my_platform.Using('account_id').Example("hello world")
+
+# 直接调用（适用于某些场景，比如没有指定的会话和id）
+my_platform.Example("hello world")
+```
+
+发送方法示例：
+```python
+from ErisPulse.Core import adapter
+
+# 使用方式
+my_platform = adapter.get("MyPlatform")
+
+# 不等待结果，消息在后台发送
+my_platform.Send.To("user", "123").Text("Hello")
+
+# 由于适配器的DSL发送接口返回的是一个AsyncTask，因此你可以自行决定需不需要等待结果
+
+# 等待结果，消息在发送后返回结果
+task = my_platform.Send.To("user", "123").Text("Hello")
+
+# 等待结果，并获取结果
+result = await task
+
+# 等待结果，并获取结果
+result = await my_platform.Send.To("user", "123").Text("Hello")
+```
+> 返回的 Task 维持了协程的完整状态机，因此可以将其存储在变量中供后续使用 
+> **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
+
+
+### 2. 事件监听
+
+有三种事件监听方式：
+
+1. 平台原生事件监听：
+   ```python
+   from ErisPulse.Core import adapter, logger
+   
+   @adapter.<AdapterName>.on("event_type")
+   async def handler(data):
+       logger.info(f"收到原生事件: {data}")
+   ```
+
+2. OneBot12标准事件监听：
+   ```python
+   from ErisPulse.Core import adapter, logger
+
+   @adapter.on("event_type")  # 所有平台的标准事件
+   async def handler(data):
+       if data["platform"] == "yunhu":
+           logger.info(f"收到云湖标准事件: {data}")
+   ```
+
+3. 使用 `ErisPulse` 内置的 `Event` 模块进行事件监听（OneBot12标准事件）
+    ```python
+    from ErisPulse.Core.Event import message, command, notice, request
+
+    @message.on_message()
+    async def message_handler(event):
+      logger.info(f"收到消息事件: {event}")
+
+    @command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+    async def help_handler(event):
+      logger.info(f"收到命令事件: {event}")
+
+    @notice.on_group_increase()
+    async def notice_handler(event):
+      logger.info(f"收到群成员增加事件: {event}")
+    
+    @request.on_friend_request()
+    async def request_handler(event):
+      logger.info(f"收到好友请求事件: {event}")
+    ```
+
+ErisPulse对于OneBot12协议进行了一些修改，你可能需要先阅读 `docs/standards` 下的转换标准和api返回规则。
+
+
+更建议你使用 `Event` 模块来处理事件，它提供了更丰富的功能和语法。
+
+
+---
+
+<a id="event-systemmd"></a>
+## 事件系统
+
+# ErisPulse 事件系统
+
+事件系统是 ErisPulse 的核心组件之一，负责处理各种类型的事件，包括消息、命令、通知、请求和元事件。
+
+## 事件类型
+
+ErisPulse 支持多种事件类型：
+
+- **消息事件**：处理用户发送的消息
+- **命令事件**：处理用户输入的命令
+- **通知事件**：处理系统通知（如好友添加、群成员变化等）
+- **请求事件**：处理请求（如好友请求、群邀请等）
+- **元事件**：处理系统级事件（如连接、断开连接等）
+
+### 命令处理
+```python
+from ErisPulse.Core.Event import command
+
+# 基本命令
+@command("hello", help="发送问候消息")
+async def hello_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    
+    # 发送回复消息
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text("Hello World!")
+
+# 带别名的命令
+@command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+async def help_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    help_text = command.help()
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text(help_text)
+
+# 带权限检查的命令
+def is_admin(event):
+    # 检查是否为管理员
+    user_id = event.get("user_id")
+    return user_id in ["admin_id_1", "admin_id_2"]
+
+@command("admin", permission=is_admin, help="管理员命令")
+async def admin_command(event):
+    # 只有管理员才能执行
+    pass
+
+# 隐藏命令
+@command("secret", hidden=True, help="秘密命令")
+async def secret_command(event):
+    # 不会在帮助中显示
+    pass
+
+# 命令组
+@command("admin.reload", group="admin", help="重新加载模块")
+async def reload_command(event):
+    # 管理员命令逻辑
+    pass
+
+# 等待用户回复的交互式命令
+@command("ask", help="询问用户信息")
+async def ask_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 等待用户回复
+    reply_event = await command.wait_reply(
+        event, 
+        prompt="请输入您的姓名:", 
+        timeout=30.0
+    )
+    
+    if reply_event:
+        # 提取用户回复内容
+        user_reply = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                user_reply = segment.get("data", {}).get("text", "")
+                break
+        
+        if user_reply:
+            await adapter_instance.Send.To(detail_type, target_id).Text(f"您好，{user_reply}！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
+    else:
+        await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
+
+# 带验证和回调的高级交互命令
+@command("confirm", help="确认操作")
+async def confirm_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 定义验证函数
+    def validate_yes_no(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        return text_content in ["是", "否", "yes", "no", "y", "n"]
+    
+    # 定义回调函数
+    async def handle_confirmation(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        
+        if text_content in ["是", "yes", "y"]:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已确认！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已取消。")
+    
+    # 等待用户确认
+    await command.wait_reply(
+        event,
+        prompt="您确定要执行此操作吗？请输入'是'或'否':",
+        timeout=30.0,
+        callback=handle_confirmation,
+        validator=validate_yes_no
+    )
+```
+
+### 消息处理
+```python
+from ErisPulse.Core.Event import message
+
+# 处理所有消息
+@message.on_message()
+async def handle_message(event):
+    sdk.logger.info(f"收到消息: {event['alt_message']}")
+
+# 处理私聊消息
+@message.on_private_message()
+async def handle_private_message(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到私聊消息，来自用户: {user_id}")
+
+# 处理群聊消息
+@message.on_group_message()
+async def handle_group_message(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到群消息，群: {group_id}，用户: {user_id}")
+
+# 处理@消息
+@message.on_at_message()
+async def handle_at_message(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到@消息，来自用户: {user_id}")
+```
+
+### 通知处理
+```python
+from ErisPulse.Core.Event import notice
+
+# 处理好友添加通知
+@notice.on_friend_add()
+async def handle_friend_add(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"新好友添加: {user_id}")
+    
+    # 发送欢迎消息
+    platform = event["platform"]
+    adapter_instance = getattr(sdk.adapter, platform)
+    await adapter_instance.Send.To("user", user_id).Text("欢迎添加我为好友！")
+
+# 处理群成员增加通知
+@notice.on_group_increase()
+async def handle_group_increase(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"新成员加入群: {group_id}，用户: {user_id}")
+
+# 处理好友删除通知
+@notice.on_friend_remove()
+async def handle_friend_remove(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"好友删除: {user_id}")
+
+# 处理群成员减少通知
+@notice.on_group_decrease()
+async def handle_group_decrease(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"群成员减少，群: {group_id}，用户: {user_id}")
+```
+
+### 请求处理
+```python
+from ErisPulse.Core.Event import request
+
+# 处理好友请求
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到好友请求，来自用户: {user_id}")
+
+# 处理群邀请请求
+@request.on_group_request()
+async def handle_group_request(event):
+    group_id = event["group_id"]
+    user_id = event["user_id"]
+    sdk.logger.info(f"收到群邀请请求，群: {group_id}，用户: {user_id}")
+```
+
+### 元事件处理
+```python
+from ErisPulse.Core.Event import meta
+
+# 处理连接事件
+@meta.on_connect()
+async def handle_connect(event):
+    platform = event["platform"]
+    sdk.logger.info(f"平台 {platform} 连接成功")
+
+# 处理断开连接事件
+@meta.on_disconnect()
+async def handle_disconnect(event):
+    platform = event["platform"]
+    sdk.logger.info(f"平台 {platform} 断开连接")
+
+# 处理心跳事件
+@meta.on_heartbeat()
+async def handle_heartbeat(event):
+    platform = event["platform"]
+    sdk.logger.debug(f"平台 {platform} 心跳")
+```
+
+### 高级功能
+
+#### 优先级控制
+```python
+# 设置处理器优先级
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    # 高优先级处理器先执行
+    pass
+
+@message.on_message(priority=20)
+async def low_priority_handler(event):
+    # 低优先级处理器后执行
+    pass
+```
+
+#### 条件处理器
+```python
+# 定义条件函数
+def keyword_condition(event):
+    message_segments = event.get("message", [])
+    for segment in message_segments:
+        if segment.get("type") == "text":
+            text = segment.get("data", {}).get("text", "")
+            return "关键词" in text
+    return False
+
+# 注册条件处理器
+@message.on_message(condition=keyword_condition)
+async def keyword_handler(event):
+    # 只有消息包含"关键词"时才会执行
+    pass
+```
+
+
+---
+
+<a id="best-practicesmd"></a>
+## 最佳实践
+
+# ErisPulse 最佳实践
+
+本文档提供了 ErisPulse 开发和部署的最佳实践建议。
+
+## 1. 模块开发最佳实践
+
+### 1.1 模块结构设计
+
+```python
+class Main:
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+        self.storage = sdk.storage
+        self.config = self._load_config()
+        
+    def _load_config(self):
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            default_config = self._get_default_config()
+            self.sdk.config.setConfig("MyModule", default_config)
+            return default_config
+        return config
+        
+    def _get_default_config(self):
+        return {
+            "api_url": "https://api.example.com",
+            "timeout": 30,
+            "retry_count": 3
+        }
+```
+
+### 1.2 异步编程模型
+
+优先使用异步库，避免阻塞主线程：
+
+```python
+import aiohttp
+
+class Main:
+    def __init__(self):
+        self.session = aiohttp.ClientSession()
+    
+    async def fetch_data(self, url):
+        async with self.session.get(url) as response:
+            return await response.json()
+    
+    async def shutdown(self):
+        await self.session.close()
+```
+
+### 1.3 异常处理
+
+统一异常处理机制，记录详细日志：
+
+```python
+import traceback
+
+class Main:
+    async def handle_event(self, event):
+        try:
+            # 业务逻辑
+            await self.process_event(event)
+        except Exception as e:
+            self.logger.error(f"处理事件时出错: {e}")
+            self.logger.debug(f"错误详情: {traceback.format_exc()}")
+```
+
+## 2. 适配器开发最佳实践
+
+### 2.1 连接管理
+
+实现连接重试机制，确保服务稳定性：
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        while retry_count < 5:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                wait_time = min(60 * (2 ** retry_count), 600)  # 指数退避
+                self.logger.warning(f"连接失败，{wait_time}秒后重试: {e}")
+                await asyncio.sleep(wait_time)
+```
+
+### 2.2 事件转换
+
+严格按照 OneBot12 标准进行事件转换：
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        onebot_event = {
+            "id": self._generate_event_id(raw_event),
+            "time": self._convert_timestamp(raw_event.get("timestamp")),
+            "type": self._convert_event_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event  # 保留原始数据
+        }
+        return onebot_event
+```
+
+## 3. 配置管理最佳实践
+
+### 3.1 配置结构化
+
+使用结构化配置，便于管理和维护：
+
+```python
+# config.toml
+[MyModule]
+api_url = "https://api.example.com"
+timeout = 30
+
+[MyModule.database]
+host = "localhost"
+port = 5432
+name = "mymodule"
+
+[MyModule.features]
+enable_cache = true
+cache_ttl = 3600
+```
+
+### 3.2 配置验证
+
+对配置进行验证，确保配置正确性：
+
+```python
+def _validate_config(self, config):
+    required_fields = ["api_url", "timeout"]
+    for field in required_fields:
+        if field not in config:
+            raise ValueError(f"缺少必要配置项: {field}")
+    
+    if not isinstance(config["timeout"], int) or config["timeout"] <= 0:
+        raise ValueError("timeout 配置必须为正整数")
+```
+
+## 4. 存储系统最佳实践
+
+### 4.1 事务使用
+
+在关键操作中使用事务，确保数据一致性：
+
+```python
+async def update_user_data(self, user_id, data):
+    with self.sdk.storage.transaction():
+        self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
+        self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
+```
+
+## 5. 日志系统最佳实践
+
+### 5.1 日志级别使用
+
+合理使用不同日志级别：
+
+```python
+class Main:
+    def __init__(self):
+        self.logger = sdk.logger.get_child("MyModule")
+    
+    async def process_event(self, event):
+        self.logger.debug(f"开始处理事件: {event['id']}")
+        
+        try:
+            result = await self._handle_event(event)
+            self.logger.info(f"事件处理成功: {event['id']}")
+            return result
+        except ValueError as e:
+            self.logger.warning(f"事件处理警告: {e}")
+        except Exception as e:
+            self.logger.error(f"事件处理失败: {e}")
+            raise
+```
+
+### 5.2 日志输出配置
+
+配置日志输出到文件，便于问题排查：
+
+```python
+# 在模块初始化时配置日志输出
+sdk.logger.set_output_file(["app.log", "module.log"])
+sdk.logger.set_module_level("MyModule", "DEBUG")
+```
+
+## 6. 性能优化最佳实践
+
+### 6.1 缓存使用
+
+对频繁查询的数据使用缓存：
+
+```python
+import asyncio
+
+class Main:
+    def __init__(self):
+        self._cache = {}
+        self._cache_lock = asyncio.Lock()
+    
+    async def get_user_info(self, user_id):
+        async with self._cache_lock:
+            if user_id in self._cache:
+                # 检查缓存是否过期
+                if self._cache[user_id]["expires"] > asyncio.get_event_loop().time():
+                    return self._cache[user_id]["data"]
+                else:
+                    del self._cache[user_id]
+        
+        # 从数据库获取数据
+        user_info = await self._fetch_user_info_from_db(user_id)
+        
+        # 缓存数据
+        async with self._cache_lock:
+            self._cache[user_id] = {
+                "data": user_info,
+                "expires": asyncio.get_event_loop().time() + 3600  # 1小时过期
+            }
+        
+        return user_info
+```
+
+### 6.2 资源管理
+
+及时释放资源，避免内存泄漏：
+
+```python
+class Main:
+    def __init__(self):
+        self.resources = []
+    
+    async def create_resource(self):
+        resource = await self._create_new_resource()
+        self.resources.append(resource)
+        return resource
+    
+    async def cleanup_resources(self):
+        for resource in self.resources:
+            await resource.close()
+        self.resources.clear()
+```
+
+## 7. 安全最佳实践
+
+### 7.1 敏感数据保护
+
+避免将密钥、密码等硬编码在代码中：
+
+```python
+# config.toml
+[MyModule]
+api_key = "YOUR_API_KEY_HERE"  # 用户需要替换为实际值
+
+# 代码中
+class Main:
+    def __init__(self):
+        config = self.sdk.config.getConfig("MyModule")
+        self.api_key = config.get("api_key")
+        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("请在 config.toml 中配置 API 密钥")
+```
+
+## 8. 部署最佳实践
+
+### 8.1 环境配置
+
+使用环境变量配置敏感信息：
+
+```python
+import os
+
+class Main:
+    def __init__(self):
+        self.config = self._load_config()
+        self._load_env_config()
+    
+    def _load_env_config(self):
+        # 从环境变量加载配置，覆盖默认配置
+        api_key = os.getenv("MYMODULE_API_KEY")
+        if api_key:
+            self.config["api_key"] = api_key
+```
+
+### 8.2 监控和健康检查
+
+实现健康检查接口：
+
+```python
+from fastapi import APIRouter
+
+class Main:
+    def __init__(self):
+        self._register_health_check()
+    
+    def _register_health_check(self):
+        router = APIRouter()
+        
+        @router.get("/health")
+        async def health_check():
+            return {
+                "status": "ok",
+                "module": "MyModule",
+                "version": "1.0.0"
+            }
+        
+        self.sdk.router.register_http_route(
+            module_name="MyModule",
+            path="/health",
+            handler=health_check,
+            methods=["GET"]
+        )
+```
+
+遵循这些最佳实践可以帮助您开发出高质量、稳定可靠的 ErisPulse 模块和适配器。
+
+---
+
+<a id="modulemd"></a>
 ## 模块开发指南
 
 # ErisPulse 模块开发指南
@@ -1612,13 +2034,10 @@ class Main:
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
----
-
-*文档最后更新于 2025-08-11 14:53:51*
 
 ---
 
-<a id="Adaptermd"></a>
+<a id="adaptermd"></a>
 ## 适配器开发指南
 
 # ErisPulse 适配器开发指南
@@ -1773,7 +2192,7 @@ class MyAdapter(BaseAdapter):
 |------|------|
 | `on(event_type: str)` | 注册事件处理器 |
 | `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
-| `middleware(func: Callable)` | 添加中间件处理传入数据 |
+| `middleware(func: Callable` | 添加中间件处理传入数据 |
 | `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
 
 - 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
@@ -1907,7 +2326,7 @@ async def start(self):
 
 ### 5.3 事件转换器实现
 
-适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[事件转换标准文档](docs/AdapterStandards/EventConversion.md)：
+适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[事件转换标准文档](docs/standards/event-conversion.md)：
 
 ```python
 class MyPlatformConverter:
@@ -2055,13 +2474,10 @@ class ErrorCode:
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
----
-
-*文档最后更新于 2025-08-11 14:43:21*
 
 ---
 
-<a id="APIResponsemd"></a>
+<a id="api-responsemd"></a>
 ## API响应标准
 
 # ErisPulse 适配器标准化返回规范
@@ -2174,9 +2590,10 @@ class ErrorCode:
 - 避免使用保留错误段(4xxxx、5xxxx)
 - 错误信息应当简洁明了，便于调试
 
+
 ---
 
-<a id="EventConversionmd"></a>
+<a id="event-conversionmd"></a>
 ## 事件转换标准
 
 # ErisPulse 适配器标准化转换规范
@@ -2382,6 +2799,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 - 特殊字符测试（消息内容含emoji/特殊符号）
 - 压力测试（连续事件转换）
 
+
 ---
 
 # API参考
@@ -2415,7 +2833,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2441,13 +2859,13 @@ ErisPulse 事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2523,13 +2941,13 @@ ErisPulse 事件处理基础模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_command"></a>
 ## ErisPulse\Core\Event\command.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2680,13 +3098,13 @@ ErisPulse 命令处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2729,13 +3147,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2833,13 +3251,13 @@ ErisPulse 消息处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -2936,13 +3354,13 @@ ErisPulse 元事件处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3057,13 +3475,13 @@ ErisPulse 通知处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3142,13 +3560,13 @@ ErisPulse 请求处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3544,13 +3962,13 @@ ErisPulse 适配器系统
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3591,13 +4009,13 @@ ErisPulse 配置中心
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_env"></a>
 ## ErisPulse\Core\env.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3613,13 +4031,13 @@ ErisPulse 环境模块 (已弃用)
 
 ---
 
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_erispulse_config"></a>
 ## ErisPulse\Core\erispulse_config.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3676,13 +4094,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3749,13 +4167,13 @@ ErisPulse 全局异常处理系统
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3878,13 +4296,13 @@ ErisPulse 日志系统
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_module"></a>
 ## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -3989,13 +4407,13 @@ ErisPulse 模块管理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_module_registry"></a>
 ## ErisPulse\Core\module_registry.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -4209,13 +4627,13 @@ ErisPulse 模块管理器
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -4323,13 +4741,13 @@ ErisPulse 路由系统
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -4663,13 +5081,13 @@ ErisPulse 存储管理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -4976,13 +5394,13 @@ SDK初始化入口，返回Task对象
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-08-18 22:00:40</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -5424,6 +5842,6 @@ CLI入口点
 
     ---
     
-<sub>文档最后更新于 2025-08-18 22:00:40</sub>
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
 
 ---
