@@ -1,4 +1,3 @@
-# ErisPulse/Core/Event/cmd.py
 """
 ErisPulse 命令处理模块
 
@@ -8,14 +7,16 @@ ErisPulse 命令处理模块
 1. 支持命令别名和命令组
 2. 支持命令权限控制
 3. 支持命令帮助系统
+4. 支持等待用户回复交互
 {!--< /tips >!--}
 """
 
 from .base import BaseEventHandler
 from .. import adapter, config, logger
-from typing import Callable, Union, List, Dict, Any, Optional
+from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 import re
+from collections import defaultdict
 
 class CommandHandler:
     def __init__(self):
@@ -27,10 +28,16 @@ class CommandHandler:
         self.case_sensitive = config.getConfig("ErisPulse.event.command.case_sensitive", True)
         self.allow_space_prefix = config.getConfig("ErisPulse.event.command.allow_space_prefix", False)
         
+        # 等待回复相关
+        self._waiting_replies = {}  # 存储等待回复的用户信息
+        
         # 创建消息事件处理器
         self.handler = BaseEventHandler("message", "command")
+        
         # 注册消息处理器
-        self.handler.register(self._handle_message)
+        if not hasattr(self.handler, '_command_handler_registered') or not self.handler._command_handler_registered:
+            self.handler.register(self._handle_message)
+            self.handler._command_handler_registered = True
     
     def __call__(self, 
                  name: Union[str, List[str]] = None, 
@@ -102,6 +109,109 @@ class CommandHandler:
             return func
         return decorator
     
+    def unregister(self, handler: Callable) -> bool:
+        """
+        注销命令处理器
+        
+        :param handler: 要注销的命令处理器
+        :return: 是否成功注销
+        """
+        # 从基础处理器中移除
+        result = self.handler.unregister(handler)
+        
+        # 从命令映射中移除
+        commands_to_remove = []
+        for cmd_name, cmd_info in self.commands.items():
+            if cmd_info["func"] == handler:
+                commands_to_remove.append(cmd_name)
+        
+        for cmd_name in commands_to_remove:
+            # 移除命令别名映射
+            main_name = self.commands[cmd_name]["main_name"]
+            aliases_to_remove = [alias for alias, name in self.aliases.items() if name == main_name]
+            for alias in aliases_to_remove:
+                del self.aliases[alias]
+            
+            # 从命令组中移除
+            for group_name, group_commands in self.groups.items():
+                if cmd_name in group_commands:
+                    group_commands.remove(cmd_name)
+            
+            # 移除权限检查函数
+            if cmd_name in self.permissions:
+                del self.permissions[cmd_name]
+            
+            # 最后移除命令本身
+            del self.commands[cmd_name]
+        
+        return result
+    
+    async def wait_reply(self, 
+                        event: Dict[str, Any], 
+                        prompt: str = None,
+                        timeout: float = 60.0,
+                        callback: Callable[[Dict[str, Any]], Awaitable[Any]] = None,
+                        validator: Callable[[Dict[str, Any]], bool] = None) -> Optional[Dict[str, Any]]:
+        """
+        等待用户回复
+        
+        :param event: 原始事件数据
+        :param prompt: 提示消息，如果提供会发送给用户
+        :param timeout: 等待超时时间(秒)
+        :param callback: 回调函数，当收到回复时执行
+        :param validator: 验证函数，用于验证回复是否有效
+        :return: 用户回复的事件数据，如果超时则返回None
+        """
+        platform = event.get("platform")
+        user_id = event.get("user_id")
+        group_id = event.get("group_id")
+        detail_type = "group" if group_id else "private"
+        target_id = group_id or user_id
+        
+        # 发送提示消息（如果提供）
+        if prompt and platform:
+            try:
+                adapter_instance = getattr(adapter, platform)
+                await adapter_instance.Send.To(detail_type, target_id).Text(prompt)
+            except Exception as e:
+                logger.warning(f"发送提示消息失败: {e}")
+        
+        # 创建等待 future
+        future = asyncio.get_event_loop().create_future()
+        
+        # 存储等待信息
+        wait_key = f"{platform}:{user_id}:{target_id}"
+        self._waiting_replies[wait_key] = {
+            "future": future,
+            "callback": callback,
+            "validator": validator,
+            "timestamp": asyncio.get_event_loop().time()
+        }
+        
+        try:
+            # 等待回复或超时
+            result = await asyncio.wait_for(future, timeout=timeout)
+            
+            # 如果提供了回调函数，则执行
+            if callback:
+                if asyncio.iscoroutinefunction(callback):
+                    await callback(result)
+                else:
+                    callback(result)
+            
+            return result
+        except asyncio.TimeoutError:
+            # 清理超时的等待
+            if wait_key in self._waiting_replies:
+                del self._waiting_replies[wait_key]
+            return None
+        except Exception as e:
+            # 清理异常情况
+            if wait_key in self._waiting_replies:
+                del self._waiting_replies[wait_key]
+            logger.error(f"等待回复时发生错误: {e}")
+            return None
+    
     async def _handle_message(self, event: Dict[str, Any]):
         """
         处理消息事件中的命令
@@ -111,6 +221,17 @@ class CommandHandler:
         
         :param event: 消息事件数据
         """
+        # 检查是否是系统消息或自身消息
+        if event.get("self", {}).get("user_id") == event.get("user_id"):
+            # 根据配置决定是否忽略自身消息
+            ignore_self = config.getConfig("ErisPulse.event.message.ignore_self", True)
+            if ignore_self:
+                return
+        
+        # 检查是否已经被其他处理器标记为已处理
+        if event.get("_processed"):
+            return
+            
         # 检查是否为文本消息
         if event.get("type") != "message":
             return
@@ -135,6 +256,8 @@ class CommandHandler:
             if self.allow_space_prefix and check_text.startswith(prefix + " "):
                 pass
             else:
+                # 检查是否是等待回复的消息
+                await self._check_pending_reply(event)
                 return
         
         # 解析命令和参数
@@ -185,6 +308,9 @@ class CommandHandler:
             
             event["command"] = command_info
             
+            # 标记事件已被处理
+            event["_processed"] = True
+            
             try:
                 if asyncio.iscoroutinefunction(handler):
                     await handler(event)
@@ -193,6 +319,40 @@ class CommandHandler:
             except Exception as e:
                 logger.error(f"命令执行错误: {e}")
                 await self._send_command_error(event, str(e))
+    
+    async def _check_pending_reply(self, event: Dict[str, Any]):
+        """
+        检查是否是等待回复的消息
+        
+        :param event: 消息事件数据
+        """
+        platform = event.get("platform")
+        user_id = event.get("user_id")
+        group_id = event.get("group_id")
+        target_id = group_id or user_id
+        
+        wait_key = f"{platform}:{user_id}:{target_id}"
+        
+        # 检查是否有等待的处理器
+        if wait_key in self._waiting_replies:
+            wait_info = self._waiting_replies[wait_key]
+            validator = wait_info.get("validator")
+            
+            # 如果有验证器，验证回复是否有效
+            if validator:
+                if not validator(event):
+                    # 验证失败，不处理此回复，继续等待
+                    return
+            
+            # 设置 future 结果
+            if not wait_info["future"].done():
+                wait_info["future"].set_result(event)
+            
+            # 清理等待信息
+            del self._waiting_replies[wait_key]
+            
+            # 标记事件已被处理
+            event["_processed"] = True
     
     async def _send_permission_denied(self, event: Dict[str, Any]):
         """
