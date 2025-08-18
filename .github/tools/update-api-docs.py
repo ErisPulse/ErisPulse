@@ -117,11 +117,9 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
         # 处理类定义
         if isinstance(node, ast.ClassDef):
             class_doc = ast.get_docstring(node)
-            processed_class_doc = process_docstring(class_doc) if class_doc else None
+            processed_class_doc = process_docstring(class_doc) if class_doc else ""
             
-            if processed_class_doc is None:
-                continue
-                
+            # 不管类有没有文档，都要处理其中的方法
             methods = []
             # 提取类方法
             for item in node.body:
@@ -129,7 +127,7 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
                     method_doc = ast.get_docstring(item)
                     processed_method_doc = process_docstring(method_doc) if method_doc else None
                     
-                    if processed_method_doc:
+                    if processed_method_doc:  # 只有方法有文档才添加
                         # 获取函数签名
                         args = []
                         defaults = dict(zip([arg.arg for arg in item.args.args][-len(item.args.defaults):], item.args.defaults)) if item.args.defaults else {}
@@ -159,12 +157,14 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
             bases = [ast.unparse(base) for base in node.bases] if node.bases else []
             class_signature = f"class {node.name}({', '.join(bases)})" if bases else f"class {node.name}"
             
-            classes.append({
-                "name": node.name,
-                "signature": class_signature,
-                "doc": processed_class_doc,
-                "methods": methods
-            })
+            # 只有类有文档或者有方法时才添加类
+            if processed_class_doc or methods:
+                classes.append({
+                    "name": node.name,
+                    "signature": class_signature,
+                    "doc": processed_class_doc,
+                    "methods": methods
+                })
         
         # 处理函数定义
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -243,11 +243,13 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     if classes:
         content.append("## 类列表\n")
         for cls in classes:
+            # 如果类没有文档，显示默认信息
+            class_doc = cls['doc'] if cls['doc'] else f"{cls['name']} 类提供相关功能。"
             content.append(f"""### `{cls['signature']}`
 
-{cls['doc']}
+    {class_doc}
 
-""")
+    """)
             
             # 类方法
             if cls["methods"]:
@@ -256,10 +258,10 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
                     async_marker = "async " if method["is_async"] else ""
                     content.append(f"""##### {async_marker}`{method['signature']}`
 
-{method['doc']}
+    {method['doc']}
 
----
-""")
+    ---
+    """)
     
     # 文档尾部
     content.append(f"<sub>文档最后更新于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</sub>")
