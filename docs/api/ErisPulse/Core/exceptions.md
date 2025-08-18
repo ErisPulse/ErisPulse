@@ -1,6 +1,6 @@
 # `ErisPulse.Core.exceptions` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-18 22:00:40</sup>
 
 ---
 
@@ -42,4 +42,29 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+## 类列表
+
+### `class ExceptionHandler`
+
+    ExceptionHandler 类提供相关功能。
+
+    
+#### 方法列表
+
+##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+    :param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+:return: 格式化后的异常信息
+
+    ---
+    
+##### `format_async_exception(exception: Exception)`
+
+    :param exception: 异常对象
+:return: 格式化后的异常信息
+
+    ---
+    
+<sub>文档最后更新于 2025-08-18 22:00:40</sub>
