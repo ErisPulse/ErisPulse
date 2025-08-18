@@ -92,7 +92,6 @@ def merge_api_docs(api_dir, output_file):
             try:
                 with open(file_path, 'r', encoding='utf-8') as infile:
                     content = infile.read()
-                    # 移除原有标题，因为我们已经添加了
                     lines = content.split('\n')
                     if lines and lines[0].startswith('# '):
                         content = '\n'.join(lines[1:])
@@ -110,12 +109,16 @@ def generate_full_document():
     # 要合并的文件
     files_to_merge = [
         {"path": "docs/quick-start.md", "description": "快速开始指南"},
-        {"path": "docs/UseCore.md", "description": "核心功能使用说明"},
-        {"path": "docs/PlatformFeatures.md", "description": "平台功能说明"},
-        {"path": "docs/Development/Module.md", "description": "模块开发指南"},
-        {"path": "docs/Development/Adapter.md", "description": "适配器开发指南"},
-        {"path": "docs/AdapterStandards/APIResponse.md", "description": "API响应标准"},
-        {"path": "docs/AdapterStandards/EventConversion.md", "description": "事件转换标准"},
+        {"path": "docs/platform-features.md", "description": "平台功能说明"},
+        {"path": "docs/core/concepts.md", "description": "核心概念"},
+        {"path": "docs/core/modules.md", "description": "核心模块"},
+        {"path": "docs/core/adapters.md", "description": "适配器系统"},
+        {"path": "docs/core/event-system.md", "description": "事件系统"},
+        {"path": "docs/core/best-practices.md", "description": "最佳实践"},
+        {"path": "docs/development/module.md", "description": "模块开发指南"},
+        {"path": "docs/development/adapter.md", "description": "适配器开发指南"},
+        {"path": "docs/standards/api-response.md", "description": "API响应标准"},
+        {"path": "docs/standards/event-conversion.md", "description": "事件转换标准"},
     ]
     
     # 过滤不存在的文件
@@ -123,7 +126,7 @@ def generate_full_document():
     if len(existing_files) != len(files_to_merge):
         print(f"警告: {len(files_to_merge) - len(existing_files)} 个文件不存在，已跳过")
     
-    output_file = "docs/AIDocs/ErisPulse-Full.md"
+    output_file = "docs/ai/AIDocs/ErisPulse-Full.md"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
     merge_md_files(output_file, existing_files, "完整开发文档")
@@ -131,65 +134,51 @@ def generate_full_document():
     
     print(f"完整文档生成完成，已保存到: {output_file}")
 
-def generate_core_document():
-    print("正在生成核心功能文档...")
-    
-    files_to_merge = [
-        {"path": "docs/quick-start.md", "description": "快速开始指南"},
-        {"path": "docs/UseCore.md", "description": "核心功能使用说明"},
-        {"path": "docs/PlatformFeatures.md", "description": "平台功能说明"},
-    ]
-    
-    # 过滤不存在的文件
-    existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
-    
-    output_file = "docs/AIDocs/ErisPulse-Core.md"
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
-    merge_md_files(output_file, existing_files, "核心功能文档")
-    # 合并API文档
-    merge_api_docs("docs/api", output_file)
-    
-    print(f"核心功能文档生成完成，已保存到: {output_file}")
-
 def generate_dev_documents():
     print("正在生成开发文档...")
     
     # 模块开发文档
     module_files = [
         {"path": "docs/quick-start.md", "description": "快速开始指南"},
-        {"path": "docs/UseCore.md", "description": "核心功能使用说明"},
-        {"path": "docs/PlatformFeatures.md", "description": "平台支持的发送类型及差异性说明"},
-        {"path": "docs/Development/Module.md", "description": "模块开发指南"}
+        {"path": "docs/core/concepts.md", "description": "基础架构和设计理念"},
+        {"path": "docs/core/modules.md", "description": "核心模块"},
+        {"path": "docs/core/adapters.md", "description": "适配器"},
+        {"path": "docs/core/event-system.md", "description": "事件系统"},
+        {"path": "docs/platform-features.md", "description": "平台功能说明"},
+        {"path": "docs/standards/event-conversion.md", "description": "标准事件的定义"},
+        {"path": "docs/standards/api-response.md", "description": "api响应的格式" },
     ]
     
     # 过滤不存在的文件
     existing_module_files = [f for f in module_files if os.path.exists(f['path'])]
     
-    module_output = "docs/AIDocs/ErisPulse-ModuleDev.md"
+    module_output = "docs/ai/AIDocs/ErisPulse-ModuleDev.md"
     os.makedirs(os.path.dirname(module_output), exist_ok=True)
     merge_md_files(module_output, existing_module_files, "模块开发文档")
-    # 合并API文档
-    merge_api_docs("docs/api", module_output)
-    
+
     print(f"模块开发文档生成完成，已保存到: {module_output}")
     
     # 适配器开发文档
-    adapter_files = [
+    adapter_files  = [
         {"path": "docs/quick-start.md", "description": "快速开始指南"},
-        {"path": "docs/UseCore.md", "description": "核心功能使用说明"},
-        {"path": "docs/Development/Adapter.md", "description": "适配器开发指南"},
-        {"path": "docs/AdapterStandards/APIResponse.md", "description": "API响应标准"},
-        {"path": "docs/AdapterStandards/EventConversion.md", "description": "事件转换标准"},
+        {"path": "docs/platform-features.md", "description": "平台功能说明"},
+        {"path": "docs/core/concepts.md", "description": "核心概念"},
+        {"path": "docs/core/modules.md", "description": "核心模块"},
+        {"path": "docs/core/adapters.md", "description": "适配器系统"},
+        {"path": "docs/core/event-system.md", "description": "事件系统"},
+        {"path": "docs/core/best-practices.md", "description": "最佳实践"},
+        {"path": "docs/development/module.md", "description": "模块开发指南"},
+        {"path": "docs/development/adapter.md", "description": "适配器开发指南"},
+        {"path": "docs/standards/api-response.md", "description": "API响应标准"},
+        {"path": "docs/standards/event-conversion.md", "description": "事件转换标准"},
     ]
     
     # 过滤不存在的文件
     existing_adapter_files = [f for f in adapter_files if os.path.exists(f['path'])]
     
-    adapter_output = "docs/AIDocs/ErisPulse-AdapterDev.md"
+    adapter_output = "docs/ai/AIDocs/ErisPulse-AdapterDev.md"
     os.makedirs(os.path.dirname(adapter_output), exist_ok=True)
     merge_md_files(adapter_output, existing_adapter_files, "适配器开发文档")
-    # 合并API文档
     merge_api_docs("docs/api", adapter_output)
     
     print(f"适配器开发文档生成完成，已保存到: {adapter_output}")
@@ -219,7 +208,6 @@ def generate_custom_document(title, files, api_dirs, output_path):
 if __name__ == "__main__":
     try:
         generate_full_document()
-        generate_core_document()
         generate_dev_documents()
         print("所有文档生成完成")
     except Exception as e:
