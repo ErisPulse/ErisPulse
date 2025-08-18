@@ -1,18 +1,23 @@
 """
 ErisPulse 事件处理基础模块
 
-提供事件处理的核心功能，包括事件注册、处理和中间件支持
+提供事件处理的核心功能，包括事件注册和处理
+
+{!--< tips >!--}
+1. 所有事件处理都基于OneBot12标准事件格式
+2. 通过适配器系统进行事件分发和接收
+{!--< /tips >!--}
 """
 
 from .. import adapter, logger
-from typing import Callable, Any, Dict, List, Optional, Union
+from typing import Callable, Any, Dict, List, Optional
 import asyncio
 
 class BaseEventHandler:
     """
     基础事件处理器
     
-    提供事件处理的基本功能，包括处理器注册、中间件支持等
+    提供事件处理的基本功能，包括处理器注册等
     """
     
     def __init__(self, event_type: str, module_name: str = None):
@@ -25,17 +30,6 @@ class BaseEventHandler:
         self.event_type = event_type
         self.module_name = module_name
         self.handlers: List[Dict] = []
-        self.middlewares: List[Callable] = []
-    
-    def middleware(self, func: Callable) -> Callable:
-        """
-        添加中间件
-        
-        :param func: 中间件函数
-        :return: 中间件函数
-        """
-        self.middlewares.append(func)
-        return func
     
     def register(self, handler: Callable, priority: int = 0, condition: Callable = None):
         """
@@ -81,30 +75,19 @@ class BaseEventHandler:
         
         :param event: 事件数据
         """
-        # 执行中间件
-        processed_event = event
-        for middleware in self.middlewares:
-            try:
-                if asyncio.iscoroutinefunction(middleware):
-                    processed_event = await middleware(processed_event)
-                else:
-                    processed_event = middleware(processed_event)
-            except Exception as e:
-                logger.error(f"中间件执行错误: {e}")
-        
         # 执行处理器
         for handler_info in self.handlers:
             condition = handler_info.get("condition")
             # 检查条件
-            if condition and not condition(processed_event):
+            if condition and not condition(event):
                 continue
                 
             handler = handler_info["func"]
             try:
                 if asyncio.iscoroutinefunction(handler):
-                    await handler(processed_event)
+                    await handler(event)
                 else:
-                    handler(processed_event)
+                    handler(event)
             except Exception as e:
                 logger.error(f"事件处理器执行错误: {e}")
     

@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2025-08-17 09:01:39
+**生成时间**: 2025-08-18 12:43:23
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -149,12 +149,15 @@ Event 模块包含以下子模块：
 | `Event.notice` | 通知事件处理 |
 | `Event.request` | 请求事件处理 |
 | `Event.meta` | 元事件处理 |
-| `Event.event_manager` | 事件管理器 |
 | `Event.exceptions` | 事件异常处理 |
 
 ```python
 # 直接导入方式
-from ErisPulse.Core import storage, module_registry, logger, adapter, module, BaseAdapter, Event
+from ErisPulse.Core import (
+        storage, config, module_registry,
+        adapter, module, logger,
+        BaseAdapter, Event
+    )
 
 # 通过SDK对象方式
 from ErisPulse import sdk
@@ -162,8 +165,8 @@ sdk.storage  # 等同于直接导入的storage
 ```
 
 ## 模块使用
-- 所有模块通过`sdk`对象统一管理
-- 每个模块拥有独立命名空间，使用`sdk`进行调用
+- 所有模块通过 `sdk` 对象统一管理
+- 每个模块拥有独立命名空间，使用 `sdk` 进行调用
 - 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
 
 ## 适配器使用
@@ -218,36 +221,11 @@ async def hello_command(event):
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text("Hello World!")
 
-async def send_reply(event: Dict[str, Any], message: Union[str, List[Dict]]) -> Any:
-    platform = event.get("platform")
-    if not platform:
-        logger.warning("事件中缺少 'platform' 字段")
-    
-    adapter_sender = getattr(adapter, platform, None)
-    if not adapter_sender:
-        logger.warning(f"适配器 {platform} 未注册")
-    
-    # 判断消息类型（群聊/频道/私聊）
-    if event.get("detail_type") == "group":
-        target_type = "group"
-        target_id = event.get("group_id")
-    elif event.get("detail_type") == "channel":
-        target_type = "channel"
-        target_id = event.get("channel_id") 
-    else:
-        target_type = "user"
-        target_id = event.get("user_id")
-    
-    # 发送消息
-    adapter_sender.Send.To(target_type, target_id).Text(message)
-
 # 带参数的命令
 @command("echo", help="回显消息", usage="/echo <内容>")
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
-
-    # 处理command时，我们会自动添加 "command" 字段, 所以他不是一个ob12标准字段
     args = event["command"]["args"]
     
     if not args:
@@ -267,6 +245,23 @@ async def help_command(event):
     
     adapter_instance = getattr(sdk.adapter, platform)
     await adapter_instance.Send.To("user", user_id).Text(help_text)
+
+# 带权限检查的命令
+def is_admin(event):
+    # 检查是否为管理员
+    user_id = event.get("user_id")
+    return user_id in ["admin_id_1", "admin_id_2"]
+
+@command("admin", permission=is_admin, help="管理员命令")
+async def admin_command(event):
+    # 只有管理员才能执行
+    pass
+
+# 隐藏命令
+@command("secret", hidden=True, help="秘密命令")
+async def secret_command(event):
+    # 不会在帮助中显示
+    pass
 
 # 命令组
 @command("admin.reload", group="admin", help="重新加载模块")
@@ -415,27 +410,6 @@ async def keyword_handler(event):
     pass
 ```
 
-#### 中间件
-```python
-from ErisPulse.Core.Event import command, message, notice, request
-
-# 命令触发中间件
-@command.handler.middleware
-async def command_middleware(event):
-    sdk.logger.info(f"处理命令: {event.get('alt_message')}")
-    return event
-
-# 消息触发中间件
-@message.handler.middleware
-async def message_middleware(event):
-    sdk.logger.info(f"处理消息: {event.get('alt_message')}")
-    return event
-
-# 其他中间件同理
-# ...
-
-```
-
 ## 核心模块功能详解
 
 ### 1. 日志模块(logger)
@@ -515,42 +489,7 @@ exceptions.setup_async_loop()
 # 这样设置后，异步代码中的未捕获异常会被统一处理并格式化输出
 ```
 
-### 5. 模块状态管理器(module_registry)
-
-模块注册表用于管理所有模块的注册信息和启用状态。
-
-```python
-# 设置模块状态
-module_registry.set_module_status("MyModule", True)   # 启用模块
-module_registry.set_module_status("MyModule", False)  # 禁用模块
-
-# 获取模块状态
-is_enabled = module_registry.get_module_status("MyModule")  # 获取模块状态
-
-# 注册模块信息
-module_registry.set_module("MyModule", {
-    "version": "1.0.0",
-    "description": "我的模块",
-    "dependencies": [],
-    "author": "开发者",
-    "license": "MIT"
-})
-
-# 获取模块信息
-module_info = module_registry.get_module("MyModule")
-
-# 批量操作
-module_registry.set_all_modules({
-    "Module1": {"version": "1.0", "status": True},
-    "Module2": {"version": "2.0", "status": False}
-})
-all_modules = module_registry.get_all_modules()    # 获取所有模块信息
-
-# 移除模块
-module_registry.remove_module("OldModule")
-```
-
-### 6. 模块管理器
+### 5. 模块管理器(module)
 ```python
 # 直接获取模块实例
 my_module = module.get("MyModule")
@@ -588,6 +527,7 @@ module.disable("MyModule")
 [ErisPulse.event.command]
 prefix = "/"
 case_sensitive = true
+allow_space_prefix = false
 
 [ErisPulse.event.message]
 ignore_self = true
@@ -2343,9 +2283,8 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 
 - [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
 - [ErisPulse\Core\Event\base.md](#ErisPulse_Core_Event_base)
-- [ErisPulse\Core\Event\cmd.md](#ErisPulse_Core_Event_cmd)
+- [ErisPulse\Core\Event\command.md](#ErisPulse_Core_Event_command)
 - [ErisPulse\Core\Event\exceptions.md](#ErisPulse_Core_Event_exceptions)
-- [ErisPulse\Core\Event\manager.md](#ErisPulse_Core_Event_manager)
 - [ErisPulse\Core\Event\message.md](#ErisPulse_Core_Event_message)
 - [ErisPulse\Core\Event\meta.md](#ErisPulse_Core_Event_meta)
 - [ErisPulse\Core\Event\notice.md](#ErisPulse_Core_Event_notice)
@@ -2369,7 +2308,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2380,26 +2319,28 @@ ErisPulse 事件处理模块
 
 提供统一的事件处理接口，支持命令、消息、通知、请求和元事件处理
 
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 所有事件处理都基于OneBot12标准事件格式
+2. 通过装饰器方式注册事件处理器
+3. 支持优先级和条件过滤</p></div>
+
 ---
 
 ## 函数列表
 
 ### `_setup_default_config()`
 
-设置默认配置
-
 <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-内部使用的方法，用于初始化默认配置
+设置默认配置
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2408,7 +2349,10 @@ ErisPulse 事件处理模块
 
 ErisPulse 事件处理基础模块
 
-提供事件处理的核心功能，包括事件注册、处理和中间件支持
+提供事件处理的核心功能，包括事件注册和处理
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 所有事件处理都基于OneBot12标准事件格式
+2. 通过适配器系统进行事件分发和接收</p></div>
 
 ---
 
@@ -2418,7 +2362,7 @@ ErisPulse 事件处理基础模块
 
 基础事件处理器
 
-提供事件处理的基本功能，包括处理器注册、中间件支持等
+提供事件处理的基本功能，包括处理器注册等
 
 
 #### 方法列表
@@ -2429,15 +2373,6 @@ ErisPulse 事件处理基础模块
 
 :param event_type: 事件类型
 :param module_name: 模块名称
-
----
-
-##### `middleware(func: Callable)`
-
-添加中间件
-
-:param func: 中间件函数
-:return: 中间件函数
 
 ---
 
@@ -2480,13 +2415,13 @@ ErisPulse 事件处理基础模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
-<a id="ErisPulse_Core_Event_cmd"></a>
-## ErisPulse\Core\Event\cmd.md
+<a id="ErisPulse_Core_Event_command"></a>
+## ErisPulse\Core\Event\command.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2497,92 +2432,19 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
----
-
-## 类列表
-
-### `class CommandHandler`
-
-命令处理器
-
-提供命令注册、解析和执行功能
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化命令处理器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持命令别名和命令组
+2. 支持命令权限控制
+3. 支持命令帮助系统</p></div>
 
 ---
 
-##### `__call__(name: Union[str, List[str]] = None, aliases: List[str] = None, group: str = None, priority: int = 0, help: str = None, usage: str = None)`
-
-命令装饰器
-
-:param name: 命令名称，可以是字符串或字符串列表
-:param aliases: 命令别名列表
-:param group: 命令组名称
-:param priority: 处理器优先级
-:param help: 命令帮助信息
-:param usage: 命令使用方法
-:return: 装饰器函数
-
----
-
-##### async `async _handle_message(event: Dict[str, Any])`
-
-处理消息事件中的命令
-
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
-内部使用的方法，用于从消息中解析并执行命令
-
-:param event: 消息事件数据
-
----
-
-##### `get_command(name: str)`
-
-获取命令信息
-
-:param name: 命令名称
-:return: 命令信息字典，如果不存在则返回None
-
----
-
-##### `get_commands()`
-
-获取所有命令
-
-:return: 命令信息字典
-
----
-
-##### `get_group_commands(group: str)`
-
-获取命令组中的命令
-
-:param group: 命令组名称
-:return: 命令名称列表
-
----
-
-##### `help(command_name: str = None)`
-
-生成帮助信息
-
-:param command_name: 命令名称，如果为None则生成所有命令的帮助
-:return: 帮助信息字符串
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2625,112 +2487,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
-
-<a id="ErisPulse_Core_Event_manager"></a>
-## ErisPulse\Core\Event\manager.md
-
-
-<sup>更新时间: 2025-08-17 09:01:35</sup>
-
----
-
-## 模块概述
-
-
-ErisPulse 事件管理器
-
-提供全局事件管理功能，包括事件处理器创建、模块事件管理等
-
----
-
-## 类列表
-
-### `class EventManager`
-
-事件管理器
-
-管理所有事件处理器，提供全局事件处理功能
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化事件管理器
-
----
-
-##### `create_event_handler(event_type: str, module_name: str = None)`
-
-创建事件处理器
-
-:param event_type: 事件类型
-:param module_name: 模块名称
-:return: 事件处理器实例
-
----
-
-##### `get_event_handler(event_type: str)`
-
-获取事件处理器
-
-:param event_type: 事件类型
-:return: 事件处理器实例，如果不存在则返回None
-
----
-
-##### `register_module_event(module_name: str, event_type: str)`
-
-注册模块事件
-
-:param module_name: 模块名称
-:param event_type: 事件类型
-
----
-
-##### `middleware(func: Callable)`
-
-添加全局中间件
-
-:param func: 中间件函数
-:return: 中间件函数
-
----
-
-##### async `async emit(event_type: str, event_data: Dict[str, Any])`
-
-触发事件
-
-:param event_type: 事件类型
-:param event_data: 事件数据
-
----
-
-##### `get_module_events(module_name: str)`
-
-获取模块注册的事件
-
-:param module_name: 模块名称
-:return: 事件类型列表
-
----
-
-##### `cleanup_module_events(module_name: str)`
-
-清理模块事件
-
-:param module_name: 模块名称
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2741,68 +2504,19 @@ ErisPulse 消息处理模块
 
 提供基于装饰器的消息事件处理功能
 
----
-
-## 类列表
-
-### `class MessageHandler`
-
-消息处理器
-
-提供不同类型消息事件的处理功能
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化消息处理器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持私聊、群聊消息分类处理
+2. 支持@消息特殊处理
+3. 支持自定义条件过滤</p></div>
 
 ---
 
-##### `on_message(priority: int = 0)`
-
-消息事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_private_message(priority: int = 0)`
-
-私聊消息事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_group_message(priority: int = 0)`
-
-群聊消息事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_at_message(priority: int = 0)`
-
-@消息事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2813,68 +2527,18 @@ ErisPulse 元事件处理模块
 
 提供基于装饰器的元事件处理功能
 
----
-
-## 类列表
-
-### `class MetaHandler`
-
-元事件处理器
-
-提供元事件（如连接、断开连接、心跳等）的处理功能
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化元事件处理器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持连接、断开连接等生命周期事件
+2. 适用于系统状态监控和初始化操作</p></div>
 
 ---
 
-##### `on_meta(priority: int = 0)`
-
-通用元事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_connect(priority: int = 0)`
-
-连接事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_disconnect(priority: int = 0)`
-
-断开连接事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_heartbeat(priority: int = 0)`
-
-心跳事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2885,77 +2549,18 @@ ErisPulse 通知处理模块
 
 提供基于装饰器的通知事件处理功能
 
----
-
-## 类列表
-
-### `class NoticeHandler`
-
-通知处理器
-
-提供不同类型通知事件的处理功能
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化通知处理器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持好友、群组等不同类型通知
+2. 支持成员变动等细粒度事件</p></div>
 
 ---
 
-##### `on_notice(priority: int = 0)`
-
-通用通知事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_friend_add(priority: int = 0)`
-
-好友添加通知事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_friend_remove(priority: int = 0)`
-
-好友删除通知事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_group_increase(priority: int = 0)`
-
-群成员增加通知事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_group_decrease(priority: int = 0)`
-
-群成员减少通知事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -2966,59 +2571,18 @@ ErisPulse 请求处理模块
 
 提供基于装饰器的请求事件处理功能
 
----
-
-## 类列表
-
-### `class RequestHandler`
-
-请求处理器
-
-提供不同类型请求事件的处理功能（如好友申请、群邀请等）
-
-
-#### 方法列表
-
-##### `__init__()`
-
-初始化请求处理器
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持好友请求、群邀请等不同类型请求
+2. 可以通过返回特定值来同意或拒绝请求</p></div>
 
 ---
 
-##### `on_request(priority: int = 0)`
-
-通用请求事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_friend_request(priority: int = 0)`
-
-好友请求事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-##### `on_group_request(priority: int = 0)`
-
-群邀请请求事件装饰器
-
-:param priority: 处理器优先级
-:return: 装饰器函数
-
----
-
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3414,13 +2978,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3434,13 +2998,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_env"></a>
 ## ErisPulse\Core\env.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3456,13 +3020,13 @@ ErisPulse 环境模块 (已弃用)
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_erispulse_config"></a>
 ## ErisPulse\Core\erispulse_config.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3519,13 +3083,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3567,13 +3131,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3696,13 +3260,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_module"></a>
 ## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -3807,13 +3371,13 @@ ErisPulse 模块管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_module_registry"></a>
 ## ErisPulse\Core\module_registry.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -4027,13 +3591,13 @@ ErisPulse 模块注册表
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -4141,13 +3705,13 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -4481,13 +4045,13 @@ ErisPulse 存储管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -4794,13 +4358,13 @@ SDK初始化入口，返回Task对象
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-08-17 09:01:35</sup>
+<sup>更新时间: 2025-08-18 12:43:21</sup>
 
 ---
 
@@ -5242,6 +4806,6 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-17 09:01:35</sub>
+<sub>文档最后更新于 2025-08-18 12:43:21</sub>
 
 ---
