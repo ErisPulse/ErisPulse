@@ -28,6 +28,15 @@ class NoticeHandler:
             return func
         return decorator
     
+    def remove_notice_handler(self, handler: Callable) -> bool:
+        """
+        取消注册通用通知事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_friend_add(self, priority: int = 0):
         """
         好友添加通知事件装饰器
@@ -42,6 +51,15 @@ class NoticeHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_friend_add_handler(self, handler: Callable) -> bool:
+        """
+        取消注册好友添加通知事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
     
     def on_friend_remove(self, priority: int = 0):
         """
@@ -58,6 +76,15 @@ class NoticeHandler:
             return func
         return decorator
     
+    def remove_friend_remove_handler(self, handler: Callable) -> bool:
+        """
+        取消注册好友删除通知事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_group_increase(self, priority: int = 0):
         """
         群成员增加通知事件装饰器
@@ -73,6 +100,15 @@ class NoticeHandler:
             return func
         return decorator
     
+    def remove_group_increase_handler(self, handler: Callable) -> bool:
+        """
+        取消注册群成员增加通知事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_group_decrease(self, priority: int = 0):
         """
         群成员减少通知事件装饰器
@@ -87,5 +123,14 @@ class NoticeHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_group_decrease_handler(self, handler: Callable) -> bool:
+        """
+        取消注册群成员减少通知事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
 
 notice = NoticeHandler()
