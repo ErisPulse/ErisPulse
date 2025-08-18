@@ -96,18 +96,6 @@ jobs:
             changelog="$changelog\n\n"
           fi
           
-          # 贡献信息
-          changelog="${changelog}### 🧙‍♀️ 魔法贡献者\n\n"
-          while IFS= read -r contributor; do
-            escaped_contributor=$(echo "$contributor" | sed 's/>/\&gt;/g' | sed 's/</\&lt;/g')
-            changelog="${changelog}- ${escaped_contributor}\n"
-          done <<< "$contributors"
-
-          changelog="${changelog}\n### 📜 魔法卷轴更新\n\n"
-          escaped_commit_msg=$(echo "$commit_msg" | sed 's/#/\\#/g')
-          changelog="${changelog}- 最新提交: $escaped_commit_msg (by $commit_author, $commit_short)\n"
-          changelog="${changelog}- 变更文件: ${{ steps.changed_files.outputs.files }}\n"
-
           if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
             echo "🎀🎀 施加新的魔法印记..."
             git tag "$tag_name"
