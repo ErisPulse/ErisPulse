@@ -49,34 +49,215 @@ sdk.storage  # 等同于直接导入的storage
 适配器事件分为两类：
 - 标准事件：平台转换为的标准事件，其格式为标准的 OneBot12 事件格式 | 需要判断接收到的消息的 `platform` 字段，来确定消息来自哪个平台
 - 原生事件：平台原生事件 通过 sdk.adapter.<Adapter>.on() 监听对应平台的原生事件
-适配器标准事件的拓展以及支持的消息发送类型，请参考 [PlatformFeatures.md](docs/PlatformFeatures.md)
 
 建议使用标准事件进行事件的处理，适配器会自动将原生事件转换为标准事件
 
+### 通用接口
+#### Send 链式调用
+
+Send DSL 的方法返回 `asyncio.Task` 对象，这意味着你可以选择是否立即等待结果：
+
 ```python
-# 启动适配器
-await sdk.adapter.startup("MyAdapter")  # 不指定名称则启动所有适配器
-# 另外可以传入列表，例如 sdk.adapter.startup(["Telegram", "Yunhu"])
+# 不等待结果，消息在后台发送
+task = adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
 
-# 监听 OneBot12 标准事件
-@adapter.on("message")
-async def on_message(data):
-    platform = data.get("platform")
-    detail_type = "user" if data.get("detail_type") == "private" else "group"
-    detail_id = data.get("user_id") if detail_type == "user" else data.get("group_id")
-    Sender = None
+# 如果需要获取发送结果，稍后可以等待
+result = await task
 
-    if hasattr(adapter, platform):
-        Sender = getattr(adapter, platform).To(detail_type, detail_id)
-    
-    Sender.Text(data.get("alt_message"))
-
-# 监听平台原生事件
-@adapter.Telegram.on("message")
-async def on_raw_message(data):
-    # Do something ...
+# 等待结果并赋值
+result = await adapter.<AdapterName>.Send.To("user", "123").Text("Hello")
 ```
-平台原生事件监听并不建议使用，因为格式不保证与 OneBot12 兼容，另外 OneBot12 的标准事件规定了一个拓展字段 `{{platform}}_raw` 用于传输平台原生数据
+
+> 返回的 Task 维持了协程的完整状态机，因此可以将其存储在变量中供后续使用。
+
+所有适配器都支持以下标准调用方式：
+
+1. 指定类型和ID: `To(type,id).Func()`
+   ```python
+   await adapter.<AdapterName>.Send.To("user", "U1001").Text("Hello")
+   # 例如：
+   await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+   ```
+
+2. 仅指定ID: `To(id).Func()`
+   ```python
+   await adapter.<AdapterName>.Send.To("U1001").Text("Hello")
+   # 例如：
+   await adapter.telegram.Send.To("U1001").Text("Hello")
+   ```
+
+3. 指定发送账号: `Using(account_id)`
+   ```python
+   await adapter.<AdapterName>.Send.Using("bot1").To("U1001").Text("Hello")
+   # 例如：
+   await adapter.onebot11.Send.Using("bot1").To("U1001").Text("Hello")
+   ```
+
+4. 直接调用: `Func()`
+   ```python
+   await adapter.<AdapterName>.Send.Text("Broadcast message")
+   # 例如：
+   await adapter.email.Send.Text("Broadcast message")
+   ```
+
+##### 使用场景示例
+
+```python
+# 场景1：不需要确认发送结果（推荐用于大多数情况）
+adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 场景2：需要处理发送结果
+result = await adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 场景3：批量发送，稍后统一处理结果
+tasks = []
+user_ids = ["U1001", "U1002", "U1003"]
+for i in user_ids:
+    task = adapter.yunhu.Send.To("user", i).Text("Hello")
+    tasks.append(task)
+
+# 等待所有发送完成
+results = await asyncio.gather(*tasks)
+```
+
+> **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
+
+### 事件监听
+有三种事件监听方式：
+
+1. 平台原生事件监听：
+   ```python
+   from ErisPulse.Core import adapter, logger
+   
+   @adapter.<AdapterName>.on("event_type")
+   async def handler(data):
+       logger.info(f"收到原生事件: {data}")
+   ```
+
+2. OneBot12标准事件监听：
+   ```python
+   from ErisPulse.Core import adapter, logger
+
+   @adapter.on("event_type")  # 所有平台的标准事件
+   async def handler(data):
+       if data["platform"] == "yunhu":
+           logger.info(f"收到云湖标准事件: {data}")
+   ```
+
+3. 使用 `ErisPulse` 内置的 `Event` 模块进行事件监听（OneBot12标准事件）
+    ```python
+    from ErisPulse.Core.Event import message, command, notice, request
+
+    @message.on_message()
+    async def message_handler(event):
+      logger.info(f"收到消息事件: {event}")
+
+    @command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+    async def help_handler(event):
+      logger.info(f"收到命令事件: {event}")
+
+    @notice.on_group_increase()
+    async def notice_handler(event):
+      logger.info(f"收到群成员增加事件: {event}")
+    
+    @request.on_friend_request()
+    async def request_handler(event):
+      logger.info(f"收到好友请求事件: {event}")
+
+    # 注意：这里仅是简单的示例，完整的内容请参考Event部分的api文档。或者查看UseCore文档查看一些更全的示例。
+    ```
+
+#### 事件监听的误区
+
+在开发模块时，经常会将事件处理函数定义为类的方法。如果直接在类方法上使用装饰器，可能会导致 `self` 参数无法正确传递，从而造成事件监听器注册失败。
+
+##### 常见错误示例：
+
+  ```python
+  from ErisPulse.Core.Event import message, command
+
+  class TestModule:
+      def __init__(self, sdk):
+          self.sdk = sdk
+          self.logger = sdk.logger.get_child(__name__)
+
+      @message.on_message()  # 错误：直接装饰实例方法
+      def on_message(self, event):
+          pass
+  ```
+
+##### 推荐做法：
+
+  ```python
+  from ErisPulse.Core.Event import message, command
+
+  class TestModule:
+      def __init__(self, sdk):
+          self.sdk = sdk
+          self.logger = sdk.logger.get_child(__name__)
+          self._register_events()  # 在初始化时注册事件监听器
+
+      def _register_events(self):
+          @message.on_message()
+          async def on_message(event):  # 注意：这里不使用 self 参数
+              # 如果需要访问实例属性，可以通过闭包访问 self
+              self.logger.info("收到消息")
+              pass
+  ```
+
+### 标准格式
+为方便参考，这里给出了简单的事件格式，如果需要详细信息，请参考上方的链接。
+
+#### 标准事件格式
+所有适配器必须实现的事件转换格式：
+```json
+{
+  "id": "event_123",
+  "time": 1752241220,
+  "type": "message",
+  "detail_type": "group",
+  "platform": "yunhu",
+  "self": {"platform": "yunhu", "user_id": "bot_123"},
+  "message_id": "msg_abc",
+  "message": [
+    {"type": "text", "data": {"text": "你好"}}
+  ],
+  "alt_message": "你好",
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "group_id": "group_789"
+}
+```
+
+#### 标准响应格式
+##### 消息发送成功
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {
+    "message_id": "1234",
+    "time": 1632847927.599013
+  },
+  "message_id": "1234",
+  "message": "",
+  "echo": "1234",
+  "{platform}_raw": {...}
+}
+```
+
+##### 消息发送失败
+```json
+{
+  "status": "failed",
+  "retcode": 10003,
+  "data": null,
+  "message_id": "",
+  "message": "缺少必要参数",
+  "echo": "1234",
+  "{platform}_raw": {...}
+}
+```
 
 ## 事件处理模块(Event)
 Event 模块提供了一套完整的事件处理机制，支持命令处理、消息处理、通知处理、请求处理和元事件处理等功能。
@@ -142,6 +323,79 @@ async def secret_command(event):
 async def reload_command(event):
     # 管理员命令逻辑
     pass
+
+# 等待用户回复的交互式命令
+@command("ask", help="询问用户信息")
+async def ask_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 等待用户回复
+    reply_event = await command.wait_reply(
+        event, 
+        prompt="请输入您的姓名:", 
+        timeout=30.0
+    )
+    
+    if reply_event:
+        # 提取用户回复内容
+        user_reply = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                user_reply = segment.get("data", {}).get("text", "")
+                break
+        
+        if user_reply:
+            await adapter_instance.Send.To(detail_type, target_id).Text(f"您好，{user_reply}！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
+    else:
+        await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
+
+# 带验证和回调的高级交互命令
+@command("confirm", help="确认操作")
+async def confirm_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 定义验证函数
+    def validate_yes_no(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        return text_content in ["是", "否", "yes", "no", "y", "n"]
+    
+    # 定义回调函数
+    async def handle_confirmation(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        
+        if text_content in ["是", "yes", "y"]:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已确认！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已取消。")
+    
+    # 等待用户确认
+    await command.wait_reply(
+        event,
+        prompt="您确定要执行此操作吗？请输入'是'或'否':",
+        timeout=30.0,
+        callback=handle_confirmation,
+        validator=validate_yes_no
+    )
 ```
 
 ### 消息处理

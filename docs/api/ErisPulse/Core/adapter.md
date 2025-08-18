@@ -1,6 +1,6 @@
 # `ErisPulse.Core.adapter` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-18 22:00:40</sup>
 
 ---
 
@@ -22,30 +22,30 @@ ErisPulse 适配器系统
 
 ### `class SendDSLBase`
 
-消息发送DSL基类
+    消息发送DSL基类
 
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 子类应实现具体的消息发送方法(如Text, Image等)
 2. 通过__getattr__实现动态方法调用</p></div>
 
-
+    
 #### 方法列表
 
 ##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
 
-初始化DSL发送器
+    初始化DSL发送器
 
 :param adapter: 所属适配器实例
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
 :param _account_id: 发送账号(可选)
 
----
-
+    ---
+    
 ##### `To(target_type: str = None, target_id: Union[str, int] = None)`
 
-设置消息目标
+    设置消息目标
 
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
@@ -59,11 +59,11 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ##### `Using(account_id: Union[str, int])`
 
-设置发送账号
+    设置发送账号
 
 :param _account_id: 发送账号
 :return: SendDSL实例
@@ -76,11 +76,11 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ### `class BaseAdapter`
 
-适配器基类
+    适配器基类
 
 提供与外部平台交互的标准接口，子类必须实现必要方法
 
@@ -89,27 +89,27 @@ ErisPulse 适配器系统
 3. 通过on装饰器注册事件处理器
 4. 支持OneBot12协议的事件处理</p></div>
 
-
+    
 #### 方法列表
 
 ##### `__init__()`
 
-初始化适配器
+    初始化适配器
 
----
-
+    ---
+    
 ##### `on(event_type: str = '*')`
 
-适配器事件监听装饰器
+    适配器事件监听装饰器
 
 :param event_type: 事件类型
 :return: 装饰器函数
 
----
-
+    ---
+    
 ##### `middleware(func: Callable)`
 
-添加中间件处理器
+    添加中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
@@ -124,38 +124,38 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ##### async `async call_api(endpoint: str)`
 
-调用平台API的抽象方法
+    调用平台API的抽象方法
 
 :param endpoint: API端点
 :param params: API参数
 :return: API调用结果
 <dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
----
-
+    ---
+    
 ##### async `async start()`
 
-启动适配器的抽象方法
+    启动适配器的抽象方法
 
 <dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
----
-
+    ---
+    
 ##### async `async shutdown()`
 
-关闭适配器的抽象方法
+    关闭适配器的抽象方法
 
 <dt>异常</dt><dd><code>NotImplementedError</code> 必须由子类实现</dd>
 
----
-
+    ---
+    
 ##### async `async emit(event_type: str, data: Any)`
 
-触发原生协议事件
+    触发原生协议事件
 
 :param event_type: 事件类型
 :param data: 事件数据
@@ -167,11 +167,11 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ##### async `async send(target_type: str, target_id: str, message: Any)`
 
-发送消息的便捷方法
+    发送消息的便捷方法
 
 :param target_type: 目标类型
 :param target_id: 目标ID
@@ -190,11 +190,11 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ### `class AdapterManager`
 
-适配器管理器
+    适配器管理器
 
 管理多个平台适配器的注册、启动和关闭
 
@@ -203,12 +203,12 @@ ErisPulse 适配器系统
 3. 通过shutdown方法关闭所有适配器
 4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
 
-
+    
 #### 方法列表
 
 ##### `Adapter()`
 
-获取BaseAdapter类，用于访问原始事件监听
+    获取BaseAdapter类，用于访问原始事件监听
 
 :return: BaseAdapter类
 
@@ -221,11 +221,11 @@ ErisPulse 适配器系统
 ```
 </details>
 
----
-
+    ---
+    
 ##### `on(event_type: str = '*')`
 
-OneBot12协议事件监听装饰器
+    OneBot12协议事件监听装饰器
 
 :param event_type: OneBot12事件类型
 :return: 装饰器函数
@@ -239,11 +239,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### `middleware(func: Callable)`
 
-添加OneBot12中间件处理器
+    添加OneBot12中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
@@ -258,11 +258,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### async `async emit(data: Any)`
 
-提交OneBot12协议事件到指定平台
+    提交OneBot12协议事件到指定平台
 
 :param platform: 平台名称
 :param event_type: OneBot12事件类型
@@ -283,11 +283,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### `register(platform: str, adapter_class: Type[BaseAdapter])`
 
-注册新的适配器类
+    注册新的适配器类
 
 :param platform: 平台名称
 :param adapter_class: 适配器类
@@ -302,11 +302,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### async `async startup(platforms: List[str] = None)`
 
-启动指定的适配器
+    启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
@@ -322,21 +322,21 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### async `async _run_adapter(adapter: BaseAdapter, platform: str)`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 运行适配器实例
 
 :param adapter: 适配器实例
 :param platform: 平台名称
 
----
-
+    ---
+    
 ##### async `async shutdown()`
 
-关闭所有适配器
+    关闭所有适配器
 
 <details class='example'><summary>示例</summary>
 
@@ -345,11 +345,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### `get(platform: str)`
 
-获取指定平台的适配器实例
+    获取指定平台的适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例或None
@@ -361,11 +361,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### `__getattr__(platform: str)`
 
-通过属性访问获取适配器实例
+    通过属性访问获取适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例
@@ -379,11 +379,11 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
+    ---
+    
 ##### `platforms()`
 
-获取所有已注册的平台列表
+    获取所有已注册的平台列表
 
 :return: 平台名称列表
     
@@ -394,6 +394,6 @@ OneBot12协议事件监听装饰器
 ```
 </details>
 
----
-
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+    ---
+    
+<sub>文档最后更新于 2025-08-18 22:00:40</sub>

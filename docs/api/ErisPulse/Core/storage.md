@@ -1,6 +1,6 @@
 # `ErisPulse.Core.storage` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-18 22:00:40</sup>
 
 ---
 
@@ -22,7 +22,7 @@ ErisPulse 存储管理模块
 
 ### `class StorageManager`
 
-存储管理器
+    存储管理器
 
 单例模式实现，提供键值存储的增删改查、事务和快照管理
 
@@ -30,19 +30,19 @@ ErisPulse 存储管理模块
 2. 使用transaction上下文管理事务
 3. 使用snapshot/restore管理数据快照</p></div>
 
-
+    
 #### 方法列表
 
 ##### `_init_db()`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 初始化数据库
 
----
-
+    ---
+    
 ##### `get(key: str, default: Any = None)`
 
-获取存储项的值
+    获取存储项的值
 
 :param key: 存储项键名
 :param default: 默认值(当键不存在时返回)
@@ -56,11 +56,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `get_all_keys()`
 
-获取所有存储项的键名
+    获取所有存储项的键名
 
 :return: 键名列表
 
@@ -72,11 +72,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `set(key: str, value: Any)`
 
-设置存储项的值
+    设置存储项的值
 
 :param key: 存储项键名
 :param value: 存储项的值
@@ -90,11 +90,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `set_multi(items: Dict[str, Any])`
 
-批量设置多个存储项
+    批量设置多个存储项
 
 :param items: 键值对字典
 :return: 操作是否成功
@@ -110,29 +110,29 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `getConfig(key: str, default: Any = None)`
 
-获取模块/适配器配置项（委托给config模块）
+    获取模块/适配器配置项（委托给config模块）
 :param key: 配置项的键(支持点分隔符如"module.sub.key")
 :param default: 默认值
 :return: 配置项的值
 
----
-
+    ---
+    
 ##### `setConfig(key: str, value: Any)`
 
-设置模块/适配器配置（委托给config模块）
+    设置模块/适配器配置（委托给config模块）
 :param key: 配置项键名(支持点分隔符如"module.sub.key")
 :param value: 配置项值
 :return: 操作是否成功
 
----
-
+    ---
+    
 ##### `delete(key: str)`
 
-删除存储项
+    删除存储项
 
 :param key: 存储项键名
 :return: 操作是否成功
@@ -144,11 +144,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `delete_multi(keys: List[str])`
 
-批量删除多个存储项
+    批量删除多个存储项
 
 :param keys: 键名列表
 :return: 操作是否成功
@@ -160,11 +160,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `get_multi(keys: List[str])`
 
-批量获取多个存储项的值
+    批量获取多个存储项的值
 
 :param keys: 键名列表
 :return: 键值对字典
@@ -176,11 +176,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `transaction()`
 
-创建事务上下文
+    创建事务上下文
 
 :return: 事务上下文管理器
 
@@ -193,18 +193,18 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `_check_auto_snapshot()`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 检查并执行自动快照
 
----
-
+    ---
+    
 ##### `set_snapshot_interval(seconds: int)`
 
-设置自动快照间隔
+    设置自动快照间隔
 
 :param seconds: 间隔秒数
 
@@ -216,11 +216,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `clear()`
 
-清空所有存储项
+    清空所有存储项
 
 :return: 操作是否成功
 
@@ -231,11 +231,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `__getattr__(key: str)`
 
-通过属性访问存储项
+    通过属性访问存储项
 
 :param key: 存储项键名
 :return: 存储项的值
@@ -249,11 +249,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `__setattr__(key: str, value: Any)`
 
-通过属性设置存储项
+    通过属性设置存储项
 
 :param key: 存储项键名
 :param value: 存储项的值
@@ -265,11 +265,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `snapshot(name: Optional[str] = None)`
 
-创建数据库快照
+    创建数据库快照
 
 :param name: 快照名称(可选)
 :return: 快照文件路径
@@ -284,11 +284,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `restore(snapshot_name: str)`
 
-从快照恢复数据库
+    从快照恢复数据库
 
 :param snapshot_name: 快照名称或路径
 :return: 恢复是否成功
@@ -300,11 +300,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `list_snapshots()`
 
-列出所有可用的快照
+    列出所有可用的快照
 
 :return: 快照信息列表(名称, 创建时间, 大小)
 
@@ -316,11 +316,11 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
+    ---
+    
 ##### `delete_snapshot(snapshot_name: str)`
 
-删除指定的快照
+    删除指定的快照
 
 :param snapshot_name: 快照名称
 :return: 删除是否成功
@@ -332,6 +332,6 @@ ErisPulse 存储管理模块
 ```
 </details>
 
----
-
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+    ---
+    
+<sub>文档最后更新于 2025-08-18 22:00:40</sub>

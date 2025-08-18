@@ -1,4 +1,3 @@
-# ErisPulse/Core/Event/meta.py
 """
 ErisPulse 元事件处理模块
 
@@ -29,6 +28,15 @@ class MetaHandler:
             return func
         return decorator
     
+    def remove_meta_handler(self, handler: Callable) -> bool:
+        """
+        取消注册通用元事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_connect(self, priority: int = 0):
         """
         连接事件装饰器
@@ -43,6 +51,15 @@ class MetaHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_connect_handler(self, handler: Callable) -> bool:
+        """
+        取消注册连接事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
     
     def on_disconnect(self, priority: int = 0):
         """
@@ -59,6 +76,15 @@ class MetaHandler:
             return func
         return decorator
     
+    def remove_disconnect_handler(self, handler: Callable) -> bool:
+        """
+        取消注册断开连接事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_heartbeat(self, priority: int = 0):
         """
         心跳事件装饰器
@@ -73,5 +99,14 @@ class MetaHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_heartbeat_handler(self, handler: Callable) -> bool:
+        """
+        取消注册心跳事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
 
 meta = MetaHandler()

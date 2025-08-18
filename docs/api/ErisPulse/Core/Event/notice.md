@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.notice` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-18 22:00:40</sup>
 
 ---
 
@@ -16,4 +16,103 @@ ErisPulse 通知处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+## 类列表
+
+### `class NoticeHandler`
+
+    NoticeHandler 类提供相关功能。
+
+    
+#### 方法列表
+
+##### `on_notice(priority: int = 0)`
+
+    通用通知事件装饰器
+
+:param priority: 处理器优先级
+:return: 装饰器函数
+
+    ---
+    
+##### `remove_notice_handler(handler: Callable)`
+
+    取消注册通用通知事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+    ---
+    
+##### `on_friend_add(priority: int = 0)`
+
+    好友添加通知事件装饰器
+
+:param priority: 处理器优先级
+:return: 装饰器函数
+
+    ---
+    
+##### `remove_friend_add_handler(handler: Callable)`
+
+    取消注册好友添加通知事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+    ---
+    
+##### `on_friend_remove(priority: int = 0)`
+
+    好友删除通知事件装饰器
+
+:param priority: 处理器优先级
+:return: 装饰器函数
+
+    ---
+    
+##### `remove_friend_remove_handler(handler: Callable)`
+
+    取消注册好友删除通知事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+    ---
+    
+##### `on_group_increase(priority: int = 0)`
+
+    群成员增加通知事件装饰器
+
+:param priority: 处理器优先级
+:return: 装饰器函数
+
+    ---
+    
+##### `remove_group_increase_handler(handler: Callable)`
+
+    取消注册群成员增加通知事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+    ---
+    
+##### `on_group_decrease(priority: int = 0)`
+
+    群成员减少通知事件装饰器
+
+:param priority: 处理器优先级
+:return: 装饰器函数
+
+    ---
+    
+##### `remove_group_decrease_handler(handler: Callable)`
+
+    取消注册群成员减少通知事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+    ---
+    
+<sub>文档最后更新于 2025-08-18 22:00:40</sub>
