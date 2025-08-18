@@ -1,25 +1,21 @@
+# ErisPulse/Core/Event/meta.py
 """
 ErisPulse 元事件处理模块
 
 提供基于装饰器的元事件处理功能
+
+{!--< tips >!--}
+1. 支持连接、断开连接等生命周期事件
+2. 适用于系统状态监控和初始化操作
+{!--< /tips >!--}
 """
 
 from .base import BaseEventHandler
-from .manager import event_manager
 from typing import Callable, Dict, Any
 
 class MetaHandler:
-    """
-    元事件处理器
-    
-    提供元事件（如连接、断开连接、心跳等）的处理功能
-    """
-    
     def __init__(self):
-        """
-        初始化元事件处理器
-        """
-        self.handler = event_manager.create_event_handler("meta", "meta")
+        self.handler = BaseEventHandler("meta", "meta")
     
     def on_meta(self, priority: int = 0):
         """
