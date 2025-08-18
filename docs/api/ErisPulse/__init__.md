@@ -1,6 +1,6 @@
 # `ErisPulse.__init__` 模块
 
-<sup>更新时间: 2025-08-18 15:39:00</sup>
+<sup>更新时间: 2025-08-19 05:32:03</sup>
 
 ---
 
@@ -76,90 +76,90 @@ SDK初始化入口，返回Task对象
 
 ### `class LazyModule`
 
-懒加载模块包装器
+    懒加载模块包装器
 
 当模块第一次被访问时才进行实例化
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块的实际实例化会在第一次属性访问时进行
 2. 依赖模块会在被使用时自动初始化</p></div>
 
-
+    
 #### 方法列表
 
 ##### `__init__(module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any])`
 
-初始化懒加载包装器
+    初始化懒加载包装器
 
 :param module_name: str 模块名称
 :param module_class: Type 模块类
 :param sdk_ref: Any SDK引用
 :param module_info: Dict[str, Any] 模块信息字典
 
----
-
+    ---
+    
 ##### `_initialize()`
 
-实际初始化模块
+    实际初始化模块
 
 <dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
 
----
-
+    ---
+    
 ##### `__getattr__(name: str)`
 
-属性访问时触发初始化
+    属性访问时触发初始化
 
 :param name: str 要访问的属性名
 :return: Any 模块属性值
 
----
-
+    ---
+    
 ##### `__call__()`
 
-调用时触发初始化
+    调用时触发初始化
 
 :param args: 位置参数
 :param kwargs: 关键字参数
 :return: Any 模块调用结果
 
----
-
+    ---
+    
 ##### `__bool__()`
 
-判断模块布尔值时触发初始化
+    判断模块布尔值时触发初始化
 
 :return: bool 模块布尔值
 
----
-
+    ---
+    
 ##### `__str__()`
 
-转换为字符串时触发初始化
+    转换为字符串时触发初始化
 
 :return: str 模块字符串表示
 
----
-
+    ---
+    
 ##### `__copy__()`
 
-浅拷贝时返回自身，保持懒加载特性
+    浅拷贝时返回自身，保持懒加载特性
 
 :return: self
 
----
-
+    ---
+    
 ##### `__deepcopy__(memo)`
 
-深拷贝时返回自身，保持懒加载特性
+    深拷贝时返回自身，保持懒加载特性
 
 :param memo: memo
 :return: self
 
----
-
+    ---
+    
 ### `class AdapterLoader`
 
-适配器加载器
+    适配器加载器
 
 专门用于从PyPI包加载和初始化适配器
 
@@ -167,12 +167,12 @@ SDK初始化入口，返回Task对象
 2. 适配器类必须继承BaseAdapter
 3. 适配器不适用懒加载</p></div>
 
-
+    
 #### 方法列表
 
 ##### `load()`
 
-从PyPI包entry-points加载适配器
+    从PyPI包entry-points加载适配器
 
 :return: 
     Dict[str, object]: 适配器对象字典 {适配器名: 模块对象}
@@ -181,11 +181,11 @@ SDK初始化入口，返回Task对象
     
 <dt>异常</dt><dd><code>ImportError</code> 当无法加载适配器时抛出</dd>
 
----
-
+    ---
+    
 ##### `_process_adapter(entry_point: Any, adapter_objs: Dict[str, object], enabled_adapters: List[str], disabled_adapters: List[str])`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 处理单个适配器entry-point
 
 :param entry_point: entry-point对象
@@ -200,23 +200,23 @@ SDK初始化入口，返回Task对象
     
 <dt>异常</dt><dd><code>ImportError</code> 当适配器加载失败时抛出</dd>
 
----
-
+    ---
+    
 ### `class ModuleLoader`
 
-模块加载器
+    模块加载器
 
 专门用于从PyPI包加载和初始化普通模块
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块必须通过entry-points机制注册到erispulse.module组
 2. 模块类名应与entry-point名称一致</p></div>
 
-
+    
 #### 方法列表
 
 ##### `load()`
 
-从PyPI包entry-points加载模块
+    从PyPI包entry-points加载模块
 
 :return: 
     Dict[str, object]: 模块对象字典 {模块名: 模块对象}
@@ -225,11 +225,11 @@ SDK初始化入口，返回Task对象
     
 <dt>异常</dt><dd><code>ImportError</code> 当无法加载模块时抛出</dd>
 
----
-
+    ---
+    
 ##### `_process_module(entry_point: Any, module_objs: Dict[str, object], enabled_modules: List[str], disabled_modules: List[str])`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 处理单个模块entry-point
 
 :param entry_point: entry-point对象
@@ -244,32 +244,32 @@ SDK初始化入口，返回Task对象
     
 <dt>异常</dt><dd><code>ImportError</code> 当模块加载失败时抛出</dd>
 
----
-
+    ---
+    
 ##### `_should_lazy_load(module_class: Type)`
 
-检查模块是否应该懒加载
+    检查模块是否应该懒加载
 
 :param module_class: Type 模块类
 :return: bool 如果返回 False，则立即加载；否则懒加载
 
----
-
+    ---
+    
 ### `class ModuleInitializer`
 
-模块初始化器
+    模块初始化器
 
 负责协调适配器和模块的初始化流程
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 初始化顺序：适配器 → 模块
 2. 模块初始化采用懒加载机制</p></div>
 
-
+    
 #### 方法列表
 
 ##### `init()`
 
-初始化所有模块和适配器
+    初始化所有模块和适配器
 
 执行步骤:
 1. 从PyPI包加载适配器
@@ -281,11 +281,11 @@ SDK初始化入口，返回Task对象
 :return: bool 初始化是否成功
 <dt>异常</dt><dd><code>InitError</code> 当初始化失败时抛出</dd>
 
----
-
+    ---
+    
 ##### `_initialize_modules(modules: List[str], module_objs: Dict[str, Any])`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 初始化模块
 
 :param modules: List[str] 模块名称列表
@@ -293,11 +293,11 @@ SDK初始化入口，返回Task对象
 
 :return: bool 模块初始化是否成功
 
----
-
+    ---
+    
 ##### `_register_adapters(adapters: List[str], adapter_objs: Dict[str, Any])`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 注册适配器
 
 :param adapters: List[str] 适配器名称列表
@@ -305,6 +305,6 @@ SDK初始化入口，返回Task对象
 
 :return: bool 适配器注册是否成功
 
----
-
-<sub>文档最后更新于 2025-08-18 15:39:00</sub>
+    ---
+    
+<sub>文档最后更新于 2025-08-19 05:32:03</sub>
