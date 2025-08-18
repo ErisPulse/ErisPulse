@@ -28,6 +28,15 @@ class RequestHandler:
             return func
         return decorator
     
+    def remove_request_handler(self, handler: Callable) -> bool:
+        """
+        取消注册通用请求事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_friend_request(self, priority: int = 0):
         """
         好友请求事件装饰器
@@ -43,6 +52,15 @@ class RequestHandler:
             return func
         return decorator
     
+    def remove_friend_request_handler(self, handler: Callable) -> bool:
+        """
+        取消注册好友请求事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+    
     def on_group_request(self, priority: int = 0):
         """
         群邀请请求事件装饰器
@@ -57,5 +75,14 @@ class RequestHandler:
             self.handler.register(func, priority, condition)
             return func
         return decorator
+    
+    def remove_group_request_handler(self, handler: Callable) -> bool:
+        """
+        取消注册群邀请请求事件处理器
+        
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
 
 request = RequestHandler()
