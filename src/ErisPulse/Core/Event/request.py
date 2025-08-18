@@ -2,24 +2,19 @@
 ErisPulse 请求处理模块
 
 提供基于装饰器的请求事件处理功能
+
+{!--< tips >!--}
+1. 支持好友请求、群邀请等不同类型请求
+2. 可以通过返回特定值来同意或拒绝请求
+{!--< /tips >!--}
 """
 
 from .base import BaseEventHandler
-from .manager import event_manager
 from typing import Callable, Dict, Any
 
 class RequestHandler:
-    """
-    请求处理器
-    
-    提供不同类型请求事件的处理功能（如好友申请、群邀请等）
-    """
-    
     def __init__(self):
-        """
-        初始化请求处理器
-        """
-        self.handler = event_manager.create_event_handler("request", "request")
+        self.handler = BaseEventHandler("request", "request")
     
     def on_request(self, priority: int = 0):
         """
