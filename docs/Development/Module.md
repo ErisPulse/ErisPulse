@@ -57,6 +57,7 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Event import command
 
 class Main:
     def __init__(self):
@@ -66,13 +67,14 @@ class Main:
 
         self.logger.info("模块已加载")
         self.config = self._get_config()
+        self._register_commands()
 
     @staticmethod
     def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
 
-    # 从环境变量中获取配置, 如果不存在则使用默认值
+    # 从 config.toml 中获取配置, 如果不存在则使用默认值
     def _get_config(self):
         config = self.sdk.config.getConfig("MyModule")
         if not config:
@@ -83,6 +85,13 @@ class Main:
             self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
+
+    # 注册命令
+    async def _register_commands(self):
+        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
+
+    async def ACommand(self):
+        self.logger.info("命令已执行")
 
     def print_hello(self):
         self.logger.info("Hello World!")
@@ -313,7 +322,7 @@ class Main:
 - **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
 
 ### 5. 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
+- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
 ---
