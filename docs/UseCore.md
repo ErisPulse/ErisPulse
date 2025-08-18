@@ -277,7 +277,7 @@ async def hello_command(event):
     await adapter_instance.Send.To("user", user_id).Text("Hello World!")
 
 # 带参数的命令
-@command("echo", help="回显消息", usage="/echo <内容>")
+@command("echo", help="回显消息", usage="echo <内容>")
 async def echo_command(event):
     platform = event["platform"]
     user_id = event["user_id"]
