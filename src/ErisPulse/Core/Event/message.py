@@ -2,25 +2,20 @@
 ErisPulse 消息处理模块
 
 提供基于装饰器的消息事件处理功能
+
+{!--< tips >!--}
+1. 支持私聊、群聊消息分类处理
+2. 支持@消息特殊处理
+3. 支持自定义条件过滤
+{!--< /tips >!--}
 """
 
 from .base import BaseEventHandler
-from .manager import event_manager
 from typing import Callable, Dict, Any
-import asyncio
 
 class MessageHandler:
-    """
-    消息处理器
-    
-    提供不同类型消息事件的处理功能
-    """
-    
     def __init__(self):
-        """
-        初始化消息处理器
-        """
-        self.handler = event_manager.create_event_handler("message", "message")
+        self.handler = BaseEventHandler("message", "message")
     
     def on_message(self, priority: int = 0):
         """
