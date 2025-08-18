@@ -27,20 +27,6 @@ async def test_command(event):
     await adapter.Send.To(target_type, target_id).Text("收到测试命令")
     sdk.logger.info(f"处理测试命令: {event}")
 
-@command("help", help="显示帮助信息", usage="help")
-async def help_command(event):
-    platform = event["platform"]
-    
-    if event.get("detail_type") == "group":
-        target_type = "group"
-        target_id = event["group_id"]
-    else:
-        target_type = "user"
-        target_id = event["user_id"]
-
-    adapter = getattr(sdk.adapter, platform)
-    await adapter.Send.To(target_type, target_id).Text(command.help())
-
 @command(["alias", "别名"], aliases=["a"], help="别名命令测试", usage="alias 或 a")
 async def alias_command(event):
     platform = event["platform"]
