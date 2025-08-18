@@ -3,6 +3,7 @@ import json
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command, message, notice, request, meta
 
+echo_handlers = {}
 # 管理员用户ID列表
 admin_users = ["5197892", "admin2"]
 
@@ -85,8 +86,6 @@ async def hidden_command(event):
 
 @command("echo", help="开关回显命令", usage="echo <on|off>")
 async def echo_command(event):
-    _message_handler = None
-
     platform = event["platform"]
     
     if event.get("detail_type") == "group":
@@ -104,17 +103,42 @@ async def echo_command(event):
         return
     
     action = args[0].lower()
+    handler_key = f"{target_type}_{target_id}_{platform}"
     
     if action == "on":
-        _message_handler = message.on_message()(echo_message_handler)
+        # 如果已经存在echo处理器，先注销它
+        if handler_key in echo_handlers:
+            try:
+                message.remove_message_handler(echo_handlers[handler_key])
+            except Exception as e:
+                sdk.logger.warning(f"注销旧的echo处理器时出错: {e}")
+        
+        # 注册新的echo消息处理器
+        echo_handler = message.on_message()(echo_message_handler)
+        echo_handlers[handler_key] = echo_handler
+        
         await adapter.Send.To(target_type, target_id).Text("Echo功能已开启")
     elif action == "off":
-        _message_handler = None
-        await adapter.Send.To(target_type, target_id).Text("Echo功能已关闭")
+        # 注销echo消息处理器
+        if handler_key in echo_handlers:
+            try:
+                message.remove_message_handler(echo_handlers[handler_key])
+                del echo_handlers[handler_key]
+                await adapter.Send.To(target_type, target_id).Text("Echo功能已关闭")
+            except Exception as e:
+                sdk.logger.error(f"注销echo处理器时出错: {e}")
+                await adapter.Send.To(target_type, target_id).Text("关闭Echo功能时发生错误")
+        else:
+            await adapter.Send.To(target_type, target_id).Text("Echo功能未开启")
     else:
         await adapter.Send.To(target_type, target_id).Text("无效参数，请使用 'on' 或 'off'")
 
 async def echo_message_handler(event):
+    sdk.logger.info(f"处理Echo命令: {event}")
+    # 避免echo处理器处理命令消息，防止无限循环
+    if event.get("command"):
+        return
+    
     platform = event["platform"]
 
     event_copy = event.copy()
