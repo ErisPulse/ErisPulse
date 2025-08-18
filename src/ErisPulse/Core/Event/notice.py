@@ -2,24 +2,19 @@
 ErisPulse 通知处理模块
 
 提供基于装饰器的通知事件处理功能
+
+{!--< tips >!--}
+1. 支持好友、群组等不同类型通知
+2. 支持成员变动等细粒度事件
+{!--< /tips >!--}
 """
 
 from .base import BaseEventHandler
-from .manager import event_manager
 from typing import Callable, Dict, Any
 
 class NoticeHandler:
-    """
-    通知处理器
-    
-    提供不同类型通知事件的处理功能
-    """
-    
     def __init__(self):
-        """
-        初始化通知处理器
-        """
-        self.handler = event_manager.create_event_handler("notice", "notice")
+        self.handler = BaseEventHandler("notice", "notice")
     
     def on_notice(self, priority: int = 0):
         """
