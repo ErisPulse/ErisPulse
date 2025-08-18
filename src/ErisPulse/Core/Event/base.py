@@ -17,7 +17,7 @@ class BaseEventHandler:
     """
     基础事件处理器
     
-    提供事件处理的基本功能，包括处理器注册等
+    提供事件处理的基本功能，包括处理器注册和注销
     """
     
     def __init__(self, event_type: str, module_name: str = None):
@@ -30,6 +30,7 @@ class BaseEventHandler:
         self.event_type = event_type
         self.module_name = module_name
         self.handlers: List[Dict] = []
+        self._handler_map = {}  # 用于快速查找处理器
     
     def register(self, handler: Callable, priority: int = 0, condition: Callable = None):
         """
@@ -46,12 +47,27 @@ class BaseEventHandler:
             "module": self.module_name
         }
         self.handlers.append(handler_info)
+        self._handler_map[id(handler)] = handler_info
         # 按优先级排序
         self.handlers.sort(key=lambda x: x["priority"])
         
         # 注册到适配器
         if self.event_type:
             adapter.on(self.event_type)(self._process_event)
+    
+    def unregister(self, handler: Callable) -> bool:
+        """
+        注销事件处理器
+        
+        :param handler: 要注销的事件处理器
+        :return: 是否成功注销
+        """
+        handler_id = id(handler)
+        if handler_id in self._handler_map:
+            self.handlers = [h for h in self.handlers if h["func"] != handler]
+            del self._handler_map[handler_id]
+            return True
+        return False
     
     def __call__(self, priority: int = 0, condition: Callable = None):
         """
@@ -90,11 +106,4 @@ class BaseEventHandler:
                     handler(event)
             except Exception as e:
                 logger.error(f"事件处理器执行错误: {e}")
-    
-    def unregister(self, handler: Callable):
-        """
-        注销事件处理器
-        
-        :param handler: 要注销的事件处理器
-        """
-        self.handlers = [h for h in self.handlers if h["func"] != handler]
+                
