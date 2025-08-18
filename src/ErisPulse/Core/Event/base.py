@@ -30,7 +30,8 @@ class BaseEventHandler:
         self.event_type = event_type
         self.module_name = module_name
         self.handlers: List[Dict] = []
-        self._handler_map = {}  # 用于快速查找处理器
+        self._handler_map = {}                      # 用于快速查找处理器
+        self._adapter_handler_registered = False    # 是否已注册到适配器
     
     def register(self, handler: Callable, priority: int = 0, condition: Callable = None):
         """
@@ -52,8 +53,9 @@ class BaseEventHandler:
         self.handlers.sort(key=lambda x: x["priority"])
         
         # 注册到适配器
-        if self.event_type:
+        if self.event_type and not self._adapter_handler_registered:
             adapter.on(self.event_type)(self._process_event)
+            self._adapter_handler_registered = True
     
     def unregister(self, handler: Callable) -> bool:
         """
@@ -106,4 +108,3 @@ class BaseEventHandler:
                     handler(event)
             except Exception as e:
                 logger.error(f"事件处理器执行错误: {e}")
-                
