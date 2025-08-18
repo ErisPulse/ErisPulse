@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/2.1.15?artifact_id=tar-gz)](https://socket.dev/pypi/package/ErisPulse/overview/2.1.15/tar-gz)
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
 ## 文档资源
 
@@ -114,3 +114,4 @@ uv run devs/test.py
 ---
 
 [![](https://starchart.cc/ErisPulse/ErisPulse.svg?variant=adaptive)](https://starchart.cc/ErisPulse/ErisPulse)
+
