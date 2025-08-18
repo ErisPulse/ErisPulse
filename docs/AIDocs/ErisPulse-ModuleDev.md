@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2025-08-18 12:43:23
+**生成时间**: 2025-08-18 15:39:06
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -645,7 +645,7 @@ results = await asyncio.gather(*tasks)
 > **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
 
 ### 事件监听
-有两种事件监听方式：
+有三种事件监听方式：
 
 1. 平台原生事件监听：
    ```python
@@ -665,6 +665,67 @@ results = await asyncio.gather(*tasks)
        if data["platform"] == "yunhu":
            logger.info(f"收到云湖标准事件: {data}")
    ```
+
+3. 使用 `ErisPulse` 内置的 `Event` 模块进行事件监听（OneBot12标准事件）
+    ```python
+    from ErisPulse.Core.Event import message, command, notice, request
+
+    @message.on_message()
+    async def message_handler(event):
+      logger.info(f"收到消息事件: {event}")
+
+    @command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
+    async def help_handler(event):
+      logger.info(f"收到命令事件: {event}")
+
+    @notice.on_group_increase()
+    async def notice_handler(event):
+      logger.info(f"收到群成员增加事件: {event}")
+    
+    @request.on_friend_request()
+    async def request_handler(event):
+      logger.info(f"收到好友请求事件: {event}")
+
+    # 注意：这里仅是简单的示例，完整的内容请参考Event部分的api文档。或者查看UseCore文档查看一些更全的示例。
+    ```
+
+#### 事件监听的误区
+
+在开发模块时，经常会将事件处理函数定义为类的方法。如果直接在类方法上使用装饰器，可能会导致 `self` 参数无法正确传递，从而造成事件监听器注册失败。
+
+##### 常见错误示例：
+
+  ```python
+  from ErisPulse.Core.Event import message, command
+
+  class TestModule:
+      def __init__(self, sdk):
+          self.sdk = sdk
+          self.logger = sdk.logger.get_child(__name__)
+
+      @message.on_message()  # 错误：直接装饰实例方法
+      def on_message(self, event):
+          pass
+  ```
+
+##### 推荐做法：
+
+  ```python
+  from ErisPulse.Core.Event import message, command
+
+  class TestModule:
+      def __init__(self, sdk):
+          self.sdk = sdk
+          self.logger = sdk.logger.get_child(__name__)
+          self._register_events()  # 在初始化时注册事件监听器
+
+      def _register_events(self):
+          @message.on_message()
+          async def on_message(event):  # 注意：这里不使用 self 参数
+              # 如果需要访问实例属性，可以通过闭包访问 self
+              self.logger.info("收到消息")
+              pass
+  ```
 
 ---
 
@@ -1240,6 +1301,7 @@ from .Core import Main
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Event import command
 
 class Main:
     def __init__(self):
@@ -1249,13 +1311,14 @@ class Main:
 
         self.logger.info("模块已加载")
         self.config = self._get_config()
+        self._register_commands()
 
     @staticmethod
     def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
 
-    # 从环境变量中获取配置, 如果不存在则使用默认值
+    # 从 config.toml 中获取配置, 如果不存在则使用默认值
     def _get_config(self):
         config = self.sdk.config.getConfig("MyModule")
         if not config:
@@ -1266,6 +1329,13 @@ class Main:
             self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
+
+    # 注册命令
+    async def _register_commands(self):
+        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
+
+    async def ACommand(self):
+        self.logger.info("命令已执行")
 
     def print_hello(self):
         self.logger.info("Hello World!")
@@ -1496,7 +1566,7 @@ class Main:
 - **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
 
 ### 5. 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用环境变量或配置中心。
+- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
 
 ---
@@ -1536,7 +1606,7 @@ class Main:
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1562,13 +1632,13 @@ ErisPulse 事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1643,13 +1713,13 @@ ErisPulse 事件处理基础模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_command"></a>
 ## ErisPulse\Core\Event\command.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1666,13 +1736,13 @@ ErisPulse 命令处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1715,13 +1785,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1738,13 +1808,13 @@ ErisPulse 消息处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1760,13 +1830,13 @@ ErisPulse 元事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1782,13 +1852,13 @@ ErisPulse 通知处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -1804,13 +1874,13 @@ ErisPulse 请求处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2206,13 +2276,13 @@ OneBot12协议事件监听装饰器
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2226,13 +2296,13 @@ ErisPulse 配置中心
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_env"></a>
 ## ErisPulse\Core\env.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2248,13 +2318,13 @@ ErisPulse 环境模块 (已弃用)
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_erispulse_config"></a>
 ## ErisPulse\Core\erispulse_config.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2311,13 +2381,13 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2359,13 +2429,13 @@ ErisPulse 全局异常处理系统
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2488,13 +2558,13 @@ ErisPulse 日志系统
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_module"></a>
 ## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2599,13 +2669,13 @@ ErisPulse 模块管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_module_registry"></a>
 ## ErisPulse\Core\module_registry.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2819,13 +2889,13 @@ ErisPulse 模块注册表
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -2933,13 +3003,13 @@ ErisPulse 路由系统
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -3273,13 +3343,13 @@ ErisPulse 存储管理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -3586,13 +3656,13 @@ SDK初始化入口，返回Task对象
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-08-18 12:43:21</sup>
+<sup>更新时间: 2025-08-18 15:39:00</sup>
 
 ---
 
@@ -4034,6 +4104,6 @@ ErisPulse命令行接口
 
 ---
 
-<sub>文档最后更新于 2025-08-18 12:43:21</sub>
+<sub>文档最后更新于 2025-08-18 15:39:00</sub>
 
 ---
