@@ -1,9 +1,9 @@
 {
-    "last_updated": "2025-08-16T03:10:19Z",
+    "last_updated": "2025-08-19T03:06:01Z",
     "modules": {
         "ErisPulse": {
             "package": "ErisPulse",
-            "version": "2.1.14",
+            "version": "2.2.1",
             "author": "ErisPulse Team",
             "description": "更新ErisPulse",
             "min_sdk_version": "2.0.0",
