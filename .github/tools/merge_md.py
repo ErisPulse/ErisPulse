@@ -143,6 +143,7 @@ def generate_dev_documents():
         {"path": "docs/core/concepts.md", "description": "基础架构和设计理念"},
         {"path": "docs/core/modules.md", "description": "核心模块"},
         {"path": "docs/core/adapters.md", "description": "适配器"},
+        {"path": "docs/development/module.md", "description": "模块开发指南"},
         {"path": "docs/core/event-system.md", "description": "事件系统"},
         {"path": "docs/platform-features.md", "description": "平台功能说明"},
         {"path": "docs/standards/event-conversion.md", "description": "标准事件的定义"},
