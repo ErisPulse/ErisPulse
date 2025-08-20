@@ -145,7 +145,7 @@ class StorageManager:
             
             self._check_auto_snapshot()
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def set_multi(self, items: Dict[str, Any]) -> bool:
@@ -175,7 +175,7 @@ class StorageManager:
             
             self._check_auto_snapshot()
             return True
-        except Exception as e:
+        except Exception:
             return False
             
     def getConfig(self, key: str, default: Any = None) -> Any:
@@ -188,7 +188,7 @@ class StorageManager:
         try:
             from .config import config
             return config.getConfig(key, default)
-        except Exception as e:
+        except Exception:
             return default
     
     def setConfig(self, key: str, value: Any) -> bool:
@@ -201,7 +201,7 @@ class StorageManager:
         try:
             from .config import config
             return config.setConfig(key, value)
-        except Exception as e:
+        except Exception:
             return False
 
     def delete(self, key: str) -> bool:
@@ -224,7 +224,7 @@ class StorageManager:
             
             self._check_auto_snapshot()
             return True
-        except Exception as e:
+        except Exception:
             return False
             
     def delete_multi(self, keys: List[str]) -> bool:
@@ -247,7 +247,7 @@ class StorageManager:
             
             self._check_auto_snapshot()
             return True
-        except Exception as e:
+        except Exception:
             return False
             
     def get_multi(self, keys: List[str]) -> Dict[str, Any]:
@@ -376,7 +376,7 @@ class StorageManager:
             conn.commit()
             conn.close()
             return True
-        except Exception as e:
+        except Exception:
             return False
         
     def __getattr__(self, key: str) -> Any:

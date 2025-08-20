@@ -10,7 +10,7 @@ ErisPulse 事件处理基础模块
 """
 
 from .. import adapter, logger
-from typing import Callable, Any, Dict, List, Optional
+from typing import Callable, Any, Dict, List
 import asyncio
 
 class BaseEventHandler:
