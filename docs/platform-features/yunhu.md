@@ -6,9 +6,8 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 3.1.2
+- 对应模块版本: 3.2.0
 - 维护者: ErisPulse
-
 
 ## 支持的消息发送类型
 
@@ -21,17 +20,18 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支持的发送类型包括：
-- `.Text(text: str, buttons: List = None)`：发送纯文本消息，可选添加按钮。
-- `.Html(html: str, buttons: List = None)`：发送HTML格式消息。
-- `.Markdown(markdown: str, buttons: List = None)`：发送Markdown格式消息。
-- `.Image(file: bytes, buttons: List = None)`：发送图片消息。
-- `.Video(file: bytes, buttons: List = None)`：发送视频消息。
-- `.File(file: bytes, buttons: List = None)`：发送文件消息。
-- `.Batch(target_ids: List[str], message: str)`：批量发送消息。
-- `.Edit(msg_id: str, text: str, buttons: List = None)`：编辑已有消息。
+- `.Text(text: str, buttons: List = None, parent_id: str = "")`：发送纯文本消息，可选添加按钮和父消息ID。
+- `.Html(html: str, buttons: List = None, parent_id: str = "")`：发送HTML格式消息。
+- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：发送Markdown格式消息。
+- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
+- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
+- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送文件消息，支持流式上传和自定义文件名。
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量发送消息。
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：编辑已有消息。
 - `.Recall(msg_id: str)`：撤回消息。
-- `.Board(board_type: str, content: str, **kwargs)`：发布公告看板。
-- `.Stream(content_type: str, generator: AsyncGenerator)`：发送流式消息。
+- `.Board(scope: str, content: str, **kwargs)`：发布公告看板，scope支持`local`和`global`。
+- `.DismissBoard(scope: str, **kwargs)`：撤销公告看板。
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：发送流式消息。
 
 Board board_type 支持以下类型：
 - `local`：指定用户看板
@@ -83,36 +83,17 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 ```python
 # 表单命令
 {
-  "type": "yunhu_form",
-  "data": {
-    "id": "1766",
-    "name": "123123",
-    "fields": [
-      {
-        "id": "abgapt",
-        "type": "textarea",
-        "value": ""
-      },
-      {
-        "id": "mnabyo", 
-        "type": "select",
-        "value": ""
-      }
-    ]
-  },
+  "type": "message",
+  "detail_type": "private",
   "yunhu_command": {
-    "name": "123123",
-    "id": "1766",
+    "name": "表单指令名",
+    "id": "指令ID",
     "form": {
-      "abgapt": {
-        "id": "abgapt",
-        "type": "textarea",
-        "value": ""
-      },
-      "mnabyo": {
-        "id": "mnabyo",
-        "type": "select",
-        "value": ""
+      "字段ID1": {
+        "id": "字段ID1",
+        "type": "input/textarea/select/radio/checkbox/switch",
+        "label": "字段标签",
+        "value": "字段值"
       }
     }
   }
@@ -120,43 +101,53 @@ await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
 
 # 按钮事件
 {
+  "type": "notice",
   "detail_type": "yunhu_button_click",
+  "user_id": "点击按钮的用户ID",
+  "user_nickname": "用户昵称",
+  "message_id": "消息ID",
   "yunhu_button": {
-    "id": "",
-    "value": "test_button_value"
+    "id": "按钮ID（可能为空）",
+    "value": "按钮值"
   }
 }
 
 # 机器人设置
 {
+  "type": "notice",
   "detail_type": "yunhu_bot_setting",
+  "group_id": "群组ID（可能为空）",
+  "user_nickname": "用户昵称",
   "yunhu_setting": {
-    "lokola": {
-      "id": "lokola",
-      "type": "radio",
-      "value": ""
-    },
-    "ngcezg": {
-      "id": "ngcezg",
-      "type": "input",
-      "value": null
+    "设置项ID": {
+      "id": "设置项ID",
+      "type": "input/radio/checkbox/select/switch",
+      "value": "设置值"
     }
   }
 }
 
 # 快捷菜单
 {
-  "detail_type": "yunhu_shortcut_menu", 
+  "type": "notice",
+  "detail_type": "yunhu_shortcut_menu",
+  "user_id": "触发菜单的用户ID",
+  "user_nickname": "用户昵称",
+  "group_id": "群组ID（如果是群聊）",
   "yunhu_menu": {
-    "id": "B4X00M5B",
-    "type": 1,
-    "action": 1
+    "id": "菜单ID",
+    "type": "菜单类型(整数)",
+    "action": "菜单动作(整数)"
   }
 }
 ```
 
 ## 扩展字段说明
 
-- 所有特有字段均以 `yunhu_` 前缀标识
-- 保留原始数据在 `yunhu_raw` 字段
-- 私聊中 `self.user_id` 表示机器人ID
+- 所有特有字段均以 `yunhu_` 前缀标识，避免与标准字段冲突
+- 保留原始数据在 `yunhu_raw` 字段，便于访问云湖平台的完整原始数据
+- 私聊中 `self.user_id` 表示机器人ID，群聊中表示群ID
+- 表单指令通过 `yunhu_command` 字段提供结构化数据
+- 按钮点击事件通过 `yunhu_button` 字段提供按钮相关信息
+- 机器人设置变更通过 `yunhu_setting` 字段提供设置项数据
+- 快捷菜单操作通过 `yunhu_menu` 字段提供菜单相关信息
