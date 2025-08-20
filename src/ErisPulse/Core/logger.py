@@ -13,7 +13,6 @@ ErisPulse 日志系统
 import logging
 import inspect
 import datetime
-from typing import List, Dict, Any, Optional, Union, Type, Set, Tuple, FrozenSet
 from rich.logging import RichHandler
 from rich.console import Console
 
@@ -78,7 +77,7 @@ class Logger:
                 self._logger.setLevel(getattr(logging, level))
                 return True
             return False
-        except Exception as e:
+        except Exception:
             self._logger.error(f"无效的日志等级: {level}")
             return False
 
@@ -135,7 +134,7 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        if self._logs == None:
+        if self._logs is None:
             self._logger.warning("没有log记录可供保存。")
             return False
         if isinstance(path, str):
