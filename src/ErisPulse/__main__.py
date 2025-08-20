@@ -17,8 +17,7 @@ import os
 import time
 import json
 import asyncio
-from urllib.parse import urlparse
-from typing import List, Dict, Tuple, Optional, Callable, Any
+from typing import List, Dict, Tuple, Optional, Any
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -28,13 +27,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm, Prompt
-from rich.text import Text
-from rich.box import SIMPLE, ROUNDED, DOUBLE
-from rich.style import Style
+from rich.box import SIMPLE
 from rich.theme import Theme
-from rich.layout import Layout
-from rich.live import Live
-from rich.markdown import Markdown
 from rich.highlighter import RegexHighlighter
 
 # 确保在Windows上启用颜色
@@ -149,7 +143,6 @@ class PackageManager:
             if time.time() - self._cache_time[cache_key] < self.CACHE_EXPIRY:
                 return self._cache[cache_key]
         
-        last_error = None
         result = {"modules": {}, "adapters": {}, "cli_extensions": {}}
         
         for url in self.REMOTE_SOURCES:
@@ -348,7 +341,6 @@ class PackageManager:
                 
                 # 使用超时机制避免永久阻塞
                 import threading
-                import queue
                 
                 def read_output(pipe, lines_list):
                     try:
@@ -635,7 +627,7 @@ class PackageManager:
         failed = [pkg for pkg, success in results.items() if not success]
         if failed:
             console.print(Panel(
-                f"以下包升级失败:\n" + "\n".join(f"  - [error]{pkg}[/]" for pkg in failed),
+                "以下包升级失败:\n" + "\n".join(f"  - [error]{pkg}[/]" for pkg in failed),
                 title="警告",
                 style="warning"
             ))
@@ -1005,8 +997,6 @@ class ReloadHandler(FileSystemEventHandler):
                 # 如果在主线程中
                 if threading.current_thread() is threading.main_thread():
                     try:
-                        # 尝试获取当前事件循环
-                        loop = asyncio.get_running_loop()
                         # 在新线程中运行适配器停止
                         stop_thread = threading.Thread(target=lambda: asyncio.run(adapter.shutdown()))
                         stop_thread.start()
