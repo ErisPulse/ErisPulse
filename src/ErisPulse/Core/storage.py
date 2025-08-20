@@ -145,7 +145,9 @@ class StorageManager:
             
             self._check_auto_snapshot()
             return True
-        except Exception:
+        except Exception as e:
+            from . import logger
+            logger.error(f"设置存储项 {key} 失败: {e}")
             return False
 
     def set_multi(self, items: Dict[str, Any]) -> bool:
