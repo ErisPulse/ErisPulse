@@ -406,7 +406,7 @@ class AdapterManager:
         
         logger.info(f"启动适配器 {platforms}")
 
-        from .router import adapter_server
+        from .router import router
         from .erispulse_config import get_server_config
         server_config = get_server_config()
 
@@ -416,7 +416,7 @@ class AdapterManager:
         ssl_key = server_config.get("ssl_keyfile", None)
         
         # 启动服务器
-        await adapter_server.start(
+        await router.start(
             host=host,
             port=port,
             ssl_certfile=ssl_cert,
@@ -493,8 +493,8 @@ class AdapterManager:
         for adapter in self._adapters.values():
             await adapter.shutdown()
         
-        from .router import adapter_server
-        await adapter_server.stop()
+        from .router import router
+        await router.stop()
 
     def get(self, platform: str) -> Optional[BaseAdapter]:
         """
