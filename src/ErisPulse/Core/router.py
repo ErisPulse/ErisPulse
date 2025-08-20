@@ -1,4 +1,3 @@
-# router.py (新文件名)
 """
 ErisPulse 路由系统
 
@@ -7,7 +6,6 @@ ErisPulse 路由系统
 {!--< tips >!--}
 1. 适配器只需注册路由，无需自行管理服务器
 2. WebSocket支持自定义认证逻辑
-3. 兼容FastAPI 0.68+ 版本
 {!--< /tips >!--}
 """
 
