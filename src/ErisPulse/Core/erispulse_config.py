@@ -29,12 +29,6 @@ def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str,
     :param config_dict: 当前配置
     :return: 补全后的完整配置
     """
-    merged_config = DEFAULT_ERISPULSE_CONFIG.copy()
-
-    from .logger import logger
-
-    logger.debug("ErisPulse Config: %s", config_dict)
-    logger.debug("ErisPulse Default Config: %s", merged_config)
     
     # 深度合并配置
     for section, default_values in DEFAULT_ERISPULSE_CONFIG.items():
