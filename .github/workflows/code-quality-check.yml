@@ -1,0 +1,39 @@
+name: 🔍 艾莉丝的代码审查魔法 ~
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  code-quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出魔法书
+        uses: actions/checkout@v4
+
+      - name: 准备魔法环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 召唤审查精灵 Ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: 施展代码审查魔法
+        run: |
+          echo "🔍 艾莉丝正在使用 Ruff 审查代码规范..."
+          # 检查代码规范问题
+          ruff check .
+
+      - name: 展示魔法细节
+        if: failure()
+        run: |
+          echo "💢 发现代码规范问题!"
+          echo "请运行 'ruff check .' 本地检查并修复问题"
+          echo "你也可以运行 'ruff --fix .' 自动修复部分问题"
