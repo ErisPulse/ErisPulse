@@ -1,4 +1,3 @@
-from ErisPulse import sdk
 from ErisPulse.Core.Event import command, message, notice
 
 class Main:

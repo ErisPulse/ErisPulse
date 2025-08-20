@@ -57,7 +57,7 @@ def is_version_newer(new_version, old_version):
             return tuple(map(int, (v.split('.'))))
         
         return version_to_tuple(new_version) > version_to_tuple(old_version)
-    except:
+    except Exception:
         # 如果无法解析，保守地认为需要更新
         return new_version != old_version
 

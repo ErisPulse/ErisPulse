@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 from ErisPulse.Core import BaseAdapter
 # 你也可以直接导入对应的模块
 # from ErisPulse import sdk
