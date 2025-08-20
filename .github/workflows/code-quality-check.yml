@@ -59,7 +59,7 @@ jobs:
             });
             
             const botComment = comments.find(comment => 
-              comment.user.login === 'github-actions[bot]' && 
+              comment.user.login === '艾莉丝[bot]' && 
               comment.body.includes('🔍 艾莉丝的代码审查结果')
             );
             
@@ -68,16 +68,10 @@ jobs:
 
             ${process.env.RUFF_OUTPUT}
 
-            💡 修复建议:
-            1. 运行 \`ruff check .\` 查看所有问题
-            2. 运行 \`ruff --fix .\` 自动修复可修复的问题
-            3. 手动修复剩余问题
-
-            需要帮助可以随时召唤艾莉丝哦~
+            魔法完成，请检查并修改代码
             `;
             
             if (botComment) {
-              // 更新现有评论
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -85,7 +79,6 @@ jobs:
                 body: message
               });
             } else {
-              // 创建新评论
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
