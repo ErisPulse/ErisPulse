@@ -212,3 +212,4 @@ pyvenv.cfg
 my_bot
 modules
 config.toml
+devs/test_st.py
