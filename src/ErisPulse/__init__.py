@@ -12,6 +12,7 @@ ErisPulse SDK 主模块
 
 import os
 import sys
+import types
 import importlib
 import asyncio
 import inspect
@@ -20,16 +21,21 @@ from typing import Dict, List, Tuple, Type, Any
 from pathlib import Path
 
 # BaseModules: SDK核心模块
-from .Core import logger
-from .Core import storage
-from .Core import env
-from .Core import module_registry
-from .Core import adapter, AdapterFather, SendDSL
-from .Core import module
-from .Core import router, adapter_server
-from .Core import exceptions
-from .Core import config
+# 事件处理模块
 from .Core import Event
+# 基础设施
+from .Core import logger, exceptions
+# 存储和配置相关
+from .Core import storage, env, config
+# 适配器相关
+from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
+# 模块相关
+from .Core import module, module_registry
+# 路由相关
+from .Core import router, adapter_server
+
+# SDK统一对外接口
+sdk = types.ModuleType('sdk')
 
 try:
     __version__ = importlib.metadata.version('ErisPulse')
@@ -37,31 +43,34 @@ except importlib.metadata.PackageNotFoundError:
     logger.critical("未找到ErisPulse版本信息，请检查是否正确安装ErisPulse")
 __author__  = "ErisPulse"
 
-sdk = sys.modules[__name__]
-
 BaseModules = {
-    "Event": Event,
-    "logger": logger,
-    "config": config,
-    "exceptions": exceptions,
-    "storage": storage,
-    "env": env,
+    "Event"         : Event,
+
+    "logger"        : logger,
+    "exceptions"    : exceptions,
+
+    "storage"       : storage,
+    "env"           : env,
+    "config"        : config,
+    
+    "adapter"       : adapter,
+    "AdapterFather" : AdapterFather,
+    "BaseAdapter"   : BaseAdapter,
+    "SendDSL"       : SendDSL,
+
+    "module"        : module,
     "module_registry": module_registry,
-    "adapter": adapter,
-    "module": module,
+    
     "router": router,
     "adapter_server": adapter_server,
-    "SendDSL": SendDSL,
-    "AdapterFather": AdapterFather,
-    "BaseAdapter": AdapterFather
 }
-
-asyncio_loop = asyncio.get_event_loop()
-
-exceptions.setup_async_loop(asyncio_loop)
 
 for module_name, moduleObj in BaseModules.items():
     setattr(sdk, module_name, moduleObj)
+    
+# 设置默认loop循环捕捉器
+asyncio_loop = asyncio.get_event_loop()
+exceptions.setup_async_loop(asyncio_loop)
 
 class LazyModule:
     """
