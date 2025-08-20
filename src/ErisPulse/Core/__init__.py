@@ -1,30 +1,42 @@
 from .adapter import AdapterFather, SendDSL, adapter
 from .storage import storage
-from .env import env
 from .logger import logger
 from .module_registry import module_registry
 from .module import module
-from .router import router, adapter_server
+from .router import router
 from .config import config
 from . import exceptions
-
 from . import Event
 
-BaseAdapter = AdapterFather
+# 兼容性别名定义
+adapter_server  = router        # 路由管理器别名
+env             = storage       # 存储管理器别名
+BaseAdapter     = AdapterFather # 适配器基类别名
 
 __all__ = [
+    # 事件模块
     'Event',
-    'BaseAdapter',
-    'AdapterFather',
-    'SendDSL',
-    'adapter',
-    'module',
-    'storage',
-    'env',
-    'logger',
-    'module_registry',
-    'exceptions',
-    'router',
-    'adapter_server',
-    'config'
+
+    # 适配器相关
+    'adapter',          # 适配器管理器
+    'AdapterFather',    # 适配器基类
+    'BaseAdapter',      # 适配器基类别名
+    'SendDSL',          # DSL发送接口基类
+
+    # 模块相关
+    'module',           # 模块管理器
+    'module_registry',  # 模块注册管理器
+    
+    # 存储和配置相关
+    'storage',          # 存储管理器
+    'config',           # 配置管理器
+    'env',              # 配置管理器别名
+
+    # 路由相关
+    'router',           # 路由管理器
+    'adapter_server',   # 路由管理器别名
+
+    # 基础设施
+    'logger',           # 日志管理器
+    'exceptions',       # 异常处理模块
 ]

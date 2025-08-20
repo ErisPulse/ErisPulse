@@ -250,13 +250,8 @@ class RouterManager:
                 logger.info("路由服务器已停止")
             self._server_task = None
 
-# 主要实例
 router = RouterManager()
-
-# 兼容性实例
-adapter_server = router
 
 __all__ = [
     "router",
-    "adapter_server"
 ]
