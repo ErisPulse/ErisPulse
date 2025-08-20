@@ -6,7 +6,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 3.2.1
+- 对应模块版本: 3.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -26,14 +26,16 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支持的发送类型包括：
-- `.Text(text: str)`：发送纯文本消息。
-- `.Image(file: bytes, caption: str = "")`：发送图片消息。
-- `.Video(file: bytes, caption: str = "")`：发送视频消息。
-- `.Audio(file: bytes, caption: str = "")`：发送音频消息。
-- `.Document(file: bytes, caption: str = "")`：发送文件消息。
-- `.EditMessageText(message_id: int, text: str)`：编辑已有消息。
-- `.DeleteMessage(message_id: int)`：删除指定消息。
-- `.GetChat()`：获取聊天信息。
+- `.Text(text: str)`：发送纯文本消息，不包含任何格式。
+- `.Markdown(text: str, content_type: str = "MarkdownV2")`：发送Markdown格式消息。
+- `.Html(text: str, content_type: str = "HTML")`：发送HTML格式消息。
+- `.Image(file: bytes, caption: str = "", content_type: str = None)`：发送图片消息，支持说明文字和格式。
+- `.Video(file: bytes, caption: str = "", content_type: str = None)`：发送视频消息，支持说明文字和格式。
+- `.Audio(file: bytes, caption: str = "", content_type: str = None)`：发送音频消息，支持说明文字和格式。
+- `.Document(file: bytes, caption: str = "", content_type: str = None)`：发送文件消息，支持说明文字和格式。
+- `.Edit(message_id: int, text: str, content_type: str = None)`：编辑已有消息。
+- `.Recall(message_id: int)`：删除指定消息。
+- `.CheckExist(message_id: int)`：检查消息是否存在。
 
 ## 特有事件类型
 
@@ -52,6 +54,22 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
    - 保留原始数据在telegram_raw字段
    - 频道消息使用detail_type="channel"
 
+### 事件监听方式
+
+Telegram适配器支持两种方式监听事件：
+
+```python
+# 使用原始事件名
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+
+# 使用映射后的事件名
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+```
+
 ### 特殊字段示例
 
 ```python
@@ -61,7 +79,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
   "user_nickname": "YingXinche",
-  "telegram_callback": {
+  "telegram_callback_data": {
     "id": "cb_123",
     "data": "callback_data",
     "message_id": "msg_456"
@@ -74,7 +92,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
   "user_nickname": "YingXinche",
-  "telegram_inline": {
+  "telegram_inline_query": {
     "id": "iq_789",
     "query": "search_text",
     "offset": "0"
@@ -87,7 +105,7 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
   "detail_type": "channel",
   "message_id": "msg_345",
   "channel_id": "channel_123",
-  "telegram_channel": {
+  "telegram_chat": {
     "title": "News Channel",
     "username": "news_official"
   }
@@ -99,3 +117,23 @@ Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 - 所有特有字段均以 `telegram_` 前缀标识
 - 保留原始数据在 `telegram_raw` 字段
 - 频道消息使用 `detail_type="channel"`
+- 消息内容中的实体（如粗体、链接等）会转换为相应的消息段
+- 回复消息会添加 `telegram_reply` 类型的消息段
+
+## 配置选项
+
+Telegram 适配器支持以下配置选项：
+
+### 基本配置
+- `token`: Telegram Bot Token
+- `mode`: 运行模式 ("webhook" 或 "polling")
+- `proxy_enabled`: 是否启用代理
+
+### Webhook 配置
+- `webhook.path`: Webhook 路径
+- `webhook.domain`: 外部可访问域名
+
+### 代理配置
+- `proxy.host`: 代理服务器地址
+- `proxy.port`: 代理端口
+- `proxy.type`: 代理类型 ("socks4" 或 "socks5")
