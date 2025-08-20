@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-import glob
 
 def merge_md_files(output_file, files_to_merge, title="文档合集"):
     """
@@ -46,7 +45,7 @@ def merge_md_files(output_file, files_to_merge, title="文档合集"):
                 with open(file_path, 'r', encoding='utf-8') as infile:
                     content = infile.read()
                     outfile.write(content)
-                    outfile.write(f"\n\n---\n\n")
+                    outfile.write("\n\n---\n\n")
             else:
                 print(f"文件不存在，跳过: {file_path}")
 
