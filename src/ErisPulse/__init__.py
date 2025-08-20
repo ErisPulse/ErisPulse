@@ -31,6 +31,12 @@ from .Core import exceptions
 from .Core import config
 from .Core import Event
 
+# 测试action
+try:
+    import importlib.metadata
+except:
+    import importlib_metadata as importlib
+
 try:
     __version__ = importlib.metadata.version('ErisPulse')
 except importlib.metadata.PackageNotFoundError:
