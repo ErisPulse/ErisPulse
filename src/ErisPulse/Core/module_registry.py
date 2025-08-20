@@ -10,7 +10,7 @@ ErisPulse 模块管理器
 {!--< /tips >!--}
 """
 
-from typing import Dict, Optional, Any, List, Set, Tuple, Union, Type, FrozenSet
+from typing import Dict, Optional, Any
 
 class ModuleRegistry:
     """
