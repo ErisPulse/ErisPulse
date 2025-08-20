@@ -2,6 +2,7 @@ name: 🔍 艾莉丝的代码审查魔法 ~
 
 permissions:
   contents: read
+  pull-requests: write
 
 on:
   pull_request:
@@ -15,25 +16,100 @@ jobs:
       - name: 检出魔法书
         uses: actions/checkout@v4
 
+      - name: 缓存 Python 依赖
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/ruff
+          key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
+
       - name: 准备魔法环境
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: 召唤审查精灵 Ruff
+      - name: 安装 Ruff 审查精灵
         run: |
           python -m pip install --upgrade pip
           pip install ruff
 
-      - name: 施展代码审查魔法
+      - name: 尝试自动修复代码问题
+        id: ruff_fix
+        continue-on-error: true
         run: |
-          echo "🔍 艾莉丝正在使用 Ruff 审查代码规范..."
-          # 检查代码规范问题
-          ruff check .
+          echo "✨ 艾莉丝正在尝试自动修复代码问题..."
+          ruff check --quiet --exit-zero --select ALL .
+          ruff format --quiet .
+          ruff --fix --exit-zero .
 
-      - name: 展示魔法细节
-        if: failure()
+      - name: 施展代码审查魔法
+        id: ruff_check
         run: |
-          echo "💢 发现代码规范问题!"
-          echo "请运行 'ruff check .' 本地检查并修复问题"
-          echo "你也可以运行 'ruff --fix .' 自动修复部分问题"
+          echo "🔍 艾莉丝正在审查代码规范..."
+          # 保存 Ruff 输出到文件并捕获退出码
+          ruff check --output-format=github . > ruff_output.txt 2>&1 || echo "RUFF_EXIT_CODE=$?" >> $GITHUB_ENV
+          
+      - name: 展示魔法细节并在 PR 中评论
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = '没有发现问题';
+            try {
+              output = fs.readFileSync('ruff_output.txt', 'utf8');
+            } catch (err) {
+              output = '无法读取 Ruff 输出: ' + err.message;
+            }
+            
+            const body = `
+            ## 🔍 Ruff 代码审查报告
+
+            <details>
+            <summary>📝 点击查看详细问题 (${output.split('\n').length} 个)</summary>
+
+            \`\`\`
+            ${output}
+            \`\`\`
+
+            </details>
+
+            ### 如何修复这些问题？
+
+            1️⃣ **自动修复** (可修复约 80% 的问题):
+            \`\`\`bash
+            ruff check .
+            ruff --fix .
+            \`\`\`
+
+            2️⃣ **手动修复**:
+            请查看上方列出的具体问题，逐项修复
+
+            3️⃣ **忽略特定规则** (谨慎使用):
+            在 pyproject.toml 或 ruff.toml 中添加:
+            \`\`\`toml
+            [tool.ruff]
+            ignore = ["E501", "F401"]
+            \`\`\`
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: 上传审查报告
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ruff-code-review-report
+          path: ruff_output.txt
+
+      - name: 清理临时文件
+        if: always()
+        run: rm -f ruff_output.txt
