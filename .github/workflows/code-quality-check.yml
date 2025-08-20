@@ -29,19 +29,23 @@ jobs:
 
       - name: 施展代码审查魔法
         id: ruff-check
+        continue-on-error: true
         run: |
           echo "🔍 艾莉丝正在使用 Ruff 审查代码规范..."
-          # 运行检查并捕获输出
-          ruff_output=$(ruff check . --format=github 2>&1)
+          # 运行检查并捕获输出和退出码
+          ruff_output=$(ruff check . --format=github 2>&1; echo "RUFF_EXIT_CODE=$?")
+          exit_code=${ruff_output##*RUFF_EXIT_CODE=}
+          ruff_output=${ruff_output%RUFF_EXIT_CODE=*}
+          
           echo "RUFF_OUTPUT<<EOF" >> $GITHUB_ENV
           echo "$ruff_output" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # 检查是否有错误
-          if [ -n "$ruff_output" ]; then
-            echo "::set-output name=has_errors::true"
+          # 检查是否有错误输出或非零退出码
+          if [ -n "$ruff_output" ] || [ "$exit_code" -ne 0 ]; then
+            echo "has_errors=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=has_errors::false"
+            echo "has_errors=false" >> $GITHUB_OUTPUT
           fi
 
       - name: 提交审查结果到PR
