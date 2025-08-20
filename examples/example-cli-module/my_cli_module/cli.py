@@ -37,7 +37,7 @@ def example_cli_register(subparsers: Any, console: Any) -> None:
         """实际处理函数"""
         try:
             console.print(Panel(
-                f"来自第三方CLI模块的问候!",
+                "来自第三方CLI模块的问候!",
                 title="示例命令",
                 style="info"
             ))
