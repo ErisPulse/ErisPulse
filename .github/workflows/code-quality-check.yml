@@ -60,15 +60,13 @@ jobs:
             
             const botComment = comments.find(comment => 
               comment.user.login === '艾莉丝[bot]' && 
-              comment.body.includes('🔍 艾莉丝的代码审查结果')
+              comment.body.includes('🔍 代码审查结果')
             );
             
             const message = `
-            🔍 艾莉丝的代码审查结果 ~
-
+            🔍 代码审查结果
+            
             ${process.env.RUFF_OUTPUT}
-
-            魔法完成，请检查并修改代码
             `;
             
             if (botComment) {
@@ -86,10 +84,3 @@ jobs:
                 body: message
               });
             }
-
-      - name: 展示魔法细节
-        if: failure()
-        run: |
-          echo "💢 发现代码规范问题!"
-          echo "请运行 'ruff check .' 本地检查并修复问题"
-          echo "你也可以运行 'ruff --fix .' 自动修复部分问题"
