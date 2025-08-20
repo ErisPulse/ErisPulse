@@ -1,7 +1,7 @@
 import asyncio
 import time
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command, message, notice, request, meta
+from ErisPulse.Core.Event import command, message, notice, meta
 
 # 测试命令处理
 @command("test", help="测试命令", usage="/test [参数]")
