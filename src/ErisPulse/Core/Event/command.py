@@ -15,8 +15,6 @@ from .base import BaseEventHandler
 from .. import adapter, config, logger
 from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
-import re
-from collections import defaultdict
 
 class CommandHandler:
     def __init__(self):
