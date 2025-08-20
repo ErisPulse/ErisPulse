@@ -773,4 +773,5 @@ def load_module(module_name: str) -> bool:
 
 
 sdk.init = init
+sdk.init_task = init_task
 sdk.load_module = load_module
