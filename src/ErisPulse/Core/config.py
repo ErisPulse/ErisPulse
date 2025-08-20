@@ -6,7 +6,7 @@ ErisPulse 配置中心
 """
 import os
 import toml
-from typing import Dict, Any, Optional
+from typing import Any
 
 class ConfigManager:
     def __init__(self, config_file: str = "config.toml"):

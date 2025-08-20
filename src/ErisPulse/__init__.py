@@ -60,8 +60,8 @@ asyncio_loop = asyncio.get_event_loop()
 
 exceptions.setup_async_loop(asyncio_loop)
 
-for module, moduleObj in BaseModules.items():
-    setattr(sdk, module, moduleObj)
+for module_name, moduleObj in BaseModules.items():
+    setattr(sdk, module_name, moduleObj)
 
 class LazyModule:
     """

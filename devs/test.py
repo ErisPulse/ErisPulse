@@ -3,8 +3,6 @@ from ErisPulse import sdk
 from importlib.metadata import version
 import sys
 from typing import Optional
-import time
-from pathlib import Path
 
 # 颜色定义
 class Colors:
@@ -393,6 +391,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
-    except Exception as e:
+    except Exception:
         import traceback
         traceback.print_exc()
