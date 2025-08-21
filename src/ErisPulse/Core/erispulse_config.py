@@ -19,7 +19,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "level": "INFO",
         "log_files": [],
         "memory_limit": 1000
-    }
+    },
+    "modules": {},
+    "adapters": {}
 }
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:

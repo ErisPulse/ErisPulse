@@ -1,3 +1,4 @@
+# ErisPulse/__init__.py
 """
 ErisPulse SDK 主模块
 
@@ -24,13 +25,13 @@ from pathlib import Path
 # 事件处理模块
 from .Core import Event
 # 基础设施
-from .Core import logger, exceptions
+from .Core import lifecycle, logger, exceptions
 # 存储和配置相关
 from .Core import storage, env, config
 # 适配器相关
 from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
 # 模块相关
-from .Core import module, module_registry
+from .Core import module
 # 路由相关
 from .Core import router, adapter_server
 
@@ -46,6 +47,7 @@ __author__  = "ErisPulse"
 BaseModules = {
     "Event"         : Event,
 
+    "lifecycle"     : lifecycle,
     "logger"        : logger,
     "exceptions"    : exceptions,
 
@@ -59,7 +61,6 @@ BaseModules = {
     "SendDSL"       : SendDSL,
 
     "module"        : module,
-    "module_registry": module_registry,
     
     "router": router,
     "adapter_server": adapter_server,
@@ -120,8 +121,13 @@ class LazyModule:
             setattr(self._instance, "moduleInfo", self._module_info)
             self._initialized = True
             logger.debug(f"模块 {self._module_name} 初始化完成")
+            
+            # 触发模块初始化完成事件
+            asyncio.create_task(lifecycle.emit("module_initialized", module_name=self._module_name))
         except Exception as e:
             logger.error(f"模块 {self._module_name} 初始化失败: {e}")
+            # 触发模块初始化失败事件
+            asyncio.create_task(lifecycle.emit("module_init_error", module_name=self._module_name, error=e))
             raise 
     
     def __getattr__(self, name: str) -> Any:
@@ -228,6 +234,9 @@ class AdapterLoader:
         disabled_adapters = []
         
         try:
+            # 触发适配器加载开始事件
+            asyncio.create_task(lifecycle.emit("adapter_load_start"))
+            
             # 加载适配器entry-points
             entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
@@ -242,8 +251,15 @@ class AdapterLoader:
                     
         except Exception as e:
             logger.error(f"加载适配器entry-points失败: {e}")
+            # 触发适配器加载失败事件
+            asyncio.create_task(lifecycle.emit("adapter_load_error", error=e))
             raise ImportError(f"无法加载适配器: {e}")
             
+        # 触发适配器加载完成事件
+        asyncio.create_task(lifecycle.emit("adapter_load_complete", 
+                                         adapter_objects=adapter_objs,
+                                         enabled_adapters=enabled_adapters,
+                                         disabled_adapters=disabled_adapters))
         return adapter_objs, enabled_adapters, disabled_adapters
     
     @staticmethod
@@ -270,12 +286,22 @@ class AdapterLoader:
         :raises ImportError: 当适配器加载失败时抛出
         """
         meta_name = entry_point.name
-        adapter_status = module_registry.get_module_status(meta_name)
+
+        if not adapter.exists(meta_name):
+            adapter._config_register(meta_name)
+            logger.info(f"发现新适配器 {meta_name}, 请在配置文件中配置适配器并决定是否启用")
+        
+        adapter_status = adapter.is_enabled(meta_name)
         logger.debug(f"适配器 {meta_name} 状态: {adapter_status}")
         
+        # 触发适配器处理开始事件
+        asyncio.create_task(lifecycle.emit("adapter_process_start", adapter_name=meta_name))
+            
         if adapter_status is False:
             disabled_adapters.append(meta_name)
             logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
+            # 触发适配器禁用事件
+            asyncio.create_task(lifecycle.emit("adapter_disabled", adapter_name=meta_name))
             return adapter_objs, enabled_adapters, disabled_adapters
             
         try:
@@ -299,16 +325,22 @@ class AdapterLoader:
                 adapter_obj.adapterInfo = {}
                 
             adapter_obj.adapterInfo[meta_name] = adapter_info
-            
-            # 存储适配器信息
-            module_registry.set_module(meta_name, adapter_info)
                 
             adapter_objs[meta_name] = adapter_obj
             enabled_adapters.append(meta_name)
             logger.debug(f"从PyPI包发现适配器: {meta_name}")
             
+            # 触发适配器处理完成事件
+            asyncio.create_task(lifecycle.emit("adapter_processed", 
+                                             adapter_name=meta_name,
+                                             adapter_info=adapter_info))
+            
         except Exception as e:
             logger.warning(f"从entry-point加载适配器 {meta_name} 失败: {e}")
+            # 触发适配器加载错误事件
+            asyncio.create_task(lifecycle.emit("adapter_process_error", 
+                                             adapter_name=meta_name,
+                                             error=e))
             raise ImportError(f"无法加载适配器 {meta_name}: {e}")
             
         return adapter_objs, enabled_adapters, disabled_adapters
@@ -343,6 +375,9 @@ class ModuleLoader:
         disabled_modules = []
         
         try:
+            # 触发模块加载开始事件
+            asyncio.create_task(lifecycle.emit("module_load_start"))
+            
             # 加载模块entry-points
             entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
@@ -357,8 +392,15 @@ class ModuleLoader:
                     
         except Exception as e:
             logger.error(f"加载模块entry-points失败: {e}")
+            # 触发模块加载失败事件
+            asyncio.create_task(lifecycle.emit("module_load_error", error=e))
             raise ImportError(f"无法加载模块: {e}")
             
+        # 触发模块加载完成事件
+        asyncio.create_task(lifecycle.emit("module_load_complete",
+                                         module_objects=module_objs,
+                                         enabled_modules=enabled_modules,
+                                         disabled_modules=disabled_modules))
         return module_objs, enabled_modules, disabled_modules
     
     @staticmethod
@@ -385,13 +427,22 @@ class ModuleLoader:
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
-        module_status = module_registry.get_module_status(meta_name)
+
+        if not module.exists(meta_name):
+            module._config_register(meta_name)
+            logger.info(f"发现新模块 {meta_name}，如有需要启用请在配置文件中手动启用")
+
+        module_status = module.is_enabled(meta_name)
         logger.debug(f"模块 {meta_name} 状态: {module_status}")
         
-        # 首先检查模块状态，如果明确为False则直接跳过
+        # 触发模块处理开始事件
+        asyncio.create_task(lifecycle.emit("module_process_start", module_name=meta_name))
+        
         if module_status is False:
             disabled_modules.append(meta_name)
             logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
+            # 触发模块禁用事件
+            asyncio.create_task(lifecycle.emit("module_disabled", module_name=meta_name))
             return module_objs, enabled_modules, disabled_modules
             
         try:
@@ -416,15 +467,21 @@ class ModuleLoader:
             
             module_obj.moduleInfo = module_info
             
-            # 存储模块信息
-            module_registry.set_module(meta_name, module_info)
-                
             module_objs[meta_name] = module_obj
             enabled_modules.append(meta_name)
             logger.debug(f"从PyPI包加载模块: {meta_name}")
             
+            # 触发模块处理完成事件
+            asyncio.create_task(lifecycle.emit("module_processed",
+                                             module_name=meta_name,
+                                             module_info=module_info))
+            
         except Exception as e:
             logger.warning(f"从entry-point加载模块 {meta_name} 失败: {e}")
+            # 触发模块加载错误事件
+            asyncio.create_task(lifecycle.emit("module_process_error",
+                                             module_name=meta_name,
+                                             error=e))
             raise ImportError(f"无法加载模块 {meta_name}: {e}")
             
         return module_objs, enabled_modules, disabled_modules
@@ -465,6 +522,15 @@ class ModuleInitializer:
         """
         初始化所有模块和适配器
         
+        生命周期事件:
+        - on_init_start: 初始化开始
+        - on_env_ready: 环境准备完成
+        - on_adapter_load: 适配器加载完成
+        - on_module_load: 模块加载完成
+        - on_adapter_register: 适配器注册完成
+        - on_module_init: 模块初始化完成
+        - on_init_complete: 初始化完成
+        
         执行步骤:
         1. 从PyPI包加载适配器
         2. 从PyPI包加载模块
@@ -475,6 +541,9 @@ class ModuleInitializer:
         :return: bool 初始化是否成功
         :raises InitError: 当初始化失败时抛出
         """
+        # 触发初始化开始事件
+        asyncio.create_task(lifecycle.emit("init_start"))
+        
         logger.info("[Init] SDK 正在初始化...")
         
         try:
@@ -482,9 +551,19 @@ class ModuleInitializer:
             adapter_objs, enabled_adapters, disabled_adapters = AdapterLoader.load()
             logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
             
+            # 触发适配器加载完成事件
+            asyncio.create_task(lifecycle.emit("adapter_load", 
+                                             adapters=enabled_adapters, 
+                                             adapter_objects=adapter_objs))
+            
             # 2. 再加载模块
             module_objs, enabled_modules, disabled_modules = ModuleLoader.load()
             logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
+            
+            # 触发模块加载完成事件
+            asyncio.create_task(lifecycle.emit("module_load",
+                                             modules=enabled_modules,
+                                             module_objects=module_objs))
             
             modules_dir = os.path.join(os.path.dirname(__file__), "modules")
             if os.path.exists(modules_dir) and os.listdir(modules_dir):
@@ -492,21 +571,41 @@ class ModuleInitializer:
             
             if not enabled_modules and not enabled_adapters:
                 logger.warning("[Init] 没有找到可用的模块和适配器")
+                # 触发初始化完成事件（即使没有模块）
+                asyncio.create_task(lifecycle.emit("init_complete"))
                 return True
             
             # 3. 注册适配器
             logger.debug("[Init] 正在注册适配器...")
             if not ModuleInitializer._register_adapters(enabled_adapters, adapter_objs):
                 return False
+                
+            # 触发适配器注册完成事件
+            asyncio.create_task(lifecycle.emit("adapter_register",
+                                             adapters=enabled_adapters))
             
             # 4. 初始化模块
             logger.debug("[Init] 正在初始化模块...")
             success = ModuleInitializer._initialize_modules(enabled_modules, module_objs)
-            logger.info(f"[Init] SDK初始化{'成功' if success else '失败'}")
+            
+            # 触发模块初始化完成事件
+            asyncio.create_task(lifecycle.emit("module_init",
+                                             modules=enabled_modules,
+                                             success=success))
+            
+            if success:
+                logger.info("[Init] SDK初始化成功")
+                # 触发初始化完成事件
+                asyncio.create_task(lifecycle.emit("init_complete"))
+            else:
+                logger.error("[Init] SDK初始化失败")
+                
             return success
             
         except Exception as e:
             logger.critical(f"SDK初始化严重错误: {e}")
+            # 触发初始化错误事件
+            asyncio.create_task(lifecycle.emit("init_error", error=e))
             return False
     
     @staticmethod
@@ -630,8 +729,17 @@ class ModuleInitializer:
                             sdk.adapter._platform_to_instance[platform] = instance
                             registered_classes[adapter_class] = instance
                             logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
+                            
+                            # 触发适配器实例注册事件
+                            asyncio.create_task(lifecycle.emit("adapter_instance_registered",
+                                                             platform=platform,
+                                                             adapter_class=adapter_class.__name__))
             except Exception as e:
                 logger.error(f"适配器 {adapter_name} 注册失败: {e}")
+                # 触发适配器注册错误事件
+                asyncio.create_task(lifecycle.emit("adapter_register_error",
+                                                 adapter_name=adapter_name,
+                                                 error=e))
                 success = False
         return success
     
@@ -686,9 +794,14 @@ if __name__ == "__main__":
                 f.write(main_content)
             main_init = True
             
+            # 触发主文件创建事件
+            asyncio.create_task(lifecycle.emit("main_file_created"))
+            
         return main_init
     except Exception as e:
         sdk.logger.error(f"无法初始化项目环境: {e}")
+        # 触发环境初始化错误事件
+        asyncio.create_task(lifecycle.emit("env_init_error", error=e))
         return False
 
 
@@ -707,12 +820,17 @@ def _prepare_environment() -> bool:
         get_erispulse_config()
         logger.info("[Init] 配置文件已加载")
         
+        # 触发环境准备完成事件
+        asyncio.create_task(lifecycle.emit("env_ready"))
+        
         main_init = init_progress()
         if main_init:
             logger.info("[Init] 项目入口已生成, 你可以在 main.py 中编写一些代码")
         return True
     except Exception as e:
         logger.error(f"环境准备失败: {e}")
+        # 触发环境准备错误事件
+        asyncio.create_task(lifecycle.emit("env_error", error=e))
         return False
 
 def init() -> bool:
@@ -721,9 +839,16 @@ def init() -> bool:
     
     :return: bool SDK初始化是否成功
     """
+    # 触发SDK初始化开始事件
+    asyncio.create_task(lifecycle.emit("sdk_init_start"))
+    
     if not _prepare_environment():
         return False
-    return ModuleInitializer.init()
+    result = ModuleInitializer.init()
+    
+    # 触发SDK初始化结果事件
+    asyncio.create_task(lifecycle.emit("sdk_init_result", success=result))
+    return result
 
 def init_task() -> asyncio.Task:
     """
@@ -732,9 +857,16 @@ def init_task() -> asyncio.Task:
     :return: asyncio.Task 初始化任务
     """
     async def _async_init():
+        # 触发异步初始化开始事件
+        asyncio.create_task(lifecycle.emit("sdk_async_init_start"))
+        
         if not _prepare_environment():
             return False
-        return ModuleInitializer.init()
+        result = ModuleInitializer.init()
+        
+        # 触发异步初始化结果事件
+        asyncio.create_task(lifecycle.emit("sdk_async_init_result", success=result))
+        return result
     
     try:
         return asyncio.create_task(_async_init())
@@ -756,19 +888,30 @@ def load_module(module_name: str) -> bool:
     {!--< /tips >!--}
     """
     try:
+        # 触发模块加载开始事件
+        asyncio.create_task(lifecycle.emit("manual_module_load_start", module_name=module_name))
+        
         module = getattr(sdk, module_name, None)
         if isinstance(module, LazyModule):
             # 触发懒加载模块的初始化
             module._initialize()
+            # 触发模块手动加载完成事件
+            asyncio.create_task(lifecycle.emit("manual_module_loaded", module_name=module_name))
             return True
         elif module is not None:
             logger.warning(f"模块 {module_name} 已经加载")
+            # 触发模块已加载事件
+            asyncio.create_task(lifecycle.emit("module_already_loaded", module_name=module_name))
             return False
         else:
             logger.error(f"模块 {module_name} 不存在")
+            # 触发模块不存在事件
+            asyncio.create_task(lifecycle.emit("module_not_found", module_name=module_name))
             return False
     except Exception as e:
         logger.error(f"加载模块 {module_name} 失败: {e}")
+        # 触发模块加载错误事件
+        asyncio.create_task(lifecycle.emit("manual_module_load_error", module_name=module_name, error=e))
         return False
 
 
