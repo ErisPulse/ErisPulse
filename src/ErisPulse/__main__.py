@@ -242,8 +242,8 @@ class PackageManager:
         :raises ImportError: 核心模块不可用时抛出
         """
         try:
-            from ErisPulse.Core import module_registry
-            return module_registry.get_module_status(module_name)
+            from ErisPulse.Core import module as module_manager
+            return module_manager.is_enabled(module_name)
         except ImportError:
             return True
         except Exception:
@@ -975,8 +975,8 @@ class ReloadHandler(FileSystemEventHandler):
             
         if event.src_path.endswith(".py") and self.reload_mode:
             self._handle_reload(event, "文件变动")
-        elif event.src_path.endswith(("config.toml", ".env")):
-            self._handle_reload(event, "配置变动")
+        # elif event.src_path.endswith(("config.toml", ".env")):
+        #     self._handle_reload(event, "配置变动")
 
     def _handle_reload(self, event, reason: str):
         """
@@ -1695,7 +1695,7 @@ class CLI:
         try:
             if args.command == "install":
                 success = self.package_manager.install_package(
-                    args.package,  # 现在是列表
+                    args.package,
                     upgrade=args.upgrade,
                     pre=args.pre
                 )
@@ -1703,26 +1703,26 @@ class CLI:
                     sys.exit(1)
                     
             elif args.command == "uninstall":
-                success = self.package_manager.uninstall_package(args.package)  # 现在是列表
+                success = self.package_manager.uninstall_package(args.package)
                 if not success:
                     sys.exit(1)
                     
             elif args.command == "module":
-                from ErisPulse.Core import module_registry
+                from ErisPulse.Core import module as module_manager
                 installed = self.package_manager.get_installed_packages()
                 
                 if args.module_command == "enable":
                     if args.module not in installed["modules"]:
                         console.print(f"[error]模块 [bold]{args.module}[/] 不存在或未安装[/]")
                     else:
-                        module_registry.set_module_status(args.module, True)
+                        module_manager.enable(args.module)
                         console.print(f"[success]模块 [bold]{args.module}[/] 已启用[/]")
                         
                 elif args.module_command == "disable":
                     if args.module not in installed["modules"]:
                         console.print(f"[error]模块 [bold]{args.module}[/] 不存在或未安装[/]")
                     else:
-                        module_registry.set_module_status(args.module, False)
+                        module_manager.disable(args.module)
                         console.print(f"[warning]模块 [bold]{args.module}[/] 已禁用[/]")
                 else:
                     self.parser.parse_args(["module", "--help"])
@@ -1748,7 +1748,7 @@ class CLI:
             elif args.command == "upgrade":
                 if args.package:
                     success = self.package_manager.upgrade_package(
-                        args.package,  # 现在是列表
+                        args.package,
                         pre=args.pre
                     )
                     if not success:
