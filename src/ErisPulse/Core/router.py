@@ -224,13 +224,6 @@ class RouterManager:
         if self._server_task and not self._server_task.done():
             raise RuntimeError("服务器已在运行中")
 
-        # 触发服务器启动开始事件
-        await lifecycle.emit("server_start_start", 
-                           host=host, 
-                           port=port, 
-                           ssl_certfile=ssl_certfile, 
-                           ssl_keyfile=ssl_keyfile)
-
         config = Config()
         config.bind = [f"{host}:{port}"]
         config.loglevel = "warning"
@@ -243,20 +236,11 @@ class RouterManager:
         logger.info(f"启动路由服务器 {self.base_url}")
         
         self._server_task = asyncio.create_task(serve(self.app, config))
-        
-        # 触发服务器启动完成事件
-        await lifecycle.emit("server_start_complete", 
-                           host=host, 
-                           port=port, 
-                           base_url=self.base_url)
 
     async def stop(self) -> None:
         """
         停止服务器
         """
-        # 触发服务器停止开始事件
-        await lifecycle.emit("server_stop_start")
-        
         if self._server_task:
             self._server_task.cancel()
             try:
@@ -264,9 +248,6 @@ class RouterManager:
             except asyncio.CancelledError:
                 logger.info("路由服务器已停止")
             self._server_task = None
-            
-        # 触发服务器停止完成事件
-        await lifecycle.emit("server_stop_complete")
 
 router = RouterManager()
 
