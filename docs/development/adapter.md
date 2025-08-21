@@ -34,7 +34,6 @@ dependencies = [
 
 [project.entry-points]
 "erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
-
 ```
 
 ### 1.2 `MyAdapter/__init__.py` 文件
@@ -144,9 +143,9 @@ class MyAdapter(BaseAdapter):
         raise NotImplementedError("需要实现适配器关闭逻辑")
 ```
 
-### 接口规范说明
+## 2. 接口规范说明
 
-#### 必须实现的方法
+### 必须实现的方法
 
 | 方法 | 描述 |
 |------|------|
@@ -154,13 +153,13 @@ class MyAdapter(BaseAdapter):
 | `start()` | 启动适配器 |
 | `shutdown()` | 关闭适配器资源 |
 
-> ⚠️ 注意：
+> ⚠⚠⚠️ 注意：
 > - 适配器类必须继承 `BaseAdapter` 基类；
 > - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类(继承自 `BaseAdapter.Send`)；
 > - To中的接受者类型不允许例如 "private" 的格式，当然这是一个规范
 > - 但为了兼容和标准性，用户发送时还是使用 "user" / "group" / "channel" / ... 等更标准的接受类型格式，如有必要，请你自行转换。
 
-### 5. DSL 风格消息接口（SendDSL）
+## 3. DSL 风格消息接口（SendDSL）
 
 每个适配器可定义一组链式调用风格的方法，例如：
 
@@ -214,13 +213,11 @@ class Send(BaseAdapter.Send):
 `To`方法可以指定接受者类型以及接受者ID，当To参数接受了单参数时，会设置`self._target_to`属性，当To参数接受了两个参数时，会设置`self._target_type`和`self._target_id`属性，可以在后续的调用中通过这些属性来获取接受者信息。
 `Using`方法用于指定发送账号，会设置`self._account_id`属性，可以在后续API调用中使用。
 
----
-
-## 6. 事件转换与路由注册
+## 4. 事件转换与路由注册
 
 适配器需要处理平台原生事件并转换为OneBot12标准格式，同时需要向底层框架注册路由。以下是两种典型实现方式：
 
-### 6.1 WebSocket 方式实现
+### 4.1 WebSocket 方式实现
 
 ```python
 async def _ws_handler(self, websocket: WebSocket):
@@ -254,7 +251,7 @@ async def start(self):
     )
 ```
 
-### 6.2 WebHook 方式实现
+### 4.2 WebHook 方式实现
 
 ```python
 async def _webhook_handler(self, request: Request):
@@ -284,7 +281,7 @@ async def start(self):
     )
 ```
 
-### 6.3 事件转换器实现
+### 4.3 事件转换器实现
 
 适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[适配器标准化转换规范](../standards/event-conversion.md)：
 
@@ -319,11 +316,11 @@ class MyPlatformConverter:
         return None
 ```
 
-## 7. API响应标准
+## 5. API响应标准
 
 适配器的`call_api`方法必须返回符合以下标准的响应结构（具体实现请参考[适配器标准化返回规范](../standards/api-response.md)：）：
 
-### 7.1 成功响应格式
+### 5.1 成功响应格式
 
 ```python
 {
@@ -340,7 +337,7 @@ class MyPlatformConverter:
 }
 ```
 
-### 7.2 失败响应格式
+### 5.2 失败响应格式
 
 ```python
 {
@@ -354,7 +351,7 @@ class MyPlatformConverter:
 }
 ```
 
-### 7.3 实现示例
+### 5.3 实现示例
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -387,21 +384,7 @@ async def call_api(self, endpoint: str, **params):
         }
 ```
 
-## 8. 开发最佳实践
-
-### 8.1 异常处理与日志记录
-- **统一异常处理机制**：直接 `raise` 异常，上层会自动捕获并记录日志。
-- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
-
-### 8.2 性能优化
-- **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
-- **使用智能缓存**：对频繁查询的数据使用缓存，例如配置信息等。
-
-### 8.3 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
-- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
-## 9. 平台特性文档维护
+## 6. 平台特性文档维护
 
 请参考 [平台特性文档维护说明](../platform-features/maintain-notes.md) 来维护你的适配器平台特性文档。
 
@@ -413,12 +396,5 @@ async def call_api(self, endpoint: str, **params):
 5. OneBot12协议转换说明
 6. API响应格式
 7. 最佳实践和注意事项
-
-## 参与贡献
-
-我们欢迎更多开发者参与编写和维护适配器文档！请按照以下步骤提交贡献：
-1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 仓库。
-2. 在 `docs/development/` 目录下修改适配器开发文档。
-3. 提交 Pull Request。
 
 感谢您的支持！
