@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发指南
 
-### 1. 目录结构
+## 1. 目录结构
 一个标准的适配器包结构应该是：
 
 ```
@@ -14,7 +14,7 @@ MyAdapter/
     └── Converter.py
 ```
 
-### 2. `pyproject.toml` 文件
+### 1.1 `pyproject.toml` 文件
 ```toml
 [project]
 name = "ErisPulse-MyAdapter"
@@ -37,7 +37,7 @@ dependencies = [
 
 ```
 
-### 3. `MyAdapter/__init__.py` 文件
+### 1.2 `MyAdapter/__init__.py` 文件
 
 顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
 
@@ -47,25 +47,27 @@ dependencies = [
 from .Core import MyAdapter
 ```
 
-### 4. `MyAdapter/Core.py`
+### 1.3 `MyAdapter/Core.py`
 实现适配器主类 `MyAdapter`，并提供适配器类继承 `BaseAdapter`, 实现嵌套类Send以实现例如 Send.To(type, id).Text("hello world") 的语法
 
 ```python
 from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router
+from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 # 这里仅你使用 websocket 作为通信协议时需要 | 第一个作为参数的类型是 WebSocket, 第二个是 WebSocketDisconnect，当 ws 连接断开时触发你的捕捉
 # 一般来说你不用在依赖中添加 fastapi, 因为它已经内置在 ErisPulse 中了
-from fastapi import WebSocket, WebSocketDisconnect
+# from fastapi import WebSocket, WebSocketDisconnect
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):    # 这里是不强制传入sdk的，你可以选择不传入 
+    def __init__(self, sdk=None):    # 这里是不强制传入sdk的，你可以选择不传入 
         self.sdk = sdk
-        self.storage = self.sdk.storage
-        self.logger = self.sdk.logger
+        self.logger = logger.get_child("MyAdapter")
+        self.config_manager = config_manager
+        self.adapter = adapter
         
-        self.logger.info("MyModule 初始化完成")
+        if self.logger:
+            self.logger.info("MyAdapter 初始化完成")
         self.config = self._get_config()
         self.converter = self._setup_converter()  # 获取转换器实例
         self.convert = self.converter.convert
@@ -76,12 +78,17 @@ class MyAdapter(BaseAdapter):
 
     def _get_config(self):
         # 加载配置方法，你需要在这里进行必要的配置加载逻辑
-        config = self.sdk.config.getConfig("MyAdapter", {})
+        if not self.config_manager:
+            return {}
+            
+        config = self.config_manager.getConfig("MyAdapter", {})
 
         if config is None:
-            default_config = {...}
+            default_config = {
+                # 在这里定义默认配置
+            }
             # 这里默认配置会生成到用户的 config.toml 文件中
-            self.sdk.config.setConfig("MyAdapter", default_config)
+            self.config_manager.setConfig("MyAdapter", default_config)
             return default_config
         return config
 
@@ -100,6 +107,7 @@ class MyAdapter(BaseAdapter):
         
         def Text(self, text: str):
             """发送文本消息（可重写实现）"""
+            import asyncio
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send",
@@ -111,6 +119,7 @@ class MyAdapter(BaseAdapter):
             
         def Image(self, file: bytes):
             """发送图片消息"""
+            import asyncio
             return asyncio.create_task(
                 self._adapter.call_api(
                     endpoint="/send_image",
@@ -123,17 +132,18 @@ class MyAdapter(BaseAdapter):
     # 这里的call_api方法需要被实现, 哪怕他是类似邮箱时一个轮询一个发送stmp无需请求api的实现
     # 因为这是必须继承的方法
     async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError()
+        raise NotImplementedError("需要实现平台特定的API调用")
 
-    # 适配器设定了启动和停止的方法，用户可以直接通过 sdk.adapter.setup() 来启动所有适配器，
+    # 适配器设定了启动和停止的方法，用户可以直接通过 adapter.setup() 来启动所有适配器，
     # 当然在底层捕捉到adapter的错误时我们会尝试停止适配器再进行重启等操作
     # 启动方法，你需要在这里定义你的adapter启动时候的逻辑
     async def start(self):
-        raise NotImplementedError()
+        raise NotImplementedError("需要实现适配器启动逻辑")
     # 停止方法，你需要在这里进行必要的释放资源等逻辑
     async def shutdown(self):
-        raise NotImplementedError()
+        raise NotImplementedError("需要实现适配器关闭逻辑")
 ```
+
 ### 接口规范说明
 
 #### 必须实现的方法
@@ -144,72 +154,73 @@ class MyAdapter(BaseAdapter):
 | `start()` | 启动适配器 |
 | `shutdown()` | 关闭适配器资源 |
 
-#### 可选实现的方法
-
-| 方法 | 描述 |
-|------|------|
-| `on(event_type: str)` | 注册事件处理器 |
-| `add_handler(event_type: str, func: Callable)/add_handler(func: Callable)` | 添加事件处理器 |
-| `middleware(func: Callable` | 添加中间件处理传入数据 |
-| `emit(event_type: str, data: Any)` | 自定义事件分发逻辑 |
-
-- 在适配器中如果需要向底层提交事件，请使用 `emit()` 方法。
-- 这时用户可以通过 `on([事件类型])` 修饰器 或者 `add_handler()` 获取到你提交到adapter的事件。
-
 > ⚠️ 注意：
-> - 适配器类必须继承 `sdk.BaseAdapter`；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类并继承自 `super().Send`；
-> - 推荐实现 `.Text(...)` 方法作为基础消息发送接口。
-> - To中的接受者类型不允许例如 "private" 的格式，当然这是一个规范，但为了兼容性，请使用 "user" / "group" / other
+> - 适配器类必须继承 `BaseAdapter` 基类；
+> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类(继承自 `BaseAdapter.Send`)；
+> - To中的接受者类型不允许例如 "private" 的格式，当然这是一个规范
+> - 但为了兼容和标准性，用户发送时还是使用 "user" / "group" / "channel" / ... 等更标准的接受类型格式，如有必要，请你自行转换。
 
-### 4. DSL 风格消息接口（SendDSL）
+### 5. DSL 风格消息接口（SendDSL）
 
 每个适配器可定义一组链式调用风格的方法，例如：
 
 ```python
-class Send((BaseAdapter.Send):
+class Send(BaseAdapter.Send):
     def Text(self, text: str):
+        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(...)
         )
 
     def Image(self, file: bytes):
+        import asyncio
         return asyncio.create_task(
             self._upload_file_and_call_api(...)
         )
 ```
+> **注意**：Send的链式调用方式，必须返回一个asyncio.Task对象。
 
-调用方式支持以下组合：
+#### ErisPulse的SendDSL支持以下不同组合的标准调用方式：
 
-1. 指定发送账号和接收目标：
-```python
-sdk.adapter.MyPlatform.Send.Using("bot1").To("user", "U1001").Text("你好")
-```
+1. 指定类型和ID: `To(type,id).Func()`
+   ```python
+   # 获取适配器实例
+   my_adapter = adapter.get("MyAdapter")
+   
+   await my_adapter.Send.To("user", "U1001").Text("Hello")
+   ```
+2. 仅指定ID: `To(id).Func()`
+   ```python
+   my_adapter = adapter.get("MyAdapter")
 
-2. 仅指定接收目标：
-```python
-sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("你好")
-```
+   await my_adapter.Send.To("U1001").Text("Hello")
+   ```
+3. 指定发送账号: `Using(account_id)`
+   ```python
+   my_adapter = adapter.get("MyAdapter")
 
-3. 仅指定发送账号：
-```python
-sdk.adapter.MyPlatform.Send.Using("bot1").Text("广播消息")
-```
+   await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
+   ```
+4. 直接调用: `Func()`
+   ```python
+   my_adapter = adapter.get("MyAdapter")
+   await my_adapter.Send.Text("Broadcast message")
+   
+   # 例如：
+   email = adapter.get("email")
+   await email.Send.Text("Broadcast message")
+   ```
 
-4. 直接调用：
-```python
-sdk.adapter.MyPlatform.Send.Text("广播消息")
-```
-
+`To`方法可以指定接受者类型以及接受者ID，当To参数接受了单参数时，会设置`self._target_to`属性，当To参数接受了两个参数时，会设置`self._target_type`和`self._target_id`属性，可以在后续的调用中通过这些属性来获取接受者信息。
 `Using`方法用于指定发送账号，会设置`self._account_id`属性，可以在后续API调用中使用。
 
 ---
 
-## 5. 事件转换与路由注册
+## 6. 事件转换与路由注册
 
 适配器需要处理平台原生事件并转换为OneBot12标准格式，同时需要向底层框架注册路由。以下是两种典型实现方式：
 
-### 5.1 WebSocket 方式实现
+### 6.1 WebSocket 方式实现
 
 ```python
 async def _ws_handler(self, websocket: WebSocket):
@@ -221,16 +232,10 @@ async def _ws_handler(self, websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             try:
-                event = json.loads(data)
-                # 提交原生事件到适配器
-                # 原生事件需要通过指定平台来获取 比如 sdk.adapter.MyPlatform.on("事件类型")
-                self.emit(data.get("event_type"), data)
-
                 # 转换为OneBot12标准事件
-                onebot_event = self.convert(event)
-                if onebot_event:
-                    # 提交标准事件到框架 | 这里直接通过 sdk.adaoter.on("事件类型") 便可以获取到事件，但是需要判断字段里面的platform字段来区分适配器
-                    await self.sdk.adapter.emit(onebot_event)
+                onebot_event = self.convert(data)
+                if onebot_event and self.adapter:
+                    await self.adapter.emit(onebot_event)
             except json.JSONDecodeError:
                 self.logger.error(f"JSON解析失败: {data}")
     except WebSocketDisconnect:
@@ -249,7 +254,7 @@ async def start(self):
     )
 ```
 
-### 5.2 WebHook 方式实现
+### 6.2 WebHook 方式实现
 
 ```python
 async def _webhook_handler(self, request: Request):
@@ -257,18 +262,15 @@ async def _webhook_handler(self, request: Request):
     try:
         data = await request.json()
 
-        # 提交原生事件到适配器
-        # 原生事件需要通过指定平台来获取 比如 sdk.adapter.MyPlatform.on("事件类型")
-        self.emit(data.get("event_type"), data)
-
         # 转换为OneBot12标准事件
-        onebot_event = self.convert(data)=
-        if onebot_event:
-            # 提交标准事件到框架 | 这里直接通过 sdk.adaoter.on("事件类型") 便可以获取到事件，但是需要判断字段里面的platform字段来区分适配器
-            await self.sdk.adapter.emit(onebot_event)
+        onebot_event = self.convert(data)
+        if onebot_event and self.adapter:
+            # 提交标准事件到框架 
+            await self.adapter.emit(onebot_event)
         return JSONResponse({"status": "ok"})
     except Exception as e:
-        self.logger.error(f"处理WebHook失败: {str(e)}")
+        if self.logger:
+            self.logger.error(f"处理WebHook失败: {str(e)}")
         return JSONResponse({"status": "failed"}, status_code=400)
 
 async def start(self):
@@ -282,9 +284,9 @@ async def start(self):
     )
 ```
 
-### 5.3 事件转换器实现
+### 6.3 事件转换器实现
 
-适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[事件转换标准文档](docs/standards/event-conversion.md)：
+适配器应提供标准的事件转换器，将平台原生事件转换为OneBot12格式 具体实现请参考[适配器标准化转换规范](../standards/event-conversion.md)：
 
 ```python
 class MyPlatformConverter:
@@ -317,11 +319,11 @@ class MyPlatformConverter:
         return None
 ```
 
-## 6. API响应标准
+## 7. API响应标准
 
-适配器的`call_api`方法必须返回符合以下标准的响应结构：
+适配器的`call_api`方法必须返回符合以下标准的响应结构（具体实现请参考[适配器标准化返回规范](../standards/api-response.md)：）：
 
-### 6.1 成功响应格式
+### 7.1 成功响应格式
 
 ```python
 {
@@ -338,7 +340,7 @@ class MyPlatformConverter:
 }
 ```
 
-### 6.2 失败响应格式
+### 7.2 失败响应格式
 
 ```python
 {
@@ -352,7 +354,7 @@ class MyPlatformConverter:
 }
 ```
 
-### 6.3 实现示例
+### 7.3 实现示例
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -362,8 +364,8 @@ async def call_api(self, endpoint: str, **params):
         
         # 标准化响应
         standardized = {
-            "status": "ok" if raw_response["success"] else "failed",
-            "retcode": 0 if raw_response["success"] else raw_response.get("code", 10001),
+            "status": "ok" if raw_response.get("success", False) else "failed",
+            "retcode": 0 if raw_response.get("success", False) else raw_response.get("code", 10001),
             "data": raw_response.get("data"),
             "message": raw_response.get("message", ""),
             "message_id": raw_response.get("data", {}).get("message_id", ""),
@@ -385,49 +387,38 @@ async def call_api(self, endpoint: str, **params):
         }
 ```
 
-## 7. 错误代码规范
+## 8. 开发最佳实践
 
-适配器应遵循以下错误代码范围：
-
-| 代码范围 | 类型 | 说明 |
-|---------|------|------|
-| 0 | 成功 | 必须为0 |
-| 1xxxx | 请求错误 | 无效参数、不支持的操作等 |
-| 2xxxx | 处理器错误 | 适配器内部处理错误 |
-| 3xxxx | 执行错误 | 平台API调用错误 |
-| 34xxx | 平台错误 | 平台返回的错误 |
-
-建议在适配器中定义常量：
-
-```python
-class ErrorCode:
-    SUCCESS = 0
-    INVALID_PARAMS = 10003
-    UNSUPPORTED_ACTION = 10002
-    INTERNAL_ERROR = 20001
-    PLATFORM_ERROR = 34000
-```
-
----
-
-## 开发建议
-
-### 1. 使用异步编程模型
-- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
-- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
-
-### 2. 异常处理与日志记录
+### 8.1 异常处理与日志记录
 - **统一异常处理机制**：直接 `raise` 异常，上层会自动捕获并记录日志。
 - **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
 
-### 3. 模块化与解耦设计
-- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
-- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
-
-### 4. 性能优化
+### 8.2 性能优化
 - **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
-- **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
+- **使用智能缓存**：对频繁查询的数据使用缓存，例如配置信息等。
 
-### 5. 安全与隐私
+### 8.3 安全与隐私
 - **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
 - **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
+
+## 9. 平台特性文档维护
+
+请参考 [平台特性文档维护说明](../platform-features/maintain-notes.md) 来维护你的适配器平台特性文档。
+
+主要需要包含以下内容：
+1. 平台简介和适配器基本信息
+2. 支持的消息发送类型和参数说明
+3. 特有事件类型和格式说明
+4. 扩展字段说明
+5. OneBot12协议转换说明
+6. API响应格式
+7. 最佳实践和注意事项
+
+## 参与贡献
+
+我们欢迎更多开发者参与编写和维护适配器文档！请按照以下步骤提交贡献：
+1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 仓库。
+2. 在 `docs/development/` 目录下修改适配器开发文档。
+3. 提交 Pull Request。
+
+感谢您的支持！
