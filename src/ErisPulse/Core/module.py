@@ -1,18 +1,13 @@
-"""
-ErisPulse 模块管理模块
-
-提供便捷的模块访问接口
-"""
-
-from typing import Any, Optional, Dict
-from .module_registry import module_registry
+from typing import Any, Dict
 from .logger import logger
+from .config import config
 
 class ModuleManager:
     """
     模块管理器
     
     提供便捷的模块访问接口，支持获取模块实例、检查模块状态等操作
+    使用 config 模块存储模块状态
     """
     
     def __init__(self):
@@ -29,14 +24,8 @@ class ModuleManager:
         if module_name in self._modules:
             return self._modules[module_name]
             
-        # 从模块注册表获取模块信息
-        module_info = module_registry.get_module(module_name)
-        if not module_info:
-            logger.warning(f"模块 {module_name} 未注册")
-            return None
-            
         # 模块是否启用
-        if not module_registry.get_module_status(module_name):
+        if not self.is_enabled(module_name):
             logger.warning(f"模块 {module_name} 已禁用")
             return None
             
@@ -60,7 +49,8 @@ class ModuleManager:
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否存在
         """
-        return module_registry.get_module(module_name) is not None
+        module_statuses = config.getConfig("ErisPulse.modules.status", {})
+        return module_name in module_statuses
     
     def is_enabled(self, module_name: str) -> bool:
         """
@@ -69,7 +59,15 @@ class ModuleManager:
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否启用
         """
-        return module_registry.get_module_status(module_name)
+        status = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        
+        if status is None:
+            return False
+        
+        if isinstance(status, str):
+            return status.lower() not in ('false', '0', 'no', 'off')
+        
+        return bool(status)
     
     def enable(self, module_name: str) -> bool:
         """
@@ -78,11 +76,8 @@ class ModuleManager:
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
-        if not self.exists(module_name):
-            logger.error(f"模块 {module_name} 不存在")
-            return False
-            
-        module_registry.set_module_status(module_name, True)
+
+        config.setConfig(f"ErisPulse.modules.status.{module_name}", True)
         logger.info(f"模块 {module_name} 已启用")
         return True
     
@@ -93,33 +88,33 @@ class ModuleManager:
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
-        if not self.exists(module_name):
-            logger.error(f"模块 {module_name} 不存在")
-            return False
-            
-        module_registry.set_module_status(module_name, False)
+        config.setConfig(f"ErisPulse.modules.status.{module_name}", False)
         logger.info(f"模块 {module_name} 已禁用")
-        # 如果模块在缓存中，移除它
+        
         if module_name in self._modules:
             del self._modules[module_name]
         return True
     
-    def list_modules(self) -> Dict[str, Dict[str, Any]]:
+    def _config_register(self, module_name: str, enabled: bool = False) -> bool:
         """
-        列出所有模块信息
-        
-        :return: [Dict[str, Dict[str, Any]]] 模块信息字典
-        """
-        return module_registry.get_all_modules()
-    
-    def get_info(self, module_name: str) -> Optional[Dict[str, Any]]:
-        """
-        获取模块详细信息
+        注册新模块信息
         
         :param module_name: [str] 模块名称
-        :return: [Optional[Dict[str, Any]]] 模块信息字典
+        :param enabled: [bool] 是否启用模块
+        :return: [bool] 操作是否成功
         """
-        return module_registry.get_module(module_name)
+        config.setConfig(f"ErisPulse.modules.status.{module_name}", enabled)
+        status = "启用" if enabled else "禁用"
+        logger.info(f"模块 {module_name} 已注册并{status}")
+        return True
+    
+    def list_modules(self) -> Dict[str, bool]:
+        """
+        列出所有模块状态
+        
+        :return: [Dict[str, bool]] 模块状态字典
+        """
+        return config.getConfig("ErisPulse.modules.status", {})
     
     def __getattr__(self, module_name: str) -> Any:
         """
