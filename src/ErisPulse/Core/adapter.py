@@ -178,9 +178,6 @@ class AdapterManager:
         
         logger.info(f"启动适配器 {platforms}")
         
-        # 告诉生命周期模块，开始启动适配器
-        await lifecycle.emit("adapter_startup_before", platforms=platforms)
-
         from .router import router
         from .erispulse_config import get_server_config
         server_config = get_server_config()
@@ -213,9 +210,6 @@ class AdapterManager:
             scheduled_adapters.add(adapter)
             asyncio.create_task(self._run_adapter(adapter, platform))
         
-        # 告诉生命周期模块，适配器启动完成
-        await lifecycle.emit("adapter_startup_after", platforms=platforms)
-
     async def _run_adapter(self, adapter: BaseAdapter, platform: str) -> None:
         """
         {!--< internal-use >!--}
@@ -240,27 +234,15 @@ class AdapterManager:
 
             while True:
                 try:
-                    # 触发适配器启动尝试事件
-                    await lifecycle.emit("adapter_start_attempt", 
-                                       platform=platform, 
-                                       retry_count=retry_count)
                     
                     await adapter.start()
                     self._started_instances.add(adapter)
                     
-                    # 触发适配器启动成功事件
-                    await lifecycle.emit("adapter_started", platform=platform)
                     return
                 except Exception as e:
                     retry_count += 1
                     logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
                     
-                    # 触发适配器启动失败事件
-                    await lifecycle.emit("adapter_start_failed", 
-                                       platform=platform, 
-                                       retry_count=retry_count, 
-                                       error=e)
-
                     try:
                         await adapter.shutdown()
                     except Exception as stop_err:
@@ -278,17 +260,11 @@ class AdapterManager:
         """
         关闭所有适配器
         """
-        # 触发适配器关闭开始事件
-        await lifecycle.emit("adapter_shutdown_start")
-        
         for adapter in self._adapters.values():
             await adapter.shutdown()
         
         from .router import router
         await router.stop()
-        
-        # 触发适配器关闭完成事件
-        await lifecycle.emit("adapter_shutdown_complete")
 
     def get(self, platform: str) -> Optional[BaseAdapter]:
         """
