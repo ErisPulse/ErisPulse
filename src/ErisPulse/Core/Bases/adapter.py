@@ -1,10 +1,8 @@
-import functools
+import asyncio
 from typing import (
-    Callable, Any, Optional,
+    Any, Optional,
     Union, Awaitable
 )
-from collections import defaultdict
-from .logger import logger
 
 class SendDSL:
     """
@@ -98,48 +96,22 @@ class BaseAdapter:
             :example:
             >>> await adapter.Send.To("123").Example("Hello")
             """
-            logger.debug(f"适配器 {self._adapter.__class__.__name__} 发送了实例类型的消息: {text}")
-            
-        
+            return {
+                "status": "ok",
+                "retcode": 0,
+                "data": {
+                    "message_id": "1234567890",
+                    "time": 1755801512
+                },
+                "message_id": "1234567890",
+                "message": "",
+                "echo": None,
+                "example_raw": {
+                    "result": "success",
+                }
+            }
     def __init__(self):
-        """
-        初始化适配器
-        """
-        self._handlers = defaultdict(list)
-        self._middlewares = []
         self.Send = self.__class__.Send(self)
-
-    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
-        """
-        适配器事件监听装饰器
-        
-        :param event_type: 事件类型
-        :return: 装饰器函数
-        """
-        def decorator(func: Callable) -> Callable:
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                return await func(*args, **kwargs)
-            self._handlers[event_type].append(wrapper)
-
-            return wrapper
-        return decorator
-
-    def middleware(self, func: Callable) -> Callable:
-        """
-        添加中间件处理器
-        
-        :param func: 中间件函数
-        :return: 中间件函数
-        
-        :example:
-        >>> @adapter.middleware
-        >>> async def log_middleware(data):
-        >>>     print(f"处理数据: {data}")
-        >>>     return data
-        """
-        self._middlewares.append(func)
-        return func
 
     async def call_api(self, endpoint: str, **params: Any) -> Any:
         """
@@ -159,7 +131,7 @@ class BaseAdapter:
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现start方法")
-
+    
     async def shutdown(self) -> None:
         """
         关闭适配器的抽象方法
@@ -167,52 +139,38 @@ class BaseAdapter:
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现shutdown方法")
-        
-    async def emit(self, event_type: str, data: Any) -> None:
-        """
-        触发原生协议事件
-        
-        :param event_type: 事件类型
-        :param data: 事件数据
-        
-        :example:
-        >>> await adapter.emit("message", {"text": "Hello"})
-        """
-        # 先执行中间件
-        for middleware in self._middlewares:
-            data = await middleware(data)
+    
+    async def emit(self) -> None:
+        from .. import logger
+        logger.error("适配器调用了一个被弃用的原生方法emit，请检查适配器的实现，如果你是开发者请查看ErisPulse的文档进行更新。如果你是普通用户请查看本适配器是否有更新")
 
-        # 触发具体事件类型的处理器
-        if event_type in self._handlers:
-            for handler in self._handlers[event_type]:
-                await handler(data)
-
-        # 触发通配符 "*" 的处理器
-        for handler in self._handlers.get("*", []):
-            await handler(data)
-
-    async def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> Any:
+    def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> asyncio.Task:
         """
-        发送消息的便捷方法
+        发送消息的便捷方法，返回一个 asyncio Task
         
         :param target_type: 目标类型
         :param target_id: 目标ID
         :param message: 消息内容
         :param kwargs: 其他参数
             - method: 发送方法名(默认为"Text")
-        :return: 发送结果
+        :return: asyncio.Task 对象，用户可以自主决定是否等待
         
         :raises AttributeError: 当发送方法不存在时抛出
             
         :example:
-        >>> await adapter.send("user", "123", "Hello")
-        >>> await adapter.send("group", "456", "Hello", method="Markdown")
+        >>> task = adapter.send("user", "123", "Hello")
+        >>> # 用户可以选择等待: result = await task
+        >>> # 或者不等待让其在后台执行
+        >>> await adapter.send("group", "456", "Hello", method="Markdown")  # 直接等待
         """
-        method_name = kwargs.pop("method", "Text")
-        method = getattr(self.Send.To(target_type, target_id), method_name, None)
-        if not method:
-            raise AttributeError(f"未找到 {method_name} 方法，请确保已在 Send 类中定义")
-        return await method(text=message, **kwargs)
+        async def _send_wrapper():
+            method_name = kwargs.pop("method", "Text")
+            method = getattr(self.Send.To(target_type, target_id), method_name, None)
+            if not method:
+                raise AttributeError(f"未找到 {method_name} 方法，请确保已在 Send 类中定义")
+            return await method(message, **kwargs)
+        
+        return asyncio.create_task(_send_wrapper())
 
 __all__ = [
     "BaseAdapter",
