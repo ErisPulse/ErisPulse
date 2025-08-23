@@ -1,4 +1,3 @@
-# ErisPulse/__init__.py
 """
 ErisPulse SDK 主模块
 
@@ -6,7 +5,7 @@ ErisPulse SDK 主模块
 
 {!--< tips >!--}
 1. 使用前请确保已正确安装所有依赖
-2. 调用sdk.init()进行初始化
+2. 调用await sdk.init()进行初始化
 3. 模块加载采用懒加载机制
 {!--< /tips >!--}
 """
@@ -82,6 +81,7 @@ class LazyModule:
     {!--< tips >!--}
     1. 模块的实际实例化会在第一次属性访问时进行
     2. 依赖模块会在被使用时自动初始化
+    3. 对于继承自 BaseModule 的模块，会自动调用生命周期方法
     {!--< /tips >!--}
     """
     
@@ -100,8 +100,9 @@ class LazyModule:
         self._module_info = module_info
         self._instance = None
         self._initialized = False
+        self._is_base_module = module_info.get("meta", {}).get("is_base_module", False)
     
-    def _initialize(self):
+    async def _initialize(self):
         """
         实际初始化模块
         
@@ -120,21 +121,38 @@ class LazyModule:
             
             setattr(self._instance, "moduleInfo", self._module_info)
             self._initialized = True
-            logger.debug(f"模块 {self._module_name} 初始化完成")
+            
+            # 如果是 BaseModule 子类，在初始化后调用 on_load 方法
+            if self._is_base_module:
+                try:
+                    await module.load(self._module_name)
+                except Exception as e:
+                    logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
+            
+            logger.debug(f"懒加载模块 {self._module_name} 初始化完成")
             
         except Exception as e:
-            logger.error(f"模块 {self._module_name} 初始化失败: {e}")
-            raise 
+            logger.error(f"懒加载模块 {self._module_name} 初始化失败: {e}")
+            raise e
     
     def __getattr__(self, name: str) -> Any:
         """
         属性访问时触发初始化
         
-        :param name: str 要访问的属性名
-        :return: Any 模块属性值
+        :param name: str 属性名
+        :return: Any 属性值
         """
         if not self._initialized:
-            self._initialize()
+            # 在异步环境中同步调用异步初始化方法
+            try:
+                loop = asyncio.get_running_loop()
+                # 在已有事件循环中创建任务
+                task = loop.create_task(self._initialize())
+                # 阻塞等待完成
+                loop.run_until_complete(task)
+            except RuntimeError:
+                # 没有运行中的事件循环
+                asyncio.run(self._initialize())
         return getattr(self._instance, name)
     
     def __call__(self, *args, **kwargs) -> Any:
@@ -143,53 +161,194 @@ class LazyModule:
         
         :param args: 位置参数
         :param kwargs: 关键字参数
-        :return: Any 模块调用结果
+        :return: Any 调用结果
         """
         if not self._initialized:
-            self._initialize()
+            try:
+                loop = asyncio.get_running_loop()
+                task = loop.create_task(self._initialize())
+                loop.run_until_complete(task)
+            except RuntimeError:
+                asyncio.run(self._initialize())
         return self._instance(*args, **kwargs)
     
-    def __bool__(self) -> bool:
+    def __repr__(self) -> str:
         """
-        判断模块布尔值时触发初始化
-
-        :return: bool 模块布尔值
+        返回模块表示字符串
+        
+        :return: str 表示字符串
         """
-        if not self._initialized:
-            self._initialize()
-        return bool(self._instance)
+        if self._initialized:
+            return repr(self._instance)
+        return f"<LazyModule {self._module_name} (未初始化)>"
     
     def __str__(self) -> str:
         """
-        转换为字符串时触发初始化
+        返回模块字符串表示
         
-        :return: str 模块字符串表示
+        :return: str 字符串表示
+        """
+        return self.__repr__()
+    
+    def __dir__(self) -> List[str]:
+        """
+        返回模块属性列表
+        
+        :return: List[str] 属性列表
+        """
+        if not self._initialized:
+            try:
+                loop = asyncio.get_running_loop()
+                task = loop.create_task(self._initialize())
+                loop.run_until_complete(task)
+            except RuntimeError:
+                asyncio.run(self._initialize())
+        return dir(self._instance)
+    
+    def __getitem__(self, key):
+        """
+        支持索引访问
+        
+        :param key: 索引键
+        :return: 对应值
         """
         if not self._initialized:
             self._initialize()
-            return str(self._instance)
-        return str(self._instance)
+        return self._instance[key]
     
-    # 确保模块在被赋值给变量后仍然能正确工作
-    def __getattribute__(self, name: str) -> Any:
-        try:
-            # 首先尝试获取常规属性
-            return super().__getattribute__(name)
-        except AttributeError:
-            # 如果常规属性不存在，触发初始化
-            if name != '_initialized' and not self._initialized:
-                self._initialize()
-                return getattr(self._instance, name)
-            raise
+    def __setitem__(self, key, value):
+        """
+        支持索引赋值
         
-    def __copy__(self):
+        :param key: 索引键
+        :param value: 赋值内容
         """
-        浅拷贝时返回自身，保持懒加载特性
-
-        :return: self
+        if not self._initialized:
+            self._initialize()
+        self._instance[key] = value
+    
+    def __delitem__(self, key):
         """
-        return self
-
+        支持索引删除
+        
+        :param key: 索引键
+        """
+        if not self._initialized:
+            self._initialize()
+        del self._instance[key]
+    
+    def __contains__(self, item):
+        """
+        支持成员检查
+        
+        :param item: 检查项
+        :return: bool 是否包含
+        """
+        if not self._initialized:
+            self._initialize()
+        return item in self._instance
+    
+    def __iter__(self):
+        """
+        支持迭代
+        
+        :return: 迭代器
+        """
+        if not self._initialized:
+            self._initialize()
+        return iter(self._instance)
+    
+    def __len__(self):
+        """
+        支持长度获取
+        
+        :return: int 长度
+        """
+        if not self._initialized:
+            self._initialize()
+        return len(self._instance)
+    
+    def __bool__(self):
+        """
+        支持布尔值判断
+        
+        :return: bool 布尔值
+        """
+        # 懒加载模块始终为True，即使未初始化
+        return True
+    
+    def __eq__(self, other):
+        """
+        支持相等性比较
+        
+        :param other: 比较对象
+        :return: bool 是否相等
+        """
+        if not self._initialized:
+            self._initialize()
+        return self._instance == other
+    
+    def __ne__(self, other):
+        """
+        支持不等性比较
+        
+        :param other: 比较对象
+        :return: bool 是否不等
+        """
+        if not self._initialized:
+            self._initialize()
+        return self._instance != other
+    
+    def __hash__(self):
+        """
+        支持哈希计算
+        
+        :return: int 哈希值
+        """
+        # 懒加载模块的哈希基于模块名
+        return hash(f"LazyModule:{self._module_name}")
+    
+    def __setattr__(self, name: str, value: Any) -> None:
+        """
+        属性设置
+        
+        :param name: str 属性名
+        :param value: Any 属性值
+        """
+        # 特殊属性直接设置到包装器上
+        if name.startswith('_') or name in ('moduleInfo',):
+            super().__setattr__(name, value)
+        else:
+            # 其他属性设置到实际模块实例上
+            if not self._initialized:
+                self._initialize()
+            setattr(self._instance, name, value)
+    
+    def __delattr__(self, name: str) -> None:
+        """
+        属性删除
+        
+        :param name: str 属性名
+        """
+        if not self._initialized:
+            self._initialize()
+        delattr(self._instance, name)
+    
+    def __getattribute__(self, name: str) -> Any:
+        """
+        属性访问
+        
+        :param name: str 属性名
+        :return: Any 属性值
+        """
+        # 特殊属性直接从包装器获取
+        if name.startswith('_') or name in ('moduleInfo',):
+            return super().__getattribute__(name)
+        # 其他属性从实际模块实例获取
+        if not super().__getattribute__('_initialized'):
+            super()._initialize()
+        return getattr(super().__getattribute__('_instance'), name)
+    
     def __deepcopy__(self, memo):
         """
         深拷贝时返回自身，保持懒加载特性
@@ -198,7 +357,6 @@ class LazyModule:
         :return: self
         """
         return self
-
 
 class AdapterLoader:
     """
@@ -214,7 +372,7 @@ class AdapterLoader:
     """
     
     @staticmethod
-    def load() -> Tuple[Dict[str, object], List[str], List[str]]:
+    async def load() -> Tuple[Dict[str, object], List[str], List[str]]:
         """
         从PyPI包entry-points加载适配器
 
@@ -239,7 +397,7 @@ class AdapterLoader:
             
             # 处理适配器
             for entry_point in adapter_entries:
-                adapter_objs, enabled_adapters, disabled_adapters = AdapterLoader._process_adapter(
+                adapter_objs, enabled_adapters, disabled_adapters = await AdapterLoader._process_adapter(
                     entry_point, adapter_objs, enabled_adapters, disabled_adapters)
                     
         except Exception as e:
@@ -249,7 +407,7 @@ class AdapterLoader:
         return adapter_objs, enabled_adapters, disabled_adapters
     
     @staticmethod
-    def _process_adapter(
+    async def _process_adapter(
         entry_point: Any,
         adapter_objs: Dict[str, object],
         enabled_adapters: List[str],
@@ -273,16 +431,20 @@ class AdapterLoader:
         """
         meta_name = entry_point.name
 
-        if not adapter.exists(meta_name):
-            adapter._config_register(meta_name)
-            logger.info(f"发现新适配器 {meta_name}, 请在配置文件中配置适配器并决定是否启用")
+        # 检查适配器是否已经注册，如果未注册则进行注册（默认禁用）
+        if not sdk.adapter.exists(meta_name):
+            sdk.adapter._config_register(meta_name, False)  # 默认禁用
+            logger.info(f"发现新适配器 {meta_name}，默认已禁用，请在配置文件中配置适配器并决定是否启用")
+        else:
+            logger.debug(f"适配器 {meta_name} 已在配置中注册")
         
-        adapter_status = adapter.is_enabled(meta_name)
+        # 获取适配器当前状态
+        adapter_status = sdk.adapter.is_enabled(meta_name)
         logger.debug(f"适配器 {meta_name} 状态: {adapter_status}")
         
-        if adapter_status is False:
+        if not adapter_status:
             disabled_adapters.append(meta_name)
-            logger.warning(f"适配器 {meta_name} 已禁用，跳过加载")
+            logger.info(f"适配器 {meta_name} 当前为禁用状态")
             return adapter_objs, enabled_adapters, disabled_adapters
             
         try:
@@ -313,11 +475,9 @@ class AdapterLoader:
             
         except Exception as e:
             logger.warning(f"从entry-point加载适配器 {meta_name} 失败: {e}")
-
             raise ImportError(f"无法加载适配器 {meta_name}: {e}")
             
         return adapter_objs, enabled_adapters, disabled_adapters
-
 
 class ModuleLoader:
     """
@@ -332,7 +492,7 @@ class ModuleLoader:
     """
     
     @staticmethod
-    def load() -> Tuple[Dict[str, object], List[str], List[str]]:
+    async def load() -> Tuple[Dict[str, object], List[str], List[str]]:
         """
         从PyPI包entry-points加载模块
 
@@ -357,7 +517,7 @@ class ModuleLoader:
             
             # 处理模块
             for entry_point in module_entries:
-                module_objs, enabled_modules, disabled_modules = ModuleLoader._process_module(
+                module_objs, enabled_modules, disabled_modules = await ModuleLoader._process_module(
                     entry_point, module_objs, enabled_modules, disabled_modules)
                     
         except Exception as e:
@@ -367,7 +527,7 @@ class ModuleLoader:
         return module_objs, enabled_modules, disabled_modules
     
     @staticmethod
-    def _process_module(
+    async def _process_module(
         entry_point: Any,
         module_objs: Dict[str, object],
         enabled_modules: List[str],
@@ -390,23 +550,35 @@ class ModuleLoader:
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
+        
+        # 检查模块是否已经注册，如果未注册则进行注册（默认禁用）
+        if not sdk.module.exists(meta_name):
+            sdk.module._config_register(meta_name, False)  # 默认禁用
+            logger.info(f"发现新模块 {meta_name}，默认已禁用，请在配置文件中手动启用")
+        else:
+            logger.debug(f"模块 {meta_name} 已在配置中注册")
 
-        if not module.exists(meta_name):
-            module._config_register(meta_name)
-            logger.info(f"发现新模块 {meta_name}，如有需要启用请在配置文件中手动启用")
-
-        module_status = module.is_enabled(meta_name)
+        # 获取模块当前状态
+        module_status = sdk.module.is_enabled(meta_name)
         logger.debug(f"模块 {meta_name} 状态: {module_status}")
         
-        if module_status is False:
+        if not module_status:
             disabled_modules.append(meta_name)
-            logger.warning(f"模块 {meta_name} 已禁用，跳过加载")
+            logger.info(f"模块 {meta_name} 当前为禁用状态")
             return module_objs, enabled_modules, disabled_modules
             
         try:
             loaded_obj = entry_point.load()
             module_obj = sys.modules[loaded_obj.__module__]
             dist = importlib.metadata.distribution(entry_point.dist.name)
+            
+            # 检查模块是否继承自 BaseModule
+            from .Core.Bases.module import BaseModule
+            is_base_module = inspect.isclass(loaded_obj) and issubclass(loaded_obj, BaseModule)
+            
+            if not is_base_module:
+                logger.warning(f"模块 {meta_name} 未继承自 BaseModule，"\
+                            "如果你是这个模块的作者，请检查 ErisPulse 的文档更新 并尽快迁移！")
             
             lazy_load = ModuleLoader._should_lazy_load(loaded_obj)
             
@@ -418,7 +590,8 @@ class ModuleLoader:
                     "author": getattr(module_obj, "__author__", ""),
                     "license": getattr(module_obj, "__license__", ""),
                     "package": entry_point.dist.name,
-                    "lazy_load": lazy_load
+                    "lazy_load": lazy_load,
+                    "is_base_module": is_base_module
                 },
                 "module_class": loaded_obj
             }
@@ -467,19 +640,10 @@ class ModuleInitializer:
     """
     
     @staticmethod
-    def init() -> bool:
+    async def init() -> bool:
         """
         初始化所有模块和适配器
-        
-        生命周期事件:
-        - on_init_start: 初始化开始
-        - on_env_ready: 环境准备完成
-        - on_adapter_load: 适配器加载完成
-        - on_module_load: 模块加载完成
-        - on_adapter_register: 适配器注册完成
-        - on_module_init: 模块初始化完成
-        - on_init_complete: 初始化完成
-        
+
         执行步骤:
         1. 从PyPI包加载适配器
         2. 从PyPI包加载模块
@@ -494,11 +658,11 @@ class ModuleInitializer:
         
         try:
             # 1. 先加载适配器
-            adapter_objs, enabled_adapters, disabled_adapters = AdapterLoader.load()
+            adapter_objs, enabled_adapters, disabled_adapters = await AdapterLoader.load()
             logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
 
             # 2. 再加载模块
-            module_objs, enabled_modules, disabled_modules = ModuleLoader.load()
+            module_objs, enabled_modules, disabled_modules = await ModuleLoader.load()
             logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
             
             modules_dir = os.path.join(os.path.dirname(__file__), "modules")
@@ -511,12 +675,12 @@ class ModuleInitializer:
             
             # 3. 注册适配器
             logger.debug("[Init] 正在注册适配器...")
-            if not ModuleInitializer._register_adapters(enabled_adapters, adapter_objs):
+            if not await ModuleInitializer._register_adapters(enabled_adapters, adapter_objs):
                 return False
                 
             # 4. 初始化模块
             logger.debug("[Init] 正在初始化模块...")
-            success = ModuleInitializer._initialize_modules(enabled_modules, module_objs)
+            success = await ModuleInitializer._initialize_modules(enabled_modules, module_objs)
             
             if success:
                 logger.info("[Init] SDK初始化成功")
@@ -530,7 +694,7 @@ class ModuleInitializer:
             return False
     
     @staticmethod
-    def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
+    async def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
         """
         {!--< internal-use >!--}
         初始化模块
@@ -540,14 +704,11 @@ class ModuleInitializer:
         
         :return: bool 模块初始化是否成功
         """
-        # 将所有模块挂载到LazyModule代理上
+        # 将所有模块类注册到模块管理器
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
-            if hasattr(sdk, meta_name):
-                continue
-                
             try:
                 entry_points = importlib.metadata.entry_points()
                 if hasattr(entry_points, 'select'):
@@ -561,15 +722,11 @@ class ModuleInitializer:
                 if entry_point:
                     module_class = entry_point.load()
                     
-                    # 创建LazyModule代理
-                    lazy_module = LazyModule(meta_name, module_class, sdk, module_obj.moduleInfo)
-                    setattr(sdk, meta_name, lazy_module)
-                    
-                    logger.debug(f"预注册模块: {meta_name}")
+                    module.register(meta_name, module_class, module_obj.moduleInfo)
+                    logger.debug(f"注册模块类: {meta_name}")
                     
             except Exception as e:
-                logger.error(f"预注册模块 {meta_name} 失败: {e}")
-                setattr(sdk, meta_name, None)
+                logger.error(f"注册模块 {meta_name} 失败: {e}")
                 return False
         
         # 检查并初始化需要立即加载的模块
@@ -577,10 +734,8 @@ class ModuleInitializer:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
-            if not hasattr(sdk, meta_name):
-                continue
-                
             try:
+                # 检查是否需要立即加载
                 entry_points = importlib.metadata.entry_points()
                 if hasattr(entry_points, 'select'):
                     module_entries = entry_points.select(group='erispulse.module')
@@ -596,17 +751,21 @@ class ModuleInitializer:
                     # 检查是否需要立即加载
                     lazy_load = ModuleLoader._should_lazy_load(module_class)
                     if not lazy_load:
-                        # 触发LazyModule的初始化
-                        getattr(sdk, meta_name)._initialize()
-                        logger.debug(f"立即初始化模块: {meta_name}")
+                        # 立即加载模块
+                        if not await module.load(meta_name):
+                            logger.error(f"加载模块 {meta_name} 失败")
+                            return False
+                        else:
+                            logger.debug(f"立即加载模块: {meta_name}")
                         
             except Exception as e:
                 logger.error(f"初始化模块 {meta_name} 失败: {e}")
                 return False
                 
         return True
+    
     @staticmethod
-    def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
+    async def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
         """
         {!--< internal-use >!--}
         注册适配器
@@ -617,7 +776,6 @@ class ModuleInitializer:
         :return: bool 适配器注册是否成功
         """
         success = True
-        registered_classes = {}
 
         for adapter_name in adapters:
             adapter_obj = adapter_objs[adapter_name]
@@ -625,38 +783,20 @@ class ModuleInitializer:
             try:
                 if hasattr(adapter_obj, "adapterInfo") and isinstance(adapter_obj.adapterInfo, dict):
                     for platform, adapter_info in adapter_obj.adapterInfo.items():
-                        if platform in sdk.adapter._adapters:
+                        if platform in adapter._adapters:
                             continue
                             
                         adapter_class = adapter_info["adapter_class"]
                         
-                        if adapter_class in registered_classes:
-                            instance = registered_classes[adapter_class]
-                            # 改为直接操作适配器字典而不是调用register
-                            sdk.adapter._adapters[platform] = instance
-                            sdk.adapter._platform_to_instance[platform] = instance
-                            logger.debug(f"复用适配器实例 {adapter_class.__name__} 到平台别称 {platform}")
-                        else:
-                            init_signature = inspect.signature(adapter_class.__init__)
-                            params = init_signature.parameters
-                            
-                            if 'sdk' in params:
-                                instance = adapter_class(sdk)
-                            else:
-                                instance = adapter_class()
-                            
-                            # 直接操作适配器字典
-                            sdk.adapter._adapters[platform] = instance
-                            sdk.adapter._platform_to_instance[platform] = instance
-                            registered_classes[adapter_class] = instance
-                            logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
+                        adapter.register(platform, adapter_class, adapter_info)
+                        logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
                             
             except Exception as e:
                 logger.error(f"适配器 {adapter_name} 注册失败: {e}")
                 success = False
         return success
-    
-def init_progress() -> bool:
+
+async def init_progress() -> bool:
     """
     初始化项目环境文件
     
@@ -683,7 +823,7 @@ from ErisPulse import sdk
 
 async def main():
     try:
-        isInit = await sdk.init_task()
+        isInit = await sdk.init()
         
         if not isInit:
             sdk.logger.error("ErisPulse 初始化失败，请检查日志")
@@ -709,11 +849,10 @@ if __name__ == "__main__":
             
         return main_init
     except Exception as e:
-        sdk.logger.error(f"无法初始化项目环境: {e}")
+        logger.error(f"无法初始化项目环境: {e}")
         return False
 
-
-def _prepare_environment() -> bool:
+async def _prepare_environment() -> bool:
     """
     {!--< internal-use >!--}
     准备运行环境
@@ -728,7 +867,7 @@ def _prepare_environment() -> bool:
         get_erispulse_config()
         logger.info("[Init] 配置文件已加载")
 
-        main_init = init_progress()
+        main_init = await init_progress()
         if main_init:
             logger.info("[Init] 项目入口已生成, 你可以在 main.py 中编写一些代码")
         return True
@@ -736,16 +875,16 @@ def _prepare_environment() -> bool:
         logger.error(f"环境准备失败: {e}")
         return False
 
-def init() -> bool:
+async def init() -> bool:
     """
     SDK初始化入口
     
     :return: bool SDK初始化是否成功
     """
     
-    if not _prepare_environment():
+    if not await _prepare_environment():
         return False
-    result = ModuleInitializer.init()
+    result = await ModuleInitializer.init()
     
     return result
 
@@ -756,11 +895,9 @@ def init_task() -> asyncio.Task:
     :return: asyncio.Task 初始化任务
     """
     async def _async_init():
-        
-        if not _prepare_environment():
+        if not await _prepare_environment():
             return False
-        result = ModuleInitializer.init()
-        
+        result = await ModuleInitializer.init()
         return result
     
     try:
@@ -770,7 +907,30 @@ def init_task() -> asyncio.Task:
         asyncio.set_event_loop(loop)
         return loop.create_task(_async_init())
 
-def load_module(module_name: str) -> bool:
+async def run() -> None:
+    """
+    无头模式运行ErisPulse
+    
+    此方法提供了一种无需入口启动的方式，适用于与其它框架集成的场景
+    """
+    try:
+        isInit = await init()
+        
+        if not isInit:
+            logger.error("ErisPulse 初始化失败，请检查日志")
+            return
+        
+        await adapter.startup()
+        
+        # 保持程序运行
+        await asyncio.Event().wait()
+    except Exception as e:
+        logger.error(e)
+    finally:
+        await module.unload()
+        await adapter.shutdown()
+
+async def load_module(module_name: str) -> bool:
     """
     手动加载指定模块
     
@@ -783,12 +943,12 @@ def load_module(module_name: str) -> bool:
     {!--< /tips >!--}
     """
     try:
-        module = getattr(sdk, module_name, None)
-        if isinstance(module, LazyModule):
+        module_instance = getattr(sdk, module_name, None)
+        if isinstance(module_instance, LazyModule):
             # 触发懒加载模块的初始化
-            module._initialize()
+            await module_instance._initialize()
             return True
-        elif module is not None:
+        elif module_instance is not None:
             logger.warning(f"模块 {module_name} 已经加载")
             return False
         else:
@@ -797,7 +957,6 @@ def load_module(module_name: str) -> bool:
     except Exception as e:
         logger.error(f"加载模块 {module_name} 失败: {e}")
         return False
-
 
 sdk.init = init
 sdk.init_task = init_task

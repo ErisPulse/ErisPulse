@@ -32,9 +32,11 @@ class AdapterManager:
     def __init__(self):
         # 适配器存储
         self._adapters: Dict[str, BaseAdapter] = {}
+        self._adapter_classes: Dict[str, Type[BaseAdapter]] = {}
         self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
         self._platform_to_instance: Dict[str, BaseAdapter] = {}
         self._started_instances: Set[BaseAdapter] = set()
+        self._adapter_info: Dict[str, Dict] = {}
         
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
@@ -44,12 +46,13 @@ class AdapterManager:
     
     # ==================== 适配器注册与管理 ====================
     
-    def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
+    def register(self, platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None) -> bool:
         """
-        注册新的适配器类
+        注册新的适配器类（标准化注册方法）
         
         :param platform: 平台名称
         :param adapter_class: 适配器类
+        :param adapter_info: 适配器信息
         :return: 注册是否成功
         
         :raises TypeError: 当适配器类无效时抛出
@@ -59,12 +62,16 @@ class AdapterManager:
         """
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
-        from .. import sdk
+            
+        self._adapter_classes[platform] = adapter_class
+        if adapter_info:
+            self._adapter_info[platform] = adapter_info
 
         # 如果该类已经创建过实例，复用
         if adapter_class in self._adapter_instances:
             instance = self._adapter_instances[adapter_class]
         else:
+            from .. import sdk
             instance = adapter_class(sdk)
             self._adapter_instances[adapter_class] = instance
 
@@ -202,12 +209,16 @@ class AdapterManager:
     
     def _config_register(self, platform: str, enabled: bool = False) -> bool:
         """
-        注册新平台适配器
+        注册新平台适配器（仅当平台不存在时注册）
         
         :param platform: 平台名称
         :param enabled: [bool] 是否启用适配器
         :return: [bool] 操作是否成功
         """
+        if self.exists(platform):
+            return True
+        
+        # 平台不存在，进行注册
         config.setConfig(f"ErisPulse.adapters.status.{platform}", enabled)
         status = "启用" if enabled else "禁用"
         logger.info(f"平台适配器 {platform} 已注册并{status}")
