@@ -1,7 +1,7 @@
 """
 ErisPulse 适配器系统
 
-提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
+提供平台适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 """
 
 import functools
@@ -11,7 +11,7 @@ from typing import (
 )
 from collections import defaultdict
 from .logger import logger
-from .base import BaseAdapter
+from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
 
@@ -30,6 +30,7 @@ class AdapterManager:
     """
     
     def __init__(self):
+        # 适配器存储
         self._adapters: Dict[str, BaseAdapter] = {}
         self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
         self._platform_to_instance: Dict[str, BaseAdapter] = {}
@@ -38,81 +39,11 @@ class AdapterManager:
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
         self._onebot_middlewares = []
-
-    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
-        """
-        OneBot12协议事件监听装饰器
-        
-        :param event_type: OneBot12事件类型
-        :return: 装饰器函数
-        
-        :example:
-        >>> @sdk.adapter.on("message")
-        >>> async def handle_message(data):
-        >>>     print(f"收到OneBot12消息: {data}")
-        """
-        def decorator(func: Callable) -> Callable:
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                return await func(*args, **kwargs)
-            
-            self._onebot_handlers[event_type].append(wrapper)
-            return wrapper
-        return decorator
-
-    def middleware(self, func: Callable) -> Callable:
-        """
-        添加OneBot12中间件处理器
-        
-        :param func: 中间件函数
-        :return: 中间件函数
-        
-        :example:
-        >>> @sdk.adapter.middleware
-        >>> async def onebot_middleware(data):
-        >>>     print("处理OneBot12数据:", data)
-        >>>     return data
-        """
-        self._onebot_middlewares.append(func)
-        return func
-
-    async def emit(self, data: Any) -> None:
-        """
-        提交OneBot12协议事件到指定平台
-        
-        :param platform: 平台名称
-        :param event_type: OneBot12事件类型
-        :param data: 符合OneBot12标准的事件数据
-        
-        :raises ValueError: 当平台未注册时抛出
-            
-        :example:
-        >>> await sdk.adapter.emit("MyPlatform", "message", {
-        >>>     "id": "123",
-        >>>     "time": 1620000000,
-        >>>     "type": "message",
-        >>>     "detail_type": "private",
-        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
-        >>> })
-        """
-        platform = data.get("platform", "unknown")
-        event_type = data.get("type", "unknown")
-
-        if platform not in self._adapters:
-            raise ValueError(f"平台 {platform} 未注册")
-        
-        # 先执行OneBot12中间件
-        processed_data = data
-        for middleware in self._onebot_middlewares:
-            processed_data = await middleware(processed_data)
-
-        # 分发到OneBot12事件处理器
-        if event_type in self._onebot_handlers:
-            for handler in self._onebot_handlers[event_type]:
-                await handler(processed_data)
-        for handler in self._onebot_handlers.get("*", []):
-            await handler(processed_data)
-
+        # 原生事件处理器
+        self._raw_handlers = defaultdict(list)
+    
+    # ==================== 适配器注册与管理 ====================
+    
     def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
         """
         注册新的适配器类
@@ -153,7 +84,7 @@ class AdapterManager:
             setattr(self, platform.capitalize(), instance)
 
         return True
-
+    
     async def startup(self, platforms: List[str] = None) -> None:
         """
         启动指定的适配器
@@ -256,6 +187,7 @@ class AdapterManager:
 
                     logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
+                    
     async def shutdown(self) -> None:
         """
         关闭所有适配器
@@ -265,22 +197,9 @@ class AdapterManager:
         
         from .router import router
         await router.stop()
-
-    def get(self, platform: str) -> Optional[BaseAdapter]:
-        """
-        获取指定平台的适配器实例
-        
-        :param platform: 平台名称
-        :return: 适配器实例或None
-            
-        :example:
-        >>> adapter = adapter.get("MyPlatform")
-        """
-        platform_lower = platform.lower()
-        for registered, instance in self._adapters.items():
-            if registered.lower() == platform_lower:
-                return instance
-        return None
+    
+    # ==================== 适配器配置管理 ====================
+    
     def _config_register(self, platform: str, enabled: bool = False) -> bool:
         """
         注册新平台适配器
@@ -363,6 +282,165 @@ class AdapterManager:
         """
         return config.getConfig("ErisPulse.adapters.status", {})
     
+    # ==================== 事件处理与消息发送 ====================
+    
+    def on(self, event_type: str = "*", *, raw: bool = False, platform: str = None) -> Callable[[Callable], Callable]:
+        """
+        OneBot12协议事件监听装饰器
+        
+        :param event_type: OneBot12事件类型
+        :param raw: 是否监听原生事件
+        :param platform: 指定平台，None表示监听所有平台
+        :return: 装饰器函数
+        
+        :example:
+        >>> # 监听OneBot12标准事件（所有平台）
+        >>> @sdk.adapter.on("message")
+        >>> async def handle_message(data):
+        >>>     print(f"收到OneBot12消息: {data}")
+        >>>
+        >>> # 监听特定平台的OneBot12标准事件
+        >>> @sdk.adapter.on("message", platform="onebot11")
+        >>> async def handle_onebot11_message(data):
+        >>>     print(f"收到OneBot11标准消息: {data}")
+        >>>
+        >>> # 监听平台原生事件
+        >>> @sdk.adapter.on("message", raw=True, platform="onebot11")
+        >>> async def handle_raw_message(data):
+        >>>     print(f"收到OneBot11原生事件: {data}")
+        >>>
+        >>> # 监听所有平台的原生事件
+        >>> @sdk.adapter.on("message", raw=True)
+        >>> async def handle_all_raw_message(data):
+        >>>     print(f"收到原生事件: {data}")
+        """
+        def decorator(func: Callable) -> Callable:
+            @functools.wraps(func)
+            async def wrapper(*args, **kwargs):
+                return await func(*args, **kwargs)
+            
+            # 创建带元信息的处理器包装器
+            handler_wrapper = {
+                'func': wrapper,
+                'platform': platform
+            }
+            
+            if raw:
+                self._raw_handlers[event_type].append(handler_wrapper)
+            else:
+                self._onebot_handlers[event_type].append(handler_wrapper)
+            return wrapper
+        return decorator
+
+    def middleware(self, func: Callable) -> Callable:
+        """
+        添加OneBot12中间件处理器
+        
+        :param func: 中间件函数
+        :return: 中间件函数
+        
+        :example:
+        >>> @sdk.adapter.middleware
+        >>> async def onebot_middleware(data):
+        >>>     print("处理OneBot12数据:", data)
+        >>>     return data
+        """
+        self._onebot_middlewares.append(func)
+        return func
+
+    async def emit(self, data: Any) -> None:
+        """
+        提交OneBot12协议事件到指定平台
+        
+        :param data: 符合OneBot12标准的事件数据
+            
+        :example:
+        >>> await sdk.adapter.emit({
+        >>>     "id": "123",
+        >>>     "time": 1620000000,
+        >>>     "type": "message",
+        >>>     "detail_type": "private",
+        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}],
+        >>>     "platform": "myplatform",
+        >>>     "myplatform_raw": {...平台原生事件数据...},
+        >>>     "myplatform_raw_type": "text_message"
+        >>> })
+        """
+        platform = data.get("platform", "unknown")
+        event_type = data.get("type", "unknown")
+        platform_raw = data.get(f"{platform}_raw", {})
+        raw_event_type = data.get(f"{platform}_raw_type")
+
+        # 先执行OneBot12中间件
+        processed_data = data
+        for middleware in self._onebot_middlewares:
+            processed_data = await middleware(processed_data)
+
+        # 分发到OneBot12事件处理器
+        handlers_to_call = []
+        
+        # 处理特定事件类型的处理器
+        if event_type in self._onebot_handlers:
+            handlers_to_call.extend(self._onebot_handlers[event_type])
+        
+        # 处理通配符处理器
+        handlers_to_call.extend(self._onebot_handlers.get("*", []))
+        
+        # 调用符合条件的标准事件处理器
+        for handler_wrapper in handlers_to_call:
+            handler_platform = handler_wrapper.get('platform')
+            # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
+            if handler_platform is None or handler_platform == platform:
+                await handler_wrapper['func'](processed_data)
+        
+        # 只有当存在原生事件数据时才分发原生事件
+        if raw_event_type and platform_raw is not None:
+            raw_handlers_to_call = []
+            
+            # 处理特定原生事件类型的处理器
+            if raw_event_type in self._raw_handlers:
+                raw_handlers_to_call.extend(self._raw_handlers[raw_event_type])
+            
+            # 处理原生事件的通配符处理器
+            raw_handlers_to_call.extend(self._raw_handlers.get("*", []))
+            
+            # 调用符合条件的原生事件处理器
+            for handler_wrapper in raw_handlers_to_call:
+                handler_platform = handler_wrapper.get('platform')
+                # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
+                if handler_platform is None or handler_platform == platform:
+                    await handler_wrapper['func'](platform_raw)
+    
+    # ==================== 工具方法 ====================
+    
+    def get(self, platform: str) -> Optional[BaseAdapter]:
+        """
+        获取指定平台的适配器实例
+        
+        :param platform: 平台名称
+        :return: 适配器实例或None
+            
+        :example:
+        >>> adapter = adapter.get("MyPlatform")
+        """
+        platform_lower = platform.lower()
+        for registered, instance in self._adapters.items():
+            if registered.lower() == platform_lower:
+                return instance
+        return None
+    
+    @property
+    def platforms(self) -> List[str]:
+        """
+        获取所有已注册的平台列表
+        
+        :return: 平台名称列表
+            
+        :example:
+        >>> print("已注册平台:", adapter.platforms)
+        """
+        return list(self._adapters.keys())
+    
     def __getattr__(self, platform: str) -> BaseAdapter:
         """
         通过属性访问获取适配器实例
@@ -384,18 +462,6 @@ class AdapterManager:
         :return: [bool] 平台是否存在且启用
         """
         return self.exists(platform) and self.is_enabled(platform)
-
-    @property
-    def platforms(self) -> List[str]:
-        """
-        获取所有已注册的平台列表
-        
-        :return: 平台名称列表
-            
-        :example:
-        >>> print("已注册平台:", adapter.platforms)
-        """
-        return list(self._adapters.keys())
 
 adapter = AdapterManager()
 
