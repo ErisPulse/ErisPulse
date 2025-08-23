@@ -304,6 +304,7 @@ class MyPlatformConverter:
                 "user_id": str(raw_event.get("bot_id", ""))
             },
             "myplatform_raw": raw_event  # 保留原始数据
+            "myplatform_raw_type": raw_event.get("type", "")    # 原始数据类型
         }
 
         # 根据事件类型分发处理
