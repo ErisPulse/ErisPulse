@@ -12,6 +12,7 @@ ErisPulse SDK 主模块
 
 import os
 import sys
+import time
 import types
 import importlib
 import asyncio
@@ -126,12 +127,44 @@ class LazyModule:
             if self._is_base_module:
                 try:
                     await module.load(self._module_name)
+                    await lifecycle.emit(
+                        "module.load",
+                        msg="开始加载模块...",
+                        data={
+                            "sucess": True,
+                            "module_name": self._module_name
+                        }
+                    )
                 except Exception as e:
+                    await lifecycle.emit(
+                        "module.load",
+                        msg="模块加载失败: {}".format(e),
+                        data={
+                            "sucess": False,
+                            "module_name": self._module_name,
+                        }
+                    )
                     logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
             
+            await lifecycle.emit(
+                    "module.init",
+                    msg="初始化模块: {}".format(self._module_name),
+                    data={
+                        "sucess": True,
+                        "module_name": self._module_name,
+                    }
+                )
             logger.debug(f"懒加载模块 {self._module_name} 初始化完成")
             
         except Exception as e:
+            await lifecycle.emit(
+                "module.init",
+                msg="初始化模块: {} ,失败".format(self._module_name),
+                data={
+                    "sucess": False,
+                    "module_name": self._module_name,
+                }
+            )
             logger.error(f"懒加载模块 {self._module_name} 初始化失败: {e}")
             raise e
     
@@ -629,7 +662,7 @@ class ModuleLoader:
 
 class ModuleInitializer:
     """
-    模块初始化器
+    模块初始化器（注意：适配器是一个特殊的模块）
 
     负责协调适配器和模块的初始化流程
 
@@ -657,14 +690,29 @@ class ModuleInitializer:
         logger.info("[Init] SDK 正在初始化...")
         
         try:
-            # 1. 先加载适配器
-            adapter_objs, enabled_adapters, disabled_adapters = await AdapterLoader.load()
-            logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
-
-            # 2. 再加载模块
-            module_objs, enabled_modules, disabled_modules = await ModuleLoader.load()
-            logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
+            # 1. 并行加载适配器和模块
+            (adapter_result, module_result) = await asyncio.gather(
+                AdapterLoader.load(),
+                ModuleLoader.load(),
+                return_exceptions=True
+            )
             
+            # 检查是否有异常
+            if isinstance(adapter_result, Exception):
+                logger.error(f"[Init] 适配器加载失败: {adapter_result}")
+                return False
+                
+            if isinstance(module_result, Exception):
+                logger.error(f"[Init] 模块加载失败: {module_result}")
+                return False
+            
+            # 解包结果
+            adapter_objs, enabled_adapters, disabled_adapters = adapter_result
+            module_objs, enabled_modules, disabled_modules = module_result
+            
+            logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
+            logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
+
             modules_dir = os.path.join(os.path.dirname(__file__), "modules")
             if os.path.exists(modules_dir) and os.listdir(modules_dir):
                 logger.warning("[Warning] 你的项目使用了已经弃用的模块加载方式, 请尽快使用 PyPI 模块加载方式代替")
@@ -692,7 +740,6 @@ class ModuleInitializer:
         except Exception as e:
             logger.critical(f"SDK初始化严重错误: {e}")
             return False
-    
     @staticmethod
     async def _initialize_modules(modules: List[str], module_objs: Dict[str, Any]) -> bool:
         """
@@ -704,65 +751,86 @@ class ModuleInitializer:
         
         :return: bool 模块初始化是否成功
         """
-        # 将所有模块类注册到模块管理器
+        # 并行注册所有模块类
+        register_tasks = []
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
             
-            try:
-                entry_points = importlib.metadata.entry_points()
-                if hasattr(entry_points, 'select'):
-                    module_entries = entry_points.select(group='erispulse.module')
-                    module_entry_map = {entry.name: entry for entry in module_entries}
-                else:
-                    module_entries = entry_points.get('erispulse.module', [])
-                    module_entry_map = {entry.name: entry for entry in module_entries}
-                
-                entry_point = module_entry_map.get(meta_name)
-                if entry_point:
-                    module_class = entry_point.load()
+            async def register_module(name, obj):
+                try:
+                    entry_points = importlib.metadata.entry_points()
+                    if hasattr(entry_points, 'select'):
+                        module_entries = entry_points.select(group='erispulse.module')
+                        module_entry_map = {entry.name: entry for entry in module_entries}
+                    else:
+                        module_entries = entry_points.get('erispulse.module', [])
+                        module_entry_map = {entry.name: entry for entry in module_entries}
                     
-                    module.register(meta_name, module_class, module_obj.moduleInfo)
-                    logger.debug(f"注册模块类: {meta_name}")
-                    
-            except Exception as e:
-                logger.error(f"注册模块 {meta_name} 失败: {e}")
-                return False
-        
-        # 检查并初始化需要立即加载的模块
-        for module_name in modules:
-            module_obj = module_objs[module_name]
-            meta_name = module_obj.moduleInfo["meta"]["name"]
-            
-            try:
-                # 检查是否需要立即加载
-                entry_points = importlib.metadata.entry_points()
-                if hasattr(entry_points, 'select'):
-                    module_entries = entry_points.select(group='erispulse.module')
-                    module_entry_map = {entry.name: entry for entry in module_entries}
-                else:
-                    module_entries = entry_points.get('erispulse.module', [])
-                    module_entry_map = {entry.name: entry for entry in module_entries}
-                
-                entry_point = module_entry_map.get(meta_name)
-                if entry_point:
-                    module_class = entry_point.load()
-                    
-                    # 检查是否需要立即加载
-                    lazy_load = ModuleLoader._should_lazy_load(module_class)
-                    if not lazy_load:
-                        # 立即加载模块
-                        if not await module.load(meta_name):
-                            logger.error(f"加载模块 {meta_name} 失败")
-                            return False
-                        else:
-                            logger.debug(f"立即加载模块: {meta_name}")
+                    entry_point = module_entry_map.get(name)
+                    if entry_point:
+                        module_class = entry_point.load()
                         
-            except Exception as e:
-                logger.error(f"初始化模块 {meta_name} 失败: {e}")
-                return False
-                
-        return True
+                        module.register(name, module_class, obj.moduleInfo)
+                        logger.debug(f"注册模块类: {name}")
+                        return True
+                    return False
+                except Exception as e:
+                    logger.error(f"注册模块 {name} 失败: {e}")
+                    return False
+            
+            register_tasks.append(register_module(meta_name, module_obj))
+        
+        # 等待所有注册任务完成
+        register_results = await asyncio.gather(*register_tasks, return_exceptions=True)
+        
+        # 检查是否有注册失败的情况
+        if any(isinstance(result, Exception) or result is False for result in register_results):
+            return False
+        
+        # 并行初始化需要立即加载的模块
+        eager_load_tasks = []
+        for module_name in modules:
+            module_obj = module_objs[module_name]
+            meta_name = module_obj.moduleInfo["meta"]["name"]
+            
+            async def load_module_if_eager(name, obj):
+                try:
+                    # 检查是否需要立即加载
+                    entry_points = importlib.metadata.entry_points()
+                    if hasattr(entry_points, 'select'):
+                        module_entries = entry_points.select(group='erispulse.module')
+                        module_entry_map = {entry.name: entry for entry in module_entries}
+                    else:
+                        module_entries = entry_points.get('erispulse.module', [])
+                        module_entry_map = {entry.name: entry for entry in module_entries}
+                    
+                    entry_point = module_entry_map.get(name)
+                    if entry_point:
+                        module_class = entry_point.load()
+                        
+                        # 检查是否需要立即加载
+                        lazy_load = ModuleLoader._should_lazy_load(module_class)
+                        if not lazy_load:
+                            # 立即加载模块
+                            result = await module.load(name)
+                            if not result:
+                                logger.error(f"加载模块 {name} 失败")
+                            else:
+                                logger.debug(f"立即加载模块: {name}")
+                            return result
+                    return True  # 不需要立即加载的模块返回True
+                except Exception as e:
+                    logger.error(f"初始化模块 {name} 失败: {e}")
+                    return False
+            
+            eager_load_tasks.append(load_module_if_eager(meta_name, module_obj))
+        
+        # 等待所有立即加载任务完成
+        load_results = await asyncio.gather(*eager_load_tasks, return_exceptions=True)
+        
+        # 检查是否有加载失败的情况
+        return not any(isinstance(result, Exception) or result is False for result in load_results)
     
     @staticmethod
     async def _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any]) -> bool:
@@ -775,26 +843,36 @@ class ModuleInitializer:
         
         :return: bool 适配器注册是否成功
         """
-        success = True
-
+        # 并行注册所有适配器
+        register_tasks = []
+        
         for adapter_name in adapters:
             adapter_obj = adapter_objs[adapter_name]
             
-            try:
-                if hasattr(adapter_obj, "adapterInfo") and isinstance(adapter_obj.adapterInfo, dict):
-                    for platform, adapter_info in adapter_obj.adapterInfo.items():
-                        if platform in adapter._adapters:
-                            continue
+            async def register_single_adapter(name, obj):
+                try:
+                    success = True
+                    if hasattr(obj, "adapterInfo") and isinstance(obj.adapterInfo, dict):
+                        for platform, adapter_info in obj.adapterInfo.items():
+                            if platform in adapter._adapters:
+                                continue
+                                
+                            adapter_class = adapter_info["adapter_class"]
                             
-                        adapter_class = adapter_info["adapter_class"]
-                        
-                        adapter.register(platform, adapter_class, adapter_info)
-                        logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
-                            
-            except Exception as e:
-                logger.error(f"适配器 {adapter_name} 注册失败: {e}")
-                success = False
-        return success
+                            adapter.register(platform, adapter_class, adapter_info)
+                            logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
+                    return success
+                except Exception as e:
+                    logger.error(f"适配器 {name} 注册失败: {e}")
+                    return False
+            
+            register_tasks.append(register_single_adapter(adapter_name, adapter_obj))
+        
+        # 等待所有注册任务完成
+        register_results = await asyncio.gather(*register_tasks, return_exceptions=True)
+        
+        # 检查是否有注册失败的情况
+        return not any(isinstance(result, Exception) or result is False for result in register_results)
 
 async def init_progress() -> bool:
     """
@@ -881,10 +959,24 @@ async def init() -> bool:
     
     :return: bool SDK初始化是否成功
     """
-    
     if not await _prepare_environment():
         return False
+    
+    await lifecycle.emit("core.init.start", msg="开始初始化")
+    
+    load_start_time = time.time()
     result = await ModuleInitializer.init()
+    load_duration = time.time() - load_start_time
+    logger.debug(f"[Init] 模块加载完成，耗时 {load_duration:.2f} 秒")
+
+    await lifecycle.emit(
+        "core.init.complete",
+        msg="模块初始化完成" if result else "模块初始化失败",
+        data={
+            "duration": load_duration,
+            "success": result
+        }
+    )
     
     return result
 
@@ -896,8 +988,34 @@ def init_task() -> asyncio.Task:
     """
     async def _async_init():
         if not await _prepare_environment():
+            await lifecycle.emit(
+                "core.init.complete",
+                msg="模块初始化失败",
+                data={
+                    "duration": 0.0,
+                    "success": False
+                }
+            )
             return False
+            
+        await lifecycle.emit(
+            "core.init.start",
+            msg="开始初始化模块..."
+        )
+        
+        load_start_time = time.time()
         result = await ModuleInitializer.init()
+        load_duration = time.time() - load_start_time
+        logger.debug(f"[Init] 模块加载完成，耗时 {load_duration:.2f} 秒")
+        
+        await lifecycle.emit(
+            "core.init.complete",
+            msg="模块初始化完成" if result else "模块初始化失败",
+            data={
+                "duration": load_duration,
+                "success": result
+            }
+        )
         return result
     
     try:
@@ -906,7 +1024,7 @@ def init_task() -> asyncio.Task:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         return loop.create_task(_async_init())
-
+    
 async def run() -> None:
     """
     无头模式运行ErisPulse
