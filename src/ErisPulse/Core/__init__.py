@@ -1,6 +1,6 @@
 from .lifecycle import lifecycle
 from .adapter import adapter
-from .base import BaseAdapter, SendDSL
+from .Bases import BaseAdapter, BaseModule, SendDSL
 from .storage import storage
 from .logger import logger
 from .module import module
@@ -12,7 +12,7 @@ from . import Event
 # 兼容性别名定义
 adapter_server  = router        # 路由管理器别名
 env             = storage       # 存储管理器别名
-AdapterFather   = BaseAdapter # 适配器基类别名
+AdapterFather   = BaseAdapter   # 适配器基类别名
 
 __all__ = [
     # 事件模块
@@ -26,6 +26,7 @@ __all__ = [
 
     # 模块相关
     'module',           # 模块管理器
+    'BaseModule',       # 模块基类
     
     # 存储和配置相关
     'storage',          # 存储管理器
