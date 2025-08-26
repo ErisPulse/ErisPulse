@@ -15,6 +15,7 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
+| `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
@@ -33,7 +34,7 @@ Event 模块包含以下子模块：
 from ErisPulse.Core import (
         storage, config, module_registry,
         adapter, module, logger,
-        BaseAdapter, Event
+        BaseAdapter, Event, lifecycle
     )
 
 # 通过SDK对象方式
@@ -284,11 +285,122 @@ async def connect_handler(event):
     sdk.logger.info(f"平台连接成功: {event['platform']}")
 ```
 
+## 8. 生命周期管理 (lifecycle)
+
+生命周期管理模块提供了统一的生命周期事件管理和触发机制。所有核心组件和第三方模块都可以通过此模块提交和监听生命周期事件。
+
+### 主要功能
+
+- 生命周期事件注册和监听
+- 标准化生命周期事件格式
+- 点式结构事件监听（例如 `module.init` 可以被 `module` 监听到）
+- 自定义事件支持
+- 事件计时器功能
+
+### 事件标准格式
+
+所有生命周期事件都遵循以下标准格式：
+
+```json
+{
+    "event": "事件名称",
+    "timestamp": 1234567890,
+    "data": {
+        // 事件相关数据
+    },
+    "source": "事件来源模块",
+    "msg": "事件描述"
+}
+```
+
+### 标准生命周期事件
+
+| 事件类别 | 事件名称 | 触发时机 |
+|---------|---------|---------|
+| core | `core.init.start` | 核心初始化开始 |
+| core | `core.init.complete` | 核心初始化完成 |
+| module | `module.load` | 模块加载完成 |
+| module | `module.init` | 模块初始化完成 |
+| module | `module.unload` | 模块卸载 |
+| adapter | `adapter.load` | 适配器加载完成 |
+| adapter | `adapter.start` | 适配器启动开始 |
+| adapter | `adapter.started` | 适配器启动完成 |
+| adapter | `adapter.status.change` | 适配器状态变化 |
+| adapter | `adapter.stop` | 适配器停止开始 |
+| adapter | `adapter.stopped` | 适配器停止完成 |
+| runtime | `runtime.start` | 运行时启动 |
+| runtime | `runtime.stop` | 运行时停止 |
+| server | `server.start` | 服务器启动开始 |
+| server | `server.started` | 服务器启动完成 |
+| server | `server.stop` | 服务器停止开始 |
+| server | `server.stopped` | 服务器停止完成 |
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 监听模块初始化事件
+@sdk.lifecycle.on("module.init")
+async def module_init_handler(event_data):
+    print(f"模块 {event_data['data']['module_name']} 初始化完成")
+
+# 监听适配器状态变化事件
+@sdk.lifecycle.on("adapter.status.change")
+async def adapter_status_handler(event_data):
+    status_data = event_data['data']
+    print(f"适配器 {status_data['platform']} 状态变化为: {status_data['status']}")
+
+# 提交自定义生命周期事件
+await sdk.lifecycle.submit_event(
+    "custom.event",
+    data={"custom_field": "custom_value"},
+    source="MyModule",
+    msg="自定义事件描述"
+)
+
+# 使用计时器功能
+sdk.lifecycle.start_timer("my_operation")
+# ... 执行一些操作 ...
+duration = sdk.lifecycle.stop_timer("my_operation")
+print(f"操作耗时: {duration} 秒")
+```
+
+### 第三方模块集成
+
+生命周期模块是第三方模块也可以使用的核心模块。第三方模块可以通过此模块：
+
+1. 提交自定义生命周期事件
+2. 监听标准或自定义生命周期事件
+3. 利用计时器功能测量操作耗时
+
+```python
+# 第三方模块示例
+from ErisPulse import sdk
+
+class MyCustomModule:
+    async def on_load(self, event_data):
+        # 模块加载时提交事件
+        await sdk.lifecycle.submit_event(
+            "mymodule.loaded",
+            data={"version": "1.0.0"},
+            source="MyCustomModule",
+            msg="自定义模块加载完成"
+        )
+    
+    @sdk.lifecycle.on("adapter.started")
+    async def on_adapter_ready(self, event_data):
+        # 监听适配器启动完成事件
+        print("适配器已就绪，可以开始工作了")
+```
+
+
 ## 模块使用规范
 
 - 所有模块通过 `sdk` 对象统一管理
 - 每个模块拥有独立命名空间，使用 `sdk` 进行调用
 - 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
+- 生命周期事件可用于模块间通信和状态同步
 
 ## 配置管理
 

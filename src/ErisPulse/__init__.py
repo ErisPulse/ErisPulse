@@ -129,7 +129,7 @@ class LazyModule:
                 except Exception as e:
                     logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
 
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                     "module.init",
                     msg=f"模块 {self._module_name} 初始化完毕",
                     data={
@@ -141,7 +141,7 @@ class LazyModule:
             
         except Exception as e:
 
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                     "module.init",
                     msg=f"模块初始化失败: {e}",
                     data={
@@ -714,7 +714,7 @@ class ModuleInitializer:
                 logger.error("[Init] SDK初始化失败")
             
             load_duration = lifecycle.stop_timer("core.init")
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                 "core.init.complete",
                 msg="模块初始化完成" if success else "模块初始化失败",
                 data={
@@ -726,7 +726,7 @@ class ModuleInitializer:
             
         except Exception as e:
             load_duration = lifecycle.stop_timer("core.init")
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                 "core.init.complete",
                 msg="模块初始化失败",
                 data={
@@ -859,7 +859,7 @@ class ModuleInitializer:
                             logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
                             
                             # 提交适配器加载完成事件
-                            await lifecycle.emit(
+                            await lifecycle.submit_event(
                                 "adapter.load",
                                 msg=f"适配器 {platform} 加载完成",
                                 data={
@@ -871,7 +871,7 @@ class ModuleInitializer:
                 except Exception as e:
                     logger.error(f"适配器 {name} 注册失败: {e}")
                     # 提交适配器加载失败事件
-                    await lifecycle.emit(
+                    await lifecycle.submit_event(
                         "adapter.load",
                         msg=f"适配器 {name} 加载失败: {e}",
                         data={
@@ -954,7 +954,7 @@ async def _prepare_environment() -> bool:
 
     :return: bool 环境准备是否成功
     """
-    await lifecycle.emit(
+    await lifecycle.submit_event(
         "core.init.start",
         msg="开始初始化"
     )
@@ -972,7 +972,7 @@ async def _prepare_environment() -> bool:
         return True
     except Exception as e:
         load_duration = lifecycle.stop_timer("core.init")
-        await lifecycle.emit(
+        await lifecycle.submit_event(
             "core.init.complete",
             msg="模块初始化失败",
             data={
