@@ -116,6 +116,15 @@ class AdapterManager:
         
         logger.info(f"启动适配器 {platforms}")
         
+        # 提交适配器启动开始事件
+        await lifecycle.emit(
+            "adapter.start",
+            msg="开始启动适配器",
+            data={
+                "platforms": platforms
+            }
+        )
+        
         from .router import router
         from .erispulse_config import get_server_config
         server_config = get_server_config()
@@ -169,17 +178,49 @@ class AdapterManager:
             retry_count = 0
             fixed_delay = 3 * 60 * 60
             backoff_intervals = [60, 10 * 60, 30 * 60, 60 * 60]
+            
+            # 提交适配器状态变化事件（starting）
+            await lifecycle.emit(
+                "adapter.status.change",
+                msg=f"适配器 {platform} 状态变化: starting",
+                data={
+                    "platform": platform,
+                    "status": "starting",
+                    "retry_count": retry_count
+                }
+            )
 
             while True:
                 try:
-                    
                     await adapter.start()
                     self._started_instances.add(adapter)
+                    
+                    # 提交适配器状态变化事件（started）
+                    await lifecycle.emit(
+                        "adapter.status.change",
+                        msg=f"适配器 {platform} 状态变化: started",
+                        data={
+                            "platform": platform,
+                            "status": "started"
+                        }
+                    )
                     
                     return
                 except Exception as e:
                     retry_count += 1
                     logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+                    
+                    # 提交适配器状态变化事件（start_failed）
+                    await lifecycle.emit(
+                        "adapter.status.change",
+                        msg=f"适配器 {platform} 状态变化: start_failed",
+                        data={
+                            "platform": platform,
+                            "status": "start_failed",
+                            "retry_count": retry_count,
+                            "error": str(e)
+                        }
+                    )
                     
                     try:
                         await adapter.shutdown()
@@ -194,16 +235,29 @@ class AdapterManager:
 
                     logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
-                    
     async def shutdown(self) -> None:
         """
         关闭所有适配器
         """
+        # 提交适配器关闭开始事件
+        await lifecycle.emit(
+            "adapter.stop",
+            msg="开始关闭适配器",
+            data={}
+        )
+        
         for adapter in self._adapters.values():
             await adapter.shutdown()
         
         from .router import router
         await router.stop()
+        
+        # 提交适配器关闭完成事件
+        await lifecycle.emit(
+            "adapter.stopped",
+            msg="适配器关闭完成",
+            data={}
+        )
     
     # ==================== 适配器配置管理 ====================
     

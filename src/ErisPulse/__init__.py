@@ -128,7 +128,7 @@ class LazyModule:
                     await module.load(self._module_name)
                 except Exception as e:
                     logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
-                    
+
             await lifecycle.emit(
                     "module.init",
                     msg=f"模块 {self._module_name} 初始化完毕",
@@ -857,9 +857,28 @@ class ModuleInitializer:
                             
                             adapter.register(platform, adapter_class, adapter_info)
                             logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
+                            
+                            # 提交适配器加载完成事件
+                            await lifecycle.emit(
+                                "adapter.load",
+                                msg=f"适配器 {platform} 加载完成",
+                                data={
+                                    "platform": platform,
+                                    "success": True
+                                }
+                            )
                     return success
                 except Exception as e:
                     logger.error(f"适配器 {name} 注册失败: {e}")
+                    # 提交适配器加载失败事件
+                    await lifecycle.emit(
+                        "adapter.load",
+                        msg=f"适配器 {name} 加载失败: {e}",
+                        data={
+                            "platform": name,
+                            "success": False
+                        }
+                    )
                     return False
             
             register_tasks.append(register_single_adapter(adapter_name, adapter_obj))
