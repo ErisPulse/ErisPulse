@@ -259,21 +259,44 @@ class RouterManager:
         
         :raises RuntimeError: 当服务器已在运行时抛出
         """
-        if self._server_task and not self._server_task.done():
-            raise RuntimeError("服务器已在运行中")
+        try:
+            if self._server_task and not self._server_task.done():
+                raise RuntimeError("服务器已在运行中")
 
-        config = Config()
-        config.bind = [f"{host}:{port}"]
-        config.loglevel = "warning"
-        
-        if ssl_certfile and ssl_keyfile:
-            config.certfile = ssl_certfile
-            config.keyfile = ssl_keyfile
-        
-        self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
-        logger.info(f"启动路由服务器 {self.base_url}")
-        
-        self._server_task = asyncio.create_task(serve(self.app, config))
+            config = Config()
+            config.bind = [f"{host}:{port}"]
+            config.loglevel = "warning"
+            
+            if ssl_certfile and ssl_keyfile:
+                config.certfile = ssl_certfile
+                config.keyfile = ssl_keyfile
+            
+            self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
+            logger.info(f"启动路由服务器 {self.base_url}")
+            
+            self._server_task = asyncio.create_task(serve(self.app, config))
+
+            await lifecycle.emit(
+                "server.start",
+                msg="路由服务器已启动",
+                data={
+                    "base_url": self.base_url,
+                    "host": host,
+                    "port": port,
+                },
+            )
+        except Exception as e:
+            await lifecycle.emit(
+                "server.start",
+                msg="路由服务器启动失败",
+                data={
+                    "base_url": self.base_url,
+                    "host": host,
+                    "port": port,
+                }
+            )
+            logger.error(f"启动服务器失败: {e}")
+            raise e
 
     async def stop(self) -> None:
         """
@@ -286,6 +309,8 @@ class RouterManager:
             except asyncio.CancelledError:
                 logger.info("路由服务器已停止")
             self._server_task = None
+        
+        await lifecycle.emit("server.stopped", msg="服务器已停止")
 
 router = RouterManager()
 
