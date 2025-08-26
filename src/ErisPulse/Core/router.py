@@ -147,6 +147,29 @@ class RouterManager:
         """
         return self.register_http_route(*args, **kwargs)
 
+    def unregister_http_route(self, module_name: str, path: str) -> None:
+        """
+        取消注册HTTP路由
+
+        :param module_name: 模块名称
+        :param path: 路由路径
+
+        :return: Bool
+        """
+        try:
+            full_path = self.get_full_path(path)
+            if full_path not in self._http_routes[module_name]:
+                logger.warning(f"取消注册HTTP路由失败: 路由不存在: {self.base_url}{full_path}")
+                return
+            
+            logger.info(f"取消注册HTTP路由: {self.base_url}{full_path}")
+            del self._http_routes[module_name][full_path]
+            self.app.router.remove(full_path)
+            return True
+        except Exception as e:
+            logger.error(f"取消注册HTTP路由失败: {e}")
+            return False
+        
     def register_websocket(
         self,
         module_name: str,
@@ -195,6 +218,21 @@ class RouterManager:
         )
         self._websocket_routes[module_name][full_path] = (handler, auth_handler)
         logger.info(f"注册WebSocket: {self.base_url}{full_path} {'(需认证)' if auth_handler else ''}")
+        
+    def unregister_websocket(self, module_name: str, path: str) -> None:
+        try:
+            full_path = self._websocket_routes[module_name][path]
+
+            if full_path in self.app.websocket_routes:
+                self.app.remove_api_websocket_route(full_path)
+                logger.info(f"注销WebSocket: {self.base_url}{full_path}")
+                del self._websocket_routes[module_name][path]
+                return True
+            logger.error(f"注销WebSocket失败: 路径 {self.base_url}{full_path} 不存在")
+            return False
+        except Exception as e:
+            logger.error(f"注销WebSocket失败: {e}")
+            return False
 
     def get_app(self) -> FastAPI:
         """
