@@ -1,4 +1,3 @@
-# router.py (新文件名)
 """
 ErisPulse 路由系统
 
@@ -7,7 +6,6 @@ ErisPulse 路由系统
 {!--< tips >!--}
 1. 适配器只需注册路由，无需自行管理服务器
 2. WebSocket支持自定义认证逻辑
-3. 兼容FastAPI 0.68+ 版本
 {!--< /tips >!--}
 """
 
@@ -16,6 +14,7 @@ from fastapi.routing import APIRoute
 from typing import Dict, List, Optional, Callable, Any, Awaitable, Tuple
 from collections import defaultdict
 from .logger import logger
+from .lifecycle import lifecycle
 import asyncio
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
@@ -148,6 +147,29 @@ class RouterManager:
         """
         return self.register_http_route(*args, **kwargs)
 
+    def unregister_http_route(self, module_name: str, path: str) -> None:
+        """
+        取消注册HTTP路由
+
+        :param module_name: 模块名称
+        :param path: 路由路径
+
+        :return: Bool
+        """
+        try:
+            full_path = self.get_full_path(path)
+            if full_path not in self._http_routes[module_name]:
+                logger.warning(f"取消注册HTTP路由失败: 路由不存在: {self.base_url}{full_path}")
+                return
+            
+            logger.info(f"取消注册HTTP路由: {self.base_url}{full_path}")
+            del self._http_routes[module_name][full_path]
+            self.app.router.remove(full_path)
+            return True
+        except Exception as e:
+            logger.error(f"取消注册HTTP路由失败: {e}")
+            return False
+        
     def register_websocket(
         self,
         module_name: str,
@@ -196,6 +218,21 @@ class RouterManager:
         )
         self._websocket_routes[module_name][full_path] = (handler, auth_handler)
         logger.info(f"注册WebSocket: {self.base_url}{full_path} {'(需认证)' if auth_handler else ''}")
+        
+    def unregister_websocket(self, module_name: str, path: str) -> None:
+        try:
+            full_path = self._websocket_routes[module_name][path]
+
+            if full_path in self.app.websocket_routes:
+                self.app.remove_api_websocket_route(full_path)
+                logger.info(f"注销WebSocket: {self.base_url}{full_path}")
+                del self._websocket_routes[module_name][path]
+                return True
+            logger.error(f"注销WebSocket失败: 路径 {self.base_url}{full_path} 不存在")
+            return False
+        except Exception as e:
+            logger.error(f"注销WebSocket失败: {e}")
+            return False
 
     def get_app(self) -> FastAPI:
         """
@@ -222,21 +259,44 @@ class RouterManager:
         
         :raises RuntimeError: 当服务器已在运行时抛出
         """
-        if self._server_task and not self._server_task.done():
-            raise RuntimeError("服务器已在运行中")
+        try:
+            if self._server_task and not self._server_task.done():
+                raise RuntimeError("服务器已在运行中")
 
-        config = Config()
-        config.bind = [f"{host}:{port}"]
-        config.loglevel = "warning"
-        
-        if ssl_certfile and ssl_keyfile:
-            config.certfile = ssl_certfile
-            config.keyfile = ssl_keyfile
-        
-        self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
-        logger.info(f"启动路由服务器 {self.base_url}")
-        
-        self._server_task = asyncio.create_task(serve(self.app, config))
+            config = Config()
+            config.bind = [f"{host}:{port}"]
+            config.loglevel = "warning"
+            
+            if ssl_certfile and ssl_keyfile:
+                config.certfile = ssl_certfile
+                config.keyfile = ssl_keyfile
+            
+            self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
+            logger.info(f"启动路由服务器 {self.base_url}")
+            
+            self._server_task = asyncio.create_task(serve(self.app, config))
+
+            await lifecycle.submit_event(
+                "server.start",
+                msg="路由服务器已启动",
+                data={
+                    "base_url": self.base_url,
+                    "host": host,
+                    "port": port,
+                },
+            )
+        except Exception as e:
+            await lifecycle.submit_event(
+                "server.start",
+                msg="路由服务器启动失败",
+                data={
+                    "base_url": self.base_url,
+                    "host": host,
+                    "port": port,
+                }
+            )
+            logger.error(f"启动服务器失败: {e}")
+            raise e
 
     async def stop(self) -> None:
         """
@@ -249,14 +309,11 @@ class RouterManager:
             except asyncio.CancelledError:
                 logger.info("路由服务器已停止")
             self._server_task = None
+        
+        await lifecycle.submit_event("server.stopped", msg="服务器已停止")
 
-# 主要实例
 router = RouterManager()
-
-# 兼容性实例
-adapter_server = router
 
 __all__ = [
     "router",
-    "adapter_server"
 ]

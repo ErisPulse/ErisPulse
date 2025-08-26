@@ -1,239 +1,25 @@
 """
 ErisPulse 适配器系统
 
-提供平台适配器基类、消息发送DSL和适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
-
-{!--< tips >!--}
-1. 适配器必须继承BaseAdapter并实现必要方法
-2. 使用SendDSL实现链式调用风格的消息发送接口
-3. 适配器管理器支持多平台适配器的注册和生命周期管理
-4. 支持OneBot12协议的事件处理
-{!--< /tips >!--}
+提供平台适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 """
 
 import functools
 import asyncio
 from typing import (
-    Callable, Any, Dict, List, Type, Optional, Set, 
-    Union, Awaitable
+    Callable, Any, Dict, List, Type, Optional, Set
 )
 from collections import defaultdict
 from .logger import logger
-
-class SendDSLBase:
-    """
-    消息发送DSL基类
-    
-    用于实现 Send.To(...).Func(...) 风格的链式调用接口
-    
-    {!--< tips >!--}
-    1. 子类应实现具体的消息发送方法(如Text, Image等)
-    2. 通过__getattr__实现动态方法调用
-    {!--< /tips >!--}
-    """
-    
-    def __init__(self, adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None):
-        """
-        初始化DSL发送器
-        
-        :param adapter: 所属适配器实例
-        :param target_type: 目标类型(可选)
-        :param target_id: 目标ID(可选)
-        :param _account_id: 发送账号(可选)
-        """
-        self._adapter = adapter
-        self._target_type = target_type
-        self._target_id = target_id
-        self._target_to = target_id
-        self._account_id = account_id
-
-    def To(self, target_type: str = None, target_id: Union[str, int] = None) -> 'SendDSL':
-        """
-        设置消息目标
-        
-        :param target_type: 目标类型(可选)
-        :param target_id: 目标ID(可选)
-        :return: SendDSL实例
-        
-        :example:
-        >>> adapter.Send.To("user", "123").Text("Hello")
-        >>> adapter.Send.To("123").Text("Hello")  # 简化形式
-        """
-        if target_id is None and target_type is not None:
-            target_id = target_type
-            target_type = None
-
-        return self.__class__(self._adapter, target_type, target_id, self._account_id)
-
-    def Using(self, account_id: Union[str, int]) -> 'SendDSL':
-        """
-        设置发送账号
-        
-        :param _account_id: 发送账号
-        :return: SendDSL实例
-        
-        :example:
-        >>> adapter.Send.Using("bot1").To("123").Text("Hello")
-        >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
-        """
-        return self.__class__(self._adapter, self._target_type, self._target_id, account_id)
-
-
-class BaseAdapter:
-    """
-    适配器基类
-    
-    提供与外部平台交互的标准接口，子类必须实现必要方法
-    
-    {!--< tips >!--}
-    1. 必须实现call_api, start和shutdown方法
-    2. 可以自定义Send类实现平台特定的消息发送逻辑
-    3. 通过on装饰器注册事件处理器
-    4. 支持OneBot12协议的事件处理
-    {!--< /tips >!--}
-    """
-    
-    class Send(SendDSLBase):
-        """
-        消息发送DSL实现
-        
-        {!--< tips >!--}
-        1. 子类可以重写Text方法提供平台特定实现
-        2. 可以添加新的消息类型(如Image, Voice等)
-        {!--< /tips >!--}
-        """
-        
-        def Example(self, text: str) -> Awaitable[Any]:
-            """
-            示例消息发送方法
-            
-            :param text: 文本内容
-            :return: 异步任务
-            :example:
-            >>> await adapter.Send.To("123").Example("Hello")
-            """
-            logger.debug(f"适配器 {self._adapter.__class__.__name__} 发送了实例类型的消息: {text}")
-            
-        
-    def __init__(self):
-        """
-        初始化适配器
-        """
-        self._handlers = defaultdict(list)
-        self._middlewares = []
-        self.Send = self.__class__.Send(self)
-
-    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
-        """
-        适配器事件监听装饰器
-        
-        :param event_type: 事件类型
-        :return: 装饰器函数
-        """
-        def decorator(func: Callable) -> Callable:
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                return await func(*args, **kwargs)
-            self._handlers[event_type].append(wrapper)
-
-            return wrapper
-        return decorator
-
-    def middleware(self, func: Callable) -> Callable:
-        """
-        添加中间件处理器
-        
-        :param func: 中间件函数
-        :return: 中间件函数
-        
-        :example:
-        >>> @adapter.middleware
-        >>> async def log_middleware(data):
-        >>>     print(f"处理数据: {data}")
-        >>>     return data
-        """
-        self._middlewares.append(func)
-        return func
-
-    async def call_api(self, endpoint: str, **params: Any) -> Any:
-        """
-        调用平台API的抽象方法
-        
-        :param endpoint: API端点
-        :param params: API参数
-        :return: API调用结果
-        :raises NotImplementedError: 必须由子类实现
-        """
-        raise NotImplementedError("适配器必须实现call_api方法")
-
-    async def start(self) -> None:
-        """
-        启动适配器的抽象方法
-        
-        :raises NotImplementedError: 必须由子类实现
-        """
-        raise NotImplementedError("适配器必须实现start方法")
-
-    async def shutdown(self) -> None:
-        """
-        关闭适配器的抽象方法
-        
-        :raises NotImplementedError: 必须由子类实现
-        """
-        raise NotImplementedError("适配器必须实现shutdown方法")
-        
-    async def emit(self, event_type: str, data: Any) -> None:
-        """
-        触发原生协议事件
-        
-        :param event_type: 事件类型
-        :param data: 事件数据
-        
-        :example:
-        >>> await adapter.emit("message", {"text": "Hello"})
-        """
-        # 先执行中间件
-        for middleware in self._middlewares:
-            data = await middleware(data)
-
-        # 触发具体事件类型的处理器
-        if event_type in self._handlers:
-            for handler in self._handlers[event_type]:
-                await handler(data)
-
-        # 触发通配符 "*" 的处理器
-        for handler in self._handlers.get("*", []):
-            await handler(data)
-
-    async def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> Any:
-        """
-        发送消息的便捷方法
-        
-        :param target_type: 目标类型
-        :param target_id: 目标ID
-        :param message: 消息内容
-        :param kwargs: 其他参数
-            - method: 发送方法名(默认为"Text")
-        :return: 发送结果
-        
-        :raises AttributeError: 当发送方法不存在时抛出
-            
-        :example:
-        >>> await adapter.send("user", "123", "Hello")
-        >>> await adapter.send("group", "456", "Hello", method="Markdown")
-        """
-        method_name = kwargs.pop("method", "Text")
-        method = getattr(self.Send.To(target_type, target_id), method_name, None)
-        if not method:
-            raise AttributeError(f"未找到 {method_name} 方法，请确保已在 Send 类中定义")
-        return await method(text=message, **kwargs)
-
+from .Bases.adapter import BaseAdapter
+from .config import config
+from .lifecycle import lifecycle
 
 class AdapterManager:
     """
     适配器管理器
     
-    管理多个平台适配器的注册、启动和关闭
+    管理多个平台适配器的注册、启动和关闭，提供与模块管理器一致的接口
     
     {!--< tips >!--}
     1. 通过register方法注册适配器
@@ -244,109 +30,29 @@ class AdapterManager:
     """
     
     def __init__(self):
+        # 适配器存储
         self._adapters: Dict[str, BaseAdapter] = {}
+        self._adapter_classes: Dict[str, Type[BaseAdapter]] = {}
         self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
         self._platform_to_instance: Dict[str, BaseAdapter] = {}
         self._started_instances: Set[BaseAdapter] = set()
+        self._adapter_info: Dict[str, Dict] = {}
         
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
         self._onebot_middlewares = []
-
-    @property
-    def Adapter(self) -> Type[BaseAdapter]:
+        # 原生事件处理器
+        self._raw_handlers = defaultdict(list)
+    
+    # ==================== 适配器注册与管理 ====================
+    
+    def register(self, platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None) -> bool:
         """
-        获取BaseAdapter类，用于访问原始事件监听
-        
-        :return: BaseAdapter类
-        
-        :example:
-        >>> @sdk.adapter.Adapter.on("raw_event")
-        >>> async def handle_raw(data):
-        >>>     print("收到原始事件:", data)
-        """
-        return BaseAdapter
-
-    def on(self, event_type: str = "*") -> Callable[[Callable], Callable]:
-        """
-        OneBot12协议事件监听装饰器
-        
-        :param event_type: OneBot12事件类型
-        :return: 装饰器函数
-        
-        :example:
-        >>> @sdk.adapter.on("message")
-        >>> async def handle_message(data):
-        >>>     print(f"收到OneBot12消息: {data}")
-        """
-        def decorator(func: Callable) -> Callable:
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                return await func(*args, **kwargs)
-            
-            self._onebot_handlers[event_type].append(wrapper)
-            return wrapper
-        return decorator
-
-    def middleware(self, func: Callable) -> Callable:
-        """
-        添加OneBot12中间件处理器
-        
-        :param func: 中间件函数
-        :return: 中间件函数
-        
-        :example:
-        >>> @sdk.adapter.middleware
-        >>> async def onebot_middleware(data):
-        >>>     print("处理OneBot12数据:", data)
-        >>>     return data
-        """
-        self._onebot_middlewares.append(func)
-        return func
-
-    async def emit(self, data: Any) -> None:
-        """
-        提交OneBot12协议事件到指定平台
-        
-        :param platform: 平台名称
-        :param event_type: OneBot12事件类型
-        :param data: 符合OneBot12标准的事件数据
-        
-        :raises ValueError: 当平台未注册时抛出
-            
-        :example:
-        >>> await sdk.adapter.emit("MyPlatform", "message", {
-        >>>     "id": "123",
-        >>>     "time": 1620000000,
-        >>>     "type": "message",
-        >>>     "detail_type": "private",
-        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}]
-        >>> })
-        """
-        platform = data.get("platform", "unknown")
-        event_type = data.get("type", "unknown")
-
-        if platform not in self._adapters:
-            raise ValueError(f"平台 {platform} 未注册")
-        
-        # 先执行OneBot12中间件
-        processed_data = data
-        for middleware in self._onebot_middlewares:
-            processed_data = await middleware(processed_data)
-
-        # 分发到OneBot12事件处理器
-        if event_type in self._onebot_handlers:
-            for handler in self._onebot_handlers[event_type]:
-                await handler(processed_data)
-        for handler in self._onebot_handlers.get("*", []):
-            await handler(processed_data)
-
-    def register(self, platform: str, adapter_class: Type[BaseAdapter]) -> bool:
-        """
-        注册新的适配器类
+        注册新的适配器类（标准化注册方法）
         
         :param platform: 平台名称
         :param adapter_class: 适配器类
+        :param adapter_info: 适配器信息
         :return: 注册是否成功
         
         :raises TypeError: 当适配器类无效时抛出
@@ -356,12 +62,16 @@ class AdapterManager:
         """
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter")
-        from .. import sdk
+            
+        self._adapter_classes[platform] = adapter_class
+        if adapter_info:
+            self._adapter_info[platform] = adapter_info
 
         # 如果该类已经创建过实例，复用
         if adapter_class in self._adapter_instances:
             instance = self._adapter_instances[adapter_class]
         else:
+            from .. import sdk
             instance = adapter_class(sdk)
             self._adapter_instances[adapter_class] = instance
 
@@ -381,7 +91,7 @@ class AdapterManager:
             setattr(self, platform.capitalize(), instance)
 
         return True
-
+    
     async def startup(self, platforms: List[str] = None) -> None:
         """
         启动指定的适配器
@@ -405,8 +115,17 @@ class AdapterManager:
                 raise ValueError(f"平台 {platform} 未注册")
         
         logger.info(f"启动适配器 {platforms}")
-
-        from .router import adapter_server
+        
+        # 提交适配器启动开始事件
+        await lifecycle.submit_event(
+            "adapter.start",
+            msg="开始启动适配器",
+            data={
+                "platforms": platforms
+            }
+        )
+        
+        from .router import router
         from .erispulse_config import get_server_config
         server_config = get_server_config()
 
@@ -416,7 +135,7 @@ class AdapterManager:
         ssl_key = server_config.get("ssl_keyfile", None)
         
         # 启动服务器
-        await adapter_server.start(
+        await router.start(
             host=host,
             port=port,
             ssl_certfile=ssl_cert,
@@ -437,7 +156,7 @@ class AdapterManager:
             # 加入调度队列
             scheduled_adapters.add(adapter)
             asyncio.create_task(self._run_adapter(adapter, platform))
-
+        
     async def _run_adapter(self, adapter: BaseAdapter, platform: str) -> None:
         """
         {!--< internal-use >!--}
@@ -459,16 +178,50 @@ class AdapterManager:
             retry_count = 0
             fixed_delay = 3 * 60 * 60
             backoff_intervals = [60, 10 * 60, 30 * 60, 60 * 60]
+            
+            # 提交适配器状态变化事件（starting）
+            await lifecycle.submit_event(
+                "adapter.status.change",
+                msg=f"适配器 {platform} 状态变化: starting",
+                data={
+                    "platform": platform,
+                    "status": "starting",
+                    "retry_count": retry_count
+                }
+            )
 
             while True:
                 try:
                     await adapter.start()
                     self._started_instances.add(adapter)
+                    
+                    # 提交适配器状态变化事件（started）
+                    await lifecycle.submit_event(
+                        "adapter.status.change",
+                        msg=f"适配器 {platform} 状态变化: started",
+                        data={
+                            "platform": platform,
+                            "status": "started"
+                        }
+                    )
+                    
                     return
                 except Exception as e:
                     retry_count += 1
                     logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
-
+                    
+                    # 提交适配器状态变化事件（start_failed）
+                    await lifecycle.submit_event(
+                        "adapter.status.change",
+                        msg=f"适配器 {platform} 状态变化: start_failed",
+                        data={
+                            "platform": platform,
+                            "status": "start_failed",
+                            "retry_count": retry_count,
+                            "error": str(e)
+                        }
+                    )
+                    
                     try:
                         await adapter.shutdown()
                     except Exception as stop_err:
@@ -482,20 +235,249 @@ class AdapterManager:
 
                     logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
-
     async def shutdown(self) -> None:
         """
         关闭所有适配器
-        
-        :example:
-        >>> await adapter.shutdown()
         """
+        # 提交适配器关闭开始事件
+        await lifecycle.submit_event(
+            "adapter.stop",
+            msg="开始关闭适配器",
+            data={}
+        )
+        
         for adapter in self._adapters.values():
             await adapter.shutdown()
         
-        from .router import adapter_server
-        await adapter_server.stop()
+        from .router import router
+        await router.stop()
+        
+        # 提交适配器关闭完成事件
+        await lifecycle.submit_event(
+            "adapter.stopped",
+            msg="适配器关闭完成",
+            data={}
+        )
+    
+    # ==================== 适配器配置管理 ====================
+    
+    def _config_register(self, platform: str, enabled: bool = False) -> bool:
+        """
+        注册新平台适配器（仅当平台不存在时注册）
+        
+        :param platform: 平台名称
+        :param enabled: [bool] 是否启用适配器
+        :return: [bool] 操作是否成功
+        """
+        if self.exists(platform):
+            return True
+        
+        # 平台不存在，进行注册
+        config.setConfig(f"ErisPulse.adapters.status.{platform}", enabled)
+        status = "启用" if enabled else "禁用"
+        logger.info(f"平台适配器 {platform} 已注册并{status}")
+        return True
+    
+    def exists(self, platform: str) -> bool:
+        """
+        检查平台是否存在
+        
+        :param platform: 平台名称
+        :return: [bool] 平台是否存在
+        """
+        # 检查平台是否在配置中注册
+        adapter_statuses = config.getConfig("ErisPulse.adapters.status", {})
+        return platform in adapter_statuses
+    
+    def is_enabled(self, platform: str) -> bool:
+        """
+        检查平台适配器是否启用
+        
+        :param platform: 平台名称
+        :return: [bool] 平台适配器是否启用
+        """
+        # 不使用默认值，如果配置不存在则返回 None
+        status = config.getConfig(f"ErisPulse.adapters.status.{platform}")
+        
+        # 如果状态不存在，说明是新适配器
+        if status is None:
+            return False  # 新适配器默认不启用，需要在初始化时处理
+        
+        # 处理字符串形式的布尔值
+        if isinstance(status, str):
+            return status.lower() not in ('false', '0', 'no', 'off')
+        
+        return bool(status)
+    
+    def enable(self, platform: str) -> bool:
+        """
+        启用平台适配器
+        
+        :param platform: 平台名称
+        :return: [bool] 操作是否成功
+        """
+        if not self.exists(platform):
+            logger.error(f"平台 {platform} 不存在")
+            return False
+            
+        config.setConfig(f"ErisPulse.adapters.status.{platform}", True)
+        logger.info(f"平台 {platform} 已启用")
+        return True
+    
+    def disable(self, platform: str) -> bool:
+        """
+        禁用平台适配器
+        
+        :param platform: 平台名称
+        :return: [bool] 操作是否成功
+        """
+        if not self.exists(platform):
+            logger.error(f"平台 {platform} 不存在")
+            return False
+            
+        config.setConfig(f"ErisPulse.adapters.status.{platform}", False)
+        logger.info(f"平台 {platform} 已禁用")
+        return True
+    
+    def list_adapters(self) -> Dict[str, bool]:
+        """
+        列出所有平台适配器状态
+        
+        :return: [Dict[str, bool]] 平台适配器状态字典
+        """
+        return config.getConfig("ErisPulse.adapters.status", {})
+    
+    # ==================== 事件处理与消息发送 ====================
+    
+    def on(self, event_type: str = "*", *, raw: bool = False, platform: str = None) -> Callable[[Callable], Callable]:
+        """
+        OneBot12协议事件监听装饰器
+        
+        :param event_type: OneBot12事件类型
+        :param raw: 是否监听原生事件
+        :param platform: 指定平台，None表示监听所有平台
+        :return: 装饰器函数
+        
+        :example:
+        >>> # 监听OneBot12标准事件（所有平台）
+        >>> @sdk.adapter.on("message")
+        >>> async def handle_message(data):
+        >>>     print(f"收到OneBot12消息: {data}")
+        >>>
+        >>> # 监听特定平台的OneBot12标准事件
+        >>> @sdk.adapter.on("message", platform="onebot11")
+        >>> async def handle_onebot11_message(data):
+        >>>     print(f"收到OneBot11标准消息: {data}")
+        >>>
+        >>> # 监听平台原生事件
+        >>> @sdk.adapter.on("message", raw=True, platform="onebot11")
+        >>> async def handle_raw_message(data):
+        >>>     print(f"收到OneBot11原生事件: {data}")
+        >>>
+        >>> # 监听所有平台的原生事件
+        >>> @sdk.adapter.on("message", raw=True)
+        >>> async def handle_all_raw_message(data):
+        >>>     print(f"收到原生事件: {data}")
+        """
+        def decorator(func: Callable) -> Callable:
+            @functools.wraps(func)
+            async def wrapper(*args, **kwargs):
+                return await func(*args, **kwargs)
+            
+            # 创建带元信息的处理器包装器
+            handler_wrapper = {
+                'func': wrapper,
+                'platform': platform
+            }
+            
+            if raw:
+                self._raw_handlers[event_type].append(handler_wrapper)
+            else:
+                self._onebot_handlers[event_type].append(handler_wrapper)
+            return wrapper
+        return decorator
 
+    def middleware(self, func: Callable) -> Callable:
+        """
+        添加OneBot12中间件处理器
+        
+        :param func: 中间件函数
+        :return: 中间件函数
+        
+        :example:
+        >>> @sdk.adapter.middleware
+        >>> async def onebot_middleware(data):
+        >>>     print("处理OneBot12数据:", data)
+        >>>     return data
+        """
+        self._onebot_middlewares.append(func)
+        return func
+
+    async def emit(self, data: Any) -> None:
+        """
+        提交OneBot12协议事件到指定平台
+        
+        :param data: 符合OneBot12标准的事件数据
+            
+        :example:
+        >>> await sdk.adapter.emit({
+        >>>     "id": "123",
+        >>>     "time": 1620000000,
+        >>>     "type": "message",
+        >>>     "detail_type": "private",
+        >>>     "message": [{"type": "text", "data": {"text": "Hello"}}],
+        >>>     "platform": "myplatform",
+        >>>     "myplatform_raw": {...平台原生事件数据...},
+        >>>     "myplatform_raw_type": "text_message"
+        >>> })
+        """
+        platform = data.get("platform", "unknown")
+        event_type = data.get("type", "unknown")
+        platform_raw = data.get(f"{platform}_raw", {})
+        raw_event_type = data.get(f"{platform}_raw_type")
+
+        # 先执行OneBot12中间件
+        processed_data = data
+        for middleware in self._onebot_middlewares:
+            processed_data = await middleware(processed_data)
+
+        # 分发到OneBot12事件处理器
+        handlers_to_call = []
+        
+        # 处理特定事件类型的处理器
+        if event_type in self._onebot_handlers:
+            handlers_to_call.extend(self._onebot_handlers[event_type])
+        
+        # 处理通配符处理器
+        handlers_to_call.extend(self._onebot_handlers.get("*", []))
+        
+        # 调用符合条件的标准事件处理器
+        for handler_wrapper in handlers_to_call:
+            handler_platform = handler_wrapper.get('platform')
+            # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
+            if handler_platform is None or handler_platform == platform:
+                await handler_wrapper['func'](processed_data)
+        
+        # 只有当存在原生事件数据时才分发原生事件
+        if raw_event_type and platform_raw is not None:
+            raw_handlers_to_call = []
+            
+            # 处理特定原生事件类型的处理器
+            if raw_event_type in self._raw_handlers:
+                raw_handlers_to_call.extend(self._raw_handlers[raw_event_type])
+            
+            # 处理原生事件的通配符处理器
+            raw_handlers_to_call.extend(self._raw_handlers.get("*", []))
+            
+            # 调用符合条件的原生事件处理器
+            for handler_wrapper in raw_handlers_to_call:
+                handler_platform = handler_wrapper.get('platform')
+                # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
+                if handler_platform is None or handler_platform == platform:
+                    await handler_wrapper['func'](platform_raw)
+    
+    # ==================== 工具方法 ====================
+    
     def get(self, platform: str) -> Optional[BaseAdapter]:
         """
         获取指定平台的适配器实例
@@ -511,25 +493,7 @@ class AdapterManager:
             if registered.lower() == platform_lower:
                 return instance
         return None
-
-    def __getattr__(self, platform: str) -> BaseAdapter:
-        """
-        通过属性访问获取适配器实例
-        
-        :param platform: 平台名称
-        :return: 适配器实例
-        
-        :raises AttributeError: 当平台未注册时抛出
-            
-        :example:
-        >>> adapter = adapter.MyPlatform
-        """
-        platform_lower = platform.lower()
-        for registered, instance in self._adapters.items():
-            if registered.lower() == platform_lower:
-                return instance
-        raise AttributeError(f"平台 {platform} 的适配器未注册")
-
+    
     @property
     def platforms(self) -> List[str]:
         """
@@ -541,14 +505,31 @@ class AdapterManager:
         >>> print("已注册平台:", adapter.platforms)
         """
         return list(self._adapters.keys())
+    
+    def __getattr__(self, platform: str) -> BaseAdapter:
+        """
+        通过属性访问获取适配器实例
+        
+        :param platform: 平台名称
+        :return: 适配器实例
+        :raises AttributeError: 当平台不存在或未启用时
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            raise AttributeError(f"平台 {platform} 不存在或未启用")
+        return adapter_instance
+    
+    def __contains__(self, platform: str) -> bool:
+        """
+        检查平台是否存在且处于启用状态
+        
+        :param platform: 平台名称
+        :return: [bool] 平台是否存在且启用
+        """
+        return self.exists(platform) and self.is_enabled(platform)
 
-
-AdapterFather = BaseAdapter
 adapter = AdapterManager()
-SendDSL = SendDSLBase
 
 __all__ = [
-    "AdapterFather",
-    "adapter",
-    "SendDSL"
+    "adapter"
 ]
