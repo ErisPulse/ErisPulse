@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Type, Optional
 from .logger import logger
 from .config import config
 from .Bases import BaseModule
+from .lifecycle import lifecycle
 
 class ModuleManager:
     """
@@ -111,10 +112,26 @@ class ModuleManager:
             self._modules[module_name] = instance
             self._loaded_modules.add(module_name)
             
+            await lifecycle.emit(
+                    "module_load",
+                    data={
+                        "module_name": module_name,
+                        "success": True,
+                    },
+                    msg=f"模块 {module_name if module_name else 'All'} 加载成功",
+                )
             logger.info(f"模块 {module_name} 加载成功")
             return True
             
         except Exception as e:
+            await lifecycle.emit(
+                    "module_load",
+                    data={
+                        "module_name": module_name,
+                        "success": False,
+                    },
+                    msg=f"模块 {module_name if module_name else 'All'} 加载失败: {e}",
+                )
             logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
             
@@ -137,8 +154,18 @@ class ModuleManager:
                     success = False
             return success
         else:
-            return await self._unload_single_module(module_name)
+            success = await self._unload_single_module(module_name)
             
+        await lifecycle.emit(
+            "module.unload",
+            msg=f"模块 {module_name if module_name else 'All'} 卸载完成" if success else f"模块 {module_name if module_name else 'All'} 卸载失败",
+            data={
+                "module_name": module_name if module_name else 'All',
+                "success": success
+            }
+        )
+        return success
+    
     async def _unload_single_module(self, module_name: str) -> bool:
         """
         {!--< internal-use >!--}

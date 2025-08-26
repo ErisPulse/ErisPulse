@@ -12,7 +12,6 @@ ErisPulse SDK 主模块
 
 import os
 import sys
-import time
 import types
 import importlib
 import asyncio
@@ -127,44 +126,29 @@ class LazyModule:
             if self._is_base_module:
                 try:
                     await module.load(self._module_name)
-                    await lifecycle.emit(
-                        "module.load",
-                        msg="开始加载模块...",
-                        data={
-                            "sucess": True,
-                            "module_name": self._module_name
-                        }
-                    )
                 except Exception as e:
-                    await lifecycle.emit(
-                        "module.load",
-                        msg="模块加载失败: {}".format(e),
-                        data={
-                            "sucess": False,
-                            "module_name": self._module_name,
-                        }
-                    )
                     logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
-            
+                    
             await lifecycle.emit(
                     "module.init",
-                    msg="初始化模块: {}".format(self._module_name),
+                    msg=f"模块 {self._module_name} 初始化完毕",
                     data={
-                        "sucess": True,
                         "module_name": self._module_name,
+                        "success": True,
                     }
                 )
             logger.debug(f"懒加载模块 {self._module_name} 初始化完成")
             
         except Exception as e:
+
             await lifecycle.emit(
-                "module.init",
-                msg="初始化模块: {} ,失败".format(self._module_name),
-                data={
-                    "sucess": False,
-                    "module_name": self._module_name,
-                }
-            )
+                    "module.init",
+                    msg=f"模块初始化失败: {e}",
+                    data={
+                        "module_name": self._module_name,
+                        "success": False,
+                    }
+                )
             logger.error(f"懒加载模块 {self._module_name} 初始化失败: {e}")
             raise e
     
@@ -466,10 +450,8 @@ class AdapterLoader:
 
         # 检查适配器是否已经注册，如果未注册则进行注册（默认禁用）
         if not sdk.adapter.exists(meta_name):
-            sdk.adapter._config_register(meta_name, False)  # 默认禁用
+            sdk.adapter._config_register(meta_name, False)
             logger.info(f"发现新适配器 {meta_name}，默认已禁用，请在配置文件中配置适配器并决定是否启用")
-        else:
-            logger.debug(f"适配器 {meta_name} 已在配置中注册")
         
         # 获取适配器当前状态
         adapter_status = sdk.adapter.is_enabled(meta_name)
@@ -477,7 +459,6 @@ class AdapterLoader:
         
         if not adapter_status:
             disabled_adapters.append(meta_name)
-            logger.info(f"适配器 {meta_name} 当前为禁用状态")
             return adapter_objs, enabled_adapters, disabled_adapters
             
         try:
@@ -588,8 +569,6 @@ class ModuleLoader:
         if not sdk.module.exists(meta_name):
             sdk.module._config_register(meta_name, False)  # 默认禁用
             logger.info(f"发现新模块 {meta_name}，默认已禁用，请在配置文件中手动启用")
-        else:
-            logger.debug(f"模块 {meta_name} 已在配置中注册")
 
         # 获取模块当前状态
         module_status = sdk.module.is_enabled(meta_name)
@@ -597,7 +576,6 @@ class ModuleLoader:
         
         if not module_status:
             disabled_modules.append(meta_name)
-            logger.info(f"模块 {meta_name} 当前为禁用状态")
             return module_objs, enabled_modules, disabled_modules
             
         try:
@@ -734,10 +712,28 @@ class ModuleInitializer:
                 logger.info("[Init] SDK初始化成功")
             else:
                 logger.error("[Init] SDK初始化失败")
-                
+            
+            load_duration = lifecycle.stop_timer("core.init")
+            await lifecycle.emit(
+                "core.init.complete",
+                msg="模块初始化完成" if success else "模块初始化失败",
+                data={
+                    "duration": load_duration,
+                    "success": success
+                }
+            )
             return success
             
         except Exception as e:
+            load_duration = lifecycle.stop_timer("core.init")
+            await lifecycle.emit(
+                "core.init.complete",
+                msg="模块初始化失败",
+                data={
+                    "duration": load_duration,
+                    "success": False
+                }
+            )
             logger.critical(f"SDK初始化严重错误: {e}")
             return False
     @staticmethod
@@ -939,6 +935,12 @@ async def _prepare_environment() -> bool:
 
     :return: bool 环境准备是否成功
     """
+    await lifecycle.emit(
+        "core.init.start",
+        msg="开始初始化"
+    )
+    lifecycle.start_timer("core.init")
+
     logger.info("[Init] 准备初始化环境...")
     try:
         from .Core.erispulse_config import get_erispulse_config
@@ -950,6 +952,15 @@ async def _prepare_environment() -> bool:
             logger.info("[Init] 项目入口已生成, 你可以在 main.py 中编写一些代码")
         return True
     except Exception as e:
+        load_duration = lifecycle.stop_timer("core.init")
+        await lifecycle.emit(
+            "core.init.complete",
+            msg="模块初始化失败",
+            data={
+                "duration": load_duration,
+                "success": False
+            }
+        )
         logger.error(f"环境准备失败: {e}")
         return False
 
@@ -962,23 +973,7 @@ async def init() -> bool:
     if not await _prepare_environment():
         return False
     
-    await lifecycle.emit("core.init.start", msg="开始初始化")
-    
-    load_start_time = time.time()
-    result = await ModuleInitializer.init()
-    load_duration = time.time() - load_start_time
-    logger.debug(f"[Init] 模块加载完成，耗时 {load_duration:.2f} 秒")
-
-    await lifecycle.emit(
-        "core.init.complete",
-        msg="模块初始化完成" if result else "模块初始化失败",
-        data={
-            "duration": load_duration,
-            "success": result
-        }
-    )
-    
-    return result
+    return await ModuleInitializer.init()
 
 def init_task() -> asyncio.Task:
     """
@@ -988,35 +983,8 @@ def init_task() -> asyncio.Task:
     """
     async def _async_init():
         if not await _prepare_environment():
-            await lifecycle.emit(
-                "core.init.complete",
-                msg="模块初始化失败",
-                data={
-                    "duration": 0.0,
-                    "success": False
-                }
-            )
             return False
-            
-        await lifecycle.emit(
-            "core.init.start",
-            msg="开始初始化模块..."
-        )
-        
-        load_start_time = time.time()
-        result = await ModuleInitializer.init()
-        load_duration = time.time() - load_start_time
-        logger.debug(f"[Init] 模块加载完成，耗时 {load_duration:.2f} 秒")
-        
-        await lifecycle.emit(
-            "core.init.complete",
-            msg="模块初始化完成" if result else "模块初始化失败",
-            data={
-                "duration": load_duration,
-                "success": result
-            }
-        )
-        return result
+        return await ModuleInitializer.init()
     
     try:
         return asyncio.create_task(_async_init())
