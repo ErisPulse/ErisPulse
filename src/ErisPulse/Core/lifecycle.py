@@ -150,6 +150,10 @@ class LifecycleManager:
         # 验证事件格式
         self._validate_event(event_data)
         
+        # 触发通配符处理器（如果存在）
+        if "*" in self._handlers:
+            await self._execute_handlers("*", event_data)
+            
         # 触发完整事件名的处理器
         if event_type in self._handlers:
             await self._execute_handlers(event_type, event_data)
@@ -160,7 +164,7 @@ class LifecycleManager:
             parent_event = '.'.join(parts[:i])
             if parent_event in self._handlers:
                 await self._execute_handlers(parent_event, event_data)
-    
+                
     async def _execute_handlers(self, event: str, event_data: Dict[str, Any]) -> None:
         """
         执行事件处理器
