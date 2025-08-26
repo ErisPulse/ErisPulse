@@ -112,7 +112,7 @@ class ModuleManager:
             self._modules[module_name] = instance
             self._loaded_modules.add(module_name)
             
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                     "module_load",
                     data={
                         "module_name": module_name,
@@ -124,7 +124,7 @@ class ModuleManager:
             return True
             
         except Exception as e:
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                     "module_load",
                     data={
                         "module_name": module_name,
@@ -156,7 +156,7 @@ class ModuleManager:
         else:
             success = await self._unload_single_module(module_name)
             
-        await lifecycle.emit(
+        await lifecycle.submit_event(
             "module.unload",
             msg=f"模块 {module_name if module_name else 'All'} 卸载完成" if success else f"模块 {module_name if module_name else 'All'} 卸载失败",
             data={
