@@ -3,7 +3,7 @@
 ## 1. 核心原则
 1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
 2. 明确扩展：平台特有功能必须添加 {platform}_ 前缀（如 yunhu_form）
-3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中
+3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中，原始事件类型必须保留在 {platform}_raw_type 字段中
 4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
 5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
 
@@ -68,12 +68,14 @@
   "user_nickname": "YingXinche",
   "group_id": "group_789",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "message.receive.normal",
   "yunhu_command": {
     "name": "抽奖",
     "args": "超级大奖"
   }
 }
 ```
+
 ### 3.2 通知事件 (notice)
 ```json
 {
@@ -92,8 +94,10 @@
   "group_id": "group_789",
   "operator_id": "",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "bot.followed"
 }
 ```
+
 ### 3.3 请求事件 (request)
 ```json
 {
@@ -110,7 +114,9 @@
   "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
+  "onebot11_raw_type": "request"  // onebot11原始事件类型就是 `request`
 }
+
 ```
 ## 4. 消息段标准
 ### 4.1 通用消息段
@@ -138,6 +144,7 @@ def safe_get(data: dict, key: str, default=None):
   "type": "unknown",
   "platform": "yunhu",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "unknown",
   "warning": "Unsupported event type: special_event",
   "alt_message": "This event type is not supported by this system."
 }
@@ -160,7 +167,7 @@ def convert_timestamp(ts: Any) -> int:
 - [ ] 所有标准字段已正确映射
 - [ ] 平台特有字段已添加前缀
 - [ ] 时间戳已转换为10位秒级
-- [ ] 原始数据保存在 {platform}_raw
+- [ ] 原始数据保存在 {platform}_raw, 原始事件类型已经保存到 {platform}_raw_type
 - [ ] 消息段的 alt_message 已生成
 - [ ] 所有事件类型已通过单元测试
 - [ ] 文档包含完整示例和说明
