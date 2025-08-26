@@ -29,12 +29,12 @@
 ### Send 链式调用
 所有适配器都支持以下标准调用方式：
 
-> **注意：** 文档中的 `<AdapterName>` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。
+> **注意：** 文档中的 `{AdapterName}` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。
 
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
    # 获取适配器实例
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    
    # 发送消息
    await my_adapter.Send.To("user", "U1001").Text("Hello")
@@ -45,7 +45,7 @@
    ```
 2. 仅指定ID: `To(id).Func()`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
    
    # 例如：
@@ -54,7 +54,7 @@
    ```
 3. 指定发送账号: `Using(account_id)`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
    
    # 例如：
@@ -63,7 +63,7 @@
    ```
 4. 直接调用: `Func()`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Text("Broadcast message")
    
    # 例如：
@@ -77,7 +77,7 @@ Send DSL 的方法返回 `asyncio.Task` 对象，这意味着您可以选择是�
 
 ```python
 # 获取适配器实例
-my_adapter = adapter.get("<AdapterName>")
+my_adapter = adapter.get("{AdapterName}")
 
 # 不等待结果，消息在后台发送
 task = my_adapter.Send.To("user", "123").Text("Hello")
@@ -93,22 +93,24 @@ result = await task
    ```python
    from ErisPulse.Core import adapter, logger
    
-   # 获取适配器实例
-   my_adapter = adapter.get("<AdapterName>")
-   
-   @my_adapter.on("event_type")
+   @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到原生事件: {data}")
+       logger.info(f"收到{AdapterName}原生事件: {data}")
    ```
 
 2. OneBot12标准事件监听：
    ```python
    from ErisPulse.Core import adapter, logger
 
-   @adapter.on("event_type")  # 所有平台的标准事件
+   # 监听OneBot12标准事件
+   @adapter.on("event_type")
    async def handler(data):
-       if data["platform"] == "<AdapterName>":
-           logger.info(f"收到<AdapterName>标准事件: {data}")
+       logger.info(f"收到标准事件: {data}")
+
+   # 监听特定平台的标准事件
+   @adapter.on("event_type", platform="{AdapterName}")
+   async def handler(data):
+       logger.info(f"收到{AdapterName}标准事件: {data}")
    ```
 
 3. Event模块监听：
