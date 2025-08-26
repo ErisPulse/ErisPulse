@@ -131,9 +131,9 @@ class LifecycleManager:
             del self._timers[timer_id]
         return duration
         
-    async def emit(self, event_type: str, *, source: str = "ErisPulse", msg: str = "", data: dict = {}, timestamp = time.time()) -> None:
+    async def submit_event(self, event_type: str, *, source: str = "ErisPulse", msg: str = "", data: dict = {}, timestamp = time.time()) -> None:
         """
-        触发生命周期事件
+        提交生命周期事件
         
         :param event: 事件名称
         :param event_data: 事件数据字典

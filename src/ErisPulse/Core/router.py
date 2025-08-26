@@ -276,7 +276,7 @@ class RouterManager:
             
             self._server_task = asyncio.create_task(serve(self.app, config))
 
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                 "server.start",
                 msg="路由服务器已启动",
                 data={
@@ -286,7 +286,7 @@ class RouterManager:
                 },
             )
         except Exception as e:
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                 "server.start",
                 msg="路由服务器启动失败",
                 data={
@@ -310,7 +310,7 @@ class RouterManager:
                 logger.info("路由服务器已停止")
             self._server_task = None
         
-        await lifecycle.emit("server.stopped", msg="服务器已停止")
+        await lifecycle.submit_event("server.stopped", msg="服务器已停止")
 
 router = RouterManager()
 

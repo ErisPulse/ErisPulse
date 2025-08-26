@@ -117,7 +117,7 @@ class AdapterManager:
         logger.info(f"启动适配器 {platforms}")
         
         # 提交适配器启动开始事件
-        await lifecycle.emit(
+        await lifecycle.submit_event(
             "adapter.start",
             msg="开始启动适配器",
             data={
@@ -180,7 +180,7 @@ class AdapterManager:
             backoff_intervals = [60, 10 * 60, 30 * 60, 60 * 60]
             
             # 提交适配器状态变化事件（starting）
-            await lifecycle.emit(
+            await lifecycle.submit_event(
                 "adapter.status.change",
                 msg=f"适配器 {platform} 状态变化: starting",
                 data={
@@ -196,7 +196,7 @@ class AdapterManager:
                     self._started_instances.add(adapter)
                     
                     # 提交适配器状态变化事件（started）
-                    await lifecycle.emit(
+                    await lifecycle.submit_event(
                         "adapter.status.change",
                         msg=f"适配器 {platform} 状态变化: started",
                         data={
@@ -211,7 +211,7 @@ class AdapterManager:
                     logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
                     
                     # 提交适配器状态变化事件（start_failed）
-                    await lifecycle.emit(
+                    await lifecycle.submit_event(
                         "adapter.status.change",
                         msg=f"适配器 {platform} 状态变化: start_failed",
                         data={
@@ -240,7 +240,7 @@ class AdapterManager:
         关闭所有适配器
         """
         # 提交适配器关闭开始事件
-        await lifecycle.emit(
+        await lifecycle.submit_event(
             "adapter.stop",
             msg="开始关闭适配器",
             data={}
@@ -253,7 +253,7 @@ class AdapterManager:
         await router.stop()
         
         # 提交适配器关闭完成事件
-        await lifecycle.emit(
+        await lifecycle.submit_event(
             "adapter.stopped",
             msg="适配器关闭完成",
             data={}
