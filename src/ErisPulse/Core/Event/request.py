@@ -84,5 +84,14 @@ class RequestHandler:
         :return: 是否成功取消注册
         """
         return self.handler.unregister(handler)
-
+    
+    def _clear_request_handlers(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的请求处理器
+        
+        :return: 被清除的处理器数量
+        """
+        return self.handler._clear_handlers()
+    
 request = RequestHandler()
