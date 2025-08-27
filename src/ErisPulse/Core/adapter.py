@@ -255,8 +255,7 @@ class AdapterManager:
         # 提交适配器关闭完成事件
         await lifecycle.submit_event(
             "adapter.stopped",
-            msg="适配器关闭完成",
-            data={}
+            msg="适配器关闭完成"
         )
     
     # ==================== 适配器配置管理 ====================

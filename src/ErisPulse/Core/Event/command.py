@@ -396,6 +396,21 @@ class CommandHandler:
                 await adapter_instance.Send.To(detail_type, target_id).Text(f"命令执行出错: {error}")
         except Exception as e:
             logger.error(f"发送命令错误消息失败: {e}")
+
+    def _clear_commands(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的命令
+        
+        :return: 被清除的命令数量
+        """
+        count = len(self.commands)
+        self.commands.clear()
+        self.aliases.clear()
+        self.groups.clear()
+        self.permissions.clear()
+        self._waiting_replies.clear()
+        return count
     
     def get_command(self, name: str) -> Optional[Dict]:
         """

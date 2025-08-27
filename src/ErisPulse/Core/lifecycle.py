@@ -3,23 +3,6 @@ ErisPulse 生命周期管理模块
 
 提供统一的生命周期事件管理和触发机制
 
-支持的生命周期事件:
-- core.init.start: 核心初始化开始
-- core.init.complete: 核心初始化完成
-- module.load: 模块加载完成
-- module.init: 模块初始化完成
-- module.unload: 模块卸载
-- adapter.load: 适配器加载完成
-- adapter.start: 适配器启动开始
-- adapter.started: 适配器启动完成
-- adapter.status.change: 适配器状态变化
-- adapter.stop: 适配器停止开始
-- adapter.stopped: 适配器停止完成
-- server.start: 服务器启动开始
-- server.started: 服务器启动完成
-- server.stop: 服务器停止开始
-- server.stopped: 服务器停止完成
-
 事件标准格式:
 {
     "event": "事件名称",  # 必填
@@ -47,9 +30,8 @@ class LifecycleManager:
     STANDARD_EVENTS = {
         "core": ["init.start", "init.complete"],
         "module": ["load", "init", "unload"],
-        "adapter": ["load", "start", "started", "status.change", "stop", "stopped"],
-        "runtime": ["start", "stop"],
-        "server": ["start", "started", "stop", "stopped"]
+        "adapter": ["load", "start", "status.change", "stop", "stopped"],
+        "server": ["start", "stop"]
     }
     
     def __init__(self):
