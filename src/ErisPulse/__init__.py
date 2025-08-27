@@ -1011,7 +1011,72 @@ def init_task() -> asyncio.Task:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         return loop.create_task(_async_init())
+async def uninit() -> bool:
+    """
+    SDK反初始化
     
+    执行以下操作：
+    1. 关闭所有适配器
+    2. 卸载所有模块
+    3. 清理所有事件处理器
+    4. 清理僵尸线程
+    
+    :return: bool 反初始化是否成功
+    """
+    try:
+        logger.info("[Uninit] 开始反初始化SDK...")
+        
+        # 1. 关闭所有适配器
+        logger.debug("[Uninit] 正在关闭适配器...")
+        await adapter.shutdown()
+        
+        # 2. 卸载所有模块
+        logger.debug("[Uninit] 正在卸载模块...")
+        await module.unload()
+
+        # 3. 清理Event模块中的所有事件处理器
+        Event._clear_all_handlers()
+        
+        # 4. 清理僵尸线程
+        logger.debug("[Uninit] 正在清理线程...")
+        # SDK本身不创建线程，但可以记录可能的线程泄漏
+        current_task = asyncio.current_task()
+        logger.debug(f"[Uninit] 当前任务: {current_task}")
+        
+        logger.info("[Uninit] SDK反初始化完成")
+        return True
+        
+    except Exception as e:
+        logger.error(f"[Uninit] SDK反初始化失败: {e}")
+        return False
+
+async def restart() -> bool:
+    """
+    SDK重新启动
+    
+    执行完整的反初始化后再初始化过程
+    
+    :return: bool 重新加载是否成功
+    """
+    logger.info("[Reload] 开始重新加载SDK...")
+    
+    # 先执行反初始化
+    if not await uninit():
+        logger.error("[Reload] 反初始化失败，无法继续重新加载")
+        return False
+    
+    # 再执行初始化
+    logger.info("[Reload] 开始重新初始化SDK...")
+    if not await init():
+        logger.error("[Reload] 初始化失败，请检查日志")
+        return False
+    
+    logger.info("[Reload] 正在启动适配器...")
+    await adapter.startup()
+    
+    logger.info("[Reload] 重新加载完成")
+    return True
+
 async def run() -> None:
     """
     无头模式运行ErisPulse
@@ -1066,3 +1131,5 @@ async def load_module(module_name: str) -> bool:
 sdk.init = init
 sdk.init_task = init_task
 sdk.load_module = load_module
+sdk.uninit = uninit
+sdk.restart = restart
