@@ -1,4 +1,4 @@
-# ErisPulse 适配器标准化转换规范
+# 适配器标准化转换规范
 
 ## 1. 核心原则
 1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
@@ -7,63 +7,65 @@
 4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
 5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
 
-## 2. 基础字段规范
-### 2.1 必填字段（所有事件）
-|字段|类型|要求|
-|-|-|-|
-|id|string|必须存在，原始事件无ID时使用UUID生成|
-|time|int|10位秒级时间戳（毫秒级需转换）|
-|type|string|必须为 message/notice/request 之一|
-|platform|string|必须与适配器注册名完全一致|
-|self|object|必须包含 platform 和 user_id|
+## 2. 标准字段要求
 
-### 2.2 条件字段
-|字段|触发条件|示例|
-|-|-|-|
-|detail_type|所有事件必须|"group"/"private"|
-|sub_type|需要细分时|"invite"/"leave"|
-|message_id|消息事件|"msg_123"|
-|user_id|涉及用户|"user_456"|
-|group_id|群组事件|"group_789"|
+### 2.1 必须字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | 事件唯一标识符 |
+| time | integer | Unix时间戳（秒级） |
+| type | string | 事件类型 |
+| detail_type | string | 事件详细类型 |
+| platform | string | 平台名称 |
+| self | object | 机器人自身信息 |
+| self.platform | string | 平台名称 |
+| self.user_id | string | 机器人用户ID |
 
-### 2.3 非标准字段（非必须，但建议实现）
-|字段|触发类型|示例|
-|-|-|-|
-|user_nickname|涉及用户|"用户昵称"|
+### 2.2 消息事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | array | 消息段数组 |
+| alt_message | string | 消息段备用文本 |
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
 
-## 3. 完整事件模板
+### 2.3 通知事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| operator_id | string | 操作者ID（可选） |
+
+### 2.4 请求事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| comment | string | 请求附言（可选） |
+
+## 3. 事件格式示例
+
 ### 3.1 消息事件 (message)
 ```json
 {
-  "id": "event_123",
-  "time": 1752241220,
+  "id": "1234567890",
+  "time": 1752241223,
   "type": "message",
   "detail_type": "group",
-  "sub_type": "",
   "platform": "yunhu",
   "self": {
     "platform": "yunhu",
     "user_id": "bot_123"
   },
-  "message_id": "msg_abc",
   "message": [
     {
       "type": "text",
-      "data": {"text": "你好"}
-    },
-    {
-      "type": "image",
       "data": {
-        "file_id": "img_xyz",
-        "url": "https://example.com/image.jpg",
-        "file_name": "example.jpg",
-        "size": 102400,
-        "width": 800,
-        "height": 600
+        "text": "抽奖 超级大奖"
       }
     }
   ],
-  "alt_message": "你好[图片]",
+  "alt_message": "抽奖 超级大奖",
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "group_id": "group_789",
@@ -79,11 +81,10 @@
 ### 3.2 通知事件 (notice)
 ```json
 {
-  "id": "event_456",
-  "time": 1752241221,
+  "id": "1234567891",
+  "time": 1752241224,
   "type": "notice",
   "detail_type": "group_member_increase",
-  "sub_type": "invite",
   "platform": "yunhu",
   "self": {
     "platform": "yunhu",
@@ -101,8 +102,8 @@
 ### 3.3 请求事件 (request)
 ```json
 {
-  "id": "event_789",
-  "time": 1752241222,
+  "id": "1234567892",
+  "time": 1752241225,
   "type": "request",
   "detail_type": "friend",
   "platform": "onebot11",
@@ -116,30 +117,37 @@
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"  // onebot11原始事件类型就是 `request`
 }
-
 ```
+
 ## 4. 消息段标准
-### 4.1 通用消息段
-|类型|必填字段|扩展字段|
-|-|-|-|
-|text|text|-|
-|image|url|file_name, size, width, height|
-|video|url|duration, file_name|
-|file|url|size, file_name|
 
-## 5. 错误处理规范
-### 5.1 字段缺失处理
-```python
-def safe_get(data: dict, key: str, default=None):
-    """安全获取字段并记录警告"""
-    if key not in data:
-        logger.warning(f"Missing field '{key}' in {data.get('eventType', 'unknown')}")
-    return data.get(key, default)
-```
-### 5.2 未知事件处理
+### 4.1 通用消息段
 ```json
 {
-  "id": "event_999",
+  "type": "text",
+  "data": {
+    "text": "Hello World"
+  }
+}
+```
+
+### 4.2 特殊消息段
+平台特有的消息段需要添加平台前缀：
+```json
+{
+  "type": "yunhu_form",
+  "data": {
+    "form_id": "123456"
+  }
+}
+```
+
+## 5. 未知事件处理
+
+对于无法识别的事件类型，应生成警告事件：
+```json
+{
+  "id": "1234567893",
   "time": 1752241223,
   "type": "unknown",
   "platform": "yunhu",
@@ -149,20 +157,32 @@ def safe_get(data: dict, key: str, default=None):
   "alt_message": "This event type is not supported by this system."
 }
 ```
-## 6. 时间戳转换标准
-```python
-def convert_timestamp(ts: Any) -> int:
-    """标准化时间戳处理"""
-    if isinstance(ts, str):
-        if len(ts) == 13:  # 毫秒级
-            return int(ts) // 1000
-        return int(ts)
-    elif isinstance(ts, (int, float)):
-        if ts > 9999999999:  # 毫秒级
-            return int(ts // 1000)
-        return int(ts)
-    return int(time.time())  # 默认当前时间
+
+## 6. 平台特性字段
+
+所有平台特有字段必须以平台名称作为前缀
+
+比如:
+- 云湖平台：`yunhu_`
+- Telegram平台：`telegram_`
+- OneBot11平台：`onebot11_`
+
+### 6.1 特有字段示例
+```json
+{
+  "yunhu_command": {
+    "name": "抽奖",
+    "args": "超级大奖"
+  },
+  "yunhu_form": {
+    "form_id": "123456"
+  },
+  "telegram_sticker": {
+    "file_id": "CAACAgIAAxkBAA..."
+  }
+}
 ```
+
 ## 7. 适配器实现检查清单
 - [ ] 所有标准字段已正确映射
 - [ ] 平台特有字段已添加前缀
@@ -171,39 +191,4 @@ def convert_timestamp(ts: Any) -> int:
 - [ ] 消息段的 alt_message 已生成
 - [ ] 所有事件类型已通过单元测试
 - [ ] 文档包含完整示例和说明
-## 8. 最佳实践示例
-### 云湖表单消息处理
-```python
-def _convert_form_message(self, raw_form: dict) -> dict:
-    """转换表单消息为标准格式"""
-    return {
-        "type": "yunhu_form",
-        "data": {
-            "id": raw_form.get("formId"),
-            "fields": [
-                {
-                    "id": field.get("fieldId"),
-                    "type": field.get("fieldType"),
-                    "label": field.get("label"),
-                    "value": field.get("value")
-                }
-                for field in raw_form.get("fields", [])
-            ]
-        }
-    }
-```
-### 消息ID生成规则
-```python
-def generate_message_id(platform: str, raw_id: str) -> str:
-    """标准化消息ID格式"""
-    return f"{platform}_msg_{raw_id}" if raw_id else f"{platform}_msg_{uuid.uuid4()}"
-```
-本规范确保所有适配器：
-1. 保持与OneBot12的完全兼容性
-2. 平台特有功能可识别且不冲突
-3. 转换过程可追溯（通过_raw字段）
-4. 数据类型和格式统一
-建议配合自动化测试验证所有转换场景，特别是：
-- 边界值测试（如空消息、超大文件）
-- 特殊字符测试（消息内容含emoji/特殊符号）
-- 压力测试（连续事件转换）
+
