@@ -17,7 +17,7 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 
-> 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
+> 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
 
 | 子模块 | 用途 |
