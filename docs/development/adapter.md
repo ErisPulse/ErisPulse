@@ -303,7 +303,7 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event  # 保留原始数据
+            "myplatform_raw": raw_event,  # 保留原始数据
             "myplatform_raw_type": raw_event.get("type", "")    # 原始数据类型
         }
 
@@ -315,6 +315,59 @@ class MyPlatformConverter:
             return self._handle_notice(raw_event, onebot_event)
         
         return None
+```
+
+### 4.4 原始事件类型字段
+
+从 ErisPulse 2.3.0 版本开始，适配器需要在转换的事件中包含原始事件类型字段：
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        onebot_event = {
+            "id": self._generate_event_id(raw_event),
+            "time": self._convert_timestamp(raw_event.get("timestamp")),
+            "type": self._convert_event_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,  # 保留原始数据
+            "myplatform_raw_type": raw_event.get("type", "")  # 原始事件类型
+        }
+        return onebot_event
+```
+
+### 4.5 事件监听方式
+
+适配器现在支持两种事件监听方式：
+
+1. 监听 OneBot12 标准事件：
+```python
+from ErisPulse.Core import adapter
+
+@adapter.on("message")
+async def handle_message(event):
+    # 处理标准消息事件
+    pass
+
+# 监听特定平台的事件
+@adapter.on("message", platform="myplatform")
+async def handle_platform_message(event):
+    # 只处理来自 myplatform 的消息事件
+    pass
+```
+
+2. 监听平台原始事件：
+```python
+from ErisPulse.Core import adapter
+
+@adapter.on("text_message", raw=True, platform="myplatform")
+async def handle_raw_message(raw_event):
+    # 处理平台原始事件
+    pass
 ```
 
 ## 5. API响应标准
