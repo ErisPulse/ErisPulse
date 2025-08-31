@@ -1,18 +1,6 @@
 {
     "last_updated": "2025-08-31T03:02:34Z",
     "modules": {
-        "ErisPulse": {
-            "package": "ErisPulse",
-            "version": "2.2.1",
-            "author": "ErisPulse Team",
-            "description": "更新ErisPulse",
-            "min_sdk_version": "2.0.0",
-            "repository": "https://github.com/ErisPulse/ErisPulse",
-            "official": true,
-            "tags": [
-                "ErisPulse"
-            ]
-        },
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
             "version": "1.0.0",
