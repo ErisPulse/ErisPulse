@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.request` 模块
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-09-02 23:28:52</sup>
 
 ---
 
@@ -20,7 +20,9 @@ ErisPulse 请求处理模块
 
 ### `class RequestHandler`
 
-    RequestHandler 类提供相关功能。
+    请求事件处理器
+
+提供请求事件处理功能
 
     
 #### 方法列表
@@ -88,4 +90,4 @@ ErisPulse 请求处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-09-02 23:28:52</sub>

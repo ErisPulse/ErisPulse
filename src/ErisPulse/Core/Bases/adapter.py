@@ -1,3 +1,14 @@
+"""
+ErisPulse 适配器基础模块
+
+提供适配器和消息发送DSL的基类实现
+
+{!--< tips >!--}
+1. 用于实现与不同平台的交互接口
+2. 提供统一的消息发送DSL风格接口
+{!--< /tips >!--}
+"""
+
 import asyncio
 from typing import (
     Any, Optional,
