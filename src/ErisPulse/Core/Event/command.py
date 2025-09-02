@@ -17,6 +17,12 @@ from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 
 class CommandHandler:
+    """
+    命令处理器
+    
+    提供命令注册、处理和管理功能
+    """
+
     def __init__(self):
         self.commands: Dict[str, Dict] = {}
         self.aliases: Dict[str, str] = {}  # 别名映射

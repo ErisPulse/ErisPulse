@@ -13,6 +13,12 @@ from .base import BaseEventHandler
 from typing import Callable, Dict, Any
 
 class MetaHandler:
+    """
+    元事件处理器
+    
+    提供元事件处理功能，如连接、断开连接等
+    """
+    
     def __init__(self):
         self.handler = BaseEventHandler("meta", "meta")
     
