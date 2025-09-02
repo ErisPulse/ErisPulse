@@ -18,6 +18,20 @@ from .meta import meta
 from . import exceptions
 from .. import config
 
+def _clear_all_handlers():
+    """
+    {!--< internal-use >!--}
+    清除所有已注册的事件处理器和命令
+    """
+    # 清除命令处理器
+    command._clear_commands()
+    
+    # 清除各类事件处理器
+    message._clear_message_handlers()
+    notice._clear_notice_handlers()
+    request._clear_request_handlers()
+    meta._clear_meta_handlers()
+
 # 初始化默认配置
 def _setup_default_config():
     """

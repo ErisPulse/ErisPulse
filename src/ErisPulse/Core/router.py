@@ -310,7 +310,7 @@ class RouterManager:
                 logger.info("路由服务器已停止")
             self._server_task = None
         
-        await lifecycle.submit_event("server.stopped", msg="服务器已停止")
+        await lifecycle.submit_event("server.stop", msg="服务器已停止")
 
 router = RouterManager()
 
