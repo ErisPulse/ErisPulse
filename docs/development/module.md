@@ -1,3 +1,5 @@
+明白了，我们将更新模块开发指南，将 `BaseModule` 基类作为标准要求，而不是推荐使用。以下是更新后的文档：
+
 # ErisPulse 模块开发指南
 
 ## 1. 模块结构
@@ -53,26 +55,33 @@ from .Core import Main
 
 ## 4. `MyModule/Core.py` 文件
 
-实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的
+实现模块主类 `Main`，必须继承 `BaseModule` 基类以获得标准化的生命周期管理功能。
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-
-        self.logger.info("模块已加载")
+        
         self.config = self._get_config()
-        self._register_commands()
 
     @staticmethod
     def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
+    
+    async def on_load(self, event):
+        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
+        self.logger.info("模块已加载")
+        
+    async def on_unload(self, event):
+        command.unregister(self.ACommand)
+        self.logger.info("模块已卸载")
 
     # 从 config.toml 中获取配置, 如果不存在则使用默认值
     def _get_config(self):
@@ -86,16 +95,11 @@ class Main:
             return default_config
         return config
 
-    # 注册命令
-    async def _register_commands(self):
-        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
-
     async def ACommand(self):
         self.logger.info("命令已执行")
 
     def print_hello(self):
         self.logger.info("Hello World!")
-
 ```
 
 - 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
@@ -108,11 +112,19 @@ sdk.MyModule.print_hello()
 # epsdk run main.py --reload
 ```
 
-## 5. 模块路由注册
+### BaseModule 基类
+方法说明
+| 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
+| --- | --- | --- | --- | --- |
+| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载 | 否 | 无 | bool |
+| on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
+| on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
+
+## 6. 模块路由注册
 
 从 ErisPulse 2.1.15 版本开始，模块也可以注册自己的 HTTP/WebSocket 路由，用于提供 Web API 或实时通信功能。
 
-### 5.1 HTTP 路由注册
+### 6.1 HTTP 路由注册
 
 模块可以注册 HTTP 路由来提供 REST API 接口：
 
@@ -120,10 +132,11 @@ sdk.MyModule.print_hello()
 from ErisPulse import sdk
 from fastapi import Request
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         
         # 注册模块路由
@@ -164,7 +177,7 @@ class Main:
         self.logger.info("模块路由注册完成")
 ```
 
-### 5.2 WebSocket 路由注册
+### 6.2 WebSocket 路由注册
 
 模块也可以注册 WebSocket 路由来实现实时通信功能：
 
@@ -172,10 +185,11 @@ class Main:
 from ErisPulse import sdk
 from fastapi import WebSocket, WebSocketDisconnect
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         self._connections = set()
         
@@ -236,7 +250,7 @@ class Main:
             self._connections.discard(conn)
 ```
 
-### 5.3 路由使用说明
+### 6.3 路由使用说明
 
 注册的路由将自动添加模块名称作为前缀：
 
@@ -251,7 +265,7 @@ POST http://localhost:8000/MyModule/process
 WebSocket 连接: ws://localhost:8000/MyModule/ws
 ```
 
-### 5.4 路由最佳实践
+### 6.4 路由最佳实践
 
 1. **路由命名规范**：
    - 使用清晰、描述性的路径名
@@ -272,10 +286,11 @@ WebSocket 连接: ws://localhost:8000/MyModule/ws
 from ErisPulse import sdk
 from fastapi import HTTPException
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         self._register_routes()
         
@@ -298,7 +313,7 @@ class Main:
         )
 ```
 
-## 6. `LICENSE` 文件
+## 7. `LICENSE` 文件
 `LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
 
 ---
