@@ -13,6 +13,12 @@ from .base import BaseEventHandler
 from typing import Callable, Dict, Any
 
 class MetaHandler:
+    """
+    元事件处理器
+    
+    提供元事件处理功能，如连接、断开连接等
+    """
+    
     def __init__(self):
         self.handler = BaseEventHandler("meta", "meta")
     
@@ -108,5 +114,14 @@ class MetaHandler:
         :return: 是否成功取消注册
         """
         return self.handler.unregister(handler)
+    
+    def _clear_meta_handlers(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的元事件处理器
+        
+        :return: 被清除的处理器数量
+        """
+        return self.handler._clear_handlers()
 
 meta = MetaHandler()

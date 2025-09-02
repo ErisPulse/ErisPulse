@@ -17,7 +17,7 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 
-> 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
+> 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
 
 | 子模块 | 用途 |
@@ -313,27 +313,49 @@ async def connect_handler(event):
 }
 ```
 
+### 事件处理机制
+
+#### 点式结构事件
+ErisPulse 支持点式结构的事件命名，例如 `module.init`。当触发具体事件时，也会触发其父级事件：
+- 触发 `module.init` 事件时，也会触发 `module` 事件
+- 触发 `adapter.status.change` 事件时，也会触发 `adapter.status` 和 `adapter` 事件
+
+#### 通配符事件处理器
+可以注册 `*` 事件处理器来捕获所有事件。
+
 ### 标准生命周期事件
 
-| 事件类别 | 事件名称 | 触发时机 |
+#### 核心初始化事件
+
+| 事件名称 | 触发时机 | 数据结构 |
 |---------|---------|---------|
-| core | `core.init.start` | 核心初始化开始 |
-| core | `core.init.complete` | 核心初始化完成 |
-| module | `module.load` | 模块加载完成 |
-| module | `module.init` | 模块初始化完成 |
-| module | `module.unload` | 模块卸载 |
-| adapter | `adapter.load` | 适配器加载完成 |
-| adapter | `adapter.start` | 适配器启动开始 |
-| adapter | `adapter.started` | 适配器启动完成 |
-| adapter | `adapter.status.change` | 适配器状态变化 |
-| adapter | `adapter.stop` | 适配器停止开始 |
-| adapter | `adapter.stopped` | 适配器停止完成 |
-| runtime | `runtime.start` | 运行时启动 |
-| runtime | `runtime.stop` | 运行时停止 |
-| server | `server.start` | 服务器启动开始 |
-| server | `server.started` | 服务器启动完成 |
-| server | `server.stop` | 服务器停止开始 |
-| server | `server.stopped` | 服务器停止完成 |
+| `core.init.start` | 核心初始化开始时 | `{}` |
+| `core.init.complete` | 核心初始化完成时 | `{"duration": "初始化耗时(秒)", "success": true/false}` |
+
+#### 模块生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `module.load` | 模块加载完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.init` | 模块初始化完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.unload` | 模块卸载时 | `{"module_name": "模块名", "success": true/false}` |
+
+#### 适配器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `adapter.load` | 适配器加载完成时 | `{"platform": "平台名", "success": true/false}` |
+| `adapter.start` | 适配器开始启动时 | `{"platforms": ["平台名列表"]}` |
+| `adapter.status.change` | 适配器状态发生变化时 | `{"platform": "平台名", "status": "状态(starting/started/start_failed/stopping/stopped)", "retry_count": 重试次数(可选), "error": "错误信息(可选)"}` |
+| `adapter.stop` | 适配器开始关闭时 | `{}` |
+| `adapter.stopped` | 适配器关闭完成时 | `{}` |
+
+#### 服务器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `server.start` | 服务器启动时 | `{"base_url": "基础url","host": "主机地址", "port": "端口号"}` |
+| `server.stop` | 服务器停止时 | `{}` |
 
 ### 使用示例
 
@@ -373,27 +395,6 @@ print(f"操作耗时: {duration} 秒")
 1. 提交自定义生命周期事件
 2. 监听标准或自定义生命周期事件
 3. 利用计时器功能测量操作耗时
-
-```python
-# 第三方模块示例
-from ErisPulse import sdk
-
-class MyCustomModule:
-    async def on_load(self, event_data):
-        # 模块加载时提交事件
-        await sdk.lifecycle.submit_event(
-            "mymodule.loaded",
-            data={"version": "1.0.0"},
-            source="MyCustomModule",
-            msg="自定义模块加载完成"
-        )
-    
-    @sdk.lifecycle.on("adapter.started")
-    async def on_adapter_ready(self, event_data):
-        # 监听适配器启动完成事件
-        print("适配器已就绪，可以开始工作了")
-```
-
 
 ## 模块使用规范
 

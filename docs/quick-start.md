@@ -54,7 +54,7 @@ mkdir my_bot && cd my_bot
 
 2. 初始化 SDK 并生成配置文件：
 
-```bsah
+```bash
 ep-init
 ```
 这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
