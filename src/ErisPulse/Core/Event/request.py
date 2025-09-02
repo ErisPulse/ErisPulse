@@ -13,6 +13,12 @@ from .base import BaseEventHandler
 from typing import Callable, Dict, Any
 
 class RequestHandler:
+    """
+    请求事件处理器
+    
+    提供请求事件处理功能
+    """
+    
     def __init__(self):
         self.handler = BaseEventHandler("request", "request")
     

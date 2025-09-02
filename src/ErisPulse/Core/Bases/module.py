@@ -1,4 +1,16 @@
+"""
+ErisPulse 模块基础模块
+
+提供模块基类定义和标准接口
+"""
+
 class BaseModule:
+    """
+    模块基类
+    
+    提供模块加载和卸载的标准接口
+    """
+    
     @staticmethod
     def should_eager_load() -> bool:
         """
