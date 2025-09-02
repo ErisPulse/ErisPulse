@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.command` 模块
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-09-02 23:28:52</sup>
 
 ---
 
@@ -22,7 +22,9 @@ ErisPulse 命令处理模块
 
 ### `class CommandHandler`
 
-    CommandHandler 类提供相关功能。
+    命令处理器
+
+提供命令注册、处理和管理功能
 
     
 #### 方法列表
@@ -160,4 +162,4 @@ ErisPulse 命令处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-09-02 23:28:52</sub>
