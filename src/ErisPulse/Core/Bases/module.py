@@ -48,3 +48,7 @@ class BaseModule:
         {!--< /tips >!--}
         """
         raise NotImplementedError
+
+__all__ = [
+    "BaseModule"
+]
