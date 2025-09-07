@@ -1926,7 +1926,7 @@ class CLI:
                     
             elif args.command == "init":
                 from ErisPulse import sdk
-                sdk.init()
+                asyncio.run(sdk.init())
                 console.print("[success]ErisPulse项目初始化完成[/]")
                 
             # 处理第三方命令

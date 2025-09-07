@@ -135,7 +135,7 @@ class ModuleManager:
             logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
             
-    async def unload(self, module_name: str = None) -> bool:
+    async def unload(self, module_name: str = "Unknown") -> bool:
         """
         卸载指定模块或所有模块
         
@@ -146,7 +146,7 @@ class ModuleManager:
         >>> await module.unload("MyModule")
         >>> await module.unload()  # 卸载所有模块
         """
-        if module_name is None:
+        if module_name == "Unknown":
             # 卸载所有模块
             success = True
             for name in list(self._loaded_modules):
