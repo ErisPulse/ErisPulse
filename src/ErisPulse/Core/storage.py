@@ -54,6 +54,11 @@ class StorageManager:
         {!--< internal-use >!--}
         初始化数据库
         """
+        from .logger import logger
+
+        logger.debug(f"初始化数据库: {self.db_path}")
+        logger.debug(f"创建数据库目录: {os.path.dirname(self.db_path)}")
+        
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         os.makedirs(self.SNAPSHOT_DIR, exist_ok=True)
         conn = sqlite3.connect(self.db_path)
@@ -104,7 +109,7 @@ class StorageManager:
                 self._init_db()
                 return self.get(key, default)
             else:
-                from . import logger
+                from .logger import logger
                 logger.error(f"数据库操作错误: {e}")
                 
     def get_all_keys(self) -> List[str]:
@@ -146,7 +151,7 @@ class StorageManager:
             self._check_auto_snapshot()
             return True
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"设置存储项 {key} 失败: {e}")
             return False
 
@@ -310,13 +315,19 @@ class StorageManager:
             """
             退出事务上下文
             """
-            if exc_type is None:
-                self.conn.commit()
-            else:
-                self.conn.rollback()
-                from .logger import logger
-                logger.error(f"事务执行失败: {exc_val}")
-            self.conn.close()
+            if self.conn is not None:
+                try:
+                    if exc_type is None:
+                        if hasattr(self.conn, 'commit'):
+                            self.conn.commit()
+                    else:
+                        if hasattr(self.conn, 'rollback'):
+                            self.conn.rollback()
+                        from .logger import logger
+                        logger.error(f"事务执行失败: {exc_val}")
+                finally:
+                    if hasattr(self.conn, 'close'):
+                        self.conn.close()
 
     def _check_auto_snapshot(self) -> None:
         """
@@ -396,7 +407,7 @@ class StorageManager:
         try:
             return self.get(key)
         except KeyError:
-            from . import logger
+            from .logger import logger
             logger.error(f"存储项 {key} 不存在")
 
     def __setattr__(self, key: str, value: Any) -> None:
@@ -412,7 +423,7 @@ class StorageManager:
         try:
             self.set(key, value)
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"设置存储项 {key} 失败: {e}")
 
     def snapshot(self, name: Optional[str] = None) -> str:
@@ -441,16 +452,16 @@ class StorageManager:
                 try:
                     self._conn.close()
                 except Exception as e:
-                    from . import logger
+                    from .logger import logger
                     logger.warning(f"关闭数据库连接时出错: {e}")
             
             # 创建快照
             shutil.copy2(self.db_path, snapshot_path)
-            from . import logger
+            from .logger import logger
             logger.info(f"数据库快照已创建: {snapshot_path}")
             return snapshot_path
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"创建快照失败: {e}")
             raise
 
@@ -468,7 +479,7 @@ class StorageManager:
             if not snapshot_name.endswith('.db') else snapshot_name
             
         if not os.path.exists(snapshot_path):
-            from . import logger
+            from .logger import logger
             logger.error(f"快照文件不存在: {snapshot_path}")
             return False
             
@@ -478,17 +489,17 @@ class StorageManager:
                 try:
                     self._conn.close()
                 except Exception as e:
-                    from . import logger
+                    from .logger import logger
                     logger.warning(f"关闭数据库连接时出错: {e}")
             
             # 执行恢复操作
             shutil.copy2(snapshot_path, self.db_path)
             self._init_db()  # 恢复后重新初始化数据库连接
-            from . import logger
+            from .logger import logger
             logger.info(f"数据库已从快照恢复: {snapshot_path}")
             return True
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"恢复快照失败: {e}")
             return False
 
@@ -528,17 +539,17 @@ class StorageManager:
             if not snapshot_name.endswith('.db') else snapshot_name
             
         if not os.path.exists(snapshot_path):
-            from . import logger
+            from .logger import logger
             logger.error(f"快照文件不存在: {snapshot_path}")
             return False
             
         try:
             os.remove(snapshot_path)
-            from . import logger
+            from .logger import logger
             logger.info(f"快照已删除: {snapshot_path}")
             return True
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"删除快照失败: {e}")
             return False
 

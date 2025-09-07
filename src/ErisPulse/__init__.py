@@ -108,6 +108,9 @@ class LazyModule:
         
         :raises LazyLoadError: 当模块初始化失败时抛出
         """
+        if self._initialized:
+            return
+            
         try:
             # 获取类的__init__参数信息
             init_signature = inspect.signature(self._module_class.__init__)
@@ -140,7 +143,6 @@ class LazyModule:
             logger.debug(f"懒加载模块 {self._module_name} 初始化完成")
             
         except Exception as e:
-
             await lifecycle.submit_event(
                     "module.init",
                     msg=f"模块初始化失败: {e}",
@@ -152,12 +154,11 @@ class LazyModule:
             logger.error(f"懒加载模块 {self._module_name} 初始化失败: {e}")
             raise e
     
-    def __getattr__(self, name: str) -> Any:
+    def _ensure_initialized(self) -> None:
         """
-        属性访问时触发初始化
+        确保模块已初始化
         
-        :param name: str 属性名
-        :return: Any 属性值
+        :raises LazyLoadError: 当模块未初始化时抛出
         """
         if not self._initialized:
             # 在异步环境中同步调用异步初始化方法
@@ -170,160 +171,16 @@ class LazyModule:
             except RuntimeError:
                 # 没有运行中的事件循环
                 asyncio.run(self._initialize())
+        
+    def __getattr__(self, name: str) -> Any:
+        """
+        属性访问时触发初始化
+        
+        :param name: str 属性名
+        :return: Any 属性值
+        """
+        self._ensure_initialized()
         return getattr(self._instance, name)
-    
-    def __call__(self, *args, **kwargs) -> Any:
-        """
-        调用时触发初始化
-        
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: Any 调用结果
-        """
-        if not self._initialized:
-            try:
-                loop = asyncio.get_running_loop()
-                task = loop.create_task(self._initialize())
-                loop.run_until_complete(task)
-            except RuntimeError:
-                asyncio.run(self._initialize())
-        return self._instance(*args, **kwargs)
-    
-    def __repr__(self) -> str:
-        """
-        返回模块表示字符串
-        
-        :return: str 表示字符串
-        """
-        if self._initialized:
-            return repr(self._instance)
-        return f"<LazyModule {self._module_name} (未初始化)>"
-    
-    def __str__(self) -> str:
-        """
-        返回模块字符串表示
-        
-        :return: str 字符串表示
-        """
-        return self.__repr__()
-    
-    def __dir__(self) -> List[str]:
-        """
-        返回模块属性列表
-        
-        :return: List[str] 属性列表
-        """
-        if not self._initialized:
-            try:
-                loop = asyncio.get_running_loop()
-                task = loop.create_task(self._initialize())
-                loop.run_until_complete(task)
-            except RuntimeError:
-                asyncio.run(self._initialize())
-        return dir(self._instance)
-    
-    def __getitem__(self, key):
-        """
-        支持索引访问
-        
-        :param key: 索引键
-        :return: 对应值
-        """
-        if not self._initialized:
-            self._initialize()
-        return self._instance[key]
-    
-    def __setitem__(self, key, value):
-        """
-        支持索引赋值
-        
-        :param key: 索引键
-        :param value: 赋值内容
-        """
-        if not self._initialized:
-            self._initialize()
-        self._instance[key] = value
-    
-    def __delitem__(self, key):
-        """
-        支持索引删除
-        
-        :param key: 索引键
-        """
-        if not self._initialized:
-            self._initialize()
-        del self._instance[key]
-    
-    def __contains__(self, item):
-        """
-        支持成员检查
-        
-        :param item: 检查项
-        :return: bool 是否包含
-        """
-        if not self._initialized:
-            self._initialize()
-        return item in self._instance
-    
-    def __iter__(self):
-        """
-        支持迭代
-        
-        :return: 迭代器
-        """
-        if not self._initialized:
-            self._initialize()
-        return iter(self._instance)
-    
-    def __len__(self):
-        """
-        支持长度获取
-        
-        :return: int 长度
-        """
-        if not self._initialized:
-            self._initialize()
-        return len(self._instance)
-    
-    def __bool__(self):
-        """
-        支持布尔值判断
-        
-        :return: bool 布尔值
-        """
-        # 懒加载模块始终为True，即使未初始化
-        return True
-    
-    def __eq__(self, other):
-        """
-        支持相等性比较
-        
-        :param other: 比较对象
-        :return: bool 是否相等
-        """
-        if not self._initialized:
-            self._initialize()
-        return self._instance == other
-    
-    def __ne__(self, other):
-        """
-        支持不等性比较
-        
-        :param other: 比较对象
-        :return: bool 是否不等
-        """
-        if not self._initialized:
-            self._initialize()
-        return self._instance != other
-    
-    def __hash__(self):
-        """
-        支持哈希计算
-        
-        :return: int 哈希值
-        """
-        # 懒加载模块的哈希基于模块名
-        return hash(f"LazyModule:{self._module_name}")
     
     def __setattr__(self, name: str, value: Any) -> None:
         """
@@ -336,10 +193,11 @@ class LazyModule:
         if name.startswith('_') or name in ('moduleInfo',):
             super().__setattr__(name, value)
         else:
-            # 其他属性设置到实际模块实例上
-            if not self._initialized:
-                self._initialize()
-            setattr(self._instance, name, value)
+            # 其他属性在初始化前设置到包装器上，初始化后设置到实际模块实例上
+            if name == '_instance' or not hasattr(self, '_initialized') or not self._initialized:
+                super().__setattr__(name, value)
+            else:
+                setattr(self._instance, name, value)
     
     def __delattr__(self, name: str) -> None:
         """
@@ -347,13 +205,12 @@ class LazyModule:
         
         :param name: str 属性名
         """
-        if not self._initialized:
-            self._initialize()
+        self._ensure_initialized()
         delattr(self._instance, name)
     
     def __getattribute__(self, name: str) -> Any:
         """
-        属性访问
+        属性访问，初始化后直接委托给实际实例
         
         :param name: str 属性名
         :return: Any 属性值
@@ -361,19 +218,40 @@ class LazyModule:
         # 特殊属性直接从包装器获取
         if name.startswith('_') or name in ('moduleInfo',):
             return super().__getattribute__(name)
-        # 其他属性从实际模块实例获取
-        if not super().__getattribute__('_initialized'):
-            super()._initialize()
-        return getattr(super().__getattribute__('_instance'), name)
+            
+        # 检查是否已初始化
+        initialized = super().__getattribute__('_initialized')
+        if not initialized:
+            # 确保初始化
+            self._ensure_initialized()
+            # 重新获取initialized状态
+            initialized = super().__getattribute__('_initialized')
+            
+        # 初始化后直接委托给实际实例
+        if initialized:
+            instance = super().__getattribute__('_instance')
+            return getattr(instance, name)
+        else:
+            return super().__getattribute__(name)
     
-    def __deepcopy__(self, memo):
+    def __dir__(self) -> List[str]:
         """
-        深拷贝时返回自身，保持懒加载特性
-
-        :param memo: memo
-        :return: self
+        返回模块属性列表
+        
+        :return: List[str] 属性列表
         """
-        return self
+        self._ensure_initialized()
+        return dir(self._instance)
+    
+    def __repr__(self) -> str:
+        """
+        返回模块表示字符串
+        
+        :return: str 表示字符串
+        """
+        if self._initialized:
+            return repr(self._instance)
+        return f"<LazyModule {self._module_name} (not initialized)>"
 
 class AdapterLoader:
     """
@@ -410,7 +288,7 @@ class AdapterLoader:
             if hasattr(entry_points, 'select'):
                 adapter_entries = entry_points.select(group='erispulse.adapter')
             else:
-                adapter_entries = entry_points.get('erispulse.adapter', [])
+                adapter_entries = entry_points.get('erispulse.adapter', [])     # type: ignore[attr-defined] || 原因: 3.10.0后entry_points不再支持select方法
             
             # 处理适配器
             for entry_point in adapter_entries:
@@ -479,7 +357,7 @@ class AdapterLoader:
             }
             
             if not hasattr(adapter_obj, 'adapterInfo'):
-                adapter_obj.adapterInfo = {}
+                setattr(adapter_obj, 'adapterInfo', {})
                 
             adapter_obj.adapterInfo[meta_name] = adapter_info
                 
@@ -527,7 +405,7 @@ class ModuleLoader:
             if hasattr(entry_points, 'select'):
                 module_entries = entry_points.select(group='erispulse.module')
             else:
-                module_entries = entry_points.get('erispulse.module', [])
+                module_entries = entry_points.get('erispulse.module', [])     # type: ignore[attr-defined] || 原因: 3.10.0后entry_points不再支持select方法
             
             # 处理模块
             for entry_point in module_entries:
@@ -607,7 +485,7 @@ class ModuleLoader:
                 "module_class": loaded_obj
             }
             
-            module_obj.moduleInfo = module_info
+            setattr(module_obj, "moduleInfo", module_info)
             
             module_objs[meta_name] = module_obj
             enabled_modules.append(meta_name)
@@ -685,8 +563,15 @@ class ModuleInitializer:
                 return False
             
             # 解包结果
-            adapter_objs, enabled_adapters, disabled_adapters = adapter_result
-            module_objs, enabled_modules, disabled_modules = module_result
+            if not isinstance(adapter_result, Exception):
+                adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore[assignment]  ||  原因: 已经在方法中进行了类型检查
+            else:
+                return False
+                
+            if not isinstance(module_result, Exception):
+                module_objs, enabled_modules, disabled_modules = module_result      # type: ignore[assignment]  ||  原因: 已经在方法中进行了类型检查
+            else:
+                return False
             
             logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
             logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
@@ -760,7 +645,7 @@ class ModuleInitializer:
                         module_entries = entry_points.select(group='erispulse.module')
                         module_entry_map = {entry.name: entry for entry in module_entries}
                     else:
-                        module_entries = entry_points.get('erispulse.module', [])
+                        module_entries = entry_points.get('erispulse.module', [])         # type: ignore[assignment]    ||  原因: 已经在方法中进行了类型检查，这是一个兼容性的写法
                         module_entry_map = {entry.name: entry for entry in module_entries}
                     
                     entry_point = module_entry_map.get(name)
@@ -798,7 +683,7 @@ class ModuleInitializer:
                         module_entries = entry_points.select(group='erispulse.module')
                         module_entry_map = {entry.name: entry for entry in module_entries}
                     else:
-                        module_entries = entry_points.get('erispulse.module', [])
+                        module_entries = entry_points.get('erispulse.module', [])         # type: ignore[assignment]    ||  原因: 已经在方法中进行了类型检查，这是一个兼容性的写法
                         module_entry_map = {entry.name: entry for entry in module_entries}
                     
                     entry_point = module_entry_map.get(name)
@@ -1127,9 +1012,10 @@ async def load_module(module_name: str) -> bool:
     except Exception as e:
         logger.error(f"加载模块 {module_name} 失败: {e}")
         return False
-
-sdk.init = init
-sdk.init_task = init_task
-sdk.load_module = load_module
-sdk.uninit = uninit
-sdk.restart = restart
+    
+setattr(sdk, "init", init)
+setattr(sdk, "init_task", init_task)
+setattr(sdk, "load_module", load_module)
+setattr(sdk, "run", run)
+setattr(sdk, "restart", restart)
+setattr(sdk, "uninit", uninit)

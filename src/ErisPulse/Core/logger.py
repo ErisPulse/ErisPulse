@@ -16,18 +16,20 @@ import datetime
 from rich.logging import RichHandler
 from rich.console import Console
 
+
 class Logger:
     """
     日志管理器
-    
+
     提供模块化日志记录和存储功能
-    
+
     {!--< tips >!--}
     1. 使用set_module_level设置模块日志级别
     2. 使用get_logs获取历史日志
     3. 支持标准日志级别(DEBUG, INFO等)
     {!--< /tips >!--}
     """
+
     def __init__(self):
         self._max_logs = 1000
         self._logs = {}
@@ -41,15 +43,15 @@ class Logger:
                 show_time=False,
                 show_level=True,
                 show_path=False,
-                markup=False
+                markup=False,
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
-            
+
     def set_memory_limit(self, limit: int) -> bool:
         """
         设置日志内存存储上限
-        
+
         :param limit: 日志存储上限
         :return: bool 设置是否成功
         """
@@ -67,7 +69,7 @@ class Logger:
     def set_level(self, level: str) -> bool:
         """
         设置全局日志级别
-        
+
         :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
         :return: bool 设置是否成功
         """
@@ -90,6 +92,7 @@ class Logger:
         :return: bool 设置是否成功
         """
         from .module import module
+
         if not module.is_enabled(module_name):
             self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
             return False
@@ -118,7 +121,7 @@ class Logger:
 
         for p in path:
             try:
-                file_handler = logging.FileHandler(p, encoding='utf-8')
+                file_handler = logging.FileHandler(p, encoding="utf-8")
                 # 使用自定义格式化器去除rich markup标签
                 file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
                 self._logger.addHandler(file_handler)
@@ -126,11 +129,14 @@ class Logger:
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
                 return False
-            
+
+        self._logger.warning("出现极端错误，无法设置日志文件。")
+        return False
+
     def save_logs(self, path) -> bool:
         """
         保存所有在内存中记录的日志
-        
+
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
@@ -139,7 +145,7 @@ class Logger:
             return False
         if isinstance(path, str):
             path = [path]
-        
+
         for p in path:
             try:
                 with open(p, "w", encoding="utf-8") as file:
@@ -153,7 +159,10 @@ class Logger:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
                 return False
 
-    def get_logs(self, module_name: str = None) -> dict:
+        self._logger.warning("出现极端错误，无法保存日志。")
+        return False
+
+    def get_logs(self, module_name: str = "Unknown") -> dict:
         """
         获取日志内容
 
@@ -163,21 +172,22 @@ class Logger:
         if module_name:
             return {module_name: self._logs.get(module_name, [])}
         return {k: v.copy() for k, v in self._logs.items()}
-    
+
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
             self._logs[ModuleName] = []
-        
+
         # 检查日志数量是否超过限制
         if len(self._logs[ModuleName]) >= self._max_logs:
             self._logs[ModuleName].pop(0)
-            
+
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         msg = f"{timestamp} - {msg}"
         self._logs[ModuleName].append(msg)
 
     def _setup_config(self):
         from .erispulse_config import get_logger_config
+
         logger_config = get_logger_config()
         if "level" in logger_config:
             self.set_level(logger_config["level"])
@@ -185,26 +195,41 @@ class Logger:
             self.set_output_file(logger_config["log_files"])
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
-    
+
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
 
-    def _get_caller(self):
-        frame = inspect.currentframe().f_back.f_back
-        module = inspect.getmodule(frame)
-        module_name = module.__name__
-        if module_name == "__main__":
-            module_name = "Main"
-        if module_name.endswith(".Core"):
-            module_name = module_name[:-5]
-        if module_name.startswith("ErisPulse"):
-            module_name = "ErisPulse"
-        return module_name
 
-    def get_child(self, child_name: str = None):
+    def _get_caller(self):
+        try:
+            frame = inspect.currentframe()
+            # 安全地获取调用栈帧
+            if frame is None or frame.f_back is None or frame.f_back.f_back is None:
+                return "Unknown"
+
+            frame = frame.f_back.f_back
+            module = inspect.getmodule(frame)
+
+            # 处理模块为None的情况
+            if module is None:
+                return "Unknown"
+
+            module_name = module.__name__
+            if module_name == "__main__":
+                module_name = "Main"
+            elif module_name.endswith(".Core"):
+                module_name = module_name[:-5]
+            elif module_name.startswith("ErisPulse"):
+                module_name = "ErisPulse"
+
+            return module_name
+        except Exception:
+            return "Unknown"
+
+    def get_child(self, child_name: str = "UnknownChild"):
         """
         获取子日志记录器
-        
+
         :param child_name: 子模块名称(可选)
         :return: LoggerChild 子日志记录器实例
         """
@@ -250,42 +275,48 @@ class Logger:
 class LoggerChild:
     """
     子日志记录器
-    
+
     用于创建具有特定名称的子日志记录器，仅改变模块名称，其他功能全部委托给父日志记录器
     """
-    
+
     def __init__(self, parent_logger: Logger, name: str):
         """
         初始化子日志记录器
-        
+
         :param parent_logger: 父日志记录器实例
         :param name: 子日志记录器名称
         """
         self._parent = parent_logger
         self._name = name
-        
+
     def debug(self, msg, *args, **kwargs):
-        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.DEBUG:
+        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.DEBUG:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.debug(f"[{self._name}] {msg}", *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.INFO:
+        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.INFO:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.info(f"[{self._name}] {msg}", *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.WARNING:
+        if (
+            self._parent._get_effective_level(self._name.split(".")[0])
+            <= logging.WARNING
+        ):
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.warning(f"[{self._name}] {msg}", *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.ERROR:
+        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.ERROR:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.error(f"[{self._name}] {msg}", *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        if self._parent._get_effective_level(self._name.split('.')[0]) <= logging.CRITICAL:
+        if (
+            self._parent._get_effective_level(self._name.split(".")[0])
+            <= logging.CRITICAL
+        ):
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.critical(f"[{self._name}] {msg}", *args, **kwargs)
             raise Exception(msg)
@@ -293,7 +324,7 @@ class LoggerChild:
     def get_child(self, child_name: str):
         """
         获取子日志记录器的子记录器
-        
+
         :param child_name: 子模块名称
         :return: LoggerChild 子日志记录器实例
         """
@@ -303,6 +334,4 @@ class LoggerChild:
 
 logger = Logger()
 
-__all__ = [
-    "logger"
-]
+__all__ = ["logger"]
