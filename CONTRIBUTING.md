@@ -70,7 +70,8 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 
 1.  **Fork仓库**
     *   首先fork主仓库到您的个人GitHub账户。
-
+    * 提示：在fork时，请**取消勾选** "Copy the main branch only" 选项，以确保获取完整的分支结构（包括 `Develop/v2`、`Pre-Release/v2` 等分支），这是完成贡献提交的必要条件。
+    
 2.  **创建功能分支**
     *   在您**自己Fork的仓库**中，基于官方的 `Develop/v2` 分支创建功能分支。
     *   分支命名规范：
