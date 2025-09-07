@@ -36,7 +36,7 @@ class ConfigManager:
                 
             return value
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"读取配置文件 {self.CONFIG_FILE} 失败: {e}")
             return default
     
@@ -67,7 +67,7 @@ class ConfigManager:
                 
             return True
         except Exception as e:
-            from . import logger
+            from .logger import logger
             logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
             return False
 
