@@ -43,6 +43,8 @@ except importlib.metadata.PackageNotFoundError:
     logger.critical("未找到ErisPulse版本信息，请检查是否正确安装ErisPulse")
 __author__  = "ErisPulse"
 
+logger.debug("ErisPulse 正在挂载SDK核心模块...")
+
 BaseModules = {
     "Event"         : Event,
 
@@ -67,10 +69,14 @@ BaseModules = {
 
 for module_name, moduleObj in BaseModules.items():
     setattr(sdk, module_name, moduleObj)
-    
+
+logger.debug("ErisPulse 正在挂载loop循环器...")
+
 # 设置默认loop循环捕捉器
 asyncio_loop = asyncio.get_event_loop()
 exceptions.setup_async_loop(asyncio_loop)
+
+logger.debug("SDK核心模块挂载完毕")
 
 class LazyModule:
     """
@@ -108,25 +114,34 @@ class LazyModule:
         
         :raises LazyLoadError: 当模块初始化失败时抛出
         """
+        logger.debug(f"正在初始化懒加载模块 {self._module_name}...")
+
         if self._initialized:
+            logger.debug(f"懒加载模块 {self._module_name} 已经初始化")
             return
             
         try:
             # 获取类的__init__参数信息
+            logger.debug(f"正在获取模块 {self._module_name} 的 __init__ 参数信息...")
             init_signature = inspect.signature(self._module_class.__init__)
             params = init_signature.parameters
             
             # 根据参数决定是否传入sdk
             if 'sdk' in params:
+                logger.debug(f"模块 {self._module_name} 需要传入 sdk 参数")
                 self._instance = self._module_class(self._sdk_ref)
             else:
+                logger.debug(f"模块 {self._module_name} 不需要传入 sdk 参数")
                 self._instance = self._module_class()
-            
+
+            logger.debug(f"正在设置模块 {self._module_name} 的 moduleInfo 属性...")
             setattr(self._instance, "moduleInfo", self._module_info)
             self._initialized = True
             
             # 如果是 BaseModule 子类，在初始化后调用 on_load 方法
             if self._is_base_module:
+                logger.debug(f"正在调用模块 {self._module_name} 的 on_load 方法...")
+                
                 try:
                     await module.load(self._module_name)
                 except Exception as e:
@@ -179,6 +194,8 @@ class LazyModule:
         :param name: str 属性名
         :return: Any 属性值
         """
+        logger.debug(f"正在访问懒加载模块 {self._module_name} 的属性 {name}...")
+        
         self._ensure_initialized()
         return getattr(self._instance, name)
     
@@ -189,6 +206,8 @@ class LazyModule:
         :param name: str 属性名
         :param value: Any 属性值
         """
+        logger.debug(f"正在设置懒加载模块 {self._module_name} 的属性 {name}...")
+
         # 特殊属性直接设置到包装器上
         if name.startswith('_') or name in ('moduleInfo',):
             super().__setattr__(name, value)
@@ -205,6 +224,8 @@ class LazyModule:
         
         :param name: str 属性名
         """
+        logger.debug(f"正在删除懒加载模块 {self._module_name} 的属性 {name}...")
+
         self._ensure_initialized()
         delattr(self._instance, name)
     
@@ -215,6 +236,8 @@ class LazyModule:
         :param name: str 属性名
         :return: Any 属性值
         """
+        logger.debug(f"正在访问懒加载模块 {self._module_name} 的属性 {name}...")
+
         # 特殊属性直接从包装器获取
         if name.startswith('_') or name in ('moduleInfo',):
             return super().__getattribute__(name)
@@ -240,6 +263,8 @@ class LazyModule:
         
         :return: List[str] 属性列表
         """
+        logger.debug(f"正在获取懒加载模块 {self._module_name} 的属性列表...")
+
         self._ensure_initialized()
         return dir(self._instance)
     
@@ -249,6 +274,8 @@ class LazyModule:
         
         :return: str 表示字符串
         """
+        logger.debug(f"正在获取懒加载模块 {self._module_name} 的表示字符串...")
+
         if self._initialized:
             return repr(self._instance)
         return f"<LazyModule {self._module_name} (not initialized)>"
@@ -282,8 +309,11 @@ class AdapterLoader:
         enabled_adapters = []
         disabled_adapters = []
         
+        logger.info("正在加载适配器entry-points...")
+
         try:
             # 加载适配器entry-points
+            logger.debug("正在获取适配器entry-points...")
             entry_points = importlib.metadata.entry_points()
             if hasattr(entry_points, 'select'):
                 adapter_entries = entry_points.select(group='erispulse.adapter')
@@ -291,10 +321,13 @@ class AdapterLoader:
                 adapter_entries = entry_points.get('erispulse.adapter', [])     # type: ignore[attr-defined] || 原因: 3.10.0后entry_points不再支持select方法
             
             # 处理适配器
+            logger.debug("正在处理适配器entry-points...")
             for entry_point in adapter_entries:
                 adapter_objs, enabled_adapters, disabled_adapters = await AdapterLoader._process_adapter(
                     entry_point, adapter_objs, enabled_adapters, disabled_adapters)
-                    
+            
+            logger.info("适配器加载完成")
+
         except Exception as e:
             logger.error(f"加载适配器entry-points失败: {e}")
             raise ImportError(f"无法加载适配器: {e}")
@@ -337,6 +370,7 @@ class AdapterLoader:
         
         if not adapter_status:
             disabled_adapters.append(meta_name)
+            logger.debug(f"适配器 {meta_name} 已禁用, 跳过...")
             return adapter_objs, enabled_adapters, disabled_adapters
             
         try:
@@ -399,6 +433,8 @@ class ModuleLoader:
         enabled_modules = []
         disabled_modules = []
         
+        logger.info("正在加载模块entry-points...")
+
         try:
             # 加载模块entry-points
             entry_points = importlib.metadata.entry_points()
@@ -411,7 +447,9 @@ class ModuleLoader:
             for entry_point in module_entries:
                 module_objs, enabled_modules, disabled_modules = await ModuleLoader._process_module(
                     entry_point, module_objs, enabled_modules, disabled_modules)
-                    
+            
+            logger.info("模块加载完成")
+
         except Exception as e:
             logger.error(f"加载模块entry-points失败: {e}")
             raise ImportError(f"无法加载模块: {e}")
@@ -442,7 +480,8 @@ class ModuleLoader:
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
-        
+
+        logger.debug(f"正在处理模块: {meta_name}")
         # 检查模块是否已经注册，如果未注册则进行注册（默认禁用）
         if not sdk.module.exists(meta_name):
             sdk.module._config_register(meta_name, False)  # 默认禁用
@@ -505,6 +544,9 @@ class ModuleLoader:
         :param module_class: Type 模块类
         :return: bool 如果返回 False，则立即加载；否则懒加载
         """
+
+        logger.debug(f"检查模块 {module_class.__name__} 是否应该懒加载")
+        
         # 检查模块是否定义了 should_eager_load() 方法
         if hasattr(module_class, "should_eager_load"):
             try:
@@ -1013,6 +1055,7 @@ async def load_module(module_name: str) -> bool:
         logger.error(f"加载模块 {module_name} 失败: {e}")
         return False
     
+logger.debug("ErisPulse 正在挂载必要的入口方法")
 setattr(sdk, "init", init)
 setattr(sdk, "init_task", init_task)
 setattr(sdk, "load_module", load_module)
