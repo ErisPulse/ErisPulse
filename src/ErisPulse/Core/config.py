@@ -4,13 +4,14 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 """
+
 import os
 import toml
 from typing import Any
 
 class ConfigManager:
     def __init__(self, config_file: str = "config.toml"):
-        self.CONFIG_FILE = config_file
+        self.CONFIG_FILE: str = config_file
 
     def getConfig(self, key: str, default: Any = None) -> Any:
         """
@@ -22,10 +23,10 @@ class ConfigManager:
         try:
             if not os.path.exists(self.CONFIG_FILE):
                 return default
-                
+
             with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
                 config = toml.load(f)
-            
+
             # 支持点分隔符访问嵌套配置
             keys = key.split('.')
             value = config
@@ -33,13 +34,13 @@ class ConfigManager:
                 if k not in value:
                     return default
                 value = value[k]
-                
+
             return value
         except Exception as e:
             from .logger import logger
             logger.error(f"读取配置文件 {self.CONFIG_FILE} 失败: {e}")
             return default
-    
+
     def setConfig(self, key: str, value: Any) -> bool:
         """
         设置模块/适配器配置
@@ -52,7 +53,7 @@ class ConfigManager:
             if os.path.exists(self.CONFIG_FILE):
                 with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
                     config = toml.load(f)
-            
+
             # 支持点分隔符设置嵌套配置
             keys = key.split('.')
             current = config
@@ -61,10 +62,10 @@ class ConfigManager:
                     current[k] = {}
                 current = current[k]
             current[keys[-1]] = value
-            
+
             with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
                 toml.dump(config, f)
-                
+
             return True
         except Exception as e:
             from .logger import logger
