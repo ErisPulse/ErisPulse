@@ -186,7 +186,7 @@ class Logger:
         self._logs[ModuleName].append(msg)
 
     def _setup_config(self):
-        from .erispulse_config import get_logger_config
+        from ._self_config import get_logger_config
 
         logger_config = get_logger_config()
         if "level" in logger_config:
