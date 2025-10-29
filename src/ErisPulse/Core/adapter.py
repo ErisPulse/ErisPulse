@@ -126,7 +126,7 @@ class AdapterManager:
         )
 
         from .router import router
-        from .erispulse_config import get_server_config
+        from ._self_config import get_server_config
         server_config = get_server_config()
 
         host = server_config["host"]

@@ -889,7 +889,7 @@ async def _prepare_environment() -> bool:
 
     logger.info("[Init] 准备初始化环境...")
     try:
-        from .Core.erispulse_config import get_erispulse_config
+        from .Core._self_config import get_erispulse_config
         get_erispulse_config()
         logger.info("[Init] 配置文件已加载")
 
