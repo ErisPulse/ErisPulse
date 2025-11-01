@@ -60,8 +60,9 @@ class AdapterManager:
         :example:
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
+        logger.info(f"注册适配器 {platform}（{adapter_class.__name__}）")
         if not issubclass(adapter_class, BaseAdapter):
-            raise TypeError("适配器必须继承自BaseAdapter")
+            raise TypeError("适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误")
 
         self._adapter_classes[platform] = adapter_class
         if adapter_info:
@@ -92,7 +93,7 @@ class AdapterManager:
 
         return True
 
-    async def startup(self, platforms: List[str] = []) -> None:
+    async def startup(self, platforms = None) -> None:
         """
         启动指定的适配器
 
