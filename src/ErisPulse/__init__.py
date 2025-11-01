@@ -100,13 +100,14 @@ class LazyModule:
         :param sdk_ref: Any SDK引用
         :param module_info: Dict[str, Any] 模块信息字典
         """
-        self._module_name = module_name
-        self._module_class = module_class
-        self._sdk_ref = sdk_ref
-        self._module_info = module_info
-        self._instance = None
-        self._initialized = False
-        self._is_base_module = module_info.get("meta", {}).get("is_base_module", False)
+        # 使用object.__setattr__避免触发自定义的__setattr__
+        object.__setattr__(self, '_module_name', module_name)
+        object.__setattr__(self, '_module_class', module_class)
+        object.__setattr__(self, '_sdk_ref', sdk_ref)
+        object.__setattr__(self, '_module_info', module_info)
+        object.__setattr__(self, '_instance', None)
+        object.__setattr__(self, '_initialized', False)
+        object.__setattr__(self, '_is_base_module', module_info.get("meta", {}).get("is_base_module", False))
     
     async def _initialize(self):
         """
@@ -114,59 +115,62 @@ class LazyModule:
         
         :raises LazyLoadError: 当模块初始化失败时抛出
         """
-        logger.debug(f"正在初始化懒加载模块 {self._module_name}...")
-
-        if self._initialized:
-            logger.debug(f"懒加载模块 {self._module_name} 已经初始化")
+        # 避免重复初始化
+        if object.__getattribute__(self, '_initialized'):
             return
             
+        logger.debug(f"正在初始化懒加载模块 {object.__getattribute__(self, '_module_name')}...")
+
         try:
             # 获取类的__init__参数信息
-            logger.debug(f"正在获取模块 {self._module_name} 的 __init__ 参数信息...")
-            init_signature = inspect.signature(self._module_class.__init__)
+            logger.debug(f"正在获取模块 {object.__getattribute__(self, '_module_name')} 的 __init__ 参数信息...")
+            init_signature = inspect.signature(object.__getattribute__(self, '_module_class').__init__)
             params = init_signature.parameters
             
             # 根据参数决定是否传入sdk
             if 'sdk' in params:
-                logger.debug(f"模块 {self._module_name} 需要传入 sdk 参数")
-                self._instance = self._module_class(self._sdk_ref)
+                logger.debug(f"模块 {object.__getattribute__(self, '_module_name')} 需要传入 sdk 参数")
+                instance = object.__getattribute__(self, '_module_class')(object.__getattribute__(self, '_sdk_ref'))
             else:
-                logger.debug(f"模块 {self._module_name} 不需要传入 sdk 参数")
-                self._instance = self._module_class()
+                logger.debug(f"模块 {object.__getattribute__(self, '_module_name')} 不需要传入 sdk 参数")
+                instance = object.__getattribute__(self, '_module_class')()
 
-            logger.debug(f"正在设置模块 {self._module_name} 的 moduleInfo 属性...")
-            setattr(self._instance, "moduleInfo", self._module_info)
-            self._initialized = True
+            logger.debug(f"正在设置模块 {object.__getattribute__(self, '_module_name')} 的 moduleInfo 属性...")
+            setattr(instance, "moduleInfo", object.__getattribute__(self, '_module_info'))
+            
+            # 使用object.__setattr__避免触发自定义的__setattr__
+            object.__setattr__(self, '_instance', instance)
+            object.__setattr__(self, '_initialized', True)
             
             # 如果是 BaseModule 子类，在初始化后调用 on_load 方法
-            if self._is_base_module:
-                logger.debug(f"正在调用模块 {self._module_name} 的 on_load 方法...")
+            if object.__getattribute__(self, '_is_base_module'):
+                logger.debug(f"正在调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法...")
                 
                 try:
-                    await module.load(self._module_name)
+                    await module.load(object.__getattribute__(self, '_module_name'))
                 except Exception as e:
-                    logger.error(f"调用模块 {self._module_name} 的 on_load 方法时出错: {e}")
+                    logger.error(f"调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法时出错: {e}")
 
             await lifecycle.submit_event(
                     "module.init",
-                    msg=f"模块 {self._module_name} 初始化完毕",
+                    msg=f"模块 {object.__getattribute__(self, '_module_name')} 初始化完毕",
                     data={
-                        "module_name": self._module_name,
+                        "module_name": object.__getattribute__(self, '_module_name'),
                         "success": True,
                     }
                 )
-            logger.debug(f"懒加载模块 {self._module_name} 初始化完成")
+            logger.debug(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化完成")
             
         except Exception as e:
             await lifecycle.submit_event(
                     "module.init",
                     msg=f"模块初始化失败: {e}",
                     data={
-                        "module_name": self._module_name,
+                        "module_name": object.__getattribute__(self, '_module_name'),
                         "success": False,
                     }
                 )
-            logger.error(f"懒加载模块 {self._module_name} 初始化失败: {e}")
+            logger.error(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化失败: {e}")
             raise e
     
     def _ensure_initialized(self) -> None:
@@ -175,7 +179,7 @@ class LazyModule:
         
         :raises LazyLoadError: 当模块未初始化时抛出
         """
-        if not self._initialized:
+        if not object.__getattribute__(self, '_initialized'):
             # 在异步环境中同步调用异步初始化方法
             try:
                 loop = asyncio.get_running_loop()
@@ -186,7 +190,7 @@ class LazyModule:
             except RuntimeError:
                 # 没有运行中的事件循环
                 asyncio.run(self._initialize())
-        
+    
     def __getattr__(self, name: str) -> Any:
         """
         属性访问时触发初始化
@@ -194,10 +198,10 @@ class LazyModule:
         :param name: str 属性名
         :return: Any 属性值
         """
-        logger.debug(f"正在访问懒加载模块 {self._module_name} 的属性 {name}...")
+        logger.debug(f"正在访问懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}...")
         
         self._ensure_initialized()
-        return getattr(self._instance, name)
+        return getattr(object.__getattribute__(self, '_instance'), name)
     
     def __setattr__(self, name: str, value: Any) -> None:
         """
@@ -206,17 +210,17 @@ class LazyModule:
         :param name: str 属性名
         :param value: Any 属性值
         """
-        logger.debug(f"正在设置懒加载模块 {self._module_name} 的属性 {name}...")
+        logger.debug(f"正在设置懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}...")
 
         # 特殊属性直接设置到包装器上
         if name.startswith('_') or name in ('moduleInfo',):
-            super().__setattr__(name, value)
+            object.__setattr__(self, name, value)
         else:
             # 其他属性在初始化前设置到包装器上，初始化后设置到实际模块实例上
-            if name == '_instance' or not hasattr(self, '_initialized') or not self._initialized:
-                super().__setattr__(name, value)
+            if name == '_instance' or not hasattr(self, '_initialized') or not object.__getattribute__(self, '_initialized'):
+                object.__setattr__(self, name, value)
             else:
-                setattr(self._instance, name, value)
+                setattr(object.__getattribute__(self, '_instance'), name, value)
     
     def __delattr__(self, name: str) -> None:
         """
@@ -224,10 +228,10 @@ class LazyModule:
         
         :param name: str 属性名
         """
-        logger.debug(f"正在删除懒加载模块 {self._module_name} 的属性 {name}...")
+        logger.debug(f"正在删除懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}...")
 
         self._ensure_initialized()
-        delattr(self._instance, name)
+        delattr(object.__getattribute__(self, '_instance'), name)
     
     def __getattribute__(self, name: str) -> Any:
         """
@@ -236,26 +240,29 @@ class LazyModule:
         :param name: str 属性名
         :return: Any 属性值
         """
-        logger.debug(f"正在访问懒加载模块 {self._module_name} 的属性 {name}...")
-
         # 特殊属性直接从包装器获取
         if name.startswith('_') or name in ('moduleInfo',):
-            return super().__getattribute__(name)
+            return object.__getattribute__(self, name)
             
         # 检查是否已初始化
-        initialized = super().__getattribute__('_initialized')
+        try:
+            initialized = object.__getattribute__(self, '_initialized')
+        except AttributeError:
+            # 避免在初始化过程中访问_initialized时出现递归
+            return object.__getattribute__(self, name)
+            
         if not initialized:
             # 确保初始化
             self._ensure_initialized()
             # 重新获取initialized状态
-            initialized = super().__getattribute__('_initialized')
+            initialized = object.__getattribute__(self, '_initialized')
             
         # 初始化后直接委托给实际实例
         if initialized:
-            instance = super().__getattribute__('_instance')
+            instance = object.__getattribute__(self, '_instance')
             return getattr(instance, name)
         else:
-            return super().__getattribute__(name)
+            return object.__getattribute__(self, name)
     
     def __dir__(self) -> List[str]:
         """
@@ -263,10 +270,10 @@ class LazyModule:
         
         :return: List[str] 属性列表
         """
-        logger.debug(f"正在获取懒加载模块 {self._module_name} 的属性列表...")
+        logger.debug(f"正在获取懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性列表...")
 
         self._ensure_initialized()
-        return dir(self._instance)
+        return dir(object.__getattribute__(self, '_instance'))
     
     def __repr__(self) -> str:
         """
@@ -274,11 +281,18 @@ class LazyModule:
         
         :return: str 表示字符串
         """
-        logger.debug(f"正在获取懒加载模块 {self._module_name} 的表示字符串...")
+        logger.debug(f"正在获取懒加载模块 {object.__getattribute__(self, '_module_name')} 的表示字符串...")
 
-        if self._initialized:
-            return repr(self._instance)
-        return f"<LazyModule {self._module_name} (not initialized)>"
+        if object.__getattribute__(self, '_initialized'):
+            return repr(object.__getattribute__(self, '_instance'))
+        return f"<LazyModule {object.__getattribute__(self, '_module_name')} (not initialized)>"
+    
+    # 代理所有其他魔术方法到实际模块实例
+    def __call__(self, *args, **kwargs):
+        """代理函数调用"""
+        self._ensure_initialized()
+        return object.__getattribute__(self, '_instance')(*args, **kwargs)
+    
 
 class AdapterLoader:
     """
@@ -359,10 +373,13 @@ class AdapterLoader:
         """
         meta_name = entry_point.name
 
-        # 检查适配器是否已经注册，如果未注册则进行注册（默认禁用）
+        # # 检查适配器是否已经注册，如果未注册则进行注册（默认禁用）
+        # if not sdk.adapter.exists(meta_name):
+        #     sdk.adapter._config_register(meta_name, False)
+        #     logger.info(f"发现新适配器 {meta_name}，默认已禁用，请在配置文件中配置适配器并决定是否启用")
         if not sdk.adapter.exists(meta_name):
-            sdk.adapter._config_register(meta_name, False)
-            logger.info(f"发现新适配器 {meta_name}，默认已禁用，请在配置文件中配置适配器并决定是否启用")
+            sdk.adapter._config_register(meta_name, True)
+            logger.info(f"发现新适配器 {meta_name}，默认已启用")
         
         # 获取适配器当前状态
         adapter_status = sdk.adapter.is_enabled(meta_name)
@@ -482,11 +499,15 @@ class ModuleLoader:
         meta_name = entry_point.name
 
         logger.debug(f"正在处理模块: {meta_name}")
-        # 检查模块是否已经注册，如果未注册则进行注册（默认禁用）
-        if not sdk.module.exists(meta_name):
-            sdk.module._config_register(meta_name, False)  # 默认禁用
-            logger.info(f"发现新模块 {meta_name}，默认已禁用，请在配置文件中手动启用")
+        # # 检查模块是否已经注册，如果未注册则进行注册（默认禁用）
+        # if not sdk.module.exists(meta_name):
+        #     sdk.module._config_register(meta_name, False)  # 默认禁用
+        #     logger.info(f"发现新模块 {meta_name}，默认已禁用，请在配置文件中手动启用")
 
+        if not sdk.module.exists(meta_name):
+            sdk.module._config_register(meta_name, True)  # 默认启用
+            logger.info(f"发现新模块 {meta_name}，默认已启用")
+            
         # 获取模块当前状态
         module_status = sdk.module.is_enabled(meta_name)
         logger.debug(f"模块 {meta_name} 状态: {module_status}")
@@ -711,6 +732,27 @@ class ModuleInitializer:
         if any(isinstance(result, Exception) or result is False for result in register_results):
             return False
         
+        # 将所有模块挂载到sdk对象上
+        for module_name in modules:
+            module_obj = module_objs[module_name]
+            meta_name = module_obj.moduleInfo["meta"]["name"]
+            lazy_load = module_obj.moduleInfo["meta"].get("lazy_load", True)
+            
+            if lazy_load:
+                # 使用懒加载方式挂载
+                lazy_module = LazyModule(
+                    meta_name,
+                    module_obj.moduleInfo["module_class"],
+                    sdk,
+                    module_obj.moduleInfo
+                )
+                setattr(sdk, meta_name, lazy_module)
+                logger.debug(f"挂载懒加载模块到sdk: {meta_name}")
+            else:
+                # 立即加载的模块暂时挂载为None，稍后会加载
+                setattr(sdk, meta_name, None)
+                logger.debug(f"预挂载立即加载模块到sdk: {meta_name}")
+
         # 并行初始化需要立即加载的模块
         eager_load_tasks = []
         for module_name in modules:
@@ -741,6 +783,8 @@ class ModuleInitializer:
                                 logger.error(f"加载模块 {name} 失败")
                             else:
                                 logger.debug(f"立即加载模块: {name}")
+                                # 更新sdk上的引用
+                                setattr(sdk, name, module.get(name))
                             return result
                     return True  # 不需要立即加载的模块返回True
                 except Exception as e:
