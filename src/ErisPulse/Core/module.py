@@ -48,7 +48,7 @@ class ModuleManager:
         >>> module.register("MyModule", MyModuleClass)
         """
         if not issubclass(module_class, BaseModule):
-            raise TypeError("模块必须继承自BaseModule")
+            logger.error(f"模块 {module_name} 的类无效，但我们仍会尝试加载这个模块")
             
         self._module_classes[module_name] = module_class
         if module_info:
