@@ -506,7 +506,7 @@ class ModuleLoader:
 
         if not sdk.module.exists(meta_name):
             sdk.module._config_register(meta_name, True)  # 默认启用
-            logger.info(f"发现新模块 {meta_name}，默认已启用")
+            logger.info(f"发现新模块 {meta_name}，默认已启用。如需禁用，请在配置文件中设置 ErisPulse.modules.status.{meta_name} = false")
             
         # 获取模块当前状态
         module_status = sdk.module.is_enabled(meta_name)
