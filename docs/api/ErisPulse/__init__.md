@@ -1,6 +1,6 @@
 # `ErisPulse.__init__` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -12,14 +12,14 @@ ErisPulse SDK 主模块
 提供SDK核心功能模块加载和初始化功能
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用前请确保已正确安装所有依赖
-2. 调用sdk.init()进行初始化
+2. 调用await sdk.init()进行初始化
 3. 模块加载采用懒加载机制</p></div>
 
 ---
 
 ## 函数列表
 
-### `init_progress()`
+### async `async init_progress()`
 
 初始化项目环境文件
 
@@ -33,7 +33,7 @@ ErisPulse SDK 主模块
 
 ---
 
-### `_prepare_environment()`
+### async `async _prepare_environment()`
 
 <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 准备运行环境
@@ -44,7 +44,7 @@ ErisPulse SDK 主模块
 
 ---
 
-### `init()`
+### async `async init()`
 
 SDK初始化入口
 
@@ -60,7 +60,39 @@ SDK初始化入口，返回Task对象
 
 ---
 
-### `load_module(module_name: str)`
+### async `async uninit()`
+
+SDK反初始化
+
+执行以下操作：
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理所有事件处理器
+4. 清理僵尸线程
+
+:return: bool 反初始化是否成功
+
+---
+
+### async `async restart()`
+
+SDK重新启动
+
+执行完整的反初始化后再初始化过程
+
+:return: bool 重新加载是否成功
+
+---
+
+### async `async run()`
+
+无头模式运行ErisPulse
+
+此方法提供了一种无需入口启动的方式，适用于与其它框架集成的场景
+
+---
+
+### async `async load_module(module_name: str)`
 
 手动加载指定模块
 
@@ -81,7 +113,8 @@ SDK初始化入口，返回Task对象
 当模块第一次被访问时才进行实例化
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 模块的实际实例化会在第一次属性访问时进行
-2. 依赖模块会在被使用时自动初始化</p></div>
+2. 依赖模块会在被使用时自动初始化
+3. 对于继承自 BaseModule 的模块，会自动调用生命周期方法</p></div>
 
     
 #### 方法列表
@@ -97,7 +130,7 @@ SDK初始化入口，返回Task对象
 
     ---
     
-##### `_initialize()`
+##### async `async _initialize()`
 
     实际初始化模块
 
@@ -105,55 +138,68 @@ SDK初始化入口，返回Task对象
 
     ---
     
+##### `_ensure_initialized()`
+
+    确保模块已初始化
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块未初始化时抛出</dd>
+
+    ---
+    
 ##### `__getattr__(name: str)`
 
     属性访问时触发初始化
 
-:param name: str 要访问的属性名
-:return: Any 模块属性值
+:param name: str 属性名
+:return: Any 属性值
+
+    ---
+    
+##### `__setattr__(name: str, value: Any)`
+
+    属性设置
+
+:param name: str 属性名
+:param value: Any 属性值
+
+    ---
+    
+##### `__delattr__(name: str)`
+
+    属性删除
+
+:param name: str 属性名
+
+    ---
+    
+##### `__getattribute__(name: str)`
+
+    属性访问，初始化后直接委托给实际实例
+
+:param name: str 属性名
+:return: Any 属性值
+
+    ---
+    
+##### `__dir__()`
+
+    返回模块属性列表
+
+:return: List[str] 属性列表
+
+    ---
+    
+##### `__repr__()`
+
+    返回模块表示字符串
+
+:return: str 表示字符串
 
     ---
     
 ##### `__call__()`
 
-    调用时触发初始化
-
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: Any 模块调用结果
-
-    ---
-    
-##### `__bool__()`
-
-    判断模块布尔值时触发初始化
-
-:return: bool 模块布尔值
-
-    ---
-    
-##### `__str__()`
-
-    转换为字符串时触发初始化
-
-:return: str 模块字符串表示
-
-    ---
-    
-##### `__copy__()`
-
-    浅拷贝时返回自身，保持懒加载特性
-
-:return: self
-
-    ---
-    
-##### `__deepcopy__(memo)`
-
-    深拷贝时返回自身，保持懒加载特性
-
-:param memo: memo
-:return: self
+    代理函数调用
 
     ---
     
@@ -170,7 +216,7 @@ SDK初始化入口，返回Task对象
     
 #### 方法列表
 
-##### `load()`
+##### async `async load()`
 
     从PyPI包entry-points加载适配器
 
@@ -183,7 +229,7 @@ SDK初始化入口，返回Task对象
 
     ---
     
-##### `_process_adapter(entry_point: Any, adapter_objs: Dict[str, object], enabled_adapters: List[str], disabled_adapters: List[str])`
+##### async `async _process_adapter(entry_point: Any, adapter_objs: Dict[str, object], enabled_adapters: List[str], disabled_adapters: List[str])`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 处理单个适配器entry-point
@@ -214,7 +260,7 @@ SDK初始化入口，返回Task对象
     
 #### 方法列表
 
-##### `load()`
+##### async `async load()`
 
     从PyPI包entry-points加载模块
 
@@ -227,7 +273,7 @@ SDK初始化入口，返回Task对象
 
     ---
     
-##### `_process_module(entry_point: Any, module_objs: Dict[str, object], enabled_modules: List[str], disabled_modules: List[str])`
+##### async `async _process_module(entry_point: Any, module_objs: Dict[str, object], enabled_modules: List[str], disabled_modules: List[str])`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 处理单个模块entry-point
@@ -257,7 +303,7 @@ SDK初始化入口，返回Task对象
     
 ### `class ModuleInitializer`
 
-    模块初始化器
+    模块初始化器（注意：适配器是一个特殊的模块）
 
 负责协调适配器和模块的初始化流程
 
@@ -267,7 +313,7 @@ SDK初始化入口，返回Task对象
     
 #### 方法列表
 
-##### `init()`
+##### async `async init()`
 
     初始化所有模块和适配器
 
@@ -283,7 +329,7 @@ SDK初始化入口，返回Task对象
 
     ---
     
-##### `_initialize_modules(modules: List[str], module_objs: Dict[str, Any])`
+##### async `async _initialize_modules(modules: List[str], module_objs: Dict[str, Any])`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 初始化模块
@@ -295,7 +341,7 @@ SDK初始化入口，返回Task对象
 
     ---
     
-##### `_register_adapters(adapters: List[str], adapter_objs: Dict[str, Any])`
+##### async `async _register_adapters(adapters: List[str], adapter_objs: Dict[str, Any])`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
 注册适配器
@@ -307,4 +353,4 @@ SDK初始化入口，返回Task对象
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
