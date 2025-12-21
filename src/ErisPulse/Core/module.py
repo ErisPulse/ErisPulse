@@ -49,9 +49,11 @@ class ModuleManager:
         """
         # 严格验证模块类，确保继承自BaseModule
         if not issubclass(module_class, BaseModule):
-            error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
-            logger.error(error_msg)
-            raise TypeError(error_msg)
+            warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 没有继承自BaseModule，但我们仍会继续尝试加载这个模块，但请注意这可能引发其他问题"
+            logger.warning(warn_msg)
+            # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
+            # logger.error(error_msg)
+            # raise TypeError(error_msg)
             
         # 验证模块名是否合法
         if not module_name or not isinstance(module_name, str):
