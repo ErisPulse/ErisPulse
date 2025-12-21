@@ -1,6 +1,6 @@
 # `ErisPulse.Core.router` 模块
 
-<sup>更新时间: 2025-09-02 23:28:52</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -118,4 +118,13 @@ ErisPulse 路由系统
 
     ---
     
-<sub>文档最后更新于 2025-09-02 23:28:52</sub>
+##### `_format_display_url(url: str)`
+
+    格式化URL显示，将回环地址转换为更友好的格式
+
+:param url: 原始URL
+:return: 格式化后的URL
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>

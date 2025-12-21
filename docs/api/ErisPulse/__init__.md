@@ -1,6 +1,6 @@
 # `ErisPulse.__init__` 模块
 
-<sup>更新时间: 2025-09-02 23:28:52</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -138,131 +138,20 @@ SDK重新启动
 
     ---
     
+##### `_ensure_initialized()`
+
+    确保模块已初始化
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块未初始化时抛出</dd>
+
+    ---
+    
 ##### `__getattr__(name: str)`
 
     属性访问时触发初始化
 
 :param name: str 属性名
 :return: Any 属性值
-
-    ---
-    
-##### `__call__()`
-
-    调用时触发初始化
-
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: Any 调用结果
-
-    ---
-    
-##### `__repr__()`
-
-    返回模块表示字符串
-
-:return: str 表示字符串
-
-    ---
-    
-##### `__str__()`
-
-    返回模块字符串表示
-
-:return: str 字符串表示
-
-    ---
-    
-##### `__dir__()`
-
-    返回模块属性列表
-
-:return: List[str] 属性列表
-
-    ---
-    
-##### `__getitem__(key)`
-
-    支持索引访问
-
-:param key: 索引键
-:return: 对应值
-
-    ---
-    
-##### `__setitem__(key, value)`
-
-    支持索引赋值
-
-:param key: 索引键
-:param value: 赋值内容
-
-    ---
-    
-##### `__delitem__(key)`
-
-    支持索引删除
-
-:param key: 索引键
-
-    ---
-    
-##### `__contains__(item)`
-
-    支持成员检查
-
-:param item: 检查项
-:return: bool 是否包含
-
-    ---
-    
-##### `__iter__()`
-
-    支持迭代
-
-:return: 迭代器
-
-    ---
-    
-##### `__len__()`
-
-    支持长度获取
-
-:return: int 长度
-
-    ---
-    
-##### `__bool__()`
-
-    支持布尔值判断
-
-:return: bool 布尔值
-
-    ---
-    
-##### `__eq__(other)`
-
-    支持相等性比较
-
-:param other: 比较对象
-:return: bool 是否相等
-
-    ---
-    
-##### `__ne__(other)`
-
-    支持不等性比较
-
-:param other: 比较对象
-:return: bool 是否不等
-
-    ---
-    
-##### `__hash__()`
-
-    支持哈希计算
-
-:return: int 哈希值
 
     ---
     
@@ -285,19 +174,32 @@ SDK重新启动
     
 ##### `__getattribute__(name: str)`
 
-    属性访问
+    属性访问，初始化后直接委托给实际实例
 
 :param name: str 属性名
 :return: Any 属性值
 
     ---
     
-##### `__deepcopy__(memo)`
+##### `__dir__()`
 
-    深拷贝时返回自身，保持懒加载特性
+    返回模块属性列表
 
-:param memo: memo
-:return: self
+:return: List[str] 属性列表
+
+    ---
+    
+##### `__repr__()`
+
+    返回模块表示字符串
+
+:return: str 表示字符串
+
+    ---
+    
+##### `__call__()`
+
+    代理函数调用
 
     ---
     
@@ -451,4 +353,4 @@ SDK重新启动
 
     ---
     
-<sub>文档最后更新于 2025-09-02 23:28:52</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
