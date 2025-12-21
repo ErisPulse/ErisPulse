@@ -177,6 +177,88 @@ class LazyModule:
             logger.error(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化失败: {e}")
             raise e
     
+    def _initialize_sync(self):
+        """
+        同步初始化模块，用于在异步上下文中进行同步调用
+        
+        :raises LazyLoadError: 当模块初始化失败时抛出
+        """
+        # 避免重复初始化
+        if object.__getattribute__(self, '_initialized'):
+            return
+            
+        logger.debug(f"正在同步初始化懒加载模块 {object.__getattribute__(self, '_module_name')}...")
+
+        try:
+            # 获取类的__init__参数信息
+            logger.debug(f"正在获取模块 {object.__getattribute__(self, '_module_name')} 的 __init__ 参数信息...")
+            init_signature = inspect.signature(object.__getattribute__(self, '_module_class').__init__)
+            params = init_signature.parameters
+            
+            # 根据参数决定是否传入sdk
+            if 'sdk' in params:
+                logger.debug(f"模块 {object.__getattribute__(self, '_module_name')} 需要传入 sdk 参数")
+                instance = object.__getattribute__(self, '_module_class')(object.__getattribute__(self, '_sdk_ref'))
+            else:
+                logger.debug(f"模块 {object.__getattribute__(self, '_module_name')} 不需要传入 sdk 参数")
+                instance = object.__getattribute__(self, '_module_class')()
+
+            logger.debug(f"正在设置模块 {object.__getattribute__(self, '_module_name')} 的 moduleInfo 属性...")
+            setattr(instance, "moduleInfo", object.__getattribute__(self, '_module_info'))
+            
+            # 使用object.__setattr__避免触发自定义的__setattr__
+            object.__setattr__(self, '_instance', instance)
+            object.__setattr__(self, '_initialized', True)
+            object.__setattr__(self, '_needs_async_init', False)  # 确保清除异步初始化标志
+            
+            # 注意：在同步初始化中，我们不能调用异步的 module.load 和 lifecycle.submit_event
+            # 这些将在异步上下文中延迟处理
+            
+            logger.debug(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化完成")
+            
+        except Exception as e:
+            logger.error(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化失败: {e}")
+            raise e
+    
+    async def _complete_async_init(self):
+        """
+        完成异步初始化部分，用于同步初始化后的异步处理
+        
+        这个方法用于处理 module.load 和事件提交等异步操作
+        """
+        if not object.__getattribute__(self, '_initialized'):
+            return
+            
+        try:
+            # 如果是 BaseModule 子类，在初始化后调用 on_load 方法
+            if object.__getattribute__(self, '_is_base_module'):
+                logger.debug(f"正在异步调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法...")
+                
+                try:
+                    await module.load(object.__getattribute__(self, '_module_name'))
+                except Exception as e:
+                    logger.error(f"异步调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法时出错: {e}")
+
+            await lifecycle.submit_event(
+                    "module.init",
+                    msg=f"模块 {object.__getattribute__(self, '_module_name')} 初始化完毕",
+                    data={
+                        "module_name": object.__getattribute__(self, '_module_name'),
+                        "success": True,
+                    }
+                )
+            logger.debug(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 异步初始化部分完成")
+        except Exception as e:
+            await lifecycle.submit_event(
+                    "module.init",
+                    msg=f"模块初始化失败: {e}",
+                    data={
+                        "module_name": object.__getattribute__(self, '_module_name'),
+                        "success": False,
+                    }
+                )
+            logger.error(f"懒加载模块 {object.__getattribute__(self, '_module_name')} 异步初始化部分失败: {e}")
+    
     def _ensure_initialized(self) -> None:
         """
         确保模块已初始化
@@ -184,15 +266,32 @@ class LazyModule:
         :raises LazyLoadError: 当模块未初始化时抛出
         """
         if not object.__getattribute__(self, '_initialized'):
-            # 在异步环境中同步调用异步初始化方法
+            # 检查当前是否在异步上下文中
             try:
                 loop = asyncio.get_running_loop()
-                # 在已有事件循环中创建任务
-                task = loop.create_task(self._initialize())
-                # 阻塞等待完成
-                loop.run_until_complete(task)
+                # 如果在异步上下文中，我们需要检查模块初始化方法是否需要异步
+                init_method = getattr(object.__getattribute__(self, '_module_class'), '__init__', None)
+                
+                # 检查__init__方法是否是协程函数
+                if asyncio.iscoroutinefunction(init_method):
+                    # 对于需要异步初始化的模块，我们只能设置一个标志，提示需要异步初始化
+                    object.__setattr__(self, '_needs_async_init', True)
+                    logger.warning(f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用")
+                    return
+                else:
+                    # 对于同步初始化的模块，使用同步初始化方式
+                    self._initialize_sync()
+                    
+                    # 异步处理需要在初始化后完成的事件
+                    if object.__getattribute__(self, '_is_base_module'):
+                        # 调度异步任务来处理 module.load 和事件提交
+                        try:
+                            loop = asyncio.get_running_loop()
+                            loop.create_task(self._complete_async_init())
+                        except Exception as e:
+                            logger.warning(f"无法调度异步初始化任务: {e}")
             except RuntimeError:
-                # 没有运行中的事件循环
+                # 没有运行中的事件循环，可以安全地创建新的事件循环
                 asyncio.run(self._initialize())
     
     def __getattr__(self, name: str) -> Any:
@@ -203,6 +302,13 @@ class LazyModule:
         :return: Any 属性值
         """
         logger.debug(f"正在访问懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性 {name}...")
+        
+        # 检查是否需要异步初始化
+        if hasattr(self, '_needs_async_init') and object.__getattribute__(self, '_needs_async_init'):
+            raise RuntimeError(
+                f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，"
+                f"请使用 'await sdk.load_module(\"{object.__getattribute__(self, '_module_name')}\")' 来初始化模块"
+            )
         
         self._ensure_initialized()
         return getattr(object.__getattribute__(self, '_instance'), name)
@@ -1085,14 +1191,28 @@ async def load_module(module_name: str) -> bool:
     {!--< tips >!--}
     1. 可用于手动触发懒加载模块的初始化
     2. 如果模块不存在或已加载会返回False
+    3. 对于需要异步初始化的模块，这是唯一的加载方式
     {!--< /tips >!--}
     """
     try:
         module_instance = getattr(sdk, module_name, None)
         if isinstance(module_instance, LazyModule):
-            # 触发懒加载模块的初始化
-            await module_instance._initialize()
-            return True
+            # 检查模块是否需要异步初始化
+            if hasattr(module_instance, '_needs_async_init') and object.__getattribute__(module_instance, '_needs_async_init'):
+                # 对于需要异步初始化的模块，执行完整异步初始化
+                await module_instance._initialize()
+                object.__setattr__(module_instance, '_needs_async_init', False)  # 清除标志
+                return True
+            # 检查模块是否已经同步初始化但未完成异步部分
+            elif (object.__getattribute__(module_instance, '_initialized') and 
+                  object.__getattribute__(module_instance, '_is_base_module')):
+                # 如果是BaseModule子类且已同步初始化，只需完成异步部分
+                await module_instance._complete_async_init()
+                return True
+            else:
+                # 触发懒加载模块的完整初始化
+                await module_instance._initialize()
+                return True
         elif module_instance is not None:
             logger.warning(f"模块 {module_name} 已经加载")
             return False
