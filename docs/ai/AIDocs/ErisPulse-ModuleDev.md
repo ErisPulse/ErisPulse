@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2025-08-30 06:55:41
+**生成时间**: 2025-12-21 14:29:04
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -149,6 +149,39 @@ uv pip install ErisPulse --upgrade  # 安装框架
 
 ## 初始化项目
 
+有两种方式初始化项目：
+
+### 交互式初始化（推荐）
+
+1. 使用 epsdk init 启动交互式初始化：
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+如果您只需要快速创建项目结构，可以使用快速模式：
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称，仍然会有基本交互
+epsdk init -n my_bot
+```
+
+### 传统方式
+
+如果您更喜欢传统方式：
+
 1. 创建项目目录并进入：
 
 ```bash
@@ -160,7 +193,37 @@ mkdir my_bot && cd my_bot
 ```bash
 ep-init
 ```
-这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
+这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
 
 ---
 
@@ -257,6 +320,8 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
+| `ux`/`sdk.ux` | 用户体验管理器 |
+| `UXManager`/`sdk.UXManager` | UX管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
@@ -673,6 +738,71 @@ level = "INFO"
 log_files = []
 memory_limit = 1000
 ```
+
+## 9. 用户体验管理 (ux)
+
+用户体验管理器提供了友好的界面和简化的操作方法。
+
+### 主要功能
+
+- 显示欢迎信息和系统状态
+- 列出模块和适配器状态
+- 运行配置向导
+- 初始化新项目
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 显示欢迎信息
+sdk.ux.welcome("2.3.0")
+
+# 显示系统状态概览
+sdk.ux.show_status()
+
+# 列出所有模块状态
+sdk.ux.list_modules(detailed=True)
+
+# 列出所有适配器状态
+sdk.ux.list_adapters(detailed=True)
+
+# 运行配置向导
+sdk.ux.configure_wizard()
+
+# 初始化新项目
+sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+```
+
+### 命令行使用
+
+```bash
+# 初始化新项目
+epsdk init -n MyBot -a yunhu
+
+# 查看系统状态
+epsdk status
+
+# 查看模块详细信息
+epsdk status -t modules
+
+# 查看适配器详细信息
+epsdk status -t adapters
+
+# 运行配置向导
+epsdk config-wizard
+```
+
+### 用户体验管理器方法
+
+| 方法 | 描述 | 示例 |
+|------|------|------|
+| `welcome(version)` | 显示框架欢迎信息 | `sdk.ux.welcome("2.3.0")` |
+| `show_status()` | 显示系统状态概览 | `sdk.ux.show_status()` |
+| `list_modules(detailed=False)` | 列出所有模块状态 | `sdk.ux.list_modules(True)` |
+| `list_adapters(detailed=False)` | 列出所有适配器状态 | `sdk.ux.list_adapters(True)` |
+| `configure_wizard()` | 运行配置向导 | `sdk.ux.configure_wizard()` |
+| `init_project(project_name, adapter_list=None)` | 初始化新项目 | `sdk.ux.init_project("MyBot", ["yunhu"])` |
 
 
 ---
@@ -1125,8 +1255,6 @@ async def keyword_handler(event):
 
 <a id="modulemd"></a>
 ## 模块开发指南
-
-明白了，我们将更新模块开发指南，将 `BaseModule` 基类作为标准要求，而不是推荐使用。以下是更新后的文档：
 
 # ErisPulse 模块开发指南
 
