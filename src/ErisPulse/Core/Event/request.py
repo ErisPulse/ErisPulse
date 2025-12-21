@@ -13,6 +13,12 @@ from .base import BaseEventHandler
 from typing import Callable, Dict, Any
 
 class RequestHandler:
+    """
+    请求事件处理器
+    
+    提供请求事件处理功能
+    """
+    
     def __init__(self):
         self.handler = BaseEventHandler("request", "request")
     
@@ -84,5 +90,14 @@ class RequestHandler:
         :return: 是否成功取消注册
         """
         return self.handler.unregister(handler)
-
+    
+    def _clear_request_handlers(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的请求处理器
+        
+        :return: 被清除的处理器数量
+        """
+        return self.handler._clear_handlers()
+    
 request = RequestHandler()

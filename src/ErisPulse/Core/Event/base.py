@@ -56,7 +56,8 @@ class BaseEventHandler:
         if self.event_type and not self._adapter_handler_registered:
             adapter.on(self.event_type)(self._process_event)
             self._adapter_handler_registered = True
-    
+        logger.debug(f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}")
+
     def unregister(self, handler: Callable) -> bool:
         """
         注销事件处理器
@@ -108,3 +109,15 @@ class BaseEventHandler:
                     handler(event)
             except Exception as e:
                 logger.error(f"事件处理器执行错误: {e}")
+
+    def _clear_handlers(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的事件处理器
+        
+        :return: 被清除的处理器数量
+        """
+        count = len(self.handlers)
+        self.handlers.clear()
+        self._handler_map.clear()
+        return count
