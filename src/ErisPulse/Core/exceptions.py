@@ -87,7 +87,7 @@ def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, 
         msg = context.get('message', '未知异步错误')
         err_logger(f"ERROR: 未处理的异步错误: {msg}\n")
 
-def setup_async_loop(loop: asyncio.AbstractEventLoop = None) -> None:
+def setup_async_loop(loop: asyncio.AbstractEventLoop = None) -> None:   # type: ignore || 原因: 在实现中，已经完成了对于本方法的类型检查
     """
     为指定的事件循环设置异常处理器
     
@@ -98,6 +98,11 @@ def setup_async_loop(loop: asyncio.AbstractEventLoop = None) -> None:
             loop = asyncio.get_running_loop()
         except RuntimeError:
             loop = asyncio.get_event_loop()
+    
+    if loop is not None:
+        loop.set_exception_handler(async_exception_handler)
+    else:
+        raise RuntimeError("无法获取有效的事件循环")
     
     loop.set_exception_handler(async_exception_handler)
 

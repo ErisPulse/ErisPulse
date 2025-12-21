@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.message` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-09-02 23:28:52</sup>
 
 ---
 
@@ -21,7 +21,9 @@ ErisPulse 消息处理模块
 
 ### `class MessageHandler`
 
-    MessageHandler 类提供相关功能。
+    消息事件处理器
+
+提供不同类型消息事件的处理功能
 
     
 #### 方法列表
@@ -98,4 +100,13 @@ ErisPulse 消息处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+##### `_clear_message_handlers()`
+
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+清除所有已注册的消息处理器
+
+:return: 被清除的处理器数量
+
+    ---
+    
+<sub>文档最后更新于 2025-09-02 23:28:52</sub>

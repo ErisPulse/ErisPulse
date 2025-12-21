@@ -12,66 +12,13 @@
 
 ## 代码注释规范
 
-### 模块级文档注释
-```python
-"""
-[模块名称]
-[模块功能描述]
-
-{!--< tips >!--}
-重要使用说明或注意事项
-{!--< /tips >!--}
-"""
-```
-
-### 方法注释
-#### 基本格式
-```python
-def func(param1: type1, param2: type2) -> return_type:
-    """
-    [功能描述]
-    
-    :param param1: [类型1] [参数描述1]
-    :param param2: [类型2] [参数描述2]
-    :return: [返回类型] [返回描述]
-    """
-    pass
-```
-
-#### 完整格式（适用于复杂方法）
-```python
-def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
-    """
-    [功能详细描述]
-    [可包含多行描述]
-    
-    :param param1: [类型1] [参数描述1]
-    :param param2: [类型2] [可选参数描述2] (默认: None)
-    
-    :return: 
-        type1: [返回参数1描述]
-        type2: [返回参数2描述]
-    
-    :raises ErrorType: [错误描述]
-    """
-    pass
-```
-
-### 特殊标签
-| 标签格式 | 作用 | 示例 |
-|---------|------|------|
-| `{!--< internal-use >!--}` | 标记为内部使用 | `{!--< internal-use >!--}` |
-| `{!--< ignore >!--}` | 忽略此方法 | `{!--< ignore >!--}` |
-| `{!--< deprecated >!--}` | 标记为过时方法 | `{!--< deprecated >!--} 请使用new_func()代替` |
-| `{!--< experimental >!--}` | 标记为实验性功能 | `{!--< experimental >!--} 可能不稳定` |
-| `{!--< tips >!--}...{!--< /tips >!--}` | 多行提示内容 | `{!--< tips >!--}\n重要提示内容\n{!--< /tips >!--}` |
+> 详细注释规范请参考 docs/styleguide/
 
 ## 贡献流程
 
 1.  **Fork仓库**
     *   首先fork主仓库到您的个人GitHub账户。
-    * 提示：在fork时，请**取消勾选** "Copy the main branch only" 选项，以确保获取完整的分支结构（包括 `Develop/v2`、`Pre-Release/v2` 等分支），这是完成贡献提交的必要条件。
-    
+    *   提示：在fork时，请**取消勾选** "Copy the main branch only" 选项，以确保获取完整的分支结构（包括 `Develop/v2`、`Pre-Release/v2` 等分支），这是完成贡献提交的必要条件。
 2.  **创建功能分支**
     *   在您**自己Fork的仓库**中，基于官方的 `Develop/v2` 分支创建功能分支。
     *   分支命名规范：
@@ -82,7 +29,7 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 3.  **开发工作**
     *   在您的功能分支上进行开发。
     *   保持提交信息清晰明确（例如：`feat: 添加用户登录功能`）。
-    *   严格遵守上文中的代码注释规范，为所有新增的公开API添加文档注释。
+    *   严格遵守docs/styleguide/docstring_spec.md，为所有新增的公开API添加文档注释。
     *   提交前，确保在 `CHANGELOG.md` 中添加了变更描述。
     *   为了减少合并冲突，建议定期从**官方仓库的 `Develop/v2` 分支**拉取（`pull`）更新。
 
@@ -109,7 +56,7 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 
 *   **请勿**直接向官方的 `main` 或 `Pre-Release/v2` 分支提交代码或PR，所有功能开发应通过PR至 `Develop/v2` 的方式进入代码库。
 *   **例外情况**：如流程第4.1条所述，为特定目的（如发布测试版本）向 `Pre-Release/v2` 等分支提交PR是允许的，但需在PR中充分说明。
-*   所有公开API方法必须包含完整注释。
+*   所有公开API方法必须包含完整注释，请参考docs/styleguide/docstring_spec.md。
 *   如有疑问，请联系 `support@erisdev.com` 或 云湖群ID 635409929
 
 感谢您的贡献！
