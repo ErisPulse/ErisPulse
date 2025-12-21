@@ -678,6 +678,19 @@ class ModuleLoader:
 
         logger.debug(f"检查模块 {module_class.__name__} 是否应该懒加载")
         
+        # 首先检查全局懒加载配置
+        try:
+            from .Core._self_config import get_framework_config
+            framework_config = get_framework_config()
+            global_lazy_loading = framework_config.get("enable_lazy_loading", True)
+            
+            # 如果全局禁用懒加载，则直接返回False
+            if not global_lazy_loading:
+                logger.debug(f"全局懒加载已禁用，模块 {module_class.__name__} 将立即加载")
+                return False
+        except Exception as e:
+            logger.warning(f"获取框架配置失败: {e}，将使用模块默认配置")
+        
         # 检查模块是否定义了 should_eager_load() 方法
         if hasattr(module_class, "should_eager_load"):
             try:
