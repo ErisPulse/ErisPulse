@@ -20,6 +20,9 @@
 - [核心模块](core/modules.md)       - 存储、配置、日志等核心组件详解
 - [适配器系统](core/adapters.md)    - 平台适配器的使用和开发
 - [事件系统](core/event-system.md)  - Event 模块的使用(事件监听、事件处理、事件分发)
+- [懒加载模块系统](core/lazy-loading.md) - 懒加载模块系统的使用和配置
+- [路由管理器](core/router.md)     - HTTP和WebSocket路由管理
+- [框架配置](core/self-config.md)  - 框架默认配置说明
 - [最佳实践](core/best-practices.md) - 开发和部署建议
 
 ### 开发指南

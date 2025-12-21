@@ -18,8 +18,31 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 | `ux`/`sdk.ux` | 用户体验管理器 |
 | `UXManager`/`sdk.UXManager` | UX管理器类 |
+| `router`/`sdk.router` | 路由管理器 |
+| `RouterManager`/`sdk.RouterManager` | 路由管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
+
+### 懒加载模块系统
+
+ErisPulse 默认启用懒加载模块系统，这意味着模块只有在第一次被访问时才会实际加载和初始化。这样可以显著提升应用启动速度和内存效率。
+
+详细说明请参考：[懒加载模块系统](./lazy-loading.md)
+
+```python
+# 全局配置懒加载
+[ErisPulse.framework]
+enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加载
+
+# 模块级别控制
+class MyModule(BaseModule):
+    @staticmethod
+    def should_eager_load() -> bool:
+        return True  # 返回True表示禁用懒加载
+```
+
+### 事件系统子模块
+
 Event 模块包含以下子模块：
 
 | 子模块 | 用途 |
@@ -437,16 +460,19 @@ memory_limit = 1000
 
 ## 9. 用户体验管理 (ux)
 
-用户体验管理器提供了友好的界面和简化的操作方法。
+用户体验管理器提供了友好的界面和简化的操作方法，包括状态查看、项目初始化和交互式配置等功能。
 
 ### 主要功能
 
-- 显示欢迎信息和系统状态
-- 列出模块和适配器状态
-- 运行配置向导
-- 初始化新项目
+- **欢迎信息显示**：显示框架版本和欢迎消息
+- **系统状态概览**：展示框架各组件的运行状态
+- **模块状态查看**：列出所有模块的详细状态和信息
+- **适配器状态查看**：列出所有适配器的状态和信息
+- **项目初始化**：创建新的项目结构和配置文件
+- **交互式配置**：引导用户完成系统和适配器配置
+- **远程适配器获取**：从云端获取可用适配器列表并安装
 
-### 使用示例
+### 基本使用
 
 ```python
 from ErisPulse import sdk
@@ -462,28 +488,160 @@ sdk.ux.list_modules(detailed=True)
 
 # 列出所有适配器状态
 sdk.ux.list_adapters(detailed=True)
+```
 
-# 运行配置向导
-sdk.ux.configure_wizard()
+### 项目初始化
 
-# 初始化新项目
+```python
+# 初始化新项目（基本结构）
 sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+
+# 交互式初始化（包含配置向导）
+sdk.ux.interactive_init("MyBot", force=False)
+```
+
+### 高级功能
+
+```python
+# 获取可用适配器列表（从云端）
+adapters = await sdk.ux._fetch_available_adapters()
+print("可用适配器:", adapters)
+
+# 运行交互式适配器配置
+sdk.ux._configure_adapters_interactive_sync("/path/to/project")
 ```
 
 ### 命令行使用
 
 ```bash
 # 初始化新项目
-epsdk init -n MyBot -a yunhu
+erispulse init MyBot
+
+# 交互式初始化
+erispulse init -i
 
 # 查看系统状态
-epsdk status
+erispulse status
 
 # 查看模块详细信息
-epsdk status -t modules
+erispulse status --type modules
 
 # 查看适配器详细信息
-epsdk status -t adapters
+erispulse status --type adapters
+```
+
+### 项目结构
+
+使用UX管理器初始化的项目包含以下结构：
+
+```
+MyBot/
+├── main.py              # 主程序文件
+├── config.toml          # 配置文件
+├── modules/             # 模块目录
+│   └── example.py       # 示例模块
+├── config/              # 配置目录
+└── logs/                # 日志目录
+```
+
+### 自动生成的配置文件
+
+配置文件 `config.toml` 包含以下部分：
+
+```toml
+[ErisPulse]
+# 全局配置
+
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = ["logs/app.log"]
+memory_limit = 1000
+
+[ErisPulse.adapters.status]
+yunhu = false
+telegram = false
+```
+
+### 自动生成的主程序
+
+主程序 `main.py` 包含基本的启动逻辑：
+
+```python
+import asyncio
+from ErisPulse import sdk
+
+async def main():
+    """主程序入口"""
+    # 初始化 SDK
+    await sdk.init()
+    
+    # 启动适配器
+    await sdk.adapter.startup()
+    
+    print("ErisPulse 已启动，按 Ctrl+C 退出")
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        print("\n正在关闭...")
+        await sdk.adapter.shutdown()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### 云端适配器集成
+
+UX管理器与PackageManager集成，支持从云端获取和安装适配器：
+
+```python
+# 获取可用适配器（带5分钟缓存）
+adapters = await sdk.ux._fetch_available_adapters()
+
+# 默认适配器列表（当云端获取失败时）
+default_adapters = {
+    "yunhu": "云湖平台适配器",
+    "telegram": "Telegram机器人适配器",
+    "onebot11": "OneBot11标准适配器",
+    "email": "邮件适配器"
+}
+```
+
+### 交互式配置流程
+
+交互式初始化包含以下步骤：
+
+1. **项目名称确认**：输入或确认项目名称
+2. **日志级别配置**：设置日志记录级别
+3. **服务器配置**：设置主机地址和端口
+4. **适配器选择**：从云端列表选择需要的适配器
+5. **适配器安装**：自动安装选中的适配器
+6. **配置保存**：保存所有配置到文件
+
+### 缓存机制
+
+UX管理器实现了5分钟的适配器缓存机制，减少网络请求：
+
+```python
+# 缓存设置
+self._cache_duration = 300  # 5分钟缓存
+
+# 检查缓存有效性
+current_time = asyncio.get_event_loop().time()
+if self._adapter_cache and (current_time - self._adapter_cache_time) < self._cache_duration:
+    return self._adapter_cache
+```
+
+### 最佳实践
+
+1. **项目初始化**：使用UX管理器初始化新项目，获得标准化的项目结构
+2. **配置管理**：通过交互式配置向导完成系统设置
+3. **状态监控**：定期使用状态查看功能监控系统运行情况
+4. **适配器安装**：通过云端列表获取和安装最新适配器
 
 # 运行配置向导
 epsdk config-wizard
