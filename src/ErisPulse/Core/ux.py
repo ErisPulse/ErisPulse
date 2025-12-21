@@ -320,7 +320,7 @@ class UXManager:
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print(f"1. 编辑 {project_name}/config.toml 配置适配器")
             self.console.print(f"2. 在 {project_name}/modules/ 目录下创建自定义模块")
-            self.console.print(f"3. 运行 [cyan]cd {project_name} && python main.py[/cyan] 启动项目")
+            self.console.print(f"3. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
             
             return True
             
@@ -412,7 +412,7 @@ class UXManager:
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print("1. 编辑 {}/config.toml 进一步配置".format(project_name))
             self.console.print("2. 在 {}/modules/ 目录下创建自定义模块".format(project_name))
-            self.console.print("3. 运行 [cyan]cd {} && python main.py[/cyan] 启动项目".format(project_name))
+            self.console.print("3. 运行 [cyan]cd {} \n        ep run[/cyan] 启动项目".format(project_name))
             
             return True
             
