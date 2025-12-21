@@ -6,6 +6,7 @@ from .logger import logger
 from .module import module
 from .router import router
 from .config import config
+from .ux import ux, UXManager
 from . import exceptions
 from . import Event
 
@@ -36,6 +37,10 @@ __all__ = [
     # 路由相关
     'router',           # 路由管理器
     'adapter_server',   # 路由管理器别名
+
+    # UX
+    'ux',               # UX管理器实例
+    'UXManager',        # UX管理器类
 
     # 基础设施
     'logger',           # 日志管理器

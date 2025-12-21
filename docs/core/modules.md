@@ -16,6 +16,8 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
+| `ux`/`sdk.ux` | 用户体验管理器 |
+| `UXManager`/`sdk.UXManager` | UX管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
@@ -432,3 +434,68 @@ level = "INFO"
 log_files = []
 memory_limit = 1000
 ```
+
+## 9. 用户体验管理 (ux)
+
+用户体验管理器提供了友好的界面和简化的操作方法。
+
+### 主要功能
+
+- 显示欢迎信息和系统状态
+- 列出模块和适配器状态
+- 运行配置向导
+- 初始化新项目
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 显示欢迎信息
+sdk.ux.welcome("2.3.0")
+
+# 显示系统状态概览
+sdk.ux.show_status()
+
+# 列出所有模块状态
+sdk.ux.list_modules(detailed=True)
+
+# 列出所有适配器状态
+sdk.ux.list_adapters(detailed=True)
+
+# 运行配置向导
+sdk.ux.configure_wizard()
+
+# 初始化新项目
+sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+```
+
+### 命令行使用
+
+```bash
+# 初始化新项目
+epsdk init -n MyBot -a yunhu
+
+# 查看系统状态
+epsdk status
+
+# 查看模块详细信息
+epsdk status -t modules
+
+# 查看适配器详细信息
+epsdk status -t adapters
+
+# 运行配置向导
+epsdk config-wizard
+```
+
+### 用户体验管理器方法
+
+| 方法 | 描述 | 示例 |
+|------|------|------|
+| `welcome(version)` | 显示框架欢迎信息 | `sdk.ux.welcome("2.3.0")` |
+| `show_status()` | 显示系统状态概览 | `sdk.ux.show_status()` |
+| `list_modules(detailed=False)` | 列出所有模块状态 | `sdk.ux.list_modules(True)` |
+| `list_adapters(detailed=False)` | 列出所有适配器状态 | `sdk.ux.list_adapters(True)` |
+| `configure_wizard()` | 运行配置向导 | `sdk.ux.configure_wizard()` |
+| `init_project(project_name, adapter_list=None)` | 初始化新项目 | `sdk.ux.init_project("MyBot", ["yunhu"])` |

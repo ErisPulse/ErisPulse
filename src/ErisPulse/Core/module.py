@@ -47,8 +47,21 @@ class ModuleManager:
         :example:
         >>> module.register("MyModule", MyModuleClass)
         """
+        # 严格验证模块类，确保继承自BaseModule
         if not issubclass(module_class, BaseModule):
-            logger.warning(f"模块 {module_name} 的类无效，但我们仍会尝试加载这个模块")
+            error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
+        # 验证模块名是否合法
+        if not module_name or not isinstance(module_name, str):
+            error_msg = "模块名称必须是非空字符串"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
+        # 检查模块名是否已存在
+        if module_name in self._module_classes:
+            logger.warning(f"模块 {module_name} 已存在，将覆盖原模块类")
             
         self._module_classes[module_name] = module_class
         if module_info:
