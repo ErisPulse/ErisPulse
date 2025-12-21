@@ -20,6 +20,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "log_files": [],
         "memory_limit": 1000
     },
+    "storage":  {
+        "max_snapshot": 20
+    },
     "modules": {},
     "adapters": {}
 }
@@ -104,3 +107,12 @@ def get_logger_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["logger"]
+
+def get_storage_config() -> Dict[str, Any]:
+    """
+    获取存储模块配置
+
+    :return: 存储配置字典
+    """
+    erispulse_config = get_erispulse_config()
+    return erispulse_config["storage"]

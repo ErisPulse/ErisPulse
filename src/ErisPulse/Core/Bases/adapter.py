@@ -107,20 +107,27 @@ class BaseAdapter:
             :example:
             >>> await adapter.Send.To("123").Example("Hello")
             """
-            return {
-                "status": "ok",
-                "retcode": 0,
-                "data": {
+
+            text = {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {
+                        "message_id": "1234567890",
+                        "time": 1755801512
+                    },
                     "message_id": "1234567890",
-                    "time": 1755801512
-                },
-                "message_id": "1234567890",
-                "message": "",
-                "echo": None,
-                "example_raw": {
-                    "result": "success",
+                    "message": "",
+                    "echo": None,
+                    "example_raw": {
+                        "result": "success",
+                    }
                 }
-            }
+            async def _send_example():
+                from .. import logger
+                logger.info(f"发送示例消息: {text}")
+                return text
+            return asyncio.create_task(_send_example())
+
     def __init__(self):
         self.Send = self.__class__.Send(self)
 
