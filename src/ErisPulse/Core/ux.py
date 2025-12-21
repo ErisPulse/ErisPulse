@@ -6,8 +6,7 @@ ErisPulse UX优化模块
 
 import json
 import asyncio
-import aiohttp
-from typing import List, Dict, Optional
+from typing import List, Dict
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -40,7 +39,7 @@ class UXManager:
         
         try:
             # 使用与 PackageManager 相同的机制获取远程包列表
-            from ..__main__ import PackageManager
+            from ..utils.package_manager import PackageManager
             package_manager = PackageManager()
             remote_packages = await package_manager.get_remote_packages()
             
@@ -320,7 +319,7 @@ class UXManager:
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print(f"1. 编辑 {project_name}/config.toml 配置适配器")
             self.console.print(f"2. 在 {project_name}/modules/ 目录下创建自定义模块")
-            self.console.print(f"3. 运行 [cyan]cd {project_name} && python main.py[/cyan] 启动项目")
+            self.console.print(f"3. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
             
             return True
             
@@ -412,7 +411,7 @@ class UXManager:
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print("1. 编辑 {}/config.toml 进一步配置".format(project_name))
             self.console.print("2. 在 {}/modules/ 目录下创建自定义模块".format(project_name))
-            self.console.print("3. 运行 [cyan]cd {} && python main.py[/cyan] 启动项目".format(project_name))
+            self.console.print("3. 运行 [cyan]cd {} \n        ep run[/cyan] 启动项目".format(project_name))
             
             return True
             
@@ -426,8 +425,8 @@ class UXManager:
         
         :param project_path: 项目路径，用于加载项目特定的配置
         """
-        from .. import config
-        from ..__main__ import PackageManager
+        from . import config
+        from ..utils.package_manager import PackageManager
         
         # 如果提供了项目路径，则加载项目配置
         if project_path:
@@ -585,7 +584,7 @@ class UXManager:
         :param project_path: 项目路径，用于加载项目特定的配置
         """
         from .. import config
-        from ..__main__ import PackageManager
+        from ..utils.package_manager import PackageManager
         package_manager = PackageManager()
         
         # 如果提供了项目路径，则加载项目配置

@@ -139,7 +139,8 @@ class RouterManager:
         )
         self.app.router.routes.append(route)
         self._http_routes[module_name][full_path] = handler
-        logger.info(f"注册HTTP路由: {self.base_url}{full_path} 方法: {methods}")
+        display_url = self._format_display_url(f"{self.base_url}{full_path}")
+        logger.info(f"注册HTTP路由: {display_url} 方法: {methods}")
 
     def register_webhook(self, *args, **kwargs) -> None:
         """
@@ -159,10 +160,12 @@ class RouterManager:
         try:
             full_path = f"/{module_name}{path}"
             if full_path not in self._http_routes[module_name]:
-                logger.warning(f"取消注册HTTP路由失败: 路由不存在: {self.base_url}{full_path}")
+                display_url = self._format_display_url(f"{self.base_url}{full_path}")
+                logger.warning(f"取消注册HTTP路由失败: 路由不存在: {display_url}")
                 return False
             
-            logger.info(f"取消注册HTTP路由: {self.base_url}{full_path}")
+            display_url = self._format_display_url(f"{self.base_url}{full_path}")
+            logger.info(f"取消注册HTTP路由: {display_url}")
             del self._http_routes[module_name][full_path]
             
             # 从路由列表中移除匹配的路由
@@ -224,7 +227,9 @@ class RouterManager:
             name=f"{module_name}_{path.replace('/', '_')}"
         )
         self._websocket_routes[module_name][full_path] = (handler, auth_handler)
-        logger.info(f"注册WebSocket: {self.base_url}{full_path} {'(需认证)' if auth_handler else ''}")
+
+        display_url = self._format_display_url(f"{self.base_url}{full_path}")
+        logger.info(f"注册WebSocket: {display_url} {'(需认证)' if auth_handler else ''}")
         
     def unregister_websocket(self, module_name: str, path: str) -> bool:
         try:
@@ -233,10 +238,12 @@ class RouterManager:
             # 使用类型忽略注释
             if full_path in self.app.websocket_routes:          # type: ignore  || 原因：实际上，FastAPI的API提供了websocket_routes属性
                 self.app.remove_api_websocket_route(full_path)  # type: ignore  || 原因：实际上，FastAPI的API提供了remove_api_websocket_route方法
-                logger.info(f"注销WebSocket: {self.base_url}{full_path}")
-                del self._websocket_routes[module_name][full_path]  # 修复：这里应该是full_path而不是path
+                display_url = self._format_display_url(f"{self.base_url}{full_path}")
+                logger.info(f"注销WebSocket: {display_url}")
+                del self._websocket_routes[module_name][full_path]
                 return True
-            logger.error(f"注销WebSocket失败: 路径 {self.base_url}{full_path} 不存在")
+            display_url = self._format_display_url(f"{self.base_url}{full_path}")
+            logger.error(f"注销WebSocket失败: 路径 {display_url} 不存在")
             return False
         except Exception as e:
             logger.error(f"注销WebSocket失败: {e}")
@@ -280,7 +287,8 @@ class RouterManager:
                 config.keyfile = ssl_keyfile
             
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
-            logger.info(f"启动路由服务器 {self.base_url}")
+            display_url = self._format_display_url(self.base_url)
+            logger.info(f"启动路由服务器 {display_url}")
             
             self._server_task = asyncio.create_task(serve(self.app, config))   # type: ignore || 原因: Hypercorn与FastAPIl类型不兼容
 
@@ -294,6 +302,7 @@ class RouterManager:
                 },
             )
         except Exception as e:
+            display_url = self._format_display_url(self.base_url)
             await lifecycle.submit_event(
                 "server.start",
                 msg="路由服务器启动失败",
@@ -319,6 +328,21 @@ class RouterManager:
             self._server_task = None
         
         await lifecycle.submit_event("server.stop", msg="服务器已停止")
+
+    def _format_display_url(self, url: str) -> str:
+        """
+        格式化URL显示，将回环地址转换为更友好的格式
+        
+        :param url: 原始URL
+        :return: 格式化后的URL
+        """
+        if "0.0.0.0" in url:
+            display_url = url.replace("0.0.0.0", "127.0.0.1")
+            return f"{url} (可访问: {display_url})"
+        elif "::" in url:
+            display_url = url.replace("::", "localhost")
+            return f"{url} (可访问: {display_url})"
+        return url
 
 router = RouterManager()
 
