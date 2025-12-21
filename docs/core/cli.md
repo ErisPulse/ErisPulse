@@ -38,6 +38,17 @@
 | `run`      | `<script> [--reload] [--no-reload]` | 运行指定脚本                    | `epsdk run main.py`           |
 |            |                           | `--reload`: 启用热重载模式            | `epsdk run app.py --reload`   |
 
+### 项目管理命令
+
+| 命令       | 参数                      | 描述                                  | 示例                          |
+|------------|---------------------------|---------------------------------------|-------------------------------|
+| `init`     | `[--project-name/-n <name>]` | 交互式初始化新的 ErisPulse 项目  | `epsdk init -n my_bot`       |
+|            | `[--quick/-q]`             | 快速模式，跳过交互配置            | `epsdk init -q -n my_bot`      |
+|            | `[--force/-f]`             | 强制覆盖现有配置                  | `epsdk init -f`               |
+| `status`   | `[--type/-t <type>]`       | 显示 ErisPulse 系统状态        | `epsdk status`                |
+|            |                           | `--type`: `modules`/`adapters`/`all` | `epsdk status -t modules`     |
+
+
 ## 第三方 CLI 模块扩展
 
 ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命令来扩展 CLI 功能。
