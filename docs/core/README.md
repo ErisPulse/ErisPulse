@@ -10,6 +10,7 @@
 - [适配器系统](adapters.md) - 平台适配器的使用
 - [事件系统](event-system.md) - Event 模块的使用(事件监听、事件处理、事件分发)
 - [最佳实践](best-practices.md) - 开发和部署建议
+- [框架配置解析](self-config.md)
 
 ## 核心架构概览
 
