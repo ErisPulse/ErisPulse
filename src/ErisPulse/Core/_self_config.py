@@ -19,7 +19,12 @@ DEFAULT_ERISPULSE_CONFIG = {
         "level": "INFO",
         "log_files": [],
         "memory_limit": 1000
-    }
+    },
+    "storage":  {
+        "max_snapshot": 20
+    },
+    "modules": {},
+    "adapters": {}
 }
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -29,12 +34,6 @@ def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str,
     :param config_dict: 当前配置
     :return: 补全后的完整配置
     """
-    merged_config = DEFAULT_ERISPULSE_CONFIG.copy()
-
-    from .logger import logger
-
-    logger.debug("ErisPulse Config: %s", config_dict)
-    logger.debug("ErisPulse Default Config: %s", merged_config)
     
     # 深度合并配置
     for section, default_values in DEFAULT_ERISPULSE_CONFIG.items():
@@ -108,3 +107,12 @@ def get_logger_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["logger"]
+
+def get_storage_config() -> Dict[str, Any]:
+    """
+    获取存储模块配置
+
+    :return: 存储配置字典
+    """
+    erispulse_config = get_erispulse_config()
+    return erispulse_config["storage"]
