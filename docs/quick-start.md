@@ -46,6 +46,39 @@ uv pip install ErisPulse --upgrade  # 安装框架
 
 ## 初始化项目
 
+有两种方式初始化项目：
+
+### 交互式初始化（推荐）
+
+1. 使用 epsdk init 启动交互式初始化：
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+如果您只需要快速创建项目结构，可以使用快速模式：
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称，仍然会有基本交互
+epsdk init -n my_bot
+```
+
+### 传统方式
+
+如果您更喜欢传统方式：
+
 1. 创建项目目录并进入：
 
 ```bash
@@ -57,7 +90,37 @@ mkdir my_bot && cd my_bot
 ```bash
 ep-init
 ```
-这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
+这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
 
 ---
 
