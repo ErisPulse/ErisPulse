@@ -63,22 +63,6 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
    - 保留原始CQ码消息在onebot11_raw_message字段
    - 保留原始事件数据在onebot11_raw字段
 
-### 事件监听方式
-
-OneBot适配器支持两种方式监听事件：
-
-```python
-# 使用原始事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-
-# 使用映射后的事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-```
-
 ### 特殊字段示例
 
 ```python
