@@ -1,6 +1,6 @@
-# `ErisPulse.Core.erispulse_config` 模块
+# `ErisPulse.Core._self_config` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -57,4 +57,12 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+### `get_storage_config()`
+
+获取存储模块配置
+
+:return: 存储配置字典
+
+---
+
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>

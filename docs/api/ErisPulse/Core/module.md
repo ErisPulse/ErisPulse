@@ -1,15 +1,15 @@
 # `ErisPulse.Core.module` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
 ## 模块概述
 
 
-ErisPulse 模块管理模块
+ErisPulse 模块系统
 
-提供便捷的模块访问接口
+提供标准化的模块注册、加载和管理功能，与适配器系统保持一致的设计模式
 
 ---
 
@@ -19,26 +19,156 @@ ErisPulse 模块管理模块
 
     模块管理器
 
-提供便捷的模块访问接口，支持获取模块实例、检查模块状态等操作
+提供标准化的模块注册、加载和管理功能，模仿适配器管理器的模式
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用register方法注册模块类
+2. 使用load/unload方法加载/卸载模块
+3. 通过get方法获取模块实例</p></div>
 
     
 #### 方法列表
 
+##### `register(module_name: str, module_class: Type, module_info: Optional[Dict] = None)`
+
+    注册模块类
+
+:param module_name: 模块名称
+:param module_class: 模块类
+:param module_info: 模块信息
+:return: 是否注册成功
+
+<dt>异常</dt><dd><code>TypeError</code> 当模块类无效时抛出</dd>
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> module.register("MyModule", MyModuleClass)
+```
+</details>
+
+    ---
+    
+##### async `async load(module_name: str)`
+
+    加载指定模块（标准化加载逻辑）
+
+:param module_name: 模块名称
+:return: 是否加载成功
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> await module.load("MyModule")
+```
+</details>
+
+    ---
+    
+##### async `async unload(module_name: str = 'Unknown')`
+
+    卸载指定模块或所有模块
+
+:param module_name: 模块名称，如果为None则卸载所有模块
+:return: 是否卸载成功
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> await module.unload("MyModule")
+>>> await module.unload()  # 卸载所有模块
+```
+</details>
+
+    ---
+    
+##### async `async _unload_single_module(module_name: str)`
+
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+卸载单个模块
+
+:param module_name: 模块名称
+:return: 是否卸载成功
+
+    ---
+    
 ##### `get(module_name: str)`
 
-    获取指定模块的实例
+    获取模块实例
 
-<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
-<dt>返回值</dt><dd><span class='type-hint'>Any</span> 模块实例或None</dd>
+:param module_name: 模块名称
+:return: 模块实例或None
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> my_module = module.get("MyModule")
+```
+</details>
 
     ---
     
 ##### `exists(module_name: str)`
 
-    检查模块是否存在
+    检查模块是否存在（在配置中注册）
 
 <dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
 <dt>返回值</dt><dd><span class='type-hint'>bool</span> 模块是否存在</dd>
+
+    ---
+    
+##### `is_loaded(module_name: str)`
+
+    检查模块是否已加载
+
+:param module_name: 模块名称
+:return: 模块是否已加载
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> if module.is_loaded("MyModule"): ...
+```
+</details>
+
+    ---
+    
+##### `list_registered()`
+
+    列出所有已注册的模块
+
+:return: 模块名称列表
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> registered = module.list_registered()
+```
+</details>
+
+    ---
+    
+##### `list_loaded()`
+
+    列出所有已加载的模块
+
+:return: 模块名称列表
+    
+<details class='example'><summary>示例</summary>
+
+```python
+>>> loaded = module.list_loaded()
+```
+</details>
+
+    ---
+    
+##### `_config_register(module_name: str, enabled: bool = False)`
+
+    注册新模块信息
+
+<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
+<dt><code>enabled</code> <span class='type-hint'>bool</span></dt><dd>是否启用模块</dd>
+<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
 
     ---
     
@@ -71,18 +201,9 @@ ErisPulse 模块管理模块
     
 ##### `list_modules()`
 
-    列出所有模块信息
+    列出所有模块状态
 
-<dt>返回值</dt><dd><span class='type-hint'>Dict[str, Dict[str, Any</span> ]] 模块信息字典</dd>
-
-    ---
-    
-##### `get_info(module_name: str)`
-
-    获取模块详细信息
-
-<dt><code>module_name</code> <span class='type-hint'>str</span></dt><dd>模块名称</dd>
-<dt>返回值</dt><dd><span class='type-hint'>Optional[Dict[str, Any</span> ]] 模块信息字典</dd>
+<dt>返回值</dt><dd><span class='type-hint'>Dict[str, bool</span> ] 模块状态字典</dd>
 
     ---
     
@@ -105,4 +226,4 @@ ErisPulse 模块管理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
