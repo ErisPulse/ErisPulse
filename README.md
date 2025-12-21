@@ -81,7 +81,7 @@ python -c "from ErisPulse import sdk; sdk.init()"
 
 ### 5. 运行测试
 
-我们提供了一个交互式测试脚本，可以帮助您快速验证SDK功能(于开发中)：
+我们提供了一个交互式测试脚本，可以帮助您快速验证SDK功能：
 
 ```bash
 uv run devs/test.py
@@ -93,6 +93,25 @@ uv run devs/test.py
 - 错误管理测试
 - 工具函数测试
 - 适配器功能测试
+
+## 项目结构
+
+```
+ErisPulse/
+├── src/
+│   └── ErisPulse/           # 核心源代码
+│       ├── Core/            # 核心模块
+│       │   ├── Bases/       # 基础类定义
+│       │   ├── Event/       # 事件系统
+│       │   └── ...          # 其他核心组件
+│       └── __init__.py      # SDK入口点
+├── examples/                # 示例代码
+├── devs/                    # 开发工具
+├── docs/                    # 文档
+├── tests/                   # 测试代码
+├── scripts/                 # 脚本文件
+└── config.toml              # 默认配置文件
+```
 
 ## 贡献指南
 
@@ -115,4 +134,3 @@ uv run devs/test.py
 ---
 
 [![](https://starchart.cc/ErisPulse/ErisPulse.svg?variant=adaptive)](https://starchart.cc/ErisPulse/ErisPulse)
-

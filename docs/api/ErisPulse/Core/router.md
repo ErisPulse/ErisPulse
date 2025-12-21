@@ -1,6 +1,6 @@
 # `ErisPulse.Core.router` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-09-02 23:28:52</sup>
 
 ---
 
@@ -12,8 +12,7 @@ ErisPulse 路由系统
 提供统一的HTTP和WebSocket路由管理，支持多适配器路由注册和生命周期管理。
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 适配器只需注册路由，无需自行管理服务器
-2. WebSocket支持自定义认证逻辑
-3. 兼容FastAPI 0.68+ 版本</p></div>
+2. WebSocket支持自定义认证逻辑</p></div>
 
 ---
 
@@ -68,6 +67,17 @@ ErisPulse 路由系统
 
     ---
     
+##### `unregister_http_route(module_name: str, path: str)`
+
+    取消注册HTTP路由
+
+:param module_name: 模块名称
+:param path: 路由路径
+
+:return: Bool
+
+    ---
+    
 ##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None)`
 
     注册WebSocket路由
@@ -108,4 +118,4 @@ ErisPulse 路由系统
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+<sub>文档最后更新于 2025-09-02 23:28:52</sub>

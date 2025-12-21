@@ -17,6 +17,12 @@ from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 
 class CommandHandler:
+    """
+    命令处理器
+    
+    提供命令注册、处理和管理功能
+    """
+
     def __init__(self):
         self.commands: Dict[str, Dict] = {}
         self.aliases: Dict[str, str] = {}  # 别名映射
@@ -396,6 +402,21 @@ class CommandHandler:
                 await adapter_instance.Send.To(detail_type, target_id).Text(f"命令执行出错: {error}")
         except Exception as e:
             logger.error(f"发送命令错误消息失败: {e}")
+
+    def _clear_commands(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的命令
+        
+        :return: 被清除的命令数量
+        """
+        count = len(self.commands)
+        self.commands.clear()
+        self.aliases.clear()
+        self.groups.clear()
+        self.permissions.clear()
+        self._waiting_replies.clear()
+        return count
     
     def get_command(self, name: str) -> Optional[Dict]:
         """

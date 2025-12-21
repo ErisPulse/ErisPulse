@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.command` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-09-02 23:28:52</sup>
 
 ---
 
@@ -22,7 +22,9 @@ ErisPulse 命令处理模块
 
 ### `class CommandHandler`
 
-    CommandHandler 类提供相关功能。
+    命令处理器
+
+提供命令注册、处理和管理功能
 
     
 #### 方法列表
@@ -107,6 +109,15 @@ ErisPulse 命令处理模块
 
     ---
     
+##### `_clear_commands()`
+
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+清除所有已注册的命令
+
+:return: 被清除的命令数量
+
+    ---
+    
 ##### `get_command(name: str)`
 
     获取命令信息
@@ -151,4 +162,4 @@ ErisPulse 命令处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+<sub>文档最后更新于 2025-09-02 23:28:52</sub>

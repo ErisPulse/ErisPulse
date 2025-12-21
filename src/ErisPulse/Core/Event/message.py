@@ -14,6 +14,12 @@ from .base import BaseEventHandler
 from typing import Callable, Dict, Any
 
 class MessageHandler:
+    """
+    消息事件处理器
+    
+    提供不同类型消息事件的处理功能
+    """
+    
     def __init__(self):
         self.handler = BaseEventHandler("message", "message")
     
@@ -116,5 +122,14 @@ class MessageHandler:
         :return: 是否成功取消注册
         """
         return self.handler.unregister(handler)
+
+    def _clear_message_handlers(self):
+        """
+        {!--< internal-use >!--}
+        清除所有已注册的消息处理器
+        
+        :return: 被清除的处理器数量
+        """
+        return self.handler._clear_handlers()
 
 message = MessageHandler()
