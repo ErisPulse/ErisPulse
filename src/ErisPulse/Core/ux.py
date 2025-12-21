@@ -6,8 +6,7 @@ ErisPulse UX优化模块
 
 import json
 import asyncio
-import aiohttp
-from typing import List, Dict, Optional
+from typing import List, Dict
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -40,7 +39,7 @@ class UXManager:
         
         try:
             # 使用与 PackageManager 相同的机制获取远程包列表
-            from ..__main__ import PackageManager
+            from ..utils.package_manager import PackageManager
             package_manager = PackageManager()
             remote_packages = await package_manager.get_remote_packages()
             
@@ -426,8 +425,8 @@ class UXManager:
         
         :param project_path: 项目路径，用于加载项目特定的配置
         """
-        from .. import config
-        from ..__main__ import PackageManager
+        from . import config
+        from ..utils.package_manager import PackageManager
         
         # 如果提供了项目路径，则加载项目配置
         if project_path:
@@ -585,7 +584,7 @@ class UXManager:
         :param project_path: 项目路径，用于加载项目特定的配置
         """
         from .. import config
-        from ..__main__ import PackageManager
+        from ..utils.package_manager import PackageManager
         package_manager = PackageManager()
         
         # 如果提供了项目路径，则加载项目配置
