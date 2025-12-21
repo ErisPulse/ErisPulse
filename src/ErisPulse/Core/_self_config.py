@@ -24,7 +24,10 @@ DEFAULT_ERISPULSE_CONFIG = {
         "max_snapshot": 20
     },
     "modules": {},
-    "adapters": {}
+    "adapters": {},
+    "framework": {
+        "enable_lazy_loading": True
+    }
 }
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -116,3 +119,12 @@ def get_storage_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["storage"]
+
+def get_framework_config() -> Dict[str, Any]:
+    """
+    获取框架配置
+
+    :return: 框架配置字典
+    """
+    erispulse_config = get_erispulse_config()
+    return erispulse_config["framework"]

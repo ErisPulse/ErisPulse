@@ -1,6 +1,6 @@
 # `ErisPulse.Core.storage` 模块
 
-<sup>更新时间: 2025-09-02 23:28:52</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -11,6 +11,16 @@ ErisPulse 存储管理模块
 
 提供键值存储、事务支持、快照和恢复功能，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+
+支持两种数据库模式：
+1. 项目数据库（默认）：位于项目目录下的 config/config.db
+2. 全局数据库：位于包内的 ../data/config.db
+
+用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
+```toml
+[ErisPulse.storage]
+use_global_db = true
+```
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
@@ -26,6 +36,16 @@ ErisPulse 存储管理模块
 
 单例模式实现，提供键值存储的增删改查、事务和快照管理
 
+支持两种数据库模式：
+1. 项目数据库（默认）：位于项目目录下的 config/config.db
+2. 全局数据库：位于包内的 ../data/config.db
+
+用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
+```toml
+[ErisPulse.storage]
+use_global_db = true
+```
+
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用get/set方法操作存储项
 2. 使用transaction上下文管理事务
 3. 使用snapshot/restore管理数据快照</p></div>
@@ -33,6 +53,12 @@ ErisPulse 存储管理模块
     
 #### 方法列表
 
+##### `_ensure_directories()`
+
+    确保必要的目录存在
+
+    ---
+    
 ##### `_init_db()`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
@@ -240,7 +266,7 @@ ErisPulse 存储管理模块
 :param key: 存储项键名
 :return: 存储项的值
 
-<dt>异常</dt><dd><code>KeyError</code> 当存储项不存在时抛出</dd>
+<dt>异常</dt><dd><code>AttributeError</code> 当存储项不存在时抛出</dd>
     
 <details class='example'><summary>示例</summary>
 
@@ -334,4 +360,4 @@ ErisPulse 存储管理模块
 
     ---
     
-<sub>文档最后更新于 2025-09-02 23:28:52</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
