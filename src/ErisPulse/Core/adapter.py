@@ -30,13 +30,10 @@ class AdapterManager:
     """
 
     def __init__(self):
-        # 适配器存储
-        self._adapters: Dict[str, BaseAdapter] = {}
-        self._adapter_classes: Dict[str, Type[BaseAdapter]] = {}
-        self._adapter_instances: Dict[Type[BaseAdapter], BaseAdapter] = {}
-        self._platform_to_instance: Dict[str, BaseAdapter] = {}
-        self._started_instances: Set[BaseAdapter] = set()
-        self._adapter_info: Dict[str, Dict] = {}
+        # 适配器存储 - 简化数据结构
+        self._adapters: Dict[str, BaseAdapter] = {}  # 平台名到实例的映射
+        self._started_instances: Set[BaseAdapter] = set()  # 已启动的实例
+        self._adapter_info: Dict[str, Dict] = {}  # 适配器信息
 
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
@@ -64,22 +61,43 @@ class AdapterManager:
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误")
 
-        self._adapter_classes[platform] = adapter_class
+        # 检查是否已存在该平台的适配器
+        if platform in self._adapters:
+            logger.warning(f"平台 {platform} 已存在，将覆盖原适配器")
+        
         if adapter_info:
             self._adapter_info[platform] = adapter_info
 
-        # 如果该类已经创建过实例，复用
-        if adapter_class in self._adapter_instances:
-            instance = self._adapter_instances[adapter_class]
+        # 检查是否已存在相同类的适配器实例
+        existing_instance = None
+        for existing_platform, existing_adapter in self._adapters.items():
+            if existing_adapter.__class__ == adapter_class:
+                existing_instance = existing_adapter
+                break
+
+        # 如果存在相同类的适配器实例，直接绑定到已注册的实例
+        if existing_instance is not None:
+            self._adapters[platform] = existing_instance
+            logger.debug(f"适配器 {platform} 已绑定到已注册的实例 {existing_platform}")
         else:
+            # 创建适配器实例
             from .. import sdk
             instance = adapter_class(sdk)
-            self._adapter_instances[adapter_class] = instance
-
-        # 注册平台名，并统一映射到该实例
-        self._adapters[platform] = instance
-        self._platform_to_instance[platform] = instance
-
+            self._adapters[platform] = instance
+            logger.debug(f"适配器 {platform} 注册成功")
+        
+        # 注册平台名称的多种大小写形式作为属性
+        self._register_platform_attributes(platform, self._adapters[platform])
+        
+        return True
+    
+    def _register_platform_attributes(self, platform: str, instance: BaseAdapter) -> None:
+        """
+        注册平台名称的多种大小写形式作为属性
+        
+        :param platform: 平台名称
+        :param instance: 适配器实例
+        """
         if len(platform) <= 10:
             from itertools import product
             combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
@@ -90,8 +108,6 @@ class AdapterManager:
             setattr(self, platform.lower(), instance)
             setattr(self, platform.upper(), instance)
             setattr(self, platform.capitalize(), instance)
-
-        return True
 
     async def startup(self, platforms = None) -> None:
         """

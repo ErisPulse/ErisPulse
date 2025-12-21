@@ -265,11 +265,21 @@ class Logger:
             self._logger.error(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
+        """
+        记录 CRITICAL 级别日志
+        这是最高级别的日志，表示严重的系统错误
+        注意：此方法不会触发程序崩溃，仅记录日志
+
+        {!--< tips >!--}
+        1. 这是最高级别的日志，表示严重系统错误
+        2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+        3. 会在日志文件中添加 CRITICAL 标记便于后续分析
+        {!--< /tips >!--}
+        """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.CRITICAL:
             self._save_in_memory(caller_module, msg)
             self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
-            raise Exception(msg)
 
 
 class LoggerChild:
@@ -313,13 +323,23 @@ class LoggerChild:
             self._parent._logger.error(f"[{self._name}] {msg}", *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
+        """
+        记录 CRITICAL 级别日志
+        这是最高级别的日志，表示严重的系统错误
+        注意：此方法不会触发程序崩溃，仅记录日志
+
+        {!--< tips >!--}
+        1. 这是最高级别的日志，表示严重系统错误
+        2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+        3. 会在日志文件中添加 CRITICAL 标记便于后续分析
+        {!--< /tips >!--}
+        """
         if (
             self._parent._get_effective_level(self._name.split(".")[0])
             <= logging.CRITICAL
         ):
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.critical(f"[{self._name}] {msg}", *args, **kwargs)
-            raise Exception(msg)
 
     def get_child(self, child_name: str):
         """
