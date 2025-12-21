@@ -119,6 +119,57 @@ ErisPulse 框架具有智能配置补充机制。当配置缺失时，框架会�
 
 无论是在初始化时还是在运行时更新配置，框架都会确保配置结构的完整性。
 
+## 高级配置特性
+
+### 内存缓存机制
+
+配置系统实现了内存缓存机制，提高配置访问性能：
+
+```python
+# 配置缓存
+self._config_cache: Dict[str, Any] = {}
+```
+
+当配置被读取时，首先检查内存缓存，如果缓存中有数据则直接返回，避免频繁的文件I/O操作。
+
+### 延迟写入机制
+
+为提高性能，配置系统实现了延迟写入机制：
+
+```python
+# 延迟写入标志
+self._pending_save = False
+
+# 设置配置时标记需要保存
+def setConfig(self, path: str, value: Any) -> None:
+    self._config_cache[path] = value
+    self._pending_save = True
+
+# 在适当时机批量保存
+def _save_if_needed(self) -> None:
+    if self._pending_save:
+        self._save_to_file()
+        self._pending_save = False
+```
+
+这种机制减少了频繁的文件写入操作，特别是在短时间内多次更新配置时。
+
+### 线程安全
+
+配置系统使用线程锁确保多线程环境下的安全访问：
+
+```python
+import threading
+
+# 线程锁
+self._config_lock = threading.RLock()
+
+# 线程安全的配置访问
+with self._config_lock:
+    # 配置读写操作
+    pass
+```
+
 ## 自定义配置
 
 用户可以根据需要在项目的 `config.toml` 文件中自定义这些配置项。框架会在启动时读取用户配置并与默认配置合并，优先使用用户配置。
