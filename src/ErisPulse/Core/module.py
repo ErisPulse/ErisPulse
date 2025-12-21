@@ -47,8 +47,21 @@ class ModuleManager:
         :example:
         >>> module.register("MyModule", MyModuleClass)
         """
+        # 严格验证模块类，确保继承自BaseModule
         if not issubclass(module_class, BaseModule):
-            raise TypeError("模块必须继承自BaseModule")
+            error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
+        # 验证模块名是否合法
+        if not module_name or not isinstance(module_name, str):
+            error_msg = "模块名称必须是非空字符串"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
+        # 检查模块名是否已存在
+        if module_name in self._module_classes:
+            logger.warning(f"模块 {module_name} 已存在，将覆盖原模块类")
             
         self._module_classes[module_name] = module_class
         if module_info:
@@ -135,7 +148,7 @@ class ModuleManager:
             logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
             
-    async def unload(self, module_name: str = None) -> bool:
+    async def unload(self, module_name: str = "Unknown") -> bool:
         """
         卸载指定模块或所有模块
         
@@ -146,7 +159,7 @@ class ModuleManager:
         >>> await module.unload("MyModule")
         >>> await module.unload()  # 卸载所有模块
         """
-        if module_name is None:
+        if module_name == "Unknown":
             # 卸载所有模块
             success = True
             for name in list(self._loaded_modules):

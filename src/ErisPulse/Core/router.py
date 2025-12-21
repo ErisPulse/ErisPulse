@@ -147,7 +147,7 @@ class RouterManager:
         """
         return self.register_http_route(*args, **kwargs)
 
-    def unregister_http_route(self, module_name: str, path: str) -> None:
+    def unregister_http_route(self, module_name: str, path: str) -> bool:
         """
         取消注册HTTP路由
 
@@ -157,14 +157,21 @@ class RouterManager:
         :return: Bool
         """
         try:
-            full_path = self.get_full_path(path)
+            full_path = f"/{module_name}{path}"
             if full_path not in self._http_routes[module_name]:
                 logger.warning(f"取消注册HTTP路由失败: 路由不存在: {self.base_url}{full_path}")
-                return
+                return False
             
             logger.info(f"取消注册HTTP路由: {self.base_url}{full_path}")
             del self._http_routes[module_name][full_path]
-            self.app.router.remove(full_path)
+            
+            # 从路由列表中移除匹配的路由
+            routes = self.app.router.routes
+            self.app.router.routes = [
+                route for route in routes
+                if not (isinstance(route, APIRoute) and route.path == full_path)
+            ]
+
             return True
         except Exception as e:
             logger.error(f"取消注册HTTP路由失败: {e}")
@@ -219,21 +226,22 @@ class RouterManager:
         self._websocket_routes[module_name][full_path] = (handler, auth_handler)
         logger.info(f"注册WebSocket: {self.base_url}{full_path} {'(需认证)' if auth_handler else ''}")
         
-    def unregister_websocket(self, module_name: str, path: str) -> None:
+    def unregister_websocket(self, module_name: str, path: str) -> bool:
         try:
-            full_path = self._websocket_routes[module_name][path]
+            full_path = f"/{module_name}{path}"
 
-            if full_path in self.app.websocket_routes:
-                self.app.remove_api_websocket_route(full_path)
+            # 使用类型忽略注释
+            if full_path in self.app.websocket_routes:          # type: ignore  || 原因：实际上，FastAPI的API提供了websocket_routes属性
+                self.app.remove_api_websocket_route(full_path)  # type: ignore  || 原因：实际上，FastAPI的API提供了remove_api_websocket_route方法
                 logger.info(f"注销WebSocket: {self.base_url}{full_path}")
-                del self._websocket_routes[module_name][path]
+                del self._websocket_routes[module_name][full_path]  # 修复：这里应该是full_path而不是path
                 return True
             logger.error(f"注销WebSocket失败: 路径 {self.base_url}{full_path} 不存在")
             return False
         except Exception as e:
             logger.error(f"注销WebSocket失败: {e}")
             return False
-
+        
     def get_app(self) -> FastAPI:
         """
         获取FastAPI应用实例
@@ -274,7 +282,7 @@ class RouterManager:
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             logger.info(f"启动路由服务器 {self.base_url}")
             
-            self._server_task = asyncio.create_task(serve(self.app, config))
+            self._server_task = asyncio.create_task(serve(self.app, config))   # type: ignore || 原因: Hypercorn与FastAPIl类型不兼容
 
             await lifecycle.submit_event(
                 "server.start",

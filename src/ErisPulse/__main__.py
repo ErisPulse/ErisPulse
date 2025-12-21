@@ -1254,13 +1254,36 @@ class CLI:
         # 初始化命令
         init_parser = subparsers.add_parser(
             'init',
-            help='初始化ErisPulse项目'
+            help='交互式初始化ErisPulse项目'
+        )
+        init_parser.add_argument(
+            '--project-name', '-n',
+            help='项目名称 (可选，交互式初始化时将会询问)'
+        )
+        init_parser.add_argument(
+            '--quick', '-q',
+            action='store_true',
+            help='快速模式，跳过交互式配置'
         )
         init_parser.add_argument(
             '--force', '-f',
             action='store_true',
             help='强制覆盖现有配置'
         )
+        
+        # 状态命令
+        status_parser = subparsers.add_parser(
+            'status',
+            help='显示ErisPulse系统状态'
+        )
+        status_parser.add_argument(
+            '--type', '-t',
+            choices=['modules', 'adapters', 'all'],
+            default='all',
+            help='显示类型 (默认: all)'
+        )
+        
+
         
         # 加载第三方命令
         self._load_external_commands(subparsers)
@@ -1925,9 +1948,44 @@ class CLI:
                     console.print("[success]已安全退出[/]")
                     
             elif args.command == "init":
-                from ErisPulse import sdk
-                sdk.init()
-                console.print("[success]ErisPulse项目初始化完成[/]")
+                from ErisPulse import ux
+                
+                # 显示欢迎信息
+                try:
+                    import importlib.metadata
+                    version = importlib.metadata.version('ErisPulse')
+                    ux.welcome(version)
+                except Exception:
+                    ux.welcome()
+                
+                # 使用交互式或快速模式初始化项目
+                if args.quick and args.project_name:
+                    # 快速模式：只创建项目，不进行交互配置
+                    success = ux.init_project(args.project_name, [])
+                else:
+                    # 交互式模式：引导用户完成项目和配置设置
+                    success = ux.interactive_init(args.project_name, args.force)
+                
+                if success:
+                    console.print("[success]项目初始化完成[/]")
+                else:
+                    console.print("[error]项目初始化失败[/]")
+                    sys.exit(1)
+                    
+            elif args.command == "status":
+                from ErisPulse import ux
+                
+                # 显示状态概览
+                ux.show_status()
+                
+                # 根据类型显示详细信息
+                if args.type == "modules" or args.type == "all":
+                    ux.list_modules(detailed=True)
+                    
+                if args.type == "adapters" or args.type == "all":
+                    ux.list_adapters(detailed=True)
+                    
+
                 
             # 处理第三方命令
             elif args.command in self._get_external_commands():
