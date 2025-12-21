@@ -1,6 +1,6 @@
 # `ErisPulse.Core.adapter` 模块
 
-<sup>更新时间: 2025-09-02 23:28:52</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -39,7 +39,7 @@ ErisPulse 适配器系统
 :return: 注册是否成功
 
 <dt>异常</dt><dd><code>TypeError</code> 当适配器类无效时抛出</dd>
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -49,14 +49,23 @@ ErisPulse 适配器系统
 
     ---
     
-##### async `async startup(platforms: List[str] = None)`
+##### `_register_platform_attributes(platform: str, instance: BaseAdapter)`
+
+    注册平台名称的多种大小写形式作为属性
+
+:param platform: 平台名称
+:param instance: 适配器实例
+
+    ---
+    
+##### async `async startup(platforms = None)`
 
     启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
 <dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -199,7 +208,7 @@ ErisPulse 适配器系统
     提交OneBot12协议事件到指定平台
 
 :param data: 符合OneBot12标准的事件数据
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -224,7 +233,7 @@ ErisPulse 适配器系统
 
 :param platform: 平台名称
 :return: 适配器实例或None
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -239,7 +248,7 @@ ErisPulse 适配器系统
     获取所有已注册的平台列表
 
 :return: 平台名称列表
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -268,4 +277,4 @@ ErisPulse 适配器系统
 
     ---
     
-<sub>文档最后更新于 2025-09-02 23:28:52</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
