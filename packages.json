@@ -1,18 +1,6 @@
 {
-    "last_updated": "2025-08-20T03:04:16Z",
+    "last_updated": "2025-12-21T03:23:57Z",
     "modules": {
-        "ErisPulse": {
-            "package": "ErisPulse",
-            "version": "2.2.1",
-            "author": "ErisPulse Team",
-            "description": "更新ErisPulse",
-            "min_sdk_version": "2.0.0",
-            "repository": "https://github.com/ErisPulse/ErisPulse",
-            "official": true,
-            "tags": [
-                "ErisPulse"
-            ]
-        },
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
             "version": "1.0.0",
@@ -176,7 +164,7 @@
         "Yunhu": {
             "package": "ErisPulse-YunhuAdapter",
             "author": "wsu2059q",
-            "version": "3.1.2",
+            "version": "3.4.0",
             "description": "云湖协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-YunhuAdapter",
             "official": true,
@@ -188,7 +176,7 @@
         "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
-            "version": "3.1.1",
+            "version": "3.4.0",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
@@ -200,7 +188,7 @@
         "Telegram": {
             "package": "ErisPulse-TelegramAdapter",
             "author": "wsu2059q",
-            "version": "3.2.1",
+            "version": "3.4.0",
             "description": "Telgram协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-TelegramAdapter",
             "official": true,
@@ -212,7 +200,7 @@
         "Email": {
             "package": "ErisPulse-EmailAdapter",
             "author": "wsu2059q",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "description": "支持在 ErisPulse 生态系统中以事件形式收发电子邮件。",
             "repository": "https://github.com/ErisPulse/ErisPulse-EmailAdapter",
             "official": true,
