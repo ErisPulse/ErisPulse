@@ -1,6 +1,6 @@
 # `ErisPulse.Core.module` 模块
 
-<sup>更新时间: 2025-09-02 23:28:52</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -64,7 +64,7 @@ ErisPulse 模块系统
 
     ---
     
-##### async `async unload(module_name: str = None)`
+##### async `async unload(module_name: str = 'Unknown')`
 
     卸载指定模块或所有模块
 
@@ -226,4 +226,4 @@ ErisPulse 模块系统
 
     ---
     
-<sub>文档最后更新于 2025-09-02 23:28:52</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>

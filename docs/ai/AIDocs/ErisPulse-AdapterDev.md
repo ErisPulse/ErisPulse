@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2025-08-30 06:55:41
+**生成时间**: 2025-12-21 14:29:04
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -151,6 +151,39 @@ uv pip install ErisPulse --upgrade  # 安装框架
 
 ## 初始化项目
 
+有两种方式初始化项目：
+
+### 交互式初始化（推荐）
+
+1. 使用 epsdk init 启动交互式初始化：
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+如果您只需要快速创建项目结构，可以使用快速模式：
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称，仍然会有基本交互
+epsdk init -n my_bot
+```
+
+### 传统方式
+
+如果您更喜欢传统方式：
+
 1. 创建项目目录并进入：
 
 ```bash
@@ -162,7 +195,37 @@ mkdir my_bot && cd my_bot
 ```bash
 ep-init
 ```
-这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
+这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
 
 ---
 
@@ -259,6 +322,8 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
+| `ux`/`sdk.ux` | 用户体验管理器 |
+| `UXManager`/`sdk.UXManager` | UX管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
@@ -675,6 +740,71 @@ level = "INFO"
 log_files = []
 memory_limit = 1000
 ```
+
+## 9. 用户体验管理 (ux)
+
+用户体验管理器提供了友好的界面和简化的操作方法。
+
+### 主要功能
+
+- 显示欢迎信息和系统状态
+- 列出模块和适配器状态
+- 运行配置向导
+- 初始化新项目
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 显示欢迎信息
+sdk.ux.welcome("2.3.0")
+
+# 显示系统状态概览
+sdk.ux.show_status()
+
+# 列出所有模块状态
+sdk.ux.list_modules(detailed=True)
+
+# 列出所有适配器状态
+sdk.ux.list_adapters(detailed=True)
+
+# 运行配置向导
+sdk.ux.configure_wizard()
+
+# 初始化新项目
+sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+```
+
+### 命令行使用
+
+```bash
+# 初始化新项目
+epsdk init -n MyBot -a yunhu
+
+# 查看系统状态
+epsdk status
+
+# 查看模块详细信息
+epsdk status -t modules
+
+# 查看适配器详细信息
+epsdk status -t adapters
+
+# 运行配置向导
+epsdk config-wizard
+```
+
+### 用户体验管理器方法
+
+| 方法 | 描述 | 示例 |
+|------|------|------|
+| `welcome(version)` | 显示框架欢迎信息 | `sdk.ux.welcome("2.3.0")` |
+| `show_status()` | 显示系统状态概览 | `sdk.ux.show_status()` |
+| `list_modules(detailed=False)` | 列出所有模块状态 | `sdk.ux.list_modules(True)` |
+| `list_adapters(detailed=False)` | 列出所有适配器状态 | `sdk.ux.list_adapters(True)` |
+| `configure_wizard()` | 运行配置向导 | `sdk.ux.configure_wizard()` |
+| `init_project(project_name, adapter_list=None)` | 初始化新项目 | `sdk.ux.init_project("MyBot", ["yunhu"])` |
 
 
 ---
@@ -3115,6 +3245,7 @@ await mail.Send.Using("from@example.com")
 
 ## API文档目录
 
+- [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
 - [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
 - [ErisPulse\Core\Bases\module.md](#ErisPulse_Core_Bases_module)
 - [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
@@ -3125,32 +3256,61 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse\Core\Event\meta.md](#ErisPulse_Core_Event_meta)
 - [ErisPulse\Core\Event\notice.md](#ErisPulse_Core_Event_notice)
 - [ErisPulse\Core\Event\request.md](#ErisPulse_Core_Event_request)
+- [ErisPulse\Core\_self_config.md](#ErisPulse_Core__self_config)
 - [ErisPulse\Core\adapter.md](#ErisPulse_Core_adapter)
 - [ErisPulse\Core\config.md](#ErisPulse_Core_config)
-- [ErisPulse\Core\erispulse_config.md](#ErisPulse_Core_erispulse_config)
 - [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
 - [ErisPulse\Core\lifecycle.md](#ErisPulse_Core_lifecycle)
 - [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
 - [ErisPulse\Core\module.md](#ErisPulse_Core_module)
 - [ErisPulse\Core\router.md](#ErisPulse_Core_router)
 - [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
+- [ErisPulse\Core\ux.md](#ErisPulse_Core_ux)
 - [ErisPulse\__init__.md](#ErisPulse___init__)
 - [ErisPulse\__main__.md](#ErisPulse___main__)
+- [ErisPulse\utils\__init__.md](#ErisPulse_utils___init__)
+- [ErisPulse\utils\cli.md](#ErisPulse_utils_cli)
+- [ErisPulse\utils\package_manager.md](#ErisPulse_utils_package_manager)
+- [ErisPulse\utils\reload_handler.md](#ErisPulse_utils_reload_handler)
 
 ---
 
-<a id="ErisPulse_Core_Bases_adapter"></a>
-## ErisPulse\Core\Bases\adapter.md
+<a id="ErisPulse_Core_Bases___init__"></a>
+## ErisPulse\Core\Bases\__init__.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
 ## 模块概述
 
 
-该模块暂无概述信息。
+ErisPulse 基础模块
+
+提供核心基类定义，包括适配器和模块基类
+
+---
+
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_Core_Bases_adapter"></a>
+## ErisPulse\Core\Bases\adapter.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 适配器基础模块
+
+提供适配器和消息发送DSL的基类实现
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 用于实现与不同平台的交互接口
+2. 提供统一的消息发送DSL风格接口</p></div>
 
 ---
 
@@ -3280,20 +3440,22 @@ await mail.Send.Using("from@example.com")
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Bases_module"></a>
 ## ErisPulse\Core\Bases\module.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
 ## 模块概述
 
 
-该模块暂无概述信息。
+ErisPulse 模块基础模块
+
+提供模块基类定义和标准接口
 
 ---
 
@@ -3301,7 +3463,9 @@ await mail.Send.Using("from@example.com")
 
 ### `class BaseModule`
 
-    BaseModule 类提供相关功能。
+    模块基类
+
+提供模块加载和卸载的标准接口
 
     
 #### 方法列表
@@ -3339,13 +3503,13 @@ await mail.Send.Using("from@example.com")
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event___init__"></a>
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3378,13 +3542,13 @@ ErisPulse 事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3469,13 +3633,13 @@ ErisPulse 事件处理基础模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_command"></a>
 ## ErisPulse\Core\Event\command.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3497,7 +3661,9 @@ ErisPulse 命令处理模块
 
 ### `class CommandHandler`
 
-    CommandHandler 类提供相关功能。
+    命令处理器
+
+提供命令注册、处理和管理功能
 
     
 #### 方法列表
@@ -3635,13 +3801,13 @@ ErisPulse 命令处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3684,13 +3850,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3711,7 +3877,9 @@ ErisPulse 消息处理模块
 
 ### `class MessageHandler`
 
-    MessageHandler 类提供相关功能。
+    消息事件处理器
+
+提供不同类型消息事件的处理功能
 
     
 #### 方法列表
@@ -3797,13 +3965,13 @@ ErisPulse 消息处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3823,7 +3991,9 @@ ErisPulse 元事件处理模块
 
 ### `class MetaHandler`
 
-    MetaHandler 类提供相关功能。
+    元事件处理器
+
+提供元事件处理功能，如连接、断开连接等
 
     
 #### 方法列表
@@ -3909,13 +4079,13 @@ ErisPulse 元事件处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -3935,7 +4105,9 @@ ErisPulse 通知处理模块
 
 ### `class NoticeHandler`
 
-    NoticeHandler 类提供相关功能。
+    通知事件处理器
+
+提供通知事件处理功能
 
     
 #### 方法列表
@@ -4039,13 +4211,13 @@ ErisPulse 通知处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4065,7 +4237,9 @@ ErisPulse 请求处理模块
 
 ### `class RequestHandler`
 
-    RequestHandler 类提供相关功能。
+    请求事件处理器
+
+提供请求事件处理功能
 
     
 #### 方法列表
@@ -4133,13 +4307,84 @@ ErisPulse 请求处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_Core__self_config"></a>
+## ErisPulse\Core\_self_config.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse 框架配置管理
+
+专门管理 ErisPulse 框架自身的配置项。
+
+---
+
+## 函数列表
+
+### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
+
+确保 ErisPulse 配置结构完整，补全缺失的配置项
+
+:param config_dict: 当前配置
+:return: 补全后的完整配置
+
+---
+
+### `get_erispulse_config()`
+
+获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+
+:return: 完整的 ErisPulse 配置字典
+
+---
+
+### `update_erispulse_config(new_config: Dict[str, Any])`
+
+更新 ErisPulse 配置，自动补全缺失的配置项
+
+:param new_config: 新的配置字典
+:return: 是否更新成功
+
+---
+
+### `get_server_config()`
+
+获取服务器配置，确保结构完整
+
+:return: 服务器配置字典
+
+---
+
+### `get_logger_config()`
+
+获取日志配置，确保结构完整
+
+:return: 日志配置字典
+
+---
+
+### `get_storage_config()`
+
+获取存储模块配置
+
+:return: 存储配置字典
+
+---
+
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4178,7 +4423,7 @@ ErisPulse 适配器系统
 :return: 注册是否成功
 
 <dt>异常</dt><dd><code>TypeError</code> 当适配器类无效时抛出</dd>
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -4188,14 +4433,23 @@ ErisPulse 适配器系统
 
     ---
     
-##### async `async startup(platforms: List[str] = None)`
+##### `_register_platform_attributes(platform: str, instance: BaseAdapter)`
+
+    注册平台名称的多种大小写形式作为属性
+
+:param platform: 平台名称
+:param instance: 适配器实例
+
+    ---
+    
+##### async `async startup(platforms = None)`
 
     启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
 <dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -4338,7 +4592,7 @@ ErisPulse 适配器系统
     提交OneBot12协议事件到指定平台
 
 :param data: 符合OneBot12标准的事件数据
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -4363,7 +4617,7 @@ ErisPulse 适配器系统
 
 :param platform: 平台名称
 :return: 适配器实例或None
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -4378,7 +4632,7 @@ ErisPulse 适配器系统
     获取所有已注册的平台列表
 
 :return: 平台名称列表
-    
+
 <details class='example'><summary>示例</summary>
 
 ```python
@@ -4407,13 +4661,13 @@ ErisPulse 适配器系统
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4424,6 +4678,7 @@ ErisPulse 配置中心
 
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
+添加内存缓存和延迟写入机制以提高性能
 
 ---
 
@@ -4436,94 +4691,68 @@ ErisPulse 配置中心
     
 #### 方法列表
 
+##### `_load_config()`
+
+    从文件加载配置到缓存
+
+    ---
+    
+##### `_flush_config()`
+
+    将待写入的配置刷新到文件
+
+    ---
+    
+##### `_schedule_write()`
+
+    安排延迟写入
+
+    ---
+    
+##### `_check_cache_validity()`
+
+    检查缓存有效性，必要时重新加载
+
+    ---
+    
 ##### `getConfig(key: str, default: Any = None)`
 
-    获取模块/适配器配置项
+    获取模块/适配器配置项（优先从缓存获取）
 :param key: 配置项的键(支持点分隔符如"module.sub.key")
 :param default: 默认值
 :return: 配置项的值
 
     ---
     
-##### `setConfig(key: str, value: Any)`
+##### `setConfig(key: str, value: Any, immediate: bool = False)`
 
-    设置模块/适配器配置
+    设置模块/适配器配置（缓存+延迟写入）
 :param key: 配置项键名(支持点分隔符如"module.sub.key")
 :param value: 配置项值
+:param immediate: 是否立即写入磁盘（默认为False，延迟写入）
 :return: 操作是否成功
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+##### `force_save()`
 
-<a id="ErisPulse_Core_erispulse_config"></a>
-## ErisPulse\Core\erispulse_config.md
+    强制立即保存所有待写入的配置到磁盘
 
+    ---
+    
+##### `reload()`
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+    重新从磁盘加载配置，丢弃所有未保存的更改
 
----
-
-## 模块概述
-
-
-ErisPulse 框架配置管理
-
-专门管理 ErisPulse 框架自身的配置项。
-
----
-
-## 函数列表
-
-### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
-
-确保 ErisPulse 配置结构完整，补全缺失的配置项
-
-:param config_dict: 当前配置
-:return: 补全后的完整配置
-
----
-
-### `get_erispulse_config()`
-
-获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
-
-:return: 完整的 ErisPulse 配置字典
-
----
-
-### `update_erispulse_config(new_config: Dict[str, Any])`
-
-更新 ErisPulse 配置，自动补全缺失的配置项
-
-:param new_config: 新的配置字典
-:return: 是否更新成功
-
----
-
-### `get_server_config()`
-
-获取服务器配置，确保结构完整
-
-:return: 服务器配置字典
-
----
-
-### `get_logger_config()`
-
-获取日志配置，确保结构完整
-
-:return: 日志配置字典
-
----
-
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4590,13 +4819,13 @@ ErisPulse 全局异常处理系统
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_lifecycle"></a>
 ## ErisPulse\Core\lifecycle.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4694,13 +4923,13 @@ ErisPulse 生命周期管理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4778,7 +5007,7 @@ ErisPulse 日志系统
 
     ---
     
-##### `get_logs(module_name: str = None)`
+##### `get_logs(module_name: str = 'Unknown')`
 
     获取日志内容
 
@@ -4787,12 +5016,24 @@ ErisPulse 日志系统
 
     ---
     
-##### `get_child(child_name: str = None)`
+##### `get_child(child_name: str = 'UnknownChild')`
 
     获取子日志记录器
 
 :param child_name: 子模块名称(可选)
 :return: LoggerChild 子日志记录器实例
+
+    ---
+    
+##### `critical(msg)`
+
+    记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是最高级别的日志，表示严重系统错误
+2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+3. 会在日志文件中添加 CRITICAL 标记便于后续分析</p></div>
 
     ---
     
@@ -4814,6 +5055,18 @@ ErisPulse 日志系统
 
     ---
     
+##### `critical(msg)`
+
+    记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是最高级别的日志，表示严重系统错误
+2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+3. 会在日志文件中添加 CRITICAL 标记便于后续分析</p></div>
+
+    ---
+    
 ##### `get_child(child_name: str)`
 
     获取子日志记录器的子记录器
@@ -4823,13 +5076,13 @@ ErisPulse 日志系统
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_module"></a>
 ## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -4893,7 +5146,7 @@ ErisPulse 模块系统
 
     ---
     
-##### async `async unload(module_name: str = None)`
+##### async `async unload(module_name: str = 'Unknown')`
 
     卸载指定模块或所有模块
 
@@ -5055,13 +5308,13 @@ ErisPulse 模块系统
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -5179,13 +5432,22 @@ ErisPulse 路由系统
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+##### `_format_display_url(url: str)`
+
+    格式化URL显示，将回环地址转换为更友好的格式
+
+:param url: 原始URL
+:return: 格式化后的URL
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -5196,6 +5458,16 @@ ErisPulse 存储管理模块
 
 提供键值存储、事务支持、快照和恢复功能，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+
+支持两种数据库模式：
+1. 项目数据库（默认）：位于项目目录下的 config/config.db
+2. 全局数据库：位于包内的 ../data/config.db
+
+用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
+```toml
+[ErisPulse.storage]
+use_global_db = true
+```
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
@@ -5211,6 +5483,16 @@ ErisPulse 存储管理模块
 
 单例模式实现，提供键值存储的增删改查、事务和快照管理
 
+支持两种数据库模式：
+1. 项目数据库（默认）：位于项目目录下的 config/config.db
+2. 全局数据库：位于包内的 ../data/config.db
+
+用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
+```toml
+[ErisPulse.storage]
+use_global_db = true
+```
+
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 使用get/set方法操作存储项
 2. 使用transaction上下文管理事务
 3. 使用snapshot/restore管理数据快照</p></div>
@@ -5218,6 +5500,12 @@ ErisPulse 存储管理模块
     
 #### 方法列表
 
+##### `_ensure_directories()`
+
+    确保必要的目录存在
+
+    ---
+    
 ##### `_init_db()`
 
     <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
@@ -5425,7 +5713,7 @@ ErisPulse 存储管理模块
 :param key: 存储项键名
 :return: 存储项的值
 
-<dt>异常</dt><dd><code>KeyError</code> 当存储项不存在时抛出</dd>
+<dt>异常</dt><dd><code>AttributeError</code> 当存储项不存在时抛出</dd>
     
 <details class='example'><summary>示例</summary>
 
@@ -5519,13 +5807,117 @@ ErisPulse 存储管理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_Core_ux"></a>
+## ErisPulse\Core\ux.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse UX优化模块
+
+提供更友好的初始化和API接口，简化常用操作
+
+---
+
+## 类列表
+
+### `class UXManager`
+
+    UX优化管理器
+
+提供用户友好的界面和简化操作
+
+    
+#### 方法列表
+
+##### async `async _fetch_available_adapters()`
+
+    从云端获取可用适配器列表
+
+:return: 适配器名称到描述的映射
+
+    ---
+    
+##### `welcome(version: str = None)`
+
+    显示欢迎信息
+
+:param version: 框架版本号
+
+    ---
+    
+##### `show_status()`
+
+    显示系统状态概览
+
+    ---
+    
+##### `list_modules(detailed: bool = False)`
+
+    列出所有模块状态
+
+:param detailed: 是否显示详细信息
+
+    ---
+    
+##### `list_adapters(detailed: bool = False)`
+
+    列出所有适配器状态
+
+:param detailed: 是否显示详细信息
+
+    ---
+    
+##### `init_project(project_name: str, adapter_list: List[str] = None)`
+
+    初始化新项目
+
+:param project_name: 项目名称
+:param adapter_list: 需要初始化的适配器列表
+:return: 是否初始化成功
+
+    ---
+    
+##### `interactive_init(project_name: str = None, force: bool = False)`
+
+    交互式初始化项目，包括项目创建和配置设置
+
+:param project_name: 项目名称，可为None
+:param force: 是否强制覆盖现有配置
+:return: 是否初始化成功
+
+    ---
+    
+##### `_configure_adapters_interactive_sync(project_path: str = None)`
+
+    交互式配置适配器的同步版本，从云端获取适配器列表
+
+:param project_path: 项目路径，用于加载项目特定的配置
+
+    ---
+    
+##### async `async _configure_adapters_interactive(project_path: str = None)`
+
+    交互式配置适配器，从云端获取适配器列表
+
+:param project_path: 项目路径，用于加载项目特定的配置
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -5663,131 +6055,20 @@ SDK重新启动
 
     ---
     
+##### `_ensure_initialized()`
+
+    确保模块已初始化
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块未初始化时抛出</dd>
+
+    ---
+    
 ##### `__getattr__(name: str)`
 
     属性访问时触发初始化
 
 :param name: str 属性名
 :return: Any 属性值
-
-    ---
-    
-##### `__call__()`
-
-    调用时触发初始化
-
-:param args: 位置参数
-:param kwargs: 关键字参数
-:return: Any 调用结果
-
-    ---
-    
-##### `__repr__()`
-
-    返回模块表示字符串
-
-:return: str 表示字符串
-
-    ---
-    
-##### `__str__()`
-
-    返回模块字符串表示
-
-:return: str 字符串表示
-
-    ---
-    
-##### `__dir__()`
-
-    返回模块属性列表
-
-:return: List[str] 属性列表
-
-    ---
-    
-##### `__getitem__(key)`
-
-    支持索引访问
-
-:param key: 索引键
-:return: 对应值
-
-    ---
-    
-##### `__setitem__(key, value)`
-
-    支持索引赋值
-
-:param key: 索引键
-:param value: 赋值内容
-
-    ---
-    
-##### `__delitem__(key)`
-
-    支持索引删除
-
-:param key: 索引键
-
-    ---
-    
-##### `__contains__(item)`
-
-    支持成员检查
-
-:param item: 检查项
-:return: bool 是否包含
-
-    ---
-    
-##### `__iter__()`
-
-    支持迭代
-
-:return: 迭代器
-
-    ---
-    
-##### `__len__()`
-
-    支持长度获取
-
-:return: int 长度
-
-    ---
-    
-##### `__bool__()`
-
-    支持布尔值判断
-
-:return: bool 布尔值
-
-    ---
-    
-##### `__eq__(other)`
-
-    支持相等性比较
-
-:param other: 比较对象
-:return: bool 是否相等
-
-    ---
-    
-##### `__ne__(other)`
-
-    支持不等性比较
-
-:param other: 比较对象
-:return: bool 是否不等
-
-    ---
-    
-##### `__hash__()`
-
-    支持哈希计算
-
-:return: int 哈希值
 
     ---
     
@@ -5810,19 +6091,32 @@ SDK重新启动
     
 ##### `__getattribute__(name: str)`
 
-    属性访问
+    属性访问，初始化后直接委托给实际实例
 
 :param name: str 属性名
 :return: Any 属性值
 
     ---
     
-##### `__deepcopy__(memo)`
+##### `__dir__()`
 
-    深拷贝时返回自身，保持懒加载特性
+    返回模块属性列表
 
-:param memo: memo
-:return: self
+:return: List[str] 属性列表
+
+    ---
+    
+##### `__repr__()`
+
+    返回模块表示字符串
+
+:return: str 表示字符串
+
+    ---
+    
+##### `__call__()`
+
+    代理函数调用
 
     ---
     
@@ -5976,13 +6270,13 @@ SDK重新启动
 
     ---
     
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-08-30 06:55:36</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -6009,6 +6303,42 @@ CLI入口点
 
 ---
 
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_utils___init__"></a>
+## ErisPulse\utils\__init__.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 工具模块
+
+包含各种辅助工具和实用程序。
+
+---
+
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_utils_cli"></a>
+## ErisPulse\utils\cli.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+该模块暂无概述信息。
+
+---
+
 ## 类列表
 
 ### `class CommandHighlighter(RegexHighlighter)`
@@ -6018,6 +6348,161 @@ CLI入口点
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
 
     
+### `class CLI`
+
+    ErisPulse命令行接口
+
+提供完整的命令行交互功能
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持动态加载第三方命令
+2. 支持模块化子命令系统</p></div>
+
+    
+#### 方法列表
+
+##### `__init__()`
+
+    初始化CLI
+
+    ---
+    
+##### `_create_parser()`
+
+    创建命令行参数解析器
+
+:return: 配置好的ArgumentParser实例
+
+    ---
+    
+##### `_get_external_commands()`
+
+    获取所有已注册的第三方命令名称
+
+:return: 第三方命令名称列表
+
+    ---
+    
+##### `_load_external_commands(subparsers)`
+
+    加载第三方CLI命令
+
+:param subparsers: 子命令解析器
+
+<dt>异常</dt><dd><code>ImportError</code> 加载命令失败时抛出</dd>
+
+    ---
+    
+##### `_print_version()`
+
+    打印版本信息
+
+    ---
+    
+##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
+
+    打印已安装包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli/all)
+:param outdated_only: 是否只显示可升级的包
+
+    ---
+    
+##### `_print_remote_packages(pkg_type: str)`
+
+    打印远程包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli/all)
+
+    ---
+    
+##### `_is_package_outdated(package_name: str, current_version: str)`
+
+    检查包是否过时
+
+:param package_name: 包名
+:param current_version: 当前版本
+:return: 是否有新版本可用
+
+    ---
+    
+##### `_resolve_package_name(short_name: str)`
+
+    解析简称到完整包名（大小写不敏感）
+
+:param short_name: 模块/适配器简称
+:return: 完整包名，未找到返回None
+
+    ---
+    
+##### `_print_search_results(query: str, results: Dict[str, List[Dict[str, str]]])`
+
+    打印搜索结果
+
+:param query: 搜索关键词
+:param results: 搜索结果
+
+    ---
+    
+##### `_print_version_list(versions: List[Dict[str, Any]], include_pre: bool = False)`
+
+    打印版本列表
+
+:param versions: 版本信息列表
+:param include_pre: 是否包含预发布版本
+
+    ---
+    
+##### `_setup_watchdog(script_path: str, reload_mode: bool)`
+
+    设置文件监控
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+    ---
+    
+##### `_cleanup()`
+
+    清理资源
+
+    ---
+    
+##### `run()`
+
+    运行CLI
+
+<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户中断时抛出</dd>
+<dt>异常</dt><dd><code>Exception</code> 命令执行失败时抛出</dd>
+
+    ---
+    
+##### `_cleanup_adapters()`
+
+    清理适配器资源
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_utils_package_manager"></a>
+## ErisPulse\utils\package_manager.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 包管理器
+
+提供包安装、卸载、升级和查询功能
+
+---
+
+## 类列表
+
 ### `class PackageManager`
 
     ErisPulse包管理器
@@ -6239,6 +6724,27 @@ CLI入口点
 
     ---
     
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+
+<a id="ErisPulse_utils_reload_handler"></a>
+## ErisPulse\utils\reload_handler.md
+
+
+<sup>更新时间: 2025-12-21 14:28:48</sup>
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 热重载处理器
+
+实现热重载功能，监控文件变化并重启进程
+
+---
+
+## 类列表
+
 ### `class ReloadHandler(FileSystemEventHandler)`
 
     文件系统事件处理器
@@ -6290,140 +6796,6 @@ CLI入口点
 
     ---
     
-### `class CLI`
-
-    ErisPulse命令行接口
-
-提供完整的命令行交互功能
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 支持动态加载第三方命令
-2. 支持模块化子命令系统</p></div>
-
-    
-#### 方法列表
-
-##### `__init__()`
-
-    初始化CLI
-
-    ---
-    
-##### `_create_parser()`
-
-    创建命令行参数解析器
-
-:return: 配置好的ArgumentParser实例
-
-    ---
-    
-##### `_get_external_commands()`
-
-    获取所有已注册的第三方命令名称
-
-:return: 第三方命令名称列表
-
-    ---
-    
-##### `_load_external_commands(subparsers)`
-
-    加载第三方CLI命令
-
-:param subparsers: 子命令解析器
-
-<dt>异常</dt><dd><code>ImportError</code> 加载命令失败时抛出</dd>
-
-    ---
-    
-##### `_print_version()`
-
-    打印版本信息
-
-    ---
-    
-##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
-
-    打印已安装包信息
-
-:param pkg_type: 包类型 (modules/adapters/cli/all)
-:param outdated_only: 是否只显示可升级的包
-
-    ---
-    
-##### `_print_remote_packages(pkg_type: str)`
-
-    打印远程包信息
-
-:param pkg_type: 包类型 (modules/adapters/cli/all)
-
-    ---
-    
-##### `_is_package_outdated(package_name: str, current_version: str)`
-
-    检查包是否过时
-
-:param package_name: 包名
-:param current_version: 当前版本
-:return: 是否有新版本可用
-
-    ---
-    
-##### `_resolve_package_name(short_name: str)`
-
-    解析简称到完整包名（大小写不敏感）
-
-:param short_name: 模块/适配器简称
-:return: 完整包名，未找到返回None
-
-    ---
-    
-##### `_print_search_results(query: str, results: Dict[str, List[Dict[str, str]]])`
-
-    打印搜索结果
-
-:param query: 搜索关键词
-:param results: 搜索结果
-
-    ---
-    
-##### `_print_version_list(versions: List[Dict[str, Any]], include_pre: bool = False)`
-
-    打印版本列表
-
-:param versions: 版本信息列表
-:param include_pre: 是否包含预发布版本
-
-    ---
-    
-##### `_setup_watchdog(script_path: str, reload_mode: bool)`
-
-    设置文件监控
-
-:param script_path: 要监控的脚本路径
-:param reload_mode: 是否启用重载模式
-
-    ---
-    
-##### `_cleanup()`
-
-    清理资源
-
-    ---
-    
-##### `run()`
-
-    运行CLI
-
-<dt>异常</dt><dd><code>KeyboardInterrupt</code> 用户中断时抛出</dd>
-<dt>异常</dt><dd><code>Exception</code> 命令执行失败时抛出</dd>
-
-    ---
-    
-##### `_cleanup_adapters()`
-
-    清理适配器资源
-
-    ---
-    
-<sub>文档最后更新于 2025-08-30 06:55:36</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
 
 ---
