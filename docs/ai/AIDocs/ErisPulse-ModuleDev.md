@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2025-08-20 19:28:29
+**生成时间**: 2025-12-21 14:29:04
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -149,6 +149,39 @@ uv pip install ErisPulse --upgrade  # 安装框架
 
 ## 初始化项目
 
+有两种方式初始化项目：
+
+### 交互式初始化（推荐）
+
+1. 使用 epsdk init 启动交互式初始化：
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+如果您只需要快速创建项目结构，可以使用快速模式：
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称，仍然会有基本交互
+epsdk init -n my_bot
+```
+
+### 传统方式
+
+如果您更喜欢传统方式：
+
 1. 创建项目目录并进入：
 
 ```bash
@@ -157,10 +190,40 @@ mkdir my_bot && cd my_bot
 
 2. 初始化 SDK 并生成配置文件：
 
-```bsah
+```bash
 ep-init
 ```
-这将在当前目录下生成 `config.yml` 和 `main.py` 入口。
+这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
+
+### 查看系统状态
+
+在项目目录中，你可以使用以下命令查看系统状态：
+
+```bash
+# 查看所有组件状态
+epsdk status
+
+# 查看详细模块信息
+epsdk status -t modules
+
+# 查看详细适配器信息
+epsdk status -t adapters
+```
 
 ---
 
@@ -256,8 +319,11 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
+| `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
+| `ux`/`sdk.ux` | 用户体验管理器 |
+| `UXManager`/`sdk.UXManager` | UX管理器类 |
 
-> 注意: `Event` 模块是 ErisPulse 2.2.0 引入的新模块,发布模块时请注意提醒用户兼容性问题
+> 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 Event 模块包含以下子模块：
 
 | 子模块 | 用途 |
@@ -274,7 +340,7 @@ Event 模块包含以下子模块：
 from ErisPulse.Core import (
         storage, config, module_registry,
         adapter, module, logger,
-        BaseAdapter, Event
+        BaseAdapter, Event, lifecycle
     )
 
 # 通过SDK对象方式
@@ -525,11 +591,123 @@ async def connect_handler(event):
     sdk.logger.info(f"平台连接成功: {event['platform']}")
 ```
 
+## 8. 生命周期管理 (lifecycle)
+
+生命周期管理模块提供了统一的生命周期事件管理和触发机制。所有核心组件和第三方模块都可以通过此模块提交和监听生命周期事件。
+
+### 主要功能
+
+- 生命周期事件注册和监听
+- 标准化生命周期事件格式
+- 点式结构事件监听（例如 `module.init` 可以被 `module` 监听到）
+- 自定义事件支持
+- 事件计时器功能
+
+### 事件标准格式
+
+所有生命周期事件都遵循以下标准格式：
+
+```json
+{
+    "event": "事件名称",
+    "timestamp": 1234567890,
+    "data": {
+        // 事件相关数据
+    },
+    "source": "事件来源模块",
+    "msg": "事件描述"
+}
+```
+
+### 事件处理机制
+
+#### 点式结构事件
+ErisPulse 支持点式结构的事件命名，例如 `module.init`。当触发具体事件时，也会触发其父级事件：
+- 触发 `module.init` 事件时，也会触发 `module` 事件
+- 触发 `adapter.status.change` 事件时，也会触发 `adapter.status` 和 `adapter` 事件
+
+#### 通配符事件处理器
+可以注册 `*` 事件处理器来捕获所有事件。
+
+### 标准生命周期事件
+
+#### 核心初始化事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `core.init.start` | 核心初始化开始时 | `{}` |
+| `core.init.complete` | 核心初始化完成时 | `{"duration": "初始化耗时(秒)", "success": true/false}` |
+
+#### 模块生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `module.load` | 模块加载完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.init` | 模块初始化完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.unload` | 模块卸载时 | `{"module_name": "模块名", "success": true/false}` |
+
+#### 适配器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `adapter.load` | 适配器加载完成时 | `{"platform": "平台名", "success": true/false}` |
+| `adapter.start` | 适配器开始启动时 | `{"platforms": ["平台名列表"]}` |
+| `adapter.status.change` | 适配器状态发生变化时 | `{"platform": "平台名", "status": "状态(starting/started/start_failed/stopping/stopped)", "retry_count": 重试次数(可选), "error": "错误信息(可选)"}` |
+| `adapter.stop` | 适配器开始关闭时 | `{}` |
+| `adapter.stopped` | 适配器关闭完成时 | `{}` |
+
+#### 服务器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `server.start` | 服务器启动时 | `{"base_url": "基础url","host": "主机地址", "port": "端口号"}` |
+| `server.stop` | 服务器停止时 | `{}` |
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 监听模块初始化事件
+@sdk.lifecycle.on("module.init")
+async def module_init_handler(event_data):
+    print(f"模块 {event_data['data']['module_name']} 初始化完成")
+
+# 监听适配器状态变化事件
+@sdk.lifecycle.on("adapter.status.change")
+async def adapter_status_handler(event_data):
+    status_data = event_data['data']
+    print(f"适配器 {status_data['platform']} 状态变化为: {status_data['status']}")
+
+# 提交自定义生命周期事件
+await sdk.lifecycle.submit_event(
+    "custom.event",
+    data={"custom_field": "custom_value"},
+    source="MyModule",
+    msg="自定义事件描述"
+)
+
+# 使用计时器功能
+sdk.lifecycle.start_timer("my_operation")
+# ... 执行一些操作 ...
+duration = sdk.lifecycle.stop_timer("my_operation")
+print(f"操作耗时: {duration} 秒")
+```
+
+### 第三方模块集成
+
+生命周期模块是第三方模块也可以使用的核心模块。第三方模块可以通过此模块：
+
+1. 提交自定义生命周期事件
+2. 监听标准或自定义生命周期事件
+3. 利用计时器功能测量操作耗时
+
 ## 模块使用规范
 
 - 所有模块通过 `sdk` 对象统一管理
 - 每个模块拥有独立命名空间，使用 `sdk` 进行调用
 - 可以在模块间使用 `sdk.<module_name>.<func>` 的方式调用其他模块中的方法
+- 生命周期事件可用于模块间通信和状态同步
 
 ## 配置管理
 
@@ -560,6 +738,71 @@ level = "INFO"
 log_files = []
 memory_limit = 1000
 ```
+
+## 9. 用户体验管理 (ux)
+
+用户体验管理器提供了友好的界面和简化的操作方法。
+
+### 主要功能
+
+- 显示欢迎信息和系统状态
+- 列出模块和适配器状态
+- 运行配置向导
+- 初始化新项目
+
+### 使用示例
+
+```python
+from ErisPulse import sdk
+
+# 显示欢迎信息
+sdk.ux.welcome("2.3.0")
+
+# 显示系统状态概览
+sdk.ux.show_status()
+
+# 列出所有模块状态
+sdk.ux.list_modules(detailed=True)
+
+# 列出所有适配器状态
+sdk.ux.list_adapters(detailed=True)
+
+# 运行配置向导
+sdk.ux.configure_wizard()
+
+# 初始化新项目
+sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+```
+
+### 命令行使用
+
+```bash
+# 初始化新项目
+epsdk init -n MyBot -a yunhu
+
+# 查看系统状态
+epsdk status
+
+# 查看模块详细信息
+epsdk status -t modules
+
+# 查看适配器详细信息
+epsdk status -t adapters
+
+# 运行配置向导
+epsdk config-wizard
+```
+
+### 用户体验管理器方法
+
+| 方法 | 描述 | 示例 |
+|------|------|------|
+| `welcome(version)` | 显示框架欢迎信息 | `sdk.ux.welcome("2.3.0")` |
+| `show_status()` | 显示系统状态概览 | `sdk.ux.show_status()` |
+| `list_modules(detailed=False)` | 列出所有模块状态 | `sdk.ux.list_modules(True)` |
+| `list_adapters(detailed=False)` | 列出所有适配器状态 | `sdk.ux.list_adapters(True)` |
+| `configure_wizard()` | 运行配置向导 | `sdk.ux.configure_wizard()` |
+| `init_project(project_name, adapter_list=None)` | 初始化新项目 | `sdk.ux.init_project("MyBot", ["yunhu"])` |
 
 
 ---
@@ -1068,26 +1311,33 @@ from .Core import Main
 
 ## 4. `MyModule/Core.py` 文件
 
-实现模块主类 `Main`, 其中 `sdk` 参数的传入在 `2.x.x`版本 中不再是必须的
+实现模块主类 `Main`，必须继承 `BaseModule` 基类以获得标准化的生命周期管理功能。
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.Event import command
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-
-        self.logger.info("模块已加载")
+        
         self.config = self._get_config()
-        self._register_commands()
 
     @staticmethod
     def should_eager_load():
         # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
         return False
+    
+    async def on_load(self, event):
+        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
+        self.logger.info("模块已加载")
+        
+    async def on_unload(self, event):
+        command.unregister(self.ACommand)
+        self.logger.info("模块已卸载")
 
     # 从 config.toml 中获取配置, 如果不存在则使用默认值
     def _get_config(self):
@@ -1101,16 +1351,11 @@ class Main:
             return default_config
         return config
 
-    # 注册命令
-    async def _register_commands(self):
-        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
-
     async def ACommand(self):
         self.logger.info("命令已执行")
 
     def print_hello(self):
         self.logger.info("Hello World!")
-
 ```
 
 - 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
@@ -1123,11 +1368,19 @@ sdk.MyModule.print_hello()
 # epsdk run main.py --reload
 ```
 
-## 5. 模块路由注册
+### BaseModule 基类
+方法说明
+| 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
+| --- | --- | --- | --- | --- |
+| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载 | 否 | 无 | bool |
+| on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
+| on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
+
+## 6. 模块路由注册
 
 从 ErisPulse 2.1.15 版本开始，模块也可以注册自己的 HTTP/WebSocket 路由，用于提供 Web API 或实时通信功能。
 
-### 5.1 HTTP 路由注册
+### 6.1 HTTP 路由注册
 
 模块可以注册 HTTP 路由来提供 REST API 接口：
 
@@ -1135,10 +1388,11 @@ sdk.MyModule.print_hello()
 from ErisPulse import sdk
 from fastapi import Request
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         
         # 注册模块路由
@@ -1179,7 +1433,7 @@ class Main:
         self.logger.info("模块路由注册完成")
 ```
 
-### 5.2 WebSocket 路由注册
+### 6.2 WebSocket 路由注册
 
 模块也可以注册 WebSocket 路由来实现实时通信功能：
 
@@ -1187,10 +1441,11 @@ class Main:
 from ErisPulse import sdk
 from fastapi import WebSocket, WebSocketDisconnect
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         self._connections = set()
         
@@ -1251,7 +1506,7 @@ class Main:
             self._connections.discard(conn)
 ```
 
-### 5.3 路由使用说明
+### 6.3 路由使用说明
 
 注册的路由将自动添加模块名称作为前缀：
 
@@ -1266,7 +1521,7 @@ POST http://localhost:8000/MyModule/process
 WebSocket 连接: ws://localhost:8000/MyModule/ws
 ```
 
-### 5.4 路由最佳实践
+### 6.4 路由最佳实践
 
 1. **路由命名规范**：
    - 使用清晰、描述性的路径名
@@ -1287,10 +1542,11 @@ WebSocket 连接: ws://localhost:8000/MyModule/ws
 from ErisPulse import sdk
 from fastapi import HTTPException
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
-        self.logger = sdk.logger
+        self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
         self._register_routes()
         
@@ -1313,7 +1569,7 @@ class Main:
         )
 ```
 
-## 6. `LICENSE` 文件
+## 7. `LICENSE` 文件
 `LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
 
 ---
@@ -1372,90 +1628,93 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 <a id="event-conversionmd"></a>
 ## 事件转换标准
 
-# ErisPulse 适配器标准化转换规范
+# 适配器标准化转换规范
 
 ## 1. 核心原则
 1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
 2. 明确扩展：平台特有功能必须添加 {platform}_ 前缀（如 yunhu_form）
-3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中
+3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中，原始事件类型必须保留在 {platform}_raw_type 字段中
 4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
 5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
 
-## 2. 基础字段规范
-### 2.1 必填字段（所有事件）
-|字段|类型|要求|
-|-|-|-|
-|id|string|必须存在，原始事件无ID时使用UUID生成|
-|time|int|10位秒级时间戳（毫秒级需转换）|
-|type|string|必须为 message/notice/request 之一|
-|platform|string|必须与适配器注册名完全一致|
-|self|object|必须包含 platform 和 user_id|
+## 2. 标准字段要求
 
-### 2.2 条件字段
-|字段|触发条件|示例|
-|-|-|-|
-|detail_type|所有事件必须|"group"/"private"|
-|sub_type|需要细分时|"invite"/"leave"|
-|message_id|消息事件|"msg_123"|
-|user_id|涉及用户|"user_456"|
-|group_id|群组事件|"group_789"|
+### 2.1 必须字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | 事件唯一标识符 |
+| time | integer | Unix时间戳（秒级） |
+| type | string | 事件类型 |
+| detail_type | string | 事件详细类型 |
+| platform | string | 平台名称 |
+| self | object | 机器人自身信息 |
+| self.platform | string | 平台名称 |
+| self.user_id | string | 机器人用户ID |
 
-### 2.3 非标准字段（非必须，但建议实现）
-|字段|触发类型|示例|
-|-|-|-|
-|user_nickname|涉及用户|"用户昵称"|
+### 2.2 消息事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | array | 消息段数组 |
+| alt_message | string | 消息段备用文本 |
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
 
-## 3. 完整事件模板
+### 2.3 通知事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| operator_id | string | 操作者ID（可选） |
+
+### 2.4 请求事件字段
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| user_id | string | 用户ID |
+| user_nickname | string | 用户昵称（可选） |
+| comment | string | 请求附言（可选） |
+
+## 3. 事件格式示例
+
 ### 3.1 消息事件 (message)
 ```json
 {
-  "id": "event_123",
-  "time": 1752241220,
+  "id": "1234567890",
+  "time": 1752241223,
   "type": "message",
   "detail_type": "group",
-  "sub_type": "",
   "platform": "yunhu",
   "self": {
     "platform": "yunhu",
     "user_id": "bot_123"
   },
-  "message_id": "msg_abc",
   "message": [
     {
       "type": "text",
-      "data": {"text": "你好"}
-    },
-    {
-      "type": "image",
       "data": {
-        "file_id": "img_xyz",
-        "url": "https://example.com/image.jpg",
-        "file_name": "example.jpg",
-        "size": 102400,
-        "width": 800,
-        "height": 600
+        "text": "抽奖 超级大奖"
       }
     }
   ],
-  "alt_message": "你好[图片]",
+  "alt_message": "抽奖 超级大奖",
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "group_id": "group_789",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "message.receive.normal",
   "yunhu_command": {
     "name": "抽奖",
     "args": "超级大奖"
   }
 }
 ```
+
 ### 3.2 通知事件 (notice)
 ```json
 {
-  "id": "event_456",
-  "time": 1752241221,
+  "id": "1234567891",
+  "time": 1752241224,
   "type": "notice",
   "detail_type": "group_member_increase",
-  "sub_type": "invite",
   "platform": "yunhu",
   "self": {
     "platform": "yunhu",
@@ -1466,13 +1725,15 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
   "group_id": "group_789",
   "operator_id": "",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "bot.followed"
 }
 ```
+
 ### 3.3 请求事件 (request)
 ```json
 {
-  "id": "event_789",
-  "time": 1752241222,
+  "id": "1234567892",
+  "time": 1752241225,
   "type": "request",
   "detail_type": "friend",
   "platform": "onebot11",
@@ -1484,96 +1745,83 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
   "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
+  "onebot11_raw_type": "request"  // onebot11原始事件类型就是 `request`
 }
 ```
-## 4. 消息段标准
-### 4.1 通用消息段
-|类型|必填字段|扩展字段|
-|-|-|-|
-|text|text|-|
-|image|url|file_name, size, width, height|
-|video|url|duration, file_name|
-|file|url|size, file_name|
 
-## 5. 错误处理规范
-### 5.1 字段缺失处理
-```python
-def safe_get(data: dict, key: str, default=None):
-    """安全获取字段并记录警告"""
-    if key not in data:
-        logger.warning(f"Missing field '{key}' in {data.get('eventType', 'unknown')}")
-    return data.get(key, default)
-```
-### 5.2 未知事件处理
+## 4. 消息段标准
+
+### 4.1 通用消息段
 ```json
 {
-  "id": "event_999",
+  "type": "text",
+  "data": {
+    "text": "Hello World"
+  }
+}
+```
+
+### 4.2 特殊消息段
+平台特有的消息段需要添加平台前缀：
+```json
+{
+  "type": "yunhu_form",
+  "data": {
+    "form_id": "123456"
+  }
+}
+```
+
+## 5. 未知事件处理
+
+对于无法识别的事件类型，应生成警告事件：
+```json
+{
+  "id": "1234567893",
   "time": 1752241223,
   "type": "unknown",
   "platform": "yunhu",
   "yunhu_raw": {...},
+  "yunhu_raw_type": "unknown",
   "warning": "Unsupported event type: special_event",
   "alt_message": "This event type is not supported by this system."
 }
 ```
-## 6. 时间戳转换标准
-```python
-def convert_timestamp(ts: Any) -> int:
-    """标准化时间戳处理"""
-    if isinstance(ts, str):
-        if len(ts) == 13:  # 毫秒级
-            return int(ts) // 1000
-        return int(ts)
-    elif isinstance(ts, (int, float)):
-        if ts > 9999999999:  # 毫秒级
-            return int(ts // 1000)
-        return int(ts)
-    return int(time.time())  # 默认当前时间
+
+## 6. 平台特性字段
+
+所有平台特有字段必须以平台名称作为前缀
+
+比如:
+- 云湖平台：`yunhu_`
+- Telegram平台：`telegram_`
+- OneBot11平台：`onebot11_`
+
+### 6.1 特有字段示例
+```json
+{
+  "yunhu_command": {
+    "name": "抽奖",
+    "args": "超级大奖"
+  },
+  "yunhu_form": {
+    "form_id": "123456"
+  },
+  "telegram_sticker": {
+    "file_id": "CAACAgIAAxkBAA..."
+  }
+}
 ```
+
 ## 7. 适配器实现检查清单
 - [ ] 所有标准字段已正确映射
 - [ ] 平台特有字段已添加前缀
 - [ ] 时间戳已转换为10位秒级
-- [ ] 原始数据保存在 {platform}_raw
+- [ ] 原始数据保存在 {platform}_raw, 原始事件类型已经保存到 {platform}_raw_type
 - [ ] 消息段的 alt_message 已生成
 - [ ] 所有事件类型已通过单元测试
 - [ ] 文档包含完整示例和说明
-## 8. 最佳实践示例
-### 云湖表单消息处理
-```python
-def _convert_form_message(self, raw_form: dict) -> dict:
-    """转换表单消息为标准格式"""
-    return {
-        "type": "yunhu_form",
-        "data": {
-            "id": raw_form.get("formId"),
-            "fields": [
-                {
-                    "id": field.get("fieldId"),
-                    "type": field.get("fieldType"),
-                    "label": field.get("label"),
-                    "value": field.get("value")
-                }
-                for field in raw_form.get("fields", [])
-            ]
-        }
-    }
-```
-### 消息ID生成规则
-```python
-def generate_message_id(platform: str, raw_id: str) -> str:
-    """标准化消息ID格式"""
-    return f"{platform}_msg_{raw_id}" if raw_id else f"{platform}_msg_{uuid.uuid4()}"
-```
-本规范确保所有适配器：
-1. 保持与OneBot12的完全兼容性
-2. 平台特有功能可识别且不冲突
-3. 转换过程可追溯（通过_raw字段）
-4. 数据类型和格式统一
-建议配合自动化测试验证所有转换场景，特别是：
-- 边界值测试（如空消息、超大文件）
-- 特殊字符测试（消息内容含emoji/特殊符号）
-- 压力测试（连续事件转换）
+
 
 
 ---
@@ -1728,12 +1976,12 @@ def generate_message_id(platform: str, raw_id: str) -> str:
 ### Send 链式调用
 所有适配器都支持以下标准调用方式：
 
-> **注意：** 文档中的 `<AdapterName>` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。
+> **注意：** 文档中的 `{AdapterName}` 需替换为实际适配器名称（如 `yunhu`、`telegram`、`onebot11`、`email` 等）。
 
 1. 指定类型和ID: `To(type,id).Func()`
    ```python
    # 获取适配器实例
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    
    # 发送消息
    await my_adapter.Send.To("user", "U1001").Text("Hello")
@@ -1744,7 +1992,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
    ```
 2. 仅指定ID: `To(id).Func()`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.To("U1001").Text("Hello")
    
    # 例如：
@@ -1753,7 +2001,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
    ```
 3. 指定发送账号: `Using(account_id)`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
    
    # 例如：
@@ -1762,7 +2010,7 @@ def generate_message_id(platform: str, raw_id: str) -> str:
    ```
 4. 直接调用: `Func()`
    ```python
-   my_adapter = adapter.get("<AdapterName>")
+   my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Text("Broadcast message")
    
    # 例如：
@@ -1776,7 +2024,7 @@ Send DSL 的方法返回 `asyncio.Task` 对象，这意味着您可以选择是�
 
 ```python
 # 获取适配器实例
-my_adapter = adapter.get("<AdapterName>")
+my_adapter = adapter.get("{AdapterName}")
 
 # 不等待结果，消息在后台发送
 task = my_adapter.Send.To("user", "123").Text("Hello")
@@ -1792,22 +2040,24 @@ result = await task
    ```python
    from ErisPulse.Core import adapter, logger
    
-   # 获取适配器实例
-   my_adapter = adapter.get("<AdapterName>")
-   
-   @my_adapter.on("event_type")
+   @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到原生事件: {data}")
+       logger.info(f"收到{AdapterName}原生事件: {data}")
    ```
 
 2. OneBot12标准事件监听：
    ```python
    from ErisPulse.Core import adapter, logger
 
-   @adapter.on("event_type")  # 所有平台的标准事件
+   # 监听OneBot12标准事件
+   @adapter.on("event_type")
    async def handler(data):
-       if data["platform"] == "<AdapterName>":
-           logger.info(f"收到<AdapterName>标准事件: {data}")
+       logger.info(f"收到标准事件: {data}")
+
+   # 监听特定平台的标准事件
+   @adapter.on("event_type", platform="{AdapterName}")
+   async def handler(data):
+       logger.info(f"收到{AdapterName}标准事件: {data}")
    ```
 
 3. Event模块监听：
@@ -2291,22 +2541,6 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
    - 所有特有字段均以onebot11_前缀标识
    - 保留原始CQ码消息在onebot11_raw_message字段
    - 保留原始事件数据在onebot11_raw字段
-
-### 事件监听方式
-
-OneBot适配器支持两种方式监听事件：
-
-```python
-# 使用原始事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-
-# 使用映射后的事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-```
 
 ### 特殊字段示例
 

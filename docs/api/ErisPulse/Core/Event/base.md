@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.base` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -76,4 +76,13 @@ ErisPulse 事件处理基础模块
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+##### `_clear_handlers()`
+
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+清除所有已注册的事件处理器
+
+:return: 被清除的处理器数量
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>

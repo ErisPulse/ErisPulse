@@ -1,6 +1,6 @@
 # `ErisPulse.Core.logger` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -78,7 +78,7 @@ ErisPulse 日志系统
 
     ---
     
-##### `get_logs(module_name: str = None)`
+##### `get_logs(module_name: str = 'Unknown')`
 
     获取日志内容
 
@@ -87,12 +87,24 @@ ErisPulse 日志系统
 
     ---
     
-##### `get_child(child_name: str = None)`
+##### `get_child(child_name: str = 'UnknownChild')`
 
     获取子日志记录器
 
 :param child_name: 子模块名称(可选)
 :return: LoggerChild 子日志记录器实例
+
+    ---
+    
+##### `critical(msg)`
+
+    记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是最高级别的日志，表示严重系统错误
+2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+3. 会在日志文件中添加 CRITICAL 标记便于后续分析</p></div>
 
     ---
     
@@ -114,6 +126,18 @@ ErisPulse 日志系统
 
     ---
     
+##### `critical(msg)`
+
+    记录 CRITICAL 级别日志
+这是最高级别的日志，表示严重的系统错误
+注意：此方法不会触发程序崩溃，仅记录日志
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 这是最高级别的日志，表示严重系统错误
+2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+3. 会在日志文件中添加 CRITICAL 标记便于后续分析</p></div>
+
+    ---
+    
 ##### `get_child(child_name: str)`
 
     获取子日志记录器的子记录器
@@ -123,4 +147,4 @@ ErisPulse 日志系统
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>

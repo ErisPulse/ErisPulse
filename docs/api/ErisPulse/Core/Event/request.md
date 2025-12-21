@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.request` 模块
 
-<sup>更新时间: 2025-08-19 05:32:03</sup>
+<sup>更新时间: 2025-12-21 14:28:48</sup>
 
 ---
 
@@ -20,7 +20,9 @@ ErisPulse 请求处理模块
 
 ### `class RequestHandler`
 
-    RequestHandler 类提供相关功能。
+    请求事件处理器
+
+提供请求事件处理功能
 
     
 #### 方法列表
@@ -79,4 +81,13 @@ ErisPulse 请求处理模块
 
     ---
     
-<sub>文档最后更新于 2025-08-19 05:32:03</sub>
+##### `_clear_request_handlers()`
+
+    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+清除所有已注册的请求处理器
+
+:return: 被清除的处理器数量
+
+    ---
+    
+<sub>文档最后更新于 2025-12-21 14:28:48</sub>
