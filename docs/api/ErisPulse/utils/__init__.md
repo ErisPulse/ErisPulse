@@ -1,4 +1,4 @@
-# `ErisPulse.Core.Bases.__init__` 模块
+# `ErisPulse.utils.__init__` 模块
 
 <sup>更新时间: 2025-12-21 14:28:48</sup>
 
@@ -7,9 +7,9 @@
 ## 模块概述
 
 
-ErisPulse 基础模块
+ErisPulse SDK 工具模块
 
-提供核心基类定义，包括适配器和模块基类
+包含各种辅助工具和实用程序。
 
 ---
 
