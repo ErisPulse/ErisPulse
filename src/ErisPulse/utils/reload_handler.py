@@ -4,11 +4,9 @@ ErisPulse SDK 热重载处理器
 实现热重载功能，监控文件变化并重启进程
 """
 
-import asyncio
 import os
 import subprocess
 import sys
-import threading
 import time
 from watchdog.events import FileSystemEventHandler
 
@@ -101,35 +99,16 @@ class ReloadHandler(FileSystemEventHandler):
         :param event: 文件系统事件
         :param reason: 重载原因
         """
-        from ErisPulse.Core import adapter, logger
-        # 在重载前确保所有适配器正确停止
+        from ErisPulse.Core import logger
+    
         try:
-            # 检查适配器是否正在运行
-            if hasattr(adapter, '_started_instances') and adapter._started_instances:
-                logger.info("正在停止适配器...")
-                # 创建新的事件循环来运行异步停止操作
-                
-                # 如果在主线程中
-                if threading.current_thread() is threading.main_thread():
-                    try:
-                        # 在新线程中运行适配器停止
-                        stop_thread = threading.Thread(target=lambda: asyncio.run(adapter.shutdown()))
-                        stop_thread.start()
-                        stop_thread.join(timeout=10)  # 最多等待10秒
-                    except RuntimeError:
-                        # 没有运行中的事件循环
-                        asyncio.run(adapter.shutdown())
-                else:
-                    # 在非主线程中，创建新的事件循环
-                    new_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(new_loop)
-                    new_loop.run_until_complete(adapter.shutdown())
-                
-                logger.info("适配器已停止")
+            from .cli import _cleanup_adapters, _cleanup_modules
+            logger.info(f"检测到文件变更 ({reason})，正在关闭适配器和模块...")
+            _cleanup_adapters()
+            _cleanup_modules()
         except Exception as e:
-            logger.warning(f"停止适配器时出错: {e}")
+            logger.warning(f"关闭适配器和模块时出错: {e}")
         
-        # 原有的重载逻辑
-        logger.info(f"检测到文件变更 ({reason})，正在重启...")
+        logger.info("正在重启...")
         self._terminate_process()
         self.start_process()
