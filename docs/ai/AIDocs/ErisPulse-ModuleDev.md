@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2025-12-21 14:29:04
+**生成时间**: 2025-12-25 17:19:18
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -71,6 +71,9 @@
 - [核心模块](core/modules.md)       - 存储、配置、日志等核心组件详解
 - [适配器系统](core/adapters.md)    - 平台适配器的使用和开发
 - [事件系统](core/event-system.md)  - Event 模块的使用(事件监听、事件处理、事件分发)
+- [懒加载模块系统](core/lazy-loading.md) - 懒加载模块系统的使用和配置
+- [路由管理器](core/router.md)     - HTTP和WebSocket路由管理
+- [框架配置](core/self-config.md)  - 框架默认配置说明
 - [最佳实践](core/best-practices.md) - 开发和部署建议
 
 ### 开发指南
@@ -322,8 +325,31 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 | `ux`/`sdk.ux` | 用户体验管理器 |
 | `UXManager`/`sdk.UXManager` | UX管理器类 |
+| `router`/`sdk.router` | 路由管理器 |
+| `RouterManager`/`sdk.RouterManager` | 路由管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
+
+### 懒加载模块系统
+
+ErisPulse 默认启用懒加载模块系统，这意味着模块只有在第一次被访问时才会实际加载和初始化。这样可以显著提升应用启动速度和内存效率。
+
+详细说明请参考：[懒加载模块系统](./lazy-loading.md)
+
+```python
+# 全局配置懒加载
+[ErisPulse.framework]
+enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加载
+
+# 模块级别控制
+class MyModule(BaseModule):
+    @staticmethod
+    def should_eager_load() -> bool:
+        return True  # 返回True表示禁用懒加载
+```
+
+### 事件系统子模块
+
 Event 模块包含以下子模块：
 
 | 子模块 | 用途 |
@@ -741,16 +767,19 @@ memory_limit = 1000
 
 ## 9. 用户体验管理 (ux)
 
-用户体验管理器提供了友好的界面和简化的操作方法。
+用户体验管理器提供了友好的界面和简化的操作方法，包括状态查看、项目初始化和交互式配置等功能。
 
 ### 主要功能
 
-- 显示欢迎信息和系统状态
-- 列出模块和适配器状态
-- 运行配置向导
-- 初始化新项目
+- **欢迎信息显示**：显示框架版本和欢迎消息
+- **系统状态概览**：展示框架各组件的运行状态
+- **模块状态查看**：列出所有模块的详细状态和信息
+- **适配器状态查看**：列出所有适配器的状态和信息
+- **项目初始化**：创建新的项目结构和配置文件
+- **交互式配置**：引导用户完成系统和适配器配置
+- **远程适配器获取**：从云端获取可用适配器列表并安装
 
-### 使用示例
+### 基本使用
 
 ```python
 from ErisPulse import sdk
@@ -766,28 +795,160 @@ sdk.ux.list_modules(detailed=True)
 
 # 列出所有适配器状态
 sdk.ux.list_adapters(detailed=True)
+```
 
-# 运行配置向导
-sdk.ux.configure_wizard()
+### 项目初始化
 
-# 初始化新项目
+```python
+# 初始化新项目（基本结构）
 sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
+
+# 交互式初始化（包含配置向导）
+sdk.ux.interactive_init("MyBot", force=False)
+```
+
+### 高级功能
+
+```python
+# 获取可用适配器列表（从云端）
+adapters = await sdk.ux._fetch_available_adapters()
+print("可用适配器:", adapters)
+
+# 运行交互式适配器配置
+sdk.ux._configure_adapters_interactive_sync("/path/to/project")
 ```
 
 ### 命令行使用
 
 ```bash
 # 初始化新项目
-epsdk init -n MyBot -a yunhu
+erispulse init MyBot
+
+# 交互式初始化
+erispulse init -i
 
 # 查看系统状态
-epsdk status
+erispulse status
 
 # 查看模块详细信息
-epsdk status -t modules
+erispulse status --type modules
 
 # 查看适配器详细信息
-epsdk status -t adapters
+erispulse status --type adapters
+```
+
+### 项目结构
+
+使用UX管理器初始化的项目包含以下结构：
+
+```
+MyBot/
+├── main.py              # 主程序文件
+├── config.toml          # 配置文件
+├── modules/             # 模块目录
+│   └── example.py       # 示例模块
+├── config/              # 配置目录
+└── logs/                # 日志目录
+```
+
+### 自动生成的配置文件
+
+配置文件 `config.toml` 包含以下部分：
+
+```toml
+[ErisPulse]
+# 全局配置
+
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = ["logs/app.log"]
+memory_limit = 1000
+
+[ErisPulse.adapters.status]
+yunhu = false
+telegram = false
+```
+
+### 自动生成的主程序
+
+主程序 `main.py` 包含基本的启动逻辑：
+
+```python
+import asyncio
+from ErisPulse import sdk
+
+async def main():
+    """主程序入口"""
+    # 初始化 SDK
+    await sdk.init()
+    
+    # 启动适配器
+    await sdk.adapter.startup()
+    
+    print("ErisPulse 已启动，按 Ctrl+C 退出")
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        print("\n正在关闭...")
+        await sdk.adapter.shutdown()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### 云端适配器集成
+
+UX管理器与PackageManager集成，支持从云端获取和安装适配器：
+
+```python
+# 获取可用适配器（带5分钟缓存）
+adapters = await sdk.ux._fetch_available_adapters()
+
+# 默认适配器列表（当云端获取失败时）
+default_adapters = {
+    "yunhu": "云湖平台适配器",
+    "telegram": "Telegram机器人适配器",
+    "onebot11": "OneBot11标准适配器",
+    "email": "邮件适配器"
+}
+```
+
+### 交互式配置流程
+
+交互式初始化包含以下步骤：
+
+1. **项目名称确认**：输入或确认项目名称
+2. **日志级别配置**：设置日志记录级别
+3. **服务器配置**：设置主机地址和端口
+4. **适配器选择**：从云端列表选择需要的适配器
+5. **适配器安装**：自动安装选中的适配器
+6. **配置保存**：保存所有配置到文件
+
+### 缓存机制
+
+UX管理器实现了5分钟的适配器缓存机制，减少网络请求：
+
+```python
+# 缓存设置
+self._cache_duration = 300  # 5分钟缓存
+
+# 检查缓存有效性
+current_time = asyncio.get_event_loop().time()
+if self._adapter_cache and (current_time - self._adapter_cache_time) < self._cache_duration:
+    return self._adapter_cache
+```
+
+### 最佳实践
+
+1. **项目初始化**：使用UX管理器初始化新项目，获得标准化的项目结构
+2. **配置管理**：通过交互式配置向导完成系统设置
+3. **状态监控**：定期使用状态查看功能监控系统运行情况
+4. **适配器安装**：通过云端列表获取和安装最新适配器
 
 # 运行配置向导
 epsdk config-wizard
@@ -926,7 +1087,7 @@ ErisPulse对于OneBot12协议进行了一些修改，你可能需要先阅读 `d
 
 # ErisPulse 事件系统
 
-事件系统是 ErisPulse 的核心组件之一，负责处理各种类型的事件，包括消息、命令、通知、请求和元事件。
+事件系统是 ErisPulse 的核心组件之一，负责处理各种类型的事件，包括消息、命令、通知、请求、元事件和生命周期事件。
 
 ## 事件类型
 
@@ -937,8 +1098,109 @@ ErisPulse 支持多种事件类型：
 - **通知事件**：处理系统通知（如好友添加、群成员变化等）
 - **请求事件**：处理请求（如好友请求、群邀请等）
 - **元事件**：处理系统级事件（如连接、断开连接等）
+- **生命周期事件**：处理系统生命周期事件（如启动、停止、模块加载等）
+
+## 生命周期事件系统
+
+ErisPulse 提供完整的生命周期事件系统，用于监控系统各组件的运行状态。生命周期事件支持点式结构事件监听，例如可以监听 `module.init` 来捕获所有模块初始化事件。
+
+### 标准生命周期事件
+
+系统定义了以下标准事件类别：
+
+```python
+STANDARD_EVENTS = {
+    "core": ["init.start", "init.complete"],
+    "module": ["load", "init", "unload"],
+    "adapter": ["load", "start", "status.change", "stop", "stopped"],
+    "server": ["start", "stop"]
+}
+```
+
+### 事件数据格式
+
+所有生命周期事件都遵循标准格式：
+
+```json
+{
+    "event": "事件名称",      // 必填
+    "timestamp": 1234567890,   // 必填，Unix时间戳
+    "data": {},              // 可选，事件相关数据
+    "source": "ErisPulse",    // 必填，事件来源
+    "msg": "事件描述"          // 可选，事件描述
+}
+```
+
+### 生命周期事件监听
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 监听特定事件
+@lifecycle.on("module.init")
+async def on_module_init(event):
+    print(f"模块初始化: {event['data']['module_name']}")
+
+# 监听父级事件（点式结构）
+@lifecycle.on("module")
+async def on_any_module_event(event):
+    print(f"模块事件: {event['event']}")
+
+# 监听所有事件（通配符）
+@lifecycle.on("*")
+async def on_any_event(event):
+    print(f"系统事件: {event['event']}")
+
+# 监听服务器启动事件
+@lifecycle.on("server.start")
+async def on_server_start(event):
+    print(f"服务器已启动: {event['data']['base_url']}")
+```
+
+### 提交生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 基本事件提交
+await lifecycle.submit_event(
+    "custom.event",
+    source="MyModule",
+    msg="自定义事件",
+    data={"key": "value"}
+)
+
+# 使用默认值
+await lifecycle.submit_event(
+    "my.module.loaded",
+    data={"module_name": "MyModule"}
+)
+```
+
+### 计时器功能
+
+生命周期系统提供计时器功能，用于性能测量：
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 开始计时
+lifecycle.start_timer("operation_1")
+
+# 执行一些操作...
+
+# 获取持续时间（不停止计时器）
+elapsed = lifecycle.get_duration("operation_1")
+print(f"已运行 {elapsed} 秒")
+
+# 停止计时并获取持续时间
+total_time = lifecycle.stop_timer("operation_1")
+print(f"操作完成，总耗时 {total_time} 秒")
+```
 
 ### 命令处理
+
+ErisPulse 提供了强大的命令处理系统，支持基本命令、命令组、权限检查和等待用户回复等高级功能。
 ```python
 from ErisPulse.Core.Event import command
 
@@ -1173,6 +1435,228 @@ async def handle_heartbeat(event):
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     # 高优先级处理器先执行
+    pass
+
+@message.on_message(priority=1)
+async def low_priority_handler(event):
+    # 低优先级处理器后执行
+    pass
+```
+
+#### 命令系统高级功能
+
+##### 1. 等待用户回复
+
+ErisPulse 提供了强大的等待用户回复功能，支持超时、验证器和回调函数：
+
+```python
+from ErisPulse.Core.Event import command
+
+# 基本等待回复
+@command("ask", help="询问用户信息")
+async def ask_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 等待用户回复
+    reply_event = await command.wait_reply(
+        event, 
+        prompt="请输入您的姓名:", 
+        timeout=30.0
+    )
+    
+    if reply_event:
+        # 提取用户回复内容
+        user_reply = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                user_reply = segment.get("data", {}).get("text", "")
+                break
+        
+        if user_reply:
+            await adapter_instance.Send.To(detail_type, target_id).Text(f"您好，{user_reply}！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
+    else:
+        await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
+
+# 带验证和回调的等待回复
+@command("confirm", help="确认操作")
+async def confirm_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 定义验证函数
+    def validate_yes_no(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        return text_content in ["是", "否", "yes", "no", "y", "n"]
+    
+    # 定义回调函数
+    async def handle_confirmation(reply_event):
+        text_content = ""
+        for segment in reply_event.get("message", []):
+            if segment.get("type") == "text":
+                text_content = segment.get("data", {}).get("text", "").strip().lower()
+                break
+        
+        if text_content in ["是", "yes", "y"]:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已确认！")
+        else:
+            await adapter_instance.Send.To(detail_type, target_id).Text("操作已取消。")
+    
+    # 等待用户确认
+    await command.wait_reply(
+        event,
+        prompt="您确定要执行此操作吗？请输入'是'或'否':",
+        timeout=30.0,
+        callback=handle_confirmation,
+        validator=validate_yes_no
+    )
+```
+
+##### 2. 命令组
+
+命令组允许您将相关命令组织在一起，便于管理和权限控制：
+
+```python
+# 管理员命令组
+@command("admin.reload", group="admin", help="重新加载模块")
+async def reload_command(event):
+    # 管理员命令逻辑
+    await sdk.module.reload(event["args"][0] if event["args"] else "all")
+
+@command("admin.stop", group="admin", help="停止机器人")
+async def stop_command(event):
+    # 停止机器人逻辑
+    await sdk.adapter.shutdown()
+
+@command("admin.restart", group="admin", help="重启机器人")
+async def restart_command(event):
+    # 重启机器人逻辑
+    await sdk.adapter.restart()
+
+# 用户命令组
+@command("user.profile", group="user", help="查看个人资料")
+async def profile_command(event):
+    # 查看个人资料逻辑
+    pass
+
+@command("user.settings", group="user", help="设置个人偏好")
+async def settings_command(event):
+    # 设置个人偏好逻辑
+    pass
+
+# 获取命令组中的所有命令
+admin_commands = command.get_group_commands("admin")
+user_commands = command.get_group_commands("user")
+```
+
+##### 3. 权限检查系统
+
+ErisPulse 提供了灵活的权限检查系统，可以为命令或命令组设置权限：
+
+```python
+# 定义权限检查函数
+def is_admin(event):
+    """检查是否为管理员"""
+    user_id = event.get("user_id")
+    return user_id in ["admin_id_1", "admin_id_2"]
+
+async def is_group_admin(event):
+    """检查是否为群管理员"""
+    platform = event["platform"]
+    user_id = event["user_id"]
+    group_id = event.get("group_id")
+    
+    if not group_id:
+        return False
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    # 假设适配器有获取群成员信息的方法
+    member_info = await adapter_instance.get_group_member_info(group_id, user_id)
+    return member_info.get("role") in ["admin", "owner"]
+
+def is_whitelist(event):
+    """检查用户是否在白名单中"""
+    user_id = event.get("user_id")
+    return user_id in config.getConfig("whitelist", [])
+
+# 为单个命令设置权限
+@command("admin", permission=is_admin, help="管理员命令")
+async def admin_command(event):
+    # 只有管理员才能执行
+    pass
+
+# 为命令组设置全局权限
+command.permissions["admin"] = is_admin
+command.permissions["user"] = is_whitelist
+
+# 复杂权限检查
+@command("group.manage", permission=lambda e: is_admin(e) or is_group_admin(e), help="群管理")
+async def group_manage_command(event):
+    # 管理员或群管理员可执行
+    pass
+```
+
+##### 4. 高级命令配置
+
+```python
+# 隐藏命令（不会在帮助中显示）
+@command("secret", hidden=True, help="秘密命令")
+async def secret_command(event):
+    pass
+
+# 自定义使用说明
+@command("custom", usage="/custom <参数1> <参数2>", help="自定义命令")
+async def custom_command(event):
+    pass
+
+# 多名称命令
+@command(["name1", "name2"], aliases=["alias1", "alias2"], help="多名称命令")
+async def multi_name_command(event):
+    pass
+```
+
+##### 5. 命令帮助系统
+
+```python
+# 获取命令帮助信息
+help_text = command.help()
+
+# 获取特定命令信息
+cmd_info = command.get_command("admin")
+
+# 获取所有可见命令
+visible_commands = command.get_visible_commands()
+
+# 在命令中显示帮助
+@command("help", help="显示帮助信息")
+async def help_command(event):
+    platform = event["platform"]
+    user_id = event["user_id"]
+    detail_type = "group" if event.get("detail_type") == "group" else "user"
+    target_id = event.get("group_id") or user_id
+    
+    adapter_instance = getattr(sdk.adapter, platform)
+    
+    # 获取帮助文本
+    help_text = command.help()
+    
+    # 发送帮助信息
+    await adapter_instance.Send.To(detail_type, target_id).Text(help_text)
+```
     pass
 
 @message.on_message(priority=20)
