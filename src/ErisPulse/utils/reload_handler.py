@@ -10,10 +10,7 @@ import sys
 import time
 from watchdog.events import FileSystemEventHandler
 
-from rich.console import Console
-
-# 全局控制台实例，从CLI模块导入
-console = Console()
+from .console import console
 
 
 class ReloadHandler(FileSystemEventHandler):
