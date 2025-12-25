@@ -17,9 +17,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm
+from rich.theme import Theme
+from rich.highlighter import RegexHighlighter
 
-# 全局控制台实例，从CLI模块导入
-console = Console()
+from .console import console
 
 class PackageManager:
     """
