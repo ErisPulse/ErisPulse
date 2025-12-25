@@ -43,6 +43,7 @@ jobs:
                   return []
 
           def get_changelog_for_version(version):
+              """从CHANGELOG.md中获取指定版本的更新日志"""
               changelog_path = 'CHANGELOG.md'
               
               if not os.path.exists(changelog_path):
@@ -51,33 +52,57 @@ jobs:
               with open(changelog_path, 'r', encoding='utf-8') as f:
                   content = f.read()
               
-              # 尝试精确匹配版本号
-              pattern = rf'## \[{re.escape(version)}\].*?(?=## \[|$)'
-              match = re.search(pattern, content, re.DOTALL)
+              # 直接使用版本号匹配格式：## [2.3.0-dev.5] - 2025/12/21
+              pattern = rf'## \[{re.escape(version)}\] - .*?(?=^## |\Z)'
+              match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
               
               if match:
-                  # 提取版本标题下的内容
                   changelog_section = match.group(0)
-                  # 移除开头的标题行
-                  changelog_lines = changelog_section.split('\n')[1:]
-                  # 去除空行
-                  changelog_content = '\n'.join(line for line in changelog_lines if line.strip())
-                  return changelog_content
+                  # 移除开头的标题行（第一行）
+                  lines = changelog_section.split('\n')
+                  if lines:
+                      # 移除第一行（标题行）
+                      changelog_lines = lines[1:]
+                      # 去除空行
+                      changelog_content = '\n'.join(line for line in changelog_lines if line.strip())
+                      return changelog_content
               
               return None
 
           def get_release_info(tag):
-              """获取发行信息"""
+              """获取发行信息，如果不存在则创建"""
               try:
+                  # 先尝试获取发行信息
                   result = subprocess.run(
                       ['gh', 'release', 'view', tag, '--json', 'prerelease'],
                       capture_output=True, text=True, check=True
                   )
                   is_prerelease = '"prerelease": true' in result.stdout
                   return is_prerelease
-              except subprocess.CalledProcessError as e:
-                  print(f"获取发行 {tag} 信息失败: {e}")
-                  return None
+              except subprocess.CalledProcessError:
+                  # 如果发行不存在，创建它
+                  version = tag.replace('v', '')
+                  changelog = get_changelog_for_version(version)
+                  
+                  if not changelog:
+                      print(f"  无法创建发行 {tag}：找不到更新日志")
+                      return None
+                  
+                  # 判断是否为开发版本
+                  is_dev = 'dev' in version or 'alpha' in version or 'beta' in version or 'pre' in version
+                  is_prerelease_str = 'true' if is_dev else 'false'
+                  
+                  try:
+                      # 创建发行
+                      subprocess.run(
+                          ['gh', 'release', 'create', tag, '--notes', changelog, '--title', f'✨ 艾莉丝的魔法更新 {tag}', f'--prerelease={is_prerelease_str}'],
+                          capture_output=True, text=True, check=True
+                      )
+                      print(f"  ✅ 已创建发行 {tag}")
+                      return is_dev
+                  except subprocess.CalledProcessError as e:
+                      print(f"  ❌ 创建发行 {tag} 失败: {e}")
+                      return None
 
           def update_release(tag, changelog, is_prerelease):
               """更新发行信息"""
@@ -87,10 +112,10 @@ jobs:
                       ['gh', 'release', 'edit', tag, '--notes', changelog, f'--prerelease={is_prerelease}'],
                       capture_output=True, text=True, check=True
                   )
-                  print(f"已更新发行 {tag}")
+                  print(f"  ✅ 已更新发行 {tag}")
                   return True
               except subprocess.CalledProcessError as e:
-                  print(f"更新发行 {tag} 失败: {e}")
+                  print(f"  ❌ 更新发行 {tag} 失败: {e}")
                   return False
 
           def main():
@@ -101,7 +126,7 @@ jobs:
                   print("未找到任何标签")
                   return
               
-              print(f"找到 {len(tags)} 个标签，开始更新...")
+              print(f"找到 {len(tags)} 个标签，开始处理...")
               
               updated_count = 0
               skipped_count = 0
@@ -112,21 +137,21 @@ jobs:
                   
                   # 从标签中提取版本号
                   version = tag.replace('v', '')
-                  print(f"\n处理标签: {tag} (版本: {version})")
+                  print(f"\n处理标签: {tag}")
                   
                   # 获取更新日志
                   changelog = get_changelog_for_version(version)
                   
                   if not changelog:
-                      print(f"⚠️ 未找到版本 {version} 的更新日志，跳过")
+                      print(f"  ⚠️ 未找到版本 {version} 的更新日志，跳过")
                       skipped_count += 1
                       continue
                   
-                  # 获取发行信息
+                  # 获取发行信息（如果不存在则会创建）
                   is_prerelease = get_release_info(tag)
                   
                   if is_prerelease is None:
-                      print(f"⚠️ 无法获取发行 {tag} 信息，跳过")
+                      print(f"  ⚠️ 无法处理发行 {tag}，跳过")
                       skipped_count += 1
                       continue
                   
@@ -143,7 +168,7 @@ jobs:
           # 执行脚本
           python update_all_releases.py
           
-          # 如果需要创建新标签，可以从 pyproject.toml 读取版本并创建
+          # 处理当前版本（如果需要）
           if [ -f "pyproject.toml" ]; then
             version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
             tag_name="v$version"
@@ -153,26 +178,7 @@ jobs:
               echo "🎀🎀 创建新标签 $tag_name..."
               git tag "$tag_name"
               git push origin "$tag_name"
-              
-              # 获取更新日志并创建发行
-              if [ -f "CHANGELOG.md" ]; then
-                changelog_section=$(sed -n "/^## \[$version\]/,/^## /p" CHANGELOG.md | sed '1d;$d')
-                if [ -n "$changelog_section" ]; then
-                  # 判断是否为开发版本
-                  if [[ $version =~ dev|alpha|beta|a|b ]]; then
-                    is_dev="true"
-                  else
-                    is_dev="false"
-                  fi
-                  
-                  # 创建新发行
-                  gh release create "$tag_name" \
-                    --notes "$changelog_section" \
-                    --title "✨ 艾莉丝的魔法更新 $tag_name" \
-                    --prerelease=$is_dev
-                  echo "✨ 已创建新的魔法版本 $tag_name"
-                fi
-              fi
+              echo "✨ 已创建新标签 $tag_name"
             else
               echo "标签 $tag_name 已存在"
             fi
