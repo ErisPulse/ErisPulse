@@ -13,13 +13,11 @@ import sys
 import time
 from typing import List, Dict, Tuple, Optional, Any
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm
 
-# 全局控制台实例，从CLI模块导入
-console = Console()
+from .console import console
 
 class PackageManager:
     """
