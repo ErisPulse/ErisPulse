@@ -8,58 +8,12 @@ from typing import List, Dict, Optional, Any
 from watchdog.observers import Observer
 
 # Rich console setup
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Confirm, Prompt
 from rich.box import SIMPLE
-from rich.theme import Theme
-from rich.highlighter import RegexHighlighter
 
-# 确保在Windows上启用颜色
-if sys.platform == "win32":
-    from colorama import init
-    init()
-
-class CommandHighlighter(RegexHighlighter):
-    """
-    高亮CLI命令和参数
-    
-    {!--< tips >!--}
-    使用正则表达式匹配命令行参数和选项
-    {!--< /tips >!--}
-    """
-    highlights = [
-        r"(?P<switch>\-\-?\w+)",
-        r"(?P<option>\[\w+\])",
-        r"(?P<command>\b\w+\b)",
-    ]
-
-# 主题配置
-theme = Theme({
-    "info": "dim cyan",
-    "success": "bold green",
-    "warning": "bold yellow",
-    "error": "bold red",
-    "title": "bold magenta",
-    "default": "default",
-    "progress": "green",
-    "progress.remaining": "white",
-    "cmd": "bold blue",
-    "param": "italic cyan",
-    "switch": "bold yellow",
-    "module": "bold green",
-    "adapter": "bold yellow",
-    "cli": "bold magenta",
-})
-
-# 全局控制台实例
-console = Console(
-    theme=theme, 
-    color_system="auto", 
-    force_terminal=True,
-    highlighter=CommandHighlighter()
-)
+from .console import console
 
 class CLI:
     """
@@ -988,7 +942,8 @@ class CLI:
                         time.sleep(0.5)
                 except KeyboardInterrupt:
                     console.print("\n[info]正在安全关闭...[/]")
-                    self._cleanup_adapters()
+                    _cleanup_adapters()
+                    _cleanup_modules()
                     self._cleanup()
                     console.print("[success]已安全退出[/]")
                     
@@ -1062,41 +1017,76 @@ class CLI:
                 console.print(traceback.format_exc())
             self._cleanup()
             sys.exit(1)
+
+def _cleanup_adapters():
+    """
+    清理适配器资源
+    """
     
-    def _cleanup_adapters(self):
-        """
-        清理适配器资源
-        """
-        from ErisPulse import adapter, logger
-        try:
-            import asyncio
-            import threading
+    from ErisPulse import adapter
+    try:
+        import asyncio
+        import threading
+        
+        # 检查是否有正在运行的适配器
+        if adapter.list_adapters():
             
-            # 检查是否有正在运行的适配器
-            if (hasattr(adapter, '_started_instances') and 
-                adapter._started_instances):
-                
-                logger.info("正在停止所有适配器...")
-                
-                if threading.current_thread() is threading.main_thread():
-                    try:
-                        loop = asyncio.get_running_loop()
-                        if loop.is_running():
-                            # 在新线程中运行
-                            stop_thread = threading.Thread(
-                                target=lambda: asyncio.run(adapter.shutdown())
-                            )
-                            stop_thread.start()
-                            stop_thread.join(timeout=5)
-                        else:
-                            asyncio.run(adapter.shutdown())
-                    except RuntimeError:
+            console.print("[info]正在停止所有适配器...[/]") 
+            
+            if threading.current_thread() is threading.main_thread():
+                try:
+                    loop = asyncio.get_running_loop()
+                    if loop.is_running():
+                        # 在新线程中运行
+                        stop_thread = threading.Thread(
+                            target=lambda: asyncio.run(adapter.shutdown())
+                        )
+                        stop_thread.start()
+                        stop_thread.join(timeout=5)
+                    else:
                         asyncio.run(adapter.shutdown())
+                except RuntimeError:
+                    asyncio.run(adapter.shutdown())
+            else:
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                new_loop.run_until_complete(adapter.shutdown())
+                
+            console.print("[success]适配器已全部停止[/]")
+        else:
+            console.print("[dim]没有需要停止的适配器[/]")
+    except Exception as e:
+        console.print(f"[error]清理适配器资源时出错: {e}[/]")
+
+def _cleanup_modules():
+    """
+    清理模块资源
+    """
+    from ErisPulse import module
+    try:
+        import asyncio
+        import threading
+    
+        console.print("[info]正在卸载所有模块...[/]")
+        
+        if threading.current_thread() is threading.main_thread():
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    stop_thread = threading.Thread(
+                        target=lambda: asyncio.run(module.unload())
+                    )
+                    stop_thread.start()
+                    stop_thread.join(timeout=5)
                 else:
-                    new_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(new_loop)
-                    new_loop.run_until_complete(adapter.shutdown())
-                    
-                logger.info("适配器已全部停止")
-        except Exception as e:
-            logger.error(f"清理适配器资源时出错: {e}")
+                    asyncio.run(module.unload())
+            except RuntimeError:
+                asyncio.run(module.unload())
+        else:
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            new_loop.run_until_complete(module.unload())
+            
+        console.print("[success]模块已全部卸载[/]")
+    except Exception as e:
+        console.print(f"[error]清理模块资源时出错: {e}[/]")
