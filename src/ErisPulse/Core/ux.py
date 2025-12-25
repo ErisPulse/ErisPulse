@@ -227,7 +227,7 @@ class UXManager:
                 self.console.print(f"[green]创建项目目录: {project_name}[/green]")
             
             # 创建基本目录结构
-            dirs = ["modules", "config", "logs"]
+            dirs = ["config", "logs"]
             for dir_name in dirs:
                 dir_path = project_path / dir_name
                 dir_path.mkdir(exist_ok=True)
@@ -288,39 +288,11 @@ class UXManager:
                 
                 self.console.print("[green]创建主程序文件: main.py[/green]")
             
-            # 创建模块目录和示例模块
-            if adapter_list:
-                example_file = project_path / "modules" / "example.py"
-                if not example_file.exists():
-                    with open(example_file, "w", encoding="utf-8") as f:
-                        f.write('"""')
-                        f.write("\n示例模块\n\n")
-                        f.write("这是一个示例模块，展示了如何创建基本的消息处理器\n")
-                        f.write('"""\n\n')
-                        f.write("from ErisPulse.Core.Event import command, message\n\n")
-                        f.write("class Main:\n")
-                        f.write("    def __init__(self, sdk=None):\n")
-                        f.write("        self.sdk = sdk or globals().get('sdk', __import__('ErisPulse').sdk)\n")
-                        f.write("        self.logger = self.sdk.logger.get_child(\"Example\")\n")
-                        f.write("        self.logger.info(\"示例模块已加载\")\n\n")
-                        f.write("        # 注册命令处理器\n")
-                        f.write("        @command(\"hello\", help=\"发送问候消息\")\n")
-                        f.write("        async def hello_command(event):\n")
-                        f.write("            platform = event[\"platform\"]\n")
-                        f.write("            user_id = event[\"user_id\"]\n")
-                        f.write("            \n")
-                        f.write("            if hasattr(self.sdk.adapter, platform):\n")
-                        f.write("                adapter_instance = getattr(self.sdk.adapter, platform)\n")
-                        f.write("                await adapter_instance.Send.To(\"user\", user_id).Text(\"你好！这是一个示例消息。\")\n")
-                
-                self.console.print("[green]创建示例模块: modules/example.py[/green]")
-            
             self.console.print("\n[bold green]项目 {} 初始化成功![/bold green]".format(project_name))
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print(f"1. 编辑 {project_name}/config.toml 配置适配器")
-            self.console.print(f"2. 在 {project_name}/modules/ 目录下创建自定义模块")
-            self.console.print(f"3. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
-            
+            self.console.print(f"2. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
+            self.console.print("\n访问 https://github.com/ErisPulse/ErisPulse/tree/main/docs 获取更多信息和文档")
             return True
             
         except Exception as e:
@@ -410,8 +382,7 @@ class UXManager:
             # 显示下一步操作
             self.console.print("\n[cyan]接下来您可以:[/cyan]")
             self.console.print("1. 编辑 {}/config.toml 进一步配置".format(project_name))
-            self.console.print("2. 在 {}/modules/ 目录下创建自定义模块".format(project_name))
-            self.console.print("3. 运行 [cyan]cd {} \n        ep run[/cyan] 启动项目".format(project_name))
+            self.console.print("2. 运行 [cyan]cd {} \n        ep run[/cyan] 启动项目".format(project_name))
             
             return True
             
