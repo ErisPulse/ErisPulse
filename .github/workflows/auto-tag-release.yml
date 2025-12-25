@@ -86,21 +86,24 @@ jobs:
           tag_name="v$version"
           
           # 构建发布说明
+          changelog=""
           if [ -f "CHANGELOG.md" ]; then
+            # 使用printf正确处理换行符
             changelog_section=$(sed -n "/^## \[$version\]/,/^## /p" CHANGELOG.md | sed '1d;$d')
             
             if [ -n "$changelog_section" ]; then
-              changelog_section=$(echo "$changelog_section" | sed 's/^/  /')
-              changelog="## 📋 更新日志\n\n$changelog_section\n\n"
+              # 使用printf确保换行符正确处理
+              changelog=$(printf "## 📋 更新日志\n\n%s\n\n" "$changelog_section")
             fi
           fi
           
           # 如果没有找到更新日志内容，使用默认消息
           if [ -z "$changelog" ]; then
-            changelog="## 📋 更新日志\n\n- $commit_msg ($commit_short)\n\n"
+            changelog=$(printf "## 📋 更新日志\n\n- %s (%s)\n\n" "$commit_msg" "$commit_short")
           fi
           
-          changelog="$changelog---\n\n**提交信息**: $commit_msg ($commit_short)\n**提交者**: $commit_author"
+          # 添加折叠的提交信息
+          changelog=$(printf "%s---\n\n<details><summary>📝 提交记录</summary>\n\n```\n%s (%s)\n**提交者**: %s\n```\n\n</details>" "$changelog" "$commit_msg" "$commit_short" "$commit_author")
           
           if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
             echo "🎀🎀 施加新的魔法印记..."
@@ -125,11 +128,11 @@ jobs:
             echo "✨ 已发布新的魔法版本 $tag_name"
           fi
           
-          # 检查并更新最近几个版本的发行信息
-          echo "🔍 检查并更新最近几个版本的发行信息..."
+          # 检查并更新所有版本的发行信息
+          echo "🔍 检查并更新所有版本的发行信息..."
           
-          # 获取最近的5个标签（排除当前标签）
-          recent_tags=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -v "^$tag_name$" | head -5)
+          # 获取所有标签（排除当前标签）
+          all_tags=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -v "^$tag_name$")
           
           # 创建检查和更新的脚本
           cat > check_releases.py << 'EOF'
@@ -208,16 +211,29 @@ jobs:
                   
                   current_body = body_match.group(1).replace('\\n', '\n')
                   
-                  # 检查是否已经包含格式化的更新日志
-                  if "📋 更新日志" in current_body and "### " in current_body:
-                      print(f"✅ 发行 {tag} 已包含格式化的更新日志，跳过")
-                      return True
-                  
                   # 格式化更新日志
                   formatted_changelog = format_changelog(changelog)
                   
-                  # 创建新的发行说明
-                  new_notes = f"## 📋 更新日志\n\n{formatted_changelog}"
+                  # 创建新的发行说明，包含折叠的提交信息
+                  # 获取该版本的提交信息
+                  try:
+                      commit_result = subprocess.run(
+                          ['git', 'log', '--pretty=format:%H|%s|%an', '-n', '1', tag],
+                          capture_output=True, text=True, check=True
+                      )
+                      commit_info = commit_result.stdout.strip().split('|')
+                      if len(commit_info) >= 3:
+                          commit_hash_short = commit_info[0][:7]
+                          commit_message = commit_info[1]
+                          commit_author = commit_info[2]
+                          
+                          # 添加折叠的提交信息
+                          commit_section = f"\n---\n\n<details><summary>📝 提交记录</summary>\n\n```\n{commit_message} ({commit_hash_short})\n**提交者**: {commit_author}\n```\n\n</details>"
+                          new_notes = f"## 📋 更新日志\n\n{formatted_changelog}{commit_section}"
+                      else:
+                          new_notes = f"## 📋 更新日志\n\n{formatted_changelog}"
+                  except:
+                      new_notes = f"## 📋 更新日志\n\n{formatted_changelog}"
                   
                   # 更新发行信息
                   subprocess.run(
@@ -232,13 +248,13 @@ jobs:
                   return False
 
           # 获取标签列表
-          tags = """$recent_tags""".split('\n')
+          tags = """$all_tags""".split('\n')
           tags = [tag.strip() for tag in tags if tag.strip()]
           
           updated_count = 0
           total_count = len(tags)
           
-          print(f"检查 {total_count} 个最近的发行...")
+          print(f"检查 {total_count} 个发行...")
           
           for tag in tags:
               if not tag:
