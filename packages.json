@@ -98,7 +98,7 @@
                 "Weather"
             ]
         },
-        "AIChat": {
+        "QvQChat": {
             "package": "ErisPulse-QvQChat",
             "version": "2.0.0",
             "author": "wsu2059q",
