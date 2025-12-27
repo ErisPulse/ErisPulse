@@ -124,6 +124,19 @@
                 "AI"
             ]
         },
+        "AIChat": {
+            "package": "ErisPulse-AIChat",
+            "version": "3.0.4",
+            "author": "wsu2059q",
+            "description": "AIChat 聊天机器人模块（停更）",
+            "min_sdk_version": "2.0.0",
+            "repository": "https://github.com/wsu2059q/ErisPulse-AIChat",
+            "official": false,
+            "tags": [
+                "AIChat",
+                "AI"
+            ]
+        },
         "SeTu": {
             "package": "ErisPulse-SeTu",
             "version": "1.2.0",
