@@ -99,15 +99,15 @@
             ]
         },
         "AIChat": {
-            "package": "ErisPulse-AIChat",
-            "version": "3.0.4",
+            "package": "ErisPulse-QvQChat",
+            "version": "2.0.0",
             "author": "wsu2059q",
-            "description": "AIChat 聊天机器人模块",
-            "min_sdk_version": "2.0.0",
-            "repository": "https://github.com/wsu2059q/ErisPulse-AIChat",
+            "description": "一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天",
+            "min_sdk_version": "2.3.0",
+            "repository": "https://github.com/wsu2059q/ErisPulse-QvQChat",
             "official": false,
             "tags": [
-                "AIChat",
+                "QvQChat",
                 "AI"
             ]
         },
