@@ -1085,8 +1085,18 @@ async def init() -> bool:
     """
     if not await _prepare_environment():
         return False
-    
+
     return await ModuleInitializer.init()
+
+def init_sync() -> bool:
+    """
+    SDK初始化入口（同步版本）
+
+    用于命令行直接调用，自动在事件循环中运行异步初始化
+
+    :return: bool SDK初始化是否成功
+    """
+    return asyncio.run(init())
 
 def init_task() -> asyncio.Task:
     """
@@ -1105,6 +1115,7 @@ def init_task() -> asyncio.Task:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         return loop.create_task(_async_init())
+
 async def uninit() -> bool:
     """
     SDK反初始化
