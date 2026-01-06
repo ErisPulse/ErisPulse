@@ -8,7 +8,7 @@ on:
     branches: [main, Pre-Release/v2]
 
 jobs:
-  auto-tag-and-release:
+  update-latest-release:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
@@ -17,101 +17,79 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 读取版本卷轴
-        id: info
-        shell: bash
-        run: |
-          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "发现新版本: $version"
-
-          if [[ $version =~ dev|alpha|beta|a|b ]]; then
-            echo "is_dev=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_dev=false" >> $GITHUB_OUTPUT
-          fi
-
-          commit_msg=$(git log -1 --pretty=%B)
-          commit_short=$(git rev-parse --short HEAD)
-          commit_author=$(git log -1 --pretty=%an)
-          commit_email=$(git log -1 --pretty=%ae)
-          echo "commit_short=$commit_short" >> $GITHUB_OUTPUT
-          echo "commit_author=$commit_author" >> $GITHUB_OUTPUT
-          echo "commit_email=$commit_email" >> $GITHUB_OUTPUT
-          echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
-          echo "$commit_msg" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: 获取变更文件列表和贡献者
-        id: changed_files
-        shell: bash
-        run: |
-          before="${{ github.event.before }}"
-          after="${{ github.sha }}"
-
-          if [[ "$before" == "0000000000000000000000000000000000000000" ]]; then
-            before="HEAD~1"
-          fi
-
-          echo "before=$before" >> $GITHUB_OUTPUT
-          echo "after=$after" >> $GITHUB_OUTPUT
-
-          # 获取变更文件列表
-          files=$(git diff --name-only $before..$after | head -n 50 | xargs)
-          file_count=$(git diff --name-only $before..$after | wc -l)
-
-          if [ "$file_count" -gt 50 ]; then
-            files="$files ..."
-          fi
-          echo "files=$files" >> $GITHUB_OUTPUT
-
-          # 获取贡献者列表
-          contributors=$(git log $before..$after --format="%an <%ae>" | sort -u)
-          echo "contributors<<EOF" >> $GITHUB_OUTPUT
-          echo "$contributors" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: 施展版本魔法
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          version="${{ steps.info.outputs.version }}"
-          commit_short="${{ steps.info.outputs.commit_short }}"
-          commit_author="${{ steps.info.outputs.commit_author }}"
-          commit_email="${{ steps.info.outputs.commit_email }}"
-          commit_msg="${{ steps.info.outputs.commit_msg }}"
-          is_dev="${{ steps.info.outputs.is_dev }}"
-          contributors="${{ steps.changed_files.outputs.contributors }}"
+          # 读取当前版本
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
           
-          # 构建发布说明
-          if [ -f "docs/CHANGELOG.md" ]; then
-            changelog=$(sed -n "/^## \[$version\]/,/^## /p" docs/CHANGELOG.md | sed '1d;$d')
-          fi
+          echo "当前版本: $version"
+          echo "标签名称: $tag_name"
           
-          if [ -z "$changelog" ]; then
-            changelog="### ✨✨ 魔法更新\n\n- $commit_msg ($commit_short)\n\n"
+          # 从 CHANGELOG.md 提取更新日志
+          if [ -f "CHANGELOG.md" ]; then
+            # 修复版本号格式：将 -de. 替换为 -dev.
+            fixed_version=$(echo "$version" | sed 's/-de\./-dev./g')
+            
+            echo "尝试匹配版本: $version 或 $fixed_version"
+            
+            # 使用 sed 提取版本更新日志
+            # 先尝试匹配原始版本号
+            changelog_section=$(sed -n "/^## \[$version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
+            
+            # 如果没找到，尝试匹配修复后的版本号
+            if [ -z "$changelog_section" ]; then
+              changelog_section=$(sed -n "/^## \[$fixed_version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
+            fi
+            
+            # 移除第一行（标题行）
+            if [ -n "$changelog_section" ]; then
+              changelog=$(echo "$changelog_section" | tail -n +2)
+              
+              # 判断是否为开发版本
+              if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
+                is_dev="true"
+                latest_flag=""
+              else
+                is_dev="false"
+                latest_flag="--latest"
+              fi
+              
+              # 检查标签是否已存在
+              if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
+                echo "🎀🎀 创建新标签 $tag_name..."
+                git tag "$tag_name"
+                git push origin "$tag_name"
+              else
+                echo "标签 $tag_name 已存在"
+              fi
+              
+              # 检查发行是否存在
+              if gh release view "$tag_name" &>/dev/null; then
+                # 更新发行
+                echo "🔄 更新发行 $tag_name..."
+                gh release edit "$tag_name" \
+                  --notes "$changelog" \
+                  --prerelease=$is_dev
+                echo "✅ 已更新发行 $tag_name"
+              else
+                # 创建发行
+                echo "✨ 创建发行 $tag_name..."
+                gh release create "$tag_name" \
+                  --notes "$changelog" \
+                  --title "✨ 艾莉丝的魔法更新 $tag_name" \
+                  --prerelease=$is_dev \
+                  $latest_flag
+                echo "✅ 已创建发行 $tag_name"
+              fi
+              
+              echo "📦 发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
+            else
+              echo "⚠️ 未找到版本 $version 的更新日志"
+            fi
           else
-            changelog="$changelog\n\n"
+            echo "⚠️ CHANGELOG.md 文件不存在"
           fi
-          
-          if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-            echo "🎀🎀 施加新的魔法印记..."
-            git tag "$tag_name"
-            git push origin "$tag_name"
-          fi
-
-          if gh release view "$tag_name" &>/dev/null; then
-            gh release edit "$tag_name" \
-              --notes "$changelog" \
-              --prerelease=$is_dev
-            echo "🌟 已更新魔法版本 $tag_name"
-          else
-            gh release create "$tag_name" \
-              --notes "$changelog" \
-              --title "✨ 艾莉丝的魔法更新 $tag_name" \
-              --prerelease=$is_dev
-            echo "✨ 已发布新的魔法版本 $tag_name"
-          fi
-          
