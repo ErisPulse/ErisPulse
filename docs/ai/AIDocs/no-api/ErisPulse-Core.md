@@ -1,4 +1,4 @@
-# ErisPulse 模块开发文档
+# ErisPulse 核心功能文档
 
 **生成时间**: 2026-01-06 21:40:35
 
@@ -8,20 +8,18 @@
 
 1. [文档总览](#READMEmd)
 2. [快速开始指南](#quick-startmd)
-3. [基础架构和设计理念](#conceptsmd)
-4. [核心模块](#modulesmd)
-5. [适配器](#adaptersmd)
-6. [事件系统](#event-systemmd)
-7. [开发者指南列表](#READMEmd)
-8. [模块开发指南](#modulemd)
-9. [标准规范总览](#READMEmd)
-10. [事件转换标准](#event-conversionmd)
-11. [API响应标准](#api-responsemd)
-12. [平台特性总览](#READMEmd)
-13. [云湖平台特性](#yunhumd)
-14. [Telegram平台特性](#telegrammd)
-15. [OneBot11平台特性](#onebot11md)
-16. [邮件平台特性](#emailmd)
+3. [核心功能文档列表](#READMEmd)
+4. [核心概念](#conceptsmd)
+5. [核心模块详解](#modulesmd)
+6. [适配器系统](#adaptersmd)
+7. [事件系统](#event-systemmd)
+8. [命令行接口](#climd)
+9. [最佳实践](#best-practicesmd)
+10. [平台特性总览](#READMEmd)
+11. [云湖平台特性](#yunhumd)
+12. [Telegram平台特性](#telegrammd)
+13. [OneBot11平台特性](#onebot11md)
+14. [邮件平台特性](#emailmd)
 
 ## 各文件对应内容说明
 
@@ -29,15 +27,13 @@
 |--------|------|
 | [README.md](#READMEmd) | 文档总览 |
 | [quick-start.md](#quick-startmd) | 快速开始指南 |
-| [concepts.md](#conceptsmd) | 基础架构和设计理念 |
-| [modules.md](#modulesmd) | 核心模块 |
-| [adapters.md](#adaptersmd) | 适配器 |
+| [README.md](#READMEmd) | 核心功能文档列表 |
+| [concepts.md](#conceptsmd) | 核心概念 |
+| [modules.md](#modulesmd) | 核心模块详解 |
+| [adapters.md](#adaptersmd) | 适配器系统 |
 | [event-system.md](#event-systemmd) | 事件系统 |
-| [README.md](#READMEmd) | 开发者指南列表 |
-| [module.md](#modulemd) | 模块开发指南 |
-| [README.md](#READMEmd) | 标准规范总览 |
-| [event-conversion.md](#event-conversionmd) | 事件转换标准 |
-| [api-response.md](#api-responsemd) | API响应标准 |
+| [cli.md](#climd) | 命令行接口 |
+| [best-practices.md](#best-practicesmd) | 最佳实践 |
 | [README.md](#READMEmd) | 平台特性总览 |
 | [yunhu.md](#yunhumd) | 云湖平台特性 |
 | [telegram.md](#telegrammd) | Telegram平台特性 |
@@ -258,8 +254,37 @@ epsdk run main.py --reload
 
 ---
 
+<a id="READMEmd"></a>
+## 核心功能文档列表
+
+# ErisPulse 核心功能文档
+
+本目录包含 ErisPulse 核心功能的详细文档，帮助开发者理解框架的核心组件和工作机制。
+
+## 文档列表
+
+- [核心概念](concepts.md) - ErisPulse 的基础架构和设计理念
+- [核心模块](modules.md) - 存储、配置、日志等核心组件详解
+- [cli](cli.md) - 命令行工具使用
+- [适配器系统](adapters.md) - 平台适配器的使用
+- [事件系统](event-system.md) - Event 模块的使用(事件监听、事件处理、事件分发)
+- [最佳实践](best-practices.md) - 开发和部署建议
+- [框架配置解析](self-config.md)
+
+## 核心架构概览
+
+ErisPulse 采用模块化、事件驱动的架构设计，主要包括以下几个核心组件：
+
+1. **适配器系统** - 负责与不同平台进行交互，将平台特定事件转换为统一的 OneBot12 标准事件
+2. **事件系统** - 处理各种类型的事件，包括消息、命令、通知、请求和元事件
+3. **模块系统** - 提供功能扩展机制，开发者可以创建自定义模块来扩展功能
+4. **核心组件** - 包括配置管理、存储系统、日志系统等基础功能
+
+
+---
+
 <a id="conceptsmd"></a>
-## 基础架构和设计理念
+## 核心概念
 
 # ErisPulse 的基础架构和设计理念
 
@@ -304,7 +329,7 @@ sequenceDiagram
 ---
 
 <a id="modulesmd"></a>
-## 核心模块
+## 核心模块详解
 
 # ErisPulse 核心模块
 
@@ -970,7 +995,7 @@ epsdk config-wizard
 ---
 
 <a id="adaptersmd"></a>
-## 适配器
+## 适配器系统
 
 # ErisPulse 适配器系统
 
@@ -1687,743 +1712,419 @@ async def keyword_handler(event):
 
 ---
 
-<a id="READMEmd"></a>
-## 开发者指南列表
+<a id="climd"></a>
+## 命令行接口
 
-# ErisPulse 开发者指南
+# ErisPulse CLI 命令手册
 
-本文档包含 ErisPulse 的模块和适配器开发指南，帮助开发者快速上手开发自定义功能。
+## 官方 CLI 命令手册
 
-## 开发文档列表
+### 包管理命令
 
-- [模块开发指南](module.md) - 开发自定义功能模块
-- [适配器开发指南](adapter.md) - 开发一个平台适配器
-- [CLI 开发指南](cli.md) - 扩展命令行工具功能
+| 命令       | 参数                      | 描述                                  | 示例                          |
+|------------|---------------------------|---------------------------------------|-------------------------------|
+| `install`  | `<package>... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+|            |                           | 支持远程包简称自动解析                | `epsdk install Yunhu -U` |
+| `uninstall`| `<package>...`            | 卸载模块/适配器包（支持多个包）       | `epsdk uninstall old-module1 old-module2`  |
+| `upgrade`  | `[package]... [--force/-f] [--pre]` | 升级指定模块/适配器或所有包         | `epsdk upgrade --force`       |
+| `search`   | `<query> [--installed/-i] [--remote/-r]` | 搜索模块/适配器包             | `epsdk search github`         |
+| `self-update` | `[version] [--pre] [--force/-f]` | 更新ErisPulse SDK本身           | `epsdk self-update`           |
 
-## 开发准备
+### 模块管理命令
 
-在开始开发之前，请确保您已经：
+| 命令       | 参数       | 描述                  | 示例                  |
+|------------|------------|-----------------------|-----------------------|
+| `enable`   | `<module>` | 启用已安装的模块      | `epsdk enable chat`   |
+| `disable`  | `<module>` | 禁用已安装的模块      | `epsdk disable stats` |
 
-1. 阅读了 [核心概念](../core/concepts.md) 文档，了解 ErisPulse 的基础架构
-2. 熟悉了 [事件系统](../core/event-system.md) 的工作原理
-3. 了解了 [适配器系统](../core/adapters.md) 的设计模式
-4. 安装了必要的开发环境和依赖
+### 信息查询命令
 
-## 开发类型选择
+| 命令          | 参数                      | 描述                                  | 示例                          |
+|---------------|---------------------------|---------------------------------------|-------------------------------|
+| `list`        | `[--type/-t <type>]`      | 列出已安装的模块/适配器               | `epsdk list --type=modules`   |
+|               | `[--outdated/-o]`         | 仅显示可升级的包                      | `epsdk list -o`               |
+|               |                           | `--type`: `modules`/`adapters`/`cli`/`all`  | `epsdk list -t adapters`      |
+| `list-remote` | `[--type/-t <type>]`      | 列出远程可用的模块和适配器            | `epsdk list-remote`           |
+|               | `[--refresh/-r]`          | 强制刷新远程包列表                    | `epsdk list-remote -r`        |
+|               |                           | `--type`: `modules`/`adapters`/`cli`/`all`  | `epsdk list-remote -t all`    |
 
-根据您的需求选择合适的开发类型：
+### 运行控制命令
 
-### 模块开发
-适用于扩展 ErisPulse 的功能，如命令处理、业务逻辑等。
-- 参考文档：[模块开发指南](module.md)
-- 典型应用：聊天机器人功能、数据处理模块等
+| 命令       | 参数                      | 描述                                  | 示例                          |
+|------------|---------------------------|---------------------------------------|-------------------------------|
+| `run`      | `<script> [--reload] [--no-reload]` | 运行指定脚本                    | `epsdk run main.py`           |
+|            |                           | `--reload`: 启用热重载模式            | `epsdk run app.py --reload`   |
 
-### 适配器开发
-适用于连接新的消息平台，实现跨平台消息处理。
-- 参考文档：[适配器开发指南](adapter.md)
-- 典型应用：连接新的聊天平台、邮件系统等
+### 项目管理命令
 
-### CLI 扩展开发
-适用于扩展命令行工具功能，提供额外的管理命令。
-- 参考文档：[CLI 开发指南](cli.md)
-- 典型应用：自定义管理命令、工具脚本等
-
-## 开发最佳实践
-
-1. 遵循 [标准规范](../standards/README.md) 确保兼容性
-2. 使用 [事件系统](../core/event-system.md) 进行事件处理
-3. 合理使用 [核心模块](../core/modules.md) 提供的功能
-4. 参考 [最佳实践](../core/best-practices.md) 提高代码质量
+| 命令       | 参数                      | 描述                                  | 示例                          |
+|------------|---------------------------|---------------------------------------|-------------------------------|
+| `init`     | `[--project-name/-n <name>]` | 交互式初始化新的 ErisPulse 项目  | `epsdk init -n my_bot`       |
+|            | `[--quick/-q]`             | 快速模式，跳过交互配置            | `epsdk init -q -n my_bot`      |
+|            | `[--force/-f]`             | 强制覆盖现有配置                  | `epsdk init -f`               |
+| `status`   | `[--type/-t <type>]`       | 显示 ErisPulse 系统状态        | `epsdk status`                |
+|            |                           | `--type`: `modules`/`adapters`/`all` | `epsdk status -t modules`     |
 
 
----
+## 第三方 CLI 模块扩展
 
-<a id="modulemd"></a>
-## 模块开发指南
+ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命令来扩展 CLI 功能。
 
-# ErisPulse 模块开发指南
+如需开发第三方 CLI 模块，请参考开发文档：
+`docs/development/cli.md`
 
-## 1. 模块结构
-一个标准的模块包结构应该是：
+该文档详细介绍了：
+- 如何创建 CLI 扩展模块
+- 命令注册机制
+- 参数处理最佳实践
+- 输出格式规范
+- 错误处理指南
 
-```
-MyModule/
-├── pyproject.toml    # 项目配置
-├── README.md         # 项目说明
-├── LICENSE           # 许可证文件
-└── MyModule/
-    ├── __init__.py  # 模块入口
-    └── Core.py      # 核心逻辑(只是推荐结构使用Core.py | 只要模块入口使用正确，你可以使用任何你喜欢的文件名)
-```
+## 技术细节
 
-## 2. `pyproject.toml` 文件
-模块的配置文件, 包括模块信息、依赖项、模块/适配器入口点等信息
+- 优先使用 `uv` 进行包管理 (如果已安装)
+- 支持多源远程仓库查询
+- 热重载模式支持:
+  - 开发模式: 监控所有 `.py` 文件变化
+  - 普通模式: 仅监控 `config.toml` 变更
+- 自动检查模块的最低SDK版本要求
+- 支持通过简称安装/卸载远程包
 
-```toml
-[project]
-name = "ErisPulse-MyModule"     # 模块名称, 建议使用 ErisPulse-<模块名称> 的格式命名
-version = "1.0.0"
-description = "一个非常哇塞的模块"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-dependencies = [
-    
-]
+## 反馈与支持
 
-# 模块主页, 用于在模块管理器中显示模块信息 | 尽量使用仓库地址，以便模块商店显示文档时指定为仓库的 README.md 文件
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-# 模块入口点，用于指定模块的入口类 当然也可以在一个包中定义多个模块，但并不建议这样做
-[project.entry-points]
-"erispulse.module" = { "MyModule" = "MyModule:Main" }
-
-```
-
-## 3. `MyModule/__init__.py` 文件
-
-顾名思义,这只是使你的模块变成一个Python包, 你可以在这里导入模块核心逻辑, 当然也可以让他保持空白
-
-示例这里导入了模块核心逻辑
-
-```python
-from .Core import Main
-```
+如遇到 CLI 使用问题，请在 GitHub Issues 提交反馈。
 
 ---
 
-## 4. `MyModule/Core.py` 文件
+<a id="best-practicesmd"></a>
+## 最佳实践
 
-实现模块主类 `Main`，必须继承 `BaseModule` 基类以获得标准化的生命周期管理功能。
+# ErisPulse 最佳实践
+
+本文档提供了 ErisPulse 开发和部署的最佳实践建议。
+
+## 1. 模块开发最佳实践
+
+### 1.1 模块结构设计
 
 ```python
-from ErisPulse import sdk
-from ErisPulse.Core.Bases import BaseModule
-from ErisPulse.Core.Event import command
-
-class Main(BaseModule):
+class Main:
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
+        self.config = self._load_config()
         
-        self.config = self._get_config()
-
-    @staticmethod
-    def should_eager_load():
-        # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
-        return False
-    
-    async def on_load(self, event):
-        command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
-        self.logger.info("模块已加载")
-        
-    async def on_unload(self, event):
-        command.unregister(self.ACommand)
-        self.logger.info("模块已卸载")
-
-    # 从 config.toml 中获取配置, 如果不存在则使用默认值
-    def _get_config(self):
+    def _load_config(self):
         config = self.sdk.config.getConfig("MyModule")
         if not config:
-            default_config = {
-                "my_config_key": "default_value"
-            }
+            default_config = self._get_default_config()
             self.sdk.config.setConfig("MyModule", default_config)
-            self.logger.warning("未找到模块配置, 对应模块配置已经创建到config.toml中")
             return default_config
         return config
-
-    async def ACommand(self):
-        self.logger.info("命令已执行")
-
-    def print_hello(self):
-        self.logger.info("Hello World!")
+        
+    def _get_default_config(self):
+        return {
+            "api_url": "https://api.example.com",
+            "timeout": 30,
+            "retry_count": 3
+        }
 ```
 
-- 所有 SDK 提供的功能都可通过 `sdk` 对象访问。
-```python
-# 这时候在其它地方可以访问到该模块
-from ErisPulse import sdk
-sdk.MyModule.print_hello()
+### 1.2 异步编程模型
 
-# 运行模块主程序（推荐使用CLI命令）
-# epsdk run main.py --reload
-```
-
-### BaseModule 基类
-方法说明
-| 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
-| --- | --- | --- | --- | --- |
-| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载 | 否 | 无 | bool |
-| on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
-| on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
-
-## 6. 模块路由注册
-
-从 ErisPulse 2.1.15 版本开始，模块也可以注册自己的 HTTP/WebSocket 路由，用于提供 Web API 或实时通信功能。
-
-### 6.1 HTTP 路由注册
-
-模块可以注册 HTTP 路由来提供 REST API 接口：
+优先使用异步库，避免阻塞主线程：
 
 ```python
-from ErisPulse import sdk
-from fastapi import Request
+import aiohttp
 
-class Main(BaseModule):
+class Main:
     def __init__(self):
-        super().__init__()
-        self.sdk = sdk
+        self.session = aiohttp.ClientSession()
+    
+    async def fetch_data(self, url):
+        async with self.session.get(url) as response:
+            return await response.json()
+    
+    async def shutdown(self):
+        await self.session.close()
+```
+
+### 1.3 异常处理
+
+统一异常处理机制，记录详细日志：
+
+```python
+import traceback
+
+class Main:
+    async def handle_event(self, event):
+        try:
+            # 业务逻辑
+            await self.process_event(event)
+        except Exception as e:
+            self.logger.error(f"处理事件时出错: {e}")
+            self.logger.debug(f"错误详情: {traceback.format_exc()}")
+```
+
+## 2. 适配器开发最佳实践
+
+### 2.1 连接管理
+
+实现连接重试机制，确保服务稳定性：
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        while retry_count < 5:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                wait_time = min(60 * (2 ** retry_count), 600)  # 指数退避
+                self.logger.warning(f"连接失败，{wait_time}秒后重试: {e}")
+                await asyncio.sleep(wait_time)
+```
+
+### 2.2 事件转换
+
+严格按照 OneBot12 标准进行事件转换：
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        onebot_event = {
+            "id": self._generate_event_id(raw_event),
+            "time": self._convert_timestamp(raw_event.get("timestamp")),
+            "type": self._convert_event_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event  # 保留原始数据
+        }
+        return onebot_event
+```
+
+## 3. 配置管理最佳实践
+
+### 3.1 配置结构化
+
+使用结构化配置，便于管理和维护：
+
+```python
+# config.toml
+[MyModule]
+api_url = "https://api.example.com"
+timeout = 30
+
+[MyModule.database]
+host = "localhost"
+port = 5432
+name = "mymodule"
+
+[MyModule.features]
+enable_cache = true
+cache_ttl = 3600
+```
+
+### 3.2 配置验证
+
+对配置进行验证，确保配置正确性：
+
+```python
+def _validate_config(self, config):
+    required_fields = ["api_url", "timeout"]
+    for field in required_fields:
+        if field not in config:
+            raise ValueError(f"缺少必要配置项: {field}")
+    
+    if not isinstance(config["timeout"], int) or config["timeout"] <= 0:
+        raise ValueError("timeout 配置必须为正整数")
+```
+
+## 4. 存储系统最佳实践
+
+### 4.1 事务使用
+
+在关键操作中使用事务，确保数据一致性：
+
+```python
+async def update_user_data(self, user_id, data):
+    with self.sdk.storage.transaction():
+        self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
+        self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
+```
+
+## 5. 日志系统最佳实践
+
+### 5.1 日志级别使用
+
+合理使用不同日志级别：
+
+```python
+class Main:
+    def __init__(self):
         self.logger = sdk.logger.get_child("MyModule")
-        self.storage = sdk.storage
+    
+    async def process_event(self, event):
+        self.logger.debug(f"开始处理事件: {event['id']}")
         
-        # 注册模块路由
-        self._register_routes()
+        try:
+            result = await self._handle_event(event)
+            self.logger.info(f"事件处理成功: {event['id']}")
+            return result
+        except ValueError as e:
+            self.logger.warning(f"事件处理警告: {e}")
+        except Exception as e:
+            self.logger.error(f"事件处理失败: {e}")
+            raise
+```
+
+### 5.2 日志输出配置
+
+配置日志输出到文件，便于问题排查：
+
+```python
+# 在模块初始化时配置日志输出
+sdk.logger.set_output_file(["app.log", "module.log"])
+sdk.logger.set_module_level("MyModule", "DEBUG")
+```
+
+## 6. 性能优化最佳实践
+
+### 6.1 缓存使用
+
+对频繁查询的数据使用缓存：
+
+```python
+import asyncio
+
+class Main:
+    def __init__(self):
+        self._cache = {}
+        self._cache_lock = asyncio.Lock()
+    
+    async def get_user_info(self, user_id):
+        async with self._cache_lock:
+            if user_id in self._cache:
+                # 检查缓存是否过期
+                if self._cache[user_id]["expires"] > asyncio.get_event_loop().time():
+                    return self._cache[user_id]["data"]
+                else:
+                    del self._cache[user_id]
         
-    def _register_routes(self):
-        """注册模块路由"""
+        # 从数据库获取数据
+        user_info = await self._fetch_user_info_from_db(user_id)
         
-        # 注册 HTTP GET 路由
-        async def get_info():
-            return {
-                "module": "MyModule", 
-                "version": "1.0.0",
-                "status": "running"
+        # 缓存数据
+        async with self._cache_lock:
+            self._cache[user_id] = {
+                "data": user_info,
+                "expires": asyncio.get_event_loop().time() + 3600  # 1小时过期
             }
         
-        # 注册 HTTP POST 路由
-        async def process_data(request: Request):
-            data = await request.json()
-            # 处理数据逻辑
-            return {"result": "success", "received": data}
-        
-        # 使用 router 注册路由
-        self.sdk.router.register_http_route(
-            module_name="MyModule",
-            path="/info",
-            handler=get_info,
-            methods=["GET"]
-        )
-        
-        self.sdk.router.register_http_route(
-            module_name="MyModule", 
-            path="/process",
-            handler=process_data,
-            methods=["POST"]
-        )
-        
-        self.logger.info("模块路由注册完成")
+        return user_info
 ```
 
-### 6.2 WebSocket 路由注册
+### 6.2 资源管理
 
-模块也可以注册 WebSocket 路由来实现实时通信功能：
+及时释放资源，避免内存泄漏：
 
 ```python
-from ErisPulse import sdk
-from fastapi import WebSocket, WebSocketDisconnect
-
-class Main(BaseModule):
+class Main:
     def __init__(self):
-        super().__init__()
-        self.sdk = sdk
-        self.logger = sdk.logger.get_child("MyModule")
-        self.storage = sdk.storage
-        self._connections = set()
-        
-        # 注册 WebSocket 路由
-        self._register_websocket_routes()
-        
-    def _register_websocket_routes(self):
-        """注册 WebSocket 路由"""
-        
-        async def websocket_handler(websocket: WebSocket):
-            """WebSocket 连接处理器"""
-            await websocket.accept()
-            self._connections.add(websocket)
-            self.logger.info(f"新的 WebSocket 连接: {websocket.client}")
-            
-            try:
-                while True:
-                    data = await websocket.receive_text()
-                    # 处理接收到的消息
-                    response = f"收到消息: {data}"
-                    await websocket.send_text(response)
-                    
-                    # 广播给所有连接
-                    await self._broadcast(f"广播: {data}")
-                    
-            except WebSocketDisconnect:
-                self.logger.info(f"WebSocket 连接断开: {websocket.client}")
-            finally:
-                self._connections.discard(websocket)
-        
-        async def auth_handler(websocket: WebSocket) -> bool:
-            """WebSocket 认证处理器（可选）"""
-            # 实现认证逻辑
-            token = websocket.headers.get("authorization")
-            return token == "Bearer valid-token"  # 简单示例
-        
-        # 注册 WebSocket 路由
-        self.sdk.router.register_websocket(
-            module_name="MyModule",
-            path="/ws",
-            handler=websocket_handler,
-            auth_handler=auth_handler  # 可选
-        )
-        
-        self.logger.info("WebSocket 路由注册完成")
+        self.resources = []
     
-    async def _broadcast(self, message: str):
-        """向所有连接广播消息"""
-        disconnected = set()
-        for connection in self._connections:
-            try:
-                await connection.send_text(message)
-            except:
-                disconnected.add(connection)
-        
-        # 移除断开的连接
-        for conn in disconnected:
-            self._connections.discard(conn)
+    async def create_resource(self):
+        resource = await self._create_new_resource()
+        self.resources.append(resource)
+        return resource
+    
+    async def cleanup_resources(self):
+        for resource in self.resources:
+            await resource.close()
+        self.resources.clear()
 ```
 
-### 6.3 路由使用说明
+## 7. 安全最佳实践
 
-注册的路由将自动添加模块名称作为前缀：
+### 7.1 敏感数据保护
 
-- HTTP 路由 `/info` 将可通过 `/MyModule/info` 访问
-- WebSocket 路由 `/ws` 将可通过 `/MyModule/ws` 访问
-
-可以通过以下方式访问：
-```
-GET http://localhost:8000/MyModule/info
-POST http://localhost:8000/MyModule/process
-
-WebSocket 连接: ws://localhost:8000/MyModule/ws
-```
-
-### 6.4 路由最佳实践
-
-1. **路由命名规范**：
-   - 使用清晰、描述性的路径名
-   - 遵循 RESTful API 设计原则
-   - 避免与其他模块的路由冲突
-
-2. **安全性考虑**：
-   - 为敏感操作实现认证机制
-   - 对用户输入进行验证和过滤
-   - 使用 HTTPS（在生产环境中）
-
-3. **错误处理**：
-   - 实现适当的错误处理和响应格式
-   - 记录关键操作日志
-   - 提供有意义的错误信息
+避免将密钥、密码等硬编码在代码中：
 
 ```python
-from ErisPulse import sdk
-from fastapi import HTTPException
+# config.toml
+[MyModule]
+api_key = "YOUR_API_KEY_HERE"  # 用户需要替换为实际值
 
-class Main(BaseModule):
+# 代码中
+class Main:
     def __init__(self):
-        super().__init__()
-        self.sdk = sdk
-        self.logger = sdk.logger.get_child("MyModule")
-        self.storage = sdk.storage
-        self._register_routes()
+        config = self.sdk.config.getConfig("MyModule")
+        self.api_key = config.get("api_key")
+        if not self.api_key or self.api_key == "YOUR_API_KEY_HERE":
+            raise ValueError("请在 config.toml 中配置 API 密钥")
+```
+
+## 8. 部署最佳实践
+
+### 8.1 环境配置
+
+使用环境变量配置敏感信息：
+
+```python
+import os
+
+class Main:
+    def __init__(self):
+        self.config = self._load_config()
+        self._load_env_config()
+    
+    def _load_env_config(self):
+        # 从环境变量加载配置，覆盖默认配置
+        api_key = os.getenv("MYMODULE_API_KEY")
+        if api_key:
+            self.config["api_key"] = api_key
+```
+
+### 8.2 监控和健康检查
+
+实现健康检查接口：
+
+```python
+from fastapi import APIRouter
+
+class Main:
+    def __init__(self):
+        self._register_health_check()
+    
+    def _register_health_check(self):
+        router = APIRouter()
         
-    def _register_routes(self):
-        async def get_item(item_id: int):
-            """获取项目信息"""
-            if item_id < 0:
-                raise HTTPException(status_code=400, detail="无效的项目ID")
-            
-            # 模拟数据获取
-            item = {"id": item_id, "name": f"Item {item_id}"}
-            self.logger.info(f"获取项目: {item}")
-            return item
+        @router.get("/health")
+        async def health_check():
+            return {
+                "status": "ok",
+                "module": "MyModule",
+                "version": "1.0.0"
+            }
         
         self.sdk.router.register_http_route(
             module_name="MyModule",
-            path="/items/{item_id}",
-            handler=get_item,
+            path="/health",
+            handler=health_check,
             methods=["GET"]
         )
 ```
 
-## 7. `LICENSE` 文件
-`LICENSE` 文件用于声明模块的版权信息, 示例模块的声明默认为 `MIT` 协议。
-
----
-
-## 开发建议
-
-### 1. 使用异步编程模型
-- **优先使用异步库**：如 `aiohttp`、`asyncpg` 等，避免阻塞主线程。
-- **合理使用事件循环**：确保异步函数正确地被 `await` 或调度为任务（`create_task`）。
-
-### 2. 异常处理与日志记录
-- **统一异常处理机制**：直接 `raise` 异常，上层会自动捕获并记录日志。
-- **详细的日志输出**：在关键路径上打印调试日志，便于问题排查。
-
-### 3. 模块化与解耦设计
-- **职责单一原则**：每个模块/类只做一件事，降低耦合度。
-- **依赖注入**：通过构造函数传递依赖对象（如 `sdk`），提高可测试性。
-
-### 4. 性能优化
-- **避免死循环**：避免无止境的循环导致阻塞或内存泄漏。
-- **使用智能缓存**：对频繁查询的数据使用缓存，例如数据库查询结果、配置信息等。
-
-### 5. 安全与隐私
-- **敏感数据保护**：避免将密钥、密码等硬编码在代码中，使用sdk的配置模块。
-- **输入验证**：对所有用户输入进行校验，防止注入攻击等安全问题。
-
-
----
-
-<a id="READMEmd"></a>
-## 标准规范总览
-
-# ErisPulse 标准规范
-
-本文档包含 ErisPulse 的技术标准规范，确保各组件间的一致性和兼容性。
-
-## 标准文档列表
-
-- [事件转换标准](event-conversion.md) - 平台事件到 OneBot12 标准的转换规范
-- [API 响应标准](api-response.md) - 适配器 API 响应格式标准
-
-## 标准概述
-
-ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了扩展和细化，以适应不同平台的特性需求。所有适配器和模块都应遵循这些标准规范，确保系统的一致性和可扩展性。
-
-### 核心原则
-
-1. **兼容性**：所有标准都必须与 OneBot12 标准保持兼容
-2. **扩展性**：平台特有功能通过前缀方式扩展，避免冲突
-3. **一致性**：时间戳、ID 格式等关键字段需要统一处理
-4. **可追溯性**：保留原始数据以便调试和问题排查
-
-
----
-
-<a id="event-conversionmd"></a>
-## 事件转换标准
-
-# 适配器标准化转换规范
-
-## 1. 核心原则
-1. 严格兼容：所有标准字段必须完全遵循OneBot12规范
-2. 明确扩展：平台特有功能必须添加 {platform}_ 前缀（如 yunhu_form）
-3. 数据完整：原始事件数据必须保留在 {platform}_raw 字段中，原始事件类型必须保留在 {platform}_raw_type 字段中
-4. 时间统一：所有时间戳必须转换为10位Unix时间戳（秒级）
-5. 平台统一：platform项命名必须与你在ErisPulse中注册的名称/别称一致
-
-## 2. 标准字段要求
-
-### 2.1 必须字段
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | string | 事件唯一标识符 |
-| time | integer | Unix时间戳（秒级） |
-| type | string | 事件类型 |
-| detail_type | string | 事件详细类型 |
-| platform | string | 平台名称 |
-| self | object | 机器人自身信息 |
-| self.platform | string | 平台名称 |
-| self.user_id | string | 机器人用户ID |
-
-### 2.2 消息事件字段
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| message | array | 消息段数组 |
-| alt_message | string | 消息段备用文本 |
-| user_id | string | 用户ID |
-| user_nickname | string | 用户昵称（可选） |
-
-### 2.3 通知事件字段
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| user_id | string | 用户ID |
-| user_nickname | string | 用户昵称（可选） |
-| operator_id | string | 操作者ID（可选） |
-
-### 2.4 请求事件字段
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| user_id | string | 用户ID |
-| user_nickname | string | 用户昵称（可选） |
-| comment | string | 请求附言（可选） |
-
-## 3. 事件格式示例
-
-### 3.1 消息事件 (message)
-```json
-{
-  "id": "1234567890",
-  "time": 1752241223,
-  "type": "message",
-  "detail_type": "group",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "message": [
-    {
-      "type": "text",
-      "data": {
-        "text": "抽奖 超级大奖"
-      }
-    }
-  ],
-  "alt_message": "抽奖 超级大奖",
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "yunhu_raw": {...},
-  "yunhu_raw_type": "message.receive.normal",
-  "yunhu_command": {
-    "name": "抽奖",
-    "args": "超级大奖"
-  }
-}
-```
-
-### 3.2 通知事件 (notice)
-```json
-{
-  "id": "1234567891",
-  "time": 1752241224,
-  "type": "notice",
-  "detail_type": "group_member_increase",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "operator_id": "",
-  "yunhu_raw": {...},
-  "yunhu_raw_type": "bot.followed"
-}
-```
-
-### 3.3 请求事件 (request)
-```json
-{
-  "id": "1234567892",
-  "time": 1752241225,
-  "type": "request",
-  "detail_type": "friend",
-  "platform": "onebot11",
-  "self": {
-    "platform": "onebot11",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "comment": "请加好友",
-  "onebot11_raw": {...},
-  "onebot11_raw_type": "request"  // onebot11原始事件类型就是 `request`
-}
-```
-
-## 4. 消息段标准
-
-### 4.1 通用消息段
-```json
-{
-  "type": "text",
-  "data": {
-    "text": "Hello World"
-  }
-}
-```
-
-### 4.2 特殊消息段
-平台特有的消息段需要添加平台前缀：
-```json
-{
-  "type": "yunhu_form",
-  "data": {
-    "form_id": "123456"
-  }
-}
-```
-
-## 5. 未知事件处理
-
-对于无法识别的事件类型，应生成警告事件：
-```json
-{
-  "id": "1234567893",
-  "time": 1752241223,
-  "type": "unknown",
-  "platform": "yunhu",
-  "yunhu_raw": {...},
-  "yunhu_raw_type": "unknown",
-  "warning": "Unsupported event type: special_event",
-  "alt_message": "This event type is not supported by this system."
-}
-```
-
-## 6. 平台特性字段
-
-所有平台特有字段必须以平台名称作为前缀
-
-比如:
-- 云湖平台：`yunhu_`
-- Telegram平台：`telegram_`
-- OneBot11平台：`onebot11_`
-
-### 6.1 特有字段示例
-```json
-{
-  "yunhu_command": {
-    "name": "抽奖",
-    "args": "超级大奖"
-  },
-  "yunhu_form": {
-    "form_id": "123456"
-  },
-  "telegram_sticker": {
-    "file_id": "CAACAgIAAxkBAA..."
-  }
-}
-```
-
-## 7. 适配器实现检查清单
-- [ ] 所有标准字段已正确映射
-- [ ] 平台特有字段已添加前缀
-- [ ] 时间戳已转换为10位秒级
-- [ ] 原始数据保存在 {platform}_raw, 原始事件类型已经保存到 {platform}_raw_type
-- [ ] 消息段的 alt_message 已生成
-- [ ] 所有事件类型已通过单元测试
-- [ ] 文档包含完整示例和说明
-
-
-
----
-
-<a id="api-responsemd"></a>
-## API响应标准
-
-# ErisPulse 适配器标准化返回规范
-
-## 1. 说明
-为什么会有这个规范？
-
-为了确保各平台发送接口返回统一性与OneBot12兼容性，ErisPulse适配器在API响应格式上采用了OneBot12定义的消息发送返回结构标准。
-
-但ErisPulse的协议有一些特殊性定义:
-- 1. 基础字段中，message_id是必须的，但OneBot12标准中无此字段
-- 2. 返回内容中需要添加 {platform_name}_raw 字段，用于存放原始响应数据
-
-## 2. 基础返回结构
-所有动作响应必须包含以下基础字段：
-
-| 字段名 | 数据类型 | 必选 | 说明 |
-|-------|---------|------|------|
-| status | string | 是 | 执行状态，必须是"ok"或"failed" |
-| retcode | int64 | 是 | 返回码，遵循OneBot12返回码规则 |
-| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
-| message_id | string | 是 | 消息ID，用于标识消息, 没有则为空字符串 |
-| message | string | 是 | 错误信息，成功时为空字符串 |
-| {platform_name}_raw | any | 否 | 原始响应数据 |
-
-可选字段：
-| 字段名 | 数据类型 | 必选 | 说明 |
-|-------|---------|------|------|
-| echo | string | 否 | 当请求中包含echo字段时，原样返回 |
-
-## 3. 完整字段规范
-
-### 3.1 通用字段
-
-#### 成功响应示例
-```json
-{
-    "status": "ok",
-    "retcode": 0,
-    "data": {
-        "message_id": "1234",
-        "time": 1632847927.599013
-    },
-    "message_id": "1234",
-    "message": "",
-    "echo": "1234",
-    "telegram_raw": {...}
-}
-```
-
-#### 失败响应示例
-```json
-{
-    "status": "failed",
-    "retcode": 10003,
-    "data": null,
-    "message_id": "",
-    "message": "缺少必要参数: user_id",
-    "echo": "1234",
-    "telegram_raw": {...}
-}
-```
-
-### 3.2 返回码规范
-
-#### 0 成功（OK）
-- 0: 成功（OK）
-
-#### 1xxxx 动作请求错误（Request Error）
-| 错误码 | 错误名 | 说明 |
-|-------|-------|------|
-| 10001 | Bad Request | 无效的动作请求 |
-| 10002 | Unsupported Action | 不支持的动作请求 |
-| 10003 | Bad Param | 无效的动作请求参数 |
-| 10004 | Unsupported Param | 不支持的动作请求参数 |
-| 10005 | Unsupported Segment | 不支持的消息段类型 |
-| 10006 | Bad Segment Data | 无效的消息段参数 |
-| 10007 | Unsupported Segment Data | 不支持的消息段参数 |
-| 10101 | Who Am I | 未指定机器人账号 |
-| 10102 | Unknown Self | 未知的机器人账号 |
-
-#### 2xxxx 动作处理器错误（Handler Error）
-| 错误码 | 错误名 | 说明 |
-|-------|-------|------|
-| 20001 | Bad Handler | 动作处理器实现错误 |
-| 20002 | Internal Handler Error | 动作处理器运行时抛出异常 |
-
-#### 3xxxx 动作执行错误（Execution Error）
-| 错误码范围 | 错误类型 | 说明 |
-|-----------|---------|------|
-| 31xxx | Database Error | 数据库错误 |
-| 32xxx | Filesystem Error | 文件系统错误 |
-| 33xxx | Network Error | 网络错误 |
-| 34xxx | Platform Error | 机器人平台错误 |
-| 35xxx | Logic Error | 动作逻辑错误 |
-| 36xxx | I Am Tired | 实现决定罢工 |
-
-#### 保留错误段
-- 4xxxx、5xxxx: 保留段，不应使用
-- 6xxxx～9xxxx: 其他错误段，供实现自定义使用
-
-## 4. 实现要求
-1. 所有响应必须包含status、retcode、data和message字段
-2. 当请求中包含非空echo字段时，响应必须包含相同值的echo字段
-3. 返回码必须严格遵循OneBot12规范
-4. 错误信息(message)应当是人类可读的描述
-
-## 5. 注意事项
-- 对于3xxxx错误码，低三位可由实现自行定义
-- 避免使用保留错误段(4xxxx、5xxxx)
-- 错误信息应当简洁明了，便于调试
-
+遵循这些最佳实践可以帮助您开发出高质量、稳定可靠的 ErisPulse 模块和适配器。
 
 ---
 
