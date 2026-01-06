@@ -1,6 +1,6 @@
 # `ErisPulse.__init__` 模块
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -47,6 +47,16 @@ ErisPulse SDK 主模块
 ### async `async init()`
 
 SDK初始化入口
+
+:return: bool SDK初始化是否成功
+
+---
+
+### `init_sync()`
+
+SDK初始化入口（同步版本）
+
+用于命令行直接调用，自动在事件循环中运行异步初始化
 
 :return: bool SDK初始化是否成功
 
@@ -100,7 +110,8 @@ SDK重新启动
 :return: bool 加载是否成功
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 可用于手动触发懒加载模块的初始化
-2. 如果模块不存在或已加载会返回False</p></div>
+2. 如果模块不存在或已加载会返回False
+3. 对于需要异步初始化的模块，这是唯一的加载方式</p></div>
 
 ---
 
@@ -135,6 +146,22 @@ SDK重新启动
     实际初始化模块
 
 <dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
+
+    ---
+    
+##### `_initialize_sync()`
+
+    同步初始化模块，用于在异步上下文中进行同步调用
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
+
+    ---
+    
+##### async `async _complete_async_init()`
+
+    完成异步初始化部分，用于同步初始化后的异步处理
+
+这个方法用于处理 module.load 和事件提交等异步操作
 
     ---
     
@@ -353,4 +380,4 @@ SDK重新启动
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
