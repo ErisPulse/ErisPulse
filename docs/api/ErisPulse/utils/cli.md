@@ -1,6 +1,6 @@
 # `ErisPulse.utils.cli` 模块
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -11,15 +11,22 @@
 
 ---
 
+## 函数列表
+
+### `_cleanup_adapters()`
+
+清理适配器资源
+
+---
+
+### `_cleanup_modules()`
+
+清理模块资源
+
+---
+
 ## 类列表
 
-### `class CommandHighlighter(RegexHighlighter)`
-
-    高亮CLI命令和参数
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
-
-    
 ### `class CLI`
 
     ErisPulse命令行接口
@@ -148,10 +155,4 @@
 
     ---
     
-##### `_cleanup_adapters()`
-
-    清理适配器资源
-
-    ---
-    
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
