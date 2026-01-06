@@ -1,6 +1,38 @@
 import os
 from datetime import datetime
 
+"""
+ErisPulse文档合并工具
+
+使用方法:
+1. 默认生成包含API的完整文档和开发文档:
+   python merge_md.py
+
+2. 生成不包含API的文档版本:
+   python merge_md.py no-api
+
+3. 只生成完整文档:
+   python merge_md.py full
+
+4. 只生成开发文档:
+   python merge_md.py dev
+
+5. 只生成核心文档:
+   python merge_md.py core
+
+输出文件位置:
+- 完整文档: docs/ai/AIDocs/ErisPulse-Full.md
+- 模块开发文档: docs/ai/AIDocs/ErisPulse-ModuleDev.md  
+- 适配器开发文档: docs/ai/AIDocs/ErisPulse-AdapterDev.md
+- 核心文档: docs/ai/AIDocs/ErisPulse-Core.md
+
+no-api版本输出文件位置:
+- 完整文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-Full.md
+- 模块开发文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-ModuleDev.md  
+- 适配器开发文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-AdapterDev.md
+- 核心文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-Core.md
+"""
+
 def merge_md_files(output_file, files_to_merge, title="文档合集"):
     """
     合并多个Markdown文件
@@ -265,7 +297,7 @@ def get_platform_features_files():
     
     return platform_files
 
-def generate_full_document():
+def generate_full_document(include_api=True):
     print("正在生成完整文档...")
     
     # 基础文件
@@ -294,15 +326,24 @@ def generate_full_document():
     if len(existing_files) != len(files_to_merge):
         print(f"警告: {len(files_to_merge) - len(existing_files)} 个文件不存在，已跳过")
     
-    output_file = "docs/ai/AIDocs/ErisPulse-Full.md"
+    # 根据是否包含API决定输出路径
+    if include_api:
+        output_file = "docs/ai/AIDocs/ErisPulse-Full.md"
+    else:
+        output_file = "docs/ai/AIDocs/no-api/ErisPulse-Full.md"
+    
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
     merge_md_files(output_file, existing_files, "完整开发文档")
-    merge_api_docs("docs/api", output_file)
     
-    print(f"完整文档生成完成，已保存到: {output_file}")
+    # 根据参数决定是否合并API文档
+    if include_api:
+        merge_api_docs("docs/api", output_file)
+    
+    api_status = "包含API" if include_api else "不包含API"
+    print(f"完整文档生成完成（{api_status}），已保存到: {output_file}")
 
-def generate_dev_documents():
+def generate_dev_documents(include_api=True):
     print("正在生成开发文档...")
     
     # 模块开发文档
@@ -331,11 +372,17 @@ def generate_dev_documents():
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
     
-    module_output = "docs/ai/AIDocs/ErisPulse-ModuleDev.md"
+    # 根据是否包含API决定输出路径
+    if include_api:
+        module_output = "docs/ai/AIDocs/ErisPulse-ModuleDev.md"
+    else:
+        module_output = "docs/ai/AIDocs/no-api/ErisPulse-ModuleDev.md"
+    
     os.makedirs(os.path.dirname(module_output), exist_ok=True)
     merge_md_files(module_output, existing_files, "模块开发文档")
 
-    print(f"模块开发文档生成完成，已保存到: {module_output}")
+    api_status = "包含API" if include_api else "不包含API"
+    print(f"模块开发文档生成完成（{api_status}），已保存到: {module_output}")
     
     # 适配器开发文档
     adapter_files = [
@@ -357,14 +404,22 @@ def generate_dev_documents():
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
     
-    adapter_output = "docs/ai/AIDocs/ErisPulse-AdapterDev.md"
+    # 根据是否包含API决定输出路径
+    if include_api:
+        adapter_output = "docs/ai/AIDocs/ErisPulse-AdapterDev.md"
+    else:
+        adapter_output = "docs/ai/AIDocs/no-api/ErisPulse-AdapterDev.md"
+    
     os.makedirs(os.path.dirname(adapter_output), exist_ok=True)
     merge_md_files(adapter_output, existing_files, "适配器开发文档")
-    merge_api_docs("docs/api", adapter_output)
     
-    print(f"适配器开发文档生成完成，已保存到: {adapter_output}")
+    # 根据参数决定是否合并API文档
+    if include_api:
+        merge_api_docs("docs/api", adapter_output)
+    
+    print(f"适配器开发文档生成完成（{api_status}），已保存到: {adapter_output}")
 
-def generate_core_document():
+def generate_core_document(include_api=True):
     print("正在生成核心文档...")
     
     # 基础文件
@@ -385,11 +440,21 @@ def generate_core_document():
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
     
-    core_output = "docs/ai/AIDocs/ErisPulse-Core.md"
+    # 根据是否包含API决定输出路径
+    if include_api:
+        core_output = "docs/ai/AIDocs/ErisPulse-Core.md"
+    else:
+        core_output = "docs/ai/AIDocs/no-api/ErisPulse-Core.md"
+    
     os.makedirs(os.path.dirname(core_output), exist_ok=True)
     merge_md_files(core_output, existing_files, "核心功能文档")
     
-    print(f"核心文档生成完成，已保存到: {core_output}")
+    # 根据参数决定是否合并API文档
+    if include_api:
+        merge_api_docs("docs/api", core_output)
+    
+    api_status = "包含API" if include_api else "不包含API"
+    print(f"核心文档生成完成（{api_status}），已保存到: {core_output}")
 
 def generate_custom_document(title, files, api_dirs, output_path):
     """
@@ -414,11 +479,44 @@ def generate_custom_document(title, files, api_dirs, output_path):
     
     print(f"{title}生成完成，已保存到: {output_path}")
 
+def generate_no_api_documents():
+    print("正在生成no-api版本文档...")
+    
+    # 生成不包含API的完整文档
+    generate_full_document(include_api=False)
+    
+    # 生成不包含API的开发文档
+    generate_dev_documents(include_api=False)
+    
+    # 生成不包含API的核心文档
+    generate_core_document(include_api=False)
+    
+    print("所有no-api版本文档生成完成")
+
 if __name__ == "__main__":
+    import sys
+    
     try:
-        generate_full_document()
-        generate_dev_documents()
-        # generate_core_document()
+        # 检查命令行参数
+        if len(sys.argv) > 1:
+            if sys.argv[1] == "no-api":
+                generate_no_api_documents()
+            elif sys.argv[1] == "full":
+                generate_full_document()
+                generate_dev_documents()
+                generate_core_document()
+            elif sys.argv[1] == "dev":
+                generate_dev_documents()
+            elif sys.argv[1] == "core":
+                generate_core_document()
+            else:
+                print(f"未知参数: {sys.argv[1]}")
+                print("可用参数: no-api, full, dev, core")
+        else:
+            generate_no_api_documents()
+            generate_full_document()
+            generate_dev_documents()
+            generate_core_document()
         print("所有文档生成完成")
     except Exception as e:
         print(f"文档生成过程中出现错误: {str(e)}")
