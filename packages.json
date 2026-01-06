@@ -1,9 +1,9 @@
 {
-    "last_updated": "2025-12-25T03:21:18Z",
+    "last_updated": "2026-01-06T03:23:42Z",
     "modules": {
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "author": "wsu2059q",
             "description": "为统一的命令系统提供一个help命令，用来在平台查看现有命令",
             "min_sdk_version": "2.2.0",
@@ -98,16 +98,16 @@
                 "Weather"
             ]
         },
-        "AIChat": {
-            "package": "ErisPulse-AIChat",
-            "version": "3.0.4",
+        "QvQChat": {
+            "package": "ErisPulse-QvQChat",
+            "version": "2.3.0",
             "author": "wsu2059q",
-            "description": "AIChat 聊天机器人模块",
-            "min_sdk_version": "2.0.0",
-            "repository": "https://github.com/wsu2059q/ErisPulse-AIChat",
+            "description": "一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天",
+            "min_sdk_version": "2.3.0",
+            "repository": "https://github.com/wsu2059q/ErisPulse-QvQChat",
             "official": false,
             "tags": [
-                "AIChat",
+                "QvQChat",
                 "AI"
             ]
         },
@@ -121,6 +121,19 @@
             "official": true,
             "tags": [
                 "OpenAI",
+                "AI"
+            ]
+        },
+        "AIChat": {
+            "package": "ErisPulse-AIChat",
+            "version": "3.0.4",
+            "author": "wsu2059q",
+            "description": "AIChat 聊天机器人模块（停更）",
+            "min_sdk_version": "2.0.0",
+            "repository": "https://github.com/wsu2059q/ErisPulse-AIChat",
+            "official": false,
+            "tags": [
+                "AIChat",
                 "AI"
             ]
         },
@@ -183,6 +196,18 @@
             "tags": [
                 "adapter",
                 "onebot11"
+            ]
+        },
+        "OneBot12": {
+            "package": "ErisPulse-OneBot12Adapter",
+            "author": "wsu2059q",
+            "version": "1.0.0",
+            "description": "OneBot12协议适配模块",
+            "repository": "https://github.com/ErisPulse/ErisPulse-OneBot12Adapter",
+            "official": true,
+            "tags": [
+                "adapter",
+                "onebot12"
             ]
         },
         "Telegram": {
