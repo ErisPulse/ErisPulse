@@ -42,6 +42,7 @@
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
   - [OneBot11平台特性](platform-features/onebot11.md) - OneBot11适配器特有功能说明
+  - [OneBot12平台特性](platform-features/onebot12.md) - OneBot12适配器特有功能说明
   - [邮件平台特性](platform-features/email.md) - 邮件适配器特有功能说明
 
 ### API 参考

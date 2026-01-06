@@ -20,6 +20,7 @@
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
+- [OneBot12平台特性](onebot12.md)]
 - [邮件平台特性](email.md)
 
 ---
