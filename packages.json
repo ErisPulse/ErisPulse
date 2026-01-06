@@ -198,6 +198,18 @@
                 "onebot11"
             ]
         },
+        "OneBot12": {
+            "package": "ErisPulse-OneBot12Adapter",
+            "author": "wsu2059q",
+            "version": "1.0.0",
+            "description": "OneBot12协议适配模块",
+            "repository": "https://github.com/ErisPulse/ErisPulse-OneBot12Adapter",
+            "official": true,
+            "tags": [
+                "adapter",
+                "onebot12"
+            ]
+        },
         "Telegram": {
             "package": "ErisPulse-TelegramAdapter",
             "author": "wsu2059q",
