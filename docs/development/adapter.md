@@ -438,7 +438,277 @@ async def call_api(self, endpoint: str, **params):
         }
 ```
 
-## 6. 平台特性文档维护
+## 6. 多Bot实现指南
+
+如果你的平台支持同时运行多个机器人账号（多Bot），需要按照以下规范实现：
+
+### 6.1 配置结构设计
+
+采用分层配置结构，支持全局配置和独立账户配置：
+
+```python
+# 配置格式示例
+{
+    "YourPlatform_Adapter": {
+        "global": {
+            "retry_interval": 30,
+            "timeout": 30
+        },
+        "bots": {
+            "bot1": {
+                "bot_id": "123456789",  # 必填，机器人唯一标识
+                "token": "xxx",
+                "webhook_path": "/webhook/bot1",
+                "enabled": true
+            },
+            "bot2": {
+                "bot_id": "987654321",
+                "token": "yyy",
+                "webhook_path": "/webhook/bot2",
+                "enabled": true
+            }
+        }
+    }
+}
+```
+
+**关键设计原则：**
+- 使用 `bot_id` 作为机器人的唯一标识符（必填）
+- `bot_id` 用于SDK路由消息，与平台特定的账号标识不同
+- 每个bot配置独立的 `token`、`webhook_path` 等参数
+- 提供 `enabled` 字段控制bot的启用状态
+
+### 6.2 Bot配置数据类
+
+使用dataclass定义bot配置结构：
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class YourBotConfig:
+    bot_id: str  # 机器人ID（必填，用于SDK路由）
+    token: str  # 认证token
+    webhook_path: str = "/webhook"  # Webhook路径
+    enabled: bool = True  # 是否启用
+    name: str = ""  # 账户名称
+```
+
+### 6.3 call_api 方法实现
+
+**重要：** `call_api` 方法需要智能判断 `_account_id` 是账户名还是bot_id：
+
+```python
+async def call_api(self, endpoint: str, bot_id: str = None, _account_id: str = None, **params):
+    """
+    调用平台API
+
+    :param endpoint: API端点
+    :param bot_id: 显式指定的bot_id（优先级最高）
+    :param _account_id: 账户名或bot_id（由Using方法设置）
+    :param params: 其他API参数
+    :return: 标准化的响应
+    """
+    # 确定使用的bot
+    if bot_id is None:
+        if _account_id is None:
+            # 使用第一个启用的bot作为默认
+            enabled_bots = [b for b in self.bots.values() if b.enabled]
+            if not enabled_bots:
+                raise ValueError("没有配置任何启用的机器人")
+            bot = enabled_bots[0]
+        else:
+            # 判断_account_id是账户名还是bot_id
+            if _account_id in self.bots:
+                # _account_id是账户名，直接使用
+                bot = self.bots[_account_id]
+            else:
+                # _account_id是bot_id，查找对应的账户
+                for bot_name, bot_config in self.bots.items():
+                    if bot_config.bot_id == _account_id:
+                        bot = bot_config
+                        break
+                else:
+                    raise ValueError(f"找不到bot_id或账户名为 {_account_id} 的机器人")
+    else:
+        # 显式指定了bot_id，根据bot_id查找
+        for bot_name, bot_config in self.bots.items():
+            if bot_config.bot_id == bot_id:
+                bot = bot_config
+                break
+        else:
+            raise ValueError(f"找不到bot_id为 {bot_id} 的机器人")
+
+    if not bot.enabled:
+        raise ValueError(f"机器人 {bot.name} 已禁用")
+
+    # 使用bot配置调用API
+    raw_response = await self._net_request(endpoint, params, bot.token=bot.token)
+
+    # 标准化响应，使用bot_id标识机器人
+    return {
+        "status": "ok",
+        "retcode": 0,
+        "data": raw_response.get("data"),
+        "message": "",
+        "self": {"user_id": bot.bot_id},  # 使用bot_id作为self.user_id
+        "yourplatform_raw": raw_response
+    }
+```
+
+**注意事项：**
+1. 优先级：显式指定的 `bot_id` > `_account_id` > 默认bot
+2. `_account_id` 既可以是账户名，也可以是bot_id
+3. 如果 `_account_id` 在 `self.bots` 字典中，则视为账户名
+4. 否则视为bot_id，在各bot的配置中查找匹配的 `bot_id`
+5. 返回响应中的 `self.user_id` 必须使用 `bot_id`
+6. 日志中应同时记录bot_name和bot_id，便于调试
+
+### 6.4 不需要重写Using方法
+
+**重要：** 不需要重写Using方法！
+
+BaseAdapter的SendDSL已经提供了Using方法，它会设置`self._account_id`属性。你的适配器只需要在`call_api`中智能判断`_account_id`是账户名还是bot_id（如6.3节所述）。
+
+用户可以这样使用：
+```python
+# 使用账户名
+await adapter.Send.Using("bot1").To("123").Text("Hello")
+
+# 使用bot_id
+await adapter.Send.Using("bot_id_123").To("123").Text("Hello")
+```
+
+### 6.5 Send方法实现
+
+Send方法只需要将 `self._account_id` 传递给call_api，不需要额外处理bot_id：
+
+```python
+def Text(self, text: str):
+    return asyncio.create_task(
+        self._adapter.call_api(
+            endpoint="/send",
+            content=text,
+            recvId=self._target_id,
+            recvType=self._target_type,
+            _account_id=self._account_id  # 传递_account_id，call_api会自动判断是账户名还是bot_id
+        )
+    )
+```
+
+**注意：** 不需要传递 `bot_id` 参数，因为 `call_api` 会根据 `_account_id` 自动判断是账户名还是bot_id。
+
+### 6.6 事件处理中的bot_id
+
+在事件处理时确保事件包含正确的bot_id：
+
+```python
+async def _process_webhook_event(self, data: Dict, bot_name: str):
+    """处理webhook事件"""
+    try:
+        # 获取对应的bot配置
+        bot = self.bots.get(bot_name)
+        if not bot:
+            self.logger.error(f"找不到bot配置: {bot_name}")
+            return
+
+        # 转换事件并传递bot_id
+        onebot_event = self.convert(data, bot_id=bot.bot_id)
+
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+    except Exception as e:
+        self.logger.error(f"处理事件错误: {str(e)}")
+```
+
+Converter需要支持接收bot_id参数：
+
+```python
+def convert(self, data: Dict, bot_id: str = None) -> Optional[Dict]:
+    """转换事件，使用传入的bot_id设置self.user_id"""
+    base_event = {
+        "id": str(uuid.uuid4()),
+        "time": int(time.time()),
+        "type": "message",
+        "detail_type": "private",
+        "platform": "yourplatform",
+        "self": {
+            "platform": "yourplatform",
+            "user_id": bot_id or ""  # 使用传入的bot_id
+        },
+        "yourplatform_raw": data,
+        "yourplatform_raw_type": data.get("type", "")
+    }
+    return base_event
+```
+
+### 6.7 向后兼容性处理
+
+支持旧配置格式的自动迁移：
+
+```python
+def _load_bots_config(self) -> Dict[str, YourBotConfig]:
+    """加载多bot配置"""
+    bots = {}
+
+    # 检查新格式的bot配置
+    bot_configs = self.sdk.config.getConfig("YourPlatform_Adapter.bots", {})
+
+    if not bot_configs:
+        # 检查旧配置格式
+        old_config = self.sdk.config.getConfig("YourPlatform_Adapter")
+        if old_config and "token" in old_config:
+            self.logger.warning("检测到旧格式配置，正在兼容处理...")
+            self.logger.warning("建议迁移到新配置格式以获得更好的多bot支持")
+
+            # 临时使用旧配置
+            temp_config = {
+                "default": {
+                    "bot_id": "default",  # 用户需修改为实际的bot_id
+                    "token": old_config.get("token", ""),
+                    "enabled": True
+                }
+            }
+            bot_configs = temp_config
+
+    # 创建bot配置对象
+    for bot_name, config in bot_configs.items():
+        if "bot_id" not in config or not config["bot_id"]:
+            self.logger.error(f"Bot {bot_name} 缺少bot_id配置，已跳过")
+            continue
+
+        merged_config = {
+            "bot_id": config["bot_id"],
+            "token": config.get("token", ""),
+            "enabled": config.get("enabled", True),
+            "name": bot_name
+        }
+
+        bots[bot_name] = YourBotConfig(**merged_config)
+
+    return bots
+```
+
+### 6.8 多Bot实现检查清单
+
+实现多bot功能时，请确保：
+
+- [ ] 配置结构使用 `bots` 对象，每个bot有独立的 `bot_id`
+- [ ] `call_api` 方法支持 `bot_id` 和 `_account_id` 参数
+- [ ] `call_api` 能够智能判断 `_account_id` 是账户名还是bot_id
+  - 如果 `_account_id` 在 `self.bots` 字典中，则视为账户名
+  - 否则视为bot_id，在各bot的配置中查找匹配的 `bot_id`
+- [ ] **不要重写Using方法**（BaseAdapter已经提供了Using方法）
+- [ ] Send方法只传递 `_account_id` 参数，不需要传递 `bot_id`
+- [ ] 响应中的 `self.user_id` 使用 `bot_id`
+- [ ] Converter支持接收bot_id参数
+- [ ] 事件处理中正确传递bot_id
+- [ ] 实现旧配置格式的兼容性处理
+- [ ] 为每个bot注册独立的Webhook/WS路由（如适用）
+- [ ] 日志中记录bot_name和bot_id，便于调试
+- [ ] 提供bot启用/禁用功能
+
+## 7. 平台特性文档维护
 
 请参考 [平台特性文档维护说明](../platform-features/maintain-notes.md) 来维护你的适配器平台特性文档。
 
@@ -449,6 +719,7 @@ async def call_api(self, endpoint: str, **params):
 4. 扩展字段说明
 5. OneBot12协议转换说明
 6. API响应格式
-7. 最佳实践和注意事项
+7. 多bot支持说明（如果支持）
+8. 最佳实践和注意事项
 
 感谢您的支持！
