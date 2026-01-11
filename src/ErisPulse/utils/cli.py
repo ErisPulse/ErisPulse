@@ -952,7 +952,6 @@ class CLI:
                 
                 # 显示欢迎信息
                 try:
-                    import importlib.metadata
                     version = importlib.metadata.version('ErisPulse')
                     ux.welcome(version)
                 except Exception:
@@ -995,7 +994,7 @@ class CLI:
                     cli_entries = entry_points.select(group='erispulse.cli')
                 else:
                     cli_entries = entry_points.get('erispulse.cli', [])
-                
+
                 for entry in cli_entries:
                     if entry.name == args.command:
                         cli_func = entry.load()
@@ -1003,8 +1002,14 @@ class CLI:
                             # 创建一个新的解析器来解析第三方命令的参数
                             subparser = self.parser._subparsers._group_actions[0].choices[args.command]
                             parsed_args = subparser.parse_args(sys.argv[2:])
-                            # 调用第三方命令处理函数
-                            parsed_args.func(parsed_args)
+                            # 调用第三方命令处理函数（支持异步函数）
+                            handler_func = parsed_args.func
+                            if asyncio.iscoroutinefunction(handler_func):
+                                # 异步函数：使用 asyncio.run() 运行
+                                asyncio.run(handler_func(parsed_args))
+                            else:
+                                # 同步函数：直接调用
+                                handler_func(parsed_args)
                         break
                 
         except KeyboardInterrupt:

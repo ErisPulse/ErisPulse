@@ -1,0 +1,152 @@
+name: 📚 艾莉丝的文档炼金工房 ~
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ main, develop, master ]
+  pull_request:
+    branches: [ main, develop, master ]
+  workflow_dispatch:
+
+jobs:
+  update-and-generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出魔法书
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 准备魔法环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 学习魔法咒语
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: 🔮 更新API文档
+        id: update-api
+        run: |
+          echo "📖 艾莉丝开始更新API文档了哦~"
+          
+          # 确保输出目录存在
+          mkdir -p docs/api
+          
+          # 运行API文档更新脚本
+          if [ -f ".github/tools/update-api-docs.py" ]; then
+            python .github/tools/update-api-docs.py --src src --output docs/api --format markdown
+            echo "✅ API文档更新完成!"
+          else
+            echo "⚠️ 未找到API文档更新脚本，跳过此步骤"
+          fi
+          
+          # 检查API文档是否有更新
+          if git diff --quiet docs/api/; then
+            echo "API文档没有变化"
+            echo "api_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了API文档更新!"
+            echo "api_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📜 生成合并文档
+        id: merge-docs
+        run: |
+          echo "📚 艾莉丝开始生成合并文档了~"
+          
+          # 确保输出目录存在
+          mkdir -p docs/ai/AIDocs
+          mkdir -p docs/ai/AIDocs/no-api
+          
+          # 生成包含API的文档
+          if [ -f ".github/tools/merge_md.py" ]; then
+            python .github/tools/merge_md.py full
+            python .github/tools/merge_md.py dev
+            
+            echo "✅ 包含API的文档生成完成!"
+          else
+            echo "⚠️ 未找到文档合并脚本"
+            exit 1
+          fi
+          
+          # 检查合并文档是否有更新
+          if git diff --quiet docs/ai/AIDocs/; then
+            echo "合并文档没有变化"
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了合并文档更新!"
+            echo "docs_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📝 生成no-api版本文档
+        run: |
+          echo "📖 艾莉丝正在生成不包含API的文档版本~"
+          
+          # 生成不包含API的文档
+          if [ -f ".github/tools/merge_md.py" ]; then
+            python .github/tools/merge_md.py no-api
+            echo "✅ no-api版本文档生成完成!"
+          fi
+
+      - name: 📊 统计更新情况
+        run: |
+          echo "📈 艾莉丝正在统计今天的文档更新情况~"
+          
+          # 统计API文档更新
+          api_files=$(git diff --name-only docs/api/ 2>/dev/null | wc -l)
+          echo "📝 API文档更新文件数: $api_files"
+          
+          # 统计合并文档更新
+          full_docs=$(git diff --name-only docs/ai/AIDocs/ 2>/dev/null | wc -l)
+          echo "📚 合并文档更新文件数: $full_docs"
+          
+          # 统计no-api文档
+          noapi_docs=$(git diff --name-only docs/ai/AIDocs/no-api/ 2>/dev/null | wc -l)
+          echo "📖 no-api文档更新文件数: $noapi_docs"
+
+      - name: 💾 提交更新
+        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true'
+        run: |
+          echo "💾 艾莉丝正在保存文档更新~"
+          
+          # 配置Git用户信息
+          git config --local user.email "eris@magic-circle.dev"
+          git config --local user.name "Eris the Scribe"
+          
+          # 添加所有更新的文档
+          git add docs/api/ docs/ai/AIDocs/
+          
+          # 生成提交信息
+          commit_msg="📚 艾莉丝的自动文档更新魔法 [skip ci]
+          
+          📖 自动更新了项目文档
+          📝 包含API文档和合并文档的最新版本
+          📚 生成了包含API和不包含API两种版本
+          
+          🌟 详情请查看 docs/ 目录"
+          
+          # 提交更改
+          git commit -m "$commit_msg"
+          git push
+
+      - name: 🎉 文档更新完成
+        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true'
+        run: |
+          echo "🌟 艾莉丝今天也努力完成了文档更新的魔法呢!"
+          echo "📚 所有文档已更新并提交到仓库"
+          echo "💫 包含了最新的API文档和合并文档"
+          echo "🌙 今天的文档炼金工作完成啦~"
+
+      - name: 😊 无更新时的说明
+        if: steps.update-api.outputs.api_updated != 'true' && steps.merge-docs.outputs.docs_updated != 'true'
+        run: |
+          echo "✨ 今天没有发现需要更新的文档呢~"
+          echo "📚 所有文档都是最新状态"
+          echo "🌟 艾莉丝会继续守护着我们的文档库!"
+          echo "🌙 下次更新再见啦~"

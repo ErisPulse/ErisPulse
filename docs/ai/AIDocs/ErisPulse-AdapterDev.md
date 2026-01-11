@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2025-12-25 17:19:18
+**生成时间**: 2026-01-06 21:40:35
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -95,6 +95,7 @@
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
   - [OneBot11平台特性](platform-features/onebot11.md) - OneBot11适配器特有功能说明
+  - [OneBot12平台特性](platform-features/onebot12.md) - OneBot12适配器特有功能说明
   - [邮件平台特性](platform-features/email.md) - 邮件适配器特有功能说明
 
 ### API 参考
@@ -2899,6 +2900,7 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
+- [OneBot12平台特性](onebot12.md)]
 - [邮件平台特性](email.md)
 
 ---
@@ -3754,6 +3756,7 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse\__main__.md](#ErisPulse___main__)
 - [ErisPulse\utils\__init__.md](#ErisPulse_utils___init__)
 - [ErisPulse\utils\cli.md](#ErisPulse_utils_cli)
+- [ErisPulse\utils\console.md](#ErisPulse_utils_console)
 - [ErisPulse\utils\package_manager.md](#ErisPulse_utils_package_manager)
 - [ErisPulse\utils\reload_handler.md](#ErisPulse_utils_reload_handler)
 
@@ -3763,7 +3766,7 @@ await mail.Send.Using("from@example.com")
 ## ErisPulse\Core\Bases\__init__.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -3776,13 +3779,13 @@ ErisPulse 基础模块
 
 ---
 
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Bases_adapter"></a>
 ## ErisPulse\Core\Bases\adapter.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -3924,13 +3927,13 @@ ErisPulse 适配器基础模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Bases_module"></a>
 ## ErisPulse\Core\Bases\module.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -3987,13 +3990,13 @@ ErisPulse 模块基础模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event___init__"></a>
 ## ErisPulse\Core\Event\__init__.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4026,13 +4029,13 @@ ErisPulse 事件处理模块
 
 ---
 
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse\Core\Event\base.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4117,13 +4120,13 @@ ErisPulse 事件处理基础模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_command"></a>
 ## ErisPulse\Core\Event\command.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4285,13 +4288,13 @@ ErisPulse 命令处理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
 ## ErisPulse\Core\Event\exceptions.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4334,13 +4337,13 @@ ErisPulse 事件系统异常处理模块
 当尝试获取不存在的事件处理器时抛出
 
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_message"></a>
 ## ErisPulse\Core\Event\message.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4449,13 +4452,13 @@ ErisPulse 消息处理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_meta"></a>
 ## ErisPulse\Core\Event\meta.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4563,13 +4566,13 @@ ErisPulse 元事件处理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_notice"></a>
 ## ErisPulse\Core\Event\notice.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4695,13 +4698,13 @@ ErisPulse 通知处理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_Event_request"></a>
 ## ErisPulse\Core\Event\request.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4791,13 +4794,13 @@ ErisPulse 请求处理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core__self_config"></a>
 ## ErisPulse\Core\_self_config.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -4862,13 +4865,21 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+### `get_framework_config()`
+
+获取框架配置
+
+:return: 框架配置字典
+
+---
+
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_adapter"></a>
 ## ErisPulse\Core\adapter.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5145,13 +5156,13 @@ ErisPulse 适配器系统
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_config"></a>
 ## ErisPulse\Core\config.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5230,13 +5241,13 @@ ErisPulse 配置中心
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_exceptions"></a>
 ## ErisPulse\Core\exceptions.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5303,13 +5314,13 @@ ErisPulse 全局异常处理系统
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_lifecycle"></a>
 ## ErisPulse\Core\lifecycle.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5407,13 +5418,13 @@ ErisPulse 生命周期管理模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_logger"></a>
 ## ErisPulse\Core\logger.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5560,13 +5571,13 @@ ErisPulse 日志系统
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_module"></a>
 ## ErisPulse\Core\module.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5792,13 +5803,13 @@ ErisPulse 模块系统
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_router"></a>
 ## ErisPulse\Core\router.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -5925,13 +5936,13 @@ ErisPulse 路由系统
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_storage"></a>
 ## ErisPulse\Core\storage.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6291,13 +6302,13 @@ use_global_db = true
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_Core_ux"></a>
 ## ErisPulse\Core\ux.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6395,13 +6406,13 @@ ErisPulse UX优化模块
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse___init__"></a>
 ## ErisPulse\__init__.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6448,6 +6459,16 @@ ErisPulse SDK 主模块
 ### async `async init()`
 
 SDK初始化入口
+
+:return: bool SDK初始化是否成功
+
+---
+
+### `init_sync()`
+
+SDK初始化入口（同步版本）
+
+用于命令行直接调用，自动在事件循环中运行异步初始化
 
 :return: bool SDK初始化是否成功
 
@@ -6501,7 +6522,8 @@ SDK重新启动
 :return: bool 加载是否成功
 
 <div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 可用于手动触发懒加载模块的初始化
-2. 如果模块不存在或已加载会返回False</p></div>
+2. 如果模块不存在或已加载会返回False
+3. 对于需要异步初始化的模块，这是唯一的加载方式</p></div>
 
 ---
 
@@ -6536,6 +6558,22 @@ SDK重新启动
     实际初始化模块
 
 <dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
+
+    ---
+    
+##### `_initialize_sync()`
+
+    同步初始化模块，用于在异步上下文中进行同步调用
+
+<dt>异常</dt><dd><code>LazyLoadError</code> 当模块初始化失败时抛出</dd>
+
+    ---
+    
+##### async `async _complete_async_init()`
+
+    完成异步初始化部分，用于同步初始化后的异步处理
+
+这个方法用于处理 module.load 和事件提交等异步操作
 
     ---
     
@@ -6754,13 +6792,13 @@ SDK重新启动
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse___main__"></a>
 ## ErisPulse\__main__.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6787,13 +6825,13 @@ CLI入口点
 
 ---
 
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_utils___init__"></a>
 ## ErisPulse\utils\__init__.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6806,13 +6844,13 @@ ErisPulse SDK 工具模块
 
 ---
 
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_utils_cli"></a>
 ## ErisPulse\utils\cli.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -6823,15 +6861,22 @@ ErisPulse SDK 工具模块
 
 ---
 
+## 函数列表
+
+### `_cleanup_adapters()`
+
+清理适配器资源
+
+---
+
+### `_cleanup_modules()`
+
+清理模块资源
+
+---
+
 ## 类列表
 
-### `class CommandHighlighter(RegexHighlighter)`
-
-    高亮CLI命令和参数
-
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
-
-    
 ### `class CLI`
 
     ErisPulse命令行接口
@@ -6960,19 +7005,39 @@ ErisPulse SDK 工具模块
 
     ---
     
-##### `_cleanup_adapters()`
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
-    清理适配器资源
+<a id="ErisPulse_utils_console"></a>
+## ErisPulse\utils\console.md
 
-    ---
+
+<sup>更新时间: 2026-01-06 21:40:16</sup>
+
+---
+
+## 模块概述
+
+
+该模块暂无概述信息。
+
+---
+
+## 类列表
+
+### `class CommandHighlighter(RegexHighlighter)`
+
+    高亮CLI命令和参数
+
+<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
+
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_utils_package_manager"></a>
 ## ErisPulse\utils\package_manager.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -7208,13 +7273,13 @@ ErisPulse SDK 包管理器
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 <a id="ErisPulse_utils_reload_handler"></a>
 ## ErisPulse\utils\reload_handler.md
 
 
-<sup>更新时间: 2025-12-21 14:28:48</sup>
+<sup>更新时间: 2026-01-06 21:40:16</sup>
 
 ---
 
@@ -7280,6 +7345,6 @@ ErisPulse SDK 热重载处理器
 
     ---
     
-<sub>文档最后更新于 2025-12-21 14:28:48</sub>
+<sub>文档最后更新于 2026-01-06 21:40:16</sub>
 
 ---
