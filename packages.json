@@ -234,6 +234,19 @@
                 "mail",
                 "email"
             ]
+        },
+        "Sandbox": {
+            "package": "ErisPulse-SandboxAdapter",
+            "author": "wsu2059q",
+            "version": "1.0.0",
+            "description": "沙箱适配器，用于安全测试和隔离执行环境",
+            "repository": "https://github.com/ErisPulse/ErisPulse-SandboxAdapter",
+            "official": true,
+            "tags": [
+                "adapter",
+                "sandbox",
+                "testing"
+            ]
         }
     },
     "cli_extensions": {
