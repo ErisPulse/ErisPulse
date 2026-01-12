@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-01-11T03:44:14Z",
+    "last_updated": "2026-01-12T03:43:09Z",
     "modules": {
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
@@ -177,7 +177,7 @@
         "Yunhu": {
             "package": "ErisPulse-YunhuAdapter",
             "author": "wsu2059q",
-            "version": "3.5.0",
+            "version": "3.5.1",
             "description": "云湖协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-YunhuAdapter",
             "official": true,
@@ -189,7 +189,7 @@
         "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
-            "version": "3.5.0",
+            "version": "3.5.1",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
@@ -201,7 +201,7 @@
         "OneBot12": {
             "package": "ErisPulse-OneBot12Adapter",
             "author": "wsu2059q",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "description": "OneBot12协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot12Adapter",
             "official": true,
