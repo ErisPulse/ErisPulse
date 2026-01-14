@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-01-13T03:22:58Z",
+    "last_updated": "2026-01-14T03:41:22Z",
     "modules": {
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
@@ -238,7 +238,7 @@
         "Sandbox": {
             "package": "ErisPulse-SandboxAdapter",
             "author": "wsu2059q",
-            "version": "1.0.0",
+            "version": "1.0.3",
             "description": "沙箱适配器，用于安全测试和隔离执行环境",
             "repository": "https://github.com/ErisPulse/ErisPulse-SandboxAdapter",
             "official": true,
