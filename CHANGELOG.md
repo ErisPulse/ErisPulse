@@ -32,6 +32,45 @@
 ```
 
 ---
+## [2.3.3-dev.1] - 2026/01/16
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `Event` 模块新增 Event 包装类，提供便捷的事件访问方法：
+    - Event 类继承 dict，保持完全的字典兼容性
+    - 支持点式访问事件字段（如 `event.platform`）
+    - 提供核心字段方法：`get_id()`, `get_time()`, `get_type()`, `get_detail_type()`, `get_platform()`
+    - 提供机器人信息方法：`get_self_platform()`, `get_self_user_id()`, `get_self_info()`
+    - 提供消息事件方法：`get_message()`, `get_text()`, `get_user_id()`, `get_user_nickname()`, `get_group_id()`, `get_sender()`
+    - 提供消息类型判断：`is_message()`, `is_private_message()`, `is_group_message()`, `is_at_message()`, `has_mention()`, `get_mentions()`
+    - 提供通知事件方法：`get_operator_id()`, `get_operator_nickname()`, `is_notice()`, `is_group_member_increase()`, `is_group_member_decrease()`, `is_friend_add()`, `is_friend_delete()`
+    - 提供请求事件方法：`get_comment()`, `is_request()`, `is_friend_request()`, `is_group_request()`
+    - 提供统一的 `reply()` 方法，支持通过 `method` 参数指定适配器的发送方法（Text、Image、Voice、Video、File 等）
+    - 提供 `wait_reply()` 方法，支持等待用户回复，可设置超时、验证函数和回调函数
+    - 提供命令信息方法：`get_command_name()`, `get_command_args()`, `get_command_raw()`, `is_command()`
+    - 提供原始数据访问：`get_raw()`, `get_raw_type()`
+    - 提供工具方法：`to_dict()`, `is_processed()`, `mark_processed()`
+    - Event 对象在事件处理流程中自动创建，替换原有的 dict 对象
+
+### 变更
+- @wsu2059q
+  - 更新模块开发文档，新增 Event 包装类的详细使用说明和示例
+  - 更新示例模块，演示 Event 包装类的新功能
+
+---
+## [2.3.3-dev.0] - 2026/01/15
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `Event.command` 模块新增命令判断的兜底机制：
+    - 优化命令处理流程，当从 `message` 列表中提取的 text 内容没有触发命令时，会自动检查 `alt_message` 字段是否符合触发命令的逻辑
+    - 新增 `_process_text_for_command` 方法，用于统一处理文本内容的命令匹配逻辑
+    - 改进 `_handle_message` 方法，确保即使适配器的 `message` 列表有问题，只要 `alt_message` 字段正确，命令仍能正常触发
+
+---
+
 ## [2.3.2] - 2025/01/11
 ### 新增
 - @wsu2059q
