@@ -15,6 +15,7 @@ from .message import message
 from .notice import notice
 from .request import request
 from .meta import meta
+from .wrapper import Event
 from . import exceptions
 from .. import config
 
@@ -61,5 +62,6 @@ __all__ = [
     "notice",
     "request",
     "meta",
+    "Event",
     "exceptions"
 ]
