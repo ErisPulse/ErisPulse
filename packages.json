@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-01-15T03:25:29Z",
+    "last_updated": "2026-01-16T03:24:50Z",
     "modules": {
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
@@ -201,7 +201,7 @@
         "OneBot12": {
             "package": "ErisPulse-OneBot12Adapter",
             "author": "wsu2059q",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "description": "OneBot12协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot12Adapter",
             "official": true,
