@@ -78,67 +78,78 @@ class Main(BaseModule):
     
     async def _register_commands(self):
         """注册命令处理器"""
-        # 注册命令处理器
+        # 注册命令处理器 - 使用新的事件包装类方法
         @command("hello", help="发送问候消息")
         async def hello_command(event):
-            platform = event["platform"]
-            user_id = event["user_id"]
-            
-            if hasattr(self.adapter, platform):
-                adapter_instance = getattr(self.adapter, platform)
-                await adapter_instance.Send.To("user", user_id).Text("Hello World!")
+            # 使用便捷方法
+            await event.reply("Hello World!")
+            # 也可以获取发送者信息
+            sender = event.get_sender()
+            self.logger.info(f"收到来自 {sender['user_id']} 的hello命令")
         
-        # 注册帮助命令
+        # 注册帮助命令 - 使用新方法
         @command("help", aliases=["h"], help="显示帮助信息")
         async def help_command(event):
-            platform = event["platform"]
-            user_id = event["user_id"]
             help_text = command.help()
-            
-            if hasattr(self.adapter, platform):
-                adapter_instance = getattr(self.adapter, platform)
-                await adapter_instance.Send.To("user", user_id).Text(help_text)
+            await event.reply(help_text)
         
-        # 注册回显命令
+        # 注册回显命令 - 使用新方法
         @command("echo", help="回显消息", usage="/echo <内容>")
         async def echo_command(event):
             if not self.config.get("echo_enabled", True):
                 return
-                
-            platform = event["platform"]
-            user_id = event["user_id"]
-            args = event["command"]["args"]
+            
+            # 使用便捷方法获取命令参数
+            args = event.get_command_args()
             
             if not args:
-                response = "请提供要回显的内容"
+                await event.reply("请提供要回显的内容")
             else:
                 response = " ".join(args)
+                await event.reply(response)
+        
+        # 注册等待回复示例命令
+        @command("interactive", help="交互式命令示例", usage="/interactive")
+        async def interactive_command(event):
+            await event.reply("请输入你的名字:")
             
-            if hasattr(self.adapter, platform):
-                adapter_instance = getattr(self.adapter, platform)
-                await adapter_instance.Send.To("user", user_id).Text(response)
+            # 等待用户回复
+            reply = await event.wait_reply(timeout=30)
+            
+            if reply:
+                name = reply.get_text()
+                await event.reply(f"你好，{name}！很高兴认识你。")
+            else:
+                await event.reply("等待超时，请重试。")
     
     async def _register_message_handlers(self):
         """注册消息和通知处理器"""
-        # 注册私聊消息处理器
+        # 注册私聊消息处理器 - 使用新方法
         @message.on_private_message()
         async def private_message_handler(event):
             if self.config.get("debug_mode", False):
-                self.logger.info(f"收到私聊消息: {event}")
+                # 使用新方法获取信息
+                self.logger.info(f"收到私聊消息，发送者: {event.get_user_nickname()}, 内容: {event.get_text()}")
         
-        # 注册好友添加通知处理器
+        # 注册群聊消息处理器 - 演示群组消息处理
+        @message.on_group_message()
+        async def group_message_handler(event):
+            # 检查@消息
+            if event.is_at_message():
+                mentions = event.get_mentions()
+                self.logger.info(f"收到@消息，被@的用户: {mentions}")
+                
+                # 自动回复@消息
+                await event.reply("我收到了你的@消息！")
+        
+        # 注册好友添加通知处理器 - 使用新方法
         @notice.on_friend_add()
         async def friend_add_handler(event):
-            self.logger.info(f"新好友添加: {event}")
+            self.logger.info(f"新好友添加: {event.get_user_nickname()}")
             
-            # 发送欢迎消息
-            platform = event["platform"]
-            user_id = event["user_id"]
-            
-            if hasattr(self.adapter, platform):
-                adapter_instance = getattr(self.adapter, platform)
-                welcome_msg = self.config.get("welcome_message", "欢迎添加我为好友！")
-                await adapter_instance.Send.To("user", user_id).Text(welcome_msg)
+            # 使用便捷方法发送欢迎消息
+            welcome_msg = self.config.get("welcome_message", "欢迎添加我为好友！")
+            await event.reply(welcome_msg)
     
     def _register_routes(self):
         """注册HTTP和WebSocket路由（可选）"""
