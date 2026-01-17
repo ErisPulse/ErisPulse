@@ -5,9 +5,9 @@ permissions:
 
 on:
   push:
-    branches: [ main, Develop/v2 ]
+    branches: [ main, Develop/v2, Pre-Release/v2 ]
   pull_request:
-    branches: [ main, Develop/v2 ]
+    branches: [ main, Develop/v2, Pre-Release/v2 ]
   workflow_dispatch:
 
 jobs:
