@@ -1182,7 +1182,7 @@ async def restart() -> bool:
     logger.info("[Reload] 重新加载完成")
     return True
 
-async def run() -> None:
+async def run(keep_running: bool = True) -> None:
     """
     无头模式运行ErisPulse
     
@@ -1197,8 +1197,9 @@ async def run() -> None:
         
         await adapter.startup()
         
-        # 保持程序运行
-        await asyncio.Event().wait()
+        if keep_running:
+            # 保持程序运行
+            await asyncio.Event().wait()
     except Exception as e:
         logger.error(e)
     finally:
