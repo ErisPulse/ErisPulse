@@ -67,7 +67,6 @@ jobs:
       url: https://pypi.org/p/erispulse
 
     steps:
-      # 👇 新增这一步：检出代码，使 send-email 可用
       - name: 检出代码
         uses: actions/checkout@v4
 
