@@ -12,6 +12,7 @@ ErisPulse 事件处理基础模块
 from .. import adapter, logger
 from typing import Callable, Any, Dict, List
 import asyncio
+from .wrapper import Event
 
 class BaseEventHandler:
     """
@@ -94,6 +95,10 @@ class BaseEventHandler:
         
         :param event: 事件数据
         """
+        # 如果还不是Event对象，则转换为Event对象
+        if not isinstance(event, Event):
+            event = Event(event)
+        
         # 执行处理器
         for handler_info in self.handlers:
             condition = handler_info.get("condition")

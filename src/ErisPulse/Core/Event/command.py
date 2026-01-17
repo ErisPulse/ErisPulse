@@ -240,35 +240,80 @@ class CommandHandler:
         if event.get("type") != "message":
             return
         
+        async def _process_text_for_command(event: Dict[str, Any], text: str) -> bool:
+            """
+            处理文本内容，尝试匹配并执行命令
+            
+            {!--< internal-use >!--}
+            内部使用的方法，用于处理文本内容并尝试执行命令
+            
+            :param event: 消息事件数据
+            :param text: 要处理的文本内容
+            :return: 是否成功执行命令
+            """
+            if not text:
+                return False
+            
+            # 处理大小写敏感性
+            check_text = text if self.case_sensitive else text.lower()
+            prefix = self.prefix if self.case_sensitive else self.prefix.lower()
+            
+            # 检查前缀
+            has_prefix = check_text.startswith(prefix)
+            has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
+            
+            if not has_prefix and not has_space_prefix:
+                return False
+            
+            # 尝试执行命令
+            return await self._try_execute_command(event, text, check_text)
+        
+        # 从 message 列表和 alt_message 中提取文本内容
         message_segments = event.get("message", [])
-        text_content = ""
+        message_text = ""
         for segment in message_segments:
             if segment.get("type") == "text":
-                text_content = segment.get("data", {}).get("text", "")
+                message_text = segment.get("data", {}).get("text", "")
                 break
         
-        if not text_content:
-            return
+        alt_message = event.get("alt_message", "")
         
-        # 处理大小写敏感性
-        check_text = text_content if self.case_sensitive else text_content.lower()
-        prefix = self.prefix if self.case_sensitive else self.prefix.lower()
-        
-        # 检查前缀
-        if not check_text.startswith(prefix):
-            # 检查是否允许空格前缀 (例如: "/ command")
-            if self.allow_space_prefix and check_text.startswith(prefix + " "):
-                pass
-            else:
-                # 检查是否是等待回复的消息
-                await self._check_pending_reply(event)
+        # 尝试使用 message 列表的内容
+        if message_text:
+            command_matched = await _process_text_for_command(event, message_text)
+            if command_matched:
                 return
+        
+        # 尝试使用 alt_message
+        if alt_message and alt_message != message_text:
+            command_matched = await _process_text_for_command(event, alt_message)
+            if command_matched:
+                return
+        
+        # 如果都没有匹配，检查是否是等待回复的消息
+        await self._check_pending_reply(event)
+        return
+    
+    
+    async def _try_execute_command(self, event: Dict[str, Any], original_text: str, check_text: str) -> bool:
+        """
+        尝试执行命令
+        
+        {!--< internal-use >!--}
+        内部使用的方法，用于尝试解析和执行命令
+        
+        :param event: 消息事件数据
+        :param original_text: 原始文本内容
+        :param check_text: 用于检查的文本内容（可能已转换为小写）
+        :return: 是否成功执行命令
+        """
+        prefix = self.prefix if self.case_sensitive else self.prefix.lower()
         
         # 解析命令和参数
         command_text = check_text[len(prefix):].strip()
         parts = command_text.split()
         if not parts:
-            return
+            return False
         
         cmd_name = parts[0]
         args = parts[1:] if len(parts) > 1 else []
@@ -323,6 +368,10 @@ class CommandHandler:
             except Exception as e:
                 logger.error(f"命令执行错误: {e}")
                 await self._send_command_error(event, str(e))
+            
+            return True
+        
+        return False
     
     async def _check_pending_reply(self, event: Dict[str, Any]):
         """

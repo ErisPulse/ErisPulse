@@ -1,6 +1,6 @@
 # `ErisPulse.Core.adapter` 模块
 
-<sup>更新时间: 2026-01-06 21:40:16</sup>
+> 最后更新：2026-01-17 19:15:33
 
 ---
 
@@ -15,150 +15,159 @@ ErisPulse 适配器系统
 
 ## 类列表
 
+
 ### `class AdapterManager`
 
-    适配器管理器
+适配器管理器
 
 管理多个平台适配器的注册、启动和关闭，提供与模块管理器一致的接口
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 通过register方法注册适配器
-2. 通过startup方法启动适配器
-3. 通过shutdown方法关闭所有适配器
-4. 通过on装饰器注册OneBot12协议事件处理器</p></div>
+> **提示**
+> 1. 通过register方法注册适配器
+> 2. 通过startup方法启动适配器
+> 3. 通过shutdown方法关闭所有适配器
+> 4. 通过on装饰器注册OneBot12协议事件处理器
 
-    
+
 #### 方法列表
+
 
 ##### `register(platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None)`
 
-    注册新的适配器类（标准化注册方法）
+注册新的适配器类（标准化注册方法）
 
 :param platform: 平台名称
 :param adapter_class: 适配器类
 :param adapter_info: 适配器信息
 :return: 注册是否成功
 
-<dt>异常</dt><dd><code>TypeError</code> 当适配器类无效时抛出</dd>
+**异常**: `TypeError` - 当适配器类无效时抛出
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> adapter.register("MyPlatform", MyPlatformAdapter)
 ```
-</details>
 
-    ---
-    
+---
+
+
 ##### `_register_platform_attributes(platform: str, instance: BaseAdapter)`
 
-    注册平台名称的多种大小写形式作为属性
+注册平台名称的多种大小写形式作为属性
 
 :param platform: 平台名称
 :param instance: 适配器实例
 
-    ---
-    
-##### async `async startup(platforms = None)`
+---
 
-    启动指定的适配器
+
+##### `async async startup(platforms = None)`
+
+启动指定的适配器
 
 :param platforms: 要启动的平台列表，None表示所有平台
 
-<dt>异常</dt><dd><code>ValueError</code> 当平台未注册时抛出</dd>
+**异常**: `ValueError` - 当平台未注册时抛出
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> # 启动所有适配器
 >>> await adapter.startup()
 >>> # 启动指定适配器
 >>> await adapter.startup(["Platform1", "Platform2"])
 ```
-</details>
 
-    ---
-    
-##### async `async _run_adapter(adapter: BaseAdapter, platform: str)`
+---
 
-    <div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+
+##### `async async _run_adapter(adapter: BaseAdapter, platform: str)`
+
+> **内部方法** 
 运行适配器实例
 
 :param adapter: 适配器实例
 :param platform: 平台名称
 
-    ---
-    
-##### async `async shutdown()`
+---
 
-    关闭所有适配器
 
-    ---
-    
+##### `async async shutdown()`
+
+关闭所有适配器
+
+---
+
+
 ##### `_config_register(platform: str, enabled: bool = False)`
 
-    注册新平台适配器（仅当平台不存在时注册）
+注册新平台适配器（仅当平台不存在时注册）
 
 :param platform: 平台名称
-<dt><code>enabled</code> <span class='type-hint'>bool</span></dt><dd>是否启用适配器</dd>
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
+- **enabled** (`bool`): 是否启用适配器
+**返回值** (`bool`): 操作是否成功
 
-    ---
-    
+---
+
+
 ##### `exists(platform: str)`
 
-    检查平台是否存在
+检查平台是否存在
 
 :param platform: 平台名称
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 平台是否存在</dd>
+**返回值** (`bool`): 平台是否存在
 
-    ---
-    
+---
+
+
 ##### `is_enabled(platform: str)`
 
-    检查平台适配器是否启用
+检查平台适配器是否启用
 
 :param platform: 平台名称
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 平台适配器是否启用</dd>
+**返回值** (`bool`): 平台适配器是否启用
 
-    ---
-    
+---
+
+
 ##### `enable(platform: str)`
 
-    启用平台适配器
+启用平台适配器
 
 :param platform: 平台名称
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
+**返回值** (`bool`): 操作是否成功
 
-    ---
-    
+---
+
+
 ##### `disable(platform: str)`
 
-    禁用平台适配器
+禁用平台适配器
 
 :param platform: 平台名称
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 操作是否成功</dd>
+**返回值** (`bool`): 操作是否成功
 
-    ---
-    
+---
+
+
 ##### `list_adapters()`
 
-    列出所有平台适配器状态
+列出所有平台适配器状态
 
-<dt>返回值</dt><dd><span class='type-hint'>Dict[str, bool</span> ] 平台适配器状态字典</dd>
+**返回值** (`Dict[str, bool`): ] 平台适配器状态字典
 
-    ---
-    
+---
+
+
 ##### `on(event_type: str = '*')`
 
-    OneBot12协议事件监听装饰器
+OneBot12协议事件监听装饰器
 
 :param event_type: OneBot12事件类型
 :param raw: 是否监听原生事件
 :param platform: 指定平台，None表示监听所有平台
 :return: 装饰器函数
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> # 监听OneBot12标准事件（所有平台）
 >>> @sdk.adapter.on("message")
@@ -180,37 +189,35 @@ ErisPulse 适配器系统
 >>> async def handle_all_raw_message(data):
 >>>     print(f"收到原生事件: {data}")
 ```
-</details>
 
-    ---
-    
+---
+
+
 ##### `middleware(func: Callable)`
 
-    添加OneBot12中间件处理器
+添加OneBot12中间件处理器
 
 :param func: 中间件函数
 :return: 中间件函数
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> @sdk.adapter.middleware
 >>> async def onebot_middleware(data):
 >>>     print("处理OneBot12数据:", data)
 >>>     return data
 ```
-</details>
 
-    ---
-    
-##### async `async emit(data: Any)`
+---
 
-    提交OneBot12协议事件到指定平台
+
+##### `async async emit(data: Any)`
+
+提交OneBot12协议事件到指定平台
 
 :param data: 符合OneBot12标准的事件数据
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> await sdk.adapter.emit({
 >>>     "id": "123",
@@ -223,58 +230,56 @@ ErisPulse 适配器系统
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
-</details>
 
-    ---
-    
+---
+
+
 ##### `get(platform: str)`
 
-    获取指定平台的适配器实例
+获取指定平台的适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例或None
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> adapter = adapter.get("MyPlatform")
 ```
-</details>
 
-    ---
-    
+---
+
+
 ##### `platforms()`
 
-    获取所有已注册的平台列表
+获取所有已注册的平台列表
 
 :return: 平台名称列表
 
-<details class='example'><summary>示例</summary>
-
+**示例**:
 ```python
 >>> print("已注册平台:", adapter.platforms)
 ```
-</details>
 
-    ---
-    
+---
+
+
 ##### `__getattr__(platform: str)`
 
-    通过属性访问获取适配器实例
+通过属性访问获取适配器实例
 
 :param platform: 平台名称
 :return: 适配器实例
-<dt>异常</dt><dd><code>AttributeError</code> 当平台不存在或未启用时</dd>
+**异常**: `AttributeError` - 当平台不存在或未启用时
 
-    ---
-    
+---
+
+
 ##### `__contains__(platform: str)`
 
-    检查平台是否存在且处于启用状态
+检查平台是否存在且处于启用状态
 
 :param platform: 平台名称
-<dt>返回值</dt><dd><span class='type-hint'>bool</span> 平台是否存在且启用</dd>
+**返回值** (`bool`): 平台是否存在且启用
 
-    ---
-    
-<sub>文档最后更新于 2026-01-06 21:40:16</sub>
+---
+
