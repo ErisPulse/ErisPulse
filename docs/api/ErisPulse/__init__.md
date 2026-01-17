@@ -1,6 +1,6 @@
 # `ErisPulse.__init__` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-18 01:50:33
 
 ---
 
@@ -104,7 +104,7 @@ SDK重新启动
 ---
 
 
-### `async async run()`
+### `async async run(keep_running: bool = True)`
 
 无头模式运行ErisPulse
 
