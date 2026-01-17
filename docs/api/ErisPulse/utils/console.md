@@ -1,6 +1,6 @@
 # `ErisPulse.utils.console` 模块
 
-<sup>更新时间: 2026-01-06 21:40:16</sup>
+> 最后更新：2026-01-17 19:15:33
 
 ---
 
@@ -13,11 +13,11 @@
 
 ## 类列表
 
+
 ### `class CommandHighlighter(RegexHighlighter)`
 
-    高亮CLI命令和参数
+高亮CLI命令和参数
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>使用正则表达式匹配命令行参数和选项</p></div>
+> **提示**
+> 使用正则表达式匹配命令行参数和选项
 
-    
-<sub>文档最后更新于 2026-01-06 21:40:16</sub>

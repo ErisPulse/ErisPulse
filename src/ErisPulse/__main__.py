@@ -2,11 +2,6 @@
 ErisPulse SDK 命令行工具
 
 提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
-
-{!--< tips >!--}
-1. 需要Python 3.8+环境
-2. Windows平台需要colorama支持ANSI颜色
-{!--< /tips >!--}
 """
 from .utils import CLI
 

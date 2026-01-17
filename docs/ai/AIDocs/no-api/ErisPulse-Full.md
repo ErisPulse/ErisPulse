@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-01-06 21:40:35
+**生成时间**: 2026-01-17 19:22:10
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -2316,6 +2316,368 @@ sdk.MyModule.print_hello()
 | on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
 | on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
 
+## 5. Event 事件包装类
+
+ErisPulse 提供了一个功能强大的 Event 包装类，它继承自 `dict`，在保持完全向后兼容的同时，提供了大量便捷的方法来简化事件处理。
+
+### 5.1 核心特性
+
+- **完全兼容字典**：Event 继承自 dict，所有原有的字典访问方式都完全可用
+- **便捷方法**：提供大量便捷方法来简化事件处理
+- **点式访问**：支持使用点号访问事件字段，如 `event.platform`
+- **向后兼容**：所有方法都是可选的，不影响原有的字典访问方式
+
+### 5.2 核心字段方法
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("test")
+async def test_command(event):
+    # 获取核心事件信息
+    event_id = event.get_id()              # 事件ID
+    event_time = event.get_time()          # 时间戳
+    event_type = event.get_type()          # 事件类型 (message/notice/request/meta)
+    detail_type = event.get_detail_type()  # 详细类型 (private/group/friend等)
+    platform = event.get_platform()        # 平台名称
+    
+    # 获取机器人信息
+    self_platform = event.get_self_platform()    # 机器人平台
+    self_user_id = event.get_self_user_id()      # 机器人ID
+    self_info = event.get_self_info()            # 机器人完整信息
+```
+
+### 5.3 消息事件方法
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_private_message()
+async def private_handler(event):
+    # 获取消息内容
+    message_segments = event.get_message()    # 消息段数组
+    alt_message = event.get_alt_message()      # 消息备用文本
+    text = event.get_text()                    # 纯文本内容
+    
+    # 获取发送者信息
+    user_id = event.get_user_id()              # 发送者ID
+    nickname = event.get_user_nickname()       # 发送者昵称
+    sender_info = event.get_sender()           # 发送者完整信息字典
+    
+    # 群组信息
+    group_id = event.get_group_id()            # 群组ID（仅群聊消息）
+```
+
+### 5.4 消息类型判断
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_group_message()
+async def group_handler(event):
+    # 判断消息类型
+    is_msg = event.is_message()           # 是否为消息事件
+    is_private = event.is_private_message()  # 是否为私聊消息
+    is_group = event.is_group_message()  # 是否为群聊消息
+    
+    # @消息相关
+    is_at = event.is_at_message()         # 是否为@消息
+    has_mention = event.has_mention()     # 是否包含@消息
+    mentions = event.get_mentions()       # 获取所有被@的用户ID列表
+```
+
+### 5.5 回复功能
+
+Event 提供了统一的 `reply()` 方法，支持多种回复类型：
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("reply_test")
+async def reply_test(event):
+    # 基本文本回复（默认）
+    await event.reply("这是一条文本消息")
+    
+    # 发送图片
+    await event.reply("http://example.com/image.jpg", method="Image")
+    
+    # 发送语音
+    await event.reply("http://example.com/voice.mp3", method="Voice")
+    
+    # 发送视频
+    await event.reply("http://example.com/video.mp4", method="Video")
+    
+    # 发送文件
+    await event.reply("http://example.com/file.pdf", method="File")
+```
+
+**reply() 方法参数说明：**
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| content | str | 发送内容（文本、URL等，取决于method参数） |
+| method | str | 适配器发送方法，默认为 "Text"。可选值：Text, Image, Voice, Video, File 等 |
+| **kwargs | dict | 额外参数，具体取决于适配器实现 |
+
+### 5.6 等待回复功能
+
+Event 提供了 `wait_reply()` 方法，可以方便地等待用户回复：
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("interactive")
+async def interactive_command(event):
+    # 发送提示消息
+    await event.reply("请输入你的名字:")
+    
+    # 等待用户回复，超时时间为30秒
+    reply = await event.wait_reply(timeout=30)
+    
+    if reply:
+        name = reply.get_text()
+        await event.reply(f"你好，{name}！")
+    else:
+        await event.reply("等待超时，请重试。")
+
+# 带验证函数的例子
+@command("age_check")
+async def age_check(event):
+    def is_valid_age(event_data):
+        """验证函数：检查输入是否为有效年龄"""
+        text = event_data.get("alt_message", "")
+        try:
+            age = int(text)
+            return 0 <= age <= 150
+        except ValueError:
+            return False
+    
+    await event.reply("请输入你的年龄（0-150）:")
+    
+    # 等待回复并验证
+    reply = await event.wait_reply(
+        timeout=60,
+        validator=is_valid_age
+    )
+    
+    if reply:
+        age = int(reply.get_text())
+        await event.reply(f"你的年龄是 {age} 岁")
+    else:
+        await event.reply("输入无效或超时")
+```
+
+**wait_reply() 方法参数说明：**
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| prompt | str | 提示消息，如果提供会发送给用户 |
+| timeout | float | 等待超时时间（秒），默认60秒 |
+| callback | Callable | 回调函数，当收到回复时执行 |
+| validator | Callable | 验证函数，用于验证回复是否有效 |
+
+### 5.7 通知事件方法
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    # 通知事件信息
+    operator_id = event.get_operator_id()         # 操作者ID
+    operator_nickname = event.get_operator_nickname()  # 操作者昵称
+    
+    # 发送欢迎消息
+    await event.reply("欢迎添加我为好友！")
+
+# 群成员事件
+@notice.on_group_member_increase()
+async def member_increase(event):
+    # 群成员增加
+    pass
+
+@notice.on_group_member_decrease()
+async def member_decrease(event):
+    # 群成员减少
+    pass
+
+# 好友删除
+@notice.on_friend_delete()
+async def friend_delete(event):
+    # 好友删除
+    pass
+```
+
+### 5.8 请求事件方法
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request(event):
+    # 获取请求信息
+    user_id = event.get_user_id()              # 请求用户ID
+    comment = event.get_comment()              # 请求附言
+    
+    # 可以在这里自动同意或拒绝请求
+    await event.reply("已收到你的好友请求")
+
+@request.on_group_request()
+async def group_request(event):
+    # 群组请求
+    group_id = event.get_group_id()
+    comment = event.get_comment()
+    pass
+```
+
+### 5.9 命令信息方法
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("cmd_with_args")
+async def cmd_with_args(event):
+    # 获取命令信息
+    cmd_name = event.get_command_name()        # 命令名称
+    cmd_args = event.get_command_args()        # 命令参数列表
+    cmd_raw = event.get_command_raw()          # 命令原始文本
+    cmd_info = event.get_command_info()        # 完整命令信息字典
+    
+    # 判断是否为命令
+    if event.is_command():
+        await event.reply(f"执行命令: {cmd_name}")
+```
+
+### 5.10 原始数据访问
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_private_message()
+async def raw_data_handler(event):
+    # 获取原始事件数据（平台特定的原始数据）
+    raw_data = event.get_raw()                 # 原始事件数据
+    raw_type = event.get_raw_type()            # 原始事件类型
+    
+    # 处理原始数据
+    if raw_type == "original_event_type":
+        pass
+```
+
+### 5.11 工具方法
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("test_utils")
+async def test_utils(event):
+    # 转换为字典
+    event_dict = event.to_dict()
+    
+    # 检查是否已处理
+    if not event.is_processed():
+        # 标记为已处理
+        event.mark_processed()
+        
+    # 点式访问和字典访问都支持
+    platform = event.platform                  # 点式访问
+    user_id = event["user_id"]                 # 字典访问
+    
+    await event.reply(f"来自 {platform} 的消息")
+```
+
+### 5.12 完整示例
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command, message, notice
+
+class Main(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+        self.config = self._load_config()
+    
+    async def on_load(self, event):
+        # 注册命令处理器
+        @command("hello", help="发送问候")
+        async def hello_command(event):
+            # 使用便捷方法
+            sender = event.get_sender()
+            await event.reply(f"你好，{sender['nickname']}！")
+        
+        # 注册交互式命令
+        @command("greet", help="交互式问候")
+        async def greet_command(event):
+            await event.reply("请告诉我你的名字:")
+            
+            reply = await event.wait_reply(timeout=30)
+            if reply:
+                name = reply.get_text()
+                await event.reply(f"很高兴认识你，{name}！")
+        
+        # 注册消息处理器
+        @message.on_group_message()
+        async def group_handler(event):
+            # 检查@消息
+            if event.is_at_message():
+                user_id = event.get_user_id()
+                # 可以根据需要实现@回复功能，具体取决于适配器支持
+        
+        # 注册通知处理器
+        @notice.on_friend_add()
+        async def friend_add_handler(event):
+            welcome_msg = self.config.get("welcome_message", "欢迎！")
+            await event.reply(welcome_msg)
+```
+
+### 5.13 Event 方法速查表
+
+#### 核心方法
+- `get_id()` - 获取事件ID
+- `get_time()` - 获取时间戳
+- `get_type()` - 获取事件类型
+- `get_detail_type()` - 获取详细类型
+- `get_platform()` - 获取平台名称
+
+#### 机器人信息
+- `get_self_platform()` - 获取机器人平台
+- `get_self_user_id()` - 获取机器人用户ID
+- `get_self_info()` - 获取机器人完整信息
+
+#### 消息方法
+- `get_message()` - 获取消息段数组
+- `get_text()` - 获取纯文本内容
+- `get_user_id()` - 获取发送者ID
+- `get_user_nickname()` - 获取发送者昵称
+- `get_group_id()` - 获取群组ID
+- `get_sender()` - 获取发送者信息字典
+
+#### 类型判断
+- `is_message()` - 是否为消息事件
+- `is_private_message()` - 是否为私聊消息
+- `is_group_message()` - 是否为群聊消息
+- `is_at_message()` - 是否为@消息
+- `has_mention()` - 是否包含@消息
+- `get_mentions()` - 获取被@的用户ID列表
+
+#### 回复功能
+- `reply(content, method="Text", **kwargs)` - 通用回复方法
+
+#### 等待回复
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None)` - 等待用户回复
+
+#### 命令信息
+- `get_command_name()` - 获取命令名称
+- `get_command_args()` - 获取命令参数
+- `get_command_raw()` - 获取命令原始文本
+- `is_command()` - 是否为命令
+
+#### 工具方法
+- `to_dict()` - 转换为字典
+- `is_processed()` - 是否已处理
+- `mark_processed()` - 标记为已处理
+
 ## 6. 模块路由注册
 
 从 ErisPulse 2.1.15 版本开始，模块也可以注册自己的 HTTP/WebSocket 路由，用于提供 Web API 或实时通信功能。
@@ -3981,7 +4343,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 3.3.0
+- 对应模块版本: 3.5.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -3989,6 +4351,8 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 - 平台简介：OneBot 是一个聊天机器人应用接口标准
 - 适配器名称：OneBotAdapter
 - 支持的协议/API版本：OneBot V11
+- 多账户支持：默认多账户架构，支持同时配置和运行多个OneBot账户
+- 旧配置兼容：兼容旧版本配置格式，提供迁移提醒（非自动迁移）
 
 ## 支持的消息发送类型
 
@@ -3997,7 +4361,11 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 from ErisPulse.Core import adapter
 onebot = adapter.get("onebot11")
 
+# 使用默认账户发送
 await onebot.Send.To("group", group_id).Text("Hello World!")
+
+# 指定特定账户发送
+await onebot.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
 ```
 
 支持的发送类型包括：
@@ -4037,6 +4405,22 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
    - 所有特有字段均以onebot11_前缀标识
    - 保留原始CQ码消息在onebot11_raw_message字段
    - 保留原始事件数据在onebot11_raw字段
+
+### 事件监听方式
+
+OneBot适配器支持两种方式监听事件：
+
+```python
+# 使用原始事件名
+@sdk.adapter.OneBot.on("message")
+async def handle_message(event):
+    pass
+
+# 使用映射后的事件名
+@sdk.adapter.OneBot.on("message")
+async def handle_message(event):
+    pass
+```
 
 ### 特殊字段示例
 
@@ -4097,18 +4481,49 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
 
 ## 配置选项
 
-OneBot 适配器支持以下配置选项：
+OneBot 适配器每个账户独立配置以下选项：
 
-### 基本配置
-- `mode`: 运行模式 ("server" 或 "client")
+### 账户配置
+- `mode`: 该账户的运行模式 ("server" 或 "client")
+- `server_path`: Server模式下的WebSocket路径
+- `server_token`: Server模式下的认证Token（可选）
+- `client_url`: Client模式下要连接的WebSocket地址
+- `client_token`: Client模式下的认证Token（可选）
+- `enabled`: 是否启用该账户
 
-### Server 模式配置
-- `server.path`: WebSocket 路径
-- `server.token`: 认证 Token（可选）
+### 内置默认值
+- 重连间隔：30秒
+- API调用超时：30秒
+- 最大重试次数：3次
 
-### Client 模式配置
-- `client.url`: 要连接的 WebSocket 地址
-- `client.token`: 认证 Token（可选）
+### 配置示例
+```toml
+[OneBotv11_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot-main"
+server_token = "main_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### 默认配置
+如果未配置任何账户，适配器会自动创建：
+```toml
+[OneBotv11_Adapter.accounts.default]
+mode = "server"
+server_path = "/"
+enabled = true
+```
 
 ## 发送方法返回值
 
@@ -4119,10 +4534,22 @@ OneBot 适配器支持以下配置选项：
     "status": "ok",           // 执行状态
     "retcode": 0,             // 返回码
     "data": {...},            // 响应数据
+    "self": {...},            // 自身信息
     "message_id": "123456",   // 消息ID
     "message": "",            // 错误信息
     "onebot_raw": {...}       // 原始响应数据
 }
+```
+
+### 多账户发送语法
+
+```python
+# 账户选择方法
+await onebot.Send.Using("main").To("group", 123456).Text("主账户消息")
+await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API调用方式
+await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
 ## 异步处理机制
@@ -4132,14 +4559,43 @@ OneBot 适配器采用异步非阻塞设计，确保：
 2. 多个并发发送操作可以同时进行
 3. API 响应能够及时处理
 4. WebSocket 连接保持活跃状态
+5. 多账户并发处理，每个账户独立运行
 
 ## 错误处理
 
 适配器提供完善的错误处理机制：
-1. 网络连接异常自动重连
-2. API 调用超时处理
-3. 消息发送失败重试
-4. 详细的错误日志记录
+1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
+2. API 调用超时处理（固定30秒超时）
+3. 消息发送失败重试（最多3次重试）
+
+## 事件处理增强
+
+多账户模式下，所有事件都会自动添加账户信息：
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "main"},  // 新增：发送事件的账户ID（标准字段）
+    "platform": "onebot11",
+    // ... 其他事件字段
+}
+```
+
+## 管理接口
+
+```python
+# 获取所有账户信息
+accounts = onebot.accounts
+
+# 检查账户连接状态
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot.connections.items()
+}
+
+# 动态启用/禁用账户（需要重启适配器）
+onebot.accounts["test"].enabled = False
+```
 
 
 ---
