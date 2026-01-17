@@ -1,6 +1,6 @@
 # `ErisPulse.__main__` 模块
 
-<sup>更新时间: 2026-01-06 21:40:16</sup>
+> 最后更新：2026-01-17 19:21:20
 
 ---
 
@@ -11,20 +11,18 @@ ErisPulse SDK 命令行工具
 
 提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 需要Python 3.8+环境
-2. Windows平台需要colorama支持ANSI颜色</p></div>
-
 ---
 
 ## 函数列表
+
 
 ### `main()`
 
 CLI入口点
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 创建CLI实例并运行
-2. 处理全局异常</p></div>
+> **提示**
+> 1. 创建CLI实例并运行
+> 2. 处理全局异常
 
 ---
 
-<sub>文档最后更新于 2026-01-06 21:40:16</sub>
