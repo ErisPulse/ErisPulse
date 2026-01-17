@@ -378,11 +378,11 @@ class Event(dict):
         :param kwargs: 额外参数，例如Mention方法的user_id
         :return: 适配器发送方法的返回值
         
-        示例:
-            await event.reply("你好")  # 发送文本
-            await event.reply("http://example.com/image.jpg", method="Image")  # 发送图片
-            await event.reply("回复内容", method="Mention", user_id="123456")  # @用户并发送
-            await event.reply("http://example.com/voice.mp3", method="Voice")  # 发送语音
+        :example:
+        >>> await event.reply("你好")  # 发送文本
+        >>> await event.reply("http://example.com/image.jpg", method="Image")  # 发送图片
+        >>> await event.reply("回复内容", method="Mention", user_id="123456")  # @用户并发送
+        >>> await event.reply("http://example.com/voice.mp3", method="Voice")  # 发送语音
         """
         adapter_instance, detail_type, target_id = self._get_adapter_and_target()
         
