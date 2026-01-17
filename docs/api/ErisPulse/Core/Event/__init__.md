@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.__init__` 模块
 
-<sup>更新时间: 2026-01-06 21:40:16</sup>
+> 最后更新：2026-01-17 19:15:33
 
 ---
 
@@ -11,26 +11,28 @@ ErisPulse 事件处理模块
 
 提供统一的事件处理接口，支持命令、消息、通知、请求和元事件处理
 
-<div class='admonition tip'><p class='admonition-title'>提示</p><p>1. 所有事件处理都基于OneBot12标准事件格式
-2. 通过装饰器方式注册事件处理器
-3. 支持优先级和条件过滤</p></div>
+> **提示**
+> 1. 所有事件处理都基于OneBot12标准事件格式
+> 2. 通过装饰器方式注册事件处理器
+> 3. 支持优先级和条件过滤
 
 ---
 
 ## 函数列表
 
+
 ### `_clear_all_handlers()`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+> **内部方法** 
 清除所有已注册的事件处理器和命令
 
 ---
 
+
 ### `_setup_default_config()`
 
-<div class='admonition warning'><p class='admonition-title'>内部方法</p><p></p></div>
+> **内部方法** 
 设置默认配置
 
 ---
 
-<sub>文档最后更新于 2026-01-06 21:40:16</sub>
