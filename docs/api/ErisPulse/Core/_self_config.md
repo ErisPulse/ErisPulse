@@ -1,6 +1,6 @@
 # `ErisPulse.Core._self_config` 模块
 
-<sup>更新时间: 2026-01-06 21:40:16</sup>
+> 最后更新：2026-01-17 19:15:33
 
 ---
 
@@ -15,6 +15,7 @@ ErisPulse 框架配置管理
 
 ## 函数列表
 
+
 ### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
 
 确保 ErisPulse 配置结构完整，补全缺失的配置项
@@ -24,6 +25,7 @@ ErisPulse 框架配置管理
 
 ---
 
+
 ### `get_erispulse_config()`
 
 获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
@@ -31,6 +33,7 @@ ErisPulse 框架配置管理
 :return: 完整的 ErisPulse 配置字典
 
 ---
+
 
 ### `update_erispulse_config(new_config: Dict[str, Any])`
 
@@ -41,6 +44,7 @@ ErisPulse 框架配置管理
 
 ---
 
+
 ### `get_server_config()`
 
 获取服务器配置，确保结构完整
@@ -48,6 +52,7 @@ ErisPulse 框架配置管理
 :return: 服务器配置字典
 
 ---
+
 
 ### `get_logger_config()`
 
@@ -57,6 +62,7 @@ ErisPulse 框架配置管理
 
 ---
 
+
 ### `get_storage_config()`
 
 获取存储模块配置
@@ -64,6 +70,7 @@ ErisPulse 框架配置管理
 :return: 存储配置字典
 
 ---
+
 
 ### `get_framework_config()`
 
@@ -73,4 +80,3 @@ ErisPulse 框架配置管理
 
 ---
 
-<sub>文档最后更新于 2026-01-06 21:40:16</sub>
