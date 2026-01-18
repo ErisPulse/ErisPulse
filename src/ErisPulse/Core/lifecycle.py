@@ -165,3 +165,8 @@ class LifecycleManager:
                 logger.error(f"生命周期事件处理器执行错误 {event}: {e}")
 
 lifecycle = LifecycleManager()
+
+__all__ = [
+    "LifecycleManager",
+    "lifecycle"
+]
