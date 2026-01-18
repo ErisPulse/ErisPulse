@@ -17,8 +17,12 @@ import importlib
 import asyncio
 import inspect
 import importlib.metadata
-from typing import Dict, List, Tuple, Type, Any
+from typing import Dict, List, Tuple, Type, Any, TYPE_CHECKING
 from pathlib import Path
+
+# 类型检查时导入 Protocol，避免运行时循环导入
+if TYPE_CHECKING:
+    from .sdk_protocol import SDKProtocol
 
 # BaseModules: SDK核心模块
 # 事件处理模块
@@ -37,7 +41,7 @@ from .Core import router, adapter_server
 from .Core import ux, UXManager
 
 # SDK统一对外接口
-sdk = types.ModuleType('sdk')
+sdk: 'SDKProtocol' = types.ModuleType('sdk')  # type: ignore[assignment]
 
 try:
     __version__ = importlib.metadata.version('ErisPulse')
