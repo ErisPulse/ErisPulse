@@ -40,6 +40,7 @@
 - @wsu2059q
   - 新增类型存根生成工具和工作流：
     - 添加自动生成 .pyi 类型存根文件的脚本，支持增量更新和缓存机制
+    - 集成 GitHub Actions 自动更新类型存根，推送到 main/develop/master 分支时触发
     - 提供 IDE 配置指南（VSCode、PyCharm、Vim/Neovim 等），支持完整的类型提示和自动补全
   - 新增 `sdk_protocol` 模块，提供 SDK Protocol 类型定义：
     - 定义 SDK 对象的完整类型接口，包含所有核心模块和方法
@@ -48,9 +49,16 @@
 
 ### 变更
 - @wsu2059q
-  - 更新核心模块导出列表，添加：
+  - 更新核心模块导出列表，添加 `__all__` 声明：
     - `Core` 模块导出 Logger、LifecycleManager 等类
     - `lifecycle` 模块导出 LifecycleManager 类和实例
+    - 提升模块公共接口的明确性和类型安全性
+  - `ErisPulse.run` 方法添加 `keep_running` 参数，控制无头模式是否保持运行，默认值为 True
+
+### 文档
+- @wsu2059q
+  - 更新所有 AI 生成文档的时间戳和 API 文档
+  - 更新 `run` 方法签名文档，包含 `keep_running` 参数说明
 
 ---
 
