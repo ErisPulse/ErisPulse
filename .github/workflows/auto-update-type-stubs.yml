@@ -1,0 +1,119 @@
+name: 🔮 艾莉丝的类型存根工坊 ~
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main, Pre-Release/v2, Develop/v2]
+  pull_request:
+    branches: [main, Pre-Release/v2, Develop/v2]
+  workflow_dispatch:
+
+jobs:
+  update-type-stubs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出魔法书
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 准备魔法环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 学习魔法咒语
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: 🔮 生成类型存根
+        id: generate-stubs
+        run: |
+          echo "🔮 艾莉丝开始生成类型存根了哦~"
+          
+          # 确保输出目录存在
+          mkdir -p src
+          
+          # 运行类型存根生成脚本
+          if [ -f ".github/tools/generate-type-stubs.py" ]; then
+            python .github/tools/generate-type-stubs.py --src src --output stubs --clean --force
+            echo "✅ 类型存根生成完成!"
+          else
+            echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
+            exit 1
+          fi
+          
+          # 检查类型存根是否有更新
+          if git diff --quiet stubs/; then
+            echo "类型存根没有变化"
+            echo "stubs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了类型存根更新!"
+            echo "stubs_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📊 统计更新情况
+        run: |
+          echo "📈 艾莉丝正在统计今天的类型存根更新情况~"
+          
+          # 统计新增的.pyi文件
+          new_pyi=$(git diff --name-only --diff-filter=A stubs/ 2>/dev/null | grep "\.pyi$" | wc -l)
+          echo "🆕 新增.pyi文件数: $new_pyi"
+          
+          # 统计修改的.pyi文件
+          modified_pyi=$(git diff --name-only --diff-filter=M stubs/ 2>/dev/null | grep "\.pyi$" | wc -l)
+          echo "📝 修改.pyi文件数: $modified_pyi"
+          
+          # 统计删除的.pyi文件
+          deleted_pyi=$(git diff --name-only --diff-filter=D stubs/ 2>/dev/null | grep "\.pyi$" | wc -l)
+          echo "🗑️ 删除.pyi文件数: $deleted_pyi"
+          
+          # 列出所有变化的.pyi文件
+          echo ""
+          echo "📋 变化的类型存根文件列表:"
+          git diff --name-only stubs/ 2>/dev/null | grep "\.pyi$" | head -20 || echo "  (无)"
+
+      - name: 💾 提交更新
+        if: steps.generate-stubs.outputs.stubs_updated == 'true'
+        run: |
+          echo "💾 艾莉丝正在保存类型存根更新~"
+          
+          # 配置Git用户信息
+          git config --local user.email "eris@magic-circle.dev"
+          git config --local user.name "Eris the Type Sorceress"
+          
+          # 添加所有.pyi文件
+          git add stubs/**/*.pyi
+          
+          # 生成提交信息
+          commit_msg="🔮 艾莉丝的自动类型存根更新魔法 [skip ci]
+          
+          📝 自动更新了项目类型存根文件
+          🔮 为所有Python模块生成了.pyi类型注解文件
+          📚 支持IDE的类型提示和自动补全
+          
+          🌟 详情请查看 stubs/ 目录下的.pyi文件"
+          
+          # 提交更改
+          git commit -m "$commit_msg"
+          git push
+
+      - name: 🎉 类型存根更新完成
+        if: steps.generate-stubs.outputs.stubs_updated == 'true'
+        run: |
+          echo "🌟 艾莉丝今天也努力完成了类型存根更新的魔法呢!"
+          echo "📚 所有类型存根文件已更新并提交到仓库"
+          echo "💫 包含了最新的类型注解信息"
+          echo "🌙 今天的类型炼金工作完成啦~"
+
+      - name: 😊 无更新时的说明
+        if: steps.generate-stubs.outputs.stubs_updated != 'true'
+        run: |
+          echo "✨ 今天没有发现需要更新的类型存根呢~"
+          echo "📚 所有类型存根都是最新状态"
+          echo "🌟 艾莉丝会继续守护着我们的类型库!"
+          echo "🌙 下次更新再见啦~"
