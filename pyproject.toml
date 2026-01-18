@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.3.3-dev.0"
+version = "2.3.3-dev.1"
 description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -50,6 +50,18 @@ epsdk-cli = "ErisPulse.__main__:main"
 
 [tool.hatch]
 project.root = "src"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ErisPulse"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"stubs/ErisPulse" = "ErisPulse-stubs/ErisPulse"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/ErisPulse",
+    "/stubs/ErisPulse",
+]
 
 [tool.ruff]
 target-version = "py310"
