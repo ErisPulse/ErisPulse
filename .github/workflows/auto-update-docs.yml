@@ -40,7 +40,7 @@ jobs:
           
           # 运行API文档更新脚本
           if [ -f ".github/tools/update-api-docs.py" ]; then
-            python .github/tools/update-api-docs.py --src src --output docs/api --format markdown
+            python .github/tools/update-api-docs.py --src src --output docs/api
             echo "✅ API文档更新完成!"
           else
             echo "⚠️ 未找到API文档更新脚本，跳过此步骤"
