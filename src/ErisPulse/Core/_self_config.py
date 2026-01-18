@@ -14,7 +14,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "port": 8000,
         "ssl_certfile": None,
         "ssl_keyfile": None
-    },
+    }, 
     "logger": {
         "level": "INFO",
         "log_files": [],
