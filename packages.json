@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-01-06T03:23:42Z",
+    "last_updated": "2026-01-19T03:44:06Z",
     "modules": {
         "HelpModule": {
             "package": "ErisPulse-HelpModule",
@@ -100,7 +100,7 @@
         },
         "QvQChat": {
             "package": "ErisPulse-QvQChat",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "author": "wsu2059q",
             "description": "一个基于多AI协同的智能对话模块，让AI像真人一样自然参与聊天",
             "min_sdk_version": "2.3.0",
@@ -177,7 +177,7 @@
         "Yunhu": {
             "package": "ErisPulse-YunhuAdapter",
             "author": "wsu2059q",
-            "version": "3.4.0",
+            "version": "3.5.1",
             "description": "云湖协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-YunhuAdapter",
             "official": true,
@@ -189,7 +189,7 @@
         "OneBot11": {
             "package": "ErisPulse-OneBot11Adapter",
             "author": "wsu2059q",
-            "version": "3.4.0",
+            "version": "3.5.1",
             "description": "OneBot11协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot11Adapter",
             "official": true,
@@ -201,7 +201,7 @@
         "OneBot12": {
             "package": "ErisPulse-OneBot12Adapter",
             "author": "wsu2059q",
-            "version": "1.0.0",
+            "version": "1.0.2",
             "description": "OneBot12协议适配模块",
             "repository": "https://github.com/ErisPulse/ErisPulse-OneBot12Adapter",
             "official": true,
