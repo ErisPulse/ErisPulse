@@ -1,4 +1,4 @@
-name: 📚 艾莉丝的文档炼金工房 ~
+name: 📚 艾莉丝的炼金工房 ~
 
 permissions:
   contents: write
@@ -94,6 +94,30 @@ jobs:
             echo "✅ no-api版本文档生成完成!"
           fi
 
+      - name: 🔮 生成类型存根
+        id: generate-stubs
+        run: |
+          echo "🔮 艾莉丝开始生成类型存根文件~"
+          
+          # 运行类型存根生成脚本
+          if [ -f ".github/scripts/generate-type-stubs.py" ]; then
+            python .github/scripts/generate-type-stubs.py --src src --output stubs --force
+            echo "✅ 类型存根生成完成!"
+          else
+            echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
+            echo "stubs_updated=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # 检查类型存根是否有更新
+          if git diff --quiet stubs/; then
+            echo "类型存根没有变化"
+            echo "stubs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了类型存根更新!"
+            echo "stubs_updated=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: 📊 统计更新情况
         run: |
           echo "📈 艾莉丝正在统计今天的文档更新情况~"
@@ -109,9 +133,13 @@ jobs:
           # 统计no-api文档
           noapi_docs=$(git diff --name-only docs/ai/AIDocs/no-api/ 2>/dev/null | wc -l)
           echo "📖 no-api文档更新文件数: $noapi_docs"
+          
+          # 统计类型存根更新
+          stub_files=$(git diff --name-only stubs/ 2>/dev/null | wc -l)
+          echo "🔮 类型存根更新文件数: $stub_files"
 
       - name: 💾 提交更新
-        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true'
+        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true' || steps.generate-stubs.outputs.stubs_updated == 'true'
         run: |
           echo "💾 艾莉丝正在保存文档更新~"
           
@@ -119,32 +147,34 @@ jobs:
           git config --local user.email "eris@magic-circle.dev"
           git config --local user.name "Eris the Scribe"
           
-          # 添加所有更新的文档
-          git add docs/api/ docs/ai/AIDocs/
+          # 添加所有更新的文档和类型存根
+          git add docs/api/ docs/ai/AIDocs/ stubs/
           
           # 生成提交信息
-          commit_msg="📚 艾莉丝的自动文档更新魔法 [skip ci]
+          commit_msg="📚 艾莉丝的自动文档与类型存根更新魔法 [skip ci]
           
           📖 自动更新了项目文档
           📝 包含API文档和合并文档的最新版本
           📚 生成了包含API和不包含API两种版本
+          🔮 更新了Python类型存根文件（.pyi）
           
-          🌟 详情请查看 docs/ 目录"
+          🌟 详情请查看 docs/ 和 stubs/ 目录"
           
           # 提交更改
           git commit -m "$commit_msg"
           git push
 
       - name: 🎉 文档更新完成
-        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true'
+        if: steps.update-api.outputs.api_updated == 'true' || steps.merge-docs.outputs.docs_updated == 'true' || steps.generate-stubs.outputs.stubs_updated == 'true'
         run: |
-          echo "🌟 艾莉丝今天也努力完成了文档更新的魔法呢!"
+          echo "🌟 艾莉丝今天也努力完成了文档和类型存根的更新魔法呢!"
           echo "📚 所有文档已更新并提交到仓库"
           echo "💫 包含了最新的API文档和合并文档"
+          echo "🔮 类型存根文件也同步更新啦~"
           echo "🌙 今天的文档炼金工作完成啦~"
 
       - name: 😊 无更新时的说明
-        if: steps.update-api.outputs.api_updated != 'true' && steps.merge-docs.outputs.docs_updated != 'true'
+        if: steps.update-api.outputs.api_updated != 'true' && steps.merge-docs.outputs.docs_updated != 'true' && steps.generate-stubs.outputs.stubs_updated != 'true'
         run: |
           echo "✨ 今天没有发现需要更新的文档呢~"
           echo "📚 所有文档都是最新状态"
