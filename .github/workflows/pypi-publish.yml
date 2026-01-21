@@ -47,7 +47,7 @@ jobs:
       - name: 🔮 生成类型存根
         run: |
           echo "🔮 艾莉丝在打包前生成类型存根文件~"
-          python .github/tools/generate-type-stubs.py --src src --output src --clean --force
+          python .github/scripts/generate-type-stubs.py --src src --output src --clean --force
           echo "✅ 类型存根生成完成!"
 
       - name: 打包构建
