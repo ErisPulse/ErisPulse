@@ -110,7 +110,7 @@ jobs:
           fi
           
           # 检查类型存根是否有更新
-          if git diff --quiet stubs/; then
+          if git diff --quiet src/; then
             echo "类型存根没有变化"
             echo "stubs_updated=false" >> $GITHUB_OUTPUT
           else
@@ -135,7 +135,7 @@ jobs:
           echo "📖 no-api文档更新文件数: $noapi_docs"
           
           # 统计类型存根更新
-          stub_files=$(git diff --name-only stubs/ 2>/dev/null | wc -l)
+          stub_files=$(git diff --name-only src/ 2>/dev/null | wc -l)
           echo "🔮 类型存根更新文件数: $stub_files"
 
       - name: 💾 提交更新
@@ -148,7 +148,7 @@ jobs:
           git config --local user.name "Eris the Scribe"
           
           # 添加所有更新的文档和类型存根
-          git add docs/api/ docs/ai/AIDocs/ stubs/
+          git add docs/api/ docs/ai/AIDocs/ src/
           
           # 生成提交信息
           commit_msg="📚 艾莉丝的自动文档与类型存根更新魔法 [skip ci]
@@ -158,7 +158,7 @@ jobs:
           📚 生成了包含API和不包含API两种版本
           🔮 更新了Python类型存根文件（.pyi）
           
-          🌟 详情请查看 docs/ 和 stubs/ 目录"
+          🌟 详情请查看 docs/ 和 src/ 目录"
           
           # 提交更改
           git commit -m "$commit_msg"
