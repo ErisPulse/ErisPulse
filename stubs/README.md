@@ -48,10 +48,10 @@ A: 这样可以：
 
 ### Q: GitHub Actions会自动更新这些文件吗？
 
-A: 是的。当代码推送到main/develop/master分支或创建PR时，`.github/workflows/auto-update-type-stubs.yml`会自动更新这些文件。
+A: 是的。当代码推送到develop分支或创建PR时，会自动更新这些文件。
 
 ## 相关链接
 
-- [类型存根生成脚本](../.github/tools/generate-type-stubs.py)
+- [类型存根生成脚本](../.github/scripts/generate-type-stubs.py)
 - [IDE配置指南](../docs/development/ide-configuration.md)
 - [开发文档](../docs/development/README.md)
