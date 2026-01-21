@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-01-18 17:34:49
+**生成时间**: 2026-01-21 08:00:42
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -4805,7 +4805,7 @@ ErisPulse 基础模块
 ## ErisPulse/Core/Bases/adapter.md
 
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-21 08:00:42
 
 ---
 
@@ -4879,6 +4879,22 @@ ErisPulse 适配器基础模块
 ```python
 >>> adapter.Send.Using("bot1").To("123").Text("Hello")
 >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
+```
+
+---
+
+
+##### `Account(account_id: Union[str, int])`
+
+设置发送账号
+
+:param _account_id: 发送账号
+:return: SendDSL实例
+
+**示例**:
+```python
+>>> adapter.Send.Account("bot1").To("123").Text("Hello")
+>>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
 ```
 
 ---
@@ -9254,7 +9270,7 @@ ErisPulse SDK 热重载处理器
 ## README.md
 
 
-> 最后更新：2026-01-18 17:17:15
+> 最后更新：2026-01-21 08:00:42
 
 ---
 
@@ -9265,7 +9281,7 @@ ErisPulse SDK 热重载处理器
 - **模块总数**: 30
 - **类总数**: 33
 - **函数总数**: 25
-- **方法总数**: 285
+- **方法总数**: 286
 
 ---
 
@@ -9279,7 +9295,7 @@ ErisPulse SDK 热重载处理器
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-📦 2 个类 | 🔧 7 个方法
+📦 2 个类 | 🔧 8 个方法
 
 
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
