@@ -101,7 +101,7 @@ jobs:
           
           # 运行类型存根生成脚本
           if [ -f ".github/scripts/generate-type-stubs.py" ]; then
-            python .github/scripts/generate-type-stubs.py --src src --output stubs --force
+            python .github/scripts/generate-type-stubs.py --src src --output src --clean --force
             echo "✅ 类型存根生成完成!"
           else
             echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
