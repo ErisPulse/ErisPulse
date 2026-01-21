@@ -72,7 +72,19 @@ class SendDSL:
         >>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
         """
         return self.__class__(self._adapter, self._target_type, self._target_id, account_id)
-
+    
+    def Account(self, account_id: Union[str, int]) -> 'SendDSL':
+        """
+        设置发送账号
+        
+        :param _account_id: 发送账号
+        :return: SendDSL实例
+        
+        :example:
+        >>> adapter.Send.Account("bot1").To("123").Text("Hello")
+        >>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
+        """
+        return self.__class__(self._adapter, self._target_type, self._target_id, account_id)
 
 class BaseAdapter:
     """
