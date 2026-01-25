@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-01-25 15:59:26
+**生成时间**: 2026-01-25 16:21:34
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -99,6 +99,7 @@
 
 ### 平台特性
 - [平台特性总览](platform-features/README.md) - 平台适配器通用接口和功能说明
+- [平台维护说明](platform-features/maintain-notes.md)
 - 各个平台特性:
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
@@ -120,13 +121,14 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
-确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
 > 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
 
 ### 1. 安装 uv
 
@@ -3821,6 +3823,8 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 
 此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：
 
+- [维护说明](maintain-notes.md)
+
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
@@ -5934,7 +5938,7 @@ ErisPulse 请求处理模块
 ## ErisPulse/Core/Event/wrapper.md
 
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-25 16:21:34
 
 ---
 
@@ -6341,7 +6345,7 @@ ErisPulse 事件包装类
 
 获取原始事件数据
 
-:return: 原始事件数据
+:return: 原始事件数据字典
 
 ---
 
