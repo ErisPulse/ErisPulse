@@ -57,6 +57,7 @@ jobs:
 
       - name: 📜 生成合并文档
         id: merge-docs
+        if: steps.update-api.outputs.api_updated == 'true'
         run: |
           echo "📚 艾莉丝开始生成合并文档了~"
           
@@ -85,6 +86,7 @@ jobs:
           fi
 
       - name: 📝 生成no-api版本文档
+        if: steps.update-api.outputs.api_updated == 'true'
         run: |
           echo "📖 艾莉丝正在生成不包含API的文档版本~"
           
