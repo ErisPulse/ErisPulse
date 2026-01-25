@@ -10,9 +10,8 @@ ErisPulse 事件包装类
 {!--< /tips >!--}
 """
 
-from typing import Any, Dict, List, Optional, Callable, Awaitable, Union
+from typing import Any, Dict, List, Optional, Callable, Awaitable
 from .. import adapter, logger
-import asyncio
 
 
 class Event(dict):
@@ -479,7 +478,7 @@ class Event(dict):
         """
         获取原始事件数据
         
-        :return: 原始事件数据
+        :return: 原始事件数据字典
         """
         platform = self.get_platform()
         raw_key = f"{platform}_raw" if platform else "raw"
