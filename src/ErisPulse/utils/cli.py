@@ -931,8 +931,8 @@ class CLI:
             elif args.command == "run":
                 script = args.script or "main.py"
                 if not os.path.exists(script):
-                    console.print(f"[error]找不到指定文件: [path]{script}[/][/]")
-                    return
+                    from .. import _prepare_environment
+                    asyncio.run(_prepare_environment())
                     
                 reload_mode = args.reload and not args.no_reload
                 self._setup_watchdog(script, reload_mode)
