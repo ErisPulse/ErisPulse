@@ -3,13 +3,14 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
-确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
 > 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
 
 ### 1. 安装 uv
 
