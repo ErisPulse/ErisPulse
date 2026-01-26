@@ -29,6 +29,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "pip",  # 显式声明，防止部分情况下cli报错
     "rich",
     "colorama",
     "aiohttp",

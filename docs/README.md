@@ -38,6 +38,7 @@
 
 ### 平台特性
 - [平台特性总览](platform-features/README.md) - 平台适配器通用接口和功能说明
+- [平台维护说明](platform-features/maintain-notes.md)
 - 各个平台特性:
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明

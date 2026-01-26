@@ -17,6 +17,8 @@
 
 此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：
 
+- [维护说明](maintain-notes.md)
+
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)

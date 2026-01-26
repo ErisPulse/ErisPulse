@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-01-25 13:07:05
+**生成时间**: 2026-01-26 16:21:22
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -99,6 +99,7 @@
 
 ### 平台特性
 - [平台特性总览](platform-features/README.md) - 平台适配器通用接口和功能说明
+- [平台维护说明](platform-features/maintain-notes.md)
 - 各个平台特性:
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
@@ -120,13 +121,14 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
-确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
 > 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
 
 ### 1. 安装 uv
 
@@ -1737,19 +1739,12 @@ async def keyword_handler(event):
 
 | 命令       | 参数                      | 描述                                  | 示例                          |
 |------------|---------------------------|---------------------------------------|-------------------------------|
-| `install`  | `<package>... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+| `install`  | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+|            |                           | 不指定包名时进入交互式安装界面        | `epsdk install`                |
 |            |                           | 支持远程包简称自动解析                | `epsdk install Yunhu -U` |
 | `uninstall`| `<package>...`            | 卸载模块/适配器包（支持多个包）       | `epsdk uninstall old-module1 old-module2`  |
 | `upgrade`  | `[package]... [--force/-f] [--pre]` | 升级指定模块/适配器或所有包         | `epsdk upgrade --force`       |
-| `search`   | `<query> [--installed/-i] [--remote/-r]` | 搜索模块/适配器包             | `epsdk search github`         |
 | `self-update` | `[version] [--pre] [--force/-f]` | 更新ErisPulse SDK本身           | `epsdk self-update`           |
-
-### 模块管理命令
-
-| 命令       | 参数       | 描述                  | 示例                  |
-|------------|------------|-----------------------|-----------------------|
-| `enable`   | `<module>` | 启用已安装的模块      | `epsdk enable chat`   |
-| `disable`  | `<module>` | 禁用已安装的模块      | `epsdk disable stats` |
 
 ### 信息查询命令
 
@@ -1776,9 +1771,24 @@ async def keyword_handler(event):
 | `init`     | `[--project-name/-n <name>]` | 交互式初始化新的 ErisPulse 项目  | `epsdk init -n my_bot`       |
 |            | `[--quick/-q]`             | 快速模式，跳过交互配置            | `epsdk init -q -n my_bot`      |
 |            | `[--force/-f]`             | 强制覆盖现有配置                  | `epsdk init -f`               |
-| `status`   | `[--type/-t <type>]`       | 显示 ErisPulse 系统状态        | `epsdk status`                |
-|            |                           | `--type`: `modules`/`adapters`/`all` | `epsdk status -t modules`     |
 
+
+## 交互式安装
+
+当运行 `epsdk install` 不指定任何包名时，将进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+在交互式界面中，您可以：
+
+1. **选择适配器**：从可用适配器列表中选择一个或多个进行安装
+2. **选择模块**：从可用模块列表中选择一个或多个进行安装
+3. **选择 CLI 扩展**：从可用 CLI 扩展列表中选择一个或多个进行安装
+4. **自定义安装**：手动输入任意包名进行安装
+
+所有选项都支持多选（用逗号分隔序号），安装前会要求确认。
 
 ## 第三方 CLI 模块扩展
 
@@ -1803,10 +1813,12 @@ ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命�
   - 普通模式: 仅监控 `config.toml` 变更
 - 自动检查模块的最低SDK版本要求
 - 支持通过简称安装/卸载远程包
+- 交互式安装界面预加载远程包列表，提升用户体验
 
 ## 反馈与支持
 
 如遇到 CLI 使用问题，请在 GitHub Issues 提交反馈。
+
 
 ---
 
@@ -3821,6 +3833,8 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 
 此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：
 
+- [维护说明](maintain-notes.md)
+
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
@@ -4770,12 +4784,26 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse/Core/module.md](#ErisPulse_Core_module)
 - [ErisPulse/Core/router.md](#ErisPulse_Core_router)
 - [ErisPulse/Core/storage.md](#ErisPulse_Core_storage)
-- [ErisPulse/Core/ux.md](#ErisPulse_Core_ux)
 - [ErisPulse/__init__.md](#ErisPulse___init__)
 - [ErisPulse/__main__.md](#ErisPulse___main__)
 - [ErisPulse/sdk_protocol.md](#ErisPulse_sdk_protocol)
 - [ErisPulse/utils/__init__.md](#ErisPulse_utils___init__)
 - [ErisPulse/utils/cli.md](#ErisPulse_utils_cli)
+- [ErisPulse/utils/cli/__init__.md](#ErisPulse_utils_cli___init__)
+- [ErisPulse/utils/cli/__main__.md](#ErisPulse_utils_cli___main__)
+- [ErisPulse/utils/cli/base.md](#ErisPulse_utils_cli_base)
+- [ErisPulse/utils/cli/commands/__init__.md](#ErisPulse_utils_cli_commands___init__)
+- [ErisPulse/utils/cli/commands/adapter.md](#ErisPulse_utils_cli_commands_adapter)
+- [ErisPulse/utils/cli/commands/init.md](#ErisPulse_utils_cli_commands_init)
+- [ErisPulse/utils/cli/commands/install.md](#ErisPulse_utils_cli_commands_install)
+- [ErisPulse/utils/cli/commands/list.md](#ErisPulse_utils_cli_commands_list)
+- [ErisPulse/utils/cli/commands/list_remote.md](#ErisPulse_utils_cli_commands_list_remote)
+- [ErisPulse/utils/cli/commands/module.md](#ErisPulse_utils_cli_commands_module)
+- [ErisPulse/utils/cli/commands/run.md](#ErisPulse_utils_cli_commands_run)
+- [ErisPulse/utils/cli/commands/self_update.md](#ErisPulse_utils_cli_commands_self_update)
+- [ErisPulse/utils/cli/commands/uninstall.md](#ErisPulse_utils_cli_commands_uninstall)
+- [ErisPulse/utils/cli/commands/upgrade.md](#ErisPulse_utils_cli_commands_upgrade)
+- [ErisPulse/utils/cli/registry.md](#ErisPulse_utils_cli_registry)
 - [ErisPulse/utils/console.md](#ErisPulse_utils_console)
 - [ErisPulse/utils/package_manager.md](#ErisPulse_utils_package_manager)
 - [ErisPulse/utils/reload_handler.md](#ErisPulse_utils_reload_handler)
@@ -5934,7 +5962,7 @@ ErisPulse 请求处理模块
 ## ErisPulse/Core/Event/wrapper.md
 
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-25 16:21:34
 
 ---
 
@@ -6341,7 +6369,7 @@ ErisPulse 事件包装类
 
 获取原始事件数据
 
-:return: 原始事件数据
+:return: 原始事件数据字典
 
 ---
 
@@ -8025,120 +8053,6 @@ use_global_db = true
 
 
 
-<a id="ErisPulse_Core_ux"></a>
-## ErisPulse/Core/ux.md
-
-
-> 最后更新：2026-01-17 19:15:33
-
----
-
-## 模块概述
-
-
-ErisPulse UX优化模块
-
-提供更友好的初始化和API接口，简化常用操作
-
----
-
-## 类列表
-
-
-### `class UXManager`
-
-UX优化管理器
-
-提供用户友好的界面和简化操作
-
-
-#### 方法列表
-
-
-##### `async async _fetch_available_adapters()`
-
-从云端获取可用适配器列表
-
-:return: 适配器名称到描述的映射
-
----
-
-
-##### `welcome(version: str = None)`
-
-显示欢迎信息
-
-:param version: 框架版本号
-
----
-
-
-##### `show_status()`
-
-显示系统状态概览
-
----
-
-
-##### `list_modules(detailed: bool = False)`
-
-列出所有模块状态
-
-:param detailed: 是否显示详细信息
-
----
-
-
-##### `list_adapters(detailed: bool = False)`
-
-列出所有适配器状态
-
-:param detailed: 是否显示详细信息
-
----
-
-
-##### `init_project(project_name: str, adapter_list: List[str] = None)`
-
-初始化新项目
-
-:param project_name: 项目名称
-:param adapter_list: 需要初始化的适配器列表
-:return: 是否初始化成功
-
----
-
-
-##### `interactive_init(project_name: str = None, force: bool = False)`
-
-交互式初始化项目，包括项目创建和配置设置
-
-:param project_name: 项目名称，可为None
-:param force: 是否强制覆盖现有配置
-:return: 是否初始化成功
-
----
-
-
-##### `_configure_adapters_interactive_sync(project_path: str = None)`
-
-交互式配置适配器的同步版本，从云端获取适配器列表
-
-:param project_path: 项目路径，用于加载项目特定的配置
-
----
-
-
-##### `async async _configure_adapters_interactive(project_path: str = None)`
-
-交互式配置适配器，从云端获取适配器列表
-
-:param project_path: 项目路径，用于加载项目特定的配置
-
----
-
-
-
 <a id="ErisPulse___init__"></a>
 ## ErisPulse/__init__.md
 
@@ -8895,6 +8809,993 @@ ErisPulse命令行接口
 
 
 
+<a id="ErisPulse_utils_cli___init__"></a>
+## ErisPulse/utils/cli/__init__.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+CLI 模块
+
+ErisPulse 命令行接口
+
+---
+
+
+<a id="ErisPulse_utils_cli___main__"></a>
+## ErisPulse/utils/cli/__main__.md
+
+
+> 最后更新：2026-01-26 16:21:22
+
+---
+
+## 模块概述
+
+
+主 CLI 类
+
+ErisPulse 命令行接口主入口
+
+---
+
+## 类列表
+
+
+### `class CLI`
+
+ErisPulse 命令行接口主类
+
+提供完整的命令行交互功能，支持动态加载第三方命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化 CLI
+
+---
+
+
+##### `_create_parser()`
+
+创建命令行参数解析器
+
+:return: 配置好的 ArgumentParser 实例
+
+---
+
+
+##### `_auto_discover_commands()`
+
+自动发现并注册 commands 目录中的所有命令
+
+动态扫描 commands 目录，查找所有继承自 Command 基类的命令类
+并自动注册到命令注册表中。
+
+---
+
+
+##### `_register_builtin_commands()`
+
+注册所有内置命令（通过自动发现）
+
+---
+
+
+##### `_load_external_commands()`
+
+加载第三方 CLI 命令
+
+---
+
+
+##### `_print_version()`
+
+打印版本信息
+
+---
+
+
+##### `run()`
+
+运行 CLI
+
+**异常**: `KeyboardInterrupt` - 用户中断时抛出
+**异常**: `Exception` - 命令执行失败时抛出
+
+---
+
+
+##### `_execute_external_command(args)`
+
+执行第三方命令
+
+:param args: 解析后的参数
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_base"></a>
+## ErisPulse/utils/cli/base.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+CLI 命令基类
+
+定义所有命令的统一接口
+
+---
+
+## 类列表
+
+
+### `class Command(ABC)`
+
+命令基类
+
+所有 CLI 命令都应继承此类并实现抽象方法
+
+> **提示**
+> 1. 每个命令类必须实现 add_arguments 和 execute 方法
+> 2. name 和 description 为类属性，必须在子类中定义
+> 3. execute 方法接收解析后的 args 对象
+
+
+#### 方法列表
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+:param parser: ArgumentParser 实例
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+:param args: 解析后的参数对象
+
+---
+
+
+##### `help()`
+
+获取帮助信息
+
+:return: 命令描述
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands___init__"></a>
+## ErisPulse/utils/cli/commands/__init__.md
+
+
+> 最后更新：2026-01-26 16:21:22
+
+---
+
+## 模块概述
+
+
+命令模块
+
+自动发现 commands 目录中的所有 CLI 命令。
+所有继承自 Command 基类的命令类都会被自动加载和注册。
+
+---
+
+
+<a id="ErisPulse_utils_cli_commands_adapter"></a>
+## ErisPulse/utils/cli/commands/adapter.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Adapter 命令实现
+
+支持启用和禁用适配器
+
+---
+
+## 类列表
+
+
+### `class AdapterCommand(Command)`
+
+适配器管理命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_list_adapters(installed, show_all: bool)`
+
+列出适配器状态
+
+:param installed: 已安装的包信息
+:param show_all: 是否显示所有适配器
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_init"></a>
+## ErisPulse/utils/cli/commands/init.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Init 命令实现
+
+交互式初始化 ErisPulse 项目
+
+---
+
+## 类列表
+
+
+### `class InitCommand(Command)`
+
+初始化命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_init_project(project_name: str, adapter_list: list = None)`
+
+初始化新项目
+
+:param project_name: 项目名称
+:param adapter_list: 需要初始化的适配器列表
+:return: 是否初始化成功
+
+---
+
+
+##### `async async _fetch_available_adapters()`
+
+从云端获取可用适配器列表
+
+:return: 适配器名称到描述的映射
+
+---
+
+
+##### `_configure_adapters_interactive_sync(project_path: str = None)`
+
+交互式配置适配器的同步版本
+
+:param project_path: 项目路径
+
+---
+
+
+##### `_install_adapters(adapter_names, adapters_info)`
+
+安装选中的适配器
+
+:param adapter_names: 适配器名称列表
+:param adapters_info: 适配器信息字典
+
+---
+
+
+##### `_interactive_init(project_name: str = None, force: bool = False)`
+
+交互式初始化项目
+
+:param project_name: 项目名称
+:param force: 是否强制覆盖
+:return: 是否初始化成功
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_install"></a>
+## ErisPulse/utils/cli/commands/install.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Install 命令实现
+
+支持交互式和批量安装模块、适配器、CLI 扩展
+
+---
+
+## 类列表
+
+
+### `class InstallCommand(Command)`
+
+安装命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_interactive_install(upgrade: bool = False, pre: bool = False)`
+
+交互式安装界面
+
+:param upgrade: 是否升级模式
+:param pre: 是否包含预发布版本
+
+---
+
+
+##### `_install_adapters(remote_packages: dict, upgrade: bool, pre: bool)`
+
+安装适配器
+
+---
+
+
+##### `_install_modules(remote_packages: dict, upgrade: bool, pre: bool)`
+
+安装模块
+
+---
+
+
+##### `_install_cli_extensions(remote_packages: dict, upgrade: bool, pre: bool)`
+
+安装 CLI 扩展
+
+---
+
+
+##### `_install_custom(upgrade: bool, pre: bool)`
+
+自定义安装
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_list"></a>
+## ErisPulse/utils/cli/commands/list.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+List 命令实现
+
+列出已安装的组件
+
+---
+
+## 类列表
+
+
+### `class ListCommand(Command)`
+
+列表命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False)`
+
+打印已安装包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli)
+:param outdated_only: 是否只显示可升级的包
+
+---
+
+
+##### `_is_package_outdated(package_name: str, current_version: str)`
+
+检查包是否过时
+
+:param package_name: 包名
+:param current_version: 当前版本
+:return: 是否有新版本可用
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_list_remote"></a>
+## ErisPulse/utils/cli/commands/list_remote.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+List-Remote 命令实现
+
+列出远程可用的组件
+
+---
+
+## 类列表
+
+
+### `class ListRemoteCommand(Command)`
+
+远程列表命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_print_remote_packages(pkg_type: str, force_refresh: bool = False)`
+
+打印远程包信息
+
+:param pkg_type: 包类型 (modules/adapters/cli)
+:param force_refresh: 是否强制刷新缓存
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_module"></a>
+## ErisPulse/utils/cli/commands/module.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Module 命令实现
+
+支持启用和禁用模块
+
+---
+
+## 类列表
+
+
+### `class ModuleCommand(Command)`
+
+模块管理命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_run"></a>
+## ErisPulse/utils/cli/commands/run.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Run 命令实现
+
+运行主程序
+
+---
+
+## 类列表
+
+
+### `class RunCommand(Command)`
+
+运行命令
+
+
+#### 方法列表
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_setup_watchdog(script_path: str, reload_mode: bool)`
+
+设置文件监控
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+---
+
+
+##### `_cleanup()`
+
+清理资源
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_self_update"></a>
+## ErisPulse/utils/cli/commands/self_update.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Self-Update 命令实现
+
+更新 ErisPulse SDK 本身
+
+---
+
+## 类列表
+
+
+### `class SelfUpdateCommand(Command)`
+
+自更新命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+##### `_select_target_version(versions, specified_version: str = None, include_pre: bool = False)`
+
+选择目标版本
+
+:param versions: 版本列表
+:param specified_version: 用户指定的版本
+:param include_pre: 是否包含预发布版本
+:return: 目标版本号
+
+---
+
+
+##### `_select_from_version_list(versions, include_pre: bool = False)`
+
+从版本列表中选择
+
+:param versions: 版本列表
+:param include_pre: 是否包含预发布版本
+:return: 选中的版本号
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_uninstall"></a>
+## ErisPulse/utils/cli/commands/uninstall.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Uninstall 命令实现
+
+支持卸载模块、适配器、CLI 扩展
+
+---
+
+## 类列表
+
+
+### `class UninstallCommand(Command)`
+
+卸载命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_commands_upgrade"></a>
+## ErisPulse/utils/cli/commands/upgrade.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+Upgrade 命令实现
+
+升级组件
+
+---
+
+## 类列表
+
+
+### `class UpgradeCommand(Command)`
+
+升级命令
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化命令
+
+---
+
+
+##### `add_arguments(parser: ArgumentParser)`
+
+添加命令参数
+
+---
+
+
+##### `execute(args)`
+
+执行命令
+
+---
+
+
+
+<a id="ErisPulse_utils_cli_registry"></a>
+## ErisPulse/utils/cli/registry.md
+
+
+> 最后更新：2026-01-26 15:55:43
+
+---
+
+## 模块概述
+
+
+CLI 命令注册器
+
+负责命令的注册、查找和管理
+
+---
+
+## 类列表
+
+
+### `class CommandRegistry`
+
+命令注册器
+
+管理所有已注册的 CLI 命令
+
+> **提示**
+> 1. 使用单例模式确保全局唯一
+> 2. 支持命令的动态注册和查找
+> 3. 支持第三方命令的兼容
+
+:ivar _commands: 已注册的命令字典 {name: Command}
+
+
+#### 方法列表
+
+
+##### `__new__()`
+
+实现单例模式
+
+---
+
+
+##### `register(command: Command)`
+
+注册命令
+
+:param command: 要注册的命令实例
+**异常**: `ValueError` - 命令名称已存在时抛出
+
+---
+
+
+##### `register_external(name: str, command: Command)`
+
+注册第三方命令
+
+:param name: 命令名称
+:param command: 命令实例
+
+---
+
+
+##### `get(name: str)`
+
+获取命令
+
+:param name: 命令名称
+:return: 命令实例，未找到返回 None
+
+---
+
+
+##### `get_all()`
+
+获取所有命令（包括外部命令）
+
+:return: 所有命令列表
+
+---
+
+
+##### `list_all()`
+
+列出所有命令名称
+
+:return: 命令名称列表
+
+---
+
+
+##### `list_builtin()`
+
+列出内置命令名称
+
+:return: 内置命令名称列表
+
+---
+
+
+##### `list_external()`
+
+列出外部命令名称
+
+:return: 外部命令名称列表
+
+---
+
+
+##### `exists(name: str)`
+
+检查命令是否存在
+
+:param name: 命令名称
+:return: 命令是否存在
+
+---
+
+
+##### `clear_external()`
+
+清空外部命令
+
+---
+
+
+
 <a id="ErisPulse_utils_console"></a>
 ## ErisPulse/utils/console.md
 
@@ -9270,7 +10171,7 @@ ErisPulse SDK 热重载处理器
 ## README.md
 
 
-> 最后更新：2026-01-21 08:00:42
+> 最后更新：2026-01-26 16:21:22
 
 ---
 
@@ -9278,10 +10179,10 @@ ErisPulse SDK 热重载处理器
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 30
-- **类总数**: 33
-- **函数总数**: 25
-- **方法总数**: 286
+- **模块总数**: 41
+- **类总数**: 42
+- **函数总数**: 23
+- **方法总数**: 324
 
 ---
 
@@ -9393,11 +10294,6 @@ ErisPulse SDK 热重载处理器
 📦 1 个类 | 🔧 21 个方法
 
 
-### [ErisPulse.Core.ux](ErisPulse/Core/ux.md)
-
-📦 1 个类 | 🔧 9 个方法
-
-
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
 📦 4 个类 | 🔧 20 个方法 | ⚙️ 9 个函数
@@ -9418,9 +10314,69 @@ ErisPulse SDK 热重载处理器
 📄 模块文档
 
 
-### [ErisPulse.utils.cli](ErisPulse/utils/cli.md)
+### [ErisPulse.utils.cli.__init__](ErisPulse/utils/cli/__init__.md)
 
-📦 1 个类 | 🔧 14 个方法 | ⚙️ 2 个函数
+📄 模块文档
+
+
+### [ErisPulse.utils.cli.__main__](ErisPulse/utils/cli/__main__.md)
+
+📦 1 个类 | 🔧 8 个方法
+
+
+### [ErisPulse.utils.cli.base](ErisPulse/utils/cli/base.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.commands.__init__](ErisPulse/utils/cli/commands/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.utils.cli.commands.init](ErisPulse/utils/cli/commands/init.md)
+
+📦 1 个类 | 🔧 8 个方法
+
+
+### [ErisPulse.utils.cli.commands.install](ErisPulse/utils/cli/commands/install.md)
+
+📦 1 个类 | 🔧 8 个方法
+
+
+### [ErisPulse.utils.cli.commands.list](ErisPulse/utils/cli/commands/list.md)
+
+📦 1 个类 | 🔧 5 个方法
+
+
+### [ErisPulse.utils.cli.commands.list_remote](ErisPulse/utils/cli/commands/list_remote.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.utils.cli.commands.run](ErisPulse/utils/cli/commands/run.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.utils.cli.commands.self_update](ErisPulse/utils/cli/commands/self_update.md)
+
+📦 1 个类 | 🔧 5 个方法
+
+
+### [ErisPulse.utils.cli.commands.uninstall](ErisPulse/utils/cli/commands/uninstall.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.commands.upgrade](ErisPulse/utils/cli/commands/upgrade.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.registry](ErisPulse/utils/cli/registry.md)
+
+📦 1 个类 | 🔧 10 个方法
 
 
 ### [ErisPulse.utils.console](ErisPulse/utils/console.md)
