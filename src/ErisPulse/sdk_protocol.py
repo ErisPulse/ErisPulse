@@ -17,7 +17,6 @@ from .Core.config import ConfigManager
 from .Core.adapter import AdapterManager
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
-from .Core.ux import UXManager
 from .Core.Bases.adapter import BaseAdapter, SendDSL
 
 P = ParamSpec('P')
@@ -75,12 +74,6 @@ class SDKProtocol(Protocol):
     
     adapter_server: RouterManager
     """路由管理器别名"""
-    
-    ux: UXManager
-    """UX管理器实例"""
-    
-    UXManager: type[UXManager]
-    """UX管理器类"""
     
     # ==================== 初始化方法 ====================
     
