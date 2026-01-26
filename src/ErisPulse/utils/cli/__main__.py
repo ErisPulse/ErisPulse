@@ -103,8 +103,6 @@ class CLI:
     def _load_external_commands(self):
         """
         加载第三方 CLI 命令
-        
-        保持与旧版本的兼容性，通过 entry_points 加载第三方命令
         """
         try:
             entry_points = importlib.metadata.entry_points()
@@ -179,28 +177,19 @@ class CLI:
         :param args: 解析后的参数
         """
         try:
-            entry_points = importlib.metadata.entry_points()
-            if hasattr(entry_points, 'select'):
-                cli_entries = entry_points.select(group='erispulse.cli')
+            # 第三方命令在注册时已经通过 set_defaults(func=handle_command) 设置了处理函数
+            # 所以 args.func 就是处理函数
+            if hasattr(args, 'func') and args.func:
+                handler_func = args.func
+                if asyncio.iscoroutinefunction(handler_func):
+                    # 异步函数：使用 asyncio.run() 运行
+                    asyncio.run(handler_func(args))
+                else:
+                    # 同步函数：直接调用
+                    handler_func(args)
             else:
-                cli_entries = entry_points.get('erispulse.cli', [])
-            
-            for entry in cli_entries:
-                if entry.name == args.command:
-                    cli_func = entry.load()
-                    if callable(cli_func):
-                        # 创建一个新的解析器来解析第三方命令的参数
-                        subparser = self.subparsers._actions[0].choices[args.command]
-                        parsed_args = subparser.parse_args(sys.argv[2:])
-                        # 调用第三方命令处理函数（支持异步函数）
-                        handler_func = parsed_args.func
-                        if asyncio.iscoroutinefunction(handler_func):
-                            # 异步函数：使用 asyncio.run() 运行
-                            asyncio.run(handler_func(parsed_args))
-                        else:
-                            # 同步函数：直接调用
-                            handler_func(parsed_args)
-                    break
+                console.print(f"[error]命令 {args.command} 没有处理函数[/]")
+                sys.exit(1)
         except Exception as e:
             console.print(f"[error]执行第三方命令失败: {e}[/]")
             if args.verbose >= 1:
