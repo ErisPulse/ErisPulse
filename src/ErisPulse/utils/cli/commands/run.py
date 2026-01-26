@@ -5,7 +5,6 @@ Run 命令实现
 """
 
 import os
-import sys
 import time
 from argparse import ArgumentParser
 from watchdog.observers import Observer
@@ -46,7 +45,7 @@ class RunCommand(Command):
         
         # 检查脚本是否存在
         if not os.path.exists(script):
-            from .. import _prepare_environment
+            from .... import _prepare_environment
             import asyncio
             asyncio.run(_prepare_environment())
         
