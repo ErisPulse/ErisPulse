@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-01-25 13:07:05
+**生成时间**: 2026-01-26 16:21:22
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -99,6 +99,7 @@
 
 ### 平台特性
 - [平台特性总览](platform-features/README.md) - 平台适配器通用接口和功能说明
+- [平台维护说明](platform-features/maintain-notes.md)
 - 各个平台特性:
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
@@ -120,13 +121,14 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
-确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
 > 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
 
 ### 1. 安装 uv
 
@@ -1737,19 +1739,12 @@ async def keyword_handler(event):
 
 | 命令       | 参数                      | 描述                                  | 示例                          |
 |------------|---------------------------|---------------------------------------|-------------------------------|
-| `install`  | `<package>... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+| `install`  | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+|            |                           | 不指定包名时进入交互式安装界面        | `epsdk install`                |
 |            |                           | 支持远程包简称自动解析                | `epsdk install Yunhu -U` |
 | `uninstall`| `<package>...`            | 卸载模块/适配器包（支持多个包）       | `epsdk uninstall old-module1 old-module2`  |
 | `upgrade`  | `[package]... [--force/-f] [--pre]` | 升级指定模块/适配器或所有包         | `epsdk upgrade --force`       |
-| `search`   | `<query> [--installed/-i] [--remote/-r]` | 搜索模块/适配器包             | `epsdk search github`         |
 | `self-update` | `[version] [--pre] [--force/-f]` | 更新ErisPulse SDK本身           | `epsdk self-update`           |
-
-### 模块管理命令
-
-| 命令       | 参数       | 描述                  | 示例                  |
-|------------|------------|-----------------------|-----------------------|
-| `enable`   | `<module>` | 启用已安装的模块      | `epsdk enable chat`   |
-| `disable`  | `<module>` | 禁用已安装的模块      | `epsdk disable stats` |
 
 ### 信息查询命令
 
@@ -1776,9 +1771,24 @@ async def keyword_handler(event):
 | `init`     | `[--project-name/-n <name>]` | 交互式初始化新的 ErisPulse 项目  | `epsdk init -n my_bot`       |
 |            | `[--quick/-q]`             | 快速模式，跳过交互配置            | `epsdk init -q -n my_bot`      |
 |            | `[--force/-f]`             | 强制覆盖现有配置                  | `epsdk init -f`               |
-| `status`   | `[--type/-t <type>]`       | 显示 ErisPulse 系统状态        | `epsdk status`                |
-|            |                           | `--type`: `modules`/`adapters`/`all` | `epsdk status -t modules`     |
 
+
+## 交互式安装
+
+当运行 `epsdk install` 不指定任何包名时，将进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+在交互式界面中，您可以：
+
+1. **选择适配器**：从可用适配器列表中选择一个或多个进行安装
+2. **选择模块**：从可用模块列表中选择一个或多个进行安装
+3. **选择 CLI 扩展**：从可用 CLI 扩展列表中选择一个或多个进行安装
+4. **自定义安装**：手动输入任意包名进行安装
+
+所有选项都支持多选（用逗号分隔序号），安装前会要求确认。
 
 ## 第三方 CLI 模块扩展
 
@@ -1803,10 +1813,12 @@ ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命�
   - 普通模式: 仅监控 `config.toml` 变更
 - 自动检查模块的最低SDK版本要求
 - 支持通过简称安装/卸载远程包
+- 交互式安装界面预加载远程包列表，提升用户体验
 
 ## 反馈与支持
 
 如遇到 CLI 使用问题，请在 GitHub Issues 提交反馈。
+
 
 ---
 
@@ -3820,6 +3832,8 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 ## 平台特定功能
 
 此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：
+
+- [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)
