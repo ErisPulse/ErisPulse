@@ -6,8 +6,6 @@
 
 from .install import InstallCommand
 from .uninstall import UninstallCommand
-from .module import ModuleCommand
-from .adapter import AdapterCommand
 from .list import ListCommand
 from .list_remote import ListRemoteCommand
 from .upgrade import UpgradeCommand
@@ -18,8 +16,6 @@ from .init import InitCommand
 __all__ = [
     "InstallCommand",
     "UninstallCommand",
-    "ModuleCommand",
-    "AdapterCommand",
     "ListCommand",
     "ListRemoteCommand",
     "UpgradeCommand",
