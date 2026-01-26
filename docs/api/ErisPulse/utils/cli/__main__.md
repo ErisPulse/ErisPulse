@@ -1,6 +1,6 @@
 # `ErisPulse.utils.cli.__main__` 模块
 
-> 最后更新：2026-01-26 15:55:43
+> 最后更新：2026-01-26 16:21:22
 
 ---
 
@@ -42,9 +42,19 @@ ErisPulse 命令行接口主类
 ---
 
 
+##### `_auto_discover_commands()`
+
+自动发现并注册 commands 目录中的所有命令
+
+动态扫描 commands 目录，查找所有继承自 Command 基类的命令类
+并自动注册到命令注册表中。
+
+---
+
+
 ##### `_register_builtin_commands()`
 
-注册所有内置命令
+注册所有内置命令（通过自动发现）
 
 ---
 
