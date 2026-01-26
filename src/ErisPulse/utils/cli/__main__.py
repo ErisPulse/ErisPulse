@@ -17,8 +17,6 @@ from .registry import CommandRegistry
 from .commands import (
     InstallCommand,
     UninstallCommand,
-    ModuleCommand,
-    AdapterCommand,
     ListCommand,
     ListRemoteCommand,
     UpgradeCommand,
@@ -83,8 +81,6 @@ class CLI:
         """注册所有内置命令"""
         self.registry.register(InstallCommand())
         self.registry.register(UninstallCommand())
-        self.registry.register(ModuleCommand())
-        self.registry.register(AdapterCommand())
         self.registry.register(ListCommand())
         self.registry.register(ListRemoteCommand())
         self.registry.register(UpgradeCommand())
