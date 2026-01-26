@@ -18,7 +18,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from rich.panel import Panel
 from ..console import console
 from .registry import CommandRegistry
-from .commands import InstallCommand, UninstallCommand, ModuleCommand, AdapterCommand, ListCommand, ListRemoteCommand, UpgradeCommand, SelfUpdateCommand, RunCommand, InitCommand
+from .commands import InstallCommand, UninstallCommand, ListCommand, ListRemoteCommand, UpgradeCommand, SelfUpdateCommand, RunCommand, InitCommand
 
 class CLI:
     """
