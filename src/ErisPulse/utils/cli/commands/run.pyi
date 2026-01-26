@@ -11,7 +11,6 @@ Run 命令实现
 """
 
 import os
-import sys
 import time
 from argparse import ArgumentParser
 from watchdog.observers import Observer
