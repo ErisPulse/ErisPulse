@@ -46,8 +46,6 @@ class CLI:
     def _load_external_commands(self: object) -> ...:
         """
         加载第三方 CLI 命令
-        
-        保持与旧版本的兼容性，通过 entry_points 加载第三方命令
         """
         ...
     def _print_version(self: object) -> ...:
