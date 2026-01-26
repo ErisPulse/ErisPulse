@@ -7,16 +7,6 @@
 """
 命令模块
 
-导出所有可用的 CLI 命令
+自动发现 commands 目录中的所有 CLI 命令。
+所有继承自 Command 基类的命令类都会被自动加载和注册。
 """
-
-from .install import InstallCommand
-from .uninstall import UninstallCommand
-from .module import ModuleCommand
-from .adapter import AdapterCommand
-from .list import ListCommand
-from .list_remote import ListRemoteCommand
-from .upgrade import UpgradeCommand
-from .self_update import SelfUpdateCommand
-from .run import RunCommand
-from .init import InitCommand

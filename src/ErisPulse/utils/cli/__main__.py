@@ -5,25 +5,19 @@ ErisPulse 命令行接口主入口
 """
 
 import sys
+import importlib
 import importlib.metadata
 import asyncio
 import traceback
+import pkgutil
+from pathlib import Path
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from rich.panel import Panel
 
 from ..console import console
 from .registry import CommandRegistry
-from .commands import (
-    InstallCommand,
-    UninstallCommand,
-    ListCommand,
-    ListRemoteCommand,
-    UpgradeCommand,
-    SelfUpdateCommand,
-    RunCommand,
-    InitCommand,
-)
+from .base import Command
 
 
 class CLI:
@@ -77,16 +71,54 @@ class CLI:
         self.subparsers = subparsers
         return parser
     
+    def _auto_discover_commands(self):
+        """
+        自动发现并注册 commands 目录中的所有命令
+        
+        动态扫描 commands 目录，查找所有继承自 Command 基类的命令类
+        并自动注册到命令注册表中。
+        """
+        # 获取 commands 包的路径
+        commands_package = 'ErisPulse.utils.cli.commands'
+        
+        try:
+            # 遍历 commands 包中的所有模块
+            for importer, module_name, ispkg in pkgutil.iter_modules(
+                importlib.import_module(commands_package).__path__,
+                prefix=f"{commands_package}."
+            ):
+                # 跳过 __init__ 和 __pycache__ 目录
+                if module_name.endswith('.__init__') or '__pycache__' in module_name:
+                    continue
+                
+                try:
+                    # 动态导入模块
+                    module = importlib.import_module(module_name)
+                    
+                    # 查找模块中所有继承自 Command 的类
+                    for attr_name in dir(module):
+                        attr = getattr(module, attr_name)
+                        
+                        # 检查是否是 Command 的子类（排除 Command 基类本身）
+                        if (isinstance(attr, type) and 
+                            issubclass(attr, Command) and 
+                            attr is not Command):
+                            try:
+                                # 实例化并注册命令
+                                command_instance = attr()
+                                self.registry.register(command_instance)
+                            except Exception as e:
+                                console.print(f"[warning]实例化命令 {attr_name} 失败: {e}[/]")
+                                
+                except Exception as e:
+                    console.print(f"[warning]加载命令模块 {module_name} 失败: {e}[/]")
+                    
+        except ImportError as e:
+            console.print(f"[warning]无法导入 commands 包: {e}[/]")
+    
     def _register_builtin_commands(self):
-        """注册所有内置命令"""
-        self.registry.register(InstallCommand())
-        self.registry.register(UninstallCommand())
-        self.registry.register(ListCommand())
-        self.registry.register(ListRemoteCommand())
-        self.registry.register(UpgradeCommand())
-        self.registry.register(SelfUpdateCommand())
-        self.registry.register(RunCommand())
-        self.registry.register(InitCommand())
+        """注册所有内置命令（通过自动发现）"""
+        self._auto_discover_commands()
         
         # 添加所有命令的参数
         for command in self.registry.get_all():
