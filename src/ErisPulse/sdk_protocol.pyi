@@ -21,7 +21,6 @@ from .Core.config import ConfigManager
 from .Core.adapter import AdapterManager
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
-from .Core.ux import UXManager
 from .Core.Bases.adapter import BaseAdapter, SendDSL
 
 class SDKProtocol(Protocol):
@@ -44,8 +43,6 @@ class SDKProtocol(Protocol):
     module: ModuleManager
     router: RouterManager
     adapter_server: RouterManager
-    ux: UXManager
-    UXManager: type[UXManager]
     async def init(self: object) -> bool:
         """
         SDK初始化入口
