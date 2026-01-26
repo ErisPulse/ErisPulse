@@ -13,7 +13,6 @@ Install 命令实现
 import sys
 import asyncio
 from argparse import ArgumentParser
-from typing import List
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table

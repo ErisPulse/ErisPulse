@@ -4,7 +4,6 @@ Init 命令实现
 交互式初始化 ErisPulse 项目
 """
 
-import os
 import asyncio
 import concurrent.futures
 import subprocess
