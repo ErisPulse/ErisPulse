@@ -6,7 +6,6 @@ from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager
 from .config import config, ConfigManager
-from .ux import ux, UXManager
 from . import exceptions
 from . import Event
 
@@ -42,10 +41,6 @@ __all__ = [
     'router',           # 路由管理器
     'RouterManager',    # 路由管理器类
     'adapter_server',   # 路由管理器别名
-
-    # UX
-    'ux',               # UX管理器实例
-    'UXManager',        # UX管理器类
 
     # 基础设施
     'logger',           # 日志管理器

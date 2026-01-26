@@ -37,8 +37,6 @@ from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
 from .Core import module
 # 路由相关
 from .Core import router, adapter_server
-# 用户体验相关
-from .Core import ux, UXManager
 
 # SDK统一对外接口
 sdk: 'SDKProtocol' = types.ModuleType('sdk')  # type: ignore[assignment]
@@ -71,8 +69,6 @@ BaseModules = {
     
     "router": router,
     "adapter_server": adapter_server,
-    "ux": ux,
-    "UXManager": UXManager,
 }
 
 for module_name, moduleObj in BaseModules.items():
