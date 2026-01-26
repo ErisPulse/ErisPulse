@@ -12,6 +12,5 @@ from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager
 from .config import config, ConfigManager
-from .ux import ux, UXManager
 from . import exceptions
 from . import Event
