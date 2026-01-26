@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-01-21 08:00:42
+> 最后更新：2026-01-26 15:55:43
 
 ---
 
@@ -8,10 +8,10 @@
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 30
-- **类总数**: 33
-- **函数总数**: 25
-- **方法总数**: 286
+- **模块总数**: 43
+- **类总数**: 44
+- **函数总数**: 23
+- **方法总数**: 330
 
 ---
 
@@ -123,11 +123,6 @@
 📦 1 个类 | 🔧 21 个方法
 
 
-### [ErisPulse.Core.ux](ErisPulse/Core/ux.md)
-
-📦 1 个类 | 🔧 9 个方法
-
-
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
 📦 4 个类 | 🔧 20 个方法 | ⚙️ 9 个函数
@@ -148,9 +143,79 @@
 📄 模块文档
 
 
-### [ErisPulse.utils.cli](ErisPulse/utils/cli.md)
+### [ErisPulse.utils.cli.__init__](ErisPulse/utils/cli/__init__.md)
 
-📦 1 个类 | 🔧 14 个方法 | ⚙️ 2 个函数
+📄 模块文档
+
+
+### [ErisPulse.utils.cli.__main__](ErisPulse/utils/cli/__main__.md)
+
+📦 1 个类 | 🔧 7 个方法
+
+
+### [ErisPulse.utils.cli.base](ErisPulse/utils/cli/base.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.commands.__init__](ErisPulse/utils/cli/commands/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.utils.cli.commands.adapter](ErisPulse/utils/cli/commands/adapter.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.utils.cli.commands.init](ErisPulse/utils/cli/commands/init.md)
+
+📦 1 个类 | 🔧 8 个方法
+
+
+### [ErisPulse.utils.cli.commands.install](ErisPulse/utils/cli/commands/install.md)
+
+📦 1 个类 | 🔧 8 个方法
+
+
+### [ErisPulse.utils.cli.commands.list](ErisPulse/utils/cli/commands/list.md)
+
+📦 1 个类 | 🔧 5 个方法
+
+
+### [ErisPulse.utils.cli.commands.list_remote](ErisPulse/utils/cli/commands/list_remote.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.utils.cli.commands.module](ErisPulse/utils/cli/commands/module.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.commands.run](ErisPulse/utils/cli/commands/run.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.utils.cli.commands.self_update](ErisPulse/utils/cli/commands/self_update.md)
+
+📦 1 个类 | 🔧 5 个方法
+
+
+### [ErisPulse.utils.cli.commands.uninstall](ErisPulse/utils/cli/commands/uninstall.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.commands.upgrade](ErisPulse/utils/cli/commands/upgrade.md)
+
+📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.utils.cli.registry](ErisPulse/utils/cli/registry.md)
+
+📦 1 个类 | 🔧 10 个方法
 
 
 ### [ErisPulse.utils.console](ErisPulse/utils/console.md)
