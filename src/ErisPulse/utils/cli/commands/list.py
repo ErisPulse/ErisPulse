@@ -135,7 +135,7 @@ class ListCommand(Command):
             
             console.print(table)
         elif not installed.get(pkg_type.replace("cli", "cli_extensions"), {}):
-            console.print(f"[dim]没有找到已安装的 {pkg_type}[/]")
+            pass
     
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
         """

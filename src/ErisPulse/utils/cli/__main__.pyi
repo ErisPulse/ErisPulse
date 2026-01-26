@@ -11,14 +11,17 @@ ErisPulse 命令行接口主入口
 """
 
 import sys
+import importlib
 import importlib.metadata
 import asyncio
 import traceback
+import pkgutil
+from pathlib import Path
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from rich.panel import Panel
 from ..console import console
 from .registry import CommandRegistry
-from .commands import InstallCommand, UninstallCommand, ModuleCommand, AdapterCommand, ListCommand, ListRemoteCommand, UpgradeCommand, SelfUpdateCommand, RunCommand, InitCommand
+from .base import Command
 
 class CLI:
     """
@@ -38,9 +41,17 @@ class CLI:
         :return: 配置好的 ArgumentParser 实例
         """
         ...
+    def _auto_discover_commands(self: object) -> ...:
+        """
+        自动发现并注册 commands 目录中的所有命令
+        
+        动态扫描 commands 目录，查找所有继承自 Command 基类的命令类
+        并自动注册到命令注册表中。
+        """
+        ...
     def _register_builtin_commands(self: object) -> ...:
         """
-        注册所有内置命令
+        注册所有内置命令（通过自动发现）
         """
         ...
     def _load_external_commands(self: object) -> ...:
