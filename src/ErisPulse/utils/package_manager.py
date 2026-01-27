@@ -41,6 +41,8 @@ class PackageManager:
         """初始化包管理器"""
         self._cache = {}
         self._cache_time = {}
+        self._pypi_cache = {}  # PyPI版本缓存
+        self._pypi_cache_time = {}  # PyPI版本缓存时间
         
     async def _fetch_remote_packages(self, url: str) -> Optional[dict]:
         """
@@ -204,26 +206,41 @@ class PackageManager:
     async def _find_package_by_alias(self, alias: str) -> Optional[str]:
         """
         通过别名查找实际包名（大小写不敏感）
+        支持查找已安装包和远程包
         
-        :param alias: 包别名
+        :param alias: 包别名或PyPI包名
         :return: 实际包名，未找到返回None
         """
         normalized_alias = self._normalize_name(alias)
         remote_packages = await self.get_remote_packages()
         
+        # 首先检查是否是已安装包的PyPI包名
+        installed_package = self._find_installed_package_by_name(alias)
+        if installed_package:
+            return installed_package
+        
         # 检查模块
         for name, info in remote_packages["modules"].items():
             if self._normalize_name(name) == normalized_alias:
+                return info["package"]
+            # 同时检查PyPI包名
+            if self._normalize_name(info["package"]) == normalized_alias:
                 return info["package"]
                 
         # 检查适配器
         for name, info in remote_packages["adapters"].items():
             if self._normalize_name(name) == normalized_alias:
                 return info["package"]
+            # 同时检查PyPI包名
+            if self._normalize_name(info["package"]) == normalized_alias:
+                return info["package"]
                 
         # 检查CLI扩展
         for name, info in remote_packages.get("cli_extensions", {}).items():
             if self._normalize_name(name) == normalized_alias:
+                return info["package"]
+            # 同时检查PyPI包名
+            if self._normalize_name(info["package"]) == normalized_alias:
                 return info["package"]
                 
         return None
@@ -255,6 +272,80 @@ class PackageManager:
                 
         return None
 
+    async def check_package_updates(self) -> Dict[str, Tuple[str, str]]:
+        """
+        检查包更新，对比本地版本和远程版本
+        
+        :return: {包名: (当前版本, 最新版本)}，仅包含有新版本的包
+        """
+        installed = self.get_installed_packages()
+        remote_packages = await self.get_remote_packages()
+        
+        updates = {}
+        
+        # 构建远程包索引：PyPI包名 -> 版本
+        remote_index = {}
+        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+            for name, info in remote_packages[pkg_type].items():
+                remote_index[info["package"]] = info["version"]
+        
+        # 检查每个已安装包
+        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+            for entry_name, pkg_info in installed[pkg_type].items():
+                current_version = pkg_info["version"]
+                package_name = pkg_info["package"]
+                
+                # 检查远程是否有更新
+                if package_name in remote_index:
+                    remote_version = remote_index[package_name]
+                    
+                    # 比较版本
+                    comparison = self._compare_versions(remote_version, current_version)
+                    if comparison > 0:  # 远程版本更新
+                        updates[package_name] = (current_version, remote_version)
+                else:
+                    # 如果远程找不到，尝试通过PyPI检查（使用pip show）
+                    remote_version = await self._get_pypi_package_version(package_name)
+                    if remote_version and self._compare_versions(remote_version, current_version) > 0:
+                        updates[package_name] = (current_version, remote_version)
+        
+        return updates
+    
+    async def _get_pypi_package_version(self, package_name: str, force_refresh: bool = False) -> Optional[str]:
+        """
+        从PyPI获取包的最新版本，带缓存机制
+        
+        :param package_name: PyPI包名
+        :param force_refresh: 是否强制刷新缓存
+        :return: 最新版本号，失败返回None
+        """
+        # 检查缓存
+        cache_key = package_name.lower()
+        if not force_refresh and cache_key in self._pypi_cache:
+            if time.time() - self._pypi_cache_time[cache_key] < self.CACHE_EXPIRY:
+                return self._pypi_cache[cache_key]
+        
+        import aiohttp
+        from aiohttp import ClientError, ClientTimeout
+        
+        timeout = ClientTimeout(total=10)
+        url = f"https://pypi.org/pypi/{package_name}/json"
+        
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        version = data["info"]["version"]
+                        # 更新缓存
+                        self._pypi_cache[cache_key] = version
+                        self._pypi_cache_time[cache_key] = time.time()
+                        return version
+        except (ClientError, asyncio.TimeoutError, json.JSONDecodeError, KeyError) as e:
+            console.print(f"[warning]获取PyPI版本失败 ({package_name}): {e}[/]")
+        
+        return None
+    
     def _run_pip_command_with_output(self, args: List[str], description: str) -> Tuple[bool, str, str]:
         """
         执行pip命令并捕获输出
@@ -537,35 +628,42 @@ class PackageManager:
     
     def upgrade_all(self) -> bool:
         """
-        升级所有已安装的ErisPulse包
+        升级所有有新版本的ErisPulse包
         
         :return: 升级是否成功
         
         :raises KeyboardInterrupt: 用户取消操作时抛出
         """
-        installed = self.get_installed_packages()
-        all_packages = set()
+        # 检查可更新的包
+        updates = asyncio.run(self.check_package_updates())
         
-        for pkg_type in ["modules", "adapters", "cli_extensions"]:
-            for pkg_info in installed[pkg_type].values():
-                all_packages.add(pkg_info["package"])
+        if not updates:
+            console.print("[success]所有ErisPulse包已是最新版本[/]")
+            return True
         
-        if not all_packages:
-            console.print("[info]没有找到可升级的ErisPulse包[/]")
-            return False
-            
+        # 显示可升级的包列表
         console.print(Panel(
-            f"找到 [bold]{len(all_packages)}[/] 个可升级的包:\n" + 
-            "\n".join(f"  - [package]{pkg}[/]" for pkg in sorted(all_packages)),
+            f"找到 [bold]{len(updates)}[/] 个可升级的包:\n" + 
+            "\n".join(
+                f"  - [package]{pkg}[/] [dim]{current_ver}[/] → [success]{new_ver}[/]"
+                for pkg, (current_ver, new_ver) in updates.items()
+            ),
             title="升级列表"
         ))
         
-        if not Confirm.ask("确认升级所有包吗？", default=False):
+        if not Confirm.ask("确认升级以上包吗？", default=False):
+            console.print("[info]操作已取消[/]")
             return False
-            
+        
+        # 执行升级
         results = {}
-        for pkg in sorted(all_packages):
+        for pkg in sorted(updates.keys()):
+            console.print(f"\n[info]正在升级 [package]{pkg}[/]...")
             results[pkg] = self.install_package([pkg], upgrade=True)
+        
+        # 显示结果摘要
+        success_count = sum(1 for success in results.values() if success)
+        console.print(f"\n[success]升级完成: {success_count}/{len(results)} 个包成功[/]")
             
         failed = [pkg for pkg, success in results.items() if not success]
         if failed:
@@ -593,13 +691,41 @@ class PackageManager:
             actual_package = asyncio.run(self._find_package_by_alias(package_name))
             
             if actual_package:
-                console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]") 
+                console.print(f"[info]找到包: [package]{actual_package}[/][/]") 
                 current_package_name = actual_package
             else:
                 current_package_name = package_name
 
+            # 检查当前版本和远程版本
+            installed = self.get_installed_packages()
+            current_version = None
+            for pkg_type in ["modules", "adapters", "cli_extensions"]:
+                for pkg_info in installed[pkg_type].values():
+                    if pkg_info["package"] == current_package_name:
+                        current_version = pkg_info["version"]
+                        break
+                if current_version:
+                    break
+            
+            # 获取远程版本
+            remote_version = asyncio.run(self._get_pypi_package_version(current_package_name))
+            
+            # 显示版本信息
+            if current_version:
+                if remote_version:
+                    comparison = self._compare_versions(remote_version, current_version)
+                    if comparison <= 0:
+                        console.print(f"[success]{current_package_name} 已是最新版本 ({current_version})[/]")
+                        continue
+                    else:
+                        console.print(f"[info]{current_package_name}: {current_version} → {remote_version}[/]")
+                else:
+                    console.print(f"[info]{current_package_name}: 当前版本 {current_version}[/]")
+            else:
+                console.print(f"[warning]未找到 {current_package_name} 的安装信息[/]")
+
             # 检查SDK版本兼容性
-            package_info = asyncio.run(self._get_package_info(package_name))
+            package_info = asyncio.run(self._get_package_info(current_package_name))
             if package_info and "min_sdk_version" in package_info:
                 is_compatible, message = self._check_sdk_compatibility(package_info["min_sdk_version"])
                 if not is_compatible:
