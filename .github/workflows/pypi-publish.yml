@@ -46,7 +46,7 @@ jobs:
 
       - name: 生成类型存根
         run: |
-          python scripts/toolsgenerate-type-stubs.py --src src --output src --clean --force
+          python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
           echo "类型存根生成完成!"
 
       - name: 打包构建

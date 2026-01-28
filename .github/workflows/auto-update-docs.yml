@@ -39,8 +39,8 @@ jobs:
           mkdir -p docs/api
           
           # 运行API文档更新脚本
-          if [ -f "scripts/toolsupdate-api-docs.py" ]; then
-            python scripts/toolsupdate-api-docs.py --src src --output docs/api
+          if [ -f "scripts/tools/update-api-docs.py" ]; then
+            python scripts/tools/update-api-docs.py --src src --output docs/api
             echo "✅ API文档更新完成!"
           else
             echo "⚠️ 未找到API文档更新脚本，跳过此步骤"
@@ -66,9 +66,9 @@ jobs:
           mkdir -p docs/ai/AIDocs/no-api
           
           # 生成包含API的文档
-          if [ -f "scripts/toolsmerge_md.py" ]; then
-            python scripts/toolsmerge_md.py full
-            python scripts/toolsmerge_md.py dev
+          if [ -f "scripts/tools/merge_md.py" ]; then
+            python scripts/tools/merge_md.py full
+            python scripts/tools/merge_md.py dev
             
             echo "✅ 包含API的文档生成完成!"
           else
@@ -91,8 +91,8 @@ jobs:
           echo "📖 艾莉丝正在生成不包含API的文档版本~"
           
           # 生成不包含API的文档
-          if [ -f "scripts/toolsmerge_md.py" ]; then
-            python scripts/toolsmerge_md.py no-api
+          if [ -f "scripts/tools/merge_md.py" ]; then
+            python scripts/tools/merge_md.py no-api
             echo "✅ no-api版本文档生成完成!"
           fi
 
@@ -102,8 +102,8 @@ jobs:
       #     echo "🔮 艾莉丝开始生成类型存根文件~"
           
       #     # 运行类型存根生成脚本
-      #     if [ -f "scripts/toolsgenerate-type-stubs.py" ]; then
-      #       python scripts/toolsgenerate-type-stubs.py --src src --output src --clean --force
+      #     if [ -f "scripts/tools/generate-type-stubs.py" ]; then
+      #       python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
       #       echo "✅ 类型存根生成完成!"
       #     else
       #       echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
