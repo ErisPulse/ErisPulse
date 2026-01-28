@@ -15,23 +15,14 @@ import time
 from argparse import ArgumentParser
 from watchdog.observers import Observer
 from rich.panel import Panel
-from ...console import console
-from ...reload_handler import ReloadHandler
+from ..console import console
+from ..utils import ReloadHandler
 from ..base import Command
 
 class RunCommand(Command):
-    """
-    运行命令
-    """
     def add_arguments(self: object, parser: ArgumentParser) -> ...:
-        """
-        添加命令参数
-        """
         ...
     def execute(self: object, args: ...) -> ...:
-        """
-        执行命令
-        """
         ...
     def _setup_watchdog(self: object, script_path: str, reload_mode: bool) -> ...:
         """

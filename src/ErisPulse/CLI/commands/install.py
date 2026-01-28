@@ -13,23 +13,19 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.box import SIMPLE
 
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
+from ..console import console
 from ..base import Command
 
 
 class InstallCommand(Command):
-    """安装命令"""
-    
     name = "install"
     description = "安装模块/适配器包（不指定包名时进入交互式安装）"
     
     def __init__(self):
-        """初始化命令"""
         self.package_manager = PackageManager()
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             'package',
             nargs='*',
@@ -47,7 +43,6 @@ class InstallCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         if args.package:
             # 批量安装
             success = self.package_manager.install_package(
