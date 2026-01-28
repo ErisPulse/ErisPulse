@@ -1,6 +1,6 @@
 # `ErisPulse.utils.package_manager` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-28 16:07:55
 
 ---
 
@@ -108,8 +108,9 @@ ErisPulse包管理器
 ##### `async async _find_package_by_alias(alias: str)`
 
 通过别名查找实际包名（大小写不敏感）
+支持查找已安装包和远程包
 
-:param alias: 包别名
+:param alias: 包别名或PyPI包名
 :return: 实际包名，未找到返回None
 
 ---
@@ -121,6 +122,26 @@ ErisPulse包管理器
 
 :param name: 包名或别名
 :return: 实际包名，未找到返回None
+
+---
+
+
+##### `async async check_package_updates()`
+
+检查包更新，对比本地版本和远程版本
+
+:return: {包名: (当前版本, 最新版本)}，仅包含有新版本的包
+
+---
+
+
+##### `async async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`
+
+从PyPI获取包的最新版本，带缓存机制
+
+:param package_name: PyPI包名
+:param force_refresh: 是否强制刷新缓存
+:return: 最新版本号，失败返回None
 
 ---
 
@@ -191,7 +212,7 @@ ErisPulse包管理器
 
 ##### `upgrade_all()`
 
-升级所有已安装的ErisPulse包
+升级所有有新版本的ErisPulse包
 
 :return: 升级是否成功
 
