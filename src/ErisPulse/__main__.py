@@ -3,7 +3,7 @@ ErisPulse SDK 命令行工具
 
 提供ErisPulse生态系统的包管理、模块控制和开发工具功能。
 """
-from .utils import CLI
+from .CLI import CLI
 
 def main():
     """

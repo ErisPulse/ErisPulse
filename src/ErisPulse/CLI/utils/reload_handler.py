@@ -10,7 +10,7 @@ import sys
 import time
 from watchdog.events import FileSystemEventHandler
 
-from .console import console
+from ..console import console
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -96,16 +96,15 @@ class ReloadHandler(FileSystemEventHandler):
         :param event: 文件系统事件
         :param reason: 重载原因
         """
-        from ErisPulse.Core import logger
     
         try:
-            from .cli import _cleanup_adapters, _cleanup_modules
-            logger.info(f"检测到文件变更 ({reason})，正在关闭适配器和模块...")
-            _cleanup_adapters()
-            _cleanup_modules()
+            import asyncio
+            from ... import uninit
+            console.print(f"检测到文件变更 ({reason})，正在关闭适配器和模块...")
+            asyncio.run(uninit())
         except Exception as e:
-            logger.warning(f"关闭适配器和模块时出错: {e}")
+            console.print(f"关闭适配器和模块时出错: {e}")
         
-        logger.info("正在重启...")
+        console.print("正在重启...")
         self._terminate_process()
         self.start_process()

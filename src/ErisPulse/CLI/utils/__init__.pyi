@@ -12,5 +12,3 @@ ErisPulse SDK 工具模块
 
 from .package_manager import PackageManager
 from .reload_handler import ReloadHandler
-from .cli import CLI
-from .console import console

@@ -12,26 +12,13 @@ Uninstall 命令实现
 
 import sys
 from argparse import ArgumentParser
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
 from ..base import Command
 
 class UninstallCommand(Command):
-    """
-    卸载命令
-    """
     def __init__(self: None) -> ...:
-        """
-        初始化命令
-        """
         ...
     def add_arguments(self: object, parser: ArgumentParser) -> ...:
-        """
-        添加命令参数
-        """
         ...
     def execute(self: object, args: ...) -> ...:
-        """
-        执行命令
-        """
         ...

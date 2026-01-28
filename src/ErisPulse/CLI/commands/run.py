@@ -10,19 +10,16 @@ from argparse import ArgumentParser
 from watchdog.observers import Observer
 from rich.panel import Panel
 
-from ...console import console
-from ...reload_handler import ReloadHandler
+from ..console import console
+from ..utils import ReloadHandler
 from ..base import Command
 
 
 class RunCommand(Command):
-    """运行命令"""
-    
     name = "run"
     description = "运行主程序"
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             'script',
             nargs='?',
@@ -40,12 +37,11 @@ class RunCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         script = args.script or "main.py"
         
         # 检查脚本是否存在
         if not os.path.exists(script):
-            from .... import _prepare_environment
+            from ... import _prepare_environment
             import asyncio
             asyncio.run(_prepare_environment())
         

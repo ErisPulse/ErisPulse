@@ -12,23 +12,19 @@ from argparse import ArgumentParser
 from pathlib import Path
 from rich.prompt import Confirm, Prompt
 
-from ...console import console
-from ...package_manager import PackageManager
+from ..console import console
+from ..utils import PackageManager
 from ..base import Command
 
 
 class InitCommand(Command):
-    """初始化命令"""
-    
     name = "init"
-    description = "交互式初始化 ErisPulse 项目"
+    description = "初始化 ErisPulse 项目"
     
     def __init__(self):
-        """初始化命令"""
         self.package_manager = PackageManager()
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             '--project-name', '-n',
             help='项目名称 (可选，交互式初始化时将会询问)'
@@ -45,7 +41,6 @@ class InitCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         if args.quick and args.project_name:
             # 快速模式：只创建项目，不进行交互配置
             success = self._init_project(args.project_name, [])
@@ -263,7 +258,7 @@ class InitCommand(Command):
         :param adapter_names: 适配器名称列表
         :param adapters_info: 适配器信息字典
         """
-        from ...package_manager import PackageManager
+        from ..utils import PackageManager
         pkg_manager = PackageManager()
         
         for adapter_name in adapter_names:

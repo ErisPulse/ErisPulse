@@ -10,23 +10,19 @@ from argparse import ArgumentParser
 from rich.table import Table
 from rich.box import SIMPLE
 
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
+from ..console import console
 from ..base import Command
 
 
 class ListRemoteCommand(Command):
-    """远程列表命令"""
-    
     name = "list-remote"
     description = "列出远程可用的组件"
     
     def __init__(self):
-        """初始化命令"""
         self.package_manager = PackageManager()
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             '--type', '-t',
             choices=['modules', 'adapters', 'cli', 'all'],
@@ -40,7 +36,6 @@ class ListRemoteCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         pkg_type = args.type
         force_refresh = args.refresh
         
