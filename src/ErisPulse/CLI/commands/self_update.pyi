@@ -15,28 +15,16 @@ import asyncio
 from argparse import ArgumentParser
 from rich.prompt import Confirm, Prompt
 from rich.panel import Panel
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
+from ..console import console
 from ..base import Command
 
 class SelfUpdateCommand(Command):
-    """
-    自更新命令
-    """
     def __init__(self: None) -> ...:
-        """
-        初始化命令
-        """
         ...
     def add_arguments(self: object, parser: ArgumentParser) -> ...:
-        """
-        添加命令参数
-        """
         ...
     def execute(self: object, args: ...) -> ...:
-        """
-        执行命令
-        """
         ...
     def _select_target_version(self: object, versions: ..., specified_version: str = ..., include_pre: bool = ...) -> str:
         """

@@ -10,23 +10,19 @@ from argparse import ArgumentParser
 from rich.prompt import Confirm, Prompt
 from rich.panel import Panel
 
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
+from ..console import console
 from ..base import Command
 
 
 class SelfUpdateCommand(Command):
-    """自更新命令"""
-    
     name = "self-update"
     description = "更新 ErisPulse SDK 本身"
     
     def __init__(self):
-        """初始化命令"""
         self.package_manager = PackageManager()
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             'version',
             nargs='?',
@@ -44,7 +40,6 @@ class SelfUpdateCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         current_version = self.package_manager.get_installed_version()
         console.print(Panel(
             f"[title]ErisPulse SDK 自更新[/]\n"

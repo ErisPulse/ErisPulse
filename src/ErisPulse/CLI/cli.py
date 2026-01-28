@@ -10,12 +10,11 @@ import importlib.metadata
 import asyncio
 import traceback
 import pkgutil
-from pathlib import Path
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from rich.panel import Panel
 
-from ..console import console
+from .console import console
 from .registry import CommandRegistry
 from .base import Command
 
@@ -43,7 +42,7 @@ class CLI:
         parser = ArgumentParser(
             prog="epsdk",
             formatter_class=RawDescriptionHelpFormatter,
-            description="ErisPulse SDK 命令行工具\n\n一个功能强大的模块化系统管理工具，用于管理ErisPulse生态系统中的模块、适配器和扩展。",
+            description="ErisPulse SDK 命令行工具",
         )
         parser._positionals.title = "命令"
         parser._optionals.title = "选项"
@@ -79,7 +78,7 @@ class CLI:
         并自动注册到命令注册表中。
         """
         # 获取 commands 包的路径
-        commands_package = 'ErisPulse.utils.cli.commands'
+        commands_package = 'ErisPulse.CLI.commands'
         
         try:
             # 遍历 commands 包中的所有模块
