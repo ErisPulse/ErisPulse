@@ -17,7 +17,7 @@ from rich.panel import Panel
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm
 
-from .console import console
+from ..console import console
 
 class PackageManager:
     """

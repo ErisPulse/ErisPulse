@@ -15,7 +15,7 @@ import subprocess
 import sys
 import time
 from watchdog.events import FileSystemEventHandler
-from .console import console
+from ..console import console
 
 class ReloadHandler(FileSystemEventHandler):
     """

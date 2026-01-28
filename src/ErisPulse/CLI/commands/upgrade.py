@@ -8,23 +8,18 @@ import sys
 from argparse import ArgumentParser
 from rich.prompt import Confirm
 
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
 from ..base import Command
 
 
 class UpgradeCommand(Command):
-    """升级命令"""
-    
     name = "upgrade"
     description = "升级组件（不指定包名则升级所有）"
     
     def __init__(self):
-        """初始化命令"""
         self.package_manager = PackageManager()
     
     def add_arguments(self, parser: ArgumentParser):
-        """添加命令参数"""
         parser.add_argument(
             'package',
             nargs='*',
@@ -42,7 +37,6 @@ class UpgradeCommand(Command):
         )
     
     def execute(self, args):
-        """执行命令"""
         if args.package:
             # 升级指定包
             success = self.package_manager.upgrade_package(

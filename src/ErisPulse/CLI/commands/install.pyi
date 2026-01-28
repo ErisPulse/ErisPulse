@@ -17,28 +17,16 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.box import SIMPLE
-from ...package_manager import PackageManager
-from ...console import console
+from ..utils import PackageManager
+from ..console import console
 from ..base import Command
 
 class InstallCommand(Command):
-    """
-    安装命令
-    """
     def __init__(self: None) -> ...:
-        """
-        初始化命令
-        """
         ...
     def add_arguments(self: object, parser: ArgumentParser) -> ...:
-        """
-        添加命令参数
-        """
         ...
     def execute(self: object, args: ...) -> ...:
-        """
-        执行命令
-        """
         ...
     def _interactive_install(self: object, upgrade: bool = ..., pre: bool = ...) -> ...:
         """
