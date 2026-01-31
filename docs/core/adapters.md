@@ -65,9 +65,15 @@ result = await my_platform.Send.To("user", "123").Text("Hello")
    ```python
    from ErisPulse.Core import adapter, logger
    
-   @adapter.<AdapterName>.on("event_type")
-   async def handler(data):
+   @adapter.on("event_type", raw=True, platform="yunhu")
+   async def handler_1(data):
        logger.info(f"收到原生事件: {data}")
+
+   @adapter.on("event_type")
+   async def handler_2(data):
+      platform = data.get("self").get("platform")
+      raw_data = data.get(f"{platform}_raw")
+      logger.info(f"收到 {platform} 原生事件: {raw_data}")
    ```
 
 2. OneBot12标准事件监听：
@@ -76,7 +82,7 @@ result = await my_platform.Send.To("user", "123").Text("Hello")
 
    @adapter.on("event_type")  # 所有平台的标准事件
    async def handler(data):
-       if data["platform"] == "yunhu":
+       if data.get("self").get("platform") == "yunhu":
            logger.info(f"收到云湖标准事件: {data}")
    ```
 

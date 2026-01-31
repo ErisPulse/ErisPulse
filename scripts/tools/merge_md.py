@@ -151,6 +151,7 @@ def get_core_files():
             "modules.md",
             "adapters.md",
             "event-system.md",
+            "lifecycle.md",
             "cli.md",
             "best-practices.md"
         ]
@@ -170,6 +171,8 @@ def get_core_files():
                     description = "适配器系统"
                 elif filename == "event-system.md":
                     description = "事件系统"
+                elif filename == "lifecycle.md":
+                    description = "生命周期系统"
                 elif filename == "cli.md":
                     description = "命令行接口"
                 elif filename == "best-practices.md":
@@ -354,6 +357,7 @@ def generate_dev_documents(include_api=True):
         {"path": "docs/core/modules.md", "description": "核心模块"},
         {"path": "docs/core/adapters.md", "description": "适配器"},
         {"path": "docs/core/event-system.md", "description": "事件系统"},
+        {"path": "docs/core/lifecycle.md", "description": "生命周期系统"},
     ]
     
     # 添加开发文档 (包括模块开发指南)
@@ -392,6 +396,7 @@ def generate_dev_documents(include_api=True):
         {"path": "docs/core/modules.md", "description": "核心模块"},
         {"path": "docs/core/adapters.md", "description": "适配器系统"},
         {"path": "docs/core/event-system.md", "description": "事件系统"},
+        {"path": "docs/core/lifecycle.md", "description": "生命周期系统"},
         {"path": "docs/core/best-practices.md", "description": "最佳实践"},
     ]
     
