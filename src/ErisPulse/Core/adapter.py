@@ -14,8 +14,9 @@ from .logger import logger
 from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
+from ..loaders.manager_base import ManagerBase
 
-class AdapterManager:
+class AdapterManager(ManagerBase):
     """
     适配器管理器
 
@@ -355,13 +356,68 @@ class AdapterManager:
         logger.info(f"平台 {platform} 已禁用")
         return True
 
+    def unregister(self, platform: str) -> bool:
+        """
+        取消注册适配器
+        
+        :param platform: 平台名称
+        :return: 是否取消成功
+        
+        {!--< internal-use >!--}
+        注意：此方法仅取消注册，不关闭已启动的适配器
+        {!--< /internal-use >!--}
+        """
+        if platform not in self._adapters:
+            logger.warning(f"平台 {platform} 未注册")
+            return False
+        
+        # 移除适配器实例
+        adapter = self._adapters.pop(platform)
+        
+        # 移除平台属性
+        if len(platform) <= 10:
+            from itertools import product
+            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
+            for name in set(combinations):
+                if hasattr(self, name):
+                    delattr(self, name)
+        else:
+            if hasattr(self, platform.lower()):
+                delattr(self, platform.lower())
+            if hasattr(self, platform.upper()):
+                delattr(self, platform.upper())
+            if hasattr(self, platform.capitalize()):
+                delattr(self, platform.capitalize())
+        
+        logger.info(f"平台 {platform} 已取消注册")
+        return True
+    
+    def list_registered(self) -> List[str]:
+        """
+        列出所有已注册的平台
+        
+        :return: 平台名称列表
+        """
+        return list(self._adapters.keys())
+    
+    def list_items(self) -> Dict[str, bool]:
+        """
+        列出所有平台适配器状态
+        
+        :return: {平台名: 是否启用} 字典
+        """
+        return config.getConfig("ErisPulse.adapters.status", {})
+    
+    # 兼容性方法 - 保持向后兼容
     def list_adapters(self) -> Dict[str, bool]:
         """
         列出所有平台适配器状态
-
+        
+        {!--< deprecated >!--} 请使用 list_items() 代替
+        
         :return: [Dict[str, bool]] 平台适配器状态字典
         """
-        return config.getConfig("ErisPulse.adapters.status", {})
+        return self.list_items()
 
     # ==================== 事件处理与消息发送 ====================
 

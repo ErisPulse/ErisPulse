@@ -10,8 +10,9 @@ from .logger import logger
 from .config import config
 from .Bases import BaseModule
 from .lifecycle import lifecycle
+from ..loaders.manager_base import ManagerBase
 
-class ModuleManager:
+class ModuleManager(ManagerBase):
     """
     模块管理器
     
@@ -334,13 +335,49 @@ class ModuleManager:
         self._loaded_modules.discard(module_name)
         return True
     
+    def unregister(self, module_name: str) -> bool:
+        """
+        取消注册模块
+        
+        :param module_name: 模块名称
+        :return: 是否取消成功
+        
+        {!--< internal-use >!--}
+        注意：此方法仅取消注册，不卸载已加载的模块
+        {!--< /internal-use >!--}
+        """
+        if module_name not in self._module_classes:
+            logger.warning(f"模块 {module_name} 未注册")
+            return False
+        
+        # 移除模块类
+        self._module_classes.pop(module_name)
+        
+        # 移除模块信息
+        if module_name in self._module_info:
+            self._module_info.pop(module_name)
+        
+        logger.info(f"模块 {module_name} 已取消注册")
+        return True
+    
+    def list_items(self) -> Dict[str, bool]:
+        """
+        列出所有模块状态
+        
+        :return: {模块名: 是否启用} 字典
+        """
+        return config.getConfig("ErisPulse.modules.status", {})
+    
+    # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> Dict[str, bool]:
         """
         列出所有模块状态
         
+        {!--< deprecated >!--} 请使用 list_items() 代替
+        
         :return: [Dict[str, bool]] 模块状态字典
         """
-        return config.getConfig("ErisPulse.modules.status", {})
+        return self.list_items()
     
     # ==================== 工具方法 ====================
     
