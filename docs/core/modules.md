@@ -6,22 +6,33 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 
 | 名称 | 用途 |
 |------|------|
-| `sdk` | SDK对象 |
+| `sdk` | SDK对象（包含所有核心功能） |
 | `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
-| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
-| `module`/`sdk.module` | 获取模块实例 |
+| `module`/`sdk.module` | 模块管理器 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
 | `router`/`sdk.router` | 路由管理器 |
-| `RouterManager`/`sdk.RouterManager` | 路由管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 
-### 懒加载模块系统
+### 模块加载架构
+
+ErisPulse 采用现代化的模块加载架构，将加载逻辑与核心功能分离：
+
+#### 加载器组件
+
+| 组件 | 文件位置 | 用途 |
+|------|---------|------|
+| `BaseLoader` | `loaders/base_loader.py` | 加载器抽象基类，定义标准接口 |
+| `AdapterLoader` | `loaders/adapter_loader.py` | 从 PyPI entry-points 加载适配器 |
+| `ModuleLoader` | `loaders/module_loader.py` | 从 PyPI entry-points 加载模块 |
+| `ModuleInitializer` | `loaders/initializer.py` | 初始化协调器，统一管理加载流程 |
+
+#### 懒加载机制
 
 ErisPulse 默认启用懒加载模块系统，这意味着模块只有在第一次被访问时才会实际加载和初始化。这样可以显著提升应用启动速度和内存效率。
 
@@ -38,6 +49,13 @@ class MyModule(BaseModule):
     def should_eager_load() -> bool:
         return True  # 返回True表示禁用懒加载
 ```
+
+#### 加载流程
+
+1. SDK 初始化时，`ModuleInitializer` 协调加载流程
+2. 并行调用 `AdapterLoader` 和 `ModuleLoader` 从 PyPI entry-points 加载
+3. 按顺序注册适配器和模块
+4. 根据配置和模块特性决定是否立即加载或懒加载
 
 ### 事件系统子模块
 
@@ -195,72 +213,149 @@ sdk.exceptions.setup_async_loop(loop)
 
 ## 5. 模块管理 (module)
 
-模块管理系统，用于管理模块的启用/禁用状态。
+模块管理系统，提供模块的注册、加载和状态管理功能。
 
 ### 主要功能
 
-- 模块状态管理
-- 模块信息查询
-- 模块依赖处理
-- 模块启用/禁用
+- 模块类注册：`module.register(name, class, info)`
+- 模块实例管理：`module.load()` / `module.unload()`
+- 模块状态管理：`module.exists()` / `module.is_enabled()` / `module.enable()` / `module.disable()`
+- 模块实例获取：`module.get(name)` / `module.list_loaded()` / `module.list_registered()`
+- 配置管理：继承自 ManagerBase，提供统一的配置接口
 
 ### 使用示例
 
 ```python
 from ErisPulse import sdk
 
-# 直接获取模块实例
+# 模块注册（通常由加载器自动完成）
+from ErisPulse.Core.Bases import BaseModule
+
+class MyModule(BaseModule):
+    def on_load(self, data):
+        sdk.logger.info("模块已加载")
+    
+    def on_unload(self, data):
+        sdk.logger.info("模块已卸载")
+
+# 手动注册模块类
+sdk.module.register("MyModule", MyModule, {"meta": {"version": "1.0.0"}})
+
+# 加载模块
+await sdk.module.load("MyModule")
+
+# 获取模块实例
 my_module = sdk.module.get("MyModule")
 
 # 通过属性访问获取模块实例
 my_module = sdk.module.MyModule
 
+# 检查模块是否已加载
+if sdk.module.is_loaded("MyModule"):
+    my_module.do_something()
+
 # 检查模块是否存在且启用
 if "MyModule" in sdk.module:
-    sdk.module.MyModule.do_something()
+    sdk.logger.info("模块可用")
 
-# 获取模块信息
-module_info = sdk.module.get_info("MyModule")
+# 列出已注册和已加载的模块
+registered = sdk.module.list_registered()
+loaded = sdk.module.list_loaded()
 
-# 列出所有模块
-all_modules = sdk.module.list_modules()
+# 模块配置管理
+sdk.module.enable("MyModule")      # 启用模块
+sdk.module.disable("MyModule")     # 禁用模块
+sdk.module.is_enabled("MyModule") # 检查是否启用
 
-# 启用/禁用模块
-sdk.module.enable("MyModule")
-sdk.module.disable("MyModule")
+# 卸载模块
+await sdk.module.unload("MyModule")  # 卸载指定模块
+await sdk.module.unload()           # 卸载所有模块
 ```
 
 ## 6. 适配器管理 (adapter)
 
-适配器管理系统，用于管理与不同平台的连接和交互。
+适配器管理系统，提供适配器的注册、启动和状态管理功能。
 
 ### 主要功能
 
-- 适配器实例管理
-- 事件监听注册
-- 消息发送接口
+- 适配器类注册：`adapter.register(platform, class, info)`
+- 适配器实例管理：`adapter.startup()` / `adapter.shutdown()`
+- 适配器状态管理：`adapter.exists()` / `adapter.is_enabled()` / `adapter.enable()` / `adapter.disable()`
+- 适配器实例获取：`adapter.get(platform)` / `adapter.platforms`
+- 配置管理：继承自 ManagerBase，提供统一的配置接口
+- 事件处理：`adapter.on()` / `adapter.emit()` / `adapter.middleware()`
 
 ### 使用示例
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseAdapter
+
+class MyPlatformAdapter(BaseAdapter):
+    async def start(self):
+        sdk.logger.info("适配器已启动")
+    
+    async def shutdown(self):
+        sdk.logger.info("适配器已关闭")
+
+# 注册适配器类
+sdk.adapter.register("MyPlatform", MyPlatformAdapter)
+
+# 启动所有适配器
+await sdk.adapter.startup()
+
+# 启动指定适配器
+await sdk.adapter.startup(["MyPlatform"])
 
 # 获取适配器实例
-adapter_instance = sdk.adapter.yunhu
+adapter_instance = sdk.adapter.get("MyPlatform")
+adapter_instance = sdk.adapter.MyPlatform
 
 # 发送消息
-sdk.adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("Hello")
 
-# 监听事件
-@sdk.adapter.yunhu.on("message")
-async def handler(data):
-    sdk.logger.info(f"收到原生事件: {data}")
-
-# 监听标准事件
+# 监听标准事件（所有平台）
 @sdk.adapter.on("message")
 async def handler(data):
-    if data["platform"] == "yunhu":
-        sdk.logger.info(f"收到云湖标准事件: {data}")
+    sdk.logger.info(f"收到消息: {data}")
+
+# 监听特定平台的标准事件
+@sdk.adapter.on("message", platform="MyPlatform")
+async def handler(data):
+    sdk.logger.info(f"收到 MyPlatform 消息: {data}")
+
+# 监听平台原生事件
+@sdk.adapter.on("message", raw=True, platform="MyPlatform")
+async def handler(data):
+    sdk.logger.info(f"收到 MyPlatform 原生事件: {data}")
+
+# 提交事件
+await sdk.adapter.emit({
+    "id": "123",
+    "time": 1620000000,
+    "type": "message",
+    "detail_type": "private",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "platform": "MyPlatform",
+    "myplatform_raw": {...平台原生事件数据...},
+    "myplatform_raw_type": "text_message"
+})
+
+# 添加中间件
+@sdk.adapter.middleware
+async def my_middleware(data):
+    sdk.logger.info(f"中间件处理: {data}")
+    return data
+
+# 获取所有已注册平台
+platforms = sdk.adapter.platforms
+
+# 启用/禁用适配器
+sdk.adapter.enable("MyPlatform")
+sdk.adapter.disable("MyPlatform")
+
+# 关闭所有适配器
+await sdk.adapter.shutdown()
 ```
 
 ## 7. 事件处理 (Event)
