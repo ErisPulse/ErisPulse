@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-01-28 16:38:26
+> 最后更新：2026-01-31 19:10:05
 
 ---
 
@@ -8,10 +8,10 @@
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 41
-- **类总数**: 40
-- **函数总数**: 23
-- **方法总数**: 303
+- **模块总数**: 47
+- **类总数**: 42
+- **函数总数**: 13
+- **方法总数**: 332
 
 ---
 
@@ -170,7 +170,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 18 个方法
+📦 1 个类 | 🔧 21 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
@@ -195,7 +195,7 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-📦 1 个类 | 🔧 16 个方法
+📦 1 个类 | 🔧 18 个方法
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
@@ -210,7 +210,7 @@
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
-📦 4 个类 | 🔧 20 个方法 | ⚙️ 9 个函数
+📄 模块文档
 
 
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
@@ -218,7 +218,37 @@
 ⚙️ 1 个函数
 
 
-### [ErisPulse.sdk_protocol](ErisPulse/sdk_protocol.md)
+### [ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)
 
-📦 1 个类 | 🔧 6 个方法 | ⚙️ 1 个函数
+📄 模块文档
+
+
+### [ErisPulse.loaders.adapter_loader](ErisPulse/loaders/adapter_loader.md)
+
+📦 1 个类 | 🔧 4 个方法
+
+
+### [ErisPulse.loaders.base_loader](ErisPulse/loaders/base_loader.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.loaders.initializer](ErisPulse/loaders/initializer.md)
+
+📦 1 个类 | 🔧 2 个方法
+
+
+### [ErisPulse.loaders.manager_base](ErisPulse/loaders/manager_base.md)
+
+📦 1 个类 | 🔧 9 个方法
+
+
+### [ErisPulse.loaders.module_loader](ErisPulse/loaders/module_loader.md)
+
+📦 2 个类 | 🔧 18 个方法
+
+
+### [ErisPulse.sdk](ErisPulse/sdk.md)
+
+📦 1 个类 | 🔧 11 个方法
 

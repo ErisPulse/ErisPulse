@@ -1,6 +1,6 @@
 # `ErisPulse.Core.module` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-01-31 19:10:04
 
 ---
 
@@ -16,7 +16,7 @@ ErisPulse 模块系统
 ## 类列表
 
 
-### `class ModuleManager`
+### `class ModuleManager(ManagerBase)`
 
 模块管理器
 
@@ -208,9 +208,33 @@ ErisPulse 模块系统
 ---
 
 
+##### `unregister(module_name: str)`
+
+取消注册模块
+
+:param module_name: 模块名称
+:return: 是否取消成功
+
+> **内部方法** 
+注意：此方法仅取消注册，不卸载已加载的模块
+
+---
+
+
+##### `list_items()`
+
+列出所有模块状态
+
+:return: {模块名: 是否启用} 字典
+
+---
+
+
 ##### `list_modules()`
 
 列出所有模块状态
+
+> **已弃用** 请使用 list_items() 代替
 
 **返回值** (`Dict[str, bool`): ] 模块状态字典
 
