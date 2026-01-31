@@ -36,6 +36,9 @@ class LazyModule:
 4. 对于继承自 `BaseModule` 的模块，调用 `on_load` 方法
 5. 触发 `module.init` 生命周期事件
 
+> 需要注意的是: 如果您的模块使用了懒加载，如果其它模块从未在ErisPulse内进行过调用，则您的模块永远不会被初始化。
+> 所以，如果您的模块中包含了诸如监听Event的模块，或其它主动监听类似模块，请务必声明需要立即被加载，否则会影响您模块的正常业务。
+
 ## 配置懒加载
 
 ### 全局配置
@@ -46,6 +49,7 @@ class LazyModule:
 [ErisPulse.framework]
 enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加载
 ```
+我们不建议您禁用懒加载，除非有特殊需求 否则它可能为您带来诸如依赖管理和生命周期事件等的问题
 
 ### 模块级别控制
 

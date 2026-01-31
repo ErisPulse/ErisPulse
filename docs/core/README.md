@@ -9,6 +9,9 @@
 - [cli](cli.md) - 命令行工具使用
 - [适配器系统](adapters.md) - 平台适配器的使用
 - [事件系统](event-system.md) - Event 模块的使用(事件监听、事件处理、事件分发)
+- [生命周期系统](lifecycle.md) - 生命周期事件管理和触发机制
+- [懒加载模块系统](lazy-loading.md) - 懒加载模块系统的使用和配置
+- [路由管理器](router.md) - HTTP和WebSocket路由管理
 - [最佳实践](best-practices.md) - 开发和部署建议
 - [框架配置解析](self-config.md)
 
