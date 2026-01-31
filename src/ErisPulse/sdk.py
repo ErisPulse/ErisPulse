@@ -4,7 +4,7 @@ ErisPulse SDK 主类
 提供统一的 SDK 接口，整合所有核心模块和加载器
 
 {!--< tips >!--}
-使用方式：
+example:
     >>> from ErisPulse import sdk
     >>> await sdk.init()
     >>> await sdk.adapter.startup()
