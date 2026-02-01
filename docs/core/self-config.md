@@ -19,6 +19,9 @@ DEFAULT_ERISPULSE_CONFIG = {
         "log_files": [],
         "memory_limit": 1000
     },
+    "storage": {
+        "use_global_db": False,
+    },
     "modules": {},
     "adapters": {},
     "framework": {

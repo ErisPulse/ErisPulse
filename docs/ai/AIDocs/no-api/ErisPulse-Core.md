@@ -1,6 +1,6 @@
 # ErisPulse 核心功能文档
 
-**生成时间**: 2026-02-01 03:22:45
+**生成时间**: 2026-02-02 05:58:22
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -2372,17 +2372,6 @@ values = self.sdk.storage.get_multi(["key1", "key2", "key3"])
 
 # 批量删除
 self.sdk.storage.delete_multi(["key1", "key2", "key3"])
-```
-
-### 4.3 自动快照
-
-配置自动快照机制，防止数据丢失：
-
-```python
-class Main(BaseModule):
-    async def on_load(self, event):
-        # 每30分钟自动快照
-        self.sdk.storage.set_snapshot_interval(1800)
 ```
 
 ## 5. 日志系统最佳实践
