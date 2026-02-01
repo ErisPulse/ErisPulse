@@ -270,6 +270,9 @@ class AdapterManager(ManagerBase):
         from .router import router
         await router.stop()
 
+        # 清空已启动实例集合
+        self._started_instances.clear()
+
         # 提交适配器关闭完成事件
         await lifecycle.submit_event(
             "adapter.stopped",
@@ -302,9 +305,8 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         :return: [bool] 平台是否存在
         """
-        # 检查平台是否在配置中注册
-        adapter_statuses = config.getConfig("ErisPulse.adapters.status", {})
-        return platform in adapter_statuses
+        # 检查平台是否已注册（在 _adapters 中）
+        return platform in self._adapters
 
     def is_enabled(self, platform: str) -> bool:
         """
@@ -333,10 +335,11 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         :return: [bool] 操作是否成功
         """
-        if not self.exists(platform):
+        # 启用平台时自动在配置中注册
+        if platform not in self._adapters:
             logger.error(f"平台 {platform} 不存在")
             return False
-
+        
         config.setConfig(f"ErisPulse.adapters.status.{platform}", True)
         logger.info(f"平台 {platform} 已启用")
         return True
@@ -348,10 +351,11 @@ class AdapterManager(ManagerBase):
         :param platform: 平台名称
         :return: [bool] 操作是否成功
         """
-        if not self.exists(platform):
+        # 禁用平台时自动在配置中注册
+        if platform not in self._adapters:
             logger.error(f"平台 {platform} 不存在")
             return False
-
+        
         config.setConfig(f"ErisPulse.adapters.status.{platform}", False)
         logger.info(f"平台 {platform} 已禁用")
         return True
