@@ -1,6 +1,6 @@
 # `ErisPulse.Core.logger` 模块
 
-> 最后更新：2026-02-01 03:21:24
+> 最后更新：2026-02-01 17:25:41
 
 ---
 
@@ -87,11 +87,11 @@ ErisPulse 日志系统
 ---
 
 
-##### `get_logs(module_name: str = 'Unknown')`
+##### `get_logs(module_name: str = None)`
 
 获取日志内容
 
-:param module_name (可选): 模块名称
+:param module_name (可选): 模块名称，None表示获取所有日志
 :return: dict 日志内容
 
 ---
@@ -102,6 +102,7 @@ ErisPulse 日志系统
 获取子日志记录器
 
 :param child_name: 子模块名称(可选)
+:param relative: 是否相对于调用者模块（默认True），False表示使用完整名称
 :return: LoggerChild 子日志记录器实例
 
 ---
