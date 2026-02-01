@@ -505,17 +505,6 @@ values = self.sdk.storage.get_multi(["key1", "key2", "key3"])
 self.sdk.storage.delete_multi(["key1", "key2", "key3"])
 ```
 
-### 4.3 自动快照
-
-配置自动快照机制，防止数据丢失：
-
-```python
-class Main(BaseModule):
-    async def on_load(self, event):
-        # 每30分钟自动快照
-        self.sdk.storage.set_snapshot_interval(1800)
-```
-
 ## 5. 日志系统最佳实践
 
 ### 5.1 日志级别使用
