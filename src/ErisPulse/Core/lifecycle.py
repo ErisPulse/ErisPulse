@@ -120,6 +120,15 @@ class LifecycleManager:
         :param event: 事件名称
         :param event_data: 事件数据字典
         """
+        # 验证事件类型
+        if event_type is None:
+            logger.error("事件类型不能为None")
+            return
+        
+        if not isinstance(event_type, str) or not event_type:
+            logger.error(f"事件类型必须是非空字符串，收到: {event_type}")
+            return
+        
         # 构建完整事件数据
         event_data = {
             "event": event_type,

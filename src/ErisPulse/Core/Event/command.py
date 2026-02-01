@@ -94,13 +94,18 @@ class CommandHandler:
                     "main_name": main_name
                 }
                 
-                # 注册别名映射
+                # 注册别名映射（name列表中的额外名称）
                 if cmd_name != main_name:
                     self.aliases[cmd_name] = main_name
                 
                 # 注册权限检查函数
                 if permission and cmd_name not in self.permissions:
                     self.permissions[cmd_name] = permission
+            
+            # 注册aliases参数中的别名
+            for alias in alias_list:
+                if alias not in self.aliases:
+                    self.aliases[alias] = main_name
             
             # 添加到命令组
             if group:

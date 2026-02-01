@@ -5,6 +5,7 @@ ErisPulse 模块系统
 """
 
 import asyncio
+import warnings
 from typing import Any, Dict, List, Type, Optional
 from .logger import logger
 from .config import config
@@ -49,9 +50,16 @@ class ModuleManager(ManagerBase):
         >>> module.register("MyModule", MyModuleClass)
         """
         # 严格验证模块类，确保继承自BaseModule
+        # 先检查是否为类对象
+        if not isinstance(module_class, type):
+            error_msg = f"模块 {module_name} 的参数必须是类，而不是 {type(module_class).__name__}"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
         if not issubclass(module_class, BaseModule):
             warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 没有继承自BaseModule，但我们仍会继续尝试加载这个模块，但请注意这可能引发其他问题"
             logger.warning(warn_msg)
+            warnings.warn(warn_msg, UserWarning)
             # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
             # logger.error(error_msg)
             # raise TypeError(error_msg)
@@ -64,7 +72,9 @@ class ModuleManager(ManagerBase):
             
         # 检查模块名是否已存在
         if module_name in self._module_classes:
-            logger.warning(f"模块 {module_name} 已存在，将覆盖原模块类")
+            warn_msg = f"模块 {module_name} 已存在，将覆盖原模块类"
+            logger.warning(warn_msg)
+            warnings.warn(warn_msg, UserWarning)
             
         self._module_classes[module_name] = module_class
         if module_info:
@@ -190,14 +200,15 @@ class ModuleManager(ManagerBase):
         :param module_name: 模块名称
         :return: 是否卸载成功
         """
+        # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）
         if module_name not in self._loaded_modules:
             logger.warning(f"模块 {module_name} 未加载")
-            return False
+            return True
             
         try:
             # 调用模块的on_unload卸载方法
-            instance = self._modules[module_name]
-            if hasattr(instance, 'on_unload'):
+            instance = self._modules.get(module_name)
+            if instance and hasattr(instance, 'on_unload'):
                 try:
                     if asyncio.iscoroutinefunction(instance.on_unload):
                         await instance.on_unload({"module_name": module_name})
@@ -205,9 +216,9 @@ class ModuleManager(ManagerBase):
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
-                    
+            
             # 清理缓存
-            del self._modules[module_name]
+            del self._modules[module_name]            
             self._loaded_modules.discard(module_name)
             
             logger.info(f"模块 {module_name} 卸载成功")
