@@ -91,11 +91,6 @@ class Logger:
         :param level: 日志级别(DEBUG/INFO/WARNING/ERROR/CRITICAL)
         :return: bool 设置是否成功
         """
-        from .module import module
-
-        if not module.is_enabled(module_name):
-            self._logger.warning(f"模块 {module_name} 未启用，无法设置日志等级。")
-            return False
         level = level.upper()
         if hasattr(logging, level):
             self._module_levels[module_name] = getattr(logging, level)
@@ -115,19 +110,21 @@ class Logger:
         if self._file_handler:
             self._logger.removeHandler(self._file_handler)
             self._file_handler.close()
+            self._file_handler = None
 
         if isinstance(path, str):
             path = [path]
 
         for p in path:
             try:
-                file_handler = logging.FileHandler(p, encoding="utf-8")
+                self._file_handler = logging.FileHandler(p, encoding="utf-8")
                 # 使用自定义格式化器去除rich markup标签
-                file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
-                self._logger.addHandler(file_handler)
+                self._file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
+                self._logger.addHandler(self._file_handler)
                 return True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
+                self._file_handler = None
                 return False
 
         self._logger.warning("出现极端错误，无法设置日志文件。")
@@ -140,9 +137,11 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        if self._logs is None:
+        # 检查是否有日志记录
+        if not self._logs or all(len(logs) == 0 for logs in self._logs.values()):
             self._logger.warning("没有log记录可供保存。")
             return False
+        
         if isinstance(path, str):
             path = [path]
 
@@ -162,16 +161,18 @@ class Logger:
         self._logger.warning("出现极端错误，无法保存日志。")
         return False
 
-    def get_logs(self, module_name: str = "Unknown") -> dict:
+    def get_logs(self, module_name: str = None) -> dict:
         """
         获取日志内容
 
-        :param module_name (可选): 模块名称
+        :param module_name (可选): 模块名称，None表示获取所有日志
         :return: dict 日志内容
         """
-        if module_name:
-            return {module_name: self._logs.get(module_name, [])}
-        return {k: v.copy() for k, v in self._logs.items()}
+        if module_name is None:
+            # 返回所有日志
+            return {k: v.copy() for k, v in self._logs.items()}
+        # 返回指定模块的日志
+        return {module_name: self._logs.get(module_name, [])}
 
     def _save_in_memory(self, ModuleName, msg):
         if ModuleName not in self._logs:
@@ -226,13 +227,18 @@ class Logger:
         except Exception:
             return "Unknown"
 
-    def get_child(self, child_name: str = "UnknownChild"):
+    def get_child(self, child_name: str = "UnknownChild", *, relative: bool = True):
         """
         获取子日志记录器
 
         :param child_name: 子模块名称(可选)
+        :param relative: 是否相对于调用者模块（默认True），False表示使用完整名称
         :return: LoggerChild 子日志记录器实例
         """
+        if child_name and not relative:
+            # 使用完整的指定名称，不添加前缀
+            return LoggerChild(self, child_name)
+        
         caller_module = self._get_caller()
         if child_name:
             full_module_name = f"{caller_module}.{child_name}"

@@ -235,13 +235,20 @@ class RouterManager:
         try:
             full_path = f"/{module_name}{path}"
 
-            # 使用类型忽略注释
-            if full_path in self.app.websocket_routes:          # type: ignore  || 原因：实际上，FastAPI的API提供了websocket_routes属性
-                self.app.remove_api_websocket_route(full_path)  # type: ignore  || 原因：实际上，FastAPI的API提供了remove_api_websocket_route方法
+            # 检查 WebSocket 路由是否存在于我们的内部记录中
+            if full_path in self._websocket_routes.get(module_name, {}):
                 display_url = self._format_display_url(f"{self.base_url}{full_path}")
                 logger.info(f"注销WebSocket: {display_url}")
                 del self._websocket_routes[module_name][full_path]
+                
+                # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
+                # FastAPI 的 WebSocket 路由有 websocket_endpoint 属性
+                self.app.router.routes = [
+                    route for route in self.app.router.routes
+                    if not (hasattr(route, 'path') and route.path == full_path)
+                ]
                 return True
+            
             display_url = self._format_display_url(f"{self.base_url}{full_path}")
             logger.error(f"注销WebSocket失败: 路径 {display_url} 不存在")
             return False
@@ -339,8 +346,9 @@ class RouterManager:
         if "0.0.0.0" in url:
             display_url = url.replace("0.0.0.0", "127.0.0.1")
             return f"{url} (可访问: {display_url})"
-        elif "::" in url:
-            display_url = url.replace("::", "localhost")
+        elif "[::]" in url:
+            # IPv6 回环地址需要替换括号
+            display_url = url.replace("[::]", "localhost")
             return f"{url} (可访问: {display_url})"
         return url
 
