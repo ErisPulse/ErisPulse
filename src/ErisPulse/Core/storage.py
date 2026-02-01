@@ -1,7 +1,7 @@
 """
 ErisPulse 存储管理模块
 
-提供键值存储、事务支持、快照和恢复功能，用于管理框架运行时数据。
+提供键值存储和事务支持，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
 支持两种数据库模式：
@@ -17,23 +17,21 @@ use_global_db = true
 {!--< tips >!--}
 1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
-3. 自动快照功能防止数据丢失
 {!--< /tips >!--}
 """
 
 import os
 import json
 import sqlite3
-import shutil
-import time
-from datetime import datetime
-from typing import List, Dict, Optional, Any, Tuple, Type
+import threading
+from typing import List, Dict, Optional, Any, Type
+from contextlib import contextmanager
 
 class StorageManager:
     """
     存储管理器
     
-    单例模式实现，提供键值存储的增删改查、事务和快照管理
+    单例模式实现，提供键值存储的增删改查和事务管理
     
     支持两种数据库模式：
     1. 项目数据库（默认）：位于项目目录下的 config/config.db
@@ -48,7 +46,6 @@ class StorageManager:
     {!--< tips >!--}
     1. 使用get/set方法操作存储项
     2. 使用transaction上下文管理事务
-    3. 使用snapshot/restore管理数据快照
     {!--< /tips >!--}
     """
     
@@ -57,7 +54,8 @@ class StorageManager:
     DEFAULT_PROJECT_DB_PATH = os.path.join(os.getcwd(), "config", "config.db")
     # 包内全局数据库路径
     GLOBAL_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/config.db"))
-    SNAPSHOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/snapshots"))
+    # 线程本地存储，用于跟踪活动事务的连接
+    _local = threading.local()
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -73,19 +71,40 @@ class StorageManager:
         self._ensure_directories()
         
         # 根据配置决定使用哪个数据库
-        from .config import config
-        use_global_db = config.getConfig("ErisPulse.storage.use_global_db", False)
+        from ._self_config import get_storage_config
+        storage_config = get_storage_config()
+
+        use_global_db = storage_config.get("use_global_db", False)
         
         if use_global_db and os.path.exists(self.GLOBAL_DB_PATH):
             self.db_path = self.GLOBAL_DB_PATH
         else:
             self.db_path = self.DEFAULT_PROJECT_DB_PATH
             
-        self._last_snapshot_time = time.time()
-        self._snapshot_interval = 3600
-        
         self._init_db()
         self._initialized = True
+    
+    @contextmanager
+    def _get_connection(self):
+        """
+        获取数据库连接（支持事务）
+        
+        如果在事务中，返回事务的连接
+        否则创建新连接
+        """
+        # 检查是否在线程本地存储中有活动事务连接
+        if hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None:
+            conn = self._local.transaction_conn
+            should_close = False
+        else:
+            conn = sqlite3.connect(self.db_path)
+            should_close = True
+        
+        try:
+            yield conn
+        finally:
+            if should_close:
+                conn.close()
     
     def _ensure_directories(self) -> None:
         """
@@ -96,12 +115,6 @@ class StorageManager:
             os.makedirs(os.path.dirname(self.DEFAULT_PROJECT_DB_PATH), exist_ok=True)
         except Exception:
             pass  # 如果无法创建项目目录，则跳过
-            
-        # 确保快照目录存在
-        try:
-            os.makedirs(self.SNAPSHOT_DIR, exist_ok=True)
-        except Exception:
-            pass  # 如果无法创建快照目录，则跳过
 
     def _init_db(self) -> None:
         """
@@ -140,10 +153,6 @@ class StorageManager:
         except Exception as e:
             logger.error(f"初始化数据库时发生未知错误: {e}")
             raise
-        
-        # 初始化自动快照调度器
-        self._last_snapshot_time = time.time()  # 初始化为当前时间
-        self._snapshot_interval = 3600  # 默认每小时自动快照
 
     def get(self, key: str, default: Any = None) -> Any:
         """
@@ -226,15 +235,14 @@ class StorageManager:
             return False
             
         try:
-            serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
-            with self.transaction():
-                conn = sqlite3.connect(self.db_path)
+            serialized_value = json.dumps(value)
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
-                conn.commit()
-                conn.close()
+                # 如果不在事务中，提交更改
+                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+                    conn.commit()
             
-            self._check_auto_snapshot()
             return True
         except Exception as e:
             from .logger import logger
@@ -260,17 +268,16 @@ class StorageManager:
             return False
             
         try:
-            with self.transaction():
-                conn = sqlite3.connect(self.db_path)
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 for key, value in items.items():
-                    serialized_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
+                    serialized_value = json.dumps(value)
                     cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", 
                         (key, serialized_value))
-                conn.commit()
-                conn.close()
+                # 如果不在事务中，提交更改
+                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+                    conn.commit()
             
-            self._check_auto_snapshot()
             return True
         except Exception:
             return False
@@ -316,14 +323,13 @@ class StorageManager:
             return False
             
         try:
-            with self.transaction():
-                conn = sqlite3.connect(self.db_path)
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM config WHERE key = ?", (key,))
-                conn.commit()
-                conn.close()
+                # 如果不在事务中，提交更改
+                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+                    conn.commit()
             
-            self._check_auto_snapshot()
             return True
         except Exception:
             return False
@@ -343,14 +349,13 @@ class StorageManager:
             return False
             
         try:
-            with self.transaction():
-                conn = sqlite3.connect(self.db_path)
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executemany("DELETE FROM config WHERE key = ?", [(k,) for k in keys])
-                conn.commit()
-                conn.close()
+                # 如果不在事务中，提交更改
+                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+                    conn.commit()
             
-            self._check_auto_snapshot()
             return True
         except Exception:
             return False
@@ -374,8 +379,12 @@ class StorageManager:
             cursor = conn.cursor()
             placeholders = ','.join(['?'] * len(keys))
             cursor.execute(f"SELECT key, value FROM config WHERE key IN ({placeholders})", keys)
-            results = {row[0]: json.loads(row[1]) if row[1].startswith(('{', '[')) else row[1] 
-                        for row in cursor.fetchall()}
+            results = {}
+            for row in cursor.fetchall():
+                try:
+                    results[row[0]] = json.loads(row[1])
+                except json.JSONDecodeError:
+                    results[row[0]] = row[1]
             conn.close()
             return results
         except Exception as e:
@@ -403,6 +412,15 @@ class StorageManager:
                 def __exit__(self, *args):
                     pass
             return EmptyTransaction()
+        
+        # 如果已经在事务中（嵌套事务），返回一个空事务，复用现有连接
+        if hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None:
+            class NestedTransaction:
+                def __enter__(self):
+                    return self
+                def __exit__(self, *args):
+                    pass
+            return NestedTransaction()
             
         return self._Transaction(self)
 
@@ -426,12 +444,18 @@ class StorageManager:
             self.conn = sqlite3.connect(self.storage_manager.db_path)
             self.cursor = self.conn.cursor()
             self.cursor.execute("BEGIN TRANSACTION")
+            # 将连接存储到线程本地存储，供其他方法复用
+            self.storage_manager._local.transaction_conn = self.conn
             return self
 
         def __exit__(self, exc_type: Type[Exception], exc_val: Exception, exc_tb: Any) -> None:
             """
             退出事务上下文
             """
+            # 清除线程本地存储中的连接引用
+            if hasattr(self.storage_manager._local, 'transaction_conn'):
+                self.storage_manager._local.transaction_conn = None
+                
             if self.conn is not None:
                 try:
                     if exc_type is None:
@@ -445,58 +469,6 @@ class StorageManager:
                 finally:
                     if hasattr(self.conn, 'close'):
                         self.conn.close()
-
-    def _check_auto_snapshot(self) -> None:
-        """
-        {!--< internal-use >!--}
-        检查并执行自动快照
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            return
-            
-        from .logger import logger
-        
-        if not hasattr(self, '_last_snapshot_time') or self._last_snapshot_time is None:
-            self._last_snapshot_time = time.time()
-            
-        if not hasattr(self, '_snapshot_interval') or self._snapshot_interval is None:
-            self._snapshot_interval = 3600
-            
-        current_time = time.time()
-        
-        try:
-            time_diff = current_time - self._last_snapshot_time
-            if not isinstance(time_diff, (int, float)):
-                raise ValueError("时间差应为数值类型")
-
-            if not isinstance(self._snapshot_interval, (int, float)):
-                raise ValueError("快照间隔应为数值类型")
-                
-            if time_diff > self._snapshot_interval:
-                self._last_snapshot_time = current_time
-                self.snapshot(f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
-                
-        except Exception as e:
-            logger.error(f"自动快照检查失败: {e}")
-            self._last_snapshot_time = current_time
-            self._snapshot_interval = 3600
-
-    def set_snapshot_interval(self, seconds: int) -> None:
-        """
-        设置自动快照间隔
-        
-        :param seconds: 间隔秒数
-        
-        :example:
-        >>> # 每30分钟自动快照
-        >>> storage.set_snapshot_interval(1800)
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            return
-            
-        self._snapshot_interval = seconds
 
     def clear(self) -> bool:
         """
@@ -512,11 +484,13 @@ class StorageManager:
             return False
             
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM config")
-            conn.commit()
-            conn.close()
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM config")
+                # 如果不在事务中，提交更改
+                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+                    conn.commit()
+            
             return True
         except Exception:
             return False
@@ -540,11 +514,24 @@ class StorageManager:
         # 避免在初始化过程中调用此方法导致问题
         if not hasattr(self, '_initialized') or not self._initialized:
             raise AttributeError(f"存储尚未初始化完成: {key}")
-            
+        
+        # 检查键是否存在
         try:
-            return self.get(key)
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
+                result = cursor.fetchone()
         except Exception:
             raise AttributeError(f"存储项 {key} 不存在或访问出错")
+        
+        if result is None:
+            raise AttributeError(f"存储项 {key} 不存在")
+        
+        # 解析并返回值
+        try:
+            return json.loads(result[0])
+        except json.JSONDecodeError:
+            return result[0]
 
     def __setattr__(self, key: str, value: Any) -> None:
         """
@@ -572,157 +559,8 @@ class StorageManager:
             from .logger import logger
             logger.error(f"设置存储项 {key} 失败: {e}")
 
-    def snapshot(self, name: Optional[str] = None) -> str:
-        """
-        创建数据库快照
-        
-        :param name: 快照名称(可选)
-        :return: 快照文件路径
-        
-        :example:
-        >>> # 创建命名快照
-        >>> snapshot_path = storage.snapshot("before_update")
-        >>> # 创建时间戳快照
-        >>> snapshot_path = storage.snapshot()
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            raise RuntimeError("存储尚未初始化完成")
-            
-        if not name:
-            name = datetime.now().strftime("%Y%m%d_%H%M%S")
-        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{name}.db")
-        
-        try:
-            # 快照目录
-            os.makedirs(self.SNAPSHOT_DIR, exist_ok=True)
-            
-            # 安全关闭连接
-            if hasattr(self, "_conn") and self._conn is not None:
-                try:
-                    self._conn.close()
-                except Exception as e:
-                    from .logger import logger
-                    logger.warning(f"关闭数据库连接时出错: {e}")
-            
-            # 创建快照
-            shutil.copy2(self.db_path, snapshot_path)
-            from .logger import logger
-            logger.info(f"数据库快照已创建: {snapshot_path}")
-            return snapshot_path
-        except Exception as e:
-            from .logger import logger
-            logger.error(f"创建快照失败: {e}")
-            raise
-
-    def restore(self, snapshot_name: str) -> bool:
-        """
-        从快照恢复数据库
-        
-        :param snapshot_name: 快照名称或路径
-        :return: 恢复是否成功
-        
-        :example:
-        >>> storage.restore("before_update")
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            return False
-            
-        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
-            if not snapshot_name.endswith('.db') else snapshot_name
-            
-        if not os.path.exists(snapshot_path):
-            from .logger import logger
-            logger.error(f"快照文件不存在: {snapshot_path}")
-            return False
-            
-        try:
-            # 安全关闭连接
-            if hasattr(self, "_conn") and self._conn is not None:
-                try:
-                    self._conn.close()
-                except Exception as e:
-                    from .logger import logger
-                    logger.warning(f"关闭数据库连接时出错: {e}")
-            
-            # 执行恢复操作
-            shutil.copy2(snapshot_path, self.db_path)
-            self._init_db()  # 恢复后重新初始化数据库连接
-            from .logger import logger
-            logger.info(f"数据库已从快照恢复: {snapshot_path}")
-            return True
-        except Exception as e:
-            from .logger import logger
-            logger.error(f"恢复快照失败: {e}")
-            return False
-
-    def list_snapshots(self) -> List[Tuple[str, datetime, int]]:
-        """
-        列出所有可用的快照
-        
-        :return: 快照信息列表(名称, 创建时间, 大小)
-        
-        :example:
-        >>> for name, date, size in storage.list_snapshots():
-        >>>     print(f"{name} - {date} ({size} bytes)")
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            return []
-            
-        try:
-            snapshots = []
-            for f in os.listdir(self.SNAPSHOT_DIR):
-                if f.endswith('.db'):
-                    path = os.path.join(self.SNAPSHOT_DIR, f)
-                    stat = os.stat(path)
-                    snapshots.append((
-                        f[:-3],  # 去掉.db后缀
-                        datetime.fromtimestamp(stat.st_ctime),
-                        stat.st_size
-                    ))
-            return sorted(snapshots, key=lambda x: x[1], reverse=True)
-        except Exception as e:
-            from .logger import logger
-            logger.error(f"列出快照时发生错误: {e}")
-            return []
-
-    def delete_snapshot(self, snapshot_name: str) -> bool:
-        """
-        删除指定的快照
-        
-        :param snapshot_name: 快照名称
-        :return: 删除是否成功
-        
-        :example:
-        >>> storage.delete_snapshot("old_backup")
-        """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
-            return False
-            
-        snapshot_path = os.path.join(self.SNAPSHOT_DIR, f"{snapshot_name}.db") \
-            if not snapshot_name.endswith('.db') else snapshot_name
-            
-        if not os.path.exists(snapshot_path):
-            from .logger import logger
-            logger.error(f"快照文件不存在: {snapshot_path}")
-            return False
-            
-        try:
-            os.remove(snapshot_path)
-            from .logger import logger
-            logger.info(f"快照已删除: {snapshot_path}")
-            return True
-        except Exception as e:
-            from .logger import logger
-            logger.error(f"删除快照失败: {e}")
-            return False
-
 storage = StorageManager()
 
 __all__ = [
     "storage"
 ]
-
