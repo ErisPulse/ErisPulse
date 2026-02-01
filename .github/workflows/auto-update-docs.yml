@@ -39,8 +39,8 @@ jobs:
           mkdir -p docs/api
           
           # 运行API文档更新脚本
-          if [ -f ".github/tools/update-api-docs.py" ]; then
-            python .github/tools/update-api-docs.py --src src --output docs/api
+          if [ -f "scripts/tools/update-api-docs.py" ]; then
+            python scripts/tools/update-api-docs.py --src src --output docs/api
             echo "✅ API文档更新完成!"
           else
             echo "⚠️ 未找到API文档更新脚本，跳过此步骤"
@@ -66,9 +66,9 @@ jobs:
           mkdir -p docs/ai/AIDocs/no-api
           
           # 生成包含API的文档
-          if [ -f ".github/tools/merge_md.py" ]; then
-            python .github/tools/merge_md.py full
-            python .github/tools/merge_md.py dev
+          if [ -f "scripts/tools/merge_md.py" ]; then
+            python scripts/tools/merge_md.py full
+            python scripts/tools/merge_md.py dev
             
             echo "✅ 包含API的文档生成完成!"
           else
@@ -91,34 +91,34 @@ jobs:
           echo "📖 艾莉丝正在生成不包含API的文档版本~"
           
           # 生成不包含API的文档
-          if [ -f ".github/tools/merge_md.py" ]; then
-            python .github/tools/merge_md.py no-api
+          if [ -f "scripts/tools/merge_md.py" ]; then
+            python scripts/tools/merge_md.py no-api
             echo "✅ no-api版本文档生成完成!"
           fi
 
-      - name: 🔮 生成类型存根
-        id: generate-stubs
-        run: |
-          echo "🔮 艾莉丝开始生成类型存根文件~"
+      # - name: 🔮 生成类型存根
+      #   id: generate-stubs
+      #   run: |
+      #     echo "🔮 艾莉丝开始生成类型存根文件~"
           
-          # 运行类型存根生成脚本
-          if [ -f ".github/scripts/generate-type-stubs.py" ]; then
-            python .github/scripts/generate-type-stubs.py --src src --output src --clean --force
-            echo "✅ 类型存根生成完成!"
-          else
-            echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
-            echo "stubs_updated=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+      #     # 运行类型存根生成脚本
+      #     if [ -f "scripts/tools/generate-type-stubs.py" ]; then
+      #       python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
+      #       echo "✅ 类型存根生成完成!"
+      #     else
+      #       echo "⚠️ 未找到类型存根生成脚本，跳过此步骤"
+      #       echo "stubs_updated=false" >> $GITHUB_OUTPUT
+      #       exit 0
+      #     fi
           
-          # 检查类型存根是否有更新
-          if git diff --quiet src/; then
-            echo "类型存根没有变化"
-            echo "stubs_updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "发现了类型存根更新!"
-            echo "stubs_updated=true" >> $GITHUB_OUTPUT
-          fi
+      #     # 检查类型存根是否有更新
+      #     if git diff --quiet src/; then
+      #       echo "类型存根没有变化"
+      #       echo "stubs_updated=false" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "发现了类型存根更新!"
+      #       echo "stubs_updated=true" >> $GITHUB_OUTPUT
+      #     fi
 
       - name: 📊 统计更新情况
         run: |

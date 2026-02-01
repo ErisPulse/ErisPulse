@@ -21,7 +21,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "memory_limit": 1000
     },
     "storage":  {
-        "max_snapshot": 20
+        "use_global_db": False,
     },
     "modules": {},
     "adapters": {},
