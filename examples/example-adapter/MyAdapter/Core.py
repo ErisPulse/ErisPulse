@@ -10,7 +10,7 @@ class MyAdapter(BaseAdapter):
     实现了SendDSL风格的链式调用接口
     """
     
-    def __init__(self, sdk):    # 这里也可以不接受sdk参数而使用导入的sdk实例 SDK会自动判断这个类是否接收了参数
+    def __init__(self, sdk):
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager

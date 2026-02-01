@@ -6,9 +6,12 @@
 - **main**: 主分支，存放稳定可发布的代码
 - **Develop/v2**: 开发主分支，所有功能分支最终合并至此
 - **Pre-Release/v2**: 预发布分支，用于版本发布前的测试
-- **feature/***: 功能开发分支，按功能命名
-- **fix/***: 问题修复分支，按问题描述命名
-- **Archive/v1**: 归档分支，存放旧版本代码
+- **Archive/v1**: 归档分支，存放V1版本代码
+
+## 注解存根通知
+我们有一个用于生成pyi文件的脚本，在仓库中你是看不到pyi文件的
+如果你需要使用这些注解，请运行 `python3 scripts/tools/generate-type-stubs.py` , 它将在本地生成pyi文件
+提交时，请确保您本地的pyi文件已清除，使用 `python3 scripts/tools/generate-type-stubs.py --clean-only` 完成清理
 
 ## 代码注释规范
 
@@ -18,13 +21,8 @@
 
 1.  **Fork仓库**
     *   首先fork主仓库到您的个人GitHub账户。
-    *   提示：在fork时，请**取消勾选** "Copy the main branch only" 选项，以确保获取完整的分支结构（包括 `Develop/v2`、`Pre-Release/v2` 等分支），这是完成贡献提交的必要条件。
 2.  **创建功能分支**
     *   在您**自己Fork的仓库**中，基于官方的 `Develop/v2` 分支创建功能分支。
-    *   分支命名规范：
-        *   `feature/您的功能描述` (例如：`feature/user-auth`)
-        *   `fix/问题描述` (例如：`fix/login-bug`)
-    *   > **请注意**：此分支创建在您自己的仓库中，用于隔离开发。
 
 3.  **开发工作**
     *   在您的功能分支上进行开发。

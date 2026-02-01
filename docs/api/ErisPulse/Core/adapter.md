@@ -1,6 +1,6 @@
 # `ErisPulse.Core.adapter` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-02-02 05:58:18
 
 ---
 
@@ -16,7 +16,7 @@ ErisPulse 适配器系统
 ## 类列表
 
 
-### `class AdapterManager`
+### `class AdapterManager(ManagerBase)`
 
 适配器管理器
 
@@ -149,9 +149,42 @@ ErisPulse 适配器系统
 ---
 
 
+##### `unregister(platform: str)`
+
+取消注册适配器
+
+:param platform: 平台名称
+:return: 是否取消成功
+
+> **内部方法** 
+注意：此方法仅取消注册，不关闭已启动的适配器
+
+---
+
+
+##### `list_registered()`
+
+列出所有已注册的平台
+
+:return: 平台名称列表
+
+---
+
+
+##### `list_items()`
+
+列出所有平台适配器状态
+
+:return: {平台名: 是否启用} 字典
+
+---
+
+
 ##### `list_adapters()`
 
 列出所有平台适配器状态
+
+> **已弃用** 请使用 list_items() 代替
 
 **返回值** (`Dict[str, bool`): ] 平台适配器状态字典
 
