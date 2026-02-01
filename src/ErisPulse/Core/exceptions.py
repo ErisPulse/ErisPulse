@@ -108,6 +108,8 @@ def setup_async_loop(loop: asyncio.AbstractEventLoop = None) -> None:   # type: 
 
 sys.excepthook = global_exception_handler
 try:
-    asyncio.get_event_loop().set_exception_handler(async_exception_handler)
+    loop = asyncio.get_running_loop()
+    loop.set_exception_handler(async_exception_handler)
 except RuntimeError:
+    # 没有运行中的事件循环，这是正常的，在运行时再设置
     pass
