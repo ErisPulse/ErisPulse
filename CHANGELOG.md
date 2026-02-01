@@ -33,6 +33,53 @@
 
 ---
 
+## [2.3.4-dev.1] - 2026/02/02
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 添加测试基础设施：
+    - 新增 `pytest.ini` 配置文件，定义测试发现、标记和覆盖率规则
+    - 新增 `tests/conftest.py` 测试配置文件，提供丰富的测试夹具（fixtures）
+    - 新增 `tests/unit/test_unit_adapter.py`，提供适配器系统的完整单元测试
+  - 添加 `devs/test_imports.py` 兼容性测试脚本，验证重构后的模块导入功能
+
+### 变更
+- @wsu2059q
+  - 重构模块加载系统架构：
+    - 引入 `ManagerBase` 基类，统一适配器和模块管理器的配置接口
+    - `AdapterManager` 和 `ModuleManager` 现在继承自 `ManagerBase`
+    - 新增 `BaseLoader` 加载器抽象基类，定义标准加载接口
+    - 引入 `AdapterLoader` 和 `ModuleLoader` 专用加载器
+    - 新增 `ModuleInitializer` 初始化协调器，统一管理加载流程
+    - 移除 `__init__.py` 中的 `LazyModule` 内部实现，迁移到 `loaders/module_loader.py`
+  - 改进核心模块功能：
+    - `adapter` 模块：优化 `exists()` 方法，检查 `_adapters` 而非配置；`enable()`/`disable()` 支持自动注册
+    - `module` 模块：增强 `register()` 的类验证和警告机制；`unload()` 改进错误处理
+    - `command` 模块：修复 `aliases` 参数中的别名未正确注册的问题
+    - `router` 模块：优化 WebSocket 路由注销逻辑和 IPv6 回环地址显示
+    - `logger` 模块：改进 `get_child()` 方法，支持非相对路径；`set_output_file()` 改进处理器管理
+    - `lifecycle` 模块：添加事件类型验证，防止空值提交
+    - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
+  - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
+  - 移除 `storage` 模块的自动快照功能及其相关配置项
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
+  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
+
+### 移除
+- @wsu2059q
+  - 移除 `storage` 模块的快照功能：
+    - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
+    - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
+    - 移除 `ErisPulse.storage.max_snapshot` 配置项
+    - 移除相关文档和示例代码
+  - 移除 `devs/test.py` 交互测试脚本
+
+---
+
 ## [2.3.4-dev.0] - 2026/01/27
 > 开发版本
 
