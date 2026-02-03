@@ -14,7 +14,7 @@ from .logger import logger
 from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
-from ..loaders.manager_base import ManagerBase
+from .Bases.manager import ManagerBase
 
 class AdapterManager(ManagerBase):
     """
