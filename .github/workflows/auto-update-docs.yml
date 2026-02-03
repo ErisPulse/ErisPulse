@@ -146,8 +146,8 @@ jobs:
           echo "💾 艾莉丝正在保存文档更新~"
           
           # 配置Git用户信息
-          git config --local user.email "eris@magic-circle.dev"
-          git config --local user.name "Eris the Scribe"
+          git config --local user.email "Eris@114514.1919"
+          git config --local user.name "Eris[Bot]"
           
           # 添加所有更新的文档和类型存根
           git add docs/api/ docs/ai/AIDocs/ src/
