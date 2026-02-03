@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-02-02 05:58:22
+**生成时间**: 2026-02-03 22:38:16
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -2951,9 +2951,81 @@ sdk.MyModule.print_hello()
 方法说明
 | 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
 | --- | --- | --- | --- | --- |
-| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载 | 否 | 无 | bool |
+| get_load_strategy() | 静态方法，返回模块加载策略（推荐使用） | 否 | 无 | ModuleLoadStrategy 或 dict |
+| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载（兼容旧方法） | 否 | 无 | bool |
 | on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
 | on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
+
+### 模块加载策略
+
+从 ErisPulse 2.3.4-dev.1 版本开始，模块可以通过 `get_load_strategy()` 方法定义更灵活的加载策略，包括懒加载设置和加载优先级。
+
+#### 策略配置项
+
+| 配置项 | 类型 | 说明 | 默认值 |
+| --- | --- | --- | --- |
+| lazy_load | bool | 是否懒加载（True=懒加载，False=立即加载） | True |
+| priority | int | 加载优先级（数值越大优先级越高） | 0 |
+
+#### 使用示例
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+    
+    @staticmethod
+    def get_load_strategy():
+        """返回模块加载策略"""
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100      # 高优先级
+        )
+        # 注意: 直接返回一个字典也是被允许的
+    
+    async def on_load(self, event):
+        self.logger.info("模块已加载")
+    
+    async def on_unload(self, event):
+        self.logger.info("模块已卸载")
+```
+
+#### 优先级说明
+
+- **priority 值越大，模块优先级越高**
+- 具有更高优先级的模块会先被加载
+- 默认优先级为 0
+
+#### 懒加载说明
+
+- **lazy_load=True**：模块在首次访问时才加载（默认）
+- **lazy_load=False**：模块在 SDK 初始化时立即加载
+
+**懒加载使用场景：**
+
+```python
+# 需要立即加载的模块（例如：监听器、定时器等）
+class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 必须立即加载才能正常工作
+            priority=50
+        )
+
+# 可以懒加载的模块（例如：命令处理、功能扩展等）
+class CommandModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,  # 首次使用时才加载，节省启动时间
+            priority=0
+        )
+```
 
 ## 5. Event 事件包装类
 
@@ -5409,6 +5481,7 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse\CLI\utils\reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
 - [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
 - [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
+- [ErisPulse\Core\Bases\manager.md](#ErisPulse_Core_Bases_manager)
 - [ErisPulse\Core\Bases\module.md](#ErisPulse_Core_Bases_module)
 - [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
 - [ErisPulse\Core\Event\base.md](#ErisPulse_Core_Event_base)
@@ -5434,8 +5507,8 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse\loaders\adapter_loader.md](#ErisPulse_loaders_adapter_loader)
 - [ErisPulse\loaders\base_loader.md](#ErisPulse_loaders_base_loader)
 - [ErisPulse\loaders\initializer.md](#ErisPulse_loaders_initializer)
-- [ErisPulse\loaders\manager_base.md](#ErisPulse_loaders_manager_base)
 - [ErisPulse\loaders\module_loader.md](#ErisPulse_loaders_module_loader)
+- [ErisPulse\loaders\strategy.md](#ErisPulse_loaders_strategy)
 - [ErisPulse\sdk.md](#ErisPulse_sdk)
 - [README.md](#README)
 
@@ -5445,7 +5518,7 @@ await mail.Send.Using("from@example.com")
 ## ErisPulse\CLI\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5463,7 +5536,7 @@ ErisPulse 命令行接口
 ## ErisPulse\CLI\base.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5526,7 +5599,7 @@ CLI 命令基类
 ## ErisPulse\CLI\cli.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5623,7 +5696,7 @@ ErisPulse 命令行接口主类
 ## ErisPulse\CLI\commands\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5642,7 +5715,7 @@ ErisPulse 命令行接口主类
 ## ErisPulse\CLI\commands\init.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5721,7 +5794,7 @@ InitCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\install.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5788,7 +5861,7 @@ InstallCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\list.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5838,7 +5911,7 @@ ListCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\list_remote.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5877,7 +5950,7 @@ ListRemoteCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\run.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5923,7 +5996,7 @@ RunCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\self_update.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5975,7 +6048,7 @@ SelfUpdateCommand 类提供相关功能。
 ## ErisPulse\CLI\commands\uninstall.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5993,7 +6066,7 @@ Uninstall 命令实现
 ## ErisPulse\CLI\commands\upgrade.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6011,7 +6084,7 @@ Upgrade 命令实现
 ## ErisPulse\CLI\console.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6038,7 +6111,7 @@ Upgrade 命令实现
 ## ErisPulse\CLI\registry.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6166,7 +6239,7 @@ CLI 命令注册器
 ## ErisPulse\CLI\utils\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6184,7 +6257,7 @@ ErisPulse SDK 工具模块
 ## ErisPulse\CLI\utils\package_manager.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6470,7 +6543,7 @@ ErisPulse包管理器
 ## ErisPulse\CLI\utils\reload_handler.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6549,7 +6622,7 @@ ErisPulse SDK 热重载处理器
 ## ErisPulse\Core\Bases\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6567,7 +6640,7 @@ ErisPulse 基础模块
 ## ErisPulse\Core\Bases\adapter.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6734,11 +6807,145 @@ ErisPulse 适配器基础模块
 
 
 
+<a id="ErisPulse_Core_Bases_manager"></a>
+## ErisPulse\Core\Bases\manager.md
+
+
+> 最后更新：2026-02-03 22:38:11
+
+---
+
+## 模块概述
+
+
+ErisPulse 管理器基类
+
+提供适配器和模块管理器的统一接口定义
+
+> **提示**
+> 适配器管理器和模块管理器都应继承此基类以保持接口一致性
+
+---
+
+## 类列表
+
+
+### `class ManagerBase(ABC)`
+
+管理器基类
+
+定义适配器和模块管理器的统一接口
+
+> **提示**
+> 统一方法：
+> - register(): 注册类
+> - unregister(): 取消注册
+> - get(): 获取实例
+> - exists(): 检查是否存在
+> - enable()/disable(): 启用/禁用
+> - is_enabled(): 检查是否启用
+> - list_*(): 列出相关项
+
+
+#### 方法列表
+
+
+##### `register(name: str, class_type: Type, info: Optional[Dict] = None)`
+
+注册类
+
+:param name: 名称
+:param class_type: 类类型
+:param info: 额外信息
+:return: 是否注册成功
+
+---
+
+
+##### `unregister(name: str)`
+
+取消注册
+
+:param name: 名称
+:return: 是否取消成功
+
+---
+
+
+##### `get(name: str)`
+
+获取实例
+
+:param name: 名称
+:return: 实例或 None
+
+---
+
+
+##### `exists(name: str)`
+
+检查是否存在（在配置中注册）
+
+:param name: 名称
+:return: 是否存在
+
+---
+
+
+##### `is_enabled(name: str)`
+
+检查是否启用
+
+:param name: 名称
+:return: 是否启用
+
+---
+
+
+##### `enable(name: str)`
+
+启用
+
+:param name: 名称
+:return: 是否成功
+
+---
+
+
+##### `disable(name: str)`
+
+禁用
+
+:param name: 名称
+:return: 是否成功
+
+---
+
+
+##### `list_registered()`
+
+列出所有已注册的项
+
+:return: 名称列表
+
+---
+
+
+##### `list_items()`
+
+列出所有项及其状态
+
+:return: {名称: 是否启用} 字典
+
+---
+
+
+
 <a id="ErisPulse_Core_Bases_module"></a>
 ## ErisPulse\Core\Bases\module.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6764,12 +6971,50 @@ ErisPulse 模块基础模块
 #### 方法列表
 
 
+##### `get_load_strategy()`
+
+获取模块加载策略
+
+支持返回 ModuleLoadStrategy 对象或字典
+所有属性统一处理，没有任何预定义字段
+
+:return: 加载策略对象或字典
+
+> **提示**
+> 常用配置项：
+> - lazy_load: bool, 是否懒加载（默认 True）
+> - priority: int, 加载优先级（默认 0，数值越大优先级越高）
+> 使用方式：
+> >>> class MyModule(BaseModule):
+> ...     @staticmethod
+> ...     def get_load_strategy() -> ModuleLoadStrategy:
+> ...         return ModuleLoadStrategy(
+> ...             lazy_load=False,
+> ...             priority=100
+> ...         )
+> 或使用字典：
+> >>> class MyModule(BaseModule):
+> ...     @staticmethod
+> ...     def get_load_strategy() -> dict:
+> ...         return {
+> ...             "lazy_load": False,
+> ...             "priority": 100
+> ...         }
+
+---
+
+
 ##### `should_eager_load()`
 
 模块是否应该在启动时加载
 默认为False(即懒加载)
 
+兼容方法，实际调用 get_load_strategy()
+
 :return: 是否应该在启动时加载
+
+> **提示**
+> 旧版方法，建议使用 get_load_strategy() 替代
 
 ---
 
@@ -6807,7 +7052,7 @@ ErisPulse 模块基础模块
 ## ErisPulse\Core\Event\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6849,7 +7094,7 @@ ErisPulse 事件处理模块
 ## ErisPulse\Core\Event\base.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6948,7 +7193,7 @@ ErisPulse 事件处理基础模块
 ## ErisPulse\Core\Event\command.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7146,7 +7391,7 @@ ErisPulse 命令处理模块
 ## ErisPulse\Core\Event\exceptions.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7195,7 +7440,7 @@ ErisPulse 事件系统异常处理模块
 ## ErisPulse\Core\Event\message.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7321,7 +7566,7 @@ ErisPulse 消息处理模块
 ## ErisPulse\Core\Event\meta.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7446,7 +7691,7 @@ ErisPulse 元事件处理模块
 ## ErisPulse\Core\Event\notice.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7591,7 +7836,7 @@ ErisPulse 通知处理模块
 ## ErisPulse\Core\Event\request.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7696,7 +7941,7 @@ ErisPulse 请求处理模块
 ## ErisPulse\Core\Event\wrapper.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8211,7 +8456,7 @@ ErisPulse 事件包装类
 ## ErisPulse\Core\_self_config.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8297,7 +8542,7 @@ ErisPulse 框架配置管理
 ## ErisPulse\Core\adapter.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8619,7 +8864,7 @@ OneBot12协议事件监听装饰器
 ## ErisPulse\Core\config.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8713,7 +8958,7 @@ ConfigManager 类提供相关功能。
 ## ErisPulse\Core\exceptions.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8793,7 +9038,7 @@ ExceptionHandler 类提供相关功能。
 ## ErisPulse\Core\lifecycle.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8905,7 +9150,7 @@ ErisPulse 生命周期管理模块
 ## ErisPulse\Core\logger.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9076,7 +9321,7 @@ ErisPulse 日志系统
 ## ErisPulse\Core\module.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9343,7 +9588,7 @@ ErisPulse 模块系统
 ## ErisPulse\Core\router.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9489,7 +9734,7 @@ ErisPulse 路由系统
 ## ErisPulse\Core\storage.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9771,7 +10016,7 @@ use_global_db = true
 ## ErisPulse\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9794,7 +10039,7 @@ ErisPulse SDK 主模块
 ## ErisPulse\__main__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9826,7 +10071,7 @@ CLI入口点
 ## ErisPulse\loaders\__init__.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9848,7 +10093,7 @@ ErisPulse 加载器模块
 ## ErisPulse\loaders\adapter_loader.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9940,7 +10185,7 @@ ErisPulse 适配器加载器
 ## ErisPulse\loaders\base_loader.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -10065,7 +10310,7 @@ ErisPulse 基础加载器
 ## ErisPulse\loaders\initializer.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -10129,145 +10374,11 @@ ErisPulse 初始化协调器
 
 
 
-<a id="ErisPulse_loaders_manager_base"></a>
-## ErisPulse\loaders\manager_base.md
-
-
-> 最后更新：2026-02-02 05:58:18
-
----
-
-## 模块概述
-
-
-ErisPulse 管理器基类
-
-提供适配器和模块管理器的统一接口定义
-
-> **提示**
-> 适配器管理器和模块管理器都应继承此基类以保持接口一致性
-
----
-
-## 类列表
-
-
-### `class ManagerBase(ABC)`
-
-管理器基类
-
-定义适配器和模块管理器的统一接口
-
-> **提示**
-> 统一方法：
-> - register(): 注册类
-> - unregister(): 取消注册
-> - get(): 获取实例
-> - exists(): 检查是否存在
-> - enable()/disable(): 启用/禁用
-> - is_enabled(): 检查是否启用
-> - list_*(): 列出相关项
-
-
-#### 方法列表
-
-
-##### `register(name: str, class_type: Type, info: Optional[Dict] = None)`
-
-注册类
-
-:param name: 名称
-:param class_type: 类类型
-:param info: 额外信息
-:return: 是否注册成功
-
----
-
-
-##### `unregister(name: str)`
-
-取消注册
-
-:param name: 名称
-:return: 是否取消成功
-
----
-
-
-##### `get(name: str)`
-
-获取实例
-
-:param name: 名称
-:return: 实例或 None
-
----
-
-
-##### `exists(name: str)`
-
-检查是否存在（在配置中注册）
-
-:param name: 名称
-:return: 是否存在
-
----
-
-
-##### `is_enabled(name: str)`
-
-检查是否启用
-
-:param name: 名称
-:return: 是否启用
-
----
-
-
-##### `enable(name: str)`
-
-启用
-
-:param name: 名称
-:return: 是否成功
-
----
-
-
-##### `disable(name: str)`
-
-禁用
-
-:param name: 名称
-:return: 是否成功
-
----
-
-
-##### `list_registered()`
-
-列出所有已注册的项
-
-:return: 名称列表
-
----
-
-
-##### `list_items()`
-
-列出所有项及其状态
-
-:return: {名称: 是否启用} 字典
-
----
-
-
-
 <a id="ErisPulse_loaders_module_loader"></a>
 ## ErisPulse\loaders\module_loader.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -10339,15 +10450,29 @@ ErisPulse 模块加载器
 ---
 
 
-##### `_should_lazy_load(module_class: Type)`
+##### `_get_load_strategy(module_class: Type)`
 
-检查模块是否应该懒加载
+获取模块加载策略
 
 :param module_class: Type 模块类
-:return: bool 如果返回 False，则立即加载；否则懒加载
+:return: 加载策略对象或字典
 
 > **内部方法** 
-内部方法，用于判断模块加载策略
+内部方法，用于获取模块的加载策略
+
+---
+
+
+##### `_strategy_with_lazy_load(strategy: Any, lazy_load: bool)`
+
+创建修改 lazy_load 的新策略副本
+
+:param strategy: 原始策略
+:param lazy_load: 懒加载值
+:return: 新策略
+
+> **内部方法** 
+内部方法，用于创建修改后的策略副本
 
 ---
 
@@ -10380,8 +10505,8 @@ ErisPulse 模块加载器
 > **提示**
 > 此方法处理模块的实际初始化和挂载
 
-# 并行注册所有模块类（已在 register_to_manager 中完成）
-# 这里处理模块的实例化和挂载
+并行注册所有模块类（已在 register_to_manager 中完成）
+这里处理模块的实例化和挂载
 
 ---
 
@@ -10519,6 +10644,139 @@ ErisPulse 模块加载器
 
 代理函数调用
 
+:param args: 位置参数
+:param kwargs: 关键字参数
+:return: 调用结果
+
+---
+
+
+
+<a id="ErisPulse_loaders_strategy"></a>
+## ErisPulse\loaders\strategy.md
+
+
+> 最后更新：2026-02-03 22:38:11
+
+---
+
+## 模块概述
+
+
+ErisPulse 模块加载策略
+
+提供统一的模块加载策略配置类
+
+> **提示**
+> 1. 所有属性统一处理，没有预定义字段
+> 2. 支持通过构造函数传入任意参数
+> 3. 支持字典方式创建
+
+---
+
+## 类列表
+
+
+### `class ModuleLoadStrategy`
+
+模块加载策略配置
+
+所有属性统一处理，通过魔术方法实现动态访问
+没有预定义属性，完全由用户传入的内容决定
+
+> **提示**
+> 使用方式：
+> >>> strategy = ModuleLoadStrategy(
+> ...     lazy_load=False,
+> ...     priority=100,
+> ...     custom_option=123
+> ... )
+> eager_load 也是一个合法的属性，但不建议使用，其的han'y
+> >>> strategy.lazy_load
+> False
+> >>> strategy.priority
+> 100
+> >>> strategy.custom_option
+> 123
+> 从字典创建：
+> >>> config = {"lazy_load": False, "priority": 100}
+> >>> strategy = ModuleLoadStrategy.from_dict(config)
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化策略，所有参数统一存储
+
+:param kwargs: 策略配置项，任意键值对
+
+> **提示**
+> 常用配置项：
+> - lazy_load: bool, 是否懒加载（默认 True）
+> - priority: int, 加载优先级（默认 0，数值越大优先级越高）
+
+---
+
+
+##### `__getattr__(name: str)`
+
+获取属性值
+
+:param name: 属性名
+:return: 属性值，如果不存在则返回 None
+
+> **内部方法** 
+内部方法，用于动态属性访问
+
+---
+
+
+##### `__setattr__(name: str, value: Any)`
+
+设置属性值
+
+:param name: 属性名
+:param value: 属性值
+
+> **内部方法** 
+内部方法，用于动态属性设置
+
+---
+
+
+##### `__contains__(name: str)`
+
+检查属性是否存在
+
+:param name: 属性名
+:return: 是否存在该属性
+
+---
+
+
+##### `__repr__()`
+
+返回策略的字符串表示
+
+:return: 字符串表示
+
+---
+
+
+##### `from_dict(config: Dict[str, Any])`
+
+从字典创建策略实例
+
+:param config: 配置字典
+:return: 策略实例
+
+> **提示**
+> 示例：
+> >>> config = {"lazy_load": False, "priority": 100}
+> >>> strategy = ModuleLoadStrategy.from_dict(config)
+
 ---
 
 
@@ -10527,7 +10785,7 @@ ErisPulse 模块加载器
 ## ErisPulse\sdk.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -10722,7 +10980,7 @@ SDK 反初始化
 ## README.md
 
 
-> 最后更新：2026-02-02 05:58:18
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -10730,10 +10988,10 @@ SDK 反初始化
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 47
-- **类总数**: 42
+- **模块总数**: 48
+- **类总数**: 43
 - **函数总数**: 13
-- **方法总数**: 327
+- **方法总数**: 335
 
 ---
 
@@ -10835,9 +11093,14 @@ SDK 反初始化
 📦 2 个类 | 🔧 8 个方法
 
 
+### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)
+
+📦 1 个类 | 🔧 9 个方法
+
+
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
 
-📦 1 个类 | 🔧 3 个方法
+📦 1 个类 | 🔧 4 个方法
 
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
@@ -10960,14 +11223,14 @@ SDK 反初始化
 📦 1 个类 | 🔧 2 个方法
 
 
-### [ErisPulse.loaders.manager_base](ErisPulse/loaders/manager_base.md)
-
-📦 1 个类 | 🔧 9 个方法
-
-
 ### [ErisPulse.loaders.module_loader](ErisPulse/loaders/module_loader.md)
 
-📦 2 个类 | 🔧 18 个方法
+📦 2 个类 | 🔧 19 个方法
+
+
+### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
+
+📦 1 个类 | 🔧 6 个方法
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
