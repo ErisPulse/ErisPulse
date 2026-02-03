@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2026-02-02 05:58:22
+**生成时间**: 2026-02-03 22:38:16
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -1912,9 +1912,81 @@ sdk.MyModule.print_hello()
 方法说明
 | 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
 | --- | --- | --- | --- | --- |
-| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载 | 否 | 无 | bool |
+| get_load_strategy() | 静态方法，返回模块加载策略（推荐使用） | 否 | 无 | ModuleLoadStrategy 或 dict |
+| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载（兼容旧方法） | 否 | 无 | bool |
 | on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
 | on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
+
+### 模块加载策略
+
+从 ErisPulse 2.3.4-dev.1 版本开始，模块可以通过 `get_load_strategy()` 方法定义更灵活的加载策略，包括懒加载设置和加载优先级。
+
+#### 策略配置项
+
+| 配置项 | 类型 | 说明 | 默认值 |
+| --- | --- | --- | --- |
+| lazy_load | bool | 是否懒加载（True=懒加载，False=立即加载） | True |
+| priority | int | 加载优先级（数值越大优先级越高） | 0 |
+
+#### 使用示例
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    def __init__(self, sdk):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+    
+    @staticmethod
+    def get_load_strategy():
+        """返回模块加载策略"""
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100      # 高优先级
+        )
+        # 注意: 直接返回一个字典也是被允许的
+    
+    async def on_load(self, event):
+        self.logger.info("模块已加载")
+    
+    async def on_unload(self, event):
+        self.logger.info("模块已卸载")
+```
+
+#### 优先级说明
+
+- **priority 值越大，模块优先级越高**
+- 具有更高优先级的模块会先被加载
+- 默认优先级为 0
+
+#### 懒加载说明
+
+- **lazy_load=True**：模块在首次访问时才加载（默认）
+- **lazy_load=False**：模块在 SDK 初始化时立即加载
+
+**懒加载使用场景：**
+
+```python
+# 需要立即加载的模块（例如：监听器、定时器等）
+class ListenerModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 必须立即加载才能正常工作
+            priority=50
+        )
+
+# 可以懒加载的模块（例如：命令处理、功能扩展等）
+class CommandModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,  # 首次使用时才加载，节省启动时间
+            priority=0
+        )
+```
 
 ## 5. Event 事件包装类
 
