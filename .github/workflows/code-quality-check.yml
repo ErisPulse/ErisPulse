@@ -26,14 +26,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pytest pytest-asyncio
+          pip install pytest pytest-asyncio pytest-cov
 
       - name: 施展测试魔法
         id: pytest-check
         continue-on-error: true
         run: |
           echo "🧪 艾莉丝正在运行 Pytest 测试..."
-          pytest_output=$(pytest -v --tb=short --no-cov 2>&1; echo "PYTEST_EXIT_CODE=$?")
+          pytest_output=$(pytest -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
           exit_code=${pytest_output##*PYTEST_EXIT_CODE=}
           pytest_output=${pytest_output%PYTEST_EXIT_CODE=*}
           
