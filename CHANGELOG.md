@@ -33,6 +33,20 @@
 
 ---
 
+## [2.3.4-dev.2] - 2026/02/03
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 添加模块加载策略支持：
+    - 新增 `loaders/strategy`，提供可扩展的加载策略系统
+    - 支持 "all"（加载全部）、"enabled"（仅加载启用）和 "manual"（手动指定）三种策略
+    - 新增 `LoadingStrategy` 抽象基类，定义策略接口
+    - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
+    - `ModuleInitializer` 现在支持通过策略控制模块加载行为
+
+---
+
 ## [2.3.4-dev.1] - 2026/02/02
 > 开发版本
 
