@@ -12,9 +12,11 @@ ErisPulse 加载器模块
 from .adapter_loader import AdapterLoader
 from .module_loader import ModuleLoader
 from .initializer import Initializer
+from .strategy import ModuleLoadStrategy
 
 __all__ = [
     "AdapterLoader",
     "ModuleLoader",
     "Initializer",
+    "ModuleLoadStrategy",
 ]
