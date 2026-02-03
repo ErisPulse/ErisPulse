@@ -11,7 +11,7 @@ from .logger import logger
 from .config import config
 from .Bases import BaseModule
 from .lifecycle import lifecycle
-from ..loaders.manager_base import ManagerBase
+from .Bases.manager import ManagerBase
 
 class ModuleManager(ManagerBase):
     """
