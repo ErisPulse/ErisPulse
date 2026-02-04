@@ -1,6 +1,6 @@
 # `ErisPulse.CLI.utils.package_manager` 模块
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -69,7 +69,7 @@ ErisPulse包管理器
 
 ##### `get_installed_packages()`
 
-获取已安装的包信息
+获取已安装的包信息（使用 Finder）
 
 :return: 已安装包字典，包含模块、适配器和CLI扩展
 
