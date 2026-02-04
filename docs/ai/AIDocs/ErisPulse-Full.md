@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-02-04 07:22:15
+**生成时间**: 2026-02-04 08:04:59
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5503,6 +5503,11 @@ await mail.Send.Using("from@example.com")
 - [ErisPulse/Core/storage.md](#ErisPulse_Core_storage)
 - [ErisPulse/__init__.md](#ErisPulse___init__)
 - [ErisPulse/__main__.md](#ErisPulse___main__)
+- [ErisPulse/finders/__init__.md](#ErisPulse_finders___init__)
+- [ErisPulse/finders/adapter.md](#ErisPulse_finders_adapter)
+- [ErisPulse/finders/bases/finder.md](#ErisPulse_finders_bases_finder)
+- [ErisPulse/finders/cli.md](#ErisPulse_finders_cli)
+- [ErisPulse/finders/module.md](#ErisPulse_finders_module)
 - [ErisPulse/loaders/__init__.md](#ErisPulse_loaders___init__)
 - [ErisPulse/loaders/adapter.md](#ErisPulse_loaders_adapter)
 - [ErisPulse/loaders/bases/loader.md](#ErisPulse_loaders_bases_loader)
@@ -6315,7 +6320,7 @@ ErisPulse SDK 工具模块
 ## ErisPulse/CLI/utils/package_manager.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -6384,7 +6389,7 @@ ErisPulse包管理器
 
 ##### `get_installed_packages()`
 
-获取已安装的包信息
+获取已安装的包信息（使用 Finder）
 
 :return: 已安装包字典，包含模块、适配器和CLI扩展
 
@@ -10251,6 +10256,542 @@ CLI入口点
 
 
 
+<a id="ErisPulse_finders___init__"></a>
+## ErisPulse/finders/__init__.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 发现器模块
+
+提供模块、适配器和 CLI 扩展的发现功能
+
+> **提示**
+> 1. 每个 Finder 专门负责一类资源的发现
+> 2. 统一继承自 BaseFinder，接口一致
+> 3. 支持缓存机制，避免重复查询
+> 4. Loader 和 PackageManager 应使用这些 Finder 来发现资源
+
+---
+
+
+<a id="ErisPulse_finders_adapter"></a>
+## ErisPulse/finders/adapter.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 适配器发现器
+
+专门用于发现和查找 ErisPulse 适配器的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.adapter 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class AdapterFinder(BaseFinder)`
+
+适配器发现器
+
+负责发现 ErisPulse 适配器的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = AdapterFinder()
+> >>> # 查找所有适配器
+> >>> adapters = finder.find_all()
+> >>> # 按名称查找
+> >>> adapter = finder.find_by_name("my_adapter")
+> >>> # 获取适配器映射
+> >>> adapter_map = finder.get_entry_point_map()
+> >>> # 检查适配器是否存在
+> >>> if "my_adapter" in finder:
+> ...     print("适配器存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.adapter"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有适配器名称
+
+:return: 适配器名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有适配器所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_adapter(adapter_name: str)`
+
+获取指定适配器所属的 PyPI 包名
+
+:param adapter_name: 适配器名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_adapter_info(adapter_name: str)`
+
+获取适配器的完整信息
+
+:param adapter_name: 适配器名称
+:return: 适配器信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": 适配器名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_adapters_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有适配器名称
+
+:param package_name: PyPI 包名
+:return: 适配器名称列表
+
+---
+
+
+
+<a id="ErisPulse_finders_bases_finder"></a>
+## ErisPulse/finders/bases/finder.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 基础发现器
+
+定义发现器的抽象基类，提供通用的发现器接口和结构
+
+> **提示**
+> 1. 所有具体发现器应继承自 BaseFinder
+> 2. 子类需实现 _get_entry_point_group 方法
+> 3. 支持缓存机制，避免重复查询
+
+---
+
+## 类列表
+
+
+### `class BaseFinder(ABC)`
+
+基础发现器抽象类
+
+提供通用的发现器接口和缓存功能
+
+> **提示**
+> 子类需要实现：
+> - _get_entry_point_group: 返回 entry-point 组名
+
+> **内部方法** 
+此类仅供内部使用，不应直接实例化
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化基础发现器
+
+---
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: entry-point 组名
+
+> **内部方法** 
+子类必须实现此方法
+
+---
+
+
+##### `_get_entry_points()`
+
+获取所有 entry-points
+
+:return: entry-point 对象列表
+
+> **内部方法** 
+内部方法，使用缓存机制获取 entry-points
+
+---
+
+
+##### `find_all()`
+
+查找所有 entry-points
+
+:return: entry-point 对象列表
+
+---
+
+
+##### `find_by_name(name: str)`
+
+按名称查找 entry-point
+
+:param name: entry-point 名称
+:return: entry-point 对象，未找到返回 None
+
+---
+
+
+##### `get_entry_point_map()`
+
+获取 entry-point 映射字典
+
+:return: {name: entry_point} 字典
+
+---
+
+
+##### `get_group_name()`
+
+获取 entry-point 组名
+
+:return: entry-point 组名
+
+---
+
+
+##### `clear_cache()`
+
+清除缓存
+
+> **提示**
+> 当安装/卸载包后调用此方法清除缓存
+
+---
+
+
+##### `set_cache_expiry(expiry: int)`
+
+设置缓存过期时间
+
+:param expiry: 过期时间（秒）
+
+> **内部方法** 
+内部方法，用于调整缓存策略
+
+---
+
+
+##### `__iter__()`
+
+迭代器接口
+
+:return: entry-point 迭代器
+
+---
+
+
+##### `__len__()`
+
+返回 entry-point 数量
+
+:return: entry-point 数量
+
+---
+
+
+##### `__contains__(name: str)`
+
+检查 entry-point 是否存在
+
+:param name: entry-point 名称
+:return: 是否存在
+
+---
+
+
+##### `__repr__()`
+
+返回发现器的字符串表示
+
+:return: 字符串表示
+
+---
+
+
+
+<a id="ErisPulse_finders_cli"></a>
+## ErisPulse/finders/cli.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse CLI扩展发现器
+
+专门用于发现和查找 ErisPulse CLI 扩展的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.cli 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class CLIFinder(BaseFinder)`
+
+CLI扩展发现器
+
+负责发现 ErisPulse CLI 扩展的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = CLIFinder()
+> >>> # 查找所有CLI扩展
+> >>> cli_extensions = finder.find_all()
+> >>> # 按名称查找
+> >>> extension = finder.find_by_name("my_extension")
+> >>> # 获取CLI扩展映射
+> >>> extension_map = finder.get_entry_point_map()
+> >>> # 检查CLI扩展是否存在
+> >>> if "my_extension" in finder:
+> ...     print("CLI扩展存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.cli"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有CLI扩展名称
+
+:return: CLI扩展名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有CLI扩展所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_extension(extension_name: str)`
+
+获取指定CLI扩展所属的 PyPI 包名
+
+:param extension_name: CLI扩展名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_extension_info(extension_name: str)`
+
+获取CLI扩展的完整信息
+
+:param extension_name: CLI扩展名称
+:return: CLI扩展信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": CLI扩展名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_extensions_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有CLI扩展名称
+
+:param package_name: PyPI 包名
+:return: CLI扩展名称列表
+
+---
+
+
+
+<a id="ErisPulse_finders_module"></a>
+## ErisPulse/finders/module.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 模块发现器
+
+专门用于发现和查找 ErisPulse 模块的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.module 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class ModuleFinder(BaseFinder)`
+
+模块发现器
+
+负责发现 ErisPulse 模块的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = ModuleFinder()
+> >>> # 查找所有模块
+> >>> modules = finder.find_all()
+> >>> # 按名称查找
+> >>> module = finder.find_by_name("my_module")
+> >>> # 获取模块映射
+> >>> module_map = finder.get_entry_point_map()
+> >>> # 检查模块是否存在
+> >>> if "my_module" in finder:
+> ...     print("模块存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.module"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有模块名称
+
+:return: 模块名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有模块所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_module(module_name: str)`
+
+获取指定模块所属的 PyPI 包名
+
+:param module_name: 模块名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_module_info(module_name: str)`
+
+获取模块的完整信息
+
+:param module_name: 模块名称
+:return: 模块信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": 模块名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_modules_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有模块名称
+
+:param package_name: PyPI 包名
+:return: 模块名称列表
+
+---
+
+
+
 <a id="ErisPulse_loaders___init__"></a>
 ## ErisPulse/loaders/__init__.md
 
@@ -10277,7 +10818,7 @@ ErisPulse 加载器模块
 ## ErisPulse/loaders/adapter.md
 
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10325,6 +10866,21 @@ ErisPulse 适配器加载器
 获取 entry-point 组名
 
 :return: "erispulse.adapter"
+
+---
+
+
+##### `async async load(manager_instance: Any)`
+
+从 entry-points 加载对象（使用 AdapterFinder）
+
+:param manager_instance: 管理器实例
+:return: 
+    Dict[str, Any]: 对象字典
+    List[str]: 启用列表
+    List[str]: 禁用列表
+    
+**异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
@@ -10562,7 +11118,7 @@ ErisPulse 初始化协调器
 ## ErisPulse/loaders/module.md
 
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10610,6 +11166,21 @@ ErisPulse 模块加载器
 获取 entry-point 组名
 
 :return: "erispulse.module"
+
+---
+
+
+##### `async async load(manager_instance: Any)`
+
+从 entry-points 加载对象（使用 ModuleFinder）
+
+:param manager_instance: 管理器实例
+:return: 
+    Dict[str, Any]: 对象字典
+    List[str]: 启用列表
+    List[str]: 禁用列表
+    
+**异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
@@ -11041,7 +11612,7 @@ ErisPulse SDK 主类
 ## README.md
 
 
-> 最后更新：2026-02-04 07:22:15
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -11049,10 +11620,10 @@ ErisPulse SDK 主类
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 47
-- **类总数**: 43
+- **模块总数**: 52
+- **类总数**: 47
 - **函数总数**: 22
-- **方法总数**: 326
+- **方法总数**: 359
 
 ---
 
@@ -11259,6 +11830,31 @@ ErisPulse SDK 主类
 ⚙️ 1 个函数
 
 
+### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)
+
+📦 1 个类 | 🔧 13 个方法
+
+
+### [ErisPulse.finders.cli](ErisPulse/finders/cli.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.finders.module](ErisPulse/finders/module.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
 ### [ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)
 
 📄 模块文档
@@ -11266,7 +11862,7 @@ ErisPulse SDK 主类
 
 ### [ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)
 
-📦 1 个类 | 🔧 4 个方法
+📦 1 个类 | 🔧 5 个方法
 
 
 ### [ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)
@@ -11281,7 +11877,7 @@ ErisPulse SDK 主类
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-📦 2 个类 | 🔧 19 个方法
+📦 2 个类 | 🔧 20 个方法
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
