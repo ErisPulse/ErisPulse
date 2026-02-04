@@ -1,6 +1,6 @@
 # `ErisPulse.loaders.module` 模块
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -48,6 +48,21 @@ ErisPulse 模块加载器
 获取 entry-point 组名
 
 :return: "erispulse.module"
+
+---
+
+
+##### `async async load(manager_instance: Any)`
+
+从 entry-points 加载对象（使用 ModuleFinder）
+
+:param manager_instance: 管理器实例
+:return: 
+    Dict[str, Any]: 对象字典
+    List[str]: 启用列表
+    List[str]: 禁用列表
+    
+**异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
