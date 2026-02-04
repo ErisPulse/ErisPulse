@@ -14,7 +14,7 @@ import sys
 import asyncio
 import importlib.metadata
 from typing import Dict, List, Any, Tuple
-from .base_loader import BaseLoader
+from .bases.loader import BaseLoader
 from ..Core.logger import logger
 from ..Core.lifecycle import lifecycle
 
