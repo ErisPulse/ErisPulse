@@ -272,12 +272,38 @@ class AdapterManager(ManagerBase):
 
         # 清空已启动实例集合
         self._started_instances.clear()
+        
+        # 清空事件处理器
+        self._onebot_handlers.clear()
+        self._raw_handlers.clear()
+        self._onebot_middlewares.clear()
 
         # 提交适配器关闭完成事件
         await lifecycle.submit_event(
             "adapter.stopped",
             msg="适配器关闭完成"
         )
+    
+    def clear(self) -> None:
+        """
+        清除所有适配器实例和信息
+        
+        {!--< internal-use >!--}
+        此方法用于反初始化时完全重置适配器管理器状态
+        {!--< /internal-use >!--}
+        """
+        # 清除所有适配器实例
+        self._adapters.clear()
+        
+        # 清除适配器信息
+        self._adapter_info.clear()
+        
+        # 清除所有处理器
+        self._onebot_handlers.clear()
+        self._raw_handlers.clear()
+        self._onebot_middlewares.clear()
+        
+        logger.debug("适配器管理器已完全清理")
 
     # ==================== 适配器配置管理 ====================
 

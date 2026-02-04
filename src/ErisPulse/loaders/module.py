@@ -193,22 +193,6 @@ class ModuleLoader(BaseLoader):
         except Exception as e:
             logger.warning(f"获取框架配置失败: {e}，将使用模块默认配置")
         
-        # 检查模块是否定义了 get_load_strategy() 方法
-        if hasattr(module_class, "get_load_strategy"):
-            try:
-                strategy = module_class.get_load_strategy()
-                
-                # 如果全局禁用懒加载，则覆盖策略中的 lazy_load 设置
-                if not global_lazy_loading:
-                    if isinstance(strategy, dict):
-                        strategy = dict(strategy, lazy_load=False)
-                    elif 'lazy_load' in strategy:
-                        strategy = self._strategy_with_lazy_load(strategy, False)
-                
-                return strategy
-            except Exception as e:
-                logger.warning(f"调用模块 {module_class.__name__} 的 get_load_strategy() 失败: {e}")
-        
         # 检查模块是否定义了 should_eager_load() 方法（兼容旧方法）
         if hasattr(module_class, "should_eager_load"):
             try:
@@ -216,7 +200,21 @@ class ModuleLoader(BaseLoader):
                 return {"lazy_load": not eager_load, "priority": 0}
             except Exception as e:
                 logger.warning(f"调用模块 {module_class.__name__} 的 should_eager_load() 失败: {e}")
-        
+
+        try:
+            strategy = module_class.get_load_strategy()
+            
+            # 如果全局禁用懒加载，则覆盖策略中的 lazy_load 设置
+            if not global_lazy_loading:
+                if isinstance(strategy, dict):
+                    strategy = dict(strategy, lazy_load=False)
+                elif 'lazy_load' in strategy:
+                    strategy = self._strategy_with_lazy_load(strategy, False)
+            
+            return strategy
+        except Exception as e:
+            logger.warning(f"调用模块 {module_class.__name__} 的 get_load_strategy() 失败: {e}")
+
         # 默认策略
         return {"lazy_load": global_lazy_loading, "priority": 0}
     
