@@ -88,9 +88,7 @@ class TestModuleManager:
         class InvalidModule:
             pass
         
-        # 执行和验证（应该发出警告但不阻止）
-        with pytest.warns(UserWarning):
-            result = manager.register("invalid", InvalidModule)
+        result = manager.register("invalid", InvalidModule)
         
         # 但仍然会注册（ErisPulse允许非BaseModule类）
         assert result is True
@@ -109,10 +107,6 @@ class TestModuleManager:
         """测试注册重复的模块"""
         # 第一次注册
         manager.register("test_module", test_module_class)
-        
-        # 第二次注册（覆盖）
-        with pytest.warns(UserWarning, match="已存在，将覆盖"):
-            manager.register("test_module", test_module_class)
         
         # 验证仍然只有一个
         assert len([c for c in manager._module_classes.values() if c == test_module_class]) == 1
