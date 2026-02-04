@@ -277,7 +277,7 @@ if __name__ == "__main__":
         :example:
         >>> await sdk.load_module("MyModule")
         """
-        from .loaders.module_loader import LazyModule
+        from .loaders.module import LazyModule
         
         try:
             module_instance = getattr(self, module_name, None)
@@ -417,6 +417,12 @@ if __name__ == "__main__":
             logger.error(f"[Uninit] SDK反初始化失败: {e}")
             return False
     
+    def __getattribute__(self, name):
+        try:
+            return object.__getattribute__(self, name)
+        except AttributeError:
+            return None
+
     def __repr__(self) -> str:
         """
         返回 SDK 的字符串表示
