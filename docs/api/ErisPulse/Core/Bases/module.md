@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Bases.module` 模块
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 14:28:57
 
 ---
 
@@ -55,21 +55,6 @@ ErisPulse 模块基础模块
 > ...             "lazy_load": False,
 > ...             "priority": 100
 > ...         }
-
----
-
-
-##### `should_eager_load()`
-
-模块是否应该在启动时加载
-默认为False(即懒加载)
-
-兼容方法，实际调用 get_load_strategy()
-
-:return: 是否应该在启动时加载
-
-> **提示**
-> 旧版方法，建议使用 get_load_strategy() 替代
 
 ---
 
