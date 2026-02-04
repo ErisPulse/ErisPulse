@@ -34,7 +34,7 @@ from .Core import (
 from .sdk import sdk
 
 # 导入懒加载模块类
-from .loaders.module_loader import LazyModule
+from .loaders.module import LazyModule
 
 # 版本信息
 __version__ = "UnknownVersion"
