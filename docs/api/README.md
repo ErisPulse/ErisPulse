@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -8,10 +8,10 @@
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 48
+- **模块总数**: 47
 - **类总数**: 43
-- **函数总数**: 13
-- **方法总数**: 335
+- **函数总数**: 22
+- **方法总数**: 326
 
 ---
 
@@ -60,7 +60,7 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-📦 1 个类 | 🔧 2 个方法
+📦 2 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -96,11 +96,6 @@
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
 📦 1 个类 | 🔧 23 个方法
-
-
-### [ErisPulse.CLI.utils.reload_handler](ErisPulse/CLI/utils/reload_handler.md)
-
-📦 1 个类 | 🔧 5 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -215,7 +210,7 @@
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
-📄 模块文档
+⚙️ 9 个函数
 
 
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
@@ -255,5 +250,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 11 个方法
+📦 1 个类 | 🔧 2 个方法
 

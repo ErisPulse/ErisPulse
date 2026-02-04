@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-02-04 06:11:34
+**生成时间**: 2026-02-04 07:22:15
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5950,7 +5950,7 @@ ListRemoteCommand 类提供相关功能。
 ## ErisPulse/CLI/commands/run.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -5964,6 +5964,64 @@ Run 命令实现
 ---
 
 ## 类列表
+
+
+### `class ReloadHandler(FileSystemEventHandler)`
+
+文件系统事件处理器
+
+实现热重载功能，监控文件变化并重启进程
+
+> **提示**
+> 1. 支持.py文件修改重载
+> 2. 支持配置文件修改重载
+
+
+#### 方法列表
+
+
+##### `__init__(script_path: str, reload_mode: bool = False)`
+
+初始化处理器
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+---
+
+
+##### `start_process()`
+
+启动监控进程
+
+---
+
+
+##### `_terminate_process()`
+
+终止当前进程
+
+:raises subprocess.TimeoutExpired: 进程终止超时时抛出
+
+---
+
+
+##### `on_modified(event)`
+
+文件修改事件处理
+
+:param event: 文件系统事件
+
+---
+
+
+##### `_handle_reload(event, reason: str)`
+
+处理热重载逻辑
+:param event: 文件系统事件
+:param reason: 重载原因
+
+---
 
 
 ### `class RunCommand(Command)`
@@ -10016,7 +10074,7 @@ use_global_db = true
 ## ErisPulse/__init__.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -10033,6 +10091,132 @@ ErisPulse SDK 主模块
 > 3. 模块加载采用懒加载机制
 
 ---
+
+## 函数列表
+
+
+### `async async init()`
+
+SDK 初始化入口
+
+:return: bool SDK 初始化是否成功
+
+**示例**:
+```python
+>>> success = await sdk.init()
+>>> if success:
+>>>     await sdk.adapter.startup()
+```
+
+---
+
+
+### `async async _prepare_environment()`
+
+> **内部方法** 
+准备运行环境
+
+初始化项目环境文件和配置
+
+:return: bool 环境准备是否成功
+
+---
+
+
+### `async async _init_progress()`
+
+> **内部方法** 
+初始化项目环境文件
+
+:return: bool 是否创建了新的 main.py 文件
+
+---
+
+
+### `init_sync()`
+
+SDK 初始化入口（同步版本）
+
+用于命令行直接调用，自动在事件循环中运行异步初始化
+
+:return: bool SDK 初始化是否成功
+
+---
+
+
+### `init_task()`
+
+SDK 初始化入口，返回 Task 对象
+
+:return: asyncio.Task 初始化任务
+
+---
+
+
+### `async async load_module(module_name: str)`
+
+手动加载指定模块
+
+:param module_name: str 要加载的模块名称
+:return: bool 加载是否成功
+
+**示例**:
+```python
+>>> await sdk.load_module("MyModule")
+```
+
+---
+
+
+### `async async run(keep_running: bool = True)`
+
+无头模式运行 ErisPulse
+
+:param keep_running: bool 是否保持运行
+
+**示例**:
+```python
+>>> await sdk.run(keep_running=True)
+```
+
+---
+
+
+### `async async restart()`
+
+SDK 重新启动
+
+执行完整的反初始化后再初始化过程
+
+:return: bool 重新加载是否成功
+
+**示例**:
+```python
+>>> await sdk.restart()
+```
+
+---
+
+
+### `async async uninit()`
+
+SDK 反初始化
+
+执行以下操作：
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理所有事件处理器
+4. 清理僵尸线程
+
+:return: bool 反初始化是否成功
+
+**示例**:
+```python
+>>> await sdk.uninit()
+```
+
+---
+
 
 
 <a id="ErisPulse___main__"></a>
@@ -10785,7 +10969,7 @@ ErisPulse 模块加载策略
 ## ErisPulse/sdk.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:14
 
 ---
 
@@ -10843,129 +11027,6 @@ ErisPulse SDK 主类
 ---
 
 
-##### `async async init()`
-
-SDK 初始化入口
-
-:return: bool SDK 初始化是否成功
-
-**示例**:
-```python
->>> success = await sdk.init()
->>> if success:
->>>     await sdk.adapter.startup()
-```
-
----
-
-
-##### `async async _prepare_environment()`
-
-> **内部方法** 
-准备运行环境
-
-初始化项目环境文件和配置
-
-:return: bool 环境准备是否成功
-
----
-
-
-##### `async async _init_progress()`
-
-> **内部方法** 
-初始化项目环境文件
-
-:return: bool 是否创建了新的 main.py 文件
-
----
-
-
-##### `init_sync()`
-
-SDK 初始化入口（同步版本）
-
-用于命令行直接调用，自动在事件循环中运行异步初始化
-
-:return: bool SDK 初始化是否成功
-
----
-
-
-##### `init_task()`
-
-SDK 初始化入口，返回 Task 对象
-
-:return: asyncio.Task 初始化任务
-
----
-
-
-##### `async async load_module(module_name: str)`
-
-手动加载指定模块
-
-:param module_name: str 要加载的模块名称
-:return: bool 加载是否成功
-
-**示例**:
-```python
->>> await sdk.load_module("MyModule")
-```
-
----
-
-
-##### `async async run(keep_running: bool = True)`
-
-无头模式运行 ErisPulse
-
-:param keep_running: bool 是否保持运行
-
-**示例**:
-```python
->>> await sdk.run(keep_running=True)
-```
-
----
-
-
-##### `async async restart()`
-
-SDK 重新启动
-
-执行完整的反初始化后再初始化过程
-
-:return: bool 重新加载是否成功
-
-**示例**:
-```python
->>> await sdk.restart()
-```
-
----
-
-
-##### `async async uninit()`
-
-SDK 反初始化
-
-执行以下操作：
-1. 关闭所有适配器
-2. 卸载所有模块
-3. 清理所有事件处理器
-4. 清理僵尸线程
-
-:return: bool 反初始化是否成功
-
-**示例**:
-```python
->>> await sdk.uninit()
-```
-
----
-
-
 ##### `__repr__()`
 
 返回 SDK 的字符串表示
@@ -10980,7 +11041,7 @@ SDK 反初始化
 ## README.md
 
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -10988,10 +11049,10 @@ SDK 反初始化
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 48
+- **模块总数**: 47
 - **类总数**: 43
-- **函数总数**: 13
-- **方法总数**: 335
+- **函数总数**: 22
+- **方法总数**: 326
 
 ---
 
@@ -11040,7 +11101,7 @@ SDK 反初始化
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-📦 1 个类 | 🔧 2 个方法
+📦 2 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -11076,11 +11137,6 @@ SDK 反初始化
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
 📦 1 个类 | 🔧 23 个方法
-
-
-### [ErisPulse.CLI.utils.reload_handler](ErisPulse/CLI/utils/reload_handler.md)
-
-📦 1 个类 | 🔧 5 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -11195,7 +11251,7 @@ SDK 反初始化
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
-📄 模块文档
+⚙️ 9 个函数
 
 
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
@@ -11235,7 +11291,7 @@ SDK 反初始化
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 11 个方法
+📦 1 个类 | 🔧 2 个方法
 
 
 
