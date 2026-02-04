@@ -18,6 +18,7 @@ from typing import Dict, List, Any, Tuple, Type, TYPE_CHECKING
 from .bases.loader import BaseLoader
 from ..Core.logger import logger
 from ..Core.lifecycle import lifecycle
+from ..finders import ModuleFinder
 
 if TYPE_CHECKING:
     from ..Core.Bases.module import BaseModule
@@ -38,6 +39,7 @@ class ModuleLoader(BaseLoader):
     def __init__(self):
         """初始化模块加载器"""
         super().__init__("ErisPulse.modules")
+        self._finder = ModuleFinder()
     
     def _get_entry_point_group(self) -> str:
         """
@@ -46,6 +48,43 @@ class ModuleLoader(BaseLoader):
         :return: "erispulse.module"
         """
         return "erispulse.module"
+    
+    async def load(self, manager_instance: Any) -> Tuple[Dict[str, Any], List[str], List[str]]:
+        """
+        从 entry-points 加载对象（使用 ModuleFinder）
+        
+        :param manager_instance: 管理器实例
+        :return: 
+            Dict[str, Any]: 对象字典
+            List[str]: 启用列表
+            List[str]: 禁用列表
+            
+        :raises ImportError: 当加载失败时抛出
+        """
+        objs: Dict[str, Any] = {}
+        enabled_list: List[str] = []
+        disabled_list: List[str] = []
+        
+        group_name = self._get_entry_point_group()
+        logger.info(f"正在加载 {group_name} entry-points...")
+        
+        try:
+            # 使用 ModuleFinder 查找 entry-points
+            entries = self._finder.find_all()
+            
+            # 处理每个 entry-point
+            for entry_point in entries:
+                objs, enabled_list, disabled_list = await self._process_entry_point(
+                    entry_point, objs, enabled_list, disabled_list, manager_instance
+                )
+            
+            logger.info(f"{group_name} 加载完成")
+            
+        except Exception as e:
+            logger.error(f"加载 {group_name} entry-points 失败: {e}")
+            raise ImportError(f"无法加载 {group_name}: {e}")
+        
+        return objs, enabled_list, disabled_list
     
     async def _process_entry_point(
         self,
@@ -226,15 +265,8 @@ class ModuleLoader(BaseLoader):
             async def register_module(name: str, obj: Any) -> bool:
                 """注册单个模块"""
                 try:
-                    entry_points = importlib.metadata.entry_points()
-                    if hasattr(entry_points, 'select'):
-                        module_entries = entry_points.select(group='erispulse.module')
-                        module_entry_map = {entry.name: entry for entry in module_entries}
-                    else:
-                        module_entries = entry_points.get('erispulse.module', [])  # type: ignore[assignment]
-                        module_entry_map = {entry.name: entry for entry in module_entries}
-                    
-                    entry_point = module_entry_map.get(name)
+                    # 使用 ModuleFinder 获取 entry-point
+                    entry_point = self._finder.find_by_name(name)
                     if entry_point:
                         module_class = entry_point.load()
                         

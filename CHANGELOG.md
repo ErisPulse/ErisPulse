@@ -35,8 +35,21 @@
 ## [2.3.4-dev.3] - 2026/02/04
 > 开发版本
 
+### 新增
+- @wsu2059q
+  - 新增 `finders` 模块，实现统一的模块发现机制：
+    - 新增 `BaseFinder` 基类，定义统一的 finder 接口
+    - 新增 `ModuleFinder`，用于查找 `erispulse.module` entry-points
+    - 新增 `AdapterFinder`，用于查找 `erispulse.adapter` entry-points
+    - 新增 `CLIFinder`，用于查找 `erispulse.cli` entry-points
+    - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
+
 ### 变更
 - @wsu2059q
+  - 重构加载系统使用 `finders` 模块：
+    - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
+    - `loaders/module.py` 现在使用 `ModuleFinder` 查找模块
+    - `CLI/utils/package_manager.py` 现在使用所有三个 finders 查找已安装包
   - 修复入口直接从ErisPulse导入时发生错误的问题
   - CLI中的reloader直接移动到run命令内部进行定义
 
