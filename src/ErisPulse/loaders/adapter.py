@@ -17,6 +17,7 @@ from typing import Dict, List, Any, Tuple
 from .bases.loader import BaseLoader
 from ..Core.logger import logger
 from ..Core.lifecycle import lifecycle
+from ..finders import AdapterFinder
 
 class AdapterLoader(BaseLoader):
     """
@@ -34,6 +35,7 @@ class AdapterLoader(BaseLoader):
     def __init__(self):
         """初始化适配器加载器"""
         super().__init__("ErisPulse.adapters")
+        self._finder = AdapterFinder()
     
     def _get_entry_point_group(self) -> str:
         """
@@ -42,6 +44,43 @@ class AdapterLoader(BaseLoader):
         :return: "erispulse.adapter"
         """
         return "erispulse.adapter"
+    
+    async def load(self, manager_instance: Any) -> Tuple[Dict[str, Any], List[str], List[str]]:
+        """
+        从 entry-points 加载对象（使用 AdapterFinder）
+        
+        :param manager_instance: 管理器实例
+        :return: 
+            Dict[str, Any]: 对象字典
+            List[str]: 启用列表
+            List[str]: 禁用列表
+            
+        :raises ImportError: 当加载失败时抛出
+        """
+        objs: Dict[str, Any] = {}
+        enabled_list: List[str] = []
+        disabled_list: List[str] = []
+        
+        group_name = self._get_entry_point_group()
+        logger.info(f"正在加载 {group_name} entry-points...")
+        
+        try:
+            # 使用 AdapterFinder 查找 entry-points
+            entries = self._finder.find_all()
+            
+            # 处理每个 entry-point
+            for entry_point in entries:
+                objs, enabled_list, disabled_list = await self._process_entry_point(
+                    entry_point, objs, enabled_list, disabled_list, manager_instance
+                )
+            
+            logger.info(f"{group_name} 加载完成")
+            
+        except Exception as e:
+            logger.error(f"加载 {group_name} entry-points 失败: {e}")
+            raise ImportError(f"无法加载 {group_name}: {e}")
+        
+        return objs, enabled_list, disabled_list
     
     async def _process_entry_point(
         self,
