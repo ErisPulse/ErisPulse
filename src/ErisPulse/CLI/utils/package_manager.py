@@ -18,6 +18,7 @@ from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm
 
 from ..console import console
+from ...finders import ModuleFinder, AdapterFinder, CLIFinder
 
 class PackageManager:
     """
@@ -43,6 +44,9 @@ class PackageManager:
         self._cache_time = {}
         self._pypi_cache = {}  # PyPI版本缓存
         self._pypi_cache_time = {}  # PyPI版本缓存时间
+        self._module_finder = ModuleFinder()
+        self._adapter_finder = AdapterFinder()
+        self._cli_finder = CLIFinder()
         
     async def _fetch_remote_packages(self, url: str) -> Optional[dict]:
         """
@@ -106,7 +110,7 @@ class PackageManager:
     
     def get_installed_packages(self) -> Dict[str, Dict[str, Dict[str, str]]]:
         """
-        获取已安装的包信息
+        获取已安装的包信息（使用 Finder）
         
         :return: 已安装包字典，包含模块、适配器和CLI扩展
         
@@ -124,51 +128,36 @@ class PackageManager:
         }
         
         try:
-            # 查找模块和适配器
-            entry_points = importlib.metadata.entry_points()
-            
-            # 处理模块
-            if hasattr(entry_points, 'select'):
-                module_entries = entry_points.select(group='erispulse.module')
-            else:
-                module_entries = entry_points.get('erispulse.module', [])
-            
+            # 使用 ModuleFinder 查找模块
+            module_entries = self._module_finder.find_all()
             for entry in module_entries:
-                dist = entry.dist
-                packages["modules"][entry.name] = {
-                    "package": dist.metadata["Name"],
-                    "version": dist.version,
-                    "summary": dist.metadata["Summary"],
-                    "enabled": self._is_module_enabled(entry.name)
-                }
+                if hasattr(entry, 'dist') and entry.dist:
+                    packages["modules"][entry.name] = {
+                        "package": entry.dist.name,
+                        "version": entry.dist.version,
+                        "summary": entry.dist.metadata.get("Summary", ""),
+                        "enabled": self._is_module_enabled(entry.name)
+                    }
             
-            # 处理适配器
-            if hasattr(entry_points, 'select'):
-                adapter_entries = entry_points.select(group='erispulse.adapter')
-            else:
-                adapter_entries = entry_points.get('erispulse.adapter', [])
-            
+            # 使用 AdapterFinder 查找适配器
+            adapter_entries = self._adapter_finder.find_all()
             for entry in adapter_entries:
-                dist = entry.dist
-                packages["adapters"][entry.name] = {
-                    "package": dist.metadata["Name"],
-                    "version": dist.version,
-                    "summary": dist.metadata["Summary"]
-                }
+                if hasattr(entry, 'dist') and entry.dist:
+                    packages["adapters"][entry.name] = {
+                        "package": entry.dist.name,
+                        "version": entry.dist.version,
+                        "summary": entry.dist.metadata.get("Summary", "")
+                    }
             
-            # 查找CLI扩展
-            if hasattr(entry_points, 'select'):
-                cli_entries = entry_points.select(group='erispulse.cli')
-            else:
-                cli_entries = entry_points.get('erispulse.cli', [])
-            
+            # 使用 CLIFinder 查找 CLI 扩展
+            cli_entries = self._cli_finder.find_all()
             for entry in cli_entries:
-                dist = entry.dist
-                packages["cli_extensions"][entry.name] = {
-                    "package": dist.metadata["Name"],
-                    "version": dist.version,
-                    "summary": dist.metadata["Summary"]
-                }
+                if hasattr(entry, 'dist') and entry.dist:
+                    packages["cli_extensions"][entry.name] = {
+                        "package": entry.dist.name,
+                        "version": entry.dist.version,
+                        "summary": entry.dist.metadata.get("Summary", "")
+                    }
                 
         except Exception as e:
             print(f"[error] 获取已安装包信息失败: {e}")
