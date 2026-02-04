@@ -324,8 +324,9 @@ class RouterManager:
 
     async def stop(self) -> None:
         """
-        停止服务器
+        停止服务器并清理所有路由
         """
+        # 停止服务器
         if self._server_task:
             self._server_task.cancel()
             try:
@@ -333,6 +334,15 @@ class RouterManager:
             except asyncio.CancelledError:
                 logger.info("路由服务器已停止")
             self._server_task = None
+        
+        # 清理所有注册的路由
+        logger.debug("清理所有注册的路由...")
+        self._http_routes.clear()
+        self._websocket_routes.clear()
+        
+        # 重新设置核心路由（因为要清空 FastAPI 的路由表）
+        self.app.router.routes.clear()
+        self._setup_core_routes()
         
         await lifecycle.submit_event("server.stop", msg="服务器已停止")
 
