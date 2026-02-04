@@ -254,37 +254,68 @@ async def run(keep_running: bool = True) -> None:
         await sdk.adapter.shutdown()
 
 
+async def _restart_task() -> bool:
+    """
+    {!--< internal-use >!--}
+    实际执行重启逻辑的独立任务
+    
+    此函数在后台任务中运行，与调用 restart() 的事件处理器解耦
+    确保即使调用者被取消，重启流程也能完整执行
+    
+    :return: bool 重新加载是否成功
+    """
+    try:
+        # 先执行反初始化
+        uninit_success = await uninit()
+        if not uninit_success:
+            logger.warning("[Reload] 反初始化不完全，将继续尝试重新初始化")
+        
+        # 再执行初始化
+        logger.info("[Reload] 开始重新初始化SDK...")
+        if not await init():
+            logger.error("[Reload] 初始化失败，请检查日志")
+            return False
+        
+        logger.info("[Reload] 正在启动适配器...")
+        await sdk.adapter.startup()
+        
+        logger.info("[Reload] 重新加载完成")
+        logger.info(f"[Reload] "+"-"*50+" [Reload]")
+        return True
+    except Exception as e:
+        logger.error(f"[Reload] 重启失败: {e}")
+        return False
+
+
 async def restart() -> bool:
     """
     SDK 重新启动
     
     执行完整的反初始化后再初始化过程
     
-    :return: bool 重新加载是否成功
+    注意：此函数使用后台任务执行重启流程，确保即使当前事件处理器被取消，
+    重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+    
+    :return: bool 重新加载是否成功（后台任务完成时返回）
     
     :example:
     >>> await sdk.restart()
     """
     logger.info("[Reload] 开始重新加载SDK...")
     
-    # 先执行反初始化
-    if not await uninit():
-        logger.error("[Reload] 反初始化失败，无法继续重新加载")
-        return False
+    # 创建后台任务执行重启，与当前事件处理器解耦
+    task = asyncio.create_task(_restart_task())
     
-    # 再执行初始化
-    logger.info("[Reload] 开始重新初始化SDK...")
-    if not await init():
-        logger.error("[Reload] 初始化失败，请检查日志")
-        return False
+    # 使用 shield 确保任务不被取消
+    try:
+        result = await asyncio.shield(task)
+        return result
+    except asyncio.CancelledError:
+        logger.info("[Reload] 重启任务被外部取消，但将在后台继续执行")
+        # 任务会在后台继续执行，我们返回 True 表示重启已启动
+        # 注意：这是异步启动，实际重启结果需要查看日志
+        return True
     
-    logger.info("[Reload] 正在启动适配器...")
-    await sdk.adapter.startup()
-    
-    logger.info("[Reload] 重新加载完成")
-    return True
-
-
 async def uninit() -> bool:
     """
     SDK 反初始化
@@ -293,7 +324,8 @@ async def uninit() -> bool:
     1. 关闭所有适配器
     2. 卸载所有模块
     3. 清理所有事件处理器
-    4. 清理僵尸线程
+    4. 清理适配器管理器和模块管理器
+    5. 清理 SDK 对象上的模块属性
     
     :return: bool 反初始化是否成功
     
@@ -310,11 +342,28 @@ async def uninit() -> bool:
         # 2. 卸载所有模块
         logger.debug("[Uninit] 正在卸载模块...")
         await sdk.module.unload()
-
+        
         # 3. 清理 Event 模块中的所有事件处理器
+        logger.debug("[Uninit] 正在清理事件处理器...")
         Event._clear_all_handlers()
         
-        # 4. 清理僵尸线程
+        # 4. 清理适配器管理器和模块管理器
+        logger.debug("[Uninit] 正在清理适配器管理器...")
+        sdk.adapter.clear()
+        
+        logger.debug("[Uninit] 正在清理模块管理器...")
+        sdk.module.clear()
+        
+        # 5. 清理 SDK 对象上的模块属性（懒加载模块）
+        logger.debug("[Uninit] 正在清理 SDK 对象上的模块属性...")
+        from .Core.config import config
+        module_status = config.getConfig("ErisPulse.modules.status", {})
+        for module_name in module_status.keys():
+            if hasattr(sdk, module_name):
+                delattr(sdk, module_name)
+                logger.debug(f"[Uninit] 已清理模块属性: {module_name}")
+        
+        # 6. 清理僵尸线程
         logger.debug("[Uninit] 正在清理线程...")
         # SDK 本身不创建线程，但可以记录可能的线程泄漏
         current_task = asyncio.current_task()
