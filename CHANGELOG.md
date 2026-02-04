@@ -32,6 +32,32 @@
 ```
 
 ---
+## [2.3.4-dev.3] - 2026/02/04
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 新增 `finders` 模块，实现统一的模块发现机制：
+    - 新增 `BaseFinder` 基类，定义统一的 finder 接口
+    - 新增 `ModuleFinder`，用于查找 `erispulse.module` entry-points
+    - 新增 `AdapterFinder`，用于查找 `erispulse.adapter` entry-points
+    - 新增 `CLIFinder`，用于查找 `erispulse.cli` entry-points
+    - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
+
+### 变更
+- @wsu2059q
+  - 重构加载系统使用 `finders` 模块：
+    - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
+    - `loaders/module.py` 现在使用 `ModuleFinder` 查找模块
+    - `CLI/utils/package_manager.py` 现在使用所有三个 finders 查找已安装包
+  - 修复入口直接从ErisPulse导入时发生错误的问题
+  - CLI中的reloader直接移动到run命令内部进行定义
+
+### 修复
+- @wsu2059q
+  - 修复CLI部分命令中的导入错误
+
+---
 
 ## [2.3.4-dev.2] - 2026/02/03
 > 开发版本
@@ -76,21 +102,17 @@
     - `lifecycle` 模块：添加事件类型验证，防止空值提交
     - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
   - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
-  - 移除 `storage` 模块的自动快照功能及其相关配置项
-
-### 修复
-- @wsu2059q
-  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
-  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
-
-### 移除
-- @wsu2059q
   - 移除 `storage` 模块的快照功能：
     - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
     - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
     - 移除 `ErisPulse.storage.max_snapshot` 配置项
     - 移除相关文档和示例代码
   - 移除 `devs/test.py` 交互测试脚本
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
+  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
 
 ---
 
