@@ -5,7 +5,6 @@ ErisPulse 模块系统
 """
 
 import asyncio
-import warnings
 from typing import Any, Dict, List, Type, Optional
 from .logger import logger
 from .config import config
@@ -59,7 +58,6 @@ class ModuleManager(ManagerBase):
         if not issubclass(module_class, BaseModule):
             warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 没有继承自BaseModule，但我们仍会继续尝试加载这个模块，但请注意这可能引发其他问题"
             logger.warning(warn_msg)
-            warnings.warn(warn_msg, UserWarning)
             # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
             # logger.error(error_msg)
             # raise TypeError(error_msg)
@@ -74,7 +72,6 @@ class ModuleManager(ManagerBase):
         if module_name in self._module_classes:
             warn_msg = f"模块 {module_name} 已存在，将覆盖原模块类"
             logger.warning(warn_msg)
-            warnings.warn(warn_msg, UserWarning)
             
         self._module_classes[module_name] = module_class
         if module_info:
