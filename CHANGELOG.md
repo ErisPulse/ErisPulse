@@ -53,6 +53,10 @@
   - 修复入口直接从ErisPulse导入时发生错误的问题
   - CLI中的reloader直接移动到run命令内部进行定义
 
+### 修复
+- @wsu2059q
+  - 修复CLI部分命令中的导入错误
+
 ---
 
 ## [2.3.4-dev.2] - 2026/02/03
@@ -98,21 +102,17 @@
     - `lifecycle` 模块：添加事件类型验证，防止空值提交
     - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
   - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
-  - 移除 `storage` 模块的自动快照功能及其相关配置项
-
-### 修复
-- @wsu2059q
-  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
-  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
-
-### 移除
-- @wsu2059q
   - 移除 `storage` 模块的快照功能：
     - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
     - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
     - 移除 `ErisPulse.storage.max_snapshot` 配置项
     - 移除相关文档和示例代码
   - 移除 `devs/test.py` 交互测试脚本
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
+  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
 
 ---
 
