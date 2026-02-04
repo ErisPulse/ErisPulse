@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -228,12 +228,12 @@
 📄 模块文档
 
 
-### [ErisPulse.loaders.adapter_loader](ErisPulse/loaders/adapter_loader.md)
+### [ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)
 
 📦 1 个类 | 🔧 4 个方法
 
 
-### [ErisPulse.loaders.base_loader](ErisPulse/loaders/base_loader.md)
+### [ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)
 
 📦 1 个类 | 🔧 6 个方法
 
@@ -243,7 +243,7 @@
 📦 1 个类 | 🔧 2 个方法
 
 
-### [ErisPulse.loaders.module_loader](ErisPulse/loaders/module_loader.md)
+### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
 📦 2 个类 | 🔧 19 个方法
 
