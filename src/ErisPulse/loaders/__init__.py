@@ -9,8 +9,8 @@ ErisPulse 加载器模块
 {!--< /tips >!--}
 """
 
-from .adapter_loader import AdapterLoader
-from .module_loader import ModuleLoader
+from .adapter import AdapterLoader
+from .module import ModuleLoader
 from .initializer import Initializer
 from .strategy import ModuleLoadStrategy
 

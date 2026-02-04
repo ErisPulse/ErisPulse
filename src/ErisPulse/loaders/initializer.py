@@ -12,8 +12,8 @@ ErisPulse 初始化协调器
 
 import asyncio
 from typing import List, Dict, Any, Optional
-from .adapter_loader import AdapterLoader
-from .module_loader import ModuleLoader
+from .adapter import AdapterLoader
+from .module import ModuleLoader
 from ..Core.logger import logger
 from ..Core.lifecycle import lifecycle
 

@@ -1,6 +1,6 @@
-# `ErisPulse.loaders.base_loader` 模块
+# `ErisPulse.loaders.bases.loader` 模块
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 

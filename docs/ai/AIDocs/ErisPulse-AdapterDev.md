@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2026-02-03 22:38:16
+**生成时间**: 2026-02-04 08:04:59
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -4453,60 +4453,65 @@ await mail.Send.Using("from@example.com")
 
 ## API文档目录
 
-- [ErisPulse\CLI\__init__.md](#ErisPulse_CLI___init__)
-- [ErisPulse\CLI\base.md](#ErisPulse_CLI_base)
-- [ErisPulse\CLI\cli.md](#ErisPulse_CLI_cli)
-- [ErisPulse\CLI\commands\__init__.md](#ErisPulse_CLI_commands___init__)
-- [ErisPulse\CLI\commands\init.md](#ErisPulse_CLI_commands_init)
-- [ErisPulse\CLI\commands\install.md](#ErisPulse_CLI_commands_install)
-- [ErisPulse\CLI\commands\list.md](#ErisPulse_CLI_commands_list)
-- [ErisPulse\CLI\commands\list_remote.md](#ErisPulse_CLI_commands_list_remote)
-- [ErisPulse\CLI\commands\run.md](#ErisPulse_CLI_commands_run)
-- [ErisPulse\CLI\commands\self_update.md](#ErisPulse_CLI_commands_self_update)
-- [ErisPulse\CLI\commands\uninstall.md](#ErisPulse_CLI_commands_uninstall)
-- [ErisPulse\CLI\commands\upgrade.md](#ErisPulse_CLI_commands_upgrade)
-- [ErisPulse\CLI\console.md](#ErisPulse_CLI_console)
-- [ErisPulse\CLI\registry.md](#ErisPulse_CLI_registry)
-- [ErisPulse\CLI\utils\__init__.md](#ErisPulse_CLI_utils___init__)
-- [ErisPulse\CLI\utils\package_manager.md](#ErisPulse_CLI_utils_package_manager)
-- [ErisPulse\CLI\utils\reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
-- [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
-- [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
-- [ErisPulse\Core\Bases\manager.md](#ErisPulse_Core_Bases_manager)
-- [ErisPulse\Core\Bases\module.md](#ErisPulse_Core_Bases_module)
-- [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
-- [ErisPulse\Core\Event\base.md](#ErisPulse_Core_Event_base)
-- [ErisPulse\Core\Event\command.md](#ErisPulse_Core_Event_command)
-- [ErisPulse\Core\Event\exceptions.md](#ErisPulse_Core_Event_exceptions)
-- [ErisPulse\Core\Event\message.md](#ErisPulse_Core_Event_message)
-- [ErisPulse\Core\Event\meta.md](#ErisPulse_Core_Event_meta)
-- [ErisPulse\Core\Event\notice.md](#ErisPulse_Core_Event_notice)
-- [ErisPulse\Core\Event\request.md](#ErisPulse_Core_Event_request)
-- [ErisPulse\Core\Event\wrapper.md](#ErisPulse_Core_Event_wrapper)
-- [ErisPulse\Core\_self_config.md](#ErisPulse_Core__self_config)
-- [ErisPulse\Core\adapter.md](#ErisPulse_Core_adapter)
-- [ErisPulse\Core\config.md](#ErisPulse_Core_config)
-- [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
-- [ErisPulse\Core\lifecycle.md](#ErisPulse_Core_lifecycle)
-- [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
-- [ErisPulse\Core\module.md](#ErisPulse_Core_module)
-- [ErisPulse\Core\router.md](#ErisPulse_Core_router)
-- [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
-- [ErisPulse\__init__.md](#ErisPulse___init__)
-- [ErisPulse\__main__.md](#ErisPulse___main__)
-- [ErisPulse\loaders\__init__.md](#ErisPulse_loaders___init__)
-- [ErisPulse\loaders\adapter_loader.md](#ErisPulse_loaders_adapter_loader)
-- [ErisPulse\loaders\base_loader.md](#ErisPulse_loaders_base_loader)
-- [ErisPulse\loaders\initializer.md](#ErisPulse_loaders_initializer)
-- [ErisPulse\loaders\module_loader.md](#ErisPulse_loaders_module_loader)
-- [ErisPulse\loaders\strategy.md](#ErisPulse_loaders_strategy)
-- [ErisPulse\sdk.md](#ErisPulse_sdk)
+- [ErisPulse/CLI/__init__.md](#ErisPulse_CLI___init__)
+- [ErisPulse/CLI/base.md](#ErisPulse_CLI_base)
+- [ErisPulse/CLI/cli.md](#ErisPulse_CLI_cli)
+- [ErisPulse/CLI/commands/__init__.md](#ErisPulse_CLI_commands___init__)
+- [ErisPulse/CLI/commands/init.md](#ErisPulse_CLI_commands_init)
+- [ErisPulse/CLI/commands/install.md](#ErisPulse_CLI_commands_install)
+- [ErisPulse/CLI/commands/list.md](#ErisPulse_CLI_commands_list)
+- [ErisPulse/CLI/commands/list_remote.md](#ErisPulse_CLI_commands_list_remote)
+- [ErisPulse/CLI/commands/run.md](#ErisPulse_CLI_commands_run)
+- [ErisPulse/CLI/commands/self_update.md](#ErisPulse_CLI_commands_self_update)
+- [ErisPulse/CLI/commands/uninstall.md](#ErisPulse_CLI_commands_uninstall)
+- [ErisPulse/CLI/commands/upgrade.md](#ErisPulse_CLI_commands_upgrade)
+- [ErisPulse/CLI/console.md](#ErisPulse_CLI_console)
+- [ErisPulse/CLI/registry.md](#ErisPulse_CLI_registry)
+- [ErisPulse/CLI/utils/__init__.md](#ErisPulse_CLI_utils___init__)
+- [ErisPulse/CLI/utils/package_manager.md](#ErisPulse_CLI_utils_package_manager)
+- [ErisPulse/CLI/utils/reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
+- [ErisPulse/Core/Bases/__init__.md](#ErisPulse_Core_Bases___init__)
+- [ErisPulse/Core/Bases/adapter.md](#ErisPulse_Core_Bases_adapter)
+- [ErisPulse/Core/Bases/manager.md](#ErisPulse_Core_Bases_manager)
+- [ErisPulse/Core/Bases/module.md](#ErisPulse_Core_Bases_module)
+- [ErisPulse/Core/Event/__init__.md](#ErisPulse_Core_Event___init__)
+- [ErisPulse/Core/Event/base.md](#ErisPulse_Core_Event_base)
+- [ErisPulse/Core/Event/command.md](#ErisPulse_Core_Event_command)
+- [ErisPulse/Core/Event/exceptions.md](#ErisPulse_Core_Event_exceptions)
+- [ErisPulse/Core/Event/message.md](#ErisPulse_Core_Event_message)
+- [ErisPulse/Core/Event/meta.md](#ErisPulse_Core_Event_meta)
+- [ErisPulse/Core/Event/notice.md](#ErisPulse_Core_Event_notice)
+- [ErisPulse/Core/Event/request.md](#ErisPulse_Core_Event_request)
+- [ErisPulse/Core/Event/wrapper.md](#ErisPulse_Core_Event_wrapper)
+- [ErisPulse/Core/_self_config.md](#ErisPulse_Core__self_config)
+- [ErisPulse/Core/adapter.md](#ErisPulse_Core_adapter)
+- [ErisPulse/Core/config.md](#ErisPulse_Core_config)
+- [ErisPulse/Core/exceptions.md](#ErisPulse_Core_exceptions)
+- [ErisPulse/Core/lifecycle.md](#ErisPulse_Core_lifecycle)
+- [ErisPulse/Core/logger.md](#ErisPulse_Core_logger)
+- [ErisPulse/Core/module.md](#ErisPulse_Core_module)
+- [ErisPulse/Core/router.md](#ErisPulse_Core_router)
+- [ErisPulse/Core/storage.md](#ErisPulse_Core_storage)
+- [ErisPulse/__init__.md](#ErisPulse___init__)
+- [ErisPulse/__main__.md](#ErisPulse___main__)
+- [ErisPulse/finders/__init__.md](#ErisPulse_finders___init__)
+- [ErisPulse/finders/adapter.md](#ErisPulse_finders_adapter)
+- [ErisPulse/finders/bases/finder.md](#ErisPulse_finders_bases_finder)
+- [ErisPulse/finders/cli.md](#ErisPulse_finders_cli)
+- [ErisPulse/finders/module.md](#ErisPulse_finders_module)
+- [ErisPulse/loaders/__init__.md](#ErisPulse_loaders___init__)
+- [ErisPulse/loaders/adapter.md](#ErisPulse_loaders_adapter)
+- [ErisPulse/loaders/bases/loader.md](#ErisPulse_loaders_bases_loader)
+- [ErisPulse/loaders/initializer.md](#ErisPulse_loaders_initializer)
+- [ErisPulse/loaders/module.md](#ErisPulse_loaders_module)
+- [ErisPulse/loaders/strategy.md](#ErisPulse_loaders_strategy)
+- [ErisPulse/sdk.md](#ErisPulse_sdk)
 - [README.md](#README)
 
 ---
 
 <a id="ErisPulse_CLI___init__"></a>
-## ErisPulse\CLI\__init__.md
+## ErisPulse/CLI/__init__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4524,7 +4529,7 @@ ErisPulse 命令行接口
 
 
 <a id="ErisPulse_CLI_base"></a>
-## ErisPulse\CLI\base.md
+## ErisPulse/CLI/base.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4587,7 +4592,7 @@ CLI 命令基类
 
 
 <a id="ErisPulse_CLI_cli"></a>
-## ErisPulse\CLI\cli.md
+## ErisPulse/CLI/cli.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4684,7 +4689,7 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands___init__"></a>
-## ErisPulse\CLI\commands\__init__.md
+## ErisPulse/CLI/commands/__init__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4703,7 +4708,7 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands_init"></a>
-## ErisPulse\CLI\commands\init.md
+## ErisPulse/CLI/commands/init.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4782,7 +4787,7 @@ InitCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_install"></a>
-## ErisPulse\CLI\commands\install.md
+## ErisPulse/CLI/commands/install.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4849,7 +4854,7 @@ InstallCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list"></a>
-## ErisPulse\CLI\commands\list.md
+## ErisPulse/CLI/commands/list.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4899,7 +4904,7 @@ ListCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list_remote"></a>
-## ErisPulse\CLI\commands\list_remote.md
+## ErisPulse/CLI/commands/list_remote.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -4938,10 +4943,10 @@ ListRemoteCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_run"></a>
-## ErisPulse\CLI\commands\run.md
+## ErisPulse/CLI/commands/run.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -4955,6 +4960,64 @@ Run 命令实现
 ---
 
 ## 类列表
+
+
+### `class ReloadHandler(FileSystemEventHandler)`
+
+文件系统事件处理器
+
+实现热重载功能，监控文件变化并重启进程
+
+> **提示**
+> 1. 支持.py文件修改重载
+> 2. 支持配置文件修改重载
+
+
+#### 方法列表
+
+
+##### `__init__(script_path: str, reload_mode: bool = False)`
+
+初始化处理器
+
+:param script_path: 要监控的脚本路径
+:param reload_mode: 是否启用重载模式
+
+---
+
+
+##### `start_process()`
+
+启动监控进程
+
+---
+
+
+##### `_terminate_process()`
+
+终止当前进程
+
+:raises subprocess.TimeoutExpired: 进程终止超时时抛出
+
+---
+
+
+##### `on_modified(event)`
+
+文件修改事件处理
+
+:param event: 文件系统事件
+
+---
+
+
+##### `_handle_reload(event, reason: str)`
+
+处理热重载逻辑
+:param event: 文件系统事件
+:param reason: 重载原因
+
+---
 
 
 ### `class RunCommand(Command)`
@@ -4984,7 +5047,7 @@ RunCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_self_update"></a>
-## ErisPulse\CLI\commands\self_update.md
+## ErisPulse/CLI/commands/self_update.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5036,7 +5099,7 @@ SelfUpdateCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_uninstall"></a>
-## ErisPulse\CLI\commands\uninstall.md
+## ErisPulse/CLI/commands/uninstall.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5054,7 +5117,7 @@ Uninstall 命令实现
 
 
 <a id="ErisPulse_CLI_commands_upgrade"></a>
-## ErisPulse\CLI\commands\upgrade.md
+## ErisPulse/CLI/commands/upgrade.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5072,7 +5135,7 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_console"></a>
-## ErisPulse\CLI\console.md
+## ErisPulse/CLI/console.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5099,7 +5162,7 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_registry"></a>
-## ErisPulse\CLI\registry.md
+## ErisPulse/CLI/registry.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5227,7 +5290,7 @@ CLI 命令注册器
 
 
 <a id="ErisPulse_CLI_utils___init__"></a>
-## ErisPulse\CLI\utils\__init__.md
+## ErisPulse/CLI/utils/__init__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5245,10 +5308,10 @@ ErisPulse SDK 工具模块
 
 
 <a id="ErisPulse_CLI_utils_package_manager"></a>
-## ErisPulse\CLI\utils\package_manager.md
+## ErisPulse/CLI/utils/package_manager.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -5317,7 +5380,7 @@ ErisPulse包管理器
 
 ##### `get_installed_packages()`
 
-获取已安装的包信息
+获取已安装的包信息（使用 Finder）
 
 :return: 已安装包字典，包含模块、适配器和CLI扩展
 
@@ -5531,7 +5594,7 @@ ErisPulse包管理器
 
 
 <a id="ErisPulse_CLI_utils_reload_handler"></a>
-## ErisPulse\CLI\utils\reload_handler.md
+## ErisPulse/CLI/utils/reload_handler.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5610,7 +5673,7 @@ ErisPulse SDK 热重载处理器
 
 
 <a id="ErisPulse_Core_Bases___init__"></a>
-## ErisPulse\Core\Bases\__init__.md
+## ErisPulse/Core/Bases/__init__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5628,7 +5691,7 @@ ErisPulse 基础模块
 
 
 <a id="ErisPulse_Core_Bases_adapter"></a>
-## ErisPulse\Core\Bases\adapter.md
+## ErisPulse/Core/Bases/adapter.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5799,7 +5862,7 @@ ErisPulse 适配器基础模块
 
 
 <a id="ErisPulse_Core_Bases_manager"></a>
-## ErisPulse\Core\Bases\manager.md
+## ErisPulse/Core/Bases/manager.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -5933,7 +5996,7 @@ ErisPulse 管理器基类
 
 
 <a id="ErisPulse_Core_Bases_module"></a>
-## ErisPulse\Core\Bases\module.md
+## ErisPulse/Core/Bases/module.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6040,7 +6103,7 @@ ErisPulse 模块基础模块
 
 
 <a id="ErisPulse_Core_Event___init__"></a>
-## ErisPulse\Core\Event\__init__.md
+## ErisPulse/Core/Event/__init__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6082,7 +6145,7 @@ ErisPulse 事件处理模块
 
 
 <a id="ErisPulse_Core_Event_base"></a>
-## ErisPulse\Core\Event\base.md
+## ErisPulse/Core/Event/base.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6181,7 +6244,7 @@ ErisPulse 事件处理基础模块
 
 
 <a id="ErisPulse_Core_Event_command"></a>
-## ErisPulse\Core\Event\command.md
+## ErisPulse/Core/Event/command.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6379,7 +6442,7 @@ ErisPulse 命令处理模块
 
 
 <a id="ErisPulse_Core_Event_exceptions"></a>
-## ErisPulse\Core\Event\exceptions.md
+## ErisPulse/Core/Event/exceptions.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6428,7 +6491,7 @@ ErisPulse 事件系统异常处理模块
 
 
 <a id="ErisPulse_Core_Event_message"></a>
-## ErisPulse\Core\Event\message.md
+## ErisPulse/Core/Event/message.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6554,7 +6617,7 @@ ErisPulse 消息处理模块
 
 
 <a id="ErisPulse_Core_Event_meta"></a>
-## ErisPulse\Core\Event\meta.md
+## ErisPulse/Core/Event/meta.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6679,7 +6742,7 @@ ErisPulse 元事件处理模块
 
 
 <a id="ErisPulse_Core_Event_notice"></a>
-## ErisPulse\Core\Event\notice.md
+## ErisPulse/Core/Event/notice.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6824,7 +6887,7 @@ ErisPulse 通知处理模块
 
 
 <a id="ErisPulse_Core_Event_request"></a>
-## ErisPulse\Core\Event\request.md
+## ErisPulse/Core/Event/request.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6929,7 +6992,7 @@ ErisPulse 请求处理模块
 
 
 <a id="ErisPulse_Core_Event_wrapper"></a>
-## ErisPulse\Core\Event\wrapper.md
+## ErisPulse/Core/Event/wrapper.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -7444,7 +7507,7 @@ ErisPulse 事件包装类
 
 
 <a id="ErisPulse_Core__self_config"></a>
-## ErisPulse\Core\_self_config.md
+## ErisPulse/Core/_self_config.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -7530,7 +7593,7 @@ ErisPulse 框架配置管理
 
 
 <a id="ErisPulse_Core_adapter"></a>
-## ErisPulse\Core\adapter.md
+## ErisPulse/Core/adapter.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -7852,7 +7915,7 @@ OneBot12协议事件监听装饰器
 
 
 <a id="ErisPulse_Core_config"></a>
-## ErisPulse\Core\config.md
+## ErisPulse/Core/config.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -7946,7 +8009,7 @@ ConfigManager 类提供相关功能。
 
 
 <a id="ErisPulse_Core_exceptions"></a>
-## ErisPulse\Core\exceptions.md
+## ErisPulse/Core/exceptions.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -8026,7 +8089,7 @@ ExceptionHandler 类提供相关功能。
 
 
 <a id="ErisPulse_Core_lifecycle"></a>
-## ErisPulse\Core\lifecycle.md
+## ErisPulse/Core/lifecycle.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -8138,7 +8201,7 @@ ErisPulse 生命周期管理模块
 
 
 <a id="ErisPulse_Core_logger"></a>
-## ErisPulse\Core\logger.md
+## ErisPulse/Core/logger.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -8309,7 +8372,7 @@ ErisPulse 日志系统
 
 
 <a id="ErisPulse_Core_module"></a>
-## ErisPulse\Core\module.md
+## ErisPulse/Core/module.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -8576,7 +8639,7 @@ ErisPulse 模块系统
 
 
 <a id="ErisPulse_Core_router"></a>
-## ErisPulse\Core\router.md
+## ErisPulse/Core/router.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -8722,7 +8785,7 @@ ErisPulse 路由系统
 
 
 <a id="ErisPulse_Core_storage"></a>
-## ErisPulse\Core\storage.md
+## ErisPulse/Core/storage.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -9004,10 +9067,10 @@ use_global_db = true
 
 
 <a id="ErisPulse___init__"></a>
-## ErisPulse\__init__.md
+## ErisPulse/__init__.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -9025,9 +9088,135 @@ ErisPulse SDK 主模块
 
 ---
 
+## 函数列表
+
+
+### `async async init()`
+
+SDK 初始化入口
+
+:return: bool SDK 初始化是否成功
+
+**示例**:
+```python
+>>> success = await sdk.init()
+>>> if success:
+>>>     await sdk.adapter.startup()
+```
+
+---
+
+
+### `async async _prepare_environment()`
+
+> **内部方法** 
+准备运行环境
+
+初始化项目环境文件和配置
+
+:return: bool 环境准备是否成功
+
+---
+
+
+### `async async _init_progress()`
+
+> **内部方法** 
+初始化项目环境文件
+
+:return: bool 是否创建了新的 main.py 文件
+
+---
+
+
+### `init_sync()`
+
+SDK 初始化入口（同步版本）
+
+用于命令行直接调用，自动在事件循环中运行异步初始化
+
+:return: bool SDK 初始化是否成功
+
+---
+
+
+### `init_task()`
+
+SDK 初始化入口，返回 Task 对象
+
+:return: asyncio.Task 初始化任务
+
+---
+
+
+### `async async load_module(module_name: str)`
+
+手动加载指定模块
+
+:param module_name: str 要加载的模块名称
+:return: bool 加载是否成功
+
+**示例**:
+```python
+>>> await sdk.load_module("MyModule")
+```
+
+---
+
+
+### `async async run(keep_running: bool = True)`
+
+无头模式运行 ErisPulse
+
+:param keep_running: bool 是否保持运行
+
+**示例**:
+```python
+>>> await sdk.run(keep_running=True)
+```
+
+---
+
+
+### `async async restart()`
+
+SDK 重新启动
+
+执行完整的反初始化后再初始化过程
+
+:return: bool 重新加载是否成功
+
+**示例**:
+```python
+>>> await sdk.restart()
+```
+
+---
+
+
+### `async async uninit()`
+
+SDK 反初始化
+
+执行以下操作：
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理所有事件处理器
+4. 清理僵尸线程
+
+:return: bool 反初始化是否成功
+
+**示例**:
+```python
+>>> await sdk.uninit()
+```
+
+---
+
+
 
 <a id="ErisPulse___main__"></a>
-## ErisPulse\__main__.md
+## ErisPulse/__main__.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -9058,11 +9247,547 @@ CLI入口点
 
 
 
+<a id="ErisPulse_finders___init__"></a>
+## ErisPulse/finders/__init__.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 发现器模块
+
+提供模块、适配器和 CLI 扩展的发现功能
+
+> **提示**
+> 1. 每个 Finder 专门负责一类资源的发现
+> 2. 统一继承自 BaseFinder，接口一致
+> 3. 支持缓存机制，避免重复查询
+> 4. Loader 和 PackageManager 应使用这些 Finder 来发现资源
+
+---
+
+
+<a id="ErisPulse_finders_adapter"></a>
+## ErisPulse/finders/adapter.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 适配器发现器
+
+专门用于发现和查找 ErisPulse 适配器的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.adapter 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class AdapterFinder(BaseFinder)`
+
+适配器发现器
+
+负责发现 ErisPulse 适配器的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = AdapterFinder()
+> >>> # 查找所有适配器
+> >>> adapters = finder.find_all()
+> >>> # 按名称查找
+> >>> adapter = finder.find_by_name("my_adapter")
+> >>> # 获取适配器映射
+> >>> adapter_map = finder.get_entry_point_map()
+> >>> # 检查适配器是否存在
+> >>> if "my_adapter" in finder:
+> ...     print("适配器存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.adapter"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有适配器名称
+
+:return: 适配器名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有适配器所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_adapter(adapter_name: str)`
+
+获取指定适配器所属的 PyPI 包名
+
+:param adapter_name: 适配器名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_adapter_info(adapter_name: str)`
+
+获取适配器的完整信息
+
+:param adapter_name: 适配器名称
+:return: 适配器信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": 适配器名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_adapters_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有适配器名称
+
+:param package_name: PyPI 包名
+:return: 适配器名称列表
+
+---
+
+
+
+<a id="ErisPulse_finders_bases_finder"></a>
+## ErisPulse/finders/bases/finder.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 基础发现器
+
+定义发现器的抽象基类，提供通用的发现器接口和结构
+
+> **提示**
+> 1. 所有具体发现器应继承自 BaseFinder
+> 2. 子类需实现 _get_entry_point_group 方法
+> 3. 支持缓存机制，避免重复查询
+
+---
+
+## 类列表
+
+
+### `class BaseFinder(ABC)`
+
+基础发现器抽象类
+
+提供通用的发现器接口和缓存功能
+
+> **提示**
+> 子类需要实现：
+> - _get_entry_point_group: 返回 entry-point 组名
+
+> **内部方法** 
+此类仅供内部使用，不应直接实例化
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化基础发现器
+
+---
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: entry-point 组名
+
+> **内部方法** 
+子类必须实现此方法
+
+---
+
+
+##### `_get_entry_points()`
+
+获取所有 entry-points
+
+:return: entry-point 对象列表
+
+> **内部方法** 
+内部方法，使用缓存机制获取 entry-points
+
+---
+
+
+##### `find_all()`
+
+查找所有 entry-points
+
+:return: entry-point 对象列表
+
+---
+
+
+##### `find_by_name(name: str)`
+
+按名称查找 entry-point
+
+:param name: entry-point 名称
+:return: entry-point 对象，未找到返回 None
+
+---
+
+
+##### `get_entry_point_map()`
+
+获取 entry-point 映射字典
+
+:return: {name: entry_point} 字典
+
+---
+
+
+##### `get_group_name()`
+
+获取 entry-point 组名
+
+:return: entry-point 组名
+
+---
+
+
+##### `clear_cache()`
+
+清除缓存
+
+> **提示**
+> 当安装/卸载包后调用此方法清除缓存
+
+---
+
+
+##### `set_cache_expiry(expiry: int)`
+
+设置缓存过期时间
+
+:param expiry: 过期时间（秒）
+
+> **内部方法** 
+内部方法，用于调整缓存策略
+
+---
+
+
+##### `__iter__()`
+
+迭代器接口
+
+:return: entry-point 迭代器
+
+---
+
+
+##### `__len__()`
+
+返回 entry-point 数量
+
+:return: entry-point 数量
+
+---
+
+
+##### `__contains__(name: str)`
+
+检查 entry-point 是否存在
+
+:param name: entry-point 名称
+:return: 是否存在
+
+---
+
+
+##### `__repr__()`
+
+返回发现器的字符串表示
+
+:return: 字符串表示
+
+---
+
+
+
+<a id="ErisPulse_finders_cli"></a>
+## ErisPulse/finders/cli.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse CLI扩展发现器
+
+专门用于发现和查找 ErisPulse CLI 扩展的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.cli 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class CLIFinder(BaseFinder)`
+
+CLI扩展发现器
+
+负责发现 ErisPulse CLI 扩展的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = CLIFinder()
+> >>> # 查找所有CLI扩展
+> >>> cli_extensions = finder.find_all()
+> >>> # 按名称查找
+> >>> extension = finder.find_by_name("my_extension")
+> >>> # 获取CLI扩展映射
+> >>> extension_map = finder.get_entry_point_map()
+> >>> # 检查CLI扩展是否存在
+> >>> if "my_extension" in finder:
+> ...     print("CLI扩展存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.cli"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有CLI扩展名称
+
+:return: CLI扩展名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有CLI扩展所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_extension(extension_name: str)`
+
+获取指定CLI扩展所属的 PyPI 包名
+
+:param extension_name: CLI扩展名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_extension_info(extension_name: str)`
+
+获取CLI扩展的完整信息
+
+:param extension_name: CLI扩展名称
+:return: CLI扩展信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": CLI扩展名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_extensions_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有CLI扩展名称
+
+:param package_name: PyPI 包名
+:return: CLI扩展名称列表
+
+---
+
+
+
+<a id="ErisPulse_finders_module"></a>
+## ErisPulse/finders/module.md
+
+
+> 最后更新：2026-02-04 08:04:59
+
+---
+
+## 模块概述
+
+
+ErisPulse 模块发现器
+
+专门用于发现和查找 ErisPulse 模块的 entry-points
+
+> **提示**
+> 1. 查找 erispulse.module 组的 entry-points
+> 2. 支持缓存机制，避免重复查询
+> 3. 提供便捷的查询接口
+
+---
+
+## 类列表
+
+
+### `class ModuleFinder(BaseFinder)`
+
+模块发现器
+
+负责发现 ErisPulse 模块的 entry-points
+
+> **提示**
+> 使用方式：
+> >>> finder = ModuleFinder()
+> >>> # 查找所有模块
+> >>> modules = finder.find_all()
+> >>> # 按名称查找
+> >>> module = finder.find_by_name("my_module")
+> >>> # 获取模块映射
+> >>> module_map = finder.get_entry_point_map()
+> >>> # 检查模块是否存在
+> >>> if "my_module" in finder:
+> ...     print("模块存在")
+
+
+#### 方法列表
+
+
+##### `_get_entry_point_group()`
+
+获取 entry-point 组名
+
+:return: "erispulse.module"
+
+---
+
+
+##### `get_all_names()`
+
+获取所有模块名称
+
+:return: 模块名称列表
+
+---
+
+
+##### `get_all_packages()`
+
+获取所有模块所属的 PyPI 包名
+
+:return: PyPI 包名列表
+
+---
+
+
+##### `get_package_for_module(module_name: str)`
+
+获取指定模块所属的 PyPI 包名
+
+:param module_name: 模块名称
+:return: PyPI 包名，未找到返回 None
+
+---
+
+
+##### `get_module_info(module_name: str)`
+
+获取模块的完整信息
+
+:param module_name: 模块名称
+:return: 模块信息字典，未找到返回 None
+
+:return:
+    Dict: {
+        "name": 模块名称,
+        "package": PyPI 包名,
+        "version": 版本号,
+        "entry_point": entry-point 对象
+    }
+
+---
+
+
+##### `get_modules_by_package(package_name: str)`
+
+获取指定 PyPI 包下的所有模块名称
+
+:param package_name: PyPI 包名
+:return: 模块名称列表
+
+---
+
+
+
 <a id="ErisPulse_loaders___init__"></a>
-## ErisPulse\loaders\__init__.md
+## ErisPulse/loaders/__init__.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -9080,11 +9805,11 @@ ErisPulse 加载器模块
 ---
 
 
-<a id="ErisPulse_loaders_adapter_loader"></a>
-## ErisPulse\loaders\adapter_loader.md
+<a id="ErisPulse_loaders_adapter"></a>
+## ErisPulse/loaders/adapter.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -9136,6 +9861,21 @@ ErisPulse 适配器加载器
 ---
 
 
+##### `async async load(manager_instance: Any)`
+
+从 entry-points 加载对象（使用 AdapterFinder）
+
+:param manager_instance: 管理器实例
+:return: 
+    Dict[str, Any]: 对象字典
+    List[str]: 启用列表
+    List[str]: 禁用列表
+    
+**异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
 ##### `async async _process_entry_point(entry_point: Any, objs: Dict[str, Any], enabled_list: List[str], disabled_list: List[str], manager_instance: Any)`
 
 处理单个适配器 entry-point
@@ -9172,11 +9912,11 @@ ErisPulse 适配器加载器
 
 
 
-<a id="ErisPulse_loaders_base_loader"></a>
-## ErisPulse\loaders\base_loader.md
+<a id="ErisPulse_loaders_bases_loader"></a>
+## ErisPulse/loaders/bases/loader.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -9298,10 +10038,10 @@ ErisPulse 基础加载器
 
 
 <a id="ErisPulse_loaders_initializer"></a>
-## ErisPulse\loaders\initializer.md
+## ErisPulse/loaders/initializer.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -9365,11 +10105,11 @@ ErisPulse 初始化协调器
 
 
 
-<a id="ErisPulse_loaders_module_loader"></a>
-## ErisPulse\loaders\module_loader.md
+<a id="ErisPulse_loaders_module"></a>
+## ErisPulse/loaders/module.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -9417,6 +10157,21 @@ ErisPulse 模块加载器
 获取 entry-point 组名
 
 :return: "erispulse.module"
+
+---
+
+
+##### `async async load(manager_instance: Any)`
+
+从 entry-points 加载对象（使用 ModuleFinder）
+
+:param manager_instance: 管理器实例
+:return: 
+    Dict[str, Any]: 对象字典
+    List[str]: 启用列表
+    List[str]: 禁用列表
+    
+**异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
@@ -9644,10 +10399,10 @@ ErisPulse 模块加载器
 
 
 <a id="ErisPulse_loaders_strategy"></a>
-## ErisPulse\loaders\strategy.md
+## ErisPulse/loaders/strategy.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -9773,10 +10528,10 @@ ErisPulse 模块加载策略
 
 
 <a id="ErisPulse_sdk"></a>
-## ErisPulse\sdk.md
+## ErisPulse/sdk.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 07:22:14
 
 ---
 
@@ -9834,129 +10589,6 @@ ErisPulse SDK 主类
 ---
 
 
-##### `async async init()`
-
-SDK 初始化入口
-
-:return: bool SDK 初始化是否成功
-
-**示例**:
-```python
->>> success = await sdk.init()
->>> if success:
->>>     await sdk.adapter.startup()
-```
-
----
-
-
-##### `async async _prepare_environment()`
-
-> **内部方法** 
-准备运行环境
-
-初始化项目环境文件和配置
-
-:return: bool 环境准备是否成功
-
----
-
-
-##### `async async _init_progress()`
-
-> **内部方法** 
-初始化项目环境文件
-
-:return: bool 是否创建了新的 main.py 文件
-
----
-
-
-##### `init_sync()`
-
-SDK 初始化入口（同步版本）
-
-用于命令行直接调用，自动在事件循环中运行异步初始化
-
-:return: bool SDK 初始化是否成功
-
----
-
-
-##### `init_task()`
-
-SDK 初始化入口，返回 Task 对象
-
-:return: asyncio.Task 初始化任务
-
----
-
-
-##### `async async load_module(module_name: str)`
-
-手动加载指定模块
-
-:param module_name: str 要加载的模块名称
-:return: bool 加载是否成功
-
-**示例**:
-```python
->>> await sdk.load_module("MyModule")
-```
-
----
-
-
-##### `async async run(keep_running: bool = True)`
-
-无头模式运行 ErisPulse
-
-:param keep_running: bool 是否保持运行
-
-**示例**:
-```python
->>> await sdk.run(keep_running=True)
-```
-
----
-
-
-##### `async async restart()`
-
-SDK 重新启动
-
-执行完整的反初始化后再初始化过程
-
-:return: bool 重新加载是否成功
-
-**示例**:
-```python
->>> await sdk.restart()
-```
-
----
-
-
-##### `async async uninit()`
-
-SDK 反初始化
-
-执行以下操作：
-1. 关闭所有适配器
-2. 卸载所有模块
-3. 清理所有事件处理器
-4. 清理僵尸线程
-
-:return: bool 反初始化是否成功
-
-**示例**:
-```python
->>> await sdk.uninit()
-```
-
----
-
-
 ##### `__repr__()`
 
 返回 SDK 的字符串表示
@@ -9971,7 +10603,7 @@ SDK 反初始化
 ## README.md
 
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -9979,10 +10611,10 @@ SDK 反初始化
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 48
-- **类总数**: 43
-- **函数总数**: 13
-- **方法总数**: 335
+- **模块总数**: 52
+- **类总数**: 47
+- **函数总数**: 22
+- **方法总数**: 359
 
 ---
 
@@ -10031,7 +10663,7 @@ SDK 反初始化
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-📦 1 个类 | 🔧 2 个方法
+📦 2 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -10067,11 +10699,6 @@ SDK 反初始化
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
 📦 1 个类 | 🔧 23 个方法
-
-
-### [ErisPulse.CLI.utils.reload_handler](ErisPulse/CLI/utils/reload_handler.md)
-
-📦 1 个类 | 🔧 5 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -10186,7 +10813,7 @@ SDK 反初始化
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
-📄 模块文档
+⚙️ 9 个函数
 
 
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
@@ -10194,17 +10821,42 @@ SDK 反初始化
 ⚙️ 1 个函数
 
 
+### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)
+
+📦 1 个类 | 🔧 13 个方法
+
+
+### [ErisPulse.finders.cli](ErisPulse/finders/cli.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.finders.module](ErisPulse/finders/module.md)
+
+📦 1 个类 | 🔧 6 个方法
+
+
 ### [ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)
 
 📄 模块文档
 
 
-### [ErisPulse.loaders.adapter_loader](ErisPulse/loaders/adapter_loader.md)
+### [ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)
 
-📦 1 个类 | 🔧 4 个方法
+📦 1 个类 | 🔧 5 个方法
 
 
-### [ErisPulse.loaders.base_loader](ErisPulse/loaders/base_loader.md)
+### [ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)
 
 📦 1 个类 | 🔧 6 个方法
 
@@ -10214,9 +10866,9 @@ SDK 反初始化
 📦 1 个类 | 🔧 2 个方法
 
 
-### [ErisPulse.loaders.module_loader](ErisPulse/loaders/module_loader.md)
+### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-📦 2 个类 | 🔧 19 个方法
+📦 2 个类 | 🔧 20 个方法
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
@@ -10226,7 +10878,7 @@ SDK 反初始化
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 11 个方法
+📦 1 个类 | 🔧 2 个方法
 
 
 
