@@ -13,8 +13,8 @@ ErisPulse 基础加载器
 import importlib.metadata
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Type, Tuple
-from ..Core.logger import logger
-from ..Core.config import config
+from ...Core.logger import logger
+from ...Core.config import config
 
 class BaseLoader(ABC):
     """
