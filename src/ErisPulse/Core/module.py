@@ -368,6 +368,28 @@ class ModuleManager(ManagerBase):
         logger.info(f"模块 {module_name} 已取消注册")
         return True
     
+    def clear(self) -> None:
+        """
+        清除所有模块实例和类
+        
+        {!--< internal-use >!--}
+        此方法用于反初始化时完全重置模块管理器状态
+        {!--< /internal-use >!--}
+        """
+        # 清除所有模块实例
+        self._modules.clear()
+        
+        # 清除所有已加载的模块名称
+        self._loaded_modules.clear()
+        
+        # 清除所有模块类
+        self._module_classes.clear()
+        
+        # 清除所有模块信息
+        self._module_info.clear()
+        
+        logger.debug("模块管理器已完全清理")
+    
     def list_items(self) -> Dict[str, bool]:
         """
         列出所有模块状态
