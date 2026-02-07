@@ -20,7 +20,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "memory_limit": 1000
     },
     "storage": {
-        "use_global_db": False,
+        "use_global_db": False,     # 如果您更新 ErisPulse 后发现您的机器人丢失了一些存储内容，请修改此处为True使用原包内的db
     },
     "modules": {},
     "adapters": {},
