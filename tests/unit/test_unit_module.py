@@ -477,18 +477,35 @@ class TestBaseModule:
         
         return ConcreteModule
     
-    def test_should_eager_load_default(self, concrete_module):
-        """测试默认懒加载"""
-        assert concrete_module.should_eager_load() is False
+    def test_get_load_strategy_default(self, concrete_module):
+        """测试默认加载策略"""
+        strategy = concrete_module.get_load_strategy()
+        
+        # 验证返回的是 ModuleLoadStrategy 对象
+        from ErisPulse.loaders.strategy import ModuleLoadStrategy
+        assert isinstance(strategy, ModuleLoadStrategy)
+        
+        # 验证默认懒加载为 True
+        assert strategy.lazy_load is True
+        
+        # 验证默认优先级为 0
+        assert strategy.priority == 0
     
-    def test_should_eager_load_override(self):
-        """测试重写懒加载设置"""
+    def test_get_load_strategy_override_with_object(self):
+        """测试通过对象重写加载策略"""
+        from ErisPulse.loaders.strategy import ModuleLoadStrategy
+        
         class EagerModule(BaseModule):
             @staticmethod
-            def should_eager_load():
-                return True
+            def get_load_strategy():
+                return ModuleLoadStrategy(
+                    lazy_load=False,
+                    priority=100
+                )
         
-        assert EagerModule.should_eager_load() is True
+        strategy = EagerModule.get_load_strategy()
+        assert strategy.lazy_load is False
+        assert strategy.priority == 100
     
     @pytest.mark.asyncio
     async def test_on_load_abstractmethod(self):
