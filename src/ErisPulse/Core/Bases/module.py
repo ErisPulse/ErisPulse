@@ -54,24 +54,24 @@ class BaseModule:
             priority=0        # 默认优先级
         )
     
-    @staticmethod
-    def should_eager_load() -> bool:
-        """
-        模块是否应该在启动时加载
-        默认为False(即懒加载)
+    # @staticmethod
+    # def should_eager_load() -> bool:
+    #     """
+    #     模块是否应该在启动时加载
+    #     默认为False(即懒加载)
         
-        兼容方法，实际调用 get_load_strategy()
+    #     兼容方法，实际调用 get_load_strategy()
 
-        :return: 是否应该在启动时加载
+    #     :return: 是否应该在启动时加载
         
-        {!--< tips >!--}
-        旧版方法，建议使用 get_load_strategy() 替代
-        {!--< /tips >!--}
-        """
-        strategy = BaseModule.get_load_strategy()
-        if isinstance(strategy, dict):
-            return not strategy.get('lazy_load', True)
-        return not (strategy.lazy_load if 'lazy_load' in strategy else True)
+    #     {!--< tips >!--}
+    #     旧版方法，建议使用 get_load_strategy() 替代
+    #     {!--< /tips >!--}
+    #     """
+    #     strategy = BaseModule.get_load_strategy()
+    #     if isinstance(strategy, dict):
+    #         return not strategy.get('lazy_load', True)
+    #     return not (strategy.lazy_load if 'lazy_load' in strategy else True)
     
     async def on_load(self, event: dict) -> bool:
         """

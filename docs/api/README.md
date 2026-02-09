@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-04 08:04:59
+> 最后更新：2026-02-04 14:52:46
 
 ---
 
@@ -10,8 +10,8 @@
 
 - **模块总数**: 52
 - **类总数**: 47
-- **函数总数**: 22
-- **方法总数**: 359
+- **函数总数**: 23
+- **方法总数**: 363
 
 ---
 
@@ -115,7 +115,7 @@
 
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
 
-📦 1 个类 | 🔧 4 个方法
+📦 1 个类 | 🔧 3 个方法
 
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
@@ -160,7 +160,7 @@
 
 ### [ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)
 
-📦 1 个类 | 🔧 51 个方法
+📦 1 个类 | 🔧 54 个方法
 
 
 ### [ErisPulse.Core._self_config](ErisPulse/Core/_self_config.md)
@@ -170,7 +170,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 21 个方法
+📦 1 个类 | 🔧 22 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
@@ -195,7 +195,7 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-📦 1 个类 | 🔧 18 个方法
+📦 1 个类 | 🔧 19 个方法
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
@@ -210,7 +210,7 @@
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
 
-⚙️ 9 个函数
+⚙️ 10 个函数
 
 
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
