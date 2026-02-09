@@ -1,6 +1,6 @@
 # ErisPulse 核心功能文档
 
-**生成时间**: 2026-01-25 13:00:46
+**生成时间**: 2026-02-04 14:52:46
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -13,13 +13,14 @@
 5. [核心模块详解](#modulesmd)
 6. [适配器系统](#adaptersmd)
 7. [事件系统](#event-systemmd)
-8. [命令行接口](#climd)
-9. [最佳实践](#best-practicesmd)
-10. [平台特性总览](#READMEmd)
-11. [云湖平台特性](#yunhumd)
-12. [Telegram平台特性](#telegrammd)
-13. [OneBot11平台特性](#onebot11md)
-14. [邮件平台特性](#emailmd)
+8. [生命周期系统](#lifecyclemd)
+9. [命令行接口](#climd)
+10. [最佳实践](#best-practicesmd)
+11. [平台特性总览](#READMEmd)
+12. [云湖平台特性](#yunhumd)
+13. [Telegram平台特性](#telegrammd)
+14. [OneBot11平台特性](#onebot11md)
+15. [邮件平台特性](#emailmd)
 
 ## 各文件对应内容说明
 
@@ -32,6 +33,7 @@
 | [modules.md](#modulesmd) | 核心模块详解 |
 | [adapters.md](#adaptersmd) | 适配器系统 |
 | [event-system.md](#event-systemmd) | 事件系统 |
+| [lifecycle.md](#lifecyclemd) | 生命周期系统 |
 | [cli.md](#climd) | 命令行接口 |
 | [best-practices.md](#best-practicesmd) | 最佳实践 |
 | [README.md](#READMEmd) | 平台特性总览 |
@@ -85,6 +87,7 @@
 
 ### 平台特性
 - [平台特性总览](platform-features/README.md) - 平台适配器通用接口和功能说明
+- [平台维护说明](platform-features/maintain-notes.md)
 - 各个平台特性:
   - [云湖平台特性](platform-features/yunhu.md) - 云湖适配器特有功能说明
   - [Telegram平台特性](platform-features/telegram.md) - Telegram适配器特有功能说明
@@ -106,13 +109,14 @@
 ## 安装ErisPulse
 
 ### 使用 pip 安装
-确保你的 Python 版本 >= 3.8，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
 ```bash
 pip install ErisPulse
 ```
 
 ### 更先进的安装方法
 > 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
+> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
 
 ### 1. 安装 uv
 
@@ -268,6 +272,9 @@ epsdk run main.py --reload
 - [cli](cli.md) - 命令行工具使用
 - [适配器系统](adapters.md) - 平台适配器的使用
 - [事件系统](event-system.md) - Event 模块的使用(事件监听、事件处理、事件分发)
+- [生命周期系统](lifecycle.md) - 生命周期事件管理和触发机制
+- [懒加载模块系统](lazy-loading.md) - 懒加载模块系统的使用和配置
+- [路由管理器](router.md) - HTTP和WebSocket路由管理
 - [最佳实践](best-practices.md) - 开发和部署建议
 - [框架配置解析](self-config.md)
 
@@ -295,6 +302,8 @@ ErisPulse 采用模块化、事件驱动的架构设计，主要包括以下几�
 - 用户/AI体验优先：简化开发流程，提供友好的API接口
 
 ## 核心组件
+
+### 事件处理流程
 ```mermaid
 sequenceDiagram
     participant P as 平台
@@ -315,7 +324,71 @@ sequenceDiagram
     A->>P: 发送响应到平台
 ```
 
+### SDK 初始化流程
+```mermaid
+sequenceDiagram
+    participant U as 用户代码
+    participant S as SDK
+    participant I as ModuleInitializer
+    participant AL as AdapterLoader
+    participant ML as ModuleLoader
+    participant AM as AdapterManager
+    participant MM as ModuleManager
+    participant L as Lifecycle
+
+    U->>S: await sdk.init()
+    S->>I: await init()
+    I->>I: 准备环境配置
+    I->>L: 提交 core.init.start 事件
+    I->>I: 并行加载适配器和模块
+    
+    par 并行加载
+        I->>AL: await load()
+        AL->>AL: 读取PyPI entry-points
+        AL->>AL: 筛选启用的适配器
+        AL->>AM: 注册适配器类
+    and
+        I->>ML: await load()
+        ML->>ML: 读取PyPI entry-points
+        ML->>ML: 筛选启用的模块
+        ML->>MM: 注册模块类
+    end
+    
+    I->>I: 挂载模块到sdk对象
+    I->>I: 按需立即加载模块
+    I->>L: 提交 core.init.complete 事件
+    I-->>S: 返回初始化结果
+    S-->>U: 返回初始化状态
+```
+
+### 模块懒加载流程
+```mermaid
+sequenceDiagram
+    participant U as 用户代码
+    participant S as SDK
+    participant LM as LazyModule
+    participant MM as ModuleManager
+    participant L as Lifecycle
+
+    U->>S: 访问 sdk.MyModule.some_method()
+    S->>LM: 访问懒加载模块属性
+    LM->>LM: 检查是否已初始化
+    alt 未初始化
+        LM->>LM: 同步初始化模块实例
+        LM->>MM: 调用 module.load()
+        MM->>MM: 实例化模块类
+        MM->>MM: 调用 on_load()
+        MM->>L: 提交 module.load 事件
+        LM->>L: 提交 module.init 事件
+    end
+    LM->>LM: 委托给实际实例
+    LM-->>S: 返回属性值
+    S-->>U: 返回结果
+```
+
 ## 工作流程
+
+### 事件处理流程
 1. **事件接收**：平台适配器接收来自平台的原始事件
 2. **事件标准化**：适配器将原始事件转换为OneBot12标准事件格式
 3. **事件提交**：通过`adapter.emit`方法将标准化事件提交到适配器系统
@@ -324,6 +397,67 @@ sequenceDiagram
 6. **事件处理**：Event系统按照优先级顺序执行注册的事件处理器
 7. **模块响应**：功能模块处理事件并生成响应
 8. **响应发送**：模块通过适配器系统发送响应到平台
+
+### SDK 初始化流程
+1. **环境准备**：加载框架配置，检查并创建必要的配置文件
+2. **并行加载**：`ModuleInitializer` 并行调用 `AdapterLoader` 和 `ModuleLoader`
+3. **entry-points 解析**：从 PyPI 包的 entry-points 读取适配器和模块信息
+4. **状态筛选**：根据配置筛选启用的适配器和模块
+5. **注册阶段**：将适配器类和模块类注册到对应的管理器
+6. **实例化阶段**：根据配置决定立即加载还是懒加载
+7. **生命周期事件**：提交初始化完成事件到生命周期系统
+
+### 模块加载架构
+
+ErisPulse 采用分层的模块加载架构，将加载逻辑与核心功能分离：
+
+#### 架构层次
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        SDK 对象                          │
+│  (统一入口，包含所有核心模块和管理器)                      │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ init()
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   ModuleInitializer                        │
+│  (初始化协调器，统一管理加载流程)                         │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                ┌───────────┴───────────┐
+                ▼                       ▼
+┌───────────────────┐      ┌───────────────────┐
+│  AdapterLoader    │      │  ModuleLoader    │
+│  (适配器加载器)    │      │  (模块加载器)      │
+└───────────────────┘      └───────────────────┘
+         │                         │
+         ▼                         ▼
+┌───────────────────┐      ┌───────────────────┐
+│ AdapterManager    │      │ ModuleManager    │
+│  (适配器管理器)    │      │  (模块管理器)      │
+│ - 继承ManagerBase  │      │ - 继承ManagerBase  │
+└───────────────────┘      └───────────────────┘
+```
+
+#### 职责分离
+
+| 层级 | 组件 | 职责 |
+|------|------|------|
+| 入口层 | SDK | 提供统一的 API 接口，对外暴露所有功能 |
+| 协调层 | ModuleInitializer | 协调整个初始化流程，管理加载顺序 |
+| 加载层 | AdapterLoader/ModuleLoader | 从 PyPI entry-points 加载模块和适配器 |
+| 管理层 | AdapterManager/ModuleManager | 管理模块/适配器的注册、加载、卸载 |
+| 基础层 | ManagerBase | 提供统一的配置管理和状态查询接口 |
+
+#### 关键设计原则
+
+1. **单一职责**：每个组件只负责一个核心功能
+2. **分层清晰**：加载逻辑与业务逻辑分离
+3. **配置统一**：所有管理器通过 ManagerBase 继承统一的配置接口
+4. **职责分离**：ManagerBase 只关注接口定义，具体实现由子类完成
+5. **兼容性**：保留旧接口，确保向后兼容
 
 
 ---
@@ -339,24 +473,33 @@ ErisPulse 提供了多个核心模块，为开发者提供基础功能支持。
 
 | 名称 | 用途 |
 |------|------|
-| `sdk` | SDK对象 |
+| `sdk` | SDK对象（包含所有核心功能） |
 | `storage`/`sdk.storage` | 获取/设置数据库配置 |
 | `config`/`sdk.config` | 获取/设置模块配置 |
-| `module_registry`/`sdk.module_registry` | 模块状态管理器 |
 | `adapter`/`sdk.adapter` | 适配器管理/获取实例 |
-| `module`/`sdk.module` | 获取模块实例 |
+| `module`/`sdk.module` | 模块管理器 |
 | `logger`/`sdk.logger` | 日志记录器 |
 | `BaseAdapter`/`sdk.BaseAdapter` | 适配器基类 |
 | `Event`/`sdk.Event` | 事件处理模块 |
 | `lifecycle`/`sdk.lifecycle` | 生命周期事件管理器 |
-| `ux`/`sdk.ux` | 用户体验管理器 |
-| `UXManager`/`sdk.UXManager` | UX管理器类 |
 | `router`/`sdk.router` | 路由管理器 |
-| `RouterManager`/`sdk.RouterManager` | 路由管理器类 |
 
 > 注意: `Event` 模块是 ErisPulse 2.2.0 弹簧的新模块,发布模块时请注意提醒用户兼容性问题
 
-### 懒加载模块系统
+### 模块加载架构
+
+ErisPulse 采用现代化的模块加载架构，将加载逻辑与核心功能分离：
+
+#### 加载器组件
+
+| 组件 | 文件位置 | 用途 |
+|------|---------|------|
+| `BaseLoader` | `loaders/base_loader.py` | 加载器抽象基类，定义标准接口 |
+| `AdapterLoader` | `loaders/adapter_loader.py` | 从 PyPI entry-points 加载适配器 |
+| `ModuleLoader` | `loaders/module_loader.py` | 从 PyPI entry-points 加载模块 |
+| `ModuleInitializer` | `loaders/initializer.py` | 初始化协调器，统一管理加载流程 |
+
+#### 懒加载机制
 
 ErisPulse 默认启用懒加载模块系统，这意味着模块只有在第一次被访问时才会实际加载和初始化。这样可以显著提升应用启动速度和内存效率。
 
@@ -373,6 +516,13 @@ class MyModule(BaseModule):
     def should_eager_load() -> bool:
         return True  # 返回True表示禁用懒加载
 ```
+
+#### 加载流程
+
+1. SDK 初始化时，`ModuleInitializer` 协调加载流程
+2. 并行调用 `AdapterLoader` 和 `ModuleLoader` 从 PyPI entry-points 加载
+3. 按顺序注册适配器和模块
+4. 根据配置和模块特性决定是否立即加载或懒加载
 
 ### 事件系统子模块
 
@@ -530,72 +680,149 @@ sdk.exceptions.setup_async_loop(loop)
 
 ## 5. 模块管理 (module)
 
-模块管理系统，用于管理模块的启用/禁用状态。
+模块管理系统，提供模块的注册、加载和状态管理功能。
 
 ### 主要功能
 
-- 模块状态管理
-- 模块信息查询
-- 模块依赖处理
-- 模块启用/禁用
+- 模块类注册：`module.register(name, class, info)`
+- 模块实例管理：`module.load()` / `module.unload()`
+- 模块状态管理：`module.exists()` / `module.is_enabled()` / `module.enable()` / `module.disable()`
+- 模块实例获取：`module.get(name)` / `module.list_loaded()` / `module.list_registered()`
+- 配置管理：继承自 ManagerBase，提供统一的配置接口
 
 ### 使用示例
 
 ```python
 from ErisPulse import sdk
 
-# 直接获取模块实例
+# 模块注册（通常由加载器自动完成）
+from ErisPulse.Core.Bases import BaseModule
+
+class MyModule(BaseModule):
+    def on_load(self, data):
+        sdk.logger.info("模块已加载")
+    
+    def on_unload(self, data):
+        sdk.logger.info("模块已卸载")
+
+# 手动注册模块类
+sdk.module.register("MyModule", MyModule, {"meta": {"version": "1.0.0"}})
+
+# 加载模块
+await sdk.module.load("MyModule")
+
+# 获取模块实例
 my_module = sdk.module.get("MyModule")
 
 # 通过属性访问获取模块实例
 my_module = sdk.module.MyModule
 
+# 检查模块是否已加载
+if sdk.module.is_loaded("MyModule"):
+    my_module.do_something()
+
 # 检查模块是否存在且启用
 if "MyModule" in sdk.module:
-    sdk.module.MyModule.do_something()
+    sdk.logger.info("模块可用")
 
-# 获取模块信息
-module_info = sdk.module.get_info("MyModule")
+# 列出已注册和已加载的模块
+registered = sdk.module.list_registered()
+loaded = sdk.module.list_loaded()
 
-# 列出所有模块
-all_modules = sdk.module.list_modules()
+# 模块配置管理
+sdk.module.enable("MyModule")      # 启用模块
+sdk.module.disable("MyModule")     # 禁用模块
+sdk.module.is_enabled("MyModule") # 检查是否启用
 
-# 启用/禁用模块
-sdk.module.enable("MyModule")
-sdk.module.disable("MyModule")
+# 卸载模块
+await sdk.module.unload("MyModule")  # 卸载指定模块
+await sdk.module.unload()           # 卸载所有模块
 ```
 
 ## 6. 适配器管理 (adapter)
 
-适配器管理系统，用于管理与不同平台的连接和交互。
+适配器管理系统，提供适配器的注册、启动和状态管理功能。
 
 ### 主要功能
 
-- 适配器实例管理
-- 事件监听注册
-- 消息发送接口
+- 适配器类注册：`adapter.register(platform, class, info)`
+- 适配器实例管理：`adapter.startup()` / `adapter.shutdown()`
+- 适配器状态管理：`adapter.exists()` / `adapter.is_enabled()` / `adapter.enable()` / `adapter.disable()`
+- 适配器实例获取：`adapter.get(platform)` / `adapter.platforms`
+- 配置管理：继承自 ManagerBase，提供统一的配置接口
+- 事件处理：`adapter.on()` / `adapter.emit()` / `adapter.middleware()`
 
 ### 使用示例
 
 ```python
 from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseAdapter
+
+class MyPlatformAdapter(BaseAdapter):
+    async def start(self):
+        sdk.logger.info("适配器已启动")
+    
+    async def shutdown(self):
+        sdk.logger.info("适配器已关闭")
+
+# 注册适配器类
+sdk.adapter.register("MyPlatform", MyPlatformAdapter)
+
+# 启动所有适配器
+await sdk.adapter.startup()
+
+# 启动指定适配器
+await sdk.adapter.startup(["MyPlatform"])
 
 # 获取适配器实例
-adapter_instance = sdk.adapter.yunhu
+adapter_instance = sdk.adapter.get("MyPlatform")
+adapter_instance = sdk.adapter.MyPlatform
 
 # 发送消息
-sdk.adapter.yunhu.Send.To("user", "U1001").Text("Hello")
+sdk.adapter.MyPlatform.Send.To("user", "U1001").Text("Hello")
 
-# 监听事件
-@sdk.adapter.yunhu.on("message")
-async def handler(data):
-    sdk.logger.info(f"收到原生事件: {data}")
-
-# 监听标准事件
+# 监听标准事件（所有平台）
 @sdk.adapter.on("message")
 async def handler(data):
-    if data["platform"] == "yunhu":
-        sdk.logger.info(f"收到云湖标准事件: {data}")
+    sdk.logger.info(f"收到消息: {data}")
+
+# 监听特定平台的标准事件
+@sdk.adapter.on("message", platform="MyPlatform")
+async def handler(data):
+    sdk.logger.info(f"收到 MyPlatform 消息: {data}")
+
+# 监听平台原生事件
+@sdk.adapter.on("message", raw=True, platform="MyPlatform")
+async def handler(data):
+    sdk.logger.info(f"收到 MyPlatform 原生事件: {data}")
+
+# 提交事件
+await sdk.adapter.emit({
+    "id": "123",
+    "time": 1620000000,
+    "type": "message",
+    "detail_type": "private",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "platform": "MyPlatform",
+    "myplatform_raw": {...平台原生事件数据...},
+    "myplatform_raw_type": "text_message"
+})
+
+# 添加中间件
+@sdk.adapter.middleware
+async def my_middleware(data):
+    sdk.logger.info(f"中间件处理: {data}")
+    return data
+
+# 获取所有已注册平台
+platforms = sdk.adapter.platforms
+
+# 启用/禁用适配器
+sdk.adapter.enable("MyPlatform")
+sdk.adapter.disable("MyPlatform")
+
+# 关闭所有适配器
+await sdk.adapter.shutdown()
 ```
 
 ## 7. 事件处理 (Event)
@@ -791,206 +1018,6 @@ log_files = []
 memory_limit = 1000
 ```
 
-## 9. 用户体验管理 (ux)
-
-用户体验管理器提供了友好的界面和简化的操作方法，包括状态查看、项目初始化和交互式配置等功能。
-
-### 主要功能
-
-- **欢迎信息显示**：显示框架版本和欢迎消息
-- **系统状态概览**：展示框架各组件的运行状态
-- **模块状态查看**：列出所有模块的详细状态和信息
-- **适配器状态查看**：列出所有适配器的状态和信息
-- **项目初始化**：创建新的项目结构和配置文件
-- **交互式配置**：引导用户完成系统和适配器配置
-- **远程适配器获取**：从云端获取可用适配器列表并安装
-
-### 基本使用
-
-```python
-from ErisPulse import sdk
-
-# 显示欢迎信息
-sdk.ux.welcome("2.3.0")
-
-# 显示系统状态概览
-sdk.ux.show_status()
-
-# 列出所有模块状态
-sdk.ux.list_modules(detailed=True)
-
-# 列出所有适配器状态
-sdk.ux.list_adapters(detailed=True)
-```
-
-### 项目初始化
-
-```python
-# 初始化新项目（基本结构）
-sdk.ux.init_project("MyBot", ["yunhu", "telegram"])
-
-# 交互式初始化（包含配置向导）
-sdk.ux.interactive_init("MyBot", force=False)
-```
-
-### 高级功能
-
-```python
-# 获取可用适配器列表（从云端）
-adapters = await sdk.ux._fetch_available_adapters()
-print("可用适配器:", adapters)
-
-# 运行交互式适配器配置
-sdk.ux._configure_adapters_interactive_sync("/path/to/project")
-```
-
-### 命令行使用
-
-```bash
-# 初始化新项目
-erispulse init MyBot
-
-# 交互式初始化
-erispulse init -i
-
-# 查看系统状态
-erispulse status
-
-# 查看模块详细信息
-erispulse status --type modules
-
-# 查看适配器详细信息
-erispulse status --type adapters
-```
-
-### 项目结构
-
-使用UX管理器初始化的项目包含以下结构：
-
-```
-MyBot/
-├── main.py              # 主程序文件
-├── config.toml          # 配置文件
-├── modules/             # 模块目录
-│   └── example.py       # 示例模块
-├── config/              # 配置目录
-└── logs/                # 日志目录
-```
-
-### 自动生成的配置文件
-
-配置文件 `config.toml` 包含以下部分：
-
-```toml
-[ErisPulse]
-# 全局配置
-
-[ErisPulse.server]
-host = "0.0.0.0"
-port = 8000
-
-[ErisPulse.logger]
-level = "INFO"
-log_files = ["logs/app.log"]
-memory_limit = 1000
-
-[ErisPulse.adapters.status]
-yunhu = false
-telegram = false
-```
-
-### 自动生成的主程序
-
-主程序 `main.py` 包含基本的启动逻辑：
-
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    """主程序入口"""
-    # 初始化 SDK
-    await sdk.init()
-    
-    # 启动适配器
-    await sdk.adapter.startup()
-    
-    print("ErisPulse 已启动，按 Ctrl+C 退出")
-    try:
-        while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        print("\n正在关闭...")
-        await sdk.adapter.shutdown()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### 云端适配器集成
-
-UX管理器与PackageManager集成，支持从云端获取和安装适配器：
-
-```python
-# 获取可用适配器（带5分钟缓存）
-adapters = await sdk.ux._fetch_available_adapters()
-
-# 默认适配器列表（当云端获取失败时）
-default_adapters = {
-    "yunhu": "云湖平台适配器",
-    "telegram": "Telegram机器人适配器",
-    "onebot11": "OneBot11标准适配器",
-    "email": "邮件适配器"
-}
-```
-
-### 交互式配置流程
-
-交互式初始化包含以下步骤：
-
-1. **项目名称确认**：输入或确认项目名称
-2. **日志级别配置**：设置日志记录级别
-3. **服务器配置**：设置主机地址和端口
-4. **适配器选择**：从云端列表选择需要的适配器
-5. **适配器安装**：自动安装选中的适配器
-6. **配置保存**：保存所有配置到文件
-
-### 缓存机制
-
-UX管理器实现了5分钟的适配器缓存机制，减少网络请求：
-
-```python
-# 缓存设置
-self._cache_duration = 300  # 5分钟缓存
-
-# 检查缓存有效性
-current_time = asyncio.get_event_loop().time()
-if self._adapter_cache and (current_time - self._adapter_cache_time) < self._cache_duration:
-    return self._adapter_cache
-```
-
-### 最佳实践
-
-1. **项目初始化**：使用UX管理器初始化新项目，获得标准化的项目结构
-2. **配置管理**：通过交互式配置向导完成系统设置
-3. **状态监控**：定期使用状态查看功能监控系统运行情况
-4. **适配器安装**：通过云端列表获取和安装最新适配器
-
-# 运行配置向导
-epsdk config-wizard
-```
-
-### 用户体验管理器方法
-
-| 方法 | 描述 | 示例 |
-|------|------|------|
-| `welcome(version)` | 显示框架欢迎信息 | `sdk.ux.welcome("2.3.0")` |
-| `show_status()` | 显示系统状态概览 | `sdk.ux.show_status()` |
-| `list_modules(detailed=False)` | 列出所有模块状态 | `sdk.ux.list_modules(True)` |
-| `list_adapters(detailed=False)` | 列出所有适配器状态 | `sdk.ux.list_adapters(True)` |
-| `configure_wizard()` | 运行配置向导 | `sdk.ux.configure_wizard()` |
-| `init_project(project_name, adapter_list=None)` | 初始化新项目 | `sdk.ux.init_project("MyBot", ["yunhu"])` |
-
 
 ---
 
@@ -1064,9 +1091,15 @@ result = await my_platform.Send.To("user", "123").Text("Hello")
    ```python
    from ErisPulse.Core import adapter, logger
    
-   @adapter.<AdapterName>.on("event_type")
-   async def handler(data):
+   @adapter.on("event_type", raw=True, platform="yunhu")
+   async def handler_1(data):
        logger.info(f"收到原生事件: {data}")
+
+   @adapter.on("event_type")
+   async def handler_2(data):
+      platform = data.get("self").get("platform")
+      raw_data = data.get(f"{platform}_raw")
+      logger.info(f"收到 {platform} 原生事件: {raw_data}")
    ```
 
 2. OneBot12标准事件监听：
@@ -1075,7 +1108,7 @@ result = await my_platform.Send.To("user", "123").Text("Hello")
 
    @adapter.on("event_type")  # 所有平台的标准事件
    async def handler(data):
-       if data["platform"] == "yunhu":
+       if data.get("self").get("platform") == "yunhu":
            logger.info(f"收到云湖标准事件: {data}")
    ```
 
@@ -1113,120 +1146,26 @@ ErisPulse对于OneBot12协议进行了一些修改，你可能需要先阅读 `d
 
 # ErisPulse 事件系统
 
-事件系统是 ErisPulse 的核心组件之一，负责处理各种类型的事件，包括消息、命令、通知、请求、元事件和生命周期事件。
+事件系统是 ErisPulse 的核心组件之一，负责处理各种类型的事件，包括消息、命令、通知、请求和元事件。
+
+> **注意**：生命周期事件系统已独立到 [lifecycle.md](./lifecycle.md) 文档。
 
 ## 事件类型
 
-ErisPulse 支持多种事件类型：
+ErisPulse 支持以下事件类型：
 
 - **消息事件**：处理用户发送的消息
 - **命令事件**：处理用户输入的命令
 - **通知事件**：处理系统通知（如好友添加、群成员变化等）
 - **请求事件**：处理请求（如好友请求、群邀请等）
 - **元事件**：处理系统级事件（如连接、断开连接等）
-- **生命周期事件**：处理系统生命周期事件（如启动、停止、模块加载等）
 
-## 生命周期事件系统
-
-ErisPulse 提供完整的生命周期事件系统，用于监控系统各组件的运行状态。生命周期事件支持点式结构事件监听，例如可以监听 `module.init` 来捕获所有模块初始化事件。
-
-### 标准生命周期事件
-
-系统定义了以下标准事件类别：
-
-```python
-STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete"],
-    "module": ["load", "init", "unload"],
-    "adapter": ["load", "start", "status.change", "stop", "stopped"],
-    "server": ["start", "stop"]
-}
-```
-
-### 事件数据格式
-
-所有生命周期事件都遵循标准格式：
-
-```json
-{
-    "event": "事件名称",      // 必填
-    "timestamp": 1234567890,   // 必填，Unix时间戳
-    "data": {},              // 可选，事件相关数据
-    "source": "ErisPulse",    // 必填，事件来源
-    "msg": "事件描述"          // 可选，事件描述
-}
-```
-
-### 生命周期事件监听
-
-```python
-from ErisPulse.Core import lifecycle
-
-# 监听特定事件
-@lifecycle.on("module.init")
-async def on_module_init(event):
-    print(f"模块初始化: {event['data']['module_name']}")
-
-# 监听父级事件（点式结构）
-@lifecycle.on("module")
-async def on_any_module_event(event):
-    print(f"模块事件: {event['event']}")
-
-# 监听所有事件（通配符）
-@lifecycle.on("*")
-async def on_any_event(event):
-    print(f"系统事件: {event['event']}")
-
-# 监听服务器启动事件
-@lifecycle.on("server.start")
-async def on_server_start(event):
-    print(f"服务器已启动: {event['data']['base_url']}")
-```
-
-### 提交生命周期事件
-
-```python
-from ErisPulse.Core import lifecycle
-
-# 基本事件提交
-await lifecycle.submit_event(
-    "custom.event",
-    source="MyModule",
-    msg="自定义事件",
-    data={"key": "value"}
-)
-
-# 使用默认值
-await lifecycle.submit_event(
-    "my.module.loaded",
-    data={"module_name": "MyModule"}
-)
-```
-
-### 计时器功能
-
-生命周期系统提供计时器功能，用于性能测量：
-
-```python
-from ErisPulse.Core import lifecycle
-
-# 开始计时
-lifecycle.start_timer("operation_1")
-
-# 执行一些操作...
-
-# 获取持续时间（不停止计时器）
-elapsed = lifecycle.get_duration("operation_1")
-print(f"已运行 {elapsed} 秒")
-
-# 停止计时并获取持续时间
-total_time = lifecycle.stop_timer("operation_1")
-print(f"操作完成，总耗时 {total_time} 秒")
-```
-
-### 命令处理
+## 命令处理
 
 ErisPulse 提供了强大的命令处理系统，支持基本命令、命令组、权限检查和等待用户回复等高级功能。
+
+### 基本命令
+
 ```python
 from ErisPulse.Core.Event import command
 
@@ -1243,16 +1182,12 @@ async def hello_command(event):
 # 带别名的命令
 @command(["help", "h"], aliases=["帮助"], help="显示帮助信息")
 async def help_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
     help_text = command.help()
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text(help_text)
+    await event.reply(help_text)
 
 # 带权限检查的命令
 def is_admin(event):
-    # 检查是否为管理员
+    """检查是否为管理员"""
     user_id = event.get("user_id")
     return user_id in ["admin_id_1", "admin_id_2"]
 
@@ -1272,8 +1207,11 @@ async def secret_command(event):
 async def reload_command(event):
     # 管理员命令逻辑
     pass
+```
 
-# 等待用户回复的交互式命令
+### 等待用户回复
+
+```python
 @command("ask", help="询问用户信息")
 async def ask_command(event):
     platform = event["platform"]
@@ -1304,8 +1242,11 @@ async def ask_command(event):
             await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
     else:
         await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
+```
 
-# 带验证和回调的高级交互命令
+### 带验证和回调的交互命令
+
+```python
 @command("confirm", help="确认操作")
 async def confirm_command(event):
     platform = event["platform"]
@@ -1347,7 +1288,85 @@ async def confirm_command(event):
     )
 ```
 
-### 消息处理
+### 命令组
+
+命令组允许您将相关命令组织在一起，便于管理和权限控制：
+
+```python
+# 管理员命令组
+@command("admin.reload", group="admin", help="重新加载模块")
+async def reload_command(event):
+    # 管理员命令逻辑
+    await sdk.module.reload(event["args"][0] if event["args"] else "all")
+
+@command("admin.stop", group="admin", help="停止机器人")
+async def stop_command(event):
+    # 停止机器人逻辑
+    await sdk.adapter.shutdown()
+
+# 用户命令组
+@command("user.profile", group="user", help="查看个人资料")
+async def profile_command(event):
+    # 查看个人资料逻辑
+    pass
+
+# 获取命令组中的所有命令
+admin_commands = command.get_group_commands("admin")
+```
+
+### 权限检查系统
+
+ErisPulse 提供了灵活的权限检查系统：
+
+```python
+# 定义权限检查函数
+def is_admin(event):
+    """检查是否为管理员"""
+    user_id = event.get("user_id")
+    return user_id in ["admin_id_1", "admin_id_2"]
+
+def is_whitelist(event):
+    """检查用户是否在白名单中"""
+    user_id = event.get("user_id")
+    return user_id in sdk.config.getConfig("whitelist", [])
+
+# 为单个命令设置权限
+@command("admin", permission=is_admin, help="管理员命令")
+async def admin_command(event):
+    # 只有管理员才能执行
+    pass
+
+# 为命令组设置全局权限
+command.permissions["admin"] = is_admin
+
+# 复杂权限检查
+@command("group.manage", permission=lambda e: is_admin(e), help="群管理")
+async def group_manage_command(event):
+    # 管理员可执行
+    pass
+```
+
+### 命令帮助系统
+
+```python
+# 获取命令帮助信息
+help_text = command.help()
+
+# 获取特定命令信息
+cmd_info = command.get_command("admin")
+
+# 获取所有可见命令
+visible_commands = command.get_visible_commands()
+
+# 在命令中显示帮助
+@command("help", help="显示帮助信息")
+async def help_command(event):
+    help_text = command.help()
+    await event.reply(help_text)
+```
+
+## 消息处理
+
 ```python
 from ErisPulse.Core.Event import message
 
@@ -1376,7 +1395,8 @@ async def handle_at_message(event):
     sdk.logger.info(f"收到@消息，来自用户: {user_id}")
 ```
 
-### 通知处理
+## 通知处理
+
 ```python
 from ErisPulse.Core.Event import notice
 
@@ -1387,9 +1407,7 @@ async def handle_friend_add(event):
     sdk.logger.info(f"新好友添加: {user_id}")
     
     # 发送欢迎消息
-    platform = event["platform"]
-    adapter_instance = getattr(sdk.adapter, platform)
-    await adapter_instance.Send.To("user", user_id).Text("欢迎添加我为好友！")
+    await event.reply("欢迎添加我为好友！")
 
 # 处理群成员增加通知
 @notice.on_group_increase()
@@ -1412,7 +1430,8 @@ async def handle_group_decrease(event):
     sdk.logger.info(f"群成员减少，群: {group_id}，用户: {user_id}")
 ```
 
-### 请求处理
+## 请求处理
+
 ```python
 from ErisPulse.Core.Event import request
 
@@ -1430,7 +1449,8 @@ async def handle_group_request(event):
     sdk.logger.info(f"收到群邀请请求，群: {group_id}，用户: {user_id}")
 ```
 
-### 元事件处理
+## 元事件处理
+
 ```python
 from ErisPulse.Core.Event import meta
 
@@ -1453,11 +1473,12 @@ async def handle_heartbeat(event):
     sdk.logger.debug(f"平台 {platform} 心跳")
 ```
 
-### 高级功能
+## 高级功能
 
-#### 优先级控制
+### 优先级控制
+
 ```python
-# 设置处理器优先级
+# 设置处理器优先级（数值越小优先级越高）
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     # 高优先级处理器先执行
@@ -1469,229 +1490,8 @@ async def low_priority_handler(event):
     pass
 ```
 
-#### 命令系统高级功能
+### 条件处理器
 
-##### 1. 等待用户回复
-
-ErisPulse 提供了强大的等待用户回复功能，支持超时、验证器和回调函数：
-
-```python
-from ErisPulse.Core.Event import command
-
-# 基本等待回复
-@command("ask", help="询问用户信息")
-async def ask_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    detail_type = "group" if event.get("detail_type") == "group" else "user"
-    target_id = event.get("group_id") or user_id
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    
-    # 等待用户回复
-    reply_event = await command.wait_reply(
-        event, 
-        prompt="请输入您的姓名:", 
-        timeout=30.0
-    )
-    
-    if reply_event:
-        # 提取用户回复内容
-        user_reply = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                user_reply = segment.get("data", {}).get("text", "")
-                break
-        
-        if user_reply:
-            await adapter_instance.Send.To(detail_type, target_id).Text(f"您好，{user_reply}！")
-        else:
-            await adapter_instance.Send.To(detail_type, target_id).Text("我没有收到有效的回复。")
-    else:
-        await adapter_instance.Send.To(detail_type, target_id).Text("您没有在规定时间内回复。")
-
-# 带验证和回调的等待回复
-@command("confirm", help="确认操作")
-async def confirm_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    detail_type = "group" if event.get("detail_type") == "group" else "user"
-    target_id = event.get("group_id") or user_id
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    
-    # 定义验证函数
-    def validate_yes_no(reply_event):
-        text_content = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                text_content = segment.get("data", {}).get("text", "").strip().lower()
-                break
-        return text_content in ["是", "否", "yes", "no", "y", "n"]
-    
-    # 定义回调函数
-    async def handle_confirmation(reply_event):
-        text_content = ""
-        for segment in reply_event.get("message", []):
-            if segment.get("type") == "text":
-                text_content = segment.get("data", {}).get("text", "").strip().lower()
-                break
-        
-        if text_content in ["是", "yes", "y"]:
-            await adapter_instance.Send.To(detail_type, target_id).Text("操作已确认！")
-        else:
-            await adapter_instance.Send.To(detail_type, target_id).Text("操作已取消。")
-    
-    # 等待用户确认
-    await command.wait_reply(
-        event,
-        prompt="您确定要执行此操作吗？请输入'是'或'否':",
-        timeout=30.0,
-        callback=handle_confirmation,
-        validator=validate_yes_no
-    )
-```
-
-##### 2. 命令组
-
-命令组允许您将相关命令组织在一起，便于管理和权限控制：
-
-```python
-# 管理员命令组
-@command("admin.reload", group="admin", help="重新加载模块")
-async def reload_command(event):
-    # 管理员命令逻辑
-    await sdk.module.reload(event["args"][0] if event["args"] else "all")
-
-@command("admin.stop", group="admin", help="停止机器人")
-async def stop_command(event):
-    # 停止机器人逻辑
-    await sdk.adapter.shutdown()
-
-@command("admin.restart", group="admin", help="重启机器人")
-async def restart_command(event):
-    # 重启机器人逻辑
-    await sdk.adapter.restart()
-
-# 用户命令组
-@command("user.profile", group="user", help="查看个人资料")
-async def profile_command(event):
-    # 查看个人资料逻辑
-    pass
-
-@command("user.settings", group="user", help="设置个人偏好")
-async def settings_command(event):
-    # 设置个人偏好逻辑
-    pass
-
-# 获取命令组中的所有命令
-admin_commands = command.get_group_commands("admin")
-user_commands = command.get_group_commands("user")
-```
-
-##### 3. 权限检查系统
-
-ErisPulse 提供了灵活的权限检查系统，可以为命令或命令组设置权限：
-
-```python
-# 定义权限检查函数
-def is_admin(event):
-    """检查是否为管理员"""
-    user_id = event.get("user_id")
-    return user_id in ["admin_id_1", "admin_id_2"]
-
-async def is_group_admin(event):
-    """检查是否为群管理员"""
-    platform = event["platform"]
-    user_id = event["user_id"]
-    group_id = event.get("group_id")
-    
-    if not group_id:
-        return False
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    # 假设适配器有获取群成员信息的方法
-    member_info = await adapter_instance.get_group_member_info(group_id, user_id)
-    return member_info.get("role") in ["admin", "owner"]
-
-def is_whitelist(event):
-    """检查用户是否在白名单中"""
-    user_id = event.get("user_id")
-    return user_id in config.getConfig("whitelist", [])
-
-# 为单个命令设置权限
-@command("admin", permission=is_admin, help="管理员命令")
-async def admin_command(event):
-    # 只有管理员才能执行
-    pass
-
-# 为命令组设置全局权限
-command.permissions["admin"] = is_admin
-command.permissions["user"] = is_whitelist
-
-# 复杂权限检查
-@command("group.manage", permission=lambda e: is_admin(e) or is_group_admin(e), help="群管理")
-async def group_manage_command(event):
-    # 管理员或群管理员可执行
-    pass
-```
-
-##### 4. 高级命令配置
-
-```python
-# 隐藏命令（不会在帮助中显示）
-@command("secret", hidden=True, help="秘密命令")
-async def secret_command(event):
-    pass
-
-# 自定义使用说明
-@command("custom", usage="/custom <参数1> <参数2>", help="自定义命令")
-async def custom_command(event):
-    pass
-
-# 多名称命令
-@command(["name1", "name2"], aliases=["alias1", "alias2"], help="多名称命令")
-async def multi_name_command(event):
-    pass
-```
-
-##### 5. 命令帮助系统
-
-```python
-# 获取命令帮助信息
-help_text = command.help()
-
-# 获取特定命令信息
-cmd_info = command.get_command("admin")
-
-# 获取所有可见命令
-visible_commands = command.get_visible_commands()
-
-# 在命令中显示帮助
-@command("help", help="显示帮助信息")
-async def help_command(event):
-    platform = event["platform"]
-    user_id = event["user_id"]
-    detail_type = "group" if event.get("detail_type") == "group" else "user"
-    target_id = event.get("group_id") or user_id
-    
-    adapter_instance = getattr(sdk.adapter, platform)
-    
-    # 获取帮助文本
-    help_text = command.help()
-    
-    # 发送帮助信息
-    await adapter_instance.Send.To(detail_type, target_id).Text(help_text)
-```
-    pass
-
-@message.on_message(priority=20)
-async def low_priority_handler(event):
-    # 低优先级处理器后执行
-    pass
-```
-
-#### 条件处理器
 ```python
 # 定义条件函数
 def keyword_condition(event):
@@ -1709,6 +1509,264 @@ async def keyword_handler(event):
     pass
 ```
 
+## Event 包装类
+
+Event 模块提供了便捷的事件包装类，简化事件处理。详见 [模块开发指南](../development/module.md) 中的 Event 事件包装类章节。
+
+
+---
+
+<a id="lifecyclemd"></a>
+## 生命周期系统
+
+# ErisPulse 生命周期管理
+
+ErisPulse 提供完整的生命周期事件系统，用于监控系统各组件的运行状态。生命周期事件支持点式结构事件监听，例如可以监听 `module.init` 来捕获所有模块初始化事件。
+
+## 标准生命周期事件
+
+系统定义了以下标准事件类别：
+
+```python
+STANDARD_EVENTS = {
+    "core": ["init.start", "init.complete"],
+    "module": ["load", "init", "unload"],
+    "adapter": ["load", "start", "status.change", "stop", "stopped"],
+    "server": ["start", "stop"]
+}
+```
+
+## 事件数据格式
+
+所有生命周期事件都遵循标准格式：
+
+```json
+{
+    "event": "事件名称",      // 必填
+    "timestamp": 1234567890,   // 必填，Unix时间戳
+    "data": {},              // 可选，事件相关数据
+    "source": "ErisPulse",    // 必填，事件来源
+    "msg": "事件描述"          // 可选，事件描述
+}
+```
+
+## 事件处理机制
+
+### 点式结构事件
+ErisPulse 支持点式结构的事件命名，例如 `module.init`。当触发具体事件时，也会触发其父级事件：
+- 触发 `module.init` 事件时，也会触发 `module` 事件
+- 触发 `adapter.status.change` 事件时，也会触发 `adapter.status` 和 `adapter` 事件
+
+### 通配符事件处理器
+可以注册 `*` 事件处理器来捕获所有事件。
+
+## 标准生命周期事件
+
+### 核心初始化事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `core.init.start` | 核心初始化开始时 | `{}` |
+| `core.init.complete` | 核心初始化完成时 | `{"duration": "初始化耗时(秒)", "success": true/false}` |
+
+### 模块生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `module.load` | 模块加载完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.init` | 模块初始化完成时 | `{"module_name": "模块名", "success": true/false}` |
+| `module.unload` | 模块卸载时 | `{"module_name": "模块名", "success": true/false}` |
+
+### 适配器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `adapter.load` | 适配器加载完成时 | `{"platform": "平台名", "success": true/false}` |
+| `adapter.start` | 适配器开始启动时 | `{"platforms": ["平台名列表"]}` |
+| `adapter.status.change` | 适配器状态发生变化时 | `{"platform": "平台名", "status": "状态(starting/started/start_failed/stopping/stopped)", "retry_count": 重试次数(可选), "error": "错误信息(可选)"}` |
+| `adapter.stop` | 适配器开始关闭时 | `{}` |
+| `adapter.stopped` | 适配器关闭完成时 | `{}` |
+
+### 服务器生命周期事件
+
+| 事件名称 | 触发时机 | 数据结构 |
+|---------|---------|---------|
+| `server.start` | 服务器启动时 | `{"base_url": "基础url","host": "主机地址", "port": "端口号"}` |
+| `server.stop` | 服务器停止时 | `{}` |
+
+## 使用示例
+
+### 生命周期事件监听
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 监听特定事件
+@lifecycle.on("module.init")
+async def module_init_handler(event_data):
+    print(f"模块 {event_data['data']['module_name']} 初始化完成")
+
+# 监听父级事件（点式结构）
+@lifecycle.on("module")
+async def on_any_module_event(event_data):
+    print(f"模块事件: {event_data['event']}")
+
+# 监听所有事件（通配符）
+@lifecycle.on("*")
+async def on_any_event(event_data):
+    print(f"系统事件: {event_data['event']}")
+
+# 监听适配器状态变化事件
+@lifecycle.on("adapter.status.change")
+async def adapter_status_handler(event_data):
+    status_data = event_data['data']
+    print(f"适配器 {status_data['platform']} 状态变化为: {status_data['status']}")
+```
+
+### 提交生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 基本事件提交
+await lifecycle.submit_event(
+    "custom.event",
+    data={"custom_field": "custom_value"},
+    source="MyModule",
+    msg="自定义事件描述"
+)
+
+# 使用默认值
+await lifecycle.submit_event(
+    "my.module.loaded",
+    data={"module_name": "MyModule"}
+)
+```
+
+### 计时器功能
+
+生命周期系统提供计时器功能，用于性能测量：
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 开始计时
+lifecycle.start_timer("my_operation")
+
+# 执行一些操作...
+
+# 获取持续时间（不停止计时器）
+elapsed = lifecycle.get_duration("my_operation")
+print(f"已运行 {elapsed} 秒")
+
+# 停止计时并获取持续时间
+total_time = lifecycle.stop_timer("my_operation")
+print(f"操作完成，总耗时 {total_time} 秒")
+```
+
+### 第三方模块集成
+
+生命周期模块是第三方模块也可以使用的核心模块。第三方模块可以通过此模块：
+
+1. 提交自定义生命周期事件
+2. 监听标准或自定义生命周期事件
+3. 利用计时器功能测量操作耗时
+
+#### 模块中使用生命周期事件
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+
+class Main(BaseModule):
+    async def on_load(self, event):
+        # 监听模块生命周期事件
+        @sdk.lifecycle.on("module.load")
+        async def on_module_load(event_data):
+            module_name = event_data['data'].get('module_name')
+            if module_name != "MyModule":
+                sdk.logger.info(f"其他模块加载: {module_name}")
+        
+        # 提交自定义事件
+        await sdk.lifecycle.submit_event(
+            "custom.ready",
+            source="MyModule",
+            msg="MyModule 已准备好接收事件"
+        )
+    
+    async def process_with_timer(self):
+        """使用计时器测量处理时间"""
+        # 开始计时
+        sdk.lifecycle.start_timer("custom_process")
+        
+        # 执行处理
+        result = await self._do_work()
+        
+        # 停止计时并记录
+        duration = sdk.lifecycle.stop_timer("custom_process")
+        sdk.logger.info(f"处理完成，耗时: {duration} 秒")
+        
+        return result
+    
+    async def _do_work(self):
+        """模拟工作"""
+        import asyncio
+        await asyncio.sleep(0.5)
+        return "done"
+```
+
+### 监听特定组件事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+# 监听所有模块事件
+@lifecycle.on("module")
+async def module_watcher(event_data):
+    event_name = event_data['event']
+    module_name = event_data['data'].get('module_name', 'unknown')
+    print(f"模块事件 [{event_name}]: {module_name}")
+
+# 监听所有适配器事件
+@lifecycle.on("adapter")
+async def adapter_watcher(event_data):
+    event_name = event_data['event']
+    platform = event_data['data'].get('platform', 'unknown')
+    print(f"适配器事件 [{event_name}]: {platform}")
+
+# 监听服务器事件
+@lifecycle.on("server.start")
+async def on_server_start(event_data):
+    print(f"服务器已启动: {event_data['data']['base_url']}")
+
+@lifecycle.on("server.stop")
+async def on_server_stop(event_data):
+    print("服务器已停止")
+```
+
+## 注意事项
+
+1. **事件来源标识**：提交自定义事件时，建议设置明确的 `source` 值，便于追踪事件来源
+
+2. **事件命名规范**：建议使用点式结构命名事件，便于使用父级监听
+
+3. **计时器命名**：计时器 ID 应具有描述性，避免与其他组件冲突
+
+4. **异步处理**：所有生命周期事件处理器都是异步的，不要阻塞事件循环
+
+5. **错误处理**：在事件处理器中应该做好异常处理，避免影响其他监听器
+
+```python
+@lifecycle.on("module.init")
+async def safe_handler(event_data):
+    try:
+        # 处理逻辑
+        module_name = event_data['data'].get('module_name')
+        print(f"模块 {module_name} 已加载")
+    except Exception as e:
+        # 记录错误但不抛出，避免影响其他监听器
+        sdk.logger.error(f"处理生命周期事件时出错: {e}")
+
 
 ---
 
@@ -1723,19 +1781,12 @@ async def keyword_handler(event):
 
 | 命令       | 参数                      | 描述                                  | 示例                          |
 |------------|---------------------------|---------------------------------------|-------------------------------|
-| `install`  | `<package>... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+| `install`  | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器包（支持多个包）      | `epsdk install Yunhu Weather`  |
+|            |                           | 不指定包名时进入交互式安装界面        | `epsdk install`                |
 |            |                           | 支持远程包简称自动解析                | `epsdk install Yunhu -U` |
 | `uninstall`| `<package>...`            | 卸载模块/适配器包（支持多个包）       | `epsdk uninstall old-module1 old-module2`  |
 | `upgrade`  | `[package]... [--force/-f] [--pre]` | 升级指定模块/适配器或所有包         | `epsdk upgrade --force`       |
-| `search`   | `<query> [--installed/-i] [--remote/-r]` | 搜索模块/适配器包             | `epsdk search github`         |
 | `self-update` | `[version] [--pre] [--force/-f]` | 更新ErisPulse SDK本身           | `epsdk self-update`           |
-
-### 模块管理命令
-
-| 命令       | 参数       | 描述                  | 示例                  |
-|------------|------------|-----------------------|-----------------------|
-| `enable`   | `<module>` | 启用已安装的模块      | `epsdk enable chat`   |
-| `disable`  | `<module>` | 禁用已安装的模块      | `epsdk disable stats` |
 
 ### 信息查询命令
 
@@ -1762,9 +1813,24 @@ async def keyword_handler(event):
 | `init`     | `[--project-name/-n <name>]` | 交互式初始化新的 ErisPulse 项目  | `epsdk init -n my_bot`       |
 |            | `[--quick/-q]`             | 快速模式，跳过交互配置            | `epsdk init -q -n my_bot`      |
 |            | `[--force/-f]`             | 强制覆盖现有配置                  | `epsdk init -f`               |
-| `status`   | `[--type/-t <type>]`       | 显示 ErisPulse 系统状态        | `epsdk status`                |
-|            |                           | `--type`: `modules`/`adapters`/`all` | `epsdk status -t modules`     |
 
+
+## 交互式安装
+
+当运行 `epsdk install` 不指定任何包名时，将进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+在交互式界面中，您可以：
+
+1. **选择适配器**：从可用适配器列表中选择一个或多个进行安装
+2. **选择模块**：从可用模块列表中选择一个或多个进行安装
+3. **选择 CLI 扩展**：从可用 CLI 扩展列表中选择一个或多个进行安装
+4. **自定义安装**：手动输入任意包名进行安装
+
+所有选项都支持多选（用逗号分隔序号），安装前会要求确认。
 
 ## 第三方 CLI 模块扩展
 
@@ -1789,10 +1855,12 @@ ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命�
   - 普通模式: 仅监控 `config.toml` 变更
 - 自动检查模块的最低SDK版本要求
 - 支持通过简称安装/卸载远程包
+- 交互式安装界面预加载远程包列表，提升用户体验
 
 ## 反馈与支持
 
 如遇到 CLI 使用问题，请在 GitHub Issues 提交反馈。
+
 
 ---
 
@@ -1803,23 +1871,69 @@ ErisPulse 支持第三方 CLI 模块扩展，开发者可以创建自定义命�
 
 本文档提供了 ErisPulse 开发和部署的最佳实践建议。
 
+> **架构更新说明**：本文档已根据 ErisPulse 新架构进行更新，包括：
+> - 懒加载模块系统（ErisPulse 2.2.0+）
+> - 独立的生命周期事件系统
+> - Event 包装类（ErisPulse 2.3.3+）
+
 ## 1. 模块开发最佳实践
 
 ### 1.1 模块结构设计
 
 ```python
-class Main:
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command, message, notice
+
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
         self.storage = sdk.storage
-        self.config = self._load_config()
+        self.config = sdk.config
+        self.module_config = self._load_config()
         
+    @staticmethod
+    def should_eager_load():
+        """
+        控制模块是否立即加载
+        
+        返回 True 表示禁用懒加载，模块会在 SDK 初始化时立即加载
+        返回 False 表示启用懒加载，模块会在首次访问时才加载
+        默认值为 False，推荐大多数情况使用懒加载以提升启动速度
+        
+        适用场景（返回 True）：
+        - 监听生命周期事件的模块
+        - 定时任务模块
+        - 需要在应用启动时就初始化的模块
+        """
+        return False
+    
+    async def on_load(self, event):
+        """模块加载时调用"""
+        # 注册事件处理器（框架会自动管理注销）
+        @command("hello", help="发送问候消息")
+        async def hello_command(event):
+            await event.reply("你好！")
+        
+        # 注册消息处理器
+        @message.on_group_message()
+        async def group_handler(event):
+            self.logger.info(f"收到群消息: {event.get_alt_message()}")
+        
+        self.logger.info("模块已加载")
+    
+    async def on_unload(self, event):
+        """模块卸载时调用"""
+        # 清理资源
+        await self._cleanup_resources()
+        self.logger.info("模块已卸载")
+
     def _load_config(self):
-        config = self.sdk.config.getConfig("MyModule")
+        config = self.config.getConfig("MyModule")
         if not config:
             default_config = self._get_default_config()
-            self.sdk.config.setConfig("MyModule", default_config)
+            self.config.setConfig("MyModule", default_config)
             return default_config
         return config
         
@@ -1829,42 +1943,253 @@ class Main:
             "timeout": 30,
             "retry_count": 3
         }
+    
+    async def _cleanup_resources(self):
+        """清理资源"""
+        # 在这里执行清理逻辑，如关闭连接、释放缓存等
+        pass
 ```
 
-### 1.2 异步编程模型
+### 1.2 懒加载模块系统
+
+ErisPulse 2.2.0 引入了懒加载模块系统，可以显著提升应用启动速度和内存效率。
+
+#### 配置懒加载
+
+```toml
+# config.toml - 全局配置
+[ErisPulse.framework]
+enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加载
+```
+
+#### 模块级别控制
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def should_eager_load() -> bool:
+        # 返回 True 表示禁用懒加载
+        # 返回 False 表示启用懒加载
+        return True
+```
+
+#### 推荐使用懒加载的场景
+
+- ✅ 大多数功能模块（返回 `False`）
+- ✅ 命令处理模块
+- ✅ 按需加载的扩展功能
+
+#### 推荐禁用懒加载的场景
+
+- ❌ 生命周期事件监听器（返回 `True`）
+- ❌ 定时任务模块
+- ❌ 需要早期初始化的模块
+
+### 1.3 Event 包装类的使用
+
+> **适用于 ErisPulse 2.3.3 及以上版本**
+
+Event 包装类继承自 `dict`，在保持完全向后兼容的同时，提供了大量便捷方法。
+
+#### 基本使用
+
+```python
+from ErisPulse.Core.Event import command, message
+
+@command("info", help="获取用户信息")
+async def info_command(event):
+    # 获取核心事件信息
+    event_id = event.get_id()
+    event_time = event.get_time()
+    platform = event.get_platform()
+    
+    # 获取发送者信息
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 获取消息内容
+    text = event.get_text()
+    message_segments = event.get_message()
+    
+    # 判断消息类型
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    
+    await event.reply(
+        f"用户: {nickname}({user_id}), "
+        f"类型: {'私聊' if is_private else '群聊'}, "
+        f"平台: {platform}"
+    )
+```
+
+#### 便捷回复方法
+
+```python
+@command("test", help="测试回复方法")
+async def test_command(event):
+    # 文本回复（默认）
+    await event.reply("这是一条文本消息")
+    
+    # 发送图片
+    await event.reply("http://example.com/image.jpg", method="Image")
+    
+    # 发送语音
+    await event.reply("http://example.com/voice.mp3", method="Voice")
+    
+    # 发送视频
+    await event.reply("http://example.com/video.mp4", method="Video")
+    
+    # 发送文件
+    await event.reply("http://example.com/file.pdf", method="File")
+```
+
+#### 等待用户回复
+
+```python
+@command("ask", help="询问用户姓名")
+async def ask_command(event):
+    # 发送提示并等待用户回复
+    await event.reply("请输入您的姓名:")
+    
+    # 等待用户回复，超时时间 30 秒
+    reply = await event.wait_reply(timeout=30)
+    
+    if reply:
+        name = reply.get_text()
+        await event.reply(f"你好，{name}！")
+    else:
+        await event.reply("等待超时")
+
+# 带验证的等待回复
+@command("age", help="询问用户年龄")
+async def age_command(event):
+    def validate_age(event_data):
+        """验证年龄是否有效"""
+        try:
+            age = int(event_data.get_text())
+            return 0 <= age <= 150
+        except ValueError:
+            return False
+    
+    await event.reply("请输入您的年龄（0-150岁）:")
+    
+    # 等待回复并验证
+    reply = await event.wait_reply(timeout=60, validator=validate_age)
+    
+    if reply:
+        age = int(reply.get_text())
+        await event.reply(f"您的年龄是 {age} 岁")
+```
+
+#### 命令信息获取
+
+```python
+@command("cmdinfo", help="获取命令信息")
+async def cmdinfo_command(event):
+    # 获取命令信息
+    cmd_name = event.get_command_name()
+    cmd_args = event.get_command_args()
+    cmd_raw = event.get_command_raw()
+    
+    await event.reply(
+        f"命令: {cmd_name}\n"
+        f"参数: {cmd_args}\n"
+        f"原始文本: {cmd_raw}"
+    )
+```
+
+#### 通知事件处理
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    # 获取通知事件信息
+    operator_id = event.get_operator_id()
+    operator_nickname = event.get_operator_nickname()
+    
+    # 自动回复
+    await event.reply(f"欢迎添加我为好友，{operator_nickname}！")
+
+@notice.on_group_member_increase()
+async def group_increase_handler(event):
+    # 群成员增加事件
+    user_id = event.get_user_id()
+    await event.reply(f"欢迎新成员加入！")
+```
+
+### 1.4 生命周期事件监听
+
+> **重要**：生命周期事件已独立到 `sdk.lifecycle` 模块，与普通事件系统分离。
+
+```python
+from ErisPulse import sdk
+
+class Main(BaseModule):
+    async def on_load(self, event):
+        # 监听模块初始化事件
+        @sdk.lifecycle.on("module.init")
+        async def on_module_init(event_data):
+            print(f"模块 {event_data['data']['module_name']} 初始化完成")
+        
+        # 监听适配器状态变化事件
+        @sdk.lifecycle.on("adapter.status.change")
+        async def on_adapter_status(event_data):
+            status = event_data['data']['status']
+            platform = event_data['data']['platform']
+            print(f"适配器 {platform} 状态变化为: {status}")
+        
+        # 监听所有生命周期事件（通配符）
+        @sdk.lifecycle.on("*")
+        async def on_any_event(event_data):
+            print(f"生命周期事件: {event_data['event']}")
+```
+
+详细的生命周期事件使用请参考：[lifecycle.md](./lifecycle.md)
+
+### 1.5 异步编程模型
 
 优先使用异步库，避免阻塞主线程：
 
 ```python
 import aiohttp
 
-class Main:
-    def __init__(self):
+class Main(BaseModule):
+    async def on_load(self, event):
+        # 使用 aiohttp 创建异步 HTTP 会话
         self.session = aiohttp.ClientSession()
     
     async def fetch_data(self, url):
         async with self.session.get(url) as response:
             return await response.json()
     
-    async def shutdown(self):
+    async def on_unload(self, event):
+        # 关闭会话
         await self.session.close()
 ```
 
-### 1.3 异常处理
+### 1.6 异常处理
 
 统一异常处理机制，记录详细日志：
 
 ```python
 import traceback
 
-class Main:
+class Main(BaseModule):
     async def handle_event(self, event):
         try:
             # 业务逻辑
             await self.process_event(event)
+        except ValueError as e:
+            # 预期的业务错误
+            self.logger.warning(f"事件处理警告: {e}")
+            await event.reply(f"参数错误: {e}")
         except Exception as e:
+            # 未预期的错误
             self.logger.error(f"处理事件时出错: {e}")
             self.logger.debug(f"错误详情: {traceback.format_exc()}")
+            raise
 ```
 
 ## 2. 适配器开发最佳实践
@@ -1879,24 +2204,41 @@ import asyncio
 class MyAdapter(BaseAdapter):
     async def start(self):
         retry_count = 0
-        while retry_count < 5:
+        max_retries = 5
+        
+        while retry_count < max_retries:
             try:
                 await self._connect_to_platform()
+                self.logger.info("连接成功")
                 break
             except Exception as e:
                 retry_count += 1
-                wait_time = min(60 * (2 ** retry_count), 600)  # 指数退避
-                self.logger.warning(f"连接失败，{wait_time}秒后重试: {e}")
-                await asyncio.sleep(wait_time)
+                if retry_count < max_retries:
+                    # 指数退避策略
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(
+                        f"连接失败，{wait_time}秒后重试 ({retry_count}/{max_retries}): {e}"
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    self.logger.error(f"连接失败，已达到最大重试次数")
+                    raise
 ```
 
 ### 2.2 事件转换
 
-严格按照 OneBot12 标准进行事件转换：
+严格按照 OneBot12 标准进行事件转换，并保留原始数据：
 
 ```python
+import time
+import uuid
+
 class MyPlatformConverter:
     def convert(self, raw_event):
+        """将平台原生事件转换为 OneBot12 标准格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
         onebot_event = {
             "id": self._generate_event_id(raw_event),
             "time": self._convert_timestamp(raw_event.get("timestamp")),
@@ -1907,9 +2249,45 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event  # 保留原始数据
+            "myplatform_raw": raw_event,          # 保留原始数据（必须）
+            "myplatform_raw_type": raw_event.get("type", "")  # 保留原始事件类型（必须）
         }
         return onebot_event
+    
+    def _generate_event_id(self, raw_event):
+        """生成事件 ID"""
+        event_id = raw_event.get("event_id")
+        if event_id:
+            return str(event_id)
+        return str(uuid.uuid4())
+    
+    def _convert_timestamp(self, timestamp):
+        """转换时间戳为 10 位秒级时间戳"""
+        if not timestamp:
+            return int(time.time())
+        # 如果是毫秒级时间戳，转换为秒级
+        if timestamp > 10**12:
+            return int(timestamp / 1000)
+        return int(timestamp)
+```
+
+### 2.3 SendDSL 使用
+
+适配器支持链式调用风格的消息发送，返回的是 `asyncio.Task` 对象：
+
+```python
+# 不等待结果，消息在后台发送
+my_adapter = adapter.get("MyPlatform")
+task = my_adapter.Send.To("user", "123").Text("Hello")
+
+# 等待结果，获取发送结果
+result = await task
+
+# 直接 await
+result = await my_adapter.Send.To("user", "123").Text("Hello")
+
+# 指定发送账号（多账户适配器）
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
 ## 3. 配置管理最佳实践
@@ -1918,7 +2296,7 @@ class MyPlatformConverter:
 
 使用结构化配置，便于管理和维护：
 
-```python
+```toml
 # config.toml
 [MyModule]
 api_url = "https://api.example.com"
@@ -1947,6 +2325,20 @@ def _validate_config(self, config):
     
     if not isinstance(config["timeout"], int) or config["timeout"] <= 0:
         raise ValueError("timeout 配置必须为正整数")
+    
+    if not config["api_url"].startswith(("http://", "https://")):
+        raise ValueError("api_url 必须以 http:// 或 https:// 开头")
+```
+
+### 3.3 全局数据库配置
+
+ErisPulse 支持两种数据库模式：
+
+```toml
+[ErisPulse.storage]
+# 使用全局数据库（包内的 ../data/config.db）
+# 默认使用项目数据库（项目目录下的 config/config.db）
+use_global_db = false
 ```
 
 ## 4. 存储系统最佳实践
@@ -1960,6 +2352,26 @@ async def update_user_data(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
+        # 如果任何操作失败，所有更改都会回滚
+```
+
+### 4.2 批量操作
+
+使用批量操作提高性能：
+
+```python
+# 批量设置
+self.sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2",
+    "key3": "value3"
+})
+
+# 批量获取
+values = self.sdk.storage.get_multi(["key1", "key2", "key3"])
+
+# 批量删除
+self.sdk.storage.delete_multi(["key1", "key2", "key3"])
 ```
 
 ## 5. 日志系统最佳实践
@@ -1969,22 +2381,31 @@ async def update_user_data(self, user_id, data):
 合理使用不同日志级别：
 
 ```python
-class Main:
+class Main(BaseModule):
     def __init__(self):
         self.logger = sdk.logger.get_child("MyModule")
     
     async def process_event(self, event):
-        self.logger.debug(f"开始处理事件: {event['id']}")
+        # DEBUG: 调试信息，生产环境通常关闭
+        self.logger.debug(f"开始处理事件: {event.get_id()}")
         
         try:
             result = await self._handle_event(event)
-            self.logger.info(f"事件处理成功: {event['id']}")
+            # INFO: 正常运行信息
+            self.logger.info(f"事件处理成功: {event.get_id()}")
             return result
         except ValueError as e:
+            # WARNING: 警告信息，不影响主要功能
             self.logger.warning(f"事件处理警告: {e}")
         except Exception as e:
+            # ERROR: 错误信息
             self.logger.error(f"事件处理失败: {e}")
             raise
+    
+    async def _handle_event(self, event):
+        # CRITICAL: 严重错误，需要立即处理
+        if event.get_text() == "critical":
+            self.logger.critical("检测到严重错误！")
 ```
 
 ### 5.2 日志输出配置
@@ -1992,9 +2413,16 @@ class Main:
 配置日志输出到文件，便于问题排查：
 
 ```python
-# 在模块初始化时配置日志输出
-sdk.logger.set_output_file(["app.log", "module.log"])
-sdk.logger.set_module_level("MyModule", "DEBUG")
+class Main(BaseModule):
+    async def on_load(self, event):
+        # 设置模块日志级别
+        self.sdk.logger.set_module_level("MyModule", "DEBUG")
+        
+        # 设置日志输出文件（可以是单个文件或列表）
+        self.sdk.logger.set_output_file([
+            "logs/app.log",
+            "logs/module.log"
+        ])
 ```
 
 ## 6. 性能优化最佳实践
@@ -2006,7 +2434,7 @@ sdk.logger.set_module_level("MyModule", "DEBUG")
 ```python
 import asyncio
 
-class Main:
+class Main(BaseModule):
     def __init__(self):
         self._cache = {}
         self._cache_lock = asyncio.Lock()
@@ -2038,34 +2466,165 @@ class Main:
 及时释放资源，避免内存泄漏：
 
 ```python
-class Main:
+class Main(BaseModule):
     def __init__(self):
         self.resources = []
+        self._connections = {}
     
     async def create_resource(self):
         resource = await self._create_new_resource()
         self.resources.append(resource)
         return resource
     
-    async def cleanup_resources(self):
+    async def on_unload(self, event):
+        # 清理所有资源
         for resource in self.resources:
             await resource.close()
         self.resources.clear()
+        
+        # 清理所有连接
+        for conn in self._connections.values():
+            await conn.close()
+        self._connections.clear()
 ```
 
-## 7. 安全最佳实践
+## 7. 路由注册最佳实践
 
-### 7.1 敏感数据保护
+模块可以注册 HTTP 和 WebSocket 路由，提供 Web API 或实时通信功能。
+
+### 7.1 HTTP 路由注册
+
+```python
+from fastapi import Request, HTTPException
+
+class Main(BaseModule):
+    async def on_load(self, event):
+        # 注册 HTTP 路由
+        self.sdk.router.register_http_route(
+            module_name="MyModule",
+            path="/info",
+            handler=self.get_info,
+            methods=["GET"]
+        )
+        
+        self.sdk.router.register_http_route(
+            module_name="MyModule",
+            path="/process",
+            handler=self.process_data,
+            methods=["POST"]
+        )
+    
+    async def get_info(self):
+        """获取模块信息"""
+        return {
+            "module": "MyModule",
+            "version": "1.0.0",
+            "status": "running"
+        }
+    
+    async def process_data(self, request: Request):
+        """处理数据"""
+        data = await request.json()
+        
+        if "key" not in data:
+            raise HTTPException(status_code=400, detail="缺少必要参数: key")
+        
+        self.logger.info(f"处理数据: {data}")
+        
+        return {
+            "status": "success",
+            "received": data
+        }
+```
+
+### 7.2 WebSocket 路由注册
+
+```python
+from fastapi import WebSocket, WebSocketDisconnect
+
+class Main(BaseModule):
+    def __init__(self):
+        self._connections = set()
+    
+    async def on_load(self, event):
+        # 注册 WebSocket 路由
+        self.sdk.router.register_websocket(
+            module_name="MyModule",
+            path="/ws",
+            handler=self.websocket_handler,
+            auth_handler=self.auth_handler  # 可选的认证函数
+        )
+    
+    async def auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket 认证"""
+        token = websocket.headers.get("authorization")
+        # 实现认证逻辑
+        return token == "Bearer valid-token"
+    
+    async def websocket_handler(self, websocket: WebSocket):
+        """WebSocket 连接处理器"""
+        await websocket.accept()
+        self._connections.add(websocket)
+        self.logger.info(f"新的 WebSocket 连接: {websocket.client}")
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                self.logger.info(f"收到消息: {data}")
+                
+                # 处理消息
+                response = self._process_message(data)
+                await websocket.send_text(response)
+                
+                # 广播给所有连接
+                await self._broadcast(f"广播: {data}")
+                
+        except WebSocketDisconnect:
+            self.logger.info(f"WebSocket 连接断开: {websocket.client}")
+        finally:
+            self._connections.discard(websocket)
+    
+    async def _broadcast(self, message: str):
+        """向所有连接广播消息"""
+        disconnected = set()
+        for connection in self._connections:
+            try:
+                await connection.send_text(message)
+            except:
+                disconnected.add(connection)
+        
+        # 移除断开的连接
+        self._connections -= disconnected
+    
+    async def on_unload(self, event):
+        """清理所有 WebSocket 连接"""
+        for connection in self._connections:
+            try:
+                await connection.close()
+            except:
+                pass
+        self._connections.clear()
+```
+
+> **注意**：注册的路由会自动添加模块名称作为前缀。例如：
+> - HTTP 路由 `/info` 可通过 `/MyModule/info` 访问
+> - WebSocket 路由 `/ws` 可通过 `/MyModule/ws` 连接
+
+## 8. 安全最佳实践
+
+### 8.1 敏感数据保护
 
 避免将密钥、密码等硬编码在代码中：
 
-```python
+```toml
 # config.toml
 [MyModule]
 api_key = "YOUR_API_KEY_HERE"  # 用户需要替换为实际值
+```
 
+```python
 # 代码中
-class Main:
+class Main(BaseModule):
     def __init__(self):
         config = self.sdk.config.getConfig("MyModule")
         self.api_key = config.get("api_key")
@@ -2073,58 +2632,138 @@ class Main:
             raise ValueError("请在 config.toml 中配置 API 密钥")
 ```
 
-## 8. 部署最佳实践
+### 8.2 输入验证
 
-### 8.1 环境配置
-
-使用环境变量配置敏感信息：
+对所有用户输入进行验证，防止注入攻击：
 
 ```python
-import os
-
-class Main:
-    def __init__(self):
-        self.config = self._load_config()
-        self._load_env_config()
+@command("exec", help="执行命令")
+async def exec_command(event):
+    command = event.get_text().split(maxsplit=1)[1] if len(event.get_text().split(maxsplit=1)) > 1 else ""
     
-    def _load_env_config(self):
-        # 从环境变量加载配置，覆盖默认配置
-        api_key = os.getenv("MYMODULE_API_KEY")
-        if api_key:
-            self.config["api_key"] = api_key
+    # 验证命令
+    if not command:
+        await event.reply("请提供要执行的命令")
+        return
+    
+    # 白名单验证
+    allowed_commands = ["status", "info", "help"]
+    if command not in allowed_commands:
+        await event.reply(f"不允许的命令: {command}")
+        return
+    
+    # 执行命令
+    result = await self._execute_safe_command(command)
+    await event.reply(result)
 ```
 
-### 8.2 监控和健康检查
+## 9. 部署最佳实践
 
-实现健康检查接口：
+### 9.1 健康检查
+
+实现健康检查接口，便于监控：
 
 ```python
-from fastapi import APIRouter
+import time
 
-class Main:
-    def __init__(self):
+class Main(BaseModule):
+    async def on_load(self, event):
         self._register_health_check()
     
     def _register_health_check(self):
-        router = APIRouter()
-        
-        @router.get("/health")
-        async def health_check():
-            return {
-                "status": "ok",
-                "module": "MyModule",
-                "version": "1.0.0"
-            }
-        
         self.sdk.router.register_http_route(
             module_name="MyModule",
             path="/health",
-            handler=health_check,
+            handler=self.health_check,
             methods=["GET"]
         )
+    
+    async def health_check(self):
+        """健康检查接口"""
+        return {
+            "status": "ok",
+            "module": "MyModule",
+            "version": "1.0.0",
+            "timestamp": int(time.time())
+        }
+```
+
+### 9.2 优雅关闭
+
+实现优雅关闭机制：
+
+```python
+import asyncio
+
+class Main(BaseModule):
+    def __init__(self):
+        self._running = False
+    
+    async def on_load(self, event):
+        self._running = True
+        # 启动后台任务
+        asyncio.create_task(self._background_task())
+    
+    async def on_unload(self, event):
+        """优雅关闭"""
+        self._running = False
+        
+        # 等待后台任务完成
+        self.logger.info("等待后台任务完成...")
+        await asyncio.sleep(2)
+        
+        # 清理资源
+        await self._cleanup_resources()
+        self.logger.info("优雅关闭完成")
+    
+    async def _background_task(self):
+        """后台任务"""
+        while self._running:
+            # 执行周期性任务
+            await self._do_periodic_task()
+            await asyncio.sleep(60)
+```
+
+## 10. 开发工作流建议
+
+### 10.1 热重载开发模式
+
+使用热重载模式进行开发，自动监控文件变化：
+
+```bash
+# 启动热重载模式
+epsdk run main.py --reload
+```
+
+### 10.2 项目初始化
+
+使用官方初始化工具创建项目：
+
+```bash
+# 交互式初始化
+epsdk init
+
+# 快速初始化
+epsdk init -q -n my_bot
+```
+
+### 10.3 模块管理
+
+使用 CLI 工具管理模块：
+
+```bash
+# 安装模块
+epsdk install MyModule
+
+# 列出已安装模块
+epsdk list --type=modules
+
+# 升级模块
+epsdk upgrade MyModule
 ```
 
 遵循这些最佳实践可以帮助您开发出高质量、稳定可靠的 ErisPulse 模块和适配器。
+
 
 ---
 
@@ -2149,6 +2788,8 @@ class Main:
 ## 平台特定功能
 
 此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标准的差异和扩展功能。请参考以下各平台的详细文档：
+
+- [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
 - [Telegram平台特性](telegram.md)

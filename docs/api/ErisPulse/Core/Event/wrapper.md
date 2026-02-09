@@ -1,6 +1,6 @@
 # `ErisPulse.Core.Event.wrapper` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-02-04 14:52:46
 
 ---
 
@@ -196,6 +196,33 @@ ErisPulse 事件包装类
 ---
 
 
+##### `get_channel_id()`
+
+获取频道ID
+
+:return: 频道ID（频道消息）
+
+---
+
+
+##### `get_guild_id()`
+
+获取服务器ID
+
+:return: 服务器ID（服务器消息）
+
+---
+
+
+##### `get_thread_id()`
+
+获取话题/子频道ID
+
+:return: 话题ID（话题消息）
+
+---
+
+
 ##### `get_sender()`
 
 获取发送者信息字典
@@ -344,7 +371,9 @@ ErisPulse 事件包装类
 
 获取适配器实例和目标信息
 
-:return: (适配器实例, 详细类型, 目标ID)
+基于 OneBot12 标准，直接使用事件的 detail_type 字段
+
+:return: (适配器实例, 发送目标类型, 目标ID)
 
 ---
 
@@ -407,7 +436,7 @@ ErisPulse 事件包装类
 
 获取原始事件数据
 
-:return: 原始事件数据
+:return: 原始事件数据字典
 
 ---
 

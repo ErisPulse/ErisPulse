@@ -10,8 +10,9 @@ from .logger import logger
 from .config import config
 from .Bases import BaseModule
 from .lifecycle import lifecycle
+from .Bases.manager import ManagerBase
 
-class ModuleManager:
+class ModuleManager(ManagerBase):
     """
     模块管理器
     
@@ -48,6 +49,12 @@ class ModuleManager:
         >>> module.register("MyModule", MyModuleClass)
         """
         # 严格验证模块类，确保继承自BaseModule
+        # 先检查是否为类对象
+        if not isinstance(module_class, type):
+            error_msg = f"模块 {module_name} 的参数必须是类，而不是 {type(module_class).__name__}"
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+            
         if not issubclass(module_class, BaseModule):
             warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 没有继承自BaseModule，但我们仍会继续尝试加载这个模块，但请注意这可能引发其他问题"
             logger.warning(warn_msg)
@@ -63,7 +70,8 @@ class ModuleManager:
             
         # 检查模块名是否已存在
         if module_name in self._module_classes:
-            logger.warning(f"模块 {module_name} 已存在，将覆盖原模块类")
+            warn_msg = f"模块 {module_name} 已存在，将覆盖原模块类"
+            logger.warning(warn_msg)
             
         self._module_classes[module_name] = module_class
         if module_info:
@@ -189,14 +197,15 @@ class ModuleManager:
         :param module_name: 模块名称
         :return: 是否卸载成功
         """
+        # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）
         if module_name not in self._loaded_modules:
             logger.warning(f"模块 {module_name} 未加载")
-            return False
+            return True
             
         try:
             # 调用模块的on_unload卸载方法
-            instance = self._modules[module_name]
-            if hasattr(instance, 'on_unload'):
+            instance = self._modules.get(module_name)
+            if instance and hasattr(instance, 'on_unload'):
                 try:
                     if asyncio.iscoroutinefunction(instance.on_unload):
                         await instance.on_unload({"module_name": module_name})
@@ -204,9 +213,9 @@ class ModuleManager:
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
-                    
+            
             # 清理缓存
-            del self._modules[module_name]
+            del self._modules[module_name]            
             self._loaded_modules.discard(module_name)
             
             logger.info(f"模块 {module_name} 卸载成功")
@@ -334,13 +343,71 @@ class ModuleManager:
         self._loaded_modules.discard(module_name)
         return True
     
+    def unregister(self, module_name: str) -> bool:
+        """
+        取消注册模块
+        
+        :param module_name: 模块名称
+        :return: 是否取消成功
+        
+        {!--< internal-use >!--}
+        注意：此方法仅取消注册，不卸载已加载的模块
+        {!--< /internal-use >!--}
+        """
+        if module_name not in self._module_classes:
+            logger.warning(f"模块 {module_name} 未注册")
+            return False
+        
+        # 移除模块类
+        self._module_classes.pop(module_name)
+        
+        # 移除模块信息
+        if module_name in self._module_info:
+            self._module_info.pop(module_name)
+        
+        logger.info(f"模块 {module_name} 已取消注册")
+        return True
+    
+    def clear(self) -> None:
+        """
+        清除所有模块实例和类
+        
+        {!--< internal-use >!--}
+        此方法用于反初始化时完全重置模块管理器状态
+        {!--< /internal-use >!--}
+        """
+        # 清除所有模块实例
+        self._modules.clear()
+        
+        # 清除所有已加载的模块名称
+        self._loaded_modules.clear()
+        
+        # 清除所有模块类
+        self._module_classes.clear()
+        
+        # 清除所有模块信息
+        self._module_info.clear()
+        
+        logger.debug("模块管理器已完全清理")
+    
+    def list_items(self) -> Dict[str, bool]:
+        """
+        列出所有模块状态
+        
+        :return: {模块名: 是否启用} 字典
+        """
+        return config.getConfig("ErisPulse.modules.status", {})
+    
+    # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> Dict[str, bool]:
         """
         列出所有模块状态
         
+        {!--< deprecated >!--} 请使用 list_items() 代替
+        
         :return: [Dict[str, bool]] 模块状态字典
         """
-        return config.getConfig("ErisPulse.modules.status", {})
+        return self.list_items()
     
     # ==================== 工具方法 ====================
     

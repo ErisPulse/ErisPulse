@@ -1,6 +1,6 @@
 # `ErisPulse.Core.storage` 模块
 
-> 最后更新：2026-01-17 19:15:33
+> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9,7 +9,7 @@
 
 ErisPulse 存储管理模块
 
-提供键值存储、事务支持、快照和恢复功能，用于管理框架运行时数据。
+提供键值存储和事务支持，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
 支持两种数据库模式：
@@ -25,7 +25,6 @@ use_global_db = true
 > **提示**
 > 1. 支持JSON序列化存储复杂数据类型
 > 2. 提供事务支持确保数据一致性
-> 3. 自动快照功能防止数据丢失
 
 ---
 
@@ -36,7 +35,7 @@ use_global_db = true
 
 存储管理器
 
-单例模式实现，提供键值存储的增删改查、事务和快照管理
+单例模式实现，提供键值存储的增删改查和事务管理
 
 支持两种数据库模式：
 1. 项目数据库（默认）：位于项目目录下的 config/config.db
@@ -51,10 +50,19 @@ use_global_db = true
 > **提示**
 > 1. 使用get/set方法操作存储项
 > 2. 使用transaction上下文管理事务
-> 3. 使用snapshot/restore管理数据快照
 
 
 #### 方法列表
+
+
+##### `_get_connection()`
+
+获取数据库连接（支持事务）
+
+如果在事务中，返回事务的连接
+否则创建新连接
+
+---
 
 
 ##### `_ensure_directories()`
@@ -221,29 +229,6 @@ use_global_db = true
 ---
 
 
-##### `_check_auto_snapshot()`
-
-> **内部方法** 
-检查并执行自动快照
-
----
-
-
-##### `set_snapshot_interval(seconds: int)`
-
-设置自动快照间隔
-
-:param seconds: 间隔秒数
-
-**示例**:
-```python
->>> # 每30分钟自动快照
->>> storage.set_snapshot_interval(1800)
-```
-
----
-
-
 ##### `clear()`
 
 清空所有存储项
@@ -287,69 +272,6 @@ use_global_db = true
 **示例**:
 ```python
 >>> storage.app_name = "MyApp"
-```
-
----
-
-
-##### `snapshot(name: Optional[str] = None)`
-
-创建数据库快照
-
-:param name: 快照名称(可选)
-:return: 快照文件路径
-
-**示例**:
-```python
->>> # 创建命名快照
->>> snapshot_path = storage.snapshot("before_update")
->>> # 创建时间戳快照
->>> snapshot_path = storage.snapshot()
-```
-
----
-
-
-##### `restore(snapshot_name: str)`
-
-从快照恢复数据库
-
-:param snapshot_name: 快照名称或路径
-:return: 恢复是否成功
-
-**示例**:
-```python
->>> storage.restore("before_update")
-```
-
----
-
-
-##### `list_snapshots()`
-
-列出所有可用的快照
-
-:return: 快照信息列表(名称, 创建时间, 大小)
-
-**示例**:
-```python
->>> for name, date, size in storage.list_snapshots():
->>>     print(f"{name} - {date} ({size} bytes)")
-```
-
----
-
-
-##### `delete_snapshot(snapshot_name: str)`
-
-删除指定的快照
-
-:param snapshot_name: 快照名称
-:return: 删除是否成功
-
-**示例**:
-```python
->>> storage.delete_snapshot("old_backup")
 ```
 
 ---

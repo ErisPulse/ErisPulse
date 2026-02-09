@@ -32,13 +32,112 @@
 ```
 
 ---
+## [2.3.4] - 2026/02/10
+> 正式发布
+> 注意: 此版本开始，虽然对外api保持兼容，但内部结构和实现已发生变化，如果您的模块使用了部分内部api，请注意修改
 
-## [2.3.4-dev.0] - 2026/01/20
+---
+## [2.3.4-dev.3] - 2026/02/04
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 新增 `finders` 模块，实现统一的模块发现机制：
+    - 新增 `BaseFinder` 基类，定义统一的 finder 接口
+    - 新增 `ModuleFinder`，用于查找 `erispulse.module` entry-points
+    - 新增 `AdapterFinder`，用于查找 `erispulse.adapter` entry-points
+    - 新增 `CLIFinder`，用于查找 `erispulse.cli` entry-points
+    - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
+
+### 变更
+- @wsu2059q
+  - 重构加载系统使用 `finders` 模块：
+    - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
+    - `loaders/module.py` 现在使用 `ModuleFinder` 查找模块
+    - `CLI/utils/package_manager.py` 现在使用所有三个 finders 查找已安装包
+  - 修复入口直接从ErisPulse导入时发生错误的问题
+  - CLI中的reloader直接移动到run命令内部进行定义
+
+### 修复
+- @wsu2059q
+  - 修复CLI部分命令中的导入错误
+
+---
+
+## [2.3.4-dev.2] - 2026/02/03
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 添加模块加载策略支持：
+    - 新增 `loaders/strategy`，提供可扩展的加载策略系统
+    - 支持 "all"（加载全部）、"enabled"（仅加载启用）和 "manual"（手动指定）三种策略
+    - 新增 `LoadingStrategy` 抽象基类，定义策略接口
+    - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
+    - `ModuleInitializer` 现在支持通过策略控制模块加载行为
+
+---
+
+## [2.3.4-dev.1] - 2026/02/02
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - 添加测试基础设施：
+    - 新增 `pytest.ini` 配置文件，定义测试发现、标记和覆盖率规则
+    - 新增 `tests/conftest.py` 测试配置文件，提供丰富的测试夹具（fixtures）
+    - 新增 `tests/unit/test_unit_adapter.py`，提供适配器系统的完整单元测试
+  - 添加 `devs/test_imports.py` 兼容性测试脚本，验证重构后的模块导入功能
+
+### 变更
+- @wsu2059q
+  - 重构模块加载系统架构：
+    - 引入 `ManagerBase` 基类，统一适配器和模块管理器的配置接口
+    - `AdapterManager` 和 `ModuleManager` 现在继承自 `ManagerBase`
+    - 新增 `BaseLoader` 加载器抽象基类，定义标准加载接口
+    - 引入 `AdapterLoader` 和 `ModuleLoader` 专用加载器
+    - 新增 `ModuleInitializer` 初始化协调器，统一管理加载流程
+    - 移除 `__init__.py` 中的 `LazyModule` 内部实现，迁移到 `loaders/module_loader.py`
+  - 改进核心模块功能：
+    - `adapter` 模块：优化 `exists()` 方法，检查 `_adapters` 而非配置；`enable()`/`disable()` 支持自动注册
+    - `module` 模块：增强 `register()` 的类验证和警告机制；`unload()` 改进错误处理
+    - `command` 模块：修复 `aliases` 参数中的别名未正确注册的问题
+    - `router` 模块：优化 WebSocket 路由注销逻辑和 IPv6 回环地址显示
+    - `logger` 模块：改进 `get_child()` 方法，支持非相对路径；`set_output_file()` 改进处理器管理
+    - `lifecycle` 模块：添加事件类型验证，防止空值提交
+    - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
+  - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
+  - 移除 `storage` 模块的快照功能：
+    - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
+    - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
+    - 移除 `ErisPulse.storage.max_snapshot` 配置项
+    - 移除相关文档和示例代码
+  - 移除 `devs/test.py` 交互测试脚本
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
+  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
+
+---
+
+## [2.3.4-dev.0] - 2026/01/27
 > 开发版本
 
 ### 新增
 - @wsu2059q
   - `cli`中 `epsdk run` ，如果入口不存在，现在会自动创建一个入口文件，而不是打印错误信息
+  - `cli` 实现命令自动发现机制：
+    - 动态扫描 `commands` 目录，自动加载继承自 `Command` 基类的所有命令
+    - 无需手动注册命令，提高扩展性和维护性
+  - `cli` 交互式安装支持预加载远程包列表，提升用户体验
+
+### 变更
+- @wsu2059q
+  - 重构 `cli` 第三方命令执行逻辑，简化处理流程
+  - 修正 `run` 命令中未使用的导入路径
+  - 移除 `Core.ux` 模块及其相关功能
+  - 移除 `SDKProtocol` 中 `UXManager` 相关代码和类型定义
 
 ---
 

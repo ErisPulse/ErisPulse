@@ -20,7 +20,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "memory_limit": 1000
     },
     "storage": {
-        "max_snapshot": 20
+        "use_global_db": False,     # 如果您更新 ErisPulse 后发现您的机器人丢失了一些存储内容，请修改此处为True使用原包内的db
     },
     "modules": {},
     "adapters": {},
@@ -64,18 +64,6 @@ ssl_keyfile = "/path/to/key.pem"
 level = "DEBUG"
 log_files = ["app.log", "debug.log"]
 memory_limit = 2000
-```
-
-## 存储配置 (storage)
-
-存储配置控制着框架内置存储系统的行为：
-
-- `max_snapshot`: 最大快照数量，默认为 `20`，用于限制自动创建的快照数量
-
-配置示例：
-```toml
-[ErisPulse.storage]
-max_snapshot = 50
 ```
 
 ## 模块配置 (modules)

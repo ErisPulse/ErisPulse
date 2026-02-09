@@ -10,9 +10,8 @@ ErisPulse 事件包装类
 {!--< /tips >!--}
 """
 
-from typing import Any, Dict, List, Optional, Callable, Awaitable, Union
+from typing import Any, Dict, List, Optional, Callable, Awaitable
 from .. import adapter, logger
-import asyncio
 
 
 class Event(dict):
@@ -193,6 +192,30 @@ class Event(dict):
         """
         return self.get("group_id", "")
 
+    def get_channel_id(self) -> str:
+        """
+        获取频道ID
+        
+        :return: 频道ID（频道消息）
+        """
+        return self.get("channel_id", "")
+
+    def get_guild_id(self) -> str:
+        """
+        获取服务器ID
+        
+        :return: 服务器ID（服务器消息）
+        """
+        return self.get("guild_id", "")
+
+    def get_thread_id(self) -> str:
+        """
+        获取话题/子频道ID
+        
+        :return: 话题ID（话题消息）
+        """
+        return self.get("thread_id", "")
+
     def get_sender(self) -> Dict[str, Any]:
         """
         获取发送者信息字典
@@ -341,7 +364,9 @@ class Event(dict):
         """
         获取适配器实例和目标信息
         
-        :return: (适配器实例, 详细类型, 目标ID)
+        基于 OneBot12 标准，直接使用事件的 detail_type 字段
+        
+        :return: (适配器实例, 发送目标类型, 目标ID)
         """
         platform = self.get_platform()
         if not platform:
@@ -351,17 +376,62 @@ class Event(dict):
         if not adapter_instance:
             raise ValueError(f"找不到平台 {platform} 的适配器")
 
-        group_id = self.get_group_id()
-        user_id = self.get_user_id()
+        # 直接使用事件的 detail_type
+        detail_type = self.get_detail_type()
         
-        if group_id:
-            detail_type = "group"
-            target_id = group_id
-        else:
-            detail_type = "user"
-            target_id = user_id
+        # 根据 detail_type 获取对应的目标 ID 字段
+        # 遵循 OneBot12 标准：private、group 是标准类型
+        # 也兼容各平台可能扩展的类型：channel、guild、thread 等
+        id_field_map = {
+            # OneBot12 标准类型
+            "private": "user_id",
+            "group": "group_id",
+            
+            # 平台扩展类型
+            "user": "user_id",  # 兼容某些平台使用 user 的情况
+            "channel": "channel_id",
+            "guild": "guild_id",
+            "thread": "thread_id",
+            "supergroup": "group_id",  # Telegram supergroup 映射到 group_id
+        }
+        
+        # 获取对应的目标 ID 字段名，默认使用 user_id
+        id_field = id_field_map.get(detail_type, "user_id")
+        
+        # 获取目标 ID
+        target_id = self.get(id_field, "")
+        
+        # 如果目标 ID 为空，尝试从其他字段获取（兼容性处理）
+        if not target_id:
+            if detail_type in ["group", "channel", "guild", "supergroup"]:
+                # 对于群组/频道相关类型，尝试多个可能的字段
+                target_id = (
+                    self.get("group_id") or 
+                    self.get("channel_id") or 
+                    self.get("guild_id") or 
+                    ""
+                )
+            else:
+                # 对于其他类型（主要是 private），使用 user_id
+                target_id = self.get_user_id()
 
-        return adapter_instance, detail_type, target_id
+        if not target_id:
+            raise ValueError(f"无法获取目标 ID (detail_type={detail_type})")
+
+        # 映射到适配器发送方法的目标类型
+        # 事件中的 detail_type "private" 需要映射为发送目标的 "user"
+        send_target_type_map = {
+            "private": "user",
+            "group": "group",
+            "user": "user",
+            "channel": "channel",
+            "guild": "guild",
+            "thread": "thread",
+            "supergroup": "group",
+        }
+        send_target_type = send_target_type_map.get(detail_type, detail_type)
+
+        return adapter_instance, send_target_type, target_id
 
     async def reply(self, 
                    content: str, 
@@ -442,19 +512,14 @@ class Event(dict):
         :param validator: 验证函数，用于验证回复是否有效
         :return: 用户回复的事件数据，如果超时则返回None
         """
-        platform = self.get_platform()
-        user_id = self.get_user_id()
-        group_id = self.get_group_id()
-        target_id = group_id or user_id
-        detail_type = "group" if group_id else "private"
-
         # 导入command处理器以复用等待逻辑
         from .command import command as command_handler
 
         # 发送提示消息（如果提供）
         if prompt:
             try:
-                adapter_instance = getattr(adapter, platform)
+                # 使用相同的目标获取逻辑
+                adapter_instance, detail_type, target_id = self._get_adapter_and_target()
                 await adapter_instance.Send.To(detail_type, target_id).Text(prompt)
             except Exception as e:
                 logger.warning(f"发送提示消息失败: {e}")
@@ -479,7 +544,7 @@ class Event(dict):
         """
         获取原始事件数据
         
-        :return: 原始事件数据
+        :return: 原始事件数据字典
         """
         platform = self.get_platform()
         raw_key = f"{platform}_raw" if platform else "raw"
