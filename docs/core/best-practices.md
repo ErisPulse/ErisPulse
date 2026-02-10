@@ -25,20 +25,24 @@ class Main(BaseModule):
         self.module_config = self._load_config()
         
     @staticmethod
-    def should_eager_load():
+    def get_load_strategy():
         """
-        控制模块是否立即加载
+        控制模块加载策略
         
-        返回 True 表示禁用懒加载，模块会在 SDK 初始化时立即加载
-        返回 False 表示启用懒加载，模块会在首次访问时才加载
-        默认值为 False，推荐大多数情况使用懒加载以提升启动速度
+        使用 ModuleLoadStrategy 定义模块的加载行为：
+        - lazy_load: False 表示立即加载，True 表示懒加载（默认）
+        - priority: 加载优先级，数值越大优先级越高（默认为 0）
         
-        适用场景（返回 True）：
+        适用场景（lazy_load=False）：
         - 监听生命周期事件的模块
         - 定时任务模块
         - 需要在应用启动时就初始化的模块
         """
-        return False
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100      # 高优先级
+        )
     
     async def on_load(self, event):
         """模块加载时调用"""
@@ -96,23 +100,28 @@ enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加�
 #### 模块级别控制
 
 ```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.loaders import ModuleLoadStrategy
+
 class MyModule(BaseModule):
     @staticmethod
-    def should_eager_load() -> bool:
-        # 返回 True 表示禁用懒加载
-        # 返回 False 表示启用懒加载
-        return True
+    def get_load_strategy():
+        """返回模块加载策略"""
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100
+        )
 ```
 
-#### 推荐使用懒加载的场景
+#### 推荐使用懒加载的场景（lazy_load=True）
 
-- ✅ 大多数功能模块（返回 `False`）
+- ✅ 大多数功能模块
 - ✅ 命令处理模块
 - ✅ 按需加载的扩展功能
 
-#### 推荐禁用懒加载的场景
+#### 推荐禁用懒加载的场景（lazy_load=False）
 
-- ❌ 生命周期事件监听器（返回 `True`）
+- ❌ 生命周期事件监听器
 - ❌ 定时任务模块
 - ❌ 需要早期初始化的模块
 
