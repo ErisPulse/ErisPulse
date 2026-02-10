@@ -46,8 +46,13 @@ enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加�
 # 模块级别控制
 class MyModule(BaseModule):
     @staticmethod
-    def should_eager_load() -> bool:
-        return True  # 返回True表示禁用懒加载
+    def get_load_strategy():
+        """返回模块加载策略"""
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100
+        )
 ```
 
 #### 加载流程
