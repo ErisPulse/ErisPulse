@@ -266,7 +266,7 @@ async def group_handler(event):
 
 ### 5.5 回复功能
 
-Event 提供了统一的 `reply()` 方法，支持多种回复类型：
+Event 提供了统一的 `reply()` 方法，用于快速回复消息：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -276,25 +276,20 @@ async def reply_test(event):
     # 基本文本回复（默认）
     await event.reply("这是一条文本消息")
     
-    # 发送图片
+    # 指定发送方法
     await event.reply("http://example.com/image.jpg", method="Image")
-    
-    # 发送语音
-    await event.reply("http://example.com/voice.mp3", method="Voice")
-    
-    # 发送视频
-    await event.reply("http://example.com/video.mp4", method="Video")
-    
-    # 发送文件
-    await event.reply("http://example.com/file.pdf", method="File")
 ```
+
+**详细的发送方法说明请参考：**
+- [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看所有发送方法和使用示例
+- [发送方法命名规范](../standards/send-type-naming.md) - 查看标准方法命名规则
 
 **reply() 方法参数说明：**
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | content | str | 发送内容（文本、URL等，取决于method参数） |
-| method | str | 适配器发送方法，默认为 "Text"。可选值：Text, Image, Voice, Video, File 等 |
+| method | str | 适配器发送方法，默认为 "Text" |
 | **kwargs | dict | 额外参数，具体取决于适配器实现 |
 
 ### 5.6 等待回复功能
