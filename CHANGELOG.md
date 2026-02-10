@@ -35,6 +35,10 @@
 ## [2.3.5-dev.0] - 2026/02/10
 > 开发版本
 
+### 变更
+- @wsu2059q
+  - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
+
 ### 修复
 - @wsu2059q
   - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
@@ -83,6 +87,11 @@
     - 新增 `LoadingStrategy` 抽象基类，定义策略接口
     - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
     - `ModuleInitializer` 现在支持通过策略控制模块加载行为
+
+### 变更
+- @wsu2059q
+  - 重构模块加载系统架构：
+    - 移除 `BaseModule` 基类中的 `should_eager_load` 方法，改使用 `LoadingStrategy` 策略控制（旧策略依然保持兼容）
 
 ---
 
