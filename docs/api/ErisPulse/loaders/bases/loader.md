@@ -1,6 +1,6 @@
 # `ErisPulse.loaders.bases.loader` 模块
 
-> 最后更新：2026-02-04 06:11:34
+> 最后更新：2026-02-10 14:07:04
 
 ---
 
@@ -31,7 +31,6 @@ ErisPulse 基础加载器
 > 子类需要实现：
 > - _get_entry_point_group: 返回 entry-point 组名
 > - _process_entry_point: 处理单个 entry-point
-> - _should_eager_load: 判断是否立即加载
 
 > **内部方法** 
 此类仅供内部使用，不应直接实例化
