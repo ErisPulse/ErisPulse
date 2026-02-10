@@ -24,13 +24,15 @@ class CommandRegistry:
     """
     
     _instance = None
+    _commands: Dict[str, Command]
+    _external_commands: Dict[str, Command]
     
     def __new__(cls):
         """实现单例模式"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._commands: Dict[str, Command] = {}
-            cls._instance._external_commands: Dict[str, Command] = {}
+            cls._instance._commands = {}
+            cls._instance._external_commands = {}
         return cls._instance
     
     def register(self, command: Command):
