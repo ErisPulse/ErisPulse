@@ -6,6 +6,7 @@
 
 - [事件转换标准](event-conversion.md) - 平台事件到 OneBot12 标准的转换规范
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+- [发送方法命名规范](send-type-naming.md) - 适配器 Send 类发送方法的命名规范
 
 ## 标准概述
 
