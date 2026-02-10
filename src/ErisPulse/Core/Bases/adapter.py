@@ -140,6 +140,44 @@ class BaseAdapter:
                 return text
             return asyncio.create_task(_send_example())
 
+        def Raw_ob12(self, message: Union[List[Dict[str, Any]], Dict[str, Any]], **kwargs: Any) -> Awaitable[Any]:
+            """
+            发送原始 OneBot12 格式的消息
+            
+            注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
+            默认实现仅记录警告，不实际发送消息。
+            
+            :param message: OneBot12 格式的消息段数组或单个消息段
+            :param kwargs: 其他参数
+            :return: 异步任务
+            
+            :example:
+            >>> # 用户调用
+            >>> await adapter.Send.To("user", "123").Raw_ob12([
+            >>>     {"type": "text", "data": {"text": "Hello"}},
+            >>>     {"type": "image", "data": {"file_id": "xxx"}}
+            >>> ])
+            
+            >>> # 适配器子类重写示例（可选）
+            >>> def Raw_ob12(self, message, **kwargs):
+            >>>     return asyncio.create_task(
+            >>>         self._adapter.call_api(
+            >>>             "send_message",
+            >>>             message=message,
+            >>>             target_type=self._target_type,
+            >>>             target_id=self._target_id,
+            >>>             account_id=self._account_id,
+            >>>             **kwargs
+            >>>         )
+            >>>     )
+            """
+            async def _send_raw():
+                from .. import logger
+                logger.warning(f"适配器未实现 Raw_ob12 方法，原始消息未被发送: {message}")
+                return None
+            
+            return asyncio.create_task(_send_raw())
+
     def __init__(self):
         self.Send = self.__class__.Send(self)
 
