@@ -140,7 +140,7 @@ class BaseAdapter:
                 return text
             return asyncio.create_task(_send_example())
 
-        def Raw_ob12(self, message: Union[List[Dict[str, Any]], Dict[str, Any]], **kwargs: Any) -> Awaitable[Any]:
+        def Raw_ob12(self, message, **kwargs: Any) -> Awaitable[Any]:
             """
             发送原始 OneBot12 格式的消息
             
