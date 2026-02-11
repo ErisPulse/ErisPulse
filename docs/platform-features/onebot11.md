@@ -6,7 +6,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 3.5.0
+- 对应模块版本: 3.6.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -28,29 +28,59 @@ onebot = adapter.get("onebot11")
 await onebot.Send.To("group", group_id).Text("Hello World!")
 
 # 指定特定账户发送
-await onebot.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
+await onebot.Send.Using("main").To("group", group_id).Text("来自主账户的消息")
+
+# 链式修饰：@用户 + 回复
+await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回复消息")
+
+# @全体成员
+await onebot.Send.To("group", group_id).AtAll().Text("公告消息")
 ```
 
-支持的发送类型包括：
+### 基础发送方法
+
 - `.Text(text: str)`：发送纯文本消息。
-- `.Image(file: Union[str, bytes])`：发送图片消息（支持 URL、Base64 或 bytes）。
-- `.Voice(file: Union[str, bytes])`：发送语音消息。
-- `.Video(file: Union[str, bytes])`：发送视频消息。
-- `.Face(id: Union[str, int])`：发送表情。
-- `.At(user_id: Union[str, int], name: str = None)`：发送@消息。
-- `.Rps()`：发送猜拳魔法表情。
-- `.Dice()`：发送掷骰子魔法表情。
-- `.Shake()`：发送窗口抖动（戳一戳）。
-- `.Location(lat: float, lon: float, title: str = "", content: str = "")`：发送位置。
-- `.Music(type: str, ...)`：发送音乐分享。
-- `.Reply(message_id: Union[str, int])`：发送回复消息。
-- `.Xml(data: str)`：发送XML消息。
-- `.Json(data: str)`：发送JSON消息。
-- `.Poke(type: str, id: Union[str, int] = None, name: str = None)`：发送戳一戳。
-- `.Raw(message_list: List[Dict])`：发送原生 OneBot 消息结构。
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：发送图片（支持 URL、Base64 或 bytes）。
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：发送语音消息。
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：发送视频消息。
+- `.Face(id: Union[str, int])`：发送 QQ 表情。
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`：发送文件（自动判断类型）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息（自动转换为 OB11）。
 - `.Recall(message_id: Union[str, int])`：撤回消息。
-- `.Edit(message_id: Union[str, int], new_text: str)`：编辑消息。
-- `.Batch(target_ids: List[str], text: str)`：批量发送消息。
+
+### 链式修饰方法（可组合使用）
+
+链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
+
+- `.At(user_id: Union[str, int], name: str = None)`：@指定用户（可多次调用）。
+- `.AtAll()`：@全体成员。
+- `.Reply(message_id: Union[str, int])`：回复指定消息。
+
+### 链式调用示例
+
+```python
+# 基础发送
+await onebot.Send.To("group", 123456).Text("Hello")
+
+# @单个用户
+await onebot.Send.To("group", 123456).At(789012).Text("你好")
+
+# @多个用户
+await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
+
+# 发送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+```
+
+### 不支持的类型处理
+
+如果调用未定义的发送方法，适配器会返回文本提示：
+```python
+# 调用不存在的方法
+await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
+# 实际发送: "[不支持的发送类型] 方法名: SomeUnsupportedMethod, 参数: [...]"
+```
 
 ## 特有事件类型
 
@@ -68,22 +98,6 @@ OneBot11事件转换到OneBot12协议，其中标准字段完全遵守OneBot12�
    - 所有特有字段均以onebot11_前缀标识
    - 保留原始CQ码消息在onebot11_raw_message字段
    - 保留原始事件数据在onebot11_raw字段
-
-### 事件监听方式
-
-OneBot适配器支持两种方式监听事件：
-
-```python
-# 使用原始事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-
-# 使用映射后的事件名
-@sdk.adapter.OneBot.on("message")
-async def handle_message(event):
-    pass
-```
 
 ### 特殊字段示例
 
@@ -133,7 +147,7 @@ async def handle_message(event):
 }
 ```
 
-## 扩展字段说明
+### 扩展字段说明
 
 - 所有特有字段均以 `onebot11_` 前缀标识
 - 保留原始CQ码消息在 `onebot11_raw_message` 字段
