@@ -1,6 +1,6 @@
 # ErisPulse 模块开发文档
 
-**生成时间**: 2026-02-10 14:07:04
+**生成时间**: 2026-02-11 14:48:33
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -1014,38 +1014,62 @@ memory_limit = 1000
 
 ### 1. SendDSL 消息发送
 
-适配器通过 SendDSL 实现链式调用风格的消息发送接口：
+适配器通过 SendDSL 实现链式调用风格的消息发送接口。
 
-发送中间方法示例：
+#### 1.1 基础调用方式
+
+**To 方法 - 设置消息目标**
+
+`To` 方法用于设置消息的接收者。支持两种调用方式：
+
+1. **指定类型和ID**：`To(type, id)` - 设置 `_target_type` 和 `_target_id`
+2. **仅指定ID**：`To(id)` - 设置 `_target_to`
+
 ```python
 from ErisPulse.Core import adapter
 
 my_platform = adapter.get("MyPlatform")
 
-# 指定会话类型和对应id的发送接口
-my_platform.To('user', '123').Example("hello world")
+# 指定类型和ID
+my_platform.Send.To('user', '123').Text("hello world")
 
-# 仅指定id的接口（比如email可以仅指定一个ID）
-my_platform.To('123').Example("hello world")
-
-# 使用指定账号的发送接口
-my_platform.Using('account_id').Example("hello world")
-
-# 直接调用（适用于某些场景，比如没有指定的会话和id）
-my_platform.Example("hello world")
+# 仅指定ID（适用于某些平台，如邮件）
+my_platform.Send.To('123').Text("hello world")
 ```
 
-发送方法示例：
+**Using/Account 方法 - 设置发送账号**
+
+`Using` 和 `Account` 方法用于指定发送消息的机器人账号。
+
+```python
+# 使用 Using 方法
+my_platform.Send.Using('account_id').Text("hello world")
+
+# 使用 Account 方法（与 Using 等价）
+my_platform.Send.Account('account_id').Text("hello world")
+```
+
+**组合使用**
+
+中间方法可以组合使用，顺序不限：
+
+```python
+# Using + To
+my_platform.Send.Using('bot1').To('user', '123').Text("hello world")
+
+# To + Using
+my_platform.Send.To('user', '123').Using('bot1').Text("hello world")
+```
+
+#### 1.2 发送方法调用
+
 ```python
 from ErisPulse.Core import adapter
 
-# 使用方式
 my_platform = adapter.get("MyPlatform")
 
 # 不等待结果，消息在后台发送
 my_platform.Send.To("user", "123").Text("Hello")
-
-# 由于适配器的DSL发送接口返回的是一个AsyncTask，因此你可以自行决定需不需要等待结果
 
 # 等待结果，消息在发送后返回结果
 task = my_platform.Send.To("user", "123").Text("Hello")
@@ -1053,11 +1077,53 @@ task = my_platform.Send.To("user", "123").Text("Hello")
 # 等待结果，并获取结果
 result = await task
 
-# 等待结果，并获取结果
+# 直接 await 获取结果
 result = await my_platform.Send.To("user", "123").Text("Hello")
 ```
-> 返回的 Task 维持了协程的完整状态机，因此可以将其存储在变量中供后续使用 
-> **提示**：对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
+> **提示**：返回的 Task 维持了协程的完整状态机，因此可以将其存储在变量中供后续使用。对于大多数消息发送场景，您不需要等待发送结果。只有在需要确认消息是否成功发送或获取特定返回信息时，才需要 `await` Task 对象。
+
+#### 1.3 链式修饰方法
+
+链式修饰方法用于在发送消息前设置额外的参数（如 @用户、回复消息等）。这些方法返回 `self`，支持连续调用。
+
+```python
+# @单个用户
+await my_platform.Send.To('group', '123').At('456').Text("你好")
+
+# @多个用户
+await my_platform.Send.To('group', '123').At('456').At('789').Text("你们好")
+
+# @全体成员
+await my_platform.Send.To('group', '123').AtAll().Text("大家好")
+
+# 回复消息
+await my_platform.Send.To('group', '123').Reply('msg_id').Text("回复内容")
+
+# 组合使用
+await my_platform.Send.Using('bot1').To('group', '123').At('456').Reply('789').Text("你好")
+```
+
+#### 1.4 发送原始消息
+
+某些适配器提供了直接发送原始格式消息的方法：
+
+```python
+# 发送 OneBot12 格式的消息段
+await my_platform.Send.To('user', '123').Raw_ob12({
+    "type": "text",
+    "data": {"text": "Hello"}
+})
+
+# 发送消息段数组
+await my_platform.Send.To('group', '123').Raw_ob12([
+    {"type": "text", "data": {"text": "Hello"}},
+    {"type": "image", "data": {"file_id": "xxx"}}
+])
+```
+
+#### 1.5 方法命名规范
+
+详细的发送方法命名规范请参考 [发送方法命名规范](../standards/send-type-naming.md)。
 
 
 ### 2. 事件监听
@@ -2069,7 +2135,7 @@ async def group_handler(event):
 
 ### 5.5 回复功能
 
-Event 提供了统一的 `reply()` 方法，支持多种回复类型：
+Event 提供了统一的 `reply()` 方法，用于快速回复消息：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -2079,25 +2145,20 @@ async def reply_test(event):
     # 基本文本回复（默认）
     await event.reply("这是一条文本消息")
     
-    # 发送图片
+    # 指定发送方法
     await event.reply("http://example.com/image.jpg", method="Image")
-    
-    # 发送语音
-    await event.reply("http://example.com/voice.mp3", method="Voice")
-    
-    # 发送视频
-    await event.reply("http://example.com/video.mp4", method="Video")
-    
-    # 发送文件
-    await event.reply("http://example.com/file.pdf", method="File")
 ```
+
+**详细的发送方法说明请参考：**
+- [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看所有发送方法和使用示例
+- [发送方法命名规范](../standards/send-type-naming.md) - 查看标准方法命名规则
 
 **reply() 方法参数说明：**
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | content | str | 发送内容（文本、URL等，取决于method参数） |
-| method | str | 适配器发送方法，默认为 "Text"。可选值：Text, Image, Voice, Video, File 等 |
+| method | str | 适配器发送方法，默认为 "Text" |
 | **kwargs | dict | 额外参数，具体取决于适配器实现 |
 
 ### 5.6 等待回复功能
@@ -2593,6 +2654,7 @@ class Main(BaseModule):
 
 - [事件转换标准](event-conversion.md) - 平台事件到 OneBot12 标准的转换规范
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
+- [发送方法命名规范](send-type-naming.md) - 适配器 Send 类发送方法的命名规范
 
 ## 标准概述
 
