@@ -1,6 +1,6 @@
 # `ErisPulse.loaders.module` 模块
 
-> 最后更新：2026-02-04 08:04:59
+> 最后更新：2026-02-11 14:48:33
 
 ---
 
@@ -90,6 +90,14 @@ ErisPulse 模块加载器
 ##### `_get_load_strategy(module_class: Type)`
 
 获取模块加载策略
+
+优先级：
+1. 模块的 should_eager_load() 方法（旧版兼容）
+2. 模块的 get_load_strategy() 方法
+3. 全局配置
+4. 默认策略
+
+全局配置会覆盖模块策略中的 lazy_load 设置
 
 :param module_class: Type 模块类
 :return: 加载策略对象或字典
