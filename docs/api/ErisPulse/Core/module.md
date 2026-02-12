@@ -1,6 +1,6 @@
 # `ErisPulse.Core.module` 模块
 
-> 最后更新：2026-02-04 14:28:57
+> 最后更新：2026-02-13 03:10:39
 
 ---
 
@@ -71,9 +71,8 @@ ErisPulse 模块系统
 
 卸载指定模块或所有模块
 
-:param module_name: 模块名称，如果为None则卸载所有模块
-:return: 是否卸载成功
-    
+- **module_name** (`str`): 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
+**返回值** (`bool`): 是否卸载成功
 
 **示例**:
 ```python
@@ -171,8 +170,11 @@ ErisPulse 模块系统
 
 注册新模块信息
 
+> **内部方法** 
+此方法仅供内部使用
+
 - **module_name** (`str`): 模块名称
-- **enabled** (`bool`): 是否启用模块
+- **enabled** (`bool`): 是否启用模块 (默认: False)
 **返回值** (`bool`): 操作是否成功
 
 ---
@@ -235,7 +237,7 @@ ErisPulse 模块系统
 
 列出所有模块状态
 
-:return: {模块名: 是否启用} 字典
+**返回值** (`Dict[str, bool`): ] {模块名: 是否启用} 字典
 
 ---
 
@@ -259,6 +261,11 @@ ErisPulse 模块系统
 **返回值** (`Any`): 模块实例
 **异常**: `AttributeError` - 当模块不存在或未启用时
 
+**示例**:
+```python
+>>> my_module = module.MyModule
+```
+
 ---
 
 
@@ -268,6 +275,11 @@ ErisPulse 模块系统
 
 - **module_name** (`str`): 模块名称
 **返回值** (`bool`): 模块是否存在且启用
+
+**示例**:
+```python
+>>> if "MyModule" in module: ...
+```
 
 ---
 

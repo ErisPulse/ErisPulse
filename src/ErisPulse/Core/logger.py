@@ -247,24 +247,52 @@ class Logger:
         return LoggerChild(self, full_module_name)
 
     def debug(self, msg, *args, **kwargs):
+        """
+        记录 DEBUG 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.DEBUG:
             self._save_in_memory(caller_module, msg)
             self._logger.debug(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
+        """
+        记录 INFO 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.INFO:
             self._save_in_memory(caller_module, msg)
             self._logger.info(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
+        """
+        记录 WARNING 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.WARNING:
             self._save_in_memory(caller_module, msg)
             self._logger.warning(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
+        """
+        记录 ERROR 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= logging.ERROR:
             self._save_in_memory(caller_module, msg)
@@ -306,16 +334,37 @@ class LoggerChild:
         self._name = name
 
     def debug(self, msg, *args, **kwargs):
+        """
+        记录 DEBUG 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.DEBUG:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.debug(f"[{self._name}] {msg}", *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
+        """
+        记录 INFO 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.INFO:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.info(f"[{self._name}] {msg}", *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
+        """
+        记录 WARNING 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         if (
             self._parent._get_effective_level(self._name.split(".")[0])
             <= logging.WARNING
@@ -324,6 +373,13 @@ class LoggerChild:
             self._parent._logger.warning(f"[{self._name}] {msg}", *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
+        """
+        记录 ERROR 级别日志
+
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
         if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.ERROR:
             self._parent._save_in_memory(self._name, msg)
             self._parent._logger.error(f"[{self._name}] {msg}", *args, **kwargs)
