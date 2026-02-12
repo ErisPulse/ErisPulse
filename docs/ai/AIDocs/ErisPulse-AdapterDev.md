@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2026-02-12 19:15:14
+**生成时间**: 2026-02-13 03:56:58
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -19,11 +19,15 @@
 11. [标准规范总览](#READMEmd)
 12. [事件转换标准](#event-conversionmd)
 13. [API响应标准](#api-responsemd)
-14. [平台特性总览](#READMEmd)
-15. [云湖平台特性](#yunhumd)
-16. [Telegram平台特性](#telegrammd)
-17. [OneBot11平台特性](#onebot11md)
-18. [邮件平台特性](#emailmd)
+14. [发送类型命名标准](#send-type-namingmd)
+15. [平台特性总览](#READMEmd)
+16. [云湖平台特性](#yunhumd)
+17. [Telegram平台特性](#telegrammd)
+18. [OneBot11平台特性](#onebot11md)
+19. [OneBot12平台特性](#onebot12md)
+20. [邮件平台特性](#emailmd)
+21. [风格指南总览](#READMEmd)
+22. [文档字符串规范](#docstring_specmd)
 
 ## 各文件对应内容说明
 
@@ -42,11 +46,15 @@
 | [README.md](#READMEmd) | 标准规范总览 |
 | [event-conversion.md](#event-conversionmd) | 事件转换标准 |
 | [api-response.md](#api-responsemd) | API响应标准 |
+| [send-type-naming.md](#send-type-namingmd) | 发送类型命名标准 |
 | [README.md](#READMEmd) | 平台特性总览 |
 | [yunhu.md](#yunhumd) | 云湖平台特性 |
 | [telegram.md](#telegrammd) | Telegram平台特性 |
 | [onebot11.md](#onebot11md) | OneBot11平台特性 |
+| [onebot12.md](#onebot12md) | OneBot12平台特性 |
 | [email.md](#emailmd) | 邮件平台特性 |
+| [README.md](#READMEmd) | 风格指南总览 |
+| [docstring_spec.md](#docstring_specmd) | 文档字符串规范 |
 
 ---
 
@@ -204,36 +212,6 @@ mkdir my_bot && cd my_bot
 ep-init
 ```
 这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
-
-### 查看系统状态
-
-在项目目录中，你可以使用以下命令查看系统状态：
-
-```bash
-# 查看所有组件状态
-epsdk status
-
-# 查看详细模块信息
-epsdk status -t modules
-
-# 查看详细适配器信息
-epsdk status -t adapters
-```
-
-### 查看系统状态
-
-在项目目录中，你可以使用以下命令查看系统状态：
-
-```bash
-# 查看所有组件状态
-epsdk status
-
-# 查看详细模块信息
-epsdk status -t modules
-
-# 查看详细适配器信息
-epsdk status -t adapters
-```
 
 ---
 
@@ -3626,6 +3604,101 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 
 ---
 
+<a id="send-type-namingmd"></a>
+## 发送类型命名标准
+
+# ErisPulse 发送方法命名规范
+
+本文档定义了 ErisPulse 适配器中 Send 类发送方法的命名规范。
+
+## 1. 标准方法命名
+
+所有发送方法使用 **大驼峰命名法（PascalCase）**，首字母大写。
+
+### 1.1 标准发送方法
+
+| 方法名 | 说明 | 参数类型 |
+|-------|------|---------|
+| `Text` | 发送文本消息 | `str` |
+| `Image` | 发送图片 | `bytes`, `str` (URL) |
+| `Voice` | 发送语音 | `bytes`, `str` (URL) |
+| `Video` | 发送视频 | `bytes`, `str` (URL) |
+| `File` | 发送文件 | `bytes`, `str` (URL) |
+| `At` | @用户/群组 | `str` (user_id) |
+| `Face` | 发送表情 | `str` (emoji) |
+| `Reply` | 回复消息 | `str`, `dict` |
+| `Forward` | 转发消息 | `str` (message_id) |
+| `Markdown` | 发送 Markdown 消息 | `str` |
+| `HTML` | 发送 HTML 消息 | `str` |
+| `Card` | 发送卡片消息 | `dict` |
+
+### 1.2 链式修饰方法
+
+| 方法名 | 说明 | 参数类型 |
+|-------|------|---------|
+| `At` | @用户（可多次调用） | `str` (user_id) |
+| `AtAll` | @全体成员 | 无 |
+| `Reply` | 回复消息 | `str` (message_id) |
+
+### 1.3 协议方法
+
+| 方法名 | 说明 |
+|-------|------|
+| `Raw_ob12` | 发送原始 OneBot12 格式消息 |
+| `Raw_json` | 发送原始 JSON 格式消息 |
+| `Raw_xml` | 发送原始 XML 格式消息 |
+
+## 2. 平台特有方法命名
+
+**不推荐**在 Send 类中直接添加平台前缀方法。建议使用通用方法名或 `Raw_{协议}` 方法。
+
+**不推荐：**
+```python
+def YunhuForm(self, form_id: str):  # ❌ 不推荐
+    pass
+
+def TelegramSticker(self, sticker_id: str):  # ❌ 不推荐
+    pass
+```
+
+**推荐：**
+```python
+def Form(self, form_id: str):  # ✅ 通用方法名
+    pass
+
+def Sticker(self, sticker_id: str):  # ✅ 通用方法名
+    pass
+
+# 或使用 Raw 方法
+def Raw_ob12(self, message):  # ✅ 发送 OneBot12 格式
+    pass
+```
+
+## 3. 参数命名规范
+
+| 参数名 | 说明 | 类型 |
+|-------|------|------|
+| `text` | 文本内容 | `str` |
+| `url` / `file` | 文件 URL 或二进制数据 | `str` / `bytes` |
+| `user_id` | 用户 ID | `str` / `int` |
+| `group_id` | 群组 ID | `str` / `int` |
+| `message_id` | 消息 ID | `str` |
+| `data` | 数据对象（如卡片数据） | `dict` |
+
+## 4. 返回值规范
+
+- **发送方法**（如 `Text`, `Image`）：必须返回 `asyncio.Task` 对象
+- **修饰方法**（如 `At`, `Reply`, `AtAll`）：必须返回 `self` 以支持链式调用
+
+## 5. 相关文档
+
+- [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看调用方法和使用示例
+- [适配器开发指南](../development/adapter.md) - 查看适配器实现要求
+- [模块开发指南](../development/module.md) - 查看模块中的发送消息示例
+
+
+---
+
 <a id="READMEmd"></a>
 ## 平台特性总览
 
@@ -4700,6 +4773,351 @@ onebot.accounts["test"].enabled = False
 
 ---
 
+<a id="onebot12md"></a>
+## OneBot12平台特性
+
+# OneBot12平台特性文档
+
+OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse 框架的基线协议适配器。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 1.0.0
+- 维护者: ErisPulse
+- 协议版本: OneBot V12
+
+## 基本信息
+
+- 平台简介：OneBot V12 是一个通用的聊天机器人应用接口标准，是ErisPulse框架的基线协议
+- 适配器名称：OneBot12Adapter
+- 支持的协议/API版本：OneBot V12
+- 多账户支持：完全多账户架构，支持同时配置和运行多个OneBot12账户
+
+## 支持的消息发送类型
+
+所有发送方法均通过链式语法实现，例如：
+
+```python
+from ErisPulse.Core import adapter
+onebot12 = adapter.get("onebot12")
+
+# 使用默认账户发送
+await onebot12.Send.To("group", group_id).Text("Hello World!")
+
+# 指定特定账户发送
+await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
+```
+
+### 基础消息类型
+
+- `.Text(text: str)`：发送纯文本消息
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：发送图片消息（支持URL、Base64或bytes）
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：发送音频消息
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：发送视频消息
+
+### 交互消息类型
+
+- `.Mention(user_id: Union[str, int], user_name: str = None)`：发送@消息
+- `.Reply(message_id: Union[str, int], content: str = None)`：发送回复消息
+- `.Sticker(file_id: str)`：发送表情包/贴纸
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：发送位置
+
+### 管理功能
+
+- `.Recall(message_id: Union[str, int])`：撤回消息
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：编辑消息
+- `.Raw(message_segments: List[Dict])`：发送原生OneBot12消息段
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：批量发送消息
+
+## OneBot12标准事件
+
+OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接提交到框架。
+
+### 消息事件 (Message Events)
+
+```python
+# 私聊消息
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+
+# 群聊消息
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "group_id": "group-id",
+    "message": [{"type": "text", "data": {"text": "Hello group"}}],
+    "alt_message": "Hello group",
+    "time": 1234567890
+}
+```
+
+### 通知事件 (Notice Events)
+
+```python
+# 群成员增加
+{
+    "id": "event-id",
+    "type": "notice",
+    "detail_type": "group_member_increase",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "approve",
+    "time": 1234567890
+}
+
+# 群成员减少
+{
+    "id": "event-id",
+    "type": "notice", 
+    "detail_type": "group_member_decrease",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "leave",
+    "time": 1234567890
+}
+```
+
+### 请求事件 (Request Events)
+
+```python
+# 好友请求
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "friend",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "comment": "申请消息",
+    "flag": "request-flag",
+    "time": 1234567890
+}
+
+# 群邀请请求
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "comment": "申请消息",
+    "flag": "request-flag",
+    "sub_type": "invite",
+    "time": 1234567890
+}
+```
+
+### 元事件 (Meta Events)
+
+```python
+# 生命周期事件
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "lifecycle",
+    "self": {"user_id": "bot-id"},
+    "sub_type": "enable",
+    "time": 1234567890
+}
+
+# 心跳事件
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "heartbeat",
+    "self": {"user_id": "bot-id"},
+    "interval": 5000,
+    "status": {"online": true},
+    "time": 1234567890
+}
+```
+
+## 配置选项
+
+### 账户配置
+
+每个账户独立配置以下选项：
+
+- `mode`: 该账户的运行模式 ("server" 或 "client")
+- `server_path`: Server模式下的WebSocket路径
+- `server_token`: Server模式下的认证Token（可选）
+- `client_url`: Client模式下要连接的WebSocket地址
+- `client_token`: Client模式下的认证Token（可选）
+- `enabled`: 是否启用该账户
+- `platform`: 平台标识，默认为 "onebot12"
+- `implementation`: 实现标识，如 "go-cqhttp"（可选）
+
+### 配置示例
+
+```toml
+[OneBotv12_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot12-main"
+server_token = "main_token"
+enabled = true
+platform = "onebot12"
+implementation = "go-cqhttp"
+
+[OneBotv12_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+platform = "onebot12"
+implementation = "shinonome"
+
+[OneBotv12_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### 默认配置
+
+如果未配置任何账户，适配器会自动创建：
+
+```toml
+[OneBotv12_Adapter.accounts.default]
+mode = "server"
+server_path = "/onebot12"
+enabled = true
+platform = "onebot12"
+```
+
+## 发送方法返回值
+
+所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 OneBot12 标准：
+
+```python
+{
+    "status": "ok",           // 执行状态
+    "retcode": 0,             // 返回码
+    "data": {...},            // 响应数据
+    "self": {"user_id": "account-id"},  // 账户信息
+    "message_id": "123456",   // 消息ID
+    "message": ""             // 错误信息
+}
+```
+
+### 多账户发送语法
+
+```python
+# 账户选择方法
+await onebot12.Send.Using("main").To("group", 123456).Text("主账户消息")
+await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API调用方式
+await onebot12.call_api("send_message", account_id="main", 
+    detail_type="group", group_id=123456, 
+    content=[{"type": "text", "data": {"text": "Hello"}}])
+```
+
+## 异步处理机制
+
+OneBot12适配器采用异步非阻塞设计：
+
+1. 消息发送不会阻塞事件处理循环
+2. 多个并发发送操作可以同时进行
+3. API响应能够及时处理
+4. WebSocket连接保持活跃状态
+5. 多账户并发处理，每个账户独立运行
+
+## 错误处理
+
+适配器提供完善的错误处理机制：
+
+1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
+2. API调用超时处理（固定30秒超时）
+3. 消息发送失败自动重试（最多3次重试）
+
+## 事件处理增强
+
+多账户模式下，所有事件都会自动添加账户信息：
+
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "platform": "onebot12",
+    // ... 其他事件字段
+}
+```
+
+## 管理接口
+
+```python
+# 获取所有账户信息
+accounts = onebot12.accounts
+
+# 检查账户连接状态
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot12.connections.items()
+}
+
+# 动态启用/禁用账户（需要重启适配器）
+onebot12.accounts["test"].enabled = False
+```
+
+## OneBot12标准特性
+
+### 消息段标准
+
+OneBot12使用标准化的消息段格式：
+
+```python
+# 文本消息段
+{"type": "text", "data": {"text": "Hello"}}
+
+# 图片消息段
+{"type": "image", "data": {"file_id": "image-id"}}
+
+# 提及消息段
+{"type": "mention", "data": {"user_id": "user-id", "user_name": "Username"}}
+
+# 回复消息段
+{"type": "reply", "data": {"message_id": "msg-id"}}
+```
+
+### API标准
+
+遵循OneBot12标准API规范：
+
+- `send_message`: 发送消息
+- `delete_message`: 撤回消息
+- `edit_message`: 编辑消息
+- `get_message`: 获取消息
+- `get_self_info`: 获取自身信息
+- `get_user_info`: 获取用户信息
+- `get_group_info`: 获取群组信息
+
+## 最佳实践
+
+1. **配置管理**: 建议使用多账户配置，将不同用途的机器人分开管理
+2. **错误处理**: 始终检查API调用的返回状态
+3. **消息发送**: 使用合适的消息类型，避免发送不支持的消息
+4. **连接监控**: 定期检查连接状态，确保服务可用性
+5. **性能优化**: 批量发送时使用Batch方法，减少网络开销
+
+---
+
 <a id="emailmd"></a>
 ## 邮件平台特性
 
@@ -4845,72 +5263,182 @@ await mail.Send.Using("from@example.com")
 
 ---
 
+<a id="READMEmd"></a>
+## 风格指南总览
+
+# 风格指南
+
+为了确保代码库的风格一致性，在贡献代码之前，请务必了解以下文档
+
+[API注释风格指南](docstring_spec.md)
+
+
+---
+
+<a id="docstring_specmd"></a>
+## 文档字符串规范
+
+# ErisPulse 注释风格规范
+
+在创建EP核心方法时必须添加方法注释，注释格式如下：
+
+## 模块级文档注释
+
+每个模块文件开头应包含模块文档：
+```python
+"""
+[模块名称]
+[模块功能描述]
+
+{!--< tips >!--}
+重要使用说明或注意事项
+{!--< /tips >!--}
+"""
+```
+
+## 方法注释
+
+### 基本格式
+```python
+def func(param1: type1, param2: type2) -> return_type:
+    """
+    [功能描述]
+    
+    :param param1: [类型1] [参数描述1]
+    :param param2: [类型2] [参数描述2]
+    :return: [返回类型] [返回描述]
+    """
+    pass
+```
+
+### 完整格式（适用于复杂方法）
+```python
+def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
+    """
+    [功能详细描述]
+    [可包含多行描述]
+    
+    :param param1: [类型1] [参数描述1]
+    :param param2: [类型2] [可选参数描述2] (默认: None)
+    
+    :return: 
+        type1: [返回参数1描述]
+        type2: [返回参数2描述]
+    
+    :raises ErrorType: [错误描述]
+    """
+    pass
+```
+
+## 特殊标签（用于API文档生成）
+
+当方法注释包含以下内容时，将在API文档构建时产生对应效果：
+
+| 标签格式 | 作用 | 示例 |
+|---------|------|------|
+| `{!--< internal-use >!--}` | 标记为内部使用，不生成文档 | `{!--< internal-use >!--}` |
+| `{!--< ignore >!--}` | 忽略此方法，不生成文档 | `{!--< ignore >!--}` |
+| `{!--< deprecated >!--}` | 标记为过时方法 | `{!--< deprecated >!--} 请使用new_func()代替` |
+| `{!--< experimental >!--}` | 标记为实验性功能 | `{!--< experimental >!--} 可能不稳定` |
+| `{!--< tips >!--}...{!--< /tips >!--}` | 多行提示内容 | `{!--< tips >!--}\n重要提示内容\n{!--< /tips >!--}` |
+| `{!--< tips >!--}` | 单行提示内容 | `{!--< tips >!--} 注意: 此方法需要先初始化` |
+
+## 最佳建议
+
+1. **类型标注**：使用Python类型标注语法
+   ```python
+   def func(param: int) -> str:
+   ```
+
+2. **参数说明**：对可选参数注明默认值
+   ```python
+   :param timeout: [int] 超时时间(秒) (默认: 30)
+   ```
+
+3. **返回值**：多返回值使用`Tuple`或明确说明
+   ```python
+   :return: 
+       str: 状态信息
+       int: 状态码
+   ```
+
+4. **异常说明**：使用`:raises`标注可能抛出的异常
+   ```python
+   :raises ValueError: 当参数无效时抛出
+   ```
+
+5. **内部方法**：非公开API应添加`{!--< internal-use >!--}`标签
+
+6. **过时方法**：标记过时方法并提供替代方案
+   ```python
+   {!--< deprecated >!--} 请使用new_method()代替 | 2025-07-09
+   ```
+
+---
+
 # API参考
 
 ## API文档目录
 
-- [ErisPulse/CLI/__init__.md](#ErisPulse_CLI___init__)
-- [ErisPulse/CLI/base.md](#ErisPulse_CLI_base)
-- [ErisPulse/CLI/cli.md](#ErisPulse_CLI_cli)
-- [ErisPulse/CLI/commands/__init__.md](#ErisPulse_CLI_commands___init__)
-- [ErisPulse/CLI/commands/init.md](#ErisPulse_CLI_commands_init)
-- [ErisPulse/CLI/commands/install.md](#ErisPulse_CLI_commands_install)
-- [ErisPulse/CLI/commands/list.md](#ErisPulse_CLI_commands_list)
-- [ErisPulse/CLI/commands/list_remote.md](#ErisPulse_CLI_commands_list_remote)
-- [ErisPulse/CLI/commands/run.md](#ErisPulse_CLI_commands_run)
-- [ErisPulse/CLI/commands/self_update.md](#ErisPulse_CLI_commands_self_update)
-- [ErisPulse/CLI/commands/uninstall.md](#ErisPulse_CLI_commands_uninstall)
-- [ErisPulse/CLI/commands/upgrade.md](#ErisPulse_CLI_commands_upgrade)
-- [ErisPulse/CLI/console.md](#ErisPulse_CLI_console)
-- [ErisPulse/CLI/registry.md](#ErisPulse_CLI_registry)
-- [ErisPulse/CLI/utils/__init__.md](#ErisPulse_CLI_utils___init__)
-- [ErisPulse/CLI/utils/package_manager.md](#ErisPulse_CLI_utils_package_manager)
-- [ErisPulse/CLI/utils/reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
-- [ErisPulse/Core/Bases/__init__.md](#ErisPulse_Core_Bases___init__)
-- [ErisPulse/Core/Bases/adapter.md](#ErisPulse_Core_Bases_adapter)
-- [ErisPulse/Core/Bases/manager.md](#ErisPulse_Core_Bases_manager)
-- [ErisPulse/Core/Bases/module.md](#ErisPulse_Core_Bases_module)
-- [ErisPulse/Core/Event/__init__.md](#ErisPulse_Core_Event___init__)
-- [ErisPulse/Core/Event/base.md](#ErisPulse_Core_Event_base)
-- [ErisPulse/Core/Event/command.md](#ErisPulse_Core_Event_command)
-- [ErisPulse/Core/Event/exceptions.md](#ErisPulse_Core_Event_exceptions)
-- [ErisPulse/Core/Event/message.md](#ErisPulse_Core_Event_message)
-- [ErisPulse/Core/Event/meta.md](#ErisPulse_Core_Event_meta)
-- [ErisPulse/Core/Event/notice.md](#ErisPulse_Core_Event_notice)
-- [ErisPulse/Core/Event/request.md](#ErisPulse_Core_Event_request)
-- [ErisPulse/Core/Event/wrapper.md](#ErisPulse_Core_Event_wrapper)
-- [ErisPulse/Core/_self_config.md](#ErisPulse_Core__self_config)
-- [ErisPulse/Core/adapter.md](#ErisPulse_Core_adapter)
-- [ErisPulse/Core/config.md](#ErisPulse_Core_config)
-- [ErisPulse/Core/exceptions.md](#ErisPulse_Core_exceptions)
-- [ErisPulse/Core/lifecycle.md](#ErisPulse_Core_lifecycle)
-- [ErisPulse/Core/logger.md](#ErisPulse_Core_logger)
-- [ErisPulse/Core/module.md](#ErisPulse_Core_module)
-- [ErisPulse/Core/router.md](#ErisPulse_Core_router)
-- [ErisPulse/Core/storage.md](#ErisPulse_Core_storage)
-- [ErisPulse/__init__.md](#ErisPulse___init__)
-- [ErisPulse/__main__.md](#ErisPulse___main__)
-- [ErisPulse/finders/__init__.md](#ErisPulse_finders___init__)
-- [ErisPulse/finders/adapter.md](#ErisPulse_finders_adapter)
-- [ErisPulse/finders/bases/finder.md](#ErisPulse_finders_bases_finder)
-- [ErisPulse/finders/cli.md](#ErisPulse_finders_cli)
-- [ErisPulse/finders/module.md](#ErisPulse_finders_module)
-- [ErisPulse/loaders/__init__.md](#ErisPulse_loaders___init__)
-- [ErisPulse/loaders/adapter.md](#ErisPulse_loaders_adapter)
-- [ErisPulse/loaders/bases/loader.md](#ErisPulse_loaders_bases_loader)
-- [ErisPulse/loaders/initializer.md](#ErisPulse_loaders_initializer)
-- [ErisPulse/loaders/module.md](#ErisPulse_loaders_module)
-- [ErisPulse/loaders/strategy.md](#ErisPulse_loaders_strategy)
-- [ErisPulse/sdk.md](#ErisPulse_sdk)
+- [ErisPulse\CLI\__init__.md](#ErisPulse_CLI___init__)
+- [ErisPulse\CLI\base.md](#ErisPulse_CLI_base)
+- [ErisPulse\CLI\cli.md](#ErisPulse_CLI_cli)
+- [ErisPulse\CLI\commands\__init__.md](#ErisPulse_CLI_commands___init__)
+- [ErisPulse\CLI\commands\init.md](#ErisPulse_CLI_commands_init)
+- [ErisPulse\CLI\commands\install.md](#ErisPulse_CLI_commands_install)
+- [ErisPulse\CLI\commands\list.md](#ErisPulse_CLI_commands_list)
+- [ErisPulse\CLI\commands\list_remote.md](#ErisPulse_CLI_commands_list_remote)
+- [ErisPulse\CLI\commands\run.md](#ErisPulse_CLI_commands_run)
+- [ErisPulse\CLI\commands\self_update.md](#ErisPulse_CLI_commands_self_update)
+- [ErisPulse\CLI\commands\uninstall.md](#ErisPulse_CLI_commands_uninstall)
+- [ErisPulse\CLI\commands\upgrade.md](#ErisPulse_CLI_commands_upgrade)
+- [ErisPulse\CLI\console.md](#ErisPulse_CLI_console)
+- [ErisPulse\CLI\registry.md](#ErisPulse_CLI_registry)
+- [ErisPulse\CLI\utils\__init__.md](#ErisPulse_CLI_utils___init__)
+- [ErisPulse\CLI\utils\package_manager.md](#ErisPulse_CLI_utils_package_manager)
+- [ErisPulse\CLI\utils\reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
+- [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
+- [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
+- [ErisPulse\Core\Bases\manager.md](#ErisPulse_Core_Bases_manager)
+- [ErisPulse\Core\Bases\module.md](#ErisPulse_Core_Bases_module)
+- [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
+- [ErisPulse\Core\Event\base.md](#ErisPulse_Core_Event_base)
+- [ErisPulse\Core\Event\command.md](#ErisPulse_Core_Event_command)
+- [ErisPulse\Core\Event\message.md](#ErisPulse_Core_Event_message)
+- [ErisPulse\Core\Event\meta.md](#ErisPulse_Core_Event_meta)
+- [ErisPulse\Core\Event\notice.md](#ErisPulse_Core_Event_notice)
+- [ErisPulse\Core\Event\request.md](#ErisPulse_Core_Event_request)
+- [ErisPulse\Core\Event\wrapper.md](#ErisPulse_Core_Event_wrapper)
+- [ErisPulse\Core\_self_config.md](#ErisPulse_Core__self_config)
+- [ErisPulse\Core\adapter.md](#ErisPulse_Core_adapter)
+- [ErisPulse\Core\config.md](#ErisPulse_Core_config)
+- [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
+- [ErisPulse\Core\lifecycle.md](#ErisPulse_Core_lifecycle)
+- [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
+- [ErisPulse\Core\module.md](#ErisPulse_Core_module)
+- [ErisPulse\Core\router.md](#ErisPulse_Core_router)
+- [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
+- [ErisPulse\__init__.md](#ErisPulse___init__)
+- [ErisPulse\__main__.md](#ErisPulse___main__)
+- [ErisPulse\finders\__init__.md](#ErisPulse_finders___init__)
+- [ErisPulse\finders\adapter.md](#ErisPulse_finders_adapter)
+- [ErisPulse\finders\bases\finder.md](#ErisPulse_finders_bases_finder)
+- [ErisPulse\finders\cli.md](#ErisPulse_finders_cli)
+- [ErisPulse\finders\module.md](#ErisPulse_finders_module)
+- [ErisPulse\loaders\__init__.md](#ErisPulse_loaders___init__)
+- [ErisPulse\loaders\adapter.md](#ErisPulse_loaders_adapter)
+- [ErisPulse\loaders\bases\loader.md](#ErisPulse_loaders_bases_loader)
+- [ErisPulse\loaders\initializer.md](#ErisPulse_loaders_initializer)
+- [ErisPulse\loaders\module.md](#ErisPulse_loaders_module)
+- [ErisPulse\loaders\strategy.md](#ErisPulse_loaders_strategy)
+- [ErisPulse\sdk.md](#ErisPulse_sdk)
 - [README.md](#README)
 
 ---
 
 <a id="ErisPulse_CLI___init__"></a>
-## ErisPulse/CLI/__init__.md
+## ErisPulse\CLI\__init__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -4925,10 +5453,8 @@ ErisPulse 命令行接口
 
 
 <a id="ErisPulse_CLI_base"></a>
-## ErisPulse/CLI/base.md
+## ErisPulse\CLI\base.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -4988,10 +5514,8 @@ CLI 命令基类
 
 
 <a id="ErisPulse_CLI_cli"></a>
-## ErisPulse/CLI/cli.md
+## ErisPulse\CLI\cli.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5085,10 +5609,8 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands___init__"></a>
-## ErisPulse/CLI/commands/__init__.md
+## ErisPulse\CLI\commands\__init__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5104,10 +5626,8 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands_init"></a>
-## ErisPulse/CLI/commands/init.md
+## ErisPulse\CLI\commands\init.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5183,10 +5703,8 @@ InitCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_install"></a>
-## ErisPulse/CLI/commands/install.md
+## ErisPulse\CLI\commands\install.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5250,10 +5768,8 @@ InstallCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list"></a>
-## ErisPulse/CLI/commands/list.md
+## ErisPulse\CLI\commands\list.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5300,10 +5816,8 @@ ListCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list_remote"></a>
-## ErisPulse/CLI/commands/list_remote.md
+## ErisPulse\CLI\commands\list_remote.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5339,10 +5853,8 @@ ListRemoteCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_run"></a>
-## ErisPulse/CLI/commands/run.md
+## ErisPulse\CLI\commands\run.md
 
-
-> 最后更新：2026-02-04 07:22:15
 
 ---
 
@@ -5443,10 +5955,8 @@ RunCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_self_update"></a>
-## ErisPulse/CLI/commands/self_update.md
+## ErisPulse\CLI\commands\self_update.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5495,10 +6005,8 @@ SelfUpdateCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_uninstall"></a>
-## ErisPulse/CLI/commands/uninstall.md
+## ErisPulse\CLI\commands\uninstall.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5513,10 +6021,8 @@ Uninstall 命令实现
 
 
 <a id="ErisPulse_CLI_commands_upgrade"></a>
-## ErisPulse/CLI/commands/upgrade.md
+## ErisPulse\CLI\commands\upgrade.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5531,10 +6037,8 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_console"></a>
-## ErisPulse/CLI/console.md
+## ErisPulse\CLI\console.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5558,10 +6062,8 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_registry"></a>
-## ErisPulse/CLI/registry.md
+## ErisPulse\CLI\registry.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5686,10 +6188,8 @@ CLI 命令注册器
 
 
 <a id="ErisPulse_CLI_utils___init__"></a>
-## ErisPulse/CLI/utils/__init__.md
+## ErisPulse\CLI\utils\__init__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -5704,10 +6204,8 @@ ErisPulse SDK 工具模块
 
 
 <a id="ErisPulse_CLI_utils_package_manager"></a>
-## ErisPulse/CLI/utils/package_manager.md
+## ErisPulse\CLI\utils\package_manager.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -5990,7 +6488,7 @@ ErisPulse包管理器
 
 
 <a id="ErisPulse_CLI_utils_reload_handler"></a>
-## ErisPulse/CLI/utils/reload_handler.md
+## ErisPulse\CLI\utils\reload_handler.md
 
 
 > 最后更新：2026-02-03 22:38:11
@@ -6069,10 +6567,8 @@ ErisPulse SDK 热重载处理器
 
 
 <a id="ErisPulse_Core_Bases___init__"></a>
-## ErisPulse/Core/Bases/__init__.md
+## ErisPulse\Core\Bases\__init__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6087,10 +6583,8 @@ ErisPulse 基础模块
 
 
 <a id="ErisPulse_Core_Bases_adapter"></a>
-## ErisPulse/Core/Bases/adapter.md
+## ErisPulse\Core\Bases\adapter.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6258,10 +6752,8 @@ ErisPulse 适配器基础模块
 
 
 <a id="ErisPulse_Core_Bases_manager"></a>
-## ErisPulse/Core/Bases/manager.md
+## ErisPulse\Core\Bases\manager.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6392,10 +6884,8 @@ ErisPulse 管理器基类
 
 
 <a id="ErisPulse_Core_Bases_module"></a>
-## ErisPulse/Core/Bases/module.md
+## ErisPulse\Core\Bases\module.md
 
-
-> 最后更新：2026-02-04 14:28:57
 
 ---
 
@@ -6484,10 +6974,8 @@ ErisPulse 模块基础模块
 
 
 <a id="ErisPulse_Core_Event___init__"></a>
-## ErisPulse/Core/Event/__init__.md
+## ErisPulse\Core\Event\__init__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6526,10 +7014,8 @@ ErisPulse 事件处理模块
 
 
 <a id="ErisPulse_Core_Event_base"></a>
-## ErisPulse/Core/Event/base.md
+## ErisPulse\Core\Event\base.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6625,10 +7111,8 @@ ErisPulse 事件处理基础模块
 
 
 <a id="ErisPulse_Core_Event_command"></a>
-## ErisPulse/Core/Event/command.md
+## ErisPulse\Core\Event\command.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6822,60 +7306,9 @@ ErisPulse 命令处理模块
 
 
 
-<a id="ErisPulse_Core_Event_exceptions"></a>
-## ErisPulse/Core/Event/exceptions.md
-
-
-> 最后更新：2026-02-03 22:38:11
-
----
-
-## 模块概述
-
-
-ErisPulse 事件系统异常处理模块
-
-提供事件系统中可能发生的各种异常类型定义
-
----
-
-## 类列表
-
-
-### `class EventException(Exception)`
-
-事件系统基础异常
-
-所有事件系统相关异常的基类
-
-
-### `class CommandException(EventException)`
-
-命令处理异常
-
-当命令处理过程中发生错误时抛出
-
-
-### `class EventHandlerException(EventException)`
-
-事件处理器异常
-
-当事件处理器执行过程中发生错误时抛出
-
-
-### `class EventNotFoundException(EventException)`
-
-事件未找到异常
-
-当尝试获取不存在的事件处理器时抛出
-
-
-
 <a id="ErisPulse_Core_Event_message"></a>
-## ErisPulse/Core/Event/message.md
+## ErisPulse\Core\Event\message.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -6998,10 +7431,8 @@ ErisPulse 消息处理模块
 
 
 <a id="ErisPulse_Core_Event_meta"></a>
-## ErisPulse/Core/Event/meta.md
+## ErisPulse\Core\Event\meta.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7123,10 +7554,8 @@ ErisPulse 元事件处理模块
 
 
 <a id="ErisPulse_Core_Event_notice"></a>
-## ErisPulse/Core/Event/notice.md
+## ErisPulse\Core\Event\notice.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7268,10 +7697,8 @@ ErisPulse 通知处理模块
 
 
 <a id="ErisPulse_Core_Event_request"></a>
-## ErisPulse/Core/Event/request.md
+## ErisPulse\Core\Event\request.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -7373,10 +7800,8 @@ ErisPulse 请求处理模块
 
 
 <a id="ErisPulse_Core_Event_wrapper"></a>
-## ErisPulse/Core/Event/wrapper.md
+## ErisPulse\Core\Event\wrapper.md
 
-
-> 最后更新：2026-02-04 14:52:46
 
 ---
 
@@ -7917,10 +8342,8 @@ ErisPulse 事件包装类
 
 
 <a id="ErisPulse_Core__self_config"></a>
-## ErisPulse/Core/_self_config.md
+## ErisPulse\Core\_self_config.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8003,10 +8426,8 @@ ErisPulse 框架配置管理
 
 
 <a id="ErisPulse_Core_adapter"></a>
-## ErisPulse/Core/adapter.md
+## ErisPulse\Core\adapter.md
 
-
-> 最后更新：2026-02-04 14:28:57
 
 ---
 
@@ -8335,10 +8756,8 @@ OneBot12协议事件监听装饰器
 
 
 <a id="ErisPulse_Core_config"></a>
-## ErisPulse/Core/config.md
+## ErisPulse\Core\config.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8429,10 +8848,8 @@ ConfigManager 类提供相关功能。
 
 
 <a id="ErisPulse_Core_exceptions"></a>
-## ErisPulse/Core/exceptions.md
+## ErisPulse\Core\exceptions.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -8509,10 +8926,8 @@ ExceptionHandler 类提供相关功能。
 
 
 <a id="ErisPulse_Core_lifecycle"></a>
-## ErisPulse/Core/lifecycle.md
+## ErisPulse\Core\lifecycle.md
 
-
-> 最后更新：2026-02-13 03:06:31
 
 ---
 
@@ -8624,10 +9039,8 @@ ErisPulse 生命周期管理模块
 
 
 <a id="ErisPulse_Core_logger"></a>
-## ErisPulse/Core/logger.md
+## ErisPulse\Core\logger.md
 
-
-> 最后更新：2026-02-13 03:06:31
 
 ---
 
@@ -8883,10 +9296,8 @@ ErisPulse 日志系统
 
 
 <a id="ErisPulse_Core_module"></a>
-## ErisPulse/Core/module.md
+## ErisPulse\Core\module.md
 
-
-> 最后更新：2026-02-13 03:10:39
 
 ---
 
@@ -9172,10 +9583,8 @@ ErisPulse 模块系统
 
 
 <a id="ErisPulse_Core_router"></a>
-## ErisPulse/Core/router.md
+## ErisPulse\Core\router.md
 
-
-> 最后更新：2026-02-13 03:04:08
 
 ---
 
@@ -9330,10 +9739,8 @@ ErisPulse 路由系统
 
 
 <a id="ErisPulse_Core_storage"></a>
-## ErisPulse/Core/storage.md
+## ErisPulse\Core\storage.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9612,10 +10019,8 @@ use_global_db = true
 
 
 <a id="ErisPulse___init__"></a>
-## ErisPulse/__init__.md
+## ErisPulse\__init__.md
 
-
-> 最后更新：2026-02-04 14:28:57
 
 ---
 
@@ -9778,10 +10183,8 @@ SDK 反初始化
 
 
 <a id="ErisPulse___main__"></a>
-## ErisPulse/__main__.md
+## ErisPulse\__main__.md
 
-
-> 最后更新：2026-02-03 22:38:11
 
 ---
 
@@ -9810,10 +10213,8 @@ CLI入口点
 
 
 <a id="ErisPulse_finders___init__"></a>
-## ErisPulse/finders/__init__.md
+## ErisPulse\finders\__init__.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -9834,10 +10235,8 @@ ErisPulse 发现器模块
 
 
 <a id="ErisPulse_finders_adapter"></a>
-## ErisPulse/finders/adapter.md
+## ErisPulse\finders\adapter.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -9948,10 +10347,8 @@ ErisPulse 适配器发现器
 
 
 <a id="ErisPulse_finders_bases_finder"></a>
-## ErisPulse/finders/bases/finder.md
+## ErisPulse\finders\bases\finder.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10118,10 +10515,8 @@ ErisPulse 基础发现器
 
 
 <a id="ErisPulse_finders_cli"></a>
-## ErisPulse/finders/cli.md
+## ErisPulse\finders\cli.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10232,10 +10627,8 @@ CLI扩展发现器
 
 
 <a id="ErisPulse_finders_module"></a>
-## ErisPulse/finders/module.md
+## ErisPulse\finders\module.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10346,10 +10739,8 @@ ErisPulse 模块发现器
 
 
 <a id="ErisPulse_loaders___init__"></a>
-## ErisPulse/loaders/__init__.md
+## ErisPulse\loaders\__init__.md
 
-
-> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -10368,10 +10759,8 @@ ErisPulse 加载器模块
 
 
 <a id="ErisPulse_loaders_adapter"></a>
-## ErisPulse/loaders/adapter.md
+## ErisPulse\loaders\adapter.md
 
-
-> 最后更新：2026-02-04 08:04:59
 
 ---
 
@@ -10475,10 +10864,8 @@ ErisPulse 适配器加载器
 
 
 <a id="ErisPulse_loaders_bases_loader"></a>
-## ErisPulse/loaders/bases/loader.md
+## ErisPulse\loaders\bases\loader.md
 
-
-> 最后更新：2026-02-10 14:07:04
 
 ---
 
@@ -10599,10 +10986,8 @@ ErisPulse 基础加载器
 
 
 <a id="ErisPulse_loaders_initializer"></a>
-## ErisPulse/loaders/initializer.md
+## ErisPulse\loaders\initializer.md
 
-
-> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -10667,10 +11052,8 @@ ErisPulse 初始化协调器
 
 
 <a id="ErisPulse_loaders_module"></a>
-## ErisPulse/loaders/module.md
+## ErisPulse\loaders\module.md
 
-
-> 最后更新：2026-02-11 14:48:33
 
 ---
 
@@ -10968,10 +11351,8 @@ ErisPulse 模块加载器
 
 
 <a id="ErisPulse_loaders_strategy"></a>
-## ErisPulse/loaders/strategy.md
+## ErisPulse\loaders\strategy.md
 
-
-> 最后更新：2026-02-04 06:11:34
 
 ---
 
@@ -11097,10 +11478,8 @@ ErisPulse 模块加载策略
 
 
 <a id="ErisPulse_sdk"></a>
-## ErisPulse/sdk.md
+## ErisPulse\sdk.md
 
-
-> 最后更新：2026-02-04 07:22:14
 
 ---
 
@@ -11171,8 +11550,6 @@ ErisPulse SDK 主类
 <a id="README"></a>
 ## README.md
 
-
-> 最后更新：2026-02-12 19:15:14
 
 ---
 
