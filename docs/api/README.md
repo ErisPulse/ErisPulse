@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-13 03:06:31
+> 最后更新：2026-02-12 19:15:14
 
 ---
 
@@ -8,8 +8,8 @@
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 52
-- **类总数**: 47
+- **模块总数**: 51
+- **类总数**: 43
 - **函数总数**: 23
 - **方法总数**: 372
 
@@ -131,11 +131,6 @@
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
 
 📦 1 个类 | 🔧 14 个方法
-
-
-### [ErisPulse.Core.Event.exceptions](ErisPulse/Core/Event/exceptions.md)
-
-📦 4 个类
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
