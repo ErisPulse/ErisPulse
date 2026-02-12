@@ -1,6 +1,6 @@
 # `ErisPulse.Core.lifecycle` 模块
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-13 03:06:31
 
 ---
 
@@ -91,8 +91,11 @@ ErisPulse 生命周期管理模块
 
 提交生命周期事件
 
-:param event: 事件名称
-:param event_data: 事件数据字典
+:param event_type: 事件名称
+:param source: 事件来源(默认"ErisPulse")
+:param msg: 事件描述
+:param data: 事件相关数据
+:param timestamp: 时间戳(默认当前时间)
 
 ---
 

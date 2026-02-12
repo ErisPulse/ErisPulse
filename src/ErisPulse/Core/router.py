@@ -232,6 +232,14 @@ class RouterManager:
         logger.info(f"注册WebSocket: {display_url} {'(需认证)' if auth_handler else ''}")
         
     def unregister_websocket(self, module_name: str, path: str) -> bool:
+        """
+        取消注册WebSocket路由
+
+        :param module_name: 模块名称
+        :param path: WebSocket路径
+
+        :return: 是否成功取消注册
+        """
         try:
             full_path = f"/{module_name}{path}"
 

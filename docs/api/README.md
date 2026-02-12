@@ -1,6 +1,6 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-04 14:52:46
+> 最后更新：2026-02-13 03:06:31
 
 ---
 
@@ -11,7 +11,7 @@
 - **模块总数**: 52
 - **类总数**: 47
 - **函数总数**: 23
-- **方法总数**: 363
+- **方法总数**: 372
 
 ---
 
@@ -190,7 +190,7 @@
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
 
-📦 2 个类 | 🔧 11 个方法
+📦 2 个类 | 🔧 19 个方法
 
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
@@ -200,7 +200,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 1 个类 | 🔧 10 个方法
+📦 1 个类 | 🔧 11 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
