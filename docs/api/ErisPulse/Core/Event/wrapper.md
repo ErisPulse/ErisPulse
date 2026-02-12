@@ -1,7 +1,5 @@
 # `ErisPulse.Core.Event.wrapper` 模块
 
-> 最后更新：2026-02-04 14:52:46
-
 ---
 
 ## 模块概述
