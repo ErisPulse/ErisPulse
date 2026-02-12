@@ -161,10 +161,10 @@ class ModuleManager(ManagerBase):
     async def unload(self, module_name: str = "Unknown") -> bool:
         """
         卸载指定模块或所有模块
-        
-        :param module_name: 模块名称，如果为None则卸载所有模块
-        :return: 是否卸载成功
-            
+
+        :param module_name: [str] 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
+        :return: [bool] 是否卸载成功
+
         :example:
         >>> await module.unload("MyModule")
         >>> await module.unload()  # 卸载所有模块
@@ -286,9 +286,12 @@ class ModuleManager(ManagerBase):
     def _config_register(self, module_name: str, enabled: bool = False) -> bool:
         """
         注册新模块信息
-        
+
+        {!--< internal-use >!--}
+        此方法仅供内部使用
+
         :param module_name: [str] 模块名称
-        :param enabled: [bool] 是否启用模块
+        :param enabled: [bool] 是否启用模块 (默认: False)
         :return: [bool] 操作是否成功
         """
         if self.exists(module_name):
@@ -393,8 +396,8 @@ class ModuleManager(ManagerBase):
     def list_items(self) -> Dict[str, bool]:
         """
         列出所有模块状态
-        
-        :return: {模块名: 是否启用} 字典
+
+        :return: [Dict[str, bool]] {模块名: 是否启用} 字典
         """
         return config.getConfig("ErisPulse.modules.status", {})
     
@@ -402,9 +405,9 @@ class ModuleManager(ManagerBase):
     def list_modules(self) -> Dict[str, bool]:
         """
         列出所有模块状态
-        
+
         {!--< deprecated >!--} 请使用 list_items() 代替
-        
+
         :return: [Dict[str, bool]] 模块状态字典
         """
         return self.list_items()
@@ -414,10 +417,13 @@ class ModuleManager(ManagerBase):
     def __getattr__(self, module_name: str) -> Any:
         """
         通过属性访问获取模块实例
-        
+
         :param module_name: [str] 模块名称
         :return: [Any] 模块实例
         :raises AttributeError: 当模块不存在或未启用时
+
+        :example:
+        >>> my_module = module.MyModule
         """
         module_instance = self.get(module_name)
         if module_instance is None:
@@ -427,9 +433,12 @@ class ModuleManager(ManagerBase):
     def __contains__(self, module_name: str) -> bool:
         """
         检查模块是否存在且处于启用状态
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否存在且启用
+
+        :example:
+        >>> if "MyModule" in module: ...
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 

@@ -1,6 +1,6 @@
 # `ErisPulse.Core.logger` 模块
 
-> 最后更新：2026-02-03 22:38:11
+> 最后更新：2026-02-13 03:06:31
 
 ---
 
@@ -108,6 +108,50 @@ ErisPulse 日志系统
 ---
 
 
+##### `debug(msg)`
+
+记录 DEBUG 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `info(msg)`
+
+记录 INFO 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `warning(msg)`
+
+记录 WARNING 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `error(msg)`
+
+记录 ERROR 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
 ##### `critical(msg)`
 
 记录 CRITICAL 级别日志
@@ -138,6 +182,50 @@ ErisPulse 日志系统
 
 :param parent_logger: 父日志记录器实例
 :param name: 子日志记录器名称
+
+---
+
+
+##### `debug(msg)`
+
+记录 DEBUG 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `info(msg)`
+
+记录 INFO 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `warning(msg)`
+
+记录 WARNING 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
+##### `error(msg)`
+
+记录 ERROR 级别日志
+
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
 
 ---
 

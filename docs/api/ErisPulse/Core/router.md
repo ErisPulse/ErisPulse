@@ -1,6 +1,6 @@
 # `ErisPulse.Core.router` 模块
 
-> 最后更新：2026-02-04 14:28:57
+> 最后更新：2026-02-13 03:04:08
 
 ---
 
@@ -97,6 +97,18 @@ ErisPulse 路由系统
 :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 
 **异常**: `ValueError` - 当路径已注册时抛出
+
+---
+
+
+##### `unregister_websocket(module_name: str, path: str)`
+
+取消注册WebSocket路由
+
+:param module_name: 模块名称
+:param path: WebSocket路径
+
+:return: 是否成功取消注册
 
 ---
 
