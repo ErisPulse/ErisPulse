@@ -93,36 +93,6 @@ ep-init
 ```
 这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
 
-### 查看系统状态
-
-在项目目录中，你可以使用以下命令查看系统状态：
-
-```bash
-# 查看所有组件状态
-epsdk status
-
-# 查看详细模块信息
-epsdk status -t modules
-
-# 查看详细适配器信息
-epsdk status -t adapters
-```
-
-### 查看系统状态
-
-在项目目录中，你可以使用以下命令查看系统状态：
-
-```bash
-# 查看所有组件状态
-epsdk status
-
-# 查看详细模块信息
-epsdk status -t modules
-
-# 查看详细适配器信息
-epsdk status -t adapters
-```
-
 ---
 
 ## 安装模块
