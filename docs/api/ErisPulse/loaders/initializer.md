@@ -1,7 +1,5 @@
 # `ErisPulse.loaders.initializer` 模块
 
-> 最后更新：2026-02-04 06:11:34
-
 ---
 
 ## 模块概述
