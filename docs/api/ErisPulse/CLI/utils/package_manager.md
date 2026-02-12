@@ -1,7 +1,5 @@
 # `ErisPulse.CLI.utils.package_manager` 模块
 
-> 最后更新：2026-02-04 08:04:59
-
 ---
 
 ## 模块概述

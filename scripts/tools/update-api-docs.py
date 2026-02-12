@@ -8,58 +8,7 @@ import os
 import ast
 import re
 import argparse
-import hashlib
 from typing import List, Dict, Tuple, Optional
-from datetime import datetime
-from collections import defaultdict
-
-
-def compute_content_hash(content: str) -> str:
-    """
-    计算内容的SHA256哈希值（排除最后更新时间）
-    
-    :param content: 内容字符串
-    :return: 哈希值
-    """
-    # 移除最后更新时间行以避免时间戳影响哈希
-    lines = content.split('\n')
-    filtered_lines = [line for line in lines if not line.strip().startswith('> 最后更新：')]
-    normalized_content = '\n'.join(filtered_lines)
-    return hashlib.sha256(normalized_content.encode('utf-8')).hexdigest()
-
-
-def should_update_file(file_path: str, new_content: str) -> bool:
-    """
-    检查文件是否需要更新（基于内容哈希）
-    
-    :param file_path: 文件路径
-    :param new_content: 新内容
-    :return: 是否需要更新
-    """
-    if not os.path.exists(file_path):
-        return True
-    
-    # 读取现有文件内容并计算哈希
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            existing_content = f.read()
-        existing_hash = compute_content_hash(existing_content)
-        new_hash = compute_content_hash(new_content)
-        return existing_hash != new_hash
-    except Exception:
-        return True
-
-
-def format_timestamp(timestamp: Optional[float] = None) -> str:
-    """
-    格式化时间戳为可读字符串
-    
-    :param timestamp: 时间戳，如果为None则使用当前时间
-    :return: 格式化后的时间字符串
-    """
-    if timestamp is None:
-        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
 
 def process_docstring_for_markdown(docstring: str) -> Optional[str]:
@@ -318,8 +267,6 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     # 文档头部
     content.append(f"""# `{module_path}` 模块
 
-> 最后更新：{format_timestamp()}
-
 ---
 
 ## 模块概述
@@ -395,8 +342,6 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
     total_methods = sum(sum(len(cls.get('methods', [])) for cls in info.get('classes', [])) for info in modules_info.values())
     
     content.append(f"""# ErisPulse API 文档
-
-> 最后更新：{format_timestamp()}
 
 ---
 
@@ -484,36 +429,30 @@ def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
                     "functions": functions
                 }
                 
-                # 生成Markdown（使用增量更新）
+                # 生成Markdown
                 md_content = generate_markdown(module_path, module_doc, classes, functions)
                 md_output_path = os.path.join(output_dir, f"{module_path.replace('.', '/')}.md")
                 os.makedirs(os.path.dirname(md_output_path), exist_ok=True)
                 
-                if should_update_file(md_output_path, md_content):
-                    with open(md_output_path, "w", encoding="utf-8") as f:
-                        f.write(md_content)
-                    print(f"已生成Markdown: {md_output_path}")
-                else:
-                    print(f"Markdown未变化，跳过: {md_output_path}")
+                with open(md_output_path, "w", encoding="utf-8") as f:
+                    f.write(md_content)
+                print(f"已生成: {md_output_path}")
     
     # 生成索引页
     if modules_info:
         index_content = generate_index_markdown(modules_info)
         index_path = os.path.join(output_dir, "README.md")
         
-        if should_update_file(index_path, index_content):
-            with open(index_path, "w", encoding="utf-8") as f:
-                f.write(index_content)
-            print(f"已生成索引: {index_path}")
-        else:
-            print(f"索引未变化，跳过: {index_path}")
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write(index_content)
+        print(f"已生成: {index_path}")
     
     return modules_info
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="ErisPulse API文档生成器 v9.0",
+        description="ErisPulse API文档生成器 v10.0",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
@@ -527,12 +466,12 @@ if __name__ == "__main__":
     
     parser.add_argument("--src", default="src", help="源代码目录 (默认: src)")
     parser.add_argument("--output", default="docs/api", help="Markdown输出目录 (默认: docs/api)")
-    parser.add_argument("--version", action="version", version="API文档生成器 v9.0")
+    parser.add_argument("--version", action="version", version="API文档生成器 v10.0")
     
     args = parser.parse_args()
     
     print(f"""╔══════════════════════════════════════════╗
-║   ErisPulse API 文档生成器 v9.0      ║
+║   ErisPulse API 文档生成器 v10.0      ║
 ╚══════════════════════════════════════════╝
 
 源代码目录: {args.src}
