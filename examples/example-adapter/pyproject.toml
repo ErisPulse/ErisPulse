@@ -3,7 +3,7 @@ name = "ErisPulse-MyAdapter"
 version = "1.0.0"
 description = "MyAdapter是一个非常酷的平台，这个适配器可以帮你绽放更亮的光芒"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
@@ -14,4 +14,4 @@ dependencies = [
 "homepage" = "https://github.com/yourname/MyAdapter"
 
 [project.entry-points]
-"erispulse.adapter" = { "MyAdapter" = "MyAdapter:MyAdapter" }
+"erispulse.adapter" = { "my_adapter" = "MyAdapter:MyAdapter" }
