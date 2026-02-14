@@ -1,5 +1,5 @@
 """
-ErisPulse CLI模块示例 - 灵活版本
+ErisPulse CLI模块示例
 
 演示如何创建第三方CLI模块扩展主CLI功能
 """
@@ -8,7 +8,7 @@ import argparse
 from typing import Any
 from rich.panel import Panel
 
-def example_cli_register(subparsers: Any, console: Any) -> None:
+def example_cli_register(subparsers, console) -> None:
     """
     示例CLI注册函数
     
