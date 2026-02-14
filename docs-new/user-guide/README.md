@@ -114,3 +114,4 @@ epsdk uninstall Yunhu Weather
 - [快速开始](../quick-start.md) - 快速入门指南
 - [新手入门](../getting-started/) - 入门教程
 - [开发者指南](../developer-guide/) - 开发自定义模块和适配器
+- [API 参考](../api-reference/) - API 文档
