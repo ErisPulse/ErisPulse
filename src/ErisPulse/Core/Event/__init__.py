@@ -16,7 +16,6 @@ from .notice import notice
 from .request import request
 from .meta import meta
 from .wrapper import Event
-from . import exceptions
 from .. import config
 
 def _clear_all_handlers():
@@ -62,6 +61,5 @@ __all__ = [
     "notice",
     "request",
     "meta",
-    "Event",
-    "exceptions"
+    "Event"
 ]

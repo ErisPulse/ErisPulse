@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2026-02-13 03:56:58
+**生成时间**: 2026-02-15 06:40:38
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5396,7 +5396,6 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 - [ErisPulse\CLI\registry.md](#ErisPulse_CLI_registry)
 - [ErisPulse\CLI\utils\__init__.md](#ErisPulse_CLI_utils___init__)
 - [ErisPulse\CLI\utils\package_manager.md](#ErisPulse_CLI_utils_package_manager)
-- [ErisPulse\CLI\utils\reload_handler.md](#ErisPulse_CLI_utils_reload_handler)
 - [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
 - [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
 - [ErisPulse\Core\Bases\manager.md](#ErisPulse_Core_Bases_manager)
@@ -6482,85 +6481,6 @@ ErisPulse包管理器
 :param target_version: 目标版本号，None表示更新到最新版本
 :param force: 是否强制更新
 :return: 更新是否成功
-
----
-
-
-
-<a id="ErisPulse_CLI_utils_reload_handler"></a>
-## ErisPulse\CLI\utils\reload_handler.md
-
-
-> 最后更新：2026-02-03 22:38:11
-
----
-
-## 模块概述
-
-
-ErisPulse SDK 热重载处理器
-
-实现热重载功能，监控文件变化并重启进程
-
----
-
-## 类列表
-
-
-### `class ReloadHandler(FileSystemEventHandler)`
-
-文件系统事件处理器
-
-实现热重载功能，监控文件变化并重启进程
-
-> **提示**
-> 1. 支持.py文件修改重载
-> 2. 支持配置文件修改重载
-
-
-#### 方法列表
-
-
-##### `__init__(script_path: str, reload_mode: bool = False)`
-
-初始化处理器
-
-:param script_path: 要监控的脚本路径
-:param reload_mode: 是否启用重载模式
-
----
-
-
-##### `start_process()`
-
-启动监控进程
-
----
-
-
-##### `_terminate_process()`
-
-终止当前进程
-
-:raises subprocess.TimeoutExpired: 进程终止超时时抛出
-
----
-
-
-##### `on_modified(event)`
-
-文件修改事件处理
-
-:param event: 文件系统事件
-
----
-
-
-##### `_handle_reload(event, reason: str)`
-
-处理热重载逻辑
-:param event: 文件系统事件
-:param reason: 重载原因
 
 ---
 
