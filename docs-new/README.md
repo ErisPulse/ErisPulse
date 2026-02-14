@@ -23,7 +23,6 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 - [安装和配置](user-guide/installation.md)
 - [CLI 命令参考](user-guide/cli-reference.md)
 - [配置文件说明](user-guide/configuration.md)
-- [模块管理](user-guide/modules-management.md)
 
 ### 开发者指南
 
@@ -47,7 +46,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 ### 平台特性指南
 
-- [适配器概述](platform-guide/overview.md)
+- [平台特性说明](platform-guide/README.md)
 - [云湖平台特性](platform-guide/yunhu.md)
 - [Telegram 平台特性](platform-guide/telegram.md)
 - [OneBot11 平台特性](platform-guide/onebot11.md)
@@ -74,7 +73,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 ### AI 辅助开发
 
-- [AI 辅助入门](ai-support/getting-started.md)
+- [AI 辅助开发](ai-support/README.md)
 
 ### 风格指南
 
