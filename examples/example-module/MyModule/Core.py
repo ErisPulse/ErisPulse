@@ -22,14 +22,15 @@ class Main(BaseModule):
         self._register_routes()
     
     @staticmethod
-    def should_eager_load() -> bool:
+    def get_load_strategy():
         """
-        模块是否应该在启动时加载
-        默认为False(即懒加载)
-        
-        :return: 是否应该在启动时加载
+        返回模块加载策略
         """
-        return False
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 立即加载
+            priority=100      # 优先级为100
+        )
     
     async def on_load(self, event: dict) -> bool:
         """
