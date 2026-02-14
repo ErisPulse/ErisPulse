@@ -7,9 +7,9 @@
 > - 平台特有的事件/消息格式说明
 > 
 > 通用使用方法请参考：
-> - [使用核心模块](docs/core/)
-> - [事件转换标准](docs/standards/event-conversion.md)  
-> - [API响应规范](docs/standards/api-response.md)
+> - [基础概念](../getting-started/basic-concepts.md)
+> - [事件转换标准](../standards/event-conversion.md)  
+> - [API响应规范](../standards/api-response.md)
 
 ---
 
