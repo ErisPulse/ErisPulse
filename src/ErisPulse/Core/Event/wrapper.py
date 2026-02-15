@@ -512,27 +512,16 @@ class Event(dict):
         :param validator: 验证函数，用于验证回复是否有效
         :return: 用户回复的事件数据，如果超时则返回None
         """
-        # 导入command处理器以复用等待逻辑
         from .command import command as command_handler
-
-        # 发送提示消息（如果提供）
-        if prompt:
-            try:
-                # 使用相同的目标获取逻辑
-                adapter_instance, detail_type, target_id = self._get_adapter_and_target()
-                await adapter_instance.Send.To(detail_type, target_id).Text(prompt)
-            except Exception as e:
-                logger.warning(f"发送提示消息失败: {e}")
-
-        # 使用command处理器的wait_reply方法
+        
         result = await command_handler.wait_reply(
-            self,
-            prompt=None,  # 已经发送过提示了
+            event=self._event_data,
+            prompt=prompt,
             timeout=timeout,
             callback=callback,
             validator=validator
         )
-
+        
         # 将结果转换为Event对象
         if result:
             return Event(result)
