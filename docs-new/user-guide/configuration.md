@@ -38,6 +38,7 @@ use_global_db = false
 prefix = "/"
 case_sensitive = false
 allow_space_prefix = false
+must_at_bot = false
 
 [ErisPulse.event.message]
 ignore_self = true
@@ -113,6 +114,7 @@ allow_space_prefix = false
 | prefix | string | / | 命令前缀 |
 | case_sensitive | boolean | false | 是否区分大小写 |
 | allow_space_prefix | boolean | false | 是否允许空格作为前缀 |
+| must_at_bot | boolean | false | 是否必须@机器人才能触发命令（私聊不受限制） |
 
 ### 消息配置
 
