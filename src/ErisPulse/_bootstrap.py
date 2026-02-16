@@ -5,7 +5,7 @@ ErisPulse 框架配置管理
 """
 
 from typing import Dict, Any
-from .config import config
+from .Core.config import config
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
