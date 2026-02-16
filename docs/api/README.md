@@ -156,11 +156,6 @@
 📦 1 个类 | 🔧 54 个方法
 
 
-### [ErisPulse.Core._self_config](ErisPulse/Core/_self_config.md)
-
-⚙️ 7 个函数
-
-
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
 📦 1 个类 | 🔧 22 个方法
@@ -209,6 +204,11 @@
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
 
 ⚙️ 1 个函数
+
+
+### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
+
+⚙️ 7 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
