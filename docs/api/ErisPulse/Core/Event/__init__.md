@@ -26,11 +26,3 @@ ErisPulse 事件处理模块
 
 ---
 
-
-### `_setup_default_config()`
-
-> **内部方法** 
-设置默认配置
-
----
-

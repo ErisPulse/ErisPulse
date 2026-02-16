@@ -118,7 +118,7 @@
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
 
-⚙️ 2 个函数
+⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
@@ -208,7 +208,7 @@
 
 ### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
 
-⚙️ 7 个函数
+⚙️ 8 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)

@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2026-02-16 20:55:51
+**生成时间**: 2026-02-16 22:13:34
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5408,7 +5408,6 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 - [ErisPulse/Core/Event/notice.md](#ErisPulse_Core_Event_notice)
 - [ErisPulse/Core/Event/request.md](#ErisPulse_Core_Event_request)
 - [ErisPulse/Core/Event/wrapper.md](#ErisPulse_Core_Event_wrapper)
-- [ErisPulse/Core/_self_config.md](#ErisPulse_Core__self_config)
 - [ErisPulse/Core/adapter.md](#ErisPulse_Core_adapter)
 - [ErisPulse/Core/config.md](#ErisPulse_Core_config)
 - [ErisPulse/Core/exceptions.md](#ErisPulse_Core_exceptions)
@@ -6925,14 +6924,6 @@ ErisPulse 事件处理模块
 ---
 
 
-### `_setup_default_config()`
-
-> **内部方法** 
-设置默认配置
-
----
-
-
 
 <a id="ErisPulse_Core_Event_base"></a>
 ## ErisPulse/Core/Event/base.md
@@ -8257,90 +8248,6 @@ ErisPulse 事件包装类
 字符串表示
 
 :return: 字符串表示
-
----
-
-
-
-<a id="ErisPulse_Core__self_config"></a>
-## ErisPulse/Core/_self_config.md
-
-
----
-
-## 模块概述
-
-
-ErisPulse 框架配置管理
-
-专门管理 ErisPulse 框架自身的配置项。
-
----
-
-## 函数列表
-
-
-### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
-
-确保 ErisPulse 配置结构完整，补全缺失的配置项
-
-:param config_dict: 当前配置
-:return: 补全后的完整配置
-
----
-
-
-### `get_erispulse_config()`
-
-获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
-
-:return: 完整的 ErisPulse 配置字典
-
----
-
-
-### `update_erispulse_config(new_config: Dict[str, Any])`
-
-更新 ErisPulse 配置，自动补全缺失的配置项
-
-:param new_config: 新的配置字典
-:return: 是否更新成功
-
----
-
-
-### `get_server_config()`
-
-获取服务器配置，确保结构完整
-
-:return: 服务器配置字典
-
----
-
-
-### `get_logger_config()`
-
-获取日志配置，确保结构完整
-
-:return: 日志配置字典
-
----
-
-
-### `get_storage_config()`
-
-获取存储模块配置
-
-:return: 存储配置字典
-
----
-
-
-### `get_framework_config()`
-
-获取框架配置
-
-:return: 框架配置字典
 
 ---
 
@@ -10207,6 +10114,15 @@ ErisPulse 框架配置管理
 ---
 
 
+### `get_event_config()`
+
+获取事件系统配置
+
+:return: 事件系统配置字典
+
+---
+
+
 ### `get_framework_config()`
 
 获取框架配置
@@ -11674,7 +11590,7 @@ ErisPulse SDK 主类
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
 
-⚙️ 2 个函数
+⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
@@ -11764,7 +11680,7 @@ ErisPulse SDK 主类
 
 ### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
 
-⚙️ 7 个函数
+⚙️ 8 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
