@@ -230,12 +230,6 @@ class CommandHandler:
         
         :param event: 消息事件数据
         """
-        # 检查是否是系统消息或自身消息
-        if event.get("self", {}).get("user_id") == event.get("user_id"):
-            # 根据配置决定是否忽略自身消息
-            ignore_self = config.getConfig("ErisPulse.event.message.ignore_self", True)
-            if ignore_self:
-                return
         
         # 检查是否已经被其他处理器标记为已处理
         if event.get("_processed"):

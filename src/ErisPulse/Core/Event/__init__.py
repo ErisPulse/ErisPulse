@@ -16,7 +16,6 @@ from .notice import notice
 from .request import request
 from .meta import meta
 from .wrapper import Event
-from .. import config
 
 def _clear_all_handlers():
     """
@@ -31,29 +30,6 @@ def _clear_all_handlers():
     notice._clear_notice_handlers()
     request._clear_request_handlers()
     meta._clear_meta_handlers()
-
-# 初始化默认配置
-def _setup_default_config():
-    """
-    {!--< internal-use >!--}
-    设置默认配置
-    """
-    default_config = {
-        "command": {
-            "prefix": "/",
-            "case_sensitive": True,
-            "allow_space_prefix": False
-        },
-        "message": {
-            "ignore_self": True
-        }
-    }
-    
-    current_config = config.getConfig("ErisPulse.event")
-    if current_config is None:
-        config.setConfig("ErisPulse.event", default_config)
-
-_setup_default_config()
 
 __all__ = [
     "command",
