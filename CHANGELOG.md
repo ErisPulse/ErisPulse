@@ -38,6 +38,8 @@
 ### 变更
 - @wsu2059q
   - 优化 `Event` 模块中包装器wait_reply方法的逻辑，并且为返回值添加Event包装以支持更方便的获取事件内容
+  - 移动 `Core._self_config` 模块到 `_bootstrap.py` 模块中，以便统一管理
+  - 移动 `Core.Event` 模块的配置初始化逻辑到 `_bootstrap.py` 模块中
 
 ---
 ## [2.3.5-dev.0] - 2026/02/10
