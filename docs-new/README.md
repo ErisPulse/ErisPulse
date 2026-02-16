@@ -97,6 +97,7 @@ ErisPulse 支持两种开发方式：
 
 ```python
 # 直接嵌入使用
+import asyncio
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
@@ -105,8 +106,8 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     await event.reply("你好！")
 
-# 初始化 SDK
-await sdk.init()
+# 运行 SDK 并且维持运行 | 需要在异步环境中运行
+asyncio.run(sdk.run(keep_running=True))
 ```
 
 ## 获取帮助

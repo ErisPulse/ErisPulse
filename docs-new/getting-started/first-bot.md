@@ -54,7 +54,8 @@ async def ping_handler(event):
 async def main():
     """主入口函数"""
     print("正在初始化 ErisPulse...")
-    await sdk.init()
+    # 运行 SDK 并且维持运行
+    await sdk.run(keep_running=True)
     print("ErisPulse 初始化完成！")
     
     # 保持运行
@@ -63,6 +64,34 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+    asyncio.run(main())
+```
+
+> 除了直接使用 `sdk.run()` 之外，你还可以更细致化的控制运行流程，如：
+```python
+import asyncio
+from ErisPulse import sdk
+
+async def main():
+    try:
+        isInit = await sdk.init()
+        
+        if not isInit:
+            sdk.logger.error("ErisPulse 初始化失败，请检查日志")
+            return
+        
+        await sdk.adapter.startup()
+        
+        # 保持程序运行, 如果有其它需要执行的操作，你也可以不维持事件，但需要自行处理
+        await asyncio.Event().wait()
+    except Exception as e:
+        sdk.logger.error(e)
+    except KeyboardInterrupt:
+        sdk.logger.info("正在停止程序")
+    finally:
+        await sdk.adapter.shutdown()
+
+if __name__ == "__main__":
     asyncio.run(main())
 ```
 
