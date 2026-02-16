@@ -12,7 +12,8 @@ ErisPulse 命令处理模块
 """
 
 from .base import BaseEventHandler
-from .. import adapter, config, logger
+from .. import adapter, logger
+from ..._bootstrap import get_event_config
 from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 
@@ -28,9 +29,14 @@ class CommandHandler:
         self.aliases: Dict[str, str] = {}  # 别名映射
         self.groups: Dict[str, List[str]] = {}  # 命令组
         self.permissions: Dict[str, Callable] = {}  # 权限检查函数
-        self.prefix = config.getConfig("ErisPulse.event.command.prefix", "/")
-        self.case_sensitive = config.getConfig("ErisPulse.event.command.case_sensitive", True)
-        self.allow_space_prefix = config.getConfig("ErisPulse.event.command.allow_space_prefix", False)
+        
+        # 从 _bootstrap 获取配置
+        event_config = get_event_config()
+        command_config = event_config.get("command", {})
+        self.prefix = command_config.get("prefix", "/")
+        self.case_sensitive = command_config.get("case_sensitive", True)
+        self.allow_space_prefix = command_config.get("allow_space_prefix", False)
+        self.must_at_bot = command_config.get("must_at_bot", False)
         
         # 等待回复相关
         self._waiting_replies = {}  # 存储等待回复的用户信息
@@ -263,6 +269,23 @@ class CommandHandler:
             
             if not has_prefix and not has_space_prefix:
                 return False
+            
+            # 检查是否必须@机器人
+            if self.must_at_bot:
+                detail_type = event.get("detail_type")
+                # 一对一场景（private或user）不需要检查@
+                if detail_type not in ("private", "user", "bot"):
+                    message_segments = event.get("message", [])
+                    self_id = event.get("self", {}).get("user_id")
+                    
+                    has_mention = False
+                    for segment in message_segments:
+                        if segment.get("type") == "mention" and segment.get("data", {}).get("user_id") == self_id:
+                            has_mention = True
+                            break
+                    
+                    if not has_mention:
+                        return False
             
             # 尝试执行命令
             return await self._try_execute_command(event, text, check_text)
