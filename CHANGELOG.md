@@ -32,6 +32,33 @@
 ```
 
 ---
+## [2.3.5-dev.1] - 2026/02/15
+> 开发版本
+
+### 新增
+
+- @wsu2059q
+  - 新增 `commands.must_at_bot` 配置，用于控制是否需要 @bot 才能执行命令
+
+### 变更
+- @wsu2059q
+  - 优化 `Event` 模块中包装器wait_reply方法的逻辑，并且为返回值添加Event包装以支持更方便的获取事件内容
+  - 移动 `Core._self_config` 模块到 `_bootstrap.py` 模块中，以便统一管理
+  - 移动 `Core.Event` 模块的配置初始化逻辑到 `_bootstrap.py` 模块中
+
+---
+## [2.3.5-dev.0] - 2026/02/10
+> 开发版本
+
+### 变更
+- @wsu2059q
+  - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
+
+### 修复
+- @wsu2059q
+  - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
+
+---
 ## [2.3.4] - 2026/02/10
 > 正式发布
 > 注意: 此版本开始，虽然对外api保持兼容，但内部结构和实现已发生变化，如果您的模块使用了部分内部api，请注意修改
@@ -75,6 +102,11 @@
     - 新增 `LoadingStrategy` 抽象基类，定义策略接口
     - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
     - `ModuleInitializer` 现在支持通过策略控制模块加载行为
+
+### 变更
+- @wsu2059q
+  - 重构模块加载系统架构：
+    - 移除 `BaseModule` 基类中的 `should_eager_load` 方法，改使用 `LoadingStrategy` 策略控制（旧策略依然保持兼容）
 
 ---
 

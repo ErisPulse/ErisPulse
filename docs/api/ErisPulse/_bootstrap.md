@@ -1,15 +1,15 @@
-# `ErisPulse.Core._self_config` 模块
-
-> 最后更新：2026-02-03 22:38:11
+# `ErisPulse._bootstrap` 模块
 
 ---
 
 ## 模块概述
 
 
-ErisPulse 框架配置管理
+ErisPulse 框架配置引导模块
+提供默认配置定义及配置完整性管理功能
 
-专门管理 ErisPulse 框架自身的配置项。
+> **提示**
+> 内部使用模块，框架启动时自动加载
 
 ---
 
@@ -68,6 +68,15 @@ ErisPulse 框架配置管理
 获取存储模块配置
 
 :return: 存储配置字典
+
+---
+
+
+### `get_event_config()`
+
+获取事件系统配置
+
+:return: 事件系统配置字典
 
 ---
 

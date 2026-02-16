@@ -152,66 +152,109 @@ class MyAdapter(BaseAdapter):
 | `call_api(endpoint: str, **params)` | 调用平台 API |
 | `start()` | 启动适配器 |
 | `shutdown()` | 关闭适配器资源 |
+| `Send` 嵌套类 | 继承 `BaseAdapter.Send`，实现消息发送方法 |
 
 > ⚠⚠⚠️ 注意：
-> - 适配器类必须继承 `BaseAdapter` 基类；
-> - 必须实现 `call_api`, `start`, `shutdown` 方法 和 `Send`类(继承自 `BaseAdapter.Send`)；
-> - To中的接受者类型不允许例如 "private" 的格式，当然这是一个规范
-> - 但为了兼容和标准性，用户发送时还是使用 "user" / "group" / "channel" / ... 等更标准的接受类型格式，如有必要，请你自行转换。
+> - 适配器类必须继承 `BaseAdapter` 基类
+> - 必须实现 `call_api`, `start`, `shutdown` 方法和 `Send` 嵌套类
+> - To 中的接受者类型不允许使用 "private" 格式，应使用 "user" / "group" / "channel" 等标准格式
 
-## 3. DSL 风格消息接口（SendDSL）
+## 3. Send 类实现
 
-每个适配器可定义一组链式调用风格的方法，例如：
+Send 嵌套类继承自 `BaseAdapter.Send`，用于实现链式调用风格的消息发送接口。
+
+### 3.1 基本实现
 
 ```python
 class Send(BaseAdapter.Send):
     def Text(self, text: str):
+        """发送文本消息"""
         import asyncio
         return asyncio.create_task(
-            self._adapter.call_api(...)
-        )
-
-    def Image(self, file: bytes):
-        import asyncio
-        return asyncio.create_task(
-            self._upload_file_and_call_api(...)
+            self._adapter.call_api(
+                endpoint="/send",
+                content=text,
+                recvId=self._target_id,
+                recvType=self._target_type
+            )
         )
 ```
-> **注意**：Send的链式调用方式，必须返回一个asyncio.Task对象。
 
-#### ErisPulse的SendDSL支持以下不同组合的标准调用方式：
+### 3.2 重要规范
 
-1. 指定类型和ID: `To(type,id).Func()`
-   ```python
-   # 获取适配器实例
-   my_adapter = adapter.get("MyAdapter")
-   
-   await my_adapter.Send.To("user", "U1001").Text("Hello")
-   ```
-2. 仅指定ID: `To(id).Func()`
-   ```python
-   my_adapter = adapter.get("MyAdapter")
+- **返回值**：所有发送方法必须返回 `asyncio.Task` 对象
+- **链式修饰方法**：如 `At()`, `Reply()` 等必须返回 `self` 以支持链式调用
+- **命名规范**：方法名使用大驼峰命名法（PascalCase）。详见 [发送方法命名规范](../standards/send-type-naming.md)
 
-   await my_adapter.Send.To("U1001").Text("Hello")
-   ```
-3. 指定发送账号: `Using(account_id)`
-   ```python
-   my_adapter = adapter.get("MyAdapter")
+### 3.3 可用属性
 
-   await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
-   ```
-4. 直接调用: `Func()`
-   ```python
-   my_adapter = adapter.get("MyAdapter")
-   await my_adapter.Send.Text("Broadcast message")
-   
-   # 例如：
-   email = adapter.get("email")
-   await email.Send.Text("Broadcast message")
-   ```
+Send 类在调用时会自动设置以下属性，可在实现方法中访问：
 
-`To`方法可以指定接受者类型以及接受者ID，当To参数接受了单参数时，会设置`self._target_to`属性，当To参数接受了两个参数时，会设置`self._target_type`和`self._target_id`属性，可以在后续的调用中通过这些属性来获取接受者信息。
-`Using`方法用于指定发送账号，会设置`self._account_id`属性，可以在后续API调用中使用。
+| 属性 | 说明 | 设置方法 |
+|-----|------|---------|
+| `_target_id` | 目标ID | `To(id)` 或 `To(type, id)` |
+| `_target_type` | 目标类型 | `To(type, id)` |
+| `_target_to` | 简化目标ID | `To(id)` |
+| `_account_id` | 发送账号ID | `Using(account_id)` 或 `Account(account_id)` |
+| `_adapter` | 适配器实例 | 自动设置 |
+
+### 3.4 链式修饰方法
+
+需要支持链式调用时，可添加修饰方法：
+
+```python
+class Send(BaseAdapter.Send):
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self._at_user_ids = []       # @的用户列表
+        self._reply_message_id = None # 回复的消息ID
+        self._at_all = False         # 是否@全体
+    
+    def At(self, user_id: str) -> 'Send':
+        """@用户（可多次调用）"""
+        self._at_user_ids.append(user_id)
+        return self  # 必须返回 self
+    
+    def AtAll(self) -> 'Send':
+        """@全体成员"""
+        self._at_all = True
+        return self
+    
+    def Reply(self, message_id: str) -> 'Send':
+        """回复消息"""
+        self._reply_message_id = message_id
+        return self
+```
+
+### 3.5 原始消息发送（推荐实现）
+
+建议实现 `Raw_ob12` 方法以支持用户直接发送 OneBot12 格式消息：
+
+```python
+class Send(BaseAdapter.Send):
+    def Raw_ob12(self, message, **kwargs):
+        """
+        发送原始 OneBot12 格式的消息
+        
+        :param message: OneBot12 格式的消息段或消息段数组
+        :param kwargs: 额外参数
+        :return: asyncio.Task 对象
+        """
+        import asyncio
+        return asyncio.create_task(
+            self._adapter.call_api(
+                endpoint="/send_raw",
+                message=message,
+                target_type=self._target_type,
+                target_id=self._target_id,
+                **kwargs
+            )
+        )
+```
+
+> **详细的 SendDSL 使用说明和更多示例请参考：**
+> - [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看所有调用方式和使用示例
+> - [发送方法命名规范](../standards/send-type-naming.md) - 查看标准方法命名规则
 
 ## 4. 事件转换与路由注册
 

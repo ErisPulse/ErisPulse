@@ -1,32 +1,48 @@
 """
-ErisPulse 框架配置管理
+ErisPulse 框架配置引导模块
+提供默认配置定义及配置完整性管理功能
 
-专门管理 ErisPulse 框架自身的配置项。
+{!--< tips >!--}
+内部使用模块，框架启动时自动加载
+{!--< /tips >!--}
 """
 
 from typing import Dict, Any
-from .config import config
+from .Core.config import config
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
-    "server": {
-        "host": "0.0.0.0",
-        "port": 8000,
-        "ssl_certfile": None,
-        "ssl_keyfile": None
+    "server": {              # 服务器配置
+        "host": "0.0.0.0",      # 监听地址
+        "port": 8000,           # 监听端口
+        "ssl_certfile": None,   # SSL 证书文件路径
+        "ssl_keyfile": None     # SSL 密钥文件路径
     },
-    "logger": {
-        "level": "INFO",
-        "log_files": [],
-        "memory_limit": 1000
+    "logger": {              # 日志配置
+        "level": "INFO",        # 日志级别
+        "log_files": [],        # 日志文件列表
+        "memory_limit": 1000    # 日志内存限制（条）
     },
-    "storage":  {
-        "use_global_db": False,
+    "storage":  {            # 存储配置
+        "use_global_db": False, # 是否使用全局数据库
     },
-    "modules": {},
-    "adapters": {},
-    "framework": {
-        "enable_lazy_loading": True
+    "modules": {},           # 模块配置（可以控制模块启用等）
+    "adapters": {},          # 适配器配置（可以控制适配器启用等）
+    "event": {               # 事件系统配置
+        "message": {            # 消息事件配置
+            "ignore_self": True,        # 是否忽略自身消息
+                                        #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
+        },
+        "command": {            # 命令系统配置
+            "prefix": "/",              # 命令前缀
+            "case_sensitive": True,     # 是否区分大小写
+            "allow_space_prefix": False,# 是否允许前缀存在空格
+            "must_at_bot": False,       # 是否必须@机器人触发
+        },
+
+    },
+    "framework": {           # 框架配置
+        "enable_lazy_loading": True     # 是否启用延迟加载
     }
 }
 
@@ -119,6 +135,15 @@ def get_storage_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["storage"]
+
+def get_event_config() -> Dict[str, Any]:
+    """
+    获取事件系统配置
+
+    :return: 事件系统配置字典
+    """
+    erispulse_config = get_erispulse_config()
+    return erispulse_config["event"]
 
 def get_framework_config() -> Dict[str, Any]:
     """
