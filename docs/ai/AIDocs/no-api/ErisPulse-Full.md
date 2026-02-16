@@ -1,6 +1,6 @@
 # ErisPulse 完整开发文档
 
-**生成时间**: 2026-02-16 22:13:34
+**生成时间**: 2026-02-16 22:26:14
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -2779,6 +2779,17 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "modules": {},
     "adapters": {},
+    "event": {
+        "message": {
+            "ignore_self": True
+        },
+        "command": {
+            "prefix": "/",
+            "case_sensitive": True,
+            "allow_space_prefix": False,
+            "must_at_bot": False
+        }
+    },
     "framework": {
         "enable_lazy_loading": True
     }
@@ -2855,6 +2866,56 @@ token = "your_token_here"
 [ErisPulse.framework]
 enable_lazy_loading = true
 ```
+
+## 事件配置 (event)
+
+事件配置控制着框架事件系统的行为，包括消息处理和命令系统的设置。
+
+### 消息配置 (event.message)
+
+消息配置控制着消息事件的处理方式：
+
+- `ignore_self`: 是否忽略机器人自己的消息，默认为 `True`。当设置为 `True` 时，机器人发送的消息不会触发事件处理器
+
+配置示例：
+```toml
+[ErisPulse.event.message]
+ignore_self = true
+```
+
+### 命令配置 (event.command)
+
+命令配置控制着命令系统的行为：
+
+- `prefix`: 命令前缀，默认为 `"/"`。用户必须使用此前缀来触发命令
+- `case_sensitive`: 是否区分大小写，默认为 `True`。当设置为 `False` 时，命令不区分大小写
+- `allow_space_prefix`: 是否允许空格作为前缀，默认为 `False`。当设置为 `True` 时，`/ command` 和 `/command` 都可以触发命令
+- `must_at_bot`: 是否必须@机器人才能触发命令，默认为 `False`。当设置为 `True` 时，在非私聊场景（群聊、频道等）中必须@机器人才能触发命令，私聊不受此限制
+
+配置示例：
+```toml
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = false
+allow_space_prefix = false
+must_at_bot = false
+```
+
+#### must_at_bot 配置详解
+
+`must_at_bot` 配置项提供了更精细的命令触发控制：
+
+- **默认值**: `false`
+- **适用场景**:
+  - 私聊（`detail_type = "private"` 或 `"user"`）：不受限制，可以直接触发命令
+  - 群聊（`detail_type = "group"`）：需要@机器人才能触发命令
+  - 频道（`detail_type = "channel"`）：需要@机器人才能触发命令
+  - 其他多对一场景：需要@机器人才能触发命令
+
+- **使用建议**:
+  - 在人机混杂的群组中启用此配置可以减少误触发
+  - 在专门的机器人频道中可以保持禁用，提高使用便利性
+  - 私聊场景始终不受影响，保证一对一对话的流畅性
 
 ## 配置补充机制
 
