@@ -1,6 +1,6 @@
 # ErisPulse 适配器开发文档
 
-**生成时间**: 2026-02-15 06:40:38
+**生成时间**: 2026-02-16 20:55:51
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5380,63 +5380,64 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 
 ## API文档目录
 
-- [ErisPulse\CLI\__init__.md](#ErisPulse_CLI___init__)
-- [ErisPulse\CLI\base.md](#ErisPulse_CLI_base)
-- [ErisPulse\CLI\cli.md](#ErisPulse_CLI_cli)
-- [ErisPulse\CLI\commands\__init__.md](#ErisPulse_CLI_commands___init__)
-- [ErisPulse\CLI\commands\init.md](#ErisPulse_CLI_commands_init)
-- [ErisPulse\CLI\commands\install.md](#ErisPulse_CLI_commands_install)
-- [ErisPulse\CLI\commands\list.md](#ErisPulse_CLI_commands_list)
-- [ErisPulse\CLI\commands\list_remote.md](#ErisPulse_CLI_commands_list_remote)
-- [ErisPulse\CLI\commands\run.md](#ErisPulse_CLI_commands_run)
-- [ErisPulse\CLI\commands\self_update.md](#ErisPulse_CLI_commands_self_update)
-- [ErisPulse\CLI\commands\uninstall.md](#ErisPulse_CLI_commands_uninstall)
-- [ErisPulse\CLI\commands\upgrade.md](#ErisPulse_CLI_commands_upgrade)
-- [ErisPulse\CLI\console.md](#ErisPulse_CLI_console)
-- [ErisPulse\CLI\registry.md](#ErisPulse_CLI_registry)
-- [ErisPulse\CLI\utils\__init__.md](#ErisPulse_CLI_utils___init__)
-- [ErisPulse\CLI\utils\package_manager.md](#ErisPulse_CLI_utils_package_manager)
-- [ErisPulse\Core\Bases\__init__.md](#ErisPulse_Core_Bases___init__)
-- [ErisPulse\Core\Bases\adapter.md](#ErisPulse_Core_Bases_adapter)
-- [ErisPulse\Core\Bases\manager.md](#ErisPulse_Core_Bases_manager)
-- [ErisPulse\Core\Bases\module.md](#ErisPulse_Core_Bases_module)
-- [ErisPulse\Core\Event\__init__.md](#ErisPulse_Core_Event___init__)
-- [ErisPulse\Core\Event\base.md](#ErisPulse_Core_Event_base)
-- [ErisPulse\Core\Event\command.md](#ErisPulse_Core_Event_command)
-- [ErisPulse\Core\Event\message.md](#ErisPulse_Core_Event_message)
-- [ErisPulse\Core\Event\meta.md](#ErisPulse_Core_Event_meta)
-- [ErisPulse\Core\Event\notice.md](#ErisPulse_Core_Event_notice)
-- [ErisPulse\Core\Event\request.md](#ErisPulse_Core_Event_request)
-- [ErisPulse\Core\Event\wrapper.md](#ErisPulse_Core_Event_wrapper)
-- [ErisPulse\Core\_self_config.md](#ErisPulse_Core__self_config)
-- [ErisPulse\Core\adapter.md](#ErisPulse_Core_adapter)
-- [ErisPulse\Core\config.md](#ErisPulse_Core_config)
-- [ErisPulse\Core\exceptions.md](#ErisPulse_Core_exceptions)
-- [ErisPulse\Core\lifecycle.md](#ErisPulse_Core_lifecycle)
-- [ErisPulse\Core\logger.md](#ErisPulse_Core_logger)
-- [ErisPulse\Core\module.md](#ErisPulse_Core_module)
-- [ErisPulse\Core\router.md](#ErisPulse_Core_router)
-- [ErisPulse\Core\storage.md](#ErisPulse_Core_storage)
-- [ErisPulse\__init__.md](#ErisPulse___init__)
-- [ErisPulse\__main__.md](#ErisPulse___main__)
-- [ErisPulse\finders\__init__.md](#ErisPulse_finders___init__)
-- [ErisPulse\finders\adapter.md](#ErisPulse_finders_adapter)
-- [ErisPulse\finders\bases\finder.md](#ErisPulse_finders_bases_finder)
-- [ErisPulse\finders\cli.md](#ErisPulse_finders_cli)
-- [ErisPulse\finders\module.md](#ErisPulse_finders_module)
-- [ErisPulse\loaders\__init__.md](#ErisPulse_loaders___init__)
-- [ErisPulse\loaders\adapter.md](#ErisPulse_loaders_adapter)
-- [ErisPulse\loaders\bases\loader.md](#ErisPulse_loaders_bases_loader)
-- [ErisPulse\loaders\initializer.md](#ErisPulse_loaders_initializer)
-- [ErisPulse\loaders\module.md](#ErisPulse_loaders_module)
-- [ErisPulse\loaders\strategy.md](#ErisPulse_loaders_strategy)
-- [ErisPulse\sdk.md](#ErisPulse_sdk)
+- [ErisPulse/CLI/__init__.md](#ErisPulse_CLI___init__)
+- [ErisPulse/CLI/base.md](#ErisPulse_CLI_base)
+- [ErisPulse/CLI/cli.md](#ErisPulse_CLI_cli)
+- [ErisPulse/CLI/commands/__init__.md](#ErisPulse_CLI_commands___init__)
+- [ErisPulse/CLI/commands/init.md](#ErisPulse_CLI_commands_init)
+- [ErisPulse/CLI/commands/install.md](#ErisPulse_CLI_commands_install)
+- [ErisPulse/CLI/commands/list.md](#ErisPulse_CLI_commands_list)
+- [ErisPulse/CLI/commands/list_remote.md](#ErisPulse_CLI_commands_list_remote)
+- [ErisPulse/CLI/commands/run.md](#ErisPulse_CLI_commands_run)
+- [ErisPulse/CLI/commands/self_update.md](#ErisPulse_CLI_commands_self_update)
+- [ErisPulse/CLI/commands/uninstall.md](#ErisPulse_CLI_commands_uninstall)
+- [ErisPulse/CLI/commands/upgrade.md](#ErisPulse_CLI_commands_upgrade)
+- [ErisPulse/CLI/console.md](#ErisPulse_CLI_console)
+- [ErisPulse/CLI/registry.md](#ErisPulse_CLI_registry)
+- [ErisPulse/CLI/utils/__init__.md](#ErisPulse_CLI_utils___init__)
+- [ErisPulse/CLI/utils/package_manager.md](#ErisPulse_CLI_utils_package_manager)
+- [ErisPulse/Core/Bases/__init__.md](#ErisPulse_Core_Bases___init__)
+- [ErisPulse/Core/Bases/adapter.md](#ErisPulse_Core_Bases_adapter)
+- [ErisPulse/Core/Bases/manager.md](#ErisPulse_Core_Bases_manager)
+- [ErisPulse/Core/Bases/module.md](#ErisPulse_Core_Bases_module)
+- [ErisPulse/Core/Event/__init__.md](#ErisPulse_Core_Event___init__)
+- [ErisPulse/Core/Event/base.md](#ErisPulse_Core_Event_base)
+- [ErisPulse/Core/Event/command.md](#ErisPulse_Core_Event_command)
+- [ErisPulse/Core/Event/message.md](#ErisPulse_Core_Event_message)
+- [ErisPulse/Core/Event/meta.md](#ErisPulse_Core_Event_meta)
+- [ErisPulse/Core/Event/notice.md](#ErisPulse_Core_Event_notice)
+- [ErisPulse/Core/Event/request.md](#ErisPulse_Core_Event_request)
+- [ErisPulse/Core/Event/wrapper.md](#ErisPulse_Core_Event_wrapper)
+- [ErisPulse/Core/_self_config.md](#ErisPulse_Core__self_config)
+- [ErisPulse/Core/adapter.md](#ErisPulse_Core_adapter)
+- [ErisPulse/Core/config.md](#ErisPulse_Core_config)
+- [ErisPulse/Core/exceptions.md](#ErisPulse_Core_exceptions)
+- [ErisPulse/Core/lifecycle.md](#ErisPulse_Core_lifecycle)
+- [ErisPulse/Core/logger.md](#ErisPulse_Core_logger)
+- [ErisPulse/Core/module.md](#ErisPulse_Core_module)
+- [ErisPulse/Core/router.md](#ErisPulse_Core_router)
+- [ErisPulse/Core/storage.md](#ErisPulse_Core_storage)
+- [ErisPulse/__init__.md](#ErisPulse___init__)
+- [ErisPulse/__main__.md](#ErisPulse___main__)
+- [ErisPulse/_bootstrap.md](#ErisPulse__bootstrap)
+- [ErisPulse/finders/__init__.md](#ErisPulse_finders___init__)
+- [ErisPulse/finders/adapter.md](#ErisPulse_finders_adapter)
+- [ErisPulse/finders/bases/finder.md](#ErisPulse_finders_bases_finder)
+- [ErisPulse/finders/cli.md](#ErisPulse_finders_cli)
+- [ErisPulse/finders/module.md](#ErisPulse_finders_module)
+- [ErisPulse/loaders/__init__.md](#ErisPulse_loaders___init__)
+- [ErisPulse/loaders/adapter.md](#ErisPulse_loaders_adapter)
+- [ErisPulse/loaders/bases/loader.md](#ErisPulse_loaders_bases_loader)
+- [ErisPulse/loaders/initializer.md](#ErisPulse_loaders_initializer)
+- [ErisPulse/loaders/module.md](#ErisPulse_loaders_module)
+- [ErisPulse/loaders/strategy.md](#ErisPulse_loaders_strategy)
+- [ErisPulse/sdk.md](#ErisPulse_sdk)
 - [README.md](#README)
 
 ---
 
 <a id="ErisPulse_CLI___init__"></a>
-## ErisPulse\CLI\__init__.md
+## ErisPulse/CLI/__init__.md
 
 
 ---
@@ -5452,7 +5453,7 @@ ErisPulse 命令行接口
 
 
 <a id="ErisPulse_CLI_base"></a>
-## ErisPulse\CLI\base.md
+## ErisPulse/CLI/base.md
 
 
 ---
@@ -5513,7 +5514,7 @@ CLI 命令基类
 
 
 <a id="ErisPulse_CLI_cli"></a>
-## ErisPulse\CLI\cli.md
+## ErisPulse/CLI/cli.md
 
 
 ---
@@ -5608,7 +5609,7 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands___init__"></a>
-## ErisPulse\CLI\commands\__init__.md
+## ErisPulse/CLI/commands/__init__.md
 
 
 ---
@@ -5625,7 +5626,7 @@ ErisPulse 命令行接口主类
 
 
 <a id="ErisPulse_CLI_commands_init"></a>
-## ErisPulse\CLI\commands\init.md
+## ErisPulse/CLI/commands/init.md
 
 
 ---
@@ -5702,7 +5703,7 @@ InitCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_install"></a>
-## ErisPulse\CLI\commands\install.md
+## ErisPulse/CLI/commands/install.md
 
 
 ---
@@ -5767,7 +5768,7 @@ InstallCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list"></a>
-## ErisPulse\CLI\commands\list.md
+## ErisPulse/CLI/commands/list.md
 
 
 ---
@@ -5815,7 +5816,7 @@ ListCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_list_remote"></a>
-## ErisPulse\CLI\commands\list_remote.md
+## ErisPulse/CLI/commands/list_remote.md
 
 
 ---
@@ -5852,7 +5853,7 @@ ListRemoteCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_run"></a>
-## ErisPulse\CLI\commands\run.md
+## ErisPulse/CLI/commands/run.md
 
 
 ---
@@ -5954,7 +5955,7 @@ RunCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_self_update"></a>
-## ErisPulse\CLI\commands\self_update.md
+## ErisPulse/CLI/commands/self_update.md
 
 
 ---
@@ -6004,7 +6005,7 @@ SelfUpdateCommand 类提供相关功能。
 
 
 <a id="ErisPulse_CLI_commands_uninstall"></a>
-## ErisPulse\CLI\commands\uninstall.md
+## ErisPulse/CLI/commands/uninstall.md
 
 
 ---
@@ -6020,7 +6021,7 @@ Uninstall 命令实现
 
 
 <a id="ErisPulse_CLI_commands_upgrade"></a>
-## ErisPulse\CLI\commands\upgrade.md
+## ErisPulse/CLI/commands/upgrade.md
 
 
 ---
@@ -6036,7 +6037,7 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_console"></a>
-## ErisPulse\CLI\console.md
+## ErisPulse/CLI/console.md
 
 
 ---
@@ -6061,7 +6062,7 @@ Upgrade 命令实现
 
 
 <a id="ErisPulse_CLI_registry"></a>
-## ErisPulse\CLI\registry.md
+## ErisPulse/CLI/registry.md
 
 
 ---
@@ -6187,7 +6188,7 @@ CLI 命令注册器
 
 
 <a id="ErisPulse_CLI_utils___init__"></a>
-## ErisPulse\CLI\utils\__init__.md
+## ErisPulse/CLI/utils/__init__.md
 
 
 ---
@@ -6203,7 +6204,7 @@ ErisPulse SDK 工具模块
 
 
 <a id="ErisPulse_CLI_utils_package_manager"></a>
-## ErisPulse\CLI\utils\package_manager.md
+## ErisPulse/CLI/utils/package_manager.md
 
 
 ---
@@ -6487,7 +6488,7 @@ ErisPulse包管理器
 
 
 <a id="ErisPulse_Core_Bases___init__"></a>
-## ErisPulse\Core\Bases\__init__.md
+## ErisPulse/Core/Bases/__init__.md
 
 
 ---
@@ -6503,7 +6504,7 @@ ErisPulse 基础模块
 
 
 <a id="ErisPulse_Core_Bases_adapter"></a>
-## ErisPulse\Core\Bases\adapter.md
+## ErisPulse/Core/Bases/adapter.md
 
 
 ---
@@ -6672,7 +6673,7 @@ ErisPulse 适配器基础模块
 
 
 <a id="ErisPulse_Core_Bases_manager"></a>
-## ErisPulse\Core\Bases\manager.md
+## ErisPulse/Core/Bases/manager.md
 
 
 ---
@@ -6804,7 +6805,7 @@ ErisPulse 管理器基类
 
 
 <a id="ErisPulse_Core_Bases_module"></a>
-## ErisPulse\Core\Bases\module.md
+## ErisPulse/Core/Bases/module.md
 
 
 ---
@@ -6894,7 +6895,7 @@ ErisPulse 模块基础模块
 
 
 <a id="ErisPulse_Core_Event___init__"></a>
-## ErisPulse\Core\Event\__init__.md
+## ErisPulse/Core/Event/__init__.md
 
 
 ---
@@ -6934,7 +6935,7 @@ ErisPulse 事件处理模块
 
 
 <a id="ErisPulse_Core_Event_base"></a>
-## ErisPulse\Core\Event\base.md
+## ErisPulse/Core/Event/base.md
 
 
 ---
@@ -7031,7 +7032,7 @@ ErisPulse 事件处理基础模块
 
 
 <a id="ErisPulse_Core_Event_command"></a>
-## ErisPulse\Core\Event\command.md
+## ErisPulse/Core/Event/command.md
 
 
 ---
@@ -7227,7 +7228,7 @@ ErisPulse 命令处理模块
 
 
 <a id="ErisPulse_Core_Event_message"></a>
-## ErisPulse\Core\Event\message.md
+## ErisPulse/Core/Event/message.md
 
 
 ---
@@ -7351,7 +7352,7 @@ ErisPulse 消息处理模块
 
 
 <a id="ErisPulse_Core_Event_meta"></a>
-## ErisPulse\Core\Event\meta.md
+## ErisPulse/Core/Event/meta.md
 
 
 ---
@@ -7474,7 +7475,7 @@ ErisPulse 元事件处理模块
 
 
 <a id="ErisPulse_Core_Event_notice"></a>
-## ErisPulse\Core\Event\notice.md
+## ErisPulse/Core/Event/notice.md
 
 
 ---
@@ -7617,7 +7618,7 @@ ErisPulse 通知处理模块
 
 
 <a id="ErisPulse_Core_Event_request"></a>
-## ErisPulse\Core\Event\request.md
+## ErisPulse/Core/Event/request.md
 
 
 ---
@@ -7720,7 +7721,7 @@ ErisPulse 请求处理模块
 
 
 <a id="ErisPulse_Core_Event_wrapper"></a>
-## ErisPulse\Core\Event\wrapper.md
+## ErisPulse/Core/Event/wrapper.md
 
 
 ---
@@ -8262,7 +8263,7 @@ ErisPulse 事件包装类
 
 
 <a id="ErisPulse_Core__self_config"></a>
-## ErisPulse\Core\_self_config.md
+## ErisPulse/Core/_self_config.md
 
 
 ---
@@ -8346,7 +8347,7 @@ ErisPulse 框架配置管理
 
 
 <a id="ErisPulse_Core_adapter"></a>
-## ErisPulse\Core\adapter.md
+## ErisPulse/Core/adapter.md
 
 
 ---
@@ -8676,7 +8677,7 @@ OneBot12协议事件监听装饰器
 
 
 <a id="ErisPulse_Core_config"></a>
-## ErisPulse\Core\config.md
+## ErisPulse/Core/config.md
 
 
 ---
@@ -8768,7 +8769,7 @@ ConfigManager 类提供相关功能。
 
 
 <a id="ErisPulse_Core_exceptions"></a>
-## ErisPulse\Core\exceptions.md
+## ErisPulse/Core/exceptions.md
 
 
 ---
@@ -8846,7 +8847,7 @@ ExceptionHandler 类提供相关功能。
 
 
 <a id="ErisPulse_Core_lifecycle"></a>
-## ErisPulse\Core\lifecycle.md
+## ErisPulse/Core/lifecycle.md
 
 
 ---
@@ -8959,7 +8960,7 @@ ErisPulse 生命周期管理模块
 
 
 <a id="ErisPulse_Core_logger"></a>
-## ErisPulse\Core\logger.md
+## ErisPulse/Core/logger.md
 
 
 ---
@@ -9216,7 +9217,7 @@ ErisPulse 日志系统
 
 
 <a id="ErisPulse_Core_module"></a>
-## ErisPulse\Core\module.md
+## ErisPulse/Core/module.md
 
 
 ---
@@ -9503,7 +9504,7 @@ ErisPulse 模块系统
 
 
 <a id="ErisPulse_Core_router"></a>
-## ErisPulse\Core\router.md
+## ErisPulse/Core/router.md
 
 
 ---
@@ -9659,7 +9660,7 @@ ErisPulse 路由系统
 
 
 <a id="ErisPulse_Core_storage"></a>
-## ErisPulse\Core\storage.md
+## ErisPulse/Core/storage.md
 
 
 ---
@@ -9939,7 +9940,7 @@ use_global_db = true
 
 
 <a id="ErisPulse___init__"></a>
-## ErisPulse\__init__.md
+## ErisPulse/__init__.md
 
 
 ---
@@ -10103,7 +10104,7 @@ SDK 反初始化
 
 
 <a id="ErisPulse___main__"></a>
-## ErisPulse\__main__.md
+## ErisPulse/__main__.md
 
 
 ---
@@ -10132,8 +10133,92 @@ CLI入口点
 
 
 
+<a id="ErisPulse__bootstrap"></a>
+## ErisPulse/_bootstrap.md
+
+
+---
+
+## 模块概述
+
+
+ErisPulse 框架配置管理
+
+专门管理 ErisPulse 框架自身的配置项。
+
+---
+
+## 函数列表
+
+
+### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
+
+确保 ErisPulse 配置结构完整，补全缺失的配置项
+
+:param config_dict: 当前配置
+:return: 补全后的完整配置
+
+---
+
+
+### `get_erispulse_config()`
+
+获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+
+:return: 完整的 ErisPulse 配置字典
+
+---
+
+
+### `update_erispulse_config(new_config: Dict[str, Any])`
+
+更新 ErisPulse 配置，自动补全缺失的配置项
+
+:param new_config: 新的配置字典
+:return: 是否更新成功
+
+---
+
+
+### `get_server_config()`
+
+获取服务器配置，确保结构完整
+
+:return: 服务器配置字典
+
+---
+
+
+### `get_logger_config()`
+
+获取日志配置，确保结构完整
+
+:return: 日志配置字典
+
+---
+
+
+### `get_storage_config()`
+
+获取存储模块配置
+
+:return: 存储配置字典
+
+---
+
+
+### `get_framework_config()`
+
+获取框架配置
+
+:return: 框架配置字典
+
+---
+
+
+
 <a id="ErisPulse_finders___init__"></a>
-## ErisPulse\finders\__init__.md
+## ErisPulse/finders/__init__.md
 
 
 ---
@@ -10155,7 +10240,7 @@ ErisPulse 发现器模块
 
 
 <a id="ErisPulse_finders_adapter"></a>
-## ErisPulse\finders\adapter.md
+## ErisPulse/finders/adapter.md
 
 
 ---
@@ -10267,7 +10352,7 @@ ErisPulse 适配器发现器
 
 
 <a id="ErisPulse_finders_bases_finder"></a>
-## ErisPulse\finders\bases\finder.md
+## ErisPulse/finders/bases/finder.md
 
 
 ---
@@ -10435,7 +10520,7 @@ ErisPulse 基础发现器
 
 
 <a id="ErisPulse_finders_cli"></a>
-## ErisPulse\finders\cli.md
+## ErisPulse/finders/cli.md
 
 
 ---
@@ -10547,7 +10632,7 @@ CLI扩展发现器
 
 
 <a id="ErisPulse_finders_module"></a>
-## ErisPulse\finders\module.md
+## ErisPulse/finders/module.md
 
 
 ---
@@ -10659,7 +10744,7 @@ ErisPulse 模块发现器
 
 
 <a id="ErisPulse_loaders___init__"></a>
-## ErisPulse\loaders\__init__.md
+## ErisPulse/loaders/__init__.md
 
 
 ---
@@ -10679,7 +10764,7 @@ ErisPulse 加载器模块
 
 
 <a id="ErisPulse_loaders_adapter"></a>
-## ErisPulse\loaders\adapter.md
+## ErisPulse/loaders/adapter.md
 
 
 ---
@@ -10784,7 +10869,7 @@ ErisPulse 适配器加载器
 
 
 <a id="ErisPulse_loaders_bases_loader"></a>
-## ErisPulse\loaders\bases\loader.md
+## ErisPulse/loaders/bases/loader.md
 
 
 ---
@@ -10906,7 +10991,7 @@ ErisPulse 基础加载器
 
 
 <a id="ErisPulse_loaders_initializer"></a>
-## ErisPulse\loaders\initializer.md
+## ErisPulse/loaders/initializer.md
 
 
 ---
@@ -10972,7 +11057,7 @@ ErisPulse 初始化协调器
 
 
 <a id="ErisPulse_loaders_module"></a>
-## ErisPulse\loaders\module.md
+## ErisPulse/loaders/module.md
 
 
 ---
@@ -11271,7 +11356,7 @@ ErisPulse 模块加载器
 
 
 <a id="ErisPulse_loaders_strategy"></a>
-## ErisPulse\loaders\strategy.md
+## ErisPulse/loaders/strategy.md
 
 
 ---
@@ -11398,7 +11483,7 @@ ErisPulse 模块加载策略
 
 
 <a id="ErisPulse_sdk"></a>
-## ErisPulse\sdk.md
+## ErisPulse/sdk.md
 
 
 ---
@@ -11627,11 +11712,6 @@ ErisPulse SDK 主类
 📦 1 个类 | 🔧 54 个方法
 
 
-### [ErisPulse.Core._self_config](ErisPulse/Core/_self_config.md)
-
-⚙️ 7 个函数
-
-
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
 📦 1 个类 | 🔧 22 个方法
@@ -11680,6 +11760,11 @@ ErisPulse SDK 主类
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
 
 ⚙️ 1 个函数
+
+
+### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
+
+⚙️ 7 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
