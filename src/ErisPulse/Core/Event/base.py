@@ -99,6 +99,17 @@ class BaseEventHandler:
         if not isinstance(event, Event):
             event = Event(event)
         
+        # 检查是否是消息事件，并过滤自身消息
+        if self.event_type == "message":
+            if event.get("self", {}).get("user_id") == event.get("user_id"):
+                from ..._bootstrap import get_event_config
+                config = get_event_config()
+                
+                ignore_self = config.get("message").get("ignore_self", True)
+                print(ignore_self)
+                if ignore_self:
+                    return
+        
         # 执行处理器
         for handler_info in self.handlers:
             condition = handler_info.get("condition")
