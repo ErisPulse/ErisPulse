@@ -69,9 +69,13 @@ class Main(BaseModule):
         self.config = self._get_config()
 
     @staticmethod
-    def should_eager_load():
-        # 这适用于懒加载模块, 如果模块需要立即加载, 请返回 True | 比如一些监听器模块/定时器模块等等
-        return False
+    def get_load_strategy():
+        """返回模块加载策略"""
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,  # 懒加载，首次访问时才加载
+            priority=0       # 默认优先级
+        )
     
     async def on_load(self, event):
         command("一个命令", help="这是一个命令", usage="命令 参数")(self.ACommand)
@@ -115,7 +119,7 @@ sdk.MyModule.print_hello()
 | 方法名 | 说明 | 必须实现 | 参数 | 返回值 |
 | --- | --- | --- | --- | --- |
 | get_load_strategy() | 静态方法，返回模块加载策略（推荐使用） | 否 | 无 | ModuleLoadStrategy 或 dict |
-| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载（兼容旧方法） | 否 | 无 | bool |
+| should_eager_load() | 静态方法，决定模块是否应该立即加载而不是懒加载（兼容旧方法，已弃用，推荐使用 get_load_strategy()） | 否 | 无 | bool |
 | on_load(event) | 模块加载时调用，用于初始化资源、注册事件处理器等 | 是 | event | bool |
 | on_unload(event) | 模块卸载时调用，用于清理资源、注销事件处理器等 | 是 | event | bool |
 
@@ -262,7 +266,7 @@ async def group_handler(event):
 
 ### 5.5 回复功能
 
-Event 提供了统一的 `reply()` 方法，支持多种回复类型：
+Event 提供了统一的 `reply()` 方法，用于快速回复消息：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -272,25 +276,20 @@ async def reply_test(event):
     # 基本文本回复（默认）
     await event.reply("这是一条文本消息")
     
-    # 发送图片
+    # 指定发送方法
     await event.reply("http://example.com/image.jpg", method="Image")
-    
-    # 发送语音
-    await event.reply("http://example.com/voice.mp3", method="Voice")
-    
-    # 发送视频
-    await event.reply("http://example.com/video.mp4", method="Video")
-    
-    # 发送文件
-    await event.reply("http://example.com/file.pdf", method="File")
 ```
+
+**详细的发送方法说明请参考：**
+- [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看所有发送方法和使用示例
+- [发送方法命名规范](../standards/send-type-naming.md) - 查看标准方法命名规则
 
 **reply() 方法参数说明：**
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | content | str | 发送内容（文本、URL等，取决于method参数） |
-| method | str | 适配器发送方法，默认为 "Text"。可选值：Text, Image, Voice, Video, File 等 |
+| method | str | 适配器发送方法，默认为 "Text" |
 | **kwargs | dict | 额外参数，具体取决于适配器实现 |
 
 ### 5.6 等待回复功能

@@ -31,6 +31,14 @@ no-api版本输出文件位置:
 - 模块开发文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-ModuleDev.md  
 - 适配器开发文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-AdapterDev.md
 - 核心文档(no-api): docs/ai/AIDocs/no-api/ErisPulse-Core.md
+
+文档合并范围:
+- 核心文档(core): README.md, concepts.md, modules.md, adapters.md, event-system.md, 
+  lifecycle.md, cli.md, lazy-loading.md, router.md, self-config.md, best-practices.md
+- 开发文档(development): README.md, module.md, adapter.md, cli.md
+- 标准文档(standards): README.md, event-conversion.md, api-response.md, send-type-naming.md
+- 平台特性(platform-features): README.md, yunhu.md, telegram.md, onebot11.md, onebot12.md, email.md
+- 风格指南(styleguide): README.md, docstring_spec.md
 """
 
 def merge_md_files(output_file, files_to_merge, title="文档合集"):
@@ -153,6 +161,9 @@ def get_core_files():
             "event-system.md",
             "lifecycle.md",
             "cli.md",
+            "lazy-loading.md",
+            "router.md",
+            "self-config.md",
             "best-practices.md"
         ]
         
@@ -175,6 +186,12 @@ def get_core_files():
                     description = "生命周期系统"
                 elif filename == "cli.md":
                     description = "命令行接口"
+                elif filename == "lazy-loading.md":
+                    description = "延迟加载机制"
+                elif filename == "router.md":
+                    description = "路由系统"
+                elif filename == "self-config.md":
+                    description = "自配置系统"
                 elif filename == "best-practices.md":
                     description = "最佳实践"
                 
@@ -234,7 +251,8 @@ def get_standards_files():
         important_files = [
             "README.md",
             "event-conversion.md",
-            "api-response.md"
+            "api-response.md",
+            "send-type-naming.md"
         ]
         
         # 按顺序添加文件
@@ -248,6 +266,8 @@ def get_standards_files():
                     description = "事件转换标准"
                 elif filename == "api-response.md":
                     description = "API响应标准"
+                elif filename == "send-type-naming.md":
+                    description = "发送类型命名标准"
                 
                 standards_files.append({
                     "path": file_path,
@@ -270,6 +290,7 @@ def get_platform_features_files():
             "yunhu.md",
             "telegram.md",
             "onebot11.md",
+            "onebot12.md",
             "email.md"
         ]
         
@@ -290,6 +311,8 @@ def get_platform_features_files():
                     description = "Telegram平台特性"
                 elif filename == "onebot11.md":
                     description = "OneBot11平台特性"
+                elif filename == "onebot12.md":
+                    description = "OneBot12平台特性"
                 elif filename == "email.md":
                     description = "邮件平台特性"
                 
@@ -299,6 +322,37 @@ def get_platform_features_files():
                 })
     
     return platform_files
+
+def get_styleguide_files():
+    """
+    获取styleguide目录下的所有文档文件
+    """
+    styleguide_files = []
+    styleguide_dir = "docs/styleguide"
+    
+    if os.path.exists(styleguide_dir):
+        # 按重要性排序的文件列表
+        important_files = [
+            "README.md",
+            "docstring_spec.md"
+        ]
+        
+        # 按顺序添加文件
+        for filename in important_files:
+            file_path = os.path.join(styleguide_dir, filename)
+            if os.path.exists(file_path):
+                description = ""
+                if filename == "README.md":
+                    description = "风格指南总览"
+                elif filename == "docstring_spec.md":
+                    description = "文档字符串规范"
+                
+                styleguide_files.append({
+                    "path": file_path,
+                    "description": description
+                })
+    
+    return styleguide_files
 
 def generate_full_document(include_api=True):
     print("正在生成完整文档...")
@@ -321,8 +375,11 @@ def generate_full_document(include_api=True):
     # 添加平台特性文件
     platform_files = get_platform_features_files()
     
+    # 添加风格指南文档
+    styleguide_files = get_styleguide_files()
+    
     # 合并所有文件
-    files_to_merge = base_files + core_files + dev_files + standards_files + platform_files
+    files_to_merge = base_files + core_files + dev_files + standards_files + platform_files + styleguide_files
     
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
@@ -370,8 +427,11 @@ def generate_dev_documents(include_api=True):
     # 添加平台特性文件
     platform_files = get_platform_features_files()
     
+    # 添加风格指南文档
+    styleguide_files = get_styleguide_files()
+    
     # 合并所有文件
-    files_to_merge = module_files + module_dev_files + standards_files + platform_files
+    files_to_merge = module_files + module_dev_files + standards_files + platform_files + styleguide_files
     
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
@@ -404,7 +464,7 @@ def generate_dev_documents(include_api=True):
     adapter_dev_files = [f for f in dev_files if "适配器" in f["description"] or "指南列表" in f["description"]]
     
     # 合并所有文件
-    files_to_merge = adapter_files + adapter_dev_files + standards_files + platform_files
+    files_to_merge = adapter_files + adapter_dev_files + standards_files + platform_files + styleguide_files
     
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]
@@ -439,8 +499,11 @@ def generate_core_document(include_api=True):
     # 添加平台特性文件
     platform_files = get_platform_features_files()
     
+    # 添加风格指南文档
+    styleguide_files = get_styleguide_files()
+    
     # 合并所有文件
-    files_to_merge = base_files + core_files + platform_files
+    files_to_merge = base_files + core_files + platform_files + styleguide_files
     
     # 过滤不存在的文件
     existing_files = [f for f in files_to_merge if os.path.exists(f['path'])]

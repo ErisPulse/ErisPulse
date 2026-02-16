@@ -65,29 +65,138 @@ class MyAdapter(BaseAdapter):
            示例: Send.Using("bot1").To("user","123").Text("hi")
         4. 直接调用: Func() -> 不设置目标属性
            示例: Send.Text("broadcast")
+        
+        5. 链式调用（修饰方法返回self以支持链式）:
+           示例: Send.To("group","123").At("456").Reply("789").Text("hi")
         """
         
-        # 可以重写Text方法提供平台特定实现
+        def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+            super().__init__(adapter, target_type, target_id, account_id)
+            # 链式调用状态变量
+            self._at_user_ids = []       # @的用户列表
+            self._reply_message_id = None # 回复的消息ID
+            self._at_all = False         # 是否@全体
+        
+        def At(self, user_id: str) -> 'MyAdapter.Send':
+            """
+            @用户（可多次调用）
+            
+            :param user_id: 要@的用户ID
+            :return: Send实例自身，支持链式调用
+            """
+            self._at_user_ids.append(user_id)
+            return self
+        
+        def AtAll(self) -> 'MyAdapter.Send':
+            """
+            @全体成员
+            
+            :return: Send实例自身，支持链式调用
+            """
+            self._at_all = True
+            return self
+        
+        def Reply(self, message_id: str) -> 'MyAdapter.Send':
+            """
+            设置回复的消息
+            
+            :param message_id: 要回复的消息ID
+            :return: Send实例自身，支持链式调用
+            """
+            self._reply_message_id = message_id
+            return self
+        
         def Text(self, text: str):
-            """发送文本消息"""
+            """发送文本消息（支持链式调用中的 At、AtAll 和 Reply）"""
+            import asyncio
+            
+            # 构建消息段数组
+            message_segments = []
+            
+            # 添加 @全体
+            if self._at_all:
+                message_segments.append({
+                    "type": "mention_all",
+                    "data": {}
+                })
+            
+            # 添加 @用户列表
+            for user_id in self._at_user_ids:
+                message_segments.append({
+                    "type": "mention",
+                    "data": {"user_id": user_id}
+                })
+            
+            # 添加回复
+            if self._reply_message_id:
+                message_segments.append({
+                    "type": "reply",
+                    "data": {"message_id": self._reply_message_id}
+                })
+            
+            # 添加文本内容
+            if self._at_all or self._at_user_ids:
+                text = " " + text
+            message_segments.append({
+                "type": "text",
+                "data": {"text": text}
+            })
+            
             return asyncio.create_task(
                 self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,    # 来自To()设置的属性
-                    recvType=self._target_type # 来自To(type,id)设置的属性
+                    endpoint="/send_message",
+                    message=message_segments,
+                    target_type=self._target_type,
+                    target_id=self._target_id,
+                    account_id=self._account_id
                 )
             )
             
-        # 添加新的消息类型
         def Image(self, file: bytes):
-            """发送图片消息"""
+            """发送图片消息（支持链式调用中的 At 和 Reply）"""
+            import asyncio
+            
+            message_segments = []
+            
+            # 添加 @用户
+            for user_id in self._at_user_ids:
+                message_segments.append({
+                    "type": "mention",
+                    "data": {"user_id": user_id}
+                })
+            
+            # 添加图片
+            message_segments.append({
+                "type": "image",
+                "data": {"file": file}
+            })
+            
             return asyncio.create_task(
                 self._adapter.call_api(
-                    endpoint="/send_image",
-                    file=file,
-                    recvId=self._target_id,    # 自动使用To()设置的属性
-                    recvType=self._target_type
+                    endpoint="/send_message",
+                    message=message_segments,
+                    target_type=self._target_type,
+                    target_id=self._target_id,
+                    account_id=self._account_id
+                )
+            )
+        
+        def Raw_ob12(self, message, **kwargs):
+            """
+            发送原始 OneBot12 格式的消息
+            
+            注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
+            如果平台支持直接处理 OneBot12 格式的消息，可以实现此方法。
+            """
+            import asyncio
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send_raw_ob12",
+                    message=message,
+                    target_type=self._target_type,
+                    target_id=self._target_id,
+                    account_id=self._account_id,
+                    **kwargs
                 )
             )
         

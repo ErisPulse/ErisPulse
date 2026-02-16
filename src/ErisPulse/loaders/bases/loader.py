@@ -26,7 +26,6 @@ class BaseLoader(ABC):
     子类需要实现：
     - _get_entry_point_group: 返回 entry-point 组名
     - _process_entry_point: 处理单个 entry-point
-    - _should_eager_load: 判断是否立即加载
     {!--< /tips >!--}
     
     {!--< internal-use >!--}

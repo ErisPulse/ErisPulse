@@ -3,7 +3,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 description = "一个非常哇塞的模块"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 

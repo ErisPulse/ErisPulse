@@ -53,19 +53,23 @@ enable_lazy_loading = true  # true=启用懒加载(默认)，false=禁用懒加�
 
 ### 模块级别控制
 
-模块可以通过实现 `should_eager_load()` 静态方法来控制是否使用懒加载：
+模块可以通过实现 `get_load_strategy()` 静态方法来控制加载策略：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.loaders import ModuleLoadStrategy
 
 class MyModule(BaseModule):
     @staticmethod
-    def should_eager_load() -> bool:
+    def get_load_strategy():
         """
-        模块是否应该在启动时加载
-        默认为False(即懒加载)
+        返回模块加载策略
+        默认为 lazy_load=True（即懒加载）
         """
-        return True  # 返回True表示禁用懒加载，在启动时立即加载
+        return ModuleLoadStrategy(
+            lazy_load=False,  # 返回 False 表示立即加载
+            priority=0       # 加载优先级，数值越大优先级越高
+        )
 ```
 
 ## 使用懒加载模块
@@ -191,7 +195,7 @@ class MyModule(BaseModule):
 ### 1. 合理选择加载策略
 
 - 使用懒加载作为默认策略，除非有特殊需求
-- 对于提供基础服务的模块，考虑禁用懒加载（`should_eager_load=True`）
+- 对于提供基础服务的模块，通过 `get_load_strategy()` 返回 `ModuleLoadStrategy(lazy_load=False)` 来禁用懒加载
 
 ### 2. 处理异步初始化
 

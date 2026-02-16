@@ -1,17 +1,15 @@
 # ErisPulse API 文档
 
-> 最后更新：2026-02-04 14:52:46
-
 ---
 
 ## 概述
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 52
-- **类总数**: 47
+- **模块总数**: 51
+- **类总数**: 43
 - **函数总数**: 23
-- **方法总数**: 363
+- **方法总数**: 372
 
 ---
 
@@ -120,7 +118,7 @@
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
 
-⚙️ 2 个函数
+⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
@@ -131,11 +129,6 @@
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
 
 📦 1 个类 | 🔧 14 个方法
-
-
-### [ErisPulse.Core.Event.exceptions](ErisPulse/Core/Event/exceptions.md)
-
-📦 4 个类
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
@@ -163,11 +156,6 @@
 📦 1 个类 | 🔧 54 个方法
 
 
-### [ErisPulse.Core._self_config](ErisPulse/Core/_self_config.md)
-
-⚙️ 7 个函数
-
-
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
 📦 1 个类 | 🔧 22 个方法
@@ -190,7 +178,7 @@
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
 
-📦 2 个类 | 🔧 11 个方法
+📦 2 个类 | 🔧 19 个方法
 
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
@@ -200,7 +188,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 1 个类 | 🔧 10 个方法
+📦 1 个类 | 🔧 11 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
@@ -216,6 +204,11 @@
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
 
 ⚙️ 1 个函数
+
+
+### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
+
+⚙️ 8 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
