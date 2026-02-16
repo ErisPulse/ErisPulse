@@ -70,6 +70,15 @@ ErisPulse 框架配置管理
 ---
 
 
+### `get_event_config()`
+
+获取事件系统配置
+
+:return: 事件系统配置字典
+
+---
+
+
 ### `get_framework_config()`
 
 获取框架配置
