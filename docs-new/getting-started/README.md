@@ -21,6 +21,7 @@ ErisPulse 支持两种开发方式，你可以根据需求选择：
 
 ```python
 # main.py
+import asyncio
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
@@ -28,7 +29,8 @@ from ErisPulse.Core.Event import command
 async def hello(event):
     await event.reply("你好！")
 
-await sdk.init()
+# 运行 SDK 并且维持运行 | 需要在异步环境中运行
+asyncio.run(sdk.run(keep_running=True))
 ```
 
 **优点：**
