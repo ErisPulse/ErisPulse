@@ -71,7 +71,7 @@ class StorageManager:
         self._ensure_directories()
         
         # 根据配置决定使用哪个数据库
-        from ._self_config import get_storage_config
+        from .._bootstrap import get_storage_config
         storage_config = get_storage_config()
 
         use_global_db = storage_config.get("use_global_db", False)
