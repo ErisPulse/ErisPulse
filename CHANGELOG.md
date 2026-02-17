@@ -2,61 +2,86 @@
 
 所有版本更新遵循 [语义化版本控制](https://semver.org/lang/zh-CN/) 规范。
 
-> **如何阅读本日志**
-> 每个版本分为 "新增"/"变更"/"修复"/"移除"/"废弃" 等部分。建议开发者在升级前先阅读对应版本的 Breaking Change 和修复内容。
+  > **如何阅读本日志**
+  > 每个版本分为不同类型的变更部分。建议开发者在升级前先阅读对应版本的 "移除" 和 "变更" 部分。
 
-> **贡献日志**
-> 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
+  > **贡献日志**
+  > 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。
 
----
+  ---
 
-## 规则
+  ## 规则
 
-### 必须包含的信息
-1. **贡献者信息**：每项变更必须标明贡献者，格式为 `@Github用户名`
-2. **变更类型**：明确标识变更类型（新增/变更/修复/移除/废弃等）
-3. **日期信息**：版本发布日期采用 `YYYY/MM/DD` 格式
+  ### 必须包含的信息
+  1. **贡献者信息**：每项变更必须标明贡献者，格式为 `@Github用户名`
+  2. **变更类型**：明确标识变更类型（详见下方分类说明）
+  3. **日期信息**：版本发布日期采用 `YYYY/MM/DD` 格式
 
-### 示例格式
+  ### 变更类型分类
 
-```markdown
-## [version] - 2025/08/20
-> 开发版本
+  | 类型 | 英文标签 | 说明 | 示例 |
+  |------|---------|------|------|
+  | 新增 | Added | 新功能、新API、新模块等 | 新增命令系统支持 |
+  | 优化 | Improved | 性能提升、用户体验改进、代码优化 | 优化内存使用效率 |
+  | 变更 | Changed | 功能行为变更、配置变更、API变更（非破坏性） | 调整默认配置项 |
+  | 修复 | Fixed | Bug修复 | 修复空指针异常 |
+  | 移除 | Removed | 删除的功能、API或模块 | 移除废弃的API |
+  | 废弃 | Deprecated | 标记为弃用的功能（计划未来移除） | 某方法即将废弃 |
+  | 重构 | Refactored | 内部代码重构（不影响公共API） | 重构加载系统架构 |
+  | 安全 | Security | 安全修复或增强 | 修复权限漏洞 |
 
-### 新增
+  ### 示例格式
 
-- By [贡献者](https://github.com/贡献者)
-  - `模块名` 模块新增功能描述：
-    - 具体功能点1
-    - 具体功能点2
-```
+  ```markdown
+  ## [version] - 2025/08/20
+  > 开发版本
+
+  ### 新增
+
+  - By [贡献者](https://github.com/贡献者)
+    - `模块名` 模块新增功能描述：
+      - 具体功能点1
+      - 具体功能点2
+
+  ### 优化
+
+  - @用户名
+    - 优化某模块的性能
+  ```
 
 ---
 ## [2.3.5-dev.1] - 2026/02/15
 > 开发版本
 
-### 新增
+  ### 新增
 
-- @wsu2059q
-  - 新增 `commands.must_at_bot` 配置，用于控制是否需要 @bot 才能执行命令
+  - @wsu2059q
+    - 新增 `commands.must_at_bot` 配置，用于控制是否需要 @bot 才能执行命令
 
-### 变更
-- @wsu2059q
-  - 优化 `Event` 模块中包装器wait_reply方法的逻辑，并且为返回值添加Event包装以支持更方便的获取事件内容
-  - 移动 `Core._self_config` 模块到 `_bootstrap.py` 模块中，以便统一管理
-  - 移动 `Core.Event` 模块的配置初始化逻辑到 `_bootstrap.py` 模块中
+  ### 优化
+
+  - @wsu2059q
+    - 优化 `Event` 模块中包装器wait_reply方法的逻辑，并且为返回值添加Event包装以支持更方便的获取事件内容
+
+  ### 重构
+
+  - @wsu2059q
+    - 移动 `Core._self_config` 模块到 `_bootstrap.py` 模块中，以便统一管理
+    - 移动 `Core.Event` 模块的配置初始化逻辑到 `_bootstrap.py` 模块中
 
 ---
-## [2.3.5-dev.0] - 2026/02/10
-> 开发版本
+  ## [2.3.5-dev.0] - 2026/02/10
+  > 开发版本
 
-### 变更
-- @wsu2059q
-  - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
+  ### 优化
 
-### 修复
-- @wsu2059q
-  - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
+  - @wsu2059q
+    - 优化 `loaders/module.py` 模块中检查全局懒加载的判断逻辑
+
+  ### 修复
+
+  - @wsu2059q
+    - 修复 `CLI/registry.py` 中 `__new__` 方法的类型注解语法错误
 
 ---
 ## [2.3.4] - 2026/02/10
@@ -64,112 +89,137 @@
 > 注意: 此版本开始，虽然对外api保持兼容，但内部结构和实现已发生变化，如果您的模块使用了部分内部api，请注意修改
 
 ---
-## [2.3.4-dev.3] - 2026/02/04
-> 开发版本
+  ## [2.3.4-dev.3] - 2026/02/04
+  > 开发版本
 
-### 新增
-- @wsu2059q
-  - 新增 `finders` 模块，实现统一的模块发现机制：
-    - 新增 `BaseFinder` 基类，定义统一的 finder 接口
-    - 新增 `ModuleFinder`，用于查找 `erispulse.module` entry-points
-    - 新增 `AdapterFinder`，用于查找 `erispulse.adapter` entry-points
-    - 新增 `CLIFinder`，用于查找 `erispulse.cli` entry-points
-    - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
+  ### 新增
 
-### 变更
-- @wsu2059q
-  - 重构加载系统使用 `finders` 模块：
-    - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
-    - `loaders/module.py` 现在使用 `ModuleFinder` 查找模块
-    - `CLI/utils/package_manager.py` 现在使用所有三个 finders 查找已安装包
-  - 修复入口直接从ErisPulse导入时发生错误的问题
-  - CLI中的reloader直接移动到run命令内部进行定义
+  - @wsu2059q
+    - 新增 `finders` 模块，实现统一的模块发现机制：
+      - 新增 `BaseFinder` 基类，定义统一的 finder 接口
+      - 新增 `ModuleFinder`，用于查找 `erispulse.module` entry-points
+      - 新增 `AdapterFinder`，用于查找 `erispulse.adapter` entry-points
+      - 新增 `CLIFinder`，用于查找 `erispulse.cli` entry-points
+      - 提供 `find_all()` 和 `find_by_name()` 方法，支持批量查找和按名称查找
 
-### 修复
-- @wsu2059q
-  - 修复CLI部分命令中的导入错误
+  ### 重构
 
----
+  - @wsu2059q
+    - 重构加载系统使用 `finders` 模块：
+      - `loaders/adapter.py` 现在使用 `AdapterFinder` 查找适配器
+      - `loaders/module.py` 现在使用 `ModuleFinder` 查找模块
+      - `CLI/utils/package_manager.py` 现在使用所有三个 finders 查找已安装包
+    - CLI中的reloader直接移动到run命令内部进行定义
 
-## [2.3.4-dev.2] - 2026/02/03
-> 开发版本
+  ### 修复
 
-### 新增
-- @wsu2059q
-  - 添加模块加载策略支持：
-    - 新增 `loaders/strategy`，提供可扩展的加载策略系统
-    - 支持 "all"（加载全部）、"enabled"（仅加载启用）和 "manual"（手动指定）三种策略
-    - 新增 `LoadingStrategy` 抽象基类，定义策略接口
-    - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
-    - `ModuleInitializer` 现在支持通过策略控制模块加载行为
-
-### 变更
-- @wsu2059q
-  - 重构模块加载系统架构：
-    - 移除 `BaseModule` 基类中的 `should_eager_load` 方法，改使用 `LoadingStrategy` 策略控制（旧策略依然保持兼容）
+  - @wsu2059q
+    - 修复入口直接从ErisPulse导入时发生错误的问题
+    - 修复CLI部分命令中的导入错误
 
 ---
 
-## [2.3.4-dev.1] - 2026/02/02
-> 开发版本
+  ## [2.3.4-dev.2] - 2026/02/03
+  > 开发版本
 
-### 新增
-- @wsu2059q
-  - 添加测试基础设施：
-    - 新增 `pytest.ini` 配置文件，定义测试发现、标记和覆盖率规则
-    - 新增 `tests/conftest.py` 测试配置文件，提供丰富的测试夹具（fixtures）
-    - 新增 `tests/unit/test_unit_adapter.py`，提供适配器系统的完整单元测试
-  - 添加 `devs/test_imports.py` 兼容性测试脚本，验证重构后的模块导入功能
+  ### 新增
 
-### 变更
-- @wsu2059q
-  - 重构模块加载系统架构：
-    - 引入 `ManagerBase` 基类，统一适配器和模块管理器的配置接口
-    - `AdapterManager` 和 `ModuleManager` 现在继承自 `ManagerBase`
-    - 新增 `BaseLoader` 加载器抽象基类，定义标准加载接口
-    - 引入 `AdapterLoader` 和 `ModuleLoader` 专用加载器
-    - 新增 `ModuleInitializer` 初始化协调器，统一管理加载流程
-    - 移除 `__init__.py` 中的 `LazyModule` 内部实现，迁移到 `loaders/module_loader.py`
-  - 改进核心模块功能：
+  - @wsu2059q
+    - 添加模块加载策略支持：
+      - 新增 `loaders/strategy`，提供可扩展的加载策略系统
+      - 支持 "all"（加载全部）、"enabled"（仅加载启用）和 "manual"（手动指定）三种策略
+      - 新增 `LoadingStrategy` 抽象基类，定义策略接口
+      - 新增 `LoadAllStrategy`、`LoadEnabledStrategy`、`LoadManualStrategy` 具体实现
+      - `ModuleInitializer` 现在支持通过策略控制模块加载行为
+
+  ### 重构
+
+  - @wsu2059q
+    - 重构模块加载系统架构：
+      - 移除 `BaseModule` 基类中的 `should_eager_load` 方法，改使用 `LoadingStrategy` 策略控制（旧策略依然保持兼容）
+
+---
+
+  ## [2.3.4-dev.1] - 2026/02/02
+  > 开发版本
+
+  ### 新增
+
+  - @wsu2059q
+    - 添加测试基础设施：
+      - 新增 `pytest.ini` 配置文件，定义测试发现、标记和覆盖率规则
+      - 新增 `tests/conftest.py` 测试配置文件，提供丰富的测试夹具（fixtures）
+      - 新增 `tests/unit/test_unit_adapter.py`，提供适配器系统的完整单元测试
+    - 添加 `devs/test_imports.py` 兼容性测试脚本，验证重构后的模块导入功能
+    - `lifecycle` 模块：添加事件类型验证，防止空值提交
+
+  ### 重构
+
+  - @wsu2059q
+    - 重构模块加载系统架构：
+      - 引入 `ManagerBase` 基类，统一适配器和模块管理器的配置接口
+      - `AdapterManager` 和 `ModuleManager` 现在继承自 `ManagerBase`
+      - 新增 `BaseLoader` 加载器抽象基类，定义标准加载接口
+      - 引入 `AdapterLoader` 和 `ModuleLoader` 专用加载器
+      - 新增 `ModuleInitializer` 初始化协调器，统一管理加载流程
+      - 移除 `__init__.py` 中的 `LazyModule` 内部实现，迁移到 `loaders/module_loader.py`
+
+  ### 优化
+
+  - @wsu2059q
     - `adapter` 模块：优化 `exists()` 方法，检查 `_adapters` 而非配置；`enable()`/`disable()` 支持自动注册
     - `module` 模块：增强 `register()` 的类验证和警告机制；`unload()` 改进错误处理
-    - `command` 模块：修复 `aliases` 参数中的别名未正确注册的问题
     - `router` 模块：优化 WebSocket 路由注销逻辑和 IPv6 回环地址显示
     - `logger` 模块：改进 `get_child()` 方法，支持非相对路径；`set_output_file()` 改进处理器管理
-    - `lifecycle` 模块：添加事件类型验证，防止空值提交
     - `exceptions` 模块：改进事件循环异常处理器设置，避免 RuntimeError
-  - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
-  - 移除 `storage` 模块的快照功能：
-    - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
-    - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
-    - 移除 `ErisPulse.storage.max_snapshot` 配置项
-    - 移除相关文档和示例代码
-  - 移除 `devs/test.py` 交互测试脚本
 
-### 修复
-- @wsu2059q
-  - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
-  - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
+  ### 修复
+
+  - @wsu2059q
+    - `command` 模块：修复 `aliases` 参数中的别名未正确注册的问题
+    - 修复 `adapter.shutdown()` 后未清空 `_started_instances` 集合的问题
+    - 修复 `logger.set_module_level()` 在模块未启用时的不必要检查
+
+  ### 移除
+
+  - @wsu2059q
+    - 移除 `storage` 模块的快照功能：
+      - 移除 `snapshot()`, `restore()`, `list_snapshots()`, `delete_snapshot()` 方法
+      - 移除 `set_snapshot_interval()` 方法和 `_check_auto_snapshot()` 内部方法
+      - 移除 `ErisPulse.storage.max_snapshot` 配置项
+      - 移除相关文档和示例代码
+    - 移除 `devs/test.py` 交互测试脚本
+
+  ### 文档
+
+  - @wsu2059q
+    - 更新核心概念文档，添加 SDK 初始化流程和模块懒加载流程的 Mermaid 图表
 
 ---
 
-## [2.3.4-dev.0] - 2026/01/27
-> 开发版本
+  ## [2.3.4-dev.0] - 2026/01/27
+  > 开发版本
 
-### 新增
-- @wsu2059q
-  - `cli`中 `epsdk run` ，如果入口不存在，现在会自动创建一个入口文件，而不是打印错误信息
-  - `cli` 实现命令自动发现机制：
-    - 动态扫描 `commands` 目录，自动加载继承自 `Command` 基类的所有命令
-    - 无需手动注册命令，提高扩展性和维护性
-  - `cli` 交互式安装支持预加载远程包列表，提升用户体验
+  ### 新增
 
-### 变更
-- @wsu2059q
-  - 重构 `cli` 第三方命令执行逻辑，简化处理流程
-  - 修正 `run` 命令中未使用的导入路径
-  - 移除 `Core.ux` 模块及其相关功能
-  - 移除 `SDKProtocol` 中 `UXManager` 相关代码和类型定义
+  - @wsu2059q
+    - `cli`中 `epsdk run` ，如果入口不存在，现在会自动创建一个入口文件，而不是打印错误信息
+    - `cli` 实现命令自动发现机制：
+      - 动态扫描 `commands` 目录，自动加载继承自 `Command` 基类的所有命令
+      - 无需手动注册命令，提高扩展性和维护性
+    - `cli` 交互式安装支持预加载远程包列表，提升用户体验
+
+  ### 重构
+
+  - @wsu2059q
+    - 重构 `cli` 第三方命令执行逻辑，简化处理流程
+    - 修正 `run` 命令中未使用的导入路径
+
+  ### 移除
+
+  - @wsu2059q
+    - 移除 `Core.ux` 模块及其相关功能
+    - 移除 `SDKProtocol` 中 `UXManager` 相关代码和类型定义
 
 ---
 
@@ -194,37 +244,44 @@
 
 ---
 
-## [2.3.3-dev.1] - 2026/01/19
-> 开发版本
+  ## [2.3.3-dev.1] - 2026/01/19
+  > 开发版本
 
-### 变更
-- @wsu2059q
-  - 为 ErisPulse.run 方法添加 keep_running 参数，控制无头模式是否保持运行，默认值为 True
+  ### 变更
+
+  - @wsu2059q
+    - 为 ErisPulse.run 方法添加 keep_running 参数，控制无头模式是否保持运行，默认值为 True
 
 ---
-## [2.3.3-dev.0] - 2026/01/17
-> 开发版本
+  ## [2.3.3-dev.0] - 2026/01/17
+  > 开发版本
 
-### 新增
-- @wsu2059q
-  - `Event` 模块新增 Event 包装类，提供便捷的事件访问方法：
-    - Event 类继承 dict，保持完全的字典兼容性，支持点式访问事件字段
-    - 提供核心信息获取方法：`get_id()`, `get_time()`, `get_type()`, `get_platform()`, `get_self_info()`
-    - 提供消息事件方法：`get_message()`, `get_text()`, `get_user_id()`, `get_group_id()` 及消息类型判断
-    - 提供通知和请求事件方法：`is_notice()`, `is_request()`, `get_operator_id()` 等
-    - 提供统一的 `reply()` 方法，支持通过 `method` 参数指定适配器的发送方法（Text、Image、Voice、Video、File 等）
-    - 提供 `wait_reply()` 方法，支持等待用户回复，可设置超时、验证函数和回调函数
-    - 提供命令信息和原始数据访问方法
-    - Event 对象在事件处理流程中自动创建，替换原有的 dict 对象
-  - `Event.command` 模块新增命令判断的兜底机制：
-    - 优化命令处理流程，当从 `message` 列表中提取的 text 内容没有触发命令时，会自动检查 `alt_message` 字段是否符合触发命令的逻辑
-    - 新增 `_process_text_for_command` 方法，用于统一处理文本内容的命令匹配逻辑
-    - 改进 `_handle_message` 方法，确保即使适配器的 `message` 列表有问题，只要 `alt_message` 字段正确，命令仍能正常触发
+  ### 新增
 
-### 变更
-- @wsu2059q
-  - 更新模块开发文档，新增 Event 包装类的详细使用说明和示例
-  - 更新示例模块，演示 Event 包装类的新功能
+  - @wsu2059q
+    - `Event` 模块新增 Event 包装类，提供便捷的事件访问方法：
+      - Event 类继承 dict，保持完全的字典兼容性，支持点式访问事件字段
+      - 提供核心信息获取方法：`get_id()`, `get_time()`, `get_type()`, `get_platform()`, `get_self_info()`
+      - 提供消息事件方法：`get_message()`, `get_text()`, `get_user_id()`, `get_group_id()` 及消息类型判断
+      - 提供通知和请求事件方法：`is_notice()`, `is_request()`, `get_operator_id()` 等
+      - 提供统一的 `reply()` 方法，支持通过 `method` 参数指定适配器的发送方法（Text、Image、Voice、Video、File 等）
+      - 提供 `wait_reply()` 方法，支持等待用户回复，可设置超时、验证函数和回调函数
+      - 提供命令信息和原始数据访问方法
+      - Event 对象在事件处理流程中自动创建，替换原有的 dict 对象
+
+  ### 优化
+
+  - @wsu2059q
+    - `Event.command` 模块新增命令判断的兜底机制：
+      - 优化命令处理流程，当从 `message` 列表中提取的 text 内容没有触发命令时，会自动检查 `alt_message` 字段是否符合触发命令的逻辑
+      - 新增 `_process_text_for_command` 方法，用于统一处理文本内容的命令匹配逻辑
+      - 改进 `_handle_message` 方法，确保即使适配器的 `message` 列表有问题，只要 `alt_message` 字段正确，命令仍能正常触发
+
+  ### 文档
+
+  - @wsu2059q
+    - 更新模块开发文档，新增 Event 包装类的详细使用说明和示例
+    - 更新示例模块，演示 Event 包装类的新功能
 
 ---
 
