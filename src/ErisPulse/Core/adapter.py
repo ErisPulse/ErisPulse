@@ -144,7 +144,7 @@ class AdapterManager(ManagerBase):
         )
 
         from .router import router
-        from .._bootstrap import get_server_config
+        from ..runtime import get_server_config
         server_config = get_server_config()
 
         host = server_config["host"]

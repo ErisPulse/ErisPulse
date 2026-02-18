@@ -15,7 +15,7 @@ from typing import Any
 
 # 导入核心模块
 from .Core import Event
-from .Core import lifecycle, logger, exceptions
+from .Core import lifecycle, logger
 from .Core import storage, env, config
 from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
 from .Core import module
@@ -33,7 +33,6 @@ class SDK:
     - Event: 事件系统
     - lifecycle: 生命周期管理器
     - logger: 日志管理器
-    - exceptions: 异常处理模块
     - storage: 存储管理器
     - env: 存储管理器别名
     - config: 配置管理器
@@ -57,9 +56,6 @@ class SDK:
     
     logger: Any
     """日志管理器"""
-    
-    exceptions: Any
-    """异常处理模块"""
     
     storage: Any
     """存储管理器"""
@@ -101,7 +97,6 @@ class SDK:
         self.Event = Event
         self.lifecycle = lifecycle
         self.logger = logger
-        self.exceptions = exceptions
         
         self.storage = storage
         self.env = env
