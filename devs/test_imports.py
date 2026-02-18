@@ -28,7 +28,7 @@ async def test_sdk_attributes():
         from ErisPulse import sdk
         
         # 测试核心模块
-        modules = ["Event", "lifecycle", "logger", "exceptions", 
+        modules = ["Event", "lifecycle", "logger", 
                  "storage", "env", "config", "adapter", 
                  "module", "router", "adapter_server"]
         
@@ -202,14 +202,13 @@ async def test_core_imports():
     print("=" * 50)
     try:
         from ErisPulse.Core import (
-            Event, lifecycle, logger, exceptions,
+            Event, lifecycle, logger,
             storage, env, config, adapter, AdapterFather,
             BaseAdapter, SendDSL, module, router, adapter_server
         )
         print("✓ Event 导入成功")
         print("✓ lifecycle 导入成功")
         print("✓ logger 导入成功")
-        print("✓ exceptions 导入成功")
         print("✓ storage 导入成功")
         print("✓ env 导入成功")
         print("✓ config 导入成功")

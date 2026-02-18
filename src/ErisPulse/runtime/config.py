@@ -1,14 +1,11 @@
 """
-ErisPulse 框架配置引导模块
-提供默认配置定义及配置完整性管理功能
+ErisPulse 框架配置管理模块
 
-{!--< tips >!--}
-内部使用模块，框架启动时自动加载
-{!--< /tips >!--}
+提供默认配置定义及配置完整性管理功能
 """
 
 from typing import Dict, Any
-from .Core.config import config
+from ..Core.config import config
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
@@ -46,6 +43,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     }
 }
 
+
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
     确保 ErisPulse 配置结构完整，补全缺失的配置项
@@ -70,6 +68,7 @@ def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str,
                 
     return config_dict
 
+
 def get_erispulse_config() -> Dict[str, Any]:
     """
     获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
@@ -93,6 +92,7 @@ def get_erispulse_config() -> Dict[str, Any]:
     
     return complete_config
 
+
 def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     """
     更新 ErisPulse 配置，自动补全缺失的配置项
@@ -109,6 +109,7 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     
     return config.setConfig("ErisPulse", complete_config)
 
+
 def get_server_config() -> Dict[str, Any]:
     """
     获取服务器配置，确保结构完整
@@ -117,6 +118,7 @@ def get_server_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["server"]
+
 
 def get_logger_config() -> Dict[str, Any]:
     """
@@ -127,6 +129,7 @@ def get_logger_config() -> Dict[str, Any]:
     erispulse_config = get_erispulse_config()
     return erispulse_config["logger"]
 
+
 def get_storage_config() -> Dict[str, Any]:
     """
     获取存储模块配置
@@ -135,6 +138,7 @@ def get_storage_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["storage"]
+
 
 def get_event_config() -> Dict[str, Any]:
     """
@@ -145,6 +149,7 @@ def get_event_config() -> Dict[str, Any]:
     erispulse_config = get_erispulse_config()
     return erispulse_config["event"]
 
+
 def get_framework_config() -> Dict[str, Any]:
     """
     获取框架配置
@@ -153,3 +158,16 @@ def get_framework_config() -> Dict[str, Any]:
     """
     erispulse_config = get_erispulse_config()
     return erispulse_config["framework"]
+
+
+__all__ = [
+    'DEFAULT_ERISPULSE_CONFIG',
+    '_ensure_erispulse_config_structure',
+    'get_erispulse_config',
+    'update_erispulse_config',
+    'get_server_config',
+    'get_logger_config',
+    'get_storage_config',
+    'get_event_config',
+    'get_framework_config',
+]

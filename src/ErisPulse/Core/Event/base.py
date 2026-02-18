@@ -10,7 +10,7 @@ ErisPulse 事件处理基础模块
 """
 
 from .. import adapter, logger
-from ..._bootstrap import get_event_config
+from ...runtime import get_event_config
 from typing import Callable, Any, Dict, List
 import asyncio
 from .wrapper import Event
