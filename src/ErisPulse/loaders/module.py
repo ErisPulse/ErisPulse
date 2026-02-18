@@ -195,7 +195,7 @@ class ModuleLoader(BaseLoader):
         # 获取全局懒加载配置
         global_lazy_loading = True
         try:
-            from .._bootstrap import get_framework_config
+            from ..runtime import get_framework_config
             framework_config = get_framework_config()
             global_lazy_loading = framework_config.get("enable_lazy_loading", True)
         except Exception as e:

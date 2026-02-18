@@ -10,10 +10,13 @@ import asyncio
 import os
 from typing import Dict, Any, Type
 
+
 class ExceptionHandler:
     @staticmethod
     def format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any) -> str:
         """
+        格式化异常信息
+
         :param exc_type: 异常类型
         :param exc_value: 异常值
         :param exc_traceback: 追踪信息
@@ -32,6 +35,8 @@ class ExceptionHandler:
     @staticmethod
     def format_async_exception(exception: Exception) -> str:
         """
+        格式化异步异常信息
+
         :param exception: 异常对象
         :return: 格式化后的异常信息
         """
@@ -46,6 +51,7 @@ class ExceptionHandler:
         
         return f"ERROR: {type(exception).__name__}: {exception}"
 
+
 def global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any) -> None:
     """
     全局异常处理器
@@ -55,13 +61,14 @@ def global_exception_handler(exc_type: Type[Exception], exc_value: Exception, ex
     :param exc_traceback: 追踪信息
     """
     try:
-        from ErisPulse import logger
+        from ..Core import logger
         err_logger = logger.error
     except ImportError:
         err_logger = sys.stderr.write
 
     formatted_error = ExceptionHandler.format_exception(exc_type, exc_value, exc_traceback)
     err_logger(formatted_error)
+
 
 def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any]) -> None:
     """
@@ -71,7 +78,7 @@ def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, 
     :param context: 上下文字典
     """
     try:
-        from ErisPulse import logger
+        from ..Core import logger
         err_logger = logger.error
     except ImportError:
         err_logger = sys.stderr.write
@@ -87,29 +94,29 @@ def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, 
         msg = context.get('message', '未知异步错误')
         err_logger(f"ERROR: 未处理的异步错误: {msg}\n")
 
-def setup_async_loop(loop: asyncio.AbstractEventLoop = None) -> None:   # type: ignore || 原因: 在实现中，已经完成了对于本方法的类型检查
-    """
-    为指定的事件循环设置异常处理器
-    
-    :param loop: 事件循环实例，如果为None则使用当前事件循环
-    """
-    if loop is None:
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
-    
-    if loop is not None:
-        loop.set_exception_handler(async_exception_handler)
-    else:
-        raise RuntimeError("无法获取有效的事件循环")
-    
-    loop.set_exception_handler(async_exception_handler)
 
-sys.excepthook = global_exception_handler
-try:
-    loop = asyncio.get_running_loop()
-    loop.set_exception_handler(async_exception_handler)
-except RuntimeError:
-    # 没有运行中的事件循环，这是正常的，在运行时再设置
-    pass
+def setup_exception_handling() -> None:
+    """
+    设置全局异常处理系统
+    
+    包括同步异常和异步异常的处理钩子
+    """
+    # 设置同步异常钩子
+    sys.excepthook = global_exception_handler
+    
+    # 尝试设置异步异常处理器
+    try:
+        loop = asyncio.get_running_loop()
+        loop.set_exception_handler(async_exception_handler)
+    except RuntimeError:
+        # 没有运行中的事件循环，这在初始化时是正常的
+        # 异步异常处理器会在事件循环启动后通过其他方式设置
+        pass
+
+
+__all__ = [
+    'ExceptionHandler',
+    'global_exception_handler',
+    'async_exception_handler',
+    'setup_exception_handling',
+]

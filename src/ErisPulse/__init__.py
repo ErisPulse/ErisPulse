@@ -20,7 +20,6 @@ from .Core import (
     Event,
     lifecycle,
     logger,
-    exceptions,
     storage,
     env,
     config,
@@ -74,6 +73,10 @@ async def _prepare_environment() -> bool:
     
     :return: bool 环境准备是否成功
     """
+    # 设置全局异常处理
+    from .runtime import setup_exception_handling
+    setup_exception_handling()
+    
     await lifecycle.submit_event(
         "core.init.start",
         msg="开始初始化"
@@ -81,7 +84,7 @@ async def _prepare_environment() -> bool:
 
     logger.info("[Init] 准备初始化环境...")
     try:
-        from ._bootstrap import get_erispulse_config
+        from .runtime import get_erispulse_config
         get_erispulse_config()
         logger.info("[Init] 配置文件已加载")
 
