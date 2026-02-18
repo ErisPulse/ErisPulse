@@ -1,6 +1,6 @@
 # ErisPulse 核心功能文档
 
-**生成时间**: 2026-02-16 22:26:14
+**生成时间**: 2026-02-18 15:40:18
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -5620,6 +5620,9 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 - [ErisPulse/loaders/initializer.md](#ErisPulse_loaders_initializer)
 - [ErisPulse/loaders/module.md](#ErisPulse_loaders_module)
 - [ErisPulse/loaders/strategy.md](#ErisPulse_loaders_strategy)
+- [ErisPulse/runtime/__init__.md](#ErisPulse_runtime___init__)
+- [ErisPulse/runtime/config.md](#ErisPulse_runtime_config)
+- [ErisPulse/runtime/exceptions.md](#ErisPulse_runtime_exceptions)
 - [ErisPulse/sdk.md](#ErisPulse_sdk)
 - [README.md](#README)
 
@@ -11590,6 +11593,200 @@ ErisPulse 模块加载策略
 
 
 
+<a id="ErisPulse_runtime___init__"></a>
+## ErisPulse/runtime/__init__.md
+
+
+---
+
+## 模块概述
+
+
+ErisPulse 运行时配置和管理模块
+
+提供框架启动时的配置管理、异常处理等基础功能
+
+> **提示**
+> 内部使用模块，框架启动时自动加载
+
+---
+
+
+<a id="ErisPulse_runtime_config"></a>
+## ErisPulse/runtime/config.md
+
+
+---
+
+## 模块概述
+
+
+ErisPulse 框架配置管理模块
+
+提供默认配置定义及配置完整性管理功能
+
+---
+
+## 函数列表
+
+
+### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
+
+确保 ErisPulse 配置结构完整，补全缺失的配置项
+
+:param config_dict: 当前配置
+:return: 补全后的完整配置
+
+---
+
+
+### `get_erispulse_config()`
+
+获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+
+:return: 完整的 ErisPulse 配置字典
+
+---
+
+
+### `update_erispulse_config(new_config: Dict[str, Any])`
+
+更新 ErisPulse 配置，自动补全缺失的配置项
+
+:param new_config: 新的配置字典
+:return: 是否更新成功
+
+---
+
+
+### `get_server_config()`
+
+获取服务器配置，确保结构完整
+
+:return: 服务器配置字典
+
+---
+
+
+### `get_logger_config()`
+
+获取日志配置，确保结构完整
+
+:return: 日志配置字典
+
+---
+
+
+### `get_storage_config()`
+
+获取存储模块配置
+
+:return: 存储配置字典
+
+---
+
+
+### `get_event_config()`
+
+获取事件系统配置
+
+:return: 事件系统配置字典
+
+---
+
+
+### `get_framework_config()`
+
+获取框架配置
+
+:return: 框架配置字典
+
+---
+
+
+
+<a id="ErisPulse_runtime_exceptions"></a>
+## ErisPulse/runtime/exceptions.md
+
+
+---
+
+## 模块概述
+
+
+ErisPulse 全局异常处理系统
+
+提供统一的异常捕获和格式化功能，支持同步和异步代码的异常处理。
+
+---
+
+## 函数列表
+
+
+### `global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+全局异常处理器
+
+:param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+
+---
+
+
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any])`
+
+异步异常处理器
+
+:param loop: 事件循环
+:param context: 上下文字典
+
+---
+
+
+### `setup_exception_handling()`
+
+设置全局异常处理系统
+
+包括同步异常和异步异常的处理钩子
+
+---
+
+
+## 类列表
+
+
+### `class ExceptionHandler`
+
+ExceptionHandler 类提供相关功能。
+
+
+#### 方法列表
+
+
+##### `format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any)`
+
+格式化异常信息
+
+:param exc_type: 异常类型
+:param exc_value: 异常值
+:param exc_traceback: 追踪信息
+:return: 格式化后的异常信息
+
+---
+
+
+##### `format_async_exception(exception: Exception)`
+
+格式化异步异常信息
+
+:param exception: 异常对象
+:return: 格式化后的异常信息
+
+---
+
+
+
 <a id="ErisPulse_sdk"></a>
 ## ErisPulse/sdk.md
 
@@ -11625,7 +11822,6 @@ ErisPulse SDK 主类
 > - Event: 事件系统
 > - lifecycle: 生命周期管理器
 > - logger: 日志管理器
-> - exceptions: 异常处理模块
 > - storage: 存储管理器
 > - env: 存储管理器别名
 > - config: 配置管理器
@@ -11670,7 +11866,7 @@ ErisPulse SDK 主类
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 51
+- **模块总数**: 52
 - **类总数**: 43
 - **函数总数**: 23
 - **方法总数**: 372
@@ -11830,11 +12026,6 @@ ErisPulse SDK 主类
 📦 1 个类 | 🔧 8 个方法
 
 
-### [ErisPulse.Core.exceptions](ErisPulse/Core/exceptions.md)
-
-📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
-
-
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
 📦 1 个类 | 🔧 7 个方法
@@ -11868,11 +12059,6 @@ ErisPulse SDK 主类
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
 
 ⚙️ 1 个函数
-
-
-### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
-
-⚙️ 8 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
@@ -11928,6 +12114,21 @@ ErisPulse SDK 主类
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
 
 📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.runtime.config](ErisPulse/runtime/config.md)
+
+⚙️ 8 个函数
+
+
+### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
+
+📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)

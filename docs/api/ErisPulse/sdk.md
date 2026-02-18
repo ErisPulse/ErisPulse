@@ -31,7 +31,6 @@ ErisPulse SDK 主类
 > - Event: 事件系统
 > - lifecycle: 生命周期管理器
 > - logger: 日志管理器
-> - exceptions: 异常处理模块
 > - storage: 存储管理器
 > - env: 存储管理器别名
 > - config: 配置管理器
