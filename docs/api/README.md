@@ -6,7 +6,7 @@
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
-- **模块总数**: 51
+- **模块总数**: 52
 - **类总数**: 43
 - **函数总数**: 23
 - **方法总数**: 372
@@ -166,11 +166,6 @@
 📦 1 个类 | 🔧 8 个方法
 
 
-### [ErisPulse.Core.exceptions](ErisPulse/Core/exceptions.md)
-
-📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
-
-
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
 📦 1 个类 | 🔧 7 个方法
@@ -204,11 +199,6 @@
 ### [ErisPulse.__main__](ErisPulse/__main__.md)
 
 ⚙️ 1 个函数
-
-
-### [ErisPulse._bootstrap](ErisPulse/_bootstrap.md)
-
-⚙️ 8 个函数
 
 
 ### [ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)
@@ -264,6 +254,21 @@
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
 
 📦 1 个类 | 🔧 6 个方法
+
+
+### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.runtime.config](ErisPulse/runtime/config.md)
+
+⚙️ 8 个函数
+
+
+### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
+
+📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
