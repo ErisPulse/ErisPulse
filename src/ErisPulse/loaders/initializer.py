@@ -56,7 +56,7 @@ class Initializer:
         
         :raises ImportError: 当加载失败时抛出
         """
-        logger.info("[Init] SDK 正在初始化...")
+        logger.info("SDK 正在初始化...")
         lifecycle.start_timer("core.init")
         
         try:
@@ -72,44 +72,44 @@ class Initializer:
             
             # 检查是否有异常
             if isinstance(adapter_result, Exception):
-                logger.error(f"[Init] 适配器加载失败: {adapter_result}")
+                logger.error(f"适配器加载失败: {adapter_result}")
                 return False
                 
             if isinstance(module_result, Exception):
-                logger.error(f"[Init] 模块加载失败: {module_result}")
+                logger.error(f"模块加载失败: {module_result}")
                 return False
             
             # 解包结果
             adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
             module_objs, enabled_modules, disabled_modules = module_result      # type: ignore
             
-            logger.info(f"[Init] 加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
-            logger.info(f"[Init] 加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
+            logger.info(f"加载了 {len(enabled_adapters)} 个适配器, {len(disabled_adapters)} 个适配器被禁用")
+            logger.info(f"加载了 {len(enabled_modules)} 个模块, {len(disabled_modules)} 个模块被禁用")
             
             # 2. 注册适配器
-            logger.debug("[Init] 正在注册适配器...")
+            logger.debug("正在注册适配器...")
             if not await self._adapter_loader.register_to_manager(
                 enabled_adapters, adapter_objs, adapter_manager
             ):
                 return False
             
             # 3. 注册模块
-            logger.debug("[Init] 正在注册模块...")
+            logger.debug("正在注册模块...")
             if not await self._module_loader.register_to_manager(
                 enabled_modules, module_objs, module_manager
             ):
                 return False
             
             # 4. 初始化模块（创建实例并挂载到 SDK）
-            logger.debug("[Init] 正在初始化模块...")
+            logger.debug("正在初始化模块...")
             success = await self._module_loader.initialize_modules(
                 enabled_modules, module_objs, module_manager, self._sdk
             )
             
             if success:
-                logger.info("[Init] SDK初始化成功")
+                logger.info("SDK初始化成功")
             else:
-                logger.error("[Init] SDK初始化失败")
+                logger.error("SDK初始化失败")
             
             load_duration = lifecycle.stop_timer("core.init")
             await lifecycle.submit_event(
