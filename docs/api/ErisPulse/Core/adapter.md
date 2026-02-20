@@ -49,16 +49,6 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_register_platform_attributes(platform: str, instance: BaseAdapter)`
-
-注册平台名称的多种大小写形式作为属性
-
-:param platform: 平台名称
-:param instance: 适配器实例
-
----
-
-
 ##### `async async startup(platforms = None)`
 
 启动指定的适配器
