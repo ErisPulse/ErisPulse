@@ -50,6 +50,32 @@
   ```
 
 ---
+
+## [2.3.5-dev.2] - 2026/02/19
+> 开发版本
+
+### 重构
+
+- @wsu2059q
+  - 重构异常处理和配置管理模块架构：
+    - 将 `Core.exceptions` 模块移至 `runtime/exceptions.py`
+    - 将 `_bootstrap.py` 重构为 `runtime/config.py`，统一管理运行时配置
+    - 新增 `runtime`包，整合异常处理和配置管理功能
+    - 移除 `setup_async_loop` 方法，改用 `setup_exception_handling`
+  - 重构 SDK 架构，将核心方法迁移至 `SDK` 类：
+    - 将 `__init__.py` 中的 SDK 逻辑方法迁移至 `sdk.py` 的 `SDK` 类
+    - `__init__.py` 提供向后兼容性导出，支持现有代码继续使用函数式调用
+  - 更新导入路径：
+    - 所有引用 `_bootstrap` 的模块改为引用 `runtime`
+    - 所有引用 `Core.exceptions` 的模块改为引用 `runtime.exceptions`
+
+### 移除
+
+- @wsu2059q
+  - 移除 `Core.exceptions` 模块导出，异常处理功能已迁移至 runtime 模块
+
+---
+
 ## [2.3.5-dev.1] - 2026/02/15
 > 开发版本
 
