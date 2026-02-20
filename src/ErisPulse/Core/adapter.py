@@ -81,35 +81,14 @@ class AdapterManager(ManagerBase):
             self._adapters[platform] = existing_instance
             logger.debug(f"适配器 {platform} 已绑定到已注册的实例 {existing_platform}")
         else:
-            # 创建适配器实例
+        # 创建适配器实例
             from .. import sdk
             instance = adapter_class(sdk)
             self._adapters[platform] = instance
             logger.debug(f"适配器 {platform} 注册成功")
         
-        # 注册平台名称的多种大小写形式作为属性
-        self._register_platform_attributes(platform, self._adapters[platform])
-        
         return True
     
-    def _register_platform_attributes(self, platform: str, instance: BaseAdapter) -> None:
-        """
-        注册平台名称的多种大小写形式作为属性
-        
-        :param platform: 平台名称
-        :param instance: 适配器实例
-        """
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                setattr(self, name, instance)
-        else:
-            logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
-            setattr(self, platform.lower(), instance)
-            setattr(self, platform.upper(), instance)
-            setattr(self, platform.capitalize(), instance)
-
     async def startup(self, platforms = None) -> None:
         """
         启动指定的适配器
@@ -402,22 +381,7 @@ class AdapterManager(ManagerBase):
             return False
         
         # 移除适配器实例
-        adapter = self._adapters.pop(platform)
-        
-        # 移除平台属性
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                if hasattr(self, name):
-                    delattr(self, name)
-        else:
-            if hasattr(self, platform.lower()):
-                delattr(self, platform.lower())
-            if hasattr(self, platform.upper()):
-                delattr(self, platform.upper())
-            if hasattr(self, platform.capitalize()):
-                delattr(self, platform.capitalize())
+        self._adapters.pop(platform)
         
         logger.info(f"平台 {platform} 已取消注册")
         return True
