@@ -1,6 +1,6 @@
 # ErisPulse 核心功能文档
 
-**生成时间**: 2026-02-18 16:31:18
+**生成时间**: 2026-02-20 18:38:20
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -8499,16 +8499,6 @@ ErisPulse 适配器系统
 ---
 
 
-##### `_register_platform_attributes(platform: str, instance: BaseAdapter)`
-
-注册平台名称的多种大小写形式作为属性
-
-:param platform: 平台名称
-:param instance: 适配器实例
-
----
-
-
 ##### `async async startup(platforms = None)`
 
 启动指定的适配器
@@ -11866,7 +11856,7 @@ SDK 反初始化
 - **模块总数**: 52
 - **类总数**: 43
 - **函数总数**: 13
-- **方法总数**: 382
+- **方法总数**: 381
 
 ---
 
@@ -12015,7 +12005,7 @@ SDK 反初始化
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 22 个方法
+📦 1 个类 | 🔧 21 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
