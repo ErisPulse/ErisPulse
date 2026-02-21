@@ -4,8 +4,7 @@ ErisPulse 框架配置管理模块
 提供默认配置定义及配置完整性管理功能
 """
 
-from typing import Dict, Any
-from ..Core.config import config
+from typing import Dict, Any, Union
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
@@ -75,12 +74,16 @@ def get_erispulse_config() -> Dict[str, Any]:
     
     :return: 完整的 ErisPulse 配置字典
     """
+    # 导入 config_service
+    from ..registry import registry
+    config_service = registry.get('config')
+    
     # 获取现有配置
-    current_config = config.getConfig("ErisPulse")
+    current_config = config_service.getConfig("ErisPulse")
     
     # 如果完全没有配置，设置默认配置
     if current_config is None:
-        config.setConfig("ErisPulse", DEFAULT_ERISPULSE_CONFIG)
+        config_service.setConfig("ErisPulse", DEFAULT_ERISPULSE_CONFIG)
         return DEFAULT_ERISPULSE_CONFIG
     
     # 检查并补全缺失的配置项
@@ -88,9 +91,23 @@ def get_erispulse_config() -> Dict[str, Any]:
     
     # 如果配置有变化，更新到存储
     if current_config != complete_config:
-        config.setConfig("ErisPulse", complete_config)
+        config_service.setConfig("ErisPulse", complete_config)
     
     return complete_config
+
+
+def get_config(section: str = None) -> Union[Dict[str, Any], Any]:
+    """
+    获取 ErisPulse 配置
+    
+    :param section: 配置部分名称（如 "server"、"logger" 等），None 表示获取完整配置
+    :return: 配置字典或配置项
+    """
+    erispulse_config = get_erispulse_config()
+    
+    if section is None:
+        return erispulse_config
+    return erispulse_config.get(section, {})
 
 
 def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
@@ -100,6 +117,10 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     :param new_config: 新的配置字典
     :return: 是否更新成功
     """
+    # 导入 config_service
+    from ..registry import registry
+    config_service = registry.get('config')
+    
     # 获取当前配置并合并新配置
     current = get_erispulse_config()
     merged = {**current, **new_config}
@@ -107,7 +128,7 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     # 确保合并后的配置结构完整
     complete_config = _ensure_erispulse_config_structure(merged)
     
-    return config.setConfig("ErisPulse", complete_config)
+    return config_service.setConfig("ErisPulse", complete_config)
 
 
 def get_server_config() -> Dict[str, Any]:
@@ -116,8 +137,7 @@ def get_server_config() -> Dict[str, Any]:
     
     :return: 服务器配置字典
     """
-    erispulse_config = get_erispulse_config()
-    return erispulse_config["server"]
+    return get_config("server")
 
 
 def get_logger_config() -> Dict[str, Any]:
@@ -126,8 +146,7 @@ def get_logger_config() -> Dict[str, Any]:
     
     :return: 日志配置字典
     """
-    erispulse_config = get_erispulse_config()
-    return erispulse_config["logger"]
+    return get_config("logger")
 
 
 def get_storage_config() -> Dict[str, Any]:
@@ -136,8 +155,7 @@ def get_storage_config() -> Dict[str, Any]:
 
     :return: 存储配置字典
     """
-    erispulse_config = get_erispulse_config()
-    return erispulse_config["storage"]
+    return get_config("storage")
 
 
 def get_event_config() -> Dict[str, Any]:
@@ -146,8 +164,7 @@ def get_event_config() -> Dict[str, Any]:
 
     :return: 事件系统配置字典
     """
-    erispulse_config = get_erispulse_config()
-    return erispulse_config["event"]
+    return get_config("event")
 
 
 def get_framework_config() -> Dict[str, Any]:
@@ -156,14 +173,14 @@ def get_framework_config() -> Dict[str, Any]:
 
     :return: 框架配置字典
     """
-    erispulse_config = get_erispulse_config()
-    return erispulse_config["framework"]
+    return get_config("framework")
 
 
 __all__ = [
     'DEFAULT_ERISPULSE_CONFIG',
     '_ensure_erispulse_config_structure',
     'get_erispulse_config',
+    'get_config',
     'update_erispulse_config',
     'get_server_config',
     'get_logger_config',
