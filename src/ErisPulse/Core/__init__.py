@@ -6,7 +6,6 @@ from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager
 from .config import config, ConfigManager
-from . import exceptions
 from . import Event
 
 # 兼容性别名定义
@@ -46,7 +45,6 @@ __all__ = [
     'logger',           # 日志管理器
     'Logger',           # 日志管理器类
     'LoggerChild',      # 日志子管理器类
-    'exceptions',       # 异常处理模块
     'lifecycle',        # 生命周期管理器
     'LifecycleManager', # 生命周期管理器类
 ]

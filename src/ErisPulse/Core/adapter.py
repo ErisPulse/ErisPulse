@@ -6,6 +6,7 @@ ErisPulse 适配器系统
 
 import functools
 import asyncio
+import inspect
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set
 )
@@ -41,9 +42,24 @@ class AdapterManager(ManagerBase):
         self._onebot_middlewares = []
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
-
+        self._sdk = None
+        
+    def set_sdk_ref(self, sdk) -> bool:
+        """
+        设置 SDK 引用
+        
+        :param sdk: SDK 实例
+        :return: 是否设置成功
+        """
+        try:
+            self._sdk = sdk
+            return True
+        except Exception as e:
+            logger.error(f"设置SDK引用失败: {e}")
+            return False
+        
     # ==================== 适配器注册与管理 ====================
-
+    
     def register(self, platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None) -> bool:
         """
         注册新的适配器类（标准化注册方法）
@@ -82,34 +98,26 @@ class AdapterManager(ManagerBase):
             logger.debug(f"适配器 {platform} 已绑定到已注册的实例 {existing_platform}")
         else:
             # 创建适配器实例
-            from .. import sdk
-            instance = adapter_class(sdk)
+            # 检查适配器类 __init__ 方法的参数
+            init_signature = inspect.signature(adapter_class.__init__)
+            params = [p for p in init_signature.parameters.values() if p.name != 'self']
+            
+            sdk_to_use = self._sdk
+            if sdk_to_use is None:
+                from .. import sdk
+                sdk_to_use = sdk
+                
+            # 根据参数情况创建实例
+            if params:
+                instance = adapter_class(sdk_to_use)
+            else:
+                instance = adapter_class()
+
             self._adapters[platform] = instance
             logger.debug(f"适配器 {platform} 注册成功")
         
-        # 注册平台名称的多种大小写形式作为属性
-        self._register_platform_attributes(platform, self._adapters[platform])
-        
         return True
     
-    def _register_platform_attributes(self, platform: str, instance: BaseAdapter) -> None:
-        """
-        注册平台名称的多种大小写形式作为属性
-        
-        :param platform: 平台名称
-        :param instance: 适配器实例
-        """
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                setattr(self, name, instance)
-        else:
-            logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
-            setattr(self, platform.lower(), instance)
-            setattr(self, platform.upper(), instance)
-            setattr(self, platform.capitalize(), instance)
-
     async def startup(self, platforms = None) -> None:
         """
         启动指定的适配器
@@ -144,7 +152,7 @@ class AdapterManager(ManagerBase):
         )
 
         from .router import router
-        from .._bootstrap import get_server_config
+        from ..runtime import get_server_config
         server_config = get_server_config()
 
         host = server_config["host"]
@@ -402,22 +410,7 @@ class AdapterManager(ManagerBase):
             return False
         
         # 移除适配器实例
-        adapter = self._adapters.pop(platform)
-        
-        # 移除平台属性
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                if hasattr(self, name):
-                    delattr(self, name)
-        else:
-            if hasattr(self, platform.lower()):
-                delattr(self, platform.lower())
-            if hasattr(self, platform.upper()):
-                delattr(self, platform.upper())
-            if hasattr(self, platform.capitalize()):
-                delattr(self, platform.capitalize())
+        self._adapters.pop(platform)
         
         logger.info(f"平台 {platform} 已取消注册")
         return True

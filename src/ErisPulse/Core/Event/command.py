@@ -13,7 +13,7 @@ ErisPulse 命令处理模块
 
 from .base import BaseEventHandler
 from .. import adapter, logger
-from ..._bootstrap import get_event_config
+from ...runtime import get_event_config
 from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 

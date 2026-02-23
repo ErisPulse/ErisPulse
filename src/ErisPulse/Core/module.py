@@ -5,6 +5,7 @@ ErisPulse 模块系统
 """
 
 import asyncio
+import inspect
 from typing import Any, Dict, List, Type, Optional
 from .logger import logger
 from .config import config
@@ -31,6 +32,21 @@ class ModuleManager(ManagerBase):
         self._module_classes: Dict[str, Type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: Dict[str, Dict] = {}  # 模块信息
+        self._sdk = None
+        
+    def set_sdk_ref(self, sdk) -> bool:
+        """
+        设置 SDK 引用
+        
+        :param sdk: SDK 实例
+        :return: 是否设置成功
+        """
+        try:
+            self._sdk = sdk
+            return True
+        except Exception as e:
+            logger.error(f"设置SDK引用失败: {e}")
+            return False
         
     # ==================== 模块注册与管理 ====================
     
@@ -101,21 +117,25 @@ class ModuleManager(ManagerBase):
             return True
             
         try:
-            from .. import sdk
-            import inspect
-            
             # 创建模块实例
             module_class = self._module_classes[module_name]
             
-            # 检查是否需要传入sdk参数
+            # 检查模块类 __init__ 方法的参数
             init_signature = inspect.signature(module_class.__init__)
-            params = init_signature.parameters
+            params = [p for p in init_signature.parameters.values() if p.name != 'self']
             
-            if 'sdk' in params:
-                instance = module_class(sdk)
+            # 获取 sdk
+            sdk_to_use = self._sdk
+            if sdk_to_use is None:
+                from .. import sdk
+                sdk_to_use = sdk
+            
+            # 根据参数情况创建实例
+            if params:
+                instance = module_class(sdk_to_use)
             else:
                 instance = module_class()
-                
+
             # 设置模块信息
             if module_name in self._module_info:
                 setattr(instance, "moduleInfo", self._module_info[module_name])

@@ -1,4 +1,4 @@
-name: 🎀 艾莉丝的版本标签魔法 ~
+name: 🎀 艾莉丝的版本管理
 
 permissions:
   contents: write
@@ -17,7 +17,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 施展版本魔法
+      - name: 准备 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: 创建标签和发行
+        id: create-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -60,7 +71,7 @@ jobs:
               
               # 检查标签是否已存在
               if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-                echo "🎀🎀 创建新标签 $tag_name..."
+                echo "正在创建新标签 $tag_name"
                 git tag "$tag_name"
                 git push origin "$tag_name"
               else
@@ -70,26 +81,68 @@ jobs:
               # 检查发行是否存在
               if gh release view "$tag_name" &>/dev/null; then
                 # 更新发行
-                echo "🔄 更新发行 $tag_name..."
+                echo "正在更新发行 $tag_name"
                 gh release edit "$tag_name" \
                   --notes "$changelog" \
                   --prerelease=$is_dev
-                echo "✅ 已更新发行 $tag_name"
+                echo "发行更新完成 $tag_name"
+                echo "release_updated=true" >> $GITHUB_OUTPUT
               else
                 # 创建发行
-                echo "✨ 创建发行 $tag_name..."
+                echo "正在创建发行 $tag_name"
                 gh release create "$tag_name" \
                   --notes "$changelog" \
-                  --title "✨ 艾莉丝的魔法更新 $tag_name" \
+                  --title "ErisPulse $tag_name" \
                   --prerelease=$is_dev \
                   $latest_flag
-                echo "✅ 已创建发行 $tag_name"
+                echo "发行创建完成 $tag_name"
+                echo "release_created=true" >> $GITHUB_OUTPUT
               fi
               
-              echo "📦 发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
+              echo "发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
             else
-              echo "⚠️ 未找到版本 $version 的更新日志"
+              echo "未找到版本 $version 的更新日志"
             fi
           else
-            echo "⚠️ CHANGELOG.md 文件不存在"
+            echo "CHANGELOG.md 文件不存在"
           fi
+
+      - name: 生成 AI 物料文档
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        run: |
+          echo "艾莉丝开始生成 AI 物料文档~"
+          
+          # 确保输出目录存在
+          mkdir -p docs/ai-support/prompts
+          
+          # 运行 AI prompt 生成脚本
+          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
+            python scripts/tools/generate-ai-prompts.py
+            echo "AI 物料文档生成完成"
+          else
+            echo "未找到 AI Prompt 生成脚本，跳过此步骤"
+          fi
+
+      - name: 上传 AI 物料文档到 Release
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "艾莉丝正在上传 AI 物料文档到 Release~"
+          
+          # 读取当前版本
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          tag_name="v$version"
+          
+          # 上传 AI 物料文档
+          gh release upload "$tag_name" \
+            docs/ai-support/prompts/ErisPulse-ModuleDev.md \
+            docs/ai-support/prompts/ErisPulse-AdapterDev.md \
+            docs/ai-support/prompts/ErisPulse-Full.md \
+            --clobber
+          
+          echo "AI 物料文档上传完成"
+          echo "用户可以从以下链接下载文档:"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-ModuleDev.md"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-AdapterDev.md"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-Full.md"

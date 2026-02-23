@@ -1,57 +1,38 @@
 # 快速开始
 
-## 安装ErisPulse
+## 安装 ErisPulse
 
 ### 使用 pip 安装
+
 确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
+
 ```bash
 pip install ErisPulse
 ```
 
-### 更先进的安装方法
-> 采用 [`uv`](https://github.com/astral-sh/uv) 作为 Python 工具链
-> 这不是必须的，但推荐使用，因为它可以帮助你管理 Python 环境和依赖。
+### 使用 uv 安装（推荐）
 
-### 1. 安装 uv
+`uv` 是一个更快的 Python 工具链，推荐使用：
 
-#### 通用方法 (pip):
+#### 安装 uv
+
 ```bash
 pip install uv
 ```
 
-#### macOS/Linux:
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-#### Windows (PowerShell):
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-验证安装:
-```bash
-uv --version
-```
-
-### 2. 创建虚拟环境,并安装 ErisPulse
+#### 创建项目并安装
 
 ```bash
 uv python install 3.12              # 安装 Python 3.12
 uv venv                             # 创建虚拟环境
-source .venv/bin/activate           # 激活环境 (Windows: .venv\Scripts\activate)
+.venv\Scripts\activate               # 激活环境 (Windows)
+# source .venv/bin/activate          # Linux/Mac
 uv pip install ErisPulse --upgrade  # 安装框架
 ```
 
----
-
 ## 初始化项目
 
-有两种方式初始化项目：
-
 ### 交互式初始化（推荐）
-
-1. 使用 epsdk init 启动交互式初始化：
 
 ```bash
 epsdk init
@@ -66,55 +47,86 @@ epsdk init
 
 ### 快速初始化
 
-如果您只需要快速创建项目结构，可以使用快速模式：
-
 ```bash
 # 指定项目名称的快速模式
 epsdk init -q -n my_bot
 
-# 或者只指定项目名称，仍然会有基本交互
+# 或者只指定项目名称
 epsdk init -n my_bot
 ```
 
-### 传统方式
+### 手动创建项目
 
-如果您更喜欢传统方式：
-
-1. 创建项目目录并进入：
+如果更喜欢手动创建项目：
 
 ```bash
 mkdir my_bot && cd my_bot
+epsdk init
 ```
-
-2. 初始化 SDK 并生成配置文件：
-
-```bash
-ep-init
-```
-这将在当前目录下生成 `config.toml` 和 `main.py` 入口。
-
----
 
 ## 安装模块
 
-你可以通过 CLI 安装所需模块：
+### 通过 CLI 安装
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-你也可以手动编写模块逻辑，参考开发者文档进行模块开发。
+### 查看可用模块
 
----
-
-## 运行你的机器人
-运行我们自动生成的程序入口：
 ```bash
-epsdk run main.py
+epsdk list-remote
 ```
 
-或者使用热重载模式（开发时推荐）：
+### 交互式安装
+
+不指定包名时进入交互式安装界面：
 
 ```bash
+epsdk install
+```
+
+## 运行项目
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 热重载模式（开发时推荐）
 epsdk run main.py --reload
 ```
+
+## 项目结构
+
+初始化后的项目结构：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+- [入门指南总览](getting-started/README.md) - 了解 ErisPulse 的基本概念
+- [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
+- [用户使用指南](user-guide/) - 深入了解配置和模块管理
+- [开发者指南](developer-guide/) - 开发自定义模块和适配器
