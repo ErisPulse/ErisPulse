@@ -7,22 +7,56 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
+ErisPulse 是一个事件驱动的多平台机器人开发框架。通过统一的适配器系统和标准化事件模型，让模块一次编写，即可在多个平台运行。
+
+```python
+import asyncio
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+# 注册命令 - 一次编写，多平台运行
+@command("hello")
+async def hello(event):
+    await event.reply("你好！来自 ErisPulse")
+
+# 启动框架
+asyncio.run(sdk.run(keep_running=True))
+```
+
+## 核心特性
+
+- **事件驱动** - 基于 OneBot12 标准的清晰事件模型
+- **一次编写，全平台运行** - 插件模块编写一次即可在所有平台使用
+- **模块化设计** - 灵活的插件系统，易于扩展开发
+- **热重载** - 支持热重载，无需重启即可reload系统
+
+## 应用场景
+
+- **多平台机器人** - 在多个平台部署相同功能的机器人
+- **聊天助手** - 接入自己的AI聊天模块，实现娱乐、交互机器人
+- **自动化工具** - 消息通知、任务管理、数据收集
+- **消息转发** - 跨平台消息同步和转发
+> 你还能做更多更多，多到没有想象的边界 www
+
+## 支持的适配器
+> 也欢迎你贡献适配器 TwT~
+
+- [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) - 企业级即时通讯平台（机器人账户）
+- [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) - 基于云湖用户账户的适配器
+- [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) - 全球性即时通讯软件
+- [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) - 通用机器人接口标准
+- [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) - OneBot12 标准
+- [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) - 邮件收发处理
+- [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) - 网页调试界面，无需接入实际平台
+
+> 查看[适配器详情介绍](docs-new/platform-guide/README.md)
+
 ## 文档资源
 
 | 平台 | 主站点 | 备用站点 |
 |------|--------|---------|
 | 文档 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) • [GitHub](https://erispulse.github.io/#docs) • [Netlify](https://erispulse.netlify.app/#docs) |
 | 模块市场 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) • [GitHub](https://erispulse.github.io/#market) • [Netlify](https://erispulse.netlify.app/#market) |
-
-## 核心特性
-
-| 特性 | 描述 |
-|:-----|:-----|
-| 异步架构 | 完全基于 async/await 的异步设计 |
-| 模块化系统 | 灵活的插件和模块管理 |
-| 热重载 | 开发时自动重载，无需重启 |
-| 错误管理 | 统一的错误处理和报告系统 |
-| 配置管理 | 灵活的配置存储和访问 |
 
 ## 快速开始
 
@@ -42,42 +76,25 @@ curl -sSL https://get.erisdev.com/install.sh | tee install.sh >/dev/null && chmo
 
 ## 开发与测试
 
-### 1. 克隆项目
+### 克隆项目
 
 ```bash
 git clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git
 cd ErisPulse
 ```
 
-### 2. 环境搭建
+### 环境搭建
 
-使用 uv 同步项目环境:
+使用 `uv` 同步项目环境：
 
 ```bash
 uv sync
-
-# 激活虚拟环境
-source .venv/bin/activate   # macOS/Linux
-# Windows: .venv\Scripts\activate
+# 激活虚拟环境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
 ```
 
-说明: ErisPulse 使用 Python 3.13 开发，但兼容 Python 3.10+
+> 提示：ErisPulse 使用 Python 3.13 开发，兼容 Python 3.10+
 
-### 3. 安装依赖
-
-```bash
-uv pip install -e .
-```
-
-这将以"开发模式"安装 SDK，所有本地修改都会立即生效。
-
-### 4. 验证安装
-
-运行以下命令确认 SDK 正常加载：
-
-```bash
-python -c "from ErisPulse import sdk; sdk.init()"
-```
+**快速开始**：[快速开始指南](docs-new/quick-start.md) | [入门指南](docs-new/getting-started/)
 
 ## 项目结构
 
