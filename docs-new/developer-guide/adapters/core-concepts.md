@@ -38,6 +38,215 @@
 └─────────────────────────────────────────┘
 ```
 
+## AdapterManager 适配器管理器
+
+`AdapterManager` 是 ErisPulse 适配器系统的核心组件，负责管理所有平台适配器的注册、启动、关闭和事件分发。
+
+### 核心功能
+
+- **适配器注册**：注册和管理多个平台适配器
+- **生命周期管理**：控制适配器的启动和关闭
+- **事件分发**：分发 OneBot12 标准事件和平台原生事件
+- **配置管理**：管理适配器的启用/禁用状态
+- **中间件支持**：支持 OneBot12 事件中间件
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 注册适配器（通常由 Loader 自动完成）
+sdk.adapter.register("myplatform", MyPlatformAdapter)
+
+# 启动所有适配器
+await sdk.adapter.startup()
+
+# 启动指定适配器
+await sdk.adapter.startup(["myplatform"])
+# 启动全部适配器
+await sdk.adapter.startup()
+
+# 获取适配器实例
+my_adapter = sdk.adapter.get("myplatform")
+# 或通过属性访问
+my_adapter = sdk.adapter.myplatform
+
+# 关闭所有适配器
+await sdk.adapter.shutdown()
+```
+
+### 启动和关闭
+
+#### 启动适配器
+
+```python
+# 启动所有已注册的适配器
+await sdk.adapter.startup()
+
+# 启动指定平台
+await sdk.adapter.startup(["platform1", "platform2"])
+```
+
+**启动流程：**
+
+1. 提交 `adapter.start` 生命周期事件
+2. 提交 `adapter.status.change` 事件（starting）
+3. 并行启动各个适配器
+4. 如果启动失败，自动重试（指数退避策略）
+5. 启动成功后提交 `adapter.status.change` 事件（started）
+
+**重试机制：**
+
+- 前 4 次重试：60秒、10分钟、30分钟、60分钟
+- 第 5 次及以后：3 小时固定间隔
+
+#### 关闭适配器
+
+```python
+# 关闭所有适配器
+await sdk.adapter.shutdown()
+```
+
+**关闭流程：**
+
+1. 提交 `adapter.stop` 生命周期事件
+2. 调用所有适配器的 `shutdown()` 方法
+3. 关闭路由服务器
+4. 清空事件处理器
+5. 提交 `adapter.stopped` 生命周期事件
+
+### 配置管理
+
+#### 检查平台状态
+
+```python
+# 检查平台是否已注册
+exists = sdk.adapter.exists("myplatform")
+
+# 检查平台是否启用
+enabled = sdk.adapter.is_enabled("myplatform")
+
+# 使用 in 操作符
+if "myplatform" in sdk.adapter:
+    print("平台存在且已启用")
+```
+
+#### 列出平台
+
+```python
+# 列出所有已注册的平台
+platforms = sdk.adapter.list_registered()
+
+# 列出所有平台及其状态
+status_dict = sdk.adapter.list_items()
+# 返回: {"platform1": true, "platform2": false, ...}
+
+# 获取已启用的平台列表
+enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
+```
+
+### 事件监听
+
+#### OneBot12 标准事件
+
+```python
+from ErisPulse import sdk
+
+# 监听所有平台的标准消息事件
+@sdk.adapter.on("message")
+async def handle_message(data):
+    print(f"收到OneBot12消息: {data}")
+
+# 监听特定平台的标准消息事件
+@sdk.adapter.on("message", platform="myplatform")
+async def handle_platform_message(data):
+    print(f"收到 myplatform 消息: {data}")
+
+# 监听所有事件
+@sdk.adapter.on("*")
+async def handle_any_event(data):
+    print(f"收到事件: {data.get('type')}")
+```
+
+#### 平台原生事件
+
+```python
+# 监听特定平台的原生事件
+@sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
+async def handle_raw_event(data):
+    print(f"收到原生事件: {data}")
+
+# 监听所有平台的原生事件（通配符）
+@sdk.adapter.on("*", raw=True)
+async def handle_all_raw_events(data):
+    print(f"收到原生事件: {data}")
+```
+
+#### 事件分发机制
+
+当调用 `adapter.emit(event_data)` 时：
+
+1. **中间件处理**：先执行所有 OneBot12 中间件
+2. **标准事件分发**：分发到匹配的 OneBot12 事件处理器
+3. **原生事件分发**：如果存在原始数据，分发到原生事件处理器
+
+**匹配规则：**
+
+- 精确匹配：`@sdk.adapter.on("message")` 只匹配 `message` 事件
+- 通配符：`@sdk.adapter.on("*")` 匹配所有事件
+- 平台过滤：`platform="myplatform"` 只分发指定平台的事件
+
+### 中间件
+
+#### 添加中间件
+
+```python
+@sdk.adapter.middleware
+async def logging_middleware(data):
+    """日志记录中间件"""
+    print(f"处理事件: {data.get('type')}")
+    return data  # 必须返回数据
+
+@sdk.adapter.middleware
+async def filter_middleware(data):
+    """事件过滤中间件"""
+    # 过滤不需要的事件
+    if data.get("type") == "notice":
+        return None  # 返回 None 会阻止事件继续分发
+    return data
+```
+
+#### 中间件执行顺序
+
+中间件按照注册顺序执行，后注册的中间件先执行。
+
+```python
+# 注册顺序
+sdk.adapter.middleware(middleware1)  # 最后执行
+sdk.adapter.middleware(middleware2)  # 中间执行
+sdk.adapter.middleware(middleware3)  # 最先执行
+
+# 执行顺序：middleware3 -> middleware2 -> middleware1
+```
+
+### 获取适配器实例
+
+#### get() 方法
+
+```python
+adapter = sdk.adapter.get("myplatform")
+if adapter:
+    await adapter.Send.To("user", "123").Text("Hello")
+```
+
+#### 属性访问
+
+```python
+# 通过属性名访问（不区分大小写）
+adapter = sdk.adapter.myplatform
+await adapter.Send.To("user", "123").Text("Hello")
+```
+
 ## BaseAdapter 基类
 
 ### 基本结构
