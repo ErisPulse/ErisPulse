@@ -29,6 +29,16 @@ ErisPulse 模块系统
 #### 方法列表
 
 
+##### `set_sdk_ref(sdk)`
+
+设置 SDK 引用
+
+:param sdk: SDK 实例
+:return: 是否设置成功
+
+---
+
+
 ##### `register(module_name: str, module_class: Type, module_info: Optional[Dict] = None)`
 
 注册模块类

@@ -1,6 +1,6 @@
 # ErisPulse 核心功能文档
 
-**生成时间**: 2026-02-23 05:38:41
+**生成时间**: 2026-02-23 11:38:07
 
 本文件由多个开发文档合并而成，用于辅助开发者理解 ErisPulse 的相关功能。
 
@@ -6691,7 +6691,7 @@ ErisPulse包管理器
 
 ErisPulse 基础模块
 
-提供核心基类定义，包括适配器和模块基类
+提供平台适配器以及模块的基类
 
 ---
 
@@ -8481,6 +8481,16 @@ ErisPulse 适配器系统
 #### 方法列表
 
 
+##### `set_sdk_ref(sdk)`
+
+设置 SDK 引用
+
+:param sdk: SDK 实例
+:return: 是否设置成功
+
+---
+
+
 ##### `register(platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None)`
 
 注册新的适配器类（标准化注册方法）
@@ -9338,6 +9348,16 @@ ErisPulse 模块系统
 
 
 #### 方法列表
+
+
+##### `set_sdk_ref(sdk)`
+
+设置 SDK 引用
+
+:param sdk: SDK 实例
+:return: 是否设置成功
+
+---
 
 
 ##### `register(module_name: str, module_class: Type, module_info: Optional[Dict] = None)`
@@ -11960,7 +11980,7 @@ SDK 反初始化
 - **模块总数**: 52
 - **类总数**: 43
 - **函数总数**: 14
-- **方法总数**: 381
+- **方法总数**: 383
 
 ---
 
@@ -12109,7 +12129,7 @@ SDK 反初始化
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 21 个方法
+📦 1 个类 | 🔧 22 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
@@ -12129,7 +12149,7 @@ SDK 反初始化
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-📦 1 个类 | 🔧 19 个方法
+📦 1 个类 | 🔧 20 个方法
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
