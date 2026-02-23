@@ -17,7 +17,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 准备 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
       - name: 创建标签和发行
+        id: create-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -75,6 +86,7 @@ jobs:
                   --notes "$changelog" \
                   --prerelease=$is_dev
                 echo "发行更新完成 $tag_name"
+                echo "release_updated=true" >> $GITHUB_OUTPUT
               else
                 # 创建发行
                 echo "正在创建发行 $tag_name"
@@ -84,6 +96,7 @@ jobs:
                   --prerelease=$is_dev \
                   $latest_flag
                 echo "发行创建完成 $tag_name"
+                echo "release_created=true" >> $GITHUB_OUTPUT
               fi
               
               echo "发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
@@ -93,3 +106,43 @@ jobs:
           else
             echo "CHANGELOG.md 文件不存在"
           fi
+
+      - name: 生成 AI 物料文档
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        run: |
+          echo "艾莉丝开始生成 AI 物料文档~"
+          
+          # 确保输出目录存在
+          mkdir -p docs/ai-support/prompts
+          
+          # 运行 AI prompt 生成脚本
+          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
+            python scripts/tools/generate-ai-prompts.py
+            echo "AI 物料文档生成完成"
+          else
+            echo "未找到 AI Prompt 生成脚本，跳过此步骤"
+          fi
+
+      - name: 上传 AI 物料文档到 Release
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "艾莉丝正在上传 AI 物料文档到 Release~"
+          
+          # 读取当前版本
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          tag_name="v$version"
+          
+          # 上传 AI 物料文档
+          gh release upload "$tag_name" \
+            docs/ai-support/prompts/ErisPulse-ModuleDev.md \
+            docs/ai-support/prompts/ErisPulse-AdapterDev.md \
+            docs/ai-support/prompts/ErisPulse-Full.md \
+            --clobber
+          
+          echo "AI 物料文档上传完成"
+          echo "用户可以从以下链接下载文档:"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-ModuleDev.md"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-AdapterDev.md"
+          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-Full.md"
