@@ -1,7 +1,7 @@
 """
 ErisPulse 基础模块
 
-提供核心基类定义，包括适配器和模块基类
+提供平台适配器以及模块的基类
 """
 
 from .adapter import SendDSL, BaseAdapter
