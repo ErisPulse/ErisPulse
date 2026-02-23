@@ -57,15 +57,17 @@
 ### 新增
 - @wsu2059q
   - `runtime` 新增 `get_config` 方法
-  - `BaseAdapter` 的 `SendDSL` 新增修饰方法的实现，避免适配器未重写时导致模块出现的一些bug
-  
-### 重构
+  - `BaseAdapter` 的 `SendDSL` 新增修饰方法的默认实现：
+    - 新增 `At()`、`Reply()`、`AtAll()`、`Raw_ob12()`、`Raw_json()` 方法的默认实现
+    - 避免适配器未重写时导致模块出现 bug，提供友好的错误提示
+  - 为 `AdapterManager` 和 `ModuleManager` 添加 `set_sdk_ref()` 方法，支持设置 SDK 引用
 
+### 重构
 - @wsu2059q
   - 重构异常处理和配置管理模块架构：
     - 将 `Core.exceptions` 模块移至 `runtime/exceptions.py`
-    - 将 `_bootstrap.py` 重构为 `runtime/config.py`，统一管理运行时配置
-    - 新增 `runtime`包，整合异常处理和配置管理功能
+    - 将 `_bootstrap.py` 重构为 `runtime/frame_config.py`，统一管理运行时配置
+    - 新增 `runtime` 包，整合异常处理和配置管理功能
     - 移除 `setup_async_loop` 方法，改用 `setup_exception_handling`
   - 重构 SDK 架构，将核心方法迁移至 `SDK` 类：
     - 将 `__init__.py` 中的 SDK 逻辑方法迁移至 `sdk.py` 的 `SDK` 类
@@ -73,11 +75,14 @@
   - 更新导入路径：
     - 所有引用 `_bootstrap` 的模块改为引用 `runtime`
     - 所有引用 `Core.exceptions` 的模块改为引用 `runtime.exceptions`
+  - 将 `runtime/config.py` 重命名为 `runtime/frame_config.py`，优化模块命名
+  - 提取配置服务获取逻辑到 `_get_config_service()` 独立函数，减少代码重复
+  - 移除 `AdapterManager` 中平台名称大小写属性注册功能，简化适配器管理逻辑
 
 ### 移除
-
 - @wsu2059q
   - 移除 `Core.exceptions` 模块导出，异常处理功能已迁移至 runtime 模块
+  - 移除 `AdapterManager` 中的 `_register_platform_attributes()` 方法及相关平台属性注册逻辑
 
 ---
 
