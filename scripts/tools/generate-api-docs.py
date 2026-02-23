@@ -349,6 +349,19 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 
 本文档包含 ErisPulse SDK 的所有 API 参考文档。
 
+> **⚠️ 重要说明**
+> 本目录下的所有文档均为**自动生成**的 API 参考文档。
+> 
+> **请不要手动编辑此目录下的任何文件**，所有更改将在下次自动生成时被覆盖。
+> 
+> 如需修改 API 文档，请在源代码中更新对应模块、类和函数的 docstring。
+> 
+> 自动生成脚本位置：`scripts/tools/update-api-docs.py`
+
+---
+
+## 统计信息
+
 - **模块总数**: {total_modules}
 - **类总数**: {total_classes}
 - **函数总数**: {total_functions}
@@ -465,7 +478,7 @@ if __name__ == "__main__":
     )
     
     parser.add_argument("--src", default="src", help="源代码目录 (默认: src)")
-    parser.add_argument("--output", default="docs/api", help="Markdown输出目录 (默认: docs/api)")
+    parser.add_argument("--output", default="docs/api-reference/auto_api", help="Markdown输出目录 (默认: docs/api-reference/auto_api)")
     parser.add_argument("--version", action="version", version="API文档生成器 v10.0")
     
     args = parser.parse_args()
