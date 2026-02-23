@@ -15,9 +15,10 @@ from .exceptions import (
     setup_exception_handling
 )
 
-from .config import (
+from .frame_config import (
     DEFAULT_ERISPULSE_CONFIG,
     get_erispulse_config,
+    get_config,
     update_erispulse_config,
     get_server_config,
     get_logger_config,
@@ -36,6 +37,7 @@ __all__ = [
     # 配置管理
     'DEFAULT_ERISPULSE_CONFIG',
     'get_erispulse_config',
+    'get_config',
     'update_erispulse_config',
     'get_server_config',
     'get_logger_config',
