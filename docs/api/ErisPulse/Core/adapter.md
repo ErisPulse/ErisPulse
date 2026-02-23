@@ -30,6 +30,16 @@ ErisPulse 适配器系统
 #### 方法列表
 
 
+##### `set_sdk_ref(sdk)`
+
+设置 SDK 引用
+
+:param sdk: SDK 实例
+:return: 是否设置成功
+
+---
+
+
 ##### `register(platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None)`
 
 注册新的适配器类（标准化注册方法）
