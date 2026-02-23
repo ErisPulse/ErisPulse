@@ -107,11 +107,17 @@ class SDK:
         self.config = config
         
         self.adapter = adapter
+
+        # 设置 adapter 的 SDK 引用
+        adapter.set_sdk_ref(self)
+
         self.AdapterFather = AdapterFather
         self.BaseAdapter = BaseAdapter
         self.SendDSL = SendDSL
         
         self.module = module
+        # 设置 module 的 SDK 引用
+        module.set_sdk_ref(self)
         
         self.router = router
         self.adapter_server = adapter_server
