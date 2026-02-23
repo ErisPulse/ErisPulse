@@ -3,7 +3,6 @@ devs/videos
 main.py
 venvs
 config.toml
-adapters
 uv.lock
 snapshots/
 config.db*
@@ -207,10 +206,3 @@ bin
 include
 lib
 pyvenv.cfg
-
-# erispulse
-my_bot
-modules
-config.toml
-devs/test_st.py
-docs/ux-improvements.md

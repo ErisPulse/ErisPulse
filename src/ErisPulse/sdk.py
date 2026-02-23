@@ -107,7 +107,6 @@ class SDK:
         self.config = config
         
         self.adapter = adapter
-
         # 设置 adapter 的 SDK 引用
         adapter.set_sdk_ref(self)
 
