@@ -8,7 +8,7 @@
 
 - **模块总数**: 52
 - **类总数**: 43
-- **函数总数**: 13
+- **函数总数**: 14
 - **方法总数**: 381
 
 ---
@@ -261,14 +261,14 @@
 📄 模块文档
 
 
-### [ErisPulse.runtime.config](ErisPulse/runtime/config.md)
-
-⚙️ 8 个函数
-
-
 ### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
 
 📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
+
+
+### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
+
+⚙️ 9 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
