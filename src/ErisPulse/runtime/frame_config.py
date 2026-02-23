@@ -42,6 +42,9 @@ DEFAULT_ERISPULSE_CONFIG = {
     }
 }
 
+def _get_config_service():
+    from ..Core.config import ConfigManager
+    return ConfigManager()
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -74,9 +77,7 @@ def get_erispulse_config() -> Dict[str, Any]:
     
     :return: 完整的 ErisPulse 配置字典
     """
-    # 导入 config_service
-    from ..registry import registry
-    config_service = registry.get('config')
+    config_service = _get_config_service()
     
     # 获取现有配置
     current_config = config_service.getConfig("ErisPulse")
@@ -117,9 +118,7 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     :param new_config: 新的配置字典
     :return: 是否更新成功
     """
-    # 导入 config_service
-    from ..registry import registry
-    config_service = registry.get('config')
+    config_service = _get_config_service()
     
     # 获取当前配置并合并新配置
     current = get_erispulse_config()
