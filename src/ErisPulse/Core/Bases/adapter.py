@@ -41,7 +41,33 @@ class SendDSL:
         self._target_id = target_id
         self._target_to = target_id
         self._account_id = account_id
-
+    
+    def At(self, **kwargs):
+        from .. import logger
+        logger.debug(f"未实现At方法; At: {kwargs}")
+        logger.error(f"注意：该平台{self._adapter.__class__.__name__}未实现At方法，该修饰方法将被忽略")
+        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+    def Reply(self, **kwargs):
+        from .. import logger
+        logger.debug(f"未实现Reply方法; Reply: {kwargs}")
+        logger.error(f"注意：该平台{self._adapter.__class__.__name__}未实现Reply方法，该修饰方法将被忽略")
+        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+    def AtAll(self, **kwargs):
+        from .. import logger
+        logger.debug(f"未实现AtAll方法; AtAll: {kwargs}")
+        logger.error(f"注意：该平台{self._adapter.__class__.__name__}未实现AtAll方法，该修饰方法将被忽略")
+        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+    def Raw_ob12(self, **kwargs):
+        from .. import logger
+        logger.debug(f"未实现Raw_ob12方法; Raw_ob12: {kwargs}")
+        logger.error(f"注意：该平台{self._adapter.__class__.__name__}未实现Raw_ob12方法，该修饰方法将被忽略")
+        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+    def Raw_json(self, **kwargs):
+        from .. import logger
+        logger.debug(f"未实现Raw_json方法; Raw_json: {kwargs}")
+        logger.error(f"注意：该平台{self._adapter.__class__.__name__}未实现Raw_json方法，该修饰方法将被忽略")
+        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+    
     def To(self, target_type: str = None, target_id: Union[str, int] = None) -> 'SendDSL':
         """
         设置消息目标

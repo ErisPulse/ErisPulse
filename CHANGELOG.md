@@ -57,7 +57,8 @@
 ### 新增
 - @wsu2059q
   - `runtime` 新增 `get_config` 方法
-
+  - `BaseAdapter` 的 `SendDSL` 新增修饰方法的实现，避免适配器未重写时导致模块出现的一些bug
+  
 ### 重构
 
 - @wsu2059q
