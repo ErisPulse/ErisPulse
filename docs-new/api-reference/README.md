@@ -7,6 +7,7 @@
 - [核心模块 API](core-modules.md) - 存储、配置、日志等核心模块 API
 - [事件系统 API](event-system.md) - Event 模块 API 参考
 - [适配器系统 API](adapter-system.md) - Adapter 管理器 API 参考
+- [ErisPulse 自动生成 API](auto_api/README.md) - 自动生成API 参考
 
 ## API 概览
 

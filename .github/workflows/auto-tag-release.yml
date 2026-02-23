@@ -1,4 +1,4 @@
-name: 🎀 艾莉丝的版本标签魔法 ~
+name: 🎀 艾莉丝的版本管理
 
 permissions:
   contents: write
@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 施展版本魔法
+      - name: 创建标签和发行
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -60,7 +60,7 @@ jobs:
               
               # 检查标签是否已存在
               if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-                echo "🎀🎀 创建新标签 $tag_name..."
+                echo "正在创建新标签 $tag_name"
                 git tag "$tag_name"
                 git push origin "$tag_name"
               else
@@ -70,26 +70,26 @@ jobs:
               # 检查发行是否存在
               if gh release view "$tag_name" &>/dev/null; then
                 # 更新发行
-                echo "🔄 更新发行 $tag_name..."
+                echo "正在更新发行 $tag_name"
                 gh release edit "$tag_name" \
                   --notes "$changelog" \
                   --prerelease=$is_dev
-                echo "✅ 已更新发行 $tag_name"
+                echo "发行更新完成 $tag_name"
               else
                 # 创建发行
-                echo "✨ 创建发行 $tag_name..."
+                echo "正在创建发行 $tag_name"
                 gh release create "$tag_name" \
                   --notes "$changelog" \
-                  --title "✨ 艾莉丝的魔法更新 $tag_name" \
+                  --title "ErisPulse $tag_name" \
                   --prerelease=$is_dev \
                   $latest_flag
-                echo "✅ 已创建发行 $tag_name"
+                echo "发行创建完成 $tag_name"
               fi
               
-              echo "📦 发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
+              echo "发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
             else
-              echo "⚠️ 未找到版本 $version 的更新日志"
+              echo "未找到版本 $version 的更新日志"
             fi
           else
-            echo "⚠️ CHANGELOG.md 文件不存在"
+            echo "CHANGELOG.md 文件不存在"
           fi
