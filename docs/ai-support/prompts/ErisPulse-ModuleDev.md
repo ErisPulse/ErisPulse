@@ -2190,8 +2190,6 @@ user_id = event.user_id          # 等同于 event["user_id"]
 message = event.message          # 等同于 event["message"]
 ```
 
-如果访问不存在的键，会抛出 AttributeError。
-
 ## 相关文档
 
 - [模块开发入门](getting-started.md) - 创建第一个模块
