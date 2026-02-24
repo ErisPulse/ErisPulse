@@ -37,8 +37,6 @@ dependencies = [
     "toml",
     "fastapi>=0.116.1",
     "hypercorn>=0.14.0",
-    "pydantic>=2.10.6",
-    "python-multipart>=0.0.20",
     "packaging>=25.0",
 ]
 
