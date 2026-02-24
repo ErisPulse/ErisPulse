@@ -376,7 +376,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reply(content: str, method: str = 'Text')`
+##### `async async reply(content: str, method: str = 'Text', at_users: List[str] = None, reply_to: str = None, at_all: bool = False)`
 
 通用回复方法
 
@@ -385,15 +385,31 @@ ErisPulse 事件包装类
 :param content: 发送内容（文本、URL等，取决于method参数）
 :param method: 适配器发送方法，默认为"Text"
                可选值: "Text", "Image", "Voice", "Video", "File" 等
+:param at_users: @用户列表（可选），如 ["user1", "user2"]
+:param reply_to: 回复消息ID（可选）
+:param at_all: 是否@全体成员（可选），默认为 False
 :param kwargs: 额外参数，例如Mention方法的user_id
 :return: 适配器发送方法的返回值
 
 **示例**:
 ```python
->>> await event.reply("你好")  # 发送文本
->>> await event.reply("http://example.com/image.jpg", method="Image")  # 发送图片
->>> await event.reply("回复内容", method="Mention", user_id="123456")  # @用户并发送
->>> await event.reply("http://example.com/voice.mp3", method="Voice")  # 发送语音
+>>> # 简单回复
+>>> await event.reply("你好")
+>>> 
+>>> # 发送图片
+>>> await event.reply("http://example.com/image.jpg", method="Image")
+>>> 
+>>> # @用户
+>>> await event.reply("你好", at_users=["user123"])
+>>> 
+>>> # 回复消息
+>>> await event.reply("回复内容", reply_to="msg_id")
+>>> 
+>>> # @全体成员
+>>> await event.reply("公告", at_all=True)
+>>> 
+>>> # 组合使用：@用户 + 回复消息
+>>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
 
 ---
