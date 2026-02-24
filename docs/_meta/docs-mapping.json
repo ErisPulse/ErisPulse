@@ -1,0 +1,552 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-02-24T10:55:45.368897+00:00",
+  "total_categories": 10,
+  "categories": {
+    "快速开始": {
+      "description": "ErisPulse 快速入门指南",
+      "count": 2,
+      "documents": [
+        {
+          "title": "快速开始",
+          "path": "quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 文档",
+          "path": "README.md",
+          "level": 1
+        }
+      ]
+    },
+    "风格指南": {
+      "description": "代码和文档风格规范",
+      "count": 2,
+      "documents": [
+        {
+          "title": "ErisPulse 注释风格规范",
+          "path": "styleguide/docstring.md",
+          "level": 1
+        },
+        {
+          "title": "风格指南",
+          "path": "styleguide/README.md",
+          "level": 1
+        }
+      ]
+    },
+    "高级主题": {
+      "description": "深入理解框架的高级特性",
+      "count": 4,
+      "documents": [
+        {
+          "title": "路由管理器",
+          "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "高级主题",
+          "path": "advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "生命周期管理",
+          "path": "advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "懒加载模块系统",
+          "path": "advanced/lazy-loading.md",
+          "level": 1
+        }
+      ]
+    },
+    "开发者指南": {
+      "description": "模块和适配器开发指南",
+      "count": 10,
+      "documents": [
+        {
+          "title": "开发者指南",
+          "path": "developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "CLI 扩展开发指南",
+          "path": "developer-guide/extensions/cli-extensions.md",
+          "level": 1
+        },
+        {
+          "title": "SendDSL 详解",
+          "path": "developer-guide/adapters/send-dsl.md",
+          "level": 1
+        },
+        {
+          "title": "适配器开发入门",
+          "path": "developer-guide/adapters/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "适配器核心概念",
+          "path": "developer-guide/adapters/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "适配器开发最佳实践",
+          "path": "developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "模块开发入门",
+          "path": "developer-guide/modules/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "模块核心概念",
+          "path": "developer-guide/modules/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Event 包装类详解",
+          "path": "developer-guide/modules/event-wrapper.md",
+          "level": 1
+        },
+        {
+          "title": "模块开发最佳实践",
+          "path": "developer-guide/modules/best-practices.md",
+          "level": 1
+        }
+      ]
+    },
+    "平台特性指南": {
+      "description": "各平台特性和适配器说明",
+      "count": 7,
+      "documents": [
+        {
+          "title": "云湖平台特性文档",
+          "path": "platform-guide/yunhu.md",
+          "level": 1
+        },
+        {
+          "title": "Telegram平台特性文档",
+          "path": "platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "文档维护说明",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse PlatformFeatures 文档",
+          "path": "platform-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot11平台特性文档",
+          "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "邮件平台特性文档",
+          "path": "platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12平台特性文档",
+          "path": "platform-guide/onebot12.md",
+          "level": 1
+        }
+      ]
+    },
+    "入门指南": {
+      "description": "ErisPulse 基础概念和使用教程",
+      "count": 5,
+      "documents": [
+        {
+          "title": "入门指南",
+          "path": "getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "事件处理入门",
+          "path": "getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "基础概念",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "创建第一个机器人",
+          "path": "getting-started/first-bot.md",
+          "level": 1
+        },
+        {
+          "title": "常见任务示例",
+          "path": "getting-started/common-tasks.md",
+          "level": 1
+        }
+      ]
+    },
+    "AI 辅助开发": {
+      "description": "使用 AI 辅助开发 ErisPulse",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI 辅助开发",
+          "path": "ai-support/README.md",
+          "level": 1
+        }
+      ]
+    },
+    "用户使用指南": {
+      "description": "ErisPulse 配置和命令参考",
+      "count": 4,
+      "documents": [
+        {
+          "title": "配置文件说明",
+          "path": "user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "用户使用指南",
+          "path": "user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "安装和配置",
+          "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "CLI 命令参考",
+          "path": "user-guide/cli-reference.md",
+          "level": 1
+        }
+      ]
+    },
+    "技术标准": {
+      "description": "框架的技术规范和标准",
+      "count": 4,
+      "documents": [
+        {
+          "title": "ErisPulse 适配器标准化返回规范",
+          "path": "standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "技术标准",
+          "path": "standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "适配器标准化转换规范",
+          "path": "standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 发送方法命名规范",
+          "path": "standards/naming-conventions.md",
+          "level": 1
+        }
+      ]
+    },
+    "API 参考": {
+      "description": "核心 API 和接口文档",
+      "count": 58,
+      "documents": [
+        {
+          "title": "适配器系统 API",
+          "path": "api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "事件系统 API",
+          "path": "api-reference/event-system.md",
+          "level": 1
+        },
+        {
+          "title": "API 参考",
+          "path": "api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "核心模块 API",
+          "path": "api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse API 文档",
+          "path": "api-reference/auto_api/README.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.sdk` 模块",
+          "path": "api-reference/auto_api/ErisPulse/sdk.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.__main__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/__main__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.router` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/router.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.config` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/config.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.storage` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/storage.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.logger` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/logger.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.adapter` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.lifecycle` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.module` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/module.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.request` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/request.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.wrapper` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.command` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.base` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/base.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.notice` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/notice.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.meta` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/meta.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Event.message` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Event/message.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Bases.manager` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Bases.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Bases/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Bases.adapter` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.Core.Bases.module` 模块",
+          "path": "api-reference/auto_api/ErisPulse/Core/Bases/module.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.registry` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/registry.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.console` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/console.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.base` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/base.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.cli` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/cli.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.list` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/list.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.self_update` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/self_update.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.list_remote` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/list_remote.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.install` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/install.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.init` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.uninstall` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/uninstall.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.run` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/run.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.commands.upgrade` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/commands/upgrade.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.utils.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/utils/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.CLI.utils.package_manager` 模块",
+          "path": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.runtime.exceptions` 模块",
+          "path": "api-reference/auto_api/ErisPulse/runtime/exceptions.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.runtime.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/runtime/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.runtime.frame_config` 模块",
+          "path": "api-reference/auto_api/ErisPulse/runtime/frame_config.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.finders.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/finders/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.finders.cli` 模块",
+          "path": "api-reference/auto_api/ErisPulse/finders/cli.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.finders.adapter` 模块",
+          "path": "api-reference/auto_api/ErisPulse/finders/adapter.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.finders.module` 模块",
+          "path": "api-reference/auto_api/ErisPulse/finders/module.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.finders.bases.finder` 模块",
+          "path": "api-reference/auto_api/ErisPulse/finders/bases/finder.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.__init__` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/__init__.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.adapter` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/adapter.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.strategy` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/strategy.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.module` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/module.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.initializer` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/initializer.md",
+          "level": 1
+        },
+        {
+          "title": "`ErisPulse.loaders.bases.loader` 模块",
+          "path": "api-reference/auto_api/ErisPulse/loaders/bases/loader.md",
+          "level": 1
+        }
+      ]
+    }
+  }
+}
