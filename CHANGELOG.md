@@ -57,6 +57,9 @@
 ### 新增
 
 - @wsu2059q
+  - `adapter` 模块新增发送方法查询功能：
+    - 新增 `list_sends(platform)` 方法，列出指定平台支持的所有发送方法
+    - 新增 `send_info(platform, method_name)` 方法，获取发送方法的详细信息（参数、返回类型、文档等）
   - `Event.wrapper` 模块的 `reply` 方法新增修饰参数支持：
     - 新增 `at_users` 参数，支持 @多个用户，如 `["user1", "user2"]`
     - 新增 `reply_to` 参数，支持回复指定消息

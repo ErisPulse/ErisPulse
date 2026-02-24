@@ -589,6 +589,123 @@ class AdapterManager(ManagerBase):
                 return instance
         return None
 
+    def list_sends(self, platform: str) -> List[str]:
+        """
+        列出指定平台支持的发送方法
+
+        :param platform: 平台名称
+        :return: 发送方法名列表
+        :raises ValueError: 当平台不存在时抛出
+
+        :example:
+        >>> methods = adapter.list_sends("onebot11")
+        >>> print(methods)  # ["Text", "Image", "Voice", ...]
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            raise ValueError(f"平台 {platform} 不存在")
+        
+        # 获取Send类
+        send_class = adapter_instance.Send.__class__
+        
+        # 获取SendDSL基类的所有方法名称
+        from .Bases.adapter import SendDSL
+        base_dsl_methods = set(dir(SendDSL))
+        
+        # 获取Send类中定义的方法，排除基类方法和私有方法
+        send_methods = []
+        for name in dir(send_class):
+            # 跳过私有方法和魔法方法
+            if name.startswith('_'):
+                continue
+            # 跳过基类中已有的方法
+            if name in base_dsl_methods:
+                continue
+            # 获取属性，确保是方法或可调用对象
+            attr = getattr(send_class, name)
+            if callable(attr):
+                send_methods.append(name)
+        
+        return sorted(send_methods)
+
+    def send_info(self, platform: str, method_name: str) -> Dict[str, Any]:
+        """
+        获取指定发送方法的详细信息
+
+        :param platform: 平台名称
+        :param method_name: 发送方法名
+        :return: 方法信息字典，包含name, parameters, return_type, docstring
+        :raises ValueError: 当平台或方法不存在时抛出
+
+        :example:
+        >>> info = adapter.send_info("onebot11", "Text")
+        >>> print(info)
+        # {
+        #     "name": "Text",
+        #     "parameters": [
+        #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+        #     ],
+        #     "return_type": "Awaitable[Any]",
+        #     "docstring": "发送文本消息..."
+        # }
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            raise ValueError(f"平台 {platform} 不存在")
+        
+        # 获取Send类
+        send_class = adapter_instance.Send.__class__
+        
+        # 检查方法是否存在
+        if not hasattr(send_class, method_name):
+            raise ValueError(f"方法 {method_name} 不存在")
+        
+        method = getattr(send_class, method_name)
+        
+        # 提取参数信息
+        parameters = []
+        if inspect.ismethod(method) or inspect.isfunction(method):
+            sig = inspect.signature(method)
+            for param_name, param in sig.parameters.items():
+                # 跳过self参数
+                if param_name == 'self':
+                    continue
+                
+                param_info = {
+                    "name": param_name,
+                    "type": None,
+                    "default": None,
+                    "annotation": None
+                }
+                
+                # 获取类型注解
+                if param.annotation != inspect.Parameter.empty:
+                    param_info["annotation"] = str(param.annotation)
+                    param_info["type"] = str(param.annotation)
+                
+                # 获取默认值
+                if param.default != inspect.Parameter.empty:
+                    param_info["default"] = str(param.default)
+                
+                parameters.append(param_info)
+        
+        # 提取返回类型
+        return_type = None
+        if inspect.ismethod(method) or inspect.isfunction(method):
+            sig = inspect.signature(method)
+            if sig.return_annotation != inspect.Signature.empty:
+                return_type = str(sig.return_annotation)
+        
+        # 提取文档字符串
+        docstring = inspect.getdoc(method) or ""
+        
+        return {
+            "name": method_name,
+            "parameters": parameters,
+            "return_type": return_type,
+            "docstring": docstring
+        }
+
     @property
     def platforms(self) -> List[str]:
         """
