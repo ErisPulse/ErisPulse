@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generated_at": "2026-02-24T21:33:03.797271+00:00",
-  "total_keywords": 1004,
+  "generated_at": "2026-02-24T23:46:26.234598+00:00",
+  "total_keywords": 1016,
   "keywords": {
     "快速开始": [
       {
@@ -840,7 +840,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 183,
+        "line": 204,
         "level": 2,
         "title": "相关文档"
       },
@@ -1025,6 +1025,12 @@
       {
         "document": "advanced/router.md",
         "line": 104,
+        "level": 1,
+        "title": "返回:"
+      },
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 108,
         "level": 1,
         "title": "返回:"
       }
@@ -2142,7 +2148,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 104,
+        "line": 125,
         "level": 1,
         "title": "@全体成员"
       }
@@ -2188,7 +2194,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 107,
+        "line": 128,
         "level": 1,
         "title": "回复消息"
       }
@@ -2418,7 +2424,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 129,
+        "line": 150,
         "level": 1,
         "title": "标准化响应"
       }
@@ -5312,7 +5318,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 101,
+        "line": 122,
         "level": 1,
         "title": "@用户"
       }
@@ -5326,7 +5332,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 110,
+        "line": 131,
         "level": 1,
         "title": "组合使用"
       }
@@ -6992,7 +6998,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 98,
+        "line": 119,
         "level": 3,
         "title": "链式修饰"
       }
@@ -9001,10 +9007,106 @@
         "title": "发送图片消息"
       }
     ],
-    "API 调用": [
+    "查询支持的发送方法": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 98,
+        "level": 3,
+        "title": "查询支持的发送方法"
+      }
+    ],
+    "列出平台支持的所有发送方法": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 102,
+        "level": 1,
+        "title": "列出平台支持的所有发送方法"
+      }
+    ],
+    "返回: [\"Text\", \"Image\", \"Voice\", \"Markdown\", ...]": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 104,
+        "level": 1,
+        "title": "返回: [\"Text\", \"Image\", \"Voice\", \"Markdown\", ...]"
+      }
+    ],
+    "获取某个方法的详细信息": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 106,
+        "level": 1,
+        "title": "获取某个方法的详细信息"
+      }
+    ],
+    "{": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 109,
+        "level": 1,
+        "title": "{"
+      }
+    ],
+    "\"name\": \"Text\",": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 110,
+        "level": 1,
+        "title": "\"name\": \"Text\","
+      }
+    ],
+    "\"parameters\": [": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 111,
+        "level": 1,
+        "title": "\"parameters\": ["
+      }
+    ],
+    "{\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 112,
+        "level": 1,
+        "title": "{\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}"
+      }
+    ],
+    "],": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 113,
+        "level": 1,
+        "title": "],"
+      }
+    ],
+    "\"return_type\": \"Awaitable[Any]\",": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 114,
+        "level": 1,
+        "title": "\"return_type\": \"Awaitable[Any]\","
+      }
+    ],
+    "\"docstring\": \"发送文本消息...\"": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 115,
+        "level": 1,
+        "title": "\"docstring\": \"发送文本消息...\""
+      }
+    ],
+    "}": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 116,
+        "level": 1,
+        "title": "}"
+      }
+    ],
+    "API 调用": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 135,
         "level": 2,
         "title": "API 调用"
       }
@@ -9012,7 +9114,7 @@
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 116,
+        "line": 137,
         "level": 3,
         "title": "call_api 方法"
       }
@@ -9020,7 +9122,7 @@
     "调用平台 API": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 121,
+        "line": 142,
         "level": 1,
         "title": "调用平台 API"
       }
@@ -9028,7 +9130,7 @@
     "适配器基类": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 140,
+        "line": 161,
         "level": 2,
         "title": "适配器基类"
       }
@@ -9036,7 +9138,7 @@
     "BaseAdapter 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 142,
+        "line": 163,
         "level": 3,
         "title": "BaseAdapter 方法"
       }
@@ -9044,7 +9146,7 @@
     "Send 嵌套类": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 165,
+        "line": 186,
         "level": 3,
         "title": "Send 嵌套类"
       }
