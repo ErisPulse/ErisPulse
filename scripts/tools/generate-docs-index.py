@@ -44,7 +44,7 @@ class DocsIndexGenerator:
     }
     
     # 需要忽略的目录
-    IGNORE_DIRS = {"_meta", "ai-support/prompts", "docs/api-reference/auto_api"}
+    IGNORE_DIRS = {"_meta", "ai-support/prompts", "api-reference/auto_api"}
     
     def __init__(self, docs_dir: str, output_dir: str):
         """
