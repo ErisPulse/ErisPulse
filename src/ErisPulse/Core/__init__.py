@@ -1,3 +1,9 @@
+"""
+ErisPulse 核心模块
+
+提供了一系列用于构建和管理应用的核心组件，包括适配器、模块、存储、配置、路由和生命周期管理等。
+"""
+
 from .lifecycle import lifecycle, LifecycleManager
 from .adapter import adapter, AdapterManager
 from .Bases import BaseAdapter, BaseModule, SendDSL
