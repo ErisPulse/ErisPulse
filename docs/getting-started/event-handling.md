@@ -242,6 +242,34 @@ async def heartbeat_handler(event):
 
 ## 交互式处理
 
+### 使用 reply 方法发送回复
+
+`event.reply()` 方法支持多种修饰参数，方便发送带有 @、回复等功能的消息：
+
+```python
+# 简单回复
+await event.reply("你好")
+
+# 发送不同类型的消息
+await event.reply("http://example.com/image.jpg", method="Image")  # 图片
+await event.reply("http://example.com/voice.mp3", method="Voice")  # 语音
+
+# @单个用户
+await event.reply("你好", at_users=["user123"])
+
+# @多个用户
+await event.reply("大家好", at_users=["user1", "user2", "user3"])
+
+# 回复消息
+await event.reply("回复内容", reply_to="msg_id")
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 组合使用：@用户 + 回复消息
+await event.reply("内容", at_users=["user1"], reply_to="msg_id")
+```
+
 ### 等待用户回复
 
 ```python
