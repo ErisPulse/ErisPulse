@@ -57,7 +57,6 @@ jobs:
 
       - name: 生成 AI Prompt 文档
         id: generate-ai-prompts
-        if: steps.update-api.outputs.api_updated == 'true'
         run: |
           echo "艾莉丝开始生成 AI Prompt 文档~"
           
