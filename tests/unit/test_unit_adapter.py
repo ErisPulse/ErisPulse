@@ -292,6 +292,67 @@ class TestAdapterManager:
         assert "platform2" in platforms
         assert len(platforms) == 2
     
+    def test_list_sends(self, manager, test_adapter_class):
+        """测试列出支持的发送方法"""
+        # 注册适配器
+        manager.register("test_platform", test_adapter_class)
+        
+        # 执行
+        methods = manager.list_sends("test_platform")
+        
+        # 验证 - 应该包含Example方法（从BaseAdapter.Send继承），但不包含基类方法
+        assert "Example" in methods
+        # 验证不包含基类方法
+        assert "To" not in methods
+        assert "Using" not in methods
+        assert "Account" not in methods
+        assert "At" not in methods
+        assert "Reply" not in methods
+        assert "AtAll" not in methods
+    
+    def test_list_sends_nonexistent_platform(self, manager):
+        """测试列出不存在平台的方法"""
+        # 执行和验证
+        with pytest.raises(ValueError, match="平台.*不存在"):
+            manager.list_sends("nonexistent")
+    
+    def test_send_info(self, manager, test_adapter_class):
+        """测试获取发送方法详情"""
+        # 注册适配器
+        manager.register("test_platform", test_adapter_class)
+        
+        # 执行
+        info = manager.send_info("test_platform", "Example")
+        
+        # 验证基本信息
+        assert info["name"] == "Example"
+        assert "Awaitable" in info["return_type"]
+        assert "Any" in info["return_type"]
+        assert "示例消息发送方法" in info["docstring"]
+        
+        # 验证参数信息
+        parameters = info["parameters"]
+        assert len(parameters) == 1
+        assert parameters[0]["name"] == "text"
+        assert "str" in parameters[0]["type"]
+        assert "str" in parameters[0]["annotation"]
+        assert parameters[0]["default"] is None
+    
+    def test_send_info_nonexistent_platform(self, manager):
+        """测试获取不存在平台的方法详情"""
+        # 执行和验证
+        with pytest.raises(ValueError, match="平台.*不存在"):
+            manager.send_info("nonexistent", "Example")
+    
+    def test_send_info_nonexistent_method(self, manager, test_adapter_class):
+        """测试获取不存在方法的详情"""
+        # 注册适配器
+        manager.register("test_platform", test_adapter_class)
+        
+        # 执行和验证
+        with pytest.raises(ValueError, match="方法.*不存在"):
+            manager.send_info("test_platform", "NonexistentMethod")
+    
     def test_contains_operator(self, manager, test_adapter_class):
         """测试包含操作符"""
         with patch.object(config, 'getConfig', return_value=True):
