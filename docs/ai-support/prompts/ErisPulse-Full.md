@@ -1125,6 +1125,34 @@ async def heartbeat_handler(event):
 
 ## 交互式处理
 
+### 使用 reply 方法发送回复
+
+`event.reply()` 方法支持多种修饰参数，方便发送带有 @、回复等功能的消息：
+
+```python
+# 简单回复
+await event.reply("你好")
+
+# 发送不同类型的消息
+await event.reply("http://example.com/image.jpg", method="Image")  # 图片
+await event.reply("http://example.com/voice.mp3", method="Voice")  # 语音
+
+# @单个用户
+await event.reply("你好", at_users=["user123"])
+
+# @多个用户
+await event.reply("大家好", at_users=["user1", "user2", "user3"])
+
+# 回复消息
+await event.reply("回复内容", reply_to="msg_id")
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 组合使用：@用户 + 回复消息
+await event.reply("内容", at_users=["user1"], reply_to="msg_id")
+```
+
 ### 等待用户回复
 
 ```python
@@ -2964,9 +2992,12 @@ async def friend_add_handler(event):
 ### 回复功能
 
 #### 基础回复
-- `reply(content, method="Text", **kwargs)` - 通用回复方法
+- `reply(content, method="Text", at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
   - `content`: 发送内容（文本、URL等）
   - `method`: 发送方法，默认 "Text"
+  - `at_users`: @用户列表，如 `["user1", "user2"]`
+  - `reply_to`: 回复消息ID
+  - `at_all`: 是否@全体成员
   - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
@@ -3012,8 +3043,6 @@ platform = event.platform          # 等同于 event["platform"]
 user_id = event.user_id          # 等同于 event["user_id"]
 message = event.message          # 等同于 event["message"]
 ```
-
-如果访问不存在的键，会抛出 AttributeError。
 
 ## 相关文档
 
@@ -6185,6 +6214,27 @@ await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 # 使用账户 ID
 await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+```
+
+### 查询支持的发送方法
+> 由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在，故从 `2.3.5-dev.3` 开始，新增 `list_sends` 方法来查询支持的所有发送方法。
+
+```python
+# 列出平台支持的所有发送方法
+methods = sdk.adapter.list_sends("onebot11")
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+
+# 获取某个方法的详细信息
+info = sdk.adapter.send_info("onebot11", "Text")
+# 返回:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
 ```
 
 ### 链式修饰

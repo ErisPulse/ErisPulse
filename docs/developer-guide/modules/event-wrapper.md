@@ -157,9 +157,12 @@ async def friend_add_handler(event):
 ### 回复功能
 
 #### 基础回复
-- `reply(content, method="Text", **kwargs)` - 通用回复方法
+- `reply(content, method="Text", at_users=None, reply_to=None, at_all=False, **kwargs)` - 通用回复方法
   - `content`: 发送内容（文本、URL等）
   - `method`: 发送方法，默认 "Text"
+  - `at_users`: @用户列表，如 `["user1", "user2"]`
+  - `reply_to`: 回复消息ID
+  - `at_all`: 是否@全体成员
   - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
