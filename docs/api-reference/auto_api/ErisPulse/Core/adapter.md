@@ -290,6 +290,49 @@ OneBot12协议事件监听装饰器
 ---
 
 
+##### `list_sends(platform: str)`
+
+列出指定平台支持的发送方法
+
+:param platform: 平台名称
+:return: 发送方法名列表
+**异常**: `ValueError` - 当平台不存在时抛出
+
+**示例**:
+```python
+>>> methods = adapter.list_sends("onebot11")
+>>> print(methods)  # ["Text", "Image", "Voice", ...]
+```
+
+---
+
+
+##### `send_info(platform: str, method_name: str)`
+
+获取指定发送方法的详细信息
+
+:param platform: 平台名称
+:param method_name: 发送方法名
+:return: 方法信息字典，包含name, parameters, return_type, docstring
+**异常**: `ValueError` - 当平台或方法不存在时抛出
+
+**示例**:
+```python
+>>> info = adapter.send_info("onebot11", "Text")
+>>> print(info)
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
+```
+
+---
+
+
 ##### `platforms()`
 
 获取所有已注册的平台列表

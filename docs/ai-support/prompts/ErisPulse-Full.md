@@ -6216,6 +6216,27 @@ await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
+### 查询支持的发送方法
+> 由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在，故从 `2.3.5-dev.3` 开始，新增 `list_sends` 方法来查询支持的所有发送方法。
+
+```python
+# 列出平台支持的所有发送方法
+methods = sdk.adapter.list_sends("onebot11")
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+
+# 获取某个方法的详细信息
+info = sdk.adapter.send_info("onebot11", "Text")
+# 返回:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
+```
+
 ### 链式修饰
 
 ```python
