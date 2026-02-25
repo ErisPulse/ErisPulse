@@ -6,6 +6,7 @@ ErisPulse 适配器系统
 
 import functools
 import asyncio
+import inspect
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set
 )
@@ -41,9 +42,24 @@ class AdapterManager(ManagerBase):
         self._onebot_middlewares = []
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
-
+        self._sdk = None
+        
+    def set_sdk_ref(self, sdk) -> bool:
+        """
+        设置 SDK 引用
+        
+        :param sdk: SDK 实例
+        :return: 是否设置成功
+        """
+        try:
+            self._sdk = sdk
+            return True
+        except Exception as e:
+            logger.error(f"设置SDK引用失败: {e}")
+            return False
+        
     # ==================== 适配器注册与管理 ====================
-
+    
     def register(self, platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None) -> bool:
         """
         注册新的适配器类（标准化注册方法）
@@ -82,34 +98,26 @@ class AdapterManager(ManagerBase):
             logger.debug(f"适配器 {platform} 已绑定到已注册的实例 {existing_platform}")
         else:
             # 创建适配器实例
-            from .. import sdk
-            instance = adapter_class(sdk)
+            # 检查适配器类 __init__ 方法的参数
+            init_signature = inspect.signature(adapter_class.__init__)
+            params = [p for p in init_signature.parameters.values() if p.name != 'self']
+            
+            sdk_to_use = self._sdk
+            if sdk_to_use is None:
+                from .. import sdk
+                sdk_to_use = sdk
+                
+            # 根据参数情况创建实例
+            if params:
+                instance = adapter_class(sdk_to_use)
+            else:
+                instance = adapter_class()
+
             self._adapters[platform] = instance
             logger.debug(f"适配器 {platform} 注册成功")
         
-        # 注册平台名称的多种大小写形式作为属性
-        self._register_platform_attributes(platform, self._adapters[platform])
-        
         return True
     
-    def _register_platform_attributes(self, platform: str, instance: BaseAdapter) -> None:
-        """
-        注册平台名称的多种大小写形式作为属性
-        
-        :param platform: 平台名称
-        :param instance: 适配器实例
-        """
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                setattr(self, name, instance)
-        else:
-            logger.warning(f"平台名 {platform} 过长，如果您是开发者，请考虑使用更短的名称")
-            setattr(self, platform.lower(), instance)
-            setattr(self, platform.upper(), instance)
-            setattr(self, platform.capitalize(), instance)
-
     async def startup(self, platforms = None) -> None:
         """
         启动指定的适配器
@@ -144,7 +152,7 @@ class AdapterManager(ManagerBase):
         )
 
         from .router import router
-        from ._self_config import get_server_config
+        from ..runtime import get_server_config
         server_config = get_server_config()
 
         host = server_config["host"]
@@ -402,22 +410,7 @@ class AdapterManager(ManagerBase):
             return False
         
         # 移除适配器实例
-        adapter = self._adapters.pop(platform)
-        
-        # 移除平台属性
-        if len(platform) <= 10:
-            from itertools import product
-            combinations = [''.join(c) for c in product(*[(ch.lower(), ch.upper()) for ch in platform])]
-            for name in set(combinations):
-                if hasattr(self, name):
-                    delattr(self, name)
-        else:
-            if hasattr(self, platform.lower()):
-                delattr(self, platform.lower())
-            if hasattr(self, platform.upper()):
-                delattr(self, platform.upper())
-            if hasattr(self, platform.capitalize()):
-                delattr(self, platform.capitalize())
+        self._adapters.pop(platform)
         
         logger.info(f"平台 {platform} 已取消注册")
         return True
@@ -595,6 +588,123 @@ class AdapterManager(ManagerBase):
             if registered.lower() == platform_lower:
                 return instance
         return None
+
+    def list_sends(self, platform: str) -> List[str]:
+        """
+        列出指定平台支持的发送方法
+
+        :param platform: 平台名称
+        :return: 发送方法名列表
+        :raises ValueError: 当平台不存在时抛出
+
+        :example:
+        >>> methods = adapter.list_sends("onebot11")
+        >>> print(methods)  # ["Text", "Image", "Voice", ...]
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            raise ValueError(f"平台 {platform} 不存在")
+        
+        # 获取Send类
+        send_class = adapter_instance.Send.__class__
+        
+        # 获取SendDSL基类的所有方法名称
+        from .Bases.adapter import SendDSL
+        base_dsl_methods = set(dir(SendDSL))
+        
+        # 获取Send类中定义的方法，排除基类方法和私有方法
+        send_methods = []
+        for name in dir(send_class):
+            # 跳过私有方法和魔法方法
+            if name.startswith('_'):
+                continue
+            # 跳过基类中已有的方法
+            if name in base_dsl_methods:
+                continue
+            # 获取属性，确保是方法或可调用对象
+            attr = getattr(send_class, name)
+            if callable(attr):
+                send_methods.append(name)
+        
+        return sorted(send_methods)
+
+    def send_info(self, platform: str, method_name: str) -> Dict[str, Any]:
+        """
+        获取指定发送方法的详细信息
+
+        :param platform: 平台名称
+        :param method_name: 发送方法名
+        :return: 方法信息字典，包含name, parameters, return_type, docstring
+        :raises ValueError: 当平台或方法不存在时抛出
+
+        :example:
+        >>> info = adapter.send_info("onebot11", "Text")
+        >>> print(info)
+        # {
+        #     "name": "Text",
+        #     "parameters": [
+        #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+        #     ],
+        #     "return_type": "Awaitable[Any]",
+        #     "docstring": "发送文本消息..."
+        # }
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            raise ValueError(f"平台 {platform} 不存在")
+        
+        # 获取Send类
+        send_class = adapter_instance.Send.__class__
+        
+        # 检查方法是否存在
+        if not hasattr(send_class, method_name):
+            raise ValueError(f"方法 {method_name} 不存在")
+        
+        method = getattr(send_class, method_name)
+        
+        # 提取参数信息
+        parameters = []
+        if inspect.ismethod(method) or inspect.isfunction(method):
+            sig = inspect.signature(method)
+            for param_name, param in sig.parameters.items():
+                # 跳过self参数
+                if param_name == 'self':
+                    continue
+                
+                param_info = {
+                    "name": param_name,
+                    "type": None,
+                    "default": None,
+                    "annotation": None
+                }
+                
+                # 获取类型注解
+                if param.annotation != inspect.Parameter.empty:
+                    param_info["annotation"] = str(param.annotation)
+                    param_info["type"] = str(param.annotation)
+                
+                # 获取默认值
+                if param.default != inspect.Parameter.empty:
+                    param_info["default"] = str(param.default)
+                
+                parameters.append(param_info)
+        
+        # 提取返回类型
+        return_type = None
+        if inspect.ismethod(method) or inspect.isfunction(method):
+            sig = inspect.signature(method)
+            if sig.return_annotation != inspect.Signature.empty:
+                return_type = str(sig.return_annotation)
+        
+        # 提取文档字符串
+        docstring = inspect.getdoc(method) or ""
+        
+        return {
+            "name": method_name,
+            "parameters": parameters,
+            "return_type": return_type,
+            "docstring": docstring
+        }
 
     @property
     def platforms(self) -> List[str]:

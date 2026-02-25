@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.3.4"
+version = "2.3.5"
 description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -37,9 +37,16 @@ dependencies = [
     "toml",
     "fastapi>=0.116.1",
     "hypercorn>=0.14.0",
-    "pydantic>=2.10.6",
-    "python-multipart>=0.0.20",
     "packaging>=25.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-mock>=3.10.0",
 ]
 
 [project.scripts]

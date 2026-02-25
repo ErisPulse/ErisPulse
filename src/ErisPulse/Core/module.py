@@ -5,6 +5,7 @@ ErisPulse 模块系统
 """
 
 import asyncio
+import inspect
 from typing import Any, Dict, List, Type, Optional
 from .logger import logger
 from .config import config
@@ -31,6 +32,21 @@ class ModuleManager(ManagerBase):
         self._module_classes: Dict[str, Type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: Dict[str, Dict] = {}  # 模块信息
+        self._sdk = None
+        
+    def set_sdk_ref(self, sdk) -> bool:
+        """
+        设置 SDK 引用
+        
+        :param sdk: SDK 实例
+        :return: 是否设置成功
+        """
+        try:
+            self._sdk = sdk
+            return True
+        except Exception as e:
+            logger.error(f"设置SDK引用失败: {e}")
+            return False
         
     # ==================== 模块注册与管理 ====================
     
@@ -101,21 +117,25 @@ class ModuleManager(ManagerBase):
             return True
             
         try:
-            from .. import sdk
-            import inspect
-            
             # 创建模块实例
             module_class = self._module_classes[module_name]
             
-            # 检查是否需要传入sdk参数
+            # 检查模块类 __init__ 方法的参数
             init_signature = inspect.signature(module_class.__init__)
-            params = init_signature.parameters
+            params = [p for p in init_signature.parameters.values() if p.name != 'self']
             
-            if 'sdk' in params:
-                instance = module_class(sdk)
+            # 获取 sdk
+            sdk_to_use = self._sdk
+            if sdk_to_use is None:
+                from .. import sdk
+                sdk_to_use = sdk
+            
+            # 根据参数情况创建实例
+            if params:
+                instance = module_class(sdk_to_use)
             else:
                 instance = module_class()
-                
+
             # 设置模块信息
             if module_name in self._module_info:
                 setattr(instance, "moduleInfo", self._module_info[module_name])
@@ -161,10 +181,10 @@ class ModuleManager(ManagerBase):
     async def unload(self, module_name: str = "Unknown") -> bool:
         """
         卸载指定模块或所有模块
-        
-        :param module_name: 模块名称，如果为None则卸载所有模块
-        :return: 是否卸载成功
-            
+
+        :param module_name: [str] 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
+        :return: [bool] 是否卸载成功
+
         :example:
         >>> await module.unload("MyModule")
         >>> await module.unload()  # 卸载所有模块
@@ -286,9 +306,12 @@ class ModuleManager(ManagerBase):
     def _config_register(self, module_name: str, enabled: bool = False) -> bool:
         """
         注册新模块信息
-        
+
+        {!--< internal-use >!--}
+        此方法仅供内部使用
+
         :param module_name: [str] 模块名称
-        :param enabled: [bool] 是否启用模块
+        :param enabled: [bool] 是否启用模块 (默认: False)
         :return: [bool] 操作是否成功
         """
         if self.exists(module_name):
@@ -393,8 +416,8 @@ class ModuleManager(ManagerBase):
     def list_items(self) -> Dict[str, bool]:
         """
         列出所有模块状态
-        
-        :return: {模块名: 是否启用} 字典
+
+        :return: [Dict[str, bool]] {模块名: 是否启用} 字典
         """
         return config.getConfig("ErisPulse.modules.status", {})
     
@@ -402,9 +425,9 @@ class ModuleManager(ManagerBase):
     def list_modules(self) -> Dict[str, bool]:
         """
         列出所有模块状态
-        
+
         {!--< deprecated >!--} 请使用 list_items() 代替
-        
+
         :return: [Dict[str, bool]] 模块状态字典
         """
         return self.list_items()
@@ -414,10 +437,13 @@ class ModuleManager(ManagerBase):
     def __getattr__(self, module_name: str) -> Any:
         """
         通过属性访问获取模块实例
-        
+
         :param module_name: [str] 模块名称
         :return: [Any] 模块实例
         :raises AttributeError: 当模块不存在或未启用时
+
+        :example:
+        >>> my_module = module.MyModule
         """
         module_instance = self.get(module_name)
         if module_instance is None:
@@ -427,9 +453,12 @@ class ModuleManager(ManagerBase):
     def __contains__(self, module_name: str) -> bool:
         """
         检查模块是否存在且处于启用状态
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否存在且启用
+
+        :example:
+        >>> if "MyModule" in module: ...
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 

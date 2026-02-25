@@ -71,7 +71,7 @@ class StorageManager:
         self._ensure_directories()
         
         # 根据配置决定使用哪个数据库
-        from ._self_config import get_storage_config
+        from ..runtime import get_storage_config
         storage_config = get_storage_config()
 
         use_global_db = storage_config.get("use_global_db", False)
@@ -171,7 +171,7 @@ class StorageManager:
             return default
             
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
                 result = cursor.fetchone()
@@ -209,7 +209,7 @@ class StorageManager:
             return []
             
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT key FROM config")
                 return [row[0] for row in cursor.fetchall()]
@@ -375,18 +375,17 @@ class StorageManager:
             return {}
             
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            placeholders = ','.join(['?'] * len(keys))
-            cursor.execute(f"SELECT key, value FROM config WHERE key IN ({placeholders})", keys)
-            results = {}
-            for row in cursor.fetchall():
-                try:
-                    results[row[0]] = json.loads(row[1])
-                except json.JSONDecodeError:
-                    results[row[0]] = row[1]
-            conn.close()
-            return results
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                placeholders = ','.join(['?'] * len(keys))
+                cursor.execute(f"SELECT key, value FROM config WHERE key IN ({placeholders})", keys)
+                results = {}
+                for row in cursor.fetchall():
+                    try:
+                        results[row[0]] = json.loads(row[1])
+                    except json.JSONDecodeError:
+                        results[row[0]] = row[1]
+                return results
         except Exception as e:
             from .logger import logger
             logger.error(f"批量获取存储项失败: {e}")
@@ -517,7 +516,7 @@ class StorageManager:
         
         # 检查键是否存在
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
                 result = cursor.fetchone()

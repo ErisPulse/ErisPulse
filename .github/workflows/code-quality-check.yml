@@ -1,4 +1,4 @@
-name: 🧪 艾莉丝的测试魔法 ~
+name: 🧪 艾莉丝的测试检查
 
 permissions:
   contents: read
@@ -12,12 +12,12 @@ jobs:
   pytest-check:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出魔法书
+      - name: 检出代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 准备魔法环境
+      - name: 准备环境
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
@@ -25,14 +25,13 @@ jobs:
       - name: 安装项目依赖
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install pytest pytest-asyncio pytest-cov
+          pip install -e ".[test]"
 
-      - name: 施展测试魔法
+      - name: 运行测试
         id: pytest-check
         continue-on-error: true
         run: |
-          echo "🧪 艾莉丝正在运行 Pytest 测试..."
+          echo "艾莉丝正在运行 Pytest 测试..."
           pytest_output=$(pytest -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
           exit_code=${pytest_output##*PYTEST_EXIT_CODE=}
           pytest_output=${pytest_output%PYTEST_EXIT_CODE=*}
@@ -62,10 +61,10 @@ jobs:
             
             const botComment = comments.find(comment => 
               comment.user.login === '艾莉丝[bot]' && 
-              comment.body.includes('🧪 测试结果')
+              comment.body.includes('测试结果')
             );
             
-            const message = `🧪 测试结果
+            const message = `测试结果
             
             \`\`\`
             ${process.env.PYTEST_OUTPUT}

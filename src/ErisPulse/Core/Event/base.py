@@ -10,6 +10,7 @@ ErisPulse 事件处理基础模块
 """
 
 from .. import adapter, logger
+from ...runtime import get_event_config
 from typing import Callable, Any, Dict, List
 import asyncio
 from .wrapper import Event
@@ -98,6 +99,14 @@ class BaseEventHandler:
         # 如果还不是Event对象，则转换为Event对象
         if not isinstance(event, Event):
             event = Event(event)
+        
+        # 检查是否是消息事件，并过滤自身消息
+        if self.event_type == "message":
+            if event.get("self", {}).get("user_id") == event.get("user_id"):
+                event_config = get_event_config()
+                ignore_self = event_config.get("message", {}).get("ignore_self", True)
+                if ignore_self:
+                    return
         
         # 执行处理器
         for handler_info in self.handlers:
