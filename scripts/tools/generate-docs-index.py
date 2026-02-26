@@ -160,6 +160,9 @@ class DocsIndexGenerator:
                     }
                     files.append(file_info)
         
+        # 按相对路径排序，确保每次生成的顺序一致
+        files.sort(key=lambda x: x["relative_path"])
+        
         return files
     
     def parse_document(self, file_info: Dict) -> Optional[Dict]:
@@ -228,11 +231,14 @@ class DocsIndexGenerator:
             })
             categories[category]["count"] += 1
         
+        # 按分类名称排序，确保每次生成的顺序一致
+        sorted_categories = dict(sorted(categories.items()))
+        
         return {
             "version": "1.0",
             # "generated_at": datetime.now(timezone.utc).isoformat(),
-            "total_categories": len(categories),
-            "categories": categories
+            "total_categories": len(sorted_categories),
+            "categories": sorted_categories
         }
     
     def generate_search_index(self, documents: List[Dict]) -> Dict:
@@ -259,11 +265,14 @@ class DocsIndexGenerator:
                     "title": text
                 })
         
+        # 按关键词排序，确保每次生成的顺序一致
+        sorted_keywords = dict(sorted(keywords.items()))
+        
         return {
             "version": "1.0",
             # "generated_at": datetime.now(timezone.utc).isoformat(),
-            "total_keywords": len(keywords),
-            "keywords": keywords
+            "total_keywords": len(sorted_keywords),
+            "keywords": sorted_keywords
         }
     
     def save_index(self, index: Dict, filename: str):
