@@ -1,8 +1,6 @@
 MIT License
 
-Copyright (c) 2025 ErisPulse
-
-Portions of this software are based on https://github.com/runoneall/sdkFrame.
+Copyright (c) 2025-2026 ErisPulse
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-This SDK's core adapter standardization layer strictly follows OneBot12 specifications (https://12.onebot.dev/) for:
-- Event data normalization
-- API request/response formats
-- Message segment definitions
-- Metadata definitions
-
-This ensures consistent behavior and interoperability across all adapter implementations.
-
-We extend our gratitude to all developers and authors who contribute to the open-source community.
-
-Please respect the efforts of every open-source author. By using, modifying, or distributing this software, you commit to strictly adhering to the relevant license terms and preserving all original copyright notices.
-
-The core of the open-source spirit lies in sharing, collaboration, and respect. Through this project, we hope to carry forward this spirit and contribute to the development of the open-source community.
