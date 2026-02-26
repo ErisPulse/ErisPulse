@@ -8,6 +8,43 @@
 - **Pre-Release/v2**: 预发布分支，用于版本发布前的测试
 - **Archive/v1**: 归档分支，存放V1版本代码
 
+## 开发环境搭建
+
+### 克隆项目
+
+```bash
+git clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git
+cd ErisPulse
+```
+
+### 环境配置
+
+使用 `uv` 同步项目环境：
+
+```bash
+uv sync
+# 激活虚拟环境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
+```
+
+提示：ErisPulse 使用 Python 3.13 开发，兼容 Python 3.10+
+
+### 项目结构
+
+```
+ErisPulse/
+├── src/
+│   └── ErisPulse/           # 核心源代码
+│       ├── Core/            # 核心模块
+│       │   ├── Bases/       # 基础类定义
+│       │   ├── Event/       # 事件系统
+│       │   └── ...          # 其他核心组件
+│       └── __init__.py      # SDK入口点
+├── examples/                # 示例代码
+├── docs/                   # 文档
+├── tests/                  # 测试代码
+└── scripts/                # 脚本文件
+```
+
 ## 注解存根通知
 我们有一个用于生成pyi文件的脚本，在仓库中你是看不到pyi文件的
 如果你需要使用这些注解，请运行 `python3 scripts/tools/generate-type-stubs.py` , 它将在本地生成pyi文件
