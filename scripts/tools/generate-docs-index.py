@@ -230,7 +230,7 @@ class DocsIndexGenerator:
         
         return {
             "version": "1.0",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            # "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_categories": len(categories),
             "categories": categories
         }
@@ -261,7 +261,7 @@ class DocsIndexGenerator:
         
         return {
             "version": "1.0",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            # "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_keywords": len(keywords),
             "keywords": keywords
         }
