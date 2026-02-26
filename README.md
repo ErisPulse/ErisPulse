@@ -1,6 +1,6 @@
 # ErisPulse - 异步机器人开发框架
 
-![ErisPulse Logo](.github/assets/erispulse_logo.png)
+<img src=".github/assets/erispulse_logo_1024.png" alt="ErisPulse Logo" width="100%" style="max-height: 300px; object-fit: contain;">
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
