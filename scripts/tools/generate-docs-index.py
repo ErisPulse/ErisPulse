@@ -101,7 +101,19 @@ class DocsIndexGenerator:
         headings = []
         lines = content.split('\n')
         
+        in_code_block = False
+        code_block_pattern = re.compile(r'^```')
+        
         for line_num, line in enumerate(lines, start=1):
+            # 检测代码块开始/结束
+            if code_block_pattern.match(line):
+                in_code_block = not in_code_block
+                continue
+            
+            # 跳过代码块内的内容
+            if in_code_block:
+                continue
+            
             # 匹配 # 到 ###### 的标题
             match = re.match(r'^(#{1,6})\s+(.+)$', line)
             if match:
