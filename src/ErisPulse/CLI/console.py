@@ -3,11 +3,6 @@ from rich.console import Console
 from rich.theme import Theme
 from rich.highlighter import RegexHighlighter
 
-# 确保在Windows上启用颜色
-if sys.platform == "win32":
-    from colorama import init
-    init()
-
 class CommandHighlighter(RegexHighlighter):
     """
     高亮CLI命令和参数
