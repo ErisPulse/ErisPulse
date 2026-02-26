@@ -55,7 +55,7 @@ asyncio.run(sdk.run(keep_running=True))
 - [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) - 邮件收发处理
 - [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) - 网页调试界面，无需接入实际平台
 
-> 查看[适配器详情介绍](docs-new/platform-guide/README.md)
+> 查看[适配器详情介绍](docs/platform-guide/README.md)
 
 ## 文档资源
 
@@ -100,7 +100,7 @@ uv sync
 
 > 提示：ErisPulse 使用 Python 3.13 开发，兼容 Python 3.10+
 
-**快速开始**：[快速开始指南](docs-new/quick-start.md) | [入门指南](docs-new/getting-started/)
+**快速开始**：[快速开始指南](docs/quick-start.md) | [入门指南](docs/getting-started/)
 
 ## 项目结构
 
