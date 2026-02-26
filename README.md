@@ -165,7 +165,7 @@ epsdk run main.py --reload
    通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
 
 3. **代码贡献**
-   提交 Pull Request 前请阅读我们的 [代码风格](docs/styleguide/docstring_spec.md) 以及 [贡献指南](CONTRIBUTING.md)
+   提交 Pull Request 前请阅读我们的 [代码风格](docs/styleguide/) 以及 [贡献指南](CONTRIBUTING.md)
 
 4. **文档改进**
    帮助完善文档和示例代码
