@@ -1,13 +1,19 @@
-# ErisPulse - 异步机器人开发框架
+<div align="center">
 
-<img src=".github/assets/erispulse_logo_1024.png" alt="ErisPulse Logo" width="100%" style="max-height: 300px; object-fit: contain;">
+<img src=".github/assets/erispulse_logo_1024.png" width="100%" alt="ErisPulse" />
+
+# ErisPulse
+
+_事件驱动的多平台机器人开发框架_
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
-ErisPulse 是一个事件驱动的多平台机器人开发框架。通过统一的适配器系统和标准化事件模型，让模块一次编写，即可在多个平台运行。
+</div>
+
+---
 
 ```python
 import asyncio
