@@ -69,6 +69,7 @@
 ### 变更
 - @wsu2059q
   - 移除无用的 `colorama` 依赖
+  - 迁移ep项目的 `config.toml` 配置文件 到 `config/config.toml`
 
 ---
 
