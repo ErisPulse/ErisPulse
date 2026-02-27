@@ -16,6 +16,8 @@ from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
 import asyncio
+import socket
+import ipaddress
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
 
@@ -45,10 +47,12 @@ class RouterManager:
             description="统一路由管理入口点",
             version="1.0.0"
         )
-        self._http_routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
+        # HTTP路由：{module_name: {path: {method: handler}}}
+        self._http_routes: Dict[str, Dict[str, Dict[str, Callable]]] = defaultdict(dict)
         self._websocket_routes: Dict[str, Dict[str, Tuple[Callable, Optional[Callable]]]] = defaultdict(dict)
         self.base_url = ""
         self._server_task: Optional[asyncio.Task] = None
+        self._local_ips: List[Dict[str, str]] = []
         self._setup_core_routes()
 
     def _setup_core_routes(self) -> None:
@@ -79,20 +83,15 @@ class RouterManager:
             """
             http_routes = []
             for adapter, routes in self._http_routes.items():
-                for path, handler in routes.items():
-                    # 查找对应的路由对象
-                    route_obj = None
-                    for route in self.app.router.routes:
-                        if isinstance(route, APIRoute) and route.path == path:
-                            route_obj = route
-                            break
+                for path, methods_dict in routes.items():
+                    # 获取该路径的所有方法
+                    methods = list(methods_dict.keys())
                     
-                    if route_obj:
-                        http_routes.append({
-                            "path": path,
-                            "adapter": adapter,
-                            "methods": list(route_obj.methods)
-                        })
+                    http_routes.append({
+                        "path": path,
+                        "adapter": adapter,
+                        "methods": methods
+                    })
             
             websocket_routes = []
             for adapter, routes in self._websocket_routes.items():
@@ -124,23 +123,37 @@ class RouterManager:
         :param handler: Callable 处理函数
         :param methods: List[str] HTTP方法列表(默认["POST"])
         
-        :raises ValueError: 当路径已注册时抛出
+        :raises ValueError: 当路径和方法都已注册时抛出
         """
         full_path = f"/{module_name}{path}"
         
+        # 检查是否有冲突的方法
+        conflicting_methods = []
         if full_path in self._http_routes[module_name]:
-            raise ValueError(f"路径 {full_path} 已注册")
+            for method in methods:
+                if method in self._http_routes[module_name][full_path]:
+                    conflicting_methods.append(method)
+        
+        if conflicting_methods:
+            raise ValueError(f"路径 {full_path} 的方法 {conflicting_methods} 已注册")
             
+        # 创建路由
         route = APIRoute(
             path=full_path,
             endpoint=handler,
             methods=methods,
-            name=f"{module_name}_{path.replace('/', '_')}"
+            name=f"{module_name}_{path.replace('/', '_')}_{methods[0].lower()}"
         )
         self.app.router.routes.append(route)
-        self._http_routes[module_name][full_path] = handler
-        display_url = self._format_display_url(f"{self.base_url}{full_path}")
-        logger.info(f"注册HTTP路由: {display_url} 方法: {methods}")
+        
+        # 按方法存储处理器
+        if full_path not in self._http_routes[module_name]:
+            self._http_routes[module_name][full_path] = {}
+        
+        for method in methods:
+            self._http_routes[module_name][full_path][method] = handler
+        
+        logger.info(f"[{module_name}] 注册HTTP路由: {full_path} 方法: {methods}")
 
     def register_webhook(self, *args, **kwargs) -> None:
         """
@@ -160,12 +173,12 @@ class RouterManager:
         try:
             full_path = f"/{module_name}{path}"
             if full_path not in self._http_routes[module_name]:
-                display_url = self._format_display_url(f"{self.base_url}{full_path}")
-                logger.warning(f"取消注册HTTP路由失败: 路由不存在: {display_url}")
+                logger.warning(f"\n取消注册HTTP路由失败: 路由不存在: {full_path}\n")
                 return False
             
-            display_url = self._format_display_url(f"{self.base_url}{full_path}")
-            logger.info(f"取消注册HTTP路由: {display_url}")
+            # 获取所有方法
+            methods = list(self._http_routes[module_name][full_path].keys())
+            logger.info(f"注销HTTP路由: {full_path} 方法: {methods}")
             del self._http_routes[module_name][full_path]
             
             # 从路由列表中移除匹配的路由
@@ -228,8 +241,7 @@ class RouterManager:
         )
         self._websocket_routes[module_name][full_path] = (handler, auth_handler)
 
-        display_url = self._format_display_url(f"{self.base_url}{full_path}")
-        logger.info(f"注册WebSocket: {display_url} {'(需认证)' if auth_handler else ''}")
+        logger.info(f"[{module_name}] 注册WebSocket: {full_path}{'(需认证)' if auth_handler else ''}")
         
     def unregister_websocket(self, module_name: str, path: str) -> bool:
         """
@@ -245,8 +257,7 @@ class RouterManager:
 
             # 检查 WebSocket 路由是否存在于我们的内部记录中
             if full_path in self._websocket_routes.get(module_name, {}):
-                display_url = self._format_display_url(f"{self.base_url}{full_path}")
-                logger.info(f"注销WebSocket: {display_url}")
+                logger.info(f"注销WebSocket: {full_path}")
                 del self._websocket_routes[module_name][full_path]
                 
                 # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
@@ -257,8 +268,7 @@ class RouterManager:
                 ]
                 return True
             
-            display_url = self._format_display_url(f"{self.base_url}{full_path}")
-            logger.error(f"注销WebSocket失败: 路径 {display_url} 不存在")
+            logger.error(f"\n注销WebSocket失败: 路径 {full_path} 不存在\n")
             return False
         except Exception as e:
             logger.error(f"注销WebSocket失败: {e}")
@@ -271,6 +281,37 @@ class RouterManager:
         :return: FastAPI应用实例
         """
         return self.app
+
+    def _get_local_ips(self) -> None:
+        """
+        获取本机局域网IP地址
+        
+        {!--< internal-use >!--}
+        此方法仅供内部使用
+        {!--< /internal-use >!--}
+        """
+        self._local_ips = []
+        
+        try:
+            seen = set()
+            for family, _, _, _, (ip, *_) in socket.getaddrinfo(socket.gethostname(), None):
+                if '%' in ip:
+                    ip = ip.split('%')[0]
+                if ip in seen:
+                    continue
+                seen.add(ip)
+                
+                try:
+                    ip_obj = ipaddress.ip_address(ip)
+                    if not ip_obj.is_loopback and ip_obj.is_private:
+                        self._local_ips.append({
+                            "type": f"lan_v{6 if family == socket.AF_INET6 else 4}",
+                            "ip": ip
+                        })
+                except ValueError:
+                    continue
+        except Exception as e:
+            logger.debug(f"获取本地IP地址失败: {e}")
 
     async def start(
         self,
@@ -293,6 +334,9 @@ class RouterManager:
             if self._server_task and not self._server_task.done():
                 raise RuntimeError("服务器已在运行中")
 
+            # 获取本地IP地址
+            self._get_local_ips()
+
             config = Config()
             config.bind = [f"{host}:{port}"]
             config.loglevel = "warning"
@@ -303,7 +347,7 @@ class RouterManager:
             
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
-            logger.info(f"启动路由服务器 {display_url}")
+            logger.info(f"启动路由服务器 {display_url}\n")
             
             self._server_task = asyncio.create_task(serve(self.app, config))   # type: ignore || 原因: Hypercorn与FastAPIl类型不兼容
 
@@ -356,19 +400,38 @@ class RouterManager:
 
     def _format_display_url(self, url: str) -> str:
         """
-        格式化URL显示，将回环地址转换为更友好的格式
+        格式化URL显示
         
         :param url: 原始URL
         :return: 格式化后的URL
         """
-        if "0.0.0.0" in url:
-            display_url = url.replace("0.0.0.0", "127.0.0.1")
-            return f"{url} (可访问: {display_url})"
-        elif "[::]" in url:
-            # IPv6 回环地址需要替换括号
-            display_url = url.replace("[::]", "localhost")
-            return f"{url} (可访问: {display_url})"
-        return url
+        # 提取URL组件
+        protocol = url.split("://")[0] if "://" in url else "http"
+        host_with_path = url.split("://")[1] if "://" in url else url
+        host = host_with_path.split("/")[0]
+        path = "/" + host_with_path.split("/", 1)[1] if "/" in host_with_path else ""
+        port = host.rsplit(":", 1)[-1] if ":" in host and not host.startswith("[") else "8000"
+        
+        # 特定地址直接返回
+        if not any(x in host for x in ["0.0.0.0", "[::]"]):
+            return url
+        
+        # 无本地IP或通配符地址
+        if not self._local_ips:
+            fallback = "127.0.0.1" if "0.0.0.0" in host else "localhost"
+            return f"{url}\n  └─ 可访问: http://{fallback}:{port}{path}"
+        
+        # 树状显示
+        lines = [url]
+        lan_v4 = [ip["ip"] for ip in self._local_ips if ip["type"] == "lan_v4"]
+        lan_v6 = [ip["ip"] for ip in self._local_ips if ip["type"] == "lan_v6"]
+        
+        if lan_v4:
+            lines.append(f"  {'└─' if not lan_v6 else '├─'} 局域网IPv4: {protocol}://{lan_v4[0]}:{port}{path}")
+        if lan_v6:
+            lines.append(f"  └─ 局域网IPv6: {protocol}://[{lan_v6[0]}]:{port}{path}")
+        
+        return "\n".join(lines)
 
 router = RouterManager()
 
