@@ -13,7 +13,7 @@ import threading
 from typing import Any, Dict
 
 class ConfigManager:
-    def __init__(self, config_file: str = "config.toml"):
+    def __init__(self, config_file: str = "config/config.toml"):
         self.CONFIG_FILE: str = config_file
         self._cache: Dict[str, Any] = {}  # 内存缓存
         self._dirty_keys: Dict[str, Any] = {}  # 待写入的键值对
@@ -22,7 +22,71 @@ class ConfigManager:
         self._write_delay = 5  # 写入延迟（秒）
         self._write_timer = None  # 写入定时器
         self._lock = threading.RLock()  # 线程安全锁
+        self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
+
+    def _migrate_config(self) -> None:
+        """
+        迁移旧配置文件到新位置
+        从项目根目录的 config.toml 迁移到 config/config.toml
+        """
+        old_config_path = "config.toml"
+        
+        # 检查旧配置文件是否存在
+        if not os.path.exists(old_config_path):
+            return
+        
+        # 检查新位置是否已有配置文件
+        if os.path.exists(self.CONFIG_FILE):
+            # 新位置已有配置文件，不进行迁移
+            return
+        
+        try:
+            # 确保目标目录存在
+            config_dir = os.path.dirname(self.CONFIG_FILE)
+            if config_dir and not os.path.exists(config_dir):
+                os.makedirs(config_dir, exist_ok=True)
+            
+            # 读取旧配置文件
+            with open(old_config_path, "r", encoding="utf-8") as f:
+                old_config = toml.load(f)
+            
+            # 写入新配置文件
+            with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
+                toml.dump(old_config, f)
+            
+            # 创建 config.readme.md 文件，包含迁移说明和配置内容
+            readme_content = f"""# 配置文件迁移说明
+
+您的配置文件已从项目根目录迁移到 `config/` 目录。
+
+## 迁移详情
+
+- **旧位置**: `config.toml`
+- **新位置**: `config/config.toml`
+
+## 原配置内容
+
+```toml
+{toml.dumps(old_config)}
+```
+
+## 注意事项
+
+- 新的配置文件位于 `config/config.toml`
+- 当您理解本迁移说明后，可删除本文件
+- 如需修改配置，请编辑 `config/config.toml`
+"""
+            
+            with open("config.readme.md", "w", encoding="utf-8") as f:
+                f.write(readme_content)
+            
+            # 删除旧配置文件
+            os.remove(old_config_path)
+            
+        except Exception as e:
+            # 静默处理迁移失败
+            pass
 
     def _load_config(self) -> None:
         """
