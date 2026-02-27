@@ -192,7 +192,6 @@ class AdapterLoader(BaseLoader):
                             
                             # 调用管理器的 register 方法
                             manager_instance.register(platform, adapter_class, adapter_info)
-                            logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
                             
                             # 提交适配器加载完成事件
                             await lifecycle.submit_event(
