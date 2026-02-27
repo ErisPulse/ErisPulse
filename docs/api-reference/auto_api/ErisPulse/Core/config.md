@@ -24,6 +24,14 @@ ConfigManager 类提供相关功能。
 #### 方法列表
 
 
+##### `_migrate_config()`
+
+迁移旧配置文件到新位置
+从项目根目录的 config.toml 迁移到 config/config.toml
+
+---
+
+
 ##### `_load_config()`
 
 从文件加载配置到缓存
