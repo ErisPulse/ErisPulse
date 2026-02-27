@@ -61,7 +61,7 @@ ErisPulse 路由系统
 :param handler: Callable 处理函数
 :param methods: List[str] HTTP方法列表(默认["POST"])
 
-**异常**: `ValueError` - 当路径已注册时抛出
+**异常**: `ValueError` - 当路径和方法都已注册时抛出
 
 ---
 
@@ -120,6 +120,16 @@ ErisPulse 路由系统
 ---
 
 
+##### `_get_local_ips()`
+
+获取本机局域网IP地址
+
+> **内部方法** 
+此方法仅供内部使用
+
+---
+
+
 ##### `async async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
 
 启动路由服务器
@@ -143,7 +153,7 @@ ErisPulse 路由系统
 
 ##### `_format_display_url(url: str)`
 
-格式化URL显示，将回环地址转换为更友好的格式
+格式化URL显示
 
 :param url: 原始URL
 :return: 格式化后的URL
