@@ -406,11 +406,15 @@ child_logger.info("子模块日志")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理。
+HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
+
+> 路由处理器基于 FastAPI，必须正确使用类型注解，否则可能导致参数验证错误。
 
 ```python
+from fastapi import Request, WebSocket
+
 # 注册 HTTP 路由
-async def handler(request):
+async def handler(request: Request):
     return {"status": "ok"}
 
 sdk.router.register_http_route(
@@ -421,8 +425,8 @@ sdk.router.register_http_route(
 )
 
 # 注册 WebSocket 路由
-async def ws_handler(websocket):
-    await websocket.accept()
+async def ws_handler(websocket: WebSocket):
+    # 注意：无需 await websocket.accept()，内部已自动调用
     data = await websocket.receive_text()
     await websocket.send_text(f"Echo: {data}")
 
@@ -432,6 +436,12 @@ sdk.router.register_websocket(
     handler=ws_handler
 )
 ```
+
+**常见问题：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保：
+- HTTP 处理器参数使用 `request: Request` 注解
+- WebSocket 处理器参数使用 `websocket: WebSocket` 注解
+
+更多路由功能请参考 [路由管理器](../advanced/router.md)。
 
 ## SendDSL 消息发送
 

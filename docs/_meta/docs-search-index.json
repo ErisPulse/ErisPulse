@@ -1259,7 +1259,7 @@
     "Event 回复方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 306,
+        "line": 316,
         "level": 3,
         "title": "Event 回复方法"
       }
@@ -1537,7 +1537,7 @@
     "SendDSL 消息发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 276,
+        "line": 286,
         "level": 2,
         "title": "SendDSL 消息发送"
       }
@@ -1713,7 +1713,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 343,
+        "line": 353,
         "level": 2,
         "title": "下一步"
       },
@@ -3087,7 +3087,7 @@
     "基础发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 280,
+        "line": 290,
         "level": 3,
         "title": "基础发送"
       }
@@ -3839,7 +3839,7 @@
     "懒加载系统": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 323,
+        "line": 333,
         "level": 2,
         "title": "懒加载系统"
       }
@@ -6423,7 +6423,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 293,
+        "line": 303,
         "level": 3,
         "title": "链式修饰"
       }
