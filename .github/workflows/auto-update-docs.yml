@@ -145,6 +145,12 @@ jobs:
           docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
           echo "文档索引更新文件数: $docs_index"
 
+      - name: 配置 Git 身份
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: 提交更新
         if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
