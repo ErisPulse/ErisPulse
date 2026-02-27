@@ -74,7 +74,7 @@ class AdapterManager(ManagerBase):
         :example:
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
-        logger.info(f"注册适配器 {platform}（{adapter_class.__name__}）")
+        logger.info(f"注册适配器: {platform}({adapter_class.__name__})")
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误")
 
