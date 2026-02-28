@@ -101,7 +101,19 @@ class DocsIndexGenerator:
         headings = []
         lines = content.split('\n')
         
+        in_code_block = False
+        code_block_pattern = re.compile(r'^```')
+        
         for line_num, line in enumerate(lines, start=1):
+            # 检测代码块开始/结束
+            if code_block_pattern.match(line):
+                in_code_block = not in_code_block
+                continue
+            
+            # 跳过代码块内的内容
+            if in_code_block:
+                continue
+            
             # 匹配 # 到 ###### 的标题
             match = re.match(r'^(#{1,6})\s+(.+)$', line)
             if match:
@@ -159,6 +171,9 @@ class DocsIndexGenerator:
                         "category": self.get_category(file_path)
                     }
                     files.append(file_info)
+        
+        # 按相对路径排序，确保每次生成的顺序一致
+        files.sort(key=lambda x: x["relative_path"])
         
         return files
     
@@ -228,11 +243,14 @@ class DocsIndexGenerator:
             })
             categories[category]["count"] += 1
         
+        # 按分类名称排序，确保每次生成的顺序一致
+        sorted_categories = dict(sorted(categories.items()))
+        
         return {
             "version": "1.0",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-            "total_categories": len(categories),
-            "categories": categories
+            # "generated_at": datetime.now(timezone.utc).isoformat(),
+            "total_categories": len(sorted_categories),
+            "categories": sorted_categories
         }
     
     def generate_search_index(self, documents: List[Dict]) -> Dict:
@@ -259,11 +277,14 @@ class DocsIndexGenerator:
                     "title": text
                 })
         
+        # 按关键词排序，确保每次生成的顺序一致
+        sorted_keywords = dict(sorted(keywords.items()))
+        
         return {
             "version": "1.0",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-            "total_keywords": len(keywords),
-            "keywords": keywords
+            # "generated_at": datetime.now(timezone.utc).isoformat(),
+            "total_keywords": len(sorted_keywords),
+            "keywords": sorted_keywords
         }
     
     def save_index(self, index: Dict, filename: str):

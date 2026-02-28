@@ -145,30 +145,22 @@ jobs:
           docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
           echo "文档索引更新文件数: $docs_index"
 
+      - name: 配置 Git 身份
+        if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: 提交更新
         if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
           echo "艾莉丝正在保存文档更新~"
           
-          # 配置Git用户信息
-          git config --local user.email "Eris@114514.1919"
-          git config --local user.name "Eris[Bot]"
-          
           # 添加所有更新的文档
           git add docs/api-reference/ docs/ai-support/prompts/ docs/_meta/
           
-          # 生成提交信息
-          commit_msg="艾莉丝的自动文档更新 [skip ci]
-          
-          自动更新了项目文档
-          更新了API参考文档
-          生成了AI Prompt文档
-          更新了文档索引
-          
-          详情请查看 docs/ 目录"
-          
           # 提交更改
-          git commit -m "$commit_msg"
+          git commit -m "chore(docs): auto-update [skip ci]"
           git push
 
       - name: 文档更新完成

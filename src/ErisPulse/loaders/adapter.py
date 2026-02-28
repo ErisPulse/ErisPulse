@@ -62,19 +62,26 @@ class AdapterLoader(BaseLoader):
         disabled_list: List[str] = []
         
         group_name = self._get_entry_point_group()
-        logger.info(f"正在加载 {group_name} entry-points...")
         
         try:
             # 使用 AdapterFinder 查找 entry-points
             entries = self._finder.find_all()
             
+            if entries:
+                logger.print_info(f"发现 {len(entries)} 个适配器", level=1)
+                for i, entry in enumerate(entries):
+                    is_last = i == len(entries) - 1
+                    logger.print_tree_item(entry.name, level=1, is_last=is_last)
+            else:
+                logger.print_info("未发现适配器", level=1)
+            
             # 处理每个 entry-point
             for entry_point in entries:
-                objs, enabled_list, disabled_list = await self._process_entry_point(
+                objs, enabled_list, disabled_list, is_new = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
             
-            logger.info(f"{group_name} 加载完成")
+            logger.print_section_separator()
             
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
@@ -89,7 +96,7 @@ class AdapterLoader(BaseLoader):
         enabled_list: List[str],
         disabled_list: List[str],
         manager_instance: Any
-    ) -> Tuple[Dict[str, Any], List[str], List[str]]:
+    ) -> Tuple[Dict[str, Any], List[str], List[str], bool]:
         """
         处理单个适配器 entry-point
         
@@ -103,24 +110,24 @@ class AdapterLoader(BaseLoader):
             Dict[str, Any]: 更新后的适配器对象字典
             List[str]: 更新后的启用适配器列表 
             List[str]: 更新后的禁用适配器列表
+            bool: 是否为新适配器
             
         :raises ImportError: 当适配器加载失败时抛出
         """
         meta_name = entry_point.name
+        is_new = False
         
         # 检查适配器是否已经注册，如果未注册则进行注册（默认启用）
         if not manager_instance.exists(meta_name):
             manager_instance._config_register(meta_name, True)
-            logger.info(f"发现新适配器 {meta_name}，默认已启用")
+            is_new = True
         
         # 获取适配器当前状态
         adapter_status = manager_instance.is_enabled(meta_name)
-        logger.debug(f"适配器 {meta_name} 状态: {adapter_status}")
         
         if not adapter_status:
             disabled_list.append(meta_name)
-            logger.debug(f"适配器 {meta_name} 已禁用，跳过...")
-            return objs, enabled_list, disabled_list
+            return objs, enabled_list, disabled_list, is_new
         
         try:
             loaded_class = entry_point.load()
@@ -146,13 +153,12 @@ class AdapterLoader(BaseLoader):
                 
             objs[meta_name] = adapter_obj
             enabled_list.append(meta_name)
-            logger.debug(f"从 PyPI 包发现适配器: {meta_name}")
             
         except Exception as e:
-            logger.warning(f"从 entry-point 加载适配器 {meta_name} 失败: {e}")
+            logger.error(f"加载适配器 {meta_name} 失败: {e}")
             raise ImportError(f"无法加载适配器 {meta_name}: {e}")
             
-        return objs, enabled_list, disabled_list
+        return objs, enabled_list, disabled_list, is_new
     
     async def register_to_manager(
         self,
@@ -192,7 +198,6 @@ class AdapterLoader(BaseLoader):
                             
                             # 调用管理器的 register 方法
                             manager_instance.register(platform, adapter_class, adapter_info)
-                            logger.info(f"注册适配器: {platform} ({adapter_class.__name__})")
                             
                             # 提交适配器加载完成事件
                             await lifecycle.submit_event(
