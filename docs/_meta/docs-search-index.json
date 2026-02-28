@@ -1035,7 +1035,7 @@
     "Adapter 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 130,
+        "line": 129,
         "level": 2,
         "title": "Adapter 模块"
       }
@@ -1275,7 +1275,7 @@
     "HTTP 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 277,
+        "line": 276,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -1291,7 +1291,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 225,
+        "line": 224,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -1299,7 +1299,7 @@
     "Logger 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 94,
+        "line": 93,
         "level": 2,
         "title": "Logger 模块"
       }
@@ -1331,7 +1331,7 @@
     "Module 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 181,
+        "line": 180,
         "level": 2,
         "title": "Module 模块"
       }
@@ -1467,7 +1467,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 275,
+        "line": 274,
         "level": 2,
         "title": "Router 模块"
       }
@@ -1601,7 +1601,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 299,
+        "line": 298,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -1917,7 +1917,7 @@
     "事件提交": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 227,
+        "line": 226,
         "level": 3,
         "title": "事件提交"
       }
@@ -1949,7 +1949,7 @@
     "事件监听": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 241,
+        "line": 240,
         "level": 3,
         "title": "事件监听"
       },
@@ -3031,7 +3031,7 @@
     "基本日志": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 96,
+        "line": 95,
         "level": 3,
         "title": "基本日志"
       }
@@ -3243,7 +3243,7 @@
     "子日志记录器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 109,
+        "line": 108,
         "level": 3,
         "title": "子日志记录器"
       }
@@ -4255,7 +4255,7 @@
     "日志输出": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 120,
+        "line": 119,
         "level": 3,
         "title": "日志输出"
       }
@@ -4743,7 +4743,7 @@
     "模块管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 196,
+        "line": 195,
         "level": 3,
         "title": "模块管理"
       }
@@ -5295,7 +5295,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 343,
+        "line": 342,
         "level": 2,
         "title": "相关文档"
       },
@@ -5643,7 +5643,7 @@
     "获取模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 183,
+        "line": 182,
         "level": 3,
         "title": "获取模块"
       }
@@ -5665,7 +5665,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 132,
+        "line": 131,
         "level": 3,
         "title": "获取适配器"
       }
@@ -5689,7 +5689,7 @@
     "计时器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 260,
+        "line": 259,
         "level": 3,
         "title": "计时器"
       }
@@ -5863,7 +5863,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 329,
+        "line": 328,
         "level": 3,
         "title": "路由信息"
       }
@@ -6017,7 +6017,7 @@
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 144,
+        "line": 143,
         "level": 3,
         "title": "适配器事件"
       }
@@ -6145,7 +6145,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 163,
+        "line": 162,
         "level": 3,
         "title": "适配器管理"
       }
