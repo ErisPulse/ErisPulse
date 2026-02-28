@@ -639,11 +639,15 @@ child_logger.info("子模块日志")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理。
+HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
+
+> 路由处理器基于 FastAPI，必须正确使用类型注解，否则可能导致参数验证错误。
 
 ```python
+from fastapi import Request, WebSocket
+
 # 注册 HTTP 路由
-async def handler(request):
+async def handler(request: Request):
     return {"status": "ok"}
 
 sdk.router.register_http_route(
@@ -654,8 +658,8 @@ sdk.router.register_http_route(
 )
 
 # 注册 WebSocket 路由
-async def ws_handler(websocket):
-    await websocket.accept()
+async def ws_handler(websocket: WebSocket):
+    # 注意：无需 await websocket.accept()，内部已自动调用
     data = await websocket.receive_text()
     await websocket.send_text(f"Echo: {data}")
 
@@ -665,6 +669,12 @@ sdk.router.register_websocket(
     handler=ws_handler
 )
 ```
+
+**常见问题：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保：
+- HTTP 处理器参数使用 `request: Request` 注解
+- WebSocket 处理器参数使用 `websocket: WebSocket` 注解
+
+更多路由功能请参考 [路由管理器](../advanced/router.md)。
 
 ## SendDSL 消息发送
 
@@ -1875,6 +1885,34 @@ config = sdk.config.getConfig("MyModule")
 # 访问其他模块
 other_module = sdk.OtherModule
 result = await other_module.some_method()
+```
+
+## 适配器发送方法查询
+
+由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在。从 `2.3.5` 开始，新增了查询发送方法的功能。
+
+### 列出支持的发送方法
+
+```python
+# 列出平台支持的所有发送方法
+methods = sdk.adapter.list_sends("onebot11")
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+```
+
+### 获取方法详细信息
+
+```python
+# 获取某个方法的详细信息
+info = sdk.adapter.send_info("onebot11", "Text")
+# 返回:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
 ```
 
 ## 配置管理

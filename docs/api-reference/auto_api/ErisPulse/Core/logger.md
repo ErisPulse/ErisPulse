@@ -164,6 +164,50 @@ ErisPulse 日志系统
 ---
 
 
+##### `print_section_header(title: str)`
+
+打印日志分组标题（树状结构）
+
+:param title: 分组标题
+
+---
+
+
+##### `print_section_footer()`
+
+打印分组结束标记
+
+---
+
+
+##### `print_tree_item(text: str, level: int = 0, is_last: bool = False)`
+
+打印树状结构项目
+
+:param text: 文本内容
+:param level: 缩进层级
+:param is_last: 是否是最后一项
+
+---
+
+
+##### `print_info(text: str, level: int = 1)`
+
+打印信息（树状结构）
+
+:param text: 文本内容
+:param level: 缩进层级
+
+---
+
+
+##### `print_section_separator()`
+
+打印简单的分隔线
+
+---
+
+
 ### `class LoggerChild`
 
 子日志记录器

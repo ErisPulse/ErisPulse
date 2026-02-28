@@ -74,7 +74,6 @@ class AdapterManager(ManagerBase):
         :example:
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
-        logger.info(f"注册适配器 {platform}（{adapter_class.__name__}）")
         if not issubclass(adapter_class, BaseAdapter):
             raise TypeError("适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误")
 
@@ -95,7 +94,6 @@ class AdapterManager(ManagerBase):
         # 如果存在相同类的适配器实例，直接绑定到已注册的实例
         if existing_instance is not None:
             self._adapters[platform] = existing_instance
-            logger.debug(f"适配器 {platform} 已绑定到已注册的实例 {existing_platform}")
         else:
             # 创建适配器实例
             # 检查适配器类 __init__ 方法的参数
@@ -114,7 +112,6 @@ class AdapterManager(ManagerBase):
                 instance = adapter_class()
 
             self._adapters[platform] = instance
-            logger.debug(f"适配器 {platform} 注册成功")
         
         return True
     
@@ -329,7 +326,7 @@ class AdapterManager(ManagerBase):
         # 平台不存在，进行注册
         config.setConfig(f"ErisPulse.adapters.status.{platform}", enabled)
         status = "启用" if enabled else "禁用"
-        logger.info(f"平台适配器 {platform} 已注册并{status}")
+        logger.debug(f"平台适配器 {platform} 已注册并{status}")
         return True
 
     def exists(self, platform: str) -> bool:
