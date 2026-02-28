@@ -61,7 +61,7 @@ class TestRouterManager:
         # 验证
         assert "test_module" in router_manager._http_routes
         assert "/test_module/test" in router_manager._http_routes["test_module"]
-        assert router_manager._http_routes["test_module"]["/test_module/test"] == test_handler
+        assert router_manager._http_routes["test_module"]["/test_module/test"]["GET"] == test_handler
     
     def test_register_http_route_multiple_methods(self, router_manager):
         """测试注册多种HTTP方法的路由"""
@@ -365,33 +365,6 @@ class TestRouterManager:
         
         # 验证
         assert router_manager._server_task is None
-    
-    # ==================== URL格式化测试 ====================
-    
-    def test_format_display_url_localhost(self, router_manager):
-        """测试格式化localhost URL"""
-        # 执行
-        result = router_manager._format_display_url("http://0.0.0.0:8000")
-        
-        # 验证
-        assert result == "http://0.0.0.0:8000 (可访问: http://127.0.0.1:8000)"
-    
-    def test_format_display_url_ipv6(self, router_manager):
-        """测试格式化IPv6 URL"""
-        # 执行
-        result = router_manager._format_display_url("http://[::]:8000")
-        
-        # 验证
-        assert result == "http://[::]:8000 (可访问: http://localhost:8000)"
-    
-    def test_format_display_url_normal(self, router_manager):
-        """测试格式化正常URL"""
-        # 执行
-        result = router_manager._format_display_url("http://example.com:8000")
-        
-        # 验证
-        assert result == "http://example.com:8000"
-
 
 # ==================== 全局路由实例测试 ====================
 
