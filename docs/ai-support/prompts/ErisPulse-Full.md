@@ -5541,8 +5541,7 @@ def _load_config(self):
             "timeout": 30,
             "cache_ttl": 3600
         }
-        sdk.config.setConfig("MyModule", default_config)
-        sdk.config.force_save() # 强制保存配置的这种方式在这里使用是可行的，因为你需要设置默认值到配置文件中，除此之外，不建议使用这种方式强制保存配置
+        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第三个参数为True时，立即保存配置，是方便用户可以直接修改配置文件的
         return default_config
     return config
 ```
