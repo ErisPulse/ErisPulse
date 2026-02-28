@@ -79,6 +79,7 @@ ErisPulse 模块加载器
     Dict[str, Any]: 更新后的模块对象字典
     List[str]: 更新后的启用模块列表 
     List[str]: 更新后的禁用模块列表
+    bool: 是否为新模块
     
 **异常**: `ImportError` - 当模块加载失败时抛出
 
