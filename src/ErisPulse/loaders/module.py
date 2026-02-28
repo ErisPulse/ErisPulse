@@ -66,19 +66,26 @@ class ModuleLoader(BaseLoader):
         disabled_list: List[str] = []
         
         group_name = self._get_entry_point_group()
-        logger.info(f"正在加载 {group_name} entry-points...")
         
         try:
             # 使用 ModuleFinder 查找 entry-points
             entries = self._finder.find_all()
             
+            if entries:
+                logger.print_info(f"发现 {len(entries)} 个模块", level=1)
+                for i, entry in enumerate(entries):
+                    is_last = i == len(entries) - 1
+                    logger.print_tree_item(entry.name, level=1, is_last=is_last)
+            else:
+                logger.print_info("未发现模块", level=1)
+            
             # 处理每个 entry-point
             for entry_point in entries:
-                objs, enabled_list, disabled_list = await self._process_entry_point(
+                objs, enabled_list, disabled_list, is_new = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
             
-            logger.info(f"{group_name} 加载完成")
+            logger.print_section_separator()
             
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
@@ -93,7 +100,7 @@ class ModuleLoader(BaseLoader):
         enabled_list: List[str],
         disabled_list: List[str],
         manager_instance: Any
-    ) -> Tuple[Dict[str, Any], List[str], List[str]]:
+    ) -> Tuple[Dict[str, Any], List[str], List[str], bool]:
         """
         处理单个模块 entry-point
         
@@ -107,25 +114,24 @@ class ModuleLoader(BaseLoader):
             Dict[str, Any]: 更新后的模块对象字典
             List[str]: 更新后的启用模块列表 
             List[str]: 更新后的禁用模块列表
+            bool: 是否为新模块
             
         :raises ImportError: 当模块加载失败时抛出
         """
         meta_name = entry_point.name
-        
-        logger.debug(f"正在处理模块: {meta_name}")
+        is_new = False
         
         # 检查模块是否已经注册，如果未注册则进行注册（默认启用）
         if not manager_instance.exists(meta_name):
             manager_instance._config_register(meta_name, True)
-            logger.info(f"发现新模块 {meta_name}，默认已启用。如需禁用，请在配置文件中设置 ErisPulse.modules.status.{meta_name} = false")
+            is_new = True
             
         # 获取模块当前状态
         module_status = manager_instance.is_enabled(meta_name)
-        logger.debug(f"模块 {meta_name} 状态: {module_status}")
         
         if not module_status:
             disabled_list.append(meta_name)
-            return objs, enabled_list, disabled_list
+            return objs, enabled_list, disabled_list, is_new
             
         try:
             loaded_obj = entry_point.load()
@@ -165,13 +171,12 @@ class ModuleLoader(BaseLoader):
             
             objs[meta_name] = module_obj
             enabled_list.append(meta_name)
-            logger.debug(f"从 PyPI 包加载模块: {meta_name}")
             
         except Exception as e:
             logger.warning(f"从 entry-point 加载模块 {meta_name} 失败: {e}")
             raise ImportError(f"无法加载模块 {meta_name}: {e}")
             
-        return objs, enabled_list, disabled_list
+        return objs, enabled_list, disabled_list, is_new
     
     def _get_load_strategy(self, module_class: Type) -> Any:
         """
@@ -280,7 +285,6 @@ class ModuleLoader(BaseLoader):
                         
                         # 调用管理器的 register 方法
                         manager_instance.register(name, module_class, obj.moduleInfo)
-                        logger.debug(f"注册模块类: {name}")
                         return True
                     return False
                 except Exception as e:
