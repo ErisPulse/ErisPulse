@@ -79,6 +79,7 @@ ErisPulse 适配器加载器
     Dict[str, Any]: 更新后的适配器对象字典
     List[str]: 更新后的启用适配器列表 
     List[str]: 更新后的禁用适配器列表
+    bool: 是否为新适配器
     
 **异常**: `ImportError` - 当适配器加载失败时抛出
 
