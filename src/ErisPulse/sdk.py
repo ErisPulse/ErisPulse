@@ -226,22 +226,18 @@ from ErisPulse import sdk
 
 async def main():
     try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失败，请检查日志")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程序运行(不建议修改)
-        await asyncio.Event().wait()
+        # 使用 SDK 的 run 方法
+        # 如果你需要更加精细的控制，可以参考: https://github.com/ErisPulse/ErisPulse/docs/getting-started/first-bot.md?line=70
+        # SDK 会自动：
+        # - 初始化和启动适配器
+        # - 保持程序运行
+        await sdk.run(keep_running=True)
     except Exception as e:
         sdk.logger.error(e)
     except KeyboardInterrupt:
         sdk.logger.info("正在停止程序")
     finally:
-        await sdk.adapter.shutdown()
+        await sdk.uninit()
 
 if __name__ == "__main__":
     asyncio.run(main())
