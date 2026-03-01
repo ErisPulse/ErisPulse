@@ -21,9 +21,11 @@ from .Core import storage, env, config
 from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
 from .Core import module, router, adapter_server
 
-# 导入懒加载模块类和初始化协调器
+# 导入懒加载模块类
 from .loaders.module import LazyModule
-from .loaders.initializer import Initializer
+# 导入加载器类
+from .loaders.adapter import AdapterLoader
+from .loaders.module import ModuleLoader
 
 
 class SDK:
@@ -140,6 +142,324 @@ class SDK:
         """
         return f"<ErisPulse SDK initialized={self._initialized}>"
 
+    # ==================== 内部协调器类 ====================
+
+    class Initializer:
+        """
+        初始化协调器
+        
+        协调适配器和模块的加载流程，提供统一的初始化接口
+        
+        {!--< tips >!--}
+        使用方式：
+        >>> initializer = Initializer(sdk_instance)
+        >>> success = await initializer.init()
+        {!--< /tips >!--}
+        """
+        
+        def __init__(self, sdk_instance: Any):
+            """
+            初始化协调器
+            
+            :param sdk_instance: SDK 实例
+            """
+            self._sdk = sdk_instance
+            self._adapter_loader = AdapterLoader()
+            self._module_loader = ModuleLoader()
+        
+        async def init(self) -> bool:
+            """
+            初始化所有模块和适配器
+            
+            执行步骤:
+            1. 从 PyPI 包加载适配器
+            2. 从 PyPI 包加载模块
+            3. 注册适配器
+            4. 注册模块
+            5. 初始化模块
+            
+            :return: bool 初始化是否成功
+            
+            :raises ImportError: 当加载失败时抛出
+            """
+            logger.info("SDK 正在初始化...")
+            lifecycle.start_timer("core.init")
+            
+            try:
+                # 1. 并行加载适配器和模块
+                adapter_manager = self._sdk.adapter
+                module_manager = self._sdk.module
+                
+                # 适配器发现阶段
+                logger.print_section_header("适配器发现阶段")
+                
+                (adapter_result, module_result) = await asyncio.gather(
+                    self._adapter_loader.load(adapter_manager),
+                    self._module_loader.load(module_manager),
+                    return_exceptions=True
+                )
+                
+                # 检查是否有异常
+                if isinstance(adapter_result, Exception):
+                    logger.error(f"适配器加载失败: {adapter_result}")
+                    return False
+                    
+                if isinstance(module_result, Exception):
+                    logger.error(f"模块加载失败: {module_result}")
+                    return False
+                
+                # 解包结果
+                adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
+                module_objs, enabled_modules, disabled_modules = module_result      # type: ignore
+                
+                # 2. 注册适配器
+                logger.print_section_header("适配器注册阶段")
+                if not await self._adapter_loader.register_to_manager(
+                    enabled_adapters, adapter_objs, adapter_manager
+                ):
+                    return False
+                
+                # 3. 注册模块
+                logger.print_section_header("模块注册阶段")
+                if not await self._module_loader.register_to_manager(
+                    enabled_modules, module_objs, module_manager
+                ):
+                    return False
+                
+                # 4. 初始化模块（创建实例并挂载到 SDK）
+                logger.print_section_header("模块初始化阶段")
+                if enabled_modules:
+                    success = await self._module_loader.initialize_modules(
+                        enabled_modules, module_objs, module_manager, self._sdk
+                    )
+                else:
+                    success = True
+                
+                # 获取加载耗时
+                load_duration = lifecycle.stop_timer("core.init")
+                
+                # 总结
+                logger.print_section_header("初始化完成")
+                
+                # 显示耗时
+                duration_str = f"{load_duration:.2f}s" if load_duration >= 1 else f"{load_duration*1000:.0f}ms"
+                logger.print_info(f"耗时: {duration_str}", level=1)
+                
+                if enabled_adapters:
+                    logger.print_info(f"适配器: {len(enabled_adapters)} 个", level=1)
+                    for i, adapter in enumerate(enabled_adapters):
+                        is_last = i == len(enabled_adapters) - 1
+                        logger.print_tree_item(adapter, level=1, is_last=is_last)
+                else:
+                    logger.print_info("适配器: 无", level=1)
+                
+                if enabled_modules:
+                    logger.print_info(f"模块: {len(enabled_modules)} 个", level=1)
+                    for i, module in enumerate(enabled_modules):
+                        is_last = i == len(enabled_modules) - 1
+                        logger.print_tree_item(module, level=1, is_last=is_last)
+                else:
+                    logger.print_info("模块: 无", level=1)
+                
+                logger.print_section_footer()
+                
+                logger.info(f"SDK初始化成功 (耗时: {duration_str})")
+                
+                await lifecycle.submit_event(
+                    "core.init.complete",
+                    msg="模块初始化完成" if success else "模块初始化失败",
+                    data={
+                        "duration": load_duration,
+                        "success": success,
+                        "adapters": {
+                            "enabled": enabled_adapters,
+                            "disabled": disabled_adapters
+                        },
+                        "modules": {
+                            "enabled": enabled_modules,
+                            "disabled": disabled_modules
+                        }
+                    }
+                )
+                return success
+                
+            except Exception as e:
+                load_duration = lifecycle.stop_timer("core.init")
+                await lifecycle.submit_event(
+                    "core.init.complete",
+                    msg="模块初始化失败",
+                    data={
+                        "duration": load_duration,
+                        "success": False,
+                        "error": str(e)
+                    }
+                )
+                logger.critical(f"SDK初始化严重错误: {e}")
+                return False
+
+    class Uninitializer:
+        """
+        反初始化协调器
+        
+        协调适配器和模块的卸载流程，提供统一的反初始化接口
+        
+        {!--< tips >!--}
+        使用方式：
+        >>> uninitializer = Uninitializer(sdk_instance)
+        >>> success = await uninitializer.uninit()
+        {!--< /tips >!--}
+        """
+        
+        def __init__(self, sdk_instance: Any):
+            """
+            反初始化协调器
+            
+            :param sdk_instance: SDK 实例
+            """
+            self._sdk = sdk_instance
+        
+        async def uninit(self) -> bool:
+            """
+            执行反初始化
+            
+            执行步骤:
+            1. 关闭所有适配器
+            2. 卸载所有模块
+            3. 清理事件处理器
+            4. 清理管理器
+            5. 清理 SDK 模块属性
+            
+            :return: bool 反初始化是否成功
+            """
+            lifecycle.start_timer("core.uninit")
+            
+            try:
+                # 1. 适配器关闭阶段
+                logger.print_section_header("适配器关闭阶段")
+                logger.print_info("", level=0)  # 空行
+                
+                adapter_manager = self._sdk.adapter
+                registered_adapters = adapter_manager.list_registered()
+                
+                if registered_adapters:
+                    logger.print_info(f"关闭 {len(registered_adapters)} 个适配器", level=1)
+                    for i, adapter_name in enumerate(registered_adapters):
+                        is_last = i == len(registered_adapters) - 1
+                        logger.print_tree_item(adapter_name, level=1, is_last=is_last)
+                    
+                    await adapter_manager.shutdown()
+                    logger.print_info(f"已关闭 {len(registered_adapters)} 个适配器", level=1)
+                else:
+                    logger.print_info("适配器: 无", level=1)
+                
+                # 2. 模块卸载阶段
+                logger.print_section_header("模块卸载阶段")
+                logger.print_info("", level=0)  # 空行
+                
+                module_manager = self._sdk.module
+                loaded_modules = module_manager.list_loaded()
+                
+                if loaded_modules:
+                    logger.print_info(f"卸载 {len(loaded_modules)} 个模块", level=1)
+                    for i, module_name in enumerate(loaded_modules):
+                        is_last = i == len(loaded_modules) - 1
+                        logger.print_tree_item(module_name, level=1, is_last=is_last)
+                    
+                    await module_manager.unload()
+                    logger.print_info(f"已卸载 {len(loaded_modules)} 个模块", level=1)
+                else:
+                    logger.print_info("模块: 无", level=1)
+                
+                # 3. 清理事件阶段
+                logger.print_section_header("清理事件阶段")
+                logger.print_info("", level=0)  # 空行
+                
+                # 清理 Event 模块中的所有事件处理器
+                Event._clear_all_handlers()
+                logger.print_info("已清理所有事件处理器", level=1)
+                
+                # 4. 清理管理器阶段
+                logger.print_section_header("清理管理器阶段")
+                logger.print_info("", level=0)  # 空行
+                
+                logger.print_info("清理适配器管理器", level=1)
+                adapter_manager.clear()
+                
+                logger.print_info("清理模块管理器", level=1)
+                module_manager.clear()
+                
+                # 5. 清理 SDK 对象上的模块属性
+                logger.print_info("清理 SDK 模块属性", level=1)
+                module_properties_cleared = 0
+                for module_name in module_manager.list_loaded():
+                    try:
+                        instance_dict = object.__getattribute__(self._sdk, '__dict__')
+                        if module_name in instance_dict:
+                            del instance_dict[module_name]
+                            module_properties_cleared += 1
+                    except Exception:
+                        pass
+                
+                if module_properties_cleared > 0:
+                    logger.print_info(f"已清理 {module_properties_cleared} 个模块属性", level=1)
+                
+                # 6. 重置初始化状态
+                self._sdk._initialized = False
+                self._sdk._initializer = None
+                
+                # 获取清理耗时
+                uninit_duration = lifecycle.stop_timer("core.uninit")
+                
+                # 总结
+                logger.print_section_header("反初始化完成")
+                
+                # 显示耗时
+                duration_str = f"{uninit_duration:.2f}s" if uninit_duration >= 1 else f"{uninit_duration*1000:.0f}ms"
+                logger.print_info(f"耗时: {duration_str}", level=1)
+                
+                # 显示统计信息
+                if registered_adapters:
+                    logger.print_info(f"适配器: {len(registered_adapters)} 个已关闭", level=1)
+                else:
+                    logger.print_info("适配器: 无", level=1)
+                
+                if loaded_modules:
+                    logger.print_info(f"模块: {len(loaded_modules)} 个已卸载", level=1)
+                else:
+                    logger.print_info("模块: 无", level=1)
+                
+                logger.print_section_footer()
+                
+                # 提交生命周期事件
+                await lifecycle.submit_event(
+                    "core.uninit.complete",
+                    msg="SDK反初始化完成",
+                    data={
+                        "duration": uninit_duration,
+                        "success": True,
+                        "adapters_closed": len(registered_adapters),
+                        "modules_unloaded": len(loaded_modules),
+                        "module_properties_cleared": module_properties_cleared
+                    }
+                )
+                
+                logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
+                return True
+                
+            except Exception as e:
+                uninit_duration = lifecycle.stop_timer("core.uninit")
+                await lifecycle.submit_event(
+                    "core.uninit.complete",
+                    msg="SDK反初始化失败",
+                    data={
+                        "duration": uninit_duration,
+                        "success": False,
+                        "error": str(e)
+                    }
+                )
+                logger.error(f"SDK反初始化严重错误: {e}")
+                return False
+
     # ==================== SDK 逻辑方法 ====================
 
     async def init(self) -> bool:
@@ -157,7 +477,7 @@ class SDK:
             return False
         
         # 创建初始化协调器
-        self._initializer = Initializer(self)
+        self._initializer = self.Initializer(self)
         
         # 执行初始化
         self._initialized = await self._initializer.init()
@@ -273,7 +593,7 @@ if __name__ == "__main__":
             if not await self._prepare_environment():
                 return False
             
-            self._initializer = Initializer(self)
+            self._initializer = self.Initializer(self)
             self._initialized = await self._initializer.init()
             return self._initialized
         
@@ -431,49 +751,11 @@ if __name__ == "__main__":
         :example:
         >>> await sdk.uninit()
         """
-        try:
-            logger.info("[Uninit] 开始反初始化SDK...")
-            
-            # 1. 关闭所有适配器
-            logger.debug("[Uninit] 正在关闭适配器...")
-            await self.adapter.shutdown()
-            
-            # 2. 卸载所有模块
-            logger.debug("[Uninit] 正在卸载模块...")
-            await self.module.unload()
-            
-            # 3. 清理 Event 模块中的所有事件处理器
-            logger.debug("[Uninit] 正在清理事件处理器...")
-            Event._clear_all_handlers()
-            
-            # 4. 清理适配器管理器和模块管理器
-            logger.debug("[Uninit] 正在清理适配器管理器...")
-            self.adapter.clear()
-            
-            logger.debug("[Uninit] 正在清理模块管理器...")
-            self.module.clear()
-            
-            # 5. 清理 SDK 对象上的模块属性（懒加载模块）
-            logger.debug("[Uninit] 正在清理 SDK 对象上的模块属性...")
-            for module_name in self.module.list_loaded():
-                try:
-                    instance_dict = object.__getattribute__(self, '__dict__')
-                    if module_name in instance_dict:
-                        del instance_dict[module_name]
-                        logger.debug(f"[Uninit] 已清理模块属性: {module_name}")
-                except Exception as e:
-                    logger.debug(f"[Uninit] 清理模块属性 {module_name} 时出错: {e}")
-            
-            # 6. 重置初始化状态
-            self._initialized = False
-            self._initializer = None
-            
-            logger.info("[Uninit] SDK反初始化完成")
-            return True
-            
-        except Exception as e:
-            logger.error(f"[Uninit] SDK反初始化失败: {e}")
-            return False
+        # 创建反初始化协调器
+        uninitializer = self.Uninitializer(self)
+        
+        # 执行反初始化
+        return await uninitializer.uninit()
 
 
 # 创建全局 SDK 实例
