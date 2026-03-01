@@ -1731,7 +1731,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 222,
+        "line": 216,
         "level": 2,
         "title": "下一步"
       },
@@ -1833,7 +1833,7 @@
     "事件参数": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 129,
+        "line": 123,
         "level": 3,
         "title": "事件参数"
       }
@@ -2179,7 +2179,7 @@
     "代码说明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 118,
+        "line": 112,
         "level": 2,
         "title": "代码说明"
       }
@@ -2243,7 +2243,7 @@
     "使用存储系统": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 176,
+        "line": 170,
         "level": 3,
         "title": "使用存储系统"
       }
@@ -2651,7 +2651,7 @@
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 141,
+        "line": 135,
         "level": 3,
         "title": "发送回复"
       }
@@ -2835,7 +2835,7 @@
     "命令没有响应？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 191,
+        "line": 185,
         "level": 3,
         "title": "命令没有响应？"
       }
@@ -2859,7 +2859,7 @@
     "命令装饰器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 120,
+        "line": 114,
         "level": 3,
         "title": "命令装饰器"
       }
@@ -3211,7 +3211,7 @@
     "如何修改命令前缀？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 197,
+        "line": 191,
         "level": 3,
         "title": "如何修改命令前缀？"
       }
@@ -3219,7 +3219,7 @@
     "如何支持多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 207,
+        "line": 201,
         "level": 3,
         "title": "如何支持多平台？"
       }
@@ -3533,7 +3533,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 189,
+        "line": 183,
         "level": 2,
         "title": "常见问题"
       },
@@ -3919,7 +3919,7 @@
     "扩展：添加更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 149,
+        "line": 143,
         "level": 2,
         "title": "扩展：添加更多功能"
       }
@@ -5053,7 +5053,7 @@
     "添加消息监听": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 151,
+        "line": 145,
         "level": 3,
         "title": "添加消息监听"
       }
@@ -5061,7 +5061,7 @@
     "添加通知监听": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 164,
+        "line": 158,
         "level": 3,
         "title": "添加通知监听"
       }
@@ -5423,7 +5423,7 @@
     "第五步：测试机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 108,
+        "line": 102,
         "level": 2,
         "title": "第五步：测试机器人"
       }
@@ -5431,7 +5431,7 @@
     "第四步：运行机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 98,
+        "line": 92,
         "level": 2,
         "title": "第四步：运行机器人"
       }
