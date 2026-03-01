@@ -358,10 +358,6 @@ async def main():
     # 运行 SDK 并且维持运行
     await sdk.run(keep_running=True)
     print("ErisPulse 初始化完成！")
-    
-    # 保持运行
-    import asyncio
-    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     import asyncio
@@ -387,10 +383,8 @@ async def main():
         await asyncio.Event().wait()
     except Exception as e:
         sdk.logger.error(e)
-    except KeyboardInterrupt:
-        sdk.logger.info("正在停止程序")
     finally:
-        await sdk.adapter.shutdown()
+        await sdk.uninit()
 
 if __name__ == "__main__":
     asyncio.run(main())
