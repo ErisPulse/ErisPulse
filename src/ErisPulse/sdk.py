@@ -455,20 +455,16 @@ if __name__ == "__main__":
             
             # 5. 清理 SDK 对象上的模块属性（懒加载模块）
             logger.debug("[Uninit] 正在清理 SDK 对象上的模块属性...")
-            from .Core.config import config
-            module_status = config.getConfig("ErisPulse.modules.status", {})
-            for module_name in module_status.keys():
-                if hasattr(self, module_name):
-                    delattr(self, module_name)
-                    logger.debug(f"[Uninit] 已清理模块属性: {module_name}")
+            for module_name in self.module.list_loaded():
+                try:
+                    instance_dict = object.__getattribute__(self, '__dict__')
+                    if module_name in instance_dict:
+                        del instance_dict[module_name]
+                        logger.debug(f"[Uninit] 已清理模块属性: {module_name}")
+                except Exception as e:
+                    logger.debug(f"[Uninit] 清理模块属性 {module_name} 时出错: {e}")
             
-            # 6. 清理僵尸线程
-            logger.debug("[Uninit] 正在清理线程...")
-            # SDK 本身不创建线程，但可以记录可能的线程泄漏
-            current_task = asyncio.current_task()
-            logger.debug(f"[Uninit] 当前任务: {current_task}")
-            
-            # 重置初始化状态
+            # 6. 重置初始化状态
             self._initialized = False
             self._initializer = None
             
