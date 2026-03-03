@@ -86,6 +86,7 @@ RunCommand 类提供相关功能。
 
 :param script_path: 要监控的脚本路径
 :param reload_mode: 是否启用重载模式
+:return: list 监控的目录列表
 
 ---
 
