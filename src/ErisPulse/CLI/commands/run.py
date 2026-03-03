@@ -41,7 +41,6 @@ class ReloadHandler(FileSystemEventHandler):
         self.last_reload = time.time()
         self.reload_mode = reload_mode
         self.start_process()
-        self.watched_files = set()
 
     def start_process(self):
         """启动监控进程"""
@@ -121,11 +120,13 @@ class RunCommand(Command):
         parser.add_argument(
             'script',
             nargs='?',
+            default='main.py',
             help='要运行的主程序路径 (默认: main.py)'
         )
         parser.add_argument(
             '--reload',
             action='store_true',
+            default=False,
             help='启用热重载模式'
         )
         parser.add_argument(
@@ -135,19 +136,19 @@ class RunCommand(Command):
         )
     
     def execute(self, args):
-        script = args.script or "main.py"
+        script = args.script
+        reload_mode = args.reload and not args.no_reload
         
         # 检查脚本是否存在
         if not os.path.exists(script):
+            console.print(f"[info]脚本 [path]{script}[/] 不存在，正在创建...[/]")
             from ... import _prepare_environment
             import asyncio
-            asyncio.run(_prepare_environment())
-        
-        reload_mode = args.reload and not args.no_reload
+            asyncio.run(_prepare_environment(script))
         
         # 设置文件监控
-        self.observer = None
-        self.handler = None
+        self.observer = Observer()
+        self.handler = ReloadHandler(script, reload_mode)
         self._setup_watchdog(script, reload_mode)
         
         try:
@@ -160,12 +161,13 @@ class RunCommand(Command):
             self._cleanup()
             console.print("[success]已安全退出[/]")
     
-    def _setup_watchdog(self, script_path: str, reload_mode: bool):
+    def _setup_watchdog(self, script_path: str, reload_mode: bool) -> list:
         """
         设置文件监控
         
         :param script_path: 要监控的脚本路径
         :param reload_mode: 是否启用重载模式
+        :return: list 监控的目录列表
         """
         watch_dirs = [
             os.path.dirname(os.path.abspath(script_path)),
@@ -176,9 +178,6 @@ class RunCommand(Command):
         if config_dir not in watch_dirs:
             watch_dirs.append(config_dir)
         
-        self.handler = ReloadHandler(script_path, reload_mode)
-        self.observer = Observer()
-        
         for d in watch_dirs:
             if os.path.exists(d):
                 self.observer.schedule(
@@ -187,20 +186,22 @@ class RunCommand(Command):
                     recursive=reload_mode
                 )
                 console.print(f"[dim]监控目录: [path]{d}[/][/]")
-        
-        self.observer.start()
-        
+
         mode_desc = "[bold]开发重载模式[/]" if reload_mode else "[bold]配置监控模式[/]"
         console.print(Panel(
             f"{mode_desc}\n监控目录: [path]{', '.join(watch_dirs)}[/]",
             title="热重载已启动",
             border_style="info"
         ))
+        
+        # 启动 observer
+        self.observer.start()
+        return watch_dirs
     
     def _cleanup(self):
         """清理资源"""
         if self.observer:
             self.observer.stop()
+            self.observer.join()
             if self.handler and self.handler.process:
                 self.handler._terminate_process()
-            self.observer.join()
