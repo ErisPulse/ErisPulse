@@ -484,7 +484,7 @@ class SDK:
         return self._initialized
 
 
-    async def _prepare_environment(self) -> bool:
+    async def _prepare_environment(self, script_path: str = "main.py") -> bool:
         """
         {!--< internal-use >!--}
         准备运行环境
@@ -508,7 +508,7 @@ class SDK:
             get_erispulse_config()
             logger.info("配置文件已加载")
 
-            main_init = await self._init_progress()
+            main_init = await self._init_progress(script_path)
             if main_init:
                 logger.info("项目入口已生成, 你可以在 main.py 中编写一些代码")
             return True
@@ -526,20 +526,19 @@ class SDK:
             return False
 
 
-    async def _init_progress(self) -> bool:
+    async def _init_progress(self, script_path: str = "main.py") -> bool:
         """
         {!--< internal-use >!--}
         初始化项目环境文件
         
         :return: bool 是否创建了新的 main.py 文件
         """
-        main_file = Path("main.py")
+        main_file = Path(f"{script_path}")
         main_init = False
         
         try:
             if not main_file.exists():
-                main_content = """# main.py
-# ErisPulse 主程序文件
+                main_content = """# ErisPulse 主程序文件
 # 本文件由 SDK 自动创建，您可随意修改
 import asyncio
 from ErisPulse import sdk
