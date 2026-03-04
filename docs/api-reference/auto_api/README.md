@@ -21,8 +21,8 @@
 
 - **模块总数**: 53
 - **类总数**: 43
-- **函数总数**: 14
-- **方法总数**: 385
+- **函数总数**: 16
+- **方法总数**: 399
 
 ---
 
@@ -71,7 +71,7 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-📦 2 个类 | 🔧 7 个方法
+📦 2 个类 | 🔧 9 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -181,7 +181,7 @@
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
-📦 1 个类 | 🔧 8 个方法
+📦 1 个类 | 🔧 9 个方法
 
 
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
@@ -191,7 +191,7 @@
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
 
-📦 2 个类 | 🔧 19 个方法
+📦 2 个类 | 🔧 24 个方法
 
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
@@ -201,7 +201,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 1 个类 | 🔧 11 个方法
+📦 1 个类 | 🔧 12 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
@@ -259,11 +259,6 @@
 📦 1 个类 | 🔧 6 个方法
 
 
-### [ErisPulse.loaders.initializer](ErisPulse/loaders/initializer.md)
-
-📦 1 个类 | 🔧 2 个方法
-
-
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
 📦 2 个类 | 🔧 20 个方法
@@ -277,6 +272,11 @@
 ### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)
 
 📄 模块文档
+
+
+### [ErisPulse.runtime.cleanup](ErisPulse/runtime/cleanup.md)
+
+📦 1 个类 | 🔧 7 个方法 | ⚙️ 2 个函数
 
 
 ### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)

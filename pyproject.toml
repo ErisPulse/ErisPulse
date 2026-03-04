@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.3.5"
+version = "2.3.6"
 description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -14,8 +14,25 @@ authors = [
     { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" }
 ]
 
+maintainers = [
+    { name = "艾莉丝·格雷拉特(WSu2059)", email = "wsu2059@qq.com" }
+]
+
+keywords = [
+    "async",
+    "bot",
+    "sdk",
+    "framework",
+    "robot",
+    "onebot",
+    "telegram",
+    "extensible",
+    "modular",
+    "asyncio"
+]
+
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -25,16 +42,18 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
-    "Topic :: Software Development :: Libraries :: Python Modules"
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Framework :: AsyncIO",
+    "Typing :: Typed"
 ]
 
 dependencies = [
-    "pip",  # 显式声明，防止部分情况下cli报错
-    "rich",
-    "colorama",
-    "aiohttp",
-    "watchdog",
-    "toml",
+    "pip>=23.0",  # 显式声明，防止部分情况下cli报错 | 绝对！！！不要删除这个依赖项
+    "rich>=13.0.0",
+    "aiohttp>=3.9.0",
+    "watchdog>=4.0.0",
+    "toml>=0.10.2",
     "fastapi>=0.116.1",
     "hypercorn>=0.14.0",
     "packaging>=25.0",

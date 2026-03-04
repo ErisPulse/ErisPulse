@@ -358,10 +358,6 @@ async def main():
     # 运行 SDK 并且维持运行
     await sdk.run(keep_running=True)
     print("ErisPulse 初始化完成！")
-    
-    # 保持运行
-    import asyncio
-    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     import asyncio
@@ -387,10 +383,8 @@ async def main():
         await asyncio.Event().wait()
     except Exception as e:
         sdk.logger.error(e)
-    except KeyboardInterrupt:
-        sdk.logger.info("正在停止程序")
     finally:
-        await sdk.adapter.shutdown()
+        await sdk.uninit()
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -778,11 +772,15 @@ child_logger.info("子模块日志")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理。
+HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
+
+> 路由处理器基于 FastAPI，必须正确使用类型注解，否则可能导致参数验证错误。
 
 ```python
+from fastapi import Request, WebSocket
+
 # 注册 HTTP 路由
-async def handler(request):
+async def handler(request: Request):
     return {"status": "ok"}
 
 sdk.router.register_http_route(
@@ -793,8 +791,8 @@ sdk.router.register_http_route(
 )
 
 # 注册 WebSocket 路由
-async def ws_handler(websocket):
-    await websocket.accept()
+async def ws_handler(websocket: WebSocket):
+    # 注意：无需 await websocket.accept()，内部已自动调用
     data = await websocket.receive_text()
     await websocket.send_text(f"Echo: {data}")
 
@@ -804,6 +802,12 @@ sdk.router.register_websocket(
     handler=ws_handler
 )
 ```
+
+**常见问题：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保：
+- HTTP 处理器参数使用 `request: Request` 注解
+- WebSocket 处理器参数使用 `websocket: WebSocket` 注解
+
+更多路由功能请参考 [路由管理器](../advanced/router.md)。
 
 ## SendDSL 消息发送
 
@@ -2698,6 +2702,34 @@ config = sdk.config.getConfig("MyModule")
 # 访问其他模块
 other_module = sdk.OtherModule
 result = await other_module.some_method()
+```
+
+## 适配器发送方法查询
+
+由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在。从 `2.3.5` 开始，新增了查询发送方法的功能。
+
+### 列出支持的发送方法
+
+```python
+# 列出平台支持的所有发送方法
+methods = sdk.adapter.list_sends("onebot11")
+# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+```
+
+### 获取方法详细信息
+
+```python
+# 获取某个方法的详细信息
+info = sdk.adapter.send_info("onebot11", "Text")
+# 返回:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "发送文本消息..."
+# }
 ```
 
 ## 配置管理
@@ -5503,8 +5535,7 @@ def _load_config(self):
             "timeout": 30,
             "cache_ttl": 3600
         }
-        sdk.config.setConfig("MyModule", default_config)
-        sdk.config.force_save() # 强制保存配置的这种方式在这里使用是可行的，因为你需要设置默认值到配置文件中，除此之外，不建议使用这种方式强制保存配置
+        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第三个参数为True时，立即保存配置，是方便用户可以直接修改配置文件的
         return default_config
     return config
 ```
