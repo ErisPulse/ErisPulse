@@ -80,7 +80,7 @@ SDK 初始化入口
 ---
 
 
-##### `async async _prepare_environment()`
+##### `async async _prepare_environment(script_path: str = 'main.py')`
 
 > **内部方法** 
 准备运行环境
@@ -92,7 +92,7 @@ SDK 初始化入口
 ---
 
 
-##### `async async _init_progress()`
+##### `async async _init_progress(script_path: str = 'main.py')`
 
 > **内部方法** 
 初始化项目环境文件
