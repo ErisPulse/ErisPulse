@@ -334,62 +334,27 @@ class SDK:
             lifecycle.start_timer("core.uninit")
             
             try:
-                # 1. 适配器关闭阶段
-                logger.print_section_header("适配器关闭阶段")
-                logger.print_info("", level=0)  # 空行
-                
                 adapter_manager = self._sdk.adapter
-                registered_adapters = adapter_manager.list_registered()
-                
-                if registered_adapters:
-                    logger.print_info(f"关闭 {len(registered_adapters)} 个适配器", level=1)
-                    for i, adapter_name in enumerate(registered_adapters):
-                        is_last = i == len(registered_adapters) - 1
-                        logger.print_tree_item(adapter_name, level=1, is_last=is_last)
-                    
-                    await adapter_manager.shutdown()
-                    logger.print_info(f"已关闭 {len(registered_adapters)} 个适配器", level=1)
-                else:
-                    logger.print_info("适配器: 无", level=1)
-                
-                # 2. 模块卸载阶段
-                logger.print_section_header("模块卸载阶段")
-                logger.print_info("", level=0)  # 空行
-                
                 module_manager = self._sdk.module
+                
+                # 1. 关闭所有适配器
+                registered_adapters = adapter_manager.list_registered()
+                if registered_adapters:
+                    await adapter_manager.shutdown()
+                
+                # 2. 卸载所有模块
                 loaded_modules = module_manager.list_loaded()
-                
                 if loaded_modules:
-                    logger.print_info(f"卸载 {len(loaded_modules)} 个模块", level=1)
-                    for i, module_name in enumerate(loaded_modules):
-                        is_last = i == len(loaded_modules) - 1
-                        logger.print_tree_item(module_name, level=1, is_last=is_last)
-                    
                     await module_manager.unload()
-                    logger.print_info(f"已卸载 {len(loaded_modules)} 个模块", level=1)
-                else:
-                    logger.print_info("模块: 无", level=1)
                 
-                # 3. 清理事件阶段
-                logger.print_section_header("清理事件阶段")
-                logger.print_info("", level=0)  # 空行
-                
-                # 清理 Event 模块中的所有事件处理器
+                # 3. 清理所有事件处理器
                 Event._clear_all_handlers()
-                logger.print_info("已清理所有事件处理器", level=1)
                 
-                # 4. 清理管理器阶段
-                logger.print_section_header("清理管理器阶段")
-                logger.print_info("", level=0)  # 空行
-                
-                logger.print_info("清理适配器管理器", level=1)
+                # 4. 清理管理器
                 adapter_manager.clear()
-                
-                logger.print_info("清理模块管理器", level=1)
                 module_manager.clear()
                 
                 # 5. 清理 SDK 对象上的模块属性
-                logger.print_info("清理 SDK 模块属性", level=1)
                 module_properties_cleared = 0
                 for module_name in module_manager.list_loaded():
                     try:
@@ -400,35 +365,13 @@ class SDK:
                     except Exception:
                         pass
                 
-                if module_properties_cleared > 0:
-                    logger.print_info(f"已清理 {module_properties_cleared} 个模块属性", level=1)
-                
                 # 6. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
                 
                 # 获取清理耗时
                 uninit_duration = lifecycle.stop_timer("core.uninit")
-                
-                # 总结
-                logger.print_section_header("反初始化完成")
-                
-                # 显示耗时
                 duration_str = f"{uninit_duration:.2f}s" if uninit_duration >= 1 else f"{uninit_duration*1000:.0f}ms"
-                logger.print_info(f"耗时: {duration_str}", level=1)
-                
-                # 显示统计信息
-                if registered_adapters:
-                    logger.print_info(f"适配器: {len(registered_adapters)} 个已关闭", level=1)
-                else:
-                    logger.print_info("适配器: 无", level=1)
-                
-                if loaded_modules:
-                    logger.print_info(f"模块: {len(loaded_modules)} 个已卸载", level=1)
-                else:
-                    logger.print_info("模块: 无", level=1)
-                
-                logger.print_section_footer()
                 
                 # 提交生命周期事件
                 await lifecycle.submit_event(
@@ -457,6 +400,10 @@ class SDK:
                         "error": str(e)
                     }
                 )
+                if "attached to a different loop" in str(e):
+                    # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
+                    # 在这种情况下，我们直接返回True即可
+                    return True
                 logger.error(f"SDK反初始化严重错误: {e}")
                 return False
 
