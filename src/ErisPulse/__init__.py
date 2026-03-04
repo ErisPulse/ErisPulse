@@ -35,6 +35,12 @@ from .sdk import sdk
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 
+# 导入清理管理模块
+from .runtime.cleanup import setup_cleanup_subprocess
+
+# 设置子进程清理机制
+setup_cleanup_subprocess()
+
 
 # ==================== 版本信息 ====================
 
