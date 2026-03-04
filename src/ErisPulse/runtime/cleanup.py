@@ -137,7 +137,8 @@ class CleanupManager:
         except Exception as e:
             logger.error(f"清理失败: {e}")
         finally:
-            sys.exit(0)
+            # 即使有未完成的异步任务也退出
+            os._exit(0)
     
     def stop(self):
         """
