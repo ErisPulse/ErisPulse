@@ -81,13 +81,9 @@ project.root = "src"
 [tool.hatch.build.targets.wheel]
 packages = ["src/ErisPulse"]
 
-[tool.hatch.build.targets.wheel.shared-data]
-"stubs/ErisPulse" = "ErisPulse-stubs/ErisPulse"
-
 [tool.hatch.build.targets.sdist]
 include = [
     "/src/ErisPulse",
-    "/stubs/ErisPulse",
 ]
 
 [tool.ruff]
