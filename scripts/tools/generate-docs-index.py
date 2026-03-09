@@ -43,6 +43,87 @@ class DocsIndexGenerator:
         "风格指南": "代码和文档风格规范",
     }
     
+    # 分类优先级（数值越小越靠前）
+    # 按照用户阅读逻辑排序：快速开始 → 入门指南 → 用户使用指南 → 开发者指南...
+    CATEGORY_PRIORITY = {
+        "快速开始": 1,
+        "入门指南": 2,
+        "用户使用指南": 3,
+        "开发者指南": 4,
+        "平台特性指南": 5,
+        "API 参考": 6,
+        "高级主题": 7,
+        "AI 辅助开发": 8,
+        "技术标准": 9,
+        "风格指南": 10,
+    }
+    
+    # 文档优先级（数值越小越靠前）
+    DOC_PRIORITY = {
+        # 快速开始
+        "README.md": 1,
+        "quick-start.md": 2,
+        
+        # 入门指南
+        "getting-started/first-bot.md": 1,
+        "getting-started/README.md": 2,
+        "getting-started/basic-concepts.md": 3,
+        "getting-started/common-tasks.md": 4,
+        "getting-started/event-handling.md": 5,
+        
+        # 用户使用指南
+        "user-guide/README.md": 1,
+        "user-guide/installation.md": 2,
+        "user-guide/configuration.md": 3,
+        "user-guide/cli-reference.md": 4,
+        
+        # 开发者指南
+        "developer-guide/README.md": 1,
+        "developer-guide/modules/getting-started.md": 2,
+        "developer-guide/modules/core-concepts.md": 3,
+        "developer-guide/modules/event-wrapper.md": 4,
+        "developer-guide/modules/best-practices.md": 5,
+        "developer-guide/adapters/getting-started.md": 6,
+        "developer-guide/adapters/core-concepts.md": 7,
+        "developer-guide/adapters/send-dsl.md": 8,
+        "developer-guide/adapters/best-practices.md": 9,
+        "developer-guide/extensions/cli-extensions.md": 10,
+        
+        # 平台特性指南
+        "platform-guide/README.md": 1,
+        "platform-guide/onebot11.md": 2,
+        "platform-guide/onebot12.md": 3,
+        "platform-guide/telegram.md": 4,
+        "platform-guide/email.md": 5,
+        "platform-guide/yunhu.md": 6,
+        "platform-guide/maintain-notes.md": 7,
+        
+        # API 参考
+        "api-reference/README.md": 1,
+        "api-reference/adapter-system.md": 2,
+        "api-reference/core-modules.md": 3,
+        "api-reference/event-system.md": 4,
+        
+        # 高级主题
+        "advanced/README.md": 1,
+        "advanced/lifecycle.md": 2,
+        "advanced/lazy-loading.md": 3,
+        "advanced/router.md": 4,
+        
+        # AI 辅助开发
+        "ai-support/README.md": 1,
+        
+        # 技术标准
+        "standards/README.md": 1,
+        "standards/api-response.md": 2,
+        "standards/event-conversion.md": 3,
+        "standards/naming-conventions.md": 4,
+        
+        # 风格指南
+        "styleguide/README.md": 1,
+        "styleguide/docstring.md": 2,
+    }
+    
     # 需要忽略的目录
     IGNORE_DIRS = {"_meta", "ai-support/prompts", "api-reference/auto_api"}
     
@@ -243,8 +324,22 @@ class DocsIndexGenerator:
             })
             categories[category]["count"] += 1
         
-        # 按分类名称排序，确保每次生成的顺序一致
-        sorted_categories = dict(sorted(categories.items()))
+        # 按分类优先级排序（数值越小越靠前），未定义的分类排最后
+        def sort_category(item):
+            category_name = item[0]
+            priority = self.CATEGORY_PRIORITY.get(category_name, 9999)  # 未定义的优先级设为 9999
+            return (priority, category_name)
+        
+        sorted_categories = dict(sorted(categories.items(), key=sort_category))
+        
+        # 对每个分类内的文档按优先级排序
+        for category_data in sorted_categories.values():
+            def sort_document(doc):
+                path = doc["path"]
+                priority = self.DOC_PRIORITY.get(path, 9999)  # 未定义的优先级设为 9999
+                return (priority, path)
+            
+            category_data["documents"].sort(key=sort_document)
         
         return {
             "version": "1.0",
