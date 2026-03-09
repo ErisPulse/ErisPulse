@@ -82,7 +82,7 @@ class InitCommand(Command):
                 console.print(f"[green]创建目录: {dir_name}[/green]")
             
             # 创建配置文件
-            config_file = project_path / "config.toml"
+            config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with open(config_file, "w", encoding="utf-8") as f:
                     f.write("# ErisPulse 配置文件\n\n")
@@ -105,7 +105,7 @@ class InitCommand(Command):
                             f.write(f'{adapter} = false  # 默认禁用，需要时启用\n')
                         f.write("\n")
                 
-                console.print("[green]创建配置文件: config.toml[/green]")
+                console.print("[green]创建配置文件: config/config.toml[/green]")
             
             # 创建主程序文件
             main_file = project_path / "main.py"
@@ -138,7 +138,7 @@ class InitCommand(Command):
             
             console.print("\n[bold green]项目 {} 初始化成功![/bold green]".format(project_name))
             console.print("\n[cyan]接下来您可以:[/cyan]")
-            console.print(f"1. 编辑 {project_name}/config.toml 配置适配器")
+            console.print(f"1. 编辑 {project_name}/config/config.toml 配置适配器")
             console.print(f"2. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
             console.print("\n访问 https://github.com/ErisPulse/ErisPulse/tree/main/docs 获取更多信息和文档")
             return True
@@ -187,7 +187,7 @@ class InitCommand(Command):
         
         # 如果提供了项目路径，则加载项目配置
         if project_path:
-            project_config_path = Path(project_path) / "config.toml"
+            project_config_path = project_path / "config" / "config.toml"
             if project_config_path.exists():
                 config.CONFIG_FILE = str(project_config_path)
                 config.reload()
@@ -333,7 +333,7 @@ class InitCommand(Command):
             
             # 加载项目配置
             from ErisPulse import config
-            project_config_path = project_path / "config.toml"
+            project_config_path = project_path / "config" / "config.toml"
             
             config.CONFIG_FILE = str(project_config_path)
             config.reload()
@@ -385,7 +385,7 @@ class InitCommand(Command):
             
             # 显示下一步操作
             console.print("\n[cyan]接下来您可以:[/cyan]")
-            console.print(f"1. 编辑 {project_name}/config.toml 进一步配置")
+            console.print(f"1. 编辑 {project_name}/config/config.toml 进一步配置")
             console.print(f"2. 运行 [cyan]cd {project_name} \n        ep run[/] 启动项目")
             
             return True
