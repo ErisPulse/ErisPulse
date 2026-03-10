@@ -8,6 +8,7 @@ import sys
 import importlib
 import importlib.metadata
 import asyncio
+import inspect
 import traceback
 import pkgutil
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -208,7 +209,7 @@ class CLI:
             # 所以 args.func 就是处理函数
             if hasattr(args, 'func') and args.func:
                 handler_func = args.func
-                if asyncio.iscoroutinefunction(handler_func):
+                if inspect.iscoroutinefunction(handler_func):
                     # 异步函数：使用 asyncio.run() 运行
                     asyncio.run(handler_func(args))
                 else:
