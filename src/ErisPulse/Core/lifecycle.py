@@ -14,6 +14,7 @@ ErisPulse 生命周期管理模块
 """
 
 import asyncio
+import inspect
 import time
 from typing import Callable, List, Dict, Any
 from .logger import logger
@@ -169,7 +170,7 @@ class LifecycleManager:
         logger.debug(f"触发生命周期事件: {event}")
         for handler in self._handlers[event]:
             try:
-                if asyncio.iscoroutinefunction(handler):
+                if inspect.iscoroutinefunction(handler):
                     await handler(event_data)
                 else:
                     handler(event_data)

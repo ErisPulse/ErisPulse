@@ -470,7 +470,7 @@ class LazyModule:
                 loop = asyncio.get_running_loop()
                 init_method = getattr(object.__getattribute__(self, '_module_class'), '__init__', None)
                 
-                if asyncio.iscoroutinefunction(init_method):
+                if inspect.iscoroutinefunction(init_method):
                     object.__setattr__(self, '_needs_async_init', True)
                     logger.warning(f"模块 {object.__getattribute__(self, '_module_name')} 需要异步初始化，请在异步上下文中调用")
                     return

@@ -16,6 +16,7 @@ from .. import adapter, logger
 from ...runtime import get_event_config
 from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
+import inspect
 
 class CommandHandler:
     """
@@ -209,7 +210,7 @@ class CommandHandler:
             
             # 如果提供了回调函数，则执行
             if callback:
-                if asyncio.iscoroutinefunction(callback):
+                if inspect.iscoroutinefunction(callback):
                     await callback(result)
                 else:
                     callback(result)
@@ -356,7 +357,7 @@ class CommandHandler:
             permission_func = cmd_info.get("permission") or self.permissions.get(actual_cmd_name)
             if permission_func:
                 try:
-                    has_permission = permission_func(event) if not asyncio.iscoroutinefunction(permission_func) \
+                    has_permission = permission_func(event) if not inspect.iscoroutinefunction(permission_func) \
                                     else await permission_func(event)
                     if not has_permission:
                         await self._send_permission_denied(event)
@@ -383,7 +384,7 @@ class CommandHandler:
             event["_processed"] = True
             
             try:
-                if asyncio.iscoroutinefunction(handler):
+                if inspect.iscoroutinefunction(handler):
                     await handler(event)
                 else:
                     handler(event)
