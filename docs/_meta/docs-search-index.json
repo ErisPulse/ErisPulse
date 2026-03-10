@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 700,
+  "total_keywords": 699,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -135,7 +135,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 388,
+        "line": 378,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -395,7 +395,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 406,
+        "line": 396,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -657,7 +657,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 422,
+        "line": 412,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1267,7 +1267,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 340,
+        "line": 330,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -1725,7 +1725,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 442,
+        "line": 432,
         "level": 2,
         "title": "下一步"
       },
@@ -1901,7 +1901,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 386,
+        "line": 376,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -1933,7 +1933,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 338,
+        "line": 328,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -2095,7 +2095,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 243,
+        "line": 233,
         "level": 2,
         "title": "交互式处理"
       }
@@ -2211,7 +2211,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 245,
+        "line": 235,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -2351,7 +2351,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 216,
+        "line": 206,
         "level": 2,
         "title": "元事件处理"
       }
@@ -3211,7 +3211,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 189,
+        "line": 179,
         "level": 3,
         "title": "好友请求"
       }
@@ -3479,7 +3479,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 317,
+        "line": 307,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -3487,7 +3487,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 290,
+        "line": 280,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -3739,7 +3739,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 234,
+        "line": 224,
         "level": 3,
         "title": "心跳事件"
       }
@@ -5403,7 +5403,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 273,
+        "line": 263,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -5540,14 +5540,6 @@
         "title": "群成员增加"
       }
     ],
-    "群禁言/解禁": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 177,
-        "level": 3,
-        "title": "群禁言/解禁"
-      }
-    ],
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5567,7 +5559,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 205,
+        "line": 195,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -5705,7 +5697,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 187,
+        "line": 177,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -5921,7 +5913,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 218,
+        "line": 208,
         "level": 3,
         "title": "连接事件"
       }
