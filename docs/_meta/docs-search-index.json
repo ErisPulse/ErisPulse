@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 708,
+  "total_keywords": 700,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1219,7 +1219,7 @@
     "ErisPulse-AdapterDev.md": [
       {
         "document": "ai-support/README.md",
-        "line": 50,
+        "line": 39,
         "level": 4,
         "title": "ErisPulse-AdapterDev.md"
       }
@@ -1227,7 +1227,7 @@
     "ErisPulse-Full.md": [
       {
         "document": "ai-support/README.md",
-        "line": 65,
+        "line": 54,
         "level": 4,
         "title": "ErisPulse-Full.md"
       }
@@ -1235,7 +1235,7 @@
     "ErisPulse-ModuleDev.md": [
       {
         "document": "ai-support/README.md",
-        "line": 37,
+        "line": 26,
         "level": 4,
         "title": "ErisPulse-ModuleDev.md"
       }
@@ -1419,7 +1419,7 @@
     "Q: AI 生成的代码有问题怎么办？": [
       {
         "document": "ai-support/README.md",
-        "line": 203,
+        "line": 125,
         "level": 3,
         "title": "Q: AI 生成的代码有问题怎么办？"
       }
@@ -1427,7 +1427,7 @@
     "Q: 如何让 AI 生成更高质量的代码？": [
       {
         "document": "ai-support/README.md",
-        "line": 211,
+        "line": 133,
         "level": 3,
         "title": "Q: 如何让 AI 生成更高质量的代码？"
       }
@@ -1435,7 +1435,7 @@
     "Q: 推荐使用什么 AI 工具？": [
       {
         "document": "ai-support/README.md",
-        "line": 196,
+        "line": 118,
         "level": 3,
         "title": "Q: 推荐使用什么 AI 工具？"
       }
@@ -1695,7 +1695,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 219,
+        "line": 141,
         "level": 2,
         "title": "下一步"
       },
@@ -2142,6 +2142,14 @@
         "line": 7,
         "level": 3,
         "title": "什么是适配器"
+      }
+    ],
+    "从 GitHub Releases 下载": [
+      {
+        "document": "ai-support/README.md",
+        "line": 19,
+        "level": 4,
+        "title": "从 GitHub Releases 下载"
       }
     ],
     "从本地安装": [
@@ -3527,7 +3535,7 @@
     "常见问题": [
       {
         "document": "ai-support/README.md",
-        "line": 194,
+        "line": 116,
         "level": 2,
         "title": "常见问题"
       },
@@ -3778,18 +3786,6 @@
       {
         "document": "README.md",
         "line": 8,
-        "level": 3,
-        "title": "快速开始"
-      },
-      {
-        "document": "ai-support/README.md",
-        "line": 94,
-        "level": 3,
-        "title": "快速开始"
-      },
-      {
-        "document": "ai-support/README.md",
-        "line": 117,
         "level": 3,
         "title": "快速开始"
       },
@@ -4085,7 +4081,7 @@
     "文档内容说明": [
       {
         "document": "ai-support/README.md",
-        "line": 35,
+        "line": 24,
         "level": 3,
         "title": "文档内容说明"
       }
@@ -4180,22 +4176,6 @@
         "line": 23,
         "level": 3,
         "title": "方式二：使用 uv 安装（推荐）"
-      }
-    ],
-    "方法一：使用生成脚本（推荐）": [
-      {
-        "document": "ai-support/README.md",
-        "line": 19,
-        "level": 4,
-        "title": "方法一：使用生成脚本（推荐）"
-      }
-    ],
-    "方法二：从 GitHub Releases 下载": [
-      {
-        "document": "ai-support/README.md",
-        "line": 31,
-        "level": 4,
-        "title": "方法二：从 GitHub Releases 下载"
       }
     ],
     "方法名映射": [
@@ -4692,14 +4672,6 @@
         "title": "模块开发入门"
       }
     ],
-    "模块开发指南": [
-      {
-        "document": "ai-support/README.md",
-        "line": 78,
-        "level": 2,
-        "title": "模块开发指南"
-      }
-    ],
     "模块开发最佳实践": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -4764,14 +4736,6 @@
         "title": "模块级文档注释"
       }
     ],
-    "模块结构": [
-      {
-        "document": "ai-support/README.md",
-        "line": 80,
-        "level": 3,
-        "title": "模块结构"
-      }
-    ],
     "模块设计": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -4799,17 +4763,9 @@
     "模块需求模板": [
       {
         "document": "ai-support/README.md",
-        "line": 127,
+        "line": 69,
         "level": 3,
         "title": "模块需求模板"
-      }
-    ],
-    "模块验证": [
-      {
-        "document": "ai-support/README.md",
-        "line": 176,
-        "level": 3,
-        "title": "模块验证"
       }
     ],
     "注册 HTTP 路由": [
@@ -4878,14 +4834,6 @@
         "line": 323,
         "level": 2,
         "title": "测试"
-      }
-    ],
-    "测试与验证": [
-      {
-        "document": "ai-support/README.md",
-        "line": 174,
-        "level": 2,
-        "title": "测试与验证"
       }
     ],
     "测试命令": [
@@ -6074,14 +6022,6 @@
         "title": "适配器开发入门"
       }
     ],
-    "适配器开发指南": [
-      {
-        "document": "ai-support/README.md",
-        "line": 102,
-        "level": 2,
-        "title": "适配器开发指南"
-      }
-    ],
     "适配器开发最佳实践": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -6158,28 +6098,12 @@
         "title": "适配器系统 API"
       }
     ],
-    "适配器结构": [
-      {
-        "document": "ai-support/README.md",
-        "line": 104,
-        "level": 3,
-        "title": "适配器结构"
-      }
-    ],
     "适配器需求模板": [
       {
         "document": "ai-support/README.md",
-        "line": 150,
+        "line": 92,
         "level": 3,
         "title": "适配器需求模板"
-      }
-    ],
-    "适配器验证": [
-      {
-        "document": "ai-support/README.md",
-        "line": 185,
-        "level": 3,
-        "title": "适配器验证"
       }
     ],
     "通用参数": [
@@ -6533,7 +6457,7 @@
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
-        "line": 125,
+        "line": 67,
         "level": 2,
         "title": "需求描述模板"
       }
