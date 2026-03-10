@@ -907,7 +907,7 @@ async def friend_add_handler(event):
 ### 群成员增加
 
 ```python
-@notice.on_group_member_increase()
+@notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
@@ -917,21 +917,11 @@ async def member_increase_handler(event):
 ### 群成员减少
 
 ```python
-@notice.on_group_member_decrease()
+@notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     await event.reply(f"成员 {user_id} 离开了群 {group_id}")
-```
-
-### 群禁言/解禁
-
-```python
-@notice.on_group_ban()
-async def group_ban_handler(event):
-    user_id = event.get_user_id()
-    duration = event.get("duration", "未知")
-    await event.reply(f"用户 {user_id} 被禁言 {duration}")
 ```
 
 ## 请求事件处理
