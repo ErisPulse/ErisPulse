@@ -4,7 +4,6 @@ ErisPulse 模块系统
 提供标准化的模块注册、加载和管理功能，与适配器系统保持一致的设计模式
 """
 
-import asyncio
 import inspect
 from typing import Any, Dict, List, Type, Optional
 from .logger import logger
@@ -143,7 +142,7 @@ class ModuleManager(ManagerBase):
             # 调用模块的on_load卸载方法
             if hasattr(instance, 'on_load'):
                 try:
-                    if asyncio.iscoroutinefunction(instance.on_load):
+                    if inspect.iscoroutinefunction(instance.on_load):
                         await instance.on_load({"module_name": module_name})
                     else:
                         instance.on_load({"module_name": module_name})
@@ -156,7 +155,7 @@ class ModuleManager(ManagerBase):
             self._loaded_modules.add(module_name)
             
             await lifecycle.submit_event(
-                    "module_load",
+                    "module.load",
                     data={
                         "module_name": module_name,
                         "success": True,
@@ -168,7 +167,7 @@ class ModuleManager(ManagerBase):
             
         except Exception as e:
             await lifecycle.submit_event(
-                    "module_load",
+                    "module.load",
                     data={
                         "module_name": module_name,
                         "success": False,
@@ -227,7 +226,7 @@ class ModuleManager(ManagerBase):
             instance = self._modules.get(module_name)
             if instance and hasattr(instance, 'on_unload'):
                 try:
-                    if asyncio.iscoroutinefunction(instance.on_unload):
+                    if inspect.iscoroutinefunction(instance.on_unload):
                         await instance.on_unload({"module_name": module_name})
                     else:
                         instance.on_unload({"module_name": module_name})

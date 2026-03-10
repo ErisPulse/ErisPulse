@@ -493,7 +493,7 @@ from ErisPulse import sdk
 async def main():
     try:
         # 使用 SDK 的 run 方法
-        # 如果你需要更加精细的控制，可以参考: https://github.com/ErisPulse/ErisPulse/docs/getting-started/first-bot.md?line=70
+        # 如果你需要更加精细的控制，可以参考查阅 `我的第一个机器人` 文档中的示例代码
         # SDK 会自动：
         # - 初始化和启动适配器
         # - 保持程序运行
