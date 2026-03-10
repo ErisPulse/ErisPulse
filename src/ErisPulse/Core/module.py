@@ -156,7 +156,7 @@ class ModuleManager(ManagerBase):
             self._loaded_modules.add(module_name)
             
             await lifecycle.submit_event(
-                    "module_load",
+                    "module.load",
                     data={
                         "module_name": module_name,
                         "success": True,
@@ -168,7 +168,7 @@ class ModuleManager(ManagerBase):
             
         except Exception as e:
             await lifecycle.submit_event(
-                    "module_load",
+                    "module.load",
                     data={
                         "module_name": module_name,
                         "success": False,
