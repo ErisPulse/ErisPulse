@@ -13,6 +13,7 @@ from .. import adapter, logger
 from ...runtime import get_event_config
 from typing import Callable, Any, Dict, List
 import asyncio
+import inspect
 from .wrapper import Event
 
 class BaseEventHandler:
@@ -117,7 +118,7 @@ class BaseEventHandler:
                 
             handler = handler_info["func"]
             try:
-                if asyncio.iscoroutinefunction(handler):
+                if inspect.iscoroutinefunction(handler):
                     await handler(event)
                 else:
                     handler(event)
