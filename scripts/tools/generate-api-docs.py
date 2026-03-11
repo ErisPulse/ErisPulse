@@ -136,6 +136,76 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
     return processed
 
 
+def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dict:
+    """
+    提取类的信息，包括嵌套类
+    
+    :param class_node: AST类节点
+    :param is_nested: 是否为嵌套类
+    :return: 类信息字典
+    """
+    class_doc = ast.get_docstring(class_node)
+    
+    methods = []
+    nested_classes = []
+    
+    # 提取类方法和嵌套类
+    for item in class_node.body:
+        # 提取方法
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            method_doc = ast.get_docstring(item)
+            
+            if method_doc:  # 只有方法有文档才添加
+                # 获取函数签名
+                args = []
+                defaults = dict(zip(
+                    [arg.arg for arg in item.args.args][-len(item.args.defaults):],
+                    item.args.defaults
+                )) if item.args.defaults else {}
+                
+                for arg in item.args.args:
+                    if arg.arg == "self" or arg.arg == "cls":
+                        continue
+                    arg_str = arg.arg
+                    if arg.annotation:
+                        arg_str += f": {ast.unparse(arg.annotation)}"
+                    if arg.arg in defaults:
+                        default_val = ast.unparse(defaults[arg.arg])
+                        arg_str += f" = {default_val}"
+                    args.append(arg_str)
+                
+                signature = f"{item.name}({', '.join(args)})"
+                if isinstance(item, ast.AsyncFunctionDef):
+                    signature = f"async {signature}"
+                
+                methods.append({
+                    "name": item.name,
+                    "signature": signature,
+                    "doc": method_doc,
+                    "is_async": isinstance(item, ast.AsyncFunctionDef)
+                })
+        
+        # 递归提取嵌套类
+        elif isinstance(item, ast.ClassDef):
+            nested_class_info = extract_class_info(item, is_nested=True)
+            # 只添加有文档或方法/嵌套类的嵌套类
+            if nested_class_info["doc"] or nested_class_info["methods"] or nested_class_info.get("nested_classes"):
+                nested_classes.append(nested_class_info)
+    
+    # 获取类签名
+    bases = [ast.unparse(base) for base in class_node.bases] if class_node.bases else []
+    class_signature = f"class {class_node.name}({', '.join(bases)})" if bases else f"class {class_node.name}"
+    
+    return {
+        "name": class_node.name,
+        "signature": class_signature,
+        "doc": class_doc,
+        "methods": methods,
+        "nested_classes": nested_classes,
+        "is_nested": is_nested
+    }
+
+
 def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[Dict]]:
     """
     解析Python文件，提取模块文档、类和函数信息
@@ -162,56 +232,11 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
     for node in module.body:
         # 处理类定义
         if isinstance(node, ast.ClassDef):
-            class_doc = ast.get_docstring(node)
+            class_info = extract_class_info(node, is_nested=False)
             
-            methods = []
-            # 提取类方法
-            for item in node.body:
-                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    method_doc = ast.get_docstring(item)
-                    
-                    if method_doc:  # 只有方法有文档才添加
-                        # 获取函数签名
-                        args = []
-                        defaults = dict(zip(
-                            [arg.arg for arg in item.args.args][-len(item.args.defaults):],
-                            item.args.defaults
-                        )) if item.args.defaults else {}
-                        
-                        for arg in item.args.args:
-                            if arg.arg == "self" or arg.arg == "cls":
-                                continue
-                            arg_str = arg.arg
-                            if arg.annotation:
-                                arg_str += f": {ast.unparse(arg.annotation)}"
-                            if arg.arg in defaults:
-                                default_val = ast.unparse(defaults[arg.arg])
-                                arg_str += f" = {default_val}"
-                            args.append(arg_str)
-                        
-                        signature = f"{item.name}({', '.join(args)})"
-                        if isinstance(item, ast.AsyncFunctionDef):
-                            signature = f"async {signature}"
-                        
-                        methods.append({
-                            "name": item.name,
-                            "signature": signature,
-                            "doc": method_doc,
-                            "is_async": isinstance(item, ast.AsyncFunctionDef)
-                        })
-            
-            # 获取类签名
-            bases = [ast.unparse(base) for base in node.bases] if node.bases else []
-            class_signature = f"class {node.name}({', '.join(bases)})" if bases else f"class {node.name}"
-            
-            # 只有类有文档或者有方法时才添加类
-            if class_doc or methods:
-                classes.append({
-                    "name": node.name,
-                    "signature": class_signature,
-                    "doc": class_doc,
-                    "methods": methods
-                })
+            # 只有类有文档或者有方法或嵌套类时才添加类
+            if class_info["doc"] or class_info["methods"] or class_info.get("nested_classes"):
+                classes.append(class_info)
         
         # 处理函数定义
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -246,6 +271,62 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
                 })
     
     return module_doc, classes, functions
+
+
+def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
+    """
+    生成类的Markdown文档，包括嵌套类
+    
+    :param cls: 类信息字典
+    :param base_heading_level: 基础标题级别
+    :return: Markdown格式的类文档字符串
+    """
+    content = []
+    
+    # 处理类文档
+    processed_class_doc = process_docstring_for_markdown(cls["doc"]) if cls["doc"] else None
+    class_doc = processed_class_doc if processed_class_doc else f"{cls['name']} 类提供相关功能。"
+    
+    # 类标题
+    heading_prefix = "#" * base_heading_level
+    content.append(f"""{heading_prefix} `{cls['signature']}`
+
+{class_doc}
+
+""")
+    
+    # 嵌套类（在方法之前显示）
+    if cls.get("nested_classes"):
+        nested_heading_level = base_heading_level + 1
+        nested_heading_prefix = "#" * nested_heading_level
+        content.append(f"{nested_heading_prefix} 嵌套类\n\n")
+        
+        for nested_cls in cls["nested_classes"]:
+            # 递归生成嵌套类文档
+            nested_content = generate_class_markdown(nested_cls, nested_heading_level + 1)
+            content.append(nested_content)
+    
+    # 类方法
+    if cls["methods"]:
+        methods_heading_level = base_heading_level + 1
+        methods_heading_prefix = "#" * methods_heading_level
+        content.append(f"{methods_heading_prefix} 方法列表\n\n")
+        
+        for method in cls["methods"]:
+            async_marker = "async " if method["is_async"] else ""
+            processed_doc = process_docstring_for_markdown(method["doc"])
+            
+            method_heading_level = methods_heading_level + 1
+            method_heading_prefix = "#" * method_heading_level
+            content.append(f"""{method_heading_prefix} `{async_marker}{method['signature']}`
+
+{processed_doc}
+
+---
+
+""")
+    
+    return "\n".join(content)
 
 
 def generate_markdown(module_path: str, module_doc: Optional[str], 
@@ -298,31 +379,45 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     if classes:
         content.append("## 类列表\n\n")
         for cls in classes:
-            processed_class_doc = process_docstring_for_markdown(cls["doc"]) if cls["doc"] else None
-            class_doc = processed_class_doc if processed_class_doc else f"{cls['name']} 类提供相关功能。"
-            
-            content.append(f"""### `{cls['signature']}`
-
-{class_doc}
-
-""")
-            
-            # 类方法
-            if cls["methods"]:
-                content.append("#### 方法列表\n\n")
-                for method in cls["methods"]:
-                    async_marker = "async " if method["is_async"] else ""
-                    processed_doc = process_docstring_for_markdown(method["doc"])
-                    
-                    content.append(f"""##### `{async_marker}{method['signature']}`
-
-{processed_doc}
-
----
-
-""")
+            # 使用辅助函数生成类文档（包括嵌套类）
+            class_content = generate_class_markdown(cls, base_heading_level=3)
+            content.append(class_content)
     
     return "\n".join(content)
+
+
+def count_nested_classes(classes: List[Dict]) -> int:
+    """
+    递归统计嵌套类数量
+    
+    :param classes: 类列表
+    :return: 嵌套类总数
+    """
+    count = 0
+    for cls in classes:
+        nested_classes = cls.get('nested_classes', [])
+        if nested_classes:
+            count += len(nested_classes)
+            # 递归统计更深层的嵌套类
+            count += count_nested_classes(nested_classes)
+    return count
+
+
+def count_all_methods(classes: List[Dict]) -> int:
+    """
+    递归统计所有类的方法数量（包括嵌套类）
+    
+    :param classes: 类列表
+    :return: 方法总数
+    """
+    count = 0
+    for cls in classes:
+        count += len(cls.get('methods', []))
+        # 递归统计嵌套类的方法
+        nested_classes = cls.get('nested_classes', [])
+        if nested_classes:
+            count += count_all_methods(nested_classes)
+    return count
 
 
 def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
@@ -334,12 +429,14 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
     """
     content = []
     
-    # 统计信息（包括类的方法）
+    # 统计信息（包括类的方法和嵌套类）
     total_modules = len(modules_info)
     total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
     total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
-    # 统计所有类的方法
-    total_methods = sum(sum(len(cls.get('methods', [])) for cls in info.get('classes', [])) for info in modules_info.values())
+    # 统计所有类的方法（包括嵌套类）
+    total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
+    # 统计所有嵌套类
+    total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
     
     content.append(f"""# ErisPulse API 文档
 
@@ -363,7 +460,7 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 ## 统计信息
 
 - **模块总数**: {total_modules}
-- **类总数**: {total_classes}
+- **类总数**: {total_classes}（包括 {total_nested_classes} 个嵌套类）
 - **函数总数**: {total_functions}
 - **方法总数**: {total_methods}
 
@@ -498,12 +595,13 @@ if __name__ == "__main__":
     total_modules = len(modules_info)
     total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
     total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
-    total_methods = sum(sum(len(cls.get('methods', [])) for cls in info.get('classes', [])) for info in modules_info.values())
+    total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
+    total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
     
     print("\n" + "="*50)
     print(f"API文档生成完成！")
     print(f"  模块总数: {total_modules}")
-    print(f"  类总数: {total_classes}")
+    print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
     print(f"  方法总数: {total_methods}")
     print(f"  函数总数: {total_functions}")
     print("="*50)
