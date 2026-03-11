@@ -43,6 +43,91 @@ ErisPulse SDK 主类
 > - adapter_server: 路由管理器别名
 
 
+#### 嵌套类
+
+
+##### `class Initializer`
+
+初始化协调器
+
+协调适配器和模块的加载流程，提供统一的初始化接口
+
+> **提示**
+> 使用方式：
+> >>> initializer = Initializer(sdk_instance)
+> >>> success = await initializer.init()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async init()`
+
+初始化所有模块和适配器
+
+执行步骤:
+1. 从 PyPI 包加载适配器
+2. 从 PyPI 包加载模块
+3. 注册适配器
+4. 注册模块
+5. 初始化模块
+
+:return: bool 初始化是否成功
+
+**异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
+##### `class Uninitializer`
+
+反初始化协调器
+
+协调适配器和模块的卸载流程，提供统一的反初始化接口
+
+> **提示**
+> 使用方式：
+> >>> uninitializer = Uninitializer(sdk_instance)
+> >>> success = await uninitializer.uninit()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+反初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async uninit()`
+
+执行反初始化
+
+执行步骤:
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理事件处理器
+4. 清理管理器
+5. 清理 SDK 模块属性
+
+:return: bool 反初始化是否成功
+
+---
+
+
 #### 方法列表
 
 
