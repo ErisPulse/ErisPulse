@@ -177,18 +177,18 @@ class ModuleManager(ManagerBase):
             logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
             
-    async def unload(self, module_name: str = "Unknown") -> bool:
+    async def unload(self, module_name: Optional[str] = None) -> bool:
         """
         卸载指定模块或所有模块
 
-        :param module_name: [str] 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
-        :return: [bool] 是否卸载成功
+        :param module_name: 模块名称，None表示卸载所有模块（默认None）
+        :return: 是否卸载成功
 
         :example:
-        >>> await module.unload("MyModule")
+        >>> await module.unload("MyModule")  # 卸载单个模块
         >>> await module.unload()  # 卸载所有模块
         """
-        if module_name == "Unknown":
+        if module_name is None:
             # 卸载所有模块
             success = True
             for name in list(self._loaded_modules):
