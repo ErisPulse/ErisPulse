@@ -233,8 +233,22 @@ class Logger:
         获取子日志记录器
 
         :param child_name: 子模块名称(可选)
-        :param relative: 是否相对于调用者模块（默认True），False表示使用完整名称
+        :param relative: 是否相对于调用者模块（默认True）
+            - True: 使用"调用模块.子模块"作为完整名称
+            - False: 直接使用child_name作为完整名称
         :return: LoggerChild 子日志记录器实例
+
+        :example:
+        >>> # 相对模式（默认）：自动添加调用模块前缀
+        >>> child_logger = logger.get_child("database")
+        >>> # 假设调用者是"mymodule"，完整名称将是"mymodule.database"
+        >>>
+        >>> # 绝对模式：直接使用指定名称
+        >>> child_logger = logger.get_child("custom.module.name", relative=False)
+        >>> # 完整名称将是"custom.module.name"
+        >>>
+        >>> # 获取当前模块的日志记录器
+        >>> my_logger = logger.get_child()
         """
         if child_name and not relative:
             # 使用完整的指定名称，不添加前缀
