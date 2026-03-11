@@ -50,6 +50,34 @@ use_global_db = true
 > 2. 使用transaction上下文管理事务
 
 
+#### 嵌套类
+
+
+##### `class _Transaction`
+
+事务上下文管理器
+
+> **内部方法** 
+确保多个操作的原子性
+
+
+###### 方法列表
+
+
+####### `__enter__()`
+
+进入事务上下文
+
+---
+
+
+####### `__exit__(exc_type: Type[Exception], exc_val: Exception, exc_tb: Any)`
+
+退出事务上下文
+
+---
+
+
 #### 方法列表
 
 
