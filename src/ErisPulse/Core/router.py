@@ -199,6 +199,7 @@ class RouterManager:
         path: str,
         handler: Callable[[WebSocket], Awaitable[Any]],
         auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None,
+        auto_accept: bool = True,
     ) -> None:
         """
         注册WebSocket路由
@@ -207,6 +208,7 @@ class RouterManager:
         :param path: str WebSocket路径
         :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
         :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
+        :param auto_accept: bool 是否自动调用 websocket.accept()，默认 True
         
         :raises ValueError: 当路径已注册时抛出
         """
@@ -219,7 +221,9 @@ class RouterManager:
             """
             WebSocket端点包装器
             """
-            await websocket.accept()
+            # 根据 auto_accept 参数决定是否自动 accept
+            if auto_accept:
+                await websocket.accept()
             
             try:
                 if auth_handler and not await auth_handler(websocket):
