@@ -47,21 +47,26 @@ class LifecycleManager:
         :return: 是否有效
         """
         if not isinstance(event_data, dict):
-            logger.error("事件数据必须是字典")
+            logger.error("事件数据必须是字典，请确保传递的是字典类型")
+            return False
             
         required_fields = ["event", "timestamp", "source"]
-        for field in required_fields:
-            if field not in event_data:
-                logger.error(f"事件缺少必填字段: {field}")
+        missing_fields = [field for field in required_fields if field not in event_data]
+        if missing_fields:
+            logger.error(f"事件缺少必填字段: {', '.join(missing_fields)}。请检查事件数据是否完整")
+            return False
                 
         if not isinstance(event_data["event"], str):
-            logger.error("event字段必须是字符串")
+            logger.error(f"event字段必须是字符串，当前类型: {type(event_data['event']).__name__}")
+            return False
             
         if not isinstance(event_data["timestamp"], (int, float)):
-            logger.error("timestamp字段必须是数字")
+            logger.error(f"timestamp字段必须是数字，当前类型: {type(event_data['timestamp']).__name__}")
+            return False
             
         if "data" in event_data and not isinstance(event_data["data"], dict):
-            logger.error("data字段必须是字典")
+            logger.error(f"data字段必须是字典，当前类型: {type(event_data['data']).__name__}")
+            return False
             
         return True
         
