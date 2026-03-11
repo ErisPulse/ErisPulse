@@ -618,34 +618,30 @@ if __name__ == "__main__":
             await self.module.unload()
             await self.adapter.shutdown()
 
-
-    async def _restart_task(self) -> bool:
+    async def _do_restart(self) -> bool:
         """
         {!--< internal-use >!--}
-        实际执行重启逻辑的独立任务
+        实际执行重启逻辑的内部方法
         
-        此函数在后台任务中运行，与调用 restart() 的事件处理器解耦
+        在后台任务中运行，与调用 restart() 的事件处理器解耦
         确保即使调用者被取消，重启流程也能完整执行
         
         :return: bool 重新加载是否成功
         """
         try:
             # 先执行反初始化
-            uninit_success = await self.uninit()
-            if not uninit_success:
-                logger.warning("[Reload] 反初始化不完全，将继续尝试重新初始化")
+            await self.uninit()
             
             # 再执行初始化
-            logger.info("[Reload] 开始重新初始化SDK...")
             if not await self.init():
                 logger.error("[Reload] 初始化失败，请检查日志")
                 return False
             
-            logger.info("[Reload] 正在启动适配器...")
+            # 启动适配器
             await self.adapter.startup()
             
             logger.info("[Reload] 重新加载完成")
-            logger.info(f"[Reload] "+"-"*50+" [Reload]")
+            logger.info(f"[Reload] " + "-"*50 + " ErisPulse已重新加载 -"*50+" [Reload]")
             return True
         except Exception as e:
             logger.error(f"[Reload] 重启失败: {e}")
@@ -656,12 +652,18 @@ if __name__ == "__main__":
         """
         SDK 重新启动
         
-        执行完整的反初始化后再初始化过程
+        执行完整的反初始化后再初始化过程，并重新启动适配器
         
-        注意：此函数使用后台任务执行重启流程，确保即使当前事件处理器被取消，
+        {!--< tips >!--}
+        使用 asyncio.shield 保护重启任务，确保即使当前事件处理器被取消，
         重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+
+        注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
+        {!--< /tips >!--}
         
-        :return: bool 重新加载是否成功（后台任务完成时返回）
+        :return: bool 重新加载是否成功
+        
+        :raises RuntimeError: 当初始化失败时抛出
         
         :example:
         >>> await sdk.restart()
@@ -669,16 +671,13 @@ if __name__ == "__main__":
         logger.info("[Reload] 开始重新加载SDK...")
         
         # 创建后台任务执行重启，与当前事件处理器解耦
-        task = asyncio.create_task(self._restart_task())
+        task = asyncio.create_task(self._do_restart())
         
         # 使用 shield 确保任务不被取消
         try:
-            result = await asyncio.shield(task)
-            return result
+            return await asyncio.shield(task)
         except asyncio.CancelledError:
             logger.info("[Reload] 重启任务被外部取消，但将在后台继续执行")
-            # 任务会在后台继续执行，我们返回 True 表示重启已启动
-            # 注意：这是异步启动，实际重启结果需要查看日志
             return True
         
     async def uninit(self) -> bool:
