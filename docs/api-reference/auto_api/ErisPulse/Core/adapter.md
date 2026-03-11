@@ -59,19 +59,20 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async startup(platforms = None)`
+##### `async async startup(platforms: Optional[Union[str, List[str]]] = None)`
 
 启动指定的适配器
 
-:param platforms: 要启动的平台列表，None表示所有平台
-
+:param platforms: 要启动的平台，可以是单个平台名、平台名列表或None（表示所有平台）
 **异常**: `ValueError` - 当平台未注册时抛出
 
 **示例**:
 ```python
 >>> # 启动所有适配器
 >>> await adapter.startup()
->>> # 启动指定适配器
+>>> # 启动单个适配器
+>>> await adapter.startup("Platform1")
+>>> # 启动多个适配器
 >>> await adapter.startup(["Platform1", "Platform2"])
 ```
 
