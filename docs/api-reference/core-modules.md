@@ -301,12 +301,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 注册 WebSocket 路由
+# 注册 WebSocket 路由（默认自动接受连接）
 async def websocket_handler(websocket: WebSocket):
-    await websocket.accept()
+    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+    auto_accept=True  # 默认为 True，可省略
+)
+
+# 注册 WebSocket 路由（手动控制连接）
+async def manual_websocket_handler(websocket: WebSocket):
+    # 根据 condition 决定是否接受连接
+    if some_condition:
+        await websocket.accept()
+        # 处理连接...
+    else:
+        await websocket.close(code=1008, reason="Not allowed")
 
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
@@ -314,16 +330,27 @@ async def auth_handler(websocket: WebSocket) -> bool:
         return True
     return False
 
-router.register_websocket(
+sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler
+    handler=manual_websocket_handler,
+    auth_handler=auth_handler,
+    auto_accept=False  # 手动控制连接
 )
 
 # 取消路由
 sdk.router.unregister_websocket("MyModule", "/ws")
 ```
+
+**参数说明：**
+
+- `module_name`: 模块名称
+- `path`: WebSocket 路径
+- `handler`: 处理函数
+- `auth_handler`: 可选的认证函数
+- `auto_accept`: 是否自动接受连接（默认 `True`）
+  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
+  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
 
 ### 路由信息
 
