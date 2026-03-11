@@ -85,7 +85,7 @@ ErisPulse 路由系统
 ---
 
 
-##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None)`
+##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None, auto_accept: bool = True)`
 
 注册WebSocket路由
 
@@ -93,6 +93,7 @@ ErisPulse 路由系统
 :param path: str WebSocket路径
 :param handler: Callable[[WebSocket], Awaitable[Any]] 主处理函数
 :param auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
+:param auto_accept: bool 是否自动调用 websocket.accept()，默认 True
 
 **异常**: `ValueError` - 当路径已注册时抛出
 
