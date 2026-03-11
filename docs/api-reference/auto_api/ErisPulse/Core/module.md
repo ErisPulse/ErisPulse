@@ -75,16 +75,16 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async unload(module_name: str = 'Unknown')`
+##### `async async unload(module_name: Optional[str] = None)`
 
 卸载指定模块或所有模块
 
-- **module_name** (`str`): 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
-**返回值** (`bool`): 是否卸载成功
+:param module_name: 模块名称，None表示卸载所有模块（默认None）
+:return: 是否卸载成功
 
 **示例**:
 ```python
->>> await module.unload("MyModule")
+>>> await module.unload("MyModule")  # 卸载单个模块
 >>> await module.unload()  # 卸载所有模块
 ```
 
