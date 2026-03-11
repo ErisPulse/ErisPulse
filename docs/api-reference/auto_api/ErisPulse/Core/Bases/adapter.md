@@ -106,6 +106,72 @@ ErisPulse 适配器基础模块
 > 4. 支持OneBot12协议的事件处理
 
 
+#### 嵌套类
+
+
+##### `class Send(SendDSL)`
+
+消息发送DSL实现
+
+> **提示**
+> 1. 子类可以重写Text方法提供平台特定实现
+> 2. 可以添加新的消息类型(如Image, Voice等)
+
+
+###### 方法列表
+
+
+####### `Example(text: str)`
+
+示例消息发送方法
+
+:param text: 文本内容
+:return: 异步任务
+
+**示例**:
+```python
+>>> await adapter.Send.To("123").Example("Hello")
+```
+
+---
+
+
+####### `Raw_ob12(message)`
+
+发送原始 OneBot12 格式的消息
+
+注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
+默认实现仅记录警告，不实际发送消息。
+
+:param message: OneBot12 格式的消息段数组或单个消息段
+:param kwargs: 其他参数
+:return: 异步任务
+
+**示例**:
+```python
+>>> # 用户调用
+>>> await adapter.Send.To("user", "123").Raw_ob12([
+>>>     {"type": "text", "data": {"text": "Hello"}},
+>>>     {"type": "image", "data": {"file_id": "xxx"}}
+>>> ])
+
+>>> # 适配器子类重写示例（可选）
+>>> def Raw_ob12(self, message, **kwargs):
+>>>     return asyncio.create_task(
+>>>         self._adapter.call_api(
+>>>             "send_message",
+>>>             message=message,
+>>>             target_type=self._target_type,
+>>>             target_id=self._target_id,
+>>>             account_id=self._account_id,
+>>>             **kwargs
+>>>         )
+>>>     )
+```
+
+---
+
+
 #### 方法列表
 
 
