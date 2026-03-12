@@ -75,6 +75,12 @@
 - @wsu2059q
   - 修复极端情况下 WebSocket 连接时 ASGI 消息顺序错误："Expected ASGI message 'websocket.send' or 'websocket.close', but got 'websocket.accept'"
 
+### 重构
+- @wsu2059q
+  - `config` 模块配置文件写入优化：
+    - 新增 `_sort_config_dict` 方法，递归排序配置字典
+    - 确保配置文件中同一模块的配置项排列在一起，提升可读性
+
 ### 文档
 - @wsu2059q
   - 更新所有相关文档，说明 `auto_accept` 参数的使用方法和两种模式差异
