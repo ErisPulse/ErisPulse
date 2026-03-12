@@ -61,6 +61,31 @@
     - 优化某模块的性能
   ```
 
+
+## [2.3.8-dev.0] - 2026/03/11
+> 开发版本
+
+### 变更
+- @wsu2059q
+  - `router` 模块 WebSocket 路由增强：
+    - `register_websocket` 方法新增 `auto_accept` 参数（默认 `True`）
+    - `auto_accept=False` 时，handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
+
+### 修复
+- @wsu2059q
+  - 修复极端情况下 WebSocket 连接时 ASGI 消息顺序错误："Expected ASGI message 'websocket.send' or 'websocket.close', but got 'websocket.accept'"
+
+### 重构
+- @wsu2059q
+  - `config` 模块配置文件写入优化：
+    - 新增 `_sort_config_dict` 方法，递归排序配置字典
+    - 确保配置文件中同一模块的配置项排列在一起，提升可读性
+
+### 文档
+- @wsu2059q
+  - 更新所有相关文档，说明 `auto_accept` 参数的使用方法和两种模式差异
+  - 更新示例代码，展示自动接受和手动控制连接两种用法
+
 ---
 
 ## [2.3.7] - 2026/03/10
