@@ -109,6 +109,27 @@ class ConfigManager:
                 self._cache = {}
                 self._cache_timestamp = time.time()
 
+    def _sort_config_dict(self, config_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        递归地对配置字典进行排序，确保同一模块的配置项排列在一起
+        :param config_dict: 待排序的配置字典
+        :return: 排序后的配置字典
+        """
+        if not isinstance(config_dict, dict):
+            return config_dict
+        
+        # 按 key 排序
+        sorted_dict = {}
+        for key in sorted(config_dict.keys()):
+            value = config_dict[key]
+            # 递归处理嵌套字典
+            if isinstance(value, dict):
+                sorted_dict[key] = self._sort_config_dict(value)
+            else:
+                sorted_dict[key] = value
+        
+        return sorted_dict
+
     def _flush_config(self) -> None:
         """
         将待写入的配置刷新到文件
@@ -135,12 +156,15 @@ class ConfigManager:
                         current = current[k]
                     current[keys[-1]] = value
 
+                # 对配置字典进行排序，确保同一模块的配置项排列在一起
+                sorted_config = self._sort_config_dict(config)
+
                 # 写入文件
                 with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
-                    toml.dump(config, f)
+                    toml.dump(sorted_config, f)
 
                 # 更新缓存并清除待写入队列
-                self._cache = config
+                self._cache = sorted_config
                 self._cache_timestamp = time.time()
                 self._dirty_keys.clear()
 
