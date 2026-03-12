@@ -21,6 +21,80 @@ class PromptGenerator:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
+    def _system_prompt(self, prompt_type: str) -> str:
+        """生成系统提示词
+        
+        Args:
+            prompt_type: 提示词类型 (module, adapter, full)
+        
+        Returns:
+            系统提示词内容
+        """
+        prompts = {
+            "module": """你是一个 ErisPulse 模块开发专家，精通以下领域：
+
+- 异步编程 (async/await)
+- 事件驱动架构设计
+- Python 包开发和模块化设计
+- OneBot12 事件标准
+- ErisPulse SDK 的核心模块 (Storage, Config, Logger, Router)
+- Event 包装类和事件处理机制
+
+你擅长：
+- 编写高质量的异步代码
+- 设计模块化、可扩展的模块架构
+- 实现事件处理器和命令系统
+- 使用存储系统和配置管理
+- 遵循 ErisPulse 最佳实践
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+""",
+            "adapter": """你是一个 ErisPulse 适配器开发专家，精通以下领域：
+
+- 异步网络编程 (asyncio, aiohttp)
+- WebSocket 和 WebHook 连接管理
+- OneBot12 事件转换标准
+- 平台 API 集成和适配
+- SendDSL 链式消息发送系统
+- 事件转换器 (Converter) 设计
+- API 响应标准化
+
+你擅长：
+- 将平台原生事件转换为 OneBot12 标准格式
+- 实现可靠的网络连接和重试机制
+- 设计优雅的链式调用 API
+- 遵循 ErisPulse 适配器开发规范
+- 处理多账户和配置管理
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+""",
+            "full": """你是一个 ErisPulse 全栈开发专家，精通以下领域：
+
+- ErisPulse 框架的核心架构和设计理念
+- 模块开发和适配器开发
+- 异步编程和事件驱动架构
+- OneBot12 事件标准和平台适配
+- SDK 核心模块 (Storage, Config, Logger, Router, Lifecycle)
+- Event 包装类和事件处理系统
+- CLI 命令开发和扩展
+- 懒加载系统和生命周期管理
+- SendDSL 消息发送系统
+- 路由系统和 FastAPI 集成
+
+你擅长：
+- 编写高质量的异步 Python 代码
+- 设计模块化、可扩展的架构
+- 开发模块、适配器和 CLI 扩展
+- 使用 ErisPulse 的所有核心功能
+- 遵循 ErisPulse 的最佳实践和代码规范
+- 解决跨平台兼容性问题
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+"""
+        }
+        
+        return prompts.get(prompt_type, "")
+    
     def read_file(self, filepath: str) -> str:
         """读取文件内容"""
         file_path = self.docs_dir / filepath
@@ -42,6 +116,11 @@ class PromptGenerator:
     def generate_module_dev_prompt(self) -> str:
         """生成模块开发 prompt"""
         sections = []
+        
+        # 添加系统提示词
+        sections.append(self._system_prompt("module"))
+        sections.append("\n")
+        sections.append("---\n\n")
         
         # 1. 基础概念
         sections.append(self._section_header("ErisPulse 模块开发指南"))
@@ -92,6 +171,11 @@ class PromptGenerator:
     def generate_adapter_dev_prompt(self) -> str:
         """生成适配器开发 prompt"""
         sections = []
+        
+        # 添加系统提示词
+        sections.append(self._system_prompt("adapter"))
+        sections.append("\n")
+        sections.append("---\n\n")
         
         # 1. 基础概念
         sections.append(self._section_header("ErisPulse 适配器开发指南"))
@@ -149,7 +233,12 @@ class PromptGenerator:
         """生成完整开发 prompt"""
         sections = []
         
-        # 添加提示
+        # 添加系统提示词
+        sections.append(self._system_prompt("full"))
+        sections.append("\n")
+        sections.append("---\n\n")
+        
+        # 添加标题和提示
         sections.append("# ErisPulse 完整开发物料\n")
         sections.append("> **注意**：本文档内容较多，建议仅用于具有强大上下文能力的 AI 模型\n\n")
         sections.append("---\n\n")
