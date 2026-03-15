@@ -45,6 +45,9 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
 # 使用 `uv` 安装
 uv install ErisPulse
 ```
+
+![安装演示](.github/assets/docs/install_pip.gif)
+
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
 
 ### 初始化项目
