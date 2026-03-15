@@ -373,6 +373,27 @@ class Logger:
         """
         self._console.print()
 
+    def __getattr__(self, name: str) -> 'LoggerChild':
+        """
+        通过属性访问自动创建子logger
+        
+        :param name: 子logger名称
+        :return: LoggerChild 子logger实例
+        :raises AttributeError: 当访问无效属性时抛出
+            
+        :example:
+        >>> # 自动创建子logger并记录日志
+        >>> logger.mymodule.info("message")
+        >>> 
+        >>> # 支持嵌套访问
+        >>> logger.mymodule.database.info("db message")
+        >>> 
+        >>> # 相当于 logger.get_child("mymodule").info("message")
+        """
+
+        # 自动创建子logger，使用绝对模式（不添加调用者前缀）
+        return self.get_child(name, relative=False)
+
 
 class LoggerChild:
     """
@@ -470,6 +491,24 @@ class LoggerChild:
         """
         full_child_name = f"{self._name}.{child_name}"
         return LoggerChild(self._parent, full_child_name)
+
+    def __getattr__(self, name: str) -> 'LoggerChild':
+        """
+        通过属性访问自动创建子logger
+        
+        :param name: 子logger名称
+        :return: LoggerChild 子logger实例
+        :raises AttributeError: 当访问无效属性时抛出
+            
+        :example:
+        >>> # 嵌套创建子logger
+        >>> child = logger.mymodule
+        >>> nested_child = child.database  # 相当于 logger.mymodule.database
+        >>> nested_child.info("db message")
+        """
+        
+        # 返回嵌套的子logger
+        return self.get_child(name)
 
 
 logger = Logger()
