@@ -42,6 +42,41 @@ class SendDSL:
         self._target_to = target_id
         self._account_id = account_id
     
+    def __getattr__(self, name: str):
+        """
+        动态属性访问处理，实现大小写不敏感调用
+        
+        1. 如果找到匹配的方法（忽略大小写），返回该方法
+        2. 如果没找到，打印警告并抛出 AttributeError
+        
+        :param name: 属性名
+        :return: 匹配的方法或属性
+        :raises AttributeError: 当属性不存在时抛出
+        """
+        # 检查所有实际存在的方法
+        for attr_name in dir(self.__class__):
+            # 跳过特殊方法
+            if attr_name.startswith('_'):
+                continue
+            
+            # 大小写不敏感匹配
+            if attr_name.lower() == name.lower():
+                # 返回实际的方法绑定到当前实例
+                attr = getattr(self.__class__, attr_name)
+                if callable(attr):
+                    return attr.__get__(self, self.__class__)
+                return attr
+        
+        # 没有找到匹配的方法，打印警告
+        from .. import logger
+        logger.warning(
+            f"平台 {self._adapter.__class__.__name__} "
+            f"未实现 {name} 发送方法"
+        )
+        
+        # 抛出 AttributeError，这样 hasattr() 能正常工作
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
     def At(self, **kwargs):
         from .. import logger
         logger.warning(
