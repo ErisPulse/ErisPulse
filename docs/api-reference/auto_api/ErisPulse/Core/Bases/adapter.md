@@ -44,6 +44,20 @@ ErisPulse 适配器基础模块
 ---
 
 
+##### `__getattr__(name: str)`
+
+动态属性访问处理，实现大小写不敏感调用
+
+1. 如果找到匹配的方法（忽略大小写），返回该方法
+2. 如果没找到，打印警告并抛出 AttributeError
+
+:param name: 属性名
+:return: 匹配的方法或属性
+**异常**: `AttributeError` - 当属性不存在时抛出
+
+---
+
+
 ##### `To(target_type: str = None, target_id: Union[str, int] = None)`
 
 设置消息目标
