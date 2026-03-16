@@ -428,6 +428,18 @@ child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模块日志")
 ```
 
+**属性访问语法糖**
+
+除了使用 `get_child()` 方法外，你还可以通过**属性访问**的方式创建子logger，这是一种更简洁的**语法糖**写法：
+
+```python
+# 通过属性访问创建子logger
+sdk.logger.mymodule.info("模块消息")
+
+# 支持嵌套访问
+sdk.logger.mymodule.database.info("数据库消息")
+```
+
 ### Router（路由）
 
 HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
