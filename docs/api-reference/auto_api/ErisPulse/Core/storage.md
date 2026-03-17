@@ -138,6 +138,13 @@ use_global_db = true
 ---
 
 
+##### `keys()`
+
+标准字典接口方法，返回所有存储项的键名 -> 代理 --> get_all_keys
+
+---
+
+
 ##### `set(key: str, value: Any)`
 
 设置存储项的值
