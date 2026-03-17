@@ -216,6 +216,12 @@ class StorageManager:
             from .logger import logger
             logger.error(f"获取所有键名时发生错误: {e}")
             return []
+        
+    def keys(self) -> List[str]:
+        """
+        标准字典接口方法，返回所有存储项的键名 -> 代理 --> get_all_keys
+        """
+        return self.get_all_keys()
 
     def set(self, key: str, value: Any) -> bool:
         """
