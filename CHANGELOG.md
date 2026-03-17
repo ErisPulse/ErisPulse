@@ -71,6 +71,7 @@
     - 实现大小写不敏感的方法调用，支持 `Text()`、`text()`、`TEXT()` 等任意大小写形式
     - 调用不存在的方法时，将完全兼容 `hasattr()` 逻辑
   - `logger` 的 `get_child` 新增属性获取，支持 `__getattr__` 方法：“logger.Module = logger.get_child("Module")” 是对等的
+  - `storage` 新增 `keys` 方法,用于代理 `get_all_keys` 作为字典标准的方法获取全部key
 
 ---
 
