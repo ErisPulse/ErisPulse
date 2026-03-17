@@ -22,7 +22,7 @@
 - **模块总数**: 53
 - **类总数**: 43（包括 4 个嵌套类）
 - **函数总数**: 16
-- **方法总数**: 411
+- **方法总数**: 412
 
 ---
 
@@ -206,7 +206,7 @@
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
 
-📦 1 个类 | 🔧 16 个方法
+📦 1 个类 | 🔧 17 个方法
 
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
