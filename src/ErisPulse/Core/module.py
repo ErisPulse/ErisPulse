@@ -278,6 +278,31 @@ class ModuleManager(ManagerBase):
         """
         return module_name in self._loaded_modules
         
+    def is_running(self, module_name: str) -> bool:
+        """
+        检查模块是否正在运行（已加载）
+
+        :param module_name: 模块名称
+        :return: 模块是否正在运行
+
+        :example:
+        >>> if module.is_running("MyModule"):
+        >>>     print("MyModule 正在运行")
+        """
+        return self.is_loaded(module_name)
+
+    def list_running(self) -> List[str]:
+        """
+        列出所有正在运行的模块（已加载）
+
+        :return: 模块名称列表
+
+        :example:
+        >>> running = module.list_running()
+        >>> print("正在运行的模块:", running)
+        """
+        return self.list_loaded()
+
     def list_registered(self) -> List[str]:
         """
         列出所有已注册的模块
