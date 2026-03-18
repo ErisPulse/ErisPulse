@@ -144,6 +144,37 @@ ErisPulse 模块系统
 ---
 
 
+##### `is_running(module_name: str)`
+
+检查模块是否正在运行（已加载）
+
+:param module_name: 模块名称
+:return: 模块是否正在运行
+
+**示例**:
+```python
+>>> if module.is_running("MyModule"):
+>>>     print("MyModule 正在运行")
+```
+
+---
+
+
+##### `list_running()`
+
+列出所有正在运行的模块（已加载）
+
+:return: 模块名称列表
+
+**示例**:
+```python
+>>> running = module.list_running()
+>>> print("正在运行的模块:", running)
+```
+
+---
+
+
 ##### `list_registered()`
 
 列出所有已注册的模块
