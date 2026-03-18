@@ -291,6 +291,37 @@ OneBot12协议事件监听装饰器
 ---
 
 
+##### `is_running(platform: str)`
+
+检查适配器是否正在运行（已启动）
+
+:param platform: 平台名称
+:return: 适配器是否正在运行
+
+**示例**:
+```python
+>>> if adapter.is_running("onebot11"):
+>>>     print("onebot11 适配器正在运行")
+```
+
+---
+
+
+##### `list_running()`
+
+列出所有正在运行的适配器（已启动）
+
+:return: 平台名称列表
+
+**示例**:
+```python
+>>> running = adapter.list_running()
+>>> print("正在运行的适配器:", running)
+```
+
+---
+
+
 ##### `list_sends(platform: str)`
 
 列出指定平台支持的发送方法
