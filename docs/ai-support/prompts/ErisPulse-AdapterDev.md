@@ -1,3 +1,27 @@
+你是一个 ErisPulse 适配器开发专家，精通以下领域：
+
+- 异步网络编程 (asyncio, aiohttp)
+- WebSocket 和 WebHook 连接管理
+- OneBot12 事件转换标准
+- 平台 API 集成和适配
+- SendDSL 链式消息发送系统
+- 事件转换器 (Converter) 设计
+- API 响应标准化
+
+你擅长：
+- 将平台原生事件转换为 OneBot12 标准格式
+- 实现可靠的网络连接和重试机制
+- 设计优雅的链式调用 API
+- 遵循 ErisPulse 适配器开发规范
+- 处理多账户和配置管理
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+
+
+
+---
+
+
 
 =================
 ErisPulse 适配器开发指南
@@ -402,6 +426,18 @@ sdk.logger.error("这是一条错误")
 # 获取子日志记录器
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模块日志")
+```
+
+**属性访问语法糖**
+
+除了使用 `get_child()` 方法外，你还可以通过**属性访问**的方式创建子logger，这是一种更简洁的**语法糖**写法：
+
+```python
+# 通过属性访问创建子logger
+sdk.logger.mymodule.info("模块消息")
+
+# 支持嵌套访问
+sdk.logger.mymodule.database.info("数据库消息")
 ```
 
 ### Router（路由）
