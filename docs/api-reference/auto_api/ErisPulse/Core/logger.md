@@ -100,8 +100,24 @@ ErisPulse 日志系统
 获取子日志记录器
 
 :param child_name: 子模块名称(可选)
-:param relative: 是否相对于调用者模块（默认True），False表示使用完整名称
+:param relative: 是否相对于调用者模块（默认True）
+    - True: 使用"调用模块.子模块"作为完整名称
+    - False: 直接使用child_name作为完整名称
 :return: LoggerChild 子日志记录器实例
+
+**示例**:
+```python
+>>> # 相对模式（默认）：自动添加调用模块前缀
+>>> child_logger = logger.get_child("database")
+>>> # 假设调用者是"mymodule"，完整名称将是"mymodule.database"
+>>>
+>>> # 绝对模式：直接使用指定名称
+>>> child_logger = logger.get_child("custom.module.name", relative=False)
+>>> # 完整名称将是"custom.module.name"
+>>>
+>>> # 获取当前模块的日志记录器
+>>> my_logger = logger.get_child()
+```
 
 ---
 
@@ -208,6 +224,29 @@ ErisPulse 日志系统
 ---
 
 
+##### `__getattr__(name: str)`
+
+通过属性访问自动创建子logger
+
+:param name: 子logger名称
+:return: LoggerChild 子logger实例
+**异常**: `AttributeError` - 当访问无效属性时抛出
+    
+
+**示例**:
+```python
+>>> # 自动创建子logger并记录日志
+>>> logger.mymodule.info("message")
+>>> 
+>>> # 支持嵌套访问
+>>> logger.mymodule.database.info("db message")
+>>> 
+>>> # 相当于 logger.get_child("mymodule").info("message")
+```
+
+---
+
+
 ### `class LoggerChild`
 
 子日志记录器
@@ -292,6 +331,26 @@ ErisPulse 日志系统
 
 :param child_name: 子模块名称
 :return: LoggerChild 子日志记录器实例
+
+---
+
+
+##### `__getattr__(name: str)`
+
+通过属性访问自动创建子logger
+
+:param name: 子logger名称
+:return: LoggerChild 子logger实例
+**异常**: `AttributeError` - 当访问无效属性时抛出
+    
+
+**示例**:
+```python
+>>> # 嵌套创建子logger
+>>> child = logger.mymodule
+>>> nested_child = child.database  # 相当于 logger.mymodule.database
+>>> nested_child.info("db message")
+```
 
 ---
 

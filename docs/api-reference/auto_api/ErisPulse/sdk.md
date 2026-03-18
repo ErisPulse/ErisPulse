@@ -43,6 +43,91 @@ ErisPulse SDK 主类
 > - adapter_server: 路由管理器别名
 
 
+#### 嵌套类
+
+
+##### `class Initializer`
+
+初始化协调器
+
+协调适配器和模块的加载流程，提供统一的初始化接口
+
+> **提示**
+> 使用方式：
+> >>> initializer = Initializer(sdk_instance)
+> >>> success = await initializer.init()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async init()`
+
+初始化所有模块和适配器
+
+执行步骤:
+1. 从 PyPI 包加载适配器
+2. 从 PyPI 包加载模块
+3. 注册适配器
+4. 注册模块
+5. 初始化模块
+
+:return: bool 初始化是否成功
+
+**异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
+##### `class Uninitializer`
+
+反初始化协调器
+
+协调适配器和模块的卸载流程，提供统一的反初始化接口
+
+> **提示**
+> 使用方式：
+> >>> uninitializer = Uninitializer(sdk_instance)
+> >>> success = await uninitializer.uninit()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+反初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async uninit()`
+
+执行反初始化
+
+执行步骤:
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理事件处理器
+4. 清理管理器
+5. 清理 SDK 模块属性
+
+:return: bool 反初始化是否成功
+
+---
+
+
 #### 方法列表
 
 
@@ -151,12 +236,12 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
-##### `async async _restart_task()`
+##### `async async _do_restart()`
 
 > **内部方法** 
-实际执行重启逻辑的独立任务
+实际执行重启逻辑的内部方法
 
-此函数在后台任务中运行，与调用 restart() 的事件处理器解耦
+在后台任务中运行，与调用 restart() 的事件处理器解耦
 确保即使调用者被取消，重启流程也能完整执行
 
 :return: bool 重新加载是否成功
@@ -168,12 +253,16 @@ SDK 初始化入口，返回 Task 对象
 
 SDK 重新启动
 
-执行完整的反初始化后再初始化过程
+执行完整的反初始化后再初始化过程，并重新启动适配器
 
-注意：此函数使用后台任务执行重启流程，确保即使当前事件处理器被取消，
-重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+> **提示**
+> 使用 asyncio.shield 保护重启任务，确保即使当前事件处理器被取消，
+> 重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+> 注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
 
-:return: bool 重新加载是否成功（后台任务完成时返回）
+:return: bool 重新加载是否成功
+
+**异常**: `RuntimeError` - 当初始化失败时抛出
 
 **示例**:
 ```python

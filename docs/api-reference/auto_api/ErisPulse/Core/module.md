@@ -75,16 +75,16 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async unload(module_name: str = 'Unknown')`
+##### `async async unload(module_name: Optional[str] = None)`
 
 卸载指定模块或所有模块
 
-- **module_name** (`str`): 模块名称，如果为"Unknown"则卸载所有模块 (默认: "Unknown")
-**返回值** (`bool`): 是否卸载成功
+:param module_name: 模块名称，None表示卸载所有模块（默认None）
+:return: 是否卸载成功
 
 **示例**:
 ```python
->>> await module.unload("MyModule")
+>>> await module.unload("MyModule")  # 卸载单个模块
 >>> await module.unload()  # 卸载所有模块
 ```
 
@@ -139,6 +139,37 @@ ErisPulse 模块系统
 **示例**:
 ```python
 >>> if module.is_loaded("MyModule"): ...
+```
+
+---
+
+
+##### `is_running(module_name: str)`
+
+检查模块是否正在运行（已加载）
+
+:param module_name: 模块名称
+:return: 模块是否正在运行
+
+**示例**:
+```python
+>>> if module.is_running("MyModule"):
+>>>     print("MyModule 正在运行")
+```
+
+---
+
+
+##### `list_running()`
+
+列出所有正在运行的模块（已加载）
+
+:return: 模块名称列表
+
+**示例**:
+```python
+>>> running = module.list_running()
+>>> print("正在运行的模块:", running)
 ```
 
 ---

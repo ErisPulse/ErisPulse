@@ -1259,7 +1259,7 @@
     "Event 回复方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 316,
+        "line": 328,
         "level": 3,
         "title": "Event 回复方法"
       }
@@ -1475,7 +1475,7 @@
     "Router（路由）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 247,
+        "line": 259,
         "level": 3,
         "title": "Router（路由）"
       }
@@ -1537,7 +1537,7 @@
     "SendDSL 消息发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 286,
+        "line": 298,
         "level": 2,
         "title": "SendDSL 消息发送"
       }
@@ -1713,7 +1713,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 353,
+        "line": 365,
         "level": 2,
         "title": "下一步"
       },
@@ -2321,7 +2321,7 @@
     "健康检查": [
       {
         "document": "advanced/router.md",
-        "line": 100,
+        "line": 128,
         "level": 3,
         "title": "健康检查"
       }
@@ -3095,7 +3095,7 @@
     "基础发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 290,
+        "line": 302,
         "level": 3,
         "title": "基础发送"
       }
@@ -3835,7 +3835,7 @@
     "懒加载系统": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 333,
+        "line": 345,
         "level": 2,
         "title": "懒加载系统"
       }
@@ -4281,7 +4281,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 129,
+        "line": 157,
         "level": 2,
         "title": "最佳实践"
       },
@@ -4817,7 +4817,7 @@
     "注销路由": [
       {
         "document": "advanced/router.md",
-        "line": 53,
+        "line": 81,
         "level": 3,
         "title": "注销路由"
       }
@@ -5135,7 +5135,7 @@
     "生命周期集成": [
       {
         "document": "advanced/router.md",
-        "line": 115,
+        "line": 143,
         "level": 2,
         "title": "生命周期集成"
       }
@@ -5225,7 +5225,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 136,
+        "line": 164,
         "level": 2,
         "title": "相关文档"
       },
@@ -5243,7 +5243,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 342,
+        "line": 369,
         "level": 2,
         "title": "相关文档"
       },
@@ -5487,7 +5487,7 @@
     "系统路由": [
       {
         "document": "advanced/router.md",
-        "line": 96,
+        "line": 124,
         "level": 2,
         "title": "系统路由"
       }
@@ -5645,7 +5645,7 @@
     "认证机制": [
       {
         "document": "advanced/router.md",
-        "line": 77,
+        "line": 105,
         "level": 2,
         "title": "认证机制"
       }
@@ -5795,7 +5795,7 @@
     "路径处理": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 95,
         "level": 2,
         "title": "路径处理"
       }
@@ -5803,7 +5803,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 328,
+        "line": 355,
         "level": 3,
         "title": "路由信息"
       }
@@ -5811,7 +5811,7 @@
     "路由列表": [
       {
         "document": "advanced/router.md",
-        "line": 108,
+        "line": 136,
         "level": 3,
         "title": "路由列表"
       }
@@ -6339,7 +6339,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 303,
+        "line": 315,
         "level": 3,
         "title": "链式修饰"
       }

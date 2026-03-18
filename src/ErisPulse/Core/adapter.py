@@ -8,7 +8,7 @@ import functools
 import asyncio
 import inspect
 from typing import (
-    Callable, Any, Dict, List, Type, Optional, Set
+    Callable, Any, Dict, List, Type, Optional, Set, Union
 )
 from collections import defaultdict
 from .logger import logger
@@ -115,18 +115,19 @@ class AdapterManager(ManagerBase):
         
         return True
     
-    async def startup(self, platforms = None) -> None:
+    async def startup(self, platforms: Optional[Union[str, List[str]]] = None) -> None:
         """
         启动指定的适配器
 
-        :param platforms: 要启动的平台列表，None表示所有平台
-
+        :param platforms: 要启动的平台，可以是单个平台名、平台名列表或None（表示所有平台）
         :raises ValueError: 当平台未注册时抛出
 
         :example:
         >>> # 启动所有适配器
         >>> await adapter.startup()
-        >>> # 启动指定适配器
+        >>> # 启动单个适配器
+        >>> await adapter.startup("Platform1")
+        >>> # 启动多个适配器
         >>> await adapter.startup(["Platform1", "Platform2"])
         """
         if platforms is None:
@@ -585,6 +586,39 @@ class AdapterManager(ManagerBase):
             if registered.lower() == platform_lower:
                 return instance
         return None
+
+    def is_running(self, platform: str) -> bool:
+        """
+        检查适配器是否正在运行（已启动）
+
+        :param platform: 平台名称
+        :return: 适配器是否正在运行
+
+        :example:
+        >>> if adapter.is_running("onebot11"):
+        >>>     print("onebot11 适配器正在运行")
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            return False
+        return adapter_instance in self._started_instances
+
+    def list_running(self) -> List[str]:
+        """
+        列出所有正在运行的适配器（已启动）
+
+        :return: 平台名称列表
+
+        :example:
+        >>> running = adapter.list_running()
+        >>> print("正在运行的适配器:", running)
+        """
+        running_platforms = []
+        for platform, instance in self._adapters.items():
+            if instance in self._started_instances:
+                running_platforms.append(platform)
+        return running_platforms
+
 
     def list_sends(self, platform: str) -> List[str]:
         """

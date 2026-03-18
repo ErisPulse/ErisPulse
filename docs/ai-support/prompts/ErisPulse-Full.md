@@ -1,3 +1,31 @@
+你是一个 ErisPulse 全栈开发专家，精通以下领域：
+
+- ErisPulse 框架的核心架构和设计理念
+- 模块开发和适配器开发
+- 异步编程和事件驱动架构
+- OneBot12 事件标准和平台适配
+- SDK 核心模块 (Storage, Config, Logger, Router, Lifecycle)
+- Event 包装类和事件处理系统
+- CLI 命令开发和扩展
+- 懒加载系统和生命周期管理
+- SendDSL 消息发送系统
+- 路由系统和 FastAPI 集成
+
+你擅长：
+- 编写高质量的异步 Python 代码
+- 设计模块化、可扩展的架构
+- 开发模块、适配器和 CLI 扩展
+- 使用 ErisPulse 的所有核心功能
+- 遵循 ErisPulse 的最佳实践和代码规范
+- 解决跨平台兼容性问题
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+
+
+
+---
+
+
 # ErisPulse 完整开发物料
 
 > **注意**：本文档内容较多，建议仅用于具有强大上下文能力的 AI 模型
@@ -768,6 +796,18 @@ sdk.logger.error("这是一条错误")
 # 获取子日志记录器
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模块日志")
+```
+
+**属性访问语法糖**
+
+除了使用 `get_child()` 方法外，你还可以通过**属性访问**的方式创建子logger，这是一种更简洁的**语法糖**写法：
+
+```python
+# 通过属性访问创建子logger
+sdk.logger.mymodule.info("模块消息")
+
+# 支持嵌套访问
+sdk.logger.mymodule.database.info("数据库消息")
 ```
 
 ### Router（路由）
@@ -5741,12 +5781,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 注册 WebSocket 路由
+# 注册 WebSocket 路由（默认自动接受连接）
 async def websocket_handler(websocket: WebSocket):
-    await websocket.accept()
+    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+    auto_accept=True  # 默认为 True，可省略
+)
+
+# 注册 WebSocket 路由（手动控制连接）
+async def manual_websocket_handler(websocket: WebSocket):
+    # 根据 condition 决定是否接受连接
+    if some_condition:
+        await websocket.accept()
+        # 处理连接...
+    else:
+        await websocket.close(code=1008, reason="Not allowed")
 
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
@@ -5754,16 +5810,27 @@ async def auth_handler(websocket: WebSocket) -> bool:
         return True
     return False
 
-router.register_websocket(
+sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler
+    handler=manual_websocket_handler,
+    auth_handler=auth_handler,
+    auto_accept=False  # 手动控制连接
 )
 
 # 取消路由
 sdk.router.unregister_websocket("MyModule", "/ws")
 ```
+
+**参数说明：**
+
+- `module_name`: 模块名称
+- `path`: WebSocket 路径
+- `handler`: 处理函数
+- `auth_handler`: 可选的认证函数
+- `auto_accept`: 是否自动接受连接（默认 `True`）
+  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
+  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
 
 ### 路由信息
 
@@ -7123,8 +7190,9 @@ router.register_http_route(
 ```python
 from fastapi import WebSocket
 
+# 默认自动接受连接
 async def websocket_handler(websocket: WebSocket):
-    # 不需要 await websocket.accept() ，因为内部已自动调用
+    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
@@ -7132,9 +7200,36 @@ async def websocket_handler(websocket: WebSocket):
 router.register_websocket(
     module_name="my_module",
     path="/ws",
-    handler=websocket_handler
+    handler=websocket_handler,
+    auto_accept=True  # 默认为 True，可省略
+)
+
+# 手动控制连接
+async def manual_websocket_handler(websocket: WebSocket):
+    # 根据 condition 决定是否接受连接
+    if some_condition:
+        await websocket.accept()
+        # 处理连接...
+    else:
+        await websocket.close(code=1008, reason="Not allowed")
+
+router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=manual_websocket_handler,
+    auto_accept=False  # 手动控制连接
 )
 ```
+
+**参数说明：**
+
+- `module_name`: 模块名称
+- `path`: WebSocket 路径
+- `handler`: 处理函数
+- `auth_handler`: 可选的认证函数
+- `auto_accept`: 是否自动接受连接（默认 `True`）
+  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
+  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
 
 ### 注销路由
 
