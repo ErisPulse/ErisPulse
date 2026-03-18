@@ -587,6 +587,39 @@ class AdapterManager(ManagerBase):
                 return instance
         return None
 
+    def is_running(self, platform: str) -> bool:
+        """
+        检查适配器是否正在运行（已启动）
+
+        :param platform: 平台名称
+        :return: 适配器是否正在运行
+
+        :example:
+        >>> if adapter.is_running("onebot11"):
+        >>>     print("onebot11 适配器正在运行")
+        """
+        adapter_instance = self.get(platform)
+        if adapter_instance is None:
+            return False
+        return adapter_instance in self._started_instances
+
+    def list_running(self) -> List[str]:
+        """
+        列出所有正在运行的适配器（已启动）
+
+        :return: 平台名称列表
+
+        :example:
+        >>> running = adapter.list_running()
+        >>> print("正在运行的适配器:", running)
+        """
+        running_platforms = []
+        for platform, instance in self._adapters.items():
+            if instance in self._started_instances:
+                running_platforms.append(platform)
+        return running_platforms
+
+
     def list_sends(self, platform: str) -> List[str]:
         """
         列出指定平台支持的发送方法
