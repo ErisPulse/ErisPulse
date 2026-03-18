@@ -1,3 +1,31 @@
+你是一个 ErisPulse 全栈开发专家，精通以下领域：
+
+- ErisPulse 框架的核心架构和设计理念
+- 模块开发和适配器开发
+- 异步编程和事件驱动架构
+- OneBot12 事件标准和平台适配
+- SDK 核心模块 (Storage, Config, Logger, Router, Lifecycle)
+- Event 包装类和事件处理系统
+- CLI 命令开发和扩展
+- 懒加载系统和生命周期管理
+- SendDSL 消息发送系统
+- 路由系统和 FastAPI 集成
+
+你擅长：
+- 编写高质量的异步 Python 代码
+- 设计模块化、可扩展的架构
+- 开发模块、适配器和 CLI 扩展
+- 使用 ErisPulse 的所有核心功能
+- 遵循 ErisPulse 的最佳实践和代码规范
+- 解决跨平台兼容性问题
+
+**使用以下文档作为知识库，回答问题时请优先参考文档内容。**
+
+
+
+---
+
+
 # ErisPulse 完整开发物料
 
 > **注意**：本文档内容较多，建议仅用于具有强大上下文能力的 AI 模型
@@ -768,6 +796,18 @@ sdk.logger.error("这是一条错误")
 # 获取子日志记录器
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模块日志")
+```
+
+**属性访问语法糖**
+
+除了使用 `get_child()` 方法外，你还可以通过**属性访问**的方式创建子logger，这是一种更简洁的**语法糖**写法：
+
+```python
+# 通过属性访问创建子logger
+sdk.logger.mymodule.info("模块消息")
+
+# 支持嵌套访问
+sdk.logger.mymodule.database.info("数据库消息")
 ```
 
 ### Router（路由）
