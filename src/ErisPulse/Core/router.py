@@ -18,8 +18,18 @@ from .lifecycle import lifecycle
 import asyncio
 import socket
 import ipaddress
+import sys
+import importlib.metadata
+from datetime import datetime
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
+
+ERISPULSE_VERSION = "UnknownVersion"
+
+try:
+    ERISPULSE_VERSION = importlib.metadata.version('ErisPulse')
+except importlib.metadata.PackageNotFoundError:
+    pass
 
 
 class RouterManager:
@@ -55,6 +65,24 @@ class RouterManager:
         self._local_ips: List[Dict[str, str]] = []
         self._setup_core_routes()
 
+    def _normalize_path(self, prefix: str, path: str) -> str:
+        """
+        标准化路径，确保格式正确
+        
+        :param prefix: str 路径前缀（如模块名）
+        :param path: str 路径部分
+        
+        :return: 
+            str: 标准化后的完整路径
+        
+        {!--< internal-use >!--}
+        此方法仅供内部使用
+        {!--< /internal-use >!--}
+        """
+        # 去除首尾斜杠并合并
+        parts = [part.strip("/") for part in [prefix, path] if part.strip("/")]
+        return "/" + "/".join(parts)
+
     def _setup_core_routes(self) -> None:
         """
         设置系统核心路由
@@ -69,43 +97,26 @@ class RouterManager:
             健康检查端点
             
             :return: 
-                Dict[str, str]: 包含服务状态的字典
+                Dict[str, str]: 包含服务状态和版本信息的字典
             """
-            return {"status": "ok", "service": "ErisPulse Router"}
+            return {
+                "status": "ok",
+                "service": "ErisPulse Router",
+                "version": ERISPULSE_VERSION,
+                "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+            }
             
-        @self.app.get("/routes")
-        async def list_routes() -> Dict[str, Any]:
+        @self.app.get("/ping")
+        async def ping() -> Dict[str, Any]:
             """
-            列出所有已注册路由
+            连通性检查端点
             
             :return: 
-                Dict[str, Any]: 包含所有路由信息的字典
+                Dict[str, Any]: 包含响应状态和时间戳的字典
             """
-            http_routes = []
-            for adapter, routes in self._http_routes.items():
-                for path, methods_dict in routes.items():
-                    # 获取该路径的所有方法
-                    methods = list(methods_dict.keys())
-                    
-                    http_routes.append({
-                        "path": path,
-                        "adapter": adapter,
-                        "methods": methods
-                    })
-            
-            websocket_routes = []
-            for adapter, routes in self._websocket_routes.items():
-                for path, (handler, auth_handler) in routes.items():
-                    websocket_routes.append({
-                        "path": path,
-                        "adapter": adapter,
-                        "requires_auth": auth_handler is not None
-                    })
-            
             return {
-                "http_routes": http_routes,
-                "websocket_routes": websocket_routes,
-                "base_url": self.base_url
+                "pong": True,
+                "timestamp": datetime.utcnow().isoformat() + "Z"
             }
 
     def register_http_route(
@@ -125,7 +136,7 @@ class RouterManager:
         
         :raises ValueError: 当路径和方法都已注册时抛出
         """
-        full_path = f"/{module_name}{path}"
+        full_path = self._normalize_path(module_name, path)
         
         # 检查是否有冲突的方法
         conflicting_methods = []
@@ -168,10 +179,11 @@ class RouterManager:
         :param module_name: 模块名称
         :param path: 路由路径
 
-        :return: Bool
+        :return: 
+            bool: 是否成功取消注册
         """
         try:
-            full_path = f"/{module_name}{path}"
+            full_path = self._normalize_path(module_name, path)
             if full_path not in self._http_routes[module_name]:
                 logger.warning(f"\n取消注册HTTP路由失败: 路由不存在: {full_path}\n")
                 return False
@@ -212,7 +224,7 @@ class RouterManager:
         
         :raises ValueError: 当路径已注册时抛出
         """
-        full_path = f"/{module_name}{path}"
+        full_path = self._normalize_path(module_name, path)
         
         if full_path in self._websocket_routes[module_name]:
             raise ValueError(f"WebSocket路径 {full_path} 已注册")
@@ -254,10 +266,11 @@ class RouterManager:
         :param module_name: 模块名称
         :param path: WebSocket路径
 
-        :return: 是否成功取消注册
+        :return: 
+            bool: 是否成功取消注册
         """
         try:
-            full_path = f"/{module_name}{path}"
+            full_path = self._normalize_path(module_name, path)
 
             # 检查 WebSocket 路由是否存在于我们的内部记录中
             if full_path in self._websocket_routes.get(module_name, {}):
@@ -282,7 +295,8 @@ class RouterManager:
         """
         获取FastAPI应用实例
         
-        :return: FastAPI应用实例
+        :return: 
+            FastAPI: FastAPI应用实例
         """
         return self.app
 
@@ -406,8 +420,9 @@ class RouterManager:
         """
         格式化URL显示
         
-        :param url: 原始URL
-        :return: 格式化后的URL
+        :param url: str 原始URL
+        :return: 
+            str: 格式化后的URL
         """
         # 提取URL组件
         protocol = url.split("://")[0] if "://" in url else "http"
