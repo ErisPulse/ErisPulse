@@ -42,6 +42,22 @@ ErisPulse 路由系统
 ---
 
 
+##### `_normalize_path(prefix: str, path: str)`
+
+标准化路径，确保格式正确
+
+:param prefix: str 路径前缀（如模块名）
+:param path: str 路径部分
+
+:return: 
+    str: 标准化后的完整路径
+
+> **内部方法** 
+此方法仅供内部使用
+
+---
+
+
 ##### `_setup_core_routes()`
 
 设置系统核心路由
@@ -80,7 +96,8 @@ ErisPulse 路由系统
 :param module_name: 模块名称
 :param path: 路由路径
 
-:return: Bool
+:return: 
+    bool: 是否成功取消注册
 
 ---
 
@@ -107,7 +124,8 @@ ErisPulse 路由系统
 :param module_name: 模块名称
 :param path: WebSocket路径
 
-:return: 是否成功取消注册
+:return: 
+    bool: 是否成功取消注册
 
 ---
 
@@ -116,7 +134,8 @@ ErisPulse 路由系统
 
 获取FastAPI应用实例
 
-:return: FastAPI应用实例
+:return: 
+    FastAPI: FastAPI应用实例
 
 ---
 
@@ -156,8 +175,9 @@ ErisPulse 路由系统
 
 格式化URL显示
 
-:param url: 原始URL
-:return: 格式化后的URL
+:param url: str 原始URL
+:return: 
+    str: 格式化后的URL
 
 ---
 
