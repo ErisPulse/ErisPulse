@@ -4,16 +4,6 @@ ErisPulse 存储管理模块
 提供键值存储和事务支持，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
-支持两种数据库模式：
-1. 项目数据库（默认）：位于项目目录下的 config/config.db
-2. 全局数据库：位于包内的 ../data/config.db
-
-用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
-```toml
-[ErisPulse.storage]
-use_global_db = true
-```
-
 {!--< tips >!--}
 1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
@@ -35,13 +25,7 @@ class StorageManager:
     
     支持两种数据库模式：
     1. 项目数据库（默认）：位于项目目录下的 config/config.db
-    2. 全局数据库：位于包内的 ../data/config.db
-    
-    用户可通过在 config.toml 中配置以下选项来选择使用全局数据库：
-    ```toml
-    [ErisPulse.storage]
-    use_global_db = true
-    ```
+    2. 全局数据库：位于包内的 data/config.db
 
     {!--< tips >!--}
     1. 使用get/set方法操作存储项
