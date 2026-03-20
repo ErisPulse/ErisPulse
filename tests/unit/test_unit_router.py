@@ -253,20 +253,20 @@ class TestRouterManager:
     
     def test_core_routes_registered(self, router_manager):
         """测试核心路由已注册"""
-        # 检查health路由
+        # 检查health路由和ping路由
         health_exists = False
-        routes_exists = False
+        ping_exists = False
         
         for route in router_manager.app.router.routes:
             if hasattr(route, 'path'):
                 if route.path == "/health":
                     health_exists = True
-                elif route.path == "/routes":
-                    routes_exists = True
+                elif route.path == "/ping":
+                    ping_exists = True
         
         # 验证
         assert health_exists, "health路由未注册"
-        assert routes_exists, "routes路由未注册"
+        assert ping_exists, "ping路由未注册"
     
     # ==================== 服务器生命周期测试 ====================
     
@@ -390,7 +390,7 @@ class TestGlobalRouter:
         
         # 验证核心路由存在
         assert "/health" in routes
-        assert "/routes" in routes
+        assert "/ping" in routes
 
 
 # ==================== 集成测试 ====================
