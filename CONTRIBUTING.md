@@ -6,7 +6,9 @@
 - **main**: 主分支，存放稳定可发布的代码
 - **Develop/v2**: 开发主分支，所有功能分支最终合并至此
 - **Pre-Release/v2**: 预发布分支，用于版本发布前的测试
-- **Archive/v1**: 归档分支，存放V1版本代码
+
+> **历史版本归档**: V1 版本代码已迁移至独立仓库 [ErisPulse/Archive-v1](https://github.com/ErisPulse/Archive-v1)，仅供历史参考。
+
 
 ## 开发环境搭建
 
