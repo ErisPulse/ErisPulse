@@ -72,10 +72,36 @@
     - 新增 `/ping` 端点，提供连通性检查和时间戳返回
     - `/health` 端点增强返回信息，包含 ErisPulse 版本号和 Python 版本信息
   - `router` 模块新增 `_normalize_path` 方法，标准化路径格式
+  - `Event` 模块新增会话类型管理模块（`session_type.py`）：
+    - 定义标准会话类型：`private`, `group`, `channel`, `guild`, `thread`, `user`
+    - 支持接收类型到发送类型的自动转换（如 `private` → `user`）
+    - 提供会话类型注册和注销功能（`register_custom_type`, `unregister_custom_type`）
+    - 实现自动类型推断功能（`infer_receive_type`）
+    - 提供类型转换和 ID 获取工具方法（`convert_to_send_type`, `get_target_id` 等）
+
+### 优化
+- @wsu2059q
+  - `BaseAdapter.SendDSL.To` 方法增强：
+    - 支持自动类型转换：当目标类型为 `private` 时自动转换为 `user`
+    - 支持简化形式：只提供 `target_id` 时默认推断为 `user`
+  - `Event.wrapper` 模块优化：
+    - 使用会话类型管理模块统一处理类型转换和 ID 获取
+    - 简化 `_get_adapter_and_target_info` 方法实现
+    - 移除冗余的类型映射逻辑
+  - `Event.command` 模块优化：
+    - 使用 `get_send_type_and_target_id` 替代手动类型判断
+    - 使用 `infer_receive_type` 进行类型推断
+    - 统一发送逻辑，提高代码可维护性
 
 ### 移除
 - @wsu2059q
   - 移除 `/routes` 端点，出于安全考虑删除路由列表查询功能
+
+### 文档
+- @wsu2059q
+  - 新增会话类型标准文档，提供完整的类型定义和使用指南
+  - 更新事件转换标准文档，引用会话类型标准
+  - 新增会话类型管理单元测试（`tests/unit/test_unit_session_type.py`）
 
 ---
 
