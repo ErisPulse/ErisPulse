@@ -211,8 +211,8 @@ class TestModuleManager:
         await manager.load("module1")
         await manager.load("module2")
         
-        # 执行
-        result = await manager.unload("Unknown")
+        # 执行 - 不传参数以卸载所有模块
+        result = await manager.unload()
         
         # 验证
         assert result is True
