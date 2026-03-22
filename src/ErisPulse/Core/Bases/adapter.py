@@ -117,18 +117,41 @@ class SendDSL:
         """
         设置消息目标
         
+        支持自动类型转换：
+        - 当 target_type 为 "private" 时，自动转换为 "user"
+        - 当只提供 target_id（字符串或数字）时，默认推断为 "user"
+        
         :param target_type: 目标类型(可选)
         :param target_id: 目标ID(可选)
         :return: SendDSL实例
         
         :example:
+        >>> # 标准用法
         >>> adapter.Send.To("user", "123").Text("Hello")
-        >>> adapter.Send.To("123").Text("Hello")  # 简化形式
+        >>> # 自动转换 private → user
+        >>> adapter.Send.To("private", "123").Text("Hello")
+        >>> # 简化形式（默认推断为 user）
+        >>> adapter.Send.To("123").Text("Hello")
         """
+        from ..Event.session_type import is_standard_type
+        
+        # 处理简化形式：只提供一个参数作为 target_id
         if target_id is None and target_type is not None:
             target_id = target_type
             target_type = None
-
+        
+        # 如果没有明确指定 target_type，尝试推断
+        if target_type is None:
+            # 将 target_id 作为字符串处理
+            if target_id is not None:
+                # 默认推断为 user（对应 private）
+                # 这里我们假设如果只提供 ID，通常是发送给用户
+                target_type = "user"
+        
+        # 自动转换 private → user
+        if target_type == "private":
+            target_type = "user"
+        
         return self.__class__(self._adapter, target_type, target_id, self._account_id)
 
     def Using(self, account_id: Union[str, int]) -> 'SendDSL':

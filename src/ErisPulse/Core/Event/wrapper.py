@@ -12,6 +12,7 @@ ErisPulse 事件包装类
 
 from typing import Any, Dict, List, Optional, Callable, Awaitable
 from .. import adapter, logger
+from .session_type import get_send_type_and_target_id, convert_to_send_type, infer_receive_type
 
 
 class Event(dict):
@@ -364,7 +365,7 @@ class Event(dict):
         """
         获取适配器实例和目标信息
         
-        基于 OneBot12 标准，直接使用事件的 detail_type 字段
+        使用会话类型管理模块自动处理类型转换和ID获取
         
         :return: (适配器实例, 发送目标类型, 目标ID)
         """
@@ -376,62 +377,13 @@ class Event(dict):
         if not adapter_instance:
             raise ValueError(f"找不到平台 {platform} 的适配器")
 
-        # 直接使用事件的 detail_type
-        detail_type = self.get_detail_type()
-        
-        # 根据 detail_type 获取对应的目标 ID 字段
-        # 遵循 OneBot12 标准：private、group 是标准类型
-        # 也兼容各平台可能扩展的类型：channel、guild、thread 等
-        id_field_map = {
-            # OneBot12 标准类型
-            "private": "user_id",
-            "group": "group_id",
-            
-            # 平台扩展类型
-            "user": "user_id",  # 兼容某些平台使用 user 的情况
-            "channel": "channel_id",
-            "guild": "guild_id",
-            "thread": "thread_id",
-            "supergroup": "group_id",  # Telegram supergroup 映射到 group_id
-        }
-        
-        # 获取对应的目标 ID 字段名，默认使用 user_id
-        id_field = id_field_map.get(detail_type, "user_id")
-        
-        # 获取目标 ID
-        target_id = self.get(id_field, "")
-        
-        # 如果目标 ID 为空，尝试从其他字段获取（兼容性处理）
-        if not target_id:
-            if detail_type in ["group", "channel", "guild", "supergroup"]:
-                # 对于群组/频道相关类型，尝试多个可能的字段
-                target_id = (
-                    self.get("group_id") or 
-                    self.get("channel_id") or 
-                    self.get("guild_id") or 
-                    ""
-                )
-            else:
-                # 对于其他类型（主要是 private），使用 user_id
-                target_id = self.get_user_id()
+        # 使用会话类型管理模块获取发送类型和目标ID
+        send_type, target_id = get_send_type_and_target_id(self, platform)
 
         if not target_id:
-            raise ValueError(f"无法获取目标 ID (detail_type={detail_type})")
+            raise ValueError(f"无法获取目标 ID (platform={platform})")
 
-        # 映射到适配器发送方法的目标类型
-        # 事件中的 detail_type "private" 需要映射为发送目标的 "user"
-        send_target_type_map = {
-            "private": "user",
-            "group": "group",
-            "user": "user",
-            "channel": "channel",
-            "guild": "guild",
-            "thread": "thread",
-            "supergroup": "group",
-        }
-        send_target_type = send_target_type_map.get(detail_type, detail_type)
-
-        return adapter_instance, send_target_type, target_id
+        return adapter_instance, send_type, target_id
 
     async def reply(self, 
                    content: str, 
@@ -508,28 +460,6 @@ class Event(dict):
             raise ValueError(f"适配器不支持方法: {method}")
         
         return await send_method(content)
-
-    async def forward_to_group(self, group_id: str):
-        """
-        转发到群组
-        
-        :param group_id: 目标群组ID
-        """
-        adapter_instance = getattr(adapter, self.get_platform(), None)
-        if not adapter_instance:
-            raise ValueError(f"找不到平台 {self.get_platform()} 的适配器")
-        await adapter_instance.Forward.To("group", group_id).Event(self)
-
-    async def forward_to_user(self, user_id: str):
-        """
-        转发给用户
-        
-        :param user_id: 目标用户ID
-        """
-        adapter_instance = getattr(adapter, self.get_platform(), None)
-        if not adapter_instance:
-            raise ValueError(f"找不到平台 {self.get_platform()} 的适配器")
-        await adapter_instance.Forward.To("user", user_id).Event(self)
 
     # ==================== 等待回复功能 ====================
 
