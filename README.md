@@ -151,7 +151,7 @@ epsdk run main.py --reload
 
 ## 贡献指南
 
-我们欢迎各种形式的贡献，包括但不限于：
+ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式的贡献，包括但不限于：
 
 1. **报告问题**
    在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 报告
