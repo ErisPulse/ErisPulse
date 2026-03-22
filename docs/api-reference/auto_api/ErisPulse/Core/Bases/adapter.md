@@ -62,14 +62,22 @@ ErisPulse 适配器基础模块
 
 设置消息目标
 
+支持自动类型转换：
+- 当 target_type 为 "private" 时，自动转换为 "user"
+- 当只提供 target_id（字符串或数字）时，默认推断为 "user"
+
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
 :return: SendDSL实例
 
 **示例**:
 ```python
+>>> # 标准用法
 >>> adapter.Send.To("user", "123").Text("Hello")
->>> adapter.Send.To("123").Text("Hello")  # 简化形式
+>>> # 自动转换 private → user
+>>> adapter.Send.To("private", "123").Text("Hello")
+>>> # 简化形式（默认推断为 user）
+>>> adapter.Send.To("123").Text("Hello")
 ```
 
 ---
