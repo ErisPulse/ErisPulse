@@ -1,5 +1,7 @@
 # 快速开始
 
+> 遇到不理解的术语？查看 [术语表](terminology.md) 获取通俗易懂的解释。
+
 ## 安装 ErisPulse
 
 ### 使用 pip 安装
@@ -12,7 +14,7 @@ pip install ErisPulse
 
 ### 使用 uv 安装（推荐）
 
-`uv` 是一个更快的 Python 工具链，推荐使用：
+`uv` 是一个更快的 Python 工具链，推荐使用。如果你不确定什么是"工具链"，可以理解为更高效的安装和管理 Python 包的工具。
 
 #### 安装 uv
 
