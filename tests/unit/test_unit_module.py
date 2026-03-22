@@ -565,7 +565,7 @@ class TestModuleLifecycleIntegration:
             # 验证生命周期事件被提交
             mock_lifecycle.submit_event.assert_called()
             call_args = mock_lifecycle.submit_event.call_args
-            assert call_args[0][0] == "module_load"
+            assert call_args[0][0] == "module.load"
     
     @pytest.mark.asyncio
     async def test_module_unload_submits_lifecycle_event(self):
