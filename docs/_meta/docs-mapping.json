@@ -245,6 +245,11 @@
           "level": 1
         },
         {
+          "title": "ErisPulse 会话类型标准",
+          "path": "standards/session-types.md",
+          "level": 1
+        },
+        {
           "title": "ErisPulse 适配器标准化返回规范",
           "path": "standards/api-response.md",
           "level": 1
@@ -257,11 +262,6 @@
         {
           "title": "ErisPulse 发送方法命名规范",
           "path": "standards/naming-conventions.md",
-          "level": 1
-        },
-        {
-          "title": "ErisPulse 会话类型标准",
-          "path": "standards/session-types.md",
           "level": 1
         }
       ]
