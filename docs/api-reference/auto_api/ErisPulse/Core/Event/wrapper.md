@@ -369,7 +369,7 @@ ErisPulse 事件包装类
 
 获取适配器实例和目标信息
 
-基于 OneBot12 标准，直接使用事件的 detail_type 字段
+使用会话类型管理模块自动处理类型转换和ID获取
 
 :return: (适配器实例, 发送目标类型, 目标ID)
 
@@ -411,24 +411,6 @@ ErisPulse 事件包装类
 >>> # 组合使用：@用户 + 回复消息
 >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
-
----
-
-
-##### `async async forward_to_group(group_id: str)`
-
-转发到群组
-
-:param group_id: 目标群组ID
-
----
-
-
-##### `async async forward_to_user(user_id: str)`
-
-转发给用户
-
-:param user_id: 目标用户ID
 
 ---
 
