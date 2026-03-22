@@ -211,8 +211,8 @@ class TestModuleManager:
         await manager.load("module1")
         await manager.load("module2")
         
-        # 执行
-        result = await manager.unload("Unknown")
+        # 执行 - 不传参数以卸载所有模块
+        result = await manager.unload()
         
         # 验证
         assert result is True
@@ -565,7 +565,7 @@ class TestModuleLifecycleIntegration:
             # 验证生命周期事件被提交
             mock_lifecycle.submit_event.assert_called()
             call_args = mock_lifecycle.submit_event.call_args
-            assert call_args[0][0] == "module_load"
+            assert call_args[0][0] == "module.load"
     
     @pytest.mark.asyncio
     async def test_module_unload_submits_lifecycle_event(self):

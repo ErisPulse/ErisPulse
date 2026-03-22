@@ -237,11 +237,16 @@
     },
     "技术标准": {
       "description": "框架的技术规范和标准",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "技术标准",
           "path": "standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 会话类型标准",
+          "path": "standards/session-types.md",
           "level": 1
         },
         {

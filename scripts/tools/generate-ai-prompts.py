@@ -215,6 +215,10 @@ class PromptGenerator:
         # 技术标准
         sections.append(self._section_header("技术标准"))
         
+        sections.append(self._subsection_header("会话类型标准"))
+        sections.append(self.read_file('standards/session-types.md'))
+        sections.append("\n")
+        
         sections.append(self._subsection_header("事件转换标准"))
         sections.append(self.read_file('standards/event-conversion.md'))
         sections.append("\n")
@@ -352,6 +356,10 @@ class PromptGenerator:
         
         # 技术标准
         sections.append(self._section_header("技术标准"))
+        
+        sections.append(self._subsection_header("会话类型标准"))
+        sections.append(self.read_file('standards/session-types.md'))
+        sections.append("\n")
         
         sections.append(self._subsection_header("事件转换标准"))
         sections.append(self.read_file('standards/event-conversion.md'))
