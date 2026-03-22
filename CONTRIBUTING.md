@@ -94,6 +94,6 @@ ErisPulse/
 *   **请勿**直接向官方的 `main` 或 `Pre-Release/v2` 分支提交代码或PR，所有功能开发应通过PR至 `Develop/v2` 的方式进入代码库。
 *   **例外情况**：如流程第4.1条所述，为特定目的（如发布测试版本）向 `Pre-Release/v2` 等分支提交PR是允许的，但需在PR中充分说明。
 *   所有公开API方法必须包含完整注释，请参考docs/styleguide/docstring_spec.md。
-*   如有疑问，请联系 `support@erisdev.com` 或 云湖群ID 635409929
+*   如有疑问，请联系 `erisdev@88.com` 或 云湖群ID 635409929
 
 感谢您的贡献！
