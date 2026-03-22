@@ -16,6 +16,33 @@ from .notice import notice
 from .request import request
 from .meta import meta
 from .wrapper import Event
+from .session_type import (
+    # 标准类型常量
+    RECEIVE_TYPES,
+    SEND_TYPES,
+    
+    # 自定义类型注册
+    register_custom_type,
+    unregister_custom_type,
+    
+    # 类型获取方法
+    get_id_field,
+    get_receive_type,
+    convert_to_send_type,
+    convert_to_receive_type,
+    
+    # 自动推断方法
+    infer_receive_type,
+    get_target_id,
+    get_send_type_and_target_id,
+    
+    # 工具方法
+    is_standard_type,
+    is_valid_send_type,
+    get_standard_types,
+    get_send_types,
+    clear_custom_types,
+)
 
 def _clear_all_handlers():
     """
@@ -37,5 +64,22 @@ __all__ = [
     "notice",
     "request",
     "meta",
-    "Event"
+    "Event",
+    # 会话类型管理
+    "RECEIVE_TYPES",
+    "SEND_TYPES",
+    "register_custom_type",
+    "unregister_custom_type",
+    "get_id_field",
+    "get_receive_type",
+    "convert_to_send_type",
+    "convert_to_receive_type",
+    "infer_receive_type",
+    "get_target_id",
+    "get_send_type_and_target_id",
+    "is_standard_type",
+    "is_valid_send_type",
+    "get_standard_types",
+    "get_send_types",
+    "clear_custom_types",
 ]
