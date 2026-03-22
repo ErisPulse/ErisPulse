@@ -15,11 +15,16 @@
 | id | string | 事件唯一标识符 |
 | time | integer | Unix时间戳（秒级） |
 | type | string | 事件类型 |
-| detail_type | string | 事件详细类型 |
+| detail_type | string | 事件详细类型（详见[会话类型标准](session-types.md)） |
 | platform | string | 平台名称 |
 | self | object | 机器人自身信息 |
 | self.platform | string | 平台名称 |
 | self.user_id | string | 机器人用户ID |
+
+**detail_type 规范**：
+- 必须使用 ErisPulse 标准会话类型（详见 [会话类型标准](session-types.md)）
+- 支持的类型：`private`, `group`, `user`, `channel`, `guild`, `thread`
+- 适配器负责将平台原生类型映射到标准类型
 
 ### 2.2 消息事件字段
 | 字段 | 类型 | 说明 |

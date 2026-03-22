@@ -14,6 +14,7 @@ ErisPulse 命令处理模块
 from .base import BaseEventHandler
 from .. import adapter, logger
 from ...runtime import get_event_config
+from .session_type import get_send_type_and_target_id, infer_receive_type
 from typing import Callable, Union, List, Dict, Any, Optional, Awaitable
 import asyncio
 import inspect
@@ -180,15 +181,15 @@ class CommandHandler:
         """
         platform = event.get("platform")
         user_id = event.get("user_id")
-        group_id = event.get("group_id")
-        detail_type = "group" if group_id else "private"
-        target_id = group_id or user_id
+        
+        # 使用会话类型管理模块获取发送类型和目标ID
+        send_type, target_id = get_send_type_and_target_id(event, platform)
         
         # 发送提示消息（如果提供）
         if prompt and platform:
             try:
                 adapter_instance = getattr(adapter, platform)
-                await adapter_instance.Send.To(detail_type, target_id).Text(prompt)
+                await adapter_instance.Send.To(send_type, target_id).Text(prompt)
             except Exception as e:
                 logger.warning(f"发送提示消息失败: {e}")
         
@@ -273,9 +274,9 @@ class CommandHandler:
             
             # 检查是否必须@机器人
             if self.must_at_bot:
-                detail_type = event.get("detail_type")
+                detail_type = infer_receive_type(event)
                 # 一对一场景（private或user）不需要检查@
-                if detail_type not in ("private", "user", "bot"):
+                if detail_type not in ("private", "user"):
                     message_segments = event.get("message", [])
                     self_id = event.get("self", {}).get("user_id")
                     
@@ -404,8 +405,9 @@ class CommandHandler:
         """
         platform = event.get("platform")
         user_id = event.get("user_id")
-        group_id = event.get("group_id")
-        target_id = group_id or user_id
+        
+        # 使用会话类型管理模块获取发送类型和目标ID
+        send_type, target_id = get_send_type_and_target_id(event, platform)
         
         wait_key = f"{platform}:{user_id}:{target_id}"
         
@@ -441,14 +443,13 @@ class CommandHandler:
         """
         try:
             platform = event.get("platform")
-            user_id = event.get("user_id")
-            group_id = event.get("group_id")
-            detail_type = "group" if group_id else "private"
-            target_id = group_id or user_id
+            
+            # 使用会话类型管理模块获取发送类型和目标ID
+            send_type, target_id = get_send_type_and_target_id(event, platform)
             
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                await adapter_instance.Send.To(detail_type, target_id).Text("权限不足，无法执行该命令")
+                await adapter_instance.Send.To(send_type, target_id).Text("权限不足，无法执行该命令")
         except Exception as e:
             logger.error(f"发送权限拒绝消息失败: {e}")
     
@@ -464,14 +465,13 @@ class CommandHandler:
         """
         try:
             platform = event.get("platform")
-            user_id = event.get("user_id")
-            group_id = event.get("group_id")
-            detail_type = "group" if group_id else "private"
-            target_id = group_id or user_id
+            
+            # 使用会话类型管理模块获取发送类型和目标ID
+            send_type, target_id = get_send_type_and_target_id(event, platform)
             
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                await adapter_instance.Send.To(detail_type, target_id).Text(f"命令执行出错: {error}")
+                await adapter_instance.Send.To(send_type, target_id).Text(f"命令执行出错: {error}")
         except Exception as e:
             logger.error(f"发送命令错误消息失败: {e}")
 

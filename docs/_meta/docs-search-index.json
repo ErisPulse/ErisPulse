@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 699,
+  "total_keywords": 740,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -188,6 +188,14 @@
         "title": "1. 核心原则"
       }
     ],
+    "1. 核心概念": [
+      {
+        "document": "standards/session-types.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. 核心概念"
+      }
+    ],
     "1. 模块开发（推荐）": [
       {
         "document": "README.md",
@@ -215,7 +223,7 @@
     "1. 确保跨平台兼容": [
       {
         "document": "standards/README.md",
-        "line": 24,
+        "line": 25,
         "level": 3,
         "title": "1. 确保跨平台兼容"
       }
@@ -252,12 +260,28 @@
         "title": "1. 适配器系统"
       }
     ],
+    "1.1 接收类型 && 发送类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 7,
+        "level": 3,
+        "title": "1.1 接收类型 && 发送类型"
+      }
+    ],
     "1.1 标准发送方法": [
       {
         "document": "standards/naming-conventions.md",
         "line": 9,
         "level": 3,
         "title": "1.1 标准发送方法"
+      }
+    ],
+    "1.2 类型映射关系": [
+      {
+        "document": "standards/session-types.md",
+        "line": 14,
+        "level": 3,
+        "title": "1.2 类型映射关系"
       }
     ],
     "1.2 链式修饰方法": [
@@ -416,6 +440,14 @@
         "title": "2. 更新版本信息"
       }
     ],
+    "2. 标准会话类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 32,
+        "level": 2,
+        "title": "2. 标准会话类型"
+      }
+    ],
     "2. 标准字段要求": [
       {
         "document": "standards/event-conversion.md",
@@ -451,7 +483,7 @@
     "2. 规范 API 接口": [
       {
         "document": "standards/README.md",
-        "line": 31,
+        "line": 32,
         "level": 3,
         "title": "2. 规范 API 接口"
       }
@@ -526,6 +558,14 @@
         "title": "2. 集成测试"
       }
     ],
+    "2.1 OneBot12 标准类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 34,
+        "level": 3,
+        "title": "2.1 OneBot12 标准类型"
+      }
+    ],
     "2.1 必须字段": [
       {
         "document": "standards/event-conversion.md",
@@ -534,10 +574,18 @@
         "title": "2.1 必须字段"
       }
     ],
+    "2.2 ErisPulse 扩展类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 57,
+        "level": 3,
+        "title": "2.2 ErisPulse 扩展类型"
+      }
+    ],
     "2.2 消息事件字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 24,
+        "line": 29,
         "level": 3,
         "title": "2.2 消息事件字段"
       }
@@ -545,7 +593,7 @@
     "2.3 通知事件字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 32,
+        "line": 37,
         "level": 3,
         "title": "2.3 通知事件字段"
       }
@@ -553,7 +601,7 @@
     "2.4 请求事件字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 39,
+        "line": 44,
         "level": 3,
         "title": "2.4 请求事件字段"
       }
@@ -585,7 +633,7 @@
     "3. 事件格式示例": [
       {
         "document": "standards/event-conversion.md",
-        "line": 46,
+        "line": 51,
         "level": 2,
         "title": "3. 事件格式示例"
       }
@@ -622,6 +670,14 @@
         "title": "3. 实现命令注册函数"
       }
     ],
+    "3. 平台类型映射": [
+      {
+        "document": "standards/session-types.md",
+        "line": 80,
+        "level": 2,
+        "title": "3. 平台类型映射"
+      }
+    ],
     "3. 心跳保活": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -641,7 +697,7 @@
     "3. 提高代码质量": [
       {
         "document": "standards/README.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "3. 提高代码质量"
       }
@@ -710,10 +766,18 @@
         "title": "3. 适配器"
       }
     ],
+    "3.1 映射原则": [
+      {
+        "document": "standards/session-types.md",
+        "line": 82,
+        "level": 3,
+        "title": "3.1 映射原则"
+      }
+    ],
     "3.1 消息事件 (message)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 48,
+        "line": 53,
         "level": 3,
         "title": "3.1 消息事件 (message)"
       }
@@ -724,6 +788,14 @@
         "line": 31,
         "level": 3,
         "title": "3.1 通用字段"
+      }
+    ],
+    "3.2 常见平台映射示例": [
+      {
+        "document": "standards/session-types.md",
+        "line": 90,
+        "level": 3,
+        "title": "3.2 常见平台映射示例"
       }
     ],
     "3.2 返回码规范": [
@@ -737,7 +809,7 @@
     "3.2 通知事件 (notice)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 81,
+        "line": 86,
         "level": 3,
         "title": "3.2 通知事件 (notice)"
       }
@@ -745,7 +817,7 @@
     "3.3 请求事件 (request)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 102,
+        "line": 107,
         "level": 3,
         "title": "3.3 请求事件 (request)"
       }
@@ -817,7 +889,7 @@
     "4. 消息段标准": [
       {
         "document": "standards/event-conversion.md",
-        "line": 122,
+        "line": 127,
         "level": 2,
         "title": "4. 消息段标准"
       }
@@ -830,6 +902,14 @@
         "title": "4. 组合使用"
       }
     ],
+    "4. 自定义类型扩展": [
+      {
+        "document": "standards/session-types.md",
+        "line": 121,
+        "level": 2,
+        "title": "4. 自定义类型扩展"
+      }
+    ],
     "4. 返回值规范": [
       {
         "document": "standards/naming-conventions.md",
@@ -838,20 +918,44 @@
         "title": "4. 返回值规范"
       }
     ],
+    "4.1 注册自定义类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 123,
+        "level": 3,
+        "title": "4.1 注册自定义类型"
+      }
+    ],
     "4.1 通用消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 124,
+        "line": 129,
         "level": 3,
         "title": "4.1 通用消息段"
+      }
+    ],
+    "4.2 使用自定义类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 139,
+        "level": 3,
+        "title": "4.2 使用自定义类型"
       }
     ],
     "4.2 特殊消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 134,
+        "line": 139,
         "level": 3,
         "title": "4.2 特殊消息段"
+      }
+    ],
+    "4.3 注销自定义类型": [
+      {
+        "document": "standards/session-types.md",
+        "line": 157,
+        "level": 3,
+        "title": "4.3 注销自定义类型"
       }
     ],
     "5. 实现 Send 类": [
@@ -865,7 +969,7 @@
     "5. 未知事件处理": [
       {
         "document": "standards/event-conversion.md",
-        "line": 145,
+        "line": 150,
         "level": 2,
         "title": "5. 未知事件处理"
       }
@@ -886,12 +990,44 @@
         "title": "5. 相关文档"
       }
     ],
+    "5. 自动类型推断": [
+      {
+        "document": "standards/session-types.md",
+        "line": 165,
+        "level": 2,
+        "title": "5. 自动类型推断"
+      }
+    ],
     "5. 配置选项（如适用）": [
       {
         "document": "platform-guide/maintain-notes.md",
         "line": 74,
         "level": 3,
         "title": "5. 配置选项（如适用）"
+      }
+    ],
+    "5.1 推断优先级": [
+      {
+        "document": "standards/session-types.md",
+        "line": 169,
+        "level": 3,
+        "title": "5.1 推断优先级"
+      }
+    ],
+    "5.2 使用示例": [
+      {
+        "document": "standards/session-types.md",
+        "line": 180,
+        "level": 3,
+        "title": "5.2 使用示例"
+      }
+    ],
+    "6. API 使用示例": [
+      {
+        "document": "standards/session-types.md",
+        "line": 194,
+        "level": 2,
+        "title": "6. API 使用示例"
       }
     ],
     "6. 实现转换器": [
@@ -905,17 +1041,41 @@
     "6. 平台特性字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 161,
+        "line": 166,
         "level": 2,
         "title": "6. 平台特性字段"
+      }
+    ],
+    "6.1 发送消息": [
+      {
+        "document": "standards/session-types.md",
+        "line": 196,
+        "level": 3,
+        "title": "6.1 发送消息"
       }
     ],
     "6.1 特有字段示例": [
       {
         "document": "standards/event-conversion.md",
-        "line": 170,
+        "line": 175,
         "level": 3,
         "title": "6.1 特有字段示例"
+      }
+    ],
+    "6.2 事件回复": [
+      {
+        "document": "standards/session-types.md",
+        "line": 212,
+        "level": 3,
+        "title": "6.2 事件回复"
+      }
+    ],
+    "6.3 命令处理": [
+      {
+        "document": "standards/session-types.md",
+        "line": 222,
+        "level": 3,
+        "title": "6.3 命令处理"
       }
     ],
     "7. 创建包入口": [
@@ -926,12 +1086,60 @@
         "title": "7. 创建包入口"
       }
     ],
+    "7. 最佳实践": [
+      {
+        "document": "standards/session-types.md",
+        "line": 234,
+        "level": 2,
+        "title": "7. 最佳实践"
+      }
+    ],
     "7. 适配器实现检查清单": [
       {
         "document": "standards/event-conversion.md",
-        "line": 186,
+        "line": 191,
         "level": 2,
         "title": "7. 适配器实现检查清单"
+      }
+    ],
+    "7.1 适配器开发者": [
+      {
+        "document": "standards/session-types.md",
+        "line": 236,
+        "level": 3,
+        "title": "7.1 适配器开发者"
+      }
+    ],
+    "7.2 模块开发者": [
+      {
+        "document": "standards/session-types.md",
+        "line": 243,
+        "level": 3,
+        "title": "7.2 模块开发者"
+      }
+    ],
+    "7.3 类型推断": [
+      {
+        "document": "standards/session-types.md",
+        "line": 250,
+        "level": 3,
+        "title": "7.3 类型推断"
+      }
+    ],
+    "8. 常见问题": [
+      {
+        "document": "standards/session-types.md",
+        "line": 256,
+        "level": 2,
+        "title": "8. 常见问题"
+      }
+    ],
+    "9. 相关文档": [
+      {
+        "document": "standards/session-types.md",
+        "line": 278,
+        "level": 2,
+        "title": "9. 相关文档"
       }
     ],
     "@消息相关": [
@@ -979,7 +1187,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 76,
+        "line": 77,
         "level": 3,
         "title": "API 响应"
       }
@@ -1168,12 +1376,28 @@
         "title": "Core.py - 基础模块"
       }
     ],
+    "Discord": [
+      {
+        "document": "standards/session-types.md",
+        "line": 102,
+        "level": 4,
+        "title": "Discord"
+      }
+    ],
     "ErisPulse PlatformFeatures 文档": [
       {
         "document": "platform-guide/README.md",
         "line": 1,
         "level": 1,
         "title": "ErisPulse PlatformFeatures 文档"
+      }
+    ],
+    "ErisPulse 会话类型标准": [
+      {
+        "document": "standards/session-types.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 会话类型标准"
       }
     ],
     "ErisPulse 发送方法命名规范": [
@@ -1344,6 +1568,14 @@
         "title": "Notice 通知模块"
       }
     ],
+    "OneBot11": [
+      {
+        "document": "standards/session-types.md",
+        "line": 112,
+        "level": 4,
+        "title": "OneBot11"
+      }
+    ],
     "OneBot11平台特性文档": [
       {
         "document": "platform-guide/onebot11.md",
@@ -1414,6 +1646,46 @@
         "line": 139,
         "level": 3,
         "title": "PascalCase 命名"
+      }
+    ],
+    "Q1: 为什么发送时 private 要转换为 user？": [
+      {
+        "document": "standards/session-types.md",
+        "line": 258,
+        "level": 3,
+        "title": "Q1: 为什么发送时 private 要转换为 user？"
+      }
+    ],
+    "Q2: 如何支持新的会话类型？": [
+      {
+        "document": "standards/session-types.md",
+        "line": 262,
+        "level": 3,
+        "title": "Q2: 如何支持新的会话类型？"
+      }
+    ],
+    "Q3: 事件没有 detail_type 怎么办？": [
+      {
+        "document": "standards/session-types.md",
+        "line": 266,
+        "level": 3,
+        "title": "Q3: 事件没有 detail_type 怎么办？"
+      }
+    ],
+    "Q4: 适配器如何映射 Telegram supergroup？": [
+      {
+        "document": "standards/session-types.md",
+        "line": 270,
+        "level": 3,
+        "title": "Q4: 适配器如何映射 Telegram supergroup？"
+      }
+    ],
+    "Q5: 邮箱等特殊平台如何处理？": [
+      {
+        "document": "standards/session-types.md",
+        "line": 274,
+        "level": 3,
+        "title": "Q5: 邮箱等特殊平台如何处理？"
       }
     ],
     "Q: AI 生成的代码有问题怎么办？": [
@@ -1574,6 +1846,14 @@
         "title": "Task 对象"
       }
     ],
+    "Telegram": [
+      {
+        "document": "standards/session-types.md",
+        "line": 92,
+        "level": 4,
+        "title": "Telegram"
+      }
+    ],
     "Telegram平台特性文档": [
       {
         "document": "platform-guide/telegram.md",
@@ -1630,12 +1910,36 @@
         "title": "call_api 方法"
       }
     ],
+    "channel": [
+      {
+        "document": "standards/session-types.md",
+        "line": 59,
+        "level": 4,
+        "title": "channel"
+      }
+    ],
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 234,
         "level": 4,
         "title": "get() 方法"
+      }
+    ],
+    "group": [
+      {
+        "document": "standards/session-types.md",
+        "line": 43,
+        "level": 4,
+        "title": "group"
+      }
+    ],
+    "guild": [
+      {
+        "document": "standards/session-types.md",
+        "line": 66,
+        "level": 4,
+        "title": "guild"
       }
     ],
     "install 参数": [
@@ -1670,6 +1974,14 @@
         "title": "on_unload 方法"
       }
     ],
+    "private": [
+      {
+        "document": "standards/session-types.md",
+        "line": 36,
+        "level": 4,
+        "title": "private"
+      }
+    ],
     "pyproject.toml 配置": [
       {
         "document": "developer-guide/README.md",
@@ -1690,6 +2002,22 @@
         "line": 61,
         "level": 3,
         "title": "run 参数"
+      }
+    ],
+    "thread": [
+      {
+        "document": "standards/session-types.md",
+        "line": 73,
+        "level": 4,
+        "title": "thread"
+      }
+    ],
+    "user": [
+      {
+        "document": "standards/session-types.md",
+        "line": 50,
+        "level": 4,
+        "title": "user"
       }
     ],
     "下一步": [
@@ -1809,7 +2137,7 @@
     "为什么需要标准？": [
       {
         "document": "standards/README.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "为什么需要标准？"
       }
@@ -2015,7 +2343,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 67,
+        "line": 68,
         "level": 3,
         "title": "事件转换"
       }
@@ -2675,7 +3003,7 @@
     "发送方法命名": [
       {
         "document": "standards/README.md",
-        "line": 85,
+        "line": 86,
         "level": 3,
         "title": "发送方法命名"
       }
@@ -3403,7 +3731,7 @@
     "对最终用户": [
       {
         "document": "standards/README.md",
-        "line": 59,
+        "line": 60,
         "level": 3,
         "title": "对最终用户"
       }
@@ -3411,7 +3739,7 @@
     "对模块开发者": [
       {
         "document": "standards/README.md",
-        "line": 53,
+        "line": 54,
         "level": 3,
         "title": "对模块开发者"
       }
@@ -3419,7 +3747,7 @@
     "对适配器开发者": [
       {
         "document": "standards/README.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "对适配器开发者"
       }
@@ -4427,7 +4755,7 @@
     "标准概述": [
       {
         "document": "standards/README.md",
-        "line": 11,
+        "line": 12,
         "level": 2,
         "title": "标准概述"
       }
@@ -4449,7 +4777,7 @@
     "标准遵循检查清单": [
       {
         "document": "standards/README.md",
-        "line": 65,
+        "line": 66,
         "level": 2,
         "title": "标准遵循检查清单"
       }
@@ -4473,7 +4801,7 @@
     "核心原则": [
       {
         "document": "standards/README.md",
-        "line": 15,
+        "line": 16,
         "level": 3,
         "title": "核心原则"
       }
@@ -5303,7 +5631,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "相关文档"
       },
@@ -6193,7 +6521,7 @@
     "遵循标准的好处": [
       {
         "document": "standards/README.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "遵循标准的好处"
       }
