@@ -115,9 +115,10 @@ class DocsIndexGenerator:
         
         # 技术标准
         "standards/README.md": 1,
-        "standards/api-response.md": 2,
-        "standards/event-conversion.md": 3,
-        "standards/naming-conventions.md": 4,
+        "standards/session-types.md": 2,
+        "standards/api-response.md": 3,
+        "standards/event-conversion.md": 4,
+        "standards/naming-conventions.md": 5,
         
         # 风格指南
         "styleguide/README.md": 1,
