@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 740,
+  "total_keywords": 769,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -199,7 +199,7 @@
     "1. 模块开发（推荐）": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 89,
         "level": 3,
         "title": "1. 模块开发（推荐）"
       }
@@ -373,7 +373,7 @@
     "2. 嵌入式开发": [
       {
         "document": "README.md",
-        "line": 91,
+        "line": 93,
         "level": 3,
         "title": "2. 嵌入式开发"
       }
@@ -1153,7 +1153,7 @@
     "AI 辅助开发": [
       {
         "document": "README.md",
-        "line": 75,
+        "line": 77,
         "level": 3,
         "title": "AI 辅助开发"
       },
@@ -1167,7 +1167,7 @@
     "API 参考": [
       {
         "document": "README.md",
-        "line": 57,
+        "line": 59,
         "level": 3,
         "title": "API 参考"
       },
@@ -1304,6 +1304,14 @@
         "title": "BaseModule 基类"
       }
     ],
+    "Bug 追踪器": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bug 追踪器"
+      }
+    ],
     "CLI 命令参考": [
       {
         "document": "user-guide/cli-reference.md",
@@ -1414,6 +1422,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 文档"
+      }
+    ],
+    "ErisPulse 术语表": [
+      {
+        "document": "terminology.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 术语表"
       }
     ],
     "ErisPulse 核心概念": [
@@ -1576,6 +1592,14 @@
         "title": "OneBot11"
       }
     ],
+    "OneBot11/12": [
+      {
+        "document": "terminology.md",
+        "line": 103,
+        "level": 3,
+        "title": "OneBot11/12"
+      }
+    ],
     "OneBot11平台特性文档": [
       {
         "document": "platform-guide/onebot11.md",
@@ -1588,6 +1612,12 @@
       {
         "document": "getting-started/basic-concepts.md",
         "line": 39,
+        "level": 3,
+        "title": "OneBot12 标准"
+      },
+      {
+        "document": "terminology.md",
+        "line": 12,
         "level": 3,
         "title": "OneBot12 标准"
       }
@@ -1752,6 +1782,14 @@
         "title": "Router（路由）"
       }
     ],
+    "SDK": [
+      {
+        "document": "terminology.md",
+        "line": 39,
+        "level": 3,
+        "title": "SDK"
+      }
+    ],
     "SDK 对象": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -1798,6 +1836,14 @@
         "title": "Send 链式调用"
       }
     ],
+    "SendDSL": [
+      {
+        "document": "terminology.md",
+        "line": 108,
+        "level": 3,
+        "title": "SendDSL"
+      }
+    ],
     "SendDSL 实现": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1836,6 +1882,14 @@
         "line": 194,
         "level": 3,
         "title": "Storage（存储）"
+      }
+    ],
+    "TOML": [
+      {
+        "document": "terminology.md",
+        "line": 130,
+        "level": 3,
+        "title": "TOML"
       }
     ],
     "Task 对象": [
@@ -1892,6 +1946,14 @@
         "line": 437,
         "level": 3,
         "title": "WebSocket 连接"
+      }
+    ],
+    "[BUG-001] Init 命令适配器配置路径类型错误": [
+      {
+        "document": "bug-tracker.md",
+        "line": 9,
+        "level": 3,
+        "title": "[BUG-001] Init 命令适配器配置路径类型错误"
       }
     ],
     "__init__.py": [
@@ -2065,7 +2127,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 129,
         "level": 2,
         "title": "下一步"
       },
@@ -2142,6 +2204,14 @@
         "title": "为什么需要标准？"
       }
     ],
+    "事件": [
+      {
+        "document": "terminology.md",
+        "line": 27,
+        "level": 3,
+        "title": "事件"
+      }
+    ],
     "事件中的Bot标识": [
       {
         "document": "platform-guide/yunhu.md",
@@ -2194,6 +2264,14 @@
         "line": 1,
         "level": 1,
         "title": "事件处理入门"
+      }
+    ],
+    "事件处理器": [
+      {
+        "document": "terminology.md",
+        "line": 32,
+        "level": 3,
+        "title": "事件处理器"
       }
     ],
     "事件处理器注册": [
@@ -2370,6 +2448,12 @@
         "line": 5,
         "level": 2,
         "title": "事件驱动架构"
+      },
+      {
+        "document": "terminology.md",
+        "line": 7,
+        "level": 3,
+        "title": "事件驱动架构"
       }
     ],
     "事务使用": [
@@ -2415,7 +2499,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 37,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -2431,7 +2515,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 81,
+        "line": 83,
         "level": 3,
         "title": "交互式安装"
       },
@@ -2531,7 +2615,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 5,
+        "line": 7,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -2547,7 +2631,7 @@
     "使用 uv 安装（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 13,
+        "line": 15,
         "level": 3,
         "title": "使用 uv 安装（推荐）"
       }
@@ -2716,6 +2800,14 @@
         "title": "关闭适配器"
       }
     ],
+    "其他术语": [
+      {
+        "document": "terminology.md",
+        "line": 113,
+        "level": 2,
+        "title": "其他术语"
+      }
+    ],
     "内容列表": [
       {
         "document": "developer-guide/README.md",
@@ -2803,7 +2895,7 @@
     "创建项目并安装": [
       {
         "document": "quick-start.md",
-        "line": 23,
+        "line": 25,
         "level": 4,
         "title": "创建项目并安装"
       }
@@ -2825,7 +2917,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 33,
+        "line": 35,
         "level": 2,
         "title": "初始化项目"
       },
@@ -2842,6 +2934,14 @@
         "line": 19,
         "level": 2,
         "title": "前置知识"
+      }
+    ],
+    "功能相关术语": [
+      {
+        "document": "terminology.md",
+        "line": 64,
+        "level": 2,
+        "title": "功能相关术语"
       }
     ],
     "加载优先级": [
@@ -3084,6 +3184,14 @@
         "title": "启动适配器"
       }
     ],
+    "命令": [
+      {
+        "document": "terminology.md",
+        "line": 66,
+        "level": 3,
+        "title": "命令"
+      }
+    ],
     "命令事件": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -3214,6 +3322,14 @@
         "line": 137,
         "level": 2,
         "title": "命名规范"
+      }
+    ],
+    "回复": [
+      {
+        "document": "terminology.md",
+        "line": 71,
+        "level": 3,
+        "title": "回复"
       }
     ],
     "回复功能": [
@@ -3584,6 +3700,14 @@
         "title": "子日志记录器"
       }
     ],
+    "存储": [
+      {
+        "document": "terminology.md",
+        "line": 76,
+        "level": 3,
+        "title": "存储"
+      }
+    ],
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -3625,7 +3749,7 @@
     "安装 ErisPulse": [
       {
         "document": "quick-start.md",
-        "line": 3,
+        "line": 5,
         "level": 2,
         "title": "安装 ErisPulse"
       },
@@ -3639,7 +3763,7 @@
     "安装 uv": [
       {
         "document": "quick-start.md",
-        "line": 17,
+        "line": 19,
         "level": 4,
         "title": "安装 uv"
       },
@@ -3685,7 +3809,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 67,
+        "line": 69,
         "level": 2,
         "title": "安装模块"
       },
@@ -3796,6 +3920,14 @@
         "title": "工具方法"
       }
     ],
+    "已修复的 Bug": [
+      {
+        "document": "bug-tracker.md",
+        "line": 7,
+        "level": 2,
+        "title": "已修复的 Bug"
+      }
+    ],
     "布尔参数": [
       {
         "document": "developer-guide/extensions/cli-extensions.md",
@@ -3880,6 +4012,14 @@
         "title": "常见问题"
       }
     ],
+    "平台": [
+      {
+        "document": "terminology.md",
+        "line": 98,
+        "level": 3,
+        "title": "平台"
+      }
+    ],
     "平台原生事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3907,7 +4047,7 @@
     "平台特性指南": [
       {
         "document": "README.md",
-        "line": 48,
+        "line": 50,
         "level": 3,
         "title": "平台特性指南"
       }
@@ -3926,6 +4066,14 @@
         "line": 159,
         "level": 3,
         "title": "平台特有方法"
+      }
+    ],
+    "平台相关术语": [
+      {
+        "document": "terminology.md",
+        "line": 96,
+        "level": 2,
+        "title": "平台相关术语"
       }
     ],
     "开发准备": [
@@ -3947,7 +4095,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 85,
         "level": 2,
         "title": "开发方式"
       }
@@ -3974,6 +4122,14 @@
         "title": "开发模式"
       }
     ],
+    "开发相关术语": [
+      {
+        "document": "terminology.md",
+        "line": 37,
+        "level": 2,
+        "title": "开发相关术语"
+      }
+    ],
     "开发类型选择": [
       {
         "document": "developer-guide/README.md",
@@ -3985,7 +4141,7 @@
     "开发者指南": [
       {
         "document": "README.md",
-        "line": 28,
+        "line": 30,
         "level": 3,
         "title": "开发者指南"
       },
@@ -4062,6 +4218,12 @@
         "line": 51,
         "level": 2,
         "title": "异步编程"
+      },
+      {
+        "document": "terminology.md",
+        "line": 49,
+        "level": 3,
+        "title": "异步编程"
       }
     ],
     "心跳事件": [
@@ -4091,7 +4253,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 48,
+        "line": 50,
         "level": 3,
         "title": "快速初始化"
       },
@@ -4113,7 +4275,7 @@
     "快速开始": [
       {
         "document": "README.md",
-        "line": 8,
+        "line": 10,
         "level": 3,
         "title": "快速开始"
       },
@@ -4142,6 +4304,14 @@
         "line": 249,
         "level": 2,
         "title": "性能优化"
+      }
+    ],
+    "懒加载": [
+      {
+        "document": "terminology.md",
+        "line": 59,
+        "level": 3,
+        "title": "懒加载"
       }
     ],
     "懒加载机制": [
@@ -4187,7 +4357,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 58,
+        "line": 60,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -4229,7 +4399,7 @@
     "扩展开发": [
       {
         "document": "README.md",
-        "line": 44,
+        "line": 46,
         "level": 4,
         "title": "扩展开发"
       },
@@ -4259,7 +4429,7 @@
     "技术标准": [
       {
         "document": "README.md",
-        "line": 63,
+        "line": 65,
         "level": 3,
         "title": "技术标准"
       },
@@ -4437,7 +4607,7 @@
     "文档导航": [
       {
         "document": "README.md",
-        "line": 6,
+        "line": 8,
         "level": 2,
         "title": "文档导航"
       }
@@ -4485,7 +4655,7 @@
     "新手入门": [
       {
         "document": "README.md",
-        "line": 12,
+        "line": 14,
         "level": 3,
         "title": "新手入门"
       }
@@ -4536,6 +4706,14 @@
         "line": 31,
         "level": 2,
         "title": "方法链"
+      }
+    ],
+    "日志": [
+      {
+        "document": "terminology.md",
+        "line": 86,
+        "level": 3,
+        "title": "日志"
       }
     ],
     "日志信息": [
@@ -4693,7 +4871,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 75,
+        "line": 77,
         "level": 3,
         "title": "查看可用模块"
       },
@@ -4860,6 +5038,12 @@
         "line": 114,
         "level": 2,
         "title": "核心概念"
+      },
+      {
+        "document": "terminology.md",
+        "line": 5,
+        "level": 2,
+        "title": "核心概念"
       }
     ],
     "核心模块": [
@@ -4948,6 +5132,14 @@
         "title": "概述"
       }
     ],
+    "模块": [
+      {
+        "document": "terminology.md",
+        "line": 22,
+        "level": 3,
+        "title": "模块"
+      }
+    ],
     "模块中使用生命周期": [
       {
         "document": "advanced/lifecycle.md",
@@ -4975,7 +5167,7 @@
     "模块开发": [
       {
         "document": "README.md",
-        "line": 30,
+        "line": 32,
         "level": 4,
         "title": "模块开发"
       },
@@ -5140,6 +5332,14 @@
         "line": 160,
         "level": 2,
         "title": "注意事项"
+      }
+    ],
+    "注解/装饰器": [
+      {
+        "document": "terminology.md",
+        "line": 120,
+        "level": 3,
+        "title": "注解/装饰器"
       }
     ],
     "注销路由": [
@@ -5366,6 +5566,14 @@
         "title": "点式访问"
       }
     ],
+    "热重载": [
+      {
+        "document": "terminology.md",
+        "line": 54,
+        "level": 3,
+        "title": "热重载"
+      }
+    ],
     "热重载模式": [
       {
         "document": "user-guide/README.md",
@@ -5444,6 +5652,14 @@
         "title": "特殊标签（用于API文档生成）"
       }
     ],
+    "生命周期": [
+      {
+        "document": "terminology.md",
+        "line": 115,
+        "level": 3,
+        "title": "生命周期"
+      }
+    ],
     "生命周期事件监听": [
       {
         "document": "advanced/lifecycle.md",
@@ -5471,7 +5687,7 @@
     "用户使用指南": [
       {
         "document": "README.md",
-        "line": 22,
+        "line": 24,
         "level": 3,
         "title": "用户使用指南"
       },
@@ -5651,7 +5867,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 118,
+        "line": 120,
         "level": 2,
         "title": "相关链接"
       }
@@ -5804,6 +6020,14 @@
         "title": "管理接口"
       }
     ],
+    "类型注解": [
+      {
+        "document": "terminology.md",
+        "line": 125,
+        "level": 3,
+        "title": "类型注解"
+      }
+    ],
     "系统要求": [
       {
         "document": "user-guide/installation.md",
@@ -5895,7 +6119,13 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 112,
+        "line": 114,
+        "level": 2,
+        "title": "获取帮助"
+      },
+      {
+        "document": "terminology.md",
+        "line": 135,
         "level": 2,
         "title": "获取帮助"
       }
@@ -5944,6 +6174,14 @@
         "line": 232,
         "level": 3,
         "title": "获取适配器实例"
+      }
+    ],
+    "虚拟环境": [
+      {
+        "document": "terminology.md",
+        "line": 44,
+        "level": 3,
+        "title": "虚拟环境"
       }
     ],
     "表格输出": [
@@ -6128,6 +6366,14 @@
         "title": "路径处理"
       }
     ],
+    "路由": [
+      {
+        "document": "terminology.md",
+        "line": 91,
+        "level": 3,
+        "title": "路由"
+      }
+    ],
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
@@ -6211,7 +6457,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 89,
+        "line": 91,
         "level": 2,
         "title": "运行项目"
       },
@@ -6282,6 +6528,14 @@
         "title": "适用对象"
       }
     ],
+    "适配器": [
+      {
+        "document": "terminology.md",
+        "line": 17,
+        "level": 3,
+        "title": "适配器"
+      }
+    ],
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
@@ -6317,7 +6571,7 @@
     "适配器开发": [
       {
         "document": "README.md",
-        "line": 37,
+        "line": 39,
         "level": 4,
         "title": "适配器开发"
       },
@@ -6505,7 +6759,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 71,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -6550,6 +6804,14 @@
         "title": "部署"
       }
     ],
+    "配置": [
+      {
+        "document": "terminology.md",
+        "line": 81,
+        "level": 3,
+        "title": "配置"
+      }
+    ],
     "配置懒加载": [
       {
         "document": "advanced/lazy-loading.md",
@@ -6561,7 +6823,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 113,
         "level": 2,
         "title": "配置文件"
       }
@@ -6829,7 +7091,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 99,
+        "line": 101,
         "level": 2,
         "title": "项目结构"
       }
@@ -6837,7 +7099,7 @@
     "风格指南": [
       {
         "document": "README.md",
-        "line": 79,
+        "line": 81,
         "level": 3,
         "title": "风格指南"
       },
@@ -6859,7 +7121,7 @@
     "高级主题": [
       {
         "document": "README.md",
-        "line": 69,
+        "line": 71,
         "level": 3,
         "title": "高级主题"
       },
