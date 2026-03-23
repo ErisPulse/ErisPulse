@@ -62,6 +62,18 @@
   ```
 
 ---
+## [2.3.9-dev.2] - 2026/03/23
+
+### 修复
+- @LeslieKeys
+  - 修复 `ep init` 命令交互式初始化中适配器配置的类型错误：
+    - 修正 `_configure_adapters_interactive_sync` 方法的参数类型为 `Path`
+
+### 文档
+- @wsu2059q
+  - 新增 Bug 修复说明文档（`bug-tracker.md`）
+
+---
 
 ## [2.3.9-dev.1] - 2026/03/21
 > 开发版本
