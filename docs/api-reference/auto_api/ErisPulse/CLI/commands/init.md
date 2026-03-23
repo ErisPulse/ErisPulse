@@ -42,7 +42,7 @@ InitCommand 类提供相关功能。
 ---
 
 
-##### `_configure_adapters_interactive_sync(project_path: str = None)`
+##### `_configure_adapters_interactive_sync(project_path: Path = None)`
 
 交互式配置适配器的同步版本
 
