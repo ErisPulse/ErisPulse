@@ -177,7 +177,7 @@ class InitCommand(Command):
             "email": "邮件适配器"
         }
     
-    def _configure_adapters_interactive_sync(self, project_path: str = None):
+    def _configure_adapters_interactive_sync(self, project_path: Path = None):
         """
         交互式配置适配器的同步版本
         
@@ -377,7 +377,7 @@ class InitCommand(Command):
             
             # 询问是否要配置适配器
             if Confirm.ask("\n[cyan]是否要配置适配器？[/cyan]", default=True):
-                self._configure_adapters_interactive_sync(str(project_path))
+                self._configure_adapters_interactive_sync(project_path)
             
             # 保存配置
             config.force_save()
