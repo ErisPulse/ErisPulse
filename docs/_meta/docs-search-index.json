@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 766,
+  "total_keywords": 769,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1304,6 +1304,14 @@
         "title": "BaseModule 基类"
       }
     ],
+    "Bug 追踪器": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bug 追踪器"
+      }
+    ],
     "CLI 命令参考": [
       {
         "document": "user-guide/cli-reference.md",
@@ -1938,6 +1946,14 @@
         "line": 437,
         "level": 3,
         "title": "WebSocket 连接"
+      }
+    ],
+    "[BUG-001] Init 命令适配器配置路径类型错误": [
+      {
+        "document": "bug-tracker.md",
+        "line": 9,
+        "level": 3,
+        "title": "[BUG-001] Init 命令适配器配置路径类型错误"
       }
     ],
     "__init__.py": [
@@ -3902,6 +3918,14 @@
         "line": 196,
         "level": 3,
         "title": "工具方法"
+      }
+    ],
+    "已修复的 Bug": [
+      {
+        "document": "bug-tracker.md",
+        "line": 7,
+        "level": 2,
+        "title": "已修复的 Bug"
       }
     ],
     "布尔参数": [
