@@ -93,6 +93,11 @@
     - 使用 `infer_receive_type` 进行类型推断
     - 统一发送逻辑，提高代码可维护性
 
+### 修复
+- @wsu2059q
+  - 修复 `ep init` 命令交互式初始化中适配器配置的类型错误：
+    - 修正 `_configure_adapters_interactive_sync` 方法的参数类型为 `Path`
+
 ### 移除
 - @wsu2059q
   - 移除 `/routes` 端点，出于安全考虑删除路由列表查询功能
@@ -103,6 +108,7 @@
   - 更新事件转换标准文档，引用会话类型标准
   - 新增会话类型管理单元测试（`tests/unit/test_unit_session_type.py`）
   - 文档生成器添加`会话类型支持`文档
+  - 新增 Bug 修复说明文档（`bug-fix-init-path-type.md`），详细说明 2.3.7 版本引入的适配器配置路径类型错误问题
 
 ---
 
