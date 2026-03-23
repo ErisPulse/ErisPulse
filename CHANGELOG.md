@@ -94,7 +94,7 @@
     - 统一发送逻辑，提高代码可维护性
 
 ### 修复
-- @wsu2059q
+- @LeslieKeys
   - 修复 `ep init` 命令交互式初始化中适配器配置的类型错误：
     - 修正 `_configure_adapters_interactive_sync` 方法的参数类型为 `Path`
 
