@@ -6633,9 +6633,9 @@ await adapter.myplatform.Send.To("user", "123").Text("Hello")
 # 发送给群组
 await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
-# 自动转换 private → user（推荐）
+# 自动转换 private → user（不推荐，可能会有兼容性问题）
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# 内部自动转换为: Send.To("user", "789")
+# 内部自动转换为: Send.To("user", "789") # 直接使用user作为会话类型是更优的选择
 ```
 
 ### 6.2 事件回复
