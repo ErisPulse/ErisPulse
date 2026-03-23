@@ -1,3 +1,9 @@
+<div align="center">
+
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md)
+
+</div>
+
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
