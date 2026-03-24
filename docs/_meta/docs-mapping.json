@@ -270,8 +270,8 @@
           "level": 1
         },
         {
-          "title": "ErisPulse 发送方法命名规范",
-          "path": "standards/naming-conventions.md",
+          "title": "ErisPulse 发送方法规范",
+          "path": "standards/send-method-spec.md",
           "level": 1
         }
       ]

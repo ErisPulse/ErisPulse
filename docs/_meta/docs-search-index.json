@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 769,
+  "total_keywords": 779,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -174,7 +174,7 @@
     ],
     "1. 标准方法命名": [
       {
-        "document": "standards/naming-conventions.md",
+        "document": "standards/send-method-spec.md",
         "line": 5,
         "level": 2,
         "title": "1. 标准方法命名"
@@ -270,7 +270,7 @@
     ],
     "1.1 标准发送方法": [
       {
-        "document": "standards/naming-conventions.md",
+        "document": "standards/send-method-spec.md",
         "line": 9,
         "level": 3,
         "title": "1.1 标准发送方法"
@@ -286,7 +286,7 @@
     ],
     "1.2 链式修饰方法": [
       {
-        "document": "standards/naming-conventions.md",
+        "document": "standards/send-method-spec.md",
         "line": 26,
         "level": 3,
         "title": "1.2 链式修饰方法"
@@ -294,7 +294,7 @@
     ],
     "1.3 协议方法": [
       {
-        "document": "standards/naming-conventions.md",
+        "document": "standards/send-method-spec.md",
         "line": 34,
         "level": 3,
         "title": "1.3 协议方法"
@@ -346,6 +346,14 @@
         "title": "2. 创建 pyproject.toml"
       }
     ],
+    "2. 参数规范详解": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 42,
+        "level": 2,
+        "title": "2. 参数规范详解"
+      }
+    ],
     "2. 友好的错误提示": [
       {
         "document": "developer-guide/extensions/cli-extensions.md",
@@ -376,14 +384,6 @@
         "line": 93,
         "level": 3,
         "title": "2. 嵌入式开发"
-      }
-    ],
-    "2. 平台特有方法命名": [
-      {
-        "document": "standards/naming-conventions.md",
-        "line": 42,
-        "level": 2,
-        "title": "2. 平台特有方法命名"
       }
     ],
     "2. 批量操作": [
@@ -566,12 +566,44 @@
         "title": "2.1 OneBot12 标准类型"
       }
     ],
+    "2.1 媒体消息参数规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.1 媒体消息参数规范"
+      }
+    ],
     "2.1 必须字段": [
       {
         "document": "standards/event-conversion.md",
         "line": 12,
         "level": 3,
         "title": "2.1 必须字段"
+      }
+    ],
+    "2.1.1 字符串参数（URL 或文件路径）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 48,
+        "level": 4,
+        "title": "2.1.1 字符串参数（URL 或文件路径）"
+      }
+    ],
+    "2.1.2 二进制数据参数": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 73,
+        "level": 4,
+        "title": "2.1.2 二进制数据参数"
+      }
+    ],
+    "2.1.3 参数处理优先级": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 99,
+        "level": 4,
+        "title": "2.1.3 参数处理优先级"
       }
     ],
     "2.2 ErisPulse 扩展类型": [
@@ -582,12 +614,28 @@
         "title": "2.2 ErisPulse 扩展类型"
       }
     ],
+    "2.2 文本消息参数规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 124,
+        "level": 3,
+        "title": "2.2 文本消息参数规范"
+      }
+    ],
     "2.2 消息事件字段": [
       {
         "document": "standards/event-conversion.md",
         "line": 29,
         "level": 3,
         "title": "2.2 消息事件字段"
+      }
+    ],
+    "2.3 @用户参数规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 151,
+        "level": 3,
+        "title": "2.3 @用户参数规范"
       }
     ],
     "2.3 通知事件字段": [
@@ -598,12 +646,36 @@
         "title": "2.3 通知事件字段"
       }
     ],
+    "2.4 回复消息参数规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 171,
+        "level": 3,
+        "title": "2.4 回复消息参数规范"
+      }
+    ],
     "2.4 请求事件字段": [
       {
         "document": "standards/event-conversion.md",
         "line": 44,
         "level": 3,
         "title": "2.4 请求事件字段"
+      }
+    ],
+    "2.5 卡片消息参数规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 188,
+        "level": 3,
+        "title": "2.5 卡片消息参数规范"
+      }
+    ],
+    "2.6 参数验证和错误处理": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 212,
+        "level": 3,
+        "title": "2.6 参数验证和错误处理"
       }
     ],
     "2xxxx 动作处理器错误（Handler Error）": [
@@ -646,14 +718,6 @@
         "title": "3. 创建适配器主类"
       }
     ],
-    "3. 参数命名规范": [
-      {
-        "document": "standards/naming-conventions.md",
-        "line": 68,
-        "level": 2,
-        "title": "3. 参数命名规范"
-      }
-    ],
     "3. 完整字段规范": [
       {
         "document": "standards/api-response.md",
@@ -668,6 +732,14 @@
         "line": 62,
         "level": 3,
         "title": "3. 实现命令注册函数"
+      }
+    ],
+    "3. 平台特有方法命名": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 241,
+        "level": 2,
+        "title": "3. 平台特有方法命名"
       }
     ],
     "3. 平台类型映射": [
@@ -838,6 +910,14 @@
         "title": "4. 创建包入口"
       }
     ],
+    "4. 参数命名规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 267,
+        "level": 2,
+        "title": "4. 参数命名规范"
+      }
+    ],
     "4. 命令别名": [
       {
         "document": "developer-guide/extensions/cli-extensions.md",
@@ -910,14 +990,6 @@
         "title": "4. 自定义类型扩展"
       }
     ],
-    "4. 返回值规范": [
-      {
-        "document": "standards/naming-conventions.md",
-        "line": 79,
-        "level": 2,
-        "title": "4. 返回值规范"
-      }
-    ],
     "4.1 注册自定义类型": [
       {
         "document": "standards/session-types.md",
@@ -982,20 +1054,20 @@
         "title": "5. 注意事项"
       }
     ],
-    "5. 相关文档": [
-      {
-        "document": "standards/naming-conventions.md",
-        "line": 84,
-        "level": 2,
-        "title": "5. 相关文档"
-      }
-    ],
     "5. 自动类型推断": [
       {
         "document": "standards/session-types.md",
         "line": 165,
         "level": 2,
         "title": "5. 自动类型推断"
+      }
+    ],
+    "5. 返回值规范": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 278,
+        "level": 2,
+        "title": "5. 返回值规范"
       }
     ],
     "5. 配置选项（如适用）": [
@@ -1044,6 +1116,14 @@
         "line": 166,
         "level": 2,
         "title": "6. 平台特性字段"
+      }
+    ],
+    "6. 相关文档": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 283,
+        "level": 2,
+        "title": "6. 相关文档"
       }
     ],
     "6.1 发送消息": [
@@ -1408,12 +1488,12 @@
         "title": "ErisPulse 会话类型标准"
       }
     ],
-    "ErisPulse 发送方法命名规范": [
+    "ErisPulse 发送方法规范": [
       {
-        "document": "standards/naming-conventions.md",
+        "document": "standards/send-method-spec.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse 发送方法命名规范"
+        "title": "ErisPulse 发送方法规范"
       }
     ],
     "ErisPulse 文档": [
