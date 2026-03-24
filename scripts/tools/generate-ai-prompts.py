@@ -227,8 +227,8 @@ class PromptGenerator:
         sections.append(self.read_file('standards/api-response.md'))
         sections.append("\n")
         
-        sections.append(self._subsection_header("命名规范"))
-        sections.append(self.read_file('standards/naming-conventions.md'))
+        sections.append(self._subsection_header("发送方法规范"))
+        sections.append(self.read_file('standards/send-method-spec.md'))
         sections.append("\n")
         
         return "\n".join(sections)
