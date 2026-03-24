@@ -278,5 +278,5 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 ## 9. 相关文档
 
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
-- [发送方法命名规范](naming-conventions.md) - Send 类的方法命名规范
+- [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
