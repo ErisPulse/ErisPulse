@@ -118,7 +118,7 @@ class DocsIndexGenerator:
         "standards/session-types.md": 2,
         "standards/api-response.md": 3,
         "standards/event-conversion.md": 4,
-        "standards/naming-conventions.md": 5,
+        "standards/send-method-spec.md": 5,
         
         # 风格指南
         "styleguide/README.md": 1,

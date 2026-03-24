@@ -72,6 +72,10 @@
 ### 文档
 - @wsu2059q
   - 新增 Bug 修复说明文档（`bug-tracker.md`）
+  - 重构发送方法规范文档：
+    - 将 `naming-conventions.md` 重命名为 `send-method-spec.md`，更准确反映文档内容
+    - 扩展媒体消息参数规范，详细说明 URL、文件路径、二进制数据的使用场景和注意事项
+  - 更新文档生成脚本（`generate-docs-index.py`、`generate-ai-prompts.py`）中的文档路径引用
 
 ---
 
