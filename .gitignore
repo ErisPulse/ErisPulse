@@ -206,3 +206,22 @@ bin
 include
 lib
 pyvenv.cfg
+
+# i18n 翻译文档（自动生成）
+# 已提交到版本控制以支持 CI/CD 和状态追踪
+# docs/zh-TW/
+# docs/en/
+# docs/ja/
+# docs/ko/
+# docs/fr/
+# docs/de/
+# docs/es/
+# docs/it/
+# docs/ru/
+# docs/ar/
+
+# 翻译缓存（已提交到版本控制）
+# .translate_cache/
+
+# 但保留源中文文档
+!docs/zh-CN/
