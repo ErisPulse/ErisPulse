@@ -1,0 +1,7286 @@
+{
+  "version": "1.0",
+  "total_keywords": 799,
+  "keywords": {
+    "0 Success (OK)": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 64,
+        "level": 4,
+        "title": "0 Success (OK)"
+      }
+    ],
+    "1. Account Configuration Validation": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 252,
+        "level": 3,
+        "title": "1. Account Configuration Validation"
+      }
+    ],
+    "1. Adapter System": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 103,
+        "level": 4,
+        "title": "1. Adapter System"
+      }
+    ],
+    "1. Basic Information Section": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 16,
+        "level": 3,
+        "title": "1. Basic Information Section"
+      }
+    ],
+    "1. Categorized Exception Handling": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 294,
+        "level": 3,
+        "title": "1. Categorized Exception Handling"
+      },
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 148,
+        "level": 3,
+        "title": "1. Categorized Exception Handling"
+      }
+    ],
+    "1. Clear Help Information": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 307,
+        "level": 3,
+        "title": "1. Clear Help Information"
+      }
+    ],
+    "1. Core Concepts": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. Core Concepts"
+      }
+    ],
+    "1. Core Principles": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 3,
+        "level": 2,
+        "title": "1. Core Principles"
+      }
+    ],
+    "1. Create Project": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 51,
+        "level": 3,
+        "title": "1. Create Project"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 34,
+        "level": 3,
+        "title": "1. Create Project"
+      }
+    ],
+    "1. Description": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 3,
+        "level": 2,
+        "title": "1. Description"
+      }
+    ],
+    "1. Ensure Cross-Platform Compatibility": [
+      {
+        "document": "en/standards/README.md",
+        "line": 25,
+        "level": 3,
+        "title": "1. Ensure Cross-Platform Compatibility"
+      }
+    ],
+    "1. Exception Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 378,
+        "level": 3,
+        "title": "1. Exception Handling"
+      }
+    ],
+    "1. Implement Connection Retry": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. Implement Connection Retry"
+      }
+    ],
+    "1. Maintain Platform Feature Documentation": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 386,
+        "level": 3,
+        "title": "1. Maintain Platform Feature Documentation"
+      }
+    ],
+    "1. Module Development (Recommended)": [
+      {
+        "document": "en/README.md",
+        "line": 89,
+        "level": 3,
+        "title": "1. Module Development (Recommended)"
+      }
+    ],
+    "1. Must Return Task Object": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 137,
+        "level": 3,
+        "title": "1. Must Return Task Object"
+      }
+    ],
+    "1. Proper Use of Log Levels": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 217,
+        "level": 3,
+        "title": "1. Proper Use of Log Levels"
+      }
+    ],
+    "1. SDK Object": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 47,
+        "level": 3,
+        "title": "1. SDK Object"
+      }
+    ],
+    "1. Sensitive Data Protection": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 288,
+        "level": 3,
+        "title": "1. Sensitive Data Protection"
+      }
+    ],
+    "1. Single Responsibility Principle": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. Single Responsibility Principle"
+      }
+    ],
+    "1. Specify Type and ID": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. Specify Type and ID"
+      }
+    ],
+    "1. Standard Method Naming": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. Standard Method Naming"
+      }
+    ],
+    "1. Standardize Response Format": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 202,
+        "level": 3,
+        "title": "1. Standardize Response Format"
+      }
+    ],
+    "1. Strictly Follow OneBot12 Standard": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 83,
+        "level": 3,
+        "title": "1. Strictly Follow OneBot12 Standard"
+      }
+    ],
+    "1. Unit Testing": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 325,
+        "level": 3,
+        "title": "1. Unit Testing"
+      }
+    ],
+    "1. Unit Tests": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 340,
+        "level": 3,
+        "title": "1. Unit Tests"
+      }
+    ],
+    "1. Use Asynchronous Libraries": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. Use Asynchronous Libraries"
+      }
+    ],
+    "1. Use Caching": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 251,
+        "level": 3,
+        "title": "1. Use Caching"
+      }
+    ],
+    "1. Use Event Wrapper Class": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 98,
+        "level": 3,
+        "title": "1. Use Event Wrapper Class"
+      }
+    ],
+    "1. Use Transactions": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 184,
+        "level": 3,
+        "title": "1. Use Transactions"
+      }
+    ],
+    "1. Version Management": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 356,
+        "level": 3,
+        "title": "1. Version Management"
+      }
+    ],
+    "1.1 Receive Type && Send Type": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 7,
+        "level": 3,
+        "title": "1.1 Receive Type && Send Type"
+      }
+    ],
+    "1.1 Standard Sending Methods": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 9,
+        "level": 3,
+        "title": "1.1 Standard Sending Methods"
+      }
+    ],
+    "1.2 Chain Modifier Methods": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 26,
+        "level": 3,
+        "title": "1.2 Chain Modifier Methods"
+      }
+    ],
+    "1.2 Type Mapping": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 14,
+        "level": 3,
+        "title": "1.2 Type Mapping"
+      }
+    ],
+    "1.3 Protocol Methods": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 34,
+        "level": 3,
+        "title": "1.3 Protocol Methods"
+      }
+    ],
+    "1xxxx Action Request Errors (Request Error)": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 67,
+        "level": 4,
+        "title": "1xxxx Action Request Errors (Request Error)"
+      }
+    ],
+    "2. Account Selection Mechanism": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 272,
+        "level": 3,
+        "title": "2. Account Selection Mechanism"
+      }
+    ],
+    "2. Avoid Blocking Operations": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 272,
+        "level": 3,
+        "title": "2. Avoid Blocking Operations"
+      }
+    ],
+    "2. Basic Return Structure": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 12,
+        "level": 2,
+        "title": "2. Basic Return Structure"
+      }
+    ],
+    "2. Batch Operations": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 200,
+        "level": 3,
+        "title": "2. Batch Operations"
+      }
+    ],
+    "2. Chaining Modifier Methods Return self": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 154,
+        "level": 3,
+        "title": "2. Chaining Modifier Methods Return self"
+      }
+    ],
+    "2. Complete Documentation": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 370,
+        "level": 3,
+        "title": "2. Complete Documentation"
+      }
+    ],
+    "2. Connection State Management": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 36,
+        "level": 3,
+        "title": "2. Connection State Management"
+      }
+    ],
+    "2. Correct Asynchronous Operations": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. Correct Asynchronous Operations"
+      }
+    ],
+    "2. Create pyproject.toml": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 57,
+        "level": 3,
+        "title": "2. Create pyproject.toml"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 40,
+        "level": 3,
+        "title": "2. Create pyproject.toml"
+      }
+    ],
+    "2. Detailed Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 42,
+        "level": 2,
+        "title": "2. Detailed Parameter Specifications"
+      }
+    ],
+    "2. Embedded Development": [
+      {
+        "document": "en/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "2. Embedded Development"
+      }
+    ],
+    "2. Error Code Standards": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 228,
+        "level": 3,
+        "title": "2. Error Code Standards"
+      }
+    ],
+    "2. Event Object": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 64,
+        "level": 3,
+        "title": "2. Event Object"
+      }
+    ],
+    "2. Event System": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 112,
+        "level": 4,
+        "title": "2. Event System"
+      }
+    ],
+    "2. Friendly Error Messages": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 318,
+        "level": 3,
+        "title": "2. Friendly Error Messages"
+      }
+    ],
+    "2. Input Validation": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 305,
+        "level": 3,
+        "title": "2. Input Validation"
+      }
+    ],
+    "2. Integration Testing": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 340,
+        "level": 3,
+        "title": "2. Integration Testing"
+      }
+    ],
+    "2. Integration Tests": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 364,
+        "level": 3,
+        "title": "2. Integration Tests"
+      }
+    ],
+    "2. Logging": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 319,
+        "level": 3,
+        "title": "2. Logging"
+      },
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 396,
+        "level": 3,
+        "title": "2. Logging"
+      }
+    ],
+    "2. Module Naming Conventions": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. Module Naming Conventions"
+      }
+    ],
+    "2. Proper Use of Lazy Loading": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 114,
+        "level": 3,
+        "title": "2. Proper Use of Lazy Loading"
+      }
+    ],
+    "2. Specify ID Only": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 13,
+        "level": 3,
+        "title": "2. Specify ID Only"
+      }
+    ],
+    "2. Standard Field Requirements": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 10,
+        "level": 2,
+        "title": "2. Standard Field Requirements"
+      }
+    ],
+    "2. Standard Session Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 32,
+        "level": 2,
+        "title": "2. Standard Session Types"
+      }
+    ],
+    "2. Standardize API Interfaces": [
+      {
+        "document": "en/standards/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "2. Standardize API Interfaces"
+      }
+    ],
+    "2. Structured Logging": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 239,
+        "level": 3,
+        "title": "2. Structured Logging"
+      }
+    ],
+    "2. Supported Message Sending Types": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 28,
+        "level": 3,
+        "title": "2. Supported Message Sending Types"
+      }
+    ],
+    "2. Timeout Handling": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 169,
+        "level": 3,
+        "title": "2. Timeout Handling"
+      }
+    ],
+    "2. Timestamp Normalization": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 105,
+        "level": 3,
+        "title": "2. Timestamp Normalization"
+      }
+    ],
+    "2. Update Version Information": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 407,
+        "level": 3,
+        "title": "2. Update Version Information"
+      }
+    ],
+    "2.1 Media Message Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.1 Media Message Parameter Specifications"
+      }
+    ],
+    "2.1 OneBot12 Standard Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 34,
+        "level": 3,
+        "title": "2.1 OneBot12 Standard Types"
+      }
+    ],
+    "2.1 Required Fields": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 12,
+        "level": 3,
+        "title": "2.1 Required Fields"
+      }
+    ],
+    "2.1.1 String Parameters (URL or File Path)": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 48,
+        "level": 4,
+        "title": "2.1.1 String Parameters (URL or File Path)"
+      }
+    ],
+    "2.1.2 Binary Data Parameters": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 73,
+        "level": 4,
+        "title": "2.1.2 Binary Data Parameters"
+      }
+    ],
+    "2.1.3 Parameter Processing Priority": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 99,
+        "level": 4,
+        "title": "2.1.3 Parameter Processing Priority"
+      }
+    ],
+    "2.2 ErisPulse Extended Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 57,
+        "level": 3,
+        "title": "2.2 ErisPulse Extended Types"
+      }
+    ],
+    "2.2 Message Event Fields": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 29,
+        "level": 3,
+        "title": "2.2 Message Event Fields"
+      }
+    ],
+    "2.2 Text Message Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 124,
+        "level": 3,
+        "title": "2.2 Text Message Parameter Specifications"
+      }
+    ],
+    "2.3 @ User Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 151,
+        "level": 3,
+        "title": "2.3 @ User Parameter Specifications"
+      }
+    ],
+    "2.3 Notice Event Fields": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 37,
+        "level": 3,
+        "title": "2.3 Notice Event Fields"
+      }
+    ],
+    "2.4 Reply Message Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 171,
+        "level": 3,
+        "title": "2.4 Reply Message Parameter Specifications"
+      }
+    ],
+    "2.4 Request Event Fields": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.4 Request Event Fields"
+      }
+    ],
+    "2.5 Card Message Parameter Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 188,
+        "level": 3,
+        "title": "2.5 Card Message Parameter Specifications"
+      }
+    ],
+    "2.6 Parameter Validation and Error Handling": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 212,
+        "level": 3,
+        "title": "2.6 Parameter Validation and Error Handling"
+      }
+    ],
+    "2xxxx Action Handler Errors (Handler Error)": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 80,
+        "level": 4,
+        "title": "2xxxx Action Handler Errors (Handler Error)"
+      }
+    ],
+    "3. Adapters": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 81,
+        "level": 3,
+        "title": "3. Adapters"
+      }
+    ],
+    "3. Clear Configuration Management": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 34,
+        "level": 3,
+        "title": "3. Clear Configuration Management"
+      }
+    ],
+    "3. Complete Field Specification": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 29,
+        "level": 2,
+        "title": "3. Complete Field Specification"
+      }
+    ],
+    "3. Conditional Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 412,
+        "level": 3,
+        "title": "3. Conditional Handling"
+      }
+    ],
+    "3. Create Adapter Main Class": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 80,
+        "level": 3,
+        "title": "3. Create Adapter Main Class"
+      }
+    ],
+    "3. Event Format Examples": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 51,
+        "level": 2,
+        "title": "3. Event Format Examples"
+      }
+    ],
+    "3. Event Handler Registration": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 130,
+        "level": 3,
+        "title": "3. Event Handler Registration"
+      }
+    ],
+    "3. Event ID Generation": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 121,
+        "level": 3,
+        "title": "3. Event ID Generation"
+      }
+    ],
+    "3. Heartbeat Keep-Alive": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 61,
+        "level": 3,
+        "title": "3. Heartbeat Keep-Alive"
+      }
+    ],
+    "3. Implement Command Registration Function": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 62,
+        "level": 3,
+        "title": "3. Implement Command Registration Function"
+      }
+    ],
+    "3. Improve Code Quality": [
+      {
+        "document": "en/standards/README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. Improve Code Quality"
+      }
+    ],
+    "3. Module System": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 121,
+        "level": 4,
+        "title": "3. Module System"
+      }
+    ],
+    "3. Platform Type Mapping": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 80,
+        "level": 2,
+        "title": "3. Platform Type Mapping"
+      }
+    ],
+    "3. Platform-Specific Event Types": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 47,
+        "level": 3,
+        "title": "3. Platform-Specific Event Types"
+      }
+    ],
+    "3. Platform-Specific Method Naming": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 241,
+        "level": 2,
+        "title": "3. Platform-Specific Method Naming"
+      }
+    ],
+    "3. Progress Feedback": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 329,
+        "level": 3,
+        "title": "3. Progress Feedback"
+      }
+    ],
+    "3. Resource Management": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 84,
+        "level": 3,
+        "title": "3. Resource Management"
+      }
+    ],
+    "3. Specify Sending Account": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 19,
+        "level": 3,
+        "title": "3. Specify Sending Account"
+      }
+    ],
+    "3. Support Platform-Specific Methods": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 171,
+        "level": 3,
+        "title": "3. Support Platform-Specific Methods"
+      }
+    ],
+    "3.1 Common Fields": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 31,
+        "level": 3,
+        "title": "3.1 Common Fields"
+      }
+    ],
+    "3.1 Mapping Principles": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 82,
+        "level": 3,
+        "title": "3.1 Mapping Principles"
+      }
+    ],
+    "3.1 Message Event (message)": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 53,
+        "level": 3,
+        "title": "3.1 Message Event (message)"
+      }
+    ],
+    "3.2 Common Platform Mapping Examples": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 90,
+        "level": 3,
+        "title": "3.2 Common Platform Mapping Examples"
+      }
+    ],
+    "3.2 Notice Event (notice)": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 86,
+        "level": 3,
+        "title": "3.2 Notice Event (notice)"
+      }
+    ],
+    "3.2 Return Code Specification": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 62,
+        "level": 3,
+        "title": "3.2 Return Code Specification"
+      }
+    ],
+    "3.3 Request Event (request)": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 107,
+        "level": 3,
+        "title": "3.3 Request Event (request)"
+      }
+    ],
+    "3xxxx Action Execution Errors (Execution Error)": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 86,
+        "level": 4,
+        "title": "3xxxx Action Execution Errors (Execution Error)"
+      }
+    ],
+    "4. Combine Usage": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 25,
+        "level": 3,
+        "title": "4. Combine Usage"
+      }
+    ],
+    "4. Command Aliases": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 341,
+        "level": 3,
+        "title": "4. Command Aliases"
+      }
+    ],
+    "4. Core Modules": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 129,
+        "level": 4,
+        "title": "4. Core Modules"
+      }
+    ],
+    "4. Create Package Entry": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 106,
+        "level": 3,
+        "title": "4. Create Package Entry"
+      }
+    ],
+    "4. Custom Type Extensions": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 121,
+        "level": 2,
+        "title": "4. Custom Type Extensions"
+      }
+    ],
+    "4. Extended Field Description": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 65,
+        "level": 3,
+        "title": "4. Extended Field Description"
+      }
+    ],
+    "4. Implement Required Methods": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 117,
+        "level": 3,
+        "title": "4. Implement Required Methods"
+      }
+    ],
+    "4. Implementation Requirements": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 100,
+        "level": 2,
+        "title": "4. Implementation Requirements"
+      }
+    ],
+    "4. Message Segment Standard": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 127,
+        "level": 2,
+        "title": "4. Message Segment Standard"
+      }
+    ],
+    "4. Modules": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 96,
+        "level": 3,
+        "title": "4. Modules"
+      }
+    ],
+    "4. Parameter Naming Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 267,
+        "level": 2,
+        "title": "4. Parameter Naming Specifications"
+      }
+    ],
+    "4.1 Generic Message Segment": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 129,
+        "level": 3,
+        "title": "4.1 Generic Message Segment"
+      }
+    ],
+    "4.1 Registering Custom Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 123,
+        "level": 3,
+        "title": "4.1 Registering Custom Types"
+      }
+    ],
+    "4.2 Special Message Segment": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 139,
+        "level": 3,
+        "title": "4.2 Special Message Segment"
+      }
+    ],
+    "4.2 Using Custom Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 139,
+        "level": 3,
+        "title": "4.2 Using Custom Types"
+      }
+    ],
+    "4.3 Unregistering Custom Types": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 157,
+        "level": 3,
+        "title": "4.3 Unregistering Custom Types"
+      }
+    ],
+    "5. Automatic Type Inference": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 165,
+        "level": 2,
+        "title": "5. Automatic Type Inference"
+      }
+    ],
+    "5. Configuration Options (if applicable)": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 74,
+        "level": 3,
+        "title": "5. Configuration Options (if applicable)"
+      }
+    ],
+    "5. Implement Send Class": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 147,
+        "level": 3,
+        "title": "5. Implement Send Class"
+      }
+    ],
+    "5. Notes": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 106,
+        "level": 2,
+        "title": "5. Notes"
+      }
+    ],
+    "5. Return Value Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 278,
+        "level": 2,
+        "title": "5. Return Value Specifications"
+      }
+    ],
+    "5. Unknown Event Handling": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 150,
+        "level": 2,
+        "title": "5. Unknown Event Handling"
+      }
+    ],
+    "5.1 Inference Priority": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 169,
+        "level": 3,
+        "title": "5.1 Inference Priority"
+      }
+    ],
+    "5.2 Usage Examples": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 180,
+        "level": 3,
+        "title": "5.2 Usage Examples"
+      }
+    ],
+    "6. API Usage Examples": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 194,
+        "level": 2,
+        "title": "6. API Usage Examples"
+      }
+    ],
+    "6. Implement Converter": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 229,
+        "level": 3,
+        "title": "6. Implement Converter"
+      }
+    ],
+    "6. Platform Specific Fields": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 166,
+        "level": 2,
+        "title": "6. Platform Specific Fields"
+      }
+    ],
+    "6. Related Documentation": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 283,
+        "level": 2,
+        "title": "6. Related Documentation"
+      }
+    ],
+    "6.1 Sending Messages": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 196,
+        "level": 3,
+        "title": "6.1 Sending Messages"
+      }
+    ],
+    "6.1 Specific Field Examples": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 175,
+        "level": 3,
+        "title": "6.1 Specific Field Examples"
+      }
+    ],
+    "6.2 Event Reply": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 212,
+        "level": 3,
+        "title": "6.2 Event Reply"
+      }
+    ],
+    "6.3 Command Handling": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 222,
+        "level": 3,
+        "title": "6.3 Command Handling"
+      }
+    ],
+    "7. Adapter Implementation Checklist": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 191,
+        "level": 2,
+        "title": "7. Adapter Implementation Checklist"
+      }
+    ],
+    "7. Best Practices": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 234,
+        "level": 2,
+        "title": "7. Best Practices"
+      }
+    ],
+    "7. Create Package Entry": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 271,
+        "level": 3,
+        "title": "7. Create Package Entry"
+      }
+    ],
+    "7.1 Adapter Developers": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 236,
+        "level": 3,
+        "title": "7.1 Adapter Developers"
+      }
+    ],
+    "7.2 Module Developers": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 243,
+        "level": 3,
+        "title": "7.2 Module Developers"
+      }
+    ],
+    "7.3 Type Inference": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 250,
+        "level": 3,
+        "title": "7.3 Type Inference"
+      }
+    ],
+    "8. Common Questions": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 256,
+        "level": 2,
+        "title": "8. Common Questions"
+      }
+    ],
+    "9. Related Documentation": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 273,
+        "level": 2,
+        "title": "9. Related Documentation"
+      }
+    ],
+    "@ Mention related": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 122,
+        "level": 4,
+        "title": "@ Mention related"
+      }
+    ],
+    "AI Assisted Development": [
+      {
+        "document": "en/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "AI Assisted Development"
+      }
+    ],
+    "AI-Assisted Development": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "AI-Assisted Development"
+      }
+    ],
+    "API Calls": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 135,
+        "level": 2,
+        "title": "API Calls"
+      }
+    ],
+    "API Error Handling": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 593,
+        "level": 3,
+        "title": "API Error Handling"
+      }
+    ],
+    "API Overview": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 12,
+        "level": 2,
+        "title": "API Overview"
+      }
+    ],
+    "API Reference": [
+      {
+        "document": "en/README.md",
+        "line": 59,
+        "level": 3,
+        "title": "API Reference"
+      },
+      {
+        "document": "en/api-reference/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "API Reference"
+      }
+    ],
+    "API Response": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 200,
+        "level": 2,
+        "title": "API Response"
+      },
+      {
+        "document": "en/standards/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "API Response"
+      }
+    ],
+    "API Response Standards": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 497,
+        "level": 2,
+        "title": "API Response Standards"
+      }
+    ],
+    "API Standard": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 321,
+        "level": 3,
+        "title": "API Standard"
+      }
+    ],
+    "Accessing Core Modules": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 51,
+        "level": 3,
+        "title": "Accessing Core Modules"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 53,
+        "level": 3,
+        "title": "Accessing Core Modules"
+      }
+    ],
+    "Accessing SDK": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 274,
+        "level": 3,
+        "title": "Accessing SDK"
+      }
+    ],
+    "Account Configuration": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 542,
+        "level": 3,
+        "title": "Account Configuration"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 163,
+        "level": 3,
+        "title": "Account Configuration"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 176,
+        "level": 3,
+        "title": "Account Configuration"
+      }
+    ],
+    "Account Management": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 92,
+        "level": 2,
+        "title": "Account Management"
+      }
+    ],
+    "Account Method": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 104,
+        "level": 3,
+        "title": "Account Method"
+      }
+    ],
+    "Activate Virtual Environment": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 50,
+        "level": 4,
+        "title": "Activate Virtual Environment"
+      }
+    ],
+    "Adapter": [
+      {
+        "document": "en/terminology.md",
+        "line": 17,
+        "level": 3,
+        "title": "Adapter"
+      }
+    ],
+    "Adapter Architecture": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "Adapter Architecture"
+      },
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 16,
+        "level": 3,
+        "title": "Adapter Architecture"
+      }
+    ],
+    "Adapter Base Class": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 161,
+        "level": 2,
+        "title": "Adapter Base Class"
+      }
+    ],
+    "Adapter Core Concepts": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Adapter Core Concepts"
+      }
+    ],
+    "Adapter Development": [
+      {
+        "document": "en/README.md",
+        "line": 39,
+        "level": 4,
+        "title": "Adapter Development"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "Adapter Development"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 53,
+        "level": 3,
+        "title": "Adapter Development"
+      }
+    ],
+    "Adapter Development Best Practices": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Adapter Development Best Practices"
+      }
+    ],
+    "Adapter Event Listening": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "Adapter Event Listening"
+      }
+    ],
+    "Adapter Events": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 143,
+        "level": 3,
+        "title": "Adapter Events"
+      }
+    ],
+    "Adapter Introduction": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "Adapter Introduction"
+      }
+    ],
+    "Adapter Lifecycle Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 62,
+        "level": 3,
+        "title": "Adapter Lifecycle Events"
+      }
+    ],
+    "Adapter Management": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 38,
+        "level": 3,
+        "title": "Adapter Management"
+      },
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 162,
+        "level": 3,
+        "title": "Adapter Management"
+      }
+    ],
+    "Adapter Manager": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Adapter Manager"
+      }
+    ],
+    "Adapter Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 129,
+        "level": 2,
+        "title": "Adapter Module"
+      }
+    ],
+    "Adapter Requirement Template": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "Adapter Requirement Template"
+      }
+    ],
+    "Adapter Send Method Query": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 72,
+        "level": 2,
+        "title": "Adapter Send Method Query"
+      }
+    ],
+    "Adapter Standardization Conversion Specification": [
+      {
+        "document": "en/standards/event-conversion.md",
+        "line": 1,
+        "level": 1,
+        "title": "Adapter Standardization Conversion Specification"
+      }
+    ],
+    "Adapter System API": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 1,
+        "level": 1,
+        "title": "Adapter System API"
+      }
+    ],
+    "AdapterManager": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 41,
+        "level": 2,
+        "title": "AdapterManager"
+      }
+    ],
+    "Add Message Listening": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 145,
+        "level": 3,
+        "title": "Add Message Listening"
+      }
+    ],
+    "Add Notification Listening": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 158,
+        "level": 3,
+        "title": "Add Notification Listening"
+      }
+    ],
+    "Adding Middleware": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 201,
+        "level": 4,
+        "title": "Adding Middleware"
+      }
+    ],
+    "Admin Check": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 231,
+        "level": 3,
+        "title": "Admin Check"
+      }
+    ],
+    "Advanced Topics": [
+      {
+        "document": "en/README.md",
+        "line": 71,
+        "level": 3,
+        "title": "Advanced Topics"
+      },
+      {
+        "document": "en/advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Advanced Topics"
+      }
+    ],
+    "Annotation/Decorator": [
+      {
+        "document": "en/terminology.md",
+        "line": 120,
+        "level": 3,
+        "title": "Annotation/Decorator"
+      }
+    ],
+    "Architecture Overview": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 60,
+        "level": 3,
+        "title": "Architecture Overview"
+      }
+    ],
+    "Argument Handling": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 169,
+        "level": 2,
+        "title": "Argument Handling"
+      }
+    ],
+    "Async Processing Mechanism": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 233,
+        "level": 2,
+        "title": "Async Processing Mechanism"
+      }
+    ],
+    "Asynchronous Handling": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 112,
+        "level": 2,
+        "title": "Asynchronous Handling"
+      }
+    ],
+    "Asynchronous Initialization": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "Asynchronous Initialization"
+      }
+    ],
+    "Asynchronous Processing Mechanism": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 254,
+        "level": 2,
+        "title": "Asynchronous Processing Mechanism"
+      }
+    ],
+    "Asynchronous Programming": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 51,
+        "level": 2,
+        "title": "Asynchronous Programming"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 49,
+        "level": 3,
+        "title": "Asynchronous Programming"
+      }
+    ],
+    "Asynchronous Sending and Result Processing": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 77,
+        "level": 4,
+        "title": "Asynchronous Sending and Result Processing"
+      }
+    ],
+    "At Method": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 62,
+        "level": 3,
+        "title": "At Method"
+      }
+    ],
+    "AtAll Method": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 72,
+        "level": 3,
+        "title": "AtAll Method"
+      }
+    ],
+    "Authentication Mechanism": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 105,
+        "level": 2,
+        "title": "Authentication Mechanism"
+      }
+    ],
+    "Available Properties": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 307,
+        "level": 3,
+        "title": "Available Properties"
+      }
+    ],
+    "Base Classes": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "Base Classes"
+      }
+    ],
+    "BaseAdapter Base Class": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 250,
+        "level": 2,
+        "title": "BaseAdapter Base Class"
+      }
+    ],
+    "BaseAdapter Methods": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 163,
+        "level": 3,
+        "title": "BaseAdapter Methods"
+      }
+    ],
+    "BaseModule Base Class": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 116,
+        "level": 3,
+        "title": "BaseModule Base Class"
+      }
+    ],
+    "Basic Commands": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 62,
+        "level": 3,
+        "title": "Basic Commands"
+      }
+    ],
+    "Basic Concepts": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Basic Concepts"
+      }
+    ],
+    "Basic Configuration": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 204,
+        "level": 3,
+        "title": "Basic Configuration"
+      }
+    ],
+    "Basic Format": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 22,
+        "level": 3,
+        "title": "Basic Format"
+      }
+    ],
+    "Basic Information": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 13,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      }
+    ],
+    "Basic Judgment": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 128,
+        "level": 4,
+        "title": "Basic Judgment"
+      }
+    ],
+    "Basic Logging": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 95,
+        "level": 3,
+        "title": "Basic Logging"
+      }
+    ],
+    "Basic Message Types": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 35,
+        "level": 3,
+        "title": "Basic Message Types"
+      }
+    ],
+    "Basic Methods": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 319,
+        "level": 3,
+        "title": "Basic Methods"
+      },
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 41,
+        "level": 3,
+        "title": "Basic Methods"
+      }
+    ],
+    "Basic Operations": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 7,
+        "level": 3,
+        "title": "Basic Operations"
+      }
+    ],
+    "Basic Output": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 118,
+        "level": 3,
+        "title": "Basic Output"
+      }
+    ],
+    "Basic Reply": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 159,
+        "level": 4,
+        "title": "Basic Reply"
+      }
+    ],
+    "Basic Sending": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 75,
+        "level": 3,
+        "title": "Basic Sending"
+      },
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 301,
+        "level": 3,
+        "title": "Basic Sending"
+      }
+    ],
+    "Basic Sending Methods": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 40,
+        "level": 3,
+        "title": "Basic Sending Methods"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 28,
+        "level": 3,
+        "title": "Basic Sending Methods"
+      }
+    ],
+    "Basic Structure": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 252,
+        "level": 3,
+        "title": "Basic Structure"
+      }
+    ],
+    "Basic Usage": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 61,
+        "level": 3,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "en/advanced/router.md",
+        "line": 15,
+        "level": 2,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 53,
+        "level": 3,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 5,
+        "level": 2,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 222,
+        "level": 3,
+        "title": "Basic Usage"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 127,
+        "level": 3,
+        "title": "Basic Usage"
+      }
+    ],
+    "Batch Operations": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 35,
+        "level": 3,
+        "title": "Batch Operations"
+      }
+    ],
+    "Benefits of Following Standards": [
+      {
+        "document": "en/standards/README.md",
+        "line": 46,
+        "level": 2,
+        "title": "Benefits of Following Standards"
+      }
+    ],
+    "Benefits of Following the Guidelines": [
+      {
+        "document": "en/styleguide/README.md",
+        "line": 25,
+        "level": 2,
+        "title": "Benefits of Following the Guidelines"
+      }
+    ],
+    "Best Practices": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 94,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
+        "document": "en/advanced/router.md",
+        "line": 157,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 305,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 333,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 67,
+        "level": 2,
+        "title": "Best Practices"
+      }
+    ],
+    "Best Practices for Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 376,
+        "level": 2,
+        "title": "Best Practices for Event Handling"
+      }
+    ],
+    "Blacklist Filtering": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 168,
+        "level": 3,
+        "title": "Blacklist Filtering"
+      }
+    ],
+    "Boolean Arguments": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 193,
+        "level": 3,
+        "title": "Boolean Arguments"
+      }
+    ],
+    "Bot Identification in Events": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 275,
+        "level": 3,
+        "title": "Bot Identification in Events"
+      }
+    ],
+    "Bot Information": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 98,
+        "level": 4,
+        "title": "Bot Information"
+      }
+    ],
+    "Bot does not respond?": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 185,
+        "level": 3,
+        "title": "Bot does not respond?"
+      }
+    ],
+    "Bug Tracker": [
+      {
+        "document": "en/bug-tracker.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bug Tracker"
+      }
+    ],
+    "Built-in Defaults": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 171,
+        "level": 3,
+        "title": "Built-in Defaults"
+      }
+    ],
+    "Button Parameter Description": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 48,
+        "level": 3,
+        "title": "Button Parameter Description"
+      }
+    ],
+    "CLI Command Reference": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 1,
+        "level": 1,
+        "title": "CLI Command Reference"
+      }
+    ],
+    "CLI Extension Development": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 67,
+        "level": 3,
+        "title": "CLI Extension Development"
+      }
+    ],
+    "CLI Extension Development Guide": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 1,
+        "level": 1,
+        "title": "CLI Extension Development Guide"
+      }
+    ],
+    "CLI Extensions": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 153,
+        "level": 2,
+        "title": "CLI Extensions"
+      }
+    ],
+    "Chain Calling": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 240,
+        "level": 3,
+        "title": "Chain Calling"
+      }
+    ],
+    "Chain Modifiers": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 314,
+        "level": 3,
+        "title": "Chain Modifiers"
+      }
+    ],
+    "Chained Call Examples": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 59,
+        "level": 3,
+        "title": "Chained Call Examples"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 82,
+        "level": 3,
+        "title": "Chained Call Examples"
+      }
+    ],
+    "Chained Modifier Methods": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 336,
+        "level": 3,
+        "title": "Chained Modifier Methods"
+      }
+    ],
+    "Chained Modifier Methods (Combinable)": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 51,
+        "level": 3,
+        "title": "Chained Modifier Methods (Combinable)"
+      }
+    ],
+    "Chained Modifier Methods (Composable)": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 73,
+        "level": 3,
+        "title": "Chained Modifier Methods (Composable)"
+      }
+    ],
+    "Chained Modifiers": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 119,
+        "level": 3,
+        "title": "Chained Modifiers"
+      }
+    ],
+    "Chained Modifying Methods": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 60,
+        "level": 3,
+        "title": "Chained Modifying Methods"
+      }
+    ],
+    "Check Installation": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 134,
+        "level": 3,
+        "title": "Check Installation"
+      }
+    ],
+    "Checking Platform Status": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 120,
+        "level": 4,
+        "title": "Checking Platform Status"
+      }
+    ],
+    "Child Loggers": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 108,
+        "level": 3,
+        "title": "Child Loggers"
+      }
+    ],
+    "Choosing a Development Approach": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "Choosing a Development Approach"
+      }
+    ],
+    "Choosing a Development Type": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 35,
+        "level": 2,
+        "title": "Choosing a Development Type"
+      }
+    ],
+    "Code Example Standards": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 90,
+        "level": 3,
+        "title": "Code Example Standards"
+      }
+    ],
+    "Code Explanation": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 112,
+        "level": 2,
+        "title": "Code Explanation"
+      }
+    ],
+    "Combine Modifiers": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 86,
+        "level": 3,
+        "title": "Combine Modifiers"
+      }
+    ],
+    "Command": [
+      {
+        "document": "en/terminology.md",
+        "line": 66,
+        "level": 3,
+        "title": "Command"
+      }
+    ],
+    "Command Aliases": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 78,
+        "level": 3,
+        "title": "Command Aliases"
+      }
+    ],
+    "Command Arguments": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 91,
+        "level": 3,
+        "title": "Command Arguments"
+      }
+    ],
+    "Command Basic": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 184,
+        "level": 4,
+        "title": "Command Basic"
+      }
+    ],
+    "Command Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 103,
+        "level": 3,
+        "title": "Command Configuration"
+      }
+    ],
+    "Command Decorator": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 114,
+        "level": 3,
+        "title": "Command Decorator"
+      }
+    ],
+    "Command Event": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 142,
+        "level": 3,
+        "title": "Command Event"
+      }
+    ],
+    "Command Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 60,
+        "level": 2,
+        "title": "Command Event Handling"
+      }
+    ],
+    "Command Groups": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 105,
+        "level": 3,
+        "title": "Command Groups"
+      }
+    ],
+    "Command Information": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 41,
+        "level": 3,
+        "title": "Command Information"
+      },
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 287,
+        "level": 3,
+        "title": "Command Information"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 182,
+        "level": 3,
+        "title": "Command Information"
+      }
+    ],
+    "Command Information Retrieval": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 65,
+        "level": 2,
+        "title": "Command Information Retrieval"
+      }
+    ],
+    "Command Module": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Command Module"
+      }
+    ],
+    "Command Organization": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 212,
+        "level": 2,
+        "title": "Command Organization"
+      }
+    ],
+    "Command Permissions": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 117,
+        "level": 3,
+        "title": "Command Permissions"
+      }
+    ],
+    "Command Priority": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 130,
+        "level": 3,
+        "title": "Command Priority"
+      }
+    ],
+    "Common Commands": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 13,
+        "level": 3,
+        "title": "Common Commands"
+      }
+    ],
+    "Common Configuration Locations": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 23,
+        "level": 3,
+        "title": "Common Configuration Locations"
+      }
+    ],
+    "Common Interfaces": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 30,
+        "level": 2,
+        "title": "Common Interfaces"
+      }
+    ],
+    "Common Issues": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 183,
+        "level": 2,
+        "title": "Common Issues"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 157,
+        "level": 2,
+        "title": "Common Issues"
+      }
+    ],
+    "Common Methods of the Event Object": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 330,
+        "level": 3,
+        "title": "Common Methods of the Event Object"
+      }
+    ],
+    "Common Parameters": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 39,
+        "level": 3,
+        "title": "Common Parameters"
+      }
+    ],
+    "Common Task Examples": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 1,
+        "level": 1,
+        "title": "Common Task Examples"
+      }
+    ],
+    "Common Tasks": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 61,
+        "level": 2,
+        "title": "Common Tasks"
+      }
+    ],
+    "Common Usage": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 82,
+        "level": 2,
+        "title": "Common Usage"
+      }
+    ],
+    "Complete Configuration Example": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 17,
+        "level": 2,
+        "title": "Complete Configuration Example"
+      }
+    ],
+    "Complete Examples": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 220,
+        "level": 2,
+        "title": "Complete Examples"
+      }
+    ],
+    "Component Relationships": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "Component Relationships"
+      }
+    ],
+    "Conditional Listening": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 143,
+        "level": 3,
+        "title": "Conditional Listening"
+      }
+    ],
+    "Config": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 216,
+        "level": 3,
+        "title": "Config"
+      }
+    ],
+    "Config Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 52,
+        "level": 2,
+        "title": "Config Module"
+      }
+    ],
+    "Configuration": [
+      {
+        "document": "en/terminology.md",
+        "line": 81,
+        "level": 3,
+        "title": "Configuration"
+      }
+    ],
+    "Configuration Description": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 221,
+        "level": 3,
+        "title": "Configuration Description"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 89,
+        "level": 3,
+        "title": "Configuration Description"
+      }
+    ],
+    "Configuration Errors": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 165,
+        "level": 3,
+        "title": "Configuration Errors"
+      }
+    ],
+    "Configuration Example": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 76,
+        "level": 3,
+        "title": "Configuration Example"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 176,
+        "level": 3,
+        "title": "Configuration Example"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 189,
+        "level": 3,
+        "title": "Configuration Example"
+      }
+    ],
+    "Configuration File": [
+      {
+        "document": "en/quick-start.md",
+        "line": 113,
+        "level": 2,
+        "title": "Configuration File"
+      }
+    ],
+    "Configuration File Guide": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "Configuration File Guide"
+      }
+    ],
+    "Configuration File Location": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 6,
+        "level": 2,
+        "title": "Configuration File Location"
+      }
+    ],
+    "Configuration Management": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 118,
+        "level": 3,
+        "title": "Configuration Management"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 100,
+        "level": 2,
+        "title": "Configuration Management"
+      }
+    ],
+    "Configuration Options": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 159,
+        "level": 2,
+        "title": "Configuration Options"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 174,
+        "level": 2,
+        "title": "Configuration Options"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 200,
+        "level": 2,
+        "title": "Configuration Options"
+      }
+    ],
+    "Configuring Lazy Loading": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 30,
+        "level": 2,
+        "title": "Configuring Lazy Loading"
+      }
+    ],
+    "Connection Event": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 208,
+        "level": 3,
+        "title": "Connection Event"
+      }
+    ],
+    "Connection Management": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "Connection Management"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 435,
+        "level": 2,
+        "title": "Connection Management"
+      }
+    ],
+    "Connection Retry": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 569,
+        "level": 3,
+        "title": "Connection Retry"
+      }
+    ],
+    "Content List": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 5,
+        "level": 2,
+        "title": "Content List"
+      }
+    ],
+    "Content Writing Standards": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 88,
+        "level": 2,
+        "title": "Content Writing Standards"
+      }
+    ],
+    "Contributing": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 214,
+        "level": 2,
+        "title": "Contributing"
+      }
+    ],
+    "Contribution Flow": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 137,
+        "level": 2,
+        "title": "Contribution Flow"
+      }
+    ],
+    "Conversion Process": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 364,
+        "level": 3,
+        "title": "Conversion Process"
+      }
+    ],
+    "Converter Example": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 394,
+        "level": 3,
+        "title": "Converter Example"
+      }
+    ],
+    "Core Components": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 45,
+        "level": 2,
+        "title": "Core Components"
+      }
+    ],
+    "Core Components Explanation": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 101,
+        "level": 3,
+        "title": "Core Components Explanation"
+      }
+    ],
+    "Core Concepts": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 114,
+        "level": 2,
+        "title": "Core Concepts"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 5,
+        "level": 2,
+        "title": "Core Concepts"
+      }
+    ],
+    "Core Differences": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 99,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 89,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 121,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 131,
+        "level": 3,
+        "title": "Core Differences"
+      }
+    ],
+    "Core Features": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "Core Features"
+      }
+    ],
+    "Core Field Methods": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 12,
+        "level": 2,
+        "title": "Core Field Methods"
+      }
+    ],
+    "Core Functions": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 45,
+        "level": 3,
+        "title": "Core Functions"
+      }
+    ],
+    "Core Initialization Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 47,
+        "level": 3,
+        "title": "Core Initialization Events"
+      }
+    ],
+    "Core Methods": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 244,
+        "level": 3,
+        "title": "Core Methods"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 89,
+        "level": 3,
+        "title": "Core Methods"
+      }
+    ],
+    "Core Module API": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Module API"
+      }
+    ],
+    "Core Modules": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "Core Modules"
+      },
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 191,
+        "level": 2,
+        "title": "Core Modules"
+      }
+    ],
+    "Core Principles": [
+      {
+        "document": "en/standards/README.md",
+        "line": 16,
+        "level": 3,
+        "title": "Core Principles"
+      }
+    ],
+    "Core.py - Basic Module": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 45,
+        "level": 2,
+        "title": "Core.py - Basic Module"
+      }
+    ],
+    "Create Your First Bot": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 1,
+        "level": 1,
+        "title": "Create Your First Bot"
+      }
+    ],
+    "Create a Virtual Environment": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 37,
+        "level": 4,
+        "title": "Create a Virtual Environment"
+      }
+    ],
+    "Create project and install": [
+      {
+        "document": "en/quick-start.md",
+        "line": 25,
+        "level": 4,
+        "title": "Create project and install"
+      }
+    ],
+    "Data Persistence": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 16,
+        "level": 2,
+        "title": "Data Persistence"
+      }
+    ],
+    "Debugging Tips": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 99,
+        "level": 3,
+        "title": "Debugging Tips"
+      }
+    ],
+    "Default Configuration": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 196,
+        "level": 3,
+        "title": "Default Configuration"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 214,
+        "level": 3,
+        "title": "Default Configuration"
+      }
+    ],
+    "Deployment": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 354,
+        "level": 2,
+        "title": "Deployment"
+      }
+    ],
+    "Detailed Explanation of the Event Wrapper Class": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 1,
+        "level": 1,
+        "title": "Detailed Explanation of the Event Wrapper Class"
+      }
+    ],
+    "Developer Guide": [
+      {
+        "document": "en/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "Developer Guide"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Developer Guide"
+      }
+    ],
+    "Development Mode": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 91,
+        "level": 3,
+        "title": "Development Mode"
+      },
+      {
+        "document": "en/user-guide/README.md",
+        "line": 43,
+        "level": 2,
+        "title": "Development Mode"
+      }
+    ],
+    "Development Modes": [
+      {
+        "document": "en/README.md",
+        "line": 85,
+        "level": 2,
+        "title": "Development Modes"
+      }
+    ],
+    "Development Related Terms": [
+      {
+        "document": "en/terminology.md",
+        "line": 37,
+        "level": 2,
+        "title": "Development Related Terms"
+      }
+    ],
+    "Development Tools": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 81,
+        "level": 2,
+        "title": "Development Tools"
+      }
+    ],
+    "Directory Structure": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 34,
+        "level": 2,
+        "title": "Directory Structure"
+      }
+    ],
+    "Discord": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 102,
+        "level": 4,
+        "title": "Discord"
+      }
+    ],
+    "Do Not Wait for Result": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 114,
+        "level": 3,
+        "title": "Do Not Wait for Result"
+      }
+    ],
+    "Document Format Standards": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 99,
+        "level": 3,
+        "title": "Document Format Standards"
+      }
+    ],
+    "Document Information": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      }
+    ],
+    "Document Structure Standards": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 14,
+        "level": 2,
+        "title": "Document Structure Standards"
+      }
+    ],
+    "Documentation Content Description": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 24,
+        "level": 3,
+        "title": "Documentation Content Description"
+      }
+    ],
+    "Documentation Information": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Information"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Information"
+      }
+    ],
+    "Documentation List": [
+      {
+        "document": "en/advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Documentation List"
+      },
+      {
+        "document": "en/api-reference/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Documentation List"
+      },
+      {
+        "document": "en/styleguide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Documentation List"
+      }
+    ],
+    "Documentation Maintenance": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 384,
+        "level": 2,
+        "title": "Documentation Maintenance"
+      }
+    ],
+    "Documentation Maintenance Guidelines": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 1,
+        "level": 1,
+        "title": "Documentation Maintenance Guidelines"
+      }
+    ],
+    "Documentation Navigation": [
+      {
+        "document": "en/README.md",
+        "line": 8,
+        "level": 2,
+        "title": "Documentation Navigation"
+      }
+    ],
+    "Documentation Types": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 9,
+        "level": 3,
+        "title": "Documentation Types"
+      }
+    ],
+    "Dot Notation Access": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 202,
+        "level": 3,
+        "title": "Dot Notation Access"
+      }
+    ],
+    "Dot-notation Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 34,
+        "level": 3,
+        "title": "Dot-notation Events"
+      }
+    ],
+    "Downloading from GitHub Releases": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 19,
+        "level": 4,
+        "title": "Downloading from GitHub Releases"
+      }
+    ],
+    "Embedded Development (Suitable for Fast Prototyping)": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 18,
+        "level": 3,
+        "title": "Embedded Development (Suitable for Fast Prototyping)"
+      }
+    ],
+    "ErisPulse Adapter Standardized Return Specification": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Adapter Standardized Return Specification"
+      }
+    ],
+    "ErisPulse Comment Style Guide": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Comment Style Guide"
+      }
+    ],
+    "ErisPulse Core Concepts": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 58,
+        "level": 2,
+        "title": "ErisPulse Core Concepts"
+      }
+    ],
+    "ErisPulse Documentation": [
+      {
+        "document": "en/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Documentation"
+      }
+    ],
+    "ErisPulse Glossary": [
+      {
+        "document": "en/terminology.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Glossary"
+      }
+    ],
+    "ErisPulse Platform Features Documentation": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Platform Features Documentation"
+      }
+    ],
+    "ErisPulse Sending Method Specifications": [
+      {
+        "document": "en/standards/send-method-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Sending Method Specifications"
+      }
+    ],
+    "ErisPulse Session Type Standards": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Session Type Standards"
+      }
+    ],
+    "ErisPulse-AdapterDev.md": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 39,
+        "level": 4,
+        "title": "ErisPulse-AdapterDev.md"
+      }
+    ],
+    "ErisPulse-Full.md": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 54,
+        "level": 4,
+        "title": "ErisPulse-Full.md"
+      }
+    ],
+    "ErisPulse-ModuleDev.md": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 26,
+        "level": 4,
+        "title": "ErisPulse-ModuleDev.md"
+      }
+    ],
+    "Error Handling": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 292,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 567,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 235,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 146,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 195,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 242,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 264,
+        "level": 2,
+        "title": "Error Handling"
+      }
+    ],
+    "Event": [
+      {
+        "document": "en/terminology.md",
+        "line": 27,
+        "level": 3,
+        "title": "Event"
+      }
+    ],
+    "Event Arguments": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 123,
+        "level": 3,
+        "title": "Event Arguments"
+      }
+    ],
+    "Event Basic Information": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 91,
+        "level": 4,
+        "title": "Event Basic Information"
+      }
+    ],
+    "Event Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 101,
+        "level": 2,
+        "title": "Event Configuration"
+      }
+    ],
+    "Event Conversion": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 81,
+        "level": 2,
+        "title": "Event Conversion"
+      },
+      {
+        "document": "en/standards/README.md",
+        "line": 68,
+        "level": 3,
+        "title": "Event Conversion"
+      }
+    ],
+    "Event Converter": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 362,
+        "level": 2,
+        "title": "Event Converter"
+      }
+    ],
+    "Event Data Access": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 328,
+        "level": 2,
+        "title": "Event Data Access"
+      }
+    ],
+    "Event Data Format": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 18,
+        "level": 2,
+        "title": "Event Data Format"
+      }
+    ],
+    "Event Distribution Mechanism": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 185,
+        "level": 4,
+        "title": "Event Distribution Mechanism"
+      }
+    ],
+    "Event Flow": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 9,
+        "level": 3,
+        "title": "Event Flow"
+      }
+    ],
+    "Event Handler": [
+      {
+        "document": "en/terminology.md",
+        "line": 32,
+        "level": 3,
+        "title": "Event Handler"
+      }
+    ],
+    "Event Handler Lifecycle": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 168,
+        "level": 3,
+        "title": "Event Handler Lifecycle"
+      }
+    ],
+    "Event Handler Registration": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 152,
+        "level": 3,
+        "title": "Event Handler Registration"
+      }
+    ],
+    "Event Handling": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 96,
+        "level": 2,
+        "title": "Event Handling"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 2,
+        "title": "Event Handling"
+      }
+    ],
+    "Event Handling Mechanism": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 32,
+        "level": 2,
+        "title": "Event Handling Mechanism"
+      }
+    ],
+    "Event Listening": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 240,
+        "level": 3,
+        "title": "Event Listening"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 148,
+        "level": 3,
+        "title": "Event Listening"
+      },
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "Event Listening"
+      }
+    ],
+    "Event Listening Methods": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 134,
+        "level": 3,
+        "title": "Event Listening Methods"
+      }
+    ],
+    "Event Processing Enhancement": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 249,
+        "level": 2,
+        "title": "Event Processing Enhancement"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 272,
+        "level": 2,
+        "title": "Event Processing Enhancement"
+      }
+    ],
+    "Event Reply Methods": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 327,
+        "level": 3,
+        "title": "Event Reply Methods"
+      }
+    ],
+    "Event Submission": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 226,
+        "level": 3,
+        "title": "Event Submission"
+      }
+    ],
+    "Event System": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 28,
+        "level": 3,
+        "title": "Event System"
+      }
+    ],
+    "Event System API": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event System API"
+      }
+    ],
+    "Event Type Overview": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "Event Type Overview"
+      }
+    ],
+    "Event Types": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 127,
+        "level": 2,
+        "title": "Event Types"
+      }
+    ],
+    "Event Wrapper Class": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 240,
+        "level": 2,
+        "title": "Event Wrapper Class"
+      }
+    ],
+    "Event-Driven Architecture": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "Event-Driven Architecture"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 7,
+        "level": 3,
+        "title": "Event-Driven Architecture"
+      }
+    ],
+    "Example": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 110,
+        "level": 3,
+        "title": "Example"
+      }
+    ],
+    "Exception Catching": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 197,
+        "level": 3,
+        "title": "Exception Catching"
+      }
+    ],
+    "Exception Handling": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 237,
+        "level": 3,
+        "title": "Exception Handling"
+      }
+    ],
+    "Execution Control Commands": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 23,
+        "level": 2,
+        "title": "Execution Control Commands"
+      }
+    ],
+    "Extended Field Description": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 207,
+        "level": 2,
+        "title": "Extended Field Description"
+      }
+    ],
+    "Extended Field Descriptions": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 90,
+        "level": 2,
+        "title": "Extended Field Descriptions"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 192,
+        "level": 2,
+        "title": "Extended Field Descriptions"
+      }
+    ],
+    "Extension Development": [
+      {
+        "document": "en/README.md",
+        "line": 46,
+        "level": 4,
+        "title": "Extension Development"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 22,
+        "level": 3,
+        "title": "Extension Development"
+      }
+    ],
+    "Extension Field Descriptions": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 150,
+        "level": 3,
+        "title": "Extension Field Descriptions"
+      }
+    ],
+    "Extension: Adding More Features": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 143,
+        "level": 2,
+        "title": "Extension: Adding More Features"
+      }
+    ],
+    "Failure Response": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 525,
+        "level": 3,
+        "title": "Failure Response"
+      }
+    ],
+    "Failure Response Example": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 49,
+        "level": 4,
+        "title": "Failure Response Example"
+      }
+    ],
+    "Fixed Bugs": [
+      {
+        "document": "en/bug-tracker.md",
+        "line": 7,
+        "level": 2,
+        "title": "Fixed Bugs"
+      }
+    ],
+    "For Adapter Developers": [
+      {
+        "document": "en/standards/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "For Adapter Developers"
+      }
+    ],
+    "For End Users": [
+      {
+        "document": "en/standards/README.md",
+        "line": 60,
+        "level": 3,
+        "title": "For End Users"
+      }
+    ],
+    "For Module Developers": [
+      {
+        "document": "en/standards/README.md",
+        "line": 54,
+        "level": 3,
+        "title": "For Module Developers"
+      }
+    ],
+    "Forward Functionality": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 169,
+        "level": 4,
+        "title": "Forward Functionality"
+      }
+    ],
+    "Framework Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 79,
+        "level": 2,
+        "title": "Framework Configuration"
+      }
+    ],
+    "Frequently Asked Questions": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 116,
+        "level": 2,
+        "title": "Frequently Asked Questions"
+      }
+    ],
+    "Friend Add": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 145,
+        "level": 3,
+        "title": "Friend Add"
+      }
+    ],
+    "Friend Request": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 179,
+        "level": 3,
+        "title": "Friend Request"
+      }
+    ],
+    "Full Format (For complex methods)": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 35,
+        "level": 3,
+        "title": "Full Format (For complex methods)"
+      }
+    ],
+    "Function Related Terms": [
+      {
+        "document": "en/terminology.md",
+        "line": 64,
+        "level": 2,
+        "title": "Function Related Terms"
+      }
+    ],
+    "Get Method Details": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 84,
+        "level": 3,
+        "title": "Get Method Details"
+      }
+    ],
+    "Getting Adapter Instances": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 232,
+        "level": 3,
+        "title": "Getting Adapter Instances"
+      }
+    ],
+    "Getting Adapters": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Getting Adapters"
+      },
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 131,
+        "level": 3,
+        "title": "Getting Adapters"
+      }
+    ],
+    "Getting Help": [
+      {
+        "document": "en/README.md",
+        "line": 114,
+        "level": 2,
+        "title": "Getting Help"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 135,
+        "level": 2,
+        "title": "Getting Help"
+      }
+    ],
+    "Getting Modules": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 182,
+        "level": 3,
+        "title": "Getting Modules"
+      }
+    ],
+    "Getting Started": [
+      {
+        "document": "en/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "Getting Started"
+      }
+    ],
+    "Getting Started Guide": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Getting Started Guide"
+      }
+    ],
+    "Getting Started with Adapter Development": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "Getting Started with Adapter Development"
+      }
+    ],
+    "Getting Started with Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 1,
+        "level": 1,
+        "title": "Getting Started with Event Handling"
+      }
+    ],
+    "Getting the Documentation Assets": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 17,
+        "level": 3,
+        "title": "Getting the Documentation Assets"
+      }
+    ],
+    "Global Configuration": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 32,
+        "level": 3,
+        "title": "Global Configuration"
+      }
+    ],
+    "Group Invite Request": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 195,
+        "level": 3,
+        "title": "Group Invite Request"
+      }
+    ],
+    "Group Member Decrease": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 167,
+        "level": 3,
+        "title": "Group Member Decrease"
+      }
+    ],
+    "Group Member Increase": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 157,
+        "level": 3,
+        "title": "Group Member Increase"
+      }
+    ],
+    "Group Permissions": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 266,
+        "level": 3,
+        "title": "Group Permissions"
+      }
+    ],
+    "Group/Channel Information": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 116,
+        "level": 4,
+        "title": "Group/Channel Information"
+      }
+    ],
+    "HTTP Routes": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 276,
+        "level": 3,
+        "title": "HTTP Routes"
+      }
+    ],
+    "Health Check": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 128,
+        "level": 3,
+        "title": "Health Check"
+      }
+    ],
+    "Heartbeat Event": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 224,
+        "level": 3,
+        "title": "Heartbeat Event"
+      }
+    ],
+    "Hot Reload": [
+      {
+        "document": "en/terminology.md",
+        "line": 54,
+        "level": 3,
+        "title": "Hot Reload"
+      }
+    ],
+    "Hot Reload Mode": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 45,
+        "level": 3,
+        "title": "Hot Reload Mode"
+      }
+    ],
+    "How It Works": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 14,
+        "level": 2,
+        "title": "How It Works"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 174,
+        "level": 3,
+        "title": "How It Works"
+      }
+    ],
+    "How to change the command prefix?": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 191,
+        "level": 3,
+        "title": "How to change the command prefix?"
+      }
+    ],
+    "How to support multiple platforms?": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 201,
+        "level": 3,
+        "title": "How to support multiple platforms?"
+      }
+    ],
+    "Image Download and Storage": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 381,
+        "level": 3,
+        "title": "Image Download and Storage"
+      }
+    ],
+    "Image Identification Example": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 411,
+        "level": 3,
+        "title": "Image Identification Example"
+      }
+    ],
+    "Image Processing": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 379,
+        "level": 2,
+        "title": "Image Processing"
+      }
+    ],
+    "Immediate Loading": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 182,
+        "level": 3,
+        "title": "Immediate Loading"
+      }
+    ],
+    "Information Query Commands": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 14,
+        "level": 2,
+        "title": "Information Query Commands"
+      }
+    ],
+    "Inheritance Relationship": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 298,
+        "level": 3,
+        "title": "Inheritance Relationship"
+      }
+    ],
+    "Inheriting Base Classes": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 111,
+        "level": 3,
+        "title": "Inheriting Base Classes"
+      }
+    ],
+    "Initialization Process": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 20,
+        "level": 3,
+        "title": "Initialization Process"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 275,
+        "level": 3,
+        "title": "Initialization Process"
+      }
+    ],
+    "Initialize Project": [
+      {
+        "document": "en/quick-start.md",
+        "line": 35,
+        "level": 2,
+        "title": "Initialize Project"
+      }
+    ],
+    "Initializing Projects": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 143,
+        "level": 3,
+        "title": "Initializing Projects"
+      }
+    ],
+    "Input Validation": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 257,
+        "level": 3,
+        "title": "Input Validation"
+      }
+    ],
+    "Install ErisPulse": [
+      {
+        "document": "en/quick-start.md",
+        "line": 5,
+        "level": 2,
+        "title": "Install ErisPulse"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 60,
+        "level": 4,
+        "title": "Install ErisPulse"
+      }
+    ],
+    "Install Modules": [
+      {
+        "document": "en/quick-start.md",
+        "line": 69,
+        "level": 2,
+        "title": "Install Modules"
+      }
+    ],
+    "Install New Modules": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 63,
+        "level": 3,
+        "title": "Install New Modules"
+      }
+    ],
+    "Install from Local": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 118,
+        "level": 3,
+        "title": "Install from Local"
+      }
+    ],
+    "Install from Remote Repository": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 108,
+        "level": 3,
+        "title": "Install from Remote Repository"
+      }
+    ],
+    "Install using pip": [
+      {
+        "document": "en/quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "Install using pip"
+      }
+    ],
+    "Install using uv (Recommended)": [
+      {
+        "document": "en/quick-start.md",
+        "line": 15,
+        "level": 3,
+        "title": "Install using uv (Recommended)"
+      }
+    ],
+    "Install uv": [
+      {
+        "document": "en/quick-start.md",
+        "line": 19,
+        "level": 4,
+        "title": "Install uv"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 27,
+        "level": 4,
+        "title": "Install uv"
+      }
+    ],
+    "Install via CLI": [
+      {
+        "document": "en/quick-start.md",
+        "line": 71,
+        "level": 3,
+        "title": "Install via CLI"
+      }
+    ],
+    "Installation Failed": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 159,
+        "level": 3,
+        "title": "Installation Failed"
+      }
+    ],
+    "Installation Methods": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 11,
+        "level": 2,
+        "title": "Installation Methods"
+      }
+    ],
+    "Installation and Configuration": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 1,
+        "level": 1,
+        "title": "Installation and Configuration"
+      }
+    ],
+    "Installing Modules": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 84,
+        "level": 3,
+        "title": "Installing Modules"
+      }
+    ],
+    "Integrating ErisPulse API": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 272,
+        "level": 2,
+        "title": "Integrating ErisPulse API"
+      }
+    ],
+    "Inter-module Communication": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 64,
+        "level": 3,
+        "title": "Inter-module Communication"
+      }
+    ],
+    "Interactive Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 233,
+        "level": 2,
+        "title": "Interactive Handling"
+      }
+    ],
+    "Interactive Initialization": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 69,
+        "level": 3,
+        "title": "Interactive Initialization"
+      }
+    ],
+    "Interactive Initialization (Recommended)": [
+      {
+        "document": "en/quick-start.md",
+        "line": 37,
+        "level": 3,
+        "title": "Interactive Initialization (Recommended)"
+      }
+    ],
+    "Interactive Installation": [
+      {
+        "document": "en/quick-start.md",
+        "line": 83,
+        "level": 3,
+        "title": "Interactive Installation"
+      },
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 68,
+        "level": 2,
+        "title": "Interactive Installation"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 125,
+        "level": 3,
+        "title": "Interactive Installation"
+      }
+    ],
+    "Interactive Message Types": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 42,
+        "level": 3,
+        "title": "Interactive Message Types"
+      }
+    ],
+    "Introduction to CLI Extensions": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 5,
+        "level": 2,
+        "title": "Introduction to CLI Extensions"
+      }
+    ],
+    "Introduction to Module Development": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "Introduction to Module Development"
+      }
+    ],
+    "Keyword Filtering": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 147,
+        "level": 3,
+        "title": "Keyword Filtering"
+      }
+    ],
+    "Lazy Loading": [
+      {
+        "document": "en/terminology.md",
+        "line": 59,
+        "level": 3,
+        "title": "Lazy Loading"
+      }
+    ],
+    "Lazy Loading Mechanism": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 172,
+        "level": 2,
+        "title": "Lazy Loading Mechanism"
+      }
+    ],
+    "Lazy Loading Module System": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "Lazy Loading Module System"
+      }
+    ],
+    "Lazy Loading System": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 344,
+        "level": 2,
+        "title": "Lazy Loading System"
+      }
+    ],
+    "Learning Path": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Learning Path"
+      }
+    ],
+    "Lifecycle": [
+      {
+        "document": "en/terminology.md",
+        "line": 115,
+        "level": 3,
+        "title": "Lifecycle"
+      }
+    ],
+    "Lifecycle Event Listening": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 81,
+        "level": 3,
+        "title": "Lifecycle Event Listening"
+      }
+    ],
+    "Lifecycle Integration": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 143,
+        "level": 2,
+        "title": "Lifecycle Integration"
+      }
+    ],
+    "Lifecycle Management": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 1,
+        "level": 1,
+        "title": "Lifecycle Management"
+      }
+    ],
+    "Lifecycle Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 224,
+        "level": 2,
+        "title": "Lifecycle Module"
+      }
+    ],
+    "List Supported Send Methods": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 76,
+        "level": 3,
+        "title": "List Supported Send Methods"
+      }
+    ],
+    "Listening to @ mentions": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 50,
+        "level": 3,
+        "title": "Listening to @ mentions"
+      }
+    ],
+    "Listening to all messages": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 19,
+        "level": 3,
+        "title": "Listening to all messages"
+      }
+    ],
+    "Listening to group messages": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 40,
+        "level": 3,
+        "title": "Listening to group messages"
+      }
+    ],
+    "Listening to private messages": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 31,
+        "level": 3,
+        "title": "Listening to private messages"
+      }
+    ],
+    "Listing Modules": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 97,
+        "level": 3,
+        "title": "Listing Modules"
+      }
+    ],
+    "Listing Platforms": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 134,
+        "level": 4,
+        "title": "Listing Platforms"
+      }
+    ],
+    "Loading Priority": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 108,
+        "level": 3,
+        "title": "Loading Priority"
+      }
+    ],
+    "Loading Strategy": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "Loading Strategy"
+      }
+    ],
+    "Local Testing": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 96,
+        "level": 3,
+        "title": "Local Testing"
+      }
+    ],
+    "Log": [
+      {
+        "document": "en/terminology.md",
+        "line": 86,
+        "level": 3,
+        "title": "Log"
+      }
+    ],
+    "Log Information": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 297,
+        "level": 3,
+        "title": "Log Information"
+      }
+    ],
+    "Log Output": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 119,
+        "level": 3,
+        "title": "Log Output"
+      }
+    ],
+    "Logger": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 231,
+        "level": 3,
+        "title": "Logger"
+      }
+    ],
+    "Logger Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 93,
+        "level": 2,
+        "title": "Logger Module"
+      }
+    ],
+    "Logging": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 215,
+        "level": 2,
+        "title": "Logging"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 212,
+        "level": 3,
+        "title": "Logging"
+      }
+    ],
+    "Logging Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 64,
+        "level": 2,
+        "title": "Logging Configuration"
+      }
+    ],
+    "Mail Platform Feature Documentation": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 1,
+        "level": 1,
+        "title": "Mail Platform Feature Documentation"
+      }
+    ],
+    "Management Functions": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 49,
+        "level": 3,
+        "title": "Management Functions"
+      }
+    ],
+    "Management Interface": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 262,
+        "level": 2,
+        "title": "Management Interface"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 285,
+        "level": 2,
+        "title": "Management Interface"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 306,
+        "level": 3,
+        "title": "Management Interface"
+      }
+    ],
+    "Managing Configuration": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 292,
+        "level": 3,
+        "title": "Managing Configuration"
+      }
+    ],
+    "Manual Project Creation": [
+      {
+        "document": "en/quick-start.md",
+        "line": 60,
+        "level": 3,
+        "title": "Manual Project Creation"
+      }
+    ],
+    "Media Sending Methods": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 35,
+        "level": 3,
+        "title": "Media Sending Methods"
+      }
+    ],
+    "Message Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 119,
+        "level": 3,
+        "title": "Message Configuration"
+      }
+    ],
+    "Message Content": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 105,
+        "level": 4,
+        "title": "Message Content"
+      }
+    ],
+    "Message Counting": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 283,
+        "level": 3,
+        "title": "Message Counting"
+      }
+    ],
+    "Message Event": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 129,
+        "level": 3,
+        "title": "Message Event"
+      }
+    ],
+    "Message Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "Message Event Handling"
+      }
+    ],
+    "Message Event Methods": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 25,
+        "level": 2,
+        "title": "Message Event Methods"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 103,
+        "level": 3,
+        "title": "Message Event Methods"
+      }
+    ],
+    "Message Events": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 114,
+        "level": 3,
+        "title": "Message Events"
+      }
+    ],
+    "Message Events (Message Events)": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 60,
+        "level": 3,
+        "title": "Message Events (Message Events)"
+      }
+    ],
+    "Message Filtering": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 145,
+        "level": 2,
+        "title": "Message Filtering"
+      }
+    ],
+    "Message Management Methods": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 48,
+        "level": 3,
+        "title": "Message Management Methods"
+      }
+    ],
+    "Message Methods": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 260,
+        "level": 3,
+        "title": "Message Methods"
+      }
+    ],
+    "Message Module": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message Module"
+      }
+    ],
+    "Message Segment Standard": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 303,
+        "level": 3,
+        "title": "Message Segment Standard"
+      }
+    ],
+    "Message Sending Failed": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 187,
+        "level": 4,
+        "title": "Message Sending Failed"
+      }
+    ],
+    "Message Sending Success": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 171,
+        "level": 4,
+        "title": "Message Sending Success"
+      }
+    ],
+    "Message Statistics": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 281,
+        "level": 2,
+        "title": "Message Statistics"
+      }
+    ],
+    "Message Type Judgment": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 38,
+        "level": 2,
+        "title": "Message Type Judgment"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 126,
+        "level": 3,
+        "title": "Message Type Judgment"
+      }
+    ],
+    "Meta Event": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 178,
+        "level": 3,
+        "title": "Meta Event"
+      }
+    ],
+    "Meta Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 206,
+        "level": 2,
+        "title": "Meta Event Handling"
+      }
+    ],
+    "Meta Event Module": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 215,
+        "level": 2,
+        "title": "Meta Event Module"
+      }
+    ],
+    "Meta Events": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 217,
+        "level": 3,
+        "title": "Meta Events"
+      }
+    ],
+    "Meta Events (Meta Events)": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 149,
+        "level": 3,
+        "title": "Meta Events (Meta Events)"
+      }
+    ],
+    "Method 1: Install via pip": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 13,
+        "level": 3,
+        "title": "Method 1: Install via pip"
+      }
+    ],
+    "Method 2: Install via uv (Recommended)": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 23,
+        "level": 3,
+        "title": "Method 2: Install via uv (Recommended)"
+      }
+    ],
+    "Method Chain": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 31,
+        "level": 2,
+        "title": "Method Chain"
+      }
+    ],
+    "Method Comments": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 20,
+        "level": 2,
+        "title": "Method Comments"
+      }
+    ],
+    "Method Name Mapping": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 66,
+        "level": 3,
+        "title": "Method Name Mapping"
+      }
+    ],
+    "Method Quick Reference": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 87,
+        "level": 2,
+        "title": "Method Quick Reference"
+      }
+    ],
+    "Middleware": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 56,
+        "level": 2,
+        "title": "Middleware"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 199,
+        "level": 3,
+        "title": "Middleware"
+      }
+    ],
+    "Middleware Execution Order": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 69,
+        "level": 3,
+        "title": "Middleware Execution Order"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 219,
+        "level": 4,
+        "title": "Middleware Execution Order"
+      }
+    ],
+    "Modifier Methods": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 58,
+        "level": 2,
+        "title": "Modifier Methods"
+      }
+    ],
+    "Modular Development (Recommended for Production)": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 45,
+        "level": 3,
+        "title": "Modular Development (Recommended for Production)"
+      }
+    ],
+    "Module": [
+      {
+        "document": "en/terminology.md",
+        "line": 22,
+        "level": 3,
+        "title": "Module"
+      }
+    ],
+    "Module Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 130,
+        "level": 2,
+        "title": "Module Configuration"
+      }
+    ],
+    "Module Core Concepts": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Module Core Concepts"
+      }
+    ],
+    "Module Design": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "Module Design"
+      }
+    ],
+    "Module Development": [
+      {
+        "document": "en/README.md",
+        "line": 32,
+        "level": 4,
+        "title": "Module Development"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 7,
+        "level": 3,
+        "title": "Module Development"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 39,
+        "level": 3,
+        "title": "Module Development"
+      }
+    ],
+    "Module Development Best Practices": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Module Development Best Practices"
+      }
+    ],
+    "Module Installation": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 106,
+        "level": 2,
+        "title": "Module Installation"
+      }
+    ],
+    "Module Installation Failed": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 171,
+        "level": 3,
+        "title": "Module Installation Failed"
+      }
+    ],
+    "Module Lifecycle": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "Module Lifecycle"
+      }
+    ],
+    "Module Lifecycle Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 54,
+        "level": 3,
+        "title": "Module Lifecycle Events"
+      }
+    ],
+    "Module Management": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 195,
+        "level": 3,
+        "title": "Module Management"
+      }
+    ],
+    "Module Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 180,
+        "level": 2,
+        "title": "Module Module"
+      }
+    ],
+    "Module Requirement Template": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 69,
+        "level": 3,
+        "title": "Module Requirement Template"
+      }
+    ],
+    "Module-level Control": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 41,
+        "level": 3,
+        "title": "Module-level Control"
+      }
+    ],
+    "Module-level Documentation Comment": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 5,
+        "level": 2,
+        "title": "Module-level Documentation Comment"
+      }
+    ],
+    "Multi-Account Sending Syntax": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 241,
+        "level": 3,
+        "title": "Multi-Account Sending Syntax"
+      }
+    ],
+    "Multi-Account Support": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 250,
+        "level": 2,
+        "title": "Multi-Account Support"
+      }
+    ],
+    "Multi-Bot Configuration": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 219,
+        "level": 2,
+        "title": "Multi-Bot Configuration"
+      }
+    ],
+    "Multi-account Sending Syntax": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 222,
+        "level": 3,
+        "title": "Multi-account Sending Syntax"
+      }
+    ],
+    "Multi-account Support": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 540,
+        "level": 2,
+        "title": "Multi-account Support"
+      }
+    ],
+    "Multi-platform Adaptation": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 186,
+        "level": 2,
+        "title": "Multi-platform Adaptation"
+      }
+    ],
+    "Mutually Exclusive Arguments": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 203,
+        "level": 3,
+        "title": "Mutually Exclusive Arguments"
+      }
+    ],
+    "Naming Conventions": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 137,
+        "level": 2,
+        "title": "Naming Conventions"
+      }
+    ],
+    "Next Steps": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 141,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 278,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 142,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 364,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 444,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 432,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 216,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/quick-start.md",
+        "line": 129,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 150,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 177,
+        "level": 2,
+        "title": "Next Steps"
+      }
+    ],
+    "Notes": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 122,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 160,
+        "level": 2,
+        "title": "Notes"
+      }
+    ],
+    "Notice Event": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 154,
+        "level": 3,
+        "title": "Notice Event"
+      }
+    ],
+    "Notice Event Methods": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 77,
+        "level": 2,
+        "title": "Notice Event Methods"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 134,
+        "level": 3,
+        "title": "Notice Event Methods"
+      }
+    ],
+    "Notice Events": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 163,
+        "level": 3,
+        "title": "Notice Events"
+      }
+    ],
+    "Notice Events (Notice Events)": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 89,
+        "level": 3,
+        "title": "Notice Events (Notice Events)"
+      }
+    ],
+    "Notice Module": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 161,
+        "level": 2,
+        "title": "Notice Module"
+      }
+    ],
+    "Notice Operator": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 136,
+        "level": 4,
+        "title": "Notice Operator"
+      }
+    ],
+    "Notice Type Judgment": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 140,
+        "level": 4,
+        "title": "Notice Type Judgment"
+      }
+    ],
+    "Notification Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 143,
+        "level": 2,
+        "title": "Notification Event Handling"
+      }
+    ],
+    "Old Configuration Compatibility": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 322,
+        "level": 3,
+        "title": "Old Configuration Compatibility"
+      }
+    ],
+    "OneBot11": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 112,
+        "level": 4,
+        "title": "OneBot11"
+      }
+    ],
+    "OneBot11 Platform Features Documentation": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 1,
+        "level": 1,
+        "title": "OneBot11 Platform Features Documentation"
+      }
+    ],
+    "OneBot11/12": [
+      {
+        "document": "en/terminology.md",
+        "line": 103,
+        "level": 3,
+        "title": "OneBot11/12"
+      }
+    ],
+    "OneBot12 Message Support": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 95,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      }
+    ],
+    "OneBot12 Platform Features Documentation": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 1,
+        "level": 1,
+        "title": "OneBot12 Platform Features Documentation"
+      }
+    ],
+    "OneBot12 Protocol Conversion Explanation": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 95,
+        "level": 2,
+        "title": "OneBot12 Protocol Conversion Explanation"
+      }
+    ],
+    "OneBot12 Standard": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 39,
+        "level": 3,
+        "title": "OneBot12 Standard"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 12,
+        "level": 3,
+        "title": "OneBot12 Standard"
+      }
+    ],
+    "OneBot12 Standard Events": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 150,
+        "level": 4,
+        "title": "OneBot12 Standard Events"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 56,
+        "level": 2,
+        "title": "OneBot12 Standard Events"
+      }
+    ],
+    "OneBot12 Standard Features": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 301,
+        "level": 2,
+        "title": "OneBot12 Standard Features"
+      }
+    ],
+    "Operating Mode": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 213,
+        "level": 3,
+        "title": "Operating Mode"
+      }
+    ],
+    "Optional Arguments": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 181,
+        "level": 3,
+        "title": "Optional Arguments"
+      }
+    ],
+    "Other Terms": [
+      {
+        "document": "en/terminology.md",
+        "line": 113,
+        "level": 2,
+        "title": "Other Terms"
+      }
+    ],
+    "Overview": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 5,
+        "level": 2,
+        "title": "Overview"
+      },
+      {
+        "document": "en/advanced/router.md",
+        "line": 5,
+        "level": 2,
+        "title": "Overview"
+      }
+    ],
+    "Package Management Commands": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 5,
+        "level": 2,
+        "title": "Package Management Commands"
+      }
+    ],
+    "Packaging": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 119,
+        "level": 3,
+        "title": "Packaging"
+      }
+    ],
+    "Parameter Reference": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 37,
+        "level": 2,
+        "title": "Parameter Reference"
+      }
+    ],
+    "PascalCase Naming": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 139,
+        "level": 3,
+        "title": "PascalCase Naming"
+      }
+    ],
+    "Path Handling": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 95,
+        "level": 2,
+        "title": "Path Handling"
+      }
+    ],
+    "Performance Optimization": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 249,
+        "level": 2,
+        "title": "Performance Optimization"
+      }
+    ],
+    "Permission Control": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 229,
+        "level": 2,
+        "title": "Permission Control"
+      }
+    ],
+    "Platform": [
+      {
+        "document": "en/terminology.md",
+        "line": 98,
+        "level": 3,
+        "title": "Platform"
+      }
+    ],
+    "Platform Feature Detection": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 205,
+        "level": 3,
+        "title": "Platform Feature Detection"
+      }
+    ],
+    "Platform Features Guide": [
+      {
+        "document": "en/README.md",
+        "line": 50,
+        "level": 3,
+        "title": "Platform Features Guide"
+      }
+    ],
+    "Platform Native Events": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 171,
+        "level": 4,
+        "title": "Platform Native Events"
+      }
+    ],
+    "Platform Related Terms": [
+      {
+        "document": "en/terminology.md",
+        "line": 96,
+        "level": 2,
+        "title": "Platform Related Terms"
+      }
+    ],
+    "Platform Specific Features": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 16,
+        "level": 2,
+        "title": "Platform Specific Features"
+      }
+    ],
+    "Platform-Specific Event Types": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 127,
+        "level": 2,
+        "title": "Platform-Specific Event Types"
+      }
+    ],
+    "Platform-Specific Methods": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 159,
+        "level": 3,
+        "title": "Platform-Specific Methods"
+      }
+    ],
+    "Platform-specific Responses": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 188,
+        "level": 3,
+        "title": "Platform-specific Responses"
+      }
+    ],
+    "Prerequisites": [
+      {
+        "document": "en/advanced/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "Prerequisites"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 26,
+        "level": 2,
+        "title": "Prerequisites"
+      }
+    ],
+    "Priority System": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 327,
+        "level": 2,
+        "title": "Priority System"
+      }
+    ],
+    "Progress Bar": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 155,
+        "level": 3,
+        "title": "Progress Bar"
+      }
+    ],
+    "Project Directory Structure": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 33,
+        "level": 3,
+        "title": "Project Directory Structure"
+      }
+    ],
+    "Project Initialization": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 67,
+        "level": 2,
+        "title": "Project Initialization"
+      }
+    ],
+    "Project Management Commands": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 29,
+        "level": 2,
+        "title": "Project Management Commands"
+      }
+    ],
+    "Project Structure": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 18,
+        "level": 2,
+        "title": "Project Structure"
+      },
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "Project Structure"
+      },
+      {
+        "document": "en/quick-start.md",
+        "line": 101,
+        "level": 2,
+        "title": "Project Structure"
+      }
+    ],
+    "Project Templates": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 83,
+        "level": 3,
+        "title": "Project Templates"
+      }
+    ],
+    "Property Access": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 242,
+        "level": 4,
+        "title": "Property Access"
+      }
+    ],
+    "Proxy Configuration": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 208,
+        "level": 3,
+        "title": "Proxy Configuration"
+      }
+    ],
+    "Publishing Your Module": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 117,
+        "level": 2,
+        "title": "Publishing Your Module"
+      }
+    ],
+    "Publishing to PyPI": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 152,
+        "level": 3,
+        "title": "Publishing to PyPI"
+      }
+    ],
+    "Purpose": [
+      {
+        "document": "en/styleguide/README.md",
+        "line": 17,
+        "level": 2,
+        "title": "Purpose"
+      }
+    ],
+    "Q1: Why does private convert to user during sending?": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 258,
+        "level": 3,
+        "title": "Q1: Why does private convert to user during sending?"
+      }
+    ],
+    "Q2: How to support new session types?": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 261,
+        "level": 3,
+        "title": "Q2: How to support new session types?"
+      }
+    ],
+    "Q3: What if the event has no `detail_type`?": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 264,
+        "level": 3,
+        "title": "Q3: What if the event has no `detail_type`?"
+      }
+    ],
+    "Q4: How does the adapter map Telegram supergroup?": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 267,
+        "level": 3,
+        "title": "Q4: How does the adapter map Telegram supergroup?"
+      }
+    ],
+    "Q5: How to handle special platforms like email?": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 270,
+        "level": 3,
+        "title": "Q5: How to handle special platforms like email?"
+      }
+    ],
+    "Q: How can I get AI to generate higher quality code?": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 133,
+        "level": 3,
+        "title": "Q: How can I get AI to generate higher quality code?"
+      }
+    ],
+    "Q: What AI tools are recommended?": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 118,
+        "level": 3,
+        "title": "Q: What AI tools are recommended?"
+      }
+    ],
+    "Q: What should I do if the code generated by AI has issues?": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 125,
+        "level": 3,
+        "title": "Q: What should I do if the code generated by AI has issues?"
+      }
+    ],
+    "Quality Checklist": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 115,
+        "level": 2,
+        "title": "Quality Checklist"
+      }
+    ],
+    "Query Supported Sending Methods": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 98,
+        "level": 3,
+        "title": "Query Supported Sending Methods"
+      }
+    ],
+    "Quick Initialization": [
+      {
+        "document": "en/quick-start.md",
+        "line": 50,
+        "level": 3,
+        "title": "Quick Initialization"
+      },
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 82,
+        "level": 3,
+        "title": "Quick Initialization"
+      }
+    ],
+    "Quick Reference": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 11,
+        "level": 2,
+        "title": "Quick Reference"
+      }
+    ],
+    "Quick Start": [
+      {
+        "document": "en/README.md",
+        "line": 10,
+        "level": 3,
+        "title": "Quick Start"
+      },
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 49,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 32,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
+        "document": "en/quick-start.md",
+        "line": 1,
+        "level": 1,
+        "title": "Quick Start"
+      }
+    ],
+    "Raw Data": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 191,
+        "level": 3,
+        "title": "Raw Data"
+      }
+    ],
+    "Raw Message Sending": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 53,
+        "level": 3,
+        "title": "Raw Message Sending"
+      }
+    ],
+    "Raw Messages": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 250,
+        "level": 3,
+        "title": "Raw Messages"
+      }
+    ],
+    "Raw Methods": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 51,
+        "level": 3,
+        "title": "Raw Methods"
+      }
+    ],
+    "Reading Configuration": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 54,
+        "level": 3,
+        "title": "Reading Configuration"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 102,
+        "level": 3,
+        "title": "Reading Configuration"
+      }
+    ],
+    "Reference Documents": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 128,
+        "level": 2,
+        "title": "Reference Documents"
+      }
+    ],
+    "References": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 202,
+        "level": 2,
+        "title": "References"
+      }
+    ],
+    "Registering Commands": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Registering Commands"
+      }
+    ],
+    "Registering HTTP Routes": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 17,
+        "level": 3,
+        "title": "Registering HTTP Routes"
+      }
+    ],
+    "Registering Middleware": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 58,
+        "level": 3,
+        "title": "Registering Middleware"
+      }
+    ],
+    "Registering WebSocket Routes": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 35,
+        "level": 3,
+        "title": "Registering WebSocket Routes"
+      }
+    ],
+    "Related Documentation": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 128,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 168,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/advanced/router.md",
+        "line": 164,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/api-reference/README.md",
+        "line": 130,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 204,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 162,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 416,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 611,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 261,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 348,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 383,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 223,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 212,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/standards/README.md",
+        "line": 93,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/styleguide/README.md",
+        "line": 32,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "en/user-guide/README.md",
+        "line": 112,
+        "level": 2,
+        "title": "Related Documentation"
+      }
+    ],
+    "Related Documents": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 369,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 343,
+        "level": 2,
+        "title": "Related Documents"
+      }
+    ],
+    "Related Links": [
+      {
+        "document": "en/README.md",
+        "line": 120,
+        "level": 2,
+        "title": "Related Links"
+      }
+    ],
+    "Reply": [
+      {
+        "document": "en/terminology.md",
+        "line": 71,
+        "level": 3,
+        "title": "Reply"
+      }
+    ],
+    "Reply Functionality": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 299,
+        "level": 3,
+        "title": "Reply Functionality"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 51,
+        "level": 2,
+        "title": "Reply Functionality"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 157,
+        "level": 3,
+        "title": "Reply Functionality"
+      }
+    ],
+    "Reply Method": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 79,
+        "level": 3,
+        "title": "Reply Method"
+      }
+    ],
+    "Request Event": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 166,
+        "level": 3,
+        "title": "Request Event"
+      }
+    ],
+    "Request Event Handling": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 177,
+        "level": 2,
+        "title": "Request Event Handling"
+      }
+    ],
+    "Request Event Methods": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 147,
+        "level": 3,
+        "title": "Request Event Methods"
+      }
+    ],
+    "Request Events": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 195,
+        "level": 3,
+        "title": "Request Events"
+      }
+    ],
+    "Request Events (Request Events)": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 119,
+        "level": 3,
+        "title": "Request Events (Request Events)"
+      }
+    ],
+    "Request Information": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 149,
+        "level": 4,
+        "title": "Request Information"
+      }
+    ],
+    "Request Module": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 193,
+        "level": 2,
+        "title": "Request Module"
+      }
+    ],
+    "Request Type Judgment": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 152,
+        "level": 4,
+        "title": "Request Type Judgment"
+      }
+    ],
+    "Required Arguments": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 171,
+        "level": 3,
+        "title": "Required Arguments"
+      }
+    ],
+    "Required Fields": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 374,
+        "level": 3,
+        "title": "Required Fields"
+      }
+    ],
+    "Requirement Description Templates": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 67,
+        "level": 2,
+        "title": "Requirement Description Templates"
+      }
+    ],
+    "Reserved Error Ranges": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 96,
+        "level": 4,
+        "title": "Reserved Error Ranges"
+      }
+    ],
+    "Return Values": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 184,
+        "level": 2,
+        "title": "Return Values"
+      }
+    ],
+    "Return Values of Sending Methods": [
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 226,
+        "level": 2,
+        "title": "Return Values of Sending Methods"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 111,
+        "level": 2,
+        "title": "Return Values of Sending Methods"
+      }
+    ],
+    "Route Information": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 355,
+        "level": 3,
+        "title": "Route Information"
+      }
+    ],
+    "Route List": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 136,
+        "level": 3,
+        "title": "Route List"
+      }
+    ],
+    "Router": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 258,
+        "level": 3,
+        "title": "Router"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 91,
+        "level": 3,
+        "title": "Router"
+      }
+    ],
+    "Router Manager": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 1,
+        "level": 1,
+        "title": "Router Manager"
+      }
+    ],
+    "Router Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 274,
+        "level": 2,
+        "title": "Router Module"
+      }
+    ],
+    "Run Project": [
+      {
+        "document": "en/quick-start.md",
+        "line": 91,
+        "level": 2,
+        "title": "Run Project"
+      }
+    ],
+    "Run Tests": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 141,
+        "level": 3,
+        "title": "Run Tests"
+      }
+    ],
+    "Running Projects": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 133,
+        "level": 3,
+        "title": "Running Projects"
+      }
+    ],
+    "SDK": [
+      {
+        "document": "en/terminology.md",
+        "line": 39,
+        "level": 3,
+        "title": "SDK"
+      }
+    ],
+    "SDK Object": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 51,
+        "level": 2,
+        "title": "SDK Object"
+      }
+    ],
+    "SDK Objects": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 127,
+        "level": 3,
+        "title": "SDK Objects"
+      }
+    ],
+    "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 102,
+        "level": 3,
+        "title": "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)"
+      }
+    ],
+    "Scenarios Recommended for Lazy Loading (lazy_load=True)": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 96,
+        "level": 3,
+        "title": "Scenarios Recommended for Lazy Loading (lazy_load=True)"
+      }
+    ],
+    "Scheduled Tasks": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 75,
+        "level": 2,
+        "title": "Scheduled Tasks"
+      }
+    ],
+    "Search Functionality": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 325,
+        "level": 2,
+        "title": "Search Functionality"
+      }
+    ],
+    "Security": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 286,
+        "level": 2,
+        "title": "Security"
+      }
+    ],
+    "Send Chained Invocation": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "Send Chained Invocation"
+      }
+    ],
+    "Send Message Sending": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 73,
+        "level": 2,
+        "title": "Send Message Sending"
+      }
+    ],
+    "Send Message Sending DSL": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 296,
+        "level": 2,
+        "title": "Send Message Sending DSL"
+      }
+    ],
+    "Send Method Naming": [
+      {
+        "document": "en/standards/README.md",
+        "line": 86,
+        "level": 3,
+        "title": "Send Method Naming"
+      }
+    ],
+    "Send Nested Class": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 186,
+        "level": 3,
+        "title": "Send Nested Class"
+      }
+    ],
+    "SendDSL": [
+      {
+        "document": "en/terminology.md",
+        "line": 108,
+        "level": 3,
+        "title": "SendDSL"
+      }
+    ],
+    "SendDSL Deep Dive": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 1,
+        "level": 1,
+        "title": "SendDSL Deep Dive"
+      }
+    ],
+    "SendDSL Implementation": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 135,
+        "level": 2,
+        "title": "SendDSL Implementation"
+      }
+    ],
+    "SendDSL Message Sending": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 297,
+        "level": 2,
+        "title": "SendDSL Message Sending"
+      }
+    ],
+    "Sender Information": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 111,
+        "level": 4,
+        "title": "Sender Information"
+      }
+    ],
+    "Sending Examples": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 76,
+        "level": 3,
+        "title": "Sending Examples"
+      }
+    ],
+    "Sending Method Return Values": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 206,
+        "level": 2,
+        "title": "Sending Method Return Values"
+      }
+    ],
+    "Sending Methods": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 37,
+        "level": 2,
+        "title": "Sending Methods"
+      }
+    ],
+    "Sending Replies using the `reply` Method": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 235,
+        "level": 3,
+        "title": "Sending Replies using the `reply` Method"
+      }
+    ],
+    "Sending a Reply": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 135,
+        "level": 3,
+        "title": "Sending a Reply"
+      }
+    ],
+    "Sending with Specific Account": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 554,
+        "level": 3,
+        "title": "Sending with Specific Account"
+      }
+    ],
+    "Server Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 47,
+        "level": 2,
+        "title": "Server Configuration"
+      }
+    ],
+    "Server Lifecycle Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 72,
+        "level": 3,
+        "title": "Server Lifecycle Events"
+      }
+    ],
+    "Shutting Down Adapters": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 103,
+        "level": 4,
+        "title": "Shutting Down Adapters"
+      }
+    ],
+    "Simple Counter": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 18,
+        "level": 3,
+        "title": "Simple Counter"
+      }
+    ],
+    "Simple Search": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 327,
+        "level": 3,
+        "title": "Simple Search"
+      }
+    ],
+    "Simple Timer": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 77,
+        "level": 3,
+        "title": "Simple Timer"
+      }
+    ],
+    "Special Event Types": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 53,
+        "level": 2,
+        "title": "Special Event Types"
+      }
+    ],
+    "Special Field Examples": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 102,
+        "level": 3,
+        "title": "Special Field Examples"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 150,
+        "level": 3,
+        "title": "Special Field Examples"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 143,
+        "level": 3,
+        "title": "Special Field Examples"
+      }
+    ],
+    "Special Parameters Explanation": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 42,
+        "level": 3,
+        "title": "Special Parameters Explanation"
+      }
+    ],
+    "Special Tags (For API Documentation Generation)": [
+      {
+        "document": "en/styleguide/docstring.md",
+        "line": 54,
+        "level": 2,
+        "title": "Special Tags (For API Documentation Generation)"
+      }
+    ],
+    "Specific Event Types": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 85,
+        "level": 2,
+        "title": "Specific Event Types"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 117,
+        "level": 2,
+        "title": "Specific Event Types"
+      }
+    ],
+    "Specify Sending Account": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 88,
+        "level": 3,
+        "title": "Specify Sending Account"
+      }
+    ],
+    "Specifying Bot using Send DSL": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 253,
+        "level": 3,
+        "title": "Specifying Bot using Send DSL"
+      }
+    ],
+    "Standard Compliance Checklist": [
+      {
+        "document": "en/standards/README.md",
+        "line": 66,
+        "level": 2,
+        "title": "Standard Compliance Checklist"
+      }
+    ],
+    "Standard Document List": [
+      {
+        "document": "en/standards/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Standard Document List"
+      }
+    ],
+    "Standard Event Format": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 149,
+        "level": 3,
+        "title": "Standard Event Format"
+      }
+    ],
+    "Standard Formats": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 144,
+        "level": 2,
+        "title": "Standard Formats"
+      }
+    ],
+    "Standard Lifecycle Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 5,
+        "level": 2,
+        "title": "Standard Lifecycle Events"
+      },
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 45,
+        "level": 2,
+        "title": "Standard Lifecycle Events"
+      }
+    ],
+    "Standard Overview": [
+      {
+        "document": "en/standards/README.md",
+        "line": 12,
+        "level": 2,
+        "title": "Standard Overview"
+      }
+    ],
+    "Standard Response Format": [
+      {
+        "document": "en/platform-guide/README.md",
+        "line": 170,
+        "level": 3,
+        "title": "Standard Response Format"
+      }
+    ],
+    "Standard Run Mode": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 53,
+        "level": 3,
+        "title": "Standard Run Mode"
+      }
+    ],
+    "Standardized Response": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 204,
+        "level": 3,
+        "title": "Standardized Response"
+      }
+    ],
+    "Start Learning": [
+      {
+        "document": "en/getting-started/README.md",
+        "line": 137,
+        "level": 2,
+        "title": "Start Learning"
+      }
+    ],
+    "Starting Adapters": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 80,
+        "level": 4,
+        "title": "Starting Adapters"
+      }
+    ],
+    "Startup and Shutdown": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 78,
+        "level": 3,
+        "title": "Startup and Shutdown"
+      }
+    ],
+    "Step 1: Create Project": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 5,
+        "level": 2,
+        "title": "Step 1: Create Project"
+      }
+    ],
+    "Step 2: View Project Structure": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 23,
+        "level": 2,
+        "title": "Step 2: View Project Structure"
+      }
+    ],
+    "Step 3: Write Your First Command": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 35,
+        "level": 2,
+        "title": "Step 3: Write Your First Command"
+      }
+    ],
+    "Step 4: Run the Bot": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 92,
+        "level": 2,
+        "title": "Step 4: Run the Bot"
+      }
+    ],
+    "Step 5: Test the Bot": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 102,
+        "level": 2,
+        "title": "Step 5: Test the Bot"
+      }
+    ],
+    "Storage": [
+      {
+        "document": "en/getting-started/basic-concepts.md",
+        "line": 193,
+        "level": 3,
+        "title": "Storage"
+      },
+      {
+        "document": "en/terminology.md",
+        "line": 76,
+        "level": 3,
+        "title": "Storage"
+      }
+    ],
+    "Storage Configuration": [
+      {
+        "document": "en/user-guide/configuration.md",
+        "line": 90,
+        "level": 2,
+        "title": "Storage Configuration"
+      }
+    ],
+    "Storage Module": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 5,
+        "level": 2,
+        "title": "Storage Module"
+      }
+    ],
+    "Storage System": [
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 182,
+        "level": 2,
+        "title": "Storage System"
+      },
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 125,
+        "level": 2,
+        "title": "Storage System"
+      }
+    ],
+    "Style Guide": [
+      {
+        "document": "en/README.md",
+        "line": 81,
+        "level": 3,
+        "title": "Style Guide"
+      },
+      {
+        "document": "en/styleguide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Style Guide"
+      }
+    ],
+    "Subcommands": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 214,
+        "level": 3,
+        "title": "Subcommands"
+      }
+    ],
+    "Submitting Lifecycle Events": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 102,
+        "level": 3,
+        "title": "Submitting Lifecycle Events"
+      }
+    ],
+    "Success Response": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 499,
+        "level": 3,
+        "title": "Success Response"
+      }
+    ],
+    "Success Response Example": [
+      {
+        "document": "en/standards/api-response.md",
+        "line": 33,
+        "level": 4,
+        "title": "Success Response Example"
+      }
+    ],
+    "Supported Message Sending Types": [
+      {
+        "document": "en/platform-guide/email.md",
+        "line": 13,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 20,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "en/platform-guide/onebot12.md",
+        "line": 20,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 18,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 20,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      }
+    ],
+    "Synchronous Initialization": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 85,
+        "level": 3,
+        "title": "Synchronous Initialization"
+      }
+    ],
+    "System Requirements": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 5,
+        "level": 2,
+        "title": "System Requirements"
+      }
+    ],
+    "System Routes": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 124,
+        "level": 2,
+        "title": "System Routes"
+      }
+    ],
+    "TOML": [
+      {
+        "document": "en/terminology.md",
+        "line": 130,
+        "level": 3,
+        "title": "TOML"
+      }
+    ],
+    "Table Output": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 138,
+        "level": 3,
+        "title": "Table Output"
+      }
+    ],
+    "Table of Contents": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Table of Contents"
+      },
+      {
+        "document": "en/user-guide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Table of Contents"
+      }
+    ],
+    "Target Audience": [
+      {
+        "document": "en/advanced/README.md",
+        "line": 11,
+        "level": 2,
+        "title": "Target Audience"
+      },
+      {
+        "document": "en/styleguide/README.md",
+        "line": 9,
+        "level": 2,
+        "title": "Target Audience"
+      }
+    ],
+    "Task Object": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 186,
+        "level": 3,
+        "title": "Task Object"
+      }
+    ],
+    "Technical Standards": [
+      {
+        "document": "en/README.md",
+        "line": 65,
+        "level": 3,
+        "title": "Technical Standards"
+      },
+      {
+        "document": "en/standards/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Technical Standards"
+      }
+    ],
+    "Telegram": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 92,
+        "level": 4,
+        "title": "Telegram"
+      }
+    ],
+    "Telegram Platform Features Documentation": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 1,
+        "level": 1,
+        "title": "Telegram Platform Features Documentation"
+      }
+    ],
+    "Testing": [
+      {
+        "document": "en/developer-guide/adapters/best-practices.md",
+        "line": 338,
+        "level": 2,
+        "title": "Testing"
+      },
+      {
+        "document": "en/developer-guide/modules/best-practices.md",
+        "line": 323,
+        "level": 2,
+        "title": "Testing"
+      }
+    ],
+    "Testing Commands": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 106,
+        "level": 3,
+        "title": "Testing Commands"
+      }
+    ],
+    "Testing the Module": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 94,
+        "level": 2,
+        "title": "Testing the Module"
+      }
+    ],
+    "The LazyModule Class": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 16,
+        "level": 3,
+        "title": "The LazyModule Class"
+      }
+    ],
+    "Timer": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 259,
+        "level": 3,
+        "title": "Timer"
+      }
+    ],
+    "Timer Functionality": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 116,
+        "level": 3,
+        "title": "Timer Functionality"
+      }
+    ],
+    "Transaction Operations": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 25,
+        "level": 3,
+        "title": "Transaction Operations"
+      }
+    ],
+    "Transaction Usage": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 140,
+        "level": 3,
+        "title": "Transaction Usage"
+      }
+    ],
+    "Type Annotation": [
+      {
+        "document": "en/terminology.md",
+        "line": 125,
+        "level": 3,
+        "title": "Type Annotation"
+      }
+    ],
+    "Uninstall Modules": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 102,
+        "level": 3,
+        "title": "Uninstall Modules"
+      }
+    ],
+    "Uninstalling Modules": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 110,
+        "level": 3,
+        "title": "Uninstalling Modules"
+      }
+    ],
+    "Unregistering Routes": [
+      {
+        "document": "en/advanced/router.md",
+        "line": 81,
+        "level": 3,
+        "title": "Unregistering Routes"
+      }
+    ],
+    "Unsupported Method Notifications": [
+      {
+        "document": "en/platform-guide/telegram.md",
+        "line": 108,
+        "level": 3,
+        "title": "Unsupported Method Notifications"
+      }
+    ],
+    "Unsupported Type Handling": [
+      {
+        "document": "en/platform-guide/onebot11.md",
+        "line": 76,
+        "level": 3,
+        "title": "Unsupported Type Handling"
+      }
+    ],
+    "Update Requirements": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 6,
+        "level": 2,
+        "title": "Update Requirements"
+      }
+    ],
+    "Upgrade Modules": [
+      {
+        "document": "en/user-guide/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "Upgrade Modules"
+      }
+    ],
+    "Upgrading Modules": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 120,
+        "level": 3,
+        "title": "Upgrading Modules"
+      }
+    ],
+    "Usage Examples": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 79,
+        "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "en/api-reference/README.md",
+        "line": 49,
+        "level": 2,
+        "title": "Usage Examples"
+      }
+    ],
+    "Use Cases": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 11,
+        "level": 3,
+        "title": "Use Cases"
+      }
+    ],
+    "Use Storage System": [
+      {
+        "document": "en/getting-started/first-bot.md",
+        "line": 170,
+        "level": 3,
+        "title": "Use Storage System"
+      }
+    ],
+    "User Data Storage": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 36,
+        "level": 3,
+        "title": "User Data Storage"
+      }
+    ],
+    "User Guide": [
+      {
+        "document": "en/README.md",
+        "line": 24,
+        "level": 3,
+        "title": "User Guide"
+      },
+      {
+        "document": "en/user-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "User Guide"
+      }
+    ],
+    "Using Configuration": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 117,
+        "level": 3,
+        "title": "Using Configuration"
+      }
+    ],
+    "Using Lazy Loaded Modules": [
+      {
+        "document": "en/advanced/lazy-loading.md",
+        "line": 59,
+        "level": 2,
+        "title": "Using Lazy Loaded Modules"
+      }
+    ],
+    "Using Lifecycle Events": [
+      {
+        "document": "en/getting-started/common-tasks.md",
+        "line": 128,
+        "level": 3,
+        "title": "Using Lifecycle Events"
+      }
+    ],
+    "Using Lifecycle in Modules": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 137,
+        "level": 2,
+        "title": "Using Lifecycle in Modules"
+      }
+    ],
+    "Using Method": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 94,
+        "level": 3,
+        "title": "Using Method"
+      }
+    ],
+    "Using Rich Console": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 113,
+        "level": 2,
+        "title": "Using Rich Console"
+      }
+    ],
+    "Using the Event System": [
+      {
+        "document": "en/api-reference/README.md",
+        "line": 80,
+        "level": 3,
+        "title": "Using the Event System"
+      }
+    ],
+    "Utility Methods": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 312,
+        "level": 3,
+        "title": "Utility Methods"
+      },
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 196,
+        "level": 3,
+        "title": "Utility Methods"
+      }
+    ],
+    "Verify Installation": [
+      {
+        "document": "en/user-guide/installation.md",
+        "line": 132,
+        "level": 2,
+        "title": "Verify Installation"
+      }
+    ],
+    "Version Update Notes": [
+      {
+        "document": "en/platform-guide/maintain-notes.md",
+        "line": 105,
+        "level": 3,
+        "title": "Version Update Notes"
+      }
+    ],
+    "View Available Modules": [
+      {
+        "document": "en/quick-start.md",
+        "line": 77,
+        "level": 3,
+        "title": "View Available Modules"
+      },
+      {
+        "document": "en/user-guide/README.md",
+        "line": 76,
+        "level": 3,
+        "title": "View Available Modules"
+      }
+    ],
+    "Virtual Environment": [
+      {
+        "document": "en/terminology.md",
+        "line": 44,
+        "level": 3,
+        "title": "Virtual Environment"
+      }
+    ],
+    "Wait Reply Functionality": [
+      {
+        "document": "en/developer-guide/modules/event-wrapper.md",
+        "line": 173,
+        "level": 3,
+        "title": "Wait Reply Functionality"
+      }
+    ],
+    "Wait for Result": [
+      {
+        "document": "en/developer-guide/adapters/send-dsl.md",
+        "line": 124,
+        "level": 3,
+        "title": "Wait for Result"
+      }
+    ],
+    "Waiting for Reply": [
+      {
+        "document": "en/api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "Waiting for Reply"
+      }
+    ],
+    "Waiting for Reply with Callback": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 307,
+        "level": 3,
+        "title": "Waiting for Reply with Callback"
+      }
+    ],
+    "Waiting for Reply with Validation": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 280,
+        "level": 3,
+        "title": "Waiting for Reply with Validation"
+      }
+    ],
+    "Waiting for User Reply": [
+      {
+        "document": "en/getting-started/event-handling.md",
+        "line": 263,
+        "level": 3,
+        "title": "Waiting for User Reply"
+      }
+    ],
+    "WebHook Connection": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 473,
+        "level": 3,
+        "title": "WebHook Connection"
+      }
+    ],
+    "WebSocket Connection": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 437,
+        "level": 3,
+        "title": "WebSocket Connection"
+      }
+    ],
+    "WebSocket Routes": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 298,
+        "level": 3,
+        "title": "WebSocket Routes"
+      }
+    ],
+    "What is a CLI Extension": [
+      {
+        "document": "en/developer-guide/extensions/cli-extensions.md",
+        "line": 7,
+        "level": 3,
+        "title": "What is a CLI Extension"
+      }
+    ],
+    "What is an Adapter": [
+      {
+        "document": "en/developer-guide/adapters/getting-started.md",
+        "line": 7,
+        "level": 3,
+        "title": "What is an Adapter"
+      }
+    ],
+    "Why Do We Need Standards?": [
+      {
+        "document": "en/standards/README.md",
+        "line": 23,
+        "level": 2,
+        "title": "Why Do We Need Standards?"
+      }
+    ],
+    "Wildcard Event Handlers": [
+      {
+        "document": "en/advanced/lifecycle.md",
+        "line": 41,
+        "level": 3,
+        "title": "Wildcard Event Handlers"
+      }
+    ],
+    "Writing Configuration": [
+      {
+        "document": "en/api-reference/core-modules.md",
+        "line": 66,
+        "level": 3,
+        "title": "Writing Configuration"
+      }
+    ],
+    "Yunhu Platform Feature Documentation": [
+      {
+        "document": "en/platform-guide/yunhu.md",
+        "line": 1,
+        "level": 1,
+        "title": "Yunhu Platform Feature Documentation"
+      }
+    ],
+    "[BUG-001] Init Command Adapter Configuration Path Type Error": [
+      {
+        "document": "en/bug-tracker.md",
+        "line": 9,
+        "level": 3,
+        "title": "[BUG-001] Init Command Adapter Configuration Path Type Error"
+      }
+    ],
+    "__init__.py": [
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 39,
+        "level": 2,
+        "title": "__init__.py"
+      }
+    ],
+    "call_api Method": [
+      {
+        "document": "en/api-reference/adapter-system.md",
+        "line": 137,
+        "level": 3,
+        "title": "call_api Method"
+      }
+    ],
+    "channel": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 59,
+        "level": 4,
+        "title": "channel"
+      }
+    ],
+    "get() Method": [
+      {
+        "document": "en/developer-guide/adapters/core-concepts.md",
+        "line": 234,
+        "level": 4,
+        "title": "get() Method"
+      }
+    ],
+    "group": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 43,
+        "level": 4,
+        "title": "group"
+      }
+    ],
+    "guild": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 66,
+        "level": 4,
+        "title": "guild"
+      }
+    ],
+    "install Parameters": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 46,
+        "level": 3,
+        "title": "install Parameters"
+      }
+    ],
+    "list Parameters": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 54,
+        "level": 3,
+        "title": "list Parameters"
+      }
+    ],
+    "on_load Method": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 23,
+        "level": 3,
+        "title": "on_load Method"
+      }
+    ],
+    "on_unload Method": [
+      {
+        "document": "en/developer-guide/modules/core-concepts.md",
+        "line": 38,
+        "level": 3,
+        "title": "on_unload Method"
+      }
+    ],
+    "private": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 36,
+        "level": 4,
+        "title": "private"
+      }
+    ],
+    "pyproject.toml Configuration": [
+      {
+        "document": "en/developer-guide/README.md",
+        "line": 133,
+        "level": 3,
+        "title": "pyproject.toml Configuration"
+      },
+      {
+        "document": "en/developer-guide/modules/getting-started.md",
+        "line": 19,
+        "level": 2,
+        "title": "pyproject.toml Configuration"
+      }
+    ],
+    "run Parameters": [
+      {
+        "document": "en/user-guide/cli-reference.md",
+        "line": 61,
+        "level": 3,
+        "title": "run Parameters"
+      }
+    ],
+    "thread": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 73,
+        "level": 4,
+        "title": "thread"
+      }
+    ],
+    "user": [
+      {
+        "document": "en/standards/session-types.md",
+        "line": 50,
+        "level": 4,
+        "title": "user"
+      }
+    ],
+    "📦 AI Documentation Assets": [
+      {
+        "document": "en/ai-support/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "📦 AI Documentation Assets"
+      }
+    ]
+  }
+}
