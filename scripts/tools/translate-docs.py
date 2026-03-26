@@ -98,13 +98,16 @@ class DocsTranslator:
     
     def calculate_file_hash(self, file_path: Path) -> str:
         """
-        计算文件的 MD5 哈希值
+        计算文件的 MD5 哈希值（统一转换为 LF 行尾符）
         
         :param file_path: 文件路径
         :return: 哈希值
         """
         with open(file_path, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
+            content = f.read()
+            # 统一转换为 LF 行尾符，避免 Windows CRLF 和 Linux LF 的差异
+            content = content.replace(b'\r\n', b'\n')
+            return hashlib.md5(content).hexdigest()
     
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
         """
@@ -235,18 +238,11 @@ class DocsTranslator:
                 stream=True
             )
             
-            # 流式接收响应
+            # 流式接收响应（不显示实时进度，避免刷屏）
             async for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     content_chunk = chunk.choices[0].delta.content
                     translated_content.append(content_chunk)
-                    char_count += len(content_chunk)
-                    
-                    # 实时显示到终端
-                    print(f"  [{file_name}] 已接收 {char_count} 字符...", end="\r", flush=True)
-            
-            # 清除进度显示
-            print(" " * 80, end="\r", flush=True)
             
             # 合并所有chunk
             full_content = "".join(translated_content)
@@ -377,7 +373,7 @@ class DocsTranslator:
         concurrent = self.config.get("concurrent", 5)
         
         for target_lang in target_langs:
-            print(f"\n翻译到 {self.LANG_CONFIG.get(target_lang, {}).get('name', target_lang)}...")
+            print(f"\n翻译到 {self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)}...")
             print("-" * 60)
             
             # 创建异步任务列表
