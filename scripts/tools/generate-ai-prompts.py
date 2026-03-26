@@ -5,21 +5,46 @@
 
 使用方法:
     python scripts/tools/generate-ai-prompts.py
+
+    # 只为特定语言生成
+    python scripts/tools/generate-ai-prompts.py --lang en
 """
 
 import os
 import re
+import argparse
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional
 
 
 class PromptGenerator:
     """AI Prompt 生成器"""
     
-    def __init__(self, docs_dir: str, output_dir: str):
+    def __init__(self, docs_dir: str, output_dir: str, lang: Optional[str] = None):
         self.docs_dir = Path(docs_dir)
+        self.lang = lang
+        # 如果指定了语言，实际文档目录是 docs/{lang}
+        if self.lang:
+            self.actual_docs_dir = self.docs_dir / self.lang
+        else:
+            self.actual_docs_dir = self.docs_dir
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+    
+    @staticmethod
+    def get_available_languages(docs_dir: Path) -> List[str]:
+        """
+        获取可用的语言列表
+        
+        :param docs_dir: 文档根目录
+        :return: 语言代码列表
+        """
+        langs = []
+        for item in docs_dir.iterdir():
+            # 排除 _meta
+            if item.is_dir() and item.name not in ['_meta']:
+                langs.append(item.name)
+        return sorted(langs)
     
     def _system_prompt(self, prompt_type: str) -> str:
         """生成系统提示词
@@ -97,7 +122,7 @@ class PromptGenerator:
     
     def read_file(self, filepath: str) -> str:
         """读取文件内容"""
-        file_path = self.docs_dir / filepath
+        file_path = self.actual_docs_dir / filepath
         if not file_path.exists():
             return ""
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -107,7 +132,7 @@ class PromptGenerator:
         """读取多个文件"""
         contents = {}
         for pattern in file_patterns:
-            file_path = self.docs_dir / pattern
+            file_path = self.actual_docs_dir / pattern
             if file_path.exists():
                 relative_path = pattern.replace('\\', '/')
                 contents[relative_path] = self.read_file(pattern)
@@ -444,23 +469,79 @@ class PromptGenerator:
 
 def main():
     """主函数"""
+    parser = argparse.ArgumentParser(
+        description="ErisPulse AI Prompt 生成器",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例:
+  # 使用默认设置（为所有语言生成）
+  python scripts/tools/generate-ai-prompts.py
+  
+  # 只为特定语言生成
+  python scripts/tools/generate-ai-prompts.py --lang en
+        """
+    )
+    
+    parser.add_argument(
+        "--docs",
+        default="docs",
+        help="文档目录 (默认: docs)"
+    )
+    parser.add_argument(
+        "--lang",
+        help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成"
+    )
+    
+    args = parser.parse_args()
+    
     # 获取脚本所在目录
     script_dir = Path(__file__).parent
     
     # docs 目录
-    docs_dir = script_dir.parent.parent / "docs"
+    docs_dir = script_dir.parent.parent / args.docs
     
-    # 输出目录
-    output_dir = docs_dir / "ai-support" / "prompts"
-    
-    print(f"文档目录: {docs_dir}")
-    print(f"输出目录: {output_dir}\n")
-    
-    # 创建生成器
-    generator = PromptGenerator(str(docs_dir), str(output_dir))
-    
-    # 生成所有 prompt
-    generator.generate_all()
+    # 如果指定了语言，只为该语言生成
+    if args.lang:
+        print(f"为语言 {args.lang} 生成 AI prompt 文档...")
+        print(f"文档目录: {docs_dir / args.lang}")
+        
+        # 输出目录
+        output_dir = docs_dir / args.lang / "ai-support" / "prompts"
+        
+        print(f"输出目录: {output_dir}\n")
+        
+        # 创建生成器
+        generator = PromptGenerator(str(docs_dir), str(output_dir), args.lang)
+        
+        # 生成所有 prompt
+        generator.generate_all()
+    else:
+        # 为所有语言生成
+        langs = PromptGenerator.get_available_languages(docs_dir)
+        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        print()
+        
+        for lang in langs:
+            print(f"\n{'='*60}")
+            print(f"处理语言: {lang}")
+            print('='*60)
+            
+            print(f"文档目录: {docs_dir / lang}")
+            
+            # 输出目录
+            output_dir = docs_dir / lang / "ai-support" / "prompts"
+            
+            print(f"输出目录: {output_dir}\n")
+            
+            # 创建生成器
+            generator = PromptGenerator(str(docs_dir), str(output_dir), lang)
+            
+            # 生成所有 prompt
+            generator.generate_all()
+        
+        print(f"\n{'='*60}")
+        print("✅ 所有语言的 AI prompt 文档生成完成！")
+        print('='*60)
 
 
 if __name__ == "__main__":

@@ -8,5 +8,5 @@
   "concurrent": 1,
   "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
   "translate_code_comments": true,
-  "cache_dir": ".translate_cache"
+  "cache_dir": ".github/.translate_cache"
 }
