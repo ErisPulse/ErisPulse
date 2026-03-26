@@ -38,7 +38,7 @@ jobs:
       - name: 恢复翻译缓存
         uses: actions/cache@v4
         with:
-          path: .translate_cache
+          path: .github/.translate_cache
           key: translate-cache-${{ github.sha }}
           restore-keys: |
             translate-cache-
@@ -67,7 +67,6 @@ jobs:
 
       - name: 自动翻译文档
         id: translate-docs
-        if: vars.OPENAI_API_KEY != ''
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
@@ -169,7 +168,7 @@ jobs:
           echo "文档索引更新文件数: $docs_index"
           
           # 统计翻译缓存更新
-          cache_files=$(git diff --name-only .translate_cache/ 2>/dev/null | wc -l)
+          cache_files=$(git diff --name-only .github/.translate_cache/ 2>/dev/null | wc -l)
           echo "翻译缓存更新文件数: $cache_files"
 
       - name: 配置 Git 身份
@@ -184,7 +183,7 @@ jobs:
           echo "艾莉丝正在保存文档更新~"
           
           # 添加所有更新的文档和缓存
-          git add docs/ .translate_cache/
+          git add docs/ .github/.translate_cache/
           
           # 提交更改
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
