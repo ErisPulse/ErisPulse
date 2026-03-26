@@ -40,7 +40,7 @@ class DocsTranslator:
         """
         self.config = self.load_config(config_path)
         self.source_dir = Path("docs") / self.config["source_lang"]
-        self.cache_dir = Path(self.config.get("cache_dir", ".translate_cache"))
+        self.cache_dir = Path(self.config.get("cache_dir", ".github/.translate_cache"))
         self.cache_dir.mkdir(exist_ok=True)
         
         # 初始化 OpenAI 客户端
@@ -78,7 +78,7 @@ class DocsTranslator:
                 "concurrent": 5,
                 "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api"],
                 "translate_code_comments": True,
-                "cache_dir": ".translate_cache"
+                "cache_dir": ".github/.translate_cache"
             }
         
         with open(config_file, "r", encoding="utf-8") as f:
