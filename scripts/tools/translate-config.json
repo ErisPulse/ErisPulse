@@ -5,7 +5,7 @@
   "api_key_env": "OPENAI_API_KEY",
   "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
   "model": "GLM-4.7-FlashX",
-  "concurrent": 3,
+  "concurrent": 5,
   "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
   "translate_code_comments": true,
   "cache_dir": ".github/.translate_cache"
