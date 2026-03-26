@@ -34,15 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests openai
-
-      - name: 恢复翻译缓存
-        uses: actions/cache@v4
-        with:
-          path: .github/.translate_cache
-          key: translate-cache-${{ github.sha }}
-          restore-keys: |
-            translate-cache-
-
+    
       - name: 更新API文档（多语言）
         id: update-api
         run: |
