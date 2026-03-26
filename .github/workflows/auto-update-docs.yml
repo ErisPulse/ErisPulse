@@ -35,6 +35,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests openai
     
+      - name: 检查缓存目录状态
+        run: |
+          echo "=== 检查缓存目录 ==="
+          echo "当前工作目录: $(pwd)"
+          echo "缓存目录是否存在: $(test -d .github/.translate_cache && echo 'YES' || echo 'NO')"
+          if [ -d ".github/.translate_cache" ]; then
+            echo "缓存文件数量: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l)"
+            echo "缓存目录内容:"
+            ls -la .github/.translate_cache/ | head -10
+            echo ""
+            echo "示例缓存文件:"
+            ls -la .github/.translate_cache/*.cache 2>/dev/null | head -3
+          fi
+          echo "==================="
+    
       - name: 更新API文档（多语言）
         id: update-api
         run: |
