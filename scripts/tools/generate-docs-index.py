@@ -168,10 +168,10 @@ class DocsIndexGenerator:
         规范化路径，将反斜杠转换为正斜杠
         
         :param path: 文件路径
-        :return: 规范化后的路径字符串
+        :return: 规范化后的路径字符串（相对于语言目录）
         """
-        # 获取相对于 docs 目录的路径（包含语言代码）
-        rel_path = path.relative_to(self.docs_dir)
+        # 获取相对于实际文档目录的路径（不包含语言代码）
+        rel_path = path.relative_to(self.actual_docs_dir)
         # 使用 / 作为分隔符
         return str(rel_path).replace("\\", "/")
     
@@ -560,15 +560,43 @@ def main():
             generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), lang)
             generator.run(deprecated=False)
         
-        # 生成兼容性索引（基于中文）
-        if 'zh-CN' in langs:
-            print(f"\n{'='*60}")
-            print("生成兼容性索引（基于中文，已弃用）")
-            print('='*60)
-            compat_generator = DocsIndexGenerator(str(docs_dir), args.output, 'zh-CN')
-            compat_generator.run(deprecated=True)
-        else:
-            print("\n[警告] 未找到中文文档，跳过兼容性索引生成")
+        # 生成语言索引
+        print(f"\n{'='*60}")
+        print("生成语言索引...")
+        print('='*60)
+        
+        languages_index = {
+            "version": "1.0",
+            "total_languages": len(langs),
+            "languages": {}
+        }
+        
+        # 为每种语言添加信息
+        for lang in langs:
+            lang_index_path = f"_meta/{lang}/docs-mapping.json"
+            lang_mapping_file = docs_dir / "_meta" / lang / "docs-mapping.json"
+            
+            # 读取该语言的映射文件获取文档数量
+            total_docs = 0
+            if lang_mapping_file.exists():
+                try:
+                    with open(lang_mapping_file, "r", encoding="utf-8") as f:
+                        lang_data = json.load(f)
+                        total_docs = sum(cat.get("count", 0) for cat in lang_data.get("categories", {}).values())
+                except Exception as e:
+                    print(f"  [警告] 无法读取 {lang} 的映射文件: {e}")
+            
+            languages_index["languages"][lang] = {
+                "docs_count": total_docs,
+                "mapping_path": lang_index_path
+            }
+            print(f"  {lang}: {total_docs} 个文档")
+        
+        # 保存语言索引
+        output_file = Path(args.output) / "docs-mapping.json"
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(languages_index, f, ensure_ascii=False, indent=2)
+        print(f"\n  [完成] 语言索引已保存到 {output_file}")
 
 
 if __name__ == "__main__":
