@@ -16,46 +16,122 @@ from pathlib import Path
 class DocsIndexGenerator:
     """文档索引生成器"""
     
-    # 目录到分类的映射
-    CATEGORY_MAP = {
-        "getting-started": "入门指南",
-        "user-guide": "用户使用指南",
-        "developer-guide": "开发者指南",
-        "platform-guide": "平台特性指南",
-        "api-reference": "API 参考",
-        "advanced": "高级主题",
-        "ai-support": "AI 辅助开发",
-        "standards": "技术标准",
-        "styleguide": "风格指南",
-    }
-    
-    # 分类描述
-    CATEGORY_DESCRIPTIONS = {
-        "快速开始": "ErisPulse 快速入门指南",
-        "入门指南": "ErisPulse 基础概念和使用教程",
-        "用户使用指南": "ErisPulse 配置和命令参考",
-        "开发者指南": "模块和适配器开发指南",
-        "平台特性指南": "各平台特性和适配器说明",
-        "API 参考": "核心 API 和接口文档",
-        "高级主题": "深入理解框架的高级特性",
-        "AI 辅助开发": "使用 AI 辅助开发 ErisPulse",
-        "技术标准": "框架的技术规范和标准",
-        "风格指南": "代码和文档风格规范",
-    }
-    
-    # 分类优先级（数值越小越靠前）
-    # 按照用户阅读逻辑排序：快速开始 → 入门指南 → 用户使用指南 → 开发者指南...
-    CATEGORY_PRIORITY = {
-        "快速开始": 1,
-        "入门指南": 2,
-        "用户使用指南": 3,
-        "开发者指南": 4,
-        "平台特性指南": 5,
-        "API 参考": 6,
-        "高级主题": 7,
-        "AI 辅助开发": 8,
-        "技术标准": 9,
-        "风格指南": 10,
+    # 多语言分类映射配置
+    CATEGORY_TRANSLATIONS = {
+        # 中文 (zh-CN)
+        "zh-CN": {
+            "category_map": {
+                "getting-started": "入门指南",
+                "user-guide": "用户使用指南",
+                "developer-guide": "开发者指南",
+                "platform-guide": "平台特性指南",
+                "api-reference": "API 参考",
+                "advanced": "高级主题",
+                "ai-support": "AI 辅助开发",
+                "standards": "技术标准",
+                "styleguide": "风格指南",
+            },
+            "descriptions": {
+                "快速开始": "ErisPulse 快速入门指南",
+                "入门指南": "ErisPulse 基础概念和使用教程",
+                "用户使用指南": "ErisPulse 配置和命令参考",
+                "开发者指南": "模块和适配器开发指南",
+                "平台特性指南": "各平台特性和适配器说明",
+                "API 参考": "核心 API 和接口文档",
+                "高级主题": "深入理解框架的高级特性",
+                "AI 辅助开发": "使用 AI 辅助开发 ErisPulse",
+                "技术标准": "框架的技术规范和标准",
+                "风格指南": "代码和文档风格规范",
+            },
+            "priority": {
+                "快速开始": 1,
+                "入门指南": 2,
+                "用户使用指南": 3,
+                "开发者指南": 4,
+                "平台特性指南": 5,
+                "API 参考": 6,
+                "高级主题": 7,
+                "AI 辅助开发": 8,
+                "技术标准": 9,
+                "风格指南": 10,
+            }
+        },
+        # 英文 (en)
+        "en": {
+            "category_map": {
+                "getting-started": "Getting Started",
+                "user-guide": "User Guide",
+                "developer-guide": "Developer Guide",
+                "platform-guide": "Platform Guide",
+                "api-reference": "API Reference",
+                "advanced": "Advanced Topics",
+                "ai-support": "AI-Assisted Development",
+                "standards": "Technical Standards",
+                "styleguide": "Style Guide",
+            },
+            "descriptions": {
+                "Quick Start": "ErisPulse Quick Start Guide",
+                "Getting Started": "ErisPulse basic concepts and tutorials",
+                "User Guide": "ErisPulse configuration and command reference",
+                "Developer Guide": "Module and adapter development guides",
+                "Platform Guide": "Platform features and adapter documentation",
+                "API Reference": "Core API and interface documentation",
+                "Advanced Topics": "Deep dive into advanced framework features",
+                "AI-Assisted Development": "Using AI to assist ErisPulse development",
+                "Technical Standards": "Framework technical specifications and standards",
+                "Style Guide": "Code and documentation style guidelines",
+            },
+            "priority": {
+                "Quick Start": 1,
+                "Getting Started": 2,
+                "User Guide": 3,
+                "Developer Guide": 4,
+                "Platform Guide": 5,
+                "API Reference": 6,
+                "Advanced Topics": 7,
+                "AI-Assisted Development": 8,
+                "Technical Standards": 9,
+                "Style Guide": 10,
+            }
+        },
+        # 繁体中文 (zh-TW)
+        "zh-TW": {
+            "category_map": {
+                "getting-started": "入門指南",
+                "user-guide": "使用者指南",
+                "developer-guide": "開發者指南",
+                "platform-guide": "平台特性指南",
+                "api-reference": "API 參考",
+                "advanced": "進階主題",
+                "ai-support": "AI 輔助開發",
+                "standards": "技術標準",
+                "styleguide": "風格指南",
+            },
+            "descriptions": {
+                "快速開始": "ErisPulse 快速入門指南",
+                "入門指南": "ErisPulse 基礎概念和使用教程",
+                "使用者指南": "ErisPulse 配置和命令參考",
+                "開發者指南": "模組和適配器開發指南",
+                "平台特性指南": "各平台特性和適配器說明",
+                "API 參考": "核心 API 和介面文檔",
+                "進階主題": "深入理解框架的進階特性",
+                "AI 輔助開發": "使用 AI 輔助開發 ErisPulse",
+                "技術標準": "框架的技術規範和標準",
+                "風格指南": "代碼和文檔風格規範",
+            },
+            "priority": {
+                "快速開始": 1,
+                "入門指南": 2,
+                "使用者指南": 3,
+                "開發者指南": 4,
+                "平台特性指南": 5,
+                "API 參考": 6,
+                "進階主題": 7,
+                "AI 輔助開發": 8,
+                "技術標準": 9,
+                "風格指南": 10,
+            }
+        },
     }
     
     # 文档优先级（数值越小越靠前）
@@ -147,6 +223,24 @@ class DocsIndexGenerator:
             self.actual_docs_dir = self.docs_dir / self.lang
         else:
             self.actual_docs_dir = self.docs_dir
+        
+        # 根据语言初始化分类映射
+        self._init_category_mappings()
+    
+    def _init_category_mappings(self):
+        """根据语言初始化分类映射"""
+        if self.lang and self.lang in self.CATEGORY_TRANSLATIONS:
+            # 使用指定语言的映射
+            lang_config = self.CATEGORY_TRANSLATIONS[self.lang]
+            self.CATEGORY_MAP = lang_config["category_map"]
+            self.CATEGORY_DESCRIPTIONS = lang_config["descriptions"]
+            self.CATEGORY_PRIORITY = lang_config["priority"]
+        else:
+            # 默认使用中文映射
+            lang_config = self.CATEGORY_TRANSLATIONS["zh-CN"]
+            self.CATEGORY_MAP = lang_config["category_map"]
+            self.CATEGORY_DESCRIPTIONS = lang_config["descriptions"]
+            self.CATEGORY_PRIORITY = lang_config["priority"]
     
     @staticmethod
     def get_available_languages(docs_dir: Path) -> List[str]:
@@ -185,9 +279,12 @@ class DocsIndexGenerator:
         # 获取相对于实际文档目录的路径
         rel_path = file_path.relative_to(self.actual_docs_dir)
         
-        # 根目录文件归类为"快速开始"
+        # 根目录文件归类为快速开始（根据语言）
         if len(rel_path.parts) == 1:
-            return "快速开始"
+            # 从优先级配置中获取第一个分类键（即"快速开始"的本地化名称）
+            if self.CATEGORY_PRIORITY:
+                return list(self.CATEGORY_PRIORITY.keys())[0]
+            return "Quick Start"
         
         # 根据目录名称分类
         dir_name = rel_path.parts[0]
@@ -195,7 +292,7 @@ class DocsIndexGenerator:
             return self.CATEGORY_MAP[dir_name]
         
         # 默认分类
-        return "其他"
+        return "Other"
     
     def parse_headings(self, content: str) -> List[Dict]:
         """
