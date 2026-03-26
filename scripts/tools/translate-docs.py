@@ -181,15 +181,26 @@ class DocsTranslator:
                 "target_lang": target_lang
             }, f, ensure_ascii=False, indent=2)
     
-    def build_translation_prompt(self, content: str, target_lang: str) -> str:
+    def build_translation_prompt(self, content: str, target_lang: str, file_name: str) -> str:
         """
         构建翻译提示词
         
         :param content: 要翻译的内容
         :param target_lang: 目标语言
+        :param file_name: 文件名（用于特殊处理）
         :return: 提示词
         """
         lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
+        source_lang = self.config["source_lang"]
+        
+        # 特殊处理 README.md 的路径替换要求
+        path_replacement_hint = ""
+        if file_name == "README.md":
+            path_replacement_hint = f"""
+7. **重要：路径替换规则**
+   - 将文档链接中的 `docs/{source_lang}/` 替换为 `docs/{target_lang}/`
+   - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`
+   - 这确保了链接指向正确语言的文档版本"""
         
         prompt = f"""你是一个专业的技术文档翻译专家。请将以下Markdown文档翻译成{lang_name}。
 
@@ -199,7 +210,7 @@ class DocsTranslator:
 3. 代码块中的代码不要翻译，但可以翻译代码中的注释
 4. 保持原文档的结构和语气
 5. 对于专业术语，如果{lang_name}中对应术语不确定，可以保留英文原词
-6. 不要添加任何额外的解释或说明，只返回翻译后的内容
+6. 不要添加任何额外的解释或说明，只返回翻译后的内容{path_replacement_hint}
 
 待翻译内容：
 
@@ -215,12 +226,12 @@ class DocsTranslator:
         
         :param content: 要翻译的内容
         :param target_lang: 目标语言
-        :param file_name: 文件名（用于显示）
+        :param file_name: 文件名（用于显示和特殊处理）
         :return: 翻译后的内容
         """
         try:
             model = self.config.get("model", "gpt-4")
-            prompt = self.build_translation_prompt(content, target_lang)
+            prompt = self.build_translation_prompt(content, target_lang, file_name)
             
             translated_content = []
             char_count = 0
