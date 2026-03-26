@@ -1,6 +1,6 @@
 <div align="center">
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md)
 
 </div>
 
@@ -149,6 +149,16 @@ epsdk run main.py --reload
 查看 [适配器详情介绍](docs/platform-guide/README.md)
 
 ## 文档资源
+
+<div align="center">
+
+| 🇨🇳🇳 简体中文 | 🇺🇸 English | 🇹🇼 繁體中文 |
+|----------------|----------------|----------------|
+| [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
+
+</div>
+
+## 外部资源
 
 | 平台 | 主站点 | 备用站点 |
 |------|--------|---------|
