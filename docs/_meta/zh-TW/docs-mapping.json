@@ -2,8 +2,8 @@
   "version": "1.0",
   "total_categories": 10,
   "categories": {
-    "快速开始": {
-      "description": "ErisPulse 快速入门指南",
+    "快速開始": {
+      "description": "ErisPulse 快速入門指南",
       "count": 4,
       "documents": [
         {
@@ -28,8 +28,8 @@
         }
       ]
     },
-    "入门指南": {
-      "description": "ErisPulse 基础概念和使用教程",
+    "入門指南": {
+      "description": "ErisPulse 基礎概念和使用教程",
       "count": 5,
       "documents": [
         {
@@ -59,8 +59,8 @@
         }
       ]
     },
-    "用户使用指南": {
-      "description": "ErisPulse 配置和命令参考",
+    "使用者指南": {
+      "description": "ErisPulse 配置和命令參考",
       "count": 4,
       "documents": [
         {
@@ -85,8 +85,8 @@
         }
       ]
     },
-    "开发者指南": {
-      "description": "模块和适配器开发指南",
+    "開發者指南": {
+      "description": "模組和適配器開發指南",
       "count": 10,
       "documents": [
         {
@@ -142,7 +142,7 @@
       ]
     },
     "平台特性指南": {
-      "description": "各平台特性和适配器说明",
+      "description": "各平台特性和適配器說明",
       "count": 7,
       "documents": [
         {
@@ -182,8 +182,8 @@
         }
       ]
     },
-    "API 参考": {
-      "description": "核心 API 和接口文档",
+    "API 參考": {
+      "description": "核心 API 和介面文檔",
       "count": 4,
       "documents": [
         {
@@ -208,8 +208,8 @@
         }
       ]
     },
-    "高级主题": {
-      "description": "深入理解框架的高级特性",
+    "進階主題": {
+      "description": "深入理解框架的進階特性",
       "count": 4,
       "documents": [
         {
@@ -234,8 +234,8 @@
         }
       ]
     },
-    "AI 辅助开发": {
-      "description": "使用 AI 辅助开发 ErisPulse",
+    "AI 輔助開發": {
+      "description": "使用 AI 輔助開發 ErisPulse",
       "count": 1,
       "documents": [
         {
@@ -245,8 +245,8 @@
         }
       ]
     },
-    "技术标准": {
-      "description": "框架的技术规范和标准",
+    "技術標準": {
+      "description": "框架的技術規範和標準",
       "count": 5,
       "documents": [
         {
@@ -276,8 +276,8 @@
         }
       ]
     },
-    "风格指南": {
-      "description": "代码和文档风格规范",
+    "風格指南": {
+      "description": "代碼和文檔風格規範",
       "count": 2,
       "documents": [
         {
