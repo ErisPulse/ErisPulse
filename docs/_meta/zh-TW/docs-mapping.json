@@ -1,0 +1,291 @@
+{
+  "version": "1.0",
+  "total_categories": 10,
+  "categories": {
+    "快速开始": {
+      "description": "ErisPulse 快速入门指南",
+      "count": 4,
+      "documents": [
+        {
+          "title": "ErisPulse 文檔",
+          "path": "zh-TW/README.md",
+          "level": 1
+        },
+        {
+          "title": "Bug 追蹤器",
+          "path": "zh-TW/bug-tracker.md",
+          "level": 1
+        },
+        {
+          "title": "快速開始",
+          "path": "zh-TW/quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 術語表",
+          "path": "zh-TW/terminology.md",
+          "level": 1
+        }
+      ]
+    },
+    "入门指南": {
+      "description": "ErisPulse 基础概念和使用教程",
+      "count": 5,
+      "documents": [
+        {
+          "title": "入門指南",
+          "path": "zh-TW/getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "基礎概念",
+          "path": "zh-TW/getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "常見任務範例",
+          "path": "zh-TW/getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "事件處理入門",
+          "path": "zh-TW/getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "建立第一個機器人",
+          "path": "zh-TW/getting-started/first-bot.md",
+          "level": 1
+        }
+      ]
+    },
+    "用户使用指南": {
+      "description": "ErisPulse 配置和命令参考",
+      "count": 4,
+      "documents": [
+        {
+          "title": "用戶使用指南",
+          "path": "zh-TW/user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "CLI 命令參考",
+          "path": "zh-TW/user-guide/cli-reference.md",
+          "level": 1
+        },
+        {
+          "title": "配置檔案說明",
+          "path": "zh-TW/user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "安裝與設定",
+          "path": "zh-TW/user-guide/installation.md",
+          "level": 1
+        }
+      ]
+    },
+    "开发者指南": {
+      "description": "模块和适配器开发指南",
+      "count": 10,
+      "documents": [
+        {
+          "title": "開發者指南",
+          "path": "zh-TW/developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "配接器開發最佳實踐",
+          "path": "zh-TW/developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "介接器核心概念",
+          "path": "zh-TW/developer-guide/adapters/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "適配器開發入門",
+          "path": "zh-TW/developer-guide/adapters/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "SendDSL 詳解",
+          "path": "zh-TW/developer-guide/adapters/send-dsl.md",
+          "level": 1
+        },
+        {
+          "title": "CLI 擴充開發指南",
+          "path": "zh-TW/developer-guide/extensions/cli-extensions.md",
+          "level": 1
+        },
+        {
+          "title": "模組開發最佳實務",
+          "path": "zh-TW/developer-guide/modules/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "模組核心概念",
+          "path": "zh-TW/developer-guide/modules/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Event 包裝類詳解",
+          "path": "zh-TW/developer-guide/modules/event-wrapper.md",
+          "level": 1
+        },
+        {
+          "title": "模組開發入門",
+          "path": "zh-TW/developer-guide/modules/getting-started.md",
+          "level": 1
+        }
+      ]
+    },
+    "平台特性指南": {
+      "description": "各平台特性和适配器说明",
+      "count": 6,
+      "documents": [
+        {
+          "title": "郵件平台特性文檔",
+          "path": "zh-TW/platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "文檔維護說明",
+          "path": "zh-TW/platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot11 平台特性文件",
+          "path": "zh-TW/platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12 平台特性文件",
+          "path": "zh-TW/platform-guide/onebot12.md",
+          "level": 1
+        },
+        {
+          "title": "Telegram 平台特性文件",
+          "path": "zh-TW/platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "雲湖平台特性文件",
+          "path": "zh-TW/platform-guide/yunhu.md",
+          "level": 1
+        }
+      ]
+    },
+    "API 参考": {
+      "description": "核心 API 和接口文档",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API 參考",
+          "path": "zh-TW/api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "介面卡系統 API",
+          "path": "zh-TW/api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "核心模組 API",
+          "path": "zh-TW/api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "事件系統 API",
+          "path": "zh-TW/api-reference/event-system.md",
+          "level": 1
+        }
+      ]
+    },
+    "高级主题": {
+      "description": "深入理解框架的高级特性",
+      "count": 4,
+      "documents": [
+        {
+          "title": "進階主題",
+          "path": "zh-TW/advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "延遲載入模組系統",
+          "path": "zh-TW/advanced/lazy-loading.md",
+          "level": 1
+        },
+        {
+          "title": "生命週期管理",
+          "path": "zh-TW/advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "路由管理器",
+          "path": "zh-TW/advanced/router.md",
+          "level": 1
+        }
+      ]
+    },
+    "AI 辅助开发": {
+      "description": "使用 AI 辅助开发 ErisPulse",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI 輔助開發",
+          "path": "zh-TW/ai-support/README.md",
+          "level": 1
+        }
+      ]
+    },
+    "技术标准": {
+      "description": "框架的技术规范和标准",
+      "count": 5,
+      "documents": [
+        {
+          "title": "技術標準",
+          "path": "zh-TW/standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 適配器標準化回傳規範",
+          "path": "zh-TW/standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "適配器標準化轉換規範",
+          "path": "zh-TW/standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 發送方法規範",
+          "path": "zh-TW/standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 會話類型標準",
+          "path": "zh-TW/standards/session-types.md",
+          "level": 1
+        }
+      ]
+    },
+    "风格指南": {
+      "description": "代码和文档风格规范",
+      "count": 2,
+      "documents": [
+        {
+          "title": "風格指南",
+          "path": "zh-TW/styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 註解風格規範",
+          "path": "zh-TW/styleguide/docstring.md",
+          "level": 1
+        }
+      ]
+    }
+  }
+}

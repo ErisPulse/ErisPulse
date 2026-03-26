@@ -292,7 +292,5 @@
         }
       ]
     }
-  },
-  "_deprecated": true,
-  "_note": "此索引已弃用，请使用 docs/_meta/{lang}/ 目录下的语言特定索引"
+  }
 }

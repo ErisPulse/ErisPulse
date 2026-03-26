@@ -1,0 +1,6948 @@
+{
+  "version": "1.0",
+  "total_keywords": 765,
+  "keywords": {
+    "0 成功": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 64,
+        "level": 4,
+        "title": "0 成功"
+      }
+    ],
+    "1. SDK 對象": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 47,
+        "level": 3,
+        "title": "1. SDK 對象"
+      }
+    ],
+    "1. 使用 Event 包裝類別": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 98,
+        "level": 3,
+        "title": "1. 使用 Event 包裝類別"
+      }
+    ],
+    "1. 使用交易": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 184,
+        "level": 3,
+        "title": "1. 使用交易"
+      }
+    ],
+    "1. 使用快取": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 251,
+        "level": 3,
+        "title": "1. 使用快取"
+      }
+    ],
+    "1. 使用非同步程式庫": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 53,
+        "level": 3,
+        "title": "1. 使用非同步程式庫"
+      }
+    ],
+    "1. 分類異常處理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 294,
+        "level": 3,
+        "title": "1. 分類異常處理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 148,
+        "level": 3,
+        "title": "1. 分類異常處理"
+      }
+    ],
+    "1. 合理使用日誌層級": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 217,
+        "level": 3,
+        "title": "1. 合理使用日誌層級"
+      }
+    ],
+    "1. 單一職責原則": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. 單一職責原則"
+      }
+    ],
+    "1. 單元測試": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 340,
+        "level": 3,
+        "title": "1. 單元測試"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 325,
+        "level": 3,
+        "title": "1. 單元測試"
+      }
+    ],
+    "1. 嚴格遵循 OneBot12 標準": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 83,
+        "level": 3,
+        "title": "1. 嚴格遵循 OneBot12 標準"
+      }
+    ],
+    "1. 基本資訊部分": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 15,
+        "level": 3,
+        "title": "1. 基本資訊部分"
+      }
+    ],
+    "1. 實作連線重試": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. 實作連線重試"
+      }
+    ],
+    "1. 帳號設定驗證": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 252,
+        "level": 3,
+        "title": "1. 帳號設定驗證"
+      }
+    ],
+    "1. 建立專案": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 51,
+        "level": 3,
+        "title": "1. 建立專案"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 34,
+        "level": 3,
+        "title": "1. 建立專案"
+      }
+    ],
+    "1. 必須返回 Task 物件": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 137,
+        "level": 3,
+        "title": "1. 必須返回 Task 物件"
+      }
+    ],
+    "1. 指定類型和 ID": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 7,
+        "level": 3,
+        "title": "1. 指定類型和 ID"
+      }
+    ],
+    "1. 敏感資料保護": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 288,
+        "level": 3,
+        "title": "1. 敏感資料保護"
+      }
+    ],
+    "1. 核心原則": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 3,
+        "level": 2,
+        "title": "1. 核心原則"
+      }
+    ],
+    "1. 核心概念": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. 核心概念"
+      }
+    ],
+    "1. 標準化回應格式": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 202,
+        "level": 3,
+        "title": "1. 標準化回應格式"
+      }
+    ],
+    "1. 標準方法命名": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. 標準方法命名"
+      }
+    ],
+    "1. 模組開發（推薦）": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 89,
+        "level": 3,
+        "title": "1. 模組開發（推薦）"
+      }
+    ],
+    "1. 清晰的說明資訊": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 307,
+        "level": 3,
+        "title": "1. 清晰的說明資訊"
+      }
+    ],
+    "1. 版本管理": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 356,
+        "level": 3,
+        "title": "1. 版本管理"
+      }
+    ],
+    "1. 異常處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 378,
+        "level": 3,
+        "title": "1. 異常處理"
+      }
+    ],
+    "1. 確保跨平台相容": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 25,
+        "level": 3,
+        "title": "1. 確保跨平台相容"
+      }
+    ],
+    "1. 維護平台特性文件": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 386,
+        "level": 3,
+        "title": "1. 維護平台特性文件"
+      }
+    ],
+    "1. 說明": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 3,
+        "level": 2,
+        "title": "1. 說明"
+      }
+    ],
+    "1. 適配器系統": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 103,
+        "level": 4,
+        "title": "1. 適配器系統"
+      }
+    ],
+    "1.1 接收類型 && 發送類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 7,
+        "level": 3,
+        "title": "1.1 接收類型 && 發送類型"
+      }
+    ],
+    "1.1 標準發送方法": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 9,
+        "level": 3,
+        "title": "1.1 標準發送方法"
+      }
+    ],
+    "1.2 鏈式修飾方法": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 26,
+        "level": 3,
+        "title": "1.2 鏈式修飾方法"
+      }
+    ],
+    "1.2 類型對應關係": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 14,
+        "level": 3,
+        "title": "1.2 類型對應關係"
+      }
+    ],
+    "1.3 協議方法": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 34,
+        "level": 3,
+        "title": "1.3 協議方法"
+      }
+    ],
+    "1xxxx 動作請求錯誤": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 67,
+        "level": 4,
+        "title": "1xxxx 動作請求錯誤"
+      }
+    ],
+    "2. 事件系統": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 112,
+        "level": 4,
+        "title": "2. 事件系統"
+      }
+    ],
+    "2. 僅指定 ID": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 13,
+        "level": 3,
+        "title": "2. 僅指定 ID"
+      }
+    ],
+    "2. 參數規範詳解": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 42,
+        "level": 2,
+        "title": "2. 參數規範詳解"
+      }
+    ],
+    "2. 友善的錯誤提示": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 318,
+        "level": 3,
+        "title": "2. 友善的錯誤提示"
+      }
+    ],
+    "2. 合理使用延遲載入": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 114,
+        "level": 3,
+        "title": "2. 合理使用延遲載入"
+      }
+    ],
+    "2. 基礎回傳結構": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 12,
+        "level": 2,
+        "title": "2. 基礎回傳結構"
+      }
+    ],
+    "2. 嵌入式開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 93,
+        "level": 3,
+        "title": "2. 嵌入式開發"
+      }
+    ],
+    "2. 帳號選擇機制": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 272,
+        "level": 3,
+        "title": "2. 帳號選擇機制"
+      }
+    ],
+    "2. 建立 pyproject.toml": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 57,
+        "level": 3,
+        "title": "2. 建立 pyproject.toml"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 40,
+        "level": 3,
+        "title": "2. 建立 pyproject.toml"
+      }
+    ],
+    "2. 批次操作": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 200,
+        "level": 3,
+        "title": "2. 批次操作"
+      }
+    ],
+    "2. 支援的訊息傳送類型": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. 支援的訊息傳送類型"
+      }
+    ],
+    "2. 整合測試": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 364,
+        "level": 3,
+        "title": "2. 整合測試"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 340,
+        "level": 3,
+        "title": "2. 整合測試"
+      }
+    ],
+    "2. 文件完善": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 370,
+        "level": 3,
+        "title": "2. 文件完善"
+      }
+    ],
+    "2. 日誌記錄": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 319,
+        "level": 3,
+        "title": "2. 日誌記錄"
+      },
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 396,
+        "level": 3,
+        "title": "2. 日誌記錄"
+      }
+    ],
+    "2. 時間戳標準化": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 105,
+        "level": 3,
+        "title": "2. 時間戳標準化"
+      }
+    ],
+    "2. 更新版本資訊": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 407,
+        "level": 3,
+        "title": "2. 更新版本資訊"
+      }
+    ],
+    "2. 標準會話類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 32,
+        "level": 2,
+        "title": "2. 標準會話類型"
+      }
+    ],
+    "2. 標準欄位要求": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 10,
+        "level": 2,
+        "title": "2. 標準欄位要求"
+      }
+    ],
+    "2. 模組命名規範": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. 模組命名規範"
+      }
+    ],
+    "2. 正確的非同步操作": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 73,
+        "level": 3,
+        "title": "2. 正確的非同步操作"
+      }
+    ],
+    "2. 結構化日誌": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 239,
+        "level": 3,
+        "title": "2. 結構化日誌"
+      }
+    ],
+    "2. 規範 API 介面": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "2. 規範 API 介面"
+      }
+    ],
+    "2. 輸入驗證": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 305,
+        "level": 3,
+        "title": "2. 輸入驗證"
+      }
+    ],
+    "2. 連線狀態管理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 36,
+        "level": 3,
+        "title": "2. 連線狀態管理"
+      }
+    ],
+    "2. 逾時處理": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 169,
+        "level": 3,
+        "title": "2. 逾時處理"
+      }
+    ],
+    "2. 避免阻塞操作": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 272,
+        "level": 3,
+        "title": "2. 避免阻塞操作"
+      }
+    ],
+    "2. 錯誤碼規範": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 228,
+        "level": 3,
+        "title": "2. 錯誤碼規範"
+      }
+    ],
+    "2. 鏈式修飾方法返回 self": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 154,
+        "level": 3,
+        "title": "2. 鏈式修飾方法返回 self"
+      }
+    ],
+    "2.1 OneBot12 標準類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 34,
+        "level": 3,
+        "title": "2.1 OneBot12 標準類型"
+      }
+    ],
+    "2.1 媒體訊息參數規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.1 媒體訊息參數規範"
+      }
+    ],
+    "2.1 必要欄位": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 12,
+        "level": 3,
+        "title": "2.1 必要欄位"
+      }
+    ],
+    "2.1.1 字串參數（URL 或檔案路徑）": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 48,
+        "level": 4,
+        "title": "2.1.1 字串參數（URL 或檔案路徑）"
+      }
+    ],
+    "2.1.2 二進位數據參數": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 73,
+        "level": 4,
+        "title": "2.1.2 二進位數據參數"
+      }
+    ],
+    "2.1.3 參數處理優先順序": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 99,
+        "level": 4,
+        "title": "2.1.3 參數處理優先順序"
+      }
+    ],
+    "2.2 ErisPulse 擴展類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 57,
+        "level": 3,
+        "title": "2.2 ErisPulse 擴展類型"
+      }
+    ],
+    "2.2 文字訊息參數規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 124,
+        "level": 3,
+        "title": "2.2 文字訊息參數規範"
+      }
+    ],
+    "2.2 訊息事件欄位": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 29,
+        "level": 3,
+        "title": "2.2 訊息事件欄位"
+      }
+    ],
+    "2.3 @用戶參數規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 151,
+        "level": 3,
+        "title": "2.3 @用戶參數規範"
+      }
+    ],
+    "2.3 通知事件欄位": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 37,
+        "level": 3,
+        "title": "2.3 通知事件欄位"
+      }
+    ],
+    "2.4 回覆訊息參數規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 171,
+        "level": 3,
+        "title": "2.4 回覆訊息參數規範"
+      }
+    ],
+    "2.4 請求事件欄位": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.4 請求事件欄位"
+      }
+    ],
+    "2.5 卡片訊息參數規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 188,
+        "level": 3,
+        "title": "2.5 卡片訊息參數規範"
+      }
+    ],
+    "2.6 參數驗證和錯誤處理": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 212,
+        "level": 3,
+        "title": "2.6 參數驗證和錯誤處理"
+      }
+    ],
+    "2xxxx 動作處理器錯誤": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 80,
+        "level": 4,
+        "title": "2xxxx 動作處理器錯誤"
+      }
+    ],
+    "3. 事件 ID 生成": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 121,
+        "level": 3,
+        "title": "3. 事件 ID 生成"
+      }
+    ],
+    "3. 事件格式範例": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 51,
+        "level": 2,
+        "title": "3. 事件格式範例"
+      }
+    ],
+    "3. 事件處理器註冊": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 130,
+        "level": 3,
+        "title": "3. 事件處理器註冊"
+      }
+    ],
+    "3. 完整欄位規範": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 29,
+        "level": 2,
+        "title": "3. 完整欄位規範"
+      }
+    ],
+    "3. 實作指令註冊函式": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 62,
+        "level": 3,
+        "title": "3. 實作指令註冊函式"
+      }
+    ],
+    "3. 平台特有方法命名": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 241,
+        "level": 2,
+        "title": "3. 平台特有方法命名"
+      }
+    ],
+    "3. 平台類型對應": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 80,
+        "level": 2,
+        "title": "3. 平台類型對應"
+      }
+    ],
+    "3. 建立適配器主類別": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 80,
+        "level": 3,
+        "title": "3. 建立適配器主類別"
+      }
+    ],
+    "3. 心跳保活": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 61,
+        "level": 3,
+        "title": "3. 心跳保活"
+      }
+    ],
+    "3. 指定發送帳號": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 19,
+        "level": 3,
+        "title": "3. 指定發送帳號"
+      }
+    ],
+    "3. 提高程式碼品質": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 39,
+        "level": 3,
+        "title": "3. 提高程式碼品質"
+      }
+    ],
+    "3. 支援平台特有方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 171,
+        "level": 3,
+        "title": "3. 支援平台特有方法"
+      }
+    ],
+    "3. 條件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 412,
+        "level": 3,
+        "title": "3. 條件處理"
+      }
+    ],
+    "3. 模組系統": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 121,
+        "level": 4,
+        "title": "3. 模組系統"
+      }
+    ],
+    "3. 清晰的設定管理": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 34,
+        "level": 3,
+        "title": "3. 清晰的設定管理"
+      }
+    ],
+    "3. 特有事件類型": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 46,
+        "level": 3,
+        "title": "3. 特有事件類型"
+      }
+    ],
+    "3. 資源管理": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 84,
+        "level": 3,
+        "title": "3. 資源管理"
+      }
+    ],
+    "3. 進度回饋": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 329,
+        "level": 3,
+        "title": "3. 進度回饋"
+      }
+    ],
+    "3.1 對應原則": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 82,
+        "level": 3,
+        "title": "3.1 對應原則"
+      }
+    ],
+    "3.1 訊息事件 (message)": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 53,
+        "level": 3,
+        "title": "3.1 訊息事件 (message)"
+      }
+    ],
+    "3.1 通用欄位": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 31,
+        "level": 3,
+        "title": "3.1 通用欄位"
+      }
+    ],
+    "3.2 回傳碼規範": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 62,
+        "level": 3,
+        "title": "3.2 回傳碼規範"
+      }
+    ],
+    "3.2 常見平台對應範例": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 90,
+        "level": 3,
+        "title": "3.2 常見平台對應範例"
+      }
+    ],
+    "3.2 通知事件 (notice)": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 86,
+        "level": 3,
+        "title": "3.2 通知事件 (notice)"
+      }
+    ],
+    "3.3 請求事件 (request)": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 107,
+        "level": 3,
+        "title": "3.3 請求事件 (request)"
+      }
+    ],
+    "3xxxx 動作執行錯誤": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 86,
+        "level": 4,
+        "title": "3xxxx 動作執行錯誤"
+      }
+    ],
+    "4. 參數命名規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 267,
+        "level": 2,
+        "title": "4. 參數命名規範"
+      }
+    ],
+    "4. 實作必要方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 117,
+        "level": 3,
+        "title": "4. 實作必要方法"
+      }
+    ],
+    "4. 實作要求": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 100,
+        "level": 2,
+        "title": "4. 實作要求"
+      }
+    ],
+    "4. 建立套件入口": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 106,
+        "level": 3,
+        "title": "4. 建立套件入口"
+      }
+    ],
+    "4. 指令別名": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 341,
+        "level": 3,
+        "title": "4. 指令別名"
+      }
+    ],
+    "4. 擴展欄位說明": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 64,
+        "level": 3,
+        "title": "4. 擴展欄位說明"
+      }
+    ],
+    "4. 核心模組": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 129,
+        "level": 4,
+        "title": "4. 核心模組"
+      }
+    ],
+    "4. 組合使用": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 25,
+        "level": 3,
+        "title": "4. 組合使用"
+      }
+    ],
+    "4. 自訂類型擴展": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 120,
+        "level": 2,
+        "title": "4. 自訂類型擴展"
+      }
+    ],
+    "4. 訊息段標準": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 127,
+        "level": 2,
+        "title": "4. 訊息段標準"
+      }
+    ],
+    "4.1 註冊自訂類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 122,
+        "level": 3,
+        "title": "4.1 註冊自訂類型"
+      }
+    ],
+    "4.1 通用訊息段": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 129,
+        "level": 3,
+        "title": "4.1 通用訊息段"
+      }
+    ],
+    "4.2 使用自訂類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 138,
+        "level": 3,
+        "title": "4.2 使用自訂類型"
+      }
+    ],
+    "4.2 特殊訊息段": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 139,
+        "level": 3,
+        "title": "4.2 特殊訊息段"
+      }
+    ],
+    "4.3 取消註冊自訂類型": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 156,
+        "level": 3,
+        "title": "4.3 取消註冊自訂類型"
+      }
+    ],
+    "5. 實作 Send 類別": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 147,
+        "level": 3,
+        "title": "5. 實作 Send 類別"
+      }
+    ],
+    "5. 未知事件處理": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 150,
+        "level": 2,
+        "title": "5. 未知事件處理"
+      }
+    ],
+    "5. 注意事項": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 106,
+        "level": 2,
+        "title": "5. 注意事項"
+      }
+    ],
+    "5. 自動類型推斷": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 164,
+        "level": 2,
+        "title": "5. 自動類型推斷"
+      }
+    ],
+    "5. 返回值規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 278,
+        "level": 2,
+        "title": "5. 返回值規範"
+      }
+    ],
+    "5. 配置選項（如適用）": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 73,
+        "level": 3,
+        "title": "5. 配置選項（如適用）"
+      }
+    ],
+    "5.1 推斷優先順序": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 168,
+        "level": 3,
+        "title": "5.1 推斷優先順序"
+      }
+    ],
+    "5.2 使用範例": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 179,
+        "level": 3,
+        "title": "5.2 使用範例"
+      }
+    ],
+    "6. API 使用範例": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 193,
+        "level": 2,
+        "title": "6. API 使用範例"
+      }
+    ],
+    "6. 實作轉換器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 229,
+        "level": 3,
+        "title": "6. 實作轉換器"
+      }
+    ],
+    "6. 平台特性欄位": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 166,
+        "level": 2,
+        "title": "6. 平台特性欄位"
+      }
+    ],
+    "6. 相關文檔": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 283,
+        "level": 2,
+        "title": "6. 相關文檔"
+      }
+    ],
+    "6.1 特有欄位範例": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 175,
+        "level": 3,
+        "title": "6.1 特有欄位範例"
+      }
+    ],
+    "6.1 發送訊息": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 195,
+        "level": 3,
+        "title": "6.1 發送訊息"
+      }
+    ],
+    "6.2 事件回覆": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 211,
+        "level": 3,
+        "title": "6.2 事件回覆"
+      }
+    ],
+    "6.3 命令處理": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 221,
+        "level": 3,
+        "title": "6.3 命令處理"
+      }
+    ],
+    "7. 建立套件入口": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 271,
+        "level": 3,
+        "title": "7. 建立套件入口"
+      }
+    ],
+    "7. 最佳實務": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 233,
+        "level": 2,
+        "title": "7. 最佳實務"
+      }
+    ],
+    "7. 適配器實作檢查清單": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 191,
+        "level": 2,
+        "title": "7. 適配器實作檢查清單"
+      }
+    ],
+    "7.1 介面卡開發者": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 235,
+        "level": 3,
+        "title": "7.1 介面卡開發者"
+      }
+    ],
+    "7.2 模組開發者": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 242,
+        "level": 3,
+        "title": "7.2 模組開發者"
+      }
+    ],
+    "7.3 類型推斷": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 249,
+        "level": 3,
+        "title": "7.3 類型推斷"
+      }
+    ],
+    "8. 常見問題": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 255,
+        "level": 2,
+        "title": "8. 常見問題"
+      }
+    ],
+    "9. 相關文件": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 277,
+        "level": 2,
+        "title": "9. 相關文件"
+      }
+    ],
+    "@ 訊息相關": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 122,
+        "level": 4,
+        "title": "@ 訊息相關"
+      }
+    ],
+    "AI 輔助開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "AI 輔助開發"
+      },
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "AI 輔助開發"
+      }
+    ],
+    "API 參考": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 59,
+        "level": 3,
+        "title": "API 參考"
+      },
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "API 參考"
+      }
+    ],
+    "API 呼叫": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 135,
+        "level": 2,
+        "title": "API 呼叫"
+      }
+    ],
+    "API 回應": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 200,
+        "level": 2,
+        "title": "API 回應"
+      },
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 77,
+        "level": 3,
+        "title": "API 回應"
+      }
+    ],
+    "API 概覽": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 12,
+        "level": 2,
+        "title": "API 概覽"
+      }
+    ],
+    "API 標準": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 321,
+        "level": 3,
+        "title": "API 標準"
+      }
+    ],
+    "Account 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 104,
+        "level": 3,
+        "title": "Account 方法"
+      }
+    ],
+    "Adapter 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 129,
+        "level": 2,
+        "title": "Adapter 模組"
+      }
+    ],
+    "Adapter 管理器": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Adapter 管理器"
+      }
+    ],
+    "AdapterManager 介接器管理器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 41,
+        "level": 2,
+        "title": "AdapterManager 介接器管理器"
+      }
+    ],
+    "At 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 62,
+        "level": 3,
+        "title": "At 方法"
+      }
+    ],
+    "AtAll 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 72,
+        "level": 3,
+        "title": "AtAll 方法"
+      }
+    ],
+    "BaseAdapter 基類": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 250,
+        "level": 2,
+        "title": "BaseAdapter 基類"
+      }
+    ],
+    "BaseAdapter 方法": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 163,
+        "level": 3,
+        "title": "BaseAdapter 方法"
+      }
+    ],
+    "BaseModule 基礎類別": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 116,
+        "level": 3,
+        "title": "BaseModule 基礎類別"
+      }
+    ],
+    "Bug 追蹤器": [
+      {
+        "document": "zh-TW/bug-tracker.md",
+        "line": 1,
+        "level": 1,
+        "title": "Bug 追蹤器"
+      }
+    ],
+    "CLI 命令參考": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 1,
+        "level": 1,
+        "title": "CLI 命令參考"
+      }
+    ],
+    "CLI 擴充": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 153,
+        "level": 2,
+        "title": "CLI 擴充"
+      }
+    ],
+    "CLI 擴充功能開發": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 67,
+        "level": 3,
+        "title": "CLI 擴充功能開發"
+      }
+    ],
+    "CLI 擴充簡介": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 5,
+        "level": 2,
+        "title": "CLI 擴充簡介"
+      }
+    ],
+    "CLI 擴充開發指南": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 1,
+        "level": 1,
+        "title": "CLI 擴充開發指南"
+      }
+    ],
+    "Command 命令模組": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 5,
+        "level": 2,
+        "title": "Command 命令模組"
+      }
+    ],
+    "Config 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 52,
+        "level": 2,
+        "title": "Config 模組"
+      }
+    ],
+    "Core.py - 基礎模組": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 45,
+        "level": 2,
+        "title": "Core.py - 基礎模組"
+      }
+    ],
+    "Discord": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 101,
+        "level": 4,
+        "title": "Discord"
+      }
+    ],
+    "ErisPulse 文檔": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 文檔"
+      }
+    ],
+    "ErisPulse 會話類型標準": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 會話類型標準"
+      }
+    ],
+    "ErisPulse 核心概念": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 58,
+        "level": 2,
+        "title": "ErisPulse 核心概念"
+      }
+    ],
+    "ErisPulse 發送方法規範": [
+      {
+        "document": "zh-TW/standards/send-method-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 發送方法規範"
+      }
+    ],
+    "ErisPulse 術語表": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 術語表"
+      }
+    ],
+    "ErisPulse 註解風格規範": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 註解風格規範"
+      }
+    ],
+    "ErisPulse 適配器標準化回傳規範": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 適配器標準化回傳規範"
+      }
+    ],
+    "ErisPulse-AdapterDev.md": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 39,
+        "level": 4,
+        "title": "ErisPulse-AdapterDev.md"
+      }
+    ],
+    "ErisPulse-Full.md": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 54,
+        "level": 4,
+        "title": "ErisPulse-Full.md"
+      }
+    ],
+    "ErisPulse-ModuleDev.md": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 26,
+        "level": 4,
+        "title": "ErisPulse-ModuleDev.md"
+      }
+    ],
+    "Event 包裝類": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 240,
+        "level": 2,
+        "title": "Event 包裝類"
+      }
+    ],
+    "Event 包裝類詳解": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event 包裝類詳解"
+      }
+    ],
+    "Event 物件常用方法": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 330,
+        "level": 3,
+        "title": "Event 物件常用方法"
+      }
+    ],
+    "HTTP 路由": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 276,
+        "level": 3,
+        "title": "HTTP 路由"
+      }
+    ],
+    "LazyModule 類別": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 16,
+        "level": 3,
+        "title": "LazyModule 類別"
+      }
+    ],
+    "Lifecycle 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 224,
+        "level": 2,
+        "title": "Lifecycle 模組"
+      }
+    ],
+    "Logger 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 93,
+        "level": 2,
+        "title": "Logger 模組"
+      }
+    ],
+    "Message 訊息模組": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message 訊息模組"
+      }
+    ],
+    "Meta 元事件模組": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 215,
+        "level": 2,
+        "title": "Meta 元事件模組"
+      }
+    ],
+    "Module 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 180,
+        "level": 2,
+        "title": "Module 模組"
+      }
+    ],
+    "Notice 通知模組": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 161,
+        "level": 2,
+        "title": "Notice 通知模組"
+      }
+    ],
+    "OneBot11": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 111,
+        "level": 4,
+        "title": "OneBot11"
+      }
+    ],
+    "OneBot11 平台特性文件": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 1,
+        "level": 1,
+        "title": "OneBot11 平台特性文件"
+      }
+    ],
+    "OneBot11/12": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 103,
+        "level": 3,
+        "title": "OneBot11/12"
+      }
+    ],
+    "OneBot12 協議轉換說明": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 95,
+        "level": 2,
+        "title": "OneBot12 協議轉換說明"
+      }
+    ],
+    "OneBot12 平台特性文件": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 1,
+        "level": 1,
+        "title": "OneBot12 平台特性文件"
+      }
+    ],
+    "OneBot12 標準": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 39,
+        "level": 3,
+        "title": "OneBot12 標準"
+      },
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 12,
+        "level": 3,
+        "title": "OneBot12 標準"
+      }
+    ],
+    "OneBot12 標準事件": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 150,
+        "level": 4,
+        "title": "OneBot12 標準事件"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 56,
+        "level": 2,
+        "title": "OneBot12 標準事件"
+      }
+    ],
+    "OneBot12 標準特性": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 301,
+        "level": 2,
+        "title": "OneBot12 標準特性"
+      }
+    ],
+    "OneBot12 訊息支援": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 95,
+        "level": 3,
+        "title": "OneBot12 訊息支援"
+      }
+    ],
+    "PascalCase 命名": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 139,
+        "level": 3,
+        "title": "PascalCase 命名"
+      }
+    ],
+    "Q1: 為什麼發送時 private 要轉換為 user？": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 257,
+        "level": 3,
+        "title": "Q1: 為什麼發送時 private 要轉換為 user？"
+      }
+    ],
+    "Q2: 如何支援新的會話類型？": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 261,
+        "level": 3,
+        "title": "Q2: 如何支援新的會話類型？"
+      }
+    ],
+    "Q3: 事件沒有 detail_type 怎麼辦？": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 265,
+        "level": 3,
+        "title": "Q3: 事件沒有 detail_type 怎麼辦？"
+      }
+    ],
+    "Q4: 介面卡如何對應 Telegram supergroup？": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 269,
+        "level": 3,
+        "title": "Q4: 介面卡如何對應 Telegram supergroup？"
+      }
+    ],
+    "Q5: 郵件等特殊平台如何處理？": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 273,
+        "level": 3,
+        "title": "Q5: 郵件等特殊平台如何處理？"
+      }
+    ],
+    "Q: AI 產生的程式碼有問題怎麼辦？": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 125,
+        "level": 3,
+        "title": "Q: AI 產生的程式碼有問題怎麼辦？"
+      }
+    ],
+    "Q: 如何讓 AI 產生更高品質的程式碼？": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 133,
+        "level": 3,
+        "title": "Q: 如何讓 AI 產生更高品質的程式碼？"
+      }
+    ],
+    "Q: 推薦使用什麼 AI 工具？": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 118,
+        "level": 3,
+        "title": "Q: 推薦使用什麼 AI 工具？"
+      }
+    ],
+    "Reply 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 79,
+        "level": 3,
+        "title": "Reply 方法"
+      }
+    ],
+    "Request 請求模組": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 193,
+        "level": 2,
+        "title": "Request 請求模組"
+      }
+    ],
+    "Rich Console 使用": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 113,
+        "level": 2,
+        "title": "Rich Console 使用"
+      }
+    ],
+    "Router 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 274,
+        "level": 2,
+        "title": "Router 模組"
+      }
+    ],
+    "SDK": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 39,
+        "level": 3,
+        "title": "SDK"
+      }
+    ],
+    "SDK 物件": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 51,
+        "level": 2,
+        "title": "SDK 物件"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 127,
+        "level": 3,
+        "title": "SDK 物件"
+      }
+    ],
+    "Send 巢狀類別": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 186,
+        "level": 3,
+        "title": "Send 巢狀類別"
+      }
+    ],
+    "Send 訊息發送": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 73,
+        "level": 2,
+        "title": "Send 訊息發送"
+      }
+    ],
+    "Send 訊息發送 DSL": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 296,
+        "level": 2,
+        "title": "Send 訊息發送 DSL"
+      }
+    ],
+    "SendDSL": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 108,
+        "level": 3,
+        "title": "SendDSL"
+      }
+    ],
+    "SendDSL 實作": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 135,
+        "level": 2,
+        "title": "SendDSL 實作"
+      }
+    ],
+    "SendDSL 詳解": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 1,
+        "level": 1,
+        "title": "SendDSL 詳解"
+      }
+    ],
+    "Storage 模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 5,
+        "level": 2,
+        "title": "Storage 模組"
+      }
+    ],
+    "TOML": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 130,
+        "level": 3,
+        "title": "TOML"
+      }
+    ],
+    "Task 物件": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 186,
+        "level": 3,
+        "title": "Task 物件"
+      }
+    ],
+    "Telegram": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 92,
+        "level": 4,
+        "title": "Telegram"
+      }
+    ],
+    "Telegram 平台特性文件": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 1,
+        "level": 1,
+        "title": "Telegram 平台特性文件"
+      }
+    ],
+    "Using 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 94,
+        "level": 3,
+        "title": "Using 方法"
+      }
+    ],
+    "WebHook 連線": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 473,
+        "level": 3,
+        "title": "WebHook 連線"
+      }
+    ],
+    "WebSocket 路由": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 298,
+        "level": 3,
+        "title": "WebSocket 路由"
+      }
+    ],
+    "WebSocket 連線": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 437,
+        "level": 3,
+        "title": "WebSocket 連線"
+      }
+    ],
+    "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
+      {
+        "document": "zh-TW/bug-tracker.md",
+        "line": 9,
+        "level": 3,
+        "title": "[BUG-001] Init 指令適配器配置路徑類型錯誤"
+      }
+    ],
+    "__init__.py": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 39,
+        "level": 2,
+        "title": "__init__.py"
+      }
+    ],
+    "call_api 方法": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 137,
+        "level": 3,
+        "title": "call_api 方法"
+      }
+    ],
+    "channel": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 59,
+        "level": 4,
+        "title": "channel"
+      }
+    ],
+    "get() 方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 234,
+        "level": 4,
+        "title": "get() 方法"
+      }
+    ],
+    "group": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 43,
+        "level": 4,
+        "title": "group"
+      }
+    ],
+    "guild": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 66,
+        "level": 4,
+        "title": "guild"
+      }
+    ],
+    "install 參數": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 46,
+        "level": 3,
+        "title": "install 參數"
+      }
+    ],
+    "list 參數": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 54,
+        "level": 3,
+        "title": "list 參數"
+      }
+    ],
+    "on_load 方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 23,
+        "level": 3,
+        "title": "on_load 方法"
+      }
+    ],
+    "on_unload 方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 38,
+        "level": 3,
+        "title": "on_unload 方法"
+      }
+    ],
+    "private": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 36,
+        "level": 4,
+        "title": "private"
+      }
+    ],
+    "pyproject.toml 設定": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 133,
+        "level": 3,
+        "title": "pyproject.toml 設定"
+      }
+    ],
+    "pyproject.toml 配置": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 19,
+        "level": 2,
+        "title": "pyproject.toml 配置"
+      }
+    ],
+    "run 參數": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 61,
+        "level": 3,
+        "title": "run 參數"
+      }
+    ],
+    "thread": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 73,
+        "level": 4,
+        "title": "thread"
+      }
+    ],
+    "user": [
+      {
+        "document": "zh-TW/standards/session-types.md",
+        "line": 50,
+        "level": 4,
+        "title": "user"
+      }
+    ],
+    "一般執行模式": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 53,
+        "level": 3,
+        "title": "一般執行模式"
+      }
+    ],
+    "下一個步驟": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 178,
+        "level": 2,
+        "title": "下一個步驟"
+      }
+    ],
+    "下一步": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 141,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 278,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 142,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 444,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 432,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 216,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 129,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 150,
+        "level": 2,
+        "title": "下一步"
+      }
+    ],
+    "不支援的方法提示": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 108,
+        "level": 3,
+        "title": "不支援的方法提示"
+      }
+    ],
+    "不支援的類型處理": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 76,
+        "level": 3,
+        "title": "不支援的類型處理"
+      }
+    ],
+    "不等待結果": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 114,
+        "level": 3,
+        "title": "不等待結果"
+      }
+    ],
+    "中介軟體": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 56,
+        "level": 2,
+        "title": "中介軟體"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 199,
+        "level": 3,
+        "title": "中介軟體"
+      }
+    ],
+    "中介軟體執行順序": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 69,
+        "level": 3,
+        "title": "中介軟體執行順序"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 219,
+        "level": 4,
+        "title": "中介軟體執行順序"
+      }
+    ],
+    "事件": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 27,
+        "level": 3,
+        "title": "事件"
+      }
+    ],
+    "事件中的機器人識別": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 275,
+        "level": 3,
+        "title": "事件中的機器人識別"
+      }
+    ],
+    "事件分發機制": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 185,
+        "level": 4,
+        "title": "事件分發機制"
+      }
+    ],
+    "事件參數": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 123,
+        "level": 3,
+        "title": "事件參數"
+      }
+    ],
+    "事件基礎資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 91,
+        "level": 4,
+        "title": "事件基礎資訊"
+      }
+    ],
+    "事件提交": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 226,
+        "level": 3,
+        "title": "事件提交"
+      }
+    ],
+    "事件流程": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 9,
+        "level": 3,
+        "title": "事件流程"
+      }
+    ],
+    "事件監聽": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 240,
+        "level": 3,
+        "title": "事件監聽"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 148,
+        "level": 3,
+        "title": "事件監聽"
+      }
+    ],
+    "事件監聽方式": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 134,
+        "level": 3,
+        "title": "事件監聽方式"
+      }
+    ],
+    "事件系統": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 28,
+        "level": 3,
+        "title": "事件系統"
+      }
+    ],
+    "事件系統 API": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 1,
+        "level": 1,
+        "title": "事件系統 API"
+      }
+    ],
+    "事件處理": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 96,
+        "level": 2,
+        "title": "事件處理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 150,
+        "level": 2,
+        "title": "事件處理"
+      }
+    ],
+    "事件處理入門": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 1,
+        "level": 1,
+        "title": "事件處理入門"
+      }
+    ],
+    "事件處理器": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 32,
+        "level": 3,
+        "title": "事件處理器"
+      }
+    ],
+    "事件處理器生命週期": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 168,
+        "level": 3,
+        "title": "事件處理器生命週期"
+      }
+    ],
+    "事件處理器註冊": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 152,
+        "level": 3,
+        "title": "事件處理器註冊"
+      }
+    ],
+    "事件處理增強": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 248,
+        "level": 2,
+        "title": "事件處理增強"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 272,
+        "level": 2,
+        "title": "事件處理增強"
+      }
+    ],
+    "事件處理最佳實踐": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 376,
+        "level": 2,
+        "title": "事件處理最佳實踐"
+      }
+    ],
+    "事件處理機制": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 32,
+        "level": 2,
+        "title": "事件處理機制"
+      }
+    ],
+    "事件資料存取": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 328,
+        "level": 2,
+        "title": "事件資料存取"
+      }
+    ],
+    "事件資料格式": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 18,
+        "level": 2,
+        "title": "事件資料格式"
+      }
+    ],
+    "事件轉換": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 81,
+        "level": 2,
+        "title": "事件轉換"
+      },
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 68,
+        "level": 3,
+        "title": "事件轉換"
+      }
+    ],
+    "事件轉換器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 362,
+        "level": 2,
+        "title": "事件轉換器"
+      }
+    ],
+    "事件配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 101,
+        "level": 2,
+        "title": "事件配置"
+      }
+    ],
+    "事件類型概覽": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "事件類型概覽"
+      }
+    ],
+    "事件驅動架構": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "事件驅動架構"
+      },
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 7,
+        "level": 3,
+        "title": "事件驅動架構"
+      }
+    ],
+    "事務操作": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 25,
+        "level": 3,
+        "title": "事務操作"
+      }
+    ],
+    "互動式初始化": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 69,
+        "level": 3,
+        "title": "互動式初始化"
+      }
+    ],
+    "互動式初始化（推薦）": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 37,
+        "level": 3,
+        "title": "互動式初始化（推薦）"
+      }
+    ],
+    "互動式安裝": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 83,
+        "level": 3,
+        "title": "互動式安裝"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 68,
+        "level": 2,
+        "title": "互動式安裝"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 126,
+        "level": 3,
+        "title": "互動式安裝"
+      }
+    ],
+    "互動式處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 233,
+        "level": 2,
+        "title": "互動式處理"
+      }
+    ],
+    "互動訊息類型": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 42,
+        "level": 3,
+        "title": "互動訊息類型"
+      }
+    ],
+    "互斥參數": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 203,
+        "level": 3,
+        "title": "互斥參數"
+      }
+    ],
+    "交易使用": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 140,
+        "level": 3,
+        "title": "交易使用"
+      }
+    ],
+    "什麼是 CLI 擴充": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 7,
+        "level": 3,
+        "title": "什麼是 CLI 擴充"
+      }
+    ],
+    "什麼是適配器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 7,
+        "level": 3,
+        "title": "什麼是適配器"
+      }
+    ],
+    "介接器架構": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "介接器架構"
+      }
+    ],
+    "介接器核心概念": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "介接器核心概念"
+      }
+    ],
+    "介面卡事件監聽": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "介面卡事件監聽"
+      }
+    ],
+    "介面卡基類": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 161,
+        "level": 2,
+        "title": "介面卡基類"
+      }
+    ],
+    "介面卡管理": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 38,
+        "level": 3,
+        "title": "介面卡管理"
+      }
+    ],
+    "介面卡系統 API": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 1,
+        "level": 1,
+        "title": "介面卡系統 API"
+      }
+    ],
+    "代理設定": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 208,
+        "level": 3,
+        "title": "代理設定"
+      }
+    ],
+    "伺服器生命週期事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 72,
+        "level": 3,
+        "title": "伺服器生命週期事件"
+      }
+    ],
+    "伺服器配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 47,
+        "level": 2,
+        "title": "伺服器配置"
+      }
+    ],
+    "使用 Send DSL 指定機器人": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 253,
+        "level": 3,
+        "title": "使用 Send DSL 指定機器人"
+      }
+    ],
+    "使用 pip 安裝": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "使用 pip 安裝"
+      }
+    ],
+    "使用 reply 方法發送回覆": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 235,
+        "level": 3,
+        "title": "使用 reply 方法發送回覆"
+      }
+    ],
+    "使用 uv 安裝（推薦）": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 15,
+        "level": 3,
+        "title": "使用 uv 安裝（推薦）"
+      }
+    ],
+    "使用事件系統": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 80,
+        "level": 3,
+        "title": "使用事件系統"
+      }
+    ],
+    "使用儲存系統": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 170,
+        "level": 3,
+        "title": "使用儲存系統"
+      }
+    ],
+    "使用延遲載入模組": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 59,
+        "level": 2,
+        "title": "使用延遲載入模組"
+      }
+    ],
+    "使用情境": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 11,
+        "level": 3,
+        "title": "使用情境"
+      }
+    ],
+    "使用生命週期事件": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 128,
+        "level": 3,
+        "title": "使用生命週期事件"
+      }
+    ],
+    "使用範例": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 79,
+        "level": 2,
+        "title": "使用範例"
+      },
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 49,
+        "level": 2,
+        "title": "使用範例"
+      }
+    ],
+    "使用者指南": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 24,
+        "level": 3,
+        "title": "使用者指南"
+      }
+    ],
+    "使用者資料儲存": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 36,
+        "level": 3,
+        "title": "使用者資料儲存"
+      }
+    ],
+    "使用設定": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 117,
+        "level": 3,
+        "title": "使用設定"
+      }
+    ],
+    "例外捕獲": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 197,
+        "level": 3,
+        "title": "例外捕獲"
+      }
+    ],
+    "保留錯誤段": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 96,
+        "level": 4,
+        "title": "保留錯誤段"
+      }
+    ],
+    "修飾方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 58,
+        "level": 2,
+        "title": "修飾方法"
+      }
+    ],
+    "健康檢查": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 128,
+        "level": 3,
+        "title": "健康檢查"
+      }
+    ],
+    "偵錯技巧": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 99,
+        "level": 3,
+        "title": "偵錯技巧"
+      }
+    ],
+    "傳送回覆": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 135,
+        "level": 3,
+        "title": "傳送回覆"
+      }
+    ],
+    "傳送方法傳回值": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 205,
+        "level": 2,
+        "title": "傳送方法傳回值"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 226,
+        "level": 2,
+        "title": "傳送方法傳回值"
+      }
+    ],
+    "傳送方法回傳值": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 111,
+        "level": 2,
+        "title": "傳送方法回傳值"
+      }
+    ],
+    "傳送範例": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 76,
+        "level": 3,
+        "title": "傳送範例"
+      }
+    ],
+    "優先級系統": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 327,
+        "level": 2,
+        "title": "優先級系統"
+      }
+    ],
+    "儲存": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 76,
+        "level": 3,
+        "title": "儲存"
+      }
+    ],
+    "儲存系統": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 182,
+        "level": 2,
+        "title": "儲存系統"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 125,
+        "level": 2,
+        "title": "儲存系統"
+      }
+    ],
+    "儲存配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 90,
+        "level": 2,
+        "title": "儲存配置"
+      }
+    ],
+    "元事件": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 217,
+        "level": 3,
+        "title": "元事件"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 149,
+        "level": 3,
+        "title": "元事件"
+      }
+    ],
+    "元事件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 206,
+        "level": 2,
+        "title": "元事件處理"
+      }
+    ],
+    "入門指南": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "入門指南"
+      }
+    ],
+    "內容列表": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "內容列表"
+      },
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 5,
+        "level": 2,
+        "title": "內容列表"
+      },
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "內容列表"
+      }
+    ],
+    "內容編寫規範": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 87,
+        "level": 2,
+        "title": "內容編寫規範"
+      }
+    ],
+    "內建預設值": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 171,
+        "level": 3,
+        "title": "內建預設值"
+      }
+    ],
+    "全域設定": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 32,
+        "level": 3,
+        "title": "全域設定"
+      }
+    ],
+    "其他術語": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 113,
+        "level": 2,
+        "title": "其他術語"
+      }
+    ],
+    "列出平台": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 134,
+        "level": 4,
+        "title": "列出平台"
+      }
+    ],
+    "列出支援的發送方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 76,
+        "level": 3,
+        "title": "列出支援的發送方法"
+      }
+    ],
+    "列出模組": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 97,
+        "level": 3,
+        "title": "列出模組"
+      }
+    ],
+    "初始化專案": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 35,
+        "level": 2,
+        "title": "初始化專案"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 143,
+        "level": 3,
+        "title": "初始化專案"
+      }
+    ],
+    "初始化過程": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 20,
+        "level": 3,
+        "title": "初始化過程"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 275,
+        "level": 3,
+        "title": "初始化過程"
+      }
+    ],
+    "前置知識": [
+      {
+        "document": "zh-TW/advanced/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "前置知識"
+      }
+    ],
+    "功能相關術語": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 64,
+        "level": 2,
+        "title": "功能相關術語"
+      }
+    ],
+    "升級模組": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "升級模組"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 120,
+        "level": 3,
+        "title": "升級模組"
+      }
+    ],
+    "原始方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 51,
+        "level": 3,
+        "title": "原始方法"
+      }
+    ],
+    "原始訊息": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 250,
+        "level": 3,
+        "title": "原始訊息"
+      }
+    ],
+    "原始訊息傳送": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 53,
+        "level": 3,
+        "title": "原始訊息傳送"
+      }
+    ],
+    "原始資料": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 191,
+        "level": 3,
+        "title": "原始資料"
+      }
+    ],
+    "參數處理": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 169,
+        "level": 2,
+        "title": "參數處理"
+      }
+    ],
+    "參數說明": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 37,
+        "level": 2,
+        "title": "參數說明"
+      }
+    ],
+    "參考文檔": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 127,
+        "level": 2,
+        "title": "參考文檔"
+      }
+    ],
+    "取得介接器實例": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 232,
+        "level": 3,
+        "title": "取得介接器實例"
+      }
+    ],
+    "取得介面卡": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "取得介面卡"
+      }
+    ],
+    "取得方法詳細資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 84,
+        "level": 3,
+        "title": "取得方法詳細資訊"
+      }
+    ],
+    "取得模組": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 182,
+        "level": 3,
+        "title": "取得模組"
+      }
+    ],
+    "取得素材文件": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 17,
+        "level": 3,
+        "title": "取得素材文件"
+      }
+    ],
+    "取得適配器": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 131,
+        "level": 3,
+        "title": "取得適配器"
+      }
+    ],
+    "可用屬性": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 307,
+        "level": 3,
+        "title": "可用屬性"
+      }
+    ],
+    "同步初始化": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 85,
+        "level": 3,
+        "title": "同步初始化"
+      }
+    ],
+    "命令事件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 60,
+        "level": 2,
+        "title": "命令事件處理"
+      }
+    ],
+    "命令優先級": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 130,
+        "level": 3,
+        "title": "命令優先級"
+      }
+    ],
+    "命令別名": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 78,
+        "level": 3,
+        "title": "命令別名"
+      }
+    ],
+    "命令參數": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 91,
+        "level": 3,
+        "title": "命令參數"
+      }
+    ],
+    "命令權限": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 117,
+        "level": 3,
+        "title": "命令權限"
+      }
+    ],
+    "命令組": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 105,
+        "level": 3,
+        "title": "命令組"
+      }
+    ],
+    "命令資訊": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 41,
+        "level": 3,
+        "title": "命令資訊"
+      },
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 287,
+        "level": 3,
+        "title": "命令資訊"
+      }
+    ],
+    "命名規範": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 137,
+        "level": 2,
+        "title": "命名規範"
+      }
+    ],
+    "啟動介接器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 80,
+        "level": 4,
+        "title": "啟動介接器"
+      }
+    ],
+    "啟動和關閉": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 78,
+        "level": 3,
+        "title": "啟動和關閉"
+      }
+    ],
+    "啟用虛擬環境": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 50,
+        "level": 4,
+        "title": "啟用虛擬環境"
+      }
+    ],
+    "回覆": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 71,
+        "level": 3,
+        "title": "回覆"
+      }
+    ],
+    "回覆功能": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 299,
+        "level": 3,
+        "title": "回覆功能"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 51,
+        "level": 2,
+        "title": "回覆功能"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 157,
+        "level": 3,
+        "title": "回覆功能"
+      }
+    ],
+    "圖片下載與儲存": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 381,
+        "level": 3,
+        "title": "圖片下載與儲存"
+      }
+    ],
+    "圖片處理": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 379,
+        "level": 2,
+        "title": "圖片處理"
+      }
+    ],
+    "圖片辨識範例": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 411,
+        "level": 3,
+        "title": "圖片辨識範例"
+      }
+    ],
+    "型別註解": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 125,
+        "level": 3,
+        "title": "型別註解"
+      }
+    ],
+    "執行專案": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 91,
+        "level": 2,
+        "title": "執行專案"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 133,
+        "level": 3,
+        "title": "執行專案"
+      }
+    ],
+    "執行控制命令": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 23,
+        "level": 2,
+        "title": "執行控制命令"
+      }
+    ],
+    "執行模式": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 213,
+        "level": 3,
+        "title": "執行模式"
+      }
+    ],
+    "基本使用": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 61,
+        "level": 3,
+        "title": "基本使用"
+      },
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 15,
+        "level": 2,
+        "title": "基本使用"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 53,
+        "level": 3,
+        "title": "基本使用"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 222,
+        "level": 3,
+        "title": "基本使用"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 127,
+        "level": 3,
+        "title": "基本使用"
+      }
+    ],
+    "基本傳送方法": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 28,
+        "level": 3,
+        "title": "基本傳送方法"
+      }
+    ],
+    "基本命令": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 62,
+        "level": 3,
+        "title": "基本命令"
+      }
+    ],
+    "基本操作": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 7,
+        "level": 3,
+        "title": "基本操作"
+      }
+    ],
+    "基本方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 319,
+        "level": 3,
+        "title": "基本方法"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 41,
+        "level": 3,
+        "title": "基本方法"
+      }
+    ],
+    "基本日誌": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 95,
+        "level": 3,
+        "title": "基本日誌"
+      }
+    ],
+    "基本格式": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 21,
+        "level": 3,
+        "title": "基本格式"
+      }
+    ],
+    "基本發送": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 75,
+        "level": 3,
+        "title": "基本發送"
+      }
+    ],
+    "基本結構": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 252,
+        "level": 3,
+        "title": "基本結構"
+      }
+    ],
+    "基本設定": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 204,
+        "level": 3,
+        "title": "基本設定"
+      }
+    ],
+    "基本調用方式": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 5,
+        "level": 2,
+        "title": "基本調用方式"
+      }
+    ],
+    "基本資料": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資料"
+      }
+    ],
+    "基本資訊": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 13,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      }
+    ],
+    "基本輸出": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 118,
+        "level": 3,
+        "title": "基本輸出"
+      }
+    ],
+    "基礎傳送方法": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 40,
+        "level": 3,
+        "title": "基礎傳送方法"
+      }
+    ],
+    "基礎判斷": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 128,
+        "level": 4,
+        "title": "基礎判斷"
+      }
+    ],
+    "基礎回覆": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 159,
+        "level": 4,
+        "title": "基礎回覆"
+      }
+    ],
+    "基礎概念": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "基礎概念"
+      }
+    ],
+    "基礎訊息類型": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 35,
+        "level": 3,
+        "title": "基礎訊息類型"
+      }
+    ],
+    "基類": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "基類"
+      }
+    ],
+    "多帳戶傳送語法": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 241,
+        "level": 3,
+        "title": "多帳戶傳送語法"
+      }
+    ],
+    "多帳號傳送語法": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 221,
+        "level": 3,
+        "title": "多帳號傳送語法"
+      }
+    ],
+    "多帳號支援": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 250,
+        "level": 2,
+        "title": "多帳號支援"
+      }
+    ],
+    "多平台適配": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 186,
+        "level": 2,
+        "title": "多平台適配"
+      }
+    ],
+    "多機器人設定": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 219,
+        "level": 2,
+        "title": "多機器人設定"
+      }
+    ],
+    "失敗回應範例": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 49,
+        "level": 4,
+        "title": "失敗回應範例"
+      }
+    ],
+    "套件管理命令": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 5,
+        "level": 2,
+        "title": "套件管理命令"
+      }
+    ],
+    "好友新增": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 145,
+        "level": 3,
+        "title": "好友新增"
+      }
+    ],
+    "好友請求": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 179,
+        "level": 3,
+        "title": "好友請求"
+      }
+    ],
+    "如何修改指令前綴？": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 191,
+        "level": 3,
+        "title": "如何修改指令前綴？"
+      }
+    ],
+    "如何支援多平台？": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 201,
+        "level": 3,
+        "title": "如何支援多平台？"
+      }
+    ],
+    "媒體傳送方法": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 35,
+        "level": 3,
+        "title": "媒體傳送方法"
+      }
+    ],
+    "子指令": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 214,
+        "level": 3,
+        "title": "子指令"
+      }
+    ],
+    "子日誌記錄器": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 108,
+        "level": 3,
+        "title": "子日誌記錄器"
+      }
+    ],
+    "存取 SDK": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 274,
+        "level": 3,
+        "title": "存取 SDK"
+      }
+    ],
+    "存取核心模組": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 51,
+        "level": 3,
+        "title": "存取核心模組"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 53,
+        "level": 3,
+        "title": "存取核心模組"
+      }
+    ],
+    "學習路徑": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "學習路徑"
+      }
+    ],
+    "安全性": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 286,
+        "level": 2,
+        "title": "安全性"
+      }
+    ],
+    "安裝 ErisPulse": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 5,
+        "level": 2,
+        "title": "安裝 ErisPulse"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 60,
+        "level": 4,
+        "title": "安裝 ErisPulse"
+      }
+    ],
+    "安裝 uv": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 19,
+        "level": 4,
+        "title": "安裝 uv"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 27,
+        "level": 4,
+        "title": "安裝 uv"
+      }
+    ],
+    "安裝失敗": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 160,
+        "level": 3,
+        "title": "安裝失敗"
+      }
+    ],
+    "安裝新模組": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 63,
+        "level": 3,
+        "title": "安裝新模組"
+      }
+    ],
+    "安裝方式": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 11,
+        "level": 2,
+        "title": "安裝方式"
+      }
+    ],
+    "安裝模組": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 69,
+        "level": 2,
+        "title": "安裝模組"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 84,
+        "level": 3,
+        "title": "安裝模組"
+      }
+    ],
+    "安裝與設定": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 1,
+        "level": 1,
+        "title": "安裝與設定"
+      }
+    ],
+    "完整格式（適用於複雜方法）": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 34,
+        "level": 3,
+        "title": "完整格式（適用於複雜方法）"
+      }
+    ],
+    "完整範例": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 220,
+        "level": 2,
+        "title": "完整範例"
+      }
+    ],
+    "完整配置範例": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 17,
+        "level": 2,
+        "title": "完整配置範例"
+      }
+    ],
+    "定時任務": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 75,
+        "level": 2,
+        "title": "定時任務"
+      }
+    ],
+    "寫入配置": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 66,
+        "level": 3,
+        "title": "寫入配置"
+      }
+    ],
+    "專屬事件類型": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 85,
+        "level": 2,
+        "title": "專屬事件類型"
+      }
+    ],
+    "專案初始化": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 67,
+        "level": 2,
+        "title": "專案初始化"
+      }
+    ],
+    "專案目錄結構": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 33,
+        "level": 3,
+        "title": "專案目錄結構"
+      }
+    ],
+    "專案管理命令": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 29,
+        "level": 2,
+        "title": "專案管理命令"
+      }
+    ],
+    "專案範本": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 83,
+        "level": 3,
+        "title": "專案範本"
+      }
+    ],
+    "專案結構": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 18,
+        "level": 2,
+        "title": "專案結構"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "專案結構"
+      },
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 101,
+        "level": 2,
+        "title": "專案結構"
+      }
+    ],
+    "對最終使用者": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 60,
+        "level": 3,
+        "title": "對最終使用者"
+      }
+    ],
+    "對模組開發者": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 54,
+        "level": 3,
+        "title": "對模組開發者"
+      }
+    ],
+    "對適配器開發者": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "對適配器開發者"
+      }
+    ],
+    "屬性存取": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 242,
+        "level": 4,
+        "title": "屬性存取"
+      }
+    ],
+    "嵌入式開發（適合快速原型）": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 18,
+        "level": 3,
+        "title": "嵌入式開發（適合快速原型）"
+      }
+    ],
+    "工作原理": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 14,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 174,
+        "level": 3,
+        "title": "工作原理"
+      }
+    ],
+    "工具方法": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 312,
+        "level": 3,
+        "title": "工具方法"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 196,
+        "level": 3,
+        "title": "工具方法"
+      }
+    ],
+    "已修復的 Bug": [
+      {
+        "document": "zh-TW/bug-tracker.md",
+        "line": 7,
+        "level": 2,
+        "title": "已修復的 Bug"
+      }
+    ],
+    "布林參數": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 193,
+        "level": 3,
+        "title": "布林參數"
+      }
+    ],
+    "帳戶配置": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 176,
+        "level": 3,
+        "title": "帳戶配置"
+      }
+    ],
+    "帳號管理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 92,
+        "level": 2,
+        "title": "帳號管理"
+      }
+    ],
+    "帳號設定": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 163,
+        "level": 3,
+        "title": "帳號設定"
+      }
+    ],
+    "帶回呼的等待回覆": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 307,
+        "level": 3,
+        "title": "帶回呼的等待回覆"
+      }
+    ],
+    "帶驗證的等待回覆": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 280,
+        "level": 3,
+        "title": "帶驗證的等待回覆"
+      }
+    ],
+    "常用命令": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 13,
+        "level": 3,
+        "title": "常用命令"
+      }
+    ],
+    "常見任務": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 61,
+        "level": 2,
+        "title": "常見任務"
+      }
+    ],
+    "常見任務範例": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 1,
+        "level": 1,
+        "title": "常見任務範例"
+      }
+    ],
+    "常見問題": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 116,
+        "level": 2,
+        "title": "常見問題"
+      },
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 183,
+        "level": 2,
+        "title": "常見問題"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 158,
+        "level": 2,
+        "title": "常見問題"
+      }
+    ],
+    "常見用法": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 82,
+        "level": 2,
+        "title": "常見用法"
+      }
+    ],
+    "常見配置位置": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 23,
+        "level": 3,
+        "title": "常見配置位置"
+      }
+    ],
+    "平台": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 98,
+        "level": 3,
+        "title": "平台"
+      }
+    ],
+    "平台原生事件": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 171,
+        "level": 4,
+        "title": "平台原生事件"
+      }
+    ],
+    "平台特定回應": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 188,
+        "level": 3,
+        "title": "平台特定回應"
+      }
+    ],
+    "平台特性指南": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 50,
+        "level": 3,
+        "title": "平台特性指南"
+      }
+    ],
+    "平台特性檢測": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 205,
+        "level": 3,
+        "title": "平台特性檢測"
+      }
+    ],
+    "平台特有方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 159,
+        "level": 3,
+        "title": "平台特有方法"
+      }
+    ],
+    "平台相關術語": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 96,
+        "level": 2,
+        "title": "平台相關術語"
+      }
+    ],
+    "延遲載入": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 59,
+        "level": 3,
+        "title": "延遲載入"
+      }
+    ],
+    "延遲載入模組系統": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 1,
+        "level": 1,
+        "title": "延遲載入模組系統"
+      }
+    ],
+    "延遲載入機制": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 172,
+        "level": 2,
+        "title": "延遲載入機制"
+      }
+    ],
+    "建立專案並安裝": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 25,
+        "level": 4,
+        "title": "建立專案並安裝"
+      }
+    ],
+    "建立第一個機器人": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 1,
+        "level": 1,
+        "title": "建立第一個機器人"
+      }
+    ],
+    "建立虛擬環境": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 37,
+        "level": 4,
+        "title": "建立虛擬環境"
+      }
+    ],
+    "建議使用延遲載入的情境 (lazy_load=True)": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 96,
+        "level": 3,
+        "title": "建議使用延遲載入的情境 (lazy_load=True)"
+      }
+    ],
+    "建議停用延遲載入的情境 (lazy_load=False)": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 102,
+        "level": 3,
+        "title": "建議停用延遲載入的情境 (lazy_load=False)"
+      }
+    ],
+    "從 GitHub Releases 下載": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 19,
+        "level": 4,
+        "title": "從 GitHub Releases 下載"
+      }
+    ],
+    "從本機安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 119,
+        "level": 3,
+        "title": "從本機安裝"
+      }
+    ],
+    "從遠端倉庫安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 109,
+        "level": 3,
+        "title": "從遠端倉庫安裝"
+      }
+    ],
+    "心跳事件": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 224,
+        "level": 3,
+        "title": "心跳事件"
+      }
+    ],
+    "必要參數": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 171,
+        "level": 3,
+        "title": "必要參數"
+      }
+    ],
+    "必要欄位": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 374,
+        "level": 3,
+        "title": "必要欄位"
+      }
+    ],
+    "快速初始化": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 50,
+        "level": 3,
+        "title": "快速初始化"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 82,
+        "level": 3,
+        "title": "快速初始化"
+      }
+    ],
+    "快速參考": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 11,
+        "level": 2,
+        "title": "快速參考"
+      }
+    ],
+    "快速開始": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 10,
+        "level": 3,
+        "title": "快速開始"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 49,
+        "level": 2,
+        "title": "快速開始"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 32,
+        "level": 2,
+        "title": "快速開始"
+      },
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 1,
+        "level": 1,
+        "title": "快速開始"
+      }
+    ],
+    "成功回應範例": [
+      {
+        "document": "zh-TW/standards/api-response.md",
+        "line": 33,
+        "level": 4,
+        "title": "成功回應範例"
+      }
+    ],
+    "手動建立專案": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 60,
+        "level": 3,
+        "title": "手動建立專案"
+      }
+    ],
+    "打包": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 119,
+        "level": 3,
+        "title": "打包"
+      }
+    ],
+    "批次操作": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 35,
+        "level": 3,
+        "title": "批次操作"
+      }
+    ],
+    "技術標準": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 65,
+        "level": 3,
+        "title": "技術標準"
+      },
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "技術標準"
+      }
+    ],
+    "指令": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 66,
+        "level": 3,
+        "title": "指令"
+      }
+    ],
+    "指令基礎": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 184,
+        "level": 4,
+        "title": "指令基礎"
+      }
+    ],
+    "指令沒有回應？": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 185,
+        "level": 3,
+        "title": "指令沒有回應？"
+      }
+    ],
+    "指令組織": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 212,
+        "level": 2,
+        "title": "指令組織"
+      }
+    ],
+    "指令裝飾器": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 114,
+        "level": 3,
+        "title": "指令裝飾器"
+      }
+    ],
+    "指令資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 182,
+        "level": 3,
+        "title": "指令資訊"
+      }
+    ],
+    "指令資訊獲取": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 65,
+        "level": 2,
+        "title": "指令資訊獲取"
+      }
+    ],
+    "指令配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 103,
+        "level": 3,
+        "title": "指令配置"
+      }
+    ],
+    "指定發送帳號": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 88,
+        "level": 3,
+        "title": "指定發送帳號"
+      }
+    ],
+    "按鈕參數說明": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 48,
+        "level": 3,
+        "title": "按鈕參數說明"
+      }
+    ],
+    "提交生命週期事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 102,
+        "level": 3,
+        "title": "提交生命週期事件"
+      }
+    ],
+    "搜尋功能": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 325,
+        "level": 2,
+        "title": "搜尋功能"
+      }
+    ],
+    "操作設定": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 292,
+        "level": 3,
+        "title": "操作設定"
+      }
+    ],
+    "擴充功能開發": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 22,
+        "level": 3,
+        "title": "擴充功能開發"
+      }
+    ],
+    "擴充欄位說明": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 90,
+        "level": 2,
+        "title": "擴充欄位說明"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 207,
+        "level": 2,
+        "title": "擴充欄位說明"
+      }
+    ],
+    "擴充：新增更多功能": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 143,
+        "level": 2,
+        "title": "擴充：新增更多功能"
+      }
+    ],
+    "擴展欄位說明": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 150,
+        "level": 3,
+        "title": "擴展欄位說明"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 192,
+        "level": 2,
+        "title": "擴展欄位說明"
+      }
+    ],
+    "擴展開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 46,
+        "level": 4,
+        "title": "擴展開發"
+      }
+    ],
+    "支援的訊息傳送類型": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 13,
+        "level": 2,
+        "title": "支援的訊息傳送類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 20,
+        "level": 2,
+        "title": "支援的訊息傳送類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 20,
+        "level": 2,
+        "title": "支援的訊息傳送類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 18,
+        "level": 2,
+        "title": "支援的訊息傳送類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 20,
+        "level": 2,
+        "title": "支援的訊息傳送類型"
+      }
+    ],
+    "效能優化": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 249,
+        "level": 2,
+        "title": "效能優化"
+      }
+    ],
+    "整合 ErisPulse API": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 272,
+        "level": 2,
+        "title": "整合 ErisPulse API"
+      }
+    ],
+    "文件內容說明": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 24,
+        "level": 3,
+        "title": "文件內容說明"
+      }
+    ],
+    "文件列表": [
+      {
+        "document": "zh-TW/advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件列表"
+      },
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件列表"
+      }
+    ],
+    "文件格式規範": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 98,
+        "level": 3,
+        "title": "文件格式規範"
+      }
+    ],
+    "文件清單": [
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件清單"
+      }
+    ],
+    "文件結構規範": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 13,
+        "level": 2,
+        "title": "文件結構規範"
+      }
+    ],
+    "文件維護": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 384,
+        "level": 2,
+        "title": "文件維護"
+      }
+    ],
+    "文件資訊": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      }
+    ],
+    "文件類型": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 9,
+        "level": 3,
+        "title": "文件類型"
+      }
+    ],
+    "文檔導航": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 8,
+        "level": 2,
+        "title": "文檔導航"
+      }
+    ],
+    "文檔維護說明": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 1,
+        "level": 1,
+        "title": "文檔維護說明"
+      }
+    ],
+    "文檔資訊": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "文檔資訊"
+      }
+    ],
+    "新增中介軟體": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 201,
+        "level": 4,
+        "title": "新增中介軟體"
+      }
+    ],
+    "新增訊息監聽": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 145,
+        "level": 3,
+        "title": "新增訊息監聽"
+      }
+    ],
+    "新增通知監聽": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 158,
+        "level": 3,
+        "title": "新增通知監聽"
+      }
+    ],
+    "新手入門": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "新手入門"
+      }
+    ],
+    "方式一：使用 pip 安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 13,
+        "level": 3,
+        "title": "方式一：使用 pip 安裝"
+      }
+    ],
+    "方式二：使用 uv 安裝（推薦）": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 23,
+        "level": 3,
+        "title": "方式二：使用 uv 安裝（推薦）"
+      }
+    ],
+    "方法名稱對應": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 66,
+        "level": 3,
+        "title": "方法名稱對應"
+      }
+    ],
+    "方法註解": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 19,
+        "level": 2,
+        "title": "方法註解"
+      }
+    ],
+    "方法速查表": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 87,
+        "level": 2,
+        "title": "方法速查表"
+      }
+    ],
+    "方法鏈": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 31,
+        "level": 2,
+        "title": "方法鏈"
+      }
+    ],
+    "日誌": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 86,
+        "level": 3,
+        "title": "日誌"
+      }
+    ],
+    "日誌記錄": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 215,
+        "level": 2,
+        "title": "日誌記錄"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 212,
+        "level": 3,
+        "title": "日誌記錄"
+      }
+    ],
+    "日誌資訊": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 297,
+        "level": 3,
+        "title": "日誌資訊"
+      }
+    ],
+    "日誌輸出": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 119,
+        "level": 3,
+        "title": "日誌輸出"
+      }
+    ],
+    "日誌配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 64,
+        "level": 2,
+        "title": "日誌配置"
+      }
+    ],
+    "更新要求": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 5,
+        "level": 2,
+        "title": "更新要求"
+      }
+    ],
+    "最佳實務": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 157,
+        "level": 2,
+        "title": "最佳實務"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 305,
+        "level": 2,
+        "title": "最佳實務"
+      }
+    ],
+    "最佳實踐": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 94,
+        "level": 2,
+        "title": "最佳實踐"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 333,
+        "level": 2,
+        "title": "最佳實踐"
+      }
+    ],
+    "最佳建議": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 66,
+        "level": 2,
+        "title": "最佳建議"
+      }
+    ],
+    "本地測試": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 96,
+        "level": 3,
+        "title": "本地測試"
+      }
+    ],
+    "架構概覽": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 60,
+        "level": 3,
+        "title": "架構概覽"
+      }
+    ],
+    "查看可用模組": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 76,
+        "level": 3,
+        "title": "查看可用模組"
+      }
+    ],
+    "查詢支援的發送方法": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 98,
+        "level": 3,
+        "title": "查詢支援的發送方法"
+      }
+    ],
+    "核心元件說明": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 101,
+        "level": 3,
+        "title": "核心元件說明"
+      }
+    ],
+    "核心初始化事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 47,
+        "level": 3,
+        "title": "核心初始化事件"
+      }
+    ],
+    "核心功能": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 45,
+        "level": 3,
+        "title": "核心功能"
+      }
+    ],
+    "核心原則": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 16,
+        "level": 3,
+        "title": "核心原則"
+      }
+    ],
+    "核心差異點": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 99,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 89,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 121,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 131,
+        "level": 3,
+        "title": "核心差異點"
+      }
+    ],
+    "核心方法": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 244,
+        "level": 3,
+        "title": "核心方法"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 89,
+        "level": 3,
+        "title": "核心方法"
+      }
+    ],
+    "核心概念": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 114,
+        "level": 2,
+        "title": "核心概念"
+      },
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 5,
+        "level": 2,
+        "title": "核心概念"
+      }
+    ],
+    "核心模組": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "核心模組"
+      }
+    ],
+    "核心模組 API": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 1,
+        "level": 1,
+        "title": "核心模組 API"
+      }
+    ],
+    "核心欄位方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 12,
+        "level": 2,
+        "title": "核心欄位方法"
+      }
+    ],
+    "核心特性": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "核心特性"
+      }
+    ],
+    "核心組件": [
+      {
+        "document": "zh-TW/getting-started/basic-concepts.md",
+        "line": 45,
+        "level": 2,
+        "title": "核心組件"
+      }
+    ],
+    "框架配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 79,
+        "level": 2,
+        "title": "框架配置"
+      }
+    ],
+    "條件監聽": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 143,
+        "level": 3,
+        "title": "條件監聽"
+      }
+    ],
+    "概述": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 5,
+        "level": 2,
+        "title": "概述"
+      },
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 5,
+        "level": 2,
+        "title": "概述"
+      }
+    ],
+    "標準化回應": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 204,
+        "level": 3,
+        "title": "標準化回應"
+      }
+    ],
+    "標準文件清單": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "標準文件清單"
+      }
+    ],
+    "標準概述": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 12,
+        "level": 2,
+        "title": "標準概述"
+      }
+    ],
+    "標準生命週期事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 5,
+        "level": 2,
+        "title": "標準生命週期事件"
+      },
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 45,
+        "level": 2,
+        "title": "標準生命週期事件"
+      }
+    ],
+    "標準遵循檢查清單": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 66,
+        "level": 2,
+        "title": "標準遵循檢查清單"
+      }
+    ],
+    "模組": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 22,
+        "level": 3,
+        "title": "模組"
+      }
+    ],
+    "模組中使用生命週期": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 137,
+        "level": 2,
+        "title": "模組中使用生命週期"
+      }
+    ],
+    "模組安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 107,
+        "level": 2,
+        "title": "模組安裝"
+      }
+    ],
+    "模組安裝失敗": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 172,
+        "level": 3,
+        "title": "模組安裝失敗"
+      }
+    ],
+    "模組層級控制": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 41,
+        "level": 3,
+        "title": "模組層級控制"
+      }
+    ],
+    "模組層級文件註解": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 5,
+        "level": 2,
+        "title": "模組層級文件註解"
+      }
+    ],
+    "模組核心概念": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "模組核心概念"
+      }
+    ],
+    "模組生命週期": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 5,
+        "level": 2,
+        "title": "模組生命週期"
+      }
+    ],
+    "模組生命週期事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 54,
+        "level": 3,
+        "title": "模組生命週期事件"
+      }
+    ],
+    "模組管理": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 195,
+        "level": 3,
+        "title": "模組管理"
+      }
+    ],
+    "模組設計": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "模組設計"
+      }
+    ],
+    "模組配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 130,
+        "level": 2,
+        "title": "模組配置"
+      }
+    ],
+    "模組開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 32,
+        "level": 4,
+        "title": "模組開發"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 7,
+        "level": 3,
+        "title": "模組開發"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 39,
+        "level": 3,
+        "title": "模組開發"
+      }
+    ],
+    "模組開發入門": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "模組開發入門"
+      }
+    ],
+    "模組開發最佳實務": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "模組開發最佳實務"
+      }
+    ],
+    "模組開發（推薦用於生產）": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 45,
+        "level": 3,
+        "title": "模組開發（推薦用於生產）"
+      }
+    ],
+    "模組間通訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 64,
+        "level": 3,
+        "title": "模組間通訊"
+      }
+    ],
+    "模組需求模板": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 69,
+        "level": 3,
+        "title": "模組需求模板"
+      }
+    ],
+    "機器人資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 98,
+        "level": 4,
+        "title": "機器人資訊"
+      }
+    ],
+    "檢查安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 135,
+        "level": 3,
+        "title": "檢查安裝"
+      }
+    ],
+    "檢查平台狀態": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 120,
+        "level": 4,
+        "title": "檢查平台狀態"
+      }
+    ],
+    "檢視可用模組": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 77,
+        "level": 3,
+        "title": "檢視可用模組"
+      }
+    ],
+    "權限控制": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 229,
+        "level": 2,
+        "title": "權限控制"
+      }
+    ],
+    "注意事項": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 122,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 160,
+        "level": 2,
+        "title": "注意事項"
+      }
+    ],
+    "測試": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 338,
+        "level": 2,
+        "title": "測試"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 323,
+        "level": 2,
+        "title": "測試"
+      }
+    ],
+    "測試指令": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 106,
+        "level": 3,
+        "title": "測試指令"
+      }
+    ],
+    "測試模組": [
+      {
+        "document": "zh-TW/developer-guide/modules/getting-started.md",
+        "line": 94,
+        "level": 2,
+        "title": "測試模組"
+      }
+    ],
+    "為什麼需要標準？": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 23,
+        "level": 2,
+        "title": "為什麼需要標準？"
+      }
+    ],
+    "熱重載": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 54,
+        "level": 3,
+        "title": "熱重載"
+      }
+    ],
+    "熱重載模式": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 45,
+        "level": 3,
+        "title": "熱重載模式"
+      }
+    ],
+    "版本更新說明": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 104,
+        "level": 3,
+        "title": "版本更新說明"
+      }
+    ],
+    "特有事件類型": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 53,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 117,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 127,
+        "level": 2,
+        "title": "特有事件類型"
+      }
+    ],
+    "特有參數說明": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 42,
+        "level": 3,
+        "title": "特有參數說明"
+      }
+    ],
+    "特殊標籤（用於 API 文件生成）": [
+      {
+        "document": "zh-TW/styleguide/docstring.md",
+        "line": 53,
+        "level": 2,
+        "title": "特殊標籤（用於 API 文件生成）"
+      }
+    ],
+    "特殊欄位範例": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 102,
+        "level": 3,
+        "title": "特殊欄位範例"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 150,
+        "level": 3,
+        "title": "特殊欄位範例"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 143,
+        "level": 3,
+        "title": "特殊欄位範例"
+      }
+    ],
+    "獲取協助": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 135,
+        "level": 2,
+        "title": "獲取協助"
+      }
+    ],
+    "獲取說明": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 114,
+        "level": 2,
+        "title": "獲取說明"
+      }
+    ],
+    "生命週期": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 115,
+        "level": 3,
+        "title": "生命週期"
+      }
+    ],
+    "生命週期事件監聽": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 81,
+        "level": 3,
+        "title": "生命週期事件監聽"
+      }
+    ],
+    "生命週期整合": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 143,
+        "level": 2,
+        "title": "生命週期整合"
+      }
+    ],
+    "生命週期管理": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 1,
+        "level": 1,
+        "title": "生命週期管理"
+      }
+    ],
+    "用戶使用指南": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "用戶使用指南"
+      }
+    ],
+    "異常捕獲": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 237,
+        "level": 3,
+        "title": "異常捕獲"
+      }
+    ],
+    "發布到 PyPI": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 152,
+        "level": 3,
+        "title": "發布到 PyPI"
+      }
+    ],
+    "發布您的模組": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 117,
+        "level": 2,
+        "title": "發布您的模組"
+      }
+    ],
+    "發送方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 37,
+        "level": 2,
+        "title": "發送方法"
+      }
+    ],
+    "發送方法命名": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 86,
+        "level": 3,
+        "title": "發送方法命名"
+      }
+    ],
+    "發送者資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 111,
+        "level": 4,
+        "title": "發送者資訊"
+      }
+    ],
+    "監聽@訊息": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 50,
+        "level": 3,
+        "title": "監聽@訊息"
+      }
+    ],
+    "監聽所有訊息": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 19,
+        "level": 3,
+        "title": "監聽所有訊息"
+      }
+    ],
+    "監聽私聊訊息": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 31,
+        "level": 3,
+        "title": "監聽私聊訊息"
+      }
+    ],
+    "監聽群聊訊息": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 40,
+        "level": 3,
+        "title": "監聽群聊訊息"
+      }
+    ],
+    "目的": [
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 17,
+        "level": 2,
+        "title": "目的"
+      }
+    ],
+    "目錄結構": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 34,
+        "level": 2,
+        "title": "目錄結構"
+      }
+    ],
+    "相關文件": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 128,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 168,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 164,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 130,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 204,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 343,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 162,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 416,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 261,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 348,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 383,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 223,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 212,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 93,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 32,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 112,
+        "level": 2,
+        "title": "相關文件"
+      }
+    ],
+    "相關連結": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 120,
+        "level": 2,
+        "title": "相關連結"
+      }
+    ],
+    "程式碼範例規範": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 89,
+        "level": 3,
+        "title": "程式碼範例規範"
+      }
+    ],
+    "程式碼說明": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 112,
+        "level": 2,
+        "title": "程式碼說明"
+      }
+    ],
+    "立即載入": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 182,
+        "level": 3,
+        "title": "立即載入"
+      }
+    ],
+    "第一步：建立專案": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 5,
+        "level": 2,
+        "title": "第一步：建立專案"
+      }
+    ],
+    "第三步：編寫第一個指令": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 35,
+        "level": 2,
+        "title": "第三步：編寫第一個指令"
+      }
+    ],
+    "第二步：查看專案結構": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 23,
+        "level": 2,
+        "title": "第二步：查看專案結構"
+      }
+    ],
+    "第五步：測試機器人": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 102,
+        "level": 2,
+        "title": "第五步：測試機器人"
+      }
+    ],
+    "第四步：執行機器人": [
+      {
+        "document": "zh-TW/getting-started/first-bot.md",
+        "line": 92,
+        "level": 2,
+        "title": "第四步：執行機器人"
+      }
+    ],
+    "等待使用者回覆": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 263,
+        "level": 3,
+        "title": "等待使用者回覆"
+      }
+    ],
+    "等待回覆": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "等待回覆"
+      }
+    ],
+    "等待回覆功能": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 173,
+        "level": 3,
+        "title": "等待回覆功能"
+      }
+    ],
+    "等待結果": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 124,
+        "level": 3,
+        "title": "等待結果"
+      }
+    ],
+    "管理介面": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 261,
+        "level": 2,
+        "title": "管理介面"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 285,
+        "level": 2,
+        "title": "管理介面"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 306,
+        "level": 3,
+        "title": "管理介面"
+      }
+    ],
+    "管理功能": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 49,
+        "level": 3,
+        "title": "管理功能"
+      }
+    ],
+    "管理員檢查": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 231,
+        "level": 3,
+        "title": "管理員檢查"
+      }
+    ],
+    "範例": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 110,
+        "level": 3,
+        "title": "範例"
+      }
+    ],
+    "簡單定時器": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 77,
+        "level": 3,
+        "title": "簡單定時器"
+      }
+    ],
+    "簡單搜尋": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 327,
+        "level": 3,
+        "title": "簡單搜尋"
+      }
+    ],
+    "簡單計數器": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 18,
+        "level": 3,
+        "title": "簡單計數器"
+      }
+    ],
+    "系統路由": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 124,
+        "level": 2,
+        "title": "系統路由"
+      }
+    ],
+    "系統需求": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 5,
+        "level": 2,
+        "title": "系統需求"
+      }
+    ],
+    "組件關係": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "組件關係"
+      }
+    ],
+    "組合修飾": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 86,
+        "level": 3,
+        "title": "組合修飾"
+      }
+    ],
+    "繼承基類": [
+      {
+        "document": "zh-TW/api-reference/README.md",
+        "line": 111,
+        "level": 3,
+        "title": "繼承基類"
+      }
+    ],
+    "繼承關係": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 298,
+        "level": 3,
+        "title": "繼承關係"
+      }
+    ],
+    "群組/頻道資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 116,
+        "level": 4,
+        "title": "群組/頻道資訊"
+      }
+    ],
+    "群組成員增加": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 157,
+        "level": 3,
+        "title": "群組成員增加"
+      }
+    ],
+    "群組成員減少": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 167,
+        "level": 3,
+        "title": "群組成員減少"
+      }
+    ],
+    "群組權限": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 266,
+        "level": 3,
+        "title": "群組權限"
+      }
+    ],
+    "群組邀請請求": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 195,
+        "level": 3,
+        "title": "群組邀請請求"
+      }
+    ],
+    "舊設定相容": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 322,
+        "level": 3,
+        "title": "舊設定相容"
+      }
+    ],
+    "萬用字元事件處理器": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 41,
+        "level": 3,
+        "title": "萬用字元事件處理器"
+      }
+    ],
+    "虛擬環境": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 44,
+        "level": 3,
+        "title": "虛擬環境"
+      }
+    ],
+    "表格輸出": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 138,
+        "level": 3,
+        "title": "表格輸出"
+      }
+    ],
+    "解除安裝模組": [
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 102,
+        "level": 3,
+        "title": "解除安裝模組"
+      },
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 110,
+        "level": 3,
+        "title": "解除安裝模組"
+      }
+    ],
+    "計時器": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 259,
+        "level": 3,
+        "title": "計時器"
+      }
+    ],
+    "計時器功能": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 116,
+        "level": 3,
+        "title": "計時器功能"
+      }
+    ],
+    "訊息事件": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 114,
+        "level": 3,
+        "title": "訊息事件"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 60,
+        "level": 3,
+        "title": "訊息事件"
+      }
+    ],
+    "訊息事件方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 25,
+        "level": 2,
+        "title": "訊息事件方法"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 103,
+        "level": 3,
+        "title": "訊息事件方法"
+      }
+    ],
+    "訊息事件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "訊息事件處理"
+      }
+    ],
+    "訊息內容": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 105,
+        "level": 4,
+        "title": "訊息內容"
+      }
+    ],
+    "訊息方法": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 260,
+        "level": 3,
+        "title": "訊息方法"
+      }
+    ],
+    "訊息段標準": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 303,
+        "level": 3,
+        "title": "訊息段標準"
+      }
+    ],
+    "訊息管理方法": [
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 48,
+        "level": 3,
+        "title": "訊息管理方法"
+      }
+    ],
+    "訊息統計": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 281,
+        "level": 2,
+        "title": "訊息統計"
+      }
+    ],
+    "訊息計數": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 283,
+        "level": 3,
+        "title": "訊息計數"
+      }
+    ],
+    "訊息過濾": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 145,
+        "level": 2,
+        "title": "訊息過濾"
+      }
+    ],
+    "訊息配置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 119,
+        "level": 3,
+        "title": "訊息配置"
+      }
+    ],
+    "訊息類型判斷": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 38,
+        "level": 2,
+        "title": "訊息類型判斷"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 126,
+        "level": 3,
+        "title": "訊息類型判斷"
+      }
+    ],
+    "設定": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 81,
+        "level": 3,
+        "title": "設定"
+      }
+    ],
+    "設定檔": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 113,
+        "level": 2,
+        "title": "設定檔"
+      }
+    ],
+    "設定管理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 118,
+        "level": 3,
+        "title": "設定管理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 100,
+        "level": 2,
+        "title": "設定管理"
+      }
+    ],
+    "設定範例": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 176,
+        "level": 3,
+        "title": "設定範例"
+      }
+    ],
+    "設定說明": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 221,
+        "level": 3,
+        "title": "設定說明"
+      },
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 89,
+        "level": 3,
+        "title": "設定說明"
+      }
+    ],
+    "設定選項": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 159,
+        "level": 2,
+        "title": "設定選項"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 200,
+        "level": 2,
+        "title": "設定選項"
+      }
+    ],
+    "設定錯誤": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 166,
+        "level": 3,
+        "title": "設定錯誤"
+      }
+    ],
+    "註冊 HTTP 路由": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 17,
+        "level": 3,
+        "title": "註冊 HTTP 路由"
+      }
+    ],
+    "註冊 WebSocket 路由": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 35,
+        "level": 3,
+        "title": "註冊 WebSocket 路由"
+      }
+    ],
+    "註冊中介軟體": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 58,
+        "level": 3,
+        "title": "註冊中介軟體"
+      }
+    ],
+    "註冊命令": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "註冊命令"
+      }
+    ],
+    "註解/裝飾器": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 120,
+        "level": 3,
+        "title": "註解/裝飾器"
+      }
+    ],
+    "註銷路由": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 81,
+        "level": 3,
+        "title": "註銷路由"
+      }
+    ],
+    "認證機制": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 105,
+        "level": 2,
+        "title": "認證機制"
+      }
+    ],
+    "請求事件": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 195,
+        "level": 3,
+        "title": "請求事件"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 119,
+        "level": 3,
+        "title": "請求事件"
+      }
+    ],
+    "請求事件方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 147,
+        "level": 3,
+        "title": "請求事件方法"
+      }
+    ],
+    "請求事件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 177,
+        "level": 2,
+        "title": "請求事件處理"
+      }
+    ],
+    "請求資訊": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 149,
+        "level": 4,
+        "title": "請求資訊"
+      }
+    ],
+    "請求類型判斷": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 152,
+        "level": 4,
+        "title": "請求類型判斷"
+      }
+    ],
+    "讀取設定": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 102,
+        "level": 3,
+        "title": "讀取設定"
+      }
+    ],
+    "讀取配置": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 54,
+        "level": 3,
+        "title": "讀取配置"
+      }
+    ],
+    "貢獻流程": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 136,
+        "level": 2,
+        "title": "貢獻流程"
+      }
+    ],
+    "資料持久化": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 16,
+        "level": 2,
+        "title": "資料持久化"
+      }
+    ],
+    "資訊查詢命令": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 14,
+        "level": 2,
+        "title": "資訊查詢命令"
+      }
+    ],
+    "質量檢查清單": [
+      {
+        "document": "zh-TW/platform-guide/maintain-notes.md",
+        "line": 114,
+        "level": 2,
+        "title": "質量檢查清單"
+      }
+    ],
+    "路徑處理": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 95,
+        "level": 2,
+        "title": "路徑處理"
+      }
+    ],
+    "路由": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 91,
+        "level": 3,
+        "title": "路由"
+      }
+    ],
+    "路由列表": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 136,
+        "level": 3,
+        "title": "路由列表"
+      }
+    ],
+    "路由管理器": [
+      {
+        "document": "zh-TW/advanced/router.md",
+        "line": 1,
+        "level": 1,
+        "title": "路由管理器"
+      }
+    ],
+    "載入優先級": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 108,
+        "level": 3,
+        "title": "載入優先級"
+      }
+    ],
+    "載入策略": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 7,
+        "level": 3,
+        "title": "載入策略"
+      }
+    ],
+    "輸入驗證": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 257,
+        "level": 3,
+        "title": "輸入驗證"
+      }
+    ],
+    "轉換器範例": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 394,
+        "level": 3,
+        "title": "轉換器範例"
+      }
+    ],
+    "轉換流程": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 364,
+        "level": 3,
+        "title": "轉換流程"
+      }
+    ],
+    "轉發功能": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 169,
+        "level": 4,
+        "title": "轉發功能"
+      }
+    ],
+    "返回值": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 184,
+        "level": 2,
+        "title": "返回值"
+      }
+    ],
+    "透過 CLI 安裝": [
+      {
+        "document": "zh-TW/quick-start.md",
+        "line": 71,
+        "level": 3,
+        "title": "透過 CLI 安裝"
+      }
+    ],
+    "通用參數": [
+      {
+        "document": "zh-TW/user-guide/cli-reference.md",
+        "line": 39,
+        "level": 3,
+        "title": "通用參數"
+      }
+    ],
+    "通知事件": [
+      {
+        "document": "zh-TW/api-reference/event-system.md",
+        "line": 163,
+        "level": 3,
+        "title": "通知事件"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 89,
+        "level": 3,
+        "title": "通知事件"
+      }
+    ],
+    "通知事件方法": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 77,
+        "level": 2,
+        "title": "通知事件方法"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 134,
+        "level": 3,
+        "title": "通知事件方法"
+      }
+    ],
+    "通知事件處理": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 143,
+        "level": 2,
+        "title": "通知事件處理"
+      }
+    ],
+    "通知操作者": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 136,
+        "level": 4,
+        "title": "通知操作者"
+      }
+    ],
+    "通知類型判斷": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 140,
+        "level": 4,
+        "title": "通知類型判斷"
+      }
+    ],
+    "連線事件": [
+      {
+        "document": "zh-TW/getting-started/event-handling.md",
+        "line": 208,
+        "level": 3,
+        "title": "連線事件"
+      }
+    ],
+    "連線管理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "連線管理"
+      },
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 435,
+        "level": 2,
+        "title": "連線管理"
+      }
+    ],
+    "進度條": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 155,
+        "level": 3,
+        "title": "進度條"
+      }
+    ],
+    "進階主題": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 71,
+        "level": 3,
+        "title": "進階主題"
+      },
+      {
+        "document": "zh-TW/advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "進階主題"
+      }
+    ],
+    "運行測試": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 142,
+        "level": 3,
+        "title": "運行測試"
+      }
+    ],
+    "適用對象": [
+      {
+        "document": "zh-TW/advanced/README.md",
+        "line": 11,
+        "level": 2,
+        "title": "適用對象"
+      },
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 9,
+        "level": 2,
+        "title": "適用對象"
+      }
+    ],
+    "適配器": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 17,
+        "level": 3,
+        "title": "適配器"
+      }
+    ],
+    "適配器事件": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 143,
+        "level": 3,
+        "title": "適配器事件"
+      }
+    ],
+    "適配器架構": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 16,
+        "level": 3,
+        "title": "適配器架構"
+      }
+    ],
+    "適配器標準化轉換規範": [
+      {
+        "document": "zh-TW/standards/event-conversion.md",
+        "line": 1,
+        "level": 1,
+        "title": "適配器標準化轉換規範"
+      }
+    ],
+    "適配器生命週期事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 62,
+        "level": 3,
+        "title": "適配器生命週期事件"
+      }
+    ],
+    "適配器發送方法查詢": [
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 72,
+        "level": 2,
+        "title": "適配器發送方法查詢"
+      }
+    ],
+    "適配器管理": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 162,
+        "level": 3,
+        "title": "適配器管理"
+      }
+    ],
+    "適配器簡介": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 5,
+        "level": 2,
+        "title": "適配器簡介"
+      }
+    ],
+    "適配器開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 39,
+        "level": 4,
+        "title": "適配器開發"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "適配器開發"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 53,
+        "level": 3,
+        "title": "適配器開發"
+      }
+    ],
+    "適配器開發入門": [
+      {
+        "document": "zh-TW/developer-guide/adapters/getting-started.md",
+        "line": 1,
+        "level": 1,
+        "title": "適配器開發入門"
+      }
+    ],
+    "適配器需求模板": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "適配器需求模板"
+      }
+    ],
+    "遵循標準的好處": [
+      {
+        "document": "zh-TW/standards/README.md",
+        "line": 46,
+        "level": 2,
+        "title": "遵循標準的好處"
+      }
+    ],
+    "遵循規範的好處": [
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 25,
+        "level": 2,
+        "title": "遵循規範的好處"
+      }
+    ],
+    "選用參數": [
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 181,
+        "level": 3,
+        "title": "選用參數"
+      }
+    ],
+    "部署": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 354,
+        "level": 2,
+        "title": "部署"
+      }
+    ],
+    "郵件平台特性文檔": [
+      {
+        "document": "zh-TW/platform-guide/email.md",
+        "line": 1,
+        "level": 1,
+        "title": "郵件平台特性文檔"
+      }
+    ],
+    "配接器開發最佳實踐": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "配接器開發最佳實踐"
+      }
+    ],
+    "配置延遲載入": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 30,
+        "level": 2,
+        "title": "配置延遲載入"
+      }
+    ],
+    "配置檔案位置": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 6,
+        "level": 2,
+        "title": "配置檔案位置"
+      }
+    ],
+    "配置檔案說明": [
+      {
+        "document": "zh-TW/user-guide/configuration.md",
+        "line": 1,
+        "level": 1,
+        "title": "配置檔案說明"
+      }
+    ],
+    "配置範例": [
+      {
+        "document": "zh-TW/api-reference/core-modules.md",
+        "line": 76,
+        "level": 3,
+        "title": "配置範例"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 189,
+        "level": 3,
+        "title": "配置範例"
+      }
+    ],
+    "配置選項": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 174,
+        "level": 2,
+        "title": "配置選項"
+      }
+    ],
+    "錯誤處理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/best-practices.md",
+        "line": 292,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "zh-TW/developer-guide/extensions/cli-extensions.md",
+        "line": 235,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 146,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "zh-TW/developer-guide/modules/core-concepts.md",
+        "line": 195,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 241,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 264,
+        "level": 2,
+        "title": "錯誤處理"
+      }
+    ],
+    "鏈式修飾": [
+      {
+        "document": "zh-TW/api-reference/adapter-system.md",
+        "line": 119,
+        "level": 3,
+        "title": "鏈式修飾"
+      }
+    ],
+    "鏈式修飾方法": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 336,
+        "level": 3,
+        "title": "鏈式修飾方法"
+      },
+      {
+        "document": "zh-TW/platform-guide/telegram.md",
+        "line": 60,
+        "level": 3,
+        "title": "鏈式修飾方法"
+      }
+    ],
+    "鏈式修飾方法（可組合使用）": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 51,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 73,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      }
+    ],
+    "鏈式呼叫範例": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 59,
+        "level": 3,
+        "title": "鏈式呼叫範例"
+      },
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 82,
+        "level": 3,
+        "title": "鏈式呼叫範例"
+      }
+    ],
+    "鏈式調用": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 240,
+        "level": 3,
+        "title": "鏈式調用"
+      }
+    ],
+    "開始學習": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 137,
+        "level": 2,
+        "title": "開始學習"
+      }
+    ],
+    "開發工具": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 81,
+        "level": 2,
+        "title": "開發工具"
+      }
+    ],
+    "開發方式": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 85,
+        "level": 2,
+        "title": "開發方式"
+      }
+    ],
+    "開發方式選擇": [
+      {
+        "document": "zh-TW/getting-started/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "開發方式選擇"
+      }
+    ],
+    "開發模式": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 91,
+        "level": 3,
+        "title": "開發模式"
+      },
+      {
+        "document": "zh-TW/user-guide/README.md",
+        "line": 43,
+        "level": 2,
+        "title": "開發模式"
+      }
+    ],
+    "開發準備": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 26,
+        "level": 2,
+        "title": "開發準備"
+      }
+    ],
+    "開發相關術語": [
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 37,
+        "level": 2,
+        "title": "開發相關術語"
+      }
+    ],
+    "開發者指南": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 30,
+        "level": 3,
+        "title": "開發者指南"
+      },
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "開發者指南"
+      }
+    ],
+    "開發類型選擇": [
+      {
+        "document": "zh-TW/developer-guide/README.md",
+        "line": 35,
+        "level": 2,
+        "title": "開發類型選擇"
+      }
+    ],
+    "關鍵詞過濾": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 147,
+        "level": 3,
+        "title": "關鍵詞過濾"
+      }
+    ],
+    "關閉介接器": [
+      {
+        "document": "zh-TW/developer-guide/adapters/core-concepts.md",
+        "line": 103,
+        "level": 4,
+        "title": "關閉介接器"
+      }
+    ],
+    "雲湖平台特性文件": [
+      {
+        "document": "zh-TW/platform-guide/yunhu.md",
+        "line": 1,
+        "level": 1,
+        "title": "雲湖平台特性文件"
+      }
+    ],
+    "需求描述模板": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 67,
+        "level": 2,
+        "title": "需求描述模板"
+      }
+    ],
+    "非同步初始化": [
+      {
+        "document": "zh-TW/advanced/lazy-loading.md",
+        "line": 73,
+        "level": 3,
+        "title": "非同步初始化"
+      }
+    ],
+    "非同步程式設計": [
+      {
+        "document": "zh-TW/developer-guide/modules/best-practices.md",
+        "line": 51,
+        "level": 2,
+        "title": "非同步程式設計"
+      },
+      {
+        "document": "zh-TW/terminology.md",
+        "line": 49,
+        "level": 3,
+        "title": "非同步程式設計"
+      }
+    ],
+    "非同步處理": [
+      {
+        "document": "zh-TW/developer-guide/adapters/send-dsl.md",
+        "line": 112,
+        "level": 2,
+        "title": "非同步處理"
+      }
+    ],
+    "非同步處理機制": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 232,
+        "level": 2,
+        "title": "非同步處理機制"
+      },
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 254,
+        "level": 2,
+        "title": "非同步處理機制"
+      }
+    ],
+    "預設設定": [
+      {
+        "document": "zh-TW/platform-guide/onebot11.md",
+        "line": 196,
+        "level": 3,
+        "title": "預設設定"
+      }
+    ],
+    "預設配置": [
+      {
+        "document": "zh-TW/platform-guide/onebot12.md",
+        "line": 214,
+        "level": 3,
+        "title": "預設配置"
+      }
+    ],
+    "風格指南": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 81,
+        "level": 3,
+        "title": "風格指南"
+      },
+      {
+        "document": "zh-TW/styleguide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "風格指南"
+      }
+    ],
+    "驗證安裝": [
+      {
+        "document": "zh-TW/user-guide/installation.md",
+        "line": 133,
+        "level": 2,
+        "title": "驗證安裝"
+      }
+    ],
+    "黑名單過濾": [
+      {
+        "document": "zh-TW/getting-started/common-tasks.md",
+        "line": 168,
+        "level": 3,
+        "title": "黑名單過濾"
+      }
+    ],
+    "點式存取": [
+      {
+        "document": "zh-TW/developer-guide/modules/event-wrapper.md",
+        "line": 202,
+        "level": 3,
+        "title": "點式存取"
+      }
+    ],
+    "點式結構事件": [
+      {
+        "document": "zh-TW/advanced/lifecycle.md",
+        "line": 34,
+        "level": 3,
+        "title": "點式結構事件"
+      }
+    ],
+    "📦 AI 開發素材文件": [
+      {
+        "document": "zh-TW/ai-support/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "📦 AI 開發素材文件"
+      }
+    ]
+  }
+}

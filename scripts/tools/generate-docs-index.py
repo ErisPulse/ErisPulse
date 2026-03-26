@@ -126,19 +126,42 @@ class DocsIndexGenerator:
     }
     
     # 需要忽略的目录
-    IGNORE_DIRS = {"_meta", "ai-support/prompts", "api-reference/auto_api"}
+    IGNORE_DIRS = {"ai-support/prompts", "api-reference/auto_api"}
     
-    def __init__(self, docs_dir: str, output_dir: str):
+    def __init__(self, docs_dir: str, output_dir: str, lang: Optional[str] = None):
         """
         初始化索引生成器
         
         :param docs_dir: 文档根目录
         :param output_dir: 索引输出目录
+        :param lang: 语言代码（None 表示根目录模式）
         """
         self.docs_dir = Path(docs_dir).resolve()
         self.output_dir = Path(output_dir).resolve()
+        self.lang = lang
         self.docs_mapping: Dict = {}
         self.docs_search_index: Dict = {}
+        
+        # 如果指定了语言，实际文档目录是 docs/{lang}
+        if self.lang:
+            self.actual_docs_dir = self.docs_dir / self.lang
+        else:
+            self.actual_docs_dir = self.docs_dir
+    
+    @staticmethod
+    def get_available_languages(docs_dir: Path) -> List[str]:
+        """
+        获取可用的语言列表
+        
+        :param docs_dir: 文档根目录
+        :return: 语言代码列表
+        """
+        langs = []
+        for item in docs_dir.iterdir():
+            # 排除 _meta 和 README.md
+            if item.is_dir() and item.name not in ['_meta']:
+                langs.append(item.name)
+        return sorted(langs)
         
     def normalize_path(self, path: Path) -> str:
         """
@@ -147,7 +170,7 @@ class DocsIndexGenerator:
         :param path: 文件路径
         :return: 规范化后的路径字符串
         """
-        # 获取相对于 docs 目录的路径
+        # 获取相对于 docs 目录的路径（包含语言代码）
         rel_path = path.relative_to(self.docs_dir)
         # 使用 / 作为分隔符
         return str(rel_path).replace("\\", "/")
@@ -159,7 +182,8 @@ class DocsIndexGenerator:
         :param file_path: 文件路径
         :return: 分类名称
         """
-        rel_path = file_path.relative_to(self.docs_dir)
+        # 获取相对于实际文档目录的路径
+        rel_path = file_path.relative_to(self.actual_docs_dir)
         
         # 根目录文件归类为"快速开始"
         if len(rel_path.parts) == 1:
@@ -237,10 +261,14 @@ class DocsIndexGenerator:
         """
         files = []
         
-        for root, dirs, filenames in os.walk(self.docs_dir):
+        # 使用 actual_docs_dir 作为扫描根目录
+        if not self.actual_docs_dir.exists():
+            return files
+        
+        for root, dirs, filenames in os.walk(self.actual_docs_dir):
             # 过滤需要忽略的目录
             dirs[:] = [d for d in dirs if not any(
-                Path(root) / d == Path(self.docs_dir) / ignored_dir.replace("/", os.sep)
+                Path(root) / d == self.actual_docs_dir / ignored_dir.replace("/", os.sep)
                 for ignored_dir in self.IGNORE_DIRS
             )]
             
@@ -297,11 +325,12 @@ class DocsIndexGenerator:
             "last_modified": mod_time
         }
     
-    def generate_mapping_index(self, documents: List[Dict]) -> Dict:
+    def generate_mapping_index(self, documents: List[Dict], deprecated: bool = False) -> Dict:
         """
         生成文档映射索引
         
         :param documents: 文档列表
+        :param deprecated: 是否为弃用索引
         :return: 映射索引
         """
         categories = {}
@@ -342,12 +371,19 @@ class DocsIndexGenerator:
             
             category_data["documents"].sort(key=sort_document)
         
-        return {
+        result = {
             "version": "1.0",
             # "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_categories": len(sorted_categories),
             "categories": sorted_categories
         }
+        
+        # 如果是弃用索引，添加弃用标记
+        if deprecated:
+            result["_deprecated"] = True
+            result["_note"] = "此索引已弃用，请使用 docs/_meta/{lang}/ 目录下的语言特定索引"
+        
+        return result
     
     def generate_search_index(self, documents: List[Dict]) -> Dict:
         """
@@ -397,13 +433,19 @@ class DocsIndexGenerator:
         
         print(f"  [完成] {filename}")
     
-    def run(self):
-        """运行索引生成器"""
+    def run(self, deprecated: bool = False):
+        """
+        运行索引生成器
+        
+        :param deprecated: 是否为弃用模式
+        """
         print("=" * 60)
         print("ErisPulse 文档索引生成器 v1.0")
         print("=" * 60)
         print()
-        print(f"文档目录: {self.docs_dir}")
+        if self.lang:
+            print(f"语言: {self.lang}")
+        print(f"文档目录: {self.actual_docs_dir}")
         print(f"输出目录: {self.output_dir}")
         print()
         
@@ -429,7 +471,7 @@ class DocsIndexGenerator:
         
         # 生成映射索引
         print("[3/4] 生成文档映射索引...")
-        mapping_index = self.generate_mapping_index(documents)
+        mapping_index = self.generate_mapping_index(documents, deprecated=deprecated)
         print(f"  生成 {len(mapping_index['categories'])} 个分类")
         print()
         
@@ -462,8 +504,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  # 使用默认设置
+  # 使用默认设置（为所有语言生成索引）
   python scripts/tools/generate-docs-index.py
+  
+  # 只为特定语言生成索引
+  python scripts/tools/generate-docs-index.py --lang zh-CN
   
   # 自定义文档目录和输出目录
   python scripts/tools/generate-docs-index.py --docs docs --output docs/_meta
@@ -481,6 +526,10 @@ def main():
         help="索引输出目录 (默认: docs/_meta)"
     )
     parser.add_argument(
+        "--lang",
+        help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成"
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version="ErisPulse 文档索引生成器 v1.0"
@@ -488,9 +537,38 @@ def main():
     
     args = parser.parse_args()
     
-    # 创建并运行生成器
-    generator = DocsIndexGenerator(args.docs, args.output)
-    generator.run()
+    docs_dir = Path(args.docs).resolve()
+    
+    # 如果指定了语言，只为该语言生成索引
+    if args.lang:
+        print(f"为语言 {args.lang} 生成索引...")
+        lang_output_dir = Path(args.output) / args.lang
+        generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), args.lang)
+        generator.run(deprecated=False)
+    else:
+        # 为所有语言生成索引
+        langs = DocsIndexGenerator.get_available_languages(docs_dir)
+        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        print()
+        
+        for lang in langs:
+            print(f"\n{'='*60}")
+            print(f"处理语言: {lang}")
+            print('='*60)
+            
+            lang_output_dir = Path(args.output) / lang
+            generator = DocsIndexGenerator(str(docs_dir), str(lang_output_dir), lang)
+            generator.run(deprecated=False)
+        
+        # 生成兼容性索引（基于中文）
+        if 'zh-CN' in langs:
+            print(f"\n{'='*60}")
+            print("生成兼容性索引（基于中文，已弃用）")
+            print('='*60)
+            compat_generator = DocsIndexGenerator(str(docs_dir), args.output, 'zh-CN')
+            compat_generator.run(deprecated=True)
+        else:
+            print("\n[警告] 未找到中文文档，跳过兼容性索引生成")
 
 
 if __name__ == "__main__":
