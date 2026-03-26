@@ -2,22 +2,80 @@
 
 本目录包含 ErisPulse 文档的自动生成索引文件，用于第三方文档网站的文档集成。
 
-## 索引文件说明
+## 索引文件结构
 
-### docs-mapping.json
-文档映射索引，按分类组织所有文档，用于生成文档网站的结构和导航。
+```
+docs/_meta/
+├── docs-mapping.json           # 语言索引（主索引）
+├── en/
+│   ├── docs-mapping.json       # 英文文档映射
+│   └── docs-search-index.json  # 英文搜索索引
+├── zh-CN/
+│   ├── docs-mapping.json       # 简体中文文档映射
+│   └── docs-search-index.json  # 简体中文搜索索引
+└── zh-TW/
+    ├── docs-mapping.json       # 繁体中文文档映射
+    └── docs-search-index.json  # 繁体中文搜索索引
+```
+
+## 主索引：docs-mapping.json
+
+语言索引，包含所有可用语言及其文档映射索引的路径。
 
 **结构示例：**
 ```json
 {
   "version": "1.0",
-  "generated_at": "2025-02-24T10:00:00Z",
+  "total_languages": 3,
+  "languages": {
+    "en": {
+      "docs_count": 46,
+      "mapping_path": "_meta/en/docs-mapping.json"
+    },
+    "zh-CN": {
+      "docs_count": 46,
+      "mapping_path": "_meta/zh-CN/docs-mapping.json"
+    },
+    "zh-TW": {
+      "docs_count": 46,
+      "mapping_path": "_meta/zh-TW/docs-mapping.json"
+    }
+  }
+}
+```
+
+**字段说明：**
+- `version`: 索引版本号
+- `total_languages`: 语言总数
+- `languages`: 语言字典
+  - `docs_count`: 该语言的文档数量
+  - `mapping_path`: 该语言的文档映射索引路径（相对于 `docs/` 目录）
+
+## 语言特定索引
+
+每个语言目录下包含两个索引文件：
+- `docs-mapping.json`: 文档映射索引
+- `docs-search-index.json`: 文档搜索索引
+
+### docs-mapping.json（语言特定）
+
+文档映射索引，按分类组织该语言的所有文档。
+
+**结构示例：**
+```json
+{
+  "version": "1.0",
   "total_categories": 10,
   "categories": {
     "快速开始": {
       "description": "ErisPulse 快速入门指南",
-      "count": 1,
+      "count": 4,
       "documents": [
+        {
+          "title": "ErisPulse 文档",
+          "path": "README.md",
+          "level": 1
+        },
         {
           "title": "快速开始",
           "path": "quick-start.md",
@@ -36,24 +94,23 @@
 
 **字段说明：**
 - `version`: 索引版本号
-- `generated_at`: 生成时间（ISO 8601 格式）
 - `total_categories`: 分类总数
 - `categories`: 分类字典
   - `description`: 分类描述
   - `count`: 该分类下的文档数量
   - `documents`: 文档列表
     - `title`: 文档标题（第一个一级标题）
-    - `path`: 文档相对路径（统一使用 `/` 作为分隔符）
+    - `path`: 文档相对路径（相对于语言目录，统一使用 `/` 作为分隔符）
     - `level`: 文档等级（预留字段）
 
-### docs-search-index.json
-文档搜索索引，包含所有标题关键词及其在文档中的位置。
+### docs-search-index.json（语言特定）
+
+文档搜索索引，包含该语言所有标题关键词及其在文档中的位置。
 
 **结构示例：**
 ```json
 {
   "version": "1.0",
-  "generated_at": "2025-02-24T10:00:00Z",
   "total_keywords": 1000,
   "keywords": {
     "快速开始": [
@@ -78,33 +135,116 @@
 
 **字段说明：**
 - `version`: 索引版本号
-- `generated_at`: 生成时间（ISO 8601 格式）
 - `total_keywords`: 关键词总数
 - `keywords`: 关键词字典，键为标题文本
-  - `document`: 文档路径
+  - `document`: 文档路径（相对于语言目录）
   - `line`: 标题所在行号（从 1 开始）
   - `level`: 标题级别（1-6）
   - `title`: 标题文本
 
 ## 使用指南
 
-### 1. 文档分类和导航
+### 1. 获取可用语言
 
-使用 `docs-mapping.json` 构建文档网站的分类结构和导航菜单。
-
-#### Python 示例代码
+首先获取语言索引，了解所有可用的语言：
 
 ```python
 import json
 import requests
 
-# 获取索引
+# 获取语言索引
 response = requests.get("https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/_meta/docs-mapping.json")
-mapping = response.json()
+language_index = response.json()
 
-# 构建侧边栏导航
-def build_sidebar(mapping):
-    sidebar = []
+# 打印所有可用语言
+for lang_code, lang_info in language_index["languages"].items():
+    print(f"{lang_code}: {lang_info['docs_count']} 个文档")
+```
+
+```javascript
+// 获取语言索引
+fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/_meta/docs-mapping.json')
+    .then(response => response.json())
+    .then(languageIndex => {
+        // 打印所有可用语言
+        for (const [langCode, langInfo] of Object.entries(languageIndex.languages)) {
+            console.log(`${langCode}: ${langInfo.docs_count} 个文档`);
+        }
+    });
+```
+
+### 2. 获取特定语言的文档映射
+
+选择语言后，获取该语言的文档映射索引：
+
+```python
+def get_language_mapping(lang_code):
+    """
+    获取指定语言的文档映射
+    
+    :param lang_code: 语言代码（如: zh-CN, en, zh-TW）
+    :return: 语言映射数据
+    """
+    # 首先获取语言索引
+    response = requests.get("https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/_meta/docs-mapping.json")
+    language_index = response.json()
+    
+    # 检查语言是否存在
+    if lang_code not in language_index["languages"]:
+        raise ValueError(f"不支持的语言: {lang_code}")
+    
+    # 获取语言映射
+    mapping_path = language_index["languages"][lang_code]["mapping_path"]
+    full_url = f"https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/{mapping_path}"
+    
+    response = requests.get(full_url)
+    return response.json()
+
+# 使用示例
+zh_mapping = get_language_mapping("zh-CN")
+print(f"简体中文文档共 {zh_mapping['total_categories']} 个分类")
+```
+
+```javascript
+// 获取特定语言的文档映射
+async function getLanguageMapping(langCode) {
+    // 首先获取语言索引
+    const languageIndex = await fetch('https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/_meta/docs-mapping.json')
+        .then(response => response.json());
+    
+    // 检查语言是否存在
+    if (!languageIndex.languages[langCode]) {
+        throw new Error(`不支持的语言: ${langCode}`);
+    }
+    
+    // 获取语言映射
+    const mappingPath = languageIndex.languages[langCode].mapping_path;
+    const fullUrl = `https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docs/${mappingPath}`;
+    
+    return await fetch(fullUrl).then(response => response.json());
+}
+
+// 使用示例
+getLanguageMapping('zh-CN').then(mapping => {
+    console.log(`简体中文文档共 ${mapping.total_categories} 个分类`);
+});
+```
+
+### 3. 构建文档导航和路径
+
+构建完整的文档路径（语言目录 + 文档路径）：
+
+```python
+def build_document_nav(lang_code):
+    """
+    构建文档导航
+    
+    :param lang_code: 语言代码
+    :return: 导航结构
+    """
+    mapping = get_language_mapping(lang_code)
+    nav = []
+    
     for category_name, category_data in mapping["categories"].items():
         category_item = {
             "title": category_name,
@@ -113,24 +253,30 @@ def build_sidebar(mapping):
         }
         
         for doc in category_data["documents"]:
+            # 构建完整路径: docs/{lang}/{doc_path}
+            full_path = f"docs/{lang_code}/{doc['path']}"
             category_item["items"].append({
                 "title": doc["title"],
-                "path": f"/docs/{doc['path']}"  # 根据需要调整路径前缀
+                "path": full_path
             })
         
-        sidebar.append(category_item)
+        nav.append(category_item)
     
-    return sidebar
+    return nav
 
-sidebar = build_sidebar(mapping)
+# 使用示例
+zh_nav = build_document_nav("zh-CN")
+for category in zh_nav:
+    print(f"\n{category['title']}:")
+    for item in category["items"]:
+        print(f"  - {item['title']}: {item['path']}")
 ```
 
-#### JavaScript 示例代码
-
 ```javascript
-// 构建文档分类导航
-function buildSidebar(mapping) {
-    const sidebar = [];
+// 构建文档导航
+async function buildDocumentNav(langCode) {
+    const mapping = await getLanguageMapping(langCode);
+    const nav = [];
     
     for (const [categoryName, categoryData] of Object.entries(mapping.categories)) {
         const categoryItem = {
@@ -140,25 +286,65 @@ function buildSidebar(mapping) {
         };
         
         for (const doc of categoryData.documents) {
+            // 构建完整路径: docs/{lang}/{doc_path}
+            const fullPath = `docs/${langCode}/${doc.path}`;
             categoryItem.items.push({
                 title: doc.title,
-                path: `/docs/${doc.path}`
+                path: fullPath
             });
         }
         
-        sidebar.push(categoryItem);
+        nav.push(categoryItem);
     }
     
-    return sidebar;
+    return nav;
 }
 
 // 使用示例
-fetch('/docs/_meta/docs-mapping.json')
-    .then(response => response.json())
-    .then(mapping => {
-        const sidebar = buildSidebar(mapping);
-        // 渲染侧边栏...
+buildDocumentNav('zh-CN').then(nav => {
+    nav.forEach(category => {
+        console.log(`\n${category.title}:`);
+        category.items.forEach(item => {
+            console.log(`  - ${item.title}: ${item.path}`);
+        });
     });
+});
+```
+
+### 4. 文档分类和导航（完整示例）
+
+```python
+def build_sidebar(lang_code):
+    """
+    构建侧边栏导航
+    
+    :param lang_code: 语言代码
+    :return: 侧边栏数据
+    """
+    mapping = get_language_mapping(lang_code)
+    sidebar = []
+    
+    for category_name, category_data in mapping["categories"].items():
+        category_item = {
+            "title": category_name,
+            "description": category_data["description"],
+            "items": []
+        }
+        
+        for doc in category_data["documents"]:
+            # 完整路径: /docs/{lang}/{doc_path}
+            full_path = f"/docs/{lang_code}/{doc['path']}"
+            category_item["items"].append({
+                "title": doc["title"],
+                "path": full_path
+            })
+        
+        sidebar.append(category_item)
+    
+    return sidebar
+
+# 使用示例
+sidebar = build_sidebar("zh-CN")
 ```
 
 ### 2. 文档内容跳转（锚点导航）
@@ -398,17 +584,98 @@ function displaySearchResults(results) {
 
 ## 路径说明
 
-所有文档路径都使用 `/` 作为分隔符，确保跨平台兼容性：
+### 语言特定索引中的路径
 
-- Windows 路径：`getting-started\README.md` → 索引中：`getting-started/README.md`
-- Unix/Linux 路径：`getting-started/README.md` → 索引中：`getting-started/README.md`
+在语言特定的 `docs-mapping.json` 和 `docs-search-index.json` 中，所有文档路径都**相对于语言目录**，并使用 `/` 作为分隔符：
 
-在构建文档网站时，根据服务器配置添加适当的基础路径前缀：
+- 索引中的路径：`getting-started/README.md`
+- 实际完整路径：`docs/zh-CN/getting-started/README.md`
+
+### 构建完整文档路径
+
+在第三方文档网站中使用时，需要将语言代码和文档路径组合：
+
+```python
+def get_full_document_path(lang_code, doc_path):
+    """
+    构建完整的文档路径
+    
+    :param lang_code: 语言代码（如: zh-CN, en, zh-TW）
+    :param doc_path: 索引中的文档路径（相对于语言目录）
+    :return: 完整的文档路径
+    """
+    return f"docs/{lang_code}/{doc_path}"
+
+# 示例
+full_path = get_full_document_path("zh-CN", "getting-started/README.md")
+# 输出: docs/zh-CN/getting-started/README.md
+```
+
+```javascript
+// 构建完整的文档路径
+function getFullDocumentPath(langCode, docPath) {
+    return `docs/${langCode}/${docPath}`;
+}
+
+// 示例
+const fullPath = getFullDocumentPath('zh-CN', 'getting-started/README.md');
+// 输出: docs/zh-CN/getting-started/README.md
+```
+
+### URL 路径构建
+
+对于 Web URL，需要根据文档网站的基础路径进行调整：
 
 ```javascript
 // 如果文档托管在 https://example.com/docs/
-const docsBasePath = '/docs/';
-const fullDocumentPath = docsBasePath + documentPath;
+const docsBaseUrl = 'https://example.com/docs/';
+const langCode = 'zh-CN';
+const docPath = 'getting-started/README.md';
+
+// 完整 URL
+const fullUrl = `${docsBaseUrl}${langCode}/${docPath}`;
+// 输出: https://example.com/docs/zh-CN/getting-started/README.md
+
+// 或者使用相对路径
+const relativePath = `/docs/${langCode}/${docPath}`;
+// 输出: /docs/zh-CN/getting-started/README.md
+```
+
+### 从 GitHub 获取文档内容
+
+```python
+import requests
+
+def get_document_content(lang_code, doc_path):
+    """
+    从 GitHub 获取文档内容
+    
+    :param lang_code: 语言代码
+    :param doc_path: 文档路径（相对于语言目录）
+    :return: 文档内容
+    """
+    full_path = f"docs/{lang_code}/{doc_path}"
+    url = f"https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/{full_path}"
+    response = requests.get(url)
+    return response.text
+
+# 使用示例
+content = get_document_content("zh-CN", "getting-started/README.md")
+```
+
+```javascript
+// 从 GitHub 获取文档内容
+async function getDocumentContent(langCode, docPath) {
+    const fullPath = `docs/${langCode}/${docPath}`;
+    const url = `https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/${fullPath}`;
+    const response = await fetch(url);
+    return await response.text();
+}
+
+// 使用示例
+getDocumentContent('zh-CN', 'getting-started/README.md').then(content => {
+    console.log(content);
+});
 ```
 
 ## 分类映射
