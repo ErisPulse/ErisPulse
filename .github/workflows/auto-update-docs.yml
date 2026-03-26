@@ -1,0 +1,220 @@
+name: "📚 艾莉丝的文档更新"
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [Develop/v2]
+  pull_request:
+    branches: [Develop/v2]
+  workflow_dispatch:
+    inputs:
+      force_translate:
+        description: '强制重新翻译所有文档'
+        required: false
+        default: 'false'
+
+jobs:
+  update-and-generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 准备环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests openai
+
+      - name: 恢复翻译缓存
+        uses: actions/cache@v4
+        with:
+          path: .translate_cache
+          key: translate-cache-${{ github.sha }}
+          restore-keys: |
+            translate-cache-
+
+      - name: 更新API文档（多语言）
+        id: update-api
+        run: |
+          echo "艾莉丝开始更新API文档了哦~"
+          
+          # 运行API文档更新脚本（自动为所有语言生成）
+          if [ -f "scripts/tools/generate-api-docs.py" ]; then
+            python scripts/tools/generate-api-docs.py
+            echo "API文档更新完成"
+          else
+            echo "未找到API文档更新脚本，跳过此步骤"
+          fi
+          
+          # 检查API文档是否有更新
+          if git diff --quiet docs/*/api-reference/; then
+            echo "API文档没有变化"
+            echo "api_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了API文档更新"
+            echo "api_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 自动翻译文档
+        id: translate-docs
+        if: vars.OPENAI_API_KEY != ''
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "艾莉丝开始翻译文档啦~"
+          
+          # 检查是否需要强制翻译
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
+            FORCE_FLAG="--force"
+            echo "强制重新翻译模式已启用"
+          fi
+          
+          # 运行翻译脚本（自动为所有语言翻译）
+          if [ -f "scripts/tools/translate-docs.py" ]; then
+            # 检查是否配置了 API 密钥
+            if [ -n "$OPENAI_API_KEY" ]; then
+              echo "开始翻译文档..."
+              python scripts/tools/translate-docs.py $FORCE_FLAG
+              echo "文档翻译完成"
+            else
+              echo "未配置 OPENAI_API_KEY，跳过翻译步骤"
+              echo "翻译需要在仓库 Secrets 中配置 OPENAI_API_KEY"
+            fi
+          else
+            echo "未找到翻译脚本，跳过此步骤"
+          fi
+          
+          # 检查翻译文档是否有更新
+          if git diff --quiet -- docs/; then
+            echo "翻译文档没有变化"
+            echo "docs_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了翻译文档更新"
+            echo "docs_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 生成 AI Prompt 文档（多语言）
+        id: generate-ai-prompts
+        run: |
+          echo "艾莉丝开始生成 AI Prompt 文档~"
+          
+          # 运行 AI prompt 生成脚本（自动为所有语言生成）
+          if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
+            python scripts/tools/generate-ai-prompts.py
+            echo "AI Prompt 文档生成完成"
+          else
+            echo "未找到 AI Prompt 生成脚本，跳过此步骤"
+          fi
+          
+          # 检查 AI Prompt 文档是否有更新
+          if git diff --quiet docs/*/ai-support/prompts/; then
+            echo "AI Prompt 文档没有变化"
+            echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了 AI Prompt 文档更新"
+            echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 生成文档索引（多语言）
+        id: generate-docs-index
+        run: |
+          echo "艾莉丝开始生成文档索引~"
+          
+          # 运行文档索引生成脚本（自动为所有语言生成）
+          if [ -f "scripts/tools/generate-docs-index.py" ]; then
+            python scripts/tools/generate-docs-index.py
+            echo "文档索引生成完成"
+          else
+            echo "未找到文档索引生成脚本，跳过此步骤"
+          fi
+          
+          # 检查文档索引是否有更新
+          if git diff --quiet docs/_meta/; then
+            echo "文档索引没有变化"
+            echo "docs_index_updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "发现了文档索引更新"
+            echo "docs_index_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 统计更新情况
+        run: |
+          echo "艾莉丝正在统计今天的文档更新情况~"
+          
+          # 统计API文档更新
+          api_files=$(git diff --name-only docs/*/api-reference/ 2>/dev/null | wc -l)
+          echo "API文档更新文件数: $api_files"
+          
+          # 统计翻译文档更新
+          translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
+          echo "翻译文档更新文件数: $translated_files"
+          
+          # 统计AI Prompt文档更新
+          ai_prompts=$(git diff --name-only docs/*/ai-support/prompts/ 2>/dev/null | wc -l)
+          echo "AI Prompt文档更新文件数: $ai_prompts"
+          
+          # 统计文档索引更新
+          docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
+          echo "文档索引更新文件数: $docs_index"
+          
+          # 统计翻译缓存更新
+          cache_files=$(git diff --name-only .translate_cache/ 2>/dev/null | wc -l)
+          echo "翻译缓存更新文件数: $cache_files"
+
+      - name: 配置 Git 身份
+        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 提交更新
+        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        run: |
+          echo "艾莉丝正在保存文档更新~"
+          
+          # 添加所有更新的文档和缓存
+          git add docs/ .translate_cache/
+          
+          # 提交更改
+          git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
+          git push || echo "没有新的提交需要推送"
+
+      - name: 文档更新完成
+        if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
+        run: |
+          echo "艾莉丝今天也努力完成了文档更新呢"
+          echo "所有文档已更新并提交到仓库"
+          echo "包含了:"
+          if [ "${{ steps.update-api.outputs.api_updated }}" == "true" ]; then
+            echo "  - API 参考文档（多语言）"
+          fi
+          if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
+            echo "  - 翻译文档"
+            echo "  - 翻译缓存"
+          fi
+          if [ "${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}" == "true" ]; then
+            echo "  - AI Prompt 文档（多语言）"
+          fi
+          if [ "${{ steps.generate-docs-index.outputs.docs_index_updated }}" == "true" ]; then
+            echo "  - 文档索引（多语言）"
+          fi
+          echo "今天的文档工作完成啦~"
+
+      - name: 无更新时的说明
+        if: steps.update-api.outputs.api_updated != 'true' && steps.translate-docs.outputs.docs_updated != 'true' && steps.generate-ai-prompts.outputs.ai_prompts_updated != 'true' && steps.generate-docs-index.outputs.docs_index_updated != 'true'
+        run: |
+          echo "今天没有发现需要更新的文档呢~"
+          echo "所有文档都是最新状态"
+          echo "艾莉丝会继续守护着我们的文档库"
+          echo "下次更新再见啦~"
