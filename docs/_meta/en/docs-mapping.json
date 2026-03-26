@@ -2,8 +2,8 @@
   "version": "1.0",
   "total_categories": 10,
   "categories": {
-    "快速开始": {
-      "description": "ErisPulse 快速入门指南",
+    "Quick Start": {
+      "description": "ErisPulse Quick Start Guide",
       "count": 4,
       "documents": [
         {
@@ -28,8 +28,8 @@
         }
       ]
     },
-    "入门指南": {
-      "description": "ErisPulse 基础概念和使用教程",
+    "Getting Started": {
+      "description": "ErisPulse basic concepts and tutorials",
       "count": 5,
       "documents": [
         {
@@ -59,8 +59,8 @@
         }
       ]
     },
-    "用户使用指南": {
-      "description": "ErisPulse 配置和命令参考",
+    "User Guide": {
+      "description": "ErisPulse configuration and command reference",
       "count": 4,
       "documents": [
         {
@@ -85,8 +85,8 @@
         }
       ]
     },
-    "开发者指南": {
-      "description": "模块和适配器开发指南",
+    "Developer Guide": {
+      "description": "Module and adapter development guides",
       "count": 10,
       "documents": [
         {
@@ -141,8 +141,8 @@
         }
       ]
     },
-    "平台特性指南": {
-      "description": "各平台特性和适配器说明",
+    "Platform Guide": {
+      "description": "Platform features and adapter documentation",
       "count": 7,
       "documents": [
         {
@@ -182,8 +182,8 @@
         }
       ]
     },
-    "API 参考": {
-      "description": "核心 API 和接口文档",
+    "API Reference": {
+      "description": "Core API and interface documentation",
       "count": 4,
       "documents": [
         {
@@ -208,8 +208,8 @@
         }
       ]
     },
-    "高级主题": {
-      "description": "深入理解框架的高级特性",
+    "Advanced Topics": {
+      "description": "Deep dive into advanced framework features",
       "count": 4,
       "documents": [
         {
@@ -234,8 +234,8 @@
         }
       ]
     },
-    "AI 辅助开发": {
-      "description": "使用 AI 辅助开发 ErisPulse",
+    "AI-Assisted Development": {
+      "description": "Using AI to assist ErisPulse development",
       "count": 1,
       "documents": [
         {
@@ -245,8 +245,8 @@
         }
       ]
     },
-    "技术标准": {
-      "description": "框架的技术规范和标准",
+    "Technical Standards": {
+      "description": "Framework technical specifications and standards",
       "count": 5,
       "documents": [
         {
@@ -276,8 +276,8 @@
         }
       ]
     },
-    "风格指南": {
-      "description": "代码和文档风格规范",
+    "Style Guide": {
+      "description": "Code and documentation style guidelines",
       "count": 2,
       "documents": [
         {
