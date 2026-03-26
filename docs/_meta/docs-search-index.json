@@ -199,7 +199,7 @@
     "1. 模块开发（推荐）": [
       {
         "document": "zh-CN/README.md",
-        "line": 89,
+        "line": 88,
         "level": 3,
         "title": "1. 模块开发（推荐）"
       }
@@ -381,7 +381,7 @@
     "2. 嵌入式开发": [
       {
         "document": "zh-CN/README.md",
-        "line": 93,
+        "line": 92,
         "level": 3,
         "title": "2. 嵌入式开发"
       }
@@ -1233,7 +1233,7 @@
     "AI 辅助开发": [
       {
         "document": "zh-CN/README.md",
-        "line": 77,
+        "line": 76,
         "level": 3,
         "title": "AI 辅助开发"
       },
@@ -1247,7 +1247,7 @@
     "API 参考": [
       {
         "document": "zh-CN/README.md",
-        "line": 59,
+        "line": 58,
         "level": 3,
         "title": "API 参考"
       },
@@ -4127,7 +4127,7 @@
     "平台特性指南": [
       {
         "document": "zh-CN/README.md",
-        "line": 50,
+        "line": 49,
         "level": 3,
         "title": "平台特性指南"
       }
@@ -4175,7 +4175,7 @@
     "开发方式": [
       {
         "document": "zh-CN/README.md",
-        "line": 85,
+        "line": 84,
         "level": 2,
         "title": "开发方式"
       }
@@ -4221,7 +4221,7 @@
     "开发者指南": [
       {
         "document": "zh-CN/README.md",
-        "line": 30,
+        "line": 29,
         "level": 3,
         "title": "开发者指南"
       },
@@ -4355,7 +4355,7 @@
     "快速开始": [
       {
         "document": "zh-CN/README.md",
-        "line": 10,
+        "line": 9,
         "level": 3,
         "title": "快速开始"
       },
@@ -4479,7 +4479,7 @@
     "扩展开发": [
       {
         "document": "zh-CN/README.md",
-        "line": 46,
+        "line": 45,
         "level": 4,
         "title": "扩展开发"
       },
@@ -4509,7 +4509,7 @@
     "技术标准": [
       {
         "document": "zh-CN/README.md",
-        "line": 65,
+        "line": 64,
         "level": 3,
         "title": "技术标准"
       },
@@ -4687,7 +4687,7 @@
     "文档导航": [
       {
         "document": "zh-CN/README.md",
-        "line": 8,
+        "line": 7,
         "level": 2,
         "title": "文档导航"
       }
@@ -4735,7 +4735,7 @@
     "新手入门": [
       {
         "document": "zh-CN/README.md",
-        "line": 14,
+        "line": 13,
         "level": 3,
         "title": "新手入门"
       }
@@ -5247,7 +5247,7 @@
     "模块开发": [
       {
         "document": "zh-CN/README.md",
-        "line": 32,
+        "line": 31,
         "level": 4,
         "title": "模块开发"
       },
@@ -5767,7 +5767,7 @@
     "用户使用指南": [
       {
         "document": "zh-CN/README.md",
-        "line": 24,
+        "line": 23,
         "level": 3,
         "title": "用户使用指南"
       },
@@ -5947,7 +5947,7 @@
     "相关链接": [
       {
         "document": "zh-CN/README.md",
-        "line": 120,
+        "line": 119,
         "level": 2,
         "title": "相关链接"
       }
@@ -6199,7 +6199,7 @@
     "获取帮助": [
       {
         "document": "zh-CN/README.md",
-        "line": 114,
+        "line": 113,
         "level": 2,
         "title": "获取帮助"
       },
@@ -6651,7 +6651,7 @@
     "适配器开发": [
       {
         "document": "zh-CN/README.md",
-        "line": 39,
+        "line": 38,
         "level": 4,
         "title": "适配器开发"
       },
@@ -7179,7 +7179,7 @@
     "风格指南": [
       {
         "document": "zh-CN/README.md",
-        "line": 81,
+        "line": 80,
         "level": 3,
         "title": "风格指南"
       },
@@ -7201,7 +7201,7 @@
     "高级主题": [
       {
         "document": "zh-CN/README.md",
-        "line": 71,
+        "line": 70,
         "level": 3,
         "title": "高级主题"
       },
