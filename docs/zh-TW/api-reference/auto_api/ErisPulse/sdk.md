@@ -1,0 +1,294 @@
+# `ErisPulse.sdk` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse SDK 主类
+
+提供统一的 SDK 接口，整合所有核心模块和加载器
+
+> **提示**
+> example:
+> >>> from ErisPulse import sdk
+> >>> await sdk.init()
+> >>> await sdk.adapter.startup()
+
+---
+
+## 类列表
+
+
+### `class SDK`
+
+ErisPulse SDK 主类
+
+整合所有核心模块和加载器，提供统一的初始化和管理接口
+
+> **提示**
+> SDK 提供以下核心属性：
+> - Event: 事件系统
+> - lifecycle: 生命周期管理器
+> - logger: 日志管理器
+> - storage: 存储管理器
+> - env: 存储管理器别名
+> - config: 配置管理器
+> - adapter: 适配器管理器
+> - AdapterFather: 适配器基类别名
+> - BaseAdapter: 适配器基类
+> - SendDSL: DSL 发送接口基类
+> - module: 模块管理器
+> - router: 路由管理器
+> - adapter_server: 路由管理器别名
+
+
+#### 嵌套类
+
+
+##### `class Initializer`
+
+初始化协调器
+
+协调适配器和模块的加载流程，提供统一的初始化接口
+
+> **提示**
+> 使用方式：
+> >>> initializer = Initializer(sdk_instance)
+> >>> success = await initializer.init()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async init()`
+
+初始化所有模块和适配器
+
+执行步骤:
+1. 从 PyPI 包加载适配器
+2. 从 PyPI 包加载模块
+3. 注册适配器
+4. 注册模块
+5. 初始化模块
+
+:return: bool 初始化是否成功
+
+**异常**: `ImportError` - 当加载失败时抛出
+
+---
+
+
+##### `class Uninitializer`
+
+反初始化协调器
+
+协调适配器和模块的卸载流程，提供统一的反初始化接口
+
+> **提示**
+> 使用方式：
+> >>> uninitializer = Uninitializer(sdk_instance)
+> >>> success = await uninitializer.uninit()
+
+
+###### 方法列表
+
+
+####### `__init__(sdk_instance: Any)`
+
+反初始化协调器
+
+:param sdk_instance: SDK 实例
+
+---
+
+
+####### `async async uninit()`
+
+执行反初始化
+
+执行步骤:
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理事件处理器
+4. 清理管理器
+5. 清理 SDK 模块属性
+
+:return: bool 反初始化是否成功
+
+---
+
+
+#### 方法列表
+
+
+##### `__init__()`
+
+初始化 SDK 实例
+
+挂载所有核心模块到 SDK 实例
+
+---
+
+
+##### `__repr__()`
+
+返回 SDK 的字符串表示
+
+:return: str SDK 的字符串表示
+
+---
+
+
+##### `async async init()`
+
+SDK 初始化入口
+
+:return: bool SDK 初始化是否成功
+
+**示例**:
+```python
+>>> success = await sdk.init()
+>>> if success:
+>>>     await sdk.adapter.startup()
+```
+
+---
+
+
+##### `async async _prepare_environment(script_path: str = 'main.py')`
+
+> **内部方法** 
+准备运行环境
+
+初始化项目环境文件和配置
+
+:return: bool 环境准备是否成功
+
+---
+
+
+##### `async async _init_progress(script_path: str = 'main.py')`
+
+> **内部方法** 
+初始化项目环境文件
+
+:return: bool 是否创建了新的 main.py 文件
+
+---
+
+
+##### `init_sync()`
+
+SDK 初始化入口（同步版本）
+
+用于命令行直接调用，自动在事件循环中运行异步初始化
+
+:return: bool SDK 初始化是否成功
+
+---
+
+
+##### `init_task()`
+
+SDK 初始化入口，返回 Task 对象
+
+:return: asyncio.Task 初始化任务
+
+---
+
+
+##### `async async load_module(module_name: str)`
+
+手动加载指定模块
+
+:param module_name: str 要加载的模块名称
+:return: bool 加载是否成功
+
+**示例**:
+```python
+>>> await sdk.load_module("MyModule")
+```
+
+---
+
+
+##### `async async run(keep_running: bool = True)`
+
+无头模式运行 ErisPulse
+
+:param keep_running: bool 是否保持运行
+
+**示例**:
+```python
+>>> await sdk.run(keep_running=True)
+```
+
+---
+
+
+##### `async async _do_restart()`
+
+> **内部方法** 
+实际执行重启逻辑的内部方法
+
+在后台任务中运行，与调用 restart() 的事件处理器解耦
+确保即使调用者被取消，重启流程也能完整执行
+
+:return: bool 重新加载是否成功
+
+---
+
+
+##### `async async restart()`
+
+SDK 重新启动
+
+执行完整的反初始化后再初始化过程，并重新启动适配器
+
+> **提示**
+> 使用 asyncio.shield 保护重启任务，确保即使当前事件处理器被取消，
+> 重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+> 注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
+
+:return: bool 重新加载是否成功
+
+**异常**: `RuntimeError` - 当初始化失败时抛出
+
+**示例**:
+```python
+>>> await sdk.restart()
+```
+
+---
+
+
+##### `async async uninit()`
+
+SDK 反初始化
+
+执行以下操作：
+1. 关闭所有适配器
+2. 卸载所有模块
+3. 清理所有事件处理器
+4. 清理适配器管理器和模块管理器
+5. 清理 SDK 对象上的模块属性
+
+:return: bool 反初始化是否成功
+
+**示例**:
+```python
+>>> await sdk.uninit()
+```
+
+---
+
