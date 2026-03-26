@@ -1,0 +1,165 @@
+# 開發者指南
+
+本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。
+
+## 內容列表
+
+### 模組開發
+
+1. [模組開發入門](modules/getting-started.md) - 建立第一個模組
+2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念與架構
+3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 物件的完整說明
+4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
+
+### 適配器開發
+
+1. [適配器開發入門](adapters/getting-started.md) - 建立第一個適配器
+2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念
+3. [SendDSL 詳解](adapters/send-dsl.md) - Send 訊息傳送 DSL 的完整說明
+4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
+5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
+
+### 擴充功能開發
+
+1. [CLI 擴充功能開發](extensions/cli-extensions.md) - 開發自訂 CLI 指令
+
+## 開發準備
+
+在開始開發之前，請確保您：
+
+1. 閱讀了[基礎概念](../getting-started/basic-concepts.md)
+2. 熟悉了[事件處理](../getting-started/event-handling.md)
+3. 安裝了開發環境（Python >= 3.10）
+4. 安裝了 ErisPulse SDK
+
+## 開發類型選擇
+
+根據您的需求選擇合適的開發類型：
+
+### 模組開發
+
+**適用場景：**
+- 擴充機器人功能
+- 實作特定業務邏輯
+- 提供指令與訊息處理
+
+**範例：**
+- 天氣查詢機器人
+- 音樂播放器
+- 資料收集工具
+
+**入門指南：** [模組開發入門](modules/getting-started.md)
+
+### 適配器開發
+
+**適用場景：**
+- 連接新的訊息平台
+- 實作跨平台通訊
+- 提供平台特定功能
+
+**範例：**
+- Discord 適配器
+- Slack 適配器
+- 自訂平台適配器
+
+**入門指南：** [適配器開發入門](adapters/getting-started.md)
+
+### CLI 擴充功能開發
+
+**適用場景：**
+- 擴充命令列工具
+- 提供自訂管理指令
+- 自動化部署流程
+
+**範例：**
+- 部署腳本
+- 資料遷移工具
+- 組態管理工具
+
+**入門指南：** [CLI 擴充功能開發](extensions/cli-extensions.md)
+
+## 開發工具
+
+### 專案範本
+
+ErisPulse 提供了範例專案作為參考：
+
+- `examples/example-module/` - 模組範例
+- `examples/example-adapter/` - 適配器範例
+- `examples/example-cli-module/` - CLI 擴充範例
+
+### 開發模式
+
+使用熱重載模式進行開發：
+
+```bash
+epsdk run main.py --reload
+```
+
+### 偵錯技巧
+
+啟用 DEBUG 層級日誌：
+
+```toml
+[ErisPulse.logger]
+level = "DEBUG"
+```
+
+使用模組自己的日誌記錄器：
+
+```python
+from ErisPulse import sdk
+
+logger = sdk.logger.get_child("MyModule")
+logger.debug("除錯資訊")
+```
+
+## 發布您的模組
+
+### 打包
+
+確保專案包含以下檔案：
+
+```
+MyModule/
+├── pyproject.toml
+├── README.md
+├── LICENSE
+└── MyModule/
+    ├── __init__.py
+    └── Core.py
+```
+
+### pyproject.toml 設定
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "模組功能描述"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyModule"
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+### 發布到 PyPI
+
+```bash
+# 建構分發套件
+python -m build
+
+# 發布到 PyPI
+python -m twine upload dist/*
+```
+
+## 相關文件
+
+- [標準規範](../standards/) - 確保相容性的技術標準
+- [平台特性指南](../platform-guide/) - 了解各平台適配器的特性
