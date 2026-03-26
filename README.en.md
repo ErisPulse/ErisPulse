@@ -54,7 +54,7 @@ uv install ErisPulse
 
 ![Installation Demo](.github/assets/docs/install_pip.gif)
 
-> If your Python version is below 3.10, you can use the one-click install script to automatically configure the environment. See [Installation Script Documentation](docs/en/scripts/install/) for details.
+> If your Python version is below 3.10, you can use the one-click install script to automatically configure the environment. See [Installation Script Documentation](scripts/install/) for details.
 
 ### Initialize Project
 
