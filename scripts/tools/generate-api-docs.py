@@ -8,6 +8,8 @@ import os
 import ast
 import re
 import argparse
+import shutil
+from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
 
@@ -560,48 +562,163 @@ def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
     return modules_info
 
 
+def get_available_languages(docs_dir: Path) -> List[str]:
+    """
+    获取可用的语言列表
+    
+    :param docs_dir: 文档根目录
+    :return: 语言代码列表
+    """
+    langs = []
+    for item in docs_dir.iterdir():
+        # 排除 _meta
+        if item.is_dir() and item.name not in ['_meta']:
+            langs.append(item.name)
+    return sorted(langs)
+
+
+def copy_directory(src: Path, dst: Path) -> None:
+    """
+    复制目录内容
+    
+    :param src: 源目录
+    :param dst: 目标目录
+    """
+    if dst.exists():
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="ErisPulse API文档生成器 v10.0",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  # 使用默认设置
-  python .github/tools/update-api-docs.py
+  # 使用默认设置（为所有语言生成）
+  python scripts/tools/generate-api-docs.py
+  
+  # 只为特定语言生成
+  python scripts/tools/generate-api-docs.py --lang en
   
   # 自定义源目录和输出目录
-  python .github/tools/update-api-docs.py --src src --output docs/api
+  python scripts/tools/generate-api-docs.py --src src --output docs/api-reference/auto_api
         """
     )
     
     parser.add_argument("--src", default="src", help="源代码目录 (默认: src)")
-    parser.add_argument("--output", default="docs/api-reference/auto_api", help="Markdown输出目录 (默认: docs/api-reference/auto_api)")
+    parser.add_argument("--docs", default="docs", help="文档根目录 (默认: docs)")
+    parser.add_argument("--lang", help="指定语言代码（如: zh-CN, en, zh-TW），不指定则为所有语言生成")
     parser.add_argument("--version", action="version", version="API文档生成器 v10.0")
     
     args = parser.parse_args()
     
-    print(f"""╔══════════════════════════════════════════╗
-║   ErisPulse API 文档生成器 v10.0      ║
-╚══════════════════════════════════════════╝
-
-源代码目录: {args.src}
-输出目录: {args.output}
-
-正在生成API文档...
-""")
+    # 获取脚本所在目录
+    script_dir = Path(__file__).parent
     
-    modules_info = generate_api_docs(args.src, args.output)
+    # docs 目录
+    docs_dir = script_dir.parent.parent / args.docs
     
-    total_modules = len(modules_info)
-    total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
-    total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
-    total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
-    total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
-    
-    print("\n" + "="*50)
-    print(f"API文档生成完成！")
-    print(f"  模块总数: {total_modules}")
-    print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
-    print(f"  方法总数: {total_methods}")
-    print(f"  函数总数: {total_functions}")
-    print("="*50)
+    # 如果指定了语言，只为该语言生成
+    if args.lang:
+        print(f"为语言 {args.lang} 生成 API 文档...")
+        print(f"源代码目录: {args.src}")
+        print(f"输出目录: {docs_dir / args.lang / 'api-reference' / 'auto_api'}")
+        
+        # 生成 API 文档到指定语言目录
+        output_dir = docs_dir / args.lang / "api-reference" / "auto_api"
+        modules_info = generate_api_docs(args.src, str(output_dir))
+        
+        # 输出统计
+        total_modules = len(modules_info)
+        total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
+        total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
+        total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
+        total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
+        
+        print("\n" + "="*50)
+        print(f"API文档生成完成！")
+        print(f"  语言: {args.lang}")
+        print(f"  模块总数: {total_modules}")
+        print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+        print(f"  方法总数: {total_methods}")
+        print(f"  函数总数: {total_functions}")
+        print("="*50)
+    else:
+        # 为所有语言生成
+        langs = get_available_languages(docs_dir)
+        print(f"发现 {len(langs)} 个语言: {', '.join(langs)}")
+        print()
+        
+        # 先生成到中文目录（如果有）
+        if 'zh-CN' in langs:
+            print(f"\n{'='*60}")
+            print(f"生成 API 文档到中文目录...")
+            print('='*60)
+            
+            zh_output_dir = docs_dir / "zh-CN" / "api-reference" / "auto_api"
+            modules_info = generate_api_docs(args.src, str(zh_output_dir))
+            
+            # 复制到其他语言目录
+            for lang in langs:
+                if lang == 'zh-CN':
+                    continue
+                
+                print(f"\n{'='*60}")
+                print(f"复制 API 文档到语言: {lang}")
+                print('='*60)
+                
+                target_dir = docs_dir / lang / "api-reference" / "auto_api"
+                copy_directory(zh_output_dir, target_dir)
+                print(f"已复制到: {target_dir}")
+            
+            # 输出统计
+            total_modules = len(modules_info)
+            total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
+            total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
+            total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
+            total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
+            
+            print(f"\n{'='*60}")
+            print(f"所有语言的 API 文档生成完成！")
+            print(f"  模块总数: {total_modules}")
+            print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+            print(f"  方法总数: {total_methods}")
+            print(f"  函数总数: {total_functions}")
+            print(f"  已复制到 {len(langs)} 个语言")
+            print('='*60)
+        else:
+            # 如果没有中文，使用第一个语言
+            first_lang = langs[0]
+            print(f"\n{'='*60}")
+            print(f"生成 API 文档到 {first_lang} 目录...")
+            print('='*60)
+            
+            output_dir = docs_dir / first_lang / "api-reference" / "auto_api"
+            modules_info = generate_api_docs(args.src, str(output_dir))
+            
+            # 复制到其他语言目录
+            for lang in langs[1:]:
+                print(f"\n{'='*60}")
+                print(f"复制 API 文档到语言: {lang}")
+                print('='*60)
+                
+                target_dir = docs_dir / lang / "api-reference" / "auto_api"
+                copy_directory(output_dir, target_dir)
+                print(f"已复制到: {target_dir}")
+            
+            # 输出统计
+            total_modules = len(modules_info)
+            total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
+            total_functions = sum(len(info.get('functions', [])) for info in modules_info.values())
+            total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
+            total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
+            
+            print(f"\n{'='*60}")
+            print(f"所有语言的 API 文档生成完成！")
+            print(f"  模块总数: {total_modules}")
+            print(f"  类总数: {total_classes}（包括 {total_nested_classes} 个嵌套类）")
+            print(f"  方法总数: {total_methods}")
+            print(f"  函数总数: {total_functions}")
+            print(f"  已复制到 {len(langs)} 个语言")
+            print('='*60)
