@@ -150,13 +150,9 @@ epsdk run main.py --reload
 
 ## 文檔語言
 
-<div align="center">
-
 | 🇨🇳🇳 简体中文 | 🇺🇸 English | 🇹🇼 繁體中文 |
 |----------------|----------------|----------------|
 | [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
-
-</div>
 
 ## 外部資源
 
