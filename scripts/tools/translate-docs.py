@@ -128,7 +128,15 @@ class DocsTranslator:
         """
         cache_key = self.get_cache_key(file_path, target_lang)
         
+        # 调试日志：显示缓存路径
+        if os.environ.get("DEBUG_TRANSLATE"):
+            print(f"    [DEBUG] 源文件: {file_path}")
+            print(f"    [DEBUG] 缓存文件: {cache_key}")
+            print(f"    [DEBUG] 缓存存在: {cache_key.exists()}")
+        
         if not cache_key.exists():
+            if os.environ.get("DEBUG_TRANSLATE"):
+                print(f"    [DEBUG] 缓存文件不存在，需要翻译")
             return True
         
         # 读取缓存
@@ -137,7 +145,15 @@ class DocsTranslator:
         
         # 比较哈希值
         current_hash = self.calculate_file_hash(file_path)
-        return cache_data.get("hash") != current_hash
+        cached_hash = cache_data.get("hash")
+        
+        # 调试日志：显示哈希比较
+        if os.environ.get("DEBUG_TRANSLATE"):
+            print(f"    [DEBUG] 当前文件哈希: {current_hash}")
+            print(f"    [DEBUG] 缓存中的哈希: {cached_hash}")
+            print(f"    [DEBUG] 哈希匹配: {current_hash == cached_hash}")
+        
+        return cached_hash != current_hash
     
     def save_cache(self, file_path: Path, target_lang: str, hash_value: str):
         """
