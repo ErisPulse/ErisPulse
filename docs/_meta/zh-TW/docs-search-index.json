@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 765,
+  "total_keywords": 777,
   "keywords": {
     "0 成功": [
       {
@@ -1424,6 +1424,14 @@
         "title": "Discord"
       }
     ],
+    "ErisPulse 平台功能文件": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 平台功能文件"
+      }
+    ],
     "ErisPulse 文檔": [
       {
         "document": "zh-TW/README.md",
@@ -1824,6 +1832,14 @@
         "line": 296,
         "level": 2,
         "title": "Send 訊息發送 DSL"
+      }
+    ],
+    "Send 鏈式調用": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "Send 鏈式調用"
       }
     ],
     "SendDSL": [
@@ -2242,6 +2258,12 @@
       {
         "document": "zh-TW/developer-guide/adapters/core-concepts.md",
         "line": 148,
+        "level": 3,
+        "title": "事件監聽"
+      },
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 92,
         "level": 3,
         "title": "事件監聽"
       }
@@ -3022,6 +3044,22 @@
         "line": 127,
         "level": 2,
         "title": "參考文檔"
+      }
+    ],
+    "參考連結": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 202,
+        "level": 2,
+        "title": "參考連結"
+      }
+    ],
+    "參與貢獻": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 214,
+        "level": 2,
+        "title": "參與貢獻"
       }
     ],
     "取得介接器實例": [
@@ -3998,6 +4036,14 @@
         "title": "平台原生事件"
       }
     ],
+    "平台特定功能": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 16,
+        "level": 2,
+        "title": "平台特定功能"
+      }
+    ],
     "平台特定回應": [
       {
         "document": "zh-TW/getting-started/common-tasks.md",
@@ -4918,6 +4964,14 @@
         "title": "概述"
       }
     ],
+    "標準事件格式": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 149,
+        "level": 3,
+        "title": "標準事件格式"
+      }
+    ],
     "標準化回應": [
       {
         "document": "zh-TW/developer-guide/adapters/send-dsl.md",
@@ -4926,12 +4980,28 @@
         "title": "標準化回應"
       }
     ],
+    "標準回應格式": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 170,
+        "level": 3,
+        "title": "標準回應格式"
+      }
+    ],
     "標準文件清單": [
       {
         "document": "zh-TW/standards/README.md",
         "line": 5,
         "level": 2,
         "title": "標準文件清單"
+      }
+    ],
+    "標準格式": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 144,
+        "level": 2,
+        "title": "標準格式"
       }
     ],
     "標準概述": [
@@ -5900,6 +5970,22 @@
         "title": "訊息事件處理"
       }
     ],
+    "訊息傳送失敗": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 187,
+        "level": 4,
+        "title": "訊息傳送失敗"
+      }
+    ],
+    "訊息傳送成功": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 171,
+        "level": 4,
+        "title": "訊息傳送成功"
+      }
+    ],
     "訊息內容": [
       {
         "document": "zh-TW/developer-guide/modules/event-wrapper.md",
@@ -6296,6 +6382,14 @@
         "line": 71,
         "level": 3,
         "title": "透過 CLI 安裝"
+      }
+    ],
+    "通用介面": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 30,
+        "level": 2,
+        "title": "通用介面"
       }
     ],
     "通用參數": [
@@ -6836,6 +6930,14 @@
         "line": 73,
         "level": 3,
         "title": "非同步初始化"
+      }
+    ],
+    "非同步發送與結果處理": [
+      {
+        "document": "zh-TW/platform-guide/README.md",
+        "line": 77,
+        "level": 4,
+        "title": "非同步發送與結果處理"
       }
     ],
     "非同步程式設計": [
