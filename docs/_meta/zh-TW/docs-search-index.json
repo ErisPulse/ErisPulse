@@ -199,7 +199,7 @@
     "1. 模組開發（推薦）": [
       {
         "document": "zh-TW/README.md",
-        "line": 89,
+        "line": 88,
         "level": 3,
         "title": "1. 模組開發（推薦）"
       }
@@ -359,7 +359,7 @@
     "2. 嵌入式開發": [
       {
         "document": "zh-TW/README.md",
-        "line": 93,
+        "line": 92,
         "level": 3,
         "title": "2. 嵌入式開發"
       }
@@ -1209,7 +1209,7 @@
     "AI 輔助開發": [
       {
         "document": "zh-TW/README.md",
-        "line": 77,
+        "line": 76,
         "level": 3,
         "title": "AI 輔助開發"
       },
@@ -1223,7 +1223,7 @@
     "API 參考": [
       {
         "document": "zh-TW/README.md",
-        "line": 59,
+        "line": 58,
         "level": 3,
         "title": "API 參考"
       },
@@ -2689,7 +2689,7 @@
     "使用者指南": [
       {
         "document": "zh-TW/README.md",
-        "line": 24,
+        "line": 23,
         "level": 3,
         "title": "使用者指南"
       }
@@ -4055,7 +4055,7 @@
     "平台特性指南": [
       {
         "document": "zh-TW/README.md",
-        "line": 50,
+        "line": 49,
         "level": 3,
         "title": "平台特性指南"
       }
@@ -4221,7 +4221,7 @@
     "快速開始": [
       {
         "document": "zh-TW/README.md",
-        "line": 10,
+        "line": 9,
         "level": 3,
         "title": "快速開始"
       },
@@ -4279,7 +4279,7 @@
     "技術標準": [
       {
         "document": "zh-TW/README.md",
-        "line": 65,
+        "line": 64,
         "level": 3,
         "title": "技術標準"
       },
@@ -4416,6 +4416,14 @@
         "title": "擴充欄位說明"
       }
     ],
+    "擴充開發": [
+      {
+        "document": "zh-TW/README.md",
+        "line": 45,
+        "level": 4,
+        "title": "擴充開發"
+      }
+    ],
     "擴充：新增更多功能": [
       {
         "document": "zh-TW/getting-started/first-bot.md",
@@ -4436,14 +4444,6 @@
         "line": 192,
         "level": 2,
         "title": "擴展欄位說明"
-      }
-    ],
-    "擴展開發": [
-      {
-        "document": "zh-TW/README.md",
-        "line": 46,
-        "level": 4,
-        "title": "擴展開發"
       }
     ],
     "支援的訊息傳送類型": [
@@ -4585,7 +4585,7 @@
     "文檔導航": [
       {
         "document": "zh-TW/README.md",
-        "line": 8,
+        "line": 7,
         "level": 2,
         "title": "文檔導航"
       }
@@ -4633,7 +4633,7 @@
     "新手入門": [
       {
         "document": "zh-TW/README.md",
-        "line": 14,
+        "line": 13,
         "level": 3,
         "title": "新手入門"
       }
@@ -5133,7 +5133,7 @@
     "模組開發": [
       {
         "document": "zh-TW/README.md",
-        "line": 32,
+        "line": 31,
         "level": 4,
         "title": "模組開發"
       },
@@ -5370,12 +5370,12 @@
         "title": "獲取協助"
       }
     ],
-    "獲取說明": [
+    "獲取幫助": [
       {
         "document": "zh-TW/README.md",
-        "line": 114,
+        "line": 113,
         "level": 2,
-        "title": "獲取說明"
+        "title": "獲取幫助"
       }
     ],
     "生命週期": [
@@ -5615,7 +5615,7 @@
     "相關連結": [
       {
         "document": "zh-TW/README.md",
-        "line": 120,
+        "line": 119,
         "level": 2,
         "title": "相關連結"
       }
@@ -6485,7 +6485,7 @@
     "進階主題": [
       {
         "document": "zh-TW/README.md",
-        "line": 71,
+        "line": 70,
         "level": 3,
         "title": "進階主題"
       },
@@ -6585,7 +6585,7 @@
     "適配器開發": [
       {
         "document": "zh-TW/README.md",
-        "line": 39,
+        "line": 38,
         "level": 4,
         "title": "適配器開發"
       },
@@ -6827,7 +6827,7 @@
     "開發方式": [
       {
         "document": "zh-TW/README.md",
-        "line": 85,
+        "line": 84,
         "level": 2,
         "title": "開發方式"
       }
@@ -6873,7 +6873,7 @@
     "開發者指南": [
       {
         "document": "zh-TW/README.md",
-        "line": 30,
+        "line": 29,
         "level": 3,
         "title": "開發者指南"
       },
@@ -6995,7 +6995,7 @@
     "風格指南": [
       {
         "document": "zh-TW/README.md",
-        "line": 81,
+        "line": 80,
         "level": 3,
         "title": "風格指南"
       },
