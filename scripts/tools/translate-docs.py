@@ -117,6 +117,11 @@ class DocsTranslator:
         :param target_lang: 目标语言
         :return: 缓存文件路径
         """
+        # 特殊处理根目录的 README.md
+        if file_path.name == "README.md" and file_path.parent == Path("."):
+            cache_name = f"README.{target_lang}.cache"
+            return self.cache_dir / cache_name
+            
         rel_path = file_path.relative_to(self.source_dir)
         cache_name = f"{rel_path}.{target_lang}.cache"
         return self.cache_dir / cache_name
@@ -252,7 +257,7 @@ class DocsTranslator:
                 return None
             
             # 移除可能被 AI 添加的 markdown 代码块标记
-            if full_content.startswith("```markdown") or full_content.startswith("```"):
+            if full_content.startswith("```"):
                 full_content = full_content.split("\n", 1)[-1]
             if full_content.endswith("```"):
                 full_content = full_content.rsplit("\n", 1)[0]
@@ -272,7 +277,11 @@ class DocsTranslator:
         :param force: 是否强制重新翻译
         :return: 是否成功
         """
-        rel_path = file_path.relative_to(self.source_dir)
+        # 特殊处理根目录的 README.md
+        if file_path.name == "README.md" and file_path.parent == Path("."):
+            rel_path = file_path.name
+        else:
+            rel_path = file_path.relative_to(self.source_dir)
         
         try:
             # 读取源文件
@@ -288,19 +297,24 @@ class DocsTranslator:
             print(f"  [翻译] {rel_path} -> {target_lang}")
             
             # 调用翻译 API
-            translated_content = await self.call_translation_api(content, target_lang, rel_path.name)
+            translated_content = await self.call_translation_api(content, target_lang, rel_path)
             
             if not translated_content:
                 print(f"  [失败] {rel_path}")
                 self.stats["failed_files"] += 1
                 return False
             
-            # 确保目标目录存在
-            target_dir = Path("docs") / target_lang / rel_path.parent
-            target_dir.mkdir(parents=True, exist_ok=True)
+            # 确定目标路径
+            if file_path.name == "README.md" and file_path.parent == Path("."):
+                # 根目录 README.md 直接生成到根目录的 README.{lang}.md
+                target_file = Path(f"README.{target_lang}.md")
+            else:
+                # 普通文档生成到 docs/{lang}/...
+                target_dir = Path("docs") / target_lang / rel_path.parent
+                target_dir.mkdir(parents=True, exist_ok=True)
+                target_file = target_dir / rel_path.name
             
             # 写入翻译结果（接收完成后保存）
-            target_file = target_dir / rel_path.name
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(translated_content)
             
@@ -326,17 +340,24 @@ class DocsTranslator:
         """
         files = []
         
-        for root, dirs, filenames in os.walk(self.source_dir):
-            # 过滤需要忽略的目录
-            dirs[:] = [d for d in dirs if not any(
-                Path(root) / d == self.source_dir / ignored_dir.replace("/", os.sep)
-                for ignored_dir in self.IGNORE_DIRS
-            )]
-            
-            for filename in filenames:
-                if filename.endswith(".md"):
-                    file_path = Path(root) / filename
-                    files.append(file_path)
+        # 1. 检查根目录的 README.md
+        readme_path = Path("README.md")
+        if readme_path.exists():
+            files.append(readme_path)
+        
+        # 2. 扫描 docs/{source_lang} 目录下的文件
+        if self.source_dir.exists():
+            for root, dirs, filenames in os.walk(self.source_dir):
+                # 过滤需要忽略的目录
+                dirs[:] = [d for d in dirs if not any(
+                    Path(root) / d == self.source_dir / ignored_dir.replace("/", os.sep)
+                    for ignored_dir in self.IGNORE_DIRS
+                )]
+                
+                for filename in filenames:
+                    if filename.endswith(".md"):
+                        file_path = Path(root) / filename
+                        files.append(file_path)
         
         return files
     
