@@ -143,8 +143,13 @@
     },
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
-      "count": 6,
+      "count": 7,
       "documents": [
+        {
+          "title": "ErisPulse 平台功能文件",
+          "path": "zh-TW/platform-guide/README.md",
+          "level": 1
+        },
         {
           "title": "郵件平台特性文檔",
           "path": "zh-TW/platform-guide/email.md",
