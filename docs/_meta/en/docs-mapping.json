@@ -1,0 +1,296 @@
+{
+  "version": "1.0",
+  "total_categories": 10,
+  "categories": {
+    "快速开始": {
+      "description": "ErisPulse 快速入门指南",
+      "count": 4,
+      "documents": [
+        {
+          "title": "ErisPulse Documentation",
+          "path": "en/README.md",
+          "level": 1
+        },
+        {
+          "title": "Bug Tracker",
+          "path": "en/bug-tracker.md",
+          "level": 1
+        },
+        {
+          "title": "Quick Start",
+          "path": "en/quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Glossary",
+          "path": "en/terminology.md",
+          "level": 1
+        }
+      ]
+    },
+    "入门指南": {
+      "description": "ErisPulse 基础概念和使用教程",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Getting Started Guide",
+          "path": "en/getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "Basic Concepts",
+          "path": "en/getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Common Task Examples",
+          "path": "en/getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "Getting Started with Event Handling",
+          "path": "en/getting-started/event-handling.md",
+          "level": 1
+        },
+        {
+          "title": "Create Your First Bot",
+          "path": "en/getting-started/first-bot.md",
+          "level": 1
+        }
+      ]
+    },
+    "用户使用指南": {
+      "description": "ErisPulse 配置和命令参考",
+      "count": 4,
+      "documents": [
+        {
+          "title": "User Guide",
+          "path": "en/user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "CLI Command Reference",
+          "path": "en/user-guide/cli-reference.md",
+          "level": 1
+        },
+        {
+          "title": "Configuration File Guide",
+          "path": "en/user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "Installation and Configuration",
+          "path": "en/user-guide/installation.md",
+          "level": 1
+        }
+      ]
+    },
+    "开发者指南": {
+      "description": "模块和适配器开发指南",
+      "count": 10,
+      "documents": [
+        {
+          "title": "Developer Guide",
+          "path": "en/developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Development Best Practices",
+          "path": "en/developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Core Concepts",
+          "path": "en/developer-guide/adapters/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Getting Started with Adapter Development",
+          "path": "en/developer-guide/adapters/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "SendDSL Deep Dive",
+          "path": "en/developer-guide/adapters/send-dsl.md",
+          "level": 1
+        },
+        {
+          "title": "CLI Extension Development Guide",
+          "path": "en/developer-guide/extensions/cli-extensions.md",
+          "level": 1
+        },
+        {
+          "title": "Module Development Best Practices",
+          "path": "en/developer-guide/modules/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "Module Core Concepts",
+          "path": "en/developer-guide/modules/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Detailed Explanation of the Event Wrapper Class",
+          "path": "en/developer-guide/modules/event-wrapper.md",
+          "level": 1
+        },
+        {
+          "title": "Introduction to Module Development",
+          "path": "en/developer-guide/modules/getting-started.md",
+          "level": 1
+        }
+      ]
+    },
+    "平台特性指南": {
+      "description": "各平台特性和适配器说明",
+      "count": 7,
+      "documents": [
+        {
+          "title": "ErisPulse Platform Features Documentation",
+          "path": "en/platform-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Mail Platform Feature Documentation",
+          "path": "en/platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "Documentation Maintenance Guidelines",
+          "path": "en/platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot11 Platform Features Documentation",
+          "path": "en/platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12 Platform Features Documentation",
+          "path": "en/platform-guide/onebot12.md",
+          "level": 1
+        },
+        {
+          "title": "Telegram Platform Features Documentation",
+          "path": "en/platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "Yunhu Platform Feature Documentation",
+          "path": "en/platform-guide/yunhu.md",
+          "level": 1
+        }
+      ]
+    },
+    "API 参考": {
+      "description": "核心 API 和接口文档",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API Reference",
+          "path": "en/api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter System API",
+          "path": "en/api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "Core Module API",
+          "path": "en/api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "Event System API",
+          "path": "en/api-reference/event-system.md",
+          "level": 1
+        }
+      ]
+    },
+    "高级主题": {
+      "description": "深入理解框架的高级特性",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Advanced Topics",
+          "path": "en/advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "Lazy Loading Module System",
+          "path": "en/advanced/lazy-loading.md",
+          "level": 1
+        },
+        {
+          "title": "Lifecycle Management",
+          "path": "en/advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "Router Manager",
+          "path": "en/advanced/router.md",
+          "level": 1
+        }
+      ]
+    },
+    "AI 辅助开发": {
+      "description": "使用 AI 辅助开发 ErisPulse",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI-Assisted Development",
+          "path": "en/ai-support/README.md",
+          "level": 1
+        }
+      ]
+    },
+    "技术标准": {
+      "description": "框架的技术规范和标准",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Technical Standards",
+          "path": "en/standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Adapter Standardized Return Specification",
+          "path": "en/standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Standardization Conversion Specification",
+          "path": "en/standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Sending Method Specifications",
+          "path": "en/standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Session Type Standards",
+          "path": "en/standards/session-types.md",
+          "level": 1
+        }
+      ]
+    },
+    "风格指南": {
+      "description": "代码和文档风格规范",
+      "count": 2,
+      "documents": [
+        {
+          "title": "Style Guide",
+          "path": "en/styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Comment Style Guide",
+          "path": "en/styleguide/docstring.md",
+          "level": 1
+        }
+      ]
+    }
+  }
+}
