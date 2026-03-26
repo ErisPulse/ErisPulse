@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 799,
+  "total_keywords": 798,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -129,7 +129,7 @@
     "1. Module Development (Recommended)": [
       {
         "document": "en/README.md",
-        "line": 89,
+        "line": 88,
         "level": 3,
         "title": "1. Module Development (Recommended)"
       }
@@ -399,7 +399,7 @@
     "2. Embedded Development": [
       {
         "document": "en/README.md",
-        "line": 93,
+        "line": 92,
         "level": 3,
         "title": "2. Embedded Development"
       }
@@ -1234,15 +1234,13 @@
         "title": "@ Mention related"
       }
     ],
-    "AI Assisted Development": [
+    "AI-Assisted Development": [
       {
         "document": "en/README.md",
-        "line": 77,
+        "line": 76,
         "level": 3,
-        "title": "AI Assisted Development"
-      }
-    ],
-    "AI-Assisted Development": [
+        "title": "AI-Assisted Development"
+      },
       {
         "document": "en/ai-support/README.md",
         "line": 1,
@@ -1277,7 +1275,7 @@
     "API Reference": [
       {
         "document": "en/README.md",
-        "line": 59,
+        "line": 58,
         "level": 3,
         "title": "API Reference"
       },
@@ -1425,7 +1423,7 @@
     "Adapter Development": [
       {
         "document": "en/README.md",
-        "line": 39,
+        "line": 38,
         "level": 4,
         "title": "Adapter Development"
       },
@@ -1587,7 +1585,7 @@
     "Advanced Topics": [
       {
         "document": "en/README.md",
-        "line": 71,
+        "line": 70,
         "level": 3,
         "title": "Advanced Topics"
       },
@@ -2893,7 +2891,7 @@
     "Developer Guide": [
       {
         "document": "en/README.md",
-        "line": 30,
+        "line": 29,
         "level": 3,
         "title": "Developer Guide"
       },
@@ -2902,6 +2900,14 @@
         "line": 1,
         "level": 1,
         "title": "Developer Guide"
+      }
+    ],
+    "Development Methods": [
+      {
+        "document": "en/README.md",
+        "line": 84,
+        "level": 2,
+        "title": "Development Methods"
       }
     ],
     "Development Mode": [
@@ -2916,14 +2922,6 @@
         "line": 43,
         "level": 2,
         "title": "Development Mode"
-      }
-    ],
-    "Development Modes": [
-      {
-        "document": "en/README.md",
-        "line": 85,
-        "level": 2,
-        "title": "Development Modes"
       }
     ],
     "Development Related Terms": [
@@ -3063,7 +3061,7 @@
     "Documentation Navigation": [
       {
         "document": "en/README.md",
-        "line": 8,
+        "line": 7,
         "level": 2,
         "title": "Documentation Navigation"
       }
@@ -3541,7 +3539,7 @@
     "Extension Development": [
       {
         "document": "en/README.md",
-        "line": 46,
+        "line": 45,
         "level": 4,
         "title": "Extension Development"
       },
@@ -3705,7 +3703,7 @@
     "Getting Help": [
       {
         "document": "en/README.md",
-        "line": 114,
+        "line": 113,
         "level": 2,
         "title": "Getting Help"
       },
@@ -3727,7 +3725,7 @@
     "Getting Started": [
       {
         "document": "en/README.md",
-        "line": 14,
+        "line": 13,
         "level": 3,
         "title": "Getting Started"
       }
@@ -4781,7 +4779,7 @@
     "Module Development": [
       {
         "document": "en/README.md",
-        "line": 32,
+        "line": 31,
         "level": 4,
         "title": "Module Development"
       },
@@ -5293,7 +5291,7 @@
     "Platform Features Guide": [
       {
         "document": "en/README.md",
-        "line": 50,
+        "line": 49,
         "level": 3,
         "title": "Platform Features Guide"
       }
@@ -5573,7 +5571,7 @@
     "Quick Start": [
       {
         "document": "en/README.md",
-        "line": 10,
+        "line": 9,
         "level": 3,
         "title": "Quick Start"
       },
@@ -5805,7 +5803,7 @@
     "Related Links": [
       {
         "document": "en/README.md",
-        "line": 120,
+        "line": 119,
         "level": 2,
         "title": "Related Links"
       }
@@ -6537,7 +6535,7 @@
     "Style Guide": [
       {
         "document": "en/README.md",
-        "line": 81,
+        "line": 80,
         "level": 3,
         "title": "Style Guide"
       },
@@ -6691,7 +6689,7 @@
     "Technical Standards": [
       {
         "document": "en/README.md",
-        "line": 65,
+        "line": 64,
         "level": 3,
         "title": "Technical Standards"
       },
@@ -6901,7 +6899,7 @@
     "User Guide": [
       {
         "document": "en/README.md",
-        "line": 24,
+        "line": 23,
         "level": 3,
         "title": "User Guide"
       },
