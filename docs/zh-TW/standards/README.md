@@ -5,9 +5,9 @@
 ## 標準文件清單
 
 1. [會話類型標準](session-types.md) - ErisPulse 會話類型定義和映射規範
-2. [事件轉換標準](event-conversion.md) - 平台事件到 OneBot12 標準的轉換規範
-3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準
-4. [發送方法命名規範](naming-conventions.md) - 適配器 Send 類別發送方法的命名規範
+2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴展命名規範、訊息段標準
+3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴展要求
+4. [發送方法規範](send-method-spec.md) - Send 類別方法命名、參數規範及反向轉換要求
 
 ## 標準概述
 
