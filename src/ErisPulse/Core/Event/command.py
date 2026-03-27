@@ -558,4 +558,4 @@ class CommandHandler:
                 help_lines.append(f"  {self.prefix}{cmd_name} - {help_text}")
             return "\n".join(help_lines)
 
-command = CommandHandler()
+command : CommandHandler = CommandHandler()

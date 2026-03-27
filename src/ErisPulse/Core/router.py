@@ -452,7 +452,7 @@ class RouterManager:
         
         return "\n".join(lines)
 
-router = RouterManager()
+router : RouterManager = RouterManager()
 
 __all__ = [
     "router",

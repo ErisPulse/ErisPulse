@@ -547,7 +547,7 @@ class StorageManager:
             from .logger import logger
             logger.error(f"设置存储项 {key} 失败: {e}")
 
-storage = StorageManager()
+storage : StorageManager = StorageManager()
 
 __all__ = [
     "storage"
