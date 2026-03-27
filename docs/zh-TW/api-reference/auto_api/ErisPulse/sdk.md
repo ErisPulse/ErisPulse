@@ -61,7 +61,7 @@ ErisPulse SDK 主类
 ###### 方法列表
 
 
-####### `__init__(sdk_instance: Any)`
+####### `__init__(sdk_instance: SDK)`
 
 初始化协调器
 
@@ -103,7 +103,7 @@ ErisPulse SDK 主类
 ###### 方法列表
 
 
-####### `__init__(sdk_instance: Any)`
+####### `__init__(sdk_instance: SDK)`
 
 反初始化协调器
 
