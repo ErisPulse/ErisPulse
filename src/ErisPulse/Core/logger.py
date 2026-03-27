@@ -511,6 +511,6 @@ class LoggerChild:
         return self.get_child(name)
 
 
-logger = Logger()
+logger : Logger = Logger()
 
 __all__ = ["logger"]

@@ -258,7 +258,7 @@ class ConfigManager:
             self._dirty_keys.clear()
             self._load_config()
 
-config = ConfigManager()
+config : ConfigManager = ConfigManager()
 
 __all__ = [
     "config"

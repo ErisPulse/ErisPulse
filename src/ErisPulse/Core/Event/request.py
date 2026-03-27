@@ -100,4 +100,4 @@ class RequestHandler:
         """
         return self.handler._clear_handlers()
     
-request = RequestHandler()
+request : RequestHandler = RequestHandler()
