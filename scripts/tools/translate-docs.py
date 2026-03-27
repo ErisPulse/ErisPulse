@@ -439,7 +439,15 @@ class DocsTranslator:
                 print(f"  [跳过] {rel_path} (未变化)")
                 return True
             
-            print(f"  [翻译] {rel_path} -> {target_lang}")
+            # 哈希比对信息
+            cache_key = self.get_cache_key(file_path, target_lang)
+            current_hash = self.calculate_file_hash(file_path)
+            if cache_key.exists():
+                with open(cache_key, "r", encoding="utf-8") as f:
+                    cached_hash = json.load(f).get("hash", "N/A")
+                print(f"  [翻译] {rel_path} -> {target_lang} (哈希不匹配: 源={current_hash}, 缓存={cached_hash})")
+            else:
+                print(f"  [翻译] {rel_path} -> {target_lang} (无缓存, 源哈希={current_hash})")
             
             # 加载人工审查备注
             review_notes = self.load_review_notes(file_path, target_lang)
