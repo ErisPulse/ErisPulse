@@ -82,14 +82,11 @@ from ErisPulse.Core.Event import command
 
 @command("hello", help="Send greeting message")
 async def hello_handler(event):
-    # Get user nickname, use default if unavailable
     user_name = event.get_user_nickname() or "Friend"
-    # Send reply
     await event.reply(f"Hello, {user_name}!")
 
 @command("ping", help="Test if bot is online")
 async def ping_handler(event):
-    # Reply Pong
     await event.reply("Pong! Bot is running normally.")
 
 if __name__ == "__main__":
@@ -166,7 +163,7 @@ See [Platform Adapter Details](docs/en/platform-guide/README.md)
 
 ## Contributing
 
-We need your help to ensure the robustness of the ErisPulse project! We welcome various forms of contributions, including but not limited to:
+The robustness of the ErisPulse project needs your help! We welcome various forms of contributions, including but not limited to:
 
 1. **Report Issues**
    Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
