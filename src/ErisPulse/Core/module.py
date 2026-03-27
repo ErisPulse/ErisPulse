@@ -486,7 +486,7 @@ class ModuleManager(ManagerBase):
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 
-module = ModuleManager()
+module : ModuleManager = ModuleManager()
 
 __all__ = [
     "module"

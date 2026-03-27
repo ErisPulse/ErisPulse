@@ -1,0 +1,296 @@
+{
+  "version": "1.0",
+  "total_categories": 10,
+  "categories": {
+    "Quick Start": {
+      "description": "ErisPulse Quick Start Guide",
+      "count": 4,
+      "documents": [
+        {
+          "title": "ErisPulse Documentation",
+          "path": "README.md",
+          "level": 1
+        },
+        {
+          "title": "Quick Start",
+          "path": "quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "Bug Tracker",
+          "path": "bug-tracker.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Glossary",
+          "path": "terminology.md",
+          "level": 1
+        }
+      ]
+    },
+    "Getting Started": {
+      "description": "ErisPulse basic concepts and tutorials",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Create Your First Bot",
+          "path": "getting-started/first-bot.md",
+          "level": 1
+        },
+        {
+          "title": "Getting Started Guide",
+          "path": "getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "Basic Concepts",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Common Task Examples",
+          "path": "getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "Getting Started with Event Handling",
+          "path": "getting-started/event-handling.md",
+          "level": 1
+        }
+      ]
+    },
+    "User Guide": {
+      "description": "ErisPulse configuration and command reference",
+      "count": 4,
+      "documents": [
+        {
+          "title": "User Guide",
+          "path": "user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Installation and Configuration",
+          "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "Configuration File Guide",
+          "path": "user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "CLI Command Reference",
+          "path": "user-guide/cli-reference.md",
+          "level": 1
+        }
+      ]
+    },
+    "Developer Guide": {
+      "description": "Module and adapter development guides",
+      "count": 10,
+      "documents": [
+        {
+          "title": "Developer Guide",
+          "path": "developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Introduction to Module Development",
+          "path": "developer-guide/modules/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "Module Core Concepts",
+          "path": "developer-guide/modules/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Detailed Explanation of the Event Wrapper Class",
+          "path": "developer-guide/modules/event-wrapper.md",
+          "level": 1
+        },
+        {
+          "title": "Module Development Best Practices",
+          "path": "developer-guide/modules/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "Getting Started with Adapter Development",
+          "path": "developer-guide/adapters/getting-started.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Core Concepts",
+          "path": "developer-guide/adapters/core-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "SendDSL Deep Dive",
+          "path": "developer-guide/adapters/send-dsl.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Development Best Practices",
+          "path": "developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "CLI Extension Development Guide",
+          "path": "developer-guide/extensions/cli-extensions.md",
+          "level": 1
+        }
+      ]
+    },
+    "Platform Guide": {
+      "description": "Platform features and adapter documentation",
+      "count": 7,
+      "documents": [
+        {
+          "title": "ErisPulse Platform Features Documentation",
+          "path": "platform-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot11 Platform Features Documentation",
+          "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12 Platform Features Documentation",
+          "path": "platform-guide/onebot12.md",
+          "level": 1
+        },
+        {
+          "title": "Telegram Platform Features Documentation",
+          "path": "platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "Mail Platform Feature Documentation",
+          "path": "platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "Yunhu Platform Feature Documentation",
+          "path": "platform-guide/yunhu.md",
+          "level": 1
+        },
+        {
+          "title": "Documentation Maintenance Guidelines",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        }
+      ]
+    },
+    "API Reference": {
+      "description": "Core API and interface documentation",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API Reference",
+          "path": "api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter System API",
+          "path": "api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "Core Module API",
+          "path": "api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "Event System API",
+          "path": "api-reference/event-system.md",
+          "level": 1
+        }
+      ]
+    },
+    "Advanced Topics": {
+      "description": "Deep dive into advanced framework features",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Advanced Topics",
+          "path": "advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "Lifecycle Management",
+          "path": "advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "Lazy Loading Module System",
+          "path": "advanced/lazy-loading.md",
+          "level": 1
+        },
+        {
+          "title": "Router Manager",
+          "path": "advanced/router.md",
+          "level": 1
+        }
+      ]
+    },
+    "AI-Assisted Development": {
+      "description": "Using AI to assist ErisPulse development",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI-Assisted Development",
+          "path": "ai-support/README.md",
+          "level": 1
+        }
+      ]
+    },
+    "Technical Standards": {
+      "description": "Framework technical specifications and standards",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Technical Standards",
+          "path": "standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Session Type Standards",
+          "path": "standards/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Adapter Standardized Return Specification",
+          "path": "standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "Adapter Standardization Conversion Specification",
+          "path": "standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Sending Method Specifications",
+          "path": "standards/send-method-spec.md",
+          "level": 1
+        }
+      ]
+    },
+    "Style Guide": {
+      "description": "Code and documentation style guidelines",
+      "count": 2,
+      "documents": [
+        {
+          "title": "Style Guide",
+          "path": "styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Comment Style Guide",
+          "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ]
+    }
+  }
+}

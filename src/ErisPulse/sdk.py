@@ -11,21 +11,33 @@ example:
 {!--< /tips >!--}
 """
 
+from __future__ import annotations
+
 import asyncio
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
 # 导入核心模块
 from .Core import Event, lifecycle, logger
 from .Core import storage, env, config
 from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
 from .Core import module, router, adapter_server
+from .Core.lifecycle import LifecycleManager
+from .Core.adapter import AdapterManager
+from .Core.storage import StorageManager
+from .Core.logger import Logger
+from .Core.module import ModuleManager
+from .Core.router import RouterManager
+from .Core.config import ConfigManager
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 # 导入加载器类
 from .loaders.adapter import AdapterLoader
 from .loaders.module import ModuleLoader
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 
 class SDK:
@@ -54,43 +66,43 @@ class SDK:
     
     # ==================== 核心模块属性 ====================
     
-    Event: Any
+    Event: ModuleType
     """事件系统"""
     
-    lifecycle: Any
+    lifecycle: LifecycleManager
     """生命周期管理器"""
     
-    logger: Any
+    logger: Logger
     """日志管理器"""
     
-    storage: Any
+    storage: StorageManager
     """存储管理器"""
     
-    env: Any
+    env: StorageManager
     """存储管理器别名"""
     
-    config: Any
+    config: ConfigManager
     """配置管理器"""
     
-    adapter: Any
+    adapter: AdapterManager
     """适配器管理器"""
     
-    AdapterFather: Any
+    AdapterFather: type[BaseAdapter]
     """适配器基类别名"""
     
-    BaseAdapter: Any
+    BaseAdapter: type[BaseAdapter]
     """适配器基类"""
     
-    SendDSL: Any
+    SendDSL: type[SendDSL]
     """DSL 发送接口基类"""
     
-    module: Any
+    module: ModuleManager
     """模块管理器"""
     
-    router: Any
+    router: RouterManager
     """路由管理器"""
     
-    adapter_server: Any
+    adapter_server: RouterManager
     """路由管理器别名"""
     
     def __init__(self):
@@ -124,7 +136,7 @@ class SDK:
         self.adapter_server = adapter_server
         
         # 初始化协调器（在需要时创建）
-        self._initializer: Any = None  # type: ignore
+        self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
     
     def __getattribute__(self, name: str):
@@ -157,7 +169,7 @@ class SDK:
         {!--< /tips >!--}
         """
         
-        def __init__(self, sdk_instance: Any):
+        def __init__(self, sdk_instance: SDK) -> None:
             """
             初始化协调器
             
@@ -310,7 +322,7 @@ class SDK:
         {!--< /tips >!--}
         """
         
-        def __init__(self, sdk_instance: Any):
+        def __init__(self, sdk_instance: SDK) -> None:
             """
             反初始化协调器
             
