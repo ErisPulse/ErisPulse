@@ -12,10 +12,11 @@ ErisPulse 文档翻译器
 目录结构：
   .github/
   ├── .translate_cache/          # 翻译缓存
-  │   ├── en/                   # 英文缓存
-  │   │   ├── README.md.cache
+  │   ├── README.en.md.cache    # 根目录 README 英文缓存
+  │   ├── README.zh-TW.md.cache # 根目录 README 繁中缓存
+  │   ├── en/                   # 英文缓存（docs 下文档）
   │   │   └── getting-started/first-bot.md.cache
-  │   └── zh-TW/                # 繁中缓存
+  │   └── zh-TW/                # 繁中缓存（docs 下文档）
   │       └── ...
   └── .translate_notes/         # 人工审查备注
       ├── en/                   # 英文审查备注
@@ -146,16 +147,29 @@ class DocsTranslator:
             return "README.md"
         return str(file_path.relative_to(self.source_dir))
     
+    def _is_root_readme(self, file_path: Path) -> bool:
+        """
+        判断是否为根目录的 README.md
+
+        :param file_path: 文件路径
+        :return: 是否为根目录 README
+        """
+        return file_path.name == "README.md" and file_path.parent == Path(".")
+
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
         """
-        获取缓存文件路径（按语言目录分级）
+        获取缓存文件路径
 
-        目录结构：.github/.translate_cache/{lang}/{rel_path}.cache
+        根目录 README.md -> .github/.translate_cache/README.{lang}.md.cache
+        docs 下文档 -> .github/.translate_cache/{lang}/{rel_path}.cache
 
         :param file_path: 源文件路径
         :param target_lang: 目标语言
         :return: 缓存文件路径
         """
+        if self._is_root_readme(file_path):
+            # 根目录 README 直接放在 cache_dir 下，用目标文件名命名
+            return self.cache_dir / f"README.{target_lang}.md.cache"
         rel_path = self._get_rel_path(file_path)
         return self.cache_dir / target_lang / f"{rel_path}.cache"
     
