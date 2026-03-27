@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-  "total_keywords": 777,
+  "total_keywords": 789,
   "keywords": {
-    "0 成功": [
+    "0 成功（OK）": [
       {
         "document": "standards/api-response.md",
         "line": 64,
         "level": 4,
-        "title": "0 成功"
+        "title": "0 成功（OK）"
       }
     ],
     "1. SDK 對象": [
@@ -164,14 +164,6 @@
         "title": "1. 敏感資料保護"
       }
     ],
-    "1. 核心原則": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 3,
-        "level": 2,
-        "title": "1. 核心原則"
-      }
-    ],
     "1. 核心概念": [
       {
         "document": "standards/session-types.md",
@@ -300,12 +292,12 @@
         "title": "1.3 協議方法"
       }
     ],
-    "1xxxx 動作請求錯誤": [
+    "1xxxx 動作請求錯誤（Request Error）": [
       {
         "document": "standards/api-response.md",
         "line": 67,
         "level": 4,
-        "title": "1xxxx 動作請求錯誤"
+        "title": "1xxxx 動作請求錯誤（Request Error）"
       }
     ],
     "2. 事件系統": [
@@ -327,7 +319,7 @@
     "2. 參數規範詳解": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 42,
+        "line": 48,
         "level": 2,
         "title": "2. 參數規範詳解"
       }
@@ -462,14 +454,6 @@
         "title": "2. 標準會話類型"
       }
     ],
-    "2. 標準欄位要求": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 10,
-        "level": 2,
-        "title": "2. 標準欄位要求"
-      }
-    ],
     "2. 模組命名規範": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -561,23 +545,15 @@
     "2.1 媒體訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 44,
+        "line": 50,
         "level": 3,
         "title": "2.1 媒體訊息參數規範"
-      }
-    ],
-    "2.1 必要欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 12,
-        "level": 3,
-        "title": "2.1 必要欄位"
       }
     ],
     "2.1.1 字串參數（URL 或檔案路徑）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 48,
+        "line": 54,
         "level": 4,
         "title": "2.1.1 字串參數（URL 或檔案路徑）"
       }
@@ -585,7 +561,7 @@
     "2.1.2 二進位數據參數": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 73,
+        "line": 79,
         "level": 4,
         "title": "2.1.2 二進位數據參數"
       }
@@ -593,9 +569,17 @@
     "2.1.3 參數處理優先順序": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 99,
+        "line": 105,
         "level": 4,
         "title": "2.1.3 參數處理優先順序"
+      }
+    ],
+    "2.2 @用戶參數規範": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 130,
+        "level": 3,
+        "title": "2.2 @用戶參數規範"
       }
     ],
     "2.2 ErisPulse 擴展類型": [
@@ -606,76 +590,20 @@
         "title": "2.2 ErisPulse 擴展類型"
       }
     ],
-    "2.2 文字訊息參數規範": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 124,
-        "level": 3,
-        "title": "2.2 文字訊息參數規範"
-      }
-    ],
-    "2.2 訊息事件欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 29,
-        "level": 3,
-        "title": "2.2 訊息事件欄位"
-      }
-    ],
-    "2.3 @用戶參數規範": [
+    "2.3 回覆訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
         "line": 151,
         "level": 3,
-        "title": "2.3 @用戶參數規範"
+        "title": "2.3 回覆訊息參數規範"
       }
     ],
-    "2.3 通知事件欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 37,
-        "level": 3,
-        "title": "2.3 通知事件欄位"
-      }
-    ],
-    "2.4 回覆訊息參數規範": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 171,
-        "level": 3,
-        "title": "2.4 回覆訊息參數規範"
-      }
-    ],
-    "2.4 請求事件欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 44,
-        "level": 3,
-        "title": "2.4 請求事件欄位"
-      }
-    ],
-    "2.5 卡片訊息參數規範": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 188,
-        "level": 3,
-        "title": "2.5 卡片訊息參數規範"
-      }
-    ],
-    "2.6 參數驗證和錯誤處理": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 212,
-        "level": 3,
-        "title": "2.6 參數驗證和錯誤處理"
-      }
-    ],
-    "2xxxx 動作處理器錯誤": [
+    "2xxxx 動作處理器錯誤（Handler Error）": [
       {
         "document": "standards/api-response.md",
         "line": 80,
         "level": 4,
-        "title": "2xxxx 動作處理器錯誤"
+        "title": "2xxxx 動作處理器錯誤（Handler Error）"
       }
     ],
     "3. 事件 ID 生成": [
@@ -684,14 +612,6 @@
         "line": 121,
         "level": 3,
         "title": "3. 事件 ID 生成"
-      }
-    ],
-    "3. 事件格式範例": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 51,
-        "level": 2,
-        "title": "3. 事件格式範例"
       }
     ],
     "3. 事件處理器註冊": [
@@ -721,7 +641,7 @@
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 241,
+        "line": 167,
         "level": 2,
         "title": "3. 平台特有方法命名"
       }
@@ -830,14 +750,6 @@
         "title": "3.1 對應原則"
       }
     ],
-    "3.1 訊息事件 (message)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 53,
-        "level": 3,
-        "title": "3.1 訊息事件 (message)"
-      }
-    ],
     "3.1 通用欄位": [
       {
         "document": "standards/api-response.md",
@@ -862,34 +774,18 @@
         "title": "3.2 常見平台對應範例"
       }
     ],
-    "3.2 通知事件 (notice)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 86,
-        "level": 3,
-        "title": "3.2 通知事件 (notice)"
-      }
-    ],
-    "3.3 請求事件 (request)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 107,
-        "level": 3,
-        "title": "3.3 請求事件 (request)"
-      }
-    ],
-    "3xxxx 動作執行錯誤": [
+    "3xxxx 動作執行錯誤（Execution Error）": [
       {
         "document": "standards/api-response.md",
         "line": 86,
         "level": 4,
-        "title": "3xxxx 動作執行錯誤"
+        "title": "3xxxx 動作執行錯誤（Execution Error）"
       }
     ],
     "4. 參數命名規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 267,
+        "line": 198,
         "level": 2,
         "title": "4. 參數命名規範"
       }
@@ -961,7 +857,7 @@
     "4. 訊息段標準": [
       {
         "document": "standards/event-conversion.md",
-        "line": 127,
+        "line": 3,
         "level": 2,
         "title": "4. 訊息段標準"
       }
@@ -977,7 +873,7 @@
     "4.1 通用訊息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 129,
+        "line": 5,
         "level": 3,
         "title": "4.1 通用訊息段"
       }
@@ -990,12 +886,12 @@
         "title": "4.2 使用自訂類型"
       }
     ],
-    "4.2 特殊訊息段": [
+    "4.2 平台擴展訊息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 139,
+        "line": 30,
         "level": 3,
-        "title": "4.2 特殊訊息段"
+        "title": "4.2 平台擴展訊息段"
       }
     ],
     "4.3 取消註冊自訂類型": [
@@ -1014,20 +910,20 @@
         "title": "5. 實作 Send 類別"
       }
     ],
-    "5. 未知事件處理": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 150,
-        "level": 2,
-        "title": "5. 未知事件處理"
-      }
-    ],
-    "5. 注意事項": [
+    "5. 擴充規範": [
       {
         "document": "standards/api-response.md",
         "line": 106,
         "level": 2,
-        "title": "5. 注意事項"
+        "title": "5. 擴充規範"
+      }
+    ],
+    "5. 未知事件處理": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 47,
+        "level": 2,
+        "title": "5. 未知事件處理"
       }
     ],
     "5. 自動類型推斷": [
@@ -1041,7 +937,7 @@
     "5. 返回值規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 278,
+        "line": 209,
         "level": 2,
         "title": "5. 返回值規範"
       }
@@ -1054,12 +950,28 @@
         "title": "5. 配置選項（如適用）"
       }
     ],
+    "5.1 `message_id` 必選欄位": [
+      {
+        "document": "standards/api-response.md",
+        "line": 110,
+        "level": 3,
+        "title": "5.1 `message_id` 必選欄位"
+      }
+    ],
     "5.1 推斷優先順序": [
       {
         "document": "standards/session-types.md",
         "line": 168,
         "level": 3,
         "title": "5.1 推斷優先順序"
+      }
+    ],
+    "5.2 `{platform}_raw` 原始回應欄位": [
+      {
+        "document": "standards/api-response.md",
+        "line": 117,
+        "level": 3,
+        "title": "5.2 `{platform}_raw` 原始回應欄位"
       }
     ],
     "5.2 使用範例": [
@@ -1070,12 +982,28 @@
         "title": "5.2 使用範例"
       }
     ],
+    "5.3 適配器實作檢查清單": [
+      {
+        "document": "standards/api-response.md",
+        "line": 140,
+        "level": 3,
+        "title": "5.3 適配器實作檢查清單"
+      }
+    ],
     "6. API 使用範例": [
       {
         "document": "standards/session-types.md",
         "line": 193,
         "level": 2,
         "title": "6. API 使用範例"
+      }
+    ],
+    "6. 反向轉換規範（OneBot12 → 平台）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 216,
+        "level": 2,
+        "title": "6. 反向轉換規範（OneBot12 → 平台）"
       }
     ],
     "6. 實作轉換器": [
@@ -1086,28 +1014,28 @@
         "title": "6. 實作轉換器"
       }
     ],
-    "6. 平台特性欄位": [
+    "6. 擴展命名規範": [
       {
         "document": "standards/event-conversion.md",
-        "line": 166,
+        "line": 65,
         "level": 2,
-        "title": "6. 平台特性欄位"
+        "title": "6. 擴展命名規範"
       }
     ],
-    "6. 相關文檔": [
+    "6. 注意事項": [
       {
-        "document": "standards/send-method-spec.md",
-        "line": 283,
+        "document": "standards/api-response.md",
+        "line": 147,
         "level": 2,
-        "title": "6. 相關文檔"
+        "title": "6. 注意事項"
       }
     ],
-    "6.1 特有欄位範例": [
+    "6.1 欄位命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 175,
+        "line": 67,
         "level": 3,
-        "title": "6.1 特有欄位範例"
+        "title": "6.1 欄位命名"
       }
     ],
     "6.1 發送訊息": [
@@ -1118,12 +1046,44 @@
         "title": "6.1 發送訊息"
       }
     ],
+    "6.1 轉換模型": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 220,
+        "level": 3,
+        "title": "6.1 轉換模型"
+      }
+    ],
+    "6.2 `Raw_ob12` 實作規範": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 237,
+        "level": 3,
+        "title": "6.2 `Raw_ob12` 實作規範"
+      }
+    ],
     "6.2 事件回覆": [
       {
         "document": "standards/session-types.md",
         "line": 211,
         "level": 3,
         "title": "6.2 事件回覆"
+      }
+    ],
+    "6.2 訊息段類型命名": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 86,
+        "level": 3,
+        "title": "6.2 訊息段類型命名"
+      }
+    ],
+    "6.3 原始資料欄位命名": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 92,
+        "level": 3,
+        "title": "6.3 原始資料欄位命名"
       }
     ],
     "6.3 命令處理": [
@@ -1134,12 +1094,92 @@
         "title": "6.3 命令處理"
       }
     ],
+    "6.3 訊息段轉換規則": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 265,
+        "level": 3,
+        "title": "6.3 訊息段轉換規則"
+      }
+    ],
+    "6.3.1 標準訊息段轉換": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 267,
+        "level": 4,
+        "title": "6.3.1 標準訊息段轉換"
+      }
+    ],
+    "6.3.2 平台擴展訊息段轉換": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 283,
+        "level": 4,
+        "title": "6.3.2 平台擴展訊息段轉換"
+      }
+    ],
+    "6.3.3 複合訊息段處理": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 307,
+        "level": 4,
+        "title": "6.3.3 複合訊息段處理"
+      }
+    ],
+    "6.4 `Raw_ob12` 與標準方法的關係": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 325,
+        "level": 3,
+        "title": "6.4 `Raw_ob12` 與標準方法的關係"
+      }
+    ],
+    "6.4 平台特有欄位範例": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 106,
+        "level": 3,
+        "title": "6.4 平台特有欄位範例"
+      }
+    ],
+    "6.5 實作範例": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 353,
+        "level": 3,
+        "title": "6.5 實作範例"
+      }
+    ],
+    "6.5 嵌套擴展欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 123,
+        "level": 3,
+        "title": "6.5 嵌套擴展欄位"
+      }
+    ],
+    "6.6 `self` 欄位擴展": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 146,
+        "level": 3,
+        "title": "6.6 `self` 欄位擴展"
+      }
+    ],
     "7. 建立套件入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 271,
         "level": 3,
         "title": "7. 建立套件入口"
+      }
+    ],
+    "7. 方法發現": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 406,
+        "level": 2,
+        "title": "7. 方法發現"
       }
     ],
     "7. 最佳實務": [
@@ -1150,12 +1190,12 @@
         "title": "7. 最佳實務"
       }
     ],
-    "7. 適配器實作檢查清單": [
+    "7. 會話類型擴展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 191,
+        "line": 158,
         "level": 2,
-        "title": "7. 適配器實作檢查清單"
+        "title": "7. 會話類型擴展"
       }
     ],
     "7.1 介面卡開發者": [
@@ -1182,6 +1222,14 @@
         "title": "7.3 類型推斷"
       }
     ],
+    "8. 已註冊的發送方法擴展": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 429,
+        "level": 2,
+        "title": "8. 已註冊的發送方法擴展"
+      }
+    ],
     "8. 常見問題": [
       {
         "document": "standards/session-types.md",
@@ -1190,12 +1238,58 @@
         "title": "8. 常見問題"
       }
     ],
+    "8. 模組開發者指南": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 194,
+        "level": 2,
+        "title": "8. 模組開發者指南"
+      }
+    ],
+    "8.1 存取擴展欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 196,
+        "level": 3,
+        "title": "8.1 存取擴展欄位"
+      }
+    ],
+    "8.2 處理擴展訊息段": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 225,
+        "level": 3,
+        "title": "8.2 處理擴展訊息段"
+      }
+    ],
+    "8.3 最佳實踐": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 246,
+        "level": 3,
+        "title": "8.3 最佳實踐"
+      }
+    ],
     "9. 相關文件": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 264,
+        "level": 2,
+        "title": "9. 相關文件"
+      },
       {
         "document": "standards/session-types.md",
         "line": 277,
         "level": 2,
         "title": "9. 相關文件"
+      }
+    ],
+    "9. 適配器實作檢查清單": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 444,
+        "level": 2,
+        "title": "9. 適配器實作檢查清單"
       }
     ],
     "@ 訊息相關": [
@@ -3060,6 +3154,14 @@
         "line": 214,
         "level": 2,
         "title": "參與貢獻"
+      }
+    ],
+    "反向轉換": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 453,
+        "level": 3,
+        "title": "反向轉換"
       }
     ],
     "取得介接器實例": [
@@ -5447,6 +5549,12 @@
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 37,
         "level": 2,
+        "title": "發送方法"
+      },
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 446,
+        "level": 3,
         "title": "發送方法"
       }
     ],
