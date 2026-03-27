@@ -771,7 +771,7 @@ class AdapterManager(ManagerBase):
         """
         return self.exists(platform) and self.is_enabled(platform)
 
-adapter = AdapterManager()
+adapter : AdapterManager = AdapterManager()
 
 __all__ = [
     "adapter"
