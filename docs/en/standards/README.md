@@ -5,9 +5,9 @@ This document contains ErisPulse technical standards specifications to ensure co
 ## Standard Document List
 
 1. [Session Types Standard](session-types.md) - ErisPulse session type definition and mapping specification
-2. [Event Conversion Standard](event-conversion.md) - Specification for converting platform events to OneBot12 standard
-3. [API Response Standard](api-response.md) - Standard for adapter API response formats
-4. [Send Method Naming Conventions](naming-conventions.md) - Naming conventions for adapter Send class sending methods
+2. [Event Conversion Standard](event-conversion.md) - Platform event conversion spec, extension naming conventions, and message segment standards
+3. [API Response Standard](api-response.md) - Standard for adapter API response formats and extension requirements
+4. [Send Method Naming Conventions](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
 
 ## Standard Overview
 

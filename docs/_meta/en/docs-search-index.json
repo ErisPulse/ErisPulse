@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 798,
+  "total_keywords": 793,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -388,14 +388,6 @@
         "title": "2. Create pyproject.toml"
       }
     ],
-    "2. Detailed Parameter Specifications": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 42,
-        "level": 2,
-        "title": "2. Detailed Parameter Specifications"
-      }
-    ],
     "2. Embedded Development": [
       {
         "document": "README.md",
@@ -482,6 +474,14 @@
         "title": "2. Module Naming Conventions"
       }
     ],
+    "2. Parameter Specifications Detail": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 48,
+        "level": 2,
+        "title": "2. Parameter Specifications Detail"
+      }
+    ],
     "2. Proper Use of Lazy Loading": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -565,7 +565,7 @@
     "2.1 Media Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 44,
+        "line": 50,
         "level": 3,
         "title": "2.1 Media Message Parameter Specifications"
       }
@@ -589,7 +589,7 @@
     "2.1.1 String Parameters (URL or File Path)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 48,
+        "line": 54,
         "level": 4,
         "title": "2.1.1 String Parameters (URL or File Path)"
       }
@@ -597,7 +597,7 @@
     "2.1.2 Binary Data Parameters": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 73,
+        "line": 79,
         "level": 4,
         "title": "2.1.2 Binary Data Parameters"
       }
@@ -605,9 +605,17 @@
     "2.1.3 Parameter Processing Priority": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 99,
+        "line": 105,
         "level": 4,
         "title": "2.1.3 Parameter Processing Priority"
+      }
+    ],
+    "2.2 @ User Parameter Specifications": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 130,
+        "level": 3,
+        "title": "2.2 @ User Parameter Specifications"
       }
     ],
     "2.2 ErisPulse Extended Types": [
@@ -626,60 +634,12 @@
         "title": "2.2 Message Event Fields"
       }
     ],
-    "2.2 Text Message Parameter Specifications": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 124,
-        "level": 3,
-        "title": "2.2 Text Message Parameter Specifications"
-      }
-    ],
-    "2.3 @ User Parameter Specifications": [
+    "2.3 Reply Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
         "line": 151,
         "level": 3,
-        "title": "2.3 @ User Parameter Specifications"
-      }
-    ],
-    "2.3 Notice Event Fields": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 37,
-        "level": 3,
-        "title": "2.3 Notice Event Fields"
-      }
-    ],
-    "2.4 Reply Message Parameter Specifications": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 171,
-        "level": 3,
-        "title": "2.4 Reply Message Parameter Specifications"
-      }
-    ],
-    "2.4 Request Event Fields": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 44,
-        "level": 3,
-        "title": "2.4 Request Event Fields"
-      }
-    ],
-    "2.5 Card Message Parameter Specifications": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 188,
-        "level": 3,
-        "title": "2.5 Card Message Parameter Specifications"
-      }
-    ],
-    "2.6 Parameter Validation and Error Handling": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 212,
-        "level": 3,
-        "title": "2.6 Parameter Validation and Error Handling"
+        "title": "2.3 Reply Message Parameter Specifications"
       }
     ],
     "2xxxx Action Handler Errors (Handler Error)": [
@@ -728,14 +688,6 @@
         "line": 80,
         "level": 3,
         "title": "3. Create Adapter Main Class"
-      }
-    ],
-    "3. Event Format Examples": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 51,
-        "level": 2,
-        "title": "3. Event Format Examples"
       }
     ],
     "3. Event Handler Registration": [
@@ -805,7 +757,7 @@
     "3. Platform-Specific Method Naming": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 241,
+        "line": 167,
         "level": 2,
         "title": "3. Platform-Specific Method Naming"
       }
@@ -858,14 +810,6 @@
         "title": "3.1 Mapping Principles"
       }
     ],
-    "3.1 Message Event (message)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 53,
-        "level": 3,
-        "title": "3.1 Message Event (message)"
-      }
-    ],
     "3.2 Common Platform Mapping Examples": [
       {
         "document": "standards/session-types.md",
@@ -874,28 +818,12 @@
         "title": "3.2 Common Platform Mapping Examples"
       }
     ],
-    "3.2 Notice Event (notice)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 86,
-        "level": 3,
-        "title": "3.2 Notice Event (notice)"
-      }
-    ],
     "3.2 Return Code Specification": [
       {
         "document": "standards/api-response.md",
         "line": 62,
         "level": 3,
         "title": "3.2 Return Code Specification"
-      }
-    ],
-    "3.3 Request Event (request)": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 107,
-        "level": 3,
-        "title": "3.3 Request Event (request)"
       }
     ],
     "3xxxx Action Execution Errors (Execution Error)": [
@@ -970,14 +898,6 @@
         "title": "4. Implementation Requirements"
       }
     ],
-    "4. Message Segment Standard": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 127,
-        "level": 2,
-        "title": "4. Message Segment Standard"
-      }
-    ],
     "4. Modules": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -989,17 +909,9 @@
     "4. Parameter Naming Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 267,
+        "line": 199,
         "level": 2,
         "title": "4. Parameter Naming Specifications"
-      }
-    ],
-    "4.1 Generic Message Segment": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 129,
-        "level": 3,
-        "title": "4.1 Generic Message Segment"
       }
     ],
     "4.1 Registering Custom Types": [
@@ -1008,14 +920,6 @@
         "line": 123,
         "level": 3,
         "title": "4.1 Registering Custom Types"
-      }
-    ],
-    "4.2 Special Message Segment": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 139,
-        "level": 3,
-        "title": "4.2 Special Message Segment"
       }
     ],
     "4.2 Using Custom Types": [
@@ -1050,6 +954,14 @@
         "title": "5. Configuration Options (if applicable)"
       }
     ],
+    "5. Extended Specifications": [
+      {
+        "document": "standards/api-response.md",
+        "line": 106,
+        "level": 2,
+        "title": "5. Extended Specifications"
+      }
+    ],
     "5. Implement Send Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1058,28 +970,12 @@
         "title": "5. Implement Send Class"
       }
     ],
-    "5. Notes": [
-      {
-        "document": "standards/api-response.md",
-        "line": 106,
-        "level": 2,
-        "title": "5. Notes"
-      }
-    ],
     "5. Return Value Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 278,
+        "line": 210,
         "level": 2,
         "title": "5. Return Value Specifications"
-      }
-    ],
-    "5. Unknown Event Handling": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 150,
-        "level": 2,
-        "title": "5. Unknown Event Handling"
       }
     ],
     "5.1 Inference Priority": [
@@ -1090,12 +986,36 @@
         "title": "5.1 Inference Priority"
       }
     ],
+    "5.1 `message_id` Mandatory Field": [
+      {
+        "document": "standards/api-response.md",
+        "line": 110,
+        "level": 3,
+        "title": "5.1 `message_id` Mandatory Field"
+      }
+    ],
     "5.2 Usage Examples": [
       {
         "document": "standards/session-types.md",
         "line": 180,
         "level": 3,
         "title": "5.2 Usage Examples"
+      }
+    ],
+    "5.2 `{platform}_raw` Raw Response Field": [
+      {
+        "document": "standards/api-response.md",
+        "line": 117,
+        "level": 3,
+        "title": "5.2 `{platform}_raw` Raw Response Field"
+      }
+    ],
+    "5.3 Adapter Implementation Checklist": [
+      {
+        "document": "standards/api-response.md",
+        "line": 140,
+        "level": 3,
+        "title": "5.3 Adapter Implementation Checklist"
       }
     ],
     "6. API Usage Examples": [
@@ -1114,20 +1034,28 @@
         "title": "6. Implement Converter"
       }
     ],
-    "6. Platform Specific Fields": [
+    "6. Notes": [
       {
-        "document": "standards/event-conversion.md",
-        "line": 166,
+        "document": "standards/api-response.md",
+        "line": 147,
         "level": 2,
-        "title": "6. Platform Specific Fields"
+        "title": "6. Notes"
       }
     ],
-    "6. Related Documentation": [
+    "6. Reverse Conversion Specifications (OneBot12 → Platform)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 283,
+        "line": 217,
         "level": 2,
-        "title": "6. Related Documentation"
+        "title": "6. Reverse Conversion Specifications (OneBot12 → Platform)"
+      }
+    ],
+    "6.1 Conversion Model": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 221,
+        "level": 3,
+        "title": "6.1 Conversion Model"
       }
     ],
     "6.1 Sending Messages": [
@@ -1138,20 +1066,20 @@
         "title": "6.1 Sending Messages"
       }
     ],
-    "6.1 Specific Field Examples": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 175,
-        "level": 3,
-        "title": "6.1 Specific Field Examples"
-      }
-    ],
     "6.2 Event Reply": [
       {
         "document": "standards/session-types.md",
         "line": 212,
         "level": 3,
         "title": "6.2 Event Reply"
+      }
+    ],
+    "6.2 `Raw_ob12` Implementation Specifications": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 238,
+        "level": 3,
+        "title": "6.2 `Raw_ob12` Implementation Specifications"
       }
     ],
     "6.3 Command Handling": [
@@ -1162,12 +1090,44 @@
         "title": "6.3 Command Handling"
       }
     ],
-    "7. Adapter Implementation Checklist": [
+    "6.3 Message Segment Conversion Rules": [
       {
-        "document": "standards/event-conversion.md",
-        "line": 191,
-        "level": 2,
-        "title": "7. Adapter Implementation Checklist"
+        "document": "standards/send-method-spec.md",
+        "line": 266,
+        "level": 3,
+        "title": "6.3 Message Segment Conversion Rules"
+      }
+    ],
+    "6.3.1 Standard Message Segment Conversion": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 268,
+        "level": 4,
+        "title": "6.3.1 Standard Message Segment Conversion"
+      }
+    ],
+    "6.3.2 Platform Extension Message Segment Conversion": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 284,
+        "level": 4,
+        "title": "6.3.2 Platform Extension Message Segment Conversion"
+      }
+    ],
+    "6.3.3 Composite Message Segment Processing": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 308,
+        "level": 4,
+        "title": "6.3.3 Composite Message Segment Processing"
+      }
+    ],
+    "6.4 Relationship between `Raw_ob12` and Standard Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 326,
+        "level": 3,
+        "title": "6.4 Relationship between `Raw_ob12` and Standard Methods"
       }
     ],
     "7. Best Practices": [
