@@ -2,6 +2,27 @@
 ErisPulse 文档翻译器
 
 使用 AI 自动翻译文档到其他语言
+
+特性：
+- 流式输出推理过程和翻译结果
+- 每个文档支持独立的审查备注，按语言目录集中存储，避免重复犯错
+- 自动加载已有翻译作为参考，确保翻译一致性
+- 翻译缓存按语言代码目录分级管理
+
+目录结构：
+  .github/
+  ├── .translate_cache/          # 翻译缓存
+  │   ├── en/                   # 英文缓存
+  │   │   ├── README.md.cache
+  │   │   └── getting-started/first-bot.md.cache
+  │   └── zh-TW/                # 繁中缓存
+  │       └── ...
+  └── .translate_notes/         # 人工审查备注
+      ├── en/                   # 英文审查备注
+      │   ├── README.md.notes.json
+      │   └── getting-started/first-bot.md.notes.json
+      └── zh-TW/                # 繁中审查备注
+          └── ...
 """
 
 import os
@@ -40,8 +61,12 @@ class DocsTranslator:
         """
         self.config = self.load_config(config_path)
         self.source_dir = Path("docs") / self.config["source_lang"]
-        self.cache_dir = Path(self.config.get("cache_dir", ".github/.translate_cache"))
-        self.cache_dir.mkdir(exist_ok=True)
+        
+        base_dir = Path(self.config.get("cache_dir", ".github/.translate_cache")).parent
+        self.cache_dir = base_dir / ".translate_cache"
+        self.notes_dir = base_dir / ".translate_notes"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.notes_dir.mkdir(parents=True, exist_ok=True)
         
         # 初始化 OpenAI 客户端
         api_key = self.get_api_key()
@@ -67,7 +92,6 @@ class DocsTranslator:
         """
         config_file = Path(config_path)
         if not config_file.exists():
-            # 返回默认配置
             return {
                 "source_lang": "zh-CN",
                 "target_langs": ["zh-TW", "en"],
@@ -105,26 +129,35 @@ class DocsTranslator:
         """
         with open(file_path, "rb") as f:
             content = f.read()
-            # 统一转换为 LF 行尾符，避免 Windows CRLF 和 Linux LF 的差异
             content = content.replace(b'\r\n', b'\n')
             return hashlib.md5(content).hexdigest()
     
+    def _get_rel_path(self, file_path: Path) -> str:
+        """
+        获取源文件相对于 source_dir 的路径（用于缓存和备注定位）
+
+        根目录 README.md 返回 "README.md"，
+        其他文件返回相对于 source_dir 的路径如 "getting-started/first-bot.md"
+
+        :param file_path: 源文件路径
+        :return: 相对路径字符串
+        """
+        if file_path.name == "README.md" and file_path.parent == Path("."):
+            return "README.md"
+        return str(file_path.relative_to(self.source_dir))
+    
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
         """
-        获取缓存文件路径
-        
+        获取缓存文件路径（按语言目录分级）
+
+        目录结构：.github/.translate_cache/{lang}/{rel_path}.cache
+
         :param file_path: 源文件路径
         :param target_lang: 目标语言
         :return: 缓存文件路径
         """
-        # 特殊处理根目录的 README.md
-        if file_path.name == "README.md" and file_path.parent == Path("."):
-            cache_name = f"README.{target_lang}.cache"
-            return self.cache_dir / cache_name
-            
-        rel_path = file_path.relative_to(self.source_dir)
-        cache_name = f"{rel_path}.{target_lang}.cache"
-        return self.cache_dir / cache_name
+        rel_path = self._get_rel_path(file_path)
+        return self.cache_dir / target_lang / f"{rel_path}.cache"
     
     def is_file_changed(self, file_path: Path, target_lang: str) -> bool:
         """
@@ -136,7 +169,6 @@ class DocsTranslator:
         """
         cache_key = self.get_cache_key(file_path, target_lang)
         
-        # 调试日志：显示缓存路径
         if os.environ.get("DEBUG_TRANSLATE"):
             print(f"    [DEBUG] 源文件: {file_path}")
             print(f"    [DEBUG] 缓存文件: {cache_key}")
@@ -147,15 +179,12 @@ class DocsTranslator:
                 print(f"    [DEBUG] 缓存文件不存在，需要翻译")
             return True
         
-        # 读取缓存
         with open(cache_key, "r", encoding="utf-8") as f:
             cache_data = json.load(f)
         
-        # 比较哈希值
         current_hash = self.calculate_file_hash(file_path)
         cached_hash = cache_data.get("hash")
         
-        # 调试日志：显示哈希比较
         if os.environ.get("DEBUG_TRANSLATE"):
             print(f"    [DEBUG] 当前文件哈希: {current_hash}")
             print(f"    [DEBUG] 缓存中的哈希: {cached_hash}")
@@ -181,19 +210,95 @@ class DocsTranslator:
                 "target_lang": target_lang
             }, f, ensure_ascii=False, indent=2)
     
-    def build_translation_prompt(self, content: str, target_lang: str, file_name: str) -> str:
+    def load_review_notes(self, file_path: Path, target_lang: str) -> List[str]:
+        """
+        加载文档的人工审查备注
+
+        审查备注按语言目录集中存储：
+        .github/.translate_notes/{lang}/{rel_path}.notes.json
+
+        文件内容为字符串数组：
+        ["备注1", "备注2", ...]
+
+        :param file_path: 源文件路径
+        :param target_lang: 目标语言
+        :return: 审查备注列表
+        """
+        rel_path = self._get_rel_path(file_path)
+        notes_file = self.notes_dir / target_lang / f"{rel_path}.notes.json"
+        
+        if not notes_file.exists():
+            return []
+        
+        try:
+            with open(notes_file, "r", encoding="utf-8") as f:
+                notes = json.load(f)
+            
+            if not isinstance(notes, list):
+                return []
+            
+            if notes and os.environ.get("DEBUG_TRANSLATE"):
+                print(f"    [DEBUG] 加载审查备注: {notes_file} ({len(notes)} 条)")
+            return notes
+        except Exception as e:
+            print(f"    [警告] 读取审查备注失败 {notes_file}: {e}")
+            return []
+    
+    def load_reference_translation(self, file_path: Path, target_lang: str) -> Optional[str]:
+        """
+        加载已有的翻译作为参考
+
+        读取 docs/{target_lang}/ 下对应的翻译文件，
+        为 AI 提供翻译一致性参考。
+
+        :param file_path: 源文件路径
+        :param target_lang: 目标语言
+        :return: 已有翻译内容，不存在则返回 None
+        """
+        if file_path.name == "README.md" and file_path.parent == Path("."):
+            ref_file = Path(f"README.{target_lang}.md")
+        else:
+            rel_path = file_path.relative_to(self.source_dir)
+            ref_file = Path("docs") / target_lang / rel_path
+        
+        if not ref_file.exists():
+            return None
+        
+        try:
+            with open(ref_file, "r", encoding="utf-8") as f:
+                ref_content = f.read()
+            
+            if os.environ.get("DEBUG_TRANSLATE"):
+                print(f"    [DEBUG] 加载参考翻译: {ref_file} ({len(ref_content)} 字符)")
+            return ref_content
+        except Exception as e:
+            print(f"    [警告] 读取参考翻译失败 {ref_file}: {e}")
+            return None
+    
+    def build_translation_prompt(self, content: str, target_lang: str, file_name: str,
+                                  review_notes: List[str] = None,
+                                  reference_translation: str = None) -> str:
         """
         构建翻译提示词
         
         :param content: 要翻译的内容
         :param target_lang: 目标语言
         :param file_name: 文件名（用于特殊处理）
+        :param review_notes: 人工审查备注列表
+        :param reference_translation: 已有翻译（参考用）
         :return: 提示词
         """
         lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
         source_lang = self.config["source_lang"]
         
-        # 特殊处理 README.md 的路径替换要求
+        base_rules = """翻译要求：
+1. 保持Markdown格式完整，包括标题、列表、代码块、链接、图片等
+2. 准确翻译技术术语，保持专业性
+3. 代码块中的代码不要翻译，但可以翻译代码中的注释
+4. 保持原文档的结构和语气
+5. 对于专业术语，如果{lang}中对应术语不确定，可以保留英文原词
+6. 不要添加任何额外的解释或说明，只返回翻译后的内容""".format(lang=lang_name)
+        
         path_replacement_hint = ""
         if file_name == "README.md":
             path_replacement_hint = f"""
@@ -202,15 +307,27 @@ class DocsTranslator:
    - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`
    - 这确保了链接指向正确语言的文档版本"""
         
+        review_section = ""
+        if review_notes:
+            notes_text = "\n".join(f"  - {note}" for note in review_notes)
+            review_section = f"""
+
+**⚠️ 人工审查备注（必须严格遵守，这是之前翻译中发现并修正的问题）：**
+{notes_text}"""
+        
+        reference_section = ""
+        if reference_translation:
+            reference_section = f"""
+
+**📖 已有翻译参考（请保持与以下翻译的术语和风格一致性）：**
+```
+{reference_translation}
+```
+注意：源文档可能有更新，请以源文档为准进行翻译，但术语、用词风格应与参考翻译保持一致。"""
+        
         prompt = f"""你是一个专业的技术文档翻译专家。请将以下Markdown文档翻译成{lang_name}。
 
-翻译要求：
-1. 保持Markdown格式完整，包括标题、列表、代码块、链接、图片等
-2. 准确翻译技术术语，保持专业性
-3. 代码块中的代码不要翻译，但可以翻译代码中的注释
-4. 保持原文档的结构和语气
-5. 对于专业术语，如果{lang_name}中对应术语不确定，可以保留英文原词
-6. 不要添加任何额外的解释或说明，只返回翻译后的内容{path_replacement_hint}
+{base_rules}{path_replacement_hint}{review_section}{reference_section}
 
 待翻译内容：
 
@@ -220,23 +337,29 @@ class DocsTranslator:
         
         return prompt
     
-    async def call_translation_api(self, content: str, target_lang: str, file_name: str) -> Optional[str]:
+    async def call_translation_api(self, content: str, target_lang: str, file_name: str,
+                                    review_notes: List[str] = None,
+                                    reference_translation: str = None) -> Optional[str]:
         """
         调用翻译 API
         
         :param content: 要翻译的内容
         :param target_lang: 目标语言
         :param file_name: 文件名（用于显示和特殊处理）
+        :param review_notes: 人工审查备注列表
+        :param reference_translation: 已有翻译（参考用）
         :return: 翻译后的内容
         """
         try:
             model = self.config.get("model", "gpt-4")
-            prompt = self.build_translation_prompt(content, target_lang, file_name)
+            prompt = self.build_translation_prompt(
+                content, target_lang, file_name,
+                review_notes=review_notes,
+                reference_translation=reference_translation
+            )
             
             translated_content = []
-            char_count = 0
             
-            # 使用 openai 库的流式 API
             stream = await self.client.chat.completions.create(
                 model=model,
                 messages=[
@@ -254,20 +377,37 @@ class DocsTranslator:
                 stream=True
             )
             
-            # 流式接收响应（不显示实时进度，避免刷屏）
+            has_reasoning = False
+            has_content = False
+
+            print(f"\n    正在翻译 {file_name} 到 {target_lang} 中...", flush=True)
+
             async for chunk in stream:
+                reasoning = getattr(chunk.choices[0].delta, 'reasoning_content', None)
+                if reasoning:
+                    if not has_reasoning:
+                        print(f"\n    📝 [推理过程]", flush=True)
+                        has_reasoning = True
+                    print(reasoning, end='', flush=True)
+
                 if chunk.choices[0].delta.content is not None:
                     content_chunk = chunk.choices[0].delta.content
+                    if not has_content:
+                        print()
+                        print(f"    📄 [翻译结果]", flush=True)
+                        has_content = True
+                    print(content_chunk, end='', flush=True)
                     translated_content.append(content_chunk)
+
+            if has_reasoning or has_content:
+                print()
             
-            # 合并所有chunk
             full_content = "".join(translated_content)
             
             if not full_content:
                 print(f"  [警告] {file_name} 未接收到任何翻译内容")
                 return None
             
-            # 移除可能被 AI 添加的 markdown 代码块标记
             if full_content.startswith("```"):
                 full_content = full_content.split("\n", 1)[-1]
             if full_content.endswith("```"):
@@ -288,18 +428,12 @@ class DocsTranslator:
         :param force: 是否强制重新翻译
         :return: 是否成功
         """
-        # 特殊处理根目录的 README.md
-        if file_path.name == "README.md" and file_path.parent == Path("."):
-            rel_path = file_path.name
-        else:
-            rel_path = file_path.relative_to(self.source_dir)
+        rel_path = self._get_rel_path(file_path)
         
         try:
-            # 读取源文件
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
             
-            # 检查是否需要翻译
             if not force and not self.is_file_changed(file_path, target_lang):
                 self.stats["skipped_files"] += 1
                 print(f"  [跳过] {rel_path} (未变化)")
@@ -307,8 +441,22 @@ class DocsTranslator:
             
             print(f"  [翻译] {rel_path} -> {target_lang}")
             
+            # 加载人工审查备注
+            review_notes = self.load_review_notes(file_path, target_lang)
+            if review_notes:
+                print(f"    📋 已加载 {len(review_notes)} 条审查备注")
+            
+            # 加载已有翻译作为参考
+            reference_translation = self.load_reference_translation(file_path, target_lang)
+            if reference_translation:
+                print(f"    📖 已加载参考翻译 ({len(reference_translation)} 字符)")
+            
             # 调用翻译 API
-            translated_content = await self.call_translation_api(content, target_lang, rel_path)
+            translated_content = await self.call_translation_api(
+                content, target_lang, rel_path,
+                review_notes=review_notes,
+                reference_translation=reference_translation
+            )
             
             if not translated_content:
                 print(f"  [失败] {rel_path}")
@@ -317,21 +465,17 @@ class DocsTranslator:
             
             # 确定目标路径
             if file_path.name == "README.md" and file_path.parent == Path("."):
-                # 根目录 README.md 直接生成到根目录的 README.{lang}.md
                 target_file = Path(f"README.{target_lang}.md")
             else:
-                # 普通文档生成到 docs/{lang}/...
-                target_dir = Path("docs") / target_lang / rel_path.parent
+                target_dir = Path("docs") / target_lang / Path(rel_path).parent
                 target_dir.mkdir(parents=True, exist_ok=True)
-                target_file = target_dir / rel_path.name
+                target_file = target_dir / Path(rel_path).name
             
-            # 写入翻译结果（接收完成后保存）
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(translated_content)
             
             print(f"  [完成] {rel_path}")
             
-            # 保存缓存
             file_hash = self.calculate_file_hash(file_path)
             self.save_cache(file_path, target_lang, file_hash)
             
@@ -351,15 +495,12 @@ class DocsTranslator:
         """
         files = []
         
-        # 1. 检查根目录的 README.md
         readme_path = Path("README.md")
         if readme_path.exists():
             files.append(readme_path)
         
-        # 2. 扫描 docs/{source_lang} 目录下的文件
         if self.source_dir.exists():
             for root, dirs, filenames in os.walk(self.source_dir):
-                # 过滤需要忽略的目录
                 dirs[:] = [d for d in dirs if not any(
                     Path(root) / d == self.source_dir / ignored_dir.replace("/", os.sep)
                     for ignored_dir in self.IGNORE_DIRS
@@ -391,43 +532,38 @@ class DocsTranslator:
         print(f"源语言: {self.config['source_lang']}")
         print(f"目标语言: {', '.join(target_langs)}")
         print(f"并发数: {self.config.get('concurrent', 5)}")
+        print(f"审查备注目录: {self.notes_dir}")
         print()
         
-        # 扫描文件
         print("[1/3] 扫描文档文件...")
         files = self.scan_files()
         self.stats["total_files"] = len(files)
         print(f"  发现 {len(files)} 个 Markdown 文件")
         print()
         
-        # 并发翻译
         print("[2/3] 开始翻译...")
         concurrent = self.config.get("concurrent", 5)
         
         for target_lang in target_langs:
-            print(f"\n翻译到 {self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)}...")
+            print(f"\n翻译到 {self.LANG_CONFIG.get(target_lang, {}).get('name', target_lang)}...")
             print("-" * 60)
             
-            # 创建异步任务列表
             tasks = [
                 self.translate_file(file_path, target_lang, force)
                 for file_path in files
             ]
             
-            # 控制并发数
             semaphore = asyncio.Semaphore(concurrent)
             
             async def translate_with_limit(task):
                 async with semaphore:
                     return await task
             
-            # 并发执行所有翻译任务
             results = await asyncio.gather(
                 *[translate_with_limit(task) for task in tasks],
                 return_exceptions=True
             )
             
-            # 统计结果
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     file_path = files[i]
@@ -436,7 +572,6 @@ class DocsTranslator:
         
         print()
         
-        # 完成统计
         self.stats["end_time"] = time.time()
         duration = self.stats["end_time"] - self.stats["start_time"]
         
@@ -469,6 +604,11 @@ async def main():
   
   # 使用自定义配置文件
   python scripts/tools/translate-docs.py --config custom-config.json
+
+审查备注:
+  在 .github/.translate_notes/{语言代码}/ 下创建备注文件，
+  文件名与源文档路径对应（扩展名改为 .notes.json）。
+  详见 docs/translate-workflow.md
         """
     )
     
@@ -495,7 +635,6 @@ async def main():
     
     args = parser.parse_args()
     
-    # 创建并运行翻译器
     translator = DocsTranslator(args.config)
     await translator.translate(target_langs=args.lang, force=args.force)
 
