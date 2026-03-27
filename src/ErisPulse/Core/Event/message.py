@@ -132,4 +132,4 @@ class MessageHandler:
         """
         return self.handler._clear_handlers()
 
-message = MessageHandler()
+message : MessageHandler = MessageHandler()
