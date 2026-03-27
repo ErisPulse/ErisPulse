@@ -5,7 +5,7 @@
 
 為了確保各平台發送介面回傳統一性與 OneBot12 相容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的訊息發送回傳結構標準。
 
-但 ErisPulse 的協議有一些特殊定義：
+但 ErisPulse 的協定有一些特殊定義：
 - 1. 基礎欄位中，message_id 是必須的，但 OneBot12 標準中無此欄位
 - 2. 回傳內容中需要新增 {platform_name}_raw 欄位，用於存放原始回應資料
 
@@ -61,10 +61,10 @@
 
 ### 3.2 回傳碼規範
 
-#### 0 成功
-- 0: 成功
+#### 0 成功（OK）
+- 0: 成功（OK）
 
-#### 1xxxx 動作請求錯誤
+#### 1xxxx 動作請求錯誤（Request Error）
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 10001 | Bad Request | 無效的動作請求 |
@@ -77,13 +77,13 @@
 | 10101 | Who Am I | 未指定機器人帳號 |
 | 10102 | Unknown Self | 未知的機器人帳號 |
 
-#### 2xxxx 動作處理器錯誤
+#### 2xxxx 動作處理器錯誤（Handler Error）
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 20001 | Bad Handler | 動作處理器實作錯誤 |
 | 20002 | Internal Handler Error | 動作處理器執行時拋出異常 |
 
-#### 3xxxx 動作執行錯誤
+#### 3xxxx 動作執行錯誤（Execution Error）
 | 錯誤碼範圍 | 錯誤類型 | 說明 |
 |-----------|---------|------|
 | 31xxx | Database Error | 資料庫錯誤 |
@@ -103,7 +103,48 @@
 3. 回傳碼必須嚴格遵循 OneBot12 規範
 4. 錯誤資訊應當是人類可讀的描述
 
-## 5. 注意事項
-- 關於 3xxxx 錯誤碼，低三位可由實作自行定義
+## 5. 擴充規範
+
+ErisPulse 在 OneBot12 標準回傳結構之上做了以下擴充：
+
+### 5.1 `message_id` 必選欄位
+
+OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPulse 將其提升為頂層**必選**欄位：
+
+- 無法取得 `message_id` 時應設為空字串 `""`
+- 確保 `message_id` 始終存在，模組無需進行 null 檢查
+
+### 5.2 `{platform}_raw` 原始回應欄位
+
+回傳值中應包含 `{platform}_raw` 欄位，存放平台原始回應資料的完整複本：
+
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {"message_id": "1234", "time": 1632847927},
+    "message_id": "1234",
+    "message": "",
+    "telegram_raw": {
+        "ok": true,
+        "result": {"message_id": 1234, "date": 1632847927, ...}
+    }
+}
+```
+
+**要求**：
+- `{platform}_raw` 必須是原始回應的深層複製，而非引用
+- `platform` 必須與適配器註冊時的平台名稱完全一致（區分大小寫）
+- 原始回應中的錯誤資訊也應保留，便於除錯
+
+### 5.3 適配器實作檢查清單
+
+- [ ] 包含 `status`、`retcode`、`data`、`message_id`、`message` 欄位
+- [ ] 回傳碼遵循 OneBot12 規範（詳見 §3.2）
+- [ ] `message_id` 始終存在（無法取得時為空字串）
+- [ ] `{platform}_raw` 包含平台原始回應資料
+
+## 6. 注意事項
+- 對於 3xxxx 錯誤碼，低三位可由實作自行定義
 - 避免使用保留錯誤段 (4xxxx、5xxxx)
 - 錯誤資訊應當簡潔明瞭，便於除錯
