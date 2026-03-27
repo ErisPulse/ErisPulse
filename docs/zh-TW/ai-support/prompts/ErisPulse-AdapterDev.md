@@ -2456,133 +2456,24 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 # 適配器標準化轉換規範
 
-## 1. 核心原則
-1. 嚴格相容：所有標準欄位必須完全遵循 OneBot12 規範
-2. 明確擴展：平台特有功能必須添加 {platform}_ 前綴（如 yunhu_form）
-3. 資料完整：原始事件資料必須保留在 {platform}_raw 欄位中，原始事件類型必須保留在 {platform}_raw_type 欄位中
-4. 時間統一：所有時間戳記必須轉換為 10 位 Unix 時間戳記（秒級）
-5. 平台統一：platform 項命名必須與你在 ErisPulse 中註冊的名稱/別稱一致
-
-## 2. 標準欄位要求
-
-### 2.1 必要欄位
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| id | string | 事件唯一識別碼 |
-| time | integer | Unix 時間戳記（秒級） |
-| type | string | 事件類型 |
-| detail_type | string | 事件詳細類型（詳見[會話類型標準](session-types.md)） |
-| platform | string | 平台名稱 |
-| self | object | 機器人自身資訊 |
-| self.platform | string | 平台名稱 |
-| self.user_id | string | 機器人使用者 ID |
-
-**detail_type 規範**：
-- 必須使用 ErisPulse 標準會話類型（詳見 [會話類型標準](session-types.md)）
-- 支援的類型：`private`, `group`, `user`, `channel`, `guild`, `thread`
-- 適配器負責將平台原生類型對應到標準類型
-
-### 2.2 訊息事件欄位
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| message | array | 訊息段陣列 |
-| alt_message | string | 訊息段備用文字 |
-| user_id | string | 使用者 ID |
-| user_nickname | string | 使用者暱稱（選填） |
-
-### 2.3 通知事件欄位
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| user_id | string | 使用者 ID |
-| user_nickname | string | 使用者暱稱（選填） |
-| operator_id | string | 操作者 ID（選填） |
-
-### 2.4 請求事件欄位
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| user_id | string | 使用者 ID |
-| user_nickname | string | 使用者暱稱（選填） |
-| comment | string | 請求附言（選填） |
-
-## 3. 事件格式範例
-
-### 3.1 訊息事件 (message)
-```json
-{
-  "id": "1234567890",
-  "time": 1752241223,
-  "type": "message",
-  "detail_type": "group",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "message": [
-    {
-      "type": "text",
-      "data": {
-        "text": "抽獎 超級大獎"
-      }
-    }
-  ],
-  "alt_message": "抽獎 超級大獎",
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "yunhu_raw": {...},
-  "yunhu_raw_type": "message.receive.normal",
-  "yunhu_command": {
-    "name": "抽獎",
-    "args": "超級大獎"
-  }
-}
-```
-
-### 3.2 通知事件 (notice)
-```json
-{
-  "id": "1234567891",
-  "time": 1752241224,
-  "type": "notice",
-  "detail_type": "group_member_increase",
-  "platform": "yunhu",
-  "self": {
-    "platform": "yunhu",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "group_id": "group_789",
-  "operator_id": "",
-  "yunhu_raw": {...},
-  "yunhu_raw_type": "bot.followed"
-}
-```
-
-### 3.3 請求事件 (request)
-```json
-{
-  "id": "1234567892",
-  "time": 1752241225,
-  "type": "request",
-  "detail_type": "friend",
-  "platform": "onebot11",
-  "self": {
-    "platform": "onebot11",
-    "user_id": "bot_123"
-  },
-  "user_id": "user_456",
-  "user_nickname": "YingXinche",
-  "comment": "請加好友",
-  "onebot11_raw": {...},
-  "onebot11_raw_type": "request"  // onebot11 原始事件類型就是 `request`
-}
-```
-
 ## 4. 訊息段標準
 
 ### 4.1 通用訊息段
+
+標準訊息段類型**不添加**平台前綴：
+
+| 類型 | 說明 | data 欄位 |
+|------|------|----------|
+| `text` | 純文字 | `text: str` |
+| `image` | 圖片 | `file: str/bytes`, `url: str` |
+| `audio` | 音訊 | `file: str/bytes`, `url: str` |
+| `video` | 影片 | `file: str/bytes`, `url: str` |
+| `file` | 檔案 | `file: str/bytes`, `url: str`, `filename: str` |
+| `mention` | @用戶 | `user_id: str`, `user_name: str` |
+| `reply` | 回覆 | `message_id: str` |
+| `face` | 表情 | `id: str` |
+| `location` | 位置 | `latitude: float`, `longitude: float` |
+
 ```json
 {
   "type": "text",
@@ -2592,16 +2483,22 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 }
 ```
 
-### 4.2 特殊訊息段
+### 4.2 平台擴展訊息段
+
 平台特有的訊息段需要添加平台前綴：
+
 ```json
-{
-  "type": "yunhu_form",
-  "data": {
-    "form_id": "123456"
-  }
-}
+// 雲湖 - 表單
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "報名表"}}
+
+// Telegram - 貼紙
+{"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
+
+**擴展訊息段要求**：
+1. **data 內部欄位不加前綴**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **提供降級方案**：模組可能無法識別擴展訊息段，適配器應在 `alt_message` 中提供文字替代
+3. **文件完備**：每個擴展訊息段必須在適配器文件中說明 `type`、`data` 結構和使用場景
 
 ## 5. 未知事件處理
 
@@ -2614,21 +2511,56 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
   "platform": "yunhu",
   "yunhu_raw": {...},
   "yunhu_raw_type": "unknown",
-  "warning": "不支援的事件類型：special_event",
+  "warning": "Unsupported event type: special_event",
   "alt_message": "This event type is not supported by this system."
 }
 ```
 
-## 6. 平台特性欄位
+---
 
-所有平台特有欄位必須以平台名稱作為前綴
+## 6. 擴展命名規範
 
-比如:
-- 雲湖平台：`yunhu_`
-- Telegram 平台：`telegram_`
-- OneBot11 平台：`onebot11_`
+### 6.1 欄位命名
 
-### 6.1 特有欄位範例
+**規則**：`{platform}_{field_name}`
+
+```
+平台前綴    欄位名            完整欄位名
+────────    ───────          ──────────
+yunhu       command           yunhu_command
+telegram    sticker_file_id   telegram_sticker_file_id
+onebot11    anonymous         onebot11_anonymous
+email       subject           email_subject
+```
+
+**要求**：
+- `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）
+- `field_name` 使用 `snake_case` 命名
+- 禁止使用雙底線 `__` 開頭（Python 保留）
+- 禁止與標準欄位同名（如 `type`、`time`、`message` 等）
+
+### 6.2 訊息段類型命名
+
+**規則**：`{platform}_{segment_type}`
+
+標準訊息段類型（`text`、`image`、`audio`、`video`、`mention`、`reply` 等）**不得**添加平台前綴。只有平台特有的訊息段類型才需要添加前綴。
+
+### 6.3 原始資料欄位命名
+
+以下欄位名是**保留欄位**，所有適配器必須遵循：
+
+| 保留欄位 | 類型 | 說明 |
+|---------|------|------|
+| `{platform}_raw` | `any` | 平台原始事件資料的完整副本 |
+| `{platform}_raw_type` | `string` | 平台原始事件類型識別 |
+
+**要求**：
+- `{platform}_raw` 必須是原始資料的深拷貝，而非引用
+- `{platform}_raw_type` 必須是字串，即使平台使用數字類型也要轉換為字串
+- 這兩個欄位在所有事件中**必須存在**（無法獲取時為 `null` 和空字串 `""`）
+
+### 6.4 平台特有欄位範例
+
 ```json
 {
   "yunhu_command": {
@@ -2644,14 +2576,153 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 }
 ```
 
-## 7. 適配器實作檢查清單
-- [ ] 所有標準欄位已正確對應
-- [ ] 平台特有欄位已添加前綴
-- [ ] 時間戳記已轉換為 10 位秒級
-- [ ] 原始資料保存在 {platform}_raw，原始事件類型已儲存到 {platform}_raw_type
-- [ ] 訊息段的 alt_message 已產生
-- [ ] 所有事件類型已通過單元測試
-- [ ] 文件包含完整範例和說明
+### 6.5 嵌套擴展欄位
+
+擴展欄位可以是簡單值，也可以是嵌套物件：
+
+```json
+{
+  "telegram_chat": {
+    "id": 123456,
+    "type": "supergroup",
+    "title": "My Group"
+  },
+  "telegram_forward_from": {
+    "user_id": "789",
+    "user_name": "ForwardUser"
+  }
+}
+```
+
+**嵌套欄位要求**：
+- 頂層鍵必須帶平台前綴
+- 嵌套內部欄位**不添加**平台前綴
+- 嵌套深度建議不超過 3 層
+
+### 6.6 `self` 欄位擴展
+
+`self` 物件標準的必選欄位（`platform`、`user_id`）見 §2.1，以下是 ErisPulse 擴展的可選欄位：
+
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| `self.user_name` | `string` | 機器人暱稱 |
+| `self.avatar` | `string` | 機器人頭像 URL |
+| `self.account_id` | `string` | 多帳號模式下的帳戶識別 |
+
+---
+
+## 7. 會話類型擴展
+
+ErisPulse 在 OneBot12 標準的 `private`、`group` 基礎上擴展了以下會話類型：
+
+| 類型 | OneBot12 標準 | ErisPulse 擴展 | 說明 |
+|------|:-----------:|:------------:|------|
+| `private` | ✅ | — | 一對一私聊 |
+| `group` | ✅ | — | 群聊 |
+| `user` | — | ✅ | 用戶類型（Telegram 等） |
+| `channel` | — | ✅ | 頻道（廣播式） |
+| `guild` | — | ✅ | 伺服器/社群 |
+| `thread` | — | ✅ | 主題/子頻道 |
+
+**適配器自訂類型擴展**：
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type
+
+# 在適配器啟動時註冊
+register_custom_type(
+    receive_type="email",      # 接收事件中的 detail_type
+    send_type="email",         # 發送時的目標類型
+    id_field="email_id",       # 對應的 ID 欄位名
+    platform="email"           # 平台識別
+)
+```
+
+**自訂類型要求**：
+- 必須在適配器 `start()` 時註冊，在 `shutdown()` 時註銷
+- `receive_type` 不應與標準類型重名
+- `id_field` 應遵循 `{目標}_id` 的命名模式
+
+> 完整的會話類型定義和映射關係參見 [會話類型標準](session-types.md)。
+
+---
+
+## 8. 模組開發者指南
+
+### 8.1 存取擴展欄位
+
+```python
+from ErisPulse.Core.Event import message
+
+@message()
+async def handle_message(event):
+    # 存取標準欄位
+    text = event.get_text()
+    user_id = event.get_user_id()
+
+    # 存取平台擴展欄位 - 方式1：直接 get
+    yunhu_command = event.get("yunhu_command")
+
+    # 存取平台擴展欄位 - 方式2：點式存取（Event 包裝類）
+    # event.yunhu_command
+
+    # 存取原始資料
+    raw_data = event.get("yunhu_raw")
+    raw_type = event.get_raw_type()
+
+    # 判斷平台
+    platform = event.get_platform()
+    if platform == "yunhu":
+        pass
+    elif platform == "telegram":
+        pass
+```
+
+### 8.2 處理擴展訊息段
+
+```python
+@message()
+async def handle_message(event):
+    message_segments = event.get("message", [])
+
+    for segment in message_segments:
+        seg_type = segment.get("type")
+        seg_data = segment.get("data", {})
+
+        if seg_type == "text":
+            text = seg_data["text"]
+        elif seg_type.startswith("yunhu_"):
+            if seg_type == "yunhu_form":
+                form_id = seg_data["form_id"]
+        elif seg_type.startswith("telegram_"):
+            if seg_type == "telegram_sticker":
+                file_id = seg_data["file_id"]
+```
+
+### 8.3 最佳實踐
+
+1. **優先使用標準欄位**：不要假設擴展欄位一定存在
+2. **平台判斷**：透過 `event.get_platform()` 判斷平台，而非透過擴展欄位是否存在來推斷
+3. **優雅降級**：無法處理擴展訊息段時，使用 `alt_message` 作為兜底
+4. **不要硬編碼前綴**：使用 `platform` 變數動態拼接
+
+```python
+# ✅ 推薦
+platform = event.get_platform()
+raw_data = event.get(f"{platform}_raw")
+
+# ❌ 不推薦
+raw_data = event.get("yunhu_raw")
+```
+
+---
+
+## 9. 相關文件
+
+- [各平台特性文件](../platform-guide/README.md) - 你可以存取此文件來了解各個平台特性以及已知的擴展事件和訊息段等。
+- [會話類型標準](session-types.md) - 會話類型定義和映射關係
+- [發送方法規範](send-method-spec.md) - Send 類別的方法命名、參數規範及反向轉換要求
+- [API 響應標準](api-response.md) - 適配器 API 響應格式標準
 
 
 
@@ -2664,7 +2735,7 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 為了確保各平台發送介面回傳統一性與 OneBot12 相容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的訊息發送回傳結構標準。
 
-但 ErisPulse 的協議有一些特殊定義：
+但 ErisPulse 的協定有一些特殊定義：
 - 1. 基礎欄位中，message_id 是必須的，但 OneBot12 標準中無此欄位
 - 2. 回傳內容中需要新增 {platform_name}_raw 欄位，用於存放原始回應資料
 
@@ -2720,10 +2791,10 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 ### 3.2 回傳碼規範
 
-#### 0 成功
-- 0: 成功
+#### 0 成功（OK）
+- 0: 成功（OK）
 
-#### 1xxxx 動作請求錯誤
+#### 1xxxx 動作請求錯誤（Request Error）
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 10001 | Bad Request | 無效的動作請求 |
@@ -2736,13 +2807,13 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 | 10101 | Who Am I | 未指定機器人帳號 |
 | 10102 | Unknown Self | 未知的機器人帳號 |
 
-#### 2xxxx 動作處理器錯誤
+#### 2xxxx 動作處理器錯誤（Handler Error）
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 20001 | Bad Handler | 動作處理器實作錯誤 |
 | 20002 | Internal Handler Error | 動作處理器執行時拋出異常 |
 
-#### 3xxxx 動作執行錯誤
+#### 3xxxx 動作執行錯誤（Execution Error）
 | 錯誤碼範圍 | 錯誤類型 | 說明 |
 |-----------|---------|------|
 | 31xxx | Database Error | 資料庫錯誤 |
@@ -2762,8 +2833,49 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 3. 回傳碼必須嚴格遵循 OneBot12 規範
 4. 錯誤資訊應當是人類可讀的描述
 
-## 5. 注意事項
-- 關於 3xxxx 錯誤碼，低三位可由實作自行定義
+## 5. 擴充規範
+
+ErisPulse 在 OneBot12 標準回傳結構之上做了以下擴充：
+
+### 5.1 `message_id` 必選欄位
+
+OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPulse 將其提升為頂層**必選**欄位：
+
+- 無法取得 `message_id` 時應設為空字串 `""`
+- 確保 `message_id` 始終存在，模組無需進行 null 檢查
+
+### 5.2 `{platform}_raw` 原始回應欄位
+
+回傳值中應包含 `{platform}_raw` 欄位，存放平台原始回應資料的完整複本：
+
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {"message_id": "1234", "time": 1632847927},
+    "message_id": "1234",
+    "message": "",
+    "telegram_raw": {
+        "ok": true,
+        "result": {"message_id": 1234, "date": 1632847927, ...}
+    }
+}
+```
+
+**要求**：
+- `{platform}_raw` 必須是原始回應的深層複製，而非引用
+- `platform` 必須與適配器註冊時的平台名稱完全一致（區分大小寫）
+- 原始回應中的錯誤資訊也應保留，便於除錯
+
+### 5.3 適配器實作檢查清單
+
+- [ ] 包含 `status`、`retcode`、`data`、`message_id`、`message` 欄位
+- [ ] 回傳碼遵循 OneBot12 規範（詳見 §3.2）
+- [ ] `message_id` 始終存在（無法取得時為空字串）
+- [ ] `{platform}_raw` 包含平台原始回應資料
+
+## 6. 注意事項
+- 對於 3xxxx 錯誤碼，低三位可由實作自行定義
 - 避免使用保留錯誤段 (4xxxx、5xxxx)
 - 錯誤資訊應當簡潔明瞭，便於除錯
 
@@ -2773,7 +2885,7 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 # ErisPulse 發送方法規範
 
-本文件定義了 ErisPulse 适配器中 `Send` 類別發送方法的命名規範和參數規範。
+本文件定義了 ErisPulse 适配器中 `Send` 類別發送方法的命名規範、參數規範和反向轉換要求。
 
 ## 1. 標準方法命名
 
@@ -2808,9 +2920,15 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 | 方法名 | 說明 |
 |-------|------|
-| `Raw_ob12` | 傳送原始 OneBot12 格式訊息 |
-| `Raw_json` | 傳送原始 JSON 格式訊息 |
-| `Raw_xml` | 傳送原始 XML 格式訊息 |
+| `Raw_ob12` | 傳送 OneBot12 標準訊息段 |
+| `Raw_json` | 傳送任意 JSON 資料 |
+| `Raw_xml` | 傳送任意 XML 資料 |
+
+**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
+
+**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄錯誤日誌並返回 `None`，提示適配器開發者必須實現此方法。
+
+**`Raw_json` / `Raw_xml` 未重寫時的行為**：基類預設實作會記錄警告日誌並返回 `None`，不會拋出異常。
 
 ## 2. 參數規範詳解
 
@@ -2828,7 +2946,7 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 **使用場景：**
 - 檔案已在網路上，直接發送 URL
-- 檔案在本機磁碟，發送檔案路徑
+- 檔案在本地磁碟，發送檔案路徑
 - 希望適配器自動處理檔案上傳
 
 **推薦：** 優先使用 URL，如果 URL 不可用則使用本機檔案路徑
@@ -2873,7 +2991,7 @@ send.Image(image_data)
 
 當適配器接收到媒體訊息參數時，應按以下順序處理：
 
-1. **URL 參數**：直接使用 URL 發送(部分平台适配器可能存在URL下载后再上传的操作)
+1. **URL 參數**：直接使用 URL 發送（部分平台適配器可能存在 URL 下載後再上傳的操作）
 2. **檔案路徑**：檢測是否為本地路徑，若是則上傳檔案
 3. **二進位數據**：直接上傳二進位數據
 
@@ -2894,34 +3012,7 @@ def Image(self, image: Union[bytes, str]):
         return self._upload_image(image)
 ```
 
-### 2.2 文字訊息參數規範
-
-**方法：** `Text`
-
-**參數：** `text` (`str`)
-
-**要求：**
-- 支援純文字內容
-- 不進行格式化處理（如 Markdown、HTML）
-- 建議限制文字長度（如 2000-5000 字元）
-- 超長文字應提示使用者截斷或分段發送
-
-**範例：**
-```python
-# 簡單文字
-send.Text("你好，世界！")
-
-# 長文字（建議分段）
-long_text = "很長的文字內容..."
-if len(long_text) > 2000:
-    # 分段發送
-    for i in range(0, len(long_text), 2000):
-        send.Text(long_text[i:i+2000])
-else:
-    send.Text(long_text)
-```
-
-### 2.3 @用戶參數規範
+### 2.2 @用戶參數規範
 
 **方法：** `At`（修飾方法）
 
@@ -2931,17 +3022,18 @@ else:
 - `user_id` 應為字串類型的使用者識別符
 - 不同平台的 `user_id` 格式可能不同（數字、UUID、字串等）
 - 適配器負責將 `user_id` 轉換為平台特定的格式
+- 注意需要把真正的發送方法呼叫放在最後的位置
 
 **範例：**
 ```python
 # 單個 @ 用戶
-send.Text("你好").At("123456")
+Send.To("group", "g123").At("123456").Text("你好")
 
 # 多個 @ 用戶（鏈式調用）
-send.Text("大家好").At("123456").At("789012")
+send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
-### 2.4 回覆訊息參數規範
+### 2.3 回覆訊息參數規範
 
 **方法：** `Reply`（修飾方法）
 
@@ -2954,61 +3046,7 @@ send.Text("大家好").At("123456").At("789012")
 
 **範例：**
 ```python
-# 回覆一條訊息
-send.Text("收到").Reply("msg_123456")
-```
-
-### 2.5 卡片訊息參數規範
-
-**方法：** `Card`
-
-**參數：** `data` (`dict`)
-
-**要求：**
-- `data` 應為字典類型的卡片數據
-- 具體格式取決於平台（如 Telegram 的 InlineKeyboard、OneBot12 的 card）
-- 適配器應驗證數據格式並轉換為平台特定格式
-- 不支援卡片的平台應降級為文字訊息
-
-**範例：**
-```python
-# 發送卡片數據
-card_data = {
-    "type": "image",
-    "title": "卡片標題",
-    "content": "卡片內容",
-    "image": "https://example.com/image.jpg"
-}
-send.Card(card_data)
-```
-
-### 2.6 參數驗證和錯誤處理
-
-**通用要求：**
-1. **類型檢查**：驗證參數類型是否正確
-2. **範圍檢查**：驗證參數值是否在合理範圍內
-3. **存在性檢查**：驗證必要參數是否存在
-4. **格式檢查**：驗證 URL、檔案路徑等格式是否正確
-
-**錯誤處理建議：**
-```python
-def Image(self, image: Union[bytes, str]):
-    # 類型檢查
-    if not isinstance(image, (bytes, str)):
-        raise TypeError("參數必須是 bytes 或 str 類型")
-    
-    # URL 格式檢查
-    if isinstance(image, str) and not image.startswith(("http://", "https://")):
-        # 檢查是否為本地檔案路徑
-        if not os.path.exists(image):
-            raise FileNotFoundError(f"檔案不存在: {image}")
-    
-    # 檔案大小檢查
-    if isinstance(image, bytes) and len(image) > 10 * 1024 * 1024:  # 10MB
-        raise ValueError("檔案大小超過限制（10MB）")
-    
-    # 發送訊息
-    return self._send_image(image)
+send.To("group", "g123").Reply("msg_123456").Text("收到")
 ```
 
 ## 3. 平台特有方法命名
@@ -3032,10 +3070,15 @@ def Form(self, form_id: str):  # ✅ 通用方法名
 def Sticker(self, sticker_id: str):  # ✅ 通用方法名
     pass
 
-# 或使用 Raw 方法
 def Raw_ob12(self, message):  # ✅ 發送 OneBot12 格式
     pass
 ```
+
+**擴展方法要求**：
+- 方法名使用 PascalCase，不加平台前綴
+- 必須返回 `asyncio.Task` 物件
+- 必須提供完整的類型註解和文件字串
+- 參數設計應盡量與標準方法風格一致
 
 ## 4. 參數命名規範
 
@@ -3053,9 +3096,252 @@ def Raw_ob12(self, message):  # ✅ 發送 OneBot12 格式
 - **發送方法**（如 `Text`, `Image`）：必須返回 `asyncio.Task` 物件
 - **修飾方法**（如 `At`, `Reply`, `AtAll`）：必須返回 `self` 以支援鏈式調用
 
-## 6. 相關文檔
+---
 
-- [适配器系统 - SendDSL 详解](../core/adapters.md) - 查看調用方法和使用範例
-- [适配器开发指南](../development/adapter.md) - 查看适配器實作要求
-- [模块开发指南](../development/module.md) - 查看模組中的發送訊息範例
+## 6. 反向轉換規範（OneBot12 → 平台）
+
+適配器不僅需要將平台原生事件轉換為 OneBot12 格式（正向轉換），還**必須**提供將 OneBot12 訊息段轉換回平台原生 API 呼叫的能力（反向轉換）。反向轉換的統一入口是 `Raw_ob12` 方法。
+
+### 6.1 轉換模型
+
+```
+正向轉換（接收方向）                反向轉換（發送方向）
+─────────────────                ─────────────────
+平台原生事件                       OneBot12 訊息段列表
+    │                                  │
+    ▼                                  ▼
+Converter.convert()               Send.Raw_ob12()
+    │                                  │
+    ▼                                  ▼
+OneBot12 標準事件                  平台原生 API 呼叫
+（含 {platform}_raw）             （返回標準回應格式）
+```
+
+**核心對稱性**：正向轉換保留原始資料在 `{platform}_raw` 中，反向轉換接受 OneBot12 標準格式並還原為平台呼叫。
+
+### 6.2 `Raw_ob12` 實作規範
+
+`Raw_ob12` 接收 OneBot12 標準訊息段列表，必須將其轉換為平台原生 API 呼叫。
+
+**方法簽名**：
+
+```python
+def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
+    """
+    發送 OneBot12 標準訊息段
+
+    :param message_segments: OneBot12 訊息段列表
+        [
+            {"type": "text", "data": {"text": "Hello"}},
+            {"type": "image", "data": {"file": "https://..."}},
+            {"type": "mention", "data": {"user_id": "123"}},
+        ]
+    :return: asyncio.Task，await 後返回標準回應格式
+    """
+```
+
+**實作要求**：
+
+1. **必須處理所有標準訊息段類型**：至少支援 `text`、`image`、`audio`、`video`、`file`、`mention`、`reply`
+2. **必須處理平台擴展訊息段**：對於 `{platform}_xxx` 類型的訊息段，轉換為平台對應的原生呼叫
+3. **必須返回標準回應格式**：遵循 [API 回應標準](api-response.md)
+4. **不支援的訊息段應跳過並記錄警告**，不應拋出異常導致整條訊息發送失敗
+
+### 6.3 訊息段轉換規則
+
+#### 6.3.1 標準訊息段轉換
+
+適配器必須實現以下標準訊息段的轉換：
+
+| OneBot12 訊息段 | 轉換要求 |
+|----------------|---------|
+| `text` | 直接使用 `data.text` |
+| `image` | 根據 `data.file` 類型處理：URL 直接使用，bytes 上傳，本地路徑讀取後上傳 |
+| `audio` | 同 image 處理邏輯 |
+| `video` | 同 image 處理邏輯 |
+| `file` | 同 image 處理邏輯，注意 `data.filename` |
+| `mention` | 轉換為平台的 @用戶 機制（如 Telegram 的 `entities`，雲湖的 `at_uid`） |
+| `reply` | 轉換為平台的回覆引用機制 |
+| `face` | 轉換為平台的表情發送機制，不支援則跳過 |
+| `location` | 轉換為平台的位置發送機制，不支援則跳過 |
+
+#### 6.3.2 平台擴展訊息段轉換
+
+對於帶平台前綴的訊息段，適配器應識別並轉換：
+
+```python
+def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
+    """將 OneBot12 訊息段轉換為平台原生格式"""
+    platform_prefix = f"{self._platform_name}_"
+    
+    for segment in segments:
+        seg_type = segment["type"]
+        seg_data = segment["data"]
+        
+        if seg_type.startswith(platform_prefix):
+            # 平台擴展訊息段 → 平台原生呼叫
+            self._handle_platform_segment(seg_type, seg_data)
+        elif seg_type in self._standard_segment_handlers:
+            # 標準訊息段 → 平台等價操作
+            self._standard_segment_handlers[seg_type](seg_data)
+        else:
+            # 未知訊息段 → 記錄警告並跳過
+            logger.warning(f"不支援的訊息段類型: {seg_type}")
+```
+
+#### 6.3.3 複合訊息段處理
+
+一條訊息可能包含多個訊息段，適配器需要正確處理複合訊息：
+
+```python
+# 模組發送包含文本+圖片+@用戶 的訊息
+await send.Raw_ob12([
+    {"type": "mention", "data": {"user_id": "123"}},
+    {"type": "text", "data": {"text": "你好"}},
+    {"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+])
+```
+
+**處理策略**：
+- **優先合併**：如果平台支援在一條訊息中同時包含文本、圖片、@等，應合併發送
+- **退而拆分**：如果平台不支援合併，按順序拆分為多條訊息發送
+- **保持順序**：訊息段的發送順序應與列表順序一致
+
+### 6.4 `Raw_ob12` 與標準方法的關係
+
+適配器的標準發送方法（`Text`、`Image` 等）內部應委託給 `Raw_ob12`，而非獨立實作：
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
+        """核心實作：OneBot12 訊息段 → 平台 API"""
+        return asyncio.create_task(self._send_ob12(message_segments))
+    
+    def Text(self, text: str) -> asyncio.Task:
+        """標準方法，委託給 Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
+    
+    def Image(self, image: Union[str, bytes]) -> asyncio.Task:
+        """標準方法，委託給 Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "image", "data": {"file": image}}
+        ])
+```
+
+**好處**：
+- 轉換邏輯集中在 `Raw_ob12` 一處，減少重複代碼
+- 標準方法和 `Raw_ob12` 行為完全一致
+- 模組無論使用 `Text()` 還是 `Raw_ob12()` 都能得到相同結果
+
+### 6.5 實作範例
+
+```python
+class YunhuSend(SendDSL):
+    """雲湖平台 Send 實作"""
+    
+    def Raw_ob12(self, message_segments: list) -> asyncio.Task:
+        """OneBot12 訊息段 → 雲湖 API 呼叫"""
+        return asyncio.create_task(self._do_send(message_segments))
+    
+    async def _do_send(self, segments: list) -> dict:
+        """實際發送邏輯"""
+        # 1. 解析修飾器狀態
+        at_users = self._at_users or []
+        reply_to = self._reply_to
+        at_all = self._at_all
+        
+        # 2. 轉換訊息段
+        yunhu_elements = []
+        for seg in segments:
+            seg_type = seg["type"]
+            seg_data = seg["data"]
+            
+            if seg_type == "text":
+                yunhu_elements.append({"type": "text", "content": seg_data["text"]})
+            elif seg_type == "image":
+                yunhu_elements.append({"type": "image", "url": seg_data["file"]})
+            elif seg_type == "mention":
+                at_users.append(seg_data["user_id"])
+            elif seg_type == "reply":
+                reply_to = seg_data["message_id"]
+            elif seg_type == "yunhu_form":
+                # 平台擴展訊息段
+                yunhu_elements.append({"type": "form", "form_id": seg_data["form_id"]})
+            else:
+                logger.warning(f"雲湖不支援的訊息段: {seg_type}")
+        
+        # 3. 呼叫雲湖 API
+        response = await self._call_yunhu_api(yunhu_elements, at_users, reply_to, at_all)
+        
+        # 4. 返回標準回應格式
+        return {
+            "status": "ok" if response["code"] == 0 else "failed",
+            "retcode": response["code"],
+            "data": {"message_id": response.get("msg_id", ""), "time": int(time.time())},
+            "message_id": response.get("msg_id", ""),
+            "message": "",
+            "yunhu_raw": response
+        }
+```
+
+---
+
+## 7. 方法發現
+
+模組開發者可以通過 API 查詢適配器支援的發送方法：
+
+```python
+from ErisPulse import adapter
+
+# 列出所有發送方法
+methods = adapter.list_sends("myplatform")
+# ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
+
+# 查看方法詳情
+info = adapter.send_info("myplatform", "Form")
+# {
+#     "name": "Form",
+#     "parameters": [{"name": "form_id", "type": "str", ...}],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "發送雲湖表單"
+# }
+```
+
+---
+
+## 8. 已註冊的發送方法擴展
+
+| 平台 | 方法名 | 說明 |
+|------|--------|------|
+| onebot12 | `Mention` | @用戶（OneBot12 風格） |
+| onebot12 | `Sticker` | 發送貼紙 |
+| onebot12 | `Location` | 發送位置 |
+| onebot12 | `Recall` | 撤回訊息 |
+| onebot12 | `Edit` | 編輯訊息 |
+| onebot12 | `Batch` | 批量發送 |
+
+> **注意**：發送方法不加平台前綴，不同平台的同名方法可以有不同的實作。
+
+---
+
+## 9. 適配器實作檢查清單
+
+### 發送方法
+- [ ] 標準方法（`Text`, `Image` 等）已實作
+- [ ] 返回值均為 `asyncio.Task`
+- [ ] 修飾方法（`At`, `Reply`, `AtAll`）返回 `self`
+- [ ] 平台擴展方法使用 PascalCase，無平台前綴
+- [ ] 所有方法有完整的類型註解和文件字串
+
+### 反向轉換
+- [ ] `Raw_ob12` **已實作**（必須，不可跳過）
+- [ ] `Raw_ob12` 能處理所有標準訊息段（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）
+- [ ] `Raw_ob12` 能處理平台擴展訊息段（`{platform}_xxx` 類型）
+- [ ] 標準發送方法（`Text`, `Image` 等）內部委託給 `Raw_ob12`，而非獨立實作轉換邏輯
+- [ ] 不支援的訊息段跳過並記錄警告，不拋出異常
+- [ ] 複合訊息段正確處理（合併或按序拆分）
+
+---
 
