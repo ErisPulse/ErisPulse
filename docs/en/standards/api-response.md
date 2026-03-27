@@ -103,7 +103,48 @@ Optional Fields:
 3. Return codes must strictly follow OneBot12 specification
 4. Error messages (message) should be human-readable descriptions
 
-## 5. Notes
+## 5. Extended Specifications
+
+ErisPulse makes the following extensions on top of the OneBot12 standard return structure:
+
+### 5.1 `message_id` Mandatory Field
+
+In the OneBot12 standard, `message_id` is inside the `data` object and is not mandatory. ErisPulse elevates it to a top-level **mandatory** field:
+
+- Should be set to an empty string `""` when `message_id` cannot be obtained
+- Ensure `message_id` always exists, modules do not need to perform null checks
+
+### 5.2 `{platform}_raw` Raw Response Field
+
+The return value should include a `{platform}_raw` field, containing a complete copy of the platform's raw response data:
+
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {"message_id": "1234", "time": 1632847927},
+    "message_id": "1234",
+    "message": "",
+    "telegram_raw": {
+        "ok": true,
+        "result": {"message_id": 1234, "date": 1632847927, ...}
+    }
+}
+```
+
+**Requirements**:
+- `{platform}_raw` must be a deep copy of the raw response, not a reference
+- `platform` must match the platform name used during adapter registration exactly (case-sensitive)
+- Error messages within the raw response should also be preserved to facilitate debugging
+
+### 5.3 Adapter Implementation Checklist
+
+- [ ] Include `status`, `retcode`, `data`, `message_id`, `message` fields
+- [ ] Return codes follow OneBot12 specification (see §3.2)
+- [ ] `message_id` always exists (empty string if unable to obtain)
+- [ ] `{platform}_raw` contains platform raw response data
+
+## 6. Notes
 - For 3xxxx error codes, the last three digits can be defined by the implementation
 - Avoid using reserved error segments (4xxxx, 5xxxx)
 - Error messages should be concise and clear for debugging
