@@ -62,6 +62,18 @@
   ```
 
 ---
+## [2.3.9-dev.3] - 2026/03/27
+
+### 文档
+- @wsu2059q
+  - 更新 `standards/README.md` 索引，移除已删除文档条目并更新描述
+  - 更新文档生成脚本（`generate-docs-index.py`、`generate-ai-prompts.py`）中的文档路径引用
+  - 重构技术标准文档排版：
+    - 扩展命名规范、会话类型扩展、模块开发者指南、扩展注册表 → `event-conversion.md`
+    - `Raw_ob12` 规范、反向转换规范、方法发现、发送方法扩展注册表 → `send-method-spec.md`
+    - `message_id` 必选字段、`{platform}_raw` 原始响应规范 → `api-response.md`
+
+---
 ## [2.3.9-dev.2] - 2026/03/23
 
 ### 修复
