@@ -104,7 +104,7 @@ from ErisPulse.Core.Event import command
 # Register command handler
 @command("hello")
 async def hello_handler(event):
-    await event.reply("你好！")
+    await event.reply("Hello!")
 
 # Run SDK and maintain running | Must run in async environment
 asyncio.run(sdk.run(keep_running=True))
