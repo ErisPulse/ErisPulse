@@ -113,7 +113,9 @@ jobs:
           echo "艾莉丝开始生成 AI 物料文档~"
           
           # 确保输出目录存在
-          mkdir -p docs/ai-support/prompts
+          mkdir -p docs/zh-CN/ai-support/prompts
+          mkdir -p docs/zh-TW/ai-support/prompts
+          mkdir -p docs/en/ai-support/prompts
           
           # 运行 AI prompt 生成脚本
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
@@ -134,15 +136,17 @@ jobs:
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
           
-          # 上传 AI 物料文档
+          # 上传多语言 AI 物料文档
           gh release upload "$tag_name" \
-            docs/ai-support/prompts/ErisPulse-ModuleDev.md \
-            docs/ai-support/prompts/ErisPulse-AdapterDev.md \
-            docs/ai-support/prompts/ErisPulse-Full.md \
+            docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md \
+            docs/zh-CN/ai-support/prompts/ErisPulse-AdapterDev.md \
+            docs/zh-CN/ai-support/prompts/ErisPulse-Full.md \
+            docs/zh-TW/ai-support/prompts/ErisPulse-ModuleDev.md \
+            docs/zh-TW/ai-support/prompts/ErisPulse-AdapterDev.md \
+            docs/zh-TW/ai-support/prompts/ErisPulse-Full.md \
+            docs/en/ai-support/prompts/ErisPulse-ModuleDev.md \
+            docs/en/ai-support/prompts/ErisPulse-AdapterDev.md \
+            docs/en/ai-support/prompts/ErisPulse-Full.md \
             --clobber
           
           echo "AI 物料文档上传完成"
-          echo "用户可以从以下链接下载文档:"
-          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-ModuleDev.md"
-          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-AdapterDev.md"
-          echo "https://github.com/${{ github.repository }}/releases/download/$tag_name/ErisPulse-Full.md"
