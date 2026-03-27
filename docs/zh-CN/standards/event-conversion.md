@@ -120,13 +120,28 @@
   "user_nickname": "YingXinche",
   "comment": "请加好友",
   "onebot11_raw": {...},
-  "onebot11_raw_type": "request"  // onebot11原始事件类型就是 `request`
+  "onebot11_raw_type": "request"
 }
 ```
 
 ## 4. 消息段标准
 
-### 4.1 通用消息段
+### 4.1 标准消息段
+
+标准消息段类型**不添加**平台前缀：
+
+| 类型 | 说明 | data 字段 |
+|------|------|----------|
+| `text` | 纯文本 | `text: str` |
+| `image` | 图片 | `file: str/bytes`, `url: str` |
+| `audio` | 音频 | `file: str/bytes`, `url: str` |
+| `video` | 视频 | `file: str/bytes`, `url: str` |
+| `file` | 文件 | `file: str/bytes`, `url: str`, `filename: str` |
+| `mention` | @用户 | `user_id: str`, `user_name: str` |
+| `reply` | 回复 | `message_id: str` |
+| `face` | 表情 | `id: str` |
+| `location` | 位置 | `latitude: float`, `longitude: float` |
+
 ```json
 {
   "type": "text",
@@ -136,16 +151,22 @@
 }
 ```
 
-### 4.2 特殊消息段
+### 4.2 平台扩展消息段
+
 平台特有的消息段需要添加平台前缀：
+
 ```json
-{
-  "type": "yunhu_form",
-  "data": {
-    "form_id": "123456"
-  }
-}
+// 云湖 - 表单
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "报名表"}}
+
+// Telegram - 贴纸
+{"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
+
+**扩展消息段要求**：
+1. **data 内部字段不加前缀**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **提供降级方案**：模块可能不识别扩展消息段，适配器应在 `alt_message` 中提供文本替代
+3. **文档完备**：每个扩展消息段必须在适配器文档中说明 `type`、`data` 结构和使用场景
 
 ## 5. 未知事件处理
 
@@ -163,16 +184,51 @@
 }
 ```
 
-## 6. 平台特性字段
+---
 
-所有平台特有字段必须以平台名称作为前缀
+## 6. 扩展命名规范
 
-比如:
-- 云湖平台：`yunhu_`
-- Telegram平台：`telegram_`
-- OneBot11平台：`onebot11_`
+### 6.1 字段命名
 
-### 6.1 特有字段示例
+**规则**：`{platform}_{field_name}`
+
+```
+平台前缀    字段名            完整字段名
+────────    ───────          ──────────
+yunhu       command           yunhu_command
+telegram    sticker_file_id   telegram_sticker_file_id
+onebot11    anonymous         onebot11_anonymous
+email       subject           email_subject
+```
+
+**要求**：
+- `platform` 必须与适配器注册时的平台名完全一致（大小写敏感）
+- `field_name` 使用 `snake_case` 命名
+- 禁止使用双下划线 `__` 开头（Python 保留）
+- 禁止与标准字段同名（如 `type`、`time`、`message` 等）
+
+### 6.2 消息段类型命名
+
+**规则**：`{platform}_{segment_type}`
+
+标准消息段类型（`text`、`image`、`audio`、`video`、`mention`、`reply` 等）**不得**添加平台前缀。只有平台特有的消息段类型才需要添加前缀。
+
+### 6.3 原始数据字段命名
+
+以下字段名是**保留字段**，所有适配器必须遵循：
+
+| 保留字段 | 类型 | 说明 |
+|---------|------|------|
+| `{platform}_raw` | `any` | 平台原始事件数据的完整副本 |
+| `{platform}_raw_type` | `string` | 平台原始事件类型标识 |
+
+**要求**：
+- `{platform}_raw` 必须是原始数据的深拷贝，而非引用
+- `{platform}_raw_type` 必须是字符串，即使平台使用数字类型也要转换为字符串
+- 这两个字段在所有事件中**必须存在**（无法获取时为 `null` 和空字符串 `""`）
+
+### 6.4 平台特有字段示例
+
 ```json
 {
   "yunhu_command": {
@@ -188,12 +244,150 @@
 }
 ```
 
-## 7. 适配器实现检查清单
-- [ ] 所有标准字段已正确映射
-- [ ] 平台特有字段已添加前缀
-- [ ] 时间戳已转换为10位秒级
-- [ ] 原始数据保存在 {platform}_raw, 原始事件类型已经保存到 {platform}_raw_type
-- [ ] 消息段的 alt_message 已生成
-- [ ] 所有事件类型已通过单元测试
-- [ ] 文档包含完整示例和说明
+### 6.5 嵌套扩展字段
 
+扩展字段可以是简单值，也可以是嵌套对象：
+
+```json
+{
+  "telegram_chat": {
+    "id": 123456,
+    "type": "supergroup",
+    "title": "My Group"
+  },
+  "telegram_forward_from": {
+    "user_id": "789",
+    "user_name": "ForwardUser"
+  }
+}
+```
+
+**嵌套字段要求**：
+- 顶层键必须带平台前缀
+- 嵌套内部字段**不添加**平台前缀
+- 嵌套深度建议不超过 3 层
+
+### 6.6 `self` 字段扩展
+
+`self` 对象的标准必选字段（`platform`、`user_id`）见 §2.1，以下是 ErisPulse 扩展的可选字段：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `self.user_name` | `string` | 机器人昵称 |
+| `self.avatar` | `string` | 机器人头像 URL |
+| `self.account_id` | `string` | 多账户模式下的账户标识 |
+
+---
+
+## 7. 会话类型扩展
+
+ErisPulse 在 OneBot12 标准的 `private`、`group` 基础上扩展了以下会话类型：
+
+| 类型 | OneBot12 标准 | ErisPulse 扩展 | 说明 |
+|------|:-----------:|:------------:|------|
+| `private` | ✅ | — | 一对一私聊 |
+| `group` | ✅ | — | 群聊 |
+| `user` | — | ✅ | 用户类型（Telegram 等） |
+| `channel` | — | ✅ | 频道（广播式） |
+| `guild` | — | ✅ | 服务器/社区 |
+| `thread` | — | ✅ | 话题/子频道 |
+
+**适配器自定义类型扩展**：
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type
+
+# 在适配器启动时注册
+register_custom_type(
+    receive_type="email",      # 接收事件中的 detail_type
+    send_type="email",         # 发送时的目标类型
+    id_field="email_id",       # 对应的 ID 字段名
+    platform="email"           # 平台标识
+)
+```
+
+**自定义类型要求**：
+- 必须在适配器 `start()` 时注册，在 `shutdown()` 时注销
+- `receive_type` 不应与标准类型重名
+- `id_field` 应遵循 `{目标}_id` 的命名模式
+
+> 完整的会话类型定义和映射关系参见 [会话类型标准](session-types.md)。
+
+---
+
+## 8. 模块开发者指南
+
+### 8.1 访问扩展字段
+
+```python
+from ErisPulse.Core.Event import message
+
+@message()
+async def handle_message(event):
+    # 访问标准字段
+    text = event.get_text()
+    user_id = event.get_user_id()
+
+    # 访问平台扩展字段 - 方式1：直接 get
+    yunhu_command = event.get("yunhu_command")
+
+    # 访问平台扩展字段 - 方式2：点式访问（Event 包装类）
+    # event.yunhu_command
+
+    # 访问原始数据
+    raw_data = event.get("yunhu_raw")
+    raw_type = event.get_raw_type()
+
+    # 判断平台
+    platform = event.get_platform()
+    if platform == "yunhu":
+        pass
+    elif platform == "telegram":
+        pass
+```
+
+### 8.2 处理扩展消息段
+
+```python
+@message()
+async def handle_message(event):
+    message_segments = event.get("message", [])
+
+    for segment in message_segments:
+        seg_type = segment.get("type")
+        seg_data = segment.get("data", {})
+
+        if seg_type == "text":
+            text = seg_data["text"]
+        elif seg_type.startswith("yunhu_"):
+            if seg_type == "yunhu_form":
+                form_id = seg_data["form_id"]
+        elif seg_type.startswith("telegram_"):
+            if seg_type == "telegram_sticker":
+                file_id = seg_data["file_id"]
+```
+
+### 8.3 最佳实践
+
+1. **优先使用标准字段**：不要假设扩展字段一定存在
+2. **平台判断**：通过 `event.get_platform()` 判断平台，而非通过扩展字段是否存在来推断
+3. **优雅降级**：无法处理扩展消息段时，使用 `alt_message` 作为兜底
+4. **不要硬编码前缀**：使用 `platform` 变量动态拼接
+
+```python
+# ✅ 推荐
+platform = event.get_platform()
+raw_data = event.get(f"{platform}_raw")
+
+# ❌ 不推荐
+raw_data = event.get("yunhu_raw")
+```
+
+---
+
+## 9. 相关文档
+
+- [各平台特性文档](../platform-guide/README.md) - 你可以访问此文档来了解各个平台特性以及已知的扩展事件和消息段等。
+- [会话类型标准](session-types.md) - 会话类型定义和映射关系
+- [发送方法规范](send-method-spec.md) - Send 类的方法命名、参数规范及反向转换要求
+- [API 响应标准](api-response.md) - 适配器 API 响应格式标准

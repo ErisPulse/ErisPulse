@@ -103,7 +103,48 @@
 3. 返回码必须严格遵循OneBot12规范
 4. 错误信息(message)应当是人类可读的描述
 
-## 5. 注意事项
+## 5. 扩展规范
+
+ErisPulse 在 OneBot12 标准返回结构之上做了以下扩展：
+
+### 5.1 `message_id` 必选字段
+
+OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPulse 将其提升为顶层**必选**字段：
+
+- 无法获取 `message_id` 时应设为空字符串 `""`
+- 确保 `message_id` 始终存在，模块无需做 null 检查
+
+### 5.2 `{platform}_raw` 原始响应字段
+
+返回值中应包含 `{platform}_raw` 字段，存放平台原始响应数据的完整副本：
+
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {"message_id": "1234", "time": 1632847927},
+    "message_id": "1234",
+    "message": "",
+    "telegram_raw": {
+        "ok": true,
+        "result": {"message_id": 1234, "date": 1632847927, ...}
+    }
+}
+```
+
+**要求**：
+- `{platform}_raw` 必须是原始响应的深拷贝，而非引用
+- `platform` 必须与适配器注册时的平台名完全一致（大小写敏感）
+- 原始响应中的错误信息也应保留，便于调试
+
+### 5.3 适配器实现检查清单
+
+- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段
+- [ ] 返回码遵循 OneBot12 规范（详见 §3.2）
+- [ ] `message_id` 始终存在（无法获取时为空字符串）
+- [ ] `{platform}_raw` 包含平台原始响应数据
+
+## 6. 注意事项
 - 对于3xxxx错误码，低三位可由实现自行定义
 - 避免使用保留错误段(4xxxx、5xxxx)
 - 错误信息应当简洁明了，便于调试
