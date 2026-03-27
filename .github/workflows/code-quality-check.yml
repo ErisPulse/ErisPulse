@@ -9,6 +9,80 @@ on:
   workflow_dispatch:
 
 jobs:
+  ruff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装 ruff
+        run: pip install ruff
+
+      - name: 运行 ruff 检查
+        continue-on-error: true
+        run: |
+          echo "艾莉丝正在运行 Ruff 代码检查..."
+          ruff_output=$(ruff check src/ 2>&1; echo "RUFF_EXIT_CODE=$?")
+          exit_code=${ruff_output##*RUFF_EXIT_CODE=}
+          ruff_output=${ruff_output%RUFF_EXIT_CODE=*}
+
+          echo "RUFF_OUTPUT<<EOF" >> $GITHUB_ENV
+          echo "$ruff_output" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          if [ "$exit_code" -ne 0 ]; then
+            echo "has_ruff_issues=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_ruff_issues=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 提交 Ruff 检查结果到PR
+        if: steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.login === '艾莉丝[bot]' &&
+              comment.body.includes('Ruff 代码检查')
+            );
+
+            const message = `Ruff 代码检查结果
+
+            > ⚠️ 此检查不会阻止合并，仅供参考
+
+            \`\`\`
+            ${process.env.RUFF_OUTPUT}
+            \`\`\`
+            `;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: message
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: message
+              });
+            }
+
   pytest-check:
     runs-on: ubuntu-latest
     steps:
@@ -29,13 +103,12 @@ jobs:
 
       - name: 运行测试
         id: pytest-check
-        continue-on-error: true
         run: |
           echo "艾莉丝正在运行 Pytest 测试..."
           pytest_output=$(pytest -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
           exit_code=${pytest_output##*PYTEST_EXIT_CODE=}
           pytest_output=${pytest_output%PYTEST_EXIT_CODE=*}
-          echo pytest_output
+          echo "$pytest_output"
 
           echo "PYTEST_OUTPUT<<EOF" >> $GITHUB_ENV
           echo "$pytest_output" >> $GITHUB_ENV
@@ -47,8 +120,12 @@ jobs:
             echo "has_errors=false" >> $GITHUB_OUTPUT
           fi
 
+          if [ "$exit_code" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: 提交测试结果到PR
-        if: steps.pytest-check.outputs.has_errors == 'true' && github.event_name == 'pull_request'
+        if: always() && steps.pytest-check.outputs.has_errors == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -58,19 +135,19 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.login === '艾莉丝[bot]' && 
+
+            const botComment = comments.find(comment =>
+              comment.user.login === '艾莉丝[bot]' &&
               comment.body.includes('测试结果')
             );
-            
-            const message = `测试结果
-            
+
+            const message = `❌ **测试未通过 — 已阻止合并**
+
             \`\`\`
             ${process.env.PYTEST_OUTPUT}
             \`\`\`
             `;
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
