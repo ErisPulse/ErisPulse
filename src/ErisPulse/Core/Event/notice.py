@@ -148,4 +148,4 @@ class NoticeHandler:
         """
         return self.handler._clear_handlers()
 
-notice = NoticeHandler()
+notice : NoticeHandler = NoticeHandler()
