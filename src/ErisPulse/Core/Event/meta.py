@@ -124,4 +124,4 @@ class MetaHandler:
         """
         return self.handler._clear_handlers()
 
-meta = MetaHandler()
+meta : MetaHandler = MetaHandler()
