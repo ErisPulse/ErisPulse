@@ -78,6 +78,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
+          set -e
           echo "艾莉丝开始翻译文档啦~"
           
           # 检查是否需要强制翻译
