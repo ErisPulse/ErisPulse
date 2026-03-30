@@ -702,27 +702,25 @@ async def conditional_handler(event):
 
 適配器是 ErisPulse 與各個訊息平台之間的橋樑，負責：
 
-1. 接收平台事件並轉換為 OneBot12 標準格式
-2. 將 OneBot12 標準回應轉換為平台特定格式
-3. 管理與平台的連線
+1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式
+2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
+3. 管理與平台的連線（WebSocket/WebHook）
 4. 提供統一的 SendDSL 訊息發送介面
 
 ### 適配器架構
 
 ```
-平台事件
-    ↓
-轉換器 (Converter)
-    ↓
-OneBot12 標準事件
-    ↓
-事件系統
+正向轉換（接收）                        反向轉換（發送）
+─────────────                        ─────────────
+平台事件                               模組建構訊息
+    ↓                                    ↓
+Converter.convert()               Send.Raw_ob12()
+    ↓                                    ↓
+OneBot12 標準事件                   平台原生 API 呼叫
+    ↓                                    ↓
+事件系統                             標準回應格式
     ↓
 模組處理
-    ↓
-SendDSL 訊息發送
-    ↓
-平台 API 呼叫
 ```
 
 ## 目錄結構
@@ -885,26 +883,17 @@ class MyAdapter(BaseAdapter):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            發送 OneBot12 格式訊息
+            發送 OneBot12 格式訊息（必須實作）
+
+            完整實作規範和範例請參閱：
+            ../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台
             """
             if isinstance(message, dict):
                 message = [message]
-            
-            async def _send():
-                for segment in message:
-                    seg_type = segment.get("type", "")
-                    seg_data = segment.get("data", {})
-                    
-                    if seg_type == "text":
-                        await self.Text(seg_data.get("text", ""))
-                    elif seg_type == "image":
-                        await self.Image(seg_data.get("file") or seg_data.get("url", ""))
-                    # ... 處理其他訊息類型
-            
-            return asyncio.create_task(_send())
+            return asyncio.create_task(self._do_send(message))
 ```
 
-**媒體類發送方法實作要點：**
+**媒體類發送方法 實作要點：**
 
 - `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
 - 當傳入 URL 時，需先下載檔案再上傳到平台
@@ -989,36 +978,41 @@ from .Core import MyAdapter
 ### 組件關係
 
 ```
-┌─────────────────────────────────────────┐
-│         平台 API                │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      介接器           │
-│  ┌────────────────────────────┐    │
-│  │ Send 類 (訊息發送 DSL)    │    │
-│  └────────────────────────────┘    │
-│  ┌────────────────────────────┐    │
-│  │ Converter (事件轉換器)     │    │
-│  └────────────────────────────┘    │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│     OneBot12 標準事件           │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      事件系統                   │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      模組 (處理事件)            │
-└─────────────────────────────────────────┘
+正向轉換（接收方向）                           反向轉換（發送方向）
+─────────────────                           ─────────────────
+                                             
+┌──────────────────┐                        ┌──────────────────┐
+│ 平台原生事件     │                        │ 模組建構訊息     │
+└────────┬─────────┘                        └────────┬─────────┘
+         │                                           │
+         ↓                                           ↓
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│                  │   │ 介接器 (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (事件轉換器)    │──→│ │              │ │   │ (反向轉換入口)   │
+│                  │   │ │              │ │   │                  │
+└──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
+                       └──────────────────┘            │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ 平台 API 呼叫    │
+                       │ OneBot12 標準事件 │    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ 標準響應格式     │
+                       │ 事件系統         │    └──────────────────┘
+                       └────────┬─────────┘
+                                │
+                                ↓
+                       ┌──────────────────┐
+                       │ 模組 (處理事件)  │
+                       └──────────────────┘
 ```
+
+**核心對稱性**：
+- **正向轉換**（Converter）：平台原生事件 → OneBot12 標準事件，原始資料保留在 `{platform}_raw`
+- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，傳回標準響應格式
 
 ## AdapterManager 介接器管理器
 
@@ -1280,186 +1274,7 @@ class MyAdapter(BaseAdapter):
 ### 繼承關係
 
 ```python
-class MyAdapter(BaseAdapter):
-    class Send(BaseAdapter.Send):
-        """Send 巢狀類別，繼承自 BaseAdapter.Send"""
-        pass
-```
-
-### 可用屬性
-
-`Send` 類別在呼叫時會自動設定以下屬性：
-
-| 屬性 | 說明 | 設定方式 |
-|-----|------|---------|
-| `_target_id` | 目標ID | `To(id)` 或 `To(type, id)` |
-| `_target_type` | 目標類型 | `To(type, id)` |
-| `_target_to` | 簡化目標ID | `To(id)` |
-| `_account_id` | 發送帳號ID | `Using(account_id)` |
-| `_adapter` | 介接器實例 | 自動設定 |
-
-### 基本方法
-
-```python
-class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """發送文字訊息（必須傳回 Task）"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
-            )
-        )
-```
-
-### 鏈式修飾方法
-
-```python
-class Send(BaseAdapter.Send):
-    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
-        super().__init__(adapter, target_type, target_id, account_id)
-        self._at_user_ids = []
-        self._reply_message_id = None
-        self._at_all = False
-    
-    def At(self, user_id: str) -> 'Send':
-        """@使用者（可多次呼叫）"""
-        self._at_user_ids.append(user_id)
-        return self
-    
-    def AtAll(self) -> 'Send':
-        """@全體成員"""
-        self._at_all = True
-        return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回覆訊息"""
-        self._reply_message_id = message_id
-        return self
-```
-
-## 事件轉換器
-
-### 轉換流程
-
-```
-平台原始事件
-    ↓
-Converter.convert()
-    ↓
-OneBot12 標準事件
-```
-
-### 必要欄位
-
-所有轉換後的事件必須包含：
-
-```python
-{
-    "id": "事件唯一識別碼",
-    "time": 1234567890,           # 10位 Unix 時間戳記
-    "type": "message/notice/request/meta",
-    "detail_type": "事件詳細類型",
-    "platform": "平台名稱",
-    "self": {
-        "platform": "平台名稱",
-        "user_id": "機器人 ID"
-    },
-    "{platform}_raw": {...},       # 原始資料（必須）
-    "{platform}_raw_type": "..."    # 原始類型（必須）
-}
-```
-
-### 轉換器範例
-
-```python
-class MyPlatformConverter:
-    def convert(self, raw_event):
-        """將平台原生事件轉換為 OneBot12 標準格式"""
-        if not isinstance(raw_event, dict):
-            return None
-        
-        # 產生事件 ID
-        event_id = raw_event.get("event_id") or str(uuid.uuid4())
-        
-        # 轉換時間戳記
-        timestamp = raw_event.get("timestamp")
-        if timestamp and timestamp > 10**12:
-            timestamp = int(timestamp / 1000)
-        else:
-            timestamp = int(timestamp) if timestamp else int(time.time())
-        
-        # 轉換事件類型
-        event_type = self._convert_type(raw_event.get("type"))
-        detail_type = self._convert_detail_type(raw_event)
-        
-        # 建構標準事件
-        onebot_event = {
-            "id": str(event_id),
-            "time": timestamp,
-            "type": event_type,
-            "detail_type": detail_type,
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": str(raw_event.get("bot_id", ""))
-            },
-            "myplatform_raw": raw_event,
-            "myplatform_raw_type": raw_event.get("type", "")
-        }
-        
-        return onebot_event
-```
-
-## 連線管理
-
-### WebSocket 連線
-
-```python
-from fastapi import WebSocket
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        """註冊 WebSocket 路由"""
-        router.register_websocket(
-            module_name="myplatform",
-            path="/ws",
-            handler=self._ws_handler,
-            auth_handler=self._auth_handler
-        )
-    
-    async def _ws_handler(self, websocket: WebSocket):
-        """WebSocket 連線處理器"""
-        self.connection = websocket
-        
-        try:
-            while True:
-                data = await websocket.receive_text()
-                onebot_event = self.convert(data)
-                if onebot_event:
-                    await self.adapter.emit(onebot_event)
-        except WebSocketDisconnect:
-            self.logger.info("連線已中斷")
-        finally:
-            self.connection = None
-    
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
-        """WebSocket 認證"""
-        token = websocket.query_params.get("token")
-        return token == "valid_token"
-```
-
-### WebHook 連線
-
-```python
-from fastapi import Request
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        """註冊 WebHook 路由"""
+class MyAdapter(Base
 
 
 
@@ -1515,12 +1330,13 @@ Using/Account() → To() → [修飾方法] → [發送方法]
 | `Video(file: bytes \| str)` | 發送影片 | `asyncio.Task` |
 | `File(file: bytes \| str)` | 發送檔案 | `asyncio.Task` |
 
-### 原始方法
+### 協議方法
 
-| 方法名 | 說明 | 返回值 |
-|--------|------|---------|
-| `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` |
-| `Raw_json(json_str)` | 發送原始 JSON 訊息 | `asyncio.Task` |
+| 方法名 | 說明 | 返回值 | 是否必須 |
+|--------|------|---------|---------|
+| `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` | **必須實作** |
+
+> **重要**：`Raw_ob12` 是介接器的核心方法，**必須實作**。它是反向轉換（OneBot12 → 平台）的統一入口。未實作時基底類別會記錄 error 日誌並返回標準錯誤回應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）內部應委託給 `Raw_ob12`。
 
 ## 修飾方法
 
@@ -1714,16 +1530,13 @@ await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回覆@
 await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告訊息")
 ```
 
-### 原始訊息
+### 原始訊息與訊息構建
 
-```python
-# 發送 OneBot12 格式訊息
-ob12_msg = [
-    {"type": "text", "data": {"text": "Hello"}},
-    {"type": "image", "data": {"file": "https://example.com/image.jpg"}}
-]
-await my_adapter.Send.To("group", "456").Raw_ob12(ob12_msg)
-```
+`Raw_ob12` 是反向轉換的核心入口（接收 OB12 訊息段 → 平台 API 調用），`MessageBuilder` 是配合其使用的鏈式訊息段構建工具。
+
+> 完整的 `Raw_ob12` 實作規範、`MessageBuilder` 用法及程式碼範例請參閱：
+> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [發送方法規範 §11 訊息構建器](../../standards/send-method-spec.md#11-訊息構建器-messagebuilder)
 
 ## 相關文件
 
@@ -2118,6 +1931,16 @@ async def test_send_message():
     result = await adapter.Send.To("user", "123").Text("Hello")
     assert result is not None
 ```
+
+## 反向轉換與訊息構建
+
+`Raw_ob12` 是配接器**必須實作**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
+
+`MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫與快速構建。
+
+> 完整的實作規範、程式碼範例與使用方法請參閱：
+> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [發送方法規範 §11 訊息構建器](../../standards/send-method-spec.md#11-訊息構建器-messagebuilder)
 
 ## 文件維護
 
@@ -2885,7 +2708,7 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 
 # ErisPulse 發送方法規範
 
-本文件定義了 ErisPulse 适配器中 `Send` 類別發送方法的命名規範、參數規範和反向轉換要求。
+本文件定義了 ErisPulse 適配器中 `Send` 類別發送方法的命名規範、參數規範和反向轉換要求。
 
 ## 1. 標準方法命名
 
@@ -2918,17 +2741,26 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 
 ### 1.3 協議方法
 
-| 方法名 | 說明 |
-|-------|------|
-| `Raw_ob12` | 傳送 OneBot12 標準訊息段 |
+| 方法名 | 說明 | 是否必須 |
+|-------|------|---------|
+| `Raw_ob12` | 傳送 OneBot12 格式訊息段 | 必須 |
+
+**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
+
+**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄 **error 級別**日誌並返回標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實現此方法。
+
+### 1.4 推薦的擴展命名約定
+
+適配器如需支援傳送非 OneBot12 格式的原始資料（如平台特定 JSON、XML 等），推薦使用以下命名約定：
+
+| 推薦方法名 | 說明 |
+|-----------|------|
 | `Raw_json` | 傳送任意 JSON 資料 |
 | `Raw_xml` | 傳送任意 XML 資料 |
 
-**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
+**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實作。它們僅作為命名約定，適配器可根據需要自行定義。如果適配器不支援這些格式，則無需定義。
 
-**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄錯誤日誌並返回 `None`，提示適配器開發者必須實現此方法。
-
-**`Raw_json` / `Raw_xml` 未重寫時的行為**：基類預設實作會記錄警告日誌並返回 `None`，不會拋出異常。
+**訊息構建器**：ErisPulse 提供了 `MessageBuilder` 工具類別，用於方便地構建 OneBot12 訊息段列表，搭配 `Raw_ob12` 使用。詳見 [訊息構建器](#11-訊息構建器-messagebuilder) 章節。
 
 ## 2. 參數規範詳解
 
@@ -2956,7 +2788,7 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 # 使用 URL
 send.Image("https://example.com/image.jpg")
 
-# 使用本地文件路径
+# 使用本地檔案路徑
 send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
@@ -2991,7 +2823,7 @@ send.Image(image_data)
 
 當適配器接收到媒體訊息參數時，應按以下順序處理：
 
-1. **URL 參數**：直接使用 URL 發送（部分平台適配器可能存在 URL 下載後再上傳的操作）
+1. **URL 參數**：直接使用 URL 發送(部分平台適配器可能存在 URL 下載後再上傳的操作)
 2. **檔案路徑**：檢測是否為本地路徑，若是則上傳檔案
 3. **二進位數據**：直接上傳二進位數據
 
@@ -3282,66 +3114,5 @@ class YunhuSend(SendDSL):
             "data": {"message_id": response.get("msg_id", ""), "time": int(time.time())},
             "message_id": response.get("msg_id", ""),
             "message": "",
-            "yunhu_raw": response
-        }
-```
-
----
-
-## 7. 方法發現
-
-模組開發者可以通過 API 查詢適配器支援的發送方法：
-
-```python
-from ErisPulse import adapter
-
-# 列出所有發送方法
-methods = adapter.list_sends("myplatform")
-# ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
-
-# 查看方法詳情
-info = adapter.send_info("myplatform", "Form")
-# {
-#     "name": "Form",
-#     "parameters": [{"name": "form_id", "type": "str", ...}],
-#     "return_type": "Awaitable[Any]",
-#     "docstring": "發送雲湖表單"
-# }
-```
-
----
-
-## 8. 已註冊的發送方法擴展
-
-| 平台 | 方法名 | 說明 |
-|------|--------|------|
-| onebot12 | `Mention` | @用戶（OneBot12 風格） |
-| onebot12 | `Sticker` | 發送貼紙 |
-| onebot12 | `Location` | 發送位置 |
-| onebot12 | `Recall` | 撤回訊息 |
-| onebot12 | `Edit` | 編輯訊息 |
-| onebot12 | `Batch` | 批量發送 |
-
-> **注意**：發送方法不加平台前綴，不同平台的同名方法可以有不同的實作。
-
----
-
-## 9. 適配器實作檢查清單
-
-### 發送方法
-- [ ] 標準方法（`Text`, `Image` 等）已實作
-- [ ] 返回值均為 `asyncio.Task`
-- [ ] 修飾方法（`At`, `Reply`, `AtAll`）返回 `self`
-- [ ] 平台擴展方法使用 PascalCase，無平台前綴
-- [ ] 所有方法有完整的類型註解和文件字串
-
-### 反向轉換
-- [ ] `Raw_ob12` **已實作**（必須，不可跳過）
-- [ ] `Raw_ob12` 能處理所有標準訊息段（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）
-- [ ] `Raw_ob12` 能處理平台擴展訊息段（`{platform}_xxx` 類型）
-- [ ] 標準發送方法（`Text`, `Image` 等）內部委託給 `Raw_ob12`，而非獨立實作轉換邏輯
-- [ ] 不支援的訊息段跳過並記錄警告，不拋出異常
-- [ ] 複合訊息段正確處理（合併或按序拆分）
-
----
+            "yunhu_raw":
 

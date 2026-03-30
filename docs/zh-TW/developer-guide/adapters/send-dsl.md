@@ -48,12 +48,13 @@ Using/Account() → To() → [修飾方法] → [發送方法]
 | `Video(file: bytes \| str)` | 發送影片 | `asyncio.Task` |
 | `File(file: bytes \| str)` | 發送檔案 | `asyncio.Task` |
 
-### 原始方法
+### 協議方法
 
-| 方法名 | 說明 | 返回值 |
-|--------|------|---------|
-| `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` |
-| `Raw_json(json_str)` | 發送原始 JSON 訊息 | `asyncio.Task` |
+| 方法名 | 說明 | 返回值 | 是否必須 |
+|--------|------|---------|---------|
+| `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` | **必須實作** |
+
+> **重要**：`Raw_ob12` 是介接器的核心方法，**必須實作**。它是反向轉換（OneBot12 → 平台）的統一入口。未實作時基底類別會記錄 error 日誌並返回標準錯誤回應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）內部應委託給 `Raw_ob12`。
 
 ## 修飾方法
 
@@ -247,16 +248,13 @@ await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("回覆@
 await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告訊息")
 ```
 
-### 原始訊息
+### 原始訊息與訊息構建
 
-```python
-# 發送 OneBot12 格式訊息
-ob12_msg = [
-    {"type": "text", "data": {"text": "Hello"}},
-    {"type": "image", "data": {"file": "https://example.com/image.jpg"}}
-]
-await my_adapter.Send.To("group", "456").Raw_ob12(ob12_msg)
-```
+`Raw_ob12` 是反向轉換的核心入口（接收 OB12 訊息段 → 平台 API 調用），`MessageBuilder` 是配合其使用的鏈式訊息段構建工具。
+
+> 完整的 `Raw_ob12` 實作規範、`MessageBuilder` 用法及程式碼範例請參閱：
+> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [發送方法規範 §11 訊息構建器](../../standards/send-method-spec.md#11-訊息構建器-messagebuilder)
 
 ## 相關文件
 

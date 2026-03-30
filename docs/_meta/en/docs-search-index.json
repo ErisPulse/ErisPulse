@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 793,
+  "total_keywords": 808,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -75,7 +75,7 @@
     "1. Create Project": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 51,
+        "line": 49,
         "level": 3,
         "title": "1. Create Project"
       },
@@ -121,7 +121,7 @@
     "1. Maintain Platform Feature Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 386,
+        "line": 396,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       }
@@ -302,6 +302,78 @@
         "title": "1.3 Protocol Methods"
       }
     ],
+    "1.4 Recommended Extension Naming Conventions": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "1.4 Recommended Extension Naming Conventions"
+      }
+    ],
+    "11. MessageBuilder": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 472,
+        "level": 2,
+        "title": "11. MessageBuilder"
+      }
+    ],
+    "11.1 Import": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 476,
+        "level": 3,
+        "title": "11.1 Import"
+      }
+    ],
+    "11.2 Chaining Calls to Build": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 484,
+        "level": 3,
+        "title": "11.2 Chaining Calls to Build"
+      }
+    ],
+    "11.3 Quick Build for Single Segment": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 501,
+        "level": 3,
+        "title": "11.3 Quick Build for Single Segment"
+      }
+    ],
+    "11.4 Use with Event.reply_ob12": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 512,
+        "level": 3,
+        "title": "11.4 Use with Event.reply_ob12"
+      }
+    ],
+    "11.5 Supported Message Segment Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 527,
+        "level": 3,
+        "title": "11.5 Supported Message Segment Methods"
+      }
+    ],
+    "11.6 Utility Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 542,
+        "level": 3,
+        "title": "11.6 Utility Methods"
+      }
+    ],
+    "12. Related Documents": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 561,
+        "level": 2,
+        "title": "12. Related Documents"
+      }
+    ],
     "1xxxx Action Request Errors (Request Error)": [
       {
         "document": "standards/api-response.md",
@@ -377,7 +449,7 @@
     "2. Create pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 57,
+        "line": 55,
         "level": 3,
         "title": "2. Create pyproject.toml"
       },
@@ -477,7 +549,7 @@
     "2. Parameter Specifications Detail": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 48,
+        "line": 57,
         "level": 2,
         "title": "2. Parameter Specifications Detail"
       }
@@ -557,7 +629,7 @@
     "2. Update Version Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 407,
+        "line": 417,
         "level": 3,
         "title": "2. Update Version Information"
       }
@@ -565,7 +637,7 @@
     "2.1 Media Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 50,
+        "line": 59,
         "level": 3,
         "title": "2.1 Media Message Parameter Specifications"
       }
@@ -589,7 +661,7 @@
     "2.1.1 String Parameters (URL or File Path)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 54,
+        "line": 63,
         "level": 4,
         "title": "2.1.1 String Parameters (URL or File Path)"
       }
@@ -597,7 +669,7 @@
     "2.1.2 Binary Data Parameters": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 79,
+        "line": 88,
         "level": 4,
         "title": "2.1.2 Binary Data Parameters"
       }
@@ -605,7 +677,7 @@
     "2.1.3 Parameter Processing Priority": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 105,
+        "line": 114,
         "level": 4,
         "title": "2.1.3 Parameter Processing Priority"
       }
@@ -613,7 +685,7 @@
     "2.2 @ User Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 130,
+        "line": 139,
         "level": 3,
         "title": "2.2 @ User Parameter Specifications"
       }
@@ -637,7 +709,7 @@
     "2.3 Reply Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 151,
+        "line": 160,
         "level": 3,
         "title": "2.3 Reply Message Parameter Specifications"
       }
@@ -685,7 +757,7 @@
     "3. Create Adapter Main Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 80,
+        "line": 78,
         "level": 3,
         "title": "3. Create Adapter Main Class"
       }
@@ -757,7 +829,7 @@
     "3. Platform-Specific Method Naming": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 167,
+        "line": 176,
         "level": 2,
         "title": "3. Platform-Specific Method Naming"
       }
@@ -885,7 +957,7 @@
     "4. Implement Required Methods": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 117,
+        "line": 115,
         "level": 3,
         "title": "4. Implement Required Methods"
       }
@@ -909,7 +981,7 @@
     "4. Parameter Naming Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 199,
+        "line": 207,
         "level": 2,
         "title": "4. Parameter Naming Specifications"
       }
@@ -965,7 +1037,7 @@
     "5. Implement Send Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 147,
+        "line": 145,
         "level": 3,
         "title": "5. Implement Send Class"
       }
@@ -973,7 +1045,7 @@
     "5. Return Value Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 210,
+        "line": 218,
         "level": 2,
         "title": "5. Return Value Specifications"
       }
@@ -1029,7 +1101,7 @@
     "6. Implement Converter": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 229,
+        "line": 218,
         "level": 3,
         "title": "6. Implement Converter"
       }
@@ -1045,7 +1117,7 @@
     "6. Reverse Conversion Specifications (OneBot12 → Platform)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 217,
+        "line": 225,
         "level": 2,
         "title": "6. Reverse Conversion Specifications (OneBot12 → Platform)"
       }
@@ -1053,7 +1125,7 @@
     "6.1 Conversion Model": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 221,
+        "line": 229,
         "level": 3,
         "title": "6.1 Conversion Model"
       }
@@ -1077,7 +1149,7 @@
     "6.2 `Raw_ob12` Implementation Specifications": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 238,
+        "line": 246,
         "level": 3,
         "title": "6.2 `Raw_ob12` Implementation Specifications"
       }
@@ -1093,7 +1165,7 @@
     "6.3 Message Segment Conversion Rules": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 266,
+        "line": 274,
         "level": 3,
         "title": "6.3 Message Segment Conversion Rules"
       }
@@ -1101,7 +1173,7 @@
     "6.3.1 Standard Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 268,
+        "line": 276,
         "level": 4,
         "title": "6.3.1 Standard Message Segment Conversion"
       }
@@ -1109,7 +1181,7 @@
     "6.3.2 Platform Extension Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 284,
+        "line": 292,
         "level": 4,
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
@@ -1117,7 +1189,7 @@
     "6.3.3 Composite Message Segment Processing": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 308,
+        "line": 316,
         "level": 4,
         "title": "6.3.3 Composite Message Segment Processing"
       }
@@ -1125,9 +1197,17 @@
     "6.4 Relationship between `Raw_ob12` and Standard Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 326,
+        "line": 334,
         "level": 3,
         "title": "6.4 Relationship between `Raw_ob12` and Standard Methods"
+      }
+    ],
+    "6.5 Implementation Example": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 362,
+        "level": 3,
+        "title": "6.5 Implementation Example"
       }
     ],
     "7. Best Practices": [
@@ -1141,9 +1221,17 @@
     "7. Create Package Entry": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 271,
+        "line": 260,
         "level": 3,
         "title": "7. Create Package Entry"
+      }
+    ],
+    "7. Method Discovery": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 415,
+        "level": 2,
+        "title": "7. Method Discovery"
       }
     ],
     "7.1 Adapter Developers": [
@@ -1176,6 +1264,22 @@
         "line": 256,
         "level": 2,
         "title": "8. Common Questions"
+      }
+    ],
+    "8. Registered Sending Method Extensions": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 438,
+        "level": 2,
+        "title": "8. Registered Sending Method Extensions"
+      }
+    ],
+    "9. Adapter Implementation Checklist": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 453,
+        "level": 2,
+        "title": "9. Adapter Implementation Checklist"
       }
     ],
     "9. Related Documentation": [
@@ -1219,7 +1323,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 593,
+        "line": 598,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1263,7 +1367,7 @@
     "API Response Standards": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 497,
+        "line": 502,
         "level": 2,
         "title": "API Response Standards"
       }
@@ -1301,7 +1405,7 @@
     "Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 542,
+        "line": 547,
         "level": 3,
         "title": "Account Configuration"
       },
@@ -1321,7 +1425,7 @@
     "Account Management": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "Account Management"
       }
@@ -1329,7 +1433,7 @@
     "Account Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
         "title": "Account Method"
       }
@@ -1505,7 +1609,7 @@
     "AdapterManager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 41,
+        "line": 46,
         "level": 2,
         "title": "AdapterManager"
       }
@@ -1529,7 +1633,7 @@
     "Adding Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 201,
+        "line": 206,
         "level": 4,
         "title": "Adding Middleware"
       }
@@ -1591,7 +1695,7 @@
     "Asynchronous Handling": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 112,
+        "line": 113,
         "level": 2,
         "title": "Asynchronous Handling"
       }
@@ -1637,7 +1741,7 @@
     "At Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 62,
+        "line": 63,
         "level": 3,
         "title": "At Method"
       }
@@ -1645,7 +1749,7 @@
     "AtAll Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 72,
+        "line": 73,
         "level": 3,
         "title": "AtAll Method"
       }
@@ -1661,7 +1765,7 @@
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 307,
+        "line": 312,
         "level": 3,
         "title": "Available Properties"
       }
@@ -1677,7 +1781,7 @@
     "BaseAdapter Base Class": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 250,
+        "line": 255,
         "level": 2,
         "title": "BaseAdapter Base Class"
       }
@@ -1783,7 +1887,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 319,
+        "line": 324,
         "level": 3,
         "title": "Basic Methods"
       },
@@ -1849,7 +1953,7 @@
     "Basic Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 252,
+        "line": 257,
         "level": 3,
         "title": "Basic Structure"
       }
@@ -1869,7 +1973,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 53,
+        "line": 58,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -1881,7 +1985,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 222,
+        "line": 223,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2055,7 +2159,7 @@
     "Chain Calling": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 240,
+        "line": 241,
         "level": 3,
         "title": "Chain Calling"
       }
@@ -2085,7 +2189,7 @@
     "Chained Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 336,
+        "line": 341,
         "level": 3,
         "title": "Chained Modifier Methods"
       }
@@ -2133,7 +2237,7 @@
     "Checking Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 120,
+        "line": 125,
         "level": 4,
         "title": "Checking Platform Status"
       }
@@ -2181,7 +2285,7 @@
     "Combine Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 86,
+        "line": 87,
         "level": 3,
         "title": "Combine Modifiers"
       }
@@ -2407,7 +2511,7 @@
     "Complete Examples": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "Complete Examples"
       }
@@ -2521,7 +2625,7 @@
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 118,
+        "line": 123,
         "level": 3,
         "title": "Configuration Management"
       },
@@ -2577,7 +2681,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 435,
+        "line": 440,
         "level": 2,
         "title": "Connection Management"
       }
@@ -2585,7 +2689,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 569,
+        "line": 574,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -2625,7 +2729,7 @@
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 364,
+        "line": 369,
         "level": 3,
         "title": "Conversion Process"
       }
@@ -2633,7 +2737,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 394,
+        "line": 399,
         "level": 3,
         "title": "Converter Example"
       }
@@ -2713,7 +2817,7 @@
     "Core Functions": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 45,
+        "line": 50,
         "level": 3,
         "title": "Core Functions"
       }
@@ -2903,7 +3007,7 @@
     "Directory Structure": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 34,
+        "line": 32,
         "level": 2,
         "title": "Directory Structure"
       }
@@ -2919,7 +3023,7 @@
     "Do Not Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 114,
+        "line": 115,
         "level": 3,
         "title": "Do Not Wait for Result"
       }
@@ -3005,7 +3109,7 @@
     "Documentation Maintenance": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 384,
+        "line": 394,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -3163,7 +3267,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 567,
+        "line": 572,
         "level": 2,
         "title": "Error Handling"
       },
@@ -3247,7 +3351,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 362,
+        "line": 367,
         "level": 2,
         "title": "Event Converter"
       }
@@ -3271,7 +3375,7 @@
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 185,
+        "line": 190,
         "level": 4,
         "title": "Event Distribution Mechanism"
       }
@@ -3339,7 +3443,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 148,
+        "line": 153,
         "level": 3,
         "title": "Event Listening"
       },
@@ -3529,7 +3633,7 @@
     "Failure Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 525,
+        "line": 530,
         "level": 3,
         "title": "Failure Response"
       }
@@ -3641,7 +3745,7 @@
     "Getting Adapter Instances": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "Getting Adapter Instances"
       }
@@ -3883,7 +3987,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 298,
+        "line": 303,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -3905,7 +4009,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 275,
+        "line": 280,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -4273,7 +4377,7 @@
     "Listing Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 134,
+        "line": 139,
         "level": 4,
         "title": "Listing Platforms"
       }
@@ -4669,7 +4773,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 199,
+        "line": 204,
         "level": 3,
         "title": "Middleware"
       }
@@ -4683,7 +4787,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 219,
+        "line": 224,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -4691,7 +4795,7 @@
     "Modifier Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 58,
+        "line": 59,
         "level": 2,
         "title": "Modifier Methods"
       }
@@ -4871,7 +4975,7 @@
     "Multi-account Support": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 540,
+        "line": 545,
         "level": 2,
         "title": "Multi-account Support"
       }
@@ -4895,7 +4999,7 @@
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 137,
+        "line": 138,
         "level": 2,
         "title": "Naming Conventions"
       }
@@ -4909,7 +5013,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 278,
+        "line": 267,
         "level": 2,
         "title": "Next Steps"
       },
@@ -5119,7 +5223,7 @@
     "OneBot12 Standard Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 150,
+        "line": 155,
         "level": 4,
         "title": "OneBot12 Standard Events"
       },
@@ -5203,7 +5307,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 139,
+        "line": 140,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -5259,7 +5363,7 @@
     "Platform Native Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 171,
+        "line": 176,
         "level": 4,
         "title": "Platform Native Events"
       }
@@ -5291,7 +5395,7 @@
     "Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 159,
+        "line": 160,
         "level": 3,
         "title": "Platform-Specific Methods"
       }
@@ -5389,7 +5493,7 @@
     "Property Access": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 242,
+        "line": 247,
         "level": 4,
         "title": "Property Access"
       }
@@ -5537,7 +5641,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 49,
+        "line": 47,
         "level": 2,
         "title": "Quick Start"
       },
@@ -5570,12 +5674,12 @@
         "title": "Raw Message Sending"
       }
     ],
-    "Raw Messages": [
+    "Raw Messages and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 250,
+        "line": 251,
         "level": 3,
-        "title": "Raw Messages"
+        "title": "Raw Messages and Message Building"
       }
     ],
     "Raw Methods": [
@@ -5687,19 +5791,19 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 416,
+        "line": 426,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 616,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 261,
+        "line": 259,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -5799,7 +5903,7 @@
     "Reply Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "Reply Method"
       }
@@ -5879,7 +5983,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 374,
+        "line": 379,
         "level": 3,
         "title": "Required Fields"
       }
@@ -5903,7 +6007,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 184,
+        "line": 185,
         "level": 2,
         "title": "Return Values"
       }
@@ -5920,6 +6024,22 @@
         "line": 111,
         "level": 2,
         "title": "Return Values of Sending Methods"
+      }
+    ],
+    "Reverse Conversion": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 462,
+        "level": 3,
+        "title": "Reverse Conversion"
+      }
+    ],
+    "Reverse Conversion and Message Construction": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 384,
+        "level": 2,
+        "title": "Reverse Conversion and Message Construction"
       }
     ],
     "Route Information": [
@@ -6075,7 +6195,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 296,
+        "line": 301,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -6158,6 +6278,12 @@
         "line": 37,
         "level": 2,
         "title": "Sending Methods"
+      },
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 455,
+        "level": 3,
+        "title": "Sending Methods"
       }
     ],
     "Sending Replies using the `reply` Method": [
@@ -6179,7 +6305,7 @@
     "Sending with Specific Account": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 554,
+        "line": 559,
         "level": 3,
         "title": "Sending with Specific Account"
       }
@@ -6203,7 +6329,7 @@
     "Shutting Down Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 103,
+        "line": 108,
         "level": 4,
         "title": "Shutting Down Adapters"
       }
@@ -6379,7 +6505,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 204,
+        "line": 205,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -6395,7 +6521,7 @@
     "Starting Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 80,
+        "line": 85,
         "level": 4,
         "title": "Starting Adapters"
       }
@@ -6403,7 +6529,7 @@
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 78,
+        "line": 83,
         "level": 3,
         "title": "Startup and Shutdown"
       }
@@ -6525,7 +6651,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 499,
+        "line": 504,
         "level": 3,
         "title": "Success Response"
       }
@@ -6641,7 +6767,7 @@
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "Task Object"
       }
@@ -6905,7 +7031,7 @@
     "Using Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "Using Method"
       }
@@ -6989,7 +7115,7 @@
     "Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 124,
+        "line": 125,
         "level": 3,
         "title": "Wait for Result"
       }
@@ -7029,7 +7155,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
+        "line": 478,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -7037,7 +7163,7 @@
     "WebSocket Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 437,
+        "line": 442,
         "level": 3,
         "title": "WebSocket Connection"
       }
@@ -7133,7 +7259,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 234,
+        "line": 239,
         "level": 4,
         "title": "get() Method"
       }

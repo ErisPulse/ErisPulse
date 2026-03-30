@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 789,
+  "total_keywords": 780,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -129,7 +129,7 @@
     "1. 建立專案": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 51,
+        "line": 49,
         "level": 3,
         "title": "1. 建立專案"
       },
@@ -231,7 +231,7 @@
     "1. 維護平台特性文件": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 386,
+        "line": 396,
         "level": 3,
         "title": "1. 維護平台特性文件"
       }
@@ -292,6 +292,14 @@
         "title": "1.3 協議方法"
       }
     ],
+    "1.4 推薦的擴展命名約定": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "1.4 推薦的擴展命名約定"
+      }
+    ],
     "1xxxx 動作請求錯誤（Request Error）": [
       {
         "document": "standards/api-response.md",
@@ -319,7 +327,7 @@
     "2. 參數規範詳解": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 48,
+        "line": 57,
         "level": 2,
         "title": "2. 參數規範詳解"
       }
@@ -367,7 +375,7 @@
     "2. 建立 pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 57,
+        "line": 55,
         "level": 3,
         "title": "2. 建立 pyproject.toml"
       },
@@ -441,7 +449,7 @@
     "2. 更新版本資訊": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 407,
+        "line": 417,
         "level": 3,
         "title": "2. 更新版本資訊"
       }
@@ -545,7 +553,7 @@
     "2.1 媒體訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 50,
+        "line": 59,
         "level": 3,
         "title": "2.1 媒體訊息參數規範"
       }
@@ -553,7 +561,7 @@
     "2.1.1 字串參數（URL 或檔案路徑）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 54,
+        "line": 63,
         "level": 4,
         "title": "2.1.1 字串參數（URL 或檔案路徑）"
       }
@@ -561,7 +569,7 @@
     "2.1.2 二進位數據參數": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 79,
+        "line": 88,
         "level": 4,
         "title": "2.1.2 二進位數據參數"
       }
@@ -569,7 +577,7 @@
     "2.1.3 參數處理優先順序": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 105,
+        "line": 114,
         "level": 4,
         "title": "2.1.3 參數處理優先順序"
       }
@@ -577,7 +585,7 @@
     "2.2 @用戶參數規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 130,
+        "line": 139,
         "level": 3,
         "title": "2.2 @用戶參數規範"
       }
@@ -593,7 +601,7 @@
     "2.3 回覆訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 151,
+        "line": 160,
         "level": 3,
         "title": "2.3 回覆訊息參數規範"
       }
@@ -641,7 +649,7 @@
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 167,
+        "line": 176,
         "level": 2,
         "title": "3. 平台特有方法命名"
       }
@@ -657,7 +665,7 @@
     "3. 建立適配器主類別": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 80,
+        "line": 78,
         "level": 3,
         "title": "3. 建立適配器主類別"
       }
@@ -785,7 +793,7 @@
     "4. 參數命名規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 198,
+        "line": 207,
         "level": 2,
         "title": "4. 參數命名規範"
       }
@@ -793,7 +801,7 @@
     "4. 實作必要方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 117,
+        "line": 115,
         "level": 3,
         "title": "4. 實作必要方法"
       }
@@ -905,7 +913,7 @@
     "5. 實作 Send 類別": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 147,
+        "line": 145,
         "level": 3,
         "title": "5. 實作 Send 類別"
       }
@@ -937,7 +945,7 @@
     "5. 返回值規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 209,
+        "line": 218,
         "level": 2,
         "title": "5. 返回值規範"
       }
@@ -1001,7 +1009,7 @@
     "6. 反向轉換規範（OneBot12 → 平台）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 216,
+        "line": 225,
         "level": 2,
         "title": "6. 反向轉換規範（OneBot12 → 平台）"
       }
@@ -1009,7 +1017,7 @@
     "6. 實作轉換器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 229,
+        "line": 218,
         "level": 3,
         "title": "6. 實作轉換器"
       }
@@ -1049,7 +1057,7 @@
     "6.1 轉換模型": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 220,
+        "line": 229,
         "level": 3,
         "title": "6.1 轉換模型"
       }
@@ -1057,7 +1065,7 @@
     "6.2 `Raw_ob12` 實作規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 237,
+        "line": 246,
         "level": 3,
         "title": "6.2 `Raw_ob12` 實作規範"
       }
@@ -1097,7 +1105,7 @@
     "6.3 訊息段轉換規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 265,
+        "line": 274,
         "level": 3,
         "title": "6.3 訊息段轉換規則"
       }
@@ -1105,7 +1113,7 @@
     "6.3.1 標準訊息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 267,
+        "line": 276,
         "level": 4,
         "title": "6.3.1 標準訊息段轉換"
       }
@@ -1113,7 +1121,7 @@
     "6.3.2 平台擴展訊息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 283,
+        "line": 292,
         "level": 4,
         "title": "6.3.2 平台擴展訊息段轉換"
       }
@@ -1121,7 +1129,7 @@
     "6.3.3 複合訊息段處理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 307,
+        "line": 316,
         "level": 4,
         "title": "6.3.3 複合訊息段處理"
       }
@@ -1129,7 +1137,7 @@
     "6.4 `Raw_ob12` 與標準方法的關係": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 325,
+        "line": 334,
         "level": 3,
         "title": "6.4 `Raw_ob12` 與標準方法的關係"
       }
@@ -1145,7 +1153,7 @@
     "6.5 實作範例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 353,
+        "line": 362,
         "level": 3,
         "title": "6.5 實作範例"
       }
@@ -1169,17 +1177,9 @@
     "7. 建立套件入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 271,
+        "line": 260,
         "level": 3,
         "title": "7. 建立套件入口"
-      }
-    ],
-    "7. 方法發現": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 406,
-        "level": 2,
-        "title": "7. 方法發現"
       }
     ],
     "7. 最佳實務": [
@@ -1220,14 +1220,6 @@
         "line": 249,
         "level": 3,
         "title": "7.3 類型推斷"
-      }
-    ],
-    "8. 已註冊的發送方法擴展": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 429,
-        "level": 2,
-        "title": "8. 已註冊的發送方法擴展"
       }
     ],
     "8. 常見問題": [
@@ -1282,14 +1274,6 @@
         "line": 277,
         "level": 2,
         "title": "9. 相關文件"
-      }
-    ],
-    "9. 適配器實作檢查清單": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 444,
-        "level": 2,
-        "title": "9. 適配器實作檢查清單"
       }
     ],
     "@ 訊息相關": [
@@ -1369,7 +1353,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 104,
+        "line": 105,
         "level": 3,
         "title": "Account 方法"
       }
@@ -1393,7 +1377,7 @@
     "AdapterManager 介接器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 41,
+        "line": 46,
         "level": 2,
         "title": "AdapterManager 介接器管理器"
       }
@@ -1401,7 +1385,7 @@
     "At 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 62,
+        "line": 63,
         "level": 3,
         "title": "At 方法"
       }
@@ -1409,7 +1393,7 @@
     "AtAll 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 72,
+        "line": 73,
         "level": 3,
         "title": "AtAll 方法"
       }
@@ -1417,7 +1401,7 @@
     "BaseAdapter 基類": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 250,
+        "line": 255,
         "level": 2,
         "title": "BaseAdapter 基類"
       }
@@ -1751,7 +1735,7 @@
     "OneBot12 標準事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 150,
+        "line": 155,
         "level": 4,
         "title": "OneBot12 標準事件"
       },
@@ -1781,7 +1765,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 139,
+        "line": 140,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -1853,7 +1837,7 @@
     "Reply 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "Reply 方法"
       }
@@ -1923,7 +1907,7 @@
     "Send 訊息發送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 296,
+        "line": 301,
         "level": 2,
         "title": "Send 訊息發送 DSL"
       }
@@ -1979,7 +1963,7 @@
     "Task 物件": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "Task 物件"
       }
@@ -2003,17 +1987,9 @@
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "Using 方法"
-      }
-    ],
-    "WebHook 連線": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
-        "level": 3,
-        "title": "WebHook 連線"
       }
     ],
     "WebSocket 路由": [
@@ -2022,14 +1998,6 @@
         "line": 298,
         "level": 3,
         "title": "WebSocket 路由"
-      }
-    ],
-    "WebSocket 連線": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 437,
-        "level": 3,
-        "title": "WebSocket 連線"
       }
     ],
     "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
@@ -2067,7 +2035,7 @@
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 234,
+        "line": 239,
         "level": 4,
         "title": "get() 方法"
       }
@@ -2193,7 +2161,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 278,
+        "line": 267,
         "level": 2,
         "title": "下一步"
       },
@@ -2253,7 +2221,7 @@
     "不等待結果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 114,
+        "line": 115,
         "level": 3,
         "title": "不等待結果"
       }
@@ -2267,7 +2235,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 199,
+        "line": 204,
         "level": 3,
         "title": "中介軟體"
       }
@@ -2281,7 +2249,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 219,
+        "line": 224,
         "level": 4,
         "title": "中介軟體執行順序"
       }
@@ -2305,7 +2273,7 @@
     "事件分發機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 185,
+        "line": 190,
         "level": 4,
         "title": "事件分發機制"
       }
@@ -2351,7 +2319,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 148,
+        "line": 153,
         "level": 3,
         "title": "事件監聽"
       },
@@ -2490,14 +2458,6 @@
         "line": 68,
         "level": 3,
         "title": "事件轉換"
-      }
-    ],
-    "事件轉換器": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 362,
-        "level": 2,
-        "title": "事件轉換器"
       }
     ],
     "事件配置": [
@@ -2823,7 +2783,7 @@
     "修飾方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 58,
+        "line": 59,
         "level": 2,
         "title": "修飾方法"
       }
@@ -3005,7 +2965,7 @@
     "列出平台": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 134,
+        "line": 139,
         "level": 4,
         "title": "列出平台"
       }
@@ -3049,7 +3009,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 275,
+        "line": 280,
         "level": 3,
         "title": "初始化過程"
       }
@@ -3084,20 +3044,12 @@
         "title": "升級模組"
       }
     ],
-    "原始方法": [
+    "協議方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 51,
         "level": 3,
-        "title": "原始方法"
-      }
-    ],
-    "原始訊息": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 250,
-        "level": 3,
-        "title": "原始訊息"
+        "title": "協議方法"
       }
     ],
     "原始訊息傳送": [
@@ -3106,6 +3058,14 @@
         "line": 53,
         "level": 3,
         "title": "原始訊息傳送"
+      }
+    ],
+    "原始訊息與訊息構建": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 251,
+        "level": 3,
+        "title": "原始訊息與訊息構建"
       }
     ],
     "原始資料": [
@@ -3156,18 +3116,18 @@
         "title": "參與貢獻"
       }
     ],
-    "反向轉換": [
+    "反向轉換與訊息構建": [
       {
-        "document": "standards/send-method-spec.md",
-        "line": 453,
-        "level": 3,
-        "title": "反向轉換"
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 384,
+        "level": 2,
+        "title": "反向轉換與訊息構建"
       }
     ],
     "取得介接器實例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "取得介接器實例"
       }
@@ -3210,14 +3170,6 @@
         "line": 131,
         "level": 3,
         "title": "取得適配器"
-      }
-    ],
-    "可用屬性": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 307,
-        "level": 3,
-        "title": "可用屬性"
       }
     ],
     "同步初始化": [
@@ -3293,7 +3245,7 @@
     "命名規範": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 137,
+        "line": 138,
         "level": 2,
         "title": "命名規範"
       }
@@ -3301,7 +3253,7 @@
     "啟動介接器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 80,
+        "line": 85,
         "level": 4,
         "title": "啟動介接器"
       }
@@ -3309,7 +3261,7 @@
     "啟動和關閉": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 78,
+        "line": 83,
         "level": 3,
         "title": "啟動和關閉"
       }
@@ -3427,13 +3379,13 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 53,
+        "line": 58,
         "level": 3,
         "title": "基本使用"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 222,
+        "line": 223,
         "level": 3,
         "title": "基本使用"
       },
@@ -3470,12 +3422,6 @@
     ],
     "基本方法": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 319,
-        "level": 3,
-        "title": "基本方法"
-      },
-      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 41,
         "level": 3,
@@ -3509,7 +3455,7 @@
     "基本結構": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 252,
+        "line": 257,
         "level": 3,
         "title": "基本結構"
       }
@@ -3849,7 +3795,7 @@
     "完整範例": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "完整範例"
       }
@@ -3965,7 +3911,7 @@
     "屬性存取": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 242,
+        "line": 247,
         "level": 4,
         "title": "屬性存取"
       }
@@ -4033,7 +3979,7 @@
     "帳號管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "帳號管理"
       }
@@ -4133,7 +4079,7 @@
     "平台原生事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 171,
+        "line": 176,
         "level": 4,
         "title": "平台原生事件"
       }
@@ -4173,7 +4119,7 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 159,
+        "line": 160,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -4290,14 +4236,6 @@
         "title": "必要參數"
       }
     ],
-    "必要欄位": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 374,
-        "level": 3,
-        "title": "必要欄位"
-      }
-    ],
     "快速初始化": [
       {
         "document": "quick-start.md",
@@ -4329,7 +4267,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 49,
+        "line": 47,
         "level": 2,
         "title": "快速開始"
       },
@@ -4645,7 +4583,7 @@
     "文件維護": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 384,
+        "line": 394,
         "level": 2,
         "title": "文件維護"
       }
@@ -4711,7 +4649,7 @@
     "新增中介軟體": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 201,
+        "line": 206,
         "level": 4,
         "title": "新增中介軟體"
       }
@@ -4929,7 +4867,7 @@
     "核心功能": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 45,
+        "line": 50,
         "level": 3,
         "title": "核心功能"
       }
@@ -5077,7 +5015,7 @@
     "標準化回應": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 204,
+        "line": 205,
         "level": 3,
         "title": "標準化回應"
       }
@@ -5311,7 +5249,7 @@
     "檢查平台狀態": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 120,
+        "line": 125,
         "level": 4,
         "title": "檢查平台狀態"
       }
@@ -5550,12 +5488,6 @@
         "line": 37,
         "level": 2,
         "title": "發送方法"
-      },
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 446,
-        "level": 3,
-        "title": "發送方法"
       }
     ],
     "發送方法命名": [
@@ -5617,7 +5549,7 @@
     "目錄結構": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 34,
+        "line": 32,
         "level": 2,
         "title": "目錄結構"
       }
@@ -5667,13 +5599,13 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 416,
+        "line": 426,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 261,
+        "line": 259,
         "level": 2,
         "title": "相關文件"
       },
@@ -5819,7 +5751,7 @@
     "等待結果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 124,
+        "line": 125,
         "level": 3,
         "title": "等待結果"
       }
@@ -5919,7 +5851,7 @@
     "組合修飾": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 86,
+        "line": 87,
         "level": 3,
         "title": "組合修飾"
       }
@@ -5935,7 +5867,7 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 298,
+        "line": 303,
         "level": 3,
         "title": "繼承關係"
       }
@@ -6191,7 +6123,7 @@
     "設定管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 118,
+        "line": 123,
         "level": 3,
         "title": "設定管理"
       },
@@ -6452,22 +6384,6 @@
         "title": "輸入驗證"
       }
     ],
-    "轉換器範例": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 394,
-        "level": 3,
-        "title": "轉換器範例"
-      }
-    ],
-    "轉換流程": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 364,
-        "level": 3,
-        "title": "轉換流程"
-      }
-    ],
     "轉發功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -6479,7 +6395,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 184,
+        "line": 185,
         "level": 2,
         "title": "返回值"
       }
@@ -6572,12 +6488,6 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 5,
-        "level": 2,
-        "title": "連線管理"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 435,
         "level": 2,
         "title": "連線管理"
       }
@@ -6868,12 +6778,6 @@
     ],
     "鏈式修飾方法": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 336,
-        "level": 3,
-        "title": "鏈式修飾方法"
-      },
-      {
         "document": "platform-guide/telegram.md",
         "line": 60,
         "level": 3,
@@ -6911,7 +6815,7 @@
     "鏈式調用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 240,
+        "line": 241,
         "level": 3,
         "title": "鏈式調用"
       }
@@ -7011,7 +6915,7 @@
     "關閉介接器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 103,
+        "line": 108,
         "level": 4,
         "title": "關閉介接器"
       }
@@ -7065,7 +6969,7 @@
     "非同步處理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 112,
+        "line": 113,
         "level": 2,
         "title": "非同步處理"
       }
