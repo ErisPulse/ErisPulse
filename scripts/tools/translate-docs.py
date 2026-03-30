@@ -474,14 +474,24 @@ class DocsTranslator:
                 print(f"    📖 已加载参考翻译 ({len(reference_translation)} 字符)")
             
             # 调用翻译 API
-            translated_content = await self.call_translation_api(
-                content, target_lang, rel_path,
-                review_notes=review_notes,
-                reference_translation=reference_translation
-            )
+            MAX_RETRIES = 3
+            RETRY_DELAY = 2  # 秒
+            
+            translated_content = None
+            for attempt in range(1, MAX_RETRIES + 1):
+                translated_content = await self.call_translation_api(
+                    content, target_lang, rel_path,
+                    review_notes=review_notes,
+                    reference_translation=reference_translation
+                )
+                if translated_content:
+                    break
+                if attempt < MAX_RETRIES:
+                    print(f"  [重试 {attempt + 1}/{MAX_RETRIES}] {rel_path} ...")
+                    await asyncio.sleep(RETRY_DELAY)
             
             if not translated_content:
-                print(f"  [失败] {rel_path}")
+                print(f"  [失败] {rel_path} (已重试 {MAX_RETRIES} 次)")
                 self.stats["failed_files"] += 1
                 return False
             
@@ -607,6 +617,10 @@ class DocsTranslator:
         if self.stats['translated_files'] > 0:
             print(f"速度: {self.stats['translated_files']/duration:.2f} 文件/秒")
         print("=" * 60)
+        
+        if self.stats['failed_files'] > 0:
+            print(f"\n❌ 有 {self.stats['failed_files']} 个文件翻译失败！")
+            sys.exit(1)
 
 
 async def main():
