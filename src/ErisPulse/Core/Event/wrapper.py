@@ -7,12 +7,155 @@ ErisPulse 事件包装类
 1. 继承自dict，完全兼容字典访问
 2. 提供便捷方法简化事件处理
 3. 支持点式访问 event.platform
+4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
 {!--< /tips >!--}
 """
 
-from typing import Any, Dict, List, Optional, Callable, Awaitable, Union
+import inspect
+import warnings
+from typing import Any, Dict, List, Optional, Callable, Awaitable, Union, Type
 from .. import adapter, logger
 from .session_type import get_send_type_and_target_id, convert_to_send_type, infer_receive_type
+
+
+# ==================== 平台事件方法注册系统 ====================
+
+# 注册表: {platform: {method_name: callable}}
+_platform_event_methods: Dict[str, Dict[str, Callable]] = {}
+
+
+def _get_event_builtin_names() -> set:
+    """获取 Event 类的所有公开方法名，用于冲突检测"""
+    return {
+        name for name, member in inspect.getmembers(Event, predicate=inspect.isfunction)
+        if not name.startswith("_")
+    }
+
+
+def register_event_mixin(platform: str, mixin_cls: Type) -> int:
+    """
+    注册一个类的所有公开方法到指定平台
+
+    适配器可以创建一个 Mixin 类集中定义平台专有方法，
+    然后通过此函数一次性注册。
+
+    :param platform: 平台名称（需与适配器注册名一致）
+    :param mixin_cls: 包含平台方法的类
+    :return: 成功注册的方法数量
+
+    :example:
+    >>> class EmailEventMixin:
+    ...     def get_subject(self):
+    ...         return self.get("email_raw", {}).get("subject", "")
+    ...     def get_from(self):
+    ...         return self.get("email_raw", {}).get("from", "")
+    >>> register_event_mixin("email", EmailEventMixin)
+    2
+    """
+    if platform not in _platform_event_methods:
+        _platform_event_methods[platform] = {}
+
+    builtin_names = _get_event_builtin_names()
+    registered = 0
+
+    for name, func in inspect.getmembers(mixin_cls, predicate=inspect.isfunction):
+        if name.startswith("_"):
+            continue
+        if name in builtin_names:
+            warnings.warn(
+                f"register_event_mixin: 跳过方法 '{name}'，"
+                f"与 Event 内置方法冲突 (platform={platform})",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            continue
+        _platform_event_methods[platform][name] = func
+        registered += 1
+
+    logger.debug(f"[Event] 平台 '{platform}' 注册了 {registered} 个扩展方法")
+    return registered
+
+
+def register_event_method(platform: str):
+    """
+    装饰器：注册单个方法到指定平台
+
+    适合少量方法或动态注册的场景。
+
+    :param platform: 平台名称（需与适配器注册名一致）
+
+    :example:
+    >>> @register_event_method("email")
+    ... def get_subject(self):
+    ...     return self.get("email_raw", {}).get("subject", "")
+    """
+    def decorator(func: Callable) -> Callable:
+        if platform not in _platform_event_methods:
+            _platform_event_methods[platform] = {}
+
+        name = func.__name__
+
+        if name.startswith("_"):
+            return func
+
+        builtin_names = _get_event_builtin_names()
+
+        if name in builtin_names:
+            warnings.warn(
+                f"register_event_method: 跳过方法 '{name}'，"
+                f"与 Event 内置方法冲突 (platform={platform})",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return func
+
+        _platform_event_methods[platform][name] = func
+        logger.debug(f"[Event] 平台 '{platform}' 注册了扩展方法 '{name}'")
+        return func
+    return decorator
+
+
+def unregister_event_method(platform: str, name: str) -> bool:
+    """
+    注销指定平台的单个扩展方法
+
+    :param platform: 平台名称
+    :param name: 方法名
+    :return: 是否成功注销
+    """
+    if platform in _platform_event_methods and name in _platform_event_methods[platform]:
+        del _platform_event_methods[platform][name]
+        return True
+    return False
+
+
+def unregister_platform_event_methods(platform: str) -> int:
+    """
+    注销指定平台的全部扩展方法
+
+    适配器关闭时应调用此方法清理注册的方法。
+
+    :param platform: 平台名称
+    :return: 被注销的方法数量
+    """
+    if platform in _platform_event_methods:
+        count = len(_platform_event_methods[platform])
+        del _platform_event_methods[platform]
+        logger.debug(f"[Event] 平台 '{platform}' 注销了 {count} 个扩展方法")
+        return count
+    return 0
+
+
+def get_platform_event_methods(platform: str) -> List[str]:
+    """
+    查询指定平台已注册的扩展方法名列表
+
+    :param platform: 平台名称
+    :return: 方法名列表
+    """
+    if platform in _platform_event_methods:
+        return list(_platform_event_methods[platform].keys())
+    return []
 
 
 class Event(dict):
@@ -625,15 +768,41 @@ class Event(dict):
 
     def __getattr__(self, name: str) -> Any:
         """
-        支持点式访问字典键
-        
+        属性查找优先级：
+        1. 平台注册的扩展方法（仅当前平台）
+        2. 字典键访问（点式访问 event.platform 等）
+
         :param name: 属性名
         :return: 属性值
+        :raises AttributeError: 属性不存在
         """
+        # 1. 查找当前平台的扩展方法
+        platform = dict.get(self, "platform", "")
+        platform_methods = _platform_event_methods.get(platform)
+        if platform_methods and name in platform_methods:
+            func = platform_methods[name]
+            # 使用方法描述符协议绑定 self，使 isinstance 检查和 super() 正常工作
+            return func.__get__(self, type(self))
+
+        # 2. 兜底：字典键访问
         try:
             return self[name]
         except KeyError:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
+
+    def __dir__(self) -> List[str]:
+        """
+        让 dir(event) 包含当前平台注册的扩展方法名
+        """
+        names = super().__dir__()
+        # 添加当前平台的扩展方法名
+        platform = dict.get(self, "platform", "")
+        platform_methods = _platform_event_methods.get(platform)
+        if platform_methods:
+            names = list(names) + list(platform_methods.keys())
+        return sorted(set(names))
 
     def __repr__(self) -> str:
         """
@@ -648,5 +817,11 @@ class Event(dict):
 
 
 __all__ = [
-    "Event"
+    "Event",
+    # 平台事件方法注册
+    "register_event_mixin",
+    "register_event_method",
+    "unregister_event_method",
+    "unregister_platform_event_methods",
+    "get_platform_event_methods",
 ]
