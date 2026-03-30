@@ -65,8 +65,20 @@
 ## [2.4.0-dev.0] - 2026/03/30
 > 开发版本
 
+> 这个dev版本的 Raw_ob12 之前已经实现，现转为必须实现项
+
 ### 新增
 - @wsu2059q
+  - `Event.wrapper` 新增平台事件方法扩展系统：
+    - 新增 `register_event_method(platform)` 装饰器，支持为指定平台注册专有方法
+    - 新增 `register_event_mixin(platform, mixin_cls)` 函数，支持批量注册 Mixin 类中的方法
+    - 新增 `unregister_event_method(platform, name)` 函数，支持注销单个扩展方法
+    - 新增 `unregister_platform_event_methods(platform)` 函数，适配器关闭时清理全部扩展方法
+    - 新增 `get_platform_event_methods(platform)` 函数，查询指定平台已注册的扩展方法名列表
+    - Event 实例根据 `platform` 字段动态注入对应平台的扩展方法，非当前平台的方法抛出 `AttributeError`
+    - `dir(event)` 自动包含当前平台的扩展方法名
+    - 注册时自动检测与 Event 内置方法的命名冲突，冲突时发出 `RuntimeWarning` 并跳过
+    
   - Event 模块新增 MessageBuilder 消息构建器：
     - 支持链式调用构建 OneBot12 消息段列表
     - 支持快速构建单段消息（静态方法调用）

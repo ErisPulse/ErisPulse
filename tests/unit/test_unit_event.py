@@ -6,11 +6,17 @@
 
 import pytest
 import asyncio
+import warnings
 from unittest.mock import Mock, AsyncMock, patch
 from typing import Dict, Any
 
-from ErisPulse.Core.Event import command, message, notice, request, meta
-from ErisPulse.Core.Event.wrapper import Event
+from ErisPulse.Core.Event import (
+    command, message, notice, request, meta,
+    register_event_method, register_event_mixin,
+    unregister_event_method, unregister_platform_event_methods,
+    get_platform_event_methods,
+)
+from ErisPulse.Core.Event.wrapper import Event, _platform_event_methods
 from ErisPulse.Core.Event.base import BaseEventHandler
 from ErisPulse.Core import adapter, config
 
@@ -754,3 +760,389 @@ class TestEventWrapper:
         assert "Event" in repr_str
         assert "message" in repr_str
         assert "private" in repr_str
+
+
+# ==================== 平台事件方法扩展测试 ====================
+
+class TestRegisterEventMethod:
+    """register_event_method 装饰器测试类"""
+
+    def setup_method(self):
+        """每个测试前清理注册表"""
+        _platform_event_methods.clear()
+
+    def teardown_method(self):
+        """每个测试后清理注册表"""
+        _platform_event_methods.clear()
+
+    def test_register_single_method(self):
+        """测试注册单个方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            return self.get("email_raw", {}).get("subject", "")
+
+        assert "email" in _platform_event_methods
+        assert "get_subject" in _platform_event_methods["email"]
+
+    def test_register_multiple_methods_same_platform(self):
+        """测试同一平台注册多个方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("email")
+        def get_from(self):
+            pass
+
+        assert len(_platform_event_methods["email"]) == 2
+        assert "get_subject" in _platform_event_methods["email"]
+        assert "get_from" in _platform_event_methods["email"]
+
+    def test_register_different_platforms(self):
+        """测试不同平台注册不同方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("telegram")
+        def get_chat_type(self):
+            pass
+
+        assert "get_subject" in _platform_event_methods["email"]
+        assert "get_subject" not in _platform_event_methods["telegram"]
+        assert "get_chat_type" in _platform_event_methods["telegram"]
+        assert "get_chat_type" not in _platform_event_methods["email"]
+
+    def test_skip_private_methods(self):
+        """测试跳过以下划线开头的方法"""
+        @register_event_method("test")
+        def _private_helper(self):
+            pass
+
+        assert "test" not in _platform_event_methods or "_private_helper" not in _platform_event_methods.get("test", {})
+
+    def test_conflict_with_builtin_warns(self):
+        """测试与内置方法冲突时发出警告"""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            @register_event_method("test")
+            def get_text(self):
+                pass
+
+            assert len(w) == 1
+            assert issubclass(w[0].category, RuntimeWarning)
+            assert "get_text" in str(w[0].message)
+            assert "内置方法冲突" in str(w[0].message)
+
+        # 冲突方法不应被注册
+        assert "get_text" not in _platform_event_methods.get("test", {})
+
+    def test_decorator_returns_original_function(self):
+        """测试装饰器返回原始函数"""
+        def get_subject(self):
+            return "subject"
+
+        decorated = register_event_method("email")(get_subject)
+        assert decorated is get_subject
+
+
+class TestRegisterEventMixin:
+    """register_event_mixin 批量注册测试类"""
+
+    def setup_method(self):
+        """每个测试前清理注册表"""
+        _platform_event_methods.clear()
+
+    def teardown_method(self):
+        """每个测试后清理注册表"""
+        _platform_event_methods.clear()
+
+    def test_register_mixin_class(self):
+        """测试通过 Mixin 类批量注册"""
+        class EmailEventMixin:
+            def get_subject(self):
+                return self.get("email_raw", {}).get("subject", "")
+
+            def get_from(self):
+                return self.get("email_raw", {}).get("from", "")
+
+            def _internal(self):
+                pass
+
+        count = register_event_mixin("email", EmailEventMixin)
+        assert count == 2
+        assert "get_subject" in _platform_event_methods["email"]
+        assert "get_from" in _platform_event_methods["email"]
+        assert "_internal" not in _platform_event_methods["email"]
+
+    def test_register_empty_mixin(self):
+        """测试注册空 Mixin 类"""
+        class EmptyMixin:
+            pass
+
+        count = register_event_mixin("test", EmptyMixin)
+        assert count == 0
+
+    def test_mixin_conflict_skips_with_warning(self):
+        """测试 Mixin 中与内置冲突的方法被跳过"""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            class BadMixin:
+                def get_text(self):
+                    pass
+
+                def get_platform(self):
+                    pass
+
+                def custom_method(self):
+                    pass
+
+            count = register_event_mixin("test", BadMixin)
+
+            # 应有 2 个警告（get_text 和 get_platform 冲突）
+            assert len(w) == 2
+            # 只有 custom_method 被注册
+            assert count == 1
+            assert "custom_method" in _platform_event_methods["test"]
+
+
+class TestUnregisterEventMethod:
+    """注销方法测试类"""
+
+    def setup_method(self):
+        """每个测试前清理注册表"""
+        _platform_event_methods.clear()
+
+    def teardown_method(self):
+        """每个测试后清理注册表"""
+        _platform_event_methods.clear()
+
+    def test_unregister_single_method(self):
+        """测试注销单个方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        result = unregister_event_method("email", "get_subject")
+        assert result is True
+        assert "get_subject" not in _platform_event_methods["email"]
+
+    def test_unregister_nonexistent_method(self):
+        """测试注销不存在的方法"""
+        result = unregister_event_method("email", "nonexistent")
+        assert result is False
+
+    def test_unregister_nonexistent_platform(self):
+        """测试注销不存在平台的方法"""
+        result = unregister_event_method("nonexistent", "get_subject")
+        assert result is False
+
+    def test_unregister_platform_all_methods(self):
+        """测试注销平台全部方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("email")
+        def get_from(self):
+            pass
+
+        count = unregister_platform_event_methods("email")
+        assert count == 2
+        assert "email" not in _platform_event_methods
+
+    def test_unregister_nonexistent_platform_all(self):
+        """测试注销不存在平台的全部方法"""
+        count = unregister_platform_event_methods("nonexistent")
+        assert count == 0
+
+
+class TestGetPlatformEventMethods:
+    """查询方法测试类"""
+
+    def setup_method(self):
+        """每个测试前清理注册表"""
+        _platform_event_methods.clear()
+
+    def teardown_method(self):
+        """每个测试后清理注册表"""
+        _platform_event_methods.clear()
+
+    def test_get_methods_for_platform(self):
+        """测试查询平台已注册方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("email")
+        def get_from(self):
+            pass
+
+        methods = get_platform_event_methods("email")
+        assert sorted(methods) == ["get_from", "get_subject"]
+
+    def test_get_methods_for_nonexistent_platform(self):
+        """测试查询不存在平台的方法"""
+        methods = get_platform_event_methods("nonexistent")
+        assert methods == []
+
+
+class TestEventPlatformMethodDispatch:
+    """Event 实例平台方法分派测试类"""
+
+    def setup_method(self):
+        """每个测试前清理注册表"""
+        _platform_event_methods.clear()
+
+    def teardown_method(self):
+        """每个测试后清理注册表"""
+        _platform_event_methods.clear()
+
+    def test_email_event_has_email_methods(self):
+        """测试邮件事件可以访问邮件方法"""
+        @register_event_method("email")
+        def get_subject(self):
+            return self.get("email_raw", {}).get("subject", "")
+
+        event = Event({"platform": "email", "email_raw": {"subject": "Hello Email"}})
+        assert event.get_subject() == "Hello Email"
+
+    def test_email_event_missing_telegram_methods(self):
+        """测试邮件事件访问 Telegram 方法抛出 AttributeError"""
+        @register_event_method("telegram")
+        def get_chat_type(self):
+            return self.get("telegram_raw", {}).get("chat", {}).get("type", "")
+
+        event = Event({"platform": "email", "email_raw": {}})
+        with pytest.raises(AttributeError, match="get_chat_type"):
+            event.get_chat_type()
+
+    def test_telegram_event_has_telegram_methods(self):
+        """测试 Telegram 事件可以访问 Telegram 方法"""
+        @register_event_method("telegram")
+        def get_chat_type(self):
+            return self.get("telegram_raw", {}).get("chat", {}).get("type", "")
+
+        event = Event({
+            "platform": "telegram",
+            "telegram_raw": {"chat": {"type": "private"}}
+        })
+        assert event.get_chat_type() == "private"
+
+    def test_telegram_event_missing_email_methods(self):
+        """测试 Telegram 事件访问邮件方法抛出 AttributeError"""
+        @register_event_method("email")
+        def get_subject(self):
+            return self.get("email_raw", {}).get("subject", "")
+
+        event = Event({"platform": "telegram", "telegram_raw": {}})
+        with pytest.raises(AttributeError, match="get_subject"):
+            event.get_subject()
+
+    def test_builtin_methods_always_available(self):
+        """测试内置方法在任何平台都可用"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        email_event = Event({"platform": "email"})
+        telegram_event = Event({"platform": "telegram"})
+
+        # 内置方法在两个平台都可用
+        assert callable(email_event.get_text)
+        assert callable(telegram_event.get_text)
+        assert callable(email_event.get_user_id)
+        assert callable(telegram_event.get_user_id)
+
+    def test_dict_key_access_still_works(self):
+        """测试字典键的点式访问不受影响"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        event = Event({"platform": "email", "user_id": "123", "custom_key": "value"})
+        assert event.user_id == "123"
+        assert event.custom_key == "value"
+
+    def test_nonexistent_attribute_raises(self):
+        """测试访问不存在的属性抛出 AttributeError"""
+        event = Event({"platform": "test"})
+        with pytest.raises(AttributeError, match="nonexistent_attr"):
+            event.nonexistent_attr
+
+    def test_platform_method_receives_self(self):
+        """测试平台方法正确接收 self 绑定"""
+        @register_event_method("email")
+        def get_email_field(self, field_name):
+            return self.get("email_raw", {}).get(field_name, "")
+
+        event = Event({"platform": "email", "email_raw": {"to": "a@b.com"}})
+        assert event.get_email_field("to") == "a@b.com"
+        assert event.get_email_field("missing") == ""
+
+    def test_dir_includes_platform_methods(self):
+        """测试 dir(event) 包含平台方法名"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("email")
+        def get_from(self):
+            pass
+
+        event = Event({"platform": "email"})
+        attr_names = dir(event)
+        assert "get_subject" in attr_names
+        assert "get_from" in attr_names
+
+    def test_dir_excludes_other_platform_methods(self):
+        """测试 dir(event) 不包含其他平台的方法名"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        @register_event_method("telegram")
+        def get_chat_type(self):
+            pass
+
+        event = Event({"platform": "email"})
+        attr_names = dir(event)
+        assert "get_subject" in attr_names
+        assert "get_chat_type" not in attr_names
+
+    def test_hasattr_reflects_platform_methods(self):
+        """测试 hasattr 正确反映平台方法存在性"""
+        @register_event_method("email")
+        def get_subject(self):
+            pass
+
+        email_event = Event({"platform": "email"})
+        telegram_event = Event({"platform": "telegram"})
+
+        assert hasattr(email_event, "get_subject") is True
+        assert hasattr(telegram_event, "get_subject") is False
+
+    def test_no_platform_still_works(self):
+        """测试无 platform 字段时正常工作"""
+        event = Event({"type": "message", "alt_message": "hi"})
+        assert event.get_text() == "hi"
+        assert event.type == "message"
+
+    def test_mixin_methods_on_event(self):
+        """测试通过 Mixin 注册的方法在 Event 上可用"""
+        class EmailMixin:
+            def get_subject(self):
+                return self.get("email_raw", {}).get("subject", "")
+            def get_from(self):
+                return self.get("email_raw", {}).get("from", "")
+
+        register_event_mixin("email", EmailMixin)
+
+        event = Event({
+            "platform": "email",
+            "email_raw": {"subject": "Test Subject", "from": "sender@example.com"}
+        })
+        assert event.get_subject() == "Test Subject"
+        assert event.get_from() == "sender@example.com"
