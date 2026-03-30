@@ -3,6 +3,11 @@ name: "📚 艾莉丝的文档更新"
 permissions:
   contents: write
 
+# 防止翻译期间 push 回仓库再次触发同一条工作流，取消重复运行
+concurrency:
+  group: docs-update
+  cancel-in-progress: true
+
 on:
   push:
     branches: [Develop/v2]
