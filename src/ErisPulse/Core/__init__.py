@@ -13,6 +13,7 @@ from .module import module, ModuleManager
 from .router import router, RouterManager
 from .config import config, ConfigManager
 from . import Event
+from .Event.message_builder import MessageBuilder
 
 # 兼容性别名定义
 adapter_server  = router        # 路由管理器别名
@@ -29,6 +30,7 @@ __all__ = [
     'AdapterFather',    # 适配器基类
     'BaseAdapter',      # 适配器基类别名
     'SendDSL',          # DSL发送接口基类
+    'MessageBuilder',   # 消息构建器
 
     # 模块相关
     'module',           # 模块管理器

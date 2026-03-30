@@ -632,3 +632,199 @@ class TestBaseAdapter:
         
         with pytest.raises(NotImplementedError):
             asyncio.run(adapter.call_api("/test"))
+
+
+# ==================== SendDSL Raw_ob12 测试 ====================
+
+class TestSendDSLRawMethods:
+    """SendDSL Raw_ob12 方法测试类"""
+
+    @pytest.fixture
+    def base_adapter(self):
+        """创建基础适配器（未重写 Raw_ob12）"""
+        class TestAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "test_id"}
+
+        return TestAdapter()
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_default_returns_error_response(self, base_adapter):
+        """测试未重写 Raw_ob12 时返回标准错误响应"""
+        send = SendDSL(base_adapter, "user", "123", None)
+        result = await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
+        assert result is not None
+        assert result["status"] == "failed"
+        assert result["retcode"] == 10002
+        assert "Raw_ob12" in result["message"]
+        assert result["data"] is None
+        assert result["message_id"] == ""
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_default_logs_error(self, base_adapter):
+        """测试未重写 Raw_ob12 时记录错误日志"""
+        with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            send = SendDSL(base_adapter, "user", "123", None)
+            await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
+            mock_logger.error.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_with_overridden(self):
+        """测试重写 Raw_ob12 后正常返回 Task 并可 await"""
+        import asyncio
+
+        class CustomAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "id"}
+
+            class Send(BaseAdapter.Send):
+                def Raw_ob12(self, message, **kwargs):
+                    async def _do():
+                        return await self._adapter.call_api("/send", message=message)
+                    return asyncio.create_task(_do())
+
+        adapter = CustomAdapter()
+        send = adapter.Send.To("user", "123")
+        result = await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
+        assert result["status"] == "ok"
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_overridden_awaitable(self):
+        """测试重写的 Raw_ob12 可以 await 并返回结果"""
+        class CustomAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "id"}
+
+            class Send(BaseAdapter.Send):
+                def Raw_ob12(self, message, **kwargs):
+                    import asyncio
+                    async def _do():
+                        return await self._adapter.call_api("/send", message=message)
+                    return asyncio.create_task(_do())
+
+        adapter = CustomAdapter()
+        result = await adapter.Send.To("user", "123").Raw_ob12(
+            [{"type": "text", "data": {"text": "hi"}}]
+        )
+        assert result["status"] == "ok"
+        assert result["message_id"] == "id"
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_accepts_dict_input(self):
+        """测试 Raw_ob12 接受单个 dict 输入"""
+        class CustomAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "id"}
+
+            class Send(BaseAdapter.Send):
+                def Raw_ob12(self, message, **kwargs):
+                    import asyncio
+                    # 记录收到的 message 类型
+                    self._received_type = type(message).__name__
+                    async def _do():
+                        return {}
+                    return asyncio.create_task(_do())
+
+        adapter = CustomAdapter()
+        send = adapter.Send.To("user", "123")
+        await send.Raw_ob12({"type": "text", "data": {"text": "hi"}})
+        # 基类会将 dict 包装为 list
+        assert hasattr(send, '_received_type')
+
+    @pytest.mark.asyncio
+    async def test_raw_ob12_with_message_builder(self):
+        """测试 Raw_ob12 配合 MessageBuilder 使用"""
+        from ErisPulse.Core.Event.message_builder import MessageBuilder
+        import asyncio
+
+        captured_segments = []
+
+        class CustomAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "id"}
+
+            class Send(BaseAdapter.Send):
+                def Raw_ob12(self, message, **kwargs):
+                    captured_segments.append(message)
+                    import asyncio
+                    async def _do():
+                        return {}
+                    return asyncio.create_task(_do())
+
+        adapter = CustomAdapter()
+        segments = MessageBuilder().text("Hi").mention("123").image("url").build()
+        await adapter.Send.To("group", "456").Raw_ob12(segments)
+
+        assert len(captured_segments) == 1
+        assert len(captured_segments[0]) == 3
+        assert captured_segments[0][0]["type"] == "text"
+        assert captured_segments[0][1]["type"] == "mention"
+        assert captured_segments[0][2]["type"] == "image"
+
+    @pytest.mark.asyncio
+    async def test_standard_methods_delegate_to_raw_ob12(self):
+        """测试标准方法（Text/Image）委托给 Raw_ob12 时行为一致"""
+        import asyncio
+        calls = []
+
+        class CustomAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "id"}
+
+            class Send(BaseAdapter.Send):
+                def Raw_ob12(self, message, **kwargs):
+                    calls.append(message)
+                    import asyncio
+                    async def _do():
+                        return {}
+                    return asyncio.create_task(_do())
+
+                def Text(self, text: str):
+                    return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+
+        adapter = CustomAdapter()
+        # 通过 Text 方法发送
+        await adapter.Send.To("user", "123").Text("Hello")
+        # 直接调用 Raw_ob12
+        await adapter.Send.To("user", "123").Raw_ob12(
+            [{"type": "text", "data": {"text": "Hello"}}]
+        )
+
+        assert len(calls) == 2
+        assert calls[0] == calls[1]

@@ -10,7 +10,7 @@ ErisPulse 事件包装类
 {!--< /tips >!--}
 """
 
-from typing import Any, Dict, List, Optional, Callable, Awaitable
+from typing import Any, Dict, List, Optional, Callable, Awaitable, Union
 from .. import adapter, logger
 from .session_type import get_send_type_and_target_id, convert_to_send_type, infer_receive_type
 
@@ -460,6 +460,47 @@ class Event(dict):
             raise ValueError(f"适配器不支持方法: {method}")
         
         return await send_method(content)
+
+    # ==================== OB12 消息回复 ====================
+
+    async def reply_ob12(self, message: Union[List[Dict[str, Any]], Dict[str, Any]]) -> Any:
+        """
+        使用 OneBot12 消息段回复
+
+        通过适配器的 Raw_ob12 方法发送 OneBot12 标准消息段，
+        是 reply() 方法的 OB12 对应版本。
+
+        :param message: OneBot12 消息段列表或单个消息段
+            [
+                {"type": "text", "data": {"text": "Hello"}},
+                {"type": "image", "data": {"file": "https://..." }},
+            ]
+        :return: 适配器 Raw_ob12 的返回值（标准响应格式）
+
+        :example:
+        >>> # 简单文本回复
+        >>> await event.reply_ob12([{"type": "text", "data": {"text": "收到"}}])
+        >>> 
+        >>> # 配合 MessageBuilder 使用
+        >>> from ErisPulse.Core import MessageBuilder
+        >>> await event.reply_ob12(
+        >>>     MessageBuilder()
+        >>>         .reply(event.get_id())
+        >>>         .text("收到你的消息")
+        >>>         .build()
+        >>> )
+        >>> 
+        >>> # 发送复杂消息
+        >>> await event.reply_ob12(
+        >>>     MessageBuilder()
+        >>>         .mention(event.get_user_id())
+        >>>         .text("你好")
+        >>>         .image("https://example.com/img.jpg")
+        >>>         .build()
+        >>> )
+        """
+        adapter_instance, detail_type, target_id = self._get_adapter_and_target()
+        return await adapter_instance.Send.To(detail_type, target_id).Raw_ob12(message)
 
     # ==================== 等待回复功能 ====================
 

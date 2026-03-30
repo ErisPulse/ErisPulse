@@ -8,27 +8,25 @@
 
 适配器是 ErisPulse 与各个消息平台之间的桥梁，负责：
 
-1. 接收平台事件并转换为 OneBot12 标准格式
-2. 将 OneBot12 标准响应转换为平台特定格式
+1. **正向转换**：接收平台事件并转换为 OneBot12 标准格式（Converter）
+2. **反向转换**：将 OneBot12 消息段转换为平台 API 调用（`Raw_ob12`）
 3. 管理与平台的连接（WebSocket/WebHook）
 4. 提供统一的 SendDSL 消息发送接口
 
 ### 适配器架构
 
 ```
-平台事件
-    ↓
-转换器 (Converter)
-    ↓
-OneBot12 标准事件
-    ↓
-事件系统
+正向转换（接收）                        反向转换（发送）
+─────────────                        ─────────────
+平台事件                               模块构建消息
+    ↓                                    ↓
+Converter.convert()               Send.Raw_ob12()
+    ↓                                    ↓
+OneBot12 标准事件                   平台原生 API 调用
+    ↓                                    ↓
+事件系统                             标准响应格式
     ↓
 模块处理
-    ↓
-SendDSL 消息发送
-    ↓
-平台 API 调用
 ```
 
 ## 目录结构
@@ -191,23 +189,14 @@ class MyAdapter(BaseAdapter):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            发送 OneBot12 格式消息
+            发送 OneBot12 格式消息（必须实现）
+
+            完整实现规范和示例请参阅：
+            ../../standards/send-method-spec.md#6-反向转换规范onebot12--平台
             """
             if isinstance(message, dict):
                 message = [message]
-            
-            async def _send():
-                for segment in message:
-                    seg_type = segment.get("type", "")
-                    seg_data = segment.get("data", {})
-                    
-                    if seg_type == "text":
-                        await self.Text(seg_data.get("text", ""))
-                    elif seg_type == "image":
-                        await self.Image(seg_data.get("file") or seg_data.get("url", ""))
-                    # ... 处理其他消息类型
-            
-            return asyncio.create_task(_send())
+            return asyncio.create_task(self._do_send(message))
 ```
 
 **媒体类发送方法（Image/Video/File）实现要点：**
