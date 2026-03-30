@@ -8,22 +8,47 @@ on:
   push:
     branches: [main, Pre-Release/v2]
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-latest-release:
     runs-on: ubuntu-latest
     steps:
+      - name: 检查 Release 是否已存在
+        id: check-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          tag_name="v$version"
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+          
+          if gh release view "$tag_name" &>/dev/null; then
+            echo "release_exists=true" >> $GITHUB_OUTPUT
+            echo "Release $tag_name 已存在，跳过重复发布"
+          else
+            echo "release_exists=false" >> $GITHUB_OUTPUT
+            echo "Release $tag_name 不存在，继续发布流程"
+          fi
+
       - name: 检出代码
+        if: steps.check-release.outputs.release_exists != 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 准备 Python 环境
+        if: steps.check-release.outputs.release_exists != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: 安装依赖
+        if: steps.check-release.outputs.release_exists != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install requests
