@@ -381,6 +381,16 @@ async def test_send_message():
     assert result is not None
 ```
 
+## Reverse Conversion and Message Construction
+
+`Raw_ob12` is a method that the adapter **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → Platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
+
+`MessageBuilder` is a message segment construction tool used in conjunction with `Raw_ob12`, supporting method chaining and rapid construction.
+
+> For complete implementation specifications, code examples, and usage instructions, please refer to:
+> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-reverse-conversion-specificationonebot12--platform)
+> - [Send Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-message-builder-messagebuilder)
+
 ## Documentation Maintenance
 
 ### 1. Maintain Platform Feature Documentation
