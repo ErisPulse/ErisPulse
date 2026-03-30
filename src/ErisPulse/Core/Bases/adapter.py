@@ -68,7 +68,7 @@ class SendDSL:
                 return attr
         
         # 没有找到匹配的方法，打印警告
-        from .. import logger
+        from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} "
             f"未实现 {name} 发送方法"
@@ -78,41 +78,49 @@ class SendDSL:
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
     
     def At(self, **kwargs):
-        from .. import logger
+        from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 At 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
         return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
     def Reply(self, **kwargs):
-        from .. import logger
+        from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 Reply 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
         return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
     def AtAll(self, **kwargs):
-        from .. import logger
+        from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 AtAll 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
         return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
-    def Raw_ob12(self, **kwargs):
-        from .. import logger
-        logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法，该修饰方法将被忽略。"
-            f"参数: {kwargs}"
+    def Raw_ob12(self, message, **kwargs):
+        """
+        发送 OneBot12 格式消息段（必须由适配器子类重写）
+
+        :param message: OneBot12 消息段列表或单个消息段
+        :param kwargs: 其他参数
+        :return: asyncio.Task
+        """
+        from ..logger import logger
+        logger.error(
+            f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法，"
+            f"消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。"
         )
-        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
-    def Raw_json(self, **kwargs):
-        from .. import logger
-        logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 Raw_json 方法，该修饰方法将被忽略。"
-            f"参数: {kwargs}"
-        )
-        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
-    
+        async def _not_impl():
+            return {
+                "status": "failed",
+                "retcode": 10002,
+                "data": None,
+                "message_id": "",
+                "message": f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
+            }
+        return asyncio.create_task(_not_impl())
+
     def To(self, target_type: str = None, target_id: Union[str, int] = None) -> 'SendDSL':
         """
         设置消息目标
@@ -229,30 +237,34 @@ class BaseAdapter:
                     }
                 }
             async def _send_example():
-                from .. import logger
+                from ..logger import logger
                 logger.info(f"发送示例消息: {text}")
                 return text
             return asyncio.create_task(_send_example())
 
         def Raw_ob12(self, message, **kwargs: Any) -> Awaitable[Any]:
             """
-            发送原始 OneBot12 格式的消息
-            
-            注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
-            默认实现仅记录警告，不实际发送消息。
-            
+            发送 OneBot12 格式消息段（必须由适配器子类重写）
+
+            此方法是反向转换（OneBot12 → 平台）的统一入口，适配器必须重写此方法。
+            未重写时，基类默认实现会记录错误日志并返回标准错误响应。
+
             :param message: OneBot12 格式的消息段数组或单个消息段
+                [
+                    {"type": "text", "data": {"text": "Hello"}},
+                    {"type": "image", "data": {"file": "https://..."}},
+                ]
             :param kwargs: 其他参数
-            :return: 异步任务
-            
+            :return: asyncio.Task，await 后返回标准响应格式
+
             :example:
             >>> # 用户调用
             >>> await adapter.Send.To("user", "123").Raw_ob12([
             >>>     {"type": "text", "data": {"text": "Hello"}},
-            >>>     {"type": "image", "data": {"file_id": "xxx"}}
+            >>>     {"type": "image", "data": {"file": "https://..."}}
             >>> ])
-            
-            >>> # 适配器子类重写示例（可选）
+
+            >>> # 适配器子类重写示例（必须）
             >>> def Raw_ob12(self, message, **kwargs):
             >>>     return asyncio.create_task(
             >>>         self._adapter.call_api(
@@ -266,10 +278,19 @@ class BaseAdapter:
             >>>     )
             """
             async def _send_raw():
-                from .. import logger
-                logger.warning(f"适配器未实现 Raw_ob12 方法，原始消息未被发送: {message}")
-                return None
-            
+                from ..logger import logger
+                logger.error(
+                    f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法，"
+                    f"消息未被发送。适配器必须实现此方法以支持 OneBot12 消息段发送。"
+                )
+                return {
+                    "status": "failed",
+                    "retcode": 10002,
+                    "data": None,
+                    "message_id": "",
+                    "message": f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
+                }
+
             return asyncio.create_task(_send_raw())
 
     def __init__(self):
@@ -303,7 +324,7 @@ class BaseAdapter:
         raise NotImplementedError("适配器必须实现shutdown方法")
     
     async def emit(self) -> None:
-        from .. import logger
+        from ..logger import logger
         logger.error("适配器调用了一个被弃用的原生方法emit，请检查适配器的实现，如果你是开发者请查看ErisPulse的文档进行更新。如果你是普通用户请查看本适配器是否有更新")
 
     def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> asyncio.Task:
