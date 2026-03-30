@@ -50,10 +50,11 @@ All sending methods must return an `asyncio.Task` object.
 
 ### Raw Methods
 
-| Method Name | Description | Return Value |
-|--------|------|---------|
-| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` |
-| `Raw_json(json_str)` | Send raw JSON message | `asyncio.Task` |
+| Method Name | Description | Return Value | Required |
+|--------|------|---------|---------|
+| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` | **Must Implement** |
+
+> **Important**: `Raw_ob12` is the core method of the adapter and **must be implemented**. It is the unified entry point for reverse conversion (OneBot12 → Platform). When not implemented, the base class will log an error and return a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) should internally delegate to `Raw_ob12`.
 
 ## Modifier Methods
 
@@ -247,16 +248,13 @@ await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("Reply t
 await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcement message")
 ```
 
-### Raw Messages
+### Raw Messages and Message Building
 
-```python
-# Send OneBot12 format message
-ob12_msg = [
-    {"type": "text", "data": {"text": "Hello"}},
-    {"type": "image", "data": {"file": "https://example.com/image.jpg"}}
-]
-await my_adapter.Send.To("group", "456").Raw_ob12(ob12_msg)
-```
+`Raw_ob12` is the core entry point for reverse conversion (receiving OB12 message segments → platform API calls), and `MessageBuilder` is a chain-style message segment building tool used in conjunction with it.
+
+> For complete `Raw_ob12` implementation specifications, `MessageBuilder` usage, and code examples, please refer to:
+> - [Sending Method Specifications §6 Reverse Conversion Specifications](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [Sending Method Specifications §11 Message Builder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
 ## Related Documentation
 

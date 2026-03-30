@@ -7,36 +7,41 @@ Understanding the core concepts of ErisPulse adapters is the foundation for deve
 ### Component Relationships
 
 ```
-┌─────────────────────────────────────────┐
-│         Platform API               │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Adapter (MyAdapter)           │
-│  ┌────────────────────────────┐    │
-│  │ Send Class (Message Sending DSL)│    │
-│  └────────────────────────────┘    │
-│  ┌────────────────────────────┐    │
-│  │ Converter (Event Converter)     │    │
-│  └────────────────────────────┘    │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│     OneBot12 Standard Events      │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Event System                 │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Modules (Event Handling)    │
-└─────────────────────────────────────────┘
+Forward Conversion (Receive Direction)               Reverse Conversion (Send Direction)
+─────────────────                               ─────────────────
+                                            
+┌──────────────────┐                            ┌──────────────────┐
+│ Platform Native Events │                   │ Module Constructs Message │
+└────────┬─────────┘                            └────────┬─────────┘
+         │                                              │
+         ↓                                              ↓
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│                  │   │  Adapter (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (Event Converter)│──→│ │              │ │   │ (Reverse Conversion Entry)│
+│                  │   │ │              │ │   │                  │
+└──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
+                       └──────────────────┘            │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Platform API Call│
+                       │ OneBot12 Standard Events│    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Standard Response Format│
+                       │ Event System     │    └──────────────────┘
+                       └────────┬─────────┘
+                                │
+                                ↓
+                       ┌──────────────────┐
+                       │ Modules (Event Handling)│
+                       └──────────────────┘
 ```
+
+**Core Symmetry**:
+- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, raw data preserved in `{platform}_raw`
+- **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, return standard response format
 
 ## AdapterManager
 
