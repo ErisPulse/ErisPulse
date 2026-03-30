@@ -16,6 +16,13 @@ from .notice import notice
 from .request import request
 from .meta import meta
 from .wrapper import Event
+from .wrapper import (
+    register_event_mixin,
+    register_event_method,
+    unregister_event_method,
+    unregister_platform_event_methods,
+    get_platform_event_methods,
+)
 from .message_builder import MessageBuilder
 from .session_type import (
     # 标准类型常量
@@ -84,4 +91,10 @@ __all__ = [
     "get_standard_types",
     "get_send_types",
     "clear_custom_types",
+    # 平台事件方法扩展
+    "register_event_mixin",
+    "register_event_method",
+    "unregister_event_method",
+    "unregister_platform_event_methods",
+    "get_platform_event_methods",
 ]
