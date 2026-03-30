@@ -19,7 +19,7 @@ async def info_command(event):
     event_id = event.get_id()
     platform = event.get_platform()
     time = event.get_time()
-    print(f"ID: {event_id}, Platform: {platform}, Time: {time}")  # Print event information
+    print(f"ID: {event_id}, Platform: {platform}, Time: {time}")
 ```
 
 ## Message Event Methods
@@ -32,7 +32,7 @@ async def private_handler(event):
     text = event.get_text()
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
-    await event.reply(f"Hello, {nickname}!")  # Reply to the private message
+    await event.reply(f"Hello, {nickname}!")
 ```
 
 ## Message Type Judgment
@@ -45,7 +45,7 @@ async def group_handler(event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
-    await event.reply(f"Type: {'Private' if is_private else 'Group'}")  # Reply with message type
+    await event.reply(f"Type: {'Private' if is_private else 'Group'}")
 ```
 
 ## Reply Functionality
@@ -55,11 +55,11 @@ from ErisPulse.Core.Event import command
 
 @command("ask")
 async def ask_command(event):
-    await event.reply("Please enter your name:")  # Prompt the user
+    await event.reply("Please enter your name:")
     reply = await event.wait_reply(timeout=30)
     if reply:
         name = reply.get_text()
-        await event.reply(f"Hello, {name}!")  # Reply with the name
+        await event.reply(f"Hello, {name}!")
 ```
 
 ## Command Information Retrieval
@@ -71,7 +71,7 @@ from ErisPulse.Core.Event import command
 async def cmdinfo_command(event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
-    await event.reply(f"Command: {cmd_name}, Args: {cmd_args}")  # Display command info
+    await event.reply(f"Command: {cmd_name}, Args: {cmd_args}")
 ```
 
 ## Notice Event Methods
@@ -81,7 +81,7 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_friend_add()
 async def friend_add_handler(event):
-    await event.reply("Welcome to add me as a friend!")  # Greet new friend
+    await event.reply("Welcome to add me as a friend!")
 ```
 
 ## Method Quick Reference
@@ -208,6 +208,44 @@ platform = event.platform          # Equivalent to event["platform"]
 user_id = event.user_id          # Equivalent to event["user_id"]
 message = event.message          # Equivalent to event["message"]
 ```
+
+## Platform Extension Methods
+
+Adapters can register platform-specific methods for the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises an `AttributeError`.
+
+```python
+# Email event - Only email methods
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ Returns "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram event - Only Telegram methods
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ Returns "private"
+event.get_subject()      # ❌ AttributeError
+
+# Built-in methods are always available
+event.get_text()         # ✅ Any platform
+event.reply("hi")        # ✅ Any platform
+```
+
+### Querying Registered Methods
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+### `hasattr` and `dir` Support
+
+```python
+hasattr(event, "get_subject")   # Returns True only when platform="email"
+"get_subject" in dir(event)     # Same as above
+```
+
+> For how adapter developers register extension methods, please refer to [Event System API - Adapter: Registering Platform Extension Methods](../../api-reference/event-system.md#adapter-registering-platform-extension-methods).
 
 ## Related Documentation
 

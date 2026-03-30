@@ -13,8 +13,95 @@ ErisPulse 事件包装类
 > 1. 继承自dict，完全兼容字典访问
 > 2. 提供便捷方法简化事件处理
 > 3. 支持点式访问 event.platform
+> 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
 
 ---
+
+## 函数列表
+
+
+### `_get_event_builtin_names()`
+
+获取 Event 类的所有公开方法名，用于冲突检测
+
+---
+
+
+### `register_event_mixin(platform: str, mixin_cls: Type)`
+
+注册一个类的所有公开方法到指定平台
+
+适配器可以创建一个 Mixin 类集中定义平台专有方法，
+然后通过此函数一次性注册。
+
+:param platform: 平台名称（需与适配器注册名一致）
+:param mixin_cls: 包含平台方法的类
+:return: 成功注册的方法数量
+
+**示例**:
+```python
+>>> class EmailEventMixin:
+...     def get_subject(self):
+...         return self.get("email_raw", {}).get("subject", "")
+...     def get_from(self):
+...         return self.get("email_raw", {}).get("from", "")
+>>> register_event_mixin("email", EmailEventMixin)
+2
+```
+
+---
+
+
+### `register_event_method(platform: str)`
+
+装饰器：注册单个方法到指定平台
+
+适合少量方法或动态注册的场景。
+
+:param platform: 平台名称（需与适配器注册名一致）
+
+**示例**:
+```python
+>>> @register_event_method("email")
+... def get_subject(self):
+...     return self.get("email_raw", {}).get("subject", "")
+```
+
+---
+
+
+### `unregister_event_method(platform: str, name: str)`
+
+注销指定平台的单个扩展方法
+
+:param platform: 平台名称
+:param name: 方法名
+:return: 是否成功注销
+
+---
+
+
+### `unregister_platform_event_methods(platform: str)`
+
+注销指定平台的全部扩展方法
+
+适配器关闭时应调用此方法清理注册的方法。
+
+:param platform: 平台名称
+:return: 被注销的方法数量
+
+---
+
+
+### `get_platform_event_methods(platform: str)`
+
+查询指定平台已注册的扩展方法名列表
+
+:param platform: 平台名称
+:return: 方法名列表
+
+---
+
 
 ## 类列表
 
@@ -559,10 +646,20 @@ ErisPulse 事件包装类
 
 ##### `__getattr__(name: str)`
 
-支持点式访问字典键
+属性查找优先级：
+1. 平台注册的扩展方法（仅当前平台）
+2. 字典键访问（点式访问 event.platform 等）
 
 :param name: 属性名
 :return: 属性值
+**异常**: `AttributeError` - 属性不存在
+
+---
+
+
+##### `__dir__()`
+
+让 dir(event) 包含当前平台注册的扩展方法名
 
 ---
 

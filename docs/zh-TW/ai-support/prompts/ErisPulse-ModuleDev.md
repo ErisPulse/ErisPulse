@@ -1967,6 +1967,44 @@ user_id = event.user_id          # 等同於 event["user_id"]
 message = event.message          # 等同於 event["message"]
 ```
 
+## 平台擴充方法
+
+介面卡可以為 Event 包裝類註冊平台專屬方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
+
+```python
+# 郵件事件 - 只有郵件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ 返回 "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ 返回 "private"
+event.get_subject()      # ❌ AttributeError
+
+# 內建方法始終可用
+event.get_text()         # ✅ 任何平台
+event.reply("hi")        # ✅ 任何平台
+```
+
+### 查詢已註冊方法
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+### `hasattr` 和 `dir` 支援
+
+```python
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+> 介面卡開發者註冊擴充方法的方式請參閱 [事件系統 API - 介面卡：註冊平台擴充方法](../../api-reference/event-system.md#介面卡註冊平台擴充方法)。
+
 ## 相關文件
 
 - [模組開發入門](getting-started.md) - 建立第一個模組
