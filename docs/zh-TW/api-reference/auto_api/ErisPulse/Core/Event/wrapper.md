@@ -415,6 +415,47 @@ ErisPulse 事件包装类
 ---
 
 
+##### `async async reply_ob12(message: Union[List[Dict[str, Any]], Dict[str, Any]])`
+
+使用 OneBot12 消息段回复
+
+通过适配器的 Raw_ob12 方法发送 OneBot12 标准消息段，
+是 reply() 方法的 OB12 对应版本。
+
+:param message: OneBot12 消息段列表或单个消息段
+    [
+        {"type": "text", "data": {"text": "Hello"}},
+        {"type": "image", "data": {"file": "https://..." }},
+    ]
+:return: 适配器 Raw_ob12 的返回值（标准响应格式）
+
+**示例**:
+```python
+>>> # 简单文本回复
+>>> await event.reply_ob12([{"type": "text", "data": {"text": "收到"}}])
+>>> 
+>>> # 配合 MessageBuilder 使用
+>>> from ErisPulse.Core import MessageBuilder
+>>> await event.reply_ob12(
+>>>     MessageBuilder()
+>>>         .reply(event.get_id())
+>>>         .text("收到你的消息")
+>>>         .build()
+>>> )
+>>> 
+>>> # 发送复杂消息
+>>> await event.reply_ob12(
+>>>     MessageBuilder()
+>>>         .mention(event.get_user_id())
+>>>         .text("你好")
+>>>         .image("https://example.com/img.jpg")
+>>>         .build()
+>>> )
+```
+
+---
+
+
 ##### `async async wait_reply(prompt: str = None, timeout: float = 60.0, callback: Callable[[Dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[Dict[str, Any]], bool] = None)`
 
 等待用户回复
