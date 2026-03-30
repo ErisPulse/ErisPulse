@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 780,
+  "total_keywords": 790,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2016,6 +2016,14 @@
         "title": "__init__.py"
       }
     ],
+    "`hasattr` 和 `dir` 支援": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 241,
+        "level": 3,
+        "title": "`hasattr` 和 `dir` 支援"
+      }
+    ],
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2845,7 +2853,7 @@
     "優先級系統": [
       {
         "document": "api-reference/event-system.md",
-        "line": 327,
+        "line": 441,
         "level": 2,
         "title": "優先級系統"
       }
@@ -3242,6 +3250,14 @@
         "title": "命令資訊"
       }
     ],
+    "命名衝突檢測": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 437,
+        "level": 4,
+        "title": "命名衝突檢測"
+      }
+    ],
     "命名規範": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3272,6 +3288,14 @@
         "line": 50,
         "level": 4,
         "title": "啟用虛擬環境"
+      }
+    ],
+    "單個方法註冊": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 363,
+        "level": 4,
+        "title": "單個方法註冊"
       }
     ],
     "回覆": [
@@ -4084,6 +4108,22 @@
         "title": "平台原生事件"
       }
     ],
+    "平台擴充方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 212,
+        "level": 2,
+        "title": "平台擴充方法"
+      }
+    ],
+    "平台擴展方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 327,
+        "level": 3,
+        "title": "平台擴展方法"
+      }
+    ],
     "平台特定功能": [
       {
         "document": "platform-guide/README.md",
@@ -4314,6 +4354,14 @@
         "line": 35,
         "level": 3,
         "title": "批次操作"
+      }
+    ],
+    "批量註冊（Mixin 類）": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 379,
+        "level": 4,
+        "title": "批量註冊（Mixin 類）"
       }
     ],
     "技術標準": [
@@ -4838,6 +4886,14 @@
         "line": 76,
         "level": 3,
         "title": "查看可用模組"
+      }
+    ],
+    "查詢已註冊方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 232,
+        "level": 3,
+        "title": "查詢已註冊方法"
       }
     ],
     "查詢支援的發送方法": [
@@ -5587,7 +5643,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 343,
+        "line": 457,
         "level": 2,
         "title": "相關文件"
       },
@@ -5629,7 +5685,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 212,
+        "line": 250,
         "level": 2,
         "title": "相關文件"
       },
@@ -6218,6 +6274,14 @@
         "title": "註解/裝飾器"
       }
     ],
+    "註銷方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 425,
+        "level": 4,
+        "title": "註銷方法"
+      }
+    ],
     "註銷路由": [
       {
         "document": "advanced/router.md",
@@ -6398,6 +6462,14 @@
         "line": 185,
         "level": 2,
         "title": "返回值"
+      }
+    ],
+    "返回值規範": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 400,
+        "level": 4,
+        "title": "返回值規範"
       }
     ],
     "透過 CLI 安裝": [
@@ -6634,6 +6706,14 @@
         "line": 92,
         "level": 3,
         "title": "適配器需求模板"
+      }
+    ],
+    "適配器：註冊平台擴展方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 359,
+        "level": 3,
+        "title": "適配器：註冊平台擴展方法"
       }
     ],
     "遵循標準的好處": [

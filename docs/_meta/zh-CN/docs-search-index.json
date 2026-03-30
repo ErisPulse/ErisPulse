@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 811,
+  "total_keywords": 820,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2290,6 +2290,14 @@
         "title": "__init__.py"
       }
     ],
+    "`hasattr` 和 `dir` 支持": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 241,
+        "level": 3,
+        "title": "`hasattr` 和 `dir` 支持"
+      }
+    ],
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2933,7 +2941,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 327,
+        "line": 441,
         "level": 2,
         "title": "优先级系统"
       }
@@ -3316,6 +3324,14 @@
         "title": "协议方法"
       }
     ],
+    "单个方法注册": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 363,
+        "level": 4,
+        "title": "单个方法注册"
+      }
+    ],
     "卸载模块": [
       {
         "document": "user-guide/README.md",
@@ -3662,6 +3678,14 @@
         "line": 103,
         "level": 3,
         "title": "命令配置"
+      }
+    ],
+    "命名冲突检测": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 437,
+        "level": 4,
+        "title": "命名冲突检测"
       }
     ],
     "命名规范": [
@@ -4376,6 +4400,20 @@
         "title": "平台原生事件"
       }
     ],
+    "平台扩展方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 327,
+        "level": 3,
+        "title": "平台扩展方法"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 212,
+        "level": 2,
+        "title": "平台扩展方法"
+      }
+    ],
     "平台特定功能": [
       {
         "document": "platform-guide/README.md",
@@ -4772,6 +4810,14 @@
         "line": 35,
         "level": 3,
         "title": "批量操作"
+      }
+    ],
+    "批量注册（Mixin 类）": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 379,
+        "level": 4,
+        "title": "批量注册（Mixin 类）"
       }
     ],
     "技术标准": [
@@ -5228,6 +5274,14 @@
         "line": 76,
         "level": 3,
         "title": "查看可用模块"
+      }
+    ],
+    "查询已注册方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 232,
+        "level": 3,
+        "title": "查询已注册方法"
       }
     ],
     "查询支持的发送方法": [
@@ -5690,6 +5744,14 @@
         "title": "注解/装饰器"
       }
     ],
+    "注销方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 425,
+        "level": 4,
+        "title": "注销方法"
+      }
+    ],
     "注销路由": [
       {
         "document": "advanced/router.md",
@@ -6141,7 +6203,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 343,
+        "line": 457,
         "level": 2,
         "title": "相关文档"
       },
@@ -6189,7 +6251,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 212,
+        "line": 250,
         "level": 2,
         "title": "相关文档"
       },
@@ -6824,6 +6886,14 @@
         "title": "返回值"
       }
     ],
+    "返回值规范": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 400,
+        "level": 4,
+        "title": "返回值规范"
+      }
+    ],
     "进度条": [
       {
         "document": "developer-guide/extensions/cli-extensions.md",
@@ -7026,6 +7096,14 @@
         "line": 92,
         "level": 3,
         "title": "适配器需求模板"
+      }
+    ],
+    "适配器：注册平台扩展方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 359,
+        "level": 3,
+        "title": "适配器：注册平台扩展方法"
       }
     ],
     "通用参数": [
