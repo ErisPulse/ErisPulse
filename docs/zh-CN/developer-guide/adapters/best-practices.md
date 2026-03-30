@@ -381,6 +381,16 @@ async def test_send_message():
     assert result is not None
 ```
 
+## 反向转换与消息构建
+
+`Raw_ob12` 是适配器**必须实现**的方法，是反向转换（OneBot12 → 平台）的统一入口。标准方法（`Text`、`Image` 等）应委托给 `Raw_ob12`，修饰器状态（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 内合并为消息段。
+
+`MessageBuilder` 是配合 `Raw_ob12` 使用的消息段构建工具，支持链式调用和快速构建。
+
+> 完整的实现规范、代码示例和使用方法请参阅：
+> - [发送方法规范 §6 反向转换规范](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [发送方法规范 §11 消息构建器](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
+
 ## 文档维护
 
 ### 1. 维护平台特性文档

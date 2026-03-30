@@ -16,6 +16,7 @@ from .notice import notice
 from .request import request
 from .meta import meta
 from .wrapper import Event
+from .message_builder import MessageBuilder
 from .session_type import (
     # 标准类型常量
     RECEIVE_TYPES,
@@ -65,6 +66,7 @@ __all__ = [
     "request",
     "meta",
     "Event",
+    "MessageBuilder",
     # 会话类型管理
     "RECEIVE_TYPES",
     "SEND_TYPES",

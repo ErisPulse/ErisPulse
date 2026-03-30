@@ -106,99 +106,76 @@ class MyAdapter(BaseAdapter):
             self._reply_message_id = message_id
             return self
         
-        def Text(self, text: str):
-            """发送文本消息（支持链式调用中的 At、AtAll 和 Reply）"""
-            import asyncio
-            
-            # 构建消息段数组
-            message_segments = []
-            
-            # 添加 @全体
-            if self._at_all:
-                message_segments.append({
-                    "type": "mention_all",
-                    "data": {}
-                })
-            
-            # 添加 @用户列表
-            for user_id in self._at_user_ids:
-                message_segments.append({
-                    "type": "mention",
-                    "data": {"user_id": user_id}
-                })
-            
-            # 添加回复
-            if self._reply_message_id:
-                message_segments.append({
-                    "type": "reply",
-                    "data": {"message_id": self._reply_message_id}
-                })
-            
-            # 添加文本内容
-            if self._at_all or self._at_user_ids:
-                text = " " + text
-            message_segments.append({
-                "type": "text",
-                "data": {"text": text}
-            })
-            
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_message",
-                    message=message_segments,
-                    target_type=self._target_type,
-                    target_id=self._target_id,
-                    account_id=self._account_id
-                )
-            )
-            
-        def Image(self, file: bytes):
-            """发送图片消息（支持链式调用中的 At 和 Reply）"""
-            import asyncio
-            
-            message_segments = []
-            
-            # 添加 @用户
-            for user_id in self._at_user_ids:
-                message_segments.append({
-                    "type": "mention",
-                    "data": {"user_id": user_id}
-                })
-            
-            # 添加图片
-            message_segments.append({
-                "type": "image",
-                "data": {"file": file}
-            })
-            
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_message",
-                    message=message_segments,
-                    target_type=self._target_type,
-                    target_id=self._target_id,
-                    account_id=self._account_id
-                )
-            )
-        
         def Raw_ob12(self, message, **kwargs):
             """
-            发送原始 OneBot12 格式的消息
-            
-            注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
-            如果平台支持直接处理 OneBot12 格式的消息，可以实现此方法。
+            发送 OneBot12 格式消息（必须实现）
+
+            将 OneBot12 消息段列表转换为平台 API 调用。
+            标准方法（Text、Image 等）内部委托给此方法。
+
+            :param message: OneBot12 消息段列表或单个消息段
+            :param kwargs: 其他参数
+            :return: asyncio.Task
             """
             import asyncio
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send_raw_ob12",
-                    message=message,
+            
+            async def _do_send():
+                # 标准化输入为列表
+                if isinstance(message, dict):
+                    segments = [message]
+                else:
+                    segments = list(message)
+                
+                # 合并修饰器状态到消息段
+                full_segments = []
+                
+                # 添加 @全体
+                if self._at_all:
+                    full_segments.append({
+                        "type": "mention_all",
+                        "data": {}
+                    })
+                
+                # 添加 @用户列表
+                for user_id in self._at_user_ids:
+                    full_segments.append({
+                        "type": "mention",
+                        "data": {"user_id": user_id}
+                    })
+                
+                # 添加回复
+                if self._reply_message_id:
+                    full_segments.append({
+                        "type": "reply",
+                        "data": {"message_id": self._reply_message_id}
+                    })
+                
+                # 添加用户传入的消息段
+                full_segments.extend(segments)
+                
+                # 调用平台 API
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=full_segments,
                     target_type=self._target_type,
                     target_id=self._target_id,
                     account_id=self._account_id,
                     **kwargs
                 )
-            )
+            
+            return asyncio.create_task(_do_send())
+        
+        def Text(self, text: str):
+            """发送文本消息（委托给 Raw_ob12）"""
+            return self.Raw_ob12([
+                {"type": "text", "data": {"text": text}}
+            ])
+            
+        def Image(self, file):
+            """发送图片消息（委托给 Raw_ob12）"""
+            return self.Raw_ob12([
+                {"type": "image", "data": {"file": file}}
+            ])
         
         # 示例消息发送方法，继承自BaseAdapter.Send
         # 可以重写提供平台特定实现
