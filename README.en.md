@@ -28,7 +28,7 @@
 
 ## Introduction
 
-ErisPulse is a Python-based event-driven multi-platform bot development framework. With the unified OneBot12 standard interface, you can write code once and deploy bots with identical functionality on multiple platforms such as Yunhu, Telegram, and OneBot. The framework provides a flexible module (`plugin`) system, hot reload support, and a complete developer toolchain, suitable for various scenarios ranging from simple chatbots to complex automation systems.
+ErisPulse is a Python-based event-driven multi-platform bot development framework. With the unified OneBot12 standard interface, you can write code once and deploy bots with identical functionality on multiple platforms such as Yunhu, Telegram, and OneBot. The framework provides a flexible module (plugin) system, hot reload support, and a complete developer toolchain, suitable for various scenarios ranging from simple chatbots to complex automation systems.
 
 ## Core Features
 
@@ -145,6 +145,7 @@ Contributions to adapters are welcome!
 - [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) - OneBot12 standard
 - [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) - Email sending and receiving processing
 - [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) - Web debugging interface, no need to connect to actual platforms
+- [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) - Instant messaging platform
 
 See [Platform Adapter Details](docs/en/platform-guide/README.md)
 
