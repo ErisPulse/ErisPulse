@@ -58,6 +58,17 @@ ErisPulse 适配器基础模块
 ---
 
 
+##### `Raw_ob12(message)`
+
+发送 OneBot12 格式消息段（必须由适配器子类重写）
+
+:param message: OneBot12 消息段列表或单个消息段
+:param kwargs: 其他参数
+:return: asyncio.Task
+
+---
+
+
 ##### `To(target_type: str = None, target_id: Union[str, int] = None)`
 
 设置消息目标
@@ -160,24 +171,28 @@ ErisPulse 适配器基础模块
 
 ####### `Raw_ob12(message)`
 
-发送原始 OneBot12 格式的消息
+发送 OneBot12 格式消息段（必须由适配器子类重写）
 
-注意：此方法为可选实现，适配器可以根据平台特性决定是否重写。
-默认实现仅记录警告，不实际发送消息。
+此方法是反向转换（OneBot12 → 平台）的统一入口，适配器必须重写此方法。
+未重写时，基类默认实现会记录错误日志并返回标准错误响应。
 
 :param message: OneBot12 格式的消息段数组或单个消息段
+    [
+        {"type": "text", "data": {"text": "Hello"}},
+        {"type": "image", "data": {"file": "https://..."}},
+    ]
 :param kwargs: 其他参数
-:return: 异步任务
+:return: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
 ```python
 >>> # 用户调用
 >>> await adapter.Send.To("user", "123").Raw_ob12([
 >>>     {"type": "text", "data": {"text": "Hello"}},
->>>     {"type": "image", "data": {"file_id": "xxx"}}
+>>>     {"type": "image", "data": {"file": "https://..."}}
 >>> ])
 
->>> # 适配器子类重写示例（可选）
+>>> # 适配器子类重写示例（必须）
 >>> def Raw_ob12(self, message, **kwargs):
 >>>     return asyncio.create_task(
 >>>         self._adapter.call_api(
