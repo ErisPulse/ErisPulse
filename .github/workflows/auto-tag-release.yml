@@ -144,7 +144,7 @@ jobs:
           mkdir -p temp_release_assets
           
           # 中文简体文件
-          cp "docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/简体中文-ErisPulse-ModuleDev-zh-CN.md"
+          cp "docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/ErisPulse-ModuleDev-zh-CN.md"
           cp "docs/zh-CN/ai-support/prompts/ErisPulse-AdapterDev.md" "temp_release_assets/ErisPulse-AdapterDev-zh-CN.md"
           cp "docs/zh-CN/ai-support/prompts/ErisPulse-Full.md" "temp_release_assets/ErisPulse-Full-zh-CN.md"
           
