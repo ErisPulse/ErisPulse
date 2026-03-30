@@ -62,6 +62,59 @@
   ```
 
 ---
+## [2.4.0-dev.0] - 2026/03/30
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - Event 模块新增 MessageBuilder 消息构建器：
+    - 支持链式调用构建 OneBot12 消息段列表
+    - 支持快速构建单段消息（静态方法调用）
+    - 提供文本、图片、音频、视频、文件、@用户、回复、@全体等基础消息段构建方法
+    - 支持自定义消息段和平台扩展消息段
+    - 提供 copy()、clear()、__len__() 等工具方法
+  - `Event.wrapper` 新增 reply_ob12() 方法：
+    - 支持使用 OneBot12 消息段列表进行回复
+    - 可配合 MessageBuilder 链式构建消息
+  - Core 模块导出 MessageBuilder 类，支持从 `ErisPulse.Core` 直接导入
+
+### 变更
+- @wsu2059q
+  - **BREAKING CHANGE**: Raw_ob12 方法现在是适配器必须实现的核心方法：
+    - 未实现时基类默认实现会记录 **error 级别**日志
+    - 返回标准错误响应格式（`status: "failed"`, `retcode: 10002`）
+    - 不再返回 `None`，确保调用方可统一处理响应
+  - SendDSL 协议方法文档更新：
+    - 明确标识 Raw_ob12 为必须实现的方法
+    - 标准方法（Text、Image 等）内部应委托给 Raw_ob12
+    - 修饰器状态（At/Reply/AtAll）需在 Raw_ob12 内合并为消息段
+  - 完善适配器文档：
+    - 详细说明反向转换（OneBot12 → 平台）实现规范
+    - 更新适配器架构图，展示正向转换与反向转换的对称性
+    - 提供 MessageBuilder 完整使用示例
+
+### 文档
+- @wsu2059q
+  - 更新 send-method-spec.md 标准文档：
+    - 新增第 11 章「消息构建器（MessageBuilder）」
+    - 明确 Raw_ob12 为必须实现的方法
+    - 添加推荐的消息构建器使用示例
+  - 更新适配器开发指南：
+    - best-practices.md 添加反向转换与消息构建章节
+    - core-concepts.md 更新架构图，展示双向转换流程
+    - getting-started.md 简化示例代码，强调 Raw_ob12 必须实现
+    - send-dsl.md 更新协议方法表格，标注必须实现的方法
+
+### 测试
+- @wsu2059q
+  - 新增 `SendDSL Raw_ob12` 单元测试：
+    - 测试未重写 Raw_ob12 时返回标准错误响应
+    - 测试未重写时记录 error 级别日志
+    - 测试重写后正常返回 Task 并可 await
+    - 测试接受 dict 和 list 两种输入格式
+    - 测试配合 MessageBuilder 使用
+
+---
 
 ## [2.3.9] - 2026/03/28
 > 正式发布
