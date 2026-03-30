@@ -324,6 +324,120 @@ raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
+### 平台扩展方法
+
+适配器可以为 Event 注册平台专有方法，仅在对应平台的实例上可用：
+
+```python
+# 邮件事件 - 只有邮件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ "private"
+event.get_subject()      # ❌ AttributeError
+```
+
+**查询已注册方法：**
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+**`hasattr` / `dir` 支持：**
+
+```python
+hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+### 适配器：注册平台扩展方法
+
+适配器可以通过装饰器为 Event 注册平台专有方法，方法的第一个参数为 `self`（Event 实例），可以自由访问事件数据。
+
+#### 单个方法注册
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("email")
+def get_subject(self):
+    """获取邮件主题"""
+    return self.get("email_raw", {}).get("subject", "")
+
+@register_event_method("email")
+def get_from(self):
+    """获取发件人"""
+    return self.get("email_raw", {}).get("from", {})
+```
+
+#### 批量注册（Mixin 类）
+
+当方法较多时，推荐使用 Mixin 类批量注册：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin
+
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", {})
+
+    def get_attachments(self):
+        return self.get("email_raw", {}).get("attachments", [])
+
+# 一次性注册所有方法
+register_event_mixin("email", EmailEventMixin)
+```
+
+#### 返回值规范
+
+| 场景 | 返回值 | 用户使用方式 |
+|------|--------|------------|
+| 返回数据（文本、字典等） | 直接返回值 | `subject = event.get_subject()` |
+| 执行操作（发送消息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可选 `await` |
+
+> **建议**：非数据返回的方法返回 `asyncio.Task`，这样用户可以自行决定是否 `await`，即使不 `await` 操作也会执行完成。
+
+```python
+@register_event_method("email")
+def forward_email(self, to_address: str):
+    """转发邮件 — 返回 Task，用户可自行决定是否 await"""
+    import asyncio
+    return asyncio.create_task(
+        self._do_forward(to_address)
+    )
+
+# 用户可以 await 等待结果
+await event.forward_email("user@example.com")
+
+# 也可以不 await，操作在后台执行
+event.forward_email("user@example.com")
+```
+
+#### 注销方法
+
+```python
+from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
+
+# 注销单个方法
+unregister_event_method("email", "get_subject")
+
+# 注销某平台全部方法（适配器 shutdown 时调用）
+unregister_platform_event_methods("email")
+```
+
+#### 命名冲突检测
+
+注册时如果方法名与 Event 内置方法重名（如 `get_text`、`reply`），系统会发出 warning 并跳过注册，不会覆盖内置行为。
+
 ## 优先级系统
 
 事件处理器支持优先级，数值越小优先级越高：
