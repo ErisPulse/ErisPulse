@@ -2278,6 +2278,44 @@ user_id = event.user_id          # 等同于 event["user_id"]
 message = event.message          # 等同于 event["message"]
 ```
 
+## 平台扩展方法
+
+适配器可以为 Event 包装类注册平台专有方法。方法仅在对应平台的 Event 实例上可用，其他平台访问时抛出 `AttributeError`。
+
+```python
+# 邮件事件 - 只有邮件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ 返回 "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ 返回 "private"
+event.get_subject()      # ❌ AttributeError
+
+# 内置方法始终可用
+event.get_text()         # ✅ 任何平台
+event.reply("hi")        # ✅ 任何平台
+```
+
+### 查询已注册方法
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+### `hasattr` 和 `dir` 支持
+
+```python
+hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+> 适配器开发者注册扩展方法的方式请参阅 [事件系统 API - 适配器：注册平台扩展方法](../../api-reference/event-system.md#适配器注册平台扩展方法)。
+
 ## 相关文档
 
 - [模块开发入门](getting-started.md) - 创建第一个模块

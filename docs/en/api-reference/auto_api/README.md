@@ -21,8 +21,8 @@
 
 - **模块总数**: 55
 - **类总数**: 45（包括 4 个嵌套类）
-- **函数总数**: 30
-- **方法总数**: 427
+- **函数总数**: 36
+- **方法总数**: 428
 
 ---
 
@@ -176,7 +176,7 @@
 
 ### [ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)
 
-📦 1 个类 | 🔧 53 个方法
+📦 1 个类 | 🔧 54 个方法 | ⚙️ 6 个函数
 
 
 ### [ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)
