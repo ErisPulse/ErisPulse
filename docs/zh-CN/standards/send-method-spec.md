@@ -33,17 +33,26 @@
 
 ### 1.3 协议方法
 
-| 方法名 | 说明 |
-|-------|------|
-| `Raw_ob12` | 发送 OneBot12 格式消息段 |
-| `Raw_json` | 发送任意 JSON 数据 |
-| `Raw_xml` | 发送任意 XML 数据 |
+| 方法名 | 说明 | 是否必须 |
+|-------|------|---------|
+| `Raw_ob12` | 发送 OneBot12 格式消息段 | 必须 |
 
 **`Raw_ob12` 是必须实现的方法**。这是适配器的核心职责之一：接收 OneBot12 标准消息段并将其转换为平台原生 API 调用。`Raw_ob12` 是反向转换（OneBot12 → 平台）的统一入口，确保模块可以不依赖平台特有方法，直接使用标准消息段发送消息。
 
-**未重写 `Raw_ob12` 时的行为**：基类默认实现会记录错误日志并返回 `None`，提示适配器开发者必须实现此方法。
+**未重写 `Raw_ob12` 时的行为**：基类默认实现会记录 **error 级别**日志并返回标准错误响应格式（`status: "failed"`, `retcode: 10002`），提示适配器开发者必须实现此方法。
 
-**`Raw_json` / `Raw_xml` 未重写时的行为**：基类默认实现会记录警告日志并返回 `None`，不会抛出异常。
+### 1.4 推荐的扩展命名约定
+
+适配器如需支持发送非 OneBot12 格式的原始数据（如平台特定 JSON、XML 等），推荐使用以下命名约定：
+
+| 推荐方法名 | 说明 |
+|-----------|------|
+| `Raw_json` | 发送任意 JSON 数据 |
+| `Raw_xml` | 发送任意 XML 数据 |
+
+**注意**：这些方法**不是**基类提供的默认方法，也不强制要求实现。它们仅作为命名约定，适配器可根据需要自行定义。如果适配器不支持这些格式，则无需定义。
+
+**消息构建器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具类，用于方便地构建 OneBot12 消息段列表，配合 `Raw_ob12` 使用。详见 [消息构建器](#11-消息构建器-messagebuilder) 章节。
 
 ## 2. 参数规范详解
 
@@ -460,7 +469,96 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 10. 相关文档
+## 11. 消息构建器（MessageBuilder）
+
+`MessageBuilder` 是 ErisPulse 提供的消息段构建工具，配合 `Raw_ob12` 使用，简化 OneBot12 消息段的构建过程。
+
+### 11.1 导入
+
+```python
+from ErisPulse.Core import MessageBuilder
+# 或
+from ErisPulse.Core.Event import MessageBuilder
+```
+
+### 11.2 链式调用构建
+
+```python
+# 构建包含文本、图片、@用户的消息
+segments = (
+    MessageBuilder()
+    .mention("123456")
+    .text("你好，看看这张图")
+    .image("https://example.com/img.jpg")
+    .reply("msg_789")
+    .build()
+)
+
+# 发送
+await adapter.Send.To("group", "456").Raw_ob12(segments)
+```
+
+### 11.3 快速构建单段
+
+```python
+# 快速构建单个消息段（返回 list[dict]，可直接传给 Raw_ob12）
+await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
+```
+
+### 11.4 配合 Event.reply_ob12 使用
+
+```python
+from ErisPulse.Core import MessageBuilder
+
+@message()
+async def handle(event: Event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .mention(event.get_user_id())
+        .text("收到你的消息")
+        .build()
+    )
+```
+
+### 11.5 支持的消息段方法
+
+| 方法 | 说明 | data 字段 |
+|------|------|----------|
+| `text(text)` | 文本 | `text` |
+| `image(file)` | 图片 | `file` |
+| `audio(file)` | 音频 | `file` |
+| `video(file)` | 视频 | `file` |
+| `file(file, filename=None)` | 文件 | `file`, `filename`(可选) |
+| `mention(user_id, user_name=None)` | @用户 | `user_id`, `user_name`(可选) |
+| `at(user_id, user_name=None)` | @用户（`mention` 的别名） | 同 `mention` |
+| `reply(message_id)` | 回复 | `message_id` |
+| `at_all()` | @全体成员 | `{}` |
+| `custom(type, data)` | 自定义/平台扩展 | 自定义 |
+
+### 11.6 工具方法
+
+```python
+builder = MessageBuilder().text("基础内容")
+
+# 复制（深拷贝）
+msg1 = builder.copy().image("img1").build()
+msg2 = builder.copy().image("img2").build()
+
+# 清空
+builder.clear().text("新内容").build()
+
+# 判断是否为空
+if builder:
+    print(f"包含 {len(builder)} 个消息段")
+```
+
+---
+
+## 12. 相关文档
 
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
