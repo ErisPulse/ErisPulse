@@ -201,6 +201,8 @@ jobs:
           
           # 提交更改
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
+          # 先拉取远程最新变更再推送，避免因翻译期间有人推送导致 push 被拒绝
+          git pull --rebase --autostash || echo "拉取远程更新失败，尝试直接推送"
           git push || echo "没有新的提交需要推送"
 
       - name: 文档更新完成
