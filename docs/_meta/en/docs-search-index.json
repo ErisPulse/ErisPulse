@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 808,
+  "total_keywords": 798,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2370,12 +2370,6 @@
         "title": "Command Information"
       },
       {
-        "document": "api-reference/event-system.md",
-        "line": 287,
-        "level": 3,
-        "title": "Command Information"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 182,
         "level": 3,
@@ -2522,14 +2516,6 @@
         "line": 7,
         "level": 3,
         "title": "Component Relationships"
-      }
-    ],
-    "Conditional Listening": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 143,
-        "level": 3,
-        "title": "Conditional Listening"
       }
     ],
     "Config": [
@@ -2831,12 +2817,6 @@
       }
     ],
     "Core Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 244,
-        "level": 3,
-        "title": "Core Methods"
-      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 89,
@@ -3522,14 +3502,6 @@
         "line": 127,
         "level": 2,
         "title": "Event Types"
-      }
-    ],
-    "Event Wrapper Class": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 240,
-        "level": 2,
-        "title": "Event Wrapper Class"
       }
     ],
     "Event-Driven Architecture": [
@@ -4582,14 +4554,6 @@
         "title": "Message Event Methods"
       }
     ],
-    "Message Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 114,
-        "level": 3,
-        "title": "Message Events"
-      }
-    ],
     "Message Events (Message Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -4612,22 +4576,6 @@
         "line": 48,
         "level": 3,
         "title": "Message Management Methods"
-      }
-    ],
-    "Message Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 260,
-        "level": 3,
-        "title": "Message Methods"
-      }
-    ],
-    "Message Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 112,
-        "level": 2,
-        "title": "Message Module"
       }
     ],
     "Message Segment Standard": [
@@ -4690,22 +4638,6 @@
         "line": 206,
         "level": 2,
         "title": "Meta Event Handling"
-      }
-    ],
-    "Meta Event Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 215,
-        "level": 2,
-        "title": "Meta Event Module"
-      }
-    ],
-    "Meta Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 217,
-        "level": 3,
-        "title": "Meta Events"
       }
     ],
     "Meta Events (Meta Events)": [
@@ -5102,28 +5034,12 @@
         "title": "Notice Event Methods"
       }
     ],
-    "Notice Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 163,
-        "level": 3,
-        "title": "Notice Events"
-      }
-    ],
     "Notice Events (Notice Events)": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 89,
         "level": 3,
         "title": "Notice Events (Notice Events)"
-      }
-    ],
-    "Notice Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 161,
-        "level": 2,
-        "title": "Notice Module"
       }
     ],
     "Notice Operator": [
@@ -5344,6 +5260,14 @@
         "title": "Platform"
       }
     ],
+    "Platform Extension Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 212,
+        "level": 2,
+        "title": "Platform Extension Methods"
+      }
+    ],
     "Platform Feature Detection": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5420,14 +5344,6 @@
         "line": 26,
         "level": 2,
         "title": "Prerequisites"
-      }
-    ],
-    "Priority System": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 327,
-        "level": 2,
-        "title": "Priority System"
       }
     ],
     "Progress Bar": [
@@ -5608,6 +5524,14 @@
         "line": 98,
         "level": 3,
         "title": "Query Supported Sending Methods"
+      }
+    ],
+    "Querying Registered Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 232,
+        "level": 3,
+        "title": "Querying Registered Methods"
       }
     ],
     "Quick Initialization": [
@@ -5827,7 +5751,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 212,
+        "line": 250,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -5856,12 +5780,6 @@
         "line": 369,
         "level": 2,
         "title": "Related Documents"
-      },
-      {
-        "document": "api-reference/event-system.md",
-        "line": 343,
-        "level": 2,
-        "title": "Related Documents"
       }
     ],
     "Related Links": [
@@ -5881,12 +5799,6 @@
       }
     ],
     "Reply Functionality": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 299,
-        "level": 3,
-        "title": "Reply Functionality"
-      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 51,
@@ -5932,14 +5844,6 @@
         "title": "Request Event Methods"
       }
     ],
-    "Request Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 195,
-        "level": 3,
-        "title": "Request Events"
-      }
-    ],
     "Request Events (Request Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -5954,14 +5858,6 @@
         "line": 149,
         "level": 4,
         "title": "Request Information"
-      }
-    ],
-    "Request Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 193,
-        "level": 2,
-        "title": "Request Module"
       }
     ],
     "Request Type Judgment": [
@@ -7054,12 +6950,6 @@
     ],
     "Utility Methods": [
       {
-        "document": "api-reference/event-system.md",
-        "line": 312,
-        "level": 3,
-        "title": "Utility Methods"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 196,
         "level": 3,
@@ -7118,14 +7008,6 @@
         "line": 125,
         "level": 3,
         "title": "Wait for Result"
-      }
-    ],
-    "Waiting for Reply": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 57,
-        "level": 3,
-        "title": "Waiting for Reply"
       }
     ],
     "Waiting for Reply with Callback": [
@@ -7238,6 +7120,14 @@
         "line": 39,
         "level": 2,
         "title": "__init__.py"
+      }
+    ],
+    "`hasattr` and `dir` Support": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 241,
+        "level": 3,
+        "title": "`hasattr` and `dir` Support"
       }
     ],
     "call_api Method": [

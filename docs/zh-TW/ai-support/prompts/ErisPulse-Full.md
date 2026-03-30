@@ -2796,6 +2796,44 @@ user_id = event.user_id          # 等同於 event["user_id"]
 message = event.message          # 等同於 event["message"]
 ```
 
+## 平台擴充方法
+
+介面卡可以為 Event 包裝類註冊平台專屬方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
+
+```python
+# 郵件事件 - 只有郵件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ 返回 "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ 返回 "private"
+event.get_subject()      # ❌ AttributeError
+
+# 內建方法始終可用
+event.get_text()         # ✅ 任何平台
+event.reply("hi")        # ✅ 任何平台
+```
+
+### 查詢已註冊方法
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+### `hasattr` 和 `dir` 支援
+
+```python
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+> 介面卡開發者註冊擴充方法的方式請參閱 [事件系統 API - 介面卡：註冊平台擴充方法](../../api-reference/event-system.md#介面卡註冊平台擴充方法)。
+
 ## 相關文件
 
 - [模組開發入門](getting-started.md) - 建立第一個模組
@@ -5523,6 +5561,120 @@ if not event.is_processed():
 raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
+
+### 平台擴展方法
+
+適配器可以為 Event 註冊平台專有方法，僅在對應平台的實例上可用：
+
+```python
+# 郵件事件 - 只有郵件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ "private"
+event.get_subject()      # ❌ AttributeError
+```
+
+**查詢已註冊方法：**
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", ...]
+```
+
+**`hasattr` / `dir` 支援：**
+
+```python
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+### 適配器：註冊平台擴展方法
+
+適配器可以通過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由訪問事件資料。
+
+#### 單個方法註冊
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("email")
+def get_subject(self):
+    """獲取郵件主題"""
+    return self.get("email_raw", {}).get("subject", "")
+
+@register_event_method("email")
+def get_from(self):
+    """獲取發件人"""
+    return self.get("email_raw", {}).get("from", {})
+```
+
+#### 批量註冊（Mixin 類）
+
+當方法較多時，推薦使用 Mixin 類批量註冊：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin
+
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", {})
+
+    def get_attachments(self):
+        return self.get("email_raw", {}).get("attachments", [])
+
+# 一次性註冊所有方法
+register_event_mixin("email", EmailEventMixin)
+```
+
+#### 返回值規範
+
+| 場景 | 返回值 | 使用者使用方式 |
+|------|--------|------------|
+| 返回資料（文本、字典等） | 直接返回值 | `subject = event.get_subject()` |
+| 執行操作（發送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
+
+> **建議**：非資料返回的方法返回 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
+
+```python
+@register_event_method("email")
+def forward_email(self, to_address: str):
+    """轉發郵件 — 返回 Task，使用者可自行決定是否 await"""
+    import asyncio
+    return asyncio.create_task(
+        self._do_forward(to_address)
+    )
+
+# 使用者可以 await 等待結果
+await event.forward_email("user@example.com")
+
+# 也可以不 await，操作在後台執行
+event.forward_email("user@example.com")
+```
+
+#### 註銷方法
+
+```python
+from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
+
+# 註銷單個方法
+unregister_event_method("email", "get_subject")
+
+# 註銷某平台全部方法（適配器 shutdown 時呼叫）
+unregister_platform_event_methods("email")
+```
+
+#### 命名衝突檢測
+
+註冊時如果方法名與 Event 內置方法重名（如 `get_text`、`reply`），系統會發出 warning 並跳過註冊，不會覆蓋內置行為。
 
 ## 優先級系統
 
