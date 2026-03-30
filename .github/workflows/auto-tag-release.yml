@@ -95,34 +95,25 @@ jobs:
               fi
               
               # 检查标签是否已存在
-              if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-                echo "正在创建新标签 $tag_name"
-                git tag "$tag_name"
-                git push origin "$tag_name"
-              else
-                echo "标签 $tag_name 已存在"
+              if git rev-parse "$tag_name" >/dev/null 2>&1; then
+                echo "标签 $tag_name 已存在，跳过创建"
+                exit 0
               fi
               
-              # 检查发行是否存在
-              if gh release view "$tag_name" &>/dev/null; then
-                # 更新发行
-                echo "正在更新发行 $tag_name"
-                gh release edit "$tag_name" \
-                  --notes "$changelog" \
-                  --prerelease=$is_dev
-                echo "发行更新完成 $tag_name"
-                echo "release_updated=true" >> $GITHUB_OUTPUT
-              else
-                # 创建发行
-                echo "正在创建发行 $tag_name"
-                gh release create "$tag_name" \
-                  --notes "$changelog" \
-                  --title "ErisPulse $tag_name" \
-                  --prerelease=$is_dev \
-                  $latest_flag
-                echo "发行创建完成 $tag_name"
-                echo "release_created=true" >> $GITHUB_OUTPUT
-              fi
+              # 创建标签并推送
+              echo "正在创建新标签 $tag_name"
+              git tag "$tag_name"
+              git push origin "$tag_name"
+              
+              # 创建发行
+              echo "正在创建发行 $tag_name"
+              gh release create "$tag_name" \
+                --notes "$changelog" \
+                --title "ErisPulse $tag_name" \
+                --prerelease=$is_dev \
+                $latest_flag
+              echo "发行创建完成 $tag_name"
+              echo "release_created=true" >> $GITHUB_OUTPUT
               
               echo "发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
             else
@@ -133,7 +124,7 @@ jobs:
           fi
 
       - name: 生成 AI 物料文档
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        if: steps.create-release.outputs.release_created == 'true'
         run: |
           echo "艾莉丝开始生成 AI 物料文档~"
           
@@ -151,7 +142,7 @@ jobs:
           fi
 
       - name: 上传 AI 物料文档到 Release
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        if: steps.create-release.outputs.release_created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -168,7 +159,7 @@ jobs:
           mkdir -p temp_release_assets
           
           # 中文简体文件
-          cp "docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/简体中文-ErisPulse-ModuleDev-zh-CN.md"
+          cp "docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/ErisPulse-ModuleDev-zh-CN.md"
           cp "docs/zh-CN/ai-support/prompts/ErisPulse-AdapterDev.md" "temp_release_assets/ErisPulse-AdapterDev-zh-CN.md"
           cp "docs/zh-CN/ai-support/prompts/ErisPulse-Full.md" "temp_release_assets/ErisPulse-Full-zh-CN.md"
           
