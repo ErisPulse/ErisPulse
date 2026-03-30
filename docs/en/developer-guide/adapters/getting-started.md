@@ -8,27 +8,25 @@ This guide helps you get started with developing ErisPulse adapters to connect n
 
 The adapter is a bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. Receiving platform events and converting them to OneBot12 standard format
-2. Converting OneBot12 standard responses to platform-specific format
+1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
+2. **Reverse Conversion**: Converting OneBot12 message segments to platform API calls (Raw_ob12)
 3. Managing connections with the platform (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
 ```
-Platform Event
-    ↓
-Converter
-    ↓
-OneBot12 Standard Event
-    ↓
-Event System
+Forward Conversion (Receive)                 Reverse Conversion (Send)
+────────────────────────                 ────────────────────────
+Platform Event                             Module Building Message
+    ↓                                          ↓
+Converter.convert()                    Send.Raw_ob12()
+    ↓                                          ↓
+OneBot12 Standard Event              Platform Native API Call
+    ↓                                          ↓
+Event System                            Standard Response Format
     ↓
 Module Processing
-    ↓
-SendDSL Message Sending
-    ↓
-Platform API Call
 ```
 
 ## Directory Structure
@@ -191,23 +189,14 @@ class MyAdapter(BaseAdapter):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            Send OneBot12 format message
+            Send OneBot12 format message (must implement)
+
+            For complete implementation specifications and examples, please refer to:
+            ../../standards/send-method-spec.md#6-reverse-conversion-spec-onebot12--platform
             """
             if isinstance(message, dict):
                 message = [message]
-            
-            async def _send():
-                for segment in message:
-                    seg_type = segment.get("type", "")
-                    seg_data = segment.get("data", {})
-                    
-                    if seg_type == "text":
-                        await self.Text(seg_data.get("text", ""))
-                    elif seg_type == "image":
-                        await self.Image(seg_data.get("file") or seg_data.get("url", ""))
-                    # ... handle other message types
-            
-            return asyncio.create_task(_send())
+            return asyncio.create_task(self._do_send(message))
 ```
 
 **Key points for implementing media sending methods (Image/Video/File):**

@@ -1012,27 +1012,25 @@ This guide helps you get started with developing ErisPulse adapters to connect n
 
 The adapter is a bridge between ErisPulse and various messaging platforms, responsible for:
 
-1. Receiving platform events and converting them to OneBot12 standard format
-2. Converting OneBot12 standard responses to platform-specific format
+1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
+2. **Reverse Conversion**: Converting OneBot12 message segments to platform API calls (Raw_ob12)
 3. Managing connections with the platform (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
 ### Adapter Architecture
 
 ```
-Platform Event
-    ↓
-Converter
-    ↓
-OneBot12 Standard Event
-    ↓
-Event System
+Forward Conversion (Receive)                 Reverse Conversion (Send)
+────────────────────────                 ────────────────────────
+Platform Event                             Module Building Message
+    ↓                                          ↓
+Converter.convert()                    Send.Raw_ob12()
+    ↓                                          ↓
+OneBot12 Standard Event              Platform Native API Call
+    ↓                                          ↓
+Event System                            Standard Response Format
     ↓
 Module Processing
-    ↓
-SendDSL Message Sending
-    ↓
-Platform API Call
 ```
 
 ## Directory Structure
@@ -1195,23 +1193,14 @@ class MyAdapter(BaseAdapter):
         
         def Raw_ob12(self, message, **kwargs):
             """
-            Send OneBot12 format message
+            Send OneBot12 format message (must implement)
+
+            For complete implementation specifications and examples, please refer to:
+            ../../standards/send-method-spec.md#6-reverse-conversion-spec-onebot12--platform
             """
             if isinstance(message, dict):
                 message = [message]
-            
-            async def _send():
-                for segment in message:
-                    seg_type = segment.get("type", "")
-                    seg_data = segment.get("data", {})
-                    
-                    if seg_type == "text":
-                        await self.Text(seg_data.get("text", ""))
-                    elif seg_type == "image":
-                        await self.Image(seg_data.get("file") or seg_data.get("url", ""))
-                    # ... handle other message types
-            
-            return asyncio.create_task(_send())
+            return asyncio.create_task(self._do_send(message))
 ```
 
 **Key points for implementing media sending methods (Image/Video/File):**
@@ -1299,36 +1288,41 @@ Understanding the core concepts of ErisPulse adapters is the foundation for deve
 ### Component Relationships
 
 ```
-┌─────────────────────────────────────────┐
-│         Platform API               │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Adapter (MyAdapter)           │
-│  ┌────────────────────────────┐    │
-│  │ Send Class (Message Sending DSL)│    │
-│  └────────────────────────────┘    │
-│  ┌────────────────────────────┐    │
-│  │ Converter (Event Converter)     │    │
-│  └────────────────────────────┘    │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│     OneBot12 Standard Events      │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Event System                 │
-└────────────┬────────────────────────┘
-             │
-             ↓
-┌─────────────────────────────────────────┐
-│      Modules (Event Handling)    │
-└─────────────────────────────────────────┘
+Forward Conversion (Receive Direction)               Reverse Conversion (Send Direction)
+─────────────────                               ─────────────────
+                                            
+┌──────────────────┐                            ┌──────────────────┐
+│ Platform Native Events │                   │ Module Constructs Message │
+└────────┬─────────┘                            └────────┬─────────┘
+         │                                              │
+         ↓                                              ↓
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│                  │   │  Adapter (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (Event Converter)│──→│ │              │ │   │ (Reverse Conversion Entry)│
+│                  │   │ │              │ │   │                  │
+└──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
+                       └──────────────────┘            │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Platform API Call│
+                       │ OneBot12 Standard Events│    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Standard Response Format│
+                       │ Event System     │    └──────────────────┘
+                       └────────┬─────────┘
+                                │
+                                ↓
+                       ┌──────────────────┐
+                       │ Modules (Event Handling)│
+                       └──────────────────┘
 ```
+
+**Core Symmetry**:
+- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, raw data preserved in `{platform}_raw`
+- **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, return standard response format
 
 ## AdapterManager
 
@@ -1962,10 +1956,11 @@ All sending methods must return an `asyncio.Task` object.
 
 ### Raw Methods
 
-| Method Name | Description | Return Value |
-|--------|------|---------|
-| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` |
-| `Raw_json(json_str)` | Send raw JSON message | `asyncio.Task` |
+| Method Name | Description | Return Value | Required |
+|--------|------|---------|---------|
+| `Raw_ob12(message)` | Send OneBot12 format message | `asyncio.Task` | **Must Implement** |
+
+> **Important**: `Raw_ob12` is the core method of the adapter and **must be implemented**. It is the unified entry point for reverse conversion (OneBot12 → Platform). When not implemented, the base class will log an error and return a standard error response (`status: "failed"`, `retcode: 10002`). Standard methods (`Text`, `Image`, etc.) should internally delegate to `Raw_ob12`.
 
 ## Modifier Methods
 
@@ -2159,16 +2154,13 @@ await my_adapter.Send.To("group", "456").At("789").Reply("msg123").Text("Reply t
 await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcement message")
 ```
 
-### Raw Messages
+### Raw Messages and Message Building
 
-```python
-# Send OneBot12 format message
-ob12_msg = [
-    {"type": "text", "data": {"text": "Hello"}},
-    {"type": "image", "data": {"file": "https://example.com/image.jpg"}}
-]
-await my_adapter.Send.To("group", "456").Raw_ob12(ob12_msg)
-```
+`Raw_ob12` is the core entry point for reverse conversion (receiving OB12 message segments → platform API calls), and `MessageBuilder` is a chain-style message segment building tool used in conjunction with it.
+
+> For complete `Raw_ob12` implementation specifications, `MessageBuilder` usage, and code examples, please refer to:
+> - [Sending Method Specifications §6 Reverse Conversion Specifications](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [Sending Method Specifications §11 Message Builder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
 
 ## Related Documentation
 
@@ -2563,6 +2555,16 @@ async def test_send_message():
     result = await adapter.Send.To("user", "123").Text("Hello")
     assert result is not None
 ```
+
+## Reverse Conversion and Message Construction
+
+`Raw_ob12` is a method that the adapter **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → Platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
+
+`MessageBuilder` is a message segment construction tool used in conjunction with `Raw_ob12`, supporting method chaining and rapid construction.
+
+> For complete implementation specifications, code examples, and usage instructions, please refer to:
+> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-reverse-conversion-specificationonebot12--platform)
+> - [Send Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-message-builder-messagebuilder)
 
 ## Documentation Maintenance
 
@@ -3119,17 +3121,26 @@ All sending methods use **PascalCase**, with the first letter capitalized.
 
 ### 1.3 Protocol Methods
 
-| Method Name | Description |
-|-------|------|
-| `Raw_ob12` | Send OneBot12 format message segment |
-| `Raw_json` | Send arbitrary JSON data |
-| `Raw_xml` | Send arbitrary XML data |
+| Method Name | Description | Required |
+|-------|------|---------|
+| `Raw_ob12` | Send OneBot12 format message segment | Yes |
 
 **`Raw_ob12` is a required method to implement.** This is one of the adapter's core responsibilities: receiving OneBot12 standard message segments and converting them into platform native API calls. `Raw_ob12` is the unified entry point for reverse conversion (OneBot12 → Platform), ensuring modules can send messages without relying on platform-specific methods, using standard message segments directly.
 
-**Behavior when `Raw_ob12` is not overridden:** The base class default implementation will log an error and return `None`, prompting adapter developers to implement this method.
+**Behavior when `Raw_ob12` is not overridden:** The base class default implementation will log an **error level** log and return the standard error response format (`status: "failed"`, `retcode: 10002`), prompting adapter developers to implement this method.
 
-**Behavior when `Raw_json` / `Raw_xml` are not overridden:** The base class default implementation will log a warning and return `None`, without throwing an exception.
+### 1.4 Recommended Extension Naming Conventions
+
+If the adapter needs to support sending raw data in non-OneBot12 formats (such as platform-specific JSON, XML, etc.), the following naming conventions are recommended:
+
+| Recommended Method Name | Description |
+|-----------|------|
+| `Raw_json` | Send arbitrary JSON data |
+| `Raw_xml` | Send arbitrary XML data |
+
+**Note:** These methods are **not** default methods provided by the base class, nor are they mandatory to implement. They serve only as naming conventions; adapters may define them as needed. If an adapter does not support these formats, there is no need to define them.
+
+**MessageBuilder:** ErisPulse provides a `MessageBuilder` tool class to conveniently construct OneBot12 message segment lists for use with `Raw_ob12`. See the [MessageBuilder](#11-messagebuilder) section for details.
 
 ## 2. Parameter Specifications Detail
 
@@ -3271,7 +3282,6 @@ def Form(self, form_id: str):  # ✅ Generic method name
 def Sticker(self, sticker_id: str):  # ✅ Generic method name
     pass
 
-# Or use Raw method
 def Raw_ob12(self, message):  # ✅ Send OneBot12 format
     pass
 ```
@@ -3412,4 +3422,233 @@ await send.Raw_ob12([
 ### 6.4 Relationship between `Raw_ob12` and Standard Methods
 
 Standard sending methods in the adapter (e.g., `Text`, `Image`) should delegate internally to `Raw_ob12`, rather than implementing conversion logic independently:
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
+        """Core implementation: OneBot12 message segments -> Platform API"""
+        return asyncio.create_task(self._send_ob12(message_segments))
+    
+    def Text(self, text: str) -> asyncio.Task:
+        """Standard method, delegate to Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
+    
+    def Image(self, image: Union[str, bytes]) -> asyncio.Task:
+        """Standard method, delegate to Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "image", "data": {"file": image}}
+        ])
+```
+
+**Benefits:**
+- Conversion logic is centralized in `Raw_ob12`, reducing duplicate code
+- Standard methods and `Raw_ob12` behave consistently
+- Modules get the same result whether using `Text()` or `Raw_ob12()`
+
+### 6.5 Implementation Example
+
+```python
+class YunhuSend(SendDSL):
+    """Yunhu platform Send implementation"""
+    
+    def Raw_ob12(self, message_segments: list) -> asyncio.Task:
+        """OneBot12 message segments -> Yunhu API call"""
+        return asyncio.create_task(self._do_send(message_segments))
+    
+    async def _do_send(self, segments: list) -> dict:
+        """Actual sending logic"""
+        # 1. Parse modifier state
+        at_users = self._at_users or []
+        reply_to = self._reply_to
+        at_all = self._at_all
+        
+        # 2. Convert message segments
+        yunhu_elements = []
+        for seg in segments:
+            seg_type = seg["type"]
+            seg_data = seg["data"]
+            
+            if seg_type == "text":
+                yunhu_elements.append({"type": "text", "content": seg_data["text"]})
+            elif seg_type == "image":
+                yunhu_elements.append({"type": "image", "url": seg_data["file"]})
+            elif seg_type == "mention":
+                at_users.append(seg_data["user_id"])
+            elif seg_type == "reply":
+                reply_to = seg_data["message_id"]
+            elif seg_type == "yunhu_form":
+                # Platform extension message segment
+                yunhu_elements.append({"type": "form", "form_id": seg_data["form_id"]})
+            else:
+                logger.warning(f"Yunhu unsupported message segment: {seg_type}")
+        
+        # 3. Call Yunhu API
+        response = await self._call_yunhu_api(yunhu_elements, at_users, reply_to, at_all)
+        
+        # 4. Return standard response format
+        return {
+            "status": "ok" if response["code"] == 0 else "failed",
+            "retcode": response["code"],
+            "data": {"message_id": response.get("msg_id", ""), "time": int(time.time())},
+            "message_id": response.get("msg_id", ""),
+            "message": "",
+            "yunhu_raw": response
+        }
+```
+
+---
+
+## 7. Method Discovery
+
+Module developers can query the sending methods supported by the adapter via the API:
+
+```python
+from ErisPulse import adapter
+
+# List all sending methods
+methods = adapter.list_sends("myplatform")
+# ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
+
+# View method details
+info = adapter.send_info("myplatform", "Form")
+# {
+#     "name": "Form",
+#     "parameters": [{"name": "form_id", "type": "str", ...}],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "Send Yunhu form"
+# }
+```
+
+---
+
+## 8. Registered Sending Method Extensions
+
+| Platform | Method Name | Description |
+|------|--------|------|
+| onebot12 | `Mention` | @ user (OneBot12 style) |
+| onebot12 | `Sticker` | Send sticker |
+| onebot12 | `Location` | Send location |
+| onebot12 | `Recall` | Recall message |
+| onebot12 | `Edit` | Edit message |
+| onebot12 | `Batch` | Batch send |
+
+> **Note:** Sending methods do not add platform prefixes; methods with the same name on different platforms can have different implementations.
+
+---
+
+## 9. Adapter Implementation Checklist
+
+### Sending Methods
+- [ ] Standard methods (`Text`, `Image`, etc.) implemented
+- [ ] Return values are all `asyncio.Task`
+- [ ] Modifier methods (`At`, `Reply`, `AtAll`) return `self`
+- [ ] Platform extension methods use PascalCase, no platform prefix
+- [ ] All methods have complete type hints and docstrings
+
+### Reverse Conversion
+- [ ] `Raw_ob12` **implemented** (Mandatory, cannot skip)
+- [ ] `Raw_ob12` can handle all standard message segments (`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`)
+- [ ] `Raw_ob12` can handle platform extension message segments (`{platform}_xxx` types)
+- [ ] Standard sending methods (`Text`, `Image`, etc.) delegate internally to `Raw_ob12`, rather than implementing conversion logic independently
+- [ ] Unsupported message segments are skipped and logged as warnings, no exceptions thrown
+- [ ] Composite message segments handled correctly (merged or split in order)
+
+---
+
+## 11. MessageBuilder
+
+`MessageBuilder` is a message segment building tool provided by ErisPulse, used with `Raw_ob12` to simplify the construction of OneBot12 message segments.
+
+### 11.1 Import
+
+```python
+from ErisPulse.Core import MessageBuilder
+# or
+from ErisPulse.Core.Event import MessageBuilder
+```
+
+### 11.2 Chaining Calls to Build
+
+```python
+# Build a message containing text, image, and @user
+segments = (
+    MessageBuilder()
+    .mention("123456")
+    .text("Hello, take a look at this picture")
+    .image("https://example.com/img.jpg")
+    .reply("msg_789")
+    .build()
+)
+
+# Send
+await adapter.Send.To("group", "456").Raw_ob12(segments)
+```
+
+### 11.3 Quick Build for Single Segment
+
+```python
+# Quickly build a single message segment (returns list[dict], can be passed directly to Raw_ob12)
+await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
+```
+
+### 11.4 Use with Event.reply_ob12
+
+```python
+from ErisPulse.Core import MessageBuilder
+
+@message()
+async def handle(event: Event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .mention(event.get_user_id())
+        .text("Received your message")
+        .build()
+    )
+```
+
+### 11.5 Supported Message Segment Methods
+
+| Method | Description | data fields |
+|------|----------|----------|
+| `text(text)` | Text | `text` |
+| `image(file)` | Image | `file` |
+| `audio(file)` | Audio | `file` |
+| `video(file)` | Video | `file` |
+| `file(file, filename=None)` | File | `file`, `filename` (optional) |
+| `mention(user_id, user_name=None)` | @ user | `user_id`, `user_name` (optional) |
+| `at(user_id, user_name=None)` | @ user (alias of `mention`) | Same as `mention` |
+| `reply(message_id)` | Reply | `message_id` |
+| `at_all()` | @ all members | `{}` |
+| `custom(type, data)` | Custom/Platform extension | Custom |
+
+### 11.6 Utility Methods
+
+```python
+builder = MessageBuilder().text("Base content")
+
+# Copy (deep copy)
+msg1 = builder.copy().image("img1").build()
+msg2 = builder.copy().image("img2").build()
+
+# Clear
+builder.clear().text("New content").build()
+
+# Check if empty
+if builder:
+    print(f"Contains {len(builder)} message segments")
+```
+
+---
+
+## 12. Related Documents
+
+- [Event Conversion Standard](event-conversion.md) - Complete event conversion specifications, extension naming, and message segment standards
+- [API Response Standard](api-response.md) - Adapter API response format standards
+- [Session Type Standard](session-types.md) - Session type definitions and mapping relationships
 
