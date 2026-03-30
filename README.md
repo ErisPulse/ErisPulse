@@ -145,6 +145,7 @@ epsdk run main.py --reload
 - [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) - OneBot12 标准
 - [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) - 邮件收发处理
 - [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) - 网页调试界面，无需接入实际平台
+- [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) - Kook(开黑啦)即时通讯平台
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
