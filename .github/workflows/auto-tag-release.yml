@@ -16,6 +16,12 @@ jobs:
   update-latest-release:
     runs-on: ubuntu-latest
     steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 检查 Release 是否已存在
         id: check-release
         env:
@@ -33,13 +39,6 @@ jobs:
             echo "release_exists=false" >> $GITHUB_OUTPUT
             echo "Release $tag_name 不存在，继续发布流程"
           fi
-
-      - name: 检出代码
-        if: steps.check-release.outputs.release_exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 准备 Python 环境
         if: steps.check-release.outputs.release_exists != 'true'
