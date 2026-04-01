@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 798,
+  "total_keywords": 833,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -706,12 +706,28 @@
         "title": "2.2 Message Event Fields"
       }
     ],
+    "2.3 Notice Event Fields": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 37,
+        "level": 3,
+        "title": "2.3 Notice Event Fields"
+      }
+    ],
     "2.3 Reply Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
         "line": 160,
         "level": 3,
         "title": "2.3 Reply Message Parameter Specifications"
+      }
+    ],
+    "2.4 Request Event Fields": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.4 Request Event Fields"
       }
     ],
     "2xxxx Action Handler Errors (Handler Error)": [
@@ -760,6 +776,14 @@
         "line": 78,
         "level": 3,
         "title": "3. Create Adapter Main Class"
+      }
+    ],
+    "3. Event Format Examples": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 51,
+        "level": 2,
+        "title": "3. Event Format Examples"
       }
     ],
     "3. Event Handler Registration": [
@@ -882,6 +906,14 @@
         "title": "3.1 Mapping Principles"
       }
     ],
+    "3.1 Message Event (message)": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 53,
+        "level": 3,
+        "title": "3.1 Message Event (message)"
+      }
+    ],
     "3.2 Common Platform Mapping Examples": [
       {
         "document": "standards/session-types.md",
@@ -890,12 +922,28 @@
         "title": "3.2 Common Platform Mapping Examples"
       }
     ],
+    "3.2 Notice Event (notice)": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 86,
+        "level": 3,
+        "title": "3.2 Notice Event (notice)"
+      }
+    ],
     "3.2 Return Code Specification": [
       {
         "document": "standards/api-response.md",
         "line": 62,
         "level": 3,
         "title": "3.2 Return Code Specification"
+      }
+    ],
+    "3.3 Request Event (request)": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 107,
+        "level": 3,
+        "title": "3.3 Request Event (request)"
       }
     ],
     "3xxxx Action Execution Errors (Execution Error)": [
@@ -970,6 +1018,14 @@
         "title": "4. Implementation Requirements"
       }
     ],
+    "4. Message Segment Standards": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 127,
+        "level": 2,
+        "title": "4. Message Segment Standards"
+      }
+    ],
     "4. Modules": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -992,6 +1048,22 @@
         "line": 123,
         "level": 3,
         "title": "4.1 Registering Custom Types"
+      }
+    ],
+    "4.1 Standard Message Segments": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 129,
+        "level": 3,
+        "title": "4.1 Standard Message Segments"
+      }
+    ],
+    "4.2 Platform Extension Message Segments": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 154,
+        "level": 3,
+        "title": "4.2 Platform Extension Message Segments"
       }
     ],
     "4.2 Using Custom Types": [
@@ -1050,6 +1122,14 @@
         "title": "5. Return Value Specifications"
       }
     ],
+    "5. Unknown Event Handling": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 171,
+        "level": 2,
+        "title": "5. Unknown Event Handling"
+      }
+    ],
     "5.1 Inference Priority": [
       {
         "document": "standards/session-types.md",
@@ -1098,6 +1178,14 @@
         "title": "6. API Usage Examples"
       }
     ],
+    "6. Extension Naming Conventions": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 189,
+        "level": 2,
+        "title": "6. Extension Naming Conventions"
+      }
+    ],
     "6. Implement Converter": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1130,6 +1218,14 @@
         "title": "6.1 Conversion Model"
       }
     ],
+    "6.1 Field Naming": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 191,
+        "level": 3,
+        "title": "6.1 Field Naming"
+      }
+    ],
     "6.1 Sending Messages": [
       {
         "document": "standards/session-types.md",
@@ -1144,6 +1240,14 @@
         "line": 212,
         "level": 3,
         "title": "6.2 Event Reply"
+      }
+    ],
+    "6.2 Message Segment Type Naming": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 210,
+        "level": 3,
+        "title": "6.2 Message Segment Type Naming"
       }
     ],
     "6.2 `Raw_ob12` Implementation Specifications": [
@@ -1170,6 +1274,14 @@
         "title": "6.3 Message Segment Conversion Rules"
       }
     ],
+    "6.3 Raw Data Field Naming": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 216,
+        "level": 3,
+        "title": "6.3 Raw Data Field Naming"
+      }
+    ],
     "6.3.1 Standard Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
@@ -1194,6 +1306,14 @@
         "title": "6.3.3 Composite Message Segment Processing"
       }
     ],
+    "6.4 Platform-Specific Field Examples": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 230,
+        "level": 3,
+        "title": "6.4 Platform-Specific Field Examples"
+      }
+    ],
     "6.4 Relationship between `Raw_ob12` and Standard Methods": [
       {
         "document": "standards/send-method-spec.md",
@@ -1208,6 +1328,22 @@
         "line": 362,
         "level": 3,
         "title": "6.5 Implementation Example"
+      }
+    ],
+    "6.5 Nested Extension Fields": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 247,
+        "level": 3,
+        "title": "6.5 Nested Extension Fields"
+      }
+    ],
+    "6.6 `self` Field Extension": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 270,
+        "level": 3,
+        "title": "6.6 `self` Field Extension"
       }
     ],
     "7. Best Practices": [
@@ -1232,6 +1368,14 @@
         "line": 415,
         "level": 2,
         "title": "7. Method Discovery"
+      }
+    ],
+    "7. Session Type Extensions": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 284,
+        "level": 2,
+        "title": "7. Session Type Extensions"
       }
     ],
     "7.1 Adapter Developers": [
@@ -1266,12 +1410,44 @@
         "title": "8. Common Questions"
       }
     ],
+    "8. Module Developer Guide": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 320,
+        "level": 2,
+        "title": "8. Module Developer Guide"
+      }
+    ],
     "8. Registered Sending Method Extensions": [
       {
         "document": "standards/send-method-spec.md",
         "line": 438,
         "level": 2,
         "title": "8. Registered Sending Method Extensions"
+      }
+    ],
+    "8.1 Accessing Extension Fields": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 322,
+        "level": 3,
+        "title": "8.1 Accessing Extension Fields"
+      }
+    ],
+    "8.2 Handling Extension Message Segments": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 351,
+        "level": 3,
+        "title": "8.2 Handling Extension Message Segments"
+      }
+    ],
+    "8.3 Best Practices": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 372,
+        "level": 3,
+        "title": "8.3 Best Practices"
       }
     ],
     "9. Adapter Implementation Checklist": [
@@ -1288,6 +1464,14 @@
         "line": 273,
         "level": 2,
         "title": "9. Related Documentation"
+      }
+    ],
+    "9. Related Documents": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 390,
+        "level": 2,
+        "title": "9. Related Documents"
       }
     ],
     "@ Mention related": [
@@ -1528,6 +1712,14 @@
         "title": "Adapter Events"
       }
     ],
+    "Adapter Integration Example": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 294,
+        "level": 3,
+        "title": "Adapter Integration Example"
+      }
+    ],
     "Adapter Introduction": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -1760,6 +1952,14 @@
         "line": 105,
         "level": 2,
         "title": "Authentication Mechanism"
+      }
+    ],
+    "Auto-Discovery via Normal Events": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 290,
+        "level": 3,
+        "title": "Auto-Discovery via Normal Events"
       }
     ],
     "Available Properties": [
@@ -2090,6 +2290,22 @@
         "line": 98,
         "level": 4,
         "title": "Bot Information"
+      }
+    ],
+    "Bot Status Management": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 204,
+        "level": 2,
+        "title": "Bot Status Management"
+      }
+    ],
+    "Bot Status Values": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 368,
+        "level": 3,
+        "title": "Bot Status Values"
       }
     ],
     "Bot does not respond?": [
@@ -4274,6 +4490,14 @@
         "title": "Lifecycle Event Listening"
       }
     ],
+    "Lifecycle Events": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 376,
+        "level": 3,
+        "title": "Lifecycle Events"
+      }
+    ],
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
@@ -4632,12 +4856,28 @@
         "title": "Meta Event"
       }
     ],
+    "Meta Event Format": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 230,
+        "level": 3,
+        "title": "Meta Event Format"
+      }
+    ],
     "Meta Event Handling": [
       {
         "document": "getting-started/event-handling.md",
         "line": 206,
         "level": 2,
         "title": "Meta Event Handling"
+      }
+    ],
+    "Meta Event Types": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 208,
+        "level": 3,
+        "title": "Meta Event Types"
       }
     ],
     "Meta Events (Meta Events)": [
@@ -5526,6 +5766,14 @@
         "title": "Query Supported Sending Methods"
       }
     ],
+    "Querying Bot Status": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 334,
+        "level": 3,
+        "title": "Querying Bot Status"
+      }
+    ],
     "Querying Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5703,7 +5951,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 204,
+        "line": 391,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6070,6 +6318,14 @@
         "line": 286,
         "level": 2,
         "title": "Security"
+      }
+    ],
+    "Self Field Extension": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 218,
+        "level": 3,
+        "title": "Self Field Extension"
       }
     ],
     "Send Chained Invocation": [
@@ -7146,6 +7402,22 @@
         "title": "channel"
       }
     ],
+    "connect — Connection Online": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 232,
+        "level": 4,
+        "title": "connect — Connection Online"
+      }
+    ],
+    "disconnect — Disconnection": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 272,
+        "level": 4,
+        "title": "disconnect — Disconnection"
+      }
+    ],
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -7168,6 +7440,14 @@
         "line": 66,
         "level": 4,
         "title": "guild"
+      }
+    ],
+    "heartbeat — Heartbeat": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 254,
+        "level": 4,
+        "title": "heartbeat — Heartbeat"
       }
     ],
     "install Parameters": [
