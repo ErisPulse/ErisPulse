@@ -276,6 +276,129 @@ OneBot12协议事件监听装饰器
 ---
 
 
+##### `_auto_register_bot(platform: str, self_info: dict)`
+
+> **内部方法** 
+自动注册Bot（从OB12事件self字段提取），提取所有扩展字段作为Bot元信息
+
+self字段标准扩展：
+- self.user_id (必须) - Bot用户ID
+- self.user_name (可选) - Bot昵称
+- self.avatar (可选) - Bot头像URL
+- self.account_id (可选) - 多账户标识
+
+:param platform: 平台名称
+:param self_info: 事件中的self字段内容
+:return: 是否为新注册的Bot
+
+---
+
+
+##### `_update_bot_status(platform: str, bot_id: str, status: str)`
+
+> **内部方法** 
+更新Bot状态
+
+:param platform: 平台名称
+:param bot_id: Bot用户ID
+:param status: 状态值（online/offline）
+
+---
+
+
+##### `_update_bot_heartbeat(platform: str, self_info: dict)`
+
+> **内部方法** 
+更新Bot心跳（更新活跃时间和元信息）
+
+:param platform: 平台名称
+:param self_info: 事件中的self字段内容
+
+---
+
+
+##### `get_bot_info(platform: str, bot_id: str)`
+
+获取Bot详细信息
+
+:param platform: 平台名称
+:param bot_id: Bot用户ID
+:return: Bot信息字典，包含status/last_active/info，不存在则返回None
+
+**示例**:
+```python
+>>> info = adapter.get_bot_info("telegram", "123456")
+>>> # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+```
+
+---
+
+
+##### `list_bots(platform: Optional[str] = None)`
+
+列出Bot信息
+
+:param platform: 平台名称，None表示列出所有平台的Bot
+:return: Bot信息字典 {platform: {bot_id: {status, last_active, info}}}
+
+**示例**:
+```python
+>>> # 列出所有Bot
+>>> all_bots = adapter.list_bots()
+>>> # 列出指定平台的Bot
+>>> tg_bots = adapter.list_bots("telegram")
+```
+
+---
+
+
+##### `is_bot_online(platform: str, bot_id: str)`
+
+检查Bot是否在线
+
+:param platform: 平台名称
+:param bot_id: Bot用户ID
+:return: Bot是否在线
+
+**示例**:
+```python
+>>> if adapter.is_bot_online("telegram", "123456"):
+...     print("Bot在线")
+```
+
+---
+
+
+##### `get_status_summary()`
+
+获取适配器与Bot的完整状态摘要
+
+返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
+
+:return: 状态摘要字典
+
+**示例**:
+```python
+>>> summary = adapter.get_status_summary()
+>>> # {
+>>> #     "adapters": {
+>>> #         "telegram": {
+>>> #             "status": "started",
+>>> #             "bots": {
+>>> #                 "123456": {
+>>> #                     "status": "online",
+>>> #                     "last_active": 1712345678.0,
+>>> #                     "info": {"nickname": "MyBot"}
+>>> #                 }
+>>> #             }
+>>> #         }
+>>> #     }
+>>> # }
+```
+
+---
+
+
 ##### `get(platform: str)`
 
 获取指定平台的适配器实例

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 790,
+  "total_keywords": 799,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -162,6 +162,14 @@
         "line": 288,
         "level": 3,
         "title": "1. 敏感資料保護"
+      }
+    ],
+    "1. 核心原則": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 3,
+        "level": 2,
+        "title": "1. 核心原則"
       }
     ],
     "1. 核心概念": [
@@ -462,6 +470,14 @@
         "title": "2. 標準會話類型"
       }
     ],
+    "2. 標準欄位要求": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 10,
+        "level": 2,
+        "title": "2. 標準欄位要求"
+      }
+    ],
     "2. 模組命名規範": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -558,6 +574,14 @@
         "title": "2.1 媒體訊息參數規範"
       }
     ],
+    "2.1 必須欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 12,
+        "level": 3,
+        "title": "2.1 必須欄位"
+      }
+    ],
     "2.1.1 字串參數（URL 或檔案路徑）": [
       {
         "document": "standards/send-method-spec.md",
@@ -598,12 +622,36 @@
         "title": "2.2 ErisPulse 擴展類型"
       }
     ],
+    "2.2 訊息事件欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 29,
+        "level": 3,
+        "title": "2.2 訊息事件欄位"
+      }
+    ],
     "2.3 回覆訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
         "line": 160,
         "level": 3,
         "title": "2.3 回覆訊息參數規範"
+      }
+    ],
+    "2.3 通知事件欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 37,
+        "level": 3,
+        "title": "2.3 通知事件欄位"
+      }
+    ],
+    "2.4 請求事件欄位": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 44,
+        "level": 3,
+        "title": "2.4 請求事件欄位"
       }
     ],
     "2xxxx 動作處理器錯誤（Handler Error）": [
@@ -620,6 +668,14 @@
         "line": 121,
         "level": 3,
         "title": "3. 事件 ID 生成"
+      }
+    ],
+    "3. 事件格式範例": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 51,
+        "level": 2,
+        "title": "3. 事件格式範例"
       }
     ],
     "3. 事件處理器註冊": [
@@ -758,6 +814,14 @@
         "title": "3.1 對應原則"
       }
     ],
+    "3.1 訊息事件": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 53,
+        "level": 3,
+        "title": "3.1 訊息事件"
+      }
+    ],
     "3.1 通用欄位": [
       {
         "document": "standards/api-response.md",
@@ -780,6 +844,22 @@
         "line": 90,
         "level": 3,
         "title": "3.2 常見平台對應範例"
+      }
+    ],
+    "3.2 通知事件": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 86,
+        "level": 3,
+        "title": "3.2 通知事件"
+      }
+    ],
+    "3.3 請求事件": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 107,
+        "level": 3,
+        "title": "3.3 請求事件"
       }
     ],
     "3xxxx 動作執行錯誤（Execution Error）": [
@@ -865,7 +945,7 @@
     "4. 訊息段標準": [
       {
         "document": "standards/event-conversion.md",
-        "line": 3,
+        "line": 127,
         "level": 2,
         "title": "4. 訊息段標準"
       }
@@ -881,7 +961,7 @@
     "4.1 通用訊息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 5,
+        "line": 129,
         "level": 3,
         "title": "4.1 通用訊息段"
       }
@@ -897,7 +977,7 @@
     "4.2 平台擴展訊息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 30,
+        "line": 154,
         "level": 3,
         "title": "4.2 平台擴展訊息段"
       }
@@ -924,14 +1004,6 @@
         "line": 106,
         "level": 2,
         "title": "5. 擴充規範"
-      }
-    ],
-    "5. 未知事件處理": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 47,
-        "level": 2,
-        "title": "5. 未知事件處理"
       }
     ],
     "5. 自動類型推斷": [
@@ -1022,28 +1094,12 @@
         "title": "6. 實作轉換器"
       }
     ],
-    "6. 擴展命名規範": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 65,
-        "level": 2,
-        "title": "6. 擴展命名規範"
-      }
-    ],
     "6. 注意事項": [
       {
         "document": "standards/api-response.md",
         "line": 147,
         "level": 2,
         "title": "6. 注意事項"
-      }
-    ],
-    "6.1 欄位命名": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 67,
-        "level": 3,
-        "title": "6.1 欄位命名"
       }
     ],
     "6.1 發送訊息": [
@@ -1076,22 +1132,6 @@
         "line": 211,
         "level": 3,
         "title": "6.2 事件回覆"
-      }
-    ],
-    "6.2 訊息段類型命名": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 86,
-        "level": 3,
-        "title": "6.2 訊息段類型命名"
-      }
-    ],
-    "6.3 原始資料欄位命名": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 92,
-        "level": 3,
-        "title": "6.3 原始資料欄位命名"
       }
     ],
     "6.3 命令處理": [
@@ -1142,36 +1182,12 @@
         "title": "6.4 `Raw_ob12` 與標準方法的關係"
       }
     ],
-    "6.4 平台特有欄位範例": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 106,
-        "level": 3,
-        "title": "6.4 平台特有欄位範例"
-      }
-    ],
     "6.5 實作範例": [
       {
         "document": "standards/send-method-spec.md",
         "line": 362,
         "level": 3,
         "title": "6.5 實作範例"
-      }
-    ],
-    "6.5 嵌套擴展欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 123,
-        "level": 3,
-        "title": "6.5 嵌套擴展欄位"
-      }
-    ],
-    "6.6 `self` 欄位擴展": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 146,
-        "level": 3,
-        "title": "6.6 `self` 欄位擴展"
       }
     ],
     "7. 建立套件入口": [
@@ -1188,14 +1204,6 @@
         "line": 233,
         "level": 2,
         "title": "7. 最佳實務"
-      }
-    ],
-    "7. 會話類型擴展": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 158,
-        "level": 2,
-        "title": "7. 會話類型擴展"
       }
     ],
     "7.1 介面卡開發者": [
@@ -1230,45 +1238,7 @@
         "title": "8. 常見問題"
       }
     ],
-    "8. 模組開發者指南": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 194,
-        "level": 2,
-        "title": "8. 模組開發者指南"
-      }
-    ],
-    "8.1 存取擴展欄位": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 196,
-        "level": 3,
-        "title": "8.1 存取擴展欄位"
-      }
-    ],
-    "8.2 處理擴展訊息段": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 225,
-        "level": 3,
-        "title": "8.2 處理擴展訊息段"
-      }
-    ],
-    "8.3 最佳實踐": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 246,
-        "level": 3,
-        "title": "8.3 最佳實踐"
-      }
-    ],
     "9. 相關文件": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 264,
-        "level": 2,
-        "title": "9. 相關文件"
-      },
       {
         "document": "standards/session-types.md",
         "line": 277,
@@ -1420,6 +1390,22 @@
         "line": 116,
         "level": 3,
         "title": "BaseModule 基礎類別"
+      }
+    ],
+    "Bot 狀態值": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 368,
+        "level": 3,
+        "title": "Bot 狀態值"
+      }
+    ],
+    "Bot 狀態管理": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 204,
+        "level": 2,
+        "title": "Bot 狀態管理"
       }
     ],
     "Bug 追蹤器": [
@@ -2040,6 +2026,22 @@
         "title": "channel"
       }
     ],
+    "connect — 連線上線": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 232,
+        "level": 4,
+        "title": "connect — 連線上線"
+      }
+    ],
+    "disconnect — 斷開連線": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 272,
+        "level": 4,
+        "title": "disconnect — 斷開連線"
+      }
+    ],
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2064,6 +2066,14 @@
         "title": "guild"
       }
     ],
+    "heartbeat — 心跳": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 254,
+        "level": 4,
+        "title": "heartbeat — 心跳"
+      }
+    ],
     "install 參數": [
       {
         "document": "user-guide/cli-reference.md",
@@ -2078,6 +2088,22 @@
         "line": 54,
         "level": 3,
         "title": "list 參數"
+      }
+    ],
+    "meta 事件格式": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 230,
+        "level": 3,
+        "title": "meta 事件格式"
+      }
+    ],
+    "meta 事件類型": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 208,
+        "level": 3,
+        "title": "meta 事件類型"
       }
     ],
     "on_load 方法": [
@@ -2126,6 +2152,14 @@
         "line": 61,
         "level": 3,
         "title": "run 參數"
+      }
+    ],
+    "self 欄位擴展": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 218,
+        "level": 3,
+        "title": "self 欄位擴展"
       }
     ],
     "thread": [
@@ -2620,6 +2654,14 @@
         "line": 161,
         "level": 2,
         "title": "介面卡基類"
+      }
+    ],
+    "介面卡接入範例": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 294,
+        "level": 3,
+        "title": "介面卡接入範例"
       }
     ],
     "介面卡管理": [
@@ -4820,6 +4862,14 @@
         "title": "日誌配置"
       }
     ],
+    "普通事件的自動發現": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 290,
+        "level": 3,
+        "title": "普通事件的自動發現"
+      }
+    ],
     "更新要求": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -4886,6 +4936,14 @@
         "line": 76,
         "level": 3,
         "title": "查看可用模組"
+      }
+    ],
+    "查詢 Bot 狀態": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 334,
+        "level": 3,
+        "title": "查詢 Bot 狀態"
       }
     ],
     "查詢已註冊方法": [
@@ -5482,6 +5540,14 @@
         "title": "生命週期"
       }
     ],
+    "生命週期事件": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 376,
+        "level": 3,
+        "title": "生命週期事件"
+      }
+    ],
     "生命週期事件監聽": [
       {
         "document": "advanced/lifecycle.md",
@@ -5637,7 +5703,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 204,
+        "line": 391,
         "level": 2,
         "title": "相關文件"
       },
