@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 820,
+  "total_keywords": 832,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1345,7 +1345,7 @@
     "7. 会话类型扩展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 282,
+        "line": 284,
         "level": 2,
         "title": "7. 会话类型扩展"
       }
@@ -1417,7 +1417,7 @@
     "8. 模块开发者指南": [
       {
         "document": "standards/event-conversion.md",
-        "line": 318,
+        "line": 320,
         "level": 2,
         "title": "8. 模块开发者指南"
       }
@@ -1425,7 +1425,7 @@
     "8.1 访问扩展字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 320,
+        "line": 322,
         "level": 3,
         "title": "8.1 访问扩展字段"
       }
@@ -1433,7 +1433,7 @@
     "8.2 处理扩展消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 349,
+        "line": 351,
         "level": 3,
         "title": "8.2 处理扩展消息段"
       }
@@ -1441,7 +1441,7 @@
     "8.3 最佳实践": [
       {
         "document": "standards/event-conversion.md",
-        "line": 370,
+        "line": 372,
         "level": 3,
         "title": "8.3 最佳实践"
       }
@@ -1449,7 +1449,7 @@
     "9. 相关文档": [
       {
         "document": "standards/event-conversion.md",
-        "line": 388,
+        "line": 390,
         "level": 2,
         "title": "9. 相关文档"
       },
@@ -1628,6 +1628,22 @@
         "line": 116,
         "level": 3,
         "title": "BaseModule 基类"
+      }
+    ],
+    "Bot 状态值": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 368,
+        "level": 3,
+        "title": "Bot 状态值"
+      }
+    ],
+    "Bot 状态管理": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 204,
+        "level": 2,
+        "title": "Bot 状态管理"
       }
     ],
     "Bug 追踪器": [
@@ -2314,6 +2330,22 @@
         "title": "channel"
       }
     ],
+    "connect — 连接上线": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 232,
+        "level": 4,
+        "title": "connect — 连接上线"
+      }
+    ],
+    "disconnect — 断开连接": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 272,
+        "level": 4,
+        "title": "disconnect — 断开连接"
+      }
+    ],
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2338,6 +2370,14 @@
         "title": "guild"
       }
     ],
+    "heartbeat — 心跳": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 254,
+        "level": 4,
+        "title": "heartbeat — 心跳"
+      }
+    ],
     "install 参数": [
       {
         "document": "user-guide/cli-reference.md",
@@ -2352,6 +2392,22 @@
         "line": 54,
         "level": 3,
         "title": "list 参数"
+      }
+    ],
+    "meta 事件格式": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 230,
+        "level": 3,
+        "title": "meta 事件格式"
+      }
+    ],
+    "meta 事件类型": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 208,
+        "level": 3,
+        "title": "meta 事件类型"
       }
     ],
     "on_load 方法": [
@@ -2398,6 +2454,14 @@
         "line": 61,
         "level": 3,
         "title": "run 参数"
+      }
+    ],
+    "self 字段扩展": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 218,
+        "level": 3,
+        "title": "self 字段扩展"
       }
     ],
     "thread": [
@@ -5156,6 +5220,14 @@
         "title": "旧配置兼容"
       }
     ],
+    "普通事件的自动发现": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 290,
+        "level": 3,
+        "title": "普通事件的自动发现"
+      }
+    ],
     "普通运行模式": [
       {
         "document": "user-guide/README.md",
@@ -5274,6 +5346,14 @@
         "line": 76,
         "level": 3,
         "title": "查看可用模块"
+      }
+    ],
+    "查询 Bot 状态": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 334,
+        "level": 3,
+        "title": "查询 Bot 状态"
       }
     ],
     "查询已注册方法": [
@@ -6070,6 +6150,14 @@
         "title": "生命周期"
       }
     ],
+    "生命周期事件": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 376,
+        "level": 3,
+        "title": "生命周期事件"
+      }
+    ],
     "生命周期事件监听": [
       {
         "document": "advanced/lifecycle.md",
@@ -6191,7 +6279,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 204,
+        "line": 391,
         "level": 2,
         "title": "相关文档"
       },
@@ -7020,6 +7108,14 @@
         "line": 1,
         "level": 1,
         "title": "适配器开发最佳实践"
+      }
+    ],
+    "适配器接入示例": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 294,
+        "level": 3,
+        "title": "适配器接入示例"
       }
     ],
     "适配器架构": [
