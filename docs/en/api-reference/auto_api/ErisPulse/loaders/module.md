@@ -86,6 +86,62 @@ ErisPulse 模块加载器
 ---
 
 
+##### `_extract_strategy_value(strategy: Any, key: str, default: Any)`
+
+从策略对象或字典中提取值
+
+:param strategy: 策略对象（dict 或 ModuleLoadStrategy）
+:param key: 键名
+:param default: 默认值
+:return: 提取到的值或默认值
+
+> **内部方法** 
+内部方法，统一处理 dict 和 ModuleLoadStrategy 两种策略类型
+
+---
+
+
+##### `_get_global_lazy_loading()`
+
+获取全局懒加载配置
+
+:return: 是否启用懒加载（默认 True）
+
+> **内部方法** 
+内部方法，用于获取全局懒加载配置
+
+---
+
+
+##### `_resolve_strategy(module_class: Type)`
+
+按优先级从模块类解析加载策略
+
+优先级：should_eager_load()（旧版兼容） → get_load_strategy()
+
+:param module_class: 模块类
+:return: 策略对象或 None
+
+> **内部方法** 
+内部方法，用于解析模块的加载策略
+
+---
+
+
+##### `_apply_global_lazy_loading(strategy: Any, lazy_load: bool)`
+
+应用全局懒加载配置到策略
+
+:param strategy: 原始策略
+:param lazy_load: 懒加载值
+:return: 修改后的策略
+
+> **内部方法** 
+内部方法，用于应用全局配置覆盖
+
+---
+
+
 ##### `_get_load_strategy(module_class: Type)`
 
 获取模块加载策略
@@ -103,20 +159,6 @@ ErisPulse 模块加载器
 
 > **内部方法** 
 内部方法，用于获取模块的加载策略
-
----
-
-
-##### `_strategy_with_lazy_load(strategy: Any, lazy_load: bool)`
-
-创建修改 lazy_load 的新策略副本
-
-:param strategy: 原始策略
-:param lazy_load: 懒加载值
-:return: 新策略
-
-> **内部方法** 
-内部方法，用于创建修改后的策略副本
 
 ---
 
