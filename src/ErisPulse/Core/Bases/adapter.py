@@ -77,27 +77,23 @@ class SendDSL:
         # 抛出 AttributeError，这样 hasattr() 能正常工作
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
     
+    def _unimplemented_modifier(self, method_name: str, **kwargs) -> 'SendDSL':
+        """处理未实现的修饰方法，记录警告并返回自身以保持链式调用"""
+        from ..logger import logger
+        logger.warning(
+            f"平台 {self._adapter.__class__.__name__} 未实现 {method_name} 方法，该修饰方法将被忽略。"
+            f"参数: {kwargs}"
+        )
+        return self
+
     def At(self, **kwargs):
-        from ..logger import logger
-        logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 At 方法，该修饰方法将被忽略。"
-            f"参数: {kwargs}"
-        )
-        return self
+        return self._unimplemented_modifier("At", **kwargs)
+
     def Reply(self, **kwargs):
-        from ..logger import logger
-        logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 Reply 方法，该修饰方法将被忽略。"
-            f"参数: {kwargs}"
-        )
-        return self
+        return self._unimplemented_modifier("Reply", **kwargs)
+
     def AtAll(self, **kwargs):
-        from ..logger import logger
-        logger.warning(
-            f"平台 {self._adapter.__class__.__name__} 未实现 AtAll 方法，该修饰方法将被忽略。"
-            f"参数: {kwargs}"
-        )
-        return self
+        return self._unimplemented_modifier("AtAll", **kwargs)
     def Raw_ob12(self, message, **kwargs):
         """
         发送 OneBot12 格式消息段（必须由适配器子类重写）
@@ -221,25 +217,24 @@ class BaseAdapter:
             :example:
             >>> await adapter.Send.To("123").Example("Hello")
             """
-
-            text = {
-                    "status": "ok",
-                    "retcode": 0,
-                    "data": {
-                        "message_id": "1234567890",
-                        "time": 1755801512
-                    },
+            mock_response = {
+                "status": "ok",
+                "retcode": 0,
+                "data": {
                     "message_id": "1234567890",
-                    "message": "",
-                    "echo": None,
-                    "example_raw": {
-                        "result": "success",
-                    }
+                    "time": 1755801512
+                },
+                "message_id": "1234567890",
+                "message": "",
+                "echo": None,
+                "example_raw": {
+                    "result": "success",
                 }
+            }
             async def _send_example():
                 from ..logger import logger
                 logger.info(f"发送示例消息: {text}")
-                return text
+                return mock_response
             return asyncio.create_task(_send_example())
 
         def Raw_ob12(self, message, **kwargs: Any) -> Awaitable[Any]:
