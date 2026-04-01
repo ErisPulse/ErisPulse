@@ -201,6 +201,193 @@ class MyAdapter(BaseAdapter):
             )
 ```
 
+## Bot 狀態管理
+
+介面卡透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連線狀態。系統自動從中提取 Bot 資訊進行狀態追蹤。
+
+### meta 事件類型
+
+介面卡應發送以下三種 `meta` 事件：
+
+| `type` | `detail_type` | 說明 | 觸發時機 |
+|--------|--------------|------|---------|
+| `meta` | `connect` | Bot 連線上線 | 介面卡與平台建立連線成功後 |
+| `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
+| `meta` | `disconnect` | Bot 斷開連線 | 檢測到連線斷開時 |
+
+### self 欄位擴展
+
+ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下可選欄位：
+
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| `self.platform` | string | 平台名稱（OB12 標準） |
+| `self.user_id` | string | Bot 使用者 ID（OB12 標準） |
+| `self.user_name` | string | Bot 暱稱（ErisPulse 擴展） |
+| `self.avatar` | string | Bot 頭像 URL（ErisPulse 擴展） |
+| `self.account_id` | string | 多帳戶標識（ErisPulse 擴展） |
+
+### meta 事件格式
+
+#### connect — 連線上線
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345678,
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456",
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg"
+    },
+    "telegram_raw": {...},
+    "telegram_raw_type": "bot_connected"
+})
+```
+
+系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命週期事件。
+
+#### heartbeat — 心跳
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345708,
+    "type": "meta",
+    "detail_type": "heartbeat",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+系統處理：更新 `last_active` 時間（心跳中也支援更新元資訊）。
+
+#### disconnect — 斷開連線
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345738,
+    "type": "meta",
+    "detail_type": "disconnect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
+
+### 普通事件的自動發現
+
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使介面卡不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
+
+### 介面卡接入範例
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 與平台建立連線...
+        connection = await self._connect()
+        
+        # 連線成功，發送 connect 事件
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id,
+                "user_name": self.bot_name,
+                "avatar": self.bot_avatar
+            },
+            "myplatform_raw": raw_data,
+            "myplatform_raw_type": "connected"
+        })
+    
+    async def on_disconnect(self):
+        # 斷開連線，發送 disconnect 事件
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id
+            }
+        })
+```
+
+### 查詢 Bot 狀態
+
+```python
+# 取得所有介面卡與 Bot 的完整狀態（WebUI 友善）
+summary = sdk.adapter.get_status_summary()
+# {
+#     "adapters": {
+#         "telegram": {
+#             "status": "started",
+#             "bots": {
+#                 "123456": {
+#                     "status": "online",
+#                     "last_active": 1712345678.0,
+#                     "info": {"nickname": "MyBot"}
+#                 }
+#             }
+#         }
+#     }
+# }
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# 取得單個 Bot 詳細資訊
+info = sdk.adapter.get_bot_info("telegram", "123456")
+
+# 檢查 Bot 是否線上
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    print("Bot 線上")
+```
+
+### Bot 狀態值
+
+| 狀態 | 說明 |
+|------|------|
+| `online` | 線上（持續收到事件或介面卡主動標記） |
+| `offline` | 離線（介面卡主動標記或系統關閉時自動設定） |
+| `unknown` | 未知（僅註冊但未確認狀態） |
+
+### 生命週期事件
+
+| 事件名 | 觸發時機 | 資料 |
+|--------|---------|------|
+| `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
+
+```python
+# 監聽 Bot 上線事件
+@sdk.lifecycle.on("adapter.bot.online")
+def on_bot_online(event):
+    print(f"Bot 上線: {event['data']['platform']}/{event['data']['bot_id']}")
+```
+
+> 系統關閉時（`shutdown`），所有 Bot 會自動被標記為 `offline`。
+
 ## 相關文件
 
 - [核心模組 API](core-modules.md) - 核心模組 API

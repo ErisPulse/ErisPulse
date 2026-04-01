@@ -62,6 +62,61 @@
   ```
 
 ---
+## [2.4.0-dev.1] - 2026/04/01
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `adapter` 模块新增 Bot 状态追踪系统：
+    - 新增 `_bots` 内部存储，按平台和 Bot ID 维护状态信息（在线/离线、活跃时间、元信息）
+    - `emit()` 方法自动处理 OB12 事件中的 `self` 字段，实现 Bot 自动发现与状态更新
+    - 支持处理 `meta` 事件的三种类型：
+      - `connect`：自动注册 Bot 并触发 `adapter.bot.online` 生命周期事件
+      - `disconnect`：标记 Bot 离线并触发 `adapter.bot.offline` 生命周期事件
+      - `heartbeat`：更新 Bot 活跃时间和元信息
+    - 普通事件（message/notice/request）中的 `self` 字段也会自动发现并注册 Bot
+    - 支持从 `self` 字段提取扩展元信息（`user_name`、`nickname`、`avatar`、`account_id`）
+    - 新增 `get_bot_info(platform, bot_id)` 方法，获取 Bot 详细信息
+    - 新增 `list_bots(platform=None)` 方法，列出指定平台或所有平台的 Bot
+    - 新增 `is_bot_online(platform, bot_id)` 方法，检查 Bot 是否在线
+    - 新增 `get_status_summary()` 方法，获取适配器与 Bot 的完整状态摘要（便于 WebUI 展示）
+    - `shutdown()` 时自动将所有已注册 Bot 标记为离线
+    - `clear()` 时清理所有 Bot 状态
+
+### 重构
+- @wsu2059q
+  - `logger` 模块提取 `_log` 内部方法：
+    - `Logger` 和 `LoggerChild` 各新增 `_log(level_name, level_const, msg)` 方法，统一日志记录流程
+    - `debug`/`info`/`warning`/`error`/`critical` 五个公开方法简化为单行委托调用
+  - `storage` 模块提取公共逻辑方法：
+    - 新增 `_is_ready()` 方法替代 8 处重复的初始化守卫检查
+    - 新增 `_auto_commit(conn)` 方法替代 6 处重复的事务提交检查
+  - `SendDSL` 提取修饰器未实现方法：
+    - 新增 `_unimplemented_modifier(method_name, **kwargs)` 方法
+    - `At`/`Reply`/`AtAll` 三个方法简化为委托调用
+  - `module` 加载器简化策略获取逻辑：
+    - 新增 `_extract_strategy_value()` 统一处理 dict/ModuleLoadStrategy 两种类型
+    - 新增 `_get_global_lazy_loading()`、`_resolve_strategy()`、`_apply_global_lazy_loading()` 方法
+    - `_get_load_strategy` 由嵌套 try/except 简化为顺序调用
+
+### 修复
+- @wsu2059q
+  - 修复 `BaseAdapter.Send.Example` 方法中参数 `text: str` 被硬编码字典覆盖的类型矛盾问题（改用 `mock_response` 变量名）
+
+### 测试
+- @wsu2059q
+  - 新增 Bot 状态追踪单元测试（共 23 个用例）：
+    - meta connect 事件：注册 Bot、触发生命周期事件、首次/重复注册
+    - meta heartbeat 事件：更新活跃时间、更新元信息、未知 Bot 不崩溃
+    - meta disconnect 事件：标记离线、未知 Bot 不崩溃
+    - 普通事件自动发现：message/notice 事件发现 Bot、无 self 不崩溃
+    - self 字段元信息提取与合并
+    - 查询方法：get_bot_info、list_bots、is_bot_online、get_status_summary
+    - 生命周期：shutdown 标记离线、clear 清理状态
+    - 多平台多 Bot 场景
+
+---
+
 ## [2.4.0-dev.0] - 2026/03/30
 > 开发版本
 
