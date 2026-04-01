@@ -148,8 +148,8 @@ class ModuleLoader(BaseLoader):
             
             # 获取模块加载策略
             strategy = self._get_load_strategy(loaded_obj)
-            lazy_load = strategy.get('lazy_load', True) if isinstance(strategy, dict) else strategy.lazy_load if 'lazy_load' in strategy else True
-            priority = strategy.get('priority', 0) if isinstance(strategy, dict) else strategy.priority if 'priority' in strategy else 0
+            lazy_load = self._extract_strategy_value(strategy, 'lazy_load', True)
+            priority = self._extract_strategy_value(strategy, 'priority', 0)
             
             module_info = {
                 "meta": {
@@ -178,6 +178,94 @@ class ModuleLoader(BaseLoader):
             
         return objs, enabled_list, disabled_list, is_new
     
+    def _extract_strategy_value(self, strategy: Any, key: str, default: Any) -> Any:
+        """
+        从策略对象或字典中提取值
+
+        :param strategy: 策略对象（dict 或 ModuleLoadStrategy）
+        :param key: 键名
+        :param default: 默认值
+        :return: 提取到的值或默认值
+
+        {!--< internal-use >!--}
+        内部方法，统一处理 dict 和 ModuleLoadStrategy 两种策略类型
+        {!--< /internal-use >!--}
+        """
+        if isinstance(strategy, dict):
+            return strategy.get(key, default)
+        if hasattr(strategy, '_data'):
+            return strategy._data.get(key, default)
+        return default
+
+    def _get_global_lazy_loading(self) -> bool:
+        """
+        获取全局懒加载配置
+
+        :return: 是否启用懒加载（默认 True）
+
+        {!--< internal-use >!--}
+        内部方法，用于获取全局懒加载配置
+        {!--< /internal-use >!--}
+        """
+        try:
+            from ..runtime import get_framework_config
+            framework_config = get_framework_config()
+            return framework_config.get("enable_lazy_loading", True)
+        except Exception as e:
+            logger.debug(f"获取框架配置失败: {e}，使用默认值 True")
+            return True
+
+    def _resolve_strategy(self, module_class: Type) -> Any:
+        """
+        按优先级从模块类解析加载策略
+
+        优先级：should_eager_load()（旧版兼容） → get_load_strategy()
+
+        :param module_class: 模块类
+        :return: 策略对象或 None
+
+        {!--< internal-use >!--}
+        内部方法，用于解析模块的加载策略
+        {!--< /internal-use >!--}
+        """
+        # 优先检查旧方法 should_eager_load()
+        if hasattr(module_class, "should_eager_load"):
+            try:
+                eager_load = module_class.should_eager_load()
+                return {"lazy_load": not eager_load, "priority": 0}
+            except Exception as e:
+                logger.warning(f"调用模块 {module_class.__name__} 的 should_eager_load() 失败: {e}")
+
+        # 检查新方法 get_load_strategy()
+        if hasattr(module_class, "get_load_strategy"):
+            try:
+                return module_class.get_load_strategy()
+            except Exception as e:
+                logger.warning(f"调用模块 {module_class.__name__} 的 get_load_strategy() 失败: {e}")
+
+        return None
+
+    def _apply_global_lazy_loading(self, strategy: Any, lazy_load: bool) -> Any:
+        """
+        应用全局懒加载配置到策略
+
+        :param strategy: 原始策略
+        :param lazy_load: 懒加载值
+        :return: 修改后的策略
+
+        {!--< internal-use >!--}
+        内部方法，用于应用全局配置覆盖
+        {!--< /internal-use >!--}
+        """
+        if isinstance(strategy, dict):
+            return dict(strategy, lazy_load=lazy_load)
+        elif hasattr(strategy, "_data"):
+            from .strategy import ModuleLoadStrategy
+            data = dict(strategy._data)
+            data['lazy_load'] = lazy_load
+            return ModuleLoadStrategy(**data)
+        return strategy
+
     def _get_load_strategy(self, module_class: Type) -> Any:
         """
         获取模块加载策略
@@ -197,59 +285,15 @@ class ModuleLoader(BaseLoader):
         内部方法，用于获取模块的加载策略
         {!--< /internal-use >!--}
         """
-        # 获取全局懒加载配置
-        global_lazy_loading = True
-        try:
-            from ..runtime import get_framework_config
-            framework_config = get_framework_config()
-            global_lazy_loading = framework_config.get("enable_lazy_loading", True)
-        except Exception as e:
-            logger.debug(f"获取框架配置失败: {e}，使用默认值 True")
-
-        strategy = None
-
-        # 优先检查旧方法 should_eager_load()
-        if hasattr(module_class, "should_eager_load"):
-            try:
-                eager_load = module_class.should_eager_load()
-                strategy = {"lazy_load": not eager_load, "priority": 0}
-            except Exception as e:
-                logger.warning(f"调用模块 {module_class.__name__} 的 should_eager_load() 失败: {e}")
-
-        # 如果未使用旧方法，检查新方法 get_load_strategy()
-        if strategy is None:
-            try:
-                strategy = module_class.get_load_strategy()
-            except Exception as e:
-                logger.warning(f"调用模块 {module_class.__name__} 的 get_load_strategy() 失败: {e}")
+        global_lazy_loading = self._get_global_lazy_loading()
+        strategy = self._resolve_strategy(module_class)
 
         # 全局配置覆盖策略中的 lazy_load 设置
         if strategy is not None and not global_lazy_loading:
-            if isinstance(strategy, dict):
-                strategy = dict(strategy, lazy_load=False)
-            elif hasattr(strategy, "_data"):
-                strategy = self._strategy_with_lazy_load(strategy, False)
+            strategy = self._apply_global_lazy_loading(strategy, False)
 
-        # 返回策略，如果没有则返回默认
         return strategy if strategy is not None else {"lazy_load": global_lazy_loading, "priority": 0}
     
-    def _strategy_with_lazy_load(self, strategy: Any, lazy_load: bool) -> Any:
-        """
-        创建修改 lazy_load 的新策略副本
-        
-        :param strategy: 原始策略
-        :param lazy_load: 懒加载值
-        :return: 新策略
-        
-        {!--< internal-use >!--}
-        内部方法，用于创建修改后的策略副本
-        {!--< /internal-use >!--}
-        """
-        # 由于 ModuleLoadStrategy 使用 _data 存储，我们需要创建新实例
-        from .strategy import ModuleLoadStrategy
-        data = dict(strategy._data)
-        data['lazy_load'] = lazy_load
-        return ModuleLoadStrategy(**data)
     
     async def register_to_manager(
         self,

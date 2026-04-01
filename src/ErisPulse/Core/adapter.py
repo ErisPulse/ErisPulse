@@ -7,6 +7,7 @@ ErisPulse 适配器系统
 import functools
 import asyncio
 import inspect
+import time
 from typing import (
     Callable, Any, Dict, List, Type, Optional, Set, Union
 )
@@ -43,6 +44,9 @@ class AdapterManager(ManagerBase):
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
         self._sdk = None
+        
+        # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
+        self._bots: Dict[str, Dict[str, Dict]] = {}
         
     def set_sdk_ref(self, sdk) -> bool:
         """
@@ -276,6 +280,11 @@ class AdapterManager(ManagerBase):
         from .router import router
         await router.stop()
 
+        # 将所有Bot标记为离线
+        for platform_name, bots in self._bots.items():
+            for bot_id, bot_info in bots.items():
+                bot_info["status"] = "offline"
+
         # 清空已启动实例集合
         self._started_instances.clear()
         
@@ -308,6 +317,9 @@ class AdapterManager(ManagerBase):
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
+        
+        # 清除Bot状态
+        self._bots.clear()
         
         logger.debug("适配器管理器已完全清理")
 
@@ -529,6 +541,36 @@ class AdapterManager(ManagerBase):
         platform_raw = data.get(f"{platform}_raw", {})
         raw_event_type = data.get(f"{platform}_raw_type")
 
+        # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
+        # 同时也处理普通事件中的 self 字段（自动发现Bot）
+        self_info = data.get("self")
+        if isinstance(self_info, dict) and "user_id" in self_info:
+            if event_type == "meta":
+                detail_type = data.get("detail_type", "")
+                if detail_type == "connect":
+                    # Bot 连接上线
+                    is_new_bot = self._auto_register_bot(platform, self_info)
+                    bot_id = str(self_info["user_id"])
+                    await lifecycle.submit_event(
+                        "adapter.bot.online",
+                        msg=f"Bot {platform}/{bot_id} 上线",
+                        data={
+                            "platform": platform,
+                            "bot_id": bot_id,
+                            "info": self._bots.get(platform, {}).get(bot_id, {}).get("info", {}),
+                            "status": "online"
+                        }
+                    )
+                elif detail_type == "disconnect":
+                    # Bot 断开连接
+                    self._update_bot_status(platform, str(self_info["user_id"]), "offline")
+                elif detail_type == "heartbeat":
+                    # 心跳，更新活跃时间
+                    self._update_bot_heartbeat(platform, self_info)
+            else:
+                # 普通事件：自动发现Bot并更新活跃时间
+                self._auto_register_bot(platform, self_info)
+
         # 先执行OneBot12中间件
         processed_data = data
         for middleware in self._onebot_middlewares:
@@ -568,6 +610,202 @@ class AdapterManager(ManagerBase):
                 # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
                 if handler_platform is None or handler_platform == platform:
                     await handler_wrapper['func'](platform_raw)
+
+    # ==================== Bot状态管理 ====================
+
+    def _auto_register_bot(self, platform: str, self_info: dict) -> bool:
+        """
+        {!--< internal-use >!--}
+        自动注册Bot（从OB12事件self字段提取），提取所有扩展字段作为Bot元信息
+
+        self字段标准扩展：
+        - self.user_id (必须) - Bot用户ID
+        - self.user_name (可选) - Bot昵称
+        - self.avatar (可选) - Bot头像URL
+        - self.account_id (可选) - 多账户标识
+
+        :param platform: 平台名称
+        :param self_info: 事件中的self字段内容
+        :return: 是否为新注册的Bot
+        """
+        bot_id = str(self_info.get("user_id", ""))
+        if not bot_id:
+            return False
+
+        if platform not in self._bots:
+            self._bots[platform] = {}
+
+        is_new = bot_id not in self._bots[platform]
+
+        # 从self字段提取元信息（ErisPulse扩展的标准字段）
+        bot_meta = {}
+        if "user_name" in self_info:
+            bot_meta["user_name"] = self_info["user_name"]
+        if "nickname" in self_info:
+            bot_meta["nickname"] = self_info["nickname"]
+        if "avatar" in self_info:
+            bot_meta["avatar"] = self_info["avatar"]
+        if "account_id" in self_info:
+            bot_meta["account_id"] = self_info["account_id"]
+
+        existing = self._bots[platform].get(bot_id, {})
+
+        # 合并已有元信息（新事件可更新元信息）
+        existing_meta = existing.get("info", {})
+        existing_meta.update(bot_meta)
+
+        self._bots[platform][bot_id] = {
+            "status": "online",
+            "last_active": time.time(),
+            "info": existing_meta
+        }
+
+        if is_new:
+            logger.debug(f"自动发现Bot: {platform}/{bot_id}")
+
+        return is_new
+
+    def _update_bot_status(self, platform: str, bot_id: str, status: str) -> None:
+        """
+        {!--< internal-use >!--}
+        更新Bot状态
+
+        :param platform: 平台名称
+        :param bot_id: Bot用户ID
+        :param status: 状态值（online/offline）
+        """
+        if platform not in self._bots:
+            self._bots[platform] = {}
+
+        if bot_id not in self._bots[platform]:
+            self._bots[platform][bot_id] = {"status": status, "last_active": time.time(), "info": {}}
+        else:
+            old_status = self._bots[platform][bot_id].get("status")
+            self._bots[platform][bot_id]["status"] = status
+            if old_status != status:
+                logger.debug(f"Bot状态变更: {platform}/{bot_id} {old_status} -> {status}")
+
+        if status == "offline":
+            asyncio.ensure_future(lifecycle.submit_event(
+                "adapter.bot.offline",
+                msg=f"Bot {platform}/{bot_id} 离线",
+                data={"platform": platform, "bot_id": bot_id, "status": "offline"}
+            ))
+
+    def _update_bot_heartbeat(self, platform: str, self_info: dict) -> None:
+        """
+        {!--< internal-use >!--}
+        更新Bot心跳（更新活跃时间和元信息）
+
+        :param platform: 平台名称
+        :param self_info: 事件中的self字段内容
+        """
+        bot_id = str(self_info.get("user_id", ""))
+        if not bot_id:
+            return
+
+        if platform not in self._bots:
+            self._bots[platform] = {}
+
+        if bot_id in self._bots[platform]:
+            self._bots[platform][bot_id]["last_active"] = time.time()
+            # 心跳也可更新元信息
+            bot_meta = {}
+            for key in ("user_name", "nickname", "avatar", "account_id"):
+                if key in self_info:
+                    bot_meta[key] = self_info[key]
+            if bot_meta:
+                self._bots[platform][bot_id].setdefault("info", {}).update(bot_meta)
+
+    def get_bot_info(self, platform: str, bot_id: str) -> Optional[Dict]:
+        """
+        获取Bot详细信息
+
+        :param platform: 平台名称
+        :param bot_id: Bot用户ID
+        :return: Bot信息字典，包含status/last_active/info，不存在则返回None
+
+        :example:
+        >>> info = adapter.get_bot_info("telegram", "123456")
+        >>> # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+        """
+        return self._bots.get(platform, {}).get(bot_id)
+
+    def list_bots(self, platform: Optional[str] = None) -> Dict[str, Dict[str, Dict]]:
+        """
+        列出Bot信息
+
+        :param platform: 平台名称，None表示列出所有平台的Bot
+        :return: Bot信息字典 {platform: {bot_id: {status, last_active, info}}}
+
+        :example:
+        >>> # 列出所有Bot
+        >>> all_bots = adapter.list_bots()
+        >>> # 列出指定平台的Bot
+        >>> tg_bots = adapter.list_bots("telegram")
+        """
+        if platform is not None:
+            return {platform: dict(self._bots.get(platform, {}))}
+        return {p: dict(bots) for p, bots in self._bots.items()}
+
+    def is_bot_online(self, platform: str, bot_id: str) -> bool:
+        """
+        检查Bot是否在线
+
+        :param platform: 平台名称
+        :param bot_id: Bot用户ID
+        :return: Bot是否在线
+
+        :example:
+        >>> if adapter.is_bot_online("telegram", "123456"):
+        ...     print("Bot在线")
+        """
+        bot_info = self._bots.get(platform, {}).get(bot_id)
+        if bot_info is None:
+            return False
+        return bot_info.get("status") == "online"
+
+    def get_status_summary(self) -> Dict[str, Any]:
+        """
+        获取适配器与Bot的完整状态摘要
+
+        返回所有适配器的运行状态及各适配器下的Bot状态，便于WebUI展示。
+
+        :return: 状态摘要字典
+
+        :example:
+        >>> summary = adapter.get_status_summary()
+        >>> # {
+        >>> #     "adapters": {
+        >>> #         "telegram": {
+        >>> #             "status": "started",
+        >>> #             "bots": {
+        >>> #                 "123456": {
+        >>> #                     "status": "online",
+        >>> #                     "last_active": 1712345678.0,
+        >>> #                     "info": {"nickname": "MyBot"}
+        >>> #                 }
+        >>> #             }
+        >>> #         }
+        >>> #     }
+        >>> # }
+        """
+        adapters_summary = {}
+        for platform_name in self._adapters:
+            adapter_instance = self._adapters[platform_name]
+            if adapter_instance in self._started_instances:
+                adapter_status = "started"
+            else:
+                adapter_status = "stopped"
+
+            adapters_summary[platform_name] = {
+                "status": adapter_status,
+                "bots": dict(self._bots.get(platform_name, {}))
+            }
+
+        return {
+            "adapters": adapters_summary
+        }
 
     # ==================== 工具方法 ====================
 
