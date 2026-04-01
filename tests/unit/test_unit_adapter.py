@@ -828,3 +828,440 @@ class TestSendDSLRawMethods:
 
         assert len(calls) == 2
         assert calls[0] == calls[1]
+
+
+# ==================== Bot 状态追踪测试 ====================
+
+class TestBotStatusTracking:
+    """Bot 状态追踪测试类"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        manager._bots.clear()
+        return manager
+
+    @pytest.fixture
+    def test_adapter_class(self):
+        """创建测试适配器类"""
+        class TestAdapter(BaseAdapter):
+            def __init__(self, sdk=None):
+                super().__init__()
+                self.sdk = sdk
+            async def start(self):
+                pass
+            async def shutdown(self):
+                pass
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "test_id"}
+        return TestAdapter
+
+    # ==================== meta connect 事件测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_meta_connect_registers_bot(self, manager):
+        """测试 meta connect 事件注册 Bot"""
+        event = {
+            "id": "1",
+            "time": 1712345678,
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "telegram",
+            "self": {
+                "platform": "telegram",
+                "user_id": "123456",
+                "user_name": "TestBot",
+                "avatar": "https://example.com/avatar.jpg"
+            }
+        }
+
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit(event)
+
+        # 验证 Bot 已注册
+        bot_info = manager.get_bot_info("telegram", "123456")
+        assert bot_info is not None
+        assert bot_info["status"] == "online"
+        assert bot_info["info"]["user_name"] == "TestBot"
+        assert bot_info["info"]["avatar"] == "https://example.com/avatar.jpg"
+
+    @pytest.mark.asyncio
+    async def test_meta_connect_triggers_lifecycle_event(self, manager):
+        """测试 meta connect 触发 adapter.bot.online 生命周期事件"""
+        event = {
+            "id": "1",
+            "time": 1712345678,
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "telegram",
+            "self": {
+                "platform": "telegram",
+                "user_id": "123456"
+            }
+        }
+
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock) as mock_submit:
+            await manager.emit(event)
+            # 验证 adapter.bot.online 事件被提交
+            mock_submit.assert_called_once()
+            call_args = mock_submit.call_args
+            assert call_args[0][0] == "adapter.bot.online"
+            assert call_args[1]["data"]["bot_id"] == "123456"
+            assert call_args[1]["data"]["platform"] == "telegram"
+            assert call_args[1]["data"]["status"] == "online"
+
+    @pytest.mark.asyncio
+    async def test_meta_connect_first_time_vs_repeat(self, manager):
+        """测试首次和重复 meta connect"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            # 第一次 connect
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
+            })
+            # 第二次 connect（应该更新元信息而不是报错）
+            await manager.emit({
+                "id": "2", "time": 2, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1Updated"}
+            })
+
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info["status"] == "online"
+        assert bot_info["info"]["user_name"] == "Bot1Updated"
+
+    # ==================== meta heartbeat 事件测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_meta_heartbeat_updates_active_time(self, manager):
+        """测试 meta heartbeat 更新活跃时间"""
+        import time
+
+        # 先注册 Bot
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1"}
+            })
+
+        old_active = manager.get_bot_info("tg", "bot1")["last_active"]
+        time.sleep(0.05)
+
+        # 发送心跳
+        await manager.emit({
+            "id": "2", "time": 2, "type": "meta",
+            "detail_type": "heartbeat", "platform": "tg",
+            "self": {"platform": "tg", "user_id": "bot1"}
+        })
+
+        new_active = manager.get_bot_info("tg", "bot1")["last_active"]
+        assert new_active > old_active
+
+    @pytest.mark.asyncio
+    async def test_meta_heartbeat_updates_metadata(self, manager):
+        """测试 meta heartbeat 更新元信息"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
+            })
+
+        # 心跳中更新头像
+        await manager.emit({
+            "id": "2", "time": 2, "type": "meta",
+            "detail_type": "heartbeat", "platform": "tg",
+            "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.avatar.jpg"}
+        })
+
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info["info"]["user_name"] == "Bot1"
+        assert bot_info["info"]["avatar"] == "https://new.avatar.jpg"
+
+    @pytest.mark.asyncio
+    async def test_meta_heartbeat_unknown_bot_no_crash(self, manager):
+        """测试 meta heartbeat 对未知 Bot 不崩溃"""
+        await manager.emit({
+            "id": "1", "time": 1, "type": "meta",
+            "detail_type": "heartbeat", "platform": "tg",
+            "self": {"platform": "tg", "user_id": "unknown_bot"}
+        })
+        # 不崩溃即可
+        assert manager.get_bot_info("tg", "unknown_bot") is None
+
+    # ==================== meta disconnect 事件测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_meta_disconnect_marks_offline(self, manager):
+        """测试 meta disconnect 标记 Bot 离线"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            # 先上线
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1"}
+            })
+
+        assert manager.is_bot_online("tg", "bot1") is True
+
+        # 断开连接
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "2", "time": 2, "type": "meta",
+                "detail_type": "disconnect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1"}
+            })
+
+        assert manager.is_bot_online("tg", "bot1") is False
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info["status"] == "offline"
+
+    @pytest.mark.asyncio
+    async def test_meta_disconnect_unknown_bot(self, manager):
+        """测试 meta disconnect 对未知 Bot 不崩溃"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "disconnect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "unknown_bot"}
+            })
+        # 应该被注册但状态为 offline
+        bot_info = manager.get_bot_info("tg", "unknown_bot")
+        assert bot_info is not None
+        assert bot_info["status"] == "offline"
+
+    # ==================== 普通事件自动发现测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_message_event_auto_discovers_bot(self, manager):
+        """测试普通消息事件自动发现 Bot"""
+        await manager.emit({
+            "id": "1", "time": 1, "type": "message",
+            "detail_type": "group", "platform": "tg",
+            "self": {"platform": "tg", "user_id": "bot1", "user_name": "AutoBot"},
+            "message": [{"type": "text", "data": {"text": "hi"}}]
+        })
+
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info is not None
+        assert bot_info["status"] == "online"
+        assert bot_info["info"]["user_name"] == "AutoBot"
+
+    @pytest.mark.asyncio
+    async def test_notice_event_auto_discovers_bot(self, manager):
+        """测试通知事件自动发现 Bot"""
+        await manager.emit({
+            "id": "1", "time": 1, "type": "notice",
+            "detail_type": "friend_add", "platform": "tg",
+            "self": {"platform": "tg", "user_id": "bot1"},
+            "user_id": "user1"
+        })
+
+        assert manager.is_bot_online("tg", "bot1") is True
+
+    @pytest.mark.asyncio
+    async def test_event_without_self_no_crash(self, manager):
+        """测试无 self 字段的事件不崩溃"""
+        await manager.emit({
+            "id": "1", "time": 1, "type": "message",
+            "platform": "tg", "message": []
+        })
+        # 不崩溃即可
+        assert len(manager._bots) == 0
+
+    @pytest.mark.asyncio
+    async def test_event_with_self_no_userid_no_crash(self, manager):
+        """测试 self 字段无 user_id 的事件不崩溃"""
+        await manager.emit({
+            "id": "1", "time": 1, "type": "message",
+            "platform": "tg",
+            "self": {"platform": "tg"}
+        })
+        # 不崩溃即可
+        assert len(manager._bots) == 0
+
+    # ==================== self 字段元信息提取测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_self_field_metadata_extraction(self, manager):
+        """测试 self 字段扩展元信息提取"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {
+                    "platform": "tg",
+                    "user_id": "bot1",
+                    "user_name": "MyBot",
+                    "avatar": "https://avatar.jpg",
+                    "account_id": "acc_001"
+                }
+            })
+
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info["info"]["user_name"] == "MyBot"
+        assert bot_info["info"]["avatar"] == "https://avatar.jpg"
+        assert bot_info["info"]["account_id"] == "acc_001"
+
+    @pytest.mark.asyncio
+    async def test_metadata_merge_on_repeated_events(self, manager):
+        """测试重复事件时元信息合并"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            # 第一次：只有 user_name
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
+            })
+
+            # 第二次：添加 avatar
+            await manager.emit({
+                "id": "2", "time": 2, "type": "message",
+                "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.jpg"},
+                "message": []
+            })
+
+        bot_info = manager.get_bot_info("tg", "bot1")
+        assert bot_info["info"]["user_name"] == "Bot1"
+        assert bot_info["info"]["avatar"] == "https://new.jpg"
+
+    # ==================== 查询方法测试 ====================
+
+    def test_get_bot_info_nonexistent(self, manager):
+        """测试获取不存在的 Bot 信息"""
+        assert manager.get_bot_info("tg", "bot1") is None
+
+    def test_list_bots_all(self, manager):
+        """测试列出所有 Bot"""
+        manager._bots = {
+            "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}},
+            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}}
+        }
+        result = manager.list_bots()
+        assert "tg" in result
+        assert "dc" in result
+        assert "bot1" in result["tg"]
+        assert "bot2" in result["dc"]
+
+    def test_list_bots_by_platform(self, manager):
+        """测试列出指定平台的 Bot"""
+        manager._bots = {
+            "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}},
+            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}}
+        }
+        result = manager.list_bots("tg")
+        assert "tg" in result
+        assert "dc" not in result
+
+    def test_list_bots_empty_platform(self, manager):
+        """测试列出不存在的平台"""
+        result = manager.list_bots("nonexistent")
+        assert result == {"nonexistent": {}}
+
+    def test_is_bot_online(self, manager):
+        """测试检查 Bot 是否在线"""
+        manager._bots = {
+            "tg": {
+                "bot1": {"status": "online", "last_active": 1.0, "info": {}},
+                "bot2": {"status": "offline", "last_active": 2.0, "info": {}}
+            }
+        }
+        assert manager.is_bot_online("tg", "bot1") is True
+        assert manager.is_bot_online("tg", "bot2") is False
+        assert manager.is_bot_online("tg", "bot3") is False
+        assert manager.is_bot_online("dc", "bot1") is False
+
+    def test_get_status_summary(self, manager, test_adapter_class):
+        """测试获取状态摘要"""
+        manager.register("tg", test_adapter_class)
+        manager._bots = {
+            "tg": {
+                "bot1": {"status": "online", "last_active": 1.0, "info": {"user_name": "Bot1"}}
+            }
+        }
+        summary = manager.get_status_summary()
+        assert "adapters" in summary
+        assert "tg" in summary["adapters"]
+        assert summary["adapters"]["tg"]["status"] == "stopped"
+        assert "bot1" in summary["adapters"]["tg"]["bots"]
+        assert summary["adapters"]["tg"]["bots"]["bot1"]["status"] == "online"
+
+    # ==================== shutdown 标记离线测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_shutdown_marks_all_bots_offline(self, manager, test_adapter_class):
+        """测试 shutdown 将所有 Bot 标记为离线"""
+        manager.register("tg", test_adapter_class)
+
+        # 模拟 Bot 上线
+        manager._bots = {
+            "tg": {
+                "bot1": {"status": "online", "last_active": 1.0, "info": {}},
+                "bot2": {"status": "online", "last_active": 2.0, "info": {}}
+            }
+        }
+
+        with patch.object(router, 'stop'):
+            await manager.shutdown()
+
+        # 验证所有 Bot 都离线
+        assert manager.is_bot_online("tg", "bot1") is False
+        assert manager.is_bot_online("tg", "bot2") is False
+
+    # ==================== clear 清理测试 ====================
+
+    def test_clear_clears_bot_state(self, manager):
+        """测试 clear 清理 Bot 状态"""
+        manager._bots = {
+            "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}}
+        }
+        manager.clear()
+        assert len(manager._bots) == 0
+
+    # ==================== 多平台多 Bot 测试 ====================
+
+    @pytest.mark.asyncio
+    async def test_multiple_platforms_multiple_bots(self, manager):
+        """测试多平台多 Bot 场景"""
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            # Telegram Bot 上线
+            await manager.emit({
+                "id": "1", "time": 1, "type": "meta",
+                "detail_type": "connect", "platform": "telegram",
+                "self": {"platform": "telegram", "user_id": "tg_bot1", "user_name": "TGBot"}
+            })
+            # Discord Bot 上线
+            await manager.emit({
+                "id": "2", "time": 2, "type": "meta",
+                "detail_type": "connect", "platform": "discord",
+                "self": {"platform": "discord", "user_id": "dc_bot1", "user_name": "DCBot"}
+            })
+
+        # 验证两个平台的 Bot 都已注册
+        assert manager.is_bot_online("telegram", "tg_bot1") is True
+        assert manager.is_bot_online("discord", "dc_bot1") is True
+
+        all_bots = manager.list_bots()
+        assert "telegram" in all_bots
+        assert "discord" in all_bots
+
+        # Telegram Bot 离线
+        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+            await manager.emit({
+                "id": "3", "time": 3, "type": "meta",
+                "detail_type": "disconnect", "platform": "telegram",
+                "self": {"platform": "telegram", "user_id": "tg_bot1"}
+            })
+
+        assert manager.is_bot_online("telegram", "tg_bot1") is False
+        assert manager.is_bot_online("discord", "dc_bot1") is True
