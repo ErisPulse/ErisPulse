@@ -83,21 +83,21 @@ class SendDSL:
             f"平台 {self._adapter.__class__.__name__} 未实现 At 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
-        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+        return self
     def Reply(self, **kwargs):
         from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 Reply 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
-        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+        return self
     def AtAll(self, **kwargs):
         from ..logger import logger
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 AtAll 方法，该修饰方法将被忽略。"
             f"参数: {kwargs}"
         )
-        return self.__class__(self._adapter, self._target_type, self._target_id, self._account_id)
+        return self
     def Raw_ob12(self, message, **kwargs):
         """
         发送 OneBot12 格式消息段（必须由适配器子类重写）
