@@ -201,6 +201,20 @@ class Logger:
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)
 
+    def _log(self, level_name: str, level_const: int, msg, *args, **kwargs):
+        """
+        内部日志方法，统一处理日志记录流程
+
+        :param level_name: 日志级别名称（对应logging模块的方法名）
+        :param level_const: 日志级别常量
+        :param msg: 日志消息
+        :param args: 额外的格式化参数
+        :param kwargs: 额外的关键字参数
+        """
+        caller_module = self._get_caller()
+        if self._get_effective_level(caller_module) <= level_const:
+            self._save_in_memory(caller_module, msg)
+            getattr(self._logger, level_name)(f"[{caller_module}] {msg}", *args, **kwargs)
 
     def _get_caller(self):
         try:
@@ -262,56 +276,20 @@ class Logger:
         return LoggerChild(self, full_module_name)
 
     def debug(self, msg, *args, **kwargs):
-        """
-        记录 DEBUG 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        caller_module = self._get_caller()
-        if self._get_effective_level(caller_module) <= logging.DEBUG:
-            self._save_in_memory(caller_module, msg)
-            self._logger.debug(f"[{caller_module}] {msg}", *args, **kwargs)
+        """记录 DEBUG 级别日志"""
+        self._log('debug', logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        """
-        记录 INFO 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        caller_module = self._get_caller()
-        if self._get_effective_level(caller_module) <= logging.INFO:
-            self._save_in_memory(caller_module, msg)
-            self._logger.info(f"[{caller_module}] {msg}", *args, **kwargs)
+        """记录 INFO 级别日志"""
+        self._log('info', logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        """
-        记录 WARNING 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        caller_module = self._get_caller()
-        if self._get_effective_level(caller_module) <= logging.WARNING:
-            self._save_in_memory(caller_module, msg)
-            self._logger.warning(f"[{caller_module}] {msg}", *args, **kwargs)
+        """记录 WARNING 级别日志"""
+        self._log('warning', logging.WARNING, msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        """
-        记录 ERROR 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        caller_module = self._get_caller()
-        if self._get_effective_level(caller_module) <= logging.ERROR:
-            self._save_in_memory(caller_module, msg)
-            self._logger.error(f"[{caller_module}] {msg}", *args, **kwargs)
+        """记录 ERROR 级别日志"""
+        self._log('error', logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
@@ -320,15 +298,11 @@ class Logger:
         注意：此方法不会触发程序崩溃，仅记录日志
 
         {!--< tips >!--}
-        1. 这是最高级别的日志，表示严重系统错误
-        2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
-        3. 会在日志文件中添加 CRITICAL 标记便于后续分析
+        1. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+        2. 会在日志文件中添加 CRITICAL 标记便于后续分析
         {!--< /tips >!--}
         """
-        caller_module = self._get_caller()
-        if self._get_effective_level(caller_module) <= logging.CRITICAL:
-            self._save_in_memory(caller_module, msg)
-            self._logger.critical(f"[{caller_module}] {msg}", *args, **kwargs)
+        self._log('critical', logging.CRITICAL, msg, *args, **kwargs)
 
     def print_section_header(self, title: str):
         """
@@ -412,75 +386,41 @@ class LoggerChild:
         self._parent = parent_logger
         self._name = name
 
-    def debug(self, msg, *args, **kwargs):
+    def _log(self, level_name: str, level_const: int, msg, *args, **kwargs):
         """
-        记录 DEBUG 级别日志
+        内部日志方法
 
+        :param level_name: 日志级别名称
+        :param level_const: 日志级别常量
         :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
         """
-        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.DEBUG:
+        if self._parent._get_effective_level(self._name.split(".")[0]) <= level_const:
             self._parent._save_in_memory(self._name, msg)
-            self._parent._logger.debug(f"[{self._name}] {msg}", *args, **kwargs)
+            getattr(self._parent._logger, level_name)(f"[{self._name}] {msg}", *args, **kwargs)
+
+    def debug(self, msg, *args, **kwargs):
+        """记录 DEBUG 级别日志"""
+        self._log('debug', logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        """
-        记录 INFO 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.INFO:
-            self._parent._save_in_memory(self._name, msg)
-            self._parent._logger.info(f"[{self._name}] {msg}", *args, **kwargs)
+        """记录 INFO 级别日志"""
+        self._log('info', logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        """
-        记录 WARNING 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        if (
-            self._parent._get_effective_level(self._name.split(".")[0])
-            <= logging.WARNING
-        ):
-            self._parent._save_in_memory(self._name, msg)
-            self._parent._logger.warning(f"[{self._name}] {msg}", *args, **kwargs)
+        """记录 WARNING 级别日志"""
+        self._log('warning', logging.WARNING, msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        """
-        记录 ERROR 级别日志
-
-        :param msg: 日志消息
-        :param args: 额外的格式化参数
-        :param kwargs: 额外的关键字参数
-        """
-        if self._parent._get_effective_level(self._name.split(".")[0]) <= logging.ERROR:
-            self._parent._save_in_memory(self._name, msg)
-            self._parent._logger.error(f"[{self._name}] {msg}", *args, **kwargs)
+        """记录 ERROR 级别日志"""
+        self._log('error', logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
         记录 CRITICAL 级别日志
         这是最高级别的日志，表示严重的系统错误
         注意：此方法不会触发程序崩溃，仅记录日志
-
-        {!--< tips >!--}
-        1. 这是最高级别的日志，表示严重系统错误
-        2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
-        3. 会在日志文件中添加 CRITICAL 标记便于后续分析
-        {!--< /tips >!--}
         """
-        if (
-            self._parent._get_effective_level(self._name.split(".")[0])
-            <= logging.CRITICAL
-        ):
-            self._parent._save_in_memory(self._name, msg)
-            self._parent._logger.critical(f"[{self._name}] {msg}", *args, **kwargs)
+        self._log('critical', logging.CRITICAL, msg, *args, **kwargs)
 
     def get_child(self, child_name: str):
         """
