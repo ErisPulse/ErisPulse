@@ -68,6 +68,15 @@ class StorageManager:
         self._init_db()
         self._initialized = True
     
+    def _is_ready(self) -> bool:
+        """检查存储管理器是否已初始化完成"""
+        return hasattr(self, '_initialized') and self._initialized
+
+    def _auto_commit(self, conn) -> None:
+        """非事务模式下自动提交更改"""
+        if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
+            conn.commit()
+
     @contextmanager
     def _get_connection(self):
         """
@@ -149,8 +158,7 @@ class StorageManager:
         >>> timeout = storage.get("network.timeout", 30)
         >>> user_settings = storage.get("user.settings", {})
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return default
             
         try:
@@ -187,8 +195,7 @@ class StorageManager:
         >>> all_keys = storage.get_all_keys()
         >>> print(f"共有 {len(all_keys)} 个存储项")
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return []
             
         try:
@@ -219,8 +226,7 @@ class StorageManager:
         >>> storage.set("app.name", "MyApp")
         >>> storage.set("user.settings", {"theme": "dark"})
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return False
             
         try:
@@ -228,9 +234,7 @@ class StorageManager:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, serialized_value))
-                # 如果不在事务中，提交更改
-                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
-                    conn.commit()
+                self._auto_commit(conn)
             
             return True
         except Exception as e:
@@ -252,8 +256,7 @@ class StorageManager:
         >>>     "app.debug": True
         >>> })
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return False
             
         try:
@@ -263,9 +266,7 @@ class StorageManager:
                     serialized_value = json.dumps(value)
                     cursor.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", 
                         (key, serialized_value))
-                # 如果不在事务中，提交更改
-                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
-                    conn.commit()
+                self._auto_commit(conn)
             
             return True
         except Exception:
@@ -307,17 +308,14 @@ class StorageManager:
         :example:
         >>> storage.delete("temp.session")
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return False
             
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM config WHERE key = ?", (key,))
-                # 如果不在事务中，提交更改
-                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
-                    conn.commit()
+                self._auto_commit(conn)
             
             return True
         except Exception:
@@ -333,17 +331,14 @@ class StorageManager:
         :example:
         >>> storage.delete_multi(["temp.key1", "temp.key2"])
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return False
             
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executemany("DELETE FROM config WHERE key = ?", [(k,) for k in keys])
-                # 如果不在事务中，提交更改
-                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
-                    conn.commit()
+                self._auto_commit(conn)
             
             return True
         except Exception:
@@ -359,8 +354,7 @@ class StorageManager:
         :example:
         >>> settings = storage.get_multi(["app.name", "app.version"])
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return {}
             
         try:
@@ -391,8 +385,7 @@ class StorageManager:
         >>>     storage.set("key1", "value1")
         >>>     storage.set("key2", "value2")
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             # 返回一个空的事务对象
             class EmptyTransaction:
                 def __enter__(self):
@@ -467,17 +460,14 @@ class StorageManager:
         :example:
         >>> storage.clear()  # 清空所有存储
         """
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             return False
             
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM config")
-                # 如果不在事务中，提交更改
-                if not (hasattr(self._local, 'transaction_conn') and self._local.transaction_conn is not None):
-                    conn.commit()
+                self._auto_commit(conn)
             
             return True
         except Exception:
@@ -499,8 +489,7 @@ class StorageManager:
         if key.startswith('_'):
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
             
-        # 避免在初始化过程中调用此方法导致问题
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             raise AttributeError(f"存储尚未初始化完成: {key}")
         
         # 检查键是否存在
@@ -537,7 +526,7 @@ class StorageManager:
             return
             
         # 如果还未初始化完成，直接设置属性
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not self._is_ready():
             super().__setattr__(key, value)
             return
             
