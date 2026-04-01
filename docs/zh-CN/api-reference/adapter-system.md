@@ -201,6 +201,193 @@ class MyAdapter(BaseAdapter):
             )
 ```
 
+## Bot 状态管理
+
+适配器通过发送 OneBot12 标准的 **`meta` 事件**来告知框架 Bot 的连接状态。系统自动从中提取 Bot 信息进行状态追踪。
+
+### meta 事件类型
+
+适配器应发送以下三种 `meta` 事件：
+
+| `type` | `detail_type` | 说明 | 触发时机 |
+|--------|--------------|------|---------|
+| `meta` | `connect` | Bot 连接上线 | 适配器与平台建立连接成功后 |
+| `meta` | `heartbeat` | Bot 心跳 | 定期发送（建议 30-60 秒） |
+| `meta` | `disconnect` | Bot 断开连接 | 检测到连接断开时 |
+
+### self 字段扩展
+
+ErisPulse 在 OneBot12 标准的 `self` 字段上扩展了以下可选字段：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `self.platform` | string | 平台名称（OB12 标准） |
+| `self.user_id` | string | Bot 用户 ID（OB12 标准） |
+| `self.user_name` | string | Bot 昵称（ErisPulse 扩展） |
+| `self.avatar` | string | Bot 头像 URL（ErisPulse 扩展） |
+| `self.account_id` | string | 多账户标识（ErisPulse 扩展） |
+
+### meta 事件格式
+
+#### connect — 连接上线
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345678,
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456",
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg"
+    },
+    "telegram_raw": {...},
+    "telegram_raw_type": "bot_connected"
+})
+```
+
+系统处理：注册 Bot，标记为 `online`，触发 `adapter.bot.online` 生命周期事件。
+
+#### heartbeat — 心跳
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345708,
+    "type": "meta",
+    "detail_type": "heartbeat",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+系统处理：更新 `last_active` 时间（心跳中也支持更新元信息）。
+
+#### disconnect — 断开连接
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345738,
+    "type": "meta",
+    "detail_type": "disconnect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+系统处理：标记 Bot 为 `offline`，触发 `adapter.bot.offline` 生命周期事件。
+
+### 普通事件的自动发现
+
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也会自动发现并注册 Bot、更新活跃时间。这意味着即使适配器不发送 `connect` 事件，框架也能从第一条普通事件中发现 Bot。
+
+### 适配器接入示例
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # 与平台建立连接...
+        connection = await self._connect()
+        
+        # 连接成功，发送 connect 事件
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id,
+                "user_name": self.bot_name,
+                "avatar": self.bot_avatar
+            },
+            "myplatform_raw": raw_data,
+            "myplatform_raw_type": "connected"
+        })
+    
+    async def on_disconnect(self):
+        # 断开连接，发送 disconnect 事件
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id
+            }
+        })
+```
+
+### 查询 Bot 状态
+
+```python
+# 获取所有适配器与 Bot 的完整状态（WebUI 友好）
+summary = sdk.adapter.get_status_summary()
+# {
+#     "adapters": {
+#         "telegram": {
+#             "status": "started",
+#             "bots": {
+#                 "123456": {
+#                     "status": "online",
+#                     "last_active": 1712345678.0,
+#                     "info": {"nickname": "MyBot"}
+#                 }
+#             }
+#         }
+#     }
+# }
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# 获取单个 Bot 详情
+info = sdk.adapter.get_bot_info("telegram", "123456")
+
+# 检查 Bot 是否在线
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    print("Bot 在线")
+```
+
+### Bot 状态值
+
+| 状态 | 说明 |
+|------|------|
+| `online` | 在线（持续收到事件或适配器主动标记） |
+| `offline` | 离线（适配器主动标记或系统关闭时自动设置） |
+| `unknown` | 未知（仅注册但未确认状态） |
+
+### 生命周期事件
+
+| 事件名 | 触发时机 | 数据 |
+|--------|---------|------|
+| `adapter.bot.online` | 首次自动发现新 Bot | `{platform, bot_id, status}` |
+
+```python
+# 监听 Bot 上线事件
+@sdk.lifecycle.on("adapter.bot.online")
+def on_bot_online(event):
+    print(f"Bot 上线: {event['data']['platform']}/{event['data']['bot_id']}")
+```
+
+> 系统关闭时（`shutdown`），所有 Bot 会自动被标记为 `offline`。
+
 ## 相关文档
 
 - [核心模块 API](core-modules.md) - 核心模块 API
