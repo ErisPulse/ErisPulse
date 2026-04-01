@@ -58,6 +58,13 @@ ErisPulse 适配器基础模块
 ---
 
 
+##### `_unimplemented_modifier(method_name: str)`
+
+处理未实现的修饰方法，记录警告并返回自身以保持链式调用
+
+---
+
+
 ##### `Raw_ob12(message)`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）

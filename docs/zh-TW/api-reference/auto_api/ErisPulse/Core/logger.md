@@ -95,6 +95,19 @@ ErisPulse 日志系统
 ---
 
 
+##### `_log(level_name: str, level_const: int, msg)`
+
+内部日志方法，统一处理日志记录流程
+
+:param level_name: 日志级别名称（对应logging模块的方法名）
+:param level_const: 日志级别常量
+:param msg: 日志消息
+:param args: 额外的格式化参数
+:param kwargs: 额外的关键字参数
+
+---
+
+
 ##### `get_child(child_name: str = 'UnknownChild')`
 
 获取子日志记录器
@@ -126,20 +139,12 @@ ErisPulse 日志系统
 
 记录 DEBUG 级别日志
 
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
-
 ---
 
 
 ##### `info(msg)`
 
 记录 INFO 级别日志
-
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
 
 ---
 
@@ -148,20 +153,12 @@ ErisPulse 日志系统
 
 记录 WARNING 级别日志
 
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
-
 ---
 
 
 ##### `error(msg)`
 
 记录 ERROR 级别日志
-
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
 
 ---
 
@@ -173,9 +170,8 @@ ErisPulse 日志系统
 注意：此方法不会触发程序崩溃，仅记录日志
 
 > **提示**
-> 1. 这是最高级别的日志，表示严重系统错误
-> 2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
-> 3. 会在日志文件中添加 CRITICAL 标记便于后续分析
+> 1. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
+> 2. 会在日志文件中添加 CRITICAL 标记便于后续分析
 
 ---
 
@@ -267,13 +263,20 @@ ErisPulse 日志系统
 ---
 
 
+##### `_log(level_name: str, level_const: int, msg)`
+
+内部日志方法
+
+:param level_name: 日志级别名称
+:param level_const: 日志级别常量
+:param msg: 日志消息
+
+---
+
+
 ##### `debug(msg)`
 
 记录 DEBUG 级别日志
-
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
 
 ---
 
@@ -282,10 +285,6 @@ ErisPulse 日志系统
 
 记录 INFO 级别日志
 
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
-
 ---
 
 
@@ -293,20 +292,12 @@ ErisPulse 日志系统
 
 记录 WARNING 级别日志
 
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
-
 ---
 
 
 ##### `error(msg)`
 
 记录 ERROR 级别日志
-
-:param msg: 日志消息
-:param args: 额外的格式化参数
-:param kwargs: 额外的关键字参数
 
 ---
 
@@ -316,11 +307,6 @@ ErisPulse 日志系统
 记录 CRITICAL 级别日志
 这是最高级别的日志，表示严重的系统错误
 注意：此方法不会触发程序崩溃，仅记录日志
-
-> **提示**
-> 1. 这是最高级别的日志，表示严重系统错误
-> 2. 不会触发程序崩溃，如需终止程序请显式调用 sys.exit()
-> 3. 会在日志文件中添加 CRITICAL 标记便于后续分析
 
 ---
 
