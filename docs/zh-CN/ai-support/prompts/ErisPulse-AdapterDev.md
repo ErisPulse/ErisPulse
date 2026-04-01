@@ -3180,6 +3180,8 @@ email       subject           email_subject
 | `self.avatar` | `string` | 机器人头像 URL |
 | `self.account_id` | `string` | 多账户模式下的账户标识 |
 
+> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md)。
+
 ---
 
 ## 7. 会话类型扩展

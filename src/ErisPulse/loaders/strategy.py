@@ -28,7 +28,7 @@ class ModuleLoadStrategy:
     ...     custom_option=123
     ... )
 
-    eager_load 也是一个合法的属性，但不建议使用，其的han'y
+    eager_load 也是一个合法的属性，但不建议使用，其含义与 lazy_load 相反
     >>> strategy.lazy_load
     False
     >>> strategy.priority
