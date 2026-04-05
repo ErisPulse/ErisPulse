@@ -10,6 +10,7 @@ ErisPulse 适配器基础模块
 """
 
 import asyncio
+from abc import ABC, abstractmethod
 from typing import (
     Any, Optional,
     Union, Awaitable
@@ -184,7 +185,7 @@ class SendDSL:
         """
         return self.__class__(self._adapter, self._target_type, self._target_id, account_id)
 
-class BaseAdapter:
+class BaseAdapter(ABC):
     """
     适配器基类
     
@@ -291,6 +292,7 @@ class BaseAdapter:
     def __init__(self):
         self.Send = self.__class__.Send(self)
 
+    @abstractmethod
     async def call_api(self, endpoint: str, **params: Any) -> Any:
         """
         调用平台API的抽象方法
@@ -302,6 +304,7 @@ class BaseAdapter:
         """
         raise NotImplementedError("适配器必须实现call_api方法")
 
+    @abstractmethod
     async def start(self) -> None:
         """
         启动适配器的抽象方法
@@ -310,6 +313,7 @@ class BaseAdapter:
         """
         raise NotImplementedError("适配器必须实现start方法")
     
+    @abstractmethod
     async def shutdown(self) -> None:
         """
         关闭适配器的抽象方法
