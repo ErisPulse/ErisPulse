@@ -16,101 +16,113 @@ ErisPulse 生命周期管理模块
 import asyncio
 import inspect
 import time
-from typing import Callable, List, Dict, Any
+from typing import Any
+from collections.abc import Callable
 from .logger import logger
+
 
 class LifecycleManager:
     """
     生命周期管理器
-    
+
     管理SDK的生命周期事件，提供事件注册和触发功能
     支持点式结构事件监听，例如 module.init 可以被 module 监听到
     """
-    
+
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
         "core": ["init.start", "init.complete"],
         "module": ["load", "init", "unload"],
         "adapter": ["load", "start", "status.change", "stop", "stopped"],
-        "server": ["start", "stop"]
+        "server": ["start", "stop"],
     }
-    
+
     def __init__(self):
-        self._handlers: Dict[str, List[Callable]] = {}
-        self._timers: Dict[str, float] = {}  # 用于存储计时器
-        
-    def _validate_event(self, event_data: Dict[str, Any]) -> bool:
+        self._handlers: dict[str, list[Callable]] = {}
+        self._timers: dict[str, float] = {}  # 用于存储计时器
+
+    def _validate_event(self, event_data: dict[str, Any]) -> bool:
         """
         验证事件数据格式
-        
+
         :param event_data: 事件数据字典
         :return: 是否有效
         """
         if not isinstance(event_data, dict):
             logger.error("事件数据必须是字典，请确保传递的是字典类型")
             return False
-            
+
         required_fields = ["event", "timestamp", "source"]
         missing_fields = [field for field in required_fields if field not in event_data]
         if missing_fields:
-            logger.error(f"事件缺少必填字段: {', '.join(missing_fields)}。请检查事件数据是否完整")
+            logger.error(
+                f"事件缺少必填字段: {', '.join(missing_fields)}。请检查事件数据是否完整"
+            )
             return False
-                
+
         if not isinstance(event_data["event"], str):
-            logger.error(f"event字段必须是字符串，当前类型: {type(event_data['event']).__name__}")
+            logger.error(
+                f"event字段必须是字符串，当前类型: {type(event_data['event']).__name__}"
+            )
             return False
-            
+
         if not isinstance(event_data["timestamp"], (int, float)):
-            logger.error(f"timestamp字段必须是数字，当前类型: {type(event_data['timestamp']).__name__}")
+            logger.error(
+                f"timestamp字段必须是数字，当前类型: {type(event_data['timestamp']).__name__}"
+            )
             return False
-            
+
         if "data" in event_data and not isinstance(event_data["data"], dict):
-            logger.error(f"data字段必须是字典，当前类型: {type(event_data['data']).__name__}")
+            logger.error(
+                f"data字段必须是字典，当前类型: {type(event_data['data']).__name__}"
+            )
             return False
-            
+
         return True
-        
+
     def on(self, event: str) -> Callable:
         """
         注册生命周期事件处理器
-        
+
         :param event: 事件名称，支持点式结构如 module.init
         :return: 装饰器函数
-        
+
         :raises ValueError: 当事件名无效时抛出
         """
         if not isinstance(event, str) or not event:
             raise ValueError("事件名称必须是非空字符串")
+
         def decorator(func: Callable) -> Callable:
             if event not in self._handlers:
                 self._handlers[event] = []
             self._handlers[event].append(func)
             return func
+
         return decorator
-        
+
     def start_timer(self, timer_id: str) -> None:
         """
         开始计时
-        
+
         :param timer_id: 计时器ID
         """
         self._timers[timer_id] = time.time()
-        
+
     def get_duration(self, timer_id: str) -> float:
         """
         获取指定计时器的持续时间
-        
+
         :param timer_id: 计时器ID
         :return: 持续时间(秒)
         """
         if timer_id in self._timers:
             return time.time() - self._timers[timer_id]
         return 0.0
-        
+
     def stop_timer(self, timer_id: str) -> float:
         """
         停止计时并返回持续时间
-        
+
         :param timer_id: 计时器ID
         :return: 持续时间(秒)
         """
@@ -118,8 +130,16 @@ class LifecycleManager:
         if timer_id in self._timers:
             del self._timers[timer_id]
         return duration
-        
-    async def submit_event(self, event_type: str, *, source: str = "ErisPulse", msg: str = "", data: dict = {}, timestamp = time.time()) -> None:
+
+    async def submit_event(
+        self,
+        event_type: str,
+        *,
+        source: str = "ErisPulse",
+        msg: str = "",
+        data: dict = {},
+        timestamp=time.time(),
+    ) -> None:
         """
         提交生命周期事件
 
@@ -133,42 +153,42 @@ class LifecycleManager:
         if event_type is None:
             logger.error("事件类型不能为None")
             return
-        
+
         if not isinstance(event_type, str) or not event_type:
             logger.error(f"事件类型必须是非空字符串，收到: {event_type}")
             return
-        
+
         # 构建完整事件数据
         event_data = {
             "event": event_type,
             "timestamp": timestamp,
             "data": data,
             "source": source,
-            "msg": msg
+            "msg": msg,
         }
-            
+
         # 验证事件格式
         self._validate_event(event_data)
-        
+
         # 触发通配符处理器（如果存在）
         if "*" in self._handlers:
             await self._execute_handlers("*", event_data)
-            
+
         # 触发完整事件名的处理器
         if event_type in self._handlers:
             await self._execute_handlers(event_type, event_data)
-            
+
         # 触发父级事件名的处理器（点式结构）
-        parts = event_type.split('.')
+        parts = event_type.split(".")
         for i in range(len(parts) - 1, 0, -1):
-            parent_event = '.'.join(parts[:i])
+            parent_event = ".".join(parts[:i])
             if parent_event in self._handlers:
                 await self._execute_handlers(parent_event, event_data)
-                
-    async def _execute_handlers(self, event: str, event_data: Dict[str, Any]) -> None:
+
+    async def _execute_handlers(self, event: str, event_data: dict[str, Any]) -> None:
         """
         执行事件处理器
-        
+
         :param event: 事件名称
         :param event_data: 事件数据
         """
@@ -182,9 +202,7 @@ class LifecycleManager:
             except Exception as e:
                 logger.error(f"生命周期事件处理器执行错误 {event}: {e}")
 
-lifecycle : LifecycleManager = LifecycleManager()
 
-__all__ = [
-    "LifecycleManager",
-    "lifecycle"
-]
+lifecycle: LifecycleManager = LifecycleManager()
+
+__all__ = ["LifecycleManager", "lifecycle"]

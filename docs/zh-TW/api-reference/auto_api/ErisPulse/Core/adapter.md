@@ -40,7 +40,7 @@ ErisPulse 适配器系统
 ---
 
 
-##### `register(platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None)`
+##### `register(platform: str, adapter_class: type[BaseAdapter], adapter_info: dict | None = None)`
 
 注册新的适配器类（标准化注册方法）
 
@@ -59,7 +59,7 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async startup(platforms: Optional[Union[str, List[str]]] = None)`
+##### `async async startup(platforms: str | list[str] | None = None)`
 
 启动指定的适配器
 
@@ -195,7 +195,7 @@ ErisPulse 适配器系统
 
 > **已弃用** 请使用 list_items() 代替
 
-**返回值** (`Dict[str, bool`): ] 平台适配器状态字典
+**返回值** (`dict[str, bool`): ] 平台适配器状态字典
 
 ---
 
@@ -334,7 +334,7 @@ self字段标准扩展：
 ---
 
 
-##### `list_bots(platform: Optional[str] = None)`
+##### `list_bots(platform: str | None = None)`
 
 列出Bot信息
 
