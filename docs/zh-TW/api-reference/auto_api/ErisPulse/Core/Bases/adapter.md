@@ -32,7 +32,7 @@ ErisPulse 适配器基础模块
 #### 方法列表
 
 
-##### `__init__(adapter: 'BaseAdapter', target_type: Optional[str] = None, target_id: Optional[str] = None, account_id: Optional[str] = None)`
+##### `__init__(adapter: 'BaseAdapter', target_type: str | None = None, target_id: str | None = None, account_id: str | None = None)`
 
 初始化DSL发送器
 
@@ -76,7 +76,7 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `To(target_type: str = None, target_id: Union[str, int] = None)`
+##### `To(target_type: str = None, target_id: str | int = None)`
 
 设置消息目标
 
@@ -101,7 +101,7 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `Using(account_id: Union[str, int])`
+##### `Using(account_id: str | int)`
 
 设置发送账号
 
@@ -117,7 +117,7 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `Account(account_id: Union[str, int])`
+##### `Account(account_id: str | int)`
 
 设置发送账号
 
@@ -133,7 +133,7 @@ ErisPulse 适配器基础模块
 ---
 
 
-### `class BaseAdapter`
+### `class BaseAdapter(ABC)`
 
 适配器基类
 
@@ -261,7 +261,6 @@ ErisPulse 适配器基础模块
 :return: asyncio.Task 对象，用户可以自主决定是否等待
 
 **异常**: `AttributeError` - 当发送方法不存在时抛出
-    
 
 **示例**:
 ```python
