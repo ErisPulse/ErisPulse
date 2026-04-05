@@ -4,11 +4,12 @@ ErisPulse 模块基础模块
 提供模块基类定义和标准接口
 """
 
+from abc import ABC, abstractmethod
 from typing import Union, Dict, Any
 from ...loaders.strategy import ModuleLoadStrategy
 
 
-class BaseModule:
+class BaseModule(ABC):
     """
     模块基类
     
@@ -50,8 +51,8 @@ class BaseModule:
         {!--< /tips >!--}
         """
         return ModuleLoadStrategy(
-            lazy_load=True,   # 默认懒加载
-            priority=0        # 默认优先级
+            lazy_load=True,     # 默认懒加载
+            priority=0,         # 默认优先级
         )
     
     # @staticmethod
@@ -73,6 +74,7 @@ class BaseModule:
     #         return not strategy.get('lazy_load', True)
     #     return not (strategy.lazy_load if 'lazy_load' in strategy else True)
     
+    @abstractmethod
     async def on_load(self, event: dict) -> bool:
         """
         当模块被加载时调用
@@ -87,6 +89,7 @@ class BaseModule:
         """
         raise NotImplementedError
     
+    @abstractmethod
     async def on_unload(self, event: dict) -> bool:
         """
         当模块被卸载时调用
