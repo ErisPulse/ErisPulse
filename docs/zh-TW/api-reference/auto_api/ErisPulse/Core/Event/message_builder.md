@@ -43,7 +43,7 @@ OneBot12 消息段构建器
 #### 方法列表
 
 
-##### `at(user_id: str, user_name: Optional[str] = None)`
+##### `at(user_id: str, user_name: str | None = None)`
 
 添加 @用户 消息段（mention 的别名）
 
@@ -59,7 +59,7 @@ OneBot12 消息段构建器
 ---
 
 
-##### `at(user_id: str, user_name: Optional[str] = None)`
+##### `at(user_id: str, user_name: str | None = None)`
 
 快速构建 @用户 消息段（mention 的别名）
 
@@ -70,7 +70,7 @@ OneBot12 消息段构建器
 ---
 
 
-##### `custom(segment_type: str, data: Dict[str, Any])`
+##### `custom(segment_type: str, data: dict[str, Any])`
 
 添加自定义消息段
 

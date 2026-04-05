@@ -33,7 +33,7 @@ ErisPulse 框架配置管理模块
 ---
 
 
-### `get_config(section: str = None)`
+### `get_config(section: Optional[str] = None)`
 
 获取 ErisPulse 配置
 
