@@ -34,7 +34,7 @@ ErisPulse 生命周期管理模块
 #### 方法列表
 
 
-##### `_validate_event(event_data: Dict[str, Any])`
+##### `_validate_event(event_data: dict[str, Any])`
 
 验证事件数据格式
 
@@ -98,7 +98,7 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `async async _execute_handlers(event: str, event_data: Dict[str, Any])`
+##### `async async _execute_handlers(event: str, event_data: dict[str, Any])`
 
 执行事件处理器
 
