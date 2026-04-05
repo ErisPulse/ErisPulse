@@ -27,7 +27,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `register_event_mixin(platform: str, mixin_cls: Type)`
+### `register_event_mixin(platform: str, mixin_cls: type)`
 
 注册一个类的所有公开方法到指定平台
 
@@ -119,7 +119,7 @@ ErisPulse 事件包装类
 #### 方法列表
 
 
-##### `__init__(event_data: Dict[str, Any])`
+##### `__init__(event_data: dict[str, Any])`
 
 初始化事件包装器
 
@@ -463,7 +463,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reply(content: str, method: str = 'Text', at_users: List[str] = None, reply_to: str = None, at_all: bool = False)`
+##### `async async reply(content: str, method: str = 'Text', at_users: list[str] = None, reply_to: str = None, at_all: bool = False)`
 
 通用回复方法
 
@@ -482,19 +482,19 @@ ErisPulse 事件包装类
 ```python
 >>> # 简单回复
 >>> await event.reply("你好")
->>> 
+>>>
 >>> # 发送图片
 >>> await event.reply("http://example.com/image.jpg", method="Image")
->>> 
+>>>
 >>> # @用户
 >>> await event.reply("你好", at_users=["user123"])
->>> 
+>>>
 >>> # 回复消息
 >>> await event.reply("回复内容", reply_to="msg_id")
->>> 
+>>>
 >>> # @全体成员
 >>> await event.reply("公告", at_all=True)
->>> 
+>>>
 >>> # 组合使用：@用户 + 回复消息
 >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
@@ -502,7 +502,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reply_ob12(message: Union[List[Dict[str, Any]], Dict[str, Any]])`
+##### `async async reply_ob12(message: list[dict[str, Any]] | dict[str, Any])`
 
 使用 OneBot12 消息段回复
 
@@ -520,7 +520,7 @@ ErisPulse 事件包装类
 ```python
 >>> # 简单文本回复
 >>> await event.reply_ob12([{"type": "text", "data": {"text": "收到"}}])
->>> 
+>>>
 >>> # 配合 MessageBuilder 使用
 >>> from ErisPulse.Core import MessageBuilder
 >>> await event.reply_ob12(
@@ -529,7 +529,7 @@ ErisPulse 事件包装类
 >>>         .text("收到你的消息")
 >>>         .build()
 >>> )
->>> 
+>>>
 >>> # 发送复杂消息
 >>> await event.reply_ob12(
 >>>     MessageBuilder()
@@ -543,7 +543,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait_reply(prompt: str = None, timeout: float = 60.0, callback: Callable[[Dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[Dict[str, Any]], bool] = None)`
+##### `async async wait_reply(prompt: str = None, timeout: float = 60.0, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
 
 等待用户回复
 

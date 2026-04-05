@@ -9,15 +9,15 @@ ErisPulse 管理器基类
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Type, Optional
+from typing import Any
 
 
 class ManagerBase(ABC):
     """
     管理器基类
-    
+
     定义适配器和模块管理器的统一接口
-    
+
     {!--< tips >!--}
     统一方法：
     - register(): 注册类
@@ -30,135 +30,133 @@ class ManagerBase(ABC):
     - list_*(): 列出相关项
     {!--< /tips >!--}
     """
-    
+
     # ==================== 注册与取消注册 ====================
-    
+
     @abstractmethod
-    def register(self, name: str, class_type: Type, info: Optional[Dict] = None) -> bool:
+    def register(self, name: str, class_type: type, info: dict | None = None) -> bool:
         """
         注册类
-        
+
         :param name: 名称
         :param class_type: 类类型
         :param info: 额外信息
         :return: 是否注册成功
         """
         ...
-    
+
     @abstractmethod
     def unregister(self, name: str) -> bool:
         """
         取消注册
-        
+
         :param name: 名称
         :return: 是否取消成功
         """
         ...
-    
+
     # ==================== 实例获取 ====================
-    
+
     @abstractmethod
     def get(self, name: str) -> Any:
         """
         获取实例
-        
+
         :param name: 名称
         :return: 实例或 None
         """
         ...
-    
+
     # ==================== 存在性检查 ====================
-    
+
     @abstractmethod
     def exists(self, name: str) -> bool:
         """
         检查是否存在（在配置中注册）
-        
+
         :param name: 名称
         :return: 是否存在
         """
         ...
-    
+
     # ==================== 启用/禁用管理 ====================
-    
+
     @abstractmethod
     def is_enabled(self, name: str) -> bool:
         """
         检查是否启用
-        
+
         :param name: 名称
         :return: 是否启用
         """
         ...
-    
+
     @abstractmethod
     def enable(self, name: str) -> bool:
         """
         启用
-        
+
         :param name: 名称
         :return: 是否成功
         """
         ...
-    
+
     @abstractmethod
     def disable(self, name: str) -> bool:
         """
         禁用
-        
+
         :param name: 名称
         :return: 是否成功
         """
         ...
-    
+
     # ==================== 列表方法 ====================
-    
+
     @abstractmethod
-    def list_registered(self) -> List[str]:
+    def list_registered(self) -> list[str]:
         """
         列出所有已注册的项
-        
+
         :return: 名称列表
         """
         ...
-    
+
     @abstractmethod
-    def list_items(self) -> Dict[str, bool]:
+    def list_items(self) -> dict[str, bool]:
         """
         列出所有项及其状态
-        
+
         :return: {名称: 是否启用} 字典
         """
         ...
-    
+
     # ==================== 运行状态检查 ====================
-    
+
     @abstractmethod
     def is_running(self, name: str) -> bool:
         """
         检查项是否正在运行
-        
+
         对于适配器：检查是否已启动
         对于模块：检查是否已加载
-        
+
         :param name: 名称
         :return: 是否正在运行
         """
         ...
-    
+
     @abstractmethod
-    def list_running(self) -> List[str]:
+    def list_running(self) -> list[str]:
         """
         列出所有正在运行的项
-        
+
         对于适配器：列出所有已启动的适配器
         对于模块：列出所有已加载的模块
-        
+
         :return: 名称列表
         """
         ...
 
 
-__all__ = [
-    "ManagerBase"
-]
+__all__ = ["ManagerBase"]

@@ -11,7 +11,7 @@ ErisPulse 消息构建器
 """
 
 import types
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 
 class _DualMethod:
@@ -49,117 +49,98 @@ class MessageBuilder:
     """
 
     def __init__(self):
-        self._segments: List[Dict[str, Any]] = []
+        self._segments: list[dict[str, Any]] = []
 
     # ==================== 链式调用方法（实例方法）====================
 
-    def _text_inst(self, text: str) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "text",
-            "data": {"text": text}
-        })
+    def _text_inst(self, text: str) -> "MessageBuilder":
+        self._segments.append({"type": "text", "data": {"text": text}})
         return self
 
-    def _image_inst(self, file: Union[str, bytes]) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "image",
-            "data": {"file": file}
-        })
+    def _image_inst(self, file: str | bytes) -> "MessageBuilder":
+        self._segments.append({"type": "image", "data": {"file": file}})
         return self
 
-    def _audio_inst(self, file: Union[str, bytes]) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "audio",
-            "data": {"file": file}
-        })
+    def _audio_inst(self, file: str | bytes) -> "MessageBuilder":
+        self._segments.append({"type": "audio", "data": {"file": file}})
         return self
 
-    def _video_inst(self, file: Union[str, bytes]) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "video",
-            "data": {"file": file}
-        })
+    def _video_inst(self, file: str | bytes) -> "MessageBuilder":
+        self._segments.append({"type": "video", "data": {"file": file}})
         return self
 
-    def _file_inst(self, file: Union[str, bytes], filename: Optional[str] = None) -> 'MessageBuilder':
-        data: Dict[str, Any] = {"file": file}
+    def _file_inst(
+        self, file: str | bytes, filename: str | None = None
+    ) -> "MessageBuilder":
+        data: dict[str, Any] = {"file": file}
         if filename is not None:
             data["filename"] = filename
-        self._segments.append({
-            "type": "file",
-            "data": data
-        })
+        self._segments.append({"type": "file", "data": data})
         return self
 
-    def _mention_inst(self, user_id: str, user_name: Optional[str] = None) -> 'MessageBuilder':
-        data: Dict[str, Any] = {"user_id": user_id}
+    def _mention_inst(
+        self, user_id: str, user_name: str | None = None
+    ) -> "MessageBuilder":
+        data: dict[str, Any] = {"user_id": user_id}
         if user_name is not None:
             data["user_name"] = user_name
-        self._segments.append({
-            "type": "mention",
-            "data": data
-        })
+        self._segments.append({"type": "mention", "data": data})
         return self
 
-    def _reply_inst(self, message_id: str) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "reply",
-            "data": {"message_id": message_id}
-        })
+    def _reply_inst(self, message_id: str) -> "MessageBuilder":
+        self._segments.append({"type": "reply", "data": {"message_id": message_id}})
         return self
 
-    def _at_all_inst(self) -> 'MessageBuilder':
-        self._segments.append({
-            "type": "mention_all",
-            "data": {}
-        })
+    def _at_all_inst(self) -> "MessageBuilder":
+        self._segments.append({"type": "mention_all", "data": {}})
         return self
 
-    def _custom_inst(self, segment_type: str, data: Dict[str, Any]) -> 'MessageBuilder':
-        self._segments.append({
-            "type": segment_type,
-            "data": data
-        })
+    def _custom_inst(self, segment_type: str, data: dict[str, Any]) -> "MessageBuilder":
+        self._segments.append({"type": segment_type, "data": data})
         return self
 
     # ==================== 快速构建方法（静态函数）====================
 
     @staticmethod
-    def _text_static(text: str) -> List[Dict[str, Any]]:
+    def _text_static(text: str) -> list[dict[str, Any]]:
         return [{"type": "text", "data": {"text": text}}]
 
     @staticmethod
-    def _image_static(file: Union[str, bytes]) -> List[Dict[str, Any]]:
+    def _image_static(file: str | bytes) -> list[dict[str, Any]]:
         return [{"type": "image", "data": {"file": file}}]
 
     @staticmethod
-    def _audio_static(file: Union[str, bytes]) -> List[Dict[str, Any]]:
+    def _audio_static(file: str | bytes) -> list[dict[str, Any]]:
         return [{"type": "audio", "data": {"file": file}}]
 
     @staticmethod
-    def _video_static(file: Union[str, bytes]) -> List[Dict[str, Any]]:
+    def _video_static(file: str | bytes) -> list[dict[str, Any]]:
         return [{"type": "video", "data": {"file": file}}]
 
     @staticmethod
-    def _file_static(file: Union[str, bytes], filename: Optional[str] = None) -> List[Dict[str, Any]]:
-        data: Dict[str, Any] = {"file": file}
+    def _file_static(
+        file: str | bytes, filename: str | None = None
+    ) -> list[dict[str, Any]]:
+        data: dict[str, Any] = {"file": file}
         if filename is not None:
             data["filename"] = filename
         return [{"type": "file", "data": data}]
 
     @staticmethod
-    def _mention_static(user_id: str, user_name: Optional[str] = None) -> List[Dict[str, Any]]:
-        data: Dict[str, Any] = {"user_id": user_id}
+    def _mention_static(
+        user_id: str, user_name: str | None = None
+    ) -> list[dict[str, Any]]:
+        data: dict[str, Any] = {"user_id": user_id}
         if user_name is not None:
             data["user_name"] = user_name
         return [{"type": "mention", "data": data}]
 
     @staticmethod
-    def _reply_static(message_id: str) -> List[Dict[str, Any]]:
+    def _reply_static(message_id: str) -> list[dict[str, Any]]:
         return [{"type": "reply", "data": {"message_id": message_id}}]
 
     @staticmethod
-    def _at_all_static() -> List[Dict[str, Any]]:
+    def _at_all_static() -> list[dict[str, Any]]:
         return [{"type": "mention_all", "data": {}}]
 
     # ==================== 双模式方法绑定 ====================
@@ -175,7 +156,7 @@ class MessageBuilder:
 
     # ==================== 别名和特殊方法 ====================
 
-    def at(self, user_id: str, user_name: Optional[str] = None) -> 'MessageBuilder':
+    def at(self, user_id: str, user_name: str | None = None) -> "MessageBuilder":
         """
         添加 @用户 消息段（mention 的别名）
 
@@ -189,7 +170,7 @@ class MessageBuilder:
         return self._mention_inst(user_id, user_name)
 
     @staticmethod
-    def at(user_id: str, user_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    def at(user_id: str, user_name: str | None = None) -> list[dict[str, Any]]:
         """
         快速构建 @用户 消息段（mention 的别名）
 
@@ -202,7 +183,7 @@ class MessageBuilder:
     # at 使用 _DualMethod 支持两种调用方式
     at = _DualMethod(_mention_inst, _mention_static)
 
-    def custom(self, segment_type: str, data: Dict[str, Any]) -> 'MessageBuilder':
+    def custom(self, segment_type: str, data: dict[str, Any]) -> "MessageBuilder":
         """
         添加自定义消息段
 
@@ -219,7 +200,7 @@ class MessageBuilder:
 
     # ==================== 构建方法 ====================
 
-    def build(self) -> List[Dict[str, Any]]:
+    def build(self) -> list[dict[str, Any]]:
         """
         构建消息段列表
 
@@ -233,7 +214,7 @@ class MessageBuilder:
 
     # ==================== 工具方法 ====================
 
-    def copy(self) -> 'MessageBuilder':
+    def copy(self) -> "MessageBuilder":
         """
         复制当前构建器（深拷贝消息段列表）
 
@@ -249,14 +230,17 @@ class MessageBuilder:
         # 深拷贝嵌套的 data 字典
         for i, seg in enumerate(new_builder._segments):
             if isinstance(seg.get("data"), dict):
-                new_builder._segments[i] = {"type": seg["type"], "data": dict(seg["data"])}
+                new_builder._segments[i] = {
+                    "type": seg["type"],
+                    "data": dict(seg["data"]),
+                }
                 # 深拷贝 data 内的嵌套字典
                 for k, v in new_builder._segments[i]["data"].items():
                     if isinstance(v, dict):
                         new_builder._segments[i]["data"][k] = dict(v)
         return new_builder
 
-    def clear(self) -> 'MessageBuilder':
+    def clear(self) -> "MessageBuilder":
         """
         清空已添加的消息段
 

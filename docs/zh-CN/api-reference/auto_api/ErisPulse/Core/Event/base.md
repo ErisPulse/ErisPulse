@@ -70,7 +70,7 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `async async _process_event(event: Dict[str, Any])`
+##### `async async _process_event(event: dict[str, Any])`
 
 处理事件
 
