@@ -10,13 +10,17 @@ import os
 import time
 import toml
 import threading
-from typing import Any, Dict
+from typing import Any
+
+type ConfigValue = Any
+type ConfigKey = str
+
 
 class ConfigManager:
     def __init__(self, config_file: str = "config/config.toml"):
         self.CONFIG_FILE: str = config_file
-        self._cache: Dict[str, Any] = {}  # 内存缓存
-        self._dirty_keys: Dict[str, Any] = {}  # 待写入的键值对
+        self._cache: dict[str, Any] = {}  # 内存缓存
+        self._dirty_keys: dict[str, Any] = {}  # 待写入的键值对
         self._cache_timestamp = 0  # 缓存时间戳
         self._cache_timeout = 60  # 缓存超时时间（秒）
         self._write_delay = 5  # 写入延迟（秒）
@@ -31,30 +35,30 @@ class ConfigManager:
         从项目根目录的 config.toml 迁移到 config/config.toml
         """
         old_config_path = "config.toml"
-        
+
         # 检查旧配置文件是否存在
         if not os.path.exists(old_config_path):
             return
-        
+
         # 检查新位置是否已有配置文件
         if os.path.exists(self.CONFIG_FILE):
             # 新位置已有配置文件，不进行迁移
             return
-        
+
         try:
             # 确保目标目录存在
             config_dir = os.path.dirname(self.CONFIG_FILE)
             if config_dir and not os.path.exists(config_dir):
                 os.makedirs(config_dir, exist_ok=True)
-            
+
             # 读取旧配置文件
             with open(old_config_path, "r", encoding="utf-8") as f:
                 old_config = toml.load(f)
-            
+
             # 写入新配置文件
             with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
                 toml.dump(old_config, f)
-            
+
             # 创建 config.readme.md 文件，包含迁移说明和配置内容
             readme_content = f"""# 配置文件迁移说明
 
@@ -77,13 +81,13 @@ class ConfigManager:
 - 当您理解本迁移说明后，可删除本文件
 - 如需修改配置，请编辑 `config/config.toml`
 """
-            
+
             with open("config.readme.md", "w", encoding="utf-8") as f:
                 f.write(readme_content)
-            
+
             # 删除旧配置文件
             os.remove(old_config_path)
-            
+
         except Exception as e:
             # 静默处理迁移失败
             pass
@@ -105,11 +109,12 @@ class ConfigManager:
                     self._cache_timestamp = time.time()
             except Exception as e:
                 from .logger import logger
+
                 logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
                 self._cache = {}
                 self._cache_timestamp = time.time()
 
-    def _sort_config_dict(self, config_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def _sort_config_dict(self, config_dict: dict[str, Any]) -> dict[str, Any]:
         """
         递归地对配置字典进行排序，确保同一模块的配置项排列在一起
         :param config_dict: 待排序的配置字典
@@ -117,7 +122,7 @@ class ConfigManager:
         """
         if not isinstance(config_dict, dict):
             return config_dict
-        
+
         # 按 key 排序
         sorted_dict = {}
         for key in sorted(config_dict.keys()):
@@ -127,7 +132,7 @@ class ConfigManager:
                 sorted_dict[key] = self._sort_config_dict(value)
             else:
                 sorted_dict[key] = value
-        
+
         return sorted_dict
 
     def _flush_config(self) -> None:
@@ -148,7 +153,7 @@ class ConfigManager:
 
                 # 应用待写入的更改
                 for key, value in self._dirty_keys.items():
-                    keys = key.split('.')
+                    keys = key.split(".")
                     current = config
                     for k in keys[:-1]:
                         if k not in current:
@@ -170,6 +175,7 @@ class ConfigManager:
 
             except Exception as e:
                 from .logger import logger
+
                 logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
 
     def _schedule_write(self) -> None:
@@ -178,7 +184,7 @@ class ConfigManager:
         """
         if self._write_timer:
             self._write_timer.cancel()
-        
+
         self._write_timer = threading.Timer(self._write_delay, self._flush_config)
         self._write_timer.daemon = True
         self._write_timer.start()
@@ -206,7 +212,7 @@ class ConfigManager:
                 return self._dirty_keys[key]
 
             # 然后检查缓存
-            keys = key.split('.')
+            keys = key.split(".")
             value = self._cache
             for k in keys:
                 if k not in value:
@@ -227,17 +233,18 @@ class ConfigManager:
             with self._lock:
                 # 先更新待写入队列
                 self._dirty_keys[key] = value
-                
+
                 if immediate:
                     # 立即写入磁盘
                     self._flush_config()
                 else:
                     # 安排延迟写入
                     self._schedule_write()
-                
+
             return True
         except Exception as e:
             from .logger import logger
+
             logger.error(f"设置配置项 {key} 失败: {e}")
             return False
 
@@ -258,8 +265,7 @@ class ConfigManager:
             self._dirty_keys.clear()
             self._load_config()
 
-config : ConfigManager = ConfigManager()
 
-__all__ = [
-    "config"
-]
+config: ConfigManager = ConfigManager()
+
+__all__ = ["config"]
