@@ -39,7 +39,7 @@ ErisPulse 模块系统
 ---
 
 
-##### `register(module_name: str, module_class: Type, module_info: Optional[Dict] = None)`
+##### `register(module_name: str, module_class: type, module_info: dict | None = None)`
 
 注册模块类
 
@@ -49,7 +49,6 @@ ErisPulse 模块系统
 :return: 是否注册成功
 
 **异常**: `TypeError` - 当模块类无效时抛出
-    
 
 **示例**:
 ```python
@@ -65,7 +64,6 @@ ErisPulse 模块系统
 
 :param module_name: 模块名称
 :return: 是否加载成功
-    
 
 **示例**:
 ```python
@@ -75,7 +73,7 @@ ErisPulse 模块系统
 ---
 
 
-##### `async async unload(module_name: Optional[str] = None)`
+##### `async async unload(module_name: str | None = None)`
 
 卸载指定模块或所有模块
 
@@ -108,7 +106,6 @@ ErisPulse 模块系统
 
 :param module_name: 模块名称
 :return: 模块实例或None
-    
 
 **示例**:
 ```python
@@ -134,7 +131,6 @@ ErisPulse 模块系统
 
 :param module_name: 模块名称
 :return: 模块是否已加载
-    
 
 **示例**:
 ```python
@@ -180,7 +176,6 @@ ErisPulse 模块系统
 列出所有已注册的模块
 
 :return: 模块名称列表
-    
 
 **示例**:
 ```python
@@ -195,7 +190,6 @@ ErisPulse 模块系统
 列出所有已加载的模块
 
 :return: 模块名称列表
-    
 
 **示例**:
 ```python
@@ -276,7 +270,7 @@ ErisPulse 模块系统
 
 列出所有模块状态
 
-**返回值** (`Dict[str, bool`): ] {模块名: 是否启用} 字典
+**返回值** (`dict[str, bool`): ] {模块名: 是否启用} 字典
 
 ---
 
@@ -287,7 +281,7 @@ ErisPulse 模块系统
 
 > **已弃用** 请使用 list_items() 代替
 
-**返回值** (`Dict[str, bool`): ] 模块状态字典
+**返回值** (`dict[str, bool`): ] 模块状态字典
 
 ---
 

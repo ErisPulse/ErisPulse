@@ -55,17 +55,17 @@ ErisPulse 适配器加载器
 从 entry-points 加载对象（使用 AdapterFinder）
 
 :param manager_instance: 管理器实例
-:return: 
-    Dict[str, Any]: 对象字典
-    List[str]: 启用列表
-    List[str]: 禁用列表
-    
+:return:
+    dict[str, Any]: 对象字典
+    list[str]: 启用列表
+    list[str]: 禁用列表
+
 **异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
 
-##### `async async _process_entry_point(entry_point: Any, objs: Dict[str, Any], enabled_list: List[str], disabled_list: List[str], manager_instance: Any)`
+##### `async async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
 
 处理单个适配器 entry-point
 
@@ -75,18 +75,18 @@ ErisPulse 适配器加载器
 :param disabled_list: 停用的适配器列表
 :param manager_instance: 适配器管理器实例
 
-:return: 
-    Dict[str, Any]: 更新后的适配器对象字典
-    List[str]: 更新后的启用适配器列表 
-    List[str]: 更新后的禁用适配器列表
+:return:
+    dict[str, Any]: 更新后的适配器对象字典
+    list[str]: 更新后的启用适配器列表
+    list[str]: 更新后的禁用适配器列表
     bool: 是否为新适配器
-    
+
 **异常**: `ImportError` - 当适配器加载失败时抛出
 
 ---
 
 
-##### `async async register_to_manager(adapters: List[str], adapter_objs: Dict[str, Any], manager_instance: Any)`
+##### `async async register_to_manager(adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any)`
 
 将适配器注册到管理器
 
