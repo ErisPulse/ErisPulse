@@ -143,8 +143,9 @@ class SDK:
         try:
             return object.__getattribute__(self, name)
         except AttributeError:
-            logger.error(f"[SDK] 未找到属性 {name}, 您可能使用了错误的SDK注册对象")
-            return None
+            from .Core.logger import logger as _logger
+            _logger.error(f"[SDK] 未找到属性 {name}, 您可能使用了错误的SDK注册对象")
+            raise AttributeError
 
     def __repr__(self) -> str:
         """
@@ -374,8 +375,8 @@ class SDK:
                         if module_name in instance_dict:
                             del instance_dict[module_name]
                             module_properties_cleared += 1
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"清理模块属性 {module_name} 失败: {e}")
                 
                 # 6. 重置初始化状态
                 self._sdk._initialized = False
