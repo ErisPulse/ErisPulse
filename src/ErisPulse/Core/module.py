@@ -5,38 +5,39 @@ ErisPulse 模块系统
 """
 
 import inspect
-from typing import Any, Dict, List, Type, Optional
+from typing import Any
 from .logger import logger
 from .config import config
 from .Bases import BaseModule
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
 
+
 class ModuleManager(ManagerBase):
     """
     模块管理器
-    
+
     提供标准化的模块注册、加载和管理功能，模仿适配器管理器的模式
-    
+
     {!--< tips >!--}
     1. 使用register方法注册模块类
     2. 使用load/unload方法加载/卸载模块
     3. 通过get方法获取模块实例
     {!--< /tips >!--}
     """
-    
+
     def __init__(self):
         # 模块存储
-        self._modules: Dict[str, Any] = {}  # 已加载的模块实例
-        self._module_classes: Dict[str, Type] = {}  # 模块类映射
+        self._modules: dict[str, Any] = {}  # 已加载的模块实例
+        self._module_classes: dict[str, type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
-        self._module_info: Dict[str, Dict] = {}  # 模块信息
+        self._module_info: dict[str, dict] = {}  # 模块信息
         self._sdk = None
-        
+
     def set_sdk_ref(self, sdk) -> bool:
         """
         设置 SDK 引用
-        
+
         :param sdk: SDK 实例
         :return: 是否设置成功
         """
@@ -46,20 +47,22 @@ class ModuleManager(ManagerBase):
         except Exception as e:
             logger.error(f"设置SDK引用失败: {e}")
             return False
-        
+
     # ==================== 模块注册与管理 ====================
-    
-    def register(self, module_name: str, module_class: Type, module_info: Optional[Dict] = None) -> bool:
+
+    def register(
+        self, module_name: str, module_class: type, module_info: dict | None = None
+    ) -> bool:
         """
         注册模块类
-        
+
         :param module_name: 模块名称
         :param module_class: 模块类
         :param module_info: 模块信息
         :return: 是否注册成功
-        
+
         :raises TypeError: 当模块类无效时抛出
-            
+
         :example:
         >>> module.register("MyModule", MyModuleClass)
         """
@@ -69,39 +72,39 @@ class ModuleManager(ManagerBase):
             error_msg = f"模块 {module_name} 的参数必须是类，而不是 {type(module_class).__name__}"
             logger.error(error_msg)
             raise TypeError(error_msg)
-            
+
         if not issubclass(module_class, BaseModule):
             warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 虽然没有继承自BaseModule，但我们仍会继续尝试加载这个模块"
             logger.warning(warn_msg)
             # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
             # logger.error(error_msg)
             # raise TypeError(error_msg)
-            
+
         # 验证模块名是否合法
         if not module_name or not isinstance(module_name, str):
             error_msg = "模块名称必须是非空字符串"
             logger.error(error_msg)
             raise TypeError(error_msg)
-            
+
         # 检查模块名是否已存在
         if module_name in self._module_classes:
             warn_msg = f"模块 {module_name} 已存在，将覆盖原模块类"
             logger.warning(warn_msg)
-            
+
         self._module_classes[module_name] = module_class
         if module_info:
             self._module_info[module_name] = module_info
-            
+
         logger.info(f"模块 {module_name} 已注册")
         return True
-    
+
     async def load(self, module_name: str) -> bool:
         """
         加载指定模块（标准化加载逻辑）
-        
+
         :param module_name: 模块名称
         :return: 是否加载成功
-            
+
         :example:
         >>> await module.load("MyModule")
         """
@@ -109,26 +112,26 @@ class ModuleManager(ManagerBase):
         if module_name not in self._module_classes:
             logger.error(f"模块 {module_name} 未注册")
             return False
-            
+
         # 检查模块是否已加载
         if module_name in self._loaded_modules:
             logger.info(f"模块 {module_name} 已加载")
             return True
-            
+
         try:
             # 创建模块实例
             module_class = self._module_classes[module_name]
-            
+
             # 检查模块类 __init__ 方法的参数
             init_signature = inspect.signature(module_class.__init__)
-            params = [p for p in init_signature.parameters.values() if p.name != 'self']
-            
+            params = [p for p in init_signature.parameters.values() if p.name != "self"]
+
             # 获取 sdk
-            sdk_to_use = self._sdk
-            if sdk_to_use is None:
+            if (sdk_to_use := self._sdk) is None:
                 from .. import sdk
+
                 sdk_to_use = sdk
-            
+
             # 根据参数情况创建实例
             if params:
                 instance = module_class(sdk_to_use)
@@ -138,9 +141,9 @@ class ModuleManager(ManagerBase):
             # 设置模块信息
             if module_name in self._module_info:
                 setattr(instance, "moduleInfo", self._module_info[module_name])
-                
+
             # 调用模块的on_load卸载方法
-            if hasattr(instance, 'on_load'):
+            if hasattr(instance, "on_load"):
                 try:
                     if inspect.iscoroutinefunction(instance.on_load):
                         await instance.on_load({"module_name": module_name})
@@ -149,35 +152,35 @@ class ModuleManager(ManagerBase):
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_load 方法执行失败: {e}")
                     return False
-                    
+
             # 缓存模块实例
             self._modules[module_name] = instance
             self._loaded_modules.add(module_name)
-            
+
             await lifecycle.submit_event(
-                    "module.load",
-                    data={
-                        "module_name": module_name,
-                        "success": True,
-                    },
-                    msg=f"模块 {module_name if module_name else 'All'} 加载成功",
-                )
+                "module.load",
+                data={
+                    "module_name": module_name,
+                    "success": True,
+                },
+                msg=f"模块 {module_name if module_name else 'All'} 加载成功",
+            )
             logger.info(f"模块 {module_name} 加载成功")
             return True
-            
+
         except Exception as e:
             await lifecycle.submit_event(
-                    "module.load",
-                    data={
-                        "module_name": module_name,
-                        "success": False,
-                    },
-                    msg=f"模块 {module_name if module_name else 'All'} 加载失败: {e}",
-                )
+                "module.load",
+                data={
+                    "module_name": module_name,
+                    "success": False,
+                },
+                msg=f"模块 {module_name if module_name else 'All'} 加载失败: {e}",
+            )
             logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
-            
-    async def unload(self, module_name: Optional[str] = None) -> bool:
+
+    async def unload(self, module_name: str | None = None) -> bool:
         """
         卸载指定模块或所有模块
 
@@ -197,22 +200,24 @@ class ModuleManager(ManagerBase):
             return success
         else:
             success = await self._unload_single_module(module_name)
-            
+
         await lifecycle.submit_event(
             "module.unload",
-            msg=f"模块 {module_name if module_name else 'All'} 卸载完成" if success else f"模块 {module_name if module_name else 'All'} 卸载失败",
+            msg=f"模块 {module_name if module_name else 'All'} 卸载完成"
+            if success
+            else f"模块 {module_name if module_name else 'All'} 卸载失败",
             data={
-                "module_name": module_name if module_name else 'All',
-                "success": success
-            }
+                "module_name": module_name if module_name else "All",
+                "success": success,
+            },
         )
         return success
-    
+
     async def _unload_single_module(self, module_name: str) -> bool:
         """
         {!--< internal-use >!--}
         卸载单个模块
-        
+
         :param module_name: 模块名称
         :return: 是否卸载成功
         """
@@ -220,11 +225,11 @@ class ModuleManager(ManagerBase):
         if module_name not in self._loaded_modules:
             logger.warning(f"模块 {module_name} 未加载")
             return True
-            
+
         try:
             # 调用模块的on_unload卸载方法
             instance = self._modules.get(module_name)
-            if instance and hasattr(instance, 'on_unload'):
+            if instance and hasattr(instance, "on_unload"):
                 try:
                     if inspect.iscoroutinefunction(instance.on_unload):
                         await instance.on_unload({"module_name": module_name})
@@ -232,52 +237,52 @@ class ModuleManager(ManagerBase):
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
-            
+
             # 清理缓存
-            del self._modules[module_name]            
+            del self._modules[module_name]
             self._loaded_modules.discard(module_name)
-            
+
             logger.info(f"模块 {module_name} 卸载成功")
             return True
-            
+
         except Exception as e:
             logger.error(f"卸载模块 {module_name} 失败: {e}")
             return False
-            
+
     def get(self, module_name: str) -> Any:
         """
         获取模块实例
-        
+
         :param module_name: 模块名称
         :return: 模块实例或None
-            
+
         :example:
         >>> my_module = module.get("MyModule")
         """
         return self._modules.get(module_name)
-        
+
     def exists(self, module_name: str) -> bool:
         """
         检查模块是否存在（在配置中注册）
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否存在
         """
         module_statuses = config.getConfig("ErisPulse.modules.status", {})
         return module_name in module_statuses
-    
+
     def is_loaded(self, module_name: str) -> bool:
         """
         检查模块是否已加载
-        
+
         :param module_name: 模块名称
         :return: 模块是否已加载
-            
+
         :example:
         >>> if module.is_loaded("MyModule"): ...
         """
         return module_name in self._loaded_modules
-        
+
     def is_running(self, module_name: str) -> bool:
         """
         检查模块是否正在运行（已加载）
@@ -291,7 +296,7 @@ class ModuleManager(ManagerBase):
         """
         return self.is_loaded(module_name)
 
-    def list_running(self) -> List[str]:
+    def list_running(self) -> list[str]:
         """
         列出所有正在运行的模块（已加载）
 
@@ -303,30 +308,30 @@ class ModuleManager(ManagerBase):
         """
         return self.list_loaded()
 
-    def list_registered(self) -> List[str]:
+    def list_registered(self) -> list[str]:
         """
         列出所有已注册的模块
-        
+
         :return: 模块名称列表
-            
+
         :example:
         >>> registered = module.list_registered()
         """
         return list(self._module_classes.keys())
-        
-    def list_loaded(self) -> List[str]:
+
+    def list_loaded(self) -> list[str]:
         """
         列出所有已加载的模块
-        
+
         :return: 模块名称列表
-            
+
         :example:
         >>> loaded = module.list_loaded()
         """
         return list(self._loaded_modules)
-    
+
     # ==================== 模块配置管理 ====================
-    
+
     def _config_register(self, module_name: str, enabled: bool = False) -> bool:
         """
         注册新模块信息
@@ -340,63 +345,63 @@ class ModuleManager(ManagerBase):
         """
         if self.exists(module_name):
             return True
-        
+
         # 模块不存在，进行注册
         config.setConfig(f"ErisPulse.modules.status.{module_name}", enabled)
         status = "启用" if enabled else "禁用"
         logger.info(f"模块 {module_name} 已注册并{status}")
         return True
-    
+
     def is_enabled(self, module_name: str) -> bool:
         """
         检查模块是否启用
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否启用
         """
-        status = config.getConfig(f"ErisPulse.modules.status.{module_name}")
-        
-        if status is None:
+        if (
+            status := config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        ) is None:
             return False
-        
+
         if isinstance(status, str):
-            return status.lower() not in ('false', '0', 'no', 'off')
-        
+            return status.lower() not in ("false", "0", "no", "off")
+
         return bool(status)
-    
+
     def enable(self, module_name: str) -> bool:
         """
         启用模块
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
         config.setConfig(f"ErisPulse.modules.status.{module_name}", True)
         logger.info(f"模块 {module_name} 已启用")
         return True
-    
+
     def disable(self, module_name: str) -> bool:
         """
         禁用模块
-        
+
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
         config.setConfig(f"ErisPulse.modules.status.{module_name}", False)
         logger.info(f"模块 {module_name} 已禁用")
-        
+
         if module_name in self._modules:
             del self._modules[module_name]
         self._loaded_modules.discard(module_name)
         return True
-    
+
     def unregister(self, module_name: str) -> bool:
         """
         取消注册模块
-        
+
         :param module_name: 模块名称
         :return: 是否取消成功
-        
+
         {!--< internal-use >!--}
         注意：此方法仅取消注册，不卸载已加载的模块
         {!--< /internal-use >!--}
@@ -404,60 +409,60 @@ class ModuleManager(ManagerBase):
         if module_name not in self._module_classes:
             logger.warning(f"模块 {module_name} 未注册")
             return False
-        
+
         # 移除模块类
         self._module_classes.pop(module_name)
-        
+
         # 移除模块信息
         if module_name in self._module_info:
             self._module_info.pop(module_name)
-        
+
         logger.info(f"模块 {module_name} 已取消注册")
         return True
-    
+
     def clear(self) -> None:
         """
         清除所有模块实例和类
-        
+
         {!--< internal-use >!--}
         此方法用于反初始化时完全重置模块管理器状态
         {!--< /internal-use >!--}
         """
         # 清除所有模块实例
         self._modules.clear()
-        
+
         # 清除所有已加载的模块名称
         self._loaded_modules.clear()
-        
+
         # 清除所有模块类
         self._module_classes.clear()
-        
+
         # 清除所有模块信息
         self._module_info.clear()
-        
+
         logger.debug("模块管理器已完全清理")
-    
-    def list_items(self) -> Dict[str, bool]:
+
+    def list_items(self) -> dict[str, bool]:
         """
         列出所有模块状态
 
-        :return: [Dict[str, bool]] {模块名: 是否启用} 字典
+        :return: [dict[str, bool]] {模块名: 是否启用} 字典
         """
         return config.getConfig("ErisPulse.modules.status", {})
-    
+
     # 兼容性方法 - 保持向后兼容
-    def list_modules(self) -> Dict[str, bool]:
+    def list_modules(self) -> dict[str, bool]:
         """
         列出所有模块状态
 
         {!--< deprecated >!--} 请使用 list_items() 代替
 
-        :return: [Dict[str, bool]] 模块状态字典
+        :return: [dict[str, bool]] 模块状态字典
         """
         return self.list_items()
-    
+
     # ==================== 工具方法 ====================
-    
+
     def __getattr__(self, module_name: str) -> Any:
         """
         通过属性访问获取模块实例
@@ -469,11 +474,10 @@ class ModuleManager(ManagerBase):
         :example:
         >>> my_module = module.MyModule
         """
-        module_instance = self.get(module_name)
-        if module_instance is None:
+        if (module_instance := self.get(module_name)) is None:
             raise AttributeError(f"模块 {module_name} 不存在或未启用")
         return module_instance
-    
+
     def __contains__(self, module_name: str) -> bool:
         """
         检查模块是否存在且处于启用状态
@@ -486,8 +490,7 @@ class ModuleManager(ManagerBase):
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 
-module : ModuleManager = ModuleManager()
 
-__all__ = [
-    "module"
-]
+module: ModuleManager = ModuleManager()
+
+__all__ = ["module"]

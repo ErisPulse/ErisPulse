@@ -107,7 +107,7 @@ ErisPulse 模块加载策略
 ---
 
 
-##### `from_dict(config: Dict[str, Any])`
+##### `from_dict(config: dict[str, Any])`
 
 从字典创建策略实例
 

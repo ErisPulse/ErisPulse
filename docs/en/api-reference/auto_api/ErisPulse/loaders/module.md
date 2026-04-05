@@ -55,17 +55,17 @@ ErisPulse 模块加载器
 从 entry-points 加载对象（使用 ModuleFinder）
 
 :param manager_instance: 管理器实例
-:return: 
-    Dict[str, Any]: 对象字典
-    List[str]: 启用列表
-    List[str]: 禁用列表
-    
+:return:
+    dict[str, Any]: 对象字典
+    list[str]: 启用列表
+    list[str]: 禁用列表
+
 **异常**: `ImportError` - 当加载失败时抛出
 
 ---
 
 
-##### `async async _process_entry_point(entry_point: Any, objs: Dict[str, Any], enabled_list: List[str], disabled_list: List[str], manager_instance: Any)`
+##### `async async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
 
 处理单个模块 entry-point
 
@@ -75,12 +75,12 @@ ErisPulse 模块加载器
 :param disabled_list: 停用的模块列表
 :param manager_instance: 模块管理器实例
 
-:return: 
-    Dict[str, Any]: 更新后的模块对象字典
-    List[str]: 更新后的启用模块列表 
-    List[str]: 更新后的禁用模块列表
+:return:
+    dict[str, Any]: 更新后的模块对象字典
+    list[str]: 更新后的启用模块列表
+    list[str]: 更新后的禁用模块列表
     bool: 是否为新模块
-    
+
 **异常**: `ImportError` - 当模块加载失败时抛出
 
 ---
@@ -113,7 +113,7 @@ ErisPulse 模块加载器
 ---
 
 
-##### `_resolve_strategy(module_class: Type)`
+##### `_resolve_strategy(module_class: type)`
 
 按优先级从模块类解析加载策略
 
@@ -142,7 +142,7 @@ ErisPulse 模块加载器
 ---
 
 
-##### `_get_load_strategy(module_class: Type)`
+##### `_get_load_strategy(module_class: type)`
 
 获取模块加载策略
 
@@ -163,7 +163,7 @@ ErisPulse 模块加载器
 ---
 
 
-##### `async async register_to_manager(modules: List[str], module_objs: Dict[str, Any], manager_instance: Any)`
+##### `async async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any)`
 
 将模块类注册到管理器
 
@@ -178,7 +178,7 @@ ErisPulse 模块加载器
 ---
 
 
-##### `async async initialize_modules(modules: List[str], module_objs: Dict[str, Any], manager_instance: Any, sdk_instance: Any)`
+##### `async async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
 
 初始化模块（创建实例并挂载到 SDK）
 
@@ -212,14 +212,14 @@ ErisPulse 模块加载器
 #### 方法列表
 
 
-##### `__init__(module_name: str, module_class: Type, sdk_ref: Any, module_info: Dict[str, Any], manager_instance: Any)`
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any)`
 
 初始化懒加载包装器
 
 :param module_name: str 模块名称
 :param module_class: Type 模块类
 :param sdk_ref: Any SDK 引用
-:param module_info: Dict[str, Any] 模块信息字典
+:param module_info: dict[str, Any] 模块信息字典
 :param manager_instance: 模块管理器实例
 
 ---
@@ -312,7 +312,7 @@ ErisPulse 模块加载器
 
 返回模块属性列表
 
-:return: List[str] 属性列表
+:return: list[str] 属性列表
 
 ---
 

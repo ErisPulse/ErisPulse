@@ -38,7 +38,7 @@ ErisPulse 管理器基类
 #### 方法列表
 
 
-##### `register(name: str, class_type: Type, info: Optional[Dict] = None)`
+##### `register(name: str, class_type: type, info: dict | None = None)`
 
 注册类
 
