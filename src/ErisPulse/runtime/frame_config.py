@@ -4,7 +4,7 @@ ErisPulse 框架配置管理模块
 提供默认配置定义及配置完整性管理功能
 """
 
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
@@ -43,8 +43,8 @@ DEFAULT_ERISPULSE_CONFIG = {
 }
 
 def _get_config_service():
-    from ..Core.config import ConfigManager
-    return ConfigManager()
+    from ..Core.config import config as global_config
+    return global_config
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -97,7 +97,7 @@ def get_erispulse_config() -> Dict[str, Any]:
     return complete_config
 
 
-def get_config(section: str = None) -> Union[Dict[str, Any], Any]:
+def get_config(section: Optional[str] = None) -> Union[Dict[str, Any], Any]:
     """
     获取 ErisPulse 配置
     
