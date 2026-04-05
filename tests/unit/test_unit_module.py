@@ -513,11 +513,9 @@ class TestBaseModule:
         class IncompleteModule(BaseModule):
             pass
         
-        module = IncompleteModule()
-        
-        # 验证抽象方法抛出异常
-        with pytest.raises(NotImplementedError):
-            await module.on_load({})
+        # 使用 ABC，无法实例化未实现抽象方法的类
+        with pytest.raises(TypeError, match="Can't instantiate abstract class"):
+            IncompleteModule()
     
     @pytest.mark.asyncio
     async def test_on_unload_abstractmethod(self):
@@ -526,12 +524,9 @@ class TestBaseModule:
             async def on_load(self, event):
                 return True
         
-        module = IncompleteModule()
-        
-        # 验证抽象方法抛出异常
-        with pytest.raises(NotImplementedError):
-            await module.on_unload({})
-
+        # 使用 ABC，无法实例化未实现所有抽象方法的类
+        with pytest.raises(TypeError, match="Can't instantiate abstract class"):
+            IncompleteModule()
 
 # ==================== 模块与生命周期集成测试 ====================
 
