@@ -621,17 +621,9 @@ class TestBaseAdapter:
         class IncompleteAdapter(BaseAdapter):
             pass
         
-        adapter = IncompleteAdapter()
-        
-        # 验证抽象方法抛出异常
-        with pytest.raises(NotImplementedError):
-            asyncio.run(adapter.start())
-        
-        with pytest.raises(NotImplementedError):
-            asyncio.run(adapter.shutdown())
-        
-        with pytest.raises(NotImplementedError):
-            asyncio.run(adapter.call_api("/test"))
+        # 使用 ABC，无法实例化未实现抽象方法的类
+        with pytest.raises(TypeError, match="Can't instantiate abstract class"):
+            IncompleteAdapter()
 
 
 # ==================== SendDSL Raw_ob12 测试 ====================
