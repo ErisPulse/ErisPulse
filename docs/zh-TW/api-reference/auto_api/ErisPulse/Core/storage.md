@@ -55,7 +55,7 @@ ErisPulse 存储管理模块
 ---
 
 
-####### `__exit__(exc_type: Type[Exception], exc_val: Exception, exc_tb: Any)`
+####### `__exit__(exc_type: type[Exception], exc_val: Exception, exc_tb: Any)`
 
 退出事务上下文
 
@@ -160,7 +160,7 @@ ErisPulse 存储管理模块
 ---
 
 
-##### `set_multi(items: Dict[str, Any])`
+##### `set_multi(items: dict[str, Any])`
 
 批量设置多个存储项
 
@@ -214,7 +214,7 @@ ErisPulse 存储管理模块
 ---
 
 
-##### `delete_multi(keys: List[str])`
+##### `delete_multi(keys: list[str])`
 
 批量删除多个存储项
 
@@ -229,7 +229,7 @@ ErisPulse 存储管理模块
 ---
 
 
-##### `get_multi(keys: List[str])`
+##### `get_multi(keys: list[str])`
 
 批量获取多个存储项的值
 
@@ -282,7 +282,6 @@ ErisPulse 存储管理模块
 :return: 存储项的值
 
 **异常**: `AttributeError` - 当存储项不存在时抛出
-    
 
 **示例**:
 ```python
@@ -298,7 +297,6 @@ ErisPulse 存储管理模块
 
 :param key: 存储项键名
 :param value: 存储项的值
-    
 
 **示例**:
 ```python

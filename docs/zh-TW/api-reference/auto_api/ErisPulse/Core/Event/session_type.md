@@ -20,7 +20,7 @@ ErisPulse 会话类型管理模块
 ## 函数列表
 
 
-### `register_custom_type(receive_type: str, send_type: str, id_field: str, platform: Optional[str] = None)`
+### `register_custom_type(receive_type: str, send_type: str, id_field: str, platform: str | None = None)`
 
 注册自定义会话类型
 
@@ -33,7 +33,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `unregister_custom_type(receive_type: str, platform: Optional[str] = None)`
+### `unregister_custom_type(receive_type: str, platform: str | None = None)`
 
 注销自定义会话类型
 
@@ -44,7 +44,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `get_id_field(receive_type: str, platform: Optional[str] = None)`
+### `get_id_field(receive_type: str, platform: str | None = None)`
 
 根据接收类型获取对应的ID字段名
 
@@ -55,7 +55,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `get_receive_type(id_field: str, platform: Optional[str] = None)`
+### `get_receive_type(id_field: str, platform: str | None = None)`
 
 根据ID字段获取对应的接收类型
 
@@ -66,7 +66,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `convert_to_send_type(receive_type: str, platform: Optional[str] = None)`
+### `convert_to_send_type(receive_type: str, platform: str | None = None)`
 
 将接收类型转换为发送目标类型
 
@@ -83,7 +83,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `convert_to_receive_type(send_type: str, platform: Optional[str] = None)`
+### `convert_to_receive_type(send_type: str, platform: str | None = None)`
 
 将发送目标类型转换为接收类型
 
@@ -100,7 +100,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `infer_receive_type(event: Dict, platform: Optional[str] = None)`
+### `infer_receive_type(event: dict, platform: str | None = None)`
 
 根据事件数据自动推断接收类型
 
@@ -121,7 +121,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `get_target_id(event: Dict, platform: Optional[str] = None)`
+### `get_target_id(event: dict, platform: str | None = None)`
 
 获取事件的目标ID（根据推断的会话类型）
 
@@ -138,7 +138,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `get_send_type_and_target_id(event: Dict, platform: Optional[str] = None)`
+### `get_send_type_and_target_id(event: dict, platform: str | None = None)`
 
 获取发送类型和目标ID（一步完成类型转换和ID获取）
 
@@ -193,7 +193,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `clear_custom_types(platform: Optional[str] = None)`
+### `clear_custom_types(platform: str | None = None)`
 
 清除自定义类型映射
 

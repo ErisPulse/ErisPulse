@@ -58,7 +58,7 @@ ErisPulse 基础加载器
 ---
 
 
-##### `async async _process_entry_point(entry_point: Any, objs: Dict[str, Any], enabled_list: List[str], disabled_list: List[str], manager_instance: Any)`
+##### `async async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
 
 处理单个 entry-point
 
@@ -80,11 +80,11 @@ ErisPulse 基础加载器
 从 entry-points 加载对象
 
 :param manager_instance: 管理器实例
-:return: 
-    Dict[str, Any]: 对象字典
-    List[str]: 启用列表
-    List[str]: 禁用列表
-    
+:return:
+    dict[str, Any]: 对象字典
+    list[str]: 启用列表
+    list[str]: 禁用列表
+
 **异常**: `ImportError` - 当加载失败时抛出
 
 ---

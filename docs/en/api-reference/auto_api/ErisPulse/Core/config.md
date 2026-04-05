@@ -39,7 +39,7 @@ ConfigManager 类提供相关功能。
 ---
 
 
-##### `_sort_config_dict(config_dict: Dict[str, Any])`
+##### `_sort_config_dict(config_dict: dict[str, Any])`
 
 递归地对配置字典进行排序，确保同一模块的配置项排列在一起
 :param config_dict: 待排序的配置字典
