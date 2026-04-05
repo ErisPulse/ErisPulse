@@ -60,8 +60,31 @@
   - @用户名
     - 优化某模块的性能
   ```
+## [2.4.0-dev.2] - 2026/04/05
+> 开发版本
+
+### 重构
+- @wsu2059q
+  - **类型注解现代化**：全面转向 Python 3.10+ 内置类型语法
+  - **collections.abc 替换**：
+    - `typing.Callable` → `collections.abc.Callable`
+    - `typing.Awaitable` → `collections.abc.Awaitable`
+    - `typing.Iterator` → `collections.abc.Iterator`
+  - **引入 StrEnum**：在 `session_type.py` 中使用 `enum.StrEnum` 替换字符串常量：
+    - 创建 `ReceiveType` 枚举类（PRIVATE, GROUP, CHANNEL, GUILD, THREAD, USER）
+    - 创建 `SendType` 枚举类（USER, GROUP, CHANNEL, GUILD, THREAD）
+    - 保持向后兼容
+  - **引入类型别名**：在 5 个文件中添加 `type` 别名声明：
+    - `session_type.py`: ReceiveTypeStr, SendTypeStr, SessionTypeMap, OptionalStr
+    - `config.py`: ConfigValue, ConfigKey
+    - `storage.py`: StorageKey, StorageValue
+    - `router.py`: HTTPHandler, WebSocketHandler, RoutePath
+    - `strategy.py`: StrategyData
+  - **引入海象运算符**
+  - **引入 match/case**
 
 ---
+
 ## [2.4.0-dev.1] - 2026/04/01
 > 开发版本
 

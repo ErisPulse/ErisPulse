@@ -8,15 +8,15 @@ import functools
 import asyncio
 import inspect
 import time
-from typing import (
-    Callable, Any, Dict, List, Type, Optional, Set, Union
-)
+from typing import Any
+from collections.abc import Callable
 from collections import defaultdict
 from .logger import logger
 from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
+
 
 class AdapterManager(ManagerBase):
     """
@@ -34,9 +34,9 @@ class AdapterManager(ManagerBase):
 
     def __init__(self):
         # 适配器存储 - 简化数据结构
-        self._adapters: Dict[str, BaseAdapter] = {}  # 平台名到实例的映射
-        self._started_instances: Set[BaseAdapter] = set()  # 已启动的实例
-        self._adapter_info: Dict[str, Dict] = {}  # 适配器信息
+        self._adapters: dict[str, BaseAdapter] = {}  # 平台名到实例的映射
+        self._started_instances: set[BaseAdapter] = set()  # 已启动的实例
+        self._adapter_info: dict[str, dict] = {}  # 适配器信息
 
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
@@ -44,14 +44,14 @@ class AdapterManager(ManagerBase):
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
         self._sdk = None
-        
+
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
-        self._bots: Dict[str, Dict[str, Dict]] = {}
-        
+        self._bots: dict[str, dict[str, dict]] = {}
+
     def set_sdk_ref(self, sdk) -> bool:
         """
         设置 SDK 引用
-        
+
         :param sdk: SDK 实例
         :return: 是否设置成功
         """
@@ -61,10 +61,15 @@ class AdapterManager(ManagerBase):
         except Exception as e:
             logger.error(f"设置SDK引用失败: {e}")
             return False
-        
+
     # ==================== 适配器注册与管理 ====================
-    
-    def register(self, platform: str, adapter_class: Type[BaseAdapter], adapter_info: Optional[Dict] = None) -> bool:
+
+    def register(
+        self,
+        platform: str,
+        adapter_class: type[BaseAdapter],
+        adapter_info: dict | None = None,
+    ) -> bool:
         """
         注册新的适配器类（标准化注册方法）
 
@@ -79,12 +84,14 @@ class AdapterManager(ManagerBase):
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
         if not issubclass(adapter_class, BaseAdapter):
-            raise TypeError("适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误")
+            raise TypeError(
+                "适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误"
+            )
 
         # 检查是否已存在该平台的适配器
         if platform in self._adapters:
             logger.warning(f"平台 {platform} 已存在，将覆盖原适配器")
-        
+
         if adapter_info:
             self._adapter_info[platform] = adapter_info
 
@@ -102,13 +109,14 @@ class AdapterManager(ManagerBase):
             # 创建适配器实例
             # 检查适配器类 __init__ 方法的参数
             init_signature = inspect.signature(adapter_class.__init__)
-            params = [p for p in init_signature.parameters.values() if p.name != 'self']
-            
+            params = [p for p in init_signature.parameters.values() if p.name != "self"]
+
             sdk_to_use = self._sdk
             if sdk_to_use is None:
                 from .. import sdk
+
                 sdk_to_use = sdk
-                
+
             # 根据参数情况创建实例
             if params:
                 instance = adapter_class(sdk_to_use)
@@ -116,10 +124,10 @@ class AdapterManager(ManagerBase):
                 instance = adapter_class()
 
             self._adapters[platform] = instance
-        
+
         return True
-    
-    async def startup(self, platforms: Optional[Union[str, List[str]]] = None) -> None:
+
+    async def startup(self, platforms: str | list[str] | None = None) -> None:
         """
         启动指定的适配器
 
@@ -146,15 +154,12 @@ class AdapterManager(ManagerBase):
 
         # 提交适配器启动开始事件
         await lifecycle.submit_event(
-            "adapter.start",
-            msg="开始启动适配器",
-            data={
-                "platforms": platforms
-            }
+            "adapter.start", msg="开始启动适配器", data={"platforms": platforms}
         )
 
         from .router import router
         from ..runtime import get_server_config
+
         server_config = get_server_config()
 
         host = server_config["host"]
@@ -164,10 +169,7 @@ class AdapterManager(ManagerBase):
 
         # 启动服务器
         await router.start(
-            host=host,
-            port=port,
-            ssl_certfile=ssl_cert,
-            ssl_keyfile=ssl_key
+            host=host, port=port, ssl_certfile=ssl_cert, ssl_keyfile=ssl_key
         )
         # 已经被调度过的 adapter 实例集合（防止重复调度）
         scheduled_adapters = set()
@@ -200,7 +202,9 @@ class AdapterManager(ManagerBase):
         async with adapter._starting_lock:
             # 再次确认是否已经被启动
             if adapter in self._started_instances:
-                logger.info(f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过")
+                logger.info(
+                    f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过"
+                )
                 return
 
             retry_count = 0
@@ -214,8 +218,8 @@ class AdapterManager(ManagerBase):
                 data={
                     "platform": platform,
                     "status": "starting",
-                    "retry_count": retry_count
-                }
+                    "retry_count": retry_count,
+                },
             )
 
             while True:
@@ -227,16 +231,15 @@ class AdapterManager(ManagerBase):
                     await lifecycle.submit_event(
                         "adapter.status.change",
                         msg=f"适配器 {platform} 状态变化: started",
-                        data={
-                            "platform": platform,
-                            "status": "started"
-                        }
+                        data={"platform": platform, "status": "started"},
                     )
 
                     return
                 except Exception as e:
                     retry_count += 1
-                    logger.error(f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}")
+                    logger.error(
+                        f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}"
+                    )
 
                     # 提交适配器状态变化事件（start_failed）
                     await lifecycle.submit_event(
@@ -246,8 +249,8 @@ class AdapterManager(ManagerBase):
                             "platform": platform,
                             "status": "start_failed",
                             "retry_count": retry_count,
-                            "error": str(e)
-                        }
+                            "error": str(e),
+                        },
                     )
 
                     try:
@@ -263,21 +266,19 @@ class AdapterManager(ManagerBase):
 
                     logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
                     await asyncio.sleep(wait_time)
+
     async def shutdown(self) -> None:
         """
         关闭所有适配器
         """
         # 提交适配器关闭开始事件
-        await lifecycle.submit_event(
-            "adapter.stop",
-            msg="开始关闭适配器",
-            data={}
-        )
+        await lifecycle.submit_event("adapter.stop", msg="开始关闭适配器", data={})
 
         for adapter in self._adapters.values():
             await adapter.shutdown()
 
         from .router import router
+
         await router.stop()
 
         # 将所有Bot标记为离线
@@ -287,40 +288,37 @@ class AdapterManager(ManagerBase):
 
         # 清空已启动实例集合
         self._started_instances.clear()
-        
+
         # 清空事件处理器
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
 
         # 提交适配器关闭完成事件
-        await lifecycle.submit_event(
-            "adapter.stopped",
-            msg="适配器关闭完成"
-        )
-    
+        await lifecycle.submit_event("adapter.stopped", msg="适配器关闭完成")
+
     def clear(self) -> None:
         """
         清除所有适配器实例和信息
-        
+
         {!--< internal-use >!--}
         此方法用于反初始化时完全重置适配器管理器状态
         {!--< /internal-use >!--}
         """
         # 清除所有适配器实例
         self._adapters.clear()
-        
+
         # 清除适配器信息
         self._adapter_info.clear()
-        
+
         # 清除所有处理器
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
-        
+
         # 清除Bot状态
         self._bots.clear()
-        
+
         logger.debug("适配器管理器已完全清理")
 
     # ==================== 适配器配置管理 ====================
@@ -368,7 +366,7 @@ class AdapterManager(ManagerBase):
 
         # 处理字符串形式的布尔值
         if isinstance(status, str):
-            return status.lower() not in ('false', '0', 'no', 'off')
+            return status.lower() not in ("false", "0", "no", "off")
 
         return bool(status)
 
@@ -383,7 +381,7 @@ class AdapterManager(ManagerBase):
         if platform not in self._adapters:
             logger.error(f"平台 {platform} 不存在")
             return False
-        
+
         config.setConfig(f"ErisPulse.adapters.status.{platform}", True)
         logger.info(f"平台 {platform} 已启用")
         return True
@@ -399,7 +397,7 @@ class AdapterManager(ManagerBase):
         if platform not in self._adapters:
             logger.error(f"平台 {platform} 不存在")
             return False
-        
+
         config.setConfig(f"ErisPulse.adapters.status.{platform}", False)
         logger.info(f"平台 {platform} 已禁用")
         return True
@@ -407,10 +405,10 @@ class AdapterManager(ManagerBase):
     def unregister(self, platform: str) -> bool:
         """
         取消注册适配器
-        
+
         :param platform: 平台名称
         :return: 是否取消成功
-        
+
         {!--< internal-use >!--}
         注意：此方法仅取消注册，不关闭已启动的适配器
         {!--< /internal-use >!--}
@@ -418,43 +416,49 @@ class AdapterManager(ManagerBase):
         if platform not in self._adapters:
             logger.warning(f"平台 {platform} 未注册")
             return False
-        
+
         # 移除适配器实例
         self._adapters.pop(platform)
-        
+
         logger.info(f"平台 {platform} 已取消注册")
         return True
-    
-    def list_registered(self) -> List[str]:
+
+    def list_registered(self) -> list[str]:
         """
         列出所有已注册的平台
-        
+
         :return: 平台名称列表
         """
         return list(self._adapters.keys())
-    
-    def list_items(self) -> Dict[str, bool]:
+
+    def list_items(self) -> dict[str, bool]:
         """
         列出所有平台适配器状态
-        
+
         :return: {平台名: 是否启用} 字典
         """
         return config.getConfig("ErisPulse.adapters.status", {})
-    
+
     # 兼容性方法 - 保持向后兼容
-    def list_adapters(self) -> Dict[str, bool]:
+    def list_adapters(self) -> dict[str, bool]:
         """
         列出所有平台适配器状态
-        
+
         {!--< deprecated >!--} 请使用 list_items() 代替
-        
-        :return: [Dict[str, bool]] 平台适配器状态字典
+
+        :return: [dict[str, bool]] 平台适配器状态字典
         """
         return self.list_items()
 
     # ==================== 事件处理与消息发送 ====================
 
-    def on(self, event_type: str = "*", *, raw: bool = False, platform: Optional[str] = None) -> Callable[[Callable], Callable]:
+    def on(
+        self,
+        event_type: str = "*",
+        *,
+        raw: bool = False,
+        platform: str | None = None,
+    ) -> Callable[[Callable], Callable]:
         """
         OneBot12协议事件监听装饰器
 
@@ -484,22 +488,21 @@ class AdapterManager(ManagerBase):
         >>> async def handle_all_raw_message(data):
         >>>     print(f"收到原生事件: {data}")
         """
+
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
                 return await func(*args, **kwargs)
 
             # 创建带元信息的处理器包装器
-            handler_wrapper = {
-                'func': wrapper,
-                'platform': platform
-            }
+            handler_wrapper = {"func": wrapper, "platform": platform}
 
             if raw:
                 self._raw_handlers[event_type].append(handler_wrapper)
             else:
                 self._onebot_handlers[event_type].append(handler_wrapper)
             return wrapper
+
         return decorator
 
     def middleware(self, func: Callable) -> Callable:
@@ -543,30 +546,41 @@ class AdapterManager(ManagerBase):
 
         # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
         # 同时也处理普通事件中的 self 字段（自动发现Bot）
-        self_info = data.get("self")
-        if isinstance(self_info, dict) and "user_id" in self_info:
+        if (
+            (self_info := data.get("self"))
+            and isinstance(self_info, dict)
+            and "user_id" in self_info
+        ):
             if event_type == "meta":
                 detail_type = data.get("detail_type", "")
-                if detail_type == "connect":
-                    # Bot 连接上线
-                    is_new_bot = self._auto_register_bot(platform, self_info)
-                    bot_id = str(self_info["user_id"])
-                    await lifecycle.submit_event(
-                        "adapter.bot.online",
-                        msg=f"Bot {platform}/{bot_id} 上线",
-                        data={
-                            "platform": platform,
-                            "bot_id": bot_id,
-                            "info": self._bots.get(platform, {}).get(bot_id, {}).get("info", {}),
-                            "status": "online"
-                        }
-                    )
-                elif detail_type == "disconnect":
-                    # Bot 断开连接
-                    self._update_bot_status(platform, str(self_info["user_id"]), "offline")
-                elif detail_type == "heartbeat":
-                    # 心跳，更新活跃时间
-                    self._update_bot_heartbeat(platform, self_info)
+                match detail_type:
+                    case "connect":
+                        # Bot 连接上线
+                        is_new_bot = self._auto_register_bot(platform, self_info)
+                        bot_id = str(self_info["user_id"])
+                        await lifecycle.submit_event(
+                            "adapter.bot.online",
+                            msg=f"Bot {platform}/{bot_id} 上线",
+                            data={
+                                "platform": platform,
+                                "bot_id": bot_id,
+                                "info": self._bots.get(platform, {})
+                                .get(bot_id, {})
+                                .get("info", {}),
+                                "status": "online",
+                            },
+                        )
+                    case "disconnect":
+                        # Bot 断开连接
+                        self._update_bot_status(
+                            platform, str(self_info["user_id"]), "offline"
+                        )
+                    case "heartbeat":
+                        # 心跳，更新活跃时间
+                        self._update_bot_heartbeat(platform, self_info)
+                    case _:
+                        # 其他 detail_type 不做特殊处理
+                        pass
             else:
                 # 普通事件：自动发现Bot并更新活跃时间
                 self._auto_register_bot(platform, self_info)
@@ -588,13 +602,13 @@ class AdapterManager(ManagerBase):
 
         # 调用符合条件的标准事件处理器
         for handler_wrapper in handlers_to_call:
-            handler_platform = handler_wrapper.get('platform')
+            handler_platform = handler_wrapper.get("platform")
             # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
             if handler_platform is None or handler_platform == platform:
-                await handler_wrapper['func'](processed_data)
+                await handler_wrapper["func"](processed_data)
 
         # 只有当存在原生事件数据时才分发原生事件
-        if raw_event_type and platform_raw is not None:
+        if raw_event_type and (platform_raw := data.get(f"{platform}_raw")) is not None:
             raw_handlers_to_call = []
 
             # 处理特定原生事件类型的处理器
@@ -606,10 +620,10 @@ class AdapterManager(ManagerBase):
 
             # 调用符合条件的原生事件处理器
             for handler_wrapper in raw_handlers_to_call:
-                handler_platform = handler_wrapper.get('platform')
+                handler_platform = handler_wrapper.get("platform")
                 # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
                 if handler_platform is None or handler_platform == platform:
-                    await handler_wrapper['func'](platform_raw)
+                    await handler_wrapper["func"](platform_raw)
 
     # ==================== Bot状态管理 ====================
 
@@ -657,7 +671,7 @@ class AdapterManager(ManagerBase):
         self._bots[platform][bot_id] = {
             "status": "online",
             "last_active": time.time(),
-            "info": existing_meta
+            "info": existing_meta,
         }
 
         if is_new:
@@ -678,19 +692,27 @@ class AdapterManager(ManagerBase):
             self._bots[platform] = {}
 
         if bot_id not in self._bots[platform]:
-            self._bots[platform][bot_id] = {"status": status, "last_active": time.time(), "info": {}}
+            self._bots[platform][bot_id] = {
+                "status": status,
+                "last_active": time.time(),
+                "info": {},
+            }
         else:
             old_status = self._bots[platform][bot_id].get("status")
             self._bots[platform][bot_id]["status"] = status
             if old_status != status:
-                logger.debug(f"Bot状态变更: {platform}/{bot_id} {old_status} -> {status}")
+                logger.debug(
+                    f"Bot状态变更: {platform}/{bot_id} {old_status} -> {status}"
+                )
 
         if status == "offline":
-            asyncio.ensure_future(lifecycle.submit_event(
-                "adapter.bot.offline",
-                msg=f"Bot {platform}/{bot_id} 离线",
-                data={"platform": platform, "bot_id": bot_id, "status": "offline"}
-            ))
+            asyncio.ensure_future(
+                lifecycle.submit_event(
+                    "adapter.bot.offline",
+                    msg=f"Bot {platform}/{bot_id} 离线",
+                    data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                )
+            )
 
     def _update_bot_heartbeat(self, platform: str, self_info: dict) -> None:
         """
@@ -717,7 +739,7 @@ class AdapterManager(ManagerBase):
             if bot_meta:
                 self._bots[platform][bot_id].setdefault("info", {}).update(bot_meta)
 
-    def get_bot_info(self, platform: str, bot_id: str) -> Optional[Dict]:
+    def get_bot_info(self, platform: str, bot_id: str) -> dict | None:
         """
         获取Bot详细信息
 
@@ -731,7 +753,7 @@ class AdapterManager(ManagerBase):
         """
         return self._bots.get(platform, {}).get(bot_id)
 
-    def list_bots(self, platform: Optional[str] = None) -> Dict[str, Dict[str, Dict]]:
+    def list_bots(self, platform: str | None = None) -> dict[str, dict[str, dict]]:
         """
         列出Bot信息
 
@@ -760,12 +782,11 @@ class AdapterManager(ManagerBase):
         >>> if adapter.is_bot_online("telegram", "123456"):
         ...     print("Bot在线")
         """
-        bot_info = self._bots.get(platform, {}).get(bot_id)
-        if bot_info is None:
+        if (bot_info := self._bots.get(platform, {}).get(bot_id)) is None:
             return False
         return bot_info.get("status") == "online"
 
-    def get_status_summary(self) -> Dict[str, Any]:
+    def get_status_summary(self) -> dict[str, Any]:
         """
         获取适配器与Bot的完整状态摘要
 
@@ -800,16 +821,14 @@ class AdapterManager(ManagerBase):
 
             adapters_summary[platform_name] = {
                 "status": adapter_status,
-                "bots": dict(self._bots.get(platform_name, {}))
+                "bots": dict(self._bots.get(platform_name, {})),
             }
 
-        return {
-            "adapters": adapters_summary
-        }
+        return {"adapters": adapters_summary}
 
     # ==================== 工具方法 ====================
 
-    def get(self, platform: str) -> Optional[BaseAdapter]:
+    def get(self, platform: str) -> BaseAdapter | None:
         """
         获取指定平台的适配器实例
 
@@ -836,12 +855,11 @@ class AdapterManager(ManagerBase):
         >>> if adapter.is_running("onebot11"):
         >>>     print("onebot11 适配器正在运行")
         """
-        adapter_instance = self.get(platform)
-        if adapter_instance is None:
+        if (adapter_instance := self.get(platform)) is None:
             return False
         return adapter_instance in self._started_instances
 
-    def list_running(self) -> List[str]:
+    def list_running(self) -> list[str]:
         """
         列出所有正在运行的适配器（已启动）
 
@@ -857,8 +875,7 @@ class AdapterManager(ManagerBase):
                 running_platforms.append(platform)
         return running_platforms
 
-
-    def list_sends(self, platform: str) -> List[str]:
+    def list_sends(self, platform: str) -> list[str]:
         """
         列出指定平台支持的发送方法
 
@@ -870,22 +887,22 @@ class AdapterManager(ManagerBase):
         >>> methods = adapter.list_sends("onebot11")
         >>> print(methods)  # ["Text", "Image", "Voice", ...]
         """
-        adapter_instance = self.get(platform)
-        if adapter_instance is None:
+        if (adapter_instance := self.get(platform)) is None:
             raise ValueError(f"平台 {platform} 不存在")
-        
+
         # 获取Send类
         send_class = adapter_instance.Send.__class__
-        
+
         # 获取SendDSL基类的所有方法名称
         from .Bases.adapter import SendDSL
+
         base_dsl_methods = set(dir(SendDSL))
-        
+
         # 获取Send类中定义的方法，排除基类方法和私有方法
         send_methods = []
         for name in dir(send_class):
             # 跳过私有方法和魔法方法
-            if name.startswith('_'):
+            if name.startswith("_"):
                 continue
             # 跳过基类中已有的方法
             if name in base_dsl_methods:
@@ -894,10 +911,10 @@ class AdapterManager(ManagerBase):
             attr = getattr(send_class, name)
             if callable(attr):
                 send_methods.append(name)
-        
+
         return sorted(send_methods)
 
-    def send_info(self, platform: str, method_name: str) -> Dict[str, Any]:
+    def send_info(self, platform: str, method_name: str) -> dict[str, Any]:
         """
         获取指定发送方法的详细信息
 
@@ -918,65 +935,64 @@ class AdapterManager(ManagerBase):
         #     "docstring": "发送文本消息..."
         # }
         """
-        adapter_instance = self.get(platform)
-        if adapter_instance is None:
+        if (adapter_instance := self.get(platform)) is None:
             raise ValueError(f"平台 {platform} 不存在")
-        
+
         # 获取Send类
         send_class = adapter_instance.Send.__class__
-        
+
         # 检查方法是否存在
         if not hasattr(send_class, method_name):
             raise ValueError(f"方法 {method_name} 不存在")
-        
+
         method = getattr(send_class, method_name)
-        
+
         # 提取参数信息
         parameters = []
         if inspect.ismethod(method) or inspect.isfunction(method):
             sig = inspect.signature(method)
             for param_name, param in sig.parameters.items():
                 # 跳过self参数
-                if param_name == 'self':
+                if param_name == "self":
                     continue
-                
+
                 param_info = {
                     "name": param_name,
                     "type": None,
                     "default": None,
-                    "annotation": None
+                    "annotation": None,
                 }
-                
+
                 # 获取类型注解
                 if param.annotation != inspect.Parameter.empty:
                     param_info["annotation"] = str(param.annotation)
                     param_info["type"] = str(param.annotation)
-                
+
                 # 获取默认值
                 if param.default != inspect.Parameter.empty:
                     param_info["default"] = str(param.default)
-                
+
                 parameters.append(param_info)
-        
+
         # 提取返回类型
         return_type = None
         if inspect.ismethod(method) or inspect.isfunction(method):
             sig = inspect.signature(method)
             if sig.return_annotation != inspect.Signature.empty:
                 return_type = str(sig.return_annotation)
-        
+
         # 提取文档字符串
         docstring = inspect.getdoc(method) or ""
-        
+
         return {
             "name": method_name,
             "parameters": parameters,
             "return_type": return_type,
-            "docstring": docstring
+            "docstring": docstring,
         }
 
     @property
-    def platforms(self) -> List[str]:
+    def platforms(self) -> list[str]:
         """
         获取所有已注册的平台列表
 
@@ -995,8 +1011,7 @@ class AdapterManager(ManagerBase):
         :return: 适配器实例
         :raises AttributeError: 当平台不存在或未启用时
         """
-        adapter_instance = self.get(platform)
-        if adapter_instance is None:
+        if (adapter_instance := self.get(platform)) is None:
             raise AttributeError(f"平台 {platform} 不存在或未启用")
         return adapter_instance
 
@@ -1009,8 +1024,7 @@ class AdapterManager(ManagerBase):
         """
         return self.exists(platform) and self.is_enabled(platform)
 
-adapter : AdapterManager = AdapterManager()
 
-__all__ = [
-    "adapter"
-]
+adapter: AdapterManager = AdapterManager()
+
+__all__ = ["adapter"]
