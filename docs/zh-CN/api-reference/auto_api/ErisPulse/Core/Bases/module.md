@@ -14,7 +14,7 @@ ErisPulse 模块基础模块
 ## 类列表
 
 
-### `class BaseModule`
+### `class BaseModule(ABC)`
 
 模块基类
 

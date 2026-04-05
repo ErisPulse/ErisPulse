@@ -30,7 +30,7 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
-##### `__call__(name: Union[str, List[str]] = None, aliases: List[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False)`
+##### `__call__(name: str | list[str] = None, aliases: list[str] = None, group: str = None, priority: int = 0, permission: Callable = None, help: str = None, usage: str = None, hidden: bool = False)`
 
 命令装饰器
 
@@ -57,7 +57,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async wait_reply(event: Dict[str, Any], prompt: str = None, timeout: float = 60.0, callback: Callable[[Dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[Dict[str, Any]], bool] = None)`
+##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = 60.0, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
 
 等待用户回复
 
@@ -71,7 +71,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _handle_message(event: Dict[str, Any])`
+##### `async async _handle_message(event: dict[str, Any])`
 
 处理消息事件中的命令
 
@@ -83,7 +83,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _try_execute_command(event: Dict[str, Any], original_text: str, check_text: str)`
+##### `async async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str)`
 
 尝试执行命令
 
@@ -98,7 +98,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _check_pending_reply(event: Dict[str, Any])`
+##### `async async _check_pending_reply(event: dict[str, Any])`
 
 检查是否是等待回复的消息
 
@@ -107,7 +107,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _send_permission_denied(event: Dict[str, Any])`
+##### `async async _send_permission_denied(event: dict[str, Any])`
 
 发送权限拒绝消息
 
@@ -119,7 +119,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _send_command_error(event: Dict[str, Any], error: str)`
+##### `async async _send_command_error(event: dict[str, Any], error: str)`
 
 发送命令错误消息
 

@@ -49,7 +49,7 @@ ErisPulse 路由系统
 :param prefix: str 路径前缀（如模块名）
 :param path: str 路径部分
 
-:return: 
+:return:
     str: 标准化后的完整路径
 
 > **内部方法** 
@@ -68,14 +68,14 @@ ErisPulse 路由系统
 ---
 
 
-##### `register_http_route(module_name: str, path: str, handler: Callable, methods: List[str] = ['POST'])`
+##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] = ['POST'])`
 
 注册HTTP路由
 
 :param module_name: str 模块名称
 :param path: str 路由路径
 :param handler: Callable 处理函数
-:param methods: List[str] HTTP方法列表(默认["POST"])
+:param methods: list[str] HTTP方法列表(默认["POST"])
 
 **异常**: `ValueError` - 当路径和方法都已注册时抛出
 
@@ -96,13 +96,13 @@ ErisPulse 路由系统
 :param module_name: 模块名称
 :param path: 路由路径
 
-:return: 
+:return:
     bool: 是否成功取消注册
 
 ---
 
 
-##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Optional[Callable[[WebSocket], Awaitable[bool]]] = None, auto_accept: bool = True)`
+##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True)`
 
 注册WebSocket路由
 
@@ -124,7 +124,7 @@ ErisPulse 路由系统
 :param module_name: 模块名称
 :param path: WebSocket路径
 
-:return: 
+:return:
     bool: 是否成功取消注册
 
 ---
@@ -134,7 +134,7 @@ ErisPulse 路由系统
 
 获取FastAPI应用实例
 
-:return: 
+:return:
     FastAPI: FastAPI应用实例
 
 ---
@@ -150,14 +150,14 @@ ErisPulse 路由系统
 ---
 
 
-##### `async async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: Optional[str] = None, ssl_keyfile: Optional[str] = None)`
+##### `async async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`
 
 启动路由服务器
 
 :param host: str 监听地址(默认"0.0.0.0")
 :param port: int 监听端口(默认8000)
-:param ssl_certfile: Optional[str] SSL证书路径
-:param ssl_keyfile: Optional[str] SSL密钥路径
+:param ssl_certfile: str | None SSL证书路径
+:param ssl_keyfile: str | None SSL密钥路径
 
 **异常**: `RuntimeError` - 当服务器已在运行时抛出
 
@@ -176,7 +176,7 @@ ErisPulse 路由系统
 格式化URL显示
 
 :param url: str 原始URL
-:return: 
+:return:
     str: 格式化后的URL
 
 ---
