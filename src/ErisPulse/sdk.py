@@ -255,7 +255,11 @@ class SDK:
                 logger.print_section_header("初始化完成")
                 
                 # 显示耗时
-                duration_str = f"{load_duration:.2f}s" if load_duration >= 1 else f"{load_duration*1000:.0f}ms"
+                duration_str = (
+                    f"{load_duration:.2f}s"
+                    if load_duration >= 1
+                    else f"{load_duration * 1000:.0f}ms"
+                )
                 logger.print_info(f"耗时: {duration_str}", level=1)
                 
                 if enabled_adapters:
@@ -384,8 +388,12 @@ class SDK:
                 
                 # 获取清理耗时
                 uninit_duration = lifecycle.stop_timer("core.uninit")
-                duration_str = f"{uninit_duration:.2f}s" if uninit_duration >= 1 else f"{uninit_duration*1000:.0f}ms"
-                
+                duration_str = (
+                    f"{uninit_duration:.2f}s"
+                    if uninit_duration >= 1
+                    else f"{uninit_duration * 1000:.0f}ms"
+                )
+
                 # 提交生命周期事件
                 await lifecycle.submit_event(
                     "core.uninit.complete",
@@ -395,8 +403,8 @@ class SDK:
                         "success": True,
                         "adapters_closed": len(registered_adapters),
                         "modules_unloaded": len(loaded_modules),
-                        "module_properties_cleared": module_properties_cleared
-                    }
+                        "module_properties_cleared": module_properties_cleared,
+                    },
                 )
                 
                 logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
@@ -410,8 +418,8 @@ class SDK:
                     data={
                         "duration": uninit_duration,
                         "success": False,
-                        "error": str(e)
-                    }
+                        "error": str(e),
+                    },
                 )
                 if "attached to a different loop" in str(e):
                     # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
@@ -459,7 +467,7 @@ class SDK:
         
         await lifecycle.submit_event(
             "core.init.start",
-            msg="开始初始化"
+            msg="开始初始化",
         )
 
         logger.info("准备初始化环境...")
@@ -479,8 +487,8 @@ class SDK:
                 msg="模块初始化失败",
                 data={
                     "duration": load_duration,
-                    "success": False
-                }
+                    "success": False,
+                },
             )
             logger.error(f"环境准备失败: {e}")
             return False
@@ -578,14 +586,17 @@ if __name__ == "__main__":
             module_instance = getattr(self, module_name, None)
             if isinstance(module_instance, LazyModule):
                 # 检查模块是否需要异步初始化
-                if hasattr(module_instance, '_needs_async_init') and object.__getattribute__(module_instance, '_needs_async_init'):
+                if hasattr(
+                    module_instance, "_needs_async_init"
+                ) and object.__getattribute__(module_instance, "_needs_async_init"):
                     # 对于需要异步初始化的模块，执行完整异步初始化
                     await module_instance._initialize()
-                    object.__setattr__(module_instance, '_needs_async_init', False)
+                    object.__setattr__(module_instance, "_needs_async_init", False)
                     return True
                 # 检查模块是否已经同步初始化但未完成异步部分
-                elif (object.__getattribute__(module_instance, '_initialized') and 
-                      object.__getattribute__(module_instance, '_is_base_module')):
+                elif object.__getattribute__(
+                    module_instance, "_initialized"
+                ) and object.__getattribute__(module_instance, "_is_base_module"):
                     # 如果是 BaseModule 子类且已同步初始化，只需完成异步部分
                     await module_instance._complete_async_init()
                     return True
@@ -654,7 +665,9 @@ if __name__ == "__main__":
             await self.adapter.startup()
             
             logger.info("[Reload] 重新加载完成")
-            logger.info(f"[Reload] " + "-"*50 + " ErisPulse已重新加载 -"*50+" [Reload]")
+            logger.info(
+                f"[Reload] ErisPulse已重新加载 [Reload]"
+            )
             return True
         except Exception as e:
             logger.error(f"[Reload] 重启失败: {e}")
