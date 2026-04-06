@@ -294,7 +294,7 @@ class RouterManager:
                 ]
                 return True
 
-            logger.error(f"\n注销WebSocket失败: 路径 {full_path} 不存在\n")
+            logger.debug(f"\n取消注册的路由不存在: {full_path}\n")
             return False
         except Exception as e:
             logger.error(f"注销WebSocket失败: {e}")
