@@ -67,6 +67,15 @@ test = [
     "pytest-xdist>=3.0.0",
     "pytest-mock>=3.10.0",
 ]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-mock>=3.10.0",
+    "pyclean>=3.6.0",
+    "ruff>=0.1.7",
+]
 
 [project.scripts]
 ep-init = "ErisPulse.__init__:init_sync"
