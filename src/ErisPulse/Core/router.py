@@ -11,7 +11,7 @@ ErisPulse 路由系统
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRoute
-from typing import Any
+from typing import Any, TypeAlias
 from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
@@ -32,9 +32,9 @@ try:
 except importlib.metadata.PackageNotFoundError:
     pass
 
-type HTTPHandler = Callable
-type WebSocketHandler = Callable[[WebSocket], Awaitable[Any]]
-type RoutePath = str
+HTTPHandler: TypeAlias = Callable
+WebSocketHandler: TypeAlias = Callable[[WebSocket], Awaitable[Any]]
+RoutePath: TypeAlias = str
 
 
 class RouterManager:
