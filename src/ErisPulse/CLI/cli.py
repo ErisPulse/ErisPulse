@@ -168,7 +168,8 @@ class CLI:
         :raises KeyboardInterrupt: 用户中断时抛出
         :raises Exception: 命令执行失败时抛出
         """
-        args = self.parser.parse_args()
+        args, unknown = self.parser.parse_known_args()
+        args._unknown_args = unknown
         
         # 处理版本选项
         if args.version:
@@ -177,8 +178,13 @@ class CLI:
         
         # 没有指定命令时显示帮助
         if not args.command:
+            if unknown:
+                console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
             self.parser.print_help()
             return
+        
+        if unknown and args.command not in ('install',):
+            console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
         
         try:
             # 执行命令
