@@ -12,13 +12,14 @@ ErisPulse 会话类型管理模块
 """
 
 from enum import StrEnum
+from typing import TypeAlias
 
 from .. import logger
 
-type ReceiveTypeStr = str
-type SendTypeStr = str
-type SessionTypeMap = dict[str, str]
-type OptionalStr = str | None
+ReceiveTypeStr: TypeAlias = str
+SendTypeStr: TypeAlias = str
+SessionTypeMap: TypeAlias = dict[str, str]
+OptionalStr: TypeAlias = str | None
 
 # ==================== 标准会话类型定义 ====================
 

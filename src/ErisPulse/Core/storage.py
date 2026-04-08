@@ -14,11 +14,11 @@ import os
 import json
 import sqlite3
 import threading
-from typing import Any
+from typing import Any, TypeAlias
 from contextlib import contextmanager
 
-type StorageKey = str
-type StorageValue = Any
+StorageKey: TypeAlias = str
+StorageValue: TypeAlias = Any
 
 
 class StorageManager:
