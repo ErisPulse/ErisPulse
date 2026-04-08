@@ -186,13 +186,25 @@ ErisPulse包管理器
 ---
 
 
-##### `install_package(package_names: List[str], upgrade: bool = False, pre: bool = False)`
+##### `install_package(package_names: List[str], upgrade: bool = False, pre: bool = False, extra_pip_args: List[str] = None)`
 
 安装指定包（支持多个包）
 
 :param package_names: 要安装的包名或别名列表
 :param upgrade: 是否升级已安装的包
 :param pre: 是否包含预发布版本
+:param extra_pip_args: 额外的 pip 参数
+:return: 安装是否成功
+
+---
+
+
+##### `install_direct(pip_args: List[str], description: str = 'pip install')`
+
+直接执行 pip install 命令（跳过别名解析和兼容性检查）
+
+:param pip_args: pip install 的参数列表（不含 "install" 本身）
+:param description: 进度条描述
 :return: 安装是否成功
 
 ---

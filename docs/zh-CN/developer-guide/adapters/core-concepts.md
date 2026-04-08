@@ -613,6 +613,114 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
+## Bot 状态管理
+
+AdapterManager 内置了 Bot 状态追踪系统，自动维护所有已注册 Bot 的在线状态、活跃时间和元信息。
+
+### 自动发现机制
+
+当适配器通过 `adapter.emit()` 发送事件时，框架会自动检查事件中的 `self` 字段：
+
+- **meta 事件**：根据 `detail_type` 执行对应操作（connect 注册/断开标记离线/heartbeat 更新活跃时间）
+- **普通事件**（message/notice/request）：自动发现 Bot 并更新活跃时间
+
+```python
+# 所有包含 self 字段的事件都会触发自动发现
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" 已自动注册（如果首次出现）并更新活跃时间
+```
+
+### Meta 事件类型
+
+| `detail_type` | 说明 | 框架行为 |
+|---|---|---|
+| `connect` | Bot 连接 | 注册 Bot 并触发 `adapter.bot.online` 生命周期事件 |
+| `disconnect` | Bot 断开 | 标记 Bot 离线并触发 `adapter.bot.offline` 生命周期事件 |
+| `heartbeat` | Bot 心跳 | 更新 Bot 活跃时间和元信息 |
+
+### 适配器发送 Meta 事件
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的机器人",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### `self` 字段扩展信息
+
+`self` 字段除必需的 `platform` 和 `user_id` 外，还支持以下可选字段：
+
+| 字段 | 说明 |
+|---|---|
+| `user_name` | Bot 用户名 |
+| `nickname` | Bot 昵称 |
+| `avatar` | Bot 头像 URL |
+| `account_id` | 多账户标识 |
+
+### Bot 状态查询
+
+```python
+from ErisPulse import sdk
+
+# 获取单个 Bot 信息
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# 检查 Bot 是否在线
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 获取完整状态摘要（适合 WebUI 展示）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### 监听 Bot 生命周期
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 上线: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 下线: {platform}/{bot_id}")
+```
+
 ## 相关文档
 
 - [适配器开发入门](getting-started.md) - 创建第一个适配器
