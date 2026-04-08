@@ -63,6 +63,22 @@
 
 ---
 
+## [2.4.0-dev.3] - 2026/04/08
+> 开发版本
+
+### 修复
+- @wsu2059q
+  - **Python 3.10/3.11 兼容性修复**：将 Python 3.12+ 的 `type` 语句改为 `typing.TypeAlias`，确保框架在 Python 3.10+ 环境下正常运行
+  - 涉及文件：
+    - `Core/config.py`: ConfigValue, ConfigKey
+    - `Core/Event/session_type.py`: ReceiveTypeStr, SendTypeStr, SessionTypeMap, OptionalStr
+    - `Core/router.py`: HTTPHandler, WebSocketHandler, RoutePath
+    - `Core/storage.py`: StorageKey, StorageValue
+    - `loaders/strategy.py`: StrategyData
+
+
+---
+
 ## [2.4.0-dev.2] - 2026/04/05
 > 开发版本
 
