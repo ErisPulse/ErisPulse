@@ -63,7 +63,7 @@ class PackageManager:
         
         timeout = ClientTimeout(total=10)
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.text()
@@ -321,7 +321,7 @@ class PackageManager:
         url = f"https://pypi.org/pypi/{package_name}/json"
         
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -483,13 +483,14 @@ class PackageManager:
         
         return None
 
-    def install_package(self, package_names: List[str], upgrade: bool = False, pre: bool = False) -> bool:
+    def install_package(self, package_names: List[str], upgrade: bool = False, pre: bool = False, extra_pip_args: List[str] = None) -> bool:
         """
         安装指定包（支持多个包）
         
         :param package_names: 要安装的包名或别名列表
         :param upgrade: 是否升级已安装的包
         :param pre: 是否包含预发布版本
+        :param extra_pip_args: 额外的 pip 参数
         :return: 安装是否成功
         """
         all_success = True
@@ -531,6 +532,8 @@ class PackageManager:
                 cmd.append("--upgrade")
             if pre:
                 cmd.append("--pre")
+            if extra_pip_args:
+                cmd.extend(extra_pip_args)
             cmd.append(current_package_name)
             
             # 执行安装命令
@@ -553,6 +556,34 @@ class PackageManager:
                 all_success = False
         
         return all_success
+    
+    def install_direct(self, pip_args: List[str], description: str = "pip install") -> bool:
+        """
+        直接执行 pip install 命令（跳过别名解析和兼容性检查）
+        
+        :param pip_args: pip install 的参数列表（不含 "install" 本身）
+        :param description: 进度条描述
+        :return: 安装是否成功
+        """
+        cmd = ["install"] + pip_args
+        success, stdout, stderr = self._run_pip_command_with_output(cmd, description)
+        
+        if success:
+            console.print(Panel(
+                f"[success]安装成功[/]\n\n"
+                f"[dim]{stdout}[/]",
+                title="安装完成",
+                border_style="success"
+            ))
+        else:
+            console.print(Panel(
+                f"[error]安装失败[/]\n\n"
+                f"[dim]{stderr}[/]",
+                title="安装失败",
+                border_style="error"
+            ))
+        
+        return success
     
     def uninstall_package(self, package_names: List[str]) -> bool:
         """
@@ -829,7 +860,7 @@ class PackageManager:
         url = "https://pypi.org/pypi/ErisPulse/json"
         
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
                         data = await response.json()

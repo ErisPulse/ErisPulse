@@ -11,7 +11,7 @@ ErisPulse 路由系统
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRoute
-from typing import Any
+from typing import Any, TypeAlias
 from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
@@ -32,9 +32,9 @@ try:
 except importlib.metadata.PackageNotFoundError:
     pass
 
-type HTTPHandler = Callable
-type WebSocketHandler = Callable[[WebSocket], Awaitable[Any]]
-type RoutePath = str
+HTTPHandler: TypeAlias = Callable
+WebSocketHandler: TypeAlias = Callable[[WebSocket], Awaitable[Any]]
+RoutePath: TypeAlias = str
 
 
 class RouterManager:
@@ -188,7 +188,7 @@ class RouterManager:
         try:
             full_path = self._normalize_path(module_name, path)
             if full_path not in self._http_routes[module_name]:
-                logger.warning(f"\n取消注册HTTP路由失败: 路由不存在: {full_path}\n")
+                logger.debug(f"\n取消注册的路由不存在: {full_path}\n")
                 return False
 
             # 获取所有方法
@@ -294,7 +294,7 @@ class RouterManager:
                 ]
                 return True
 
-            logger.error(f"\n注销WebSocket失败: 路径 {full_path} 不存在\n")
+            logger.debug(f"\n取消注册的路由不存在: {full_path}\n")
             return False
         except Exception as e:
             logger.error(f"注销WebSocket失败: {e}")
@@ -413,9 +413,9 @@ class RouterManager:
         if self._server_task:
             self._server_task.cancel()
             try:
-                await self._server_task
-            except asyncio.CancelledError:
-                logger.info("路由服务器已停止")
+                await asyncio.wait_for(self._server_task, timeout=5.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError, Exception):
+                 logger.info("路由服务器已停止")
             self._server_task = None
 
         # 清理所有注册的路由
