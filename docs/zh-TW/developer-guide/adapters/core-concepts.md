@@ -303,4 +303,176 @@ class MyAdapter(BaseAdapter):
 ### 繼承關係
 
 ```python
-class MyAdapter(Base
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        """Send 巢狀類，繼承自 BaseAdapter.Send"""
+        pass
+```
+
+### 可用屬性
+
+`Send` 類在呼叫時會自動設定以下屬性：
+
+| 屬性 | 說明 | 設定方式 |
+|-----|------|---------|
+| `_target_id` | 目標ID | `To(id)` 或 `To(type, id)` |
+| `_target_type` | 目標類型 | `To(type, id)` |
+| `_target_to` | 簡化目標ID | `To(id)` |
+| `_account_id` | 發送帳號ID | `Using(account_id)` |
+| `_adapter` | 介接器實例 | 自動設定 |
+
+### 基本方法
+
+```python
+class Send(BaseAdapter.Send):
+    def Text(self, text: str):
+        """發送文字訊息（必須傳回 Task）"""
+        import asyncio
+        return asyncio.create_task(
+            self._adapter.call_api(
+                endpoint="/send",
+                content=text,
+                recvId=self._target_id,
+                recvType=self._target_type
+            )
+        )
+```
+
+### 鏈式修飾方法
+
+```python
+class Send(BaseAdapter.Send):
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self._at_user_ids = []
+        self._reply_message_id = None
+        self._at_all = False
+    
+    def At(self, user_id: str) -> 'Send':
+        """@使用者（可多次呼叫）"""
+        self._at_user_ids.append(user_id)
+        return self
+    
+    def AtAll(self) -> 'Send':
+        """@全體成員"""
+        self._at_all = True
+        return self
+    
+    def Reply(self, message_id: str) -> 'Send':
+        """回覆訊息"""
+        self._reply_message_id = message_id
+        return self
+```
+
+## 事件轉換器
+
+### 轉換流程
+
+```
+平台原始事件
+    ↓
+Converter.convert()
+    ↓
+OneBot12 標準事件
+```
+
+### 必需欄位
+
+所有轉換後的事件必須包含：
+
+```python
+{
+    "id": "事件唯一識別",
+    "time": 1234567890,           # 10位 Unix 時間戳
+    "type": "message/notice/request/meta",
+    "detail_type": "事件詳細類型",
+    "platform": "平台名稱",
+    "self": {
+        "platform": "平台名稱",
+        "user_id": "機器人ID"
+    },
+    "{platform}_raw": {...},       # 原始資料（必須）
+    "{platform}_raw_type": "..."    # 原始類型（必須）
+}
+```
+
+### 轉換器範例
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """將平台原生事件轉換為 OneBot12 標準格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        # 生成事件 ID
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        
+        # 轉換時間戳
+        timestamp = raw_event.get("timestamp")
+        if timestamp and timestamp > 10**12:
+            timestamp = int(timestamp / 1000)
+        else:
+            timestamp = int(timestamp) if timestamp else int(time.time())
+        
+        # 轉換事件類型
+        event_type = self._convert_type(raw_event.get("type"))
+        detail_type = self._convert_detail_type(raw_event)
+        
+        # 建構標準事件
+        onebot_event = {
+            "id": str(event_id),
+            "time": timestamp,
+            "type": event_type,
+            "detail_type": detail_type,
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## 連線管理
+
+### WebSocket 連線
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebSocket 路由"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket 連線處理器"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("連線已中斷")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket 驗證"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook 連線
