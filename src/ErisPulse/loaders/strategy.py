@@ -10,9 +10,9 @@ ErisPulse 模块加载策略
 {!--< /tips >!--}
 """
 
-from typing import Any
+from typing import Any, TypeAlias
 
-type StrategyData = dict[str, Any]
+StrategyData: TypeAlias = dict[str, Any]
 
 
 class ModuleLoadStrategy:
