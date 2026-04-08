@@ -1014,6 +1014,27 @@ async def heartbeat_handler(event):
     sdk.logger.debug(f"{platform} heartbeat check")
 ```
 
+### Bot Status Query
+
+After the adapter sends a meta event, the framework automatically tracks Bot status, which you can query at any time:
+
+```python
+from ErisPulse import sdk
+
+# Check if a specific Bot is online
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    await adapter.Send.To("user", "123456").Text("Bot is online")
+
+# List all currently online Bots
+bots = sdk.adapter.list_bots()
+for platform, bot_list in bots.items():
+    for bot_id, info in bot_list.items():
+        print(f"{platform}/{bot_id}: {info['status']}")
+
+# Get complete status summary
+summary = sdk.adapter.get_status_summary()
+```
+
 ## Interactive Handling
 
 ### Sending Replies using the `reply` Method
@@ -1156,6 +1177,35 @@ async def info_handler(event):
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
+
+### Platform Extension Methods
+
+In addition to built-in methods, each platform adapter registers platform-specific methods to facilitate access to platform-specific data.
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # Call specific methods based on platform
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram specific method
+    elif platform == "email":
+        subject = event.get_subject()           # Email specific method
+```
+
+If you are not sure whether a platform has registered a specific method, you can query which methods are registered for a platform:
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> For platform-specific methods registered by each platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
 
 ## Best Practices for Event Handling
 
@@ -2260,6 +2310,14 @@ async def friend_add_handler(event):
 
 - `get_raw()` - Get platform raw event data
 - `get_raw_type()` - Get platform raw event type
+
+### Platform Extension Methods
+
+Adapters will register proprietary methods for their respective platforms. The following are common examples (for specific methods, please refer to the respective [Platform Documentation](../../platform-guide/)):
+
+- `get_platform_event_methods(platform)` - Query the list of registered extension methods for the specified platform
+- Platform extension methods are only available on Event instances of the corresponding platform
+- You can safely check if a method exists using `hasattr(event, "method_name")`
 
 ### Utility Methods
 
