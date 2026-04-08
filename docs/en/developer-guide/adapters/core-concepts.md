@@ -613,6 +613,114 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
+## Bot Status Management
+
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
+
+### Auto-Discovery Mechanism
+
+When an adapter sends an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
+
+- **meta events**: Perform corresponding operations based on `detail_type` (connect for registration/disconnect to mark offline/heartbeat to update active time)
+- **normal events** (message/notice/request): Automatically discover the Bot and update active time
+
+```python
+# All events containing the self field will trigger auto-discovery
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" has been automatically registered (if appearing for the first time) and active time updated
+```
+
+### Meta Event Types
+
+| `detail_type` | Description | Framework Behavior |
+|---|---|---|
+| `connect` | Bot connection | Register the Bot and trigger the `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnect | Mark the Bot as offline and trigger the `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
+
+### Adapter Sending Meta Events
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "MyBot",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### `self` Field Extended Information
+
+In addition to the required `platform` and `user_id`, the `self` field also supports the following optional fields:
+
+| Field | Description |
+|---|---|
+| `user_name` | Bot username |
+| `nickname` | Bot nickname |
+| `avatar` | Bot avatar URL |
+| `account_id` | Multi-account identifier |
+
+### Bot Status Query
+
+```python
+from ErisPulse import sdk
+
+# Get single Bot info
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# List all Bots
+all_bots = sdk.adapter.list_bots()
+
+# List Bots for a specific platform
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Check if Bot is online
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Get full status summary (suitable for WebUI display)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### Listening to Bot Lifecycle
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot online: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot offline: {platform}/{bot_id}")
+```
+
 ## Related Documentation
 
 - [Getting Started with Adapter Development](getting-started.md) - Create your first adapter

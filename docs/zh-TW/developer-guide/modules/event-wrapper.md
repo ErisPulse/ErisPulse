@@ -193,6 +193,14 @@ async def friend_add_handler(event):
 - `get_raw()` - 取得平台原始事件資料
 - `get_raw_type()` - 取得平台原始事件類型
 
+### 平台擴充方法
+
+介面卡會為各自平台註冊專有方法，以下為常見範例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
+
+- `get_platform_event_methods(platform)` - 查詢指定平台已註冊的擴充方法列表
+- 平台擴充方法僅在對應平台的 Event 實例上可用
+- 可透過 `hasattr(event, "method_name")` 安全判斷方法是否存在
+
 ### 工具方法
 
 - `to_dict()` - 轉換為普通字典

@@ -2,6 +2,130 @@
 
 本文件提供了 ErisPulse 配接器開發的最佳實踐建議。
 
+## Bot 狀態管理與 Meta 事件
+
+配接器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線和心跳資訊。
+
+### 1. 何時發送 Meta 事件
+
+| 事件 | `detail_type` | 觸發時機 | 框架行為 |
+|------|--------------|---------|---------|
+| 連線 | `"connect"` | Bot 與平台建立連線時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
+| 斷開 | `"disconnect"` | Bot 與平台斷開連線時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
+| 心跳 | `"heartbeat"` | 定期發送（建議 30-60 秒） | 更新 Bot 活躍時間和元資訊 |
+
+### 2. 發送 Meta 事件
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot 上線：發送 connect 事件
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的機器人",
+                "avatar": "https://example.com/avatar.png",
+            }
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot 下線：發送 disconnect 事件
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+```
+
+### 3. 心跳事件
+
+配接器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _heartbeat_loop(self, bot_id: str):
+        while self._connected:
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+            await asyncio.sleep(30)
+```
+
+### 4. `self` 欄位自動發現
+
+框架的 `adapter.emit()` 會自動處理所有事件（不僅是 meta 事件）中的 `self` 欄位：
+
+- **普通事件**（message/notice/request）中的 `self` 欄位會自動發現並註冊 Bot
+- **`self` 欄位擴充資訊**：支援 `user_name`、`nickname`、`avatar`、`account_id` 可選欄位
+
+```python
+# 轉換器中包含 self 欄位即可自動註冊 Bot
+onebot_event = {
+    "type": "message",
+    "detail_type": "private",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot123",
+        "user_name": "MyBot",
+        "nickname": "我的機器人",
+    },
+    # ... 其他欄位
+}
+await self.adapter.emit(onebot_event)
+# Bot "bot123" 已自動註冊並更新活躍時間
+```
+
+### 5. Bot 狀態查詢
+
+框架提供以下查詢方法：
+
+```python
+from ErisPulse import sdk
+
+# 取得 Bot 詳細資訊
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot（按平台分組）
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# 檢查 Bot 是否上線
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 取得完整狀態摘要（適合 WebUI 展示）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
 ## 連線管理
 
 ### 1. 實作連線重試
@@ -58,21 +182,34 @@ class MyAdapter(BaseAdapter):
             self._connected = False
 ```
 
-### 3. 心跳保活
+### 3. 心跳保活與 Meta 心跳
+
+配接器的心跳應同時完成兩個任務：向平台發送心跳保活，並向框架發送 meta heartbeat 事件。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
         self.connection = await self._connect_to_platform()
-        # 啟動心跳任務
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-    
+
     async def _heartbeat_loop(self):
-        """心跳保活"""
         while self.connection:
             try:
+                # 1. 向平台發送心跳保活
                 await self.connection.send_json({"type": "ping"})
-                await asyncio.sleep(30)  # 每30秒一次心跳
+
+                # 2. 向框架發送 meta heartbeat 事件（更新 Bot 活躍時間）
+                await self.adapter.emit({
+                    "type": "meta",
+                    "detail_type": "heartbeat",
+                    "platform": "myplatform",
+                    "self": {
+                        "platform": "myplatform",
+                        "user_id": self._bot_id,
+                    }
+                })
+
+                await asyncio.sleep(30)
             except Exception as e:
                 self.logger.error(f"心跳失敗: {e}")
                 break
@@ -106,325 +243,4 @@ class MyPlatformConverter:
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """轉換為 10 位秒級時間戳"""
-    if not timestamp:
-        return int(time.time())
-    
-    # 如果是毫秒級時間戳
-    if timestamp > 10**12:
-        return int(timestamp / 1000)
-    
-    # 如果是秒級時間戳
-    return int(timestamp)
-```
-
-### 3. 事件 ID 生成
-
-```python
-import uuid
-
-def _generate_event_id(self, raw_event):
-    """生成事件 ID"""
-    event_id = raw_event.get("event_id")
-    if event_id:
-        return str(event_id)
-    # 如果平台沒有提供 ID，生成 UUID
-    return str(uuid.uuid4())
-```
-
-## SendDSL 實作
-
-### 1. 必須返回 Task 物件
-
-```python
-class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """發送文字訊息"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
-            )
-        )
-```
-
-### 2. 鏈式修飾方法返回 self
-
-```python
-class Send(BaseAdapter.Send):
-    def At(self, user_id: str) -> 'Send':
-        """@使用者"""
-        if not hasattr(self, '_at_user_ids'):
-            self._at_user_ids = []
-        self._at_user_ids.append(user_id)
-        return self  # 必須返回 self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回覆訊息"""
-        self._reply_message_id = message_id
-        return self  # 必須返回 self
-```
-
-### 3. 支援平台特有方法
-
-```python
-class Send(BaseAdapter.Send):
-    def Sticker(self, sticker_id: str):
-        """發送貼圖"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send_sticker",
-                sticker_id=sticker_id,
-                recvId=self._target_id,
-                recvType=self._target_type
-            )
-        )
-    
-    def Card(self, card_data: dict):
-        """發送卡片訊息"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send_card",
-                card=card_data,
-                recvId=self._target_id,
-                recvType=self._target_type
-            )
-        )
-```
-
-## API 回應
-
-### 1. 標準化回應格式
-
-```python
-async def call_api(self, endpoint: str, **params):
-    try:
-        raw_response = await self._platform_api_call(endpoint, **params)
-        
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
-    except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
-```
-
-### 2. 錯誤碼規範
-
-遵循 OneBot12 標準錯誤碼：
-
-```python
-# 1xxxx - 動作請求錯誤
-10001: Bad Request
-10002: Unsupported Action
-10003: Bad Param
-
-# 2xxxx - 動作處理器錯誤
-20001: Bad Handler
-20002: Internal Handler Error
-
-# 3xxxx - 動作執行錯誤
-31000: Database Error
-32000: Filesystem Error
-33000: Network Error
-34000: Platform Error
-35000: Logic Error
-```
-
-## 多帳號支援
-
-### 1. 帳號設定驗證
-
-```python
-def _get_config(self):
-    """驗證設定"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
-    
-    if not accounts:
-        # 建立預設帳號
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
-    
-    return config
-```
-
-### 2. 帳號選擇機制
-
-```python
-async def _get_account_for_message(self, event):
-    """根據事件選擇發送帳號"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # 尋找匹配的帳號
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # 如果沒有找到，使用第一個啟用的帳號
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
-```
-
-## 錯誤處理
-
-### 1. 分類異常處理
-
-```python
-async def call_api(self, endpoint: str, **params):
-    try:
-        response = await self._platform_api_call(endpoint, **params)
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # 網路錯誤
-        self.logger.error(f"網路錯誤: {e}")
-        return self._error_response("網路請求失敗", 33000)
-    except asyncio.TimeoutError:
-        # 逾時錯誤
-        self.logger.error(f"請求逾時: {endpoint}")
-        return self._error_response("請求逾時", 32000)
-    except json.JSONDecodeError:
-        # JSON 解析錯誤
-        self.logger.error("JSON 解析失敗")
-        return self._error_response("回應格式錯誤", 10006)
-    except Exception as e:
-        # 未知錯誤
-        self.logger.error(f"未知錯誤: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
-```
-
-### 2. 日誌記錄
-
-```python
-class MyAdapter(BaseAdapter):
-    def __init__(self, sdk=None):
-        super().__init__(sdk)
-        self.logger = logger.get_child("MyAdapter")
-    
-    async def start(self):
-        self.logger.info("配接器啟動中...")
-        # ...
-        self.logger.info("配接器啟動完成")
-    
-    async def shutdown(self):
-        self.logger.info("配接器關閉中...")
-        # ...
-        self.logger.info("配接器關閉完成")
-```
-
-## 測試
-
-### 1. 單元測試
-
-```python
-import pytest
-from ErisPulse.Core.Bases import BaseAdapter
-
-class TestMyAdapter:
-    def test_converter(self):
-        """測試轉換器"""
-        converter = MyPlatformConverter()
-        raw_event = {"type": "message", "content": "Hello"}
-        result = converter.convert(raw_event)
-        assert result is not None
-        assert result["platform"] == "myplatform"
-        assert "myplatform_raw" in result
-    
-    def test_api_response(self):
-        """測試 API 回應格式"""
-        adapter = MyAdapter()
-        response = adapter.call_api("/test", param="value")
-        assert "status" in response
-        assert "retcode" in response
-```
-
-### 2. 整合測試
-
-```python
-@pytest.mark.asyncio
-async def test_adapter_start():
-    """測試配接器啟動"""
-    adapter = MyAdapter()
-    await adapter.start()
-    assert adapter._connected is True
-
-@pytest.mark.asyncio
-async def test_send_message():
-    """測試發送訊息"""
-    adapter = MyAdapter()
-    await adapter.start()
-    
-    result = await adapter.Send.To("user", "123").Text("Hello")
-    assert result is not None
-```
-
-## 反向轉換與訊息構建
-
-`Raw_ob12` 是配接器**必須實作**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
-
-`MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫與快速構建。
-
-> 完整的實作規範、程式碼範例與使用方法請參閱：
-> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
-> - [發送方法規範 §11 訊息構建器](../../standards/send-method-spec.md#11-訊息構建器-messagebuilder)
-
-## 文件維護
-
-### 1. 維護平台特性文件
-
-在 `docs-new/platform-guide/` 下建立 `{platform}.md` 文件：
-
-```markdown
-# 平台名稱配接器文件
-
-## 基本資訊
-- 對應模組版本: 1.0.0
-- 維護者: Your Name
-
-## 支援的訊息發送類型
-...
-
-## 特有事件類型
-...
-
-## 設定選項
-...
-```
-
-### 2. 更新版本資訊
-
-發布新版本時，更新文件中的版本資訊：
-
-```toml
-[project]
-version = "2.0.0"  # 更新版本號
-```
-
-## 相關文件
-
-- [配接器開發入門](getting-started.md) - 建立第一個配接器
-- [配接器核心概念](core-concepts.md) - 了解配接器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+    """轉換為 10 位秒級時間

@@ -25,21 +25,3 @@ def is_admin(event):
 
 @command("admin", permission=is_admin, help="管理员命令")
 async def admin_handler(event):
-    pass
-
-# Hidden command
-@command("secret", hidden=True, help="秘密命令")
-async def secret_handler(event):
-    pass
-
-# Command group
-@command("admin.reload", group="admin", help="重新加载模块")
-async def reload_handler(event):
-    pass
-```
-
-### Command Information
-
-```python
-# Get command help
-help_text = command.help
