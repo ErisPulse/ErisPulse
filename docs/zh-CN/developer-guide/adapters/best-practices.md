@@ -2,6 +2,130 @@
 
 本文档提供了 ErisPulse 适配器开发的最佳实践建议。
 
+## Bot 状态管理与 Meta 事件
+
+适配器应主动通过 `adapter.emit()` 发送 meta 事件，让框架自动追踪 Bot 的连接状态、上下线和心跳信息。
+
+### 1. 何时发送 Meta 事件
+
+| 事件 | `detail_type` | 触发时机 | 框架行为 |
+|------|--------------|---------|---------|
+| 连接 | `"connect"` | Bot 与平台建立连接时 | 注册 Bot，触发 `adapter.bot.online` 生命周期事件 |
+| 断开 | `"disconnect"` | Bot 与平台断开连接时 | 标记 Bot 离线，触发 `adapter.bot.offline` 生命周期事件 |
+| 心跳 | `"heartbeat"` | 定期发送（建议 30-60 秒） | 更新 Bot 活跃时间和元信息 |
+
+### 2. 发送 Meta 事件
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot 上线：发送 connect 事件
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的机器人",
+                "avatar": "https://example.com/avatar.png",
+            }
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot 下线：发送 disconnect 事件
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+```
+
+### 3. 心跳事件
+
+适配器应在连接存活期间定期发送心跳事件，更新 Bot 的活跃时间：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _heartbeat_loop(self, bot_id: str):
+        while self._connected:
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+            await asyncio.sleep(30)
+```
+
+### 4. `self` 字段自动发现
+
+框架的 `adapter.emit()` 会自动处理所有事件（不仅是 meta 事件）中的 `self` 字段：
+
+- **普通事件**（message/notice/request）中的 `self` 字段会自动发现并注册 Bot
+- **`self` 字段扩展信息**：支持 `user_name`、`nickname`、`avatar`、`account_id` 可选字段
+
+```python
+# 转换器中包含 self 字段即可自动注册 Bot
+onebot_event = {
+    "type": "message",
+    "detail_type": "private",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot123",
+        "user_name": "MyBot",
+        "nickname": "我的机器人",
+    },
+    # ... 其他字段
+}
+await self.adapter.emit(onebot_event)
+# Bot "bot123" 已自动注册并更新活跃时间
+```
+
+### 5. Bot 状态查询
+
+框架提供以下查询方法：
+
+```python
+from ErisPulse import sdk
+
+# 获取 Bot 详细信息
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot（按平台分组）
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# 检查 Bot 是否在线
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 获取完整状态摘要（适合 WebUI 展示）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
 ## 连接管理
 
 ### 1. 实现连接重试
@@ -58,21 +182,34 @@ class MyAdapter(BaseAdapter):
             self._connected = False
 ```
 
-### 3. 心跳保活
+### 3. 心跳保活与 Meta 心跳
+
+适配器的心跳应同时完成两个任务：向平台发送心跳保活，并向框架发送 meta heartbeat 事件。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
         self.connection = await self._connect_to_platform()
-        # 启动心跳任务
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-    
+
     async def _heartbeat_loop(self):
-        """心跳保活"""
         while self.connection:
             try:
+                # 1. 向平台发送心跳保活
                 await self.connection.send_json({"type": "ping"})
-                await asyncio.sleep(30)  # 30秒一次心跳
+
+                # 2. 向框架发送 meta heartbeat 事件（更新 Bot 活跃时间）
+                await self.adapter.emit({
+                    "type": "meta",
+                    "detail_type": "heartbeat",
+                    "platform": "myplatform",
+                    "self": {
+                        "platform": "myplatform",
+                        "user_id": self._bot_id,
+                    }
+                })
+
+                await asyncio.sleep(30)
             except Exception as e:
                 self.logger.error(f"心跳失败: {e}")
                 break
@@ -390,6 +527,60 @@ async def test_send_message():
 > 完整的实现规范、代码示例和使用方法请参阅：
 > - [发送方法规范 §6 反向转换规范](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
 > - [发送方法规范 §11 消息构建器](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
+
+## 平台事件方法扩展
+
+适配器可以为 Event 包装类注册平台专有方法，让模块开发者能更方便地访问平台特有数据。
+
+### 1. 使用 Mixin 类批量注册（推荐）
+
+当平台有多个专有方法时，推荐使用 Mixin 类：
+
+```python
+# 在适配器的 start() 或模块级别注册
+from ErisPulse.Core.Event import register_event_mixin
+
+class MyPlatformEventMixin:
+    def get_chat_name(self):
+        """获取聊天名称"""
+        return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+    def is_official_message(self):
+        """判断是否为官方消息"""
+        raw = self.get("myplatform_raw", {})
+        return raw.get("sender", {}).get("is_official", False)
+
+    def get_message_type(self):
+        """获取平台消息类型"""
+        return self.get("myplatform_raw", {}).get("msg_type", "text")
+
+# 批量注册
+register_event_mixin("myplatform", MyPlatformEventMixin)
+```
+
+### 2. 使用装饰器注册单个方法
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("myplatform")
+def get_chat_name(self):
+    return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+```
+
+### 3. 适配器关闭时清理
+
+```python
+from ErisPulse.Core.Event import unregister_platform_event_methods
+
+class MyAdapter(BaseAdapter):
+    async def shutdown(self):
+        # 清理平台事件方法注册
+        unregister_platform_event_methods("myplatform")
+        # ... 其他清理
+```
+
+> 更详细的注册和注销说明请参阅 [事件系统 API - 注册平台扩展方法](../../api-reference/event-system.md#适配器注册平台扩展方法)。
 
 ## 文档维护
 

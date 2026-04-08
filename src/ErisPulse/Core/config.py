@@ -10,10 +10,10 @@ import os
 import time
 import toml
 import threading
-from typing import Any
+from typing import Any, TypeAlias
 
-type ConfigValue = Any
-type ConfigKey = str
+ConfigValue: TypeAlias = Any
+ConfigKey: TypeAlias = str
 
 
 class ConfigManager:
@@ -71,7 +71,7 @@ class ConfigManager:
 
 ## 原配置内容
 
-```toml
+``toml
 {toml.dumps(old_config)}
 ```
 

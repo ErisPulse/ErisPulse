@@ -237,6 +237,42 @@ async def heartbeat_handler(event):
     sdk.logger.debug("收到心跳")
 ```
 
+### Bot 状态查询
+
+当适配器发送 meta 事件后，框架会自动追踪 Bot 状态。你可以通过适配器管理器查询：
+
+```python
+from ErisPulse import sdk
+
+# 获取单个 Bot 信息
+info = sdk.adapter.get_bot_info("telegram", "123456")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# 检查 Bot 是否在线
+is_online = sdk.adapter.is_bot_online("telegram", "123456")
+
+# 获取完整状态摘要
+summary = sdk.adapter.get_status_summary()
+```
+
+也可以通过生命周期事件监听 Bot 上下线：
+
+```python
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    sdk.logger.info(f"Bot 上线: {data['platform']}/{data['bot_id']}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    sdk.logger.info(f"Bot 下线: {data['platform']}/{data['bot_id']}")
+```
+
 ## Event 包装类
 
 Event 模块的事件处理器接收一个 Event 包装类实例，它继承自 dict 并提供了便捷方法。
@@ -326,7 +362,43 @@ raw_type = event.get_raw_type()
 
 ### 平台扩展方法
 
-适配器可以为 Event 注册平台专有方法，仅在对应平台的实例上可用：
+适配器可以为 Event 注册平台专有方法，仅在对应平台的实例上可用。
+
+#### 用户：使用平台扩展方法
+
+当适配器注册了平台专有方法后，你可以在事件处理器中直接调用。各平台的方法不同，请参阅对应的 [平台文档](../platform-guide/)。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根据平台调用专有方法
+    if platform == "email":
+        subject = event.get_subject()           # 邮件专有
+        attachments = event.get_attachments()   # 邮件专有
+```
+
+#### 查询平台已注册方法
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+# 查看某平台注册了哪些方法
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", "get_attachments", ...]
+
+# 动态判断并调用
+for method_name in get_platform_event_methods(event.get_platform()):
+    method = getattr(event, method_name)
+    print(f"{method_name}: {method()}")
+```
+
+#### 平台方法隔离
+
+不同平台注册的方法互不干扰：
 
 ```python
 # 邮件事件 - 只有邮件方法
@@ -340,16 +412,7 @@ event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
 ```
 
-**查询已注册方法：**
-
-```python
-from ErisPulse.Core.Event import get_platform_event_methods
-
-methods = get_platform_event_methods("email")
-# ["get_subject", "get_from", ...]
-```
-
-**`hasattr` / `dir` 支持：**
+#### `hasattr` / `dir` 支持
 
 ```python
 hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True

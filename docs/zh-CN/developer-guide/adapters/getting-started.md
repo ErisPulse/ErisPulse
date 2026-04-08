@@ -142,6 +142,43 @@ class MyAdapter(BaseAdapter):
         raise NotImplementedError("需要实现 call_api")
 ```
 
+#### 主动发送 Meta 事件
+
+适配器应主动发送 meta 事件，让框架追踪 Bot 的在线状态：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot 上线
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot 下线
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {"platform": "myplatform", "user_id": bot_id}
+            })
+```
+
+> 详细的 Bot 状态管理和 Meta 事件说明请参阅 [适配器最佳实践 - Bot 状态管理](best-practices.md#bot-状态管理与-meta-事件)。
+
 ### 5. 实现 Send 类
 
 ```python
