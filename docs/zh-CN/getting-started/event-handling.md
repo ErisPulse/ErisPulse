@@ -230,6 +230,27 @@ async def heartbeat_handler(event):
     sdk.logger.debug(f"{platform} 心跳检测")
 ```
 
+### Bot 状态查询
+
+当适配器发送 meta 事件后，框架自动追踪 Bot 状态，你可以随时查询：
+
+```python
+from ErisPulse import sdk
+
+# 检查某个 Bot 是否在线
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    await adapter.Send.To("user", "123456").Text("Bot 在线")
+
+# 列出当前所有在线 Bot
+bots = sdk.adapter.list_bots()
+for platform, bot_list in bots.items():
+    for bot_id, info in bot_list.items():
+        print(f"{platform}/{bot_id}: {info['status']}")
+
+# 获取完整状态摘要
+summary = sdk.adapter.get_status_summary()
+```
+
 ## 交互式处理
 
 ### 使用 reply 方法发送回复
@@ -372,6 +393,35 @@ async def info_handler(event):
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
+
+### 平台扩展方法
+
+除了内置方法外，各平台适配器还会注册平台专有方法，方便你访问平台特有的数据。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根据平台调用专有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 专有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 邮件专有方法
+```
+
+如果不确定平台是否注册了某个方法，可以查询某个平台注册了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台注册的专有方法请参阅对应的 [平台文档](../platform-guide/)。
 
 ## 事件处理最佳实践
 
