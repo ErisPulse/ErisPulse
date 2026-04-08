@@ -193,6 +193,14 @@ async def friend_add_handler(event):
 - `get_raw()` - Get platform raw event data
 - `get_raw_type()` - Get platform raw event type
 
+### Platform Extension Methods
+
+Adapters will register proprietary methods for their respective platforms. The following are common examples (for specific methods, please refer to the respective [Platform Documentation](../../platform-guide/)):
+
+- `get_platform_event_methods(platform)` - Query the list of registered extension methods for the specified platform
+- Platform extension methods are only available on Event instances of the corresponding platform
+- You can safely check if a method exists using `hasattr(event, "method_name")`
+
 ### Utility Methods
 
 - `to_dict()` - Convert to ordinary dictionary
