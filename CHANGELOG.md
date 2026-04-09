@@ -63,23 +63,29 @@
 
 ---
 
-## [2.4.0-dev.3] - 2026/04/08
+## [2.4.0-dev.3] - 2026/04/09
 > 开发版本
 
 ### 新增
 - @wsu2059q
   - cli的install支持pip参数
 
+### 重构
+- @wsu2059q
+  - **模块/适配器生命周期标准化**：统一初始化与卸载流程，确保完全可控
+    - `BaseEventHandler` 引入 `_linked_to_adapter_bus` 状态，明确追踪与适配器事件总线的连接关系
+    - `_clear_handlers()` 断开总线连接后，下次 `register()` 自动重新挂载，适配 shutdown/restart 场景
+    - 删除散落的 `_adapter_handler_registered`、`_command_handler_registered` 魔术标记
+  - **LazyModule 实例化修正**：BaseModule 子类统一通过 `manager.load()` 完成实例化 + `on_load`，消除双重实例化问题
+  - **Uninitializer 卸载流程修正**：先收集模块属性再清理管理器，确保重启后 sdk 状态完全重置
+
 ### 修复
 - @wsu2059q
-  - **Python 3.10/3.11 兼容性修复**：将 Python 3.12+ 的 `type` 语句改为 `typing.TypeAlias`，确保框架在 Python 3.10+ 环境下正常运行
-    - 涉及文件：
-      - `Core/config.py`: ConfigValue, ConfigKey
-      - `Core/Event/session_type.py`: ReceiveTypeStr, SendTypeStr, SessionTypeMap, OptionalStr
-      - `Core/router.py`: HTTPHandler, WebSocketHandler, RoutePath
-      - `Core/storage.py`: StorageKey, StorageValue
-      - `loaders/strategy.py`: StrategyData
-  - 解决在代理情况下运行时，无法请求pkg服务器的问题
+  - **修复重启后命令事件失效**：`adapter.shutdown()` 清空事件总线后，`BaseEventHandler` 的 `_linked_to_adapter_bus` 未重置，导致 `_process_event` 无法重新挂载到适配器总线。表现为 `@command` 注册的命令在重启后无法触发
+  - **修复重启后懒加载模块未被正常加载**：`uninit()` 在 `module_manager.clear()` 之后遍历已清空的列表，导致 sdk 上的模块属性未被清理，restart 后旧残留影响新实例
+  - **修复未初始化的 LazyModule 代理未执行 `on_unload`**：从未被访问过的懒加载模块不在 `_loaded_modules` 中，uninit 时 `on_unload` 不会被调用
+  - **修复生命周期事件处理器未清理**：`lifecycle._handlers` 在 uninit 时从未清理，restart 后旧处理器会重复触发
+  - **Python 3.10/3.11 兼容性修复**：将 Python 3.12+ 的 `type` 语句改为 `typing.TypeAlias`
 
 
 ---
