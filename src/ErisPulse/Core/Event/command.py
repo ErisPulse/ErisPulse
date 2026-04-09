@@ -48,13 +48,9 @@ class CommandHandler:
         # 创建消息事件处理器
         self.handler = BaseEventHandler("message", "command")
 
-        # 注册消息处理器
-        if (
-            not hasattr(self.handler, "_command_handler_registered")
-            or not self.handler._command_handler_registered
-        ):
+        # 将命令分发器 _handle_message 挂载到适配器消息事件总线
+        if not self.handler._linked_to_adapter_bus:
             self.handler.register(self._handle_message)
-            self.handler._command_handler_registered = True
 
     def __call__(
         self,
@@ -82,6 +78,9 @@ class CommandHandler:
         """
 
         def decorator(func: Callable):
+            if not self.handler._linked_to_adapter_bus:
+                self.handler.register(self._handle_message)
+
             cmd_names = []
             if isinstance(name, str):
                 cmd_names = [name]
@@ -506,7 +505,7 @@ class CommandHandler:
     def _clear_commands(self):
         """
         {!--< internal-use >!--}
-        清除所有已注册的命令
+        清除所有已注册的命令，并断开与适配器事件总线的连接
 
         :return: 被清除的命令数量
         """
@@ -516,6 +515,7 @@ class CommandHandler:
         self.groups.clear()
         self.permissions.clear()
         self._waiting_replies.clear()
+        self.handler._clear_handlers()
         return count
 
     def get_command(self, name: str) -> dict | None:
