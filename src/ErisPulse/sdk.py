@@ -358,31 +358,84 @@ class SDK:
                 registered_adapters = adapter_manager.list_registered()
                 if registered_adapters:
                     await adapter_manager.shutdown()
-                
-                # 2. 卸载所有模块
+
+                # 2. 卸载所有已加载模块
                 loaded_modules = module_manager.list_loaded()
                 if loaded_modules:
                     await module_manager.unload()
                 
-                # 3. 清理所有事件处理器
+                # 3. 收集 SDK 对象上的模块属性（在 clear 之前）
+                instance_dict = object.__getattribute__(self._sdk, '__dict__')
+                module_properties_to_clear = set()
+                
+                # 收集已加载模块的属性名
+                for module_name in loaded_modules:
+                    if module_name in instance_dict:
+                        module_properties_to_clear.add(module_name)
+                
+                # 收集所有 LazyModule 代理的属性名（包括从未被访问过的）
+                for attr_name, attr_value in list(instance_dict.items()):
+                    if attr_name.startswith('_'):
+                        continue
+                    from .loaders.module import LazyModule
+                    if isinstance(attr_value, LazyModule):
+                        lm_name = object.__getattribute__(attr_value, '_module_name')
+                        if lm_name not in module_properties_to_clear:
+                            # LazyModule 从未被触发初始化，需要手动调用 on_unload
+                            try:
+                                lm_class = object.__getattribute__(attr_value, '_module_class')
+                                lm_manager = object.__getattribute__(attr_value, '_manager_instance')
+                                lm_info = object.__getattribute__(attr_value, '_module_info')
+                                lm_initialized = object.__getattribute__(attr_value, '_initialized')
+                                lm_is_base = object.__getattribute__(attr_value, '_is_base_module')
+                                
+                                if lm_is_base and not lm_initialized:
+                                    import inspect
+                                    try:
+                                        if lm_manager._sdk is None:
+                                            lm_sdk = self._sdk
+                                        else:
+                                            lm_sdk = lm_manager._sdk
+                                        
+                                        params = [p for p in inspect.signature(lm_class.__init__).parameters.values() if p.name != "self"]
+                                        tmp_instance = lm_class(lm_sdk) if params else lm_class()
+                                        if tmp_instance is None:
+                                            raise ValueError(f"模块 {lm_name} __init__ 返回 None")
+                                        if hasattr(tmp_instance, 'on_unload'):
+                                            if inspect.iscoroutinefunction(tmp_instance.on_unload):
+                                                await tmp_instance.on_unload({"module_name": lm_name})
+                                            else:
+                                                tmp_instance.on_unload({"module_name": lm_name})
+                                    except Exception as e:
+                                        logger.warning(f"清理未初始化懒加载模块 {lm_name} 的 on_unload 失败: {e}")
+                            except Exception as e:
+                                logger.warning(f"清理未初始化懒加载模块 {lm_name} 失败: {e}")
+                        
+                        module_properties_to_clear.add(attr_name)
+                
+                # 4. 清理所有事件处理器
                 Event._clear_all_handlers()
                 
-                # 4. 清理管理器
+                # 5. 清理管理器
                 adapter_manager.clear()
                 module_manager.clear()
                 
-                # 5. 清理 SDK 对象上的模块属性
+                # 6. 停止路由服务器
+                router_manager = self._sdk.router
+                if router_manager._server_task and not router_manager._server_task.done():
+                    await router_manager.stop()
+                
+                # 7. 清理 SDK 对象上的模块属性（使用之前收集的列表）
                 module_properties_cleared = 0
-                for module_name in module_manager.list_loaded():
+                for module_name in module_properties_to_clear:
                     try:
-                        instance_dict = object.__getattribute__(self._sdk, '__dict__')
                         if module_name in instance_dict:
                             del instance_dict[module_name]
                             module_properties_cleared += 1
                     except Exception as e:
                         logger.warning(f"清理模块属性 {module_name} 失败: {e}")
                 
-                # 6. 重置初始化状态
+                # 8. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
                 
@@ -404,8 +457,12 @@ class SDK:
                         "adapters_closed": len(registered_adapters),
                         "modules_unloaded": len(loaded_modules),
                         "module_properties_cleared": module_properties_cleared,
+                        "module_properties_to_clear": list(module_properties_to_clear),
                     },
                 )
+                
+                # 9. 清理生命周期事件处理器（在所有事件提交之后）
+                lifecycle._handlers.clear()
                 
                 logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
                 return True
@@ -681,8 +738,8 @@ if __name__ == "__main__":
         执行完整的反初始化后再初始化过程，并重新启动适配器
         
         {!--< tips >!--}
-        使用 asyncio.shield 保护重启任务，确保即使当前事件处理器被取消，
-        重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+        使用 asyncio.ensure_future 将重启任务注册到事件循环调度器，
+        与调用栈完全解耦，确保即使调用方被取消，重启流程也能完整执行。
 
         注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
         {!--< /tips >!--}
@@ -696,15 +753,10 @@ if __name__ == "__main__":
         """
         logger.info("[Reload] 开始重新加载SDK...")
         
-        # 创建后台任务执行重启，与当前事件处理器解耦
-        task = asyncio.create_task(self._do_restart())
+        # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
+        asyncio.ensure_future(self._do_restart())
         
-        # 使用 shield 确保任务不被取消
-        try:
-            return await asyncio.shield(task)
-        except asyncio.CancelledError:
-            logger.info("[Reload] 重启任务被外部取消，但将在后台继续执行")
-            return True
+        return True
         
     async def uninit(self) -> bool:
         """

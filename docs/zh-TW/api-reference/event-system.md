@@ -237,6 +237,42 @@ async def heartbeat_handler(event):
     sdk.logger.debug("收到心跳")
 ```
 
+### Bot 狀態查詢
+
+當適配器發送 meta 事件後，框架會自動追蹤 Bot 狀態。你可以透過適配器管理器查詢：
+
+```python
+from ErisPulse import sdk
+
+# 獲取單個 Bot 資訊
+info = sdk.adapter.get_bot_info("telegram", "123456")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# 檢查 Bot 是否上線
+is_online = sdk.adapter.is_bot_online("telegram", "123456")
+
+# 獲取完整狀態摘要
+summary = sdk.adapter.get_status_summary()
+```
+
+也可以透過生命週期事件監聽 Bot 上下線：
+
+```python
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    sdk.logger.info(f"Bot 上線: {data['platform']}/{data['bot_id']}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    sdk.logger.info(f"Bot 下線: {data['platform']}/{data['bot_id']}")
+```
+
 ## Event 包裝類
 
 Event 模組的事件處理器接收一個 Event 包裝類實例，它繼承自 dict 並提供了便捷方法。
@@ -290,172 +326,4 @@ mentions = event.get_mentions()
 # 獲取命令資訊
 cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
-cmd_raw = event.get_command_raw()
-
-# 判斷是否為命令
-is_cmd = event.is_command()
-```
-
-### 回覆功能
-
-```python
-# 基本回覆
-await event.reply("這是一條訊息")
-
-# 指定發送方法
-await event.reply("http://example.com/image.jpg", method="Image")
-
-# 等待回覆
-reply = await event.wait_reply(timeout=30)
-```
-
-### 工具方法
-
-```python
-# 轉換為字典
-event_dict = event.to_dict()
-
-# 檢查是否已處理
-if not event.is_processed():
-    event.mark_processed()
-
-# 獲取原始資料
-raw = event.get_raw()
-raw_type = event.get_raw_type()
-```
-
-### 平台擴展方法
-
-適配器可以為 Event 註冊平台專有方法，僅在對應平台的實例上可用：
-
-```python
-# 郵件事件 - 只有郵件方法
-event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
-event.get_subject()      # ✅ "Hello"
-event.get_chat_type()    # ❌ AttributeError
-
-# Telegram 事件 - 只有 Telegram 方法
-event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat_type()    # ✅ "private"
-event.get_subject()      # ❌ AttributeError
-```
-
-**查詢已註冊方法：**
-
-```python
-from ErisPulse.Core.Event import get_platform_event_methods
-
-methods = get_platform_event_methods("email")
-# ["get_subject", "get_from", ...]
-```
-
-**`hasattr` / `dir` 支援：**
-
-```python
-hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
-"get_subject" in dir(event)     # 同上
-```
-
-### 適配器：註冊平台擴展方法
-
-適配器可以通過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由訪問事件資料。
-
-#### 單個方法註冊
-
-```python
-from ErisPulse.Core.Event import register_event_method
-
-@register_event_method("email")
-def get_subject(self):
-    """獲取郵件主題"""
-    return self.get("email_raw", {}).get("subject", "")
-
-@register_event_method("email")
-def get_from(self):
-    """獲取發件人"""
-    return self.get("email_raw", {}).get("from", {})
-```
-
-#### 批量註冊（Mixin 類）
-
-當方法較多時，推薦使用 Mixin 類批量註冊：
-
-```python
-from ErisPulse.Core.Event import register_event_mixin
-
-class EmailEventMixin:
-    def get_subject(self):
-        return self.get("email_raw", {}).get("subject", "")
-
-    def get_from(self):
-        return self.get("email_raw", {}).get("from", {})
-
-    def get_attachments(self):
-        return self.get("email_raw", {}).get("attachments", [])
-
-# 一次性註冊所有方法
-register_event_mixin("email", EmailEventMixin)
-```
-
-#### 返回值規範
-
-| 場景 | 返回值 | 使用者使用方式 |
-|------|--------|------------|
-| 返回資料（文本、字典等） | 直接返回值 | `subject = event.get_subject()` |
-| 執行操作（發送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
-
-> **建議**：非資料返回的方法返回 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
-
-```python
-@register_event_method("email")
-def forward_email(self, to_address: str):
-    """轉發郵件 — 返回 Task，使用者可自行決定是否 await"""
-    import asyncio
-    return asyncio.create_task(
-        self._do_forward(to_address)
-    )
-
-# 使用者可以 await 等待結果
-await event.forward_email("user@example.com")
-
-# 也可以不 await，操作在後台執行
-event.forward_email("user@example.com")
-```
-
-#### 註銷方法
-
-```python
-from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
-
-# 註銷單個方法
-unregister_event_method("email", "get_subject")
-
-# 註銷某平台全部方法（適配器 shutdown 時呼叫）
-unregister_platform_event_methods("email")
-```
-
-#### 命名衝突檢測
-
-註冊時如果方法名與 Event 內置方法重名（如 `get_text`、`reply`），系統會發出 warning 並跳過註冊，不會覆蓋內置行為。
-
-## 優先級系統
-
-事件處理器支援優先級，數值越小優先級越高：
-
-```python
-# 高優先級處理器先執行
-@message.on_message(priority=10)
-async def high_priority_handler(event):
-    pass
-
-# 低優先級處理器後執行
-@message.on_message(priority=1)
-async def low_priority_handler(event):
-    pass
-```
-
-## 相關文件
-
-- [核心模組 API](core-modules.md) - 核心模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API
-- [模組開發指南](../developer-guide/modules/) - 開發自訂模組
+cmd_raw = event.get
