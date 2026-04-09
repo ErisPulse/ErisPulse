@@ -704,6 +704,27 @@ async def heartbeat_handler(event):
     sdk.logger.debug(f"{platform} 心跳檢測")
 ```
 
+### Bot 狀態查詢
+
+當適配器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
+
+```python
+from ErisPulse import sdk
+
+# 檢查某個 Bot 是否上線
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    await adapter.Send.To("user", "123456").Text("Bot 上線")
+
+# 列出當前所有上線 Bot
+bots = sdk.adapter.list_bots()
+for platform, bot_list in bots.items():
+    for bot_id, info in bot_list.items():
+        print(f"{platform}/{bot_id}: {info['status']}")
+
+# 取得完整狀態摘要
+summary = sdk.adapter.get_status_summary()
+```
+
 ## 互動式處理
 
 ### 使用 reply 方法發送回覆
@@ -847,6 +868,35 @@ async def info_handler(event):
         cmd_raw = event.get_command_raw()
 ```
 
+### 平台擴充方法
+
+除了內建方法外，各平台適配器還會註冊平台專屬方法，方便你存取平台特有的資料。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台呼叫專屬方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 專屬方法
+    elif platform == "email":
+        subject = event.get_subject()           # 郵件專屬方法
+```
+
+如果不確定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台註冊的專屬方法請參閱對應的 [平台文件](../platform-guide/)。
+
 ## 事件處理最佳實踐
 
 ### 1. 異常處理
@@ -857,57 +907,7 @@ async def process_handler(event):
     try:
         # 業務邏輯
         result = await do_some_work()
-        await event.reply(f"結果: {result}")
-    except ValueError as e:
-        # 預期的業務錯誤
-        await event.reply(f"參數錯誤: {e}")
-    except Exception as e:
-        # 未預期的錯誤
-        sdk.logger.error(f"處理失敗: {e}")
-        await event.reply("處理失敗，請稍後重試")
-```
-
-### 2. 日誌記錄
-
-```python
-@message.on_message()
-async def message_handler(event):
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    sdk.logger.info(f"處理訊息: {user_id} - {text}")
-    
-    # 使用模組自己的日誌
-    from ErisPulse import sdk
-    logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"詳細除錯資訊")
-```
-
-### 3. 條件處理
-
-```python
-def should_handle(event):
-    """判斷是否應該處理此事件"""
-    # 只處理特定使用者的訊息
-    if event.get_user_id() in ["bot1", "bot2"]:
-        return False
-    
-    # 只處理包含特定關鍵字的訊息
-    if "關鍵字" not in event.get_text():
-        return False
-    
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
-    await event.reply("條件滿足，處理訊息")
-```
-
-## 下一步
-
-- [常見任務範例](common-tasks.md) - 學習常用功能的實作
-- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
-- [使用者使用指南](../user-guide/) - 了解配置和模組管理
+        await event
 
 
 
@@ -1950,6 +1950,14 @@ async def friend_add_handler(event):
 
 - `get_raw()` - 取得平台原始事件資料
 - `get_raw_type()` - 取得平台原始事件類型
+
+### 平台擴充方法
+
+介面卡會為各自平台註冊專有方法，以下為常見範例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
+
+- `get_platform_event_methods(platform)` - 查詢指定平台已註冊的擴充方法列表
+- 平台擴充方法僅在對應平台的 Event 實例上可用
+- 可透過 `hasattr(event, "method_name")` 安全判斷方法是否存在
 
 ### 工具方法
 
