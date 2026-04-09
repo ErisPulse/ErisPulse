@@ -8,7 +8,7 @@
 
 適配器是 ErisPulse 與各個訊息平台之間的橋樑，負責：
 
-1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式
+1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）
 2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
 3. 管理與平台的連線（WebSocket/WebHook）
 4. 提供統一的 SendDSL 訊息發送介面
@@ -141,6 +141,43 @@ class MyAdapter(BaseAdapter):
         """呼叫平台 API（必須實作）"""
         raise NotImplementedError("需要實作 call_api")
 ```
+
+#### 主動發送 Meta 事件
+
+適配器應主動發送 meta 事件，讓框架追蹤 Bot 的線上狀態：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot 上線
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot 下線
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {"platform": "myplatform", "user_id": bot_id}
+            })
+```
+
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
 
 ### 5. 實作 Send 類別
 

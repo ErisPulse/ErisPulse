@@ -2,6 +2,130 @@
 
 This document provides best practice recommendations for ErisPulse adapter development.
 
+## Bot Status Management and Meta Events
+
+Adapters should proactively send meta events via `adapter.emit()` to allow the framework to automatically track the Bot's connection status, online/offline status, and heartbeat information.
+
+### 1. When to Send Meta Events
+
+| Event | `detail_type` | Trigger Condition | Framework Behavior |
+|------|--------------|------------------|-------------------|
+| Connection | `"connect"` | When the Bot establishes a connection with the platform | Register the Bot and trigger the `adapter.bot.online` lifecycle event |
+| Disconnection | `"disconnect"` | When the Bot disconnects from the platform | Mark the Bot as offline and trigger the `adapter.bot.offline` lifecycle event |
+| Heartbeat | `"heartbeat"` | Sent periodically (recommended 30-60 seconds) | Update Bot's active time and meta information |
+
+### 2. Sending Meta Events
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot online: send connect event
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "My Robot",
+                "avatar": "https://example.com/avatar.png",
+            }
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot offline: send disconnect event
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+```
+
+### 3. Heartbeat Events
+
+Adapters should periodically send heartbeat events while the connection is alive to update the Bot's active time:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _heartbeat_loop(self, bot_id: str):
+        while self._connected:
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "myplatform",
+                "self": {
+                    "platform": "myplatform",
+                    "user_id": bot_id,
+                }
+            })
+            await asyncio.sleep(30)
+```
+
+### 4. Automatic Discovery of `self` Field
+
+The framework's `adapter.emit()` will automatically handle the `self` field in all events (not just meta events):
+
+- **Normal events** (message/notice/request): The `self` field will automatically discover and register the Bot.
+- **`self` field extended information**: Supports optional fields `user_name`, `nickname`, `avatar`, `account_id`.
+
+```python
+# Including the self field in the converter automatically registers the Bot
+onebot_event = {
+    "type": "message",
+    "detail_type": "private",
+    "platform": "myplatform",
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot123",
+        "user_name": "MyBot",
+        "nickname": "My Robot",
+    },
+    # ... other fields
+}
+await self.adapter.emit(onebot_event)
+# Bot "bot123" has been automatically registered and active time updated
+```
+
+### 5. Bot Status Query
+
+The framework provides the following query methods:
+
+```python
+from ErisPulse import sdk
+
+# Get Bot detailed information
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# List all Bots (grouped by platform)
+all_bots = sdk.adapter.list_bots()
+
+# List Bots for a specific platform
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Check if Bot is online
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Get complete status summary (suitable for WebUI display)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
 ## Connection Management
 
 ### 1. Implement Connection Retry
@@ -58,21 +182,34 @@ class MyAdapter(BaseAdapter):
             self._connected = False
 ```
 
-### 3. Heartbeat Keep-Alive
+### 3. Heartbeat Keep-Alive and Meta Heartbeat
+
+The adapter's heartbeat should accomplish two tasks simultaneously: send a heartbeat to the platform to keep the connection alive, and send a meta heartbeat event to the framework.
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
         self.connection = await self._connect_to_platform()
-        # Start heartbeat task
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-    
+
     async def _heartbeat_loop(self):
-        """Heartbeat keep-alive"""
         while self.connection:
             try:
+                # 1. Send heartbeat keep-alive to platform
                 await self.connection.send_json({"type": "ping"})
-                await asyncio.sleep(30)  # Heartbeat every 30 seconds
+
+                # 2. Send meta heartbeat event to framework (update Bot active time)
+                await self.adapter.emit({
+                    "type": "meta",
+                    "detail_type": "heartbeat",
+                    "platform": "myplatform",
+                    "self": {
+                        "platform": "myplatform",
+                        "user_id": self._bot_id,
+                    }
+                })
+
+                await asyncio.sleep(30)
             except Exception as e:
                 self.logger.error(f"心跳失败: {e}")
                 break
@@ -390,6 +527,60 @@ async def test_send_message():
 > For complete implementation specifications, code examples, and usage instructions, please refer to:
 > - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-reverse-conversion-specificationonebot12--platform)
 > - [Send Method Specification §11 Message Builder](../../standards/send-method-spec.md#11-message-builder-messagebuilder)
+
+## Platform Event Method Extension
+
+Adapters can register platform-specific methods for the Event wrapper class, allowing module developers to access platform-specific data more conveniently.
+
+### 1. Batch Register Using Mixin Classes (Recommended)
+
+When a platform has multiple proprietary methods, using a Mixin class is recommended:
+
+```python
+# Register in the adapter's start() or at module level
+from ErisPulse.Core.Event import register_event_mixin
+
+class MyPlatformEventMixin:
+    def get_chat_name(self):
+        """Get chat name"""
+        return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+    def is_official_message(self):
+        """Determine if it is an official message"""
+        raw = self.get("myplatform_raw", {})
+        return raw.get("sender", {}).get("is_official", False)
+
+    def get_message_type(self):
+        """Get platform message type"""
+        return self.get("myplatform_raw", {}).get("msg_type", "text")
+
+# Batch register
+register_event_mixin("myplatform", MyPlatformEventMixin)
+```
+
+### 2. Register Single Method Using Decorator
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("myplatform")
+def get_chat_name(self):
+    return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+```
+
+### 3. Cleanup on Adapter Shutdown
+
+```python
+from ErisPulse.Core.Event import unregister_platform_event_methods
+
+class MyAdapter(BaseAdapter):
+    async def shutdown(self):
+        # Cleanup platform event method registration
+        unregister_platform_event_methods("myplatform")
+        # ... other cleanup
+```
+
+> For more detailed registration and unregistration instructions, please refer to [Event System API - Register Platform Extension Methods](../../api-reference/event-system.md#adapter-register-platform-extension-methods).
 
 ## Documentation Maintenance
 

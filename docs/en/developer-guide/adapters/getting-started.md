@@ -9,7 +9,7 @@ This guide helps you get started with developing ErisPulse adapters to connect n
 The adapter is a bridge between ErisPulse and various messaging platforms, responsible for:
 
 1. **Forward Conversion**: Receiving platform events and converting them to OneBot12 standard format (Converter)
-2. **Reverse Conversion**: Converting OneBot12 message segments to platform API calls (Raw_ob12)
+2. **Reverse Conversion**: Converting OneBot12 message segments to platform API calls (`Raw_ob12`)
 3. Managing connections with the platform (WebSocket/WebHook)
 4. Providing a unified SendDSL message sending interface
 
@@ -141,6 +141,43 @@ class MyAdapter(BaseAdapter):
         """Call platform API (must implement)"""
         raise NotImplementedError("Need to implement call_api")
 ```
+
+#### Proactively Sending Meta Events
+
+The adapter should proactively send meta events to allow the framework to track the bot's online status:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        # Bot online
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                event = self.convert(data)
+                if event:
+                    await self.adapter.emit(event)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            # Bot offline
+            await self.adapter.emit({
+                "type": "meta",
+                "detail_type": "disconnect",
+                "platform": "myplatform",
+                "self": {"platform": "myplatform", "user_id": bot_id}
+            })
+```
+
+> For detailed information on bot status management and Meta events, please refer to [Adapter Best Practices - Bot Status Management](best-practices.md#bot-status-management-and-meta-events).
 
 ### 5. Implement Send Class
 
