@@ -370,8 +370,13 @@ class SDK:
                 # 4. 清理管理器
                 adapter_manager.clear()
                 module_manager.clear()
+
+                # 5. 停止路由服务器
+                router_manager = self._sdk.router
+                if router_manager._server_task and not router_manager._server_task.done():
+                    await router_manager.stop()
                 
-                # 5. 清理 SDK 对象上的模块属性
+                # 6. 清理 SDK 对象上的模块属性
                 module_properties_cleared = 0
                 for module_name in module_manager.list_loaded():
                     try:
@@ -382,7 +387,7 @@ class SDK:
                     except Exception as e:
                         logger.warning(f"清理模块属性 {module_name} 失败: {e}")
                 
-                # 6. 重置初始化状态
+                # 7. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
                 
@@ -681,8 +686,8 @@ if __name__ == "__main__":
         执行完整的反初始化后再初始化过程，并重新启动适配器
         
         {!--< tips >!--}
-        使用 asyncio.shield 保护重启任务，确保即使当前事件处理器被取消，
-        重启流程仍能完整执行。因此调用此函数后，重启会在后台异步进行。
+        使用 asyncio.ensure_future 将重启任务注册到事件循环调度器，
+        与调用栈完全解耦，确保即使调用方被取消，重启流程也能完整执行。
 
         注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
         {!--< /tips >!--}
@@ -696,15 +701,10 @@ if __name__ == "__main__":
         """
         logger.info("[Reload] 开始重新加载SDK...")
         
-        # 创建后台任务执行重启，与当前事件处理器解耦
-        task = asyncio.create_task(self._do_restart())
+        # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
+        asyncio.ensure_future(self._do_restart())
         
-        # 使用 shield 确保任务不被取消
-        try:
-            return await asyncio.shield(task)
-        except asyncio.CancelledError:
-            logger.info("[Reload] 重启任务被外部取消，但将在后台继续执行")
-            return True
+        return True
         
     async def uninit(self) -> bool:
         """
