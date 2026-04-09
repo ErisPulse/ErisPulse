@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 832,
+  "total_keywords": 853,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -21,9 +21,17 @@
     "1. 严格遵循 OneBot12 标准": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 83,
+        "line": 220,
         "level": 3,
         "title": "1. 严格遵循 OneBot12 标准"
+      }
+    ],
+    "1. 何时发送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 9,
+        "level": 3,
+        "title": "1. 何时发送 Meta 事件"
       }
     ],
     "1. 使用 Event 包装类": [
@@ -32,6 +40,14 @@
         "line": 98,
         "level": 3,
         "title": "1. 使用 Event 包装类"
+      }
+    ],
+    "1. 使用 Mixin 类批量注册（推荐）": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 535,
+        "level": 3,
+        "title": "1. 使用 Mixin 类批量注册（推荐）"
       }
     ],
     "1. 使用事务": [
@@ -61,7 +77,7 @@
     "1. 分类异常处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 294,
+        "line": 431,
         "level": 3,
         "title": "1. 分类异常处理"
       },
@@ -97,7 +113,7 @@
     "1. 单元测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 340,
+        "line": 477,
         "level": 3,
         "title": "1. 单元测试"
       },
@@ -127,7 +143,7 @@
     "1. 实现连接重试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 7,
+        "line": 131,
         "level": 3,
         "title": "1. 实现连接重试"
       }
@@ -135,7 +151,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 378,
+        "line": 428,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -143,7 +159,7 @@
     "1. 必须返回 Task 对象": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 137,
+        "line": 274,
         "level": 3,
         "title": "1. 必须返回 Task 对象"
       }
@@ -167,7 +183,7 @@
     "1. 标准化响应格式": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 202,
+        "line": 339,
         "level": 3,
         "title": "1. 标准化响应格式"
       }
@@ -231,7 +247,7 @@
     "1. 维护平台特性文档": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 396,
+        "line": 587,
         "level": 3,
         "title": "1. 维护平台特性文档"
       }
@@ -247,7 +263,7 @@
     "1. 账户配置验证": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 252,
+        "line": 389,
         "level": 3,
         "title": "1. 账户配置验证"
       }
@@ -404,6 +420,14 @@
         "title": "2. 仅指定ID"
       }
     ],
+    "2. 使用装饰器注册单个方法": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 561,
+        "level": 3,
+        "title": "2. 使用装饰器注册单个方法"
+      }
+    ],
     "2. 创建 pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -432,6 +456,14 @@
         "line": 318,
         "level": 3,
         "title": "2. 友好的错误提示"
+      }
+    ],
+    "2. 发送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 17,
+        "level": 3,
+        "title": "2. 发送 Meta 事件"
       }
     ],
     "2. 合理使用懒加载": [
@@ -485,13 +517,13 @@
     "2. 日志记录": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 319,
+        "line": 456,
         "level": 3,
         "title": "2. 日志记录"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 396,
+        "line": 446,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -499,7 +531,7 @@
     "2. 时间戳标准化": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 105,
+        "line": 242,
         "level": 3,
         "title": "2. 时间戳标准化"
       }
@@ -507,7 +539,7 @@
     "2. 更新版本信息": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 417,
+        "line": 608,
         "level": 3,
         "title": "2. 更新版本信息"
       }
@@ -563,7 +595,7 @@
     "2. 账户选择机制": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 272,
+        "line": 409,
         "level": 3,
         "title": "2. 账户选择机制"
       }
@@ -587,7 +619,7 @@
     "2. 连接状态管理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 36,
+        "line": 160,
         "level": 3,
         "title": "2. 连接状态管理"
       }
@@ -603,7 +635,7 @@
     "2. 链式修饰方法返回 self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 154,
+        "line": 291,
         "level": 3,
         "title": "2. 链式修饰方法返回 self"
       }
@@ -611,7 +643,7 @@
     "2. 错误码规范": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 228,
+        "line": 365,
         "level": 3,
         "title": "2. 错误码规范"
       }
@@ -619,7 +651,7 @@
     "2. 集成测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 364,
+        "line": 501,
         "level": 3,
         "title": "2. 集成测试"
       },
@@ -737,7 +769,7 @@
     "3. 事件 ID 生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 121,
+        "line": 258,
         "level": 3,
         "title": "3. 事件 ID 生成"
       }
@@ -798,12 +830,20 @@
         "title": "3. 平台类型映射"
       }
     ],
-    "3. 心跳保活": [
+    "3. 心跳事件": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 61,
+        "line": 59,
         "level": 3,
-        "title": "3. 心跳保活"
+        "title": "3. 心跳事件"
+      }
+    ],
+    "3. 心跳保活与 Meta 心跳": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 185,
+        "level": 3,
+        "title": "3. 心跳保活与 Meta 心跳"
       }
     ],
     "3. 指定发送账号": [
@@ -825,7 +865,7 @@
     "3. 支持平台特有方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 171,
+        "line": 308,
         "level": 3,
         "title": "3. 支持平台特有方法"
       }
@@ -833,7 +873,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 412,
+        "line": 462,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -884,6 +924,14 @@
         "line": 81,
         "level": 3,
         "title": "3. 适配器"
+      }
+    ],
+    "3. 适配器关闭时清理": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 571,
+        "level": 3,
+        "title": "3. 适配器关闭时清理"
       }
     ],
     "3.1 映射原则": [
@@ -948,6 +996,14 @@
         "line": 86,
         "level": 4,
         "title": "3xxxx 动作执行错误（Execution Error）"
+      }
+    ],
+    "4. `self` 字段自动发现": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 79,
+        "level": 3,
+        "title": "4. `self` 字段自动发现"
       }
     ],
     "4. 创建包入口": [
@@ -1078,10 +1134,18 @@
         "title": "4.3 注销自定义类型"
       }
     ],
+    "5. Bot 状态查询": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 104,
+        "level": 3,
+        "title": "5. Bot 状态查询"
+      }
+    ],
     "5. 实现 Send 类": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 145,
+        "line": 182,
         "level": 3,
         "title": "5. 实现 Send 类"
       }
@@ -1185,7 +1249,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 218,
+        "line": 255,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1353,7 +1417,7 @@
     "7. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 260,
+        "line": 297,
         "level": 3,
         "title": "7. 创建包入口"
       }
@@ -1507,7 +1571,7 @@
     "API 响应": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 200,
+        "line": 337,
         "level": 2,
         "title": "API 响应"
       },
@@ -1638,12 +1702,46 @@
         "title": "Bot 状态值"
       }
     ],
+    "Bot 状态查询": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 240,
+        "level": 3,
+        "title": "Bot 状态查询"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 683,
+        "level": 3,
+        "title": "Bot 状态查询"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 233,
+        "level": 3,
+        "title": "Bot 状态查询"
+      }
+    ],
     "Bot 状态管理": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 204,
         "level": 2,
         "title": "Bot 状态管理"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 616,
+        "level": 2,
+        "title": "Bot 状态管理"
+      }
+    ],
+    "Bot 状态管理与 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "Bot 状态管理与 Meta 事件"
       }
     ],
     "Bug 追踪器": [
@@ -1825,7 +1923,7 @@
     "Event 包装类": [
       {
         "document": "api-reference/event-system.md",
-        "line": 240,
+        "line": 276,
         "level": 2,
         "title": "Event 包装类"
       }
@@ -1849,7 +1947,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 330,
+        "line": 351,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -1900,6 +1998,14 @@
         "line": 112,
         "level": 2,
         "title": "Message 消息模块"
+      }
+    ],
+    "Meta 事件类型": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 638,
+        "level": 3,
+        "title": "Meta 事件类型"
       }
     ],
     "Meta 元事件模块": [
@@ -2189,7 +2295,7 @@
     "SendDSL 实现": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 135,
+        "line": 272,
         "level": 2,
         "title": "SendDSL 实现"
       }
@@ -2306,12 +2412,28 @@
         "title": "__init__.py"
       }
     ],
+    "`hasattr` / `dir` 支持": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 415,
+        "level": 4,
+        "title": "`hasattr` / `dir` 支持"
+      }
+    ],
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 241,
+        "line": 249,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
+      }
+    ],
+    "`self` 字段扩展信息": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 672,
+        "level": 3,
+        "title": "`self` 字段扩展信息"
       }
     ],
     "call_api 方法": [
@@ -2489,7 +2611,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 267,
+        "line": 304,
         "level": 2,
         "title": "下一步"
       },
@@ -2513,7 +2635,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 432,
+        "line": 482,
         "level": 2,
         "title": "下一步"
       },
@@ -2600,6 +2722,14 @@
         "line": 23,
         "level": 2,
         "title": "为什么需要标准？"
+      }
+    ],
+    "主动发送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 145,
+        "level": 4,
+        "title": "主动发送 Meta 事件"
       }
     ],
     "事件": [
@@ -2705,7 +2835,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 376,
+        "line": 426,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -2737,7 +2867,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 349,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -2813,7 +2943,7 @@
     "事件转换": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 81,
+        "line": 218,
         "level": 2,
         "title": "事件转换"
       },
@@ -2905,7 +3035,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 254,
         "level": 2,
         "title": "交互式处理"
       }
@@ -3005,7 +3135,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 441,
+        "line": 504,
         "level": 2,
         "title": "优先级系统"
       }
@@ -3021,7 +3151,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 235,
+        "line": 256,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -3391,7 +3521,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 363,
+        "line": 426,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -3485,7 +3615,7 @@
     "反向转换与消息构建": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 384,
+        "line": 521,
         "level": 2,
         "title": "反向转换与消息构建"
       }
@@ -3653,7 +3783,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 287,
+        "line": 323,
         "level": 3,
         "title": "命令信息"
       },
@@ -3747,7 +3877,7 @@
     "命名冲突检测": [
       {
         "document": "api-reference/event-system.md",
-        "line": 437,
+        "line": 500,
         "level": 4,
         "title": "命名冲突检测"
       }
@@ -3771,7 +3901,7 @@
     "回复功能": [
       {
         "document": "api-reference/event-system.md",
-        "line": 299,
+        "line": 335,
         "level": 3,
         "title": "回复功能"
       },
@@ -4053,7 +4183,7 @@
     "多账户支持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 250,
+        "line": 387,
         "level": 2,
         "title": "多账户支持"
       },
@@ -4345,13 +4475,13 @@
     "工具方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 312,
+        "line": 348,
         "level": 3,
         "title": "工具方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 196,
+        "line": 204,
         "level": 3,
         "title": "工具方法"
       }
@@ -4375,7 +4505,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 307,
+        "line": 328,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -4383,7 +4513,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 280,
+        "line": 301,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -4456,6 +4586,14 @@
         "title": "平台"
       }
     ],
+    "平台事件方法扩展": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 531,
+        "level": 2,
+        "title": "平台事件方法扩展"
+      }
+    ],
     "平台原生事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4467,15 +4605,35 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 327,
+        "line": 363,
         "level": 3,
         "title": "平台扩展方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 212,
+        "line": 196,
+        "level": 3,
+        "title": "平台扩展方法"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 220,
         "level": 2,
         "title": "平台扩展方法"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 397,
+        "level": 3,
+        "title": "平台扩展方法"
+      }
+    ],
+    "平台方法隔离": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 399,
+        "level": 4,
+        "title": "平台方法隔离"
       }
     ],
     "平台特定功能": [
@@ -4879,7 +5037,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 379,
+        "line": 442,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -5097,7 +5255,7 @@
     "文档维护": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 585,
         "level": 2,
         "title": "文档维护"
       }
@@ -5359,9 +5517,17 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 232,
+        "line": 240,
         "level": 3,
         "title": "查询已注册方法"
+      }
+    ],
+    "查询平台已注册方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 384,
+        "level": 4,
+        "title": "查询平台已注册方法"
       }
     ],
     "查询支持的发送方法": [
@@ -5503,7 +5669,7 @@
     "核心方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 244,
+        "line": 280,
         "level": 3,
         "title": "核心方法"
       },
@@ -5827,7 +5993,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 425,
+        "line": 488,
         "level": 4,
         "title": "注销方法"
       }
@@ -5843,7 +6009,7 @@
     "测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 338,
+        "line": 475,
         "level": 2,
         "title": "测试"
       },
@@ -5941,7 +6107,7 @@
     "消息方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 260,
+        "line": 296,
         "level": 3,
         "title": "消息方法"
       }
@@ -6051,7 +6217,7 @@
     "点式访问": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 202,
+        "line": 210,
         "level": 3,
         "title": "点式访问"
       }
@@ -6204,6 +6370,22 @@
         "title": "用户数据存储"
       }
     ],
+    "用户：使用平台扩展方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 367,
+        "level": 4,
+        "title": "用户：使用平台扩展方法"
+      }
+    ],
+    "监听 Bot 生命周期": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 706,
+        "level": 3,
+        "title": "监听 Bot 生命周期"
+      }
+    ],
     "监听@消息": [
       {
         "document": "getting-started/event-handling.md",
@@ -6291,7 +6473,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 457,
+        "line": 520,
         "level": 2,
         "title": "相关文档"
       },
@@ -6303,13 +6485,13 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 426,
+        "line": 617,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 616,
+        "line": 724,
         "level": 2,
         "title": "相关文档"
       },
@@ -6339,7 +6521,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 250,
+        "line": 258,
         "level": 2,
         "title": "相关文档"
       },
@@ -6445,7 +6627,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 263,
+        "line": 284,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -6612,6 +6794,14 @@
         "line": 195,
         "level": 3,
         "title": "群邀请请求"
+      }
+    ],
+    "自动发现机制": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 620,
+        "level": 3,
+        "title": "自动发现机制"
       }
     ],
     "获取帮助": [
@@ -6977,7 +7167,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 400,
+        "line": 463,
         "level": 4,
         "title": "返回值规范"
       }
@@ -7001,7 +7191,7 @@
     "连接管理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 5,
+        "line": 129,
         "level": 2,
         "title": "连接管理"
       },
@@ -7056,6 +7246,14 @@
         "line": 19,
         "level": 3,
         "title": "适配器事件监听"
+      }
+    ],
+    "适配器发送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 646,
+        "level": 3,
+        "title": "适配器发送 Meta 事件"
       }
     ],
     "适配器发送方法查询": [
@@ -7197,7 +7395,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 359,
+        "line": 422,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -7509,7 +7707,7 @@
     "错误处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 292,
+        "line": 429,
         "level": 2,
         "title": "错误处理"
       },
