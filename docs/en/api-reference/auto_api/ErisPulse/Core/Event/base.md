@@ -24,6 +24,9 @@ ErisPulse 事件处理基础模块
 
 提供事件处理的基本功能，包括处理器注册和注销
 
+内部维护与适配器事件总线的连接状态（_linked_to_adapter_bus），
+确保 _process_event 在适配器总线被清空（如 shutdown/restart）后能重新挂载。
+
 
 #### 方法列表
 
@@ -85,7 +88,10 @@ ErisPulse 事件处理基础模块
 ##### `_clear_handlers()`
 
 > **内部方法** 
-清除所有已注册的事件处理器
+清除所有已注册的事件处理器，并断开与适配器事件总线的连接
+
+断开连接后，下次调用 register() 时会自动重新挂载 _process_event 到适配器总线，
+以适配 shutdown/restart 等场景下适配器总线被清空的情况。
 
 :return: 被清除的处理器数量
 
