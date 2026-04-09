@@ -23,6 +23,9 @@ class BaseEventHandler:
     基础事件处理器
 
     提供事件处理的基本功能，包括处理器注册和注销
+
+    内部维护与适配器事件总线的连接状态（_linked_to_adapter_bus），
+    确保 _process_event 在适配器总线被清空（如 shutdown/restart）后能重新挂载。
     """
 
     def __init__(self, event_type: str, module_name: str = None):
@@ -36,7 +39,13 @@ class BaseEventHandler:
         self.module_name = module_name
         self.handlers: list[dict] = []
         self._handler_map = {}  # 用于快速查找处理器
-        self._adapter_handler_registered = False  # 是否已注册到适配器
+
+        # 是否已将 self._process_event 挂载到适配器事件总线（adapter._onebot_handlers）。
+        #
+        # 当 adapter.shutdown() 或 adapter.clear() 清空事件总线后，
+        # 需要通过 _clear_handlers() 将此标记重置为 False，
+        # 以便下次 register() 时重新调用 adapter.on() 挂载 _process_event。
+        self._linked_to_adapter_bus: bool = False
 
     def register(
         self, handler: Callable, priority: int = 0, condition: Callable = None
@@ -60,9 +69,9 @@ class BaseEventHandler:
         self.handlers.sort(key=lambda x: x["priority"])
 
         # 注册到适配器
-        if self.event_type and not self._adapter_handler_registered:
+        if self.event_type and not self._linked_to_adapter_bus:
             adapter.on(self.event_type)(self._process_event)
-            self._adapter_handler_registered = True
+            self._linked_to_adapter_bus = True
         logger.debug(
             f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}"
         )
@@ -136,11 +145,15 @@ class BaseEventHandler:
     def _clear_handlers(self):
         """
         {!--< internal-use >!--}
-        清除所有已注册的事件处理器
+        清除所有已注册的事件处理器，并断开与适配器事件总线的连接
+
+        断开连接后，下次调用 register() 时会自动重新挂载 _process_event 到适配器总线，
+        以适配 shutdown/restart 等场景下适配器总线被清空的情况。
 
         :return: 被清除的处理器数量
         """
         count = len(self.handlers)
         self.handlers.clear()
         self._handler_map.clear()
+        self._linked_to_adapter_bus = False
         return count
