@@ -471,58 +471,53 @@ class LazyModule:
         if object.__getattribute__(self, "_initialized"):
             return
 
-        logger.debug(
-            f"正在初始化懒加载模块 {object.__getattribute__(self, '_module_name')}..."
-        )
+        module_name = object.__getattribute__(self, '_module_name')
+        logger.debug(f"正在初始化懒加载模块 {module_name}...")
 
         try:
-            # 获取类的 __init__ 参数信息
-            logger.debug(
-                f"正在获取模块 {object.__getattribute__(self, '_module_name')} 的 __init__ 参数信息..."
-            )
-            init_signature = inspect.signature(
-                object.__getattribute__(self, "_module_class").__init__
-            )
-            params = init_signature.parameters
+            is_base_module = object.__getattribute__(self, "_is_base_module")
 
-            # 根据参数决定是否传入 sdk
-            if "sdk" in params:
-                logger.debug(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 需要传入 sdk 参数"
-                )
-                instance = object.__getattribute__(self, "_module_class")(
-                    object.__getattribute__(self, "_sdk_ref")
-                )
+            if is_base_module:
+                # BaseModule: 通过 manager.load() 统一处理实例化和 on_load
+                # 避免 LazyModule 自行创建实例导致双重实例化
+                manager_instance = object.__getattribute__(self, "_manager_instance")
+                success = await manager_instance.load(module_name)
+                
+                if not success:
+                    raise RuntimeError(f"模块 {module_name} 通过 manager.load() 加载失败")
+                
+                # 使用 manager 中创建的实例（唯一的真实实例）
+                instance = manager_instance.get(module_name)
+                if instance is None:
+                    raise RuntimeError(f"模块 {module_name} manager.load() 成功但 get() 返回 None")
+                
+                # 确保 moduleInfo 已设置
+                module_info = object.__getattribute__(self, "_module_info")
+                if not hasattr(instance, 'moduleInfo') or instance.moduleInfo is None:
+                    setattr(instance, "moduleInfo", module_info)
+                
+                object.__setattr__(self, "_instance", instance)
             else:
-                logger.debug(
-                    f"模块 {object.__getattribute__(self, '_module_name')} 不需要传入 sdk 参数"
+                # 非 BaseModule: 保持原有行为，LazyModule 自行实例化
+                init_signature = inspect.signature(
+                    object.__getattribute__(self, "_module_class").__init__
                 )
-                instance = object.__getattribute__(self, "_module_class")()
+                params = init_signature.parameters
 
-            logger.debug(
-                f"正在设置模块 {object.__getattribute__(self, '_module_name')} 的 moduleInfo 属性..."
-            )
-            setattr(
-                instance, "moduleInfo", object.__getattribute__(self, "_module_info")
-            )
+                if "sdk" in params:
+                    instance = object.__getattribute__(self, "_module_class")(
+                        object.__getattribute__(self, "_sdk_ref")
+                    )
+                else:
+                    instance = object.__getattribute__(self, "_module_class")()
 
-            object.__setattr__(self, "_instance", instance)
+                setattr(
+                    instance, "moduleInfo", object.__getattribute__(self, "_module_info")
+                )
+
+                object.__setattr__(self, "_instance", instance)
+
             object.__setattr__(self, "_initialized", True)
-
-            # 如果是 BaseModule 子类，在初始化后调用 on_load 方法
-            if object.__getattribute__(self, "_is_base_module"):
-                logger.debug(
-                    f"正在调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法..."
-                )
-
-                try:
-                    await object.__getattribute__(self, "_manager_instance").load(
-                        object.__getattribute__(self, "_module_name")
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法时出错: {e}"
-                    )
 
             await lifecycle.submit_event(
                 "module.init",
@@ -563,6 +558,13 @@ class LazyModule:
         if not object.__getattribute__(self, "_initialized"):
             try:
                 loop = asyncio.get_running_loop()
+                
+                if object.__getattribute__(self, "_is_base_module"):
+                    # BaseModule 必须通过 manager.load() 异步初始化
+                    # 同步创建实例后调度异步 on_load 会导致双重实例化
+                    loop.create_task(self._initialize())
+                    return
+
                 init_method = getattr(
                     object.__getattribute__(self, "_module_class"), "__init__", None
                 )
@@ -575,13 +577,6 @@ class LazyModule:
                     return
                 else:
                     self._initialize_sync()
-
-                    if object.__getattribute__(self, "_is_base_module"):
-                        try:
-                            loop = asyncio.get_running_loop()
-                            loop.create_task(self._complete_async_init())
-                        except Exception as e:
-                            logger.warning(f"无法调度异步初始化任务: {e}")
             except RuntimeError:
                 asyncio.run(self._initialize())
 
@@ -641,20 +636,8 @@ class LazyModule:
             return
 
         try:
-            if object.__getattribute__(self, "_is_base_module"):
-                logger.debug(
-                    f"正在异步调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法..."
-                )
-
-                try:
-                    await object.__getattribute__(self, "_manager_instance").load(
-                        object.__getattribute__(self, "_module_name")
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"异步调用模块 {object.__getattribute__(self, '_module_name')} 的 on_load 方法时出错: {e}"
-                    )
-
+            # _initialize 已经通过 manager.load() 完成了 BaseModule 的 on_load
+            # 这里只需要提交生命周期事件即可
             await lifecycle.submit_event(
                 "module.init",
                 msg=f"模块 {object.__getattribute__(self, '_module_name')} 初始化完毕",
