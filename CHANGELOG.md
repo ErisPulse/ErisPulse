@@ -63,6 +63,29 @@
 
 ---
 
+## [2.4.0-dev.4] - 2026/04/10
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - **Event 交互方法**：新增 `confirm`、`choose`、`collect`、`wait_for`、`conversation` 方法，提供声明式交互能力
+    - `event.confirm(prompt)` - 等待用户确认，识别中英文内置确认词
+    - `event.choose(prompt, options)` - 选项选择菜单
+    - `event.collect(fields)` - 多步骤表单收集
+    - `event.wait_for(event_type, condition)` - 等待任意事件
+    - `event.conversation()` - 多轮对话上下文
+  - **内置确认词集合**：导出 `CONFIRM_YES_WORDS` (21个) 和 `CONFIRM_NO_WORDS` (19个)
+  - **Conversation 类**：多轮对话管理器，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+
+### 优化
+- @wsu2059q
+  - **事件处理并行化**：同优先级处理器并行执行，不同优先级按顺序执行
+    - 解决 `wait_reply` 阻塞后续处理器的问题
+    - 使用 Copy-On-Write 优化，无修改时不创建副本
+    - 同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
+
+---
+
 ## [2.4.0-dev.3] - 2026/04/09
 > 开发版本
 

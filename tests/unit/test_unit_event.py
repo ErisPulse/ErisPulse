@@ -15,9 +15,10 @@ from ErisPulse.Core.Event import (
     register_event_method, register_event_mixin,
     unregister_event_method, unregister_platform_event_methods,
     get_platform_event_methods,
+    Conversation, CONFIRM_YES_WORDS, CONFIRM_NO_WORDS,
 )
 from ErisPulse.Core.Event.wrapper import Event, _platform_event_methods
-from ErisPulse.Core.Event.base import BaseEventHandler
+from ErisPulse.Core.Event.base import BaseEventHandler, _EventCopyTracker
 from ErisPulse.Core import adapter, config
 
 
@@ -136,7 +137,7 @@ class TestBaseEventHandler:
         
         # 验证
         assert len(called) == 1
-        assert isinstance(called[0], Event)
+        assert called[0].get("test") == True
     
     @pytest.mark.asyncio
     async def test_process_event_with_condition(self, handler):
@@ -1146,3 +1147,263 @@ class TestEventPlatformMethodDispatch:
         })
         assert event.get_subject() == "Test Subject"
         assert event.get_from() == "sender@example.com"
+
+
+# ==================== 并行事件处理测试 ====================
+
+class TestParallelEventHandling:
+    """并行事件处理测试类"""
+
+    @pytest.fixture
+    def handler(self):
+        handler = BaseEventHandler("message", "test_parallel")
+        handler.handlers.clear()
+        handler._handler_map.clear()
+        yield handler
+        handler._clear_handlers()
+
+    @pytest.mark.asyncio
+    async def test_parallel_same_priority(self, handler):
+        """测试同优先级处理器并行执行"""
+        results = []
+
+        async def handler_a(event):
+            results.append("A_start")
+            await asyncio.sleep(0.05)
+            results.append("A_end")
+
+        async def handler_b(event):
+            results.append("B_start")
+            await asyncio.sleep(0.05)
+            results.append("B_end")
+
+        handler.register(handler_a, priority=0)
+        handler.register(handler_b, priority=0)
+
+        event = Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "u1",
+            "self": {"user_id": "bot"}
+        })
+        await handler._process_event(event)
+
+        assert results[0] in ["A_start", "B_start"]
+        assert results[1] in ["A_start", "B_start"]
+        assert "A_end" in results
+        assert "B_end" in results
+
+    @pytest.mark.asyncio
+    async def test_different_priority_sequential(self, handler):
+        """测试不同优先级按顺序执行"""
+        order = []
+
+        async def low_priority(event):
+            order.append("low")
+
+        async def high_priority(event):
+            order.append("high")
+
+        handler.register(low_priority, priority=10)
+        handler.register(high_priority, priority=1)
+
+        event = Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "u1",
+            "self": {"user_id": "bot"}
+        })
+        await handler._process_event(event)
+
+        assert order == ["high", "low"]
+
+    @pytest.mark.asyncio
+    async def test_copy_on_write_no_modification(self, handler):
+        """测试无修改时不创建副本"""
+        async def read_only(event):
+            _ = event.get("type")
+
+        handler.register(read_only, priority=0)
+
+        event = Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "u1",
+            "self": {"user_id": "bot"}
+        })
+        await handler._process_event(event)
+
+    @pytest.mark.asyncio
+    async def test_single_handler_fast_path(self, handler):
+        """测试单个处理器走快速路径"""
+        called = []
+
+        async def single(event):
+            called.append(True)
+
+        handler.register(single, priority=0)
+
+        event = Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "u1",
+            "self": {"user_id": "bot"}
+        })
+        await handler._process_event(event)
+
+        assert len(called) == 1
+
+    @pytest.mark.asyncio
+    async def test_processed_short_circuit(self, handler):
+        """测试 _processed 标记中断后续处理器"""
+        async def mark_processed(event):
+            event.mark_processed()
+
+        async def should_not_run(event):
+            pytest.fail("should not reach here")
+
+        handler.register(mark_processed, priority=0)
+        handler.register(should_not_run, priority=1)
+
+        event = Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "u1",
+            "self": {"user_id": "bot"}
+        })
+        await handler._process_event(event)
+
+        assert event.is_processed()
+
+
+class TestEventCopyTracker:
+    """事件副本追踪器测试类"""
+
+    def test_lazy_copy_no_modification(self):
+        """测试无修改时不创建副本"""
+        original = Event({"a": 1, "b": 2})
+        tracker = _EventCopyTracker(original)
+
+        assert tracker._event is None
+
+    def test_lazy_copy_on_write(self):
+        """测试写入时创建副本"""
+        original = Event({"a": 1, "b": 2})
+        tracker = _EventCopyTracker(original)
+
+        tracker["c"] = 3
+
+        assert tracker._event is not None
+        assert tracker.get("c") == 3
+
+    def test_no_modification_returns_original(self):
+        """测试无修改时 to_event 返回原始事件"""
+        original = Event({"x": 10})
+        tracker = _EventCopyTracker(original)
+
+        result = tracker.to_event()
+        assert result is original
+
+    def test_was_modified(self):
+        """测试 was_modified 方法"""
+        original = Event({"a": 1})
+        tracker = _EventCopyTracker(original)
+
+        assert tracker.was_modified() is False
+
+        tracker["b"] = 2
+        assert tracker.was_modified() is True
+
+    def test_get_read_from_original(self):
+        """测试读取原始数据"""
+        original = Event({"a": 1, "b": 2})
+        tracker = _EventCopyTracker(original)
+
+        assert tracker.get("a") == 1
+        assert tracker.get("b") == 2
+        assert tracker["a"] == 1
+
+    def test_mark_processed(self):
+        """测试 mark_processed"""
+        original = Event({"type": "message"})
+        tracker = _EventCopyTracker(original)
+
+        tracker.mark_processed()
+        assert tracker.is_processed() is True
+
+
+# ==================== 交互方法测试 ====================
+
+class TestInteractiveMethods:
+    """交互方法测试类"""
+
+    @pytest.fixture
+    def sample_event(self):
+        return Event({
+            "type": "message",
+            "platform": "test",
+            "user_id": "user123",
+            "self": {"platform": "test", "user_id": "bot123"},
+            "alt_message": "test message"
+        })
+
+    def test_confirm_yes_words(self, sample_event):
+        """测试确认词集合"""
+        assert "是" in CONFIRM_YES_WORDS
+        assert "yes" in CONFIRM_YES_WORDS
+        assert "y" in CONFIRM_YES_WORDS
+
+    def test_confirm_no_words(self, sample_event):
+        """测试否定词集合"""
+        assert "否" in CONFIRM_NO_WORDS
+        assert "no" in CONFIRM_NO_WORDS
+        assert "n" in CONFIRM_NO_WORDS
+
+    def test_conversation_creation(self, sample_event):
+        """测试 Conversation 创建"""
+        conv = sample_event.conversation(timeout=30)
+        assert conv is not None
+        assert conv.is_active is True
+
+    def test_conversation_stop(self, sample_event):
+        """测试 Conversation 停止"""
+        conv = sample_event.conversation()
+        conv.stop()
+        assert conv.is_active is False
+
+
+# ==================== 冲突合并测试 ====================
+
+class TestMergeConflict:
+    """冲突合并测试类"""
+
+    def test_merge_message_list(self):
+        """测试消息列表合并"""
+        from ErisPulse.Core.Event.base import _try_merge_values
+
+        result = _try_merge_values("message", [
+            [{"type": "text", "data": {"text": "a"}}],
+            [{"type": "text", "data": {"text": "b"}}]
+        ])
+        assert len(result) == 2
+
+    def test_merge_alt_message(self):
+        """测试 alt_message 合并"""
+        from ErisPulse.Core.Event.base import _try_merge_values
+
+        result = _try_merge_values("alt_message", ["hello", "world"])
+        assert result == "hello world"
+
+    def test_merge_last_wins(self):
+        """测试默认最后值获胜"""
+        from ErisPulse.Core.Event.base import _try_merge_values
+
+        result = _try_merge_values("custom_key", ["first", "second", "third"])
+        assert result == "third"
+
+    def test_merge_single_value(self):
+        """测试单个值直接返回"""
+        from ErisPulse.Core.Event.base import _try_merge_values
+
+        result = _try_merge_values("key", ["only_one"])
+        assert result == "only_one"
