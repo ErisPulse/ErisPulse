@@ -140,6 +140,45 @@ async def low_priority_handler(event):
     await event.reply("低优先级处理器")
 ```
 
+### 并行事件处理
+
+ErisPulse 事件系统采用**同优先级并行、不同优先级串行**的调度模型：
+
+```
+事件到达
+    ↓
+priority=0 组: [处理器A || 处理器B] 并行 → 合并结果
+    ↓ (如未中断)
+priority=1 组: [处理器C || 处理器D] 并行 → 合并结果
+    ↓
+...
+```
+
+- **同优先级并行**：优先级相同的多个处理器会同时执行，提高吞吐量
+- **跨级串行**：不同优先级的组按顺序执行，确保高优先级处理器先运行
+- **Copy-On-Write**：处理器无修改时不创建副本，确保零开销
+- **冲突处理**：同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
+- **中断机制**：任意处理器调用 `event.mark_processed()` 后，跳过后续低优先级组
+
+```python
+# 示例：同优先级处理器并行执行
+@message.on_message(priority=0)
+async def handler_a(event):
+    # 处理任务A
+    event['result_a'] = process_a()
+
+@message.on_message(priority=0)
+async def handler_b(event):
+    # 与 handler_a 并行执行
+    event['result_b'] = process_b()
+
+# 不同优先级串行执行
+@message.on_message(priority=10)
+async def handler_c(event):
+    # 在 priority=0 组全部完成后执行
+    pass
+```
+
 ## 通知事件处理
 
 ### 好友添加
@@ -345,6 +384,117 @@ async def confirm_handler(event):
         callback=handle_confirmation
     )
 ```
+
+### 确认对话 (confirm)
+
+等待用户确认或否定，自动识别内置中英文确认词：
+
+```python
+@command("confirm", help="确认操作")
+async def confirm_handler(event):
+    if await event.confirm("确定要执行此操作吗？"):
+        await event.reply("已确认，执行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定义确认词
+if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 选择菜单 (choose)
+
+用户可回复选项编号或选项文本：
+
+```python
+@command("choose", help="选择")
+async def choose_handler(event):
+    choice = await event.choose(
+        "请选择颜色：",
+        ["红色", "绿色", "蓝色"]
+    )
+    
+    if choice is not None:
+        colors = ["红色", "绿色", "蓝色"]
+        await event.reply(f"你选择了：{colors[choice]}")
+    else:
+        await event.reply("超时未选择")
+```
+
+### 收集表单 (collect)
+
+多步骤收集用户输入：
+
+```python
+@command("register", help="注册")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "请输入姓名："},
+        {"key": "age", "prompt": "请输入年龄：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "请输入邮箱："}
+    ])
+    
+    if data:
+        await event.reply(f"注册成功！\n姓名：{data['name']}\n年龄：{data['age']}\n邮箱：{data['email']}")
+    else:
+        await event.reply("注册超时或输入无效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待满足条件的任意事件，不限于同一用户：
+
+```python
+@command("wait_member", help="等待新成员")
+async def wait_member_handler(event):
+    await event.reply("等待群成员加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"欢迎新成员：{evt.get_user_id()}")
+    else:
+        await event.reply("等待超时")
+```
+
+### 多轮对话 (conversation)
+
+创建可交互的多轮对话上下文：
+
+```python
+@command("survey", help="问卷调查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("欢迎参与问卷调查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("对话超时，再见！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再见！")
+            break
+        
+        await conv.say(f"你说了：{text}，继续输入或回复'退出'结束")
+```
+
+### 内置确认词
+
+ErisPulse 内置了中英文确认词集合：
+
+- **确认词** (`CONFIRM_YES_WORDS`): 是、yes、y、确认、确定、好、好的、ok、true、对、嗯、行、同意、没问题...
+- **否定词** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、错、拒绝、不可以...
 
 ## 事件数据访问
 
