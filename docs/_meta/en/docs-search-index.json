@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 849,
+  "total_keywords": 856,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -113,7 +113,7 @@
     "1. Exception Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 428,
+        "line": 578,
         "level": 3,
         "title": "1. Exception Handling"
       }
@@ -549,7 +549,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 446,
+        "line": 596,
         "level": 3,
         "title": "2. Logging"
       }
@@ -805,7 +805,7 @@
     "3. Conditional Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 462,
+        "line": 612,
         "level": 3,
         "title": "3. Conditional Handling"
       }
@@ -2335,7 +2335,7 @@
     "Best Practices for Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 426,
+        "line": 576,
         "level": 2,
         "title": "Best Practices for Event Handling"
       }
@@ -2403,7 +2403,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 272,
         "level": 3,
         "title": "Bot Status Query"
       }
@@ -2430,6 +2430,14 @@
         "line": 1,
         "level": 1,
         "title": "Bug Tracker"
+      }
+    ],
+    "Built-in Confirmation Words": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 492,
+        "level": 3,
+        "title": "Built-in Confirmation Words"
       }
     ],
     "Built-in Defaults": [
@@ -2574,6 +2582,14 @@
         "title": "Child Loggers"
       }
     ],
+    "Choose Menu": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 405,
+        "level": 3,
+        "title": "Choose Menu"
+      }
+    ],
     "Choosing a Development Approach": [
       {
         "document": "getting-started/README.md",
@@ -2604,6 +2620,14 @@
         "line": 112,
         "level": 2,
         "title": "Code Explanation"
+      }
+    ],
+    "Collect Form": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 424,
+        "level": 3,
+        "title": "Collect Form"
       }
     ],
     "Combine Modifiers": [
@@ -2775,7 +2799,7 @@
     "Common Methods of the Event Object": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 351,
+        "line": 501,
         "level": 3,
         "title": "Common Methods of the Event Object"
       }
@@ -2968,10 +2992,18 @@
         "title": "Configuring Lazy Loading"
       }
     ],
+    "Confirm Dialog": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 388,
+        "level": 3,
+        "title": "Confirm Dialog"
+      }
+    ],
     "Connection Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 208,
+        "line": 247,
         "level": 3,
         "title": "Connection Event"
       }
@@ -3657,7 +3689,7 @@
     "Event Data Access": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 349,
+        "line": 499,
         "level": 2,
         "title": "Event Data Access"
       }
@@ -3995,7 +4027,7 @@
     "Friend Add": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 145,
+        "line": 184,
         "level": 3,
         "title": "Friend Add"
       }
@@ -4003,7 +4035,7 @@
     "Friend Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 179,
+        "line": 218,
         "level": 3,
         "title": "Friend Request"
       }
@@ -4127,7 +4159,7 @@
     "Group Invite Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 195,
+        "line": 234,
         "level": 3,
         "title": "Group Invite Request"
       }
@@ -4135,7 +4167,7 @@
     "Group Member Decrease": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 167,
+        "line": 206,
         "level": 3,
         "title": "Group Member Decrease"
       }
@@ -4143,7 +4175,7 @@
     "Group Member Increase": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "Group Member Increase"
       }
@@ -4183,7 +4215,7 @@
     "Heartbeat Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 224,
+        "line": 263,
         "level": 3,
         "title": "Heartbeat Event"
       }
@@ -4463,7 +4495,7 @@
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 254,
+        "line": 293,
         "level": 2,
         "title": "Interactive Handling"
       }
@@ -4977,7 +5009,7 @@
     "Meta Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 245,
         "level": 2,
         "title": "Meta Event Handling"
       }
@@ -5276,6 +5308,14 @@
         "title": "Multi-platform Adaptation"
       }
     ],
+    "Multi-round Conversation": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 465,
+        "level": 3,
+        "title": "Multi-round Conversation"
+      }
+    ],
     "Mutually Exclusive Arguments": [
       {
         "document": "developer-guide/extensions/cli-extensions.md",
@@ -5325,7 +5365,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 482,
+        "line": 632,
         "level": 2,
         "title": "Next Steps"
       },
@@ -5417,7 +5457,7 @@
     "Notification Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 182,
         "level": 2,
         "title": "Notification Event Handling"
       }
@@ -5568,6 +5608,14 @@
         "title": "Packaging"
       }
     ],
+    "Parallel Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 143,
+        "level": 3,
+        "title": "Parallel Event Handling"
+      }
+    ],
     "Parameter Reference": [
       {
         "document": "user-guide/cli-reference.md",
@@ -5639,7 +5687,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 397,
+        "line": 547,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -6223,7 +6271,7 @@
     "Request Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 177,
+        "line": 216,
         "level": 2,
         "title": "Request Event Handling"
       }
@@ -6585,7 +6633,7 @@
     "Sending Replies using the `reply` Method": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 256,
+        "line": 295,
         "level": 3,
         "title": "Sending Replies using the `reply` Method"
       }
@@ -7402,6 +7450,14 @@
         "title": "Wait Reply Functionality"
       }
     ],
+    "Wait for Any Event": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 444,
+        "level": 3,
+        "title": "Wait for Any Event"
+      }
+    ],
     "Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7413,7 +7469,7 @@
     "Waiting for Reply with Callback": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 367,
         "level": 3,
         "title": "Waiting for Reply with Callback"
       }
@@ -7421,7 +7477,7 @@
     "Waiting for Reply with Validation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 301,
+        "line": 340,
         "level": 3,
         "title": "Waiting for Reply with Validation"
       }
@@ -7429,7 +7485,7 @@
     "Waiting for User Reply": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 284,
+        "line": 323,
         "level": 3,
         "title": "Waiting for User Reply"
       }

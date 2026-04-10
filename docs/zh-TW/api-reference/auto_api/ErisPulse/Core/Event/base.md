@@ -15,7 +15,55 @@ ErisPulse 事件处理基础模块
 
 ---
 
+## 函数列表
+
+
+### `_try_merge_values(key: str, values: list)`
+
+> **内部方法** 
+合并多个值，默认使用 last 策略
+
+:param key: 键名
+:param values: 值列表
+:return: 合并后的值
+
+---
+
+
+### `async async _invoke_handler(handler_info: dict, tracker: _EventCopyTracker)`
+
+> **内部方法** 
+执行单个处理器，使用 Copy-On-Write 优化
+
+:param handler_info: 处理器信息字典
+:param tracker: 事件修改追踪器
+:return: 追踪器（可能被修改）
+
+---
+
+
+### `_merge_trackers(original: Event, snapshot: dict, trackers: list[_EventCopyTracker])`
+
+> **内部方法** 
+合并多个追踪器的修改
+
+:param original: 原始事件
+:param snapshot: 执行前快照
+:param trackers: 修改追踪器列表
+
+---
+
+
 ## 类列表
+
+
+### `class _EventCopyTracker`
+
+> **内部方法** 
+事件副本修改追踪器
+
+包装 Event 对象，追踪哪些 key 被修改。
+初始只持有原始事件引用，首次写入时创建副本。
 
 
 ### `class BaseEventHandler`
@@ -78,7 +126,8 @@ ErisPulse 事件处理基础模块
 处理事件
 
 > **内部方法** 
-内部使用的方法，用于处理事件
+同优先级处理器并行执行，不同优先级按顺序串行执行。
+每个优先级组执行完毕后合并各处理器的变更，检测冲突。
 
 :param event: 事件数据
 
