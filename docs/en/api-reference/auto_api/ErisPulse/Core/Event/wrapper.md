@@ -556,11 +556,143 @@ ErisPulse 事件包装类
 ---
 
 
+##### `async async confirm(prompt: str = None, timeout: float = 60.0, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None)`
+
+等待用户确认 (是/否)
+
+自动发送提示消息并等待用户回复，识别内置中英文确认词。
+内置确认词: 是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题... (否/no/n/取消/不/不要/cancel/false/错/拒绝...)
+
+:param prompt: str - 提示消息（可选，发送后等待回复）
+:param timeout: float - 超时时间(秒)（默认: 60.0）
+:param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
+:param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+:return: bool|None - True=确认, False=否定, None=超时
+
+**异常**: `ValueError` - 当 yes_words 或 no_words 为空集合时
+
+**示例**:
+```python
+>>> if await event.confirm("确定要执行此操作吗？"):
+...     await event.reply("已执行")
+>>> # 自定义确认词
+>>> if await event.confirm("继续吗？", yes_words={"go", "run"}, no_words={"stop", "quit"}):
+...     await event.reply("开始执行")
+```
+
+---
+
+
+##### `async async choose(prompt: str, options: list[str], timeout: float = 60.0)`
+
+等待用户从选项中选择
+
+自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本
+
+:param prompt: str - 提示消息（必须）
+:param options: list[str] - 选项列表（不能为空）
+:param timeout: float - 超时时间(秒)（默认: 60.0）
+:return: int|None - 选中选项的索引(0-based), 超时返回 None
+
+**异常**: `ValueError` - 当 options 为空时
+
+**示例**:
+```python
+>>> choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
+>>> if choice is not None:
+...     await event.reply(f"你选择了: {['红','绿','蓝'][choice]}")
+```
+
+---
+
+
+##### `async async collect(fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
+
+多步骤收集信息 (表单式)
+
+依次向用户发送提示消息并收集回复，每个字段可配置验证器和重试逻辑
+
+:param fields: list[dict] - 字段列表，每个字段为字典:
+    - key: str - 字段键名（必须）
+    - prompt: str - 提示消息（默认: "请输入 {key}"）
+    - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
+    - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
+    - max_retries: int - 最大重试次数（默认: 3）
+:param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
+:return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
+
+**示例**:
+```python
+>>> data = await event.collect([
+...     {"key": "name", "prompt": "请输入姓名"},
+...     {"key": "age", "prompt": "请输入年龄",
+...      "validator": lambda e: e.get("alt_message", "").strip().isdigit()},
+... ])
+>>> if data:
+...     await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+```
+
+---
+
+
+##### `async async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = 60.0)`
+
+等待满足条件的任意事件
+
+不限于同一用户/会话，可监听任意类型事件
+
+:param event_type: str - 事件类型 (message/notice/request/meta 等，默认: message)
+:param condition: callable - 条件函数，接收 Event 对象，返回 bool（可选）
+:param timeout: float - 超时时间(秒)（默认: 60.0）
+:return: Event|None - 匹配的事件, 超时返回 None
+
+**示例**:
+```python
+>>> # 等待群成员加入通知
+>>> evt = await event.wait_for(
+...     "notice",
+...     condition=lambda e: e.get_detail_type() == "group_member_increase",
+...     timeout=120,
+... )
+>>>
+>>> # 等待任意消息包含特定关键词
+>>> evt = await event.wait_for(
+...     condition=lambda e: "hello" in e.get_text(),
+... )
+```
+
+---
+
+
+##### `conversation(timeout: float = 60.0)`
+
+创建多轮对话上下文
+
+:param timeout: 默认超时时间(秒)
+:return: Conversation 对象
+
+**示例**:
+```python
+>>> conv = event.conversation(timeout=30)
+>>> await conv.say("欢迎！请问有什么需要帮助的？")
+>>> while conv.is_active:
+...     resp = await conv.wait()
+...     if resp is None:
+...         await conv.say("会话超时，再见！")
+...         break
+...     if resp.get_text() == "退出":
+...         await conv.say("再见！")
+...         break
+```
+
+---
+
+
 ##### `get_raw()`
 
 获取原始事件数据
 
-:return: 原始事件数据字典
+:return: dict - 原始事件数据字典
 
 ---
 
@@ -569,7 +701,7 @@ ErisPulse 事件包装类
 
 获取原始事件类型
 
-:return: 原始事件类型
+:return: str - 原始事件类型
 
 ---
 
@@ -578,7 +710,7 @@ ErisPulse 事件包装类
 
 获取命令名称
 
-:return: 命令名称
+:return: str - 命令名称
 
 ---
 
@@ -646,12 +778,12 @@ ErisPulse 事件包装类
 
 ##### `__getattr__(name: str)`
 
-属性查找优先级：
+属性查找优先级:
 1. 平台注册的扩展方法（仅当前平台）
 2. 字典键访问（点式访问 event.platform 等）
 
-:param name: 属性名
-:return: 属性值
+:param name: str - 属性名
+:return: Any - 属性值
 **异常**: `AttributeError` - 属性不存在
 
 ---
@@ -669,6 +801,99 @@ ErisPulse 事件包装类
 字符串表示
 
 :return: 字符串表示
+
+---
+
+
+### `class Conversation`
+
+多轮对话上下文
+
+提供在同一会话中进行多轮交互的便捷方法
+
+> **提示**
+> 1. 通过 event.conversation() 方法创建
+> 2. 超时后自动标记为非活跃状态
+> 3. 支持链式调用 say() 方法
+
+
+#### 方法列表
+
+
+##### `__init__(event: 'Event', timeout: float = 60.0)`
+
+初始化对话上下文
+
+:param event: Event - 事件对象
+:param timeout: float - 默认超时时间(秒)（默认: 60.0）
+
+---
+
+
+##### `is_active()`
+
+对话是否处于活跃状态
+
+:return: bool - 是否活跃
+
+---
+
+
+##### `async async say(content: str)`
+
+发送消息
+
+:param content: str - 消息内容
+:return: Conversation - self（支持链式调用）
+
+---
+
+
+##### `async async wait(prompt: str = None, timeout: float = None)`
+
+等待用户回复
+
+:param prompt: str - 提示消息（可选）
+:param timeout: float - 超时时间(秒)，默认使用对话的超时设置
+:return: Event|None - 用户回复的事件, 超时返回 None
+
+---
+
+
+##### `async async confirm(prompt: str = None)`
+
+等待用户确认
+
+:param prompt: str - 提示消息
+:return: bool|None - True/False/None
+
+---
+
+
+##### `async async choose(prompt: str, options: list[str])`
+
+等待用户选择
+
+:param prompt: str - 提示消息
+:param options: list[str] - 选项列表
+:return: int|None - 选中索引或 None
+
+---
+
+
+##### `async async collect(fields: list[dict])`
+
+多步骤收集信息
+
+:param fields: list[dict] - 字段列表
+:return: dict|None - 收集到的数据字典或 None
+
+---
+
+
+##### `stop()`
+
+结束对话
 
 ---
 
