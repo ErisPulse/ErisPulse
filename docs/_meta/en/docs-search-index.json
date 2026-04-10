@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 856,
+  "total_keywords": 865,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -137,7 +137,7 @@
     "1. Module Development (Recommended)": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 92,
         "level": 3,
         "title": "1. Module Development (Recommended)"
       }
@@ -479,7 +479,7 @@
     "2. Embedded Development": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 96,
         "level": 3,
         "title": "2. Embedded Development"
       }
@@ -1549,7 +1549,7 @@
     "AI-Assisted Development": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 80,
         "level": 3,
         "title": "AI-Assisted Development"
       },
@@ -1587,7 +1587,7 @@
     "API Reference": [
       {
         "document": "README.md",
-        "line": 58,
+        "line": 62,
         "level": 3,
         "title": "API Reference"
       },
@@ -1735,7 +1735,7 @@
     "Adapter Development": [
       {
         "document": "README.md",
-        "line": 38,
+        "line": 42,
         "level": 4,
         "title": "Adapter Development"
       },
@@ -1913,7 +1913,7 @@
     "Advanced Topics": [
       {
         "document": "README.md",
-        "line": 70,
+        "line": 74,
         "level": 3,
         "title": "Advanced Topics"
       },
@@ -1933,6 +1933,18 @@
       }
     ],
     "Architecture Overview": [
+      {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "Architecture Overview"
+      },
+      {
+        "document": "architecture.md",
+        "line": 1,
+        "level": 1,
+        "title": "Architecture Overview"
+      },
       {
         "document": "getting-started/README.md",
         "line": 60,
@@ -3182,6 +3194,14 @@
         "title": "Core Module API"
       }
     ],
+    "Core Module Description": [
+      {
+        "document": "architecture.md",
+        "line": 40,
+        "level": 3,
+        "title": "Core Module Description"
+      }
+    ],
     "Core Modules": [
       {
         "document": "api-reference/README.md",
@@ -3285,7 +3305,7 @@
     "Developer Guide": [
       {
         "document": "README.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "Developer Guide"
       },
@@ -3299,7 +3319,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 88,
         "level": 2,
         "title": "Development Methods"
       }
@@ -3764,6 +3784,14 @@
         "title": "Event Handling Mechanism"
       }
     ],
+    "Event Handling Process": [
+      {
+        "document": "architecture.md",
+        "line": 83,
+        "level": 2,
+        "title": "Event Handling Process"
+      }
+    ],
     "Event Listening": [
       {
         "document": "api-reference/core-modules.md",
@@ -3925,7 +3953,7 @@
     "Extension Development": [
       {
         "document": "README.md",
-        "line": 45,
+        "line": 49,
         "level": 4,
         "title": "Extension Development"
       },
@@ -4089,7 +4117,7 @@
     "Getting Help": [
       {
         "document": "README.md",
-        "line": 113,
+        "line": 117,
         "level": 2,
         "title": "Getting Help"
       },
@@ -4111,7 +4139,7 @@
     "Getting Started": [
       {
         "document": "README.md",
-        "line": 13,
+        "line": 17,
         "level": 3,
         "title": "Getting Started"
       }
@@ -4330,10 +4358,24 @@
         "title": "Initialization Process"
       },
       {
+        "document": "architecture.md",
+        "line": 53,
+        "level": 2,
+        "title": "Initialization Process"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 280,
         "level": 3,
         "title": "Initialization Process"
+      }
+    ],
+    "Initialization Stage Breakdown": [
+      {
+        "document": "architecture.md",
+        "line": 75,
+        "level": 3,
+        "title": "Initialization Stage Breakdown"
       }
     ],
     "Initialize Project": [
@@ -4560,6 +4602,14 @@
         "title": "Introduction to Module Development"
       }
     ],
+    "Key Steps in Event Handling": [
+      {
+        "document": "architecture.md",
+        "line": 104,
+        "level": 3,
+        "title": "Key Steps in Event Handling"
+      }
+    ],
     "Keyword Filtering": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4630,6 +4680,12 @@
         "line": 376,
         "level": 3,
         "title": "Lifecycle Events"
+      },
+      {
+        "document": "architecture.md",
+        "line": 112,
+        "level": 2,
+        "title": "Lifecycle Events"
       }
     ],
     "Lifecycle Integration": [
@@ -4678,6 +4734,14 @@
         "line": 706,
         "level": 3,
         "title": "Listening to Bot Lifecycle"
+      }
+    ],
+    "Listening to Lifecycle Events": [
+      {
+        "document": "architecture.md",
+        "line": 143,
+        "level": 3,
+        "title": "Listening to Lifecycle Events"
       }
     ],
     "Listening to all messages": [
@@ -5163,7 +5227,7 @@
     "Module Development": [
       {
         "document": "README.md",
-        "line": 31,
+        "line": 35,
         "level": 4,
         "title": "Module Development"
       },
@@ -5218,6 +5282,14 @@
         "line": 54,
         "level": 3,
         "title": "Module Lifecycle Events"
+      }
+    ],
+    "Module Loading Strategy": [
+      {
+        "document": "architecture.md",
+        "line": 166,
+        "level": 2,
+        "title": "Module Loading Strategy"
       }
     ],
     "Module Management": [
@@ -5703,7 +5775,7 @@
     "Platform Features Guide": [
       {
         "document": "README.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
         "title": "Platform Features Guide"
       }
@@ -6225,7 +6297,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 119,
+        "line": 123,
         "level": 2,
         "title": "Related Links"
       }
@@ -6454,6 +6526,14 @@
         "line": 39,
         "level": 3,
         "title": "SDK"
+      }
+    ],
+    "SDK Core Architecture": [
+      {
+        "document": "architecture.md",
+        "line": 5,
+        "level": 2,
+        "title": "SDK Core Architecture"
       }
     ],
     "SDK Object": [
@@ -6965,7 +7045,7 @@
     "Style Guide": [
       {
         "document": "README.md",
-        "line": 80,
+        "line": 84,
         "level": 3,
         "title": "Style Guide"
       },
@@ -7119,7 +7199,7 @@
     "Technical Standards": [
       {
         "document": "README.md",
-        "line": 64,
+        "line": 68,
         "level": 3,
         "title": "Technical Standards"
       },
@@ -7329,7 +7409,7 @@
     "User Guide": [
       {
         "document": "README.md",
-        "line": 23,
+        "line": 27,
         "level": 3,
         "title": "User Guide"
       },
@@ -7568,6 +7648,22 @@
         "line": 9,
         "level": 3,
         "title": "[BUG-001] Init Command Adapter Configuration Path Type Error"
+      }
+    ],
+    "[BUG-002] Command Events Fail After Restart": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "[BUG-002] Command Events Fail After Restart"
+      }
+    ],
+    "[BUG-003] Lifecycle Event Handlers Not Cleared": [
+      {
+        "document": "bug-tracker.md",
+        "line": 45,
+        "level": 3,
+        "title": "[BUG-003] Lifecycle Event Handlers Not Cleared"
       }
     ],
     "__init__.py": [

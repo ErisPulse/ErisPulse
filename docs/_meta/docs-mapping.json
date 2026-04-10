@@ -3,15 +3,15 @@
   "total_languages": 3,
   "languages": {
     "en": {
-      "docs_count": 46,
+      "docs_count": 47,
       "mapping_path": "_meta/en/docs-mapping.json"
     },
     "zh-CN": {
-      "docs_count": 46,
+      "docs_count": 47,
       "mapping_path": "_meta/zh-CN/docs-mapping.json"
     },
     "zh-TW": {
-      "docs_count": 46,
+      "docs_count": 47,
       "mapping_path": "_meta/zh-TW/docs-mapping.json"
     }
   }
