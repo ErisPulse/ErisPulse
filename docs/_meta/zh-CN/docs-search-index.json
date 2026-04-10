@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 853,
+  "total_keywords": 860,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -151,7 +151,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 428,
+        "line": 578,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -523,7 +523,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 446,
+        "line": 596,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -873,7 +873,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 462,
+        "line": 612,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1717,7 +1717,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 272,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -1947,7 +1947,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 351,
+        "line": 501,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -2635,7 +2635,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 482,
+        "line": 632,
         "level": 2,
         "title": "下一步"
       },
@@ -2835,7 +2835,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 426,
+        "line": 576,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -2867,7 +2867,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 349,
+        "line": 499,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -3035,7 +3035,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 254,
+        "line": 293,
         "level": 2,
         "title": "交互式处理"
       }
@@ -3151,7 +3151,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 256,
+        "line": 295,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -3291,7 +3291,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 245,
         "level": 2,
         "title": "元事件处理"
       }
@@ -3362,6 +3362,14 @@
         "line": 88,
         "level": 2,
         "title": "内容编写规范"
+      }
+    ],
+    "内置确认词": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 492,
+        "level": 3,
+        "title": "内置确认词"
       }
     ],
     "内置默认值": [
@@ -4194,6 +4202,14 @@
         "title": "多账户支持"
       }
     ],
+    "多轮对话 (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 465,
+        "level": 3,
+        "title": "多轮对话 (conversation)"
+      }
+    ],
     "失败响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4213,7 +4229,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 145,
+        "line": 184,
         "level": 3,
         "title": "好友添加"
       }
@@ -4221,7 +4237,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 179,
+        "line": 218,
         "level": 3,
         "title": "好友请求"
       }
@@ -4505,7 +4521,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 367,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -4513,7 +4529,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 301,
+        "line": 340,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -4623,7 +4639,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 397,
+        "line": 547,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -4682,6 +4698,14 @@
         "line": 96,
         "level": 2,
         "title": "平台相关术语"
+      }
+    ],
+    "并行事件处理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 143,
+        "level": 3,
+        "title": "并行事件处理"
       }
     ],
     "开发准备": [
@@ -4837,7 +4861,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 224,
+        "line": 263,
         "level": 3,
         "title": "心跳事件"
       }
@@ -5150,6 +5174,14 @@
         "line": 20,
         "level": 2,
         "title": "支持的消息发送类型"
+      }
+    ],
+    "收集表单 (collect)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 424,
+        "level": 3,
+        "title": "收集表单 (collect)"
       }
     ],
     "数据持久化": [
@@ -6552,6 +6584,14 @@
         "title": "相关链接"
       }
     ],
+    "确认对话 (confirm)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 388,
+        "level": 3,
+        "title": "确认对话 (confirm)"
+      }
+    ],
     "示例": [
       {
         "document": "platform-guide/email.md",
@@ -6608,6 +6648,14 @@
         "title": "第四步：运行机器人"
       }
     ],
+    "等待任意事件 (wait_for)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 444,
+        "level": 3,
+        "title": "等待任意事件 (wait_for)"
+      }
+    ],
     "等待回复": [
       {
         "document": "api-reference/event-system.md",
@@ -6627,7 +6675,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 284,
+        "line": 323,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -6759,7 +6807,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 167,
+        "line": 206,
         "level": 3,
         "title": "群成员减少"
       }
@@ -6767,7 +6815,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "群成员增加"
       }
@@ -6791,7 +6839,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 195,
+        "line": 234,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -6951,7 +6999,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 177,
+        "line": 216,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -7183,7 +7231,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 208,
+        "line": 247,
         "level": 3,
         "title": "连接事件"
       }
@@ -7400,6 +7448,14 @@
         "title": "适配器：注册平台扩展方法"
       }
     ],
+    "选择菜单 (choose)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 405,
+        "level": 3,
+        "title": "选择菜单 (choose)"
+      }
+    ],
     "通用参数": [
       {
         "document": "user-guide/cli-reference.md",
@@ -7441,7 +7497,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 182,
         "level": 2,
         "title": "通知事件处理"
       }
