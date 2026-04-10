@@ -924,6 +924,45 @@ async def low_priority_handler(event):
     await event.reply("Low priority handler")
 ```
 
+### Parallel Event Handling
+
+The ErisPulse event system uses a **same-priority parallel, different-priority serial** scheduling model:
+
+```
+Event Arrived
+    ↓
+priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
+    ↓ (If not interrupted)
+priority=1 Group: [Handler C || Handler D] Parallel → Merge Results
+    ↓
+...
+```
+
+- **Same priority parallel**: Multiple handlers with the same priority execute simultaneously to improve throughput
+- **Different priority serial**: Groups of different priorities execute sequentially to ensure high-priority handlers run first
+- **Copy-On-Write**: Copies are not created when handlers do not modify data, ensuring zero overhead
+- **Conflict handling**: When multiple handlers of the same priority modify the same field, the last modified value is used and a warning is logged
+- **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
+
+```python
+# Example: Handlers with same priority execute in parallel
+@message.on_message(priority=0)
+async def handler_a(event):
+    # Process task A
+    event['result_a'] = process_a()
+
+@message.on_message(priority=0)
+async def handler_b(event):
+    # Execute in parallel with handler_a
+    event['result_b'] = process_b()
+
+# Different priorities execute serially
+@message.on_message(priority=10)
+async def handler_c(event):
+    # Execute after priority=0 group completes
+    pass
+```
+
 ## Notification Event Handling
 
 ### Friend Add
@@ -1129,6 +1168,117 @@ async def confirm_handler(event):
         callback=handle_confirmation
     )
 ```
+
+### Confirm Dialog
+
+Wait for user confirmation or denial, automatically recognizing built-in Chinese and English confirmation words:
+
+```python
+@command("confirm", help="Confirm action")
+async def confirm_handler(event):
+    if await event.confirm("Are you sure you want to perform this action?"):
+        await event.reply("Confirmed, executing...")
+    else:
+        await event.reply("Cancelled")
+
+# Custom confirmation words
+if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### Choose Menu
+
+Users can reply with the option number or option text:
+
+```python
+@command("choose", help="Choose")
+async def choose_handler(event):
+    choice = await event.choose(
+        "Please select a color:",
+        ["Red", "Green", "Blue"]
+    )
+    
+    if choice is not None:
+        colors = ["Red", "Green", "Blue"]
+        await event.reply(f"You selected: {colors[choice]}")
+    else:
+        await event.reply("Timeout or no selection made")
+```
+
+### Collect Form
+
+Multi-step collection of user input:
+
+```python
+@command("register", help="Register")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "Please enter your name:"},
+        {"key": "age", "prompt": "Please enter your age:", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "Please enter your email:"}
+    ])
+    
+    if data:
+        await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
+    else:
+        await event.reply("Registration timeout or invalid input")
+```
+
+### Wait for Any Event
+
+Wait for any event that meets the condition, not limited to the same user:
+
+```python
+@command("wait_member", help="Wait for new member")
+async def wait_member_handler(event):
+    await event.reply("Waiting for group member to join...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"Welcome new member: {evt.get_user_id()}")
+    else:
+        await event.reply("Wait timeout")
+```
+
+### Multi-round Conversation
+
+Create an interactive multi-round conversation context:
+
+```python
+@command("survey", help="Survey")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("Welcome to the survey!")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("Conversation timed out, goodbye!")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "exit":
+            await conv.say("Goodbye!")
+            break
+        
+        await conv.say(f"You said: {text}, continue typing or reply 'exit' to end")
+```
+
+### Built-in Confirmation Words
+
+ErisPulse includes a built-in set of Chinese and English confirmation words:
+
+- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
+- **Negative words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
 
 ## Event Data Access
 

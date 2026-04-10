@@ -11,6 +11,7 @@ ErisPulse 事件包装类
 {!--< /tips >!--}
 """
 
+import asyncio
 import inspect
 import warnings
 from typing import Any, Optional
@@ -21,6 +22,19 @@ from .session_type import (
     convert_to_send_type,
     infer_receive_type,
 )
+
+
+CONFIRM_YES_WORDS = frozenset({
+    "是", "yes", "y", "确认", "确定", "好", "好的",
+    "ok", "okay", "true", "对", "嗯", "行",
+    "同意", "没问题", "可以", "当然", "嗯嗯", "是的",
+})
+
+CONFIRM_NO_WORDS = frozenset({
+    "否", "no", "n", "取消", "不", "不要", "不行",
+    "cancel", "false", "错", "不对", "别",
+    "拒绝", "不可以", "算了", "不需要", "不是",
+})
 
 
 # ==================== 平台事件方法注册系统 ====================
@@ -685,10 +699,248 @@ class Event(dict):
             validator=validator,
         )
 
-        # 将结果转换为Event对象
         if result:
             return Event(result)
         return None
+
+    # ==================== 交互式对话方法 ====================
+
+    async def confirm(
+        self,
+        prompt: str = None,
+        timeout: float = 60.0,
+        yes_words: set[str] | frozenset[str] = None,
+        no_words: set[str] | frozenset[str] = None,
+    ) -> Optional[bool]:
+        """
+        等待用户确认 (是/否)
+
+        自动发送提示消息并等待用户回复，识别内置中英文确认词。
+        内置确认词: 是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题... (否/no/n/取消/不/不要/cancel/false/错/拒绝...)
+
+        :param prompt: str - 提示消息（可选，发送后等待回复）
+        :param timeout: float - 超时时间(秒)（默认: 60.0）
+        :param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
+        :param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+        :return: bool|None - True=确认, False=否定, None=超时
+
+        :raises ValueError: 当 yes_words 或 no_words 为空集合时
+
+        :example:
+        >>> if await event.confirm("确定要执行此操作吗？"):
+        ...     await event.reply("已执行")
+        >>> # 自定义确认词
+        >>> if await event.confirm("继续吗？", yes_words={"go", "run"}, no_words={"stop", "quit"}):
+        ...     await event.reply("开始执行")
+        """
+        _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
+        _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
+        _all = _yes | _no
+        _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
+        _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
+        _all = _yes | _no
+
+        def validator(event_dict: dict[str, Any]) -> bool:
+            text = event_dict.get("alt_message", "").strip().lower()
+            return text in _all
+
+        result = await self.wait_reply(prompt=prompt, timeout=timeout, validator=validator)
+
+        if result is None:
+            return None
+
+        text = result.get("alt_message", "").strip().lower()
+        return text in _yes
+
+    async def choose(
+        self,
+        prompt: str,
+        options: list[str],
+        timeout: float = 60.0,
+    ) -> Optional[int]:
+        """
+        等待用户从选项中选择
+
+        自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本
+
+        :param prompt: str - 提示消息（必须）
+        :param options: list[str] - 选项列表（不能为空）
+        :param timeout: float - 超时时间(秒)（默认: 60.0）
+        :return: int|None - 选中选项的索引(0-based), 超时返回 None
+
+        :raises ValueError: 当 options 为空时
+
+        :example:
+        >>> choice = await event.choose("请选择颜色:", ["红", "绿", "蓝"])
+        >>> if choice is not None:
+        ...     await event.reply(f"你选择了: {['红','绿','蓝'][choice]}")
+        """
+        if not options:
+            raise ValueError("选项列表不能为空")
+
+        options_text = "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
+        full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
+
+        index_map = {str(i + 1): i for i in range(len(options))}
+        lower_text_map = {opt.lower(): i for i, opt in enumerate(options)}
+        valid_inputs = set(index_map.keys()) | set(lower_text_map.keys())
+
+        def validator(event_dict: dict[str, Any]) -> bool:
+            text = event_dict.get("alt_message", "").strip().lower()
+            return text in valid_inputs
+
+        result = await self.wait_reply(prompt=full_prompt, timeout=timeout, validator=validator)
+
+        if result is None:
+            return None
+
+        text = result.get("alt_message", "").strip().lower()
+        if text in index_map:
+            return index_map[text]
+        if text in lower_text_map:
+            return lower_text_map[text]
+        return None
+
+    async def collect(
+        self,
+        fields: list[dict[str, Any]],
+        timeout_per_field: float = 60.0,
+    ) -> Optional[dict[str, str]]:
+        """
+        多步骤收集信息 (表单式)
+
+        依次向用户发送提示消息并收集回复，每个字段可配置验证器和重试逻辑
+
+        :param fields: list[dict] - 字段列表，每个字段为字典:
+            - key: str - 字段键名（必须）
+            - prompt: str - 提示消息（默认: "请输入 {key}"）
+            - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
+            - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
+            - max_retries: int - 最大重试次数（默认: 3）
+        :param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
+        :return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
+
+        :example:
+        >>> data = await event.collect([
+        ...     {"key": "name", "prompt": "请输入姓名"},
+        ...     {"key": "age", "prompt": "请输入年龄",
+        ...      "validator": lambda e: e.get("alt_message", "").strip().isdigit()},
+        ... ])
+        >>> if data:
+        ...     await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+        """
+        if not fields:
+            return {}
+
+        result = {}
+
+        for field in fields:
+            key = field.get("key")
+            if not key:
+                continue
+
+            prompt = field.get("prompt", f"请输入 {key}")
+            validator = field.get("validator")
+            retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
+            max_retries = field.get("max_retries", 3)
+
+            reply = await self.wait_reply(prompt=prompt, timeout=timeout_per_field)
+
+            if reply is None:
+                return None
+
+            if validator:
+                retries = 0
+                while not validator(reply):
+                    retries += 1
+                    if retries >= max_retries:
+                        return None
+                    reply = await self.wait_reply(prompt=retry_prompt, timeout=timeout_per_field)
+                    if reply is None:
+                        return None
+
+            result[key] = reply.get("alt_message", "").strip()
+
+        return result
+
+    async def wait_for(
+        self,
+        event_type: str = "message",
+        condition: Callable[["Event"], bool] = None,
+        timeout: float = 60.0,
+    ) -> Optional["Event"]:
+        """
+        等待满足条件的任意事件
+
+        不限于同一用户/会话，可监听任意类型事件
+
+        :param event_type: str - 事件类型 (message/notice/request/meta 等，默认: message)
+        :param condition: callable - 条件函数，接收 Event 对象，返回 bool（可选）
+        :param timeout: float - 超时时间(秒)（默认: 60.0）
+        :return: Event|None - 匹配的事件, 超时返回 None
+
+        :example:
+        >>> # 等待群成员加入通知
+        >>> evt = await event.wait_for(
+        ...     "notice",
+        ...     condition=lambda e: e.get_detail_type() == "group_member_increase",
+        ...     timeout=120,
+        ... )
+        >>>
+        >>> # 等待任意消息包含特定关键词
+        >>> evt = await event.wait_for(
+        ...     condition=lambda e: "hello" in e.get_text(),
+        ... )
+        """
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+
+        async def _temp_handler(event_data):
+            if future.done():
+                return
+            evt = event_data if isinstance(event_data, Event) else Event(event_data)
+            try:
+                if condition is None or condition(evt):
+                    if not future.done():
+                        raw = event_data if isinstance(event_data, dict) else dict(event_data)
+                        future.set_result(raw)
+            except Exception:
+                pass
+
+        handler_wrapper = {"func": _temp_handler, "platform": None}
+        adapter._onebot_handlers[event_type].append(handler_wrapper)
+
+        try:
+            raw_result = await asyncio.wait_for(future, timeout=timeout)
+            return Event(raw_result) if raw_result is not None else None
+        except asyncio.TimeoutError:
+            return None
+        finally:
+            try:
+                adapter._onebot_handlers[event_type].remove(handler_wrapper)
+            except (ValueError, KeyError):
+                pass
+
+    def conversation(self, timeout: float = 60.0) -> "Conversation":
+        """
+        创建多轮对话上下文
+
+        :param timeout: 默认超时时间(秒)
+        :return: Conversation 对象
+
+        :example:
+        >>> conv = event.conversation(timeout=30)
+        >>> await conv.say("欢迎！请问有什么需要帮助的？")
+        >>> while conv.is_active:
+        ...     resp = await conv.wait()
+        ...     if resp is None:
+        ...         await conv.say("会话超时，再见！")
+        ...         break
+        ...     if resp.get_text() == "退出":
+        ...         await conv.say("再见！")
+        ...         break
+        """
+        return Conversation(self, timeout=timeout)
 
     # ==================== 原始数据和元信息 ====================
 
@@ -696,7 +948,7 @@ class Event(dict):
         """
         获取原始事件数据
 
-        :return: 原始事件数据字典
+        :return: dict - 原始事件数据字典
         """
         platform = self.get_platform()
         raw_key = f"{platform}_raw" if platform else "raw"
@@ -706,7 +958,7 @@ class Event(dict):
         """
         获取原始事件类型
 
-        :return: 原始事件类型
+        :return: str - 原始事件类型
         """
         platform = self.get_platform()
         raw_type_key = f"{platform}_raw_type" if platform else "raw_type"
@@ -718,7 +970,7 @@ class Event(dict):
         """
         获取命令名称
 
-        :return: 命令名称
+        :return: str - 命令名称
         """
         return self.get("command", {}).get("name", "")
 
@@ -782,12 +1034,12 @@ class Event(dict):
 
     def __getattr__(self, name: str) -> Any:
         """
-        属性查找优先级：
+        属性查找优先级:
         1. 平台注册的扩展方法（仅当前平台）
         2. 字典键访问（点式访问 event.platform 等）
 
-        :param name: 属性名
-        :return: 属性值
+        :param name: str - 属性名
+        :return: Any - 属性值
         :raises AttributeError: 属性不存在
         """
         # 1. 查找当前平台的扩展方法
@@ -833,8 +1085,128 @@ class Event(dict):
         )
 
 
+class Conversation:
+    """
+    多轮对话上下文
+
+    提供在同一会话中进行多轮交互的便捷方法
+
+    {!--< tips >!--}
+    1. 通过 event.conversation() 方法创建
+    2. 超时后自动标记为非活跃状态
+    3. 支持链式调用 say() 方法
+    {!--< /tips >!--}
+    """
+
+    def __init__(self, event: "Event", timeout: float = 60.0):
+        """
+        初始化对话上下文
+
+        :param event: Event - 事件对象
+        :param timeout: float - 默认超时时间(秒)（默认: 60.0）
+        """
+        self._event = event
+        self._timeout = timeout
+        self._alive = True
+
+    @property
+    def is_active(self) -> bool:
+        """
+        对话是否处于活跃状态
+
+        :return: bool - 是否活跃
+        """
+        return self._alive
+
+    async def say(self, content: str, **kwargs) -> "Conversation":
+        """
+        发送消息
+
+        :param content: str - 消息内容
+        :return: Conversation - self（支持链式调用）
+        """
+        await self._event.reply(content, **kwargs)
+        return self
+
+    async def wait(self, prompt: str = None, timeout: float = None) -> Optional["Event"]:
+        """
+        等待用户回复
+
+        :param prompt: str - 提示消息（可选）
+        :param timeout: float - 超时时间(秒)，默认使用对话的超时设置
+        :return: Event|None - 用户回复的事件, 超时返回 None
+        """
+        if not self._alive:
+            return None
+        result = await self._event.wait_reply(
+            prompt=prompt,
+            timeout=timeout if timeout is not None else self._timeout,
+        )
+        if result is None:
+            self._alive = False
+        return result
+
+    async def confirm(self, prompt: str = None, **kwargs) -> Optional[bool]:
+        """
+        等待用户确认
+
+        :param prompt: str - 提示消息
+        :return: bool|None - True/False/None
+        """
+        if not self._alive:
+            return None
+        return await self._event.confirm(
+            prompt=prompt,
+            timeout=kwargs.pop("timeout", self._timeout),
+            **kwargs,
+        )
+
+    async def choose(self, prompt: str, options: list[str], **kwargs) -> Optional[int]:
+        """
+        等待用户选择
+
+        :param prompt: str - 提示消息
+        :param options: list[str] - 选项列表
+        :return: int|None - 选中索引或 None
+        """
+        if not self._alive:
+            return None
+        return await self._event.choose(
+            prompt, options,
+            timeout=kwargs.pop("timeout", self._timeout),
+            **kwargs,
+        )
+
+    async def collect(self, fields: list[dict], **kwargs) -> Optional[dict]:
+        """
+        多步骤收集信息
+
+        :param fields: list[dict] - 字段列表
+        :return: dict|None - 收集到的数据字典或 None
+        """
+        if not self._alive:
+            return None
+        result = await self._event.collect(
+            fields,
+            timeout_per_field=kwargs.pop("timeout_per_field", self._timeout),
+            **kwargs,
+        )
+        if result is None:
+            self._alive = False
+        return result
+
+    def stop(self):
+        """
+        结束对话
+        """
+        self._alive = False
+
+
 __all__ = [
     "Event",
+    "Conversation",
+    "CONFIRM_YES_WORDS",
+    "CONFIRM_NO_WORDS",
     # 平台事件方法注册
     "register_event_mixin",
     "register_event_method",
