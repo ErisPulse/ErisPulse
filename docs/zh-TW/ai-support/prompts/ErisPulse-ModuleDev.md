@@ -614,6 +614,45 @@ async def low_priority_handler(event):
     await event.reply("低優先級處理器")
 ```
 
+### 並行事件處理
+
+ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調度模型：
+
+```
+事件到達
+    ↓
+priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
+    ↓ (如未中斷)
+priority=1 組: [處理器C || 處理器D] 並行 → 合併結果
+    ↓
+...
+```
+
+- **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
+- **跨級串行**：不同優先級的組按順序執行，確保高優先級處理器先執行
+- **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
+
+```python
+# 示例：同優先級處理器並行執行
+@message.on_message(priority=0)
+async def handler_a(event):
+    # 處理任務A
+    event['result_a'] = process_a()
+
+@message.on_message(priority=0)
+async def handler_b(event):
+    # 與 handler_a 並行執行
+    event['result_b'] = process_b()
+
+# 不同優先級串行執行
+@message.on_message(priority=10)
+async def handler_c(event):
+    # 在 priority=0 組全部完成後執行
+    pass
+```
+
 ## 通知事件處理
 
 ### 好友新增
@@ -820,94 +859,100 @@ async def confirm_handler(event):
     )
 ```
 
-## 事件資料存取
+### 確認對話
 
-### Event 物件常用方法
+等待使用者確認或否定，自動識別內建中英文確認詞：
 
 ```python
-@command("info")
-async def info_handler(event):
-    # 基礎資訊
-    event_id = event.get_id()
-    event_time = event.get_time()
-    event_type = event.get_type()
-    detail_type = event.get_detail_type()
-    
-    # 發送者資訊
-    user_id = event.get_user_id()
-    nickname = event.get_user_nickname()
-    
-    # 訊息內容
-    message_segments = event.get_message()
-    alt_message = event.get_alt_message()
-    text = event.get_text()
-    
-    # 群組資訊
-    group_id = event.get_group_id()
-    
-    # 機器人資訊
-    self_id = event.get_self_user_id()
-    self_platform = event.get_self_platform()
-    
-    # 原始資料
-    raw_data = event.get_raw()
-    raw_type = event.get_raw_type()
-    
-    # 平台資訊
-    platform = event.get_platform()
-    
-    # 訊息類型判斷
-    is_private = event.is_private_message()
-    is_group = event.is_group_message()
-    is_at = event.is_at_message()
-    
-    # 命令資訊
-    if event.is_command():
-        cmd_name = event.get_command_name()
-        cmd_args = event.get_command_args()
-        cmd_raw = event.get_command_raw()
+@command("confirm", help="確認操作")
+async def confirm_handler(event):
+    if await event.confirm("確定要執行此操作嗎？"):
+        await event.reply("已確認，執行中...")
+    else:
+        await event.reply("已取消")
+
+# 自訂確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
 ```
 
-### 平台擴充方法
+### 選擇選單
 
-除了內建方法外，各平台適配器還會註冊平台專屬方法，方便你存取平台特有的資料。
+使用者可回覆選項編號或選項文字：
 
 ```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def handle_message(event):
-    platform = event.get_platform()
-
-    # 根據平台呼叫專屬方法
-    if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram 專屬方法
-    elif platform == "email":
-        subject = event.get_subject()           # 郵件專屬方法
+@command("choose", help="選擇")
+async def choose_handler(event):
+    choice = await event.choose(
+        "請選擇顏色：",
+        ["紅色", "綠色", "藍色"]
+    )
+    
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+    else:
+        await event.reply("逾時未選擇")
 ```
 
-如果不確定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+### 收集表單
+
+多步驟收集使用者輸入：
 
 ```python
-from ErisPulse.Core.Event import get_platform_event_methods
-
-methods = get_platform_event_methods("telegram")
-# ["get_chat_type", "is_bot_message", ...]
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "請輸入信箱："}
+    ])
+    
+    if data:
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n信箱：{data['email']}")
+    else:
+        await event.reply("註冊逾時或輸入無效")
 ```
 
-> 各平台註冊的專屬方法請參閱對應的 [平台文件](../platform-guide/)。
+### 等待任意事件
 
-## 事件處理最佳實踐
-
-### 1. 異常處理
+等待滿足條件的任意事件，不限於同一使用者：
 
 ```python
-@command("process")
-async def process_handler(event):
-    try:
-        # 業務邏輯
-        result = await do_some_work()
-        await event
+@command("wait_member", help="等待新成員")
+async def wait_member_handler(event):
+    await event.reply("等待群組成員加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
+    else:
+        await event.reply("等待逾時")
+```
+
+### 多輪對話
+
+建立可互動的多輪對話上下文：
+
+```python
+@command("survey", help="問卷調查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎參與問卷調查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("對話逾時，再見！")
+            break
 
 
 

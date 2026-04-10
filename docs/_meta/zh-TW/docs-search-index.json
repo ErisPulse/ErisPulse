@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 790,
+  "total_keywords": 792,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -190,14 +190,6 @@
         "line": 356,
         "level": 3,
         "title": "1. 版本管理"
-      }
-    ],
-    "1. 異常處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 428,
-        "level": 3,
-        "title": "1. 異常處理"
       }
     ],
     "1. 確保跨平台相容": [
@@ -1323,7 +1315,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 272,
         "level": 3,
         "title": "Bot 狀態查詢"
       }
@@ -1526,14 +1518,6 @@
         "line": 1,
         "level": 1,
         "title": "Event 包裝類詳解"
-      }
-    ],
-    "Event 物件常用方法": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 351,
-        "level": 3,
-        "title": "Event 物件常用方法"
       }
     ],
     "HTTP 路由": [
@@ -2206,6 +2190,14 @@
         "title": "不等待結果"
       }
     ],
+    "並行事件處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 143,
+        "level": 3,
+        "title": "並行事件處理"
+      }
+    ],
     "中介軟體": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2402,28 +2394,12 @@
         "title": "事件處理增強"
       }
     ],
-    "事件處理最佳實踐": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 426,
-        "level": 2,
-        "title": "事件處理最佳實踐"
-      }
-    ],
     "事件處理機制": [
       {
         "document": "advanced/lifecycle.md",
         "line": 32,
         "level": 2,
         "title": "事件處理機制"
-      }
-    ],
-    "事件資料存取": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 349,
-        "level": 2,
-        "title": "事件資料存取"
       }
     ],
     "事件資料格式": [
@@ -2533,7 +2509,7 @@
     "互動式處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 254,
+        "line": 293,
         "level": 2,
         "title": "互動式處理"
       }
@@ -2677,7 +2653,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 256,
+        "line": 295,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -2893,7 +2869,7 @@
     "元事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 245,
         "level": 2,
         "title": "元事件處理"
       }
@@ -3588,6 +3564,14 @@
         "title": "多機器人設定"
       }
     ],
+    "多輪對話": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 465,
+        "level": 3,
+        "title": "多輪對話"
+      }
+    ],
     "失敗回應範例": [
       {
         "document": "standards/api-response.md",
@@ -3607,7 +3591,7 @@
     "好友新增": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 145,
+        "line": 184,
         "level": 3,
         "title": "好友新增"
       }
@@ -3615,7 +3599,7 @@
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 179,
+        "line": 218,
         "level": 3,
         "title": "好友請求"
       }
@@ -3977,7 +3961,7 @@
     "帶回呼的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 367,
         "level": 3,
         "title": "帶回呼的等待回覆"
       }
@@ -3985,7 +3969,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 301,
+        "line": 340,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -4077,12 +4061,6 @@
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 220,
         "level": 2,
-        "title": "平台擴充方法"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 397,
-        "level": 3,
         "title": "平台擴充方法"
       }
     ],
@@ -4225,7 +4203,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 224,
+        "line": 263,
         "level": 3,
         "title": "心跳事件"
       }
@@ -4526,6 +4504,14 @@
         "line": 20,
         "level": 2,
         "title": "支援的訊息傳送類型"
+      }
+    ],
+    "收集表單": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 424,
+        "level": 3,
+        "title": "收集表單"
       }
     ],
     "效能優化": [
@@ -5676,6 +5662,14 @@
         "title": "相關連結"
       }
     ],
+    "確認對話": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 388,
+        "level": 3,
+        "title": "確認對話"
+      }
+    ],
     "程式碼範例規範": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -5740,10 +5734,18 @@
         "title": "第四步：執行機器人"
       }
     ],
+    "等待任意事件": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 444,
+        "level": 3,
+        "title": "等待任意事件"
+      }
+    ],
     "等待使用者回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 284,
+        "line": 323,
         "level": 3,
         "title": "等待使用者回覆"
       }
@@ -5899,7 +5901,7 @@
     "群組成員增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "群組成員增加"
       }
@@ -5907,7 +5909,7 @@
     "群組成員減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 167,
+        "line": 206,
         "level": 3,
         "title": "群組成員減少"
       }
@@ -5923,7 +5925,7 @@
     "群組邀請請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 195,
+        "line": 234,
         "level": 3,
         "title": "群組邀請請求"
       }
@@ -6275,7 +6277,7 @@
     "請求事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 177,
+        "line": 216,
         "level": 2,
         "title": "請求事件處理"
       }
@@ -6487,7 +6489,7 @@
     "通知事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 182,
         "level": 2,
         "title": "通知事件處理"
       }
@@ -6511,7 +6513,7 @@
     "連線事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 208,
+        "line": 247,
         "level": 3,
         "title": "連線事件"
       }
@@ -6688,6 +6690,14 @@
         "line": 25,
         "level": 2,
         "title": "遵循規範的好處"
+      }
+    ],
+    "選擇選單": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 405,
+        "level": 3,
+        "title": "選擇選單"
       }
     ],
     "選用參數": [
