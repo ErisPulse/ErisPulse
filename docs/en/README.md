@@ -10,6 +10,10 @@ ErisPulse is an extensible, multi-platform messaging processing framework that s
 
 - [Quick Start Guide](quick-start.md) - An introductory guide for installing and running ErisPulse
 
+### Architecture Overview
+
+- [Architecture Overview](architecture.md) - Understand the SDK core architecture, initialization process, event handling, and lifecycle through visual diagrams
+
 ### Getting Started
 
 If this is your first time using ErisPulse, we recommend reading the following in order:
