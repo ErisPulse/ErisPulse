@@ -25,3 +25,33 @@
 **修复日期**: 2026/03/23
 
 ---
+
+### [BUG-002] 重启后命令事件失效
+
+**问题**: 调用 `sdk.restart()` 后，通过 `@command` 注册的命令无法被触发，表现为发送命令后机器人无响应。
+
+**原因**: `adapter.shutdown()` 清空事件总线后，`BaseEventHandler` 的 `_linked_to_adapter_bus` 状态未重置为 `False`，导致 `_process_event` 方法认为已经挂载到适配器总线，跳过重新挂载操作。
+
+**影响版本**: 2.2.x - 2.4.0-dev.2
+
+**修复版本**: 2.4.0-dev.3
+
+**修复内容**: 引入 `_linked_to_adapter_bus` 状态追踪，`_clear_handlers()` 断开总线连接后，下次 `register()` 自动重新挂载，适配 shutdown/restart 场景。
+
+**修复日期**: 2026/04/09
+
+---
+
+### [BUG-003] 生命周期事件处理器未清理
+
+**问题**: `sdk.restart()` 后，旧的生命周期事件处理器仍然存在并重复触发，导致同一个事件被多次处理。
+
+**原因**: `lifecycle._handlers` 字典在 `uninit()` 时从未被清理，restart 后旧处理器与新处理器同时存在。
+
+**影响版本**: 2.3.0 - 2.4.0-dev.2
+
+**修复版本**: 2.4.0-dev.3
+
+**修复内容**: 在 `Uninitializer` 的清理流程末尾（所有事件提交之后），清空 `lifecycle._handlers`。
+
+**修复日期**: 2026/04/09

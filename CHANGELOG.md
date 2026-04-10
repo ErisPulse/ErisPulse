@@ -63,6 +63,54 @@
 
 ---
 
+## [2.4.0] - 2026/04/10
+> 正式发布
+
+**版本摘要**
+2.4.0 版本是一个重要的功能更新版本，主要新增了 Event 交互方法（confirm/choose/collect/wait_for/conversation）、Bot 状态追踪系统、MessageBuilder 消息构建器、平台事件方法扩展系统；实现了事件处理并行化；标准化了模块/适配器生命周期；全面现代化了类型注解（Python 3.10+）；并修复了重启后多个关键功能问题。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - Event 交互方法大幅简化了多轮对话和用户交互的开发流程
+  - Bot 状态追踪系统提供了完整的 Bot 生命周期管理
+  - MessageBuilder 支持链式构建 OneBot12 消息段，提升消息构建体验
+  - 事件处理并行化解决了 `wait_reply` 阻塞后续处理器的问题
+  - 生命周期标准化确保重启/卸载场景下的状态完全可控
+
+**注意事项**
+- ⚠️ **BREAKING CHANGE**：`Raw_ob12` 方法现在是适配器**必须实现**的核心方法，未实现时基类默认返回标准错误响应（`status: "failed"`, `retcode: 10002`）并记录 error 级别日志
+- 类型注解全面转向 Python 3.10+ 内置类型语法，要求 Python >= 3.10
+
+**兼容性**
+- 对外 API 保持兼容，现有代码无需修改
+- 适配器开发者需注意 `Raw_ob12` 为必须实现的方法
+
+---
+
+## [2.4.0-dev.4] - 2026/04/10
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - **Event 交互方法**：新增 `confirm`、`choose`、`collect`、`wait_for`、`conversation` 方法，提供声明式交互能力
+    - `event.confirm(prompt)` - 等待用户确认，识别中英文内置确认词
+    - `event.choose(prompt, options)` - 选项选择菜单
+    - `event.collect(fields)` - 多步骤表单收集
+    - `event.wait_for(event_type, condition)` - 等待任意事件
+    - `event.conversation()` - 多轮对话上下文
+  - **内置确认词集合**：导出 `CONFIRM_YES_WORDS` (21个) 和 `CONFIRM_NO_WORDS` (19个)
+  - **Conversation 类**：多轮对话管理器，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+
+### 优化
+- @wsu2059q
+  - **事件处理并行化**：同优先级处理器并行执行，不同优先级按顺序执行
+    - 解决 `wait_reply` 阻塞后续处理器的问题
+    - 使用 Copy-On-Write 优化，无修改时不创建副本
+    - 同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
+
+---
+
 ## [2.4.0-dev.3] - 2026/04/09
 > 开发版本
 
