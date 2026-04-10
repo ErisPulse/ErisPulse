@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 790,
+  "total_keywords": 802,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -171,7 +171,7 @@
     "1. 模組開發（推薦）": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 92,
         "level": 3,
         "title": "1. 模組開發（推薦）"
       }
@@ -190,14 +190,6 @@
         "line": 356,
         "level": 3,
         "title": "1. 版本管理"
-      }
-    ],
-    "1. 異常處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 428,
-        "level": 3,
-        "title": "1. 異常處理"
       }
     ],
     "1. 確保跨平台相容": [
@@ -331,7 +323,7 @@
     "2. 嵌入式開發": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 96,
         "level": 3,
         "title": "2. 嵌入式開發"
       }
@@ -1177,7 +1169,7 @@
     "AI 輔助開發": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 80,
         "level": 3,
         "title": "AI 輔助開發"
       },
@@ -1191,7 +1183,7 @@
     "API 參考": [
       {
         "document": "README.md",
-        "line": 58,
+        "line": 62,
         "level": 3,
         "title": "API 參考"
       },
@@ -1323,7 +1315,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 272,
         "level": 3,
         "title": "Bot 狀態查詢"
       }
@@ -1526,14 +1518,6 @@
         "line": 1,
         "level": 1,
         "title": "Event 包裝類詳解"
-      }
-    ],
-    "Event 物件常用方法": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 351,
-        "level": 3,
-        "title": "Event 物件常用方法"
       }
     ],
     "HTTP 路由": [
@@ -1796,6 +1780,14 @@
         "title": "SDK"
       }
     ],
+    "SDK 核心架構": [
+      {
+        "document": "architecture.md",
+        "line": 5,
+        "level": 2,
+        "title": "SDK 核心架構"
+      }
+    ],
     "SDK 物件": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -1936,6 +1928,22 @@
         "line": 9,
         "level": 3,
         "title": "[BUG-001] Init 指令適配器配置路徑類型錯誤"
+      }
+    ],
+    "[BUG-002] 重啟後指令事件失效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "[BUG-002] 重啟後指令事件失效"
+      }
+    ],
+    "[BUG-003] 生命週期事件處理器未清理": [
+      {
+        "document": "bug-tracker.md",
+        "line": 45,
+        "level": 3,
+        "title": "[BUG-003] 生命週期事件處理器未清理"
       }
     ],
     "__init__.py": [
@@ -2206,6 +2214,14 @@
         "title": "不等待結果"
       }
     ],
+    "並行事件處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 143,
+        "level": 3,
+        "title": "並行事件處理"
+      }
+    ],
     "中介軟體": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2402,14 +2418,6 @@
         "title": "事件處理增強"
       }
     ],
-    "事件處理最佳實踐": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 426,
-        "level": 2,
-        "title": "事件處理最佳實踐"
-      }
-    ],
     "事件處理機制": [
       {
         "document": "advanced/lifecycle.md",
@@ -2418,12 +2426,20 @@
         "title": "事件處理機制"
       }
     ],
-    "事件資料存取": [
+    "事件處理流程": [
       {
-        "document": "getting-started/event-handling.md",
-        "line": 349,
+        "document": "architecture.md",
+        "line": 83,
         "level": 2,
-        "title": "事件資料存取"
+        "title": "事件處理流程"
+      }
+    ],
+    "事件處理關鍵步驟": [
+      {
+        "document": "architecture.md",
+        "line": 104,
+        "level": 3,
+        "title": "事件處理關鍵步驟"
       }
     ],
     "事件資料格式": [
@@ -2533,7 +2549,7 @@
     "互動式處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 254,
+        "line": 293,
         "level": 2,
         "title": "互動式處理"
       }
@@ -2677,7 +2693,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 256,
+        "line": 295,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -2747,7 +2763,7 @@
     "使用者指南": [
       {
         "document": "README.md",
-        "line": 23,
+        "line": 27,
         "level": 3,
         "title": "使用者指南"
       }
@@ -2893,7 +2909,7 @@
     "元事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 245,
         "level": 2,
         "title": "元事件處理"
       }
@@ -2996,6 +3012,14 @@
         "title": "初始化專案"
       }
     ],
+    "初始化流程": [
+      {
+        "document": "architecture.md",
+        "line": 53,
+        "level": 2,
+        "title": "初始化流程"
+      }
+    ],
     "初始化過程": [
       {
         "document": "advanced/lazy-loading.md",
@@ -3008,6 +3032,14 @@
         "line": 280,
         "level": 3,
         "title": "初始化過程"
+      }
+    ],
+    "初始化階段詳解": [
+      {
+        "document": "architecture.md",
+        "line": 75,
+        "level": 3,
+        "title": "初始化階段詳解"
       }
     ],
     "前置知識": [
@@ -3588,6 +3620,14 @@
         "title": "多機器人設定"
       }
     ],
+    "多輪對話": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 465,
+        "level": 3,
+        "title": "多輪對話"
+      }
+    ],
     "失敗回應範例": [
       {
         "document": "standards/api-response.md",
@@ -3607,7 +3647,7 @@
     "好友新增": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 145,
+        "line": 184,
         "level": 3,
         "title": "好友新增"
       }
@@ -3615,7 +3655,7 @@
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 179,
+        "line": 218,
         "level": 3,
         "title": "好友請求"
       }
@@ -3977,7 +4017,7 @@
     "帶回呼的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 367,
         "level": 3,
         "title": "帶回呼的等待回覆"
       }
@@ -3985,7 +4025,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 301,
+        "line": 340,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -4078,12 +4118,6 @@
         "line": 220,
         "level": 2,
         "title": "平台擴充方法"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 397,
-        "level": 3,
-        "title": "平台擴充方法"
       }
     ],
     "平台特定功能": [
@@ -4105,7 +4139,7 @@
     "平台特性指南": [
       {
         "document": "README.md",
-        "line": 49,
+        "line": 53,
         "level": 3,
         "title": "平台特性指南"
       }
@@ -4225,7 +4259,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 224,
+        "line": 263,
         "level": 3,
         "title": "心跳事件"
       }
@@ -4329,7 +4363,7 @@
     "技術標準": [
       {
         "document": "README.md",
-        "line": 64,
+        "line": 68,
         "level": 3,
         "title": "技術標準"
       },
@@ -4469,7 +4503,7 @@
     "擴充開發": [
       {
         "document": "README.md",
-        "line": 45,
+        "line": 49,
         "level": 4,
         "title": "擴充開發"
       }
@@ -4526,6 +4560,14 @@
         "line": 20,
         "level": 2,
         "title": "支援的訊息傳送類型"
+      }
+    ],
+    "收集表單": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 424,
+        "level": 3,
+        "title": "收集表單"
       }
     ],
     "效能優化": [
@@ -4675,7 +4717,7 @@
     "新手入門": [
       {
         "document": "README.md",
-        "line": 13,
+        "line": 17,
         "level": 3,
         "title": "新手入門"
       }
@@ -4836,6 +4878,18 @@
     ],
     "架構概覽": [
       {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "架構概覽"
+      },
+      {
+        "document": "architecture.md",
+        "line": 1,
+        "level": 1,
+        "title": "架構概覽"
+      },
+      {
         "document": "getting-started/README.md",
         "line": 60,
         "level": 3,
@@ -4974,6 +5028,14 @@
         "line": 1,
         "level": 1,
         "title": "核心模組 API"
+      }
+    ],
+    "核心模組說明": [
+      {
+        "document": "architecture.md",
+        "line": 40,
+        "level": 3,
+        "title": "核心模組說明"
       }
     ],
     "核心欄位方法": [
@@ -5188,6 +5250,14 @@
         "title": "模組設計"
       }
     ],
+    "模組載入策略": [
+      {
+        "document": "architecture.md",
+        "line": 166,
+        "level": 2,
+        "title": "模組載入策略"
+      }
+    ],
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
@@ -5199,7 +5269,7 @@
     "模組開發": [
       {
         "document": "README.md",
-        "line": 31,
+        "line": 35,
         "level": 4,
         "title": "模組開發"
       },
@@ -5433,7 +5503,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 113,
+        "line": 117,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -5451,6 +5521,12 @@
         "document": "api-reference/adapter-system.md",
         "line": 376,
         "level": 3,
+        "title": "生命週期事件"
+      },
+      {
+        "document": "architecture.md",
+        "line": 112,
+        "level": 2,
         "title": "生命週期事件"
       }
     ],
@@ -5548,6 +5624,14 @@
         "line": 19,
         "level": 3,
         "title": "監聽所有訊息"
+      }
+    ],
+    "監聽生命週期事件": [
+      {
+        "document": "architecture.md",
+        "line": 143,
+        "level": 3,
+        "title": "監聽生命週期事件"
       }
     ],
     "監聽私聊訊息": [
@@ -5671,9 +5755,17 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 119,
+        "line": 123,
         "level": 2,
         "title": "相關連結"
+      }
+    ],
+    "確認對話": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 388,
+        "level": 3,
+        "title": "確認對話"
       }
     ],
     "程式碼範例規範": [
@@ -5740,10 +5832,18 @@
         "title": "第四步：執行機器人"
       }
     ],
+    "等待任意事件": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 444,
+        "level": 3,
+        "title": "等待任意事件"
+      }
+    ],
     "等待使用者回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 284,
+        "line": 323,
         "level": 3,
         "title": "等待使用者回覆"
       }
@@ -5899,7 +5999,7 @@
     "群組成員增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 157,
+        "line": 196,
         "level": 3,
         "title": "群組成員增加"
       }
@@ -5907,7 +6007,7 @@
     "群組成員減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 167,
+        "line": 206,
         "level": 3,
         "title": "群組成員減少"
       }
@@ -5923,7 +6023,7 @@
     "群組邀請請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 195,
+        "line": 234,
         "level": 3,
         "title": "群組邀請請求"
       }
@@ -6275,7 +6375,7 @@
     "請求事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 177,
+        "line": 216,
         "level": 2,
         "title": "請求事件處理"
       }
@@ -6487,7 +6587,7 @@
     "通知事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 182,
         "level": 2,
         "title": "通知事件處理"
       }
@@ -6511,7 +6611,7 @@
     "連線事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 208,
+        "line": 247,
         "level": 3,
         "title": "連線事件"
       }
@@ -6541,7 +6641,7 @@
     "進階主題": [
       {
         "document": "README.md",
-        "line": 70,
+        "line": 74,
         "level": 3,
         "title": "進階主題"
       },
@@ -6641,7 +6741,7 @@
     "適配器開發": [
       {
         "document": "README.md",
-        "line": 38,
+        "line": 42,
         "level": 4,
         "title": "適配器開發"
       },
@@ -6688,6 +6788,14 @@
         "line": 25,
         "level": 2,
         "title": "遵循規範的好處"
+      }
+    ],
+    "選擇選單": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 405,
+        "level": 3,
+        "title": "選擇選單"
       }
     ],
     "選用參數": [
@@ -6877,7 +6985,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 88,
         "level": 2,
         "title": "開發方式"
       }
@@ -6923,7 +7031,7 @@
     "開發者指南": [
       {
         "document": "README.md",
-        "line": 29,
+        "line": 33,
         "level": 3,
         "title": "開發者指南"
       },
@@ -7045,7 +7153,7 @@
     "風格指南": [
       {
         "document": "README.md",
-        "line": 80,
+        "line": 84,
         "level": 3,
         "title": "風格指南"
       },
