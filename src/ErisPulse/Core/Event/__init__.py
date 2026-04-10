@@ -15,8 +15,11 @@ from .message import message
 from .notice import notice
 from .request import request
 from .meta import meta
-from .wrapper import Event
 from .wrapper import (
+    Event,
+    Conversation,
+    CONFIRM_YES_WORDS,
+    CONFIRM_NO_WORDS,
     register_event_mixin,
     register_event_method,
     unregister_event_method,
@@ -73,6 +76,9 @@ __all__ = [
     "request",
     "meta",
     "Event",
+    "Conversation",
+    "CONFIRM_YES_WORDS",
+    "CONFIRM_NO_WORDS",
     "MessageBuilder",
     # 会话类型管理
     "RECEIVE_TYPES",
