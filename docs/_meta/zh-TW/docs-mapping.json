@@ -4,7 +4,7 @@
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "ErisPulse 文檔",
@@ -14,6 +14,11 @@
         {
           "title": "快速開始",
           "path": "quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "架構概覽",
+          "path": "architecture.md",
           "level": 1
         },
         {
