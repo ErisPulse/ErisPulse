@@ -7,7 +7,11 @@ on:
       - Pre-Release/*
     tags:
       - "v*"
-  workflow_dispatch: {}
+  pull_request:
+    branches:
+      - main
+      - Pre-Release/*
+    types: [closed]
 
 permissions:
   contents: read
@@ -19,6 +23,7 @@ env:
 jobs:
   docker-publish:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: 检出代码
@@ -45,9 +50,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-            type=raw,value=dev,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
-            type=sha,prefix=,format=short,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=latest
 
       - name: 构建并推送 Docker 镜像
         uses: docker/build-push-action@v6
