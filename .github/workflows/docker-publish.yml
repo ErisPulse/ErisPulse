@@ -4,18 +4,10 @@ on:
   push:
     branches:
       - main
+      - Pre-Release/v2
     tags:
       - "v*"
-  workflow_dispatch:
-    inputs:
-      push_dev:
-        description: "推送 dev 标签"
-        required: false
-        default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -51,14 +43,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # tag 触发: v2.4.0 → 2.4.0 + latest
+            # v2.4.0 → 2.4.0, 2.4, latest
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-            # main 分支触发: dev
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/main' }}
-            # 手动触发: dev
-            type=raw,value=dev,enable=${{ github.event_name == 'workflow_dispatch' && inputs.push_dev == 'true' }}
+            # v2.4.0-dev.0 → 2.4.0-dev.0, 2.4-dev.0
+            type=match,pattern=(\d+\.\d+\.\d+-.+),group=1,prefix=
+            # 分支推送: sha 短 hash 作为兜底标签
+            type=sha,prefix=,format=short,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
 
       - name: 构建并推送 Docker 镜像
         uses: docker/build-push-action@v6
