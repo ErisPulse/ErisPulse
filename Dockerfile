@@ -23,20 +23,13 @@
 # ---------------------------------------------------------------------------
 FROM python:3.13-slim AS base
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     UV_SYSTEM_PYTHON=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && apt-get purge -y curl \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
 
@@ -53,9 +46,7 @@ LABEL org.opencontainers.image.title="ErisPulse" \
 
 ENV ERISPULSE_DASHBOARD_TOKEN=""
 
-RUN uv pip install --system ErisPulse
-
-RUN ep install Dashboard
+RUN uv pip install --system ErisPulse ErisPulse-Dashboard
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -79,9 +70,7 @@ ENV ERISPULSE_DASHBOARD_TOKEN=""
 COPY src/ /app/src/
 COPY pyproject.toml /app/
 
-RUN uv pip install --system -e ".[dev]"
-
-RUN ep install Dashboard
+RUN uv pip install --system -e ".[dev]" ErisPulse-Dashboard
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
