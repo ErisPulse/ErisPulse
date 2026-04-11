@@ -1,6 +1,6 @@
 <div align="center">
 
-[English](README.en.md) | [簡體中文](README.md) | [繁體中文](README.zh-TW.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md)
 
 </div>
 
@@ -58,11 +58,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後訪問 `http://localhost:8000`，使用設定的令牌作為密碼登入 Dashboard 管理面板。
-
 > 鏡像內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 </details>
+
+啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理面板。
 
 ### 使用 pip 安裝
 
