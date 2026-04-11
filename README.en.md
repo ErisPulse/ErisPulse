@@ -17,6 +17,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/docker/v/wsu2059/erispulse?style=flat-square&logo=docker&label=docker)](https://hub.docker.com/r/wsu2059/erispulse)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
@@ -55,6 +56,26 @@ uv install ErisPulse
 ![Installation Demo](.github/assets/docs/install_pip.gif)
 
 > If your Python version is below 3.10, you can use the one-click install script to automatically configure the environment. See [Installation Script Documentation](scripts/install/) for details.
+
+### Docker Installation
+
+```bash
+docker pull wsu2059/erispulse:latest
+```
+
+**Quick Start:**
+
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# Set Dashboard login token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+After starting, visit `http://localhost:8000/Dashboard` and log in to the Dashboard management panel using the set token as the password.
+
+> The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
 ### Initialize Project
 
@@ -145,7 +166,7 @@ Contributions to adapters are welcome!
 - [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) - OneBot12 standard
 - [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) - Email sending and receiving processing
 - [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) - Web debugging interface, no need to connect to actual platforms
-- [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) - Instant messaging platform
+- [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) - Kook instant messaging platform
 
 See [Platform Adapter Details](docs/en/platform-guide/README.md)
 
