@@ -12,7 +12,7 @@
 # Docker Hub: https://hub.docker.com/r/wsu2059/erispulse
 # ===========================================================================
 
-FROM python:3.13-slim
+FROM python:3.13-slim AS production
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
