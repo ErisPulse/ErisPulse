@@ -1,0 +1,27 @@
+# ErisPulse Docker Compose
+#
+# Usage:
+#   docker compose up -d
+#
+# Environment variables:
+#   ERISPULSE_PORT            - Dashboard 端口 (默认: 8000)
+#   ERISPULSE_DASHBOARD_TOKEN - Dashboard 登录令牌
+#   TZ                        - 时区 (默认: Asia/Shanghai)
+#
+# Docs: https://github.com/ErisPulse/ErisPulse
+
+services:
+  erispulse:
+    build:
+      context: .
+      target: production
+    image: wsu2059/erispulse:latest
+    container_name: erispulse
+    ports:
+      - "${ERISPULSE_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
