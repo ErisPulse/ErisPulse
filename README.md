@@ -58,11 +58,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-启动后访问 `http://localhost:8000`，使用设置的令牌作为密码登录 Dashboard 管理面板。
-
 > 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
 </details>
+
+启动后访问 `http://localhost:8000/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
 
 ### 使用 pip 安装
 
