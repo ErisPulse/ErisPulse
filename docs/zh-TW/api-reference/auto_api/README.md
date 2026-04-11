@@ -20,8 +20,8 @@
 ## 统计信息
 
 - **模块总数**: 55
-- **类总数**: 47（包括 4 个嵌套类）
-- **函数总数**: 39
+- **类总数**: 46（包括 4 个嵌套类）
+- **函数总数**: 37
 - **方法总数**: 453
 
 ---
@@ -136,7 +136,7 @@
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
 
-📦 2 个类 | 🔧 6 个方法 | ⚙️ 3 个函数
+📦 1 个类 | 🔧 6 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
