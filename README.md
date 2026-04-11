@@ -17,6 +17,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/docker/v/wsu2059/erispulse?style=flat-square&logo=docker&label=docker)](https://hub.docker.com/r/wsu2059/erispulse)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
@@ -55,6 +56,26 @@ uv install ErisPulse
 ![安装演示](.github/assets/docs/install_pip.gif)
 
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+
+### Docker 安装
+
+```bash
+docker pull wsu2059/erispulse:latest
+```
+
+**快速启动：**
+
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 登录令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+启动后访问 `http://localhost:8000/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
+
+> 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
 ### 初始化项目
 
