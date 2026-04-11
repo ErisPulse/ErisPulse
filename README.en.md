@@ -58,11 +58,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-After starting, visit `http://localhost:8000` and log in to the Dashboard management panel using the set token as the password.
-
 > The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
 </details>
+
+After starting, visit `http://localhost:8000/Dashboard` and log in to the Dashboard management panel using the set token as the password.
 
 ### Installing via pip
 
@@ -211,3 +211,5 @@ The robustness of the ErisPulse project needs your help! We welcome various form
 ## Acknowledgments
 
 - Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame)
+- The core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/)
+- Thanks to all developers and authors who contribute to the open source community
