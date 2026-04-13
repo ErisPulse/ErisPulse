@@ -12,11 +12,14 @@ from ErisPulse import sdk
 # Get adapter by name
 adapter = sdk.adapter.get("platform_name")
 
-# Access via property
+# Or access directly via property
 adapter = sdk.adapter.platform_name
 ```
 
-### Adapter Event Listening
+### Using Adapter Event Listening
+> Generally, it is recommended to use the `Event` module for event listening/processing;
+>
+> Meanwhile, the `Event` module provides powerful wrappers, bringing more convenience to your module development.
 
 ```python
 # Listen to OneBot12 standard events
@@ -49,8 +52,15 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # Start/Shutdown adapter
+# The methods below show cases with parameters passed; without parameters, it means starting/stopping all registered adapters
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# Check if adapter is running
+is_running = sdk.adapter.is_running("platform_name")
+
+# List all running adapters
+running = sdk.adapter.list_running()
 ```
 
 ## Middleware
@@ -96,7 +106,6 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
 ### Query Supported Sending Methods
-> Since the new standard specification requires overriding the `__getattr__` method to implement a fallback sending mechanism, it is not possible to use the `hasattr` method to check if a method exists. Therefore, starting from `2.3.5-dev.3`, a `list_sends` method has been added to query all supported sending methods.
 
 ```python
 # List all sending methods supported by the platform
@@ -163,10 +172,12 @@ result = await adapter.call_api(
 ### BaseAdapter Methods
 
 ```python
+from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        self.sdk = sdk
         # Initialize adapter
         pass
     
@@ -378,12 +389,18 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | Event Name | Trigger Timing | Data |
 |--------|---------|------|
 | `adapter.bot.online` | When a new Bot is automatically discovered for the first time | `{platform, bot_id, status}` |
+| `adapter.status.change` | Adapter status change (starting/started/stopping/stopped/stop_failed) | `{platform, status}` |
 
 ```python
 # Listen to Bot online event
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot online: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# Listen to adapter status change
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"Adapter status: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > When the system shuts down (`shutdown`), all Bots will automatically be marked as `offline`.

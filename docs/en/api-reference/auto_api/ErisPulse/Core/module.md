@@ -117,7 +117,7 @@ ErisPulse 模块系统
 
 ##### `exists(module_name: str)`
 
-检查模块是否存在（在配置中注册）
+检查模块是否存在（已注册或在配置中）
 
 - **module_name** (`str`): 模块名称
 **返回值** (`bool`): 模块是否存在
@@ -271,6 +271,46 @@ ErisPulse 模块系统
 列出所有模块状态
 
 **返回值** (`dict[str, bool`): ] {模块名: 是否启用} 字典
+
+---
+
+
+##### `get_info(module_name: str)`
+
+获取模块信息
+
+:param module_name: 模块名称
+:return: 模块信息字典，不存在则返回None
+
+**示例**:
+```python
+>>> info = module.get_info("MyModule")
+```
+
+---
+
+
+##### `get_status_summary()`
+
+获取模块的完整状态摘要
+
+便于WebUI展示所有模块的注册、加载和启用状态。
+
+:return: 状态摘要字典
+
+**示例**:
+```python
+>>> summary = module.get_status_summary()
+>>> # {
+>>> #     "modules": {
+>>> #         "MyModule": {
+>>> #             "status": "loaded",
+>>> #             "enabled": True,
+>>> #             "is_base_module": True
+>>> #         }
+>>> #     }
+>>> # }
+```
 
 ---
 

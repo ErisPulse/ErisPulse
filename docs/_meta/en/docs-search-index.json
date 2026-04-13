@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 865,
+  "total_keywords": 888,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1563,7 +1563,7 @@
     "API Calls": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 135,
+        "line": 144,
         "level": 2,
         "title": "API Calls"
       }
@@ -1719,7 +1719,7 @@
     "Adapter Base Class": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 161,
+        "line": 170,
         "level": 2,
         "title": "Adapter Base Class"
       }
@@ -1760,14 +1760,6 @@
         "title": "Adapter Development Best Practices"
       }
     ],
-    "Adapter Event Listening": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "Adapter Event Listening"
-      }
-    ],
     "Adapter Events": [
       {
         "document": "api-reference/core-modules.md",
@@ -1779,7 +1771,7 @@
     "Adapter Integration Example": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 294,
+        "line": 305,
         "level": 3,
         "title": "Adapter Integration Example"
       }
@@ -1803,7 +1795,7 @@
     "Adapter Management": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 38,
+        "line": 41,
         "level": 3,
         "title": "Adapter Management"
       },
@@ -2049,7 +2041,7 @@
     "Auto-Discovery via Normal Events": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 290,
+        "line": 301,
         "level": 3,
         "title": "Auto-Discovery via Normal Events"
       }
@@ -2081,7 +2073,7 @@
     "BaseAdapter Methods": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 163,
+        "line": 172,
         "level": 3,
         "title": "BaseAdapter Methods"
       }
@@ -2217,7 +2209,7 @@
     "Basic Sending": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 75,
+        "line": 85,
         "level": 3,
         "title": "Basic Sending"
       },
@@ -2387,7 +2379,7 @@
     "Bot Status Management": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 204,
+        "line": 215,
         "level": 2,
         "title": "Bot Status Management"
       },
@@ -2408,6 +2400,12 @@
     ],
     "Bot Status Query": [
       {
+        "document": "api-reference/event-system.md",
+        "line": 240,
+        "level": 3,
+        "title": "Bot Status Query"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 683,
         "level": 3,
@@ -2423,7 +2421,7 @@
     "Bot Status Values": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 368,
+        "line": 379,
         "level": 3,
         "title": "Bot Status Values"
       }
@@ -2557,7 +2555,7 @@
     "Chained Modifiers": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 119,
+        "line": 128,
         "level": 3,
         "title": "Chained Modifiers"
       }
@@ -2677,7 +2675,7 @@
     "Command Basic": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
+        "line": 216,
         "level": 4,
         "title": "Command Basic"
       }
@@ -2724,8 +2722,20 @@
     ],
     "Command Information": [
       {
+        "document": "api-reference/event-system.md",
+        "line": 41,
+        "level": 3,
+        "title": "Command Information"
+      },
+      {
+        "document": "api-reference/event-system.md",
+        "line": 323,
+        "level": 3,
+        "title": "Command Information"
+      },
+      {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 214,
         "level": 3,
         "title": "Command Information"
       }
@@ -2870,6 +2880,14 @@
         "line": 7,
         "level": 3,
         "title": "Component Relationships"
+      }
+    ],
+    "Conditional Listening": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 143,
+        "level": 3,
+        "title": "Conditional Listening"
       }
     ],
     "Config": [
@@ -3179,6 +3197,12 @@
       }
     ],
     "Core Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 280,
+        "level": 3,
+        "title": "Core Methods"
+      },
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 89,
@@ -3491,7 +3515,7 @@
     "Dot Notation Access": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 210,
+        "line": 242,
         "level": 3,
         "title": "Dot Notation Access"
       }
@@ -3795,7 +3819,7 @@
     "Event Listening": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 240,
+        "line": 259,
         "level": 3,
         "title": "Event Listening"
       },
@@ -3845,7 +3869,7 @@
     "Event Submission": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 226,
+        "line": 245,
         "level": 3,
         "title": "Event Submission"
       }
@@ -3880,6 +3904,14 @@
         "line": 127,
         "level": 2,
         "title": "Event Types"
+      }
+    ],
+    "Event Wrapper Class": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 276,
+        "level": 2,
+        "title": "Event Wrapper Class"
       }
     ],
     "Event-Driven Architecture": [
@@ -4031,7 +4063,7 @@
     "Forward Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 169,
+        "line": 172,
         "level": 4,
         "title": "Forward Functionality"
       }
@@ -4131,7 +4163,7 @@
     "Getting Modules": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 182,
+        "line": 188,
         "level": 3,
         "title": "Getting Modules"
       }
@@ -4227,7 +4259,7 @@
     "HTTP Routes": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 276,
+        "line": 295,
         "level": 3,
         "title": "HTTP Routes"
       }
@@ -4534,6 +4566,20 @@
         "title": "Inter-module Communication"
       }
     ],
+    "Interaction Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 359,
+        "level": 3,
+        "title": "Interaction Methods"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 192,
+        "level": 4,
+        "title": "Interaction Methods"
+      }
+    ],
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
@@ -4677,7 +4723,7 @@
     "Lifecycle Events": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 376,
+        "line": 387,
         "level": 3,
         "title": "Lifecycle Events"
       },
@@ -4707,7 +4753,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 224,
+        "line": 243,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -4984,6 +5030,14 @@
         "title": "Message Event Methods"
       }
     ],
+    "Message Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 114,
+        "level": 3,
+        "title": "Message Events"
+      }
+    ],
     "Message Events (Message Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -5006,6 +5060,22 @@
         "line": 48,
         "level": 3,
         "title": "Message Management Methods"
+      }
+    ],
+    "Message Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 296,
+        "level": 3,
+        "title": "Message Methods"
+      }
+    ],
+    "Message Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message Module"
       }
     ],
     "Message Segment Standard": [
@@ -5065,7 +5135,7 @@
     "Meta Event Format": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 230,
+        "line": 241,
         "level": 3,
         "title": "Meta Event Format"
       }
@@ -5078,10 +5148,18 @@
         "title": "Meta Event Handling"
       }
     ],
+    "Meta Event Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 215,
+        "level": 2,
+        "title": "Meta Event Module"
+      }
+    ],
     "Meta Event Types": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 208,
+        "line": 219,
         "level": 3,
         "title": "Meta Event Types"
       },
@@ -5090,6 +5168,14 @@
         "line": 638,
         "level": 3,
         "title": "Meta Event Types"
+      }
+    ],
+    "Meta Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 217,
+        "level": 3,
+        "title": "Meta Events"
       }
     ],
     "Meta Events (Meta Events)": [
@@ -5151,7 +5237,7 @@
     "Middleware": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 56,
+        "line": 66,
         "level": 2,
         "title": "Middleware"
       },
@@ -5165,7 +5251,7 @@
     "Middleware Execution Order": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 69,
+        "line": 79,
         "level": 3,
         "title": "Middleware Execution Order"
       },
@@ -5295,7 +5381,7 @@
     "Module Management": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 195,
+        "line": 201,
         "level": 3,
         "title": "Module Management"
       }
@@ -5303,7 +5389,7 @@
     "Module Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 180,
+        "line": 186,
         "level": 2,
         "title": "Module Module"
       }
@@ -5502,12 +5588,28 @@
         "title": "Notice Event Methods"
       }
     ],
+    "Notice Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 163,
+        "level": 3,
+        "title": "Notice Events"
+      }
+    ],
     "Notice Events (Notice Events)": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 89,
         "level": 3,
         "title": "Notice Events (Notice Events)"
+      }
+    ],
+    "Notice Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 161,
+        "level": 2,
+        "title": "Notice Module"
       }
     ],
     "Notice Operator": [
@@ -5746,14 +5848,20 @@
     ],
     "Platform Extension Methods": [
       {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 196,
+        "document": "api-reference/event-system.md",
+        "line": 421,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 220,
+        "line": 228,
+        "level": 3,
+        "title": "Platform Extension Methods"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 252,
         "level": 2,
         "title": "Platform Extension Methods"
       },
@@ -5778,6 +5886,14 @@
         "line": 53,
         "level": 3,
         "title": "Platform Features Guide"
+      }
+    ],
+    "Platform Method Isolation": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 457,
+        "level": 4,
+        "title": "Platform Method Isolation"
       }
     ],
     "Platform Native Events": [
@@ -6022,10 +6138,18 @@
         "title": "Quality Checklist"
       }
     ],
+    "Query Registered Platform Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 442,
+        "level": 4,
+        "title": "Query Registered Platform Methods"
+      }
+    ],
     "Query Supported Sending Methods": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 98,
+        "line": 108,
         "level": 3,
         "title": "Query Supported Sending Methods"
       }
@@ -6033,7 +6157,7 @@
     "Querying Bot Status": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 334,
+        "line": 345,
         "level": 3,
         "title": "Querying Bot Status"
       }
@@ -6041,7 +6165,7 @@
     "Querying Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 240,
+        "line": 272,
         "level": 3,
         "title": "Querying Registered Methods"
       }
@@ -6097,7 +6221,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 191,
+        "line": 223,
         "level": 3,
         "title": "Raw Data"
       }
@@ -6175,7 +6299,7 @@
     "Registering Middleware": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 58,
+        "line": 68,
         "level": 3,
         "title": "Registering Middleware"
       }
@@ -6197,7 +6321,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 168,
+        "line": 169,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6215,7 +6339,7 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 391,
+        "line": 408,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6263,7 +6387,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 258,
+        "line": 290,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6289,7 +6413,7 @@
     "Related Documents": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 388,
         "level": 2,
         "title": "Related Documents"
       }
@@ -6308,6 +6432,14 @@
         "line": 71,
         "level": 3,
         "title": "Reply"
+      }
+    ],
+    "Reply Features": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 335,
+        "level": 3,
+        "title": "Reply Features"
       }
     ],
     "Reply Functionality": [
@@ -6356,6 +6488,14 @@
         "title": "Request Event Methods"
       }
     ],
+    "Request Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 195,
+        "level": 3,
+        "title": "Request Events"
+      }
+    ],
     "Request Events (Request Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -6370,6 +6510,14 @@
         "line": 149,
         "level": 4,
         "title": "Request Information"
+      }
+    ],
+    "Request Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 193,
+        "level": 2,
+        "title": "Request Module"
       }
     ],
     "Request Type Judgment": [
@@ -6453,7 +6601,7 @@
     "Route Information": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 355,
+        "line": 374,
         "level": 3,
         "title": "Route Information"
       }
@@ -6491,7 +6639,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 274,
+        "line": 293,
         "level": 2,
         "title": "Router Module"
       }
@@ -6555,7 +6703,7 @@
     "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 102,
+        "line": 101,
         "level": 3,
         "title": "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)"
       }
@@ -6595,7 +6743,7 @@
     "Self Field Extension": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 218,
+        "line": 229,
         "level": 3,
         "title": "Self Field Extension"
       }
@@ -6611,7 +6759,7 @@
     "Send Message Sending": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 73,
+        "line": 83,
         "level": 2,
         "title": "Send Message Sending"
       }
@@ -6635,7 +6783,7 @@
     "Send Nested Class": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 186,
+        "line": 197,
         "level": 3,
         "title": "Send Nested Class"
       }
@@ -6843,7 +6991,7 @@
     "Specify Sending Account": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 88,
+        "line": 98,
         "level": 3,
         "title": "Specify Sending Account"
       }
@@ -7267,7 +7415,7 @@
     "Timer": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 278,
         "level": 3,
         "title": "Timer"
       }
@@ -7420,6 +7568,22 @@
         "title": "User Guide"
       }
     ],
+    "Users: Using Platform Extension Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 425,
+        "level": 4,
+        "title": "Users: Using Platform Extension Methods"
+      }
+    ],
+    "Using Adapter Event Listening": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "Using Adapter Event Listening"
+      }
+    ],
     "Using Configuration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -7478,8 +7642,14 @@
     ],
     "Utility Methods": [
       {
+        "document": "api-reference/event-system.md",
+        "line": 406,
+        "level": 3,
+        "title": "Utility Methods"
+      },
+      {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 204,
+        "line": 236,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -7525,7 +7695,7 @@
     "Wait Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 173,
+        "line": 183,
         "level": 3,
         "title": "Wait Reply Functionality"
       }
@@ -7544,6 +7714,14 @@
         "line": 125,
         "level": 3,
         "title": "Wait for Result"
+      }
+    ],
+    "Waiting for Reply": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 57,
+        "level": 3,
+        "title": "Waiting for Reply"
       }
     ],
     "Waiting for Reply with Callback": [
@@ -7589,7 +7767,7 @@
     "WebSocket Routes": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 298,
+        "line": 317,
         "level": 3,
         "title": "WebSocket Routes"
       }
@@ -7666,6 +7844,54 @@
         "title": "[BUG-003] Lifecycle Event Handlers Not Cleared"
       }
     ],
+    "[BUG-004] Event.confirm() Confirmation Word Set Duplicate Assignment": [
+      {
+        "document": "bug-tracker.md",
+        "line": 61,
+        "level": 3,
+        "title": "[BUG-004] Event.confirm() Confirmation Word Set Duplicate Assignment"
+      }
+    ],
+    "[BUG-005] MessageBuilder.at Method Definition Overridden (Dead Code)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 77,
+        "level": 3,
+        "title": "[BUG-005] MessageBuilder.at Method Definition Overridden (Dead Code)"
+      }
+    ],
+    "[BUG-006] `detail_type` of `Event.is_friend_add/is_friend_delete` Inconsistent with OB12 Standard": [
+      {
+        "document": "bug-tracker.md",
+        "line": 93,
+        "level": 3,
+        "title": "[BUG-006] `detail_type` of `Event.is_friend_add/is_friend_delete` Inconsistent with OB12 Standard"
+      }
+    ],
+    "[BUG-007] `adapter.clear()` Fails to Clear `_started_instances` Causing Incorrect Status After Restart": [
+      {
+        "document": "bug-tracker.md",
+        "line": 109,
+        "level": 3,
+        "title": "[BUG-007] `adapter.clear()` Fails to Clear `_started_instances` Causing Incorrect Status After Restart"
+      }
+    ],
+    "[BUG-008] `command.wait_reply()` Uses Deprecated `asyncio.get_event_loop()`": [
+      {
+        "document": "bug-tracker.md",
+        "line": 125,
+        "level": 3,
+        "title": "[BUG-008] `command.wait_reply()` Uses Deprecated `asyncio.get_event_loop()`"
+      }
+    ],
+    "[BUG-009] `Event.collect()` Silently Skips When Field is Missing `key`": [
+      {
+        "document": "bug-tracker.md",
+        "line": 141,
+        "level": 3,
+        "title": "[BUG-009] `Event.collect()` Silently Skips When Field is Missing `key`"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -7677,7 +7903,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 249,
+        "line": 281,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }
@@ -7693,7 +7919,7 @@
     "call_api Method": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 137,
+        "line": 146,
         "level": 3,
         "title": "call_api Method"
       }
@@ -7709,7 +7935,7 @@
     "connect — Connection Online": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 232,
+        "line": 243,
         "level": 4,
         "title": "connect — Connection Online"
       }
@@ -7717,7 +7943,7 @@
     "disconnect — Disconnection": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 272,
+        "line": 283,
         "level": 4,
         "title": "disconnect — Disconnection"
       }
@@ -7749,7 +7975,7 @@
     "heartbeat — Heartbeat": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 254,
+        "line": 265,
         "level": 4,
         "title": "heartbeat — Heartbeat"
       }

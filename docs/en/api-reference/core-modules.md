@@ -15,11 +15,11 @@ sdk.storage.set("key", "value")
 # Get value
 value = sdk.storage.get("key", default_value)
 
+# Get all keys
+keys = sdk.storage.keys()
+
 # Delete value
 sdk.storage.delete("key")
-
-# Check if key exists
-exists = sdk.storage.exists("key")
 ```
 
 ### Transaction Operations
@@ -174,7 +174,13 @@ sdk.adapter.disable("platform_name")
 
 # Start/Shutdown adapter
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# Check if adapter is running
+is_running = sdk.adapter.is_running("platform_name")
+
+# List all running adapters
+running = sdk.adapter.list_running()
 ```
 
 ## Module Module
@@ -219,6 +225,19 @@ loaded = sdk.module.list_loaded()
 
 # List registered modules
 registered = sdk.module.list_registered()
+
+# Get module information
+info = sdk.module.get_info("ModuleName")
+
+# Get module status summary
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# Check if module is running (equivalent to is_loaded)
+is_running = sdk.module.is_running("ModuleName")
+
+# List all running modules
+running = sdk.module.list_running()
 ```
 
 ## Lifecycle Module

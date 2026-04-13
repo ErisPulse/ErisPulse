@@ -2773,8 +2773,8 @@ async def friend_add_handler(event):
 - `is_notice()` - 是否為通知事件
 - `is_group_member_increase()` - 群成員增加事件
 - `is_group_member_decrease()` - 群成員減少事件
-- `is_friend_add()` - 好友新增事件
-- `is_friend_delete()` - 好友刪除事件
+- `is_friend_add()` - 好友新增事件（匹配 `detail_type == "friend_increase"`）
+- `is_friend_delete()` - 好友刪除事件（匹配 `detail_type == "friend_decrease"`）
 
 ### 請求事件方法
 
@@ -2798,9 +2798,19 @@ async def friend_add_handler(event):
   - 支援 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
 
+- `reply_ob12(message)` - 使用 OneBot12 訊息段回覆
+  - `message`: OneBot12 訊息段列表或字典，可配合 MessageBuilder 構建
+
 #### 轉發功能
-- `forward_to_group(group_id)` - 轉發到群組
-- `forward_to_user(user_id)` - 轉發給使用者
+
+> **注意**：轉發功能需要透過介面卡的 Send DSL 實現，Event 包裝類本身不提供直接的轉發方法。
+
+```python
+# 轉發訊息到群組
+adapter = sdk.adapter.get(event.get_platform())
+target_id = event.get_group_id()  # 或指定其他群組ID
+await adapter.Send.To("group", target_id).Text(event.get_text())
+```
 
 ### 等待回覆功能
 
@@ -2810,6 +2820,28 @@ async def friend_add_handler(event):
   - `callback`: 回呼函數，當收到回覆時執行
   - `validator`: 驗證函數，用於驗證回覆是否有效
   - 返回使用者回覆的 Event 物件，超時返回 None
+
+#### 互動方法
+
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - 確認對話
+  - 返回 `True`（確認）/ `False`（否定）/ `None`（超時）
+  - 內建中英文確認詞自動識別，可自訂詞集
+
+- `choose(prompt, options, timeout=60.0)` - 選擇選單
+  - `options`: 選項文字列表
+  - 返回選項索引（0-based），超時返回 `None`
+
+- `collect(fields, timeout_per_field=60.0)` - 表單收集
+  - `fields`: 欄位列表，每項包含 `key`、`prompt`、可選 `validator`
+  - 返回 `{key: value}` 字典，任一欄位超時返回 `None`
+
+- `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
+  - `condition`: 過濾函數，返回 `True` 時匹配
+  - 返回匹配的 Event 物件，超時返回 `None`
+
+- `conversation(timeout=60.0)` - 建立多輪對話上下文
+  - 返回 `Conversation` 物件，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - `is_active` 屬性表示對話是否活躍
 
 ### 指令資訊
 
@@ -4989,11 +5021,11 @@ sdk.storage.set("key", "value")
 # 取得值
 value = sdk.storage.get("key", default_value)
 
+# 取得所有鍵
+keys = sdk.storage.keys()
+
 # 刪除值
 sdk.storage.delete("key")
-
-# 檢查鍵是否存在
-exists = sdk.storage.exists("key")
 ```
 
 ### 事務操作
@@ -5148,7 +5180,13 @@ sdk.adapter.disable("platform_name")
 
 # 啟動/關閉適配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 檢查適配器是否正在執行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在執行的適配器
+running = sdk.adapter.list_running()
 ```
 
 ## Module 模組
@@ -5193,6 +5231,19 @@ loaded = sdk.module.list_loaded()
 
 # 列出已註冊的模組
 registered = sdk.module.list_registered()
+
+# 取得模組資訊
+info = sdk.module.get_info("ModuleName")
+
+# 取得模組狀態摘要
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# 檢查模組是否正在執行（等價於 is_loaded）
+is_running = sdk.module.is_running("ModuleName")
+
+# 列出所有正在執行的模組
+running = sdk.module.list_running()
 ```
 
 ## Lifecycle 模組
@@ -5309,6 +5360,41 @@ sdk.router.register_websocket(
     path="/secure_ws",
     handler=manual_websocket_handler,
     auth_handler=auth_handler,
+    auto_accept=False  # 手動控制連線
+)
+
+# 取消路由
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**參數說明：**
+
+- `module_name`: 模組名稱
+- `path`: WebSocket 路徑
+- `handler`: 處理函式
+- `auth_handler`: 可選的認證函式
+- `auto_accept`: 是否自動接受連線（預設 `True`）
+  - `True`: 框架自動呼叫 `websocket.accept()`，handler 無需手動呼叫
+  - `False`: handler 必須自行呼叫 `websocket.accept()` 或 `websocket.close()`
+
+### 路由資訊
+
+```python
+# 取得 FastAPI 應用實例
+app = sdk.router.get_app()
+
+# 新增中介軟體
+@app.middleware("http")
+async def add_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Custom-Header"] = "value"
+    return response
+```
+
+## 相關文件
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
 
 
 
@@ -5488,19 +5574,19 @@ async def friend_add_handler(event):
     await event.reply("歡迎新增我為好友！")
 
 # 好友刪除
-@notice.on_friend_delete()
-async def friend_delete_handler(event):
+@notice.on_friend_remove()
+async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"好友刪除: {user_id}")
 
 # 群成員新增
-@notice.on_group_member_increase()
+@notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"歡迎新成員！")
 
 # 群成員減少
-@notice.on_group_member_decrease()
+@notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"群成員離開: {user_id}")
@@ -5622,27 +5708,7 @@ user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# 獲取群組資訊
-group_id = event.get_group_id()
-
-# 判斷訊息類型
-is_msg = event.is_message()
-is_private = event.is_private_message()
-is_group = event.is_group_message()
-
-# @訊息相關
-is_at = event.is_at_message()
-has_mention = event.has_mention()
-mentions = event.get_mentions()
-```
-
-### 命令資訊
-
-```python
-# 獲取命令資訊
-cmd_name = event.get_command_name()
-cmd_args = event.get_command_args()
-cmd_raw = event.get
+# �
 
 
 
@@ -5662,11 +5728,14 @@ from ErisPulse import sdk
 # 透過名稱取得介面卡
 adapter = sdk.adapter.get("platform_name")
 
-# 透過屬性存取
+# 或者也可以直接透過屬性存取
 adapter = sdk.adapter.platform_name
 ```
 
-### 介面卡事件監聽
+### 使用介面卡事件監聽
+> 一般情況下，更建議使用 `Event` 模組進行事件的監聽/處理;
+>
+> 同時 `Event` 模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -5699,8 +5768,15 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 啟動/關閉介面卡
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊介面卡
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 檢查介面卡是否正在執行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在執行的介面卡
+running = sdk.adapter.list_running()
 ```
 
 ## 中介軟體
@@ -5746,7 +5822,6 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
 ### 查詢支援的發送方法
-> 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在，故從 `2.3.5-dev.3` 開始，新增 `list_sends` 方法來查詢支援的所有發送方法。
 
 ```python
 # 列出平台支援的所有發送方法
@@ -5785,7 +5860,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 ## API 呼叫
 
 ### call_api 方法
-> 注意，各個平台的 API 呼叫方式可能不同，請參考對應平台介面卡文件
+> 注意，各個平台的 API 呼叫方式可能不同，請參考對於平台介面卡文件
 > 並不建議直接使用 call_api 方法，建議使用 Send 類別進行訊息發送
 
 ```python
@@ -5813,10 +5888,12 @@ result = await adapter.call_api(
 ### BaseAdapter 方法
 
 ```python
+from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        self.sdk = sdk
         # 初始化介面卡
         pass
     
@@ -6028,12 +6105,18 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
+| `adapter.status.change` | 介面卡狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
 # 監聽 Bot 上線事件
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot 上線: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# 監聽介面卡狀態變化
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"介面卡狀態: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > 系統關閉時（`shutdown`），所有 Bot 會自動被標記為 `offline`。
@@ -7186,15 +7269,15 @@ result = sdk.my_module.some_sync_method()
 
 ### 建議使用延遲載入的情境 (lazy_load=True)
 
-- ✅ 大多數功能模組
-- ✅ 指令處理模組
-- ✅ 依需求載入的擴充功能
+- 被動呼叫的工具類別
+- 被動類模組
 
 ### 建議停用延遲載入的情境 (lazy_load=False)
 
-- ❌ 生命週期事件監聽器
-- ❌ 定時任務模組
-- ❌ 需要在應用程式啟動時就初始化的模組
+- 註冊觸發器的模組（如：指令處理器、訊息處理器）
+- 生命週期事件監聽器
+- 定時任務模組
+- 需要在應用程式啟動時就初始化的模組
 
 ### 載入優先級
 
@@ -7391,6 +7474,7 @@ class Main(BaseModule):
 3. **計時器命名**：計時器 ID 應具有描述性，避免與其他組件衝突
 4. **非同步處理**：所有生命週期事件處理器都是非同步的，不要阻塞事件迴圈
 5. **錯誤處理**：在事件處理器中應該做好異常處理，避免影響其他監聽器
+6. **載入優先性**：載入策略建議設置高優先級並停用延遲載入
 
 ## 相關文件
 
