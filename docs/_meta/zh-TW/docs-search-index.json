@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 802,
+  "total_keywords": 807,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1197,7 +1197,7 @@
     "API 呼叫": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 135,
+        "line": 144,
         "level": 2,
         "title": "API 呼叫"
       }
@@ -1285,7 +1285,7 @@
     "BaseAdapter 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 163,
+        "line": 172,
         "level": 3,
         "title": "BaseAdapter 方法"
       }
@@ -1301,7 +1301,7 @@
     "Bot 狀態值": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 368,
+        "line": 379,
         "level": 3,
         "title": "Bot 狀態值"
       }
@@ -1323,7 +1323,7 @@
     "Bot 狀態管理": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 204,
+        "line": 215,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -1523,7 +1523,7 @@
     "HTTP 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 276,
+        "line": 295,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -1539,7 +1539,7 @@
     "Lifecycle 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 224,
+        "line": 243,
         "level": 2,
         "title": "Lifecycle 模組"
       }
@@ -1571,7 +1571,7 @@
     "Module 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 180,
+        "line": 186,
         "level": 2,
         "title": "Module 模組"
       }
@@ -1767,7 +1767,7 @@
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 274,
+        "line": 293,
         "level": 2,
         "title": "Router 模組"
       }
@@ -1805,7 +1805,7 @@
     "Send 巢狀類別": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 186,
+        "line": 197,
         "level": 3,
         "title": "Send 巢狀類別"
       }
@@ -1813,7 +1813,7 @@
     "Send 訊息發送": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 73,
+        "line": 83,
         "level": 2,
         "title": "Send 訊息發送"
       }
@@ -1909,7 +1909,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 298,
+        "line": 317,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -1946,6 +1946,30 @@
         "title": "[BUG-003] 生命週期事件處理器未清理"
       }
     ],
+    "[BUG-004] Event.confirm() 確認詞集合賦值重複": [
+      {
+        "document": "bug-tracker.md",
+        "line": 61,
+        "level": 3,
+        "title": "[BUG-004] Event.confirm() 確認詞集合賦值重複"
+      }
+    ],
+    "[BUG-005] MessageBuilder.at 方法定義被覆蓋（死代碼）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 77,
+        "level": 3,
+        "title": "[BUG-005] MessageBuilder.at 方法定義被覆蓋（死代碼）"
+      }
+    ],
+    "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
+      {
+        "document": "bug-tracker.md",
+        "line": 93,
+        "level": 3,
+        "title": "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -1957,7 +1981,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 249,
+        "line": 281,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -1965,7 +1989,7 @@
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 137,
+        "line": 146,
         "level": 3,
         "title": "call_api 方法"
       }
@@ -1981,7 +2005,7 @@
     "connect — 連線上線": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 232,
+        "line": 243,
         "level": 4,
         "title": "connect — 連線上線"
       }
@@ -1989,7 +2013,7 @@
     "disconnect — 斷開連線": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 272,
+        "line": 283,
         "level": 4,
         "title": "disconnect — 斷開連線"
       }
@@ -2021,7 +2045,7 @@
     "heartbeat — 心跳": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 254,
+        "line": 265,
         "level": 4,
         "title": "heartbeat — 心跳"
       }
@@ -2045,7 +2069,7 @@
     "meta 事件格式": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 230,
+        "line": 241,
         "level": 3,
         "title": "meta 事件格式"
       }
@@ -2053,7 +2077,7 @@
     "meta 事件類型": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 208,
+        "line": 219,
         "level": 3,
         "title": "meta 事件類型"
       }
@@ -2109,7 +2133,7 @@
     "self 欄位擴展": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 218,
+        "line": 229,
         "level": 3,
         "title": "self 欄位擴展"
       }
@@ -2225,7 +2249,7 @@
     "中介軟體": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 56,
+        "line": 66,
         "level": 2,
         "title": "中介軟體"
       },
@@ -2239,7 +2263,7 @@
     "中介軟體執行順序": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 69,
+        "line": 79,
         "level": 3,
         "title": "中介軟體執行順序"
       },
@@ -2301,7 +2325,7 @@
     "事件提交": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 226,
+        "line": 245,
         "level": 3,
         "title": "事件提交"
       }
@@ -2317,7 +2341,7 @@
     "事件監聽": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 240,
+        "line": 259,
         "level": 3,
         "title": "事件監聽"
       },
@@ -2554,6 +2578,14 @@
         "title": "互動式處理"
       }
     ],
+    "互動方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 192,
+        "level": 4,
+        "title": "互動方法"
+      }
+    ],
     "互動訊息類型": [
       {
         "document": "platform-guide/onebot12.md",
@@ -2610,18 +2642,10 @@
         "title": "介接器核心概念"
       }
     ],
-    "介面卡事件監聽": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "介面卡事件監聽"
-      }
-    ],
     "介面卡基類": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 161,
+        "line": 170,
         "level": 2,
         "title": "介面卡基類"
       }
@@ -2629,7 +2653,7 @@
     "介面卡接入範例": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 294,
+        "line": 305,
         "level": 3,
         "title": "介面卡接入範例"
       }
@@ -2637,7 +2661,7 @@
     "介面卡管理": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 38,
+        "line": 41,
         "level": 3,
         "title": "介面卡管理"
       }
@@ -2712,6 +2736,14 @@
         "line": 80,
         "level": 3,
         "title": "使用事件系統"
+      }
+    ],
+    "使用介面卡事件監聽": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "使用介面卡事件監聽"
       }
     ],
     "使用儲存系統": [
@@ -3099,7 +3131,7 @@
     "原始資料": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 191,
+        "line": 223,
         "level": 3,
         "title": "原始資料"
       }
@@ -3171,7 +3203,7 @@
     "取得模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 182,
+        "line": 188,
         "level": 3,
         "title": "取得模組"
       }
@@ -3260,12 +3292,6 @@
       {
         "document": "api-reference/event-system.md",
         "line": 41,
-        "level": 3,
-        "title": "命令資訊"
-      },
-      {
-        "document": "api-reference/event-system.md",
-        "line": 323,
         "level": 3,
         "title": "命令資訊"
       }
@@ -3475,7 +3501,7 @@
     "基本發送": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 75,
+        "line": 85,
         "level": 3,
         "title": "基本發送"
       }
@@ -3969,7 +3995,7 @@
     "工具方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 204,
+        "line": 236,
         "level": 3,
         "title": "工具方法"
       }
@@ -4109,13 +4135,13 @@
     "平台擴充方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 196,
+        "line": 228,
         "level": 3,
         "title": "平台擴充方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 220,
+        "line": 252,
         "level": 2,
         "title": "平台擴充方法"
       }
@@ -4227,7 +4253,7 @@
     "建議停用延遲載入的情境 (lazy_load=False)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 102,
+        "line": 101,
         "level": 3,
         "title": "建議停用延遲載入的情境 (lazy_load=False)"
       }
@@ -4385,7 +4411,7 @@
     "指令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
+        "line": 216,
         "level": 4,
         "title": "指令基礎"
       }
@@ -4417,7 +4443,7 @@
     "指令資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 214,
         "level": 3,
         "title": "指令資訊"
       }
@@ -4441,7 +4467,7 @@
     "指定發送帳號": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 88,
+        "line": 98,
         "level": 3,
         "title": "指定發送帳號"
       }
@@ -4819,7 +4845,7 @@
     "普通事件的自動發現": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 290,
+        "line": 301,
         "level": 3,
         "title": "普通事件的自動發現"
       }
@@ -4907,7 +4933,7 @@
     "查詢 Bot 狀態": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 334,
+        "line": 345,
         "level": 3,
         "title": "查詢 Bot 狀態"
       }
@@ -4915,7 +4941,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 240,
+        "line": 272,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -4923,7 +4949,7 @@
     "查詢支援的發送方法": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 98,
+        "line": 108,
         "level": 3,
         "title": "查詢支援的發送方法"
       }
@@ -5237,7 +5263,7 @@
     "模組管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 195,
+        "line": 201,
         "level": 3,
         "title": "模組管理"
       }
@@ -5519,7 +5545,7 @@
     "生命週期事件": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 376,
+        "line": 387,
         "level": 3,
         "title": "生命週期事件"
       },
@@ -5675,7 +5701,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 168,
+        "line": 169,
         "level": 2,
         "title": "相關文件"
       },
@@ -5693,7 +5719,13 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 391,
+        "line": 408,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 388,
         "level": 2,
         "title": "相關文件"
       },
@@ -5729,7 +5761,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 258,
+        "line": 290,
         "level": 2,
         "title": "相關文件"
       },
@@ -5859,7 +5891,7 @@
     "等待回覆功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 173,
+        "line": 183,
         "level": 3,
         "title": "等待回覆功能"
       }
@@ -6077,7 +6109,7 @@
     "計時器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 278,
         "level": 3,
         "title": "計時器"
       }
@@ -6313,7 +6345,7 @@
     "註冊中介軟體": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 58,
+        "line": 68,
         "level": 3,
         "title": "註冊中介軟體"
       }
@@ -6476,6 +6508,14 @@
         "title": "路由管理器"
       }
     ],
+    "路由資訊": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 374,
+        "level": 3,
+        "title": "路由資訊"
+      }
+    ],
     "載入優先級": [
       {
         "document": "advanced/lazy-loading.md",
@@ -6519,7 +6559,7 @@
     "轉發功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 169,
+        "line": 172,
         "level": 4,
         "title": "轉發功能"
       }
@@ -6911,7 +6951,7 @@
     "鏈式修飾": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 119,
+        "line": 128,
         "level": 3,
         "title": "鏈式修飾"
       }
@@ -7183,7 +7223,7 @@
     "點式存取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 210,
+        "line": 242,
         "level": 3,
         "title": "點式存取"
       }

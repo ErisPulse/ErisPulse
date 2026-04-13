@@ -43,33 +43,6 @@ OneBot12 消息段构建器
 #### 方法列表
 
 
-##### `at(user_id: str, user_name: str | None = None)`
-
-添加 @用户 消息段（mention 的别名）
-
-:param user_id: 用户 ID
-:param user_name: 用户名（可选）
-:return: MessageBuilder 实例
-
-**示例**:
-```python
->>> MessageBuilder().at("123456").text("你好").build()
-```
-
----
-
-
-##### `at(user_id: str, user_name: str | None = None)`
-
-快速构建 @用户 消息段（mention 的别名）
-
-:param user_id: 用户 ID
-:param user_name: 用户名（可选）
-:return: 包含单个消息段的列表
-
----
-
-
 ##### `custom(segment_type: str, data: dict[str, Any])`
 
 添加自定义消息段
