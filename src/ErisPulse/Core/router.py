@@ -300,6 +300,77 @@ class RouterManager:
             logger.error(f"注销WebSocket失败: {e}")
             return False
 
+    def unregister_all_by_namespace(self, namespace: str) -> dict[str, int]:
+        """
+        清理指定命名空间下的所有路由
+
+        :param namespace: 命名空间（适配器名或模块名）
+        :return: 清理统计 {http_count: int, websocket_count: int}
+
+        :example:
+        >>> router.unregister_all_by_namespace("my_adapter")
+        {"http_count": 3, "websocket_count": 1}
+        """
+        result = {"http_count": 0, "websocket_count": 0}
+        
+        # 清理 HTTP 路由
+        if namespace in self._http_routes:
+            paths = list(self._http_routes[namespace].keys())
+            for path in paths:
+                if self.unregister_http_route(namespace, path):
+                    result["http_count"] += 1
+            # 清理空命名空间
+            if namespace in self._http_routes:
+                del self._http_routes[namespace]
+        
+        # 清理 WebSocket 路由
+        if namespace in self._websocket_routes:
+            paths = list(self._websocket_routes[namespace].keys())
+            for path in paths:
+                if self.unregister_websocket(namespace, path):
+                    result["websocket_count"] += 1
+            # 清理空命名空间
+            if namespace in self._websocket_routes:
+                del self._websocket_routes[namespace]
+        
+        if result["http_count"] > 0 or result["websocket_count"] > 0:
+            logger.info(
+                f"已清理命名空间 [{namespace}] 的路由: "
+                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+            )
+        
+        return result
+
+
+    def list_namespaces(self) -> dict[str, dict[str, list[str]]]:
+        """
+        列出所有已注册的命名空间及其路由
+
+        :return: {namespace: {"http": [paths], "websocket": [paths]}}
+
+        :example:
+        >>> router.list_namespaces()
+        {
+            "onebot11": {
+                "http": ["/onebot11/webhook", "/onebot11/callback"],
+                "websocket": ["/onebot11/ws"]
+            }
+        }
+        """
+        result = {}
+        
+        for namespace, routes in self._http_routes.items():
+            if namespace not in result:
+                result[namespace] = {"http": [], "websocket": []}
+            result[namespace]["http"] = list(routes.keys())
+        
+        for namespace, routes in self._websocket_routes.items():
+            if namespace not in result:
+                result[namespace] = {"http": [], "websocket": []}
+            result[namespace]["websocket"] = list(routes.keys())
+        
+        return result
+
     def get_app(self) -> FastAPI:
         """
         获取FastAPI应用实例
@@ -476,4 +547,8 @@ router: RouterManager = RouterManager()
 
 __all__ = [
     "router",
+    "RouterManager",
+    "HTTPHandler",
+    "WebSocketHandler", 
+    "RoutePath",
 ]
