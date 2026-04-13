@@ -240,9 +240,12 @@ class ModuleManager(ManagerBase):
 
             # 清理模块注册的路由
             from .router import router
+
             result = router.unregister_all_by_namespace(module_name)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
+                logger.debug(
+                    f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                )
 
             # 清理缓存
             del self._modules[module_name]
@@ -269,11 +272,13 @@ class ModuleManager(ManagerBase):
 
     def exists(self, module_name: str) -> bool:
         """
-        检查模块是否存在（在配置中注册）
+        检查模块是否存在（已注册或在配置中）
 
         :param module_name: [str] 模块名称
         :return: [bool] 模块是否存在
         """
+        if module_name in self._module_classes:
+            return True
         module_statuses = config.getConfig("ErisPulse.modules.status", {})
         return module_name in module_statuses
 
@@ -382,6 +387,10 @@ class ModuleManager(ManagerBase):
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
+        if module_name not in self._module_classes:
+            logger.error(f"模块 {module_name} 不存在")
+            return False
+
         config.setConfig(f"ErisPulse.modules.status.{module_name}", True)
         logger.info(f"模块 {module_name} 已启用")
         return True
@@ -435,13 +444,15 @@ class ModuleManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         from .router import router
-        
+
         # 清理所有模块的路由
         for module_name in list(self._module_classes.keys()):
             result = router.unregister_all_by_namespace(module_name)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
-        
+                logger.debug(
+                    f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                )
+
         # 清除所有模块实例
         self._modules.clear()
 
@@ -463,6 +474,48 @@ class ModuleManager(ManagerBase):
         :return: [dict[str, bool]] {模块名: 是否启用} 字典
         """
         return config.getConfig("ErisPulse.modules.status", {})
+
+    def get_info(self, module_name: str) -> dict | None:
+        """
+        获取模块信息
+
+        :param module_name: 模块名称
+        :return: 模块信息字典，不存在则返回None
+
+        :example:
+        >>> info = module.get_info("MyModule")
+        """
+        return self._module_info.get(module_name)
+
+    def get_status_summary(self) -> dict[str, Any]:
+        """
+        获取模块的完整状态摘要
+
+        便于WebUI展示所有模块的注册、加载和启用状态。
+
+        :return: 状态摘要字典
+
+        :example:
+        >>> summary = module.get_status_summary()
+        >>> # {
+        >>> #     "modules": {
+        >>> #         "MyModule": {
+        >>> #             "status": "loaded",
+        >>> #             "enabled": True,
+        >>> #             "is_base_module": True
+        >>> #         }
+        >>> #     }
+        >>> # }
+        """
+        modules_summary = {}
+        for name in self._module_classes:
+            module_class = self._module_classes[name]
+            modules_summary[name] = {
+                "status": "loaded" if name in self._loaded_modules else "registered",
+                "enabled": self.is_enabled(name),
+                "is_base_module": issubclass(module_class, BaseModule),
+            }
+        return {"modules": modules_summary}
 
     # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> dict[str, bool]:

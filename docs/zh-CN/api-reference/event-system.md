@@ -172,19 +172,19 @@ async def friend_add_handler(event):
     await event.reply("欢迎添加我为好友！")
 
 # 好友删除
-@notice.on_friend_delete()
-async def friend_delete_handler(event):
+@notice.on_friend_remove()
+async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"好友删除: {user_id}")
 
 # 群成员增加
-@notice.on_group_member_increase()
+@notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"欢迎新成员！")
 
 # 群成员减少
-@notice.on_group_member_decrease()
+@notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"群成员离开: {user_id}")
@@ -341,8 +341,66 @@ await event.reply("这是一条消息")
 # 指定发送方法
 await event.reply("http://example.com/image.jpg", method="Image")
 
+# 带 @用户 和回复消息
+await event.reply("你好", at_users=["user1"], reply_to="msg_id")
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 使用 OneBot12 消息段回复
+from ErisPulse.Core.Event import MessageBuilder
+msg = MessageBuilder().text("Hello").image("url").build()
+await event.reply_ob12(msg)
+
 # 等待回复
 reply = await event.wait_reply(timeout=30)
+```
+
+### 交互方法
+
+```python
+# confirm — 确认对话
+if await event.confirm("确定要执行此操作吗？"):
+    await event.reply("已确认")
+else:
+    await event.reply("已取消")
+
+# 自定义确认词
+if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+
+# choose — 选择菜单
+choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+if choice is not None:
+    await event.reply(f"你选择了：{['红色', '绿色', '蓝色'][choice]}")
+
+# collect — 表单收集
+data = await event.collect([
+    {"key": "name", "prompt": "请输入姓名："},
+    {"key": "age", "prompt": "请输入年龄：",
+     "validator": lambda e: e.get_text().isdigit()},
+])
+if data:
+    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+
+# wait_for — 等待任意事件
+evt = await event.wait_for(
+    event_type="notice",
+    condition=lambda e: e.get_detail_type() == "group_member_increase",
+    timeout=120
+)
+if evt:
+    await event.reply(f"新成员: {evt.get_user_id()}")
+
+# conversation — 多轮对话
+conv = event.conversation(timeout=60)
+await conv.say("欢迎！输入'退出'结束。")
+while conv.is_active:
+    reply = await conv.wait()
+    if reply is None or reply.get_text() == "退出":
+        conv.stop()
+        break
+    await conv.say(f"你说: {reply.get_text()}")
 ```
 
 ### 工具方法
