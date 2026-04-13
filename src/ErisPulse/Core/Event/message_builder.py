@@ -156,31 +156,6 @@ class MessageBuilder:
 
     # ==================== 别名和特殊方法 ====================
 
-    def at(self, user_id: str, user_name: str | None = None) -> "MessageBuilder":
-        """
-        添加 @用户 消息段（mention 的别名）
-
-        :param user_id: 用户 ID
-        :param user_name: 用户名（可选）
-        :return: MessageBuilder 实例
-
-        :example:
-        >>> MessageBuilder().at("123456").text("你好").build()
-        """
-        return self._mention_inst(user_id, user_name)
-
-    @staticmethod
-    def at(user_id: str, user_name: str | None = None) -> list[dict[str, Any]]:
-        """
-        快速构建 @用户 消息段（mention 的别名）
-
-        :param user_id: 用户 ID
-        :param user_name: 用户名（可选）
-        :return: 包含单个消息段的列表
-        """
-        return MessageBuilder._mention_static(user_id, user_name)
-
-    # at 使用 _DualMethod 支持两种调用方式
     at = _DualMethod(_mention_inst, _mention_static)
 
     def custom(self, segment_type: str, data: dict[str, Any]) -> "MessageBuilder":
