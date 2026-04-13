@@ -90,9 +90,22 @@ ErisPulse 适配器系统
 ---
 
 
-##### `async async shutdown()`
+##### `async async shutdown(platforms: str | list[str] | None = None)`
 
-关闭所有适配器
+关闭指定的适配器
+
+:param platforms: 要关闭的平台，可以是单个平台名、平台名列表或None（表示所有平台）
+**异常**: `ValueError` - 当平台未注册时抛出
+
+**示例**:
+```python
+>>> # 关闭所有适配器
+>>> await adapter.shutdown()
+>>> # 关闭单个适配器
+>>> await adapter.shutdown("Platform1")
+>>> # 关闭多个适配器
+>>> await adapter.shutdown(["Platform1", "Platform2"])
+```
 
 ---
 

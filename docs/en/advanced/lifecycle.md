@@ -164,6 +164,7 @@ class Main(BaseModule):
 3.  **Timer Naming**: Timer IDs should be descriptive to avoid conflicts with other components.
 4.  **Asynchronous Processing**: All lifecycle event handlers are asynchronous; do not block the event loop.
 5.  **Error Handling**: Exception handling should be implemented in event handlers to prevent affecting other listeners.
+6.  **Loading Priority**: It is recommended to set high priority for loading strategies and disable lazy loading.
 
 ## Related Documentation
 

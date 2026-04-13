@@ -3240,8 +3240,8 @@ async def friend_add_handler(event):
 - `is_notice()` - 是否为通知事件
 - `is_group_member_increase()` - 群成员增加事件
 - `is_group_member_decrease()` - 群成员减少事件
-- `is_friend_add()` - 好友添加事件
-- `is_friend_delete()` - 好友删除事件
+- `is_friend_add()` - 好友添加事件（匹配 `detail_type == "friend_increase"`）
+- `is_friend_delete()` - 好友删除事件（匹配 `detail_type == "friend_decrease"`）
 
 ### 请求事件方法
 
@@ -3265,9 +3265,19 @@ async def friend_add_handler(event):
   - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
+- `reply_ob12(message)` - 使用 OneBot12 消息段回复
+  - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 构建
+
 #### 转发功能
-- `forward_to_group(group_id)` - 转发到群组
-- `forward_to_user(user_id)` - 转发给用户
+
+> **注意**：转发功能需要通过适配器的 Send DSL 实现，Event 包装类本身不提供直接的转发方法。
+
+```python
+# 转发消息到群组
+adapter = sdk.adapter.get(event.get_platform())
+target_id = event.get_group_id()  # 或指定其他群组ID
+await adapter.Send.To("group", target_id).Text(event.get_text())
+```
 
 ### 等待回复功能
 
@@ -3277,6 +3287,28 @@ async def friend_add_handler(event):
   - `callback`: 回调函数，当收到回复时执行
   - `validator`: 验证函数，用于验证回复是否有效
   - 返回用户回复的 Event 对象，超时返回 None
+
+#### 交互方法
+
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - 确认对话
+  - 返回 `True`（确认）/ `False`（否定）/ `None`（超时）
+  - 内置中英文确认词自动识别，可自定义词集
+
+- `choose(prompt, options, timeout=60.0)` - 选择菜单
+  - `options`: 选项文本列表
+  - 返回选项索引（0-based），超时返回 `None`
+
+- `collect(fields, timeout_per_field=60.0)` - 表单收集
+  - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`
+  - 返回 `{key: value}` 字典，任一字段超时返回 `None`
+
+- `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
+  - `condition`: 过滤函数，返回 `True` 时匹配
+  - 返回匹配的 Event 对象，超时返回 `None`
+
+- `conversation(timeout=60.0)` - 创建多轮对话上下文
+  - 返回 `Conversation` 对象，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - `is_active` 属性表示对话是否活跃
 
 ### 命令信息
 
@@ -6081,11 +6113,11 @@ sdk.storage.set("key", "value")
 # 获取值
 value = sdk.storage.get("key", default_value)
 
+# 获取所有键
+keys = sdk.storage.keys()
+
 # 删除值
 sdk.storage.delete("key")
-
-# 检查键是否存在
-exists = sdk.storage.exists("key")
 ```
 
 ### 事务操作
@@ -6240,7 +6272,13 @@ sdk.adapter.disable("platform_name")
 
 # 启动/关闭适配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 检查适配器是否正在运行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在运行的适配器
+running = sdk.adapter.list_running()
 ```
 
 ## Module 模块
@@ -6285,6 +6323,19 @@ loaded = sdk.module.list_loaded()
 
 # 列出已注册的模块
 registered = sdk.module.list_registered()
+
+# 获取模块信息
+info = sdk.module.get_info("ModuleName")
+
+# 获取模块状态摘要
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# 检查模块是否正在运行（等价于 is_loaded）
+is_running = sdk.module.is_running("ModuleName")
+
+# 列出所有正在运行的模块
+running = sdk.module.list_running()
 ```
 
 ## Lifecycle 模块
@@ -6615,19 +6666,19 @@ async def friend_add_handler(event):
     await event.reply("欢迎添加我为好友！")
 
 # 好友删除
-@notice.on_friend_delete()
-async def friend_delete_handler(event):
+@notice.on_friend_remove()
+async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"好友删除: {user_id}")
 
 # 群成员增加
-@notice.on_group_member_increase()
+@notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"欢迎新成员！")
 
 # 群成员减少
-@notice.on_group_member_decrease()
+@notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"群成员离开: {user_id}")
@@ -6784,8 +6835,66 @@ await event.reply("这是一条消息")
 # 指定发送方法
 await event.reply("http://example.com/image.jpg", method="Image")
 
+# 带 @用户 和回复消息
+await event.reply("你好", at_users=["user1"], reply_to="msg_id")
+
+# @全体成员
+await event.reply("公告", at_all=True)
+
+# 使用 OneBot12 消息段回复
+from ErisPulse.Core.Event import MessageBuilder
+msg = MessageBuilder().text("Hello").image("url").build()
+await event.reply_ob12(msg)
+
 # 等待回复
 reply = await event.wait_reply(timeout=30)
+```
+
+### 交互方法
+
+```python
+# confirm — 确认对话
+if await event.confirm("确定要执行此操作吗？"):
+    await event.reply("已确认")
+else:
+    await event.reply("已取消")
+
+# 自定义确认词
+if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+
+# choose — 选择菜单
+choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+if choice is not None:
+    await event.reply(f"你选择了：{['红色', '绿色', '蓝色'][choice]}")
+
+# collect — 表单收集
+data = await event.collect([
+    {"key": "name", "prompt": "请输入姓名："},
+    {"key": "age", "prompt": "请输入年龄：",
+     "validator": lambda e: e.get_text().isdigit()},
+])
+if data:
+    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+
+# wait_for — 等待任意事件
+evt = await event.wait_for(
+    event_type="notice",
+    condition=lambda e: e.get_detail_type() == "group_member_increase",
+    timeout=120
+)
+if evt:
+    await event.reply(f"新成员: {evt.get_user_id()}")
+
+# conversation — 多轮对话
+conv = event.conversation(timeout=60)
+await conv.say("欢迎！输入'退出'结束。")
+while conv.is_active:
+    reply = await conv.wait()
+    if reply is None or reply.get_text() == "退出":
+        conv.stop()
+        break
+    await conv.say(f"你说: {reply.get_text()}")
 ```
 
 ### 工具方法
@@ -6984,11 +7093,14 @@ from ErisPulse import sdk
 # 通过名称获取适配器
 adapter = sdk.adapter.get("platform_name")
 
-# 通过属性访问
+# 或者也可以直接通过属性访问
 adapter = sdk.adapter.platform_name
 ```
 
-### 适配器事件监听
+### 使用适配器事件监听
+> 一般情况下，更建议使用`Event`模块进行事件的监听/处理;
+>
+> 同时`Event`模块提供了强大的包装器，可以为您的模块开发带来更多便利
 
 ```python
 # 监听 OneBot12 标准事件
@@ -7021,8 +7133,15 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 启动/关闭适配器
+# 以下方法都只展示了传入参数的情况，无参数时代表启动/停止全部已注册适配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 检查适配器是否正在运行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在运行的适配器
+running = sdk.adapter.list_running()
 ```
 
 ## 中间件
@@ -7068,7 +7187,6 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
 ### 查询支持的发送方法
-> 由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在，故从 `2.3.5-dev.3` 开始，新增 `list_sends` 方法来查询支持的所有发送方法。
 
 ```python
 # 列出平台支持的所有发送方法
@@ -7135,10 +7253,12 @@ result = await adapter.call_api(
 ### BaseAdapter 方法
 
 ```python
+from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        self.sdk = sdk
         # 初始化适配器
         pass
     
@@ -7350,12 +7470,18 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 触发时机 | 数据 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自动发现新 Bot | `{platform, bot_id, status}` |
+| `adapter.status.change` | 适配器状态变化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
 # 监听 Bot 上线事件
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot 上线: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# 监听适配器状态变化
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"适配器状态: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > 系统关闭时（`shutdown`），所有 Bot 会自动被标记为 `offline`。
@@ -8891,15 +9017,15 @@ result = sdk.my_module.some_sync_method()
 
 ### 推荐使用懒加载的场景（lazy_load=True）
 
-- ✅ 大多数功能模块
-- ✅ 命令处理模块
-- ✅ 按需加载的扩展功能
+- 被动调用的工具类
+- 被动类模块
 
 ### 推荐禁用懒加载的场景（lazy_load=False）
 
-- ❌ 生命周期事件监听器
-- ❌ 定时任务模块
-- ❌ 需要在应用启动时就初始化的模块
+- 注册触发器的模块（如：命令处理器，消息处理器）
+- 生命周期事件监听器
+- 定时任务模块
+- 需要在应用启动时就初始化的模块
 
 ### 加载优先级
 
@@ -9096,6 +9222,7 @@ class Main(BaseModule):
 3. **计时器命名**：计时器 ID 应具有描述性，避免与其他组件冲突
 4. **异步处理**：所有生命周期事件处理器都是异步的，不要阻塞事件循环
 5. **错误处理**：在事件处理器中应该做好异常处理，避免影响其他监听器
+6. **加载优先性**：加载策略建议设置高优先级并禁用懒加载
 
 ## 相关文档
 
