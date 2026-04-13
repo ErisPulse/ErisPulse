@@ -130,6 +130,42 @@ ErisPulse 路由系统
 ---
 
 
+##### `unregister_all_by_namespace(namespace: str)`
+
+清理指定命名空间下的所有路由
+
+:param namespace: 命名空间（适配器名或模块名）
+:return: 清理统计 {http_count: int, websocket_count: int}
+
+**示例**:
+```python
+>>> router.unregister_all_by_namespace("my_adapter")
+{"http_count": 3, "websocket_count": 1}
+```
+
+---
+
+
+##### `list_namespaces()`
+
+列出所有已注册的命名空间及其路由
+
+:return: {namespace: {"http": [paths], "websocket": [paths]}}
+
+**示例**:
+```python
+>>> router.list_namespaces()
+{
+    "onebot11": {
+        "http": ["/onebot11/webhook", "/onebot11/callback"],
+        "websocket": ["/onebot11/ws"]
+    }
+}
+```
+
+---
+
+
 ##### `get_app()`
 
 获取FastAPI应用实例
