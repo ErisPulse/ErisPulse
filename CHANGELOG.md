@@ -70,25 +70,23 @@
 
 ### 新增
 - @wsu2059q
-  - `adapter.shutdown()` 方法新增指定平台关闭支持：
-    - 新增 `platforms` 参数，支持传入单个平台名、平台名列表或 `None`（表示所有平台）
-    - 支持部分关闭适配器，只关闭指定的平台对应的适配器实例
-    - 关闭时自动处理多平台共享同一适配器实例的情况（使用 `set` 去重）
-    - 只更新被关闭平台下的 Bot 状态为离线，其他平台 Bot 状态保持不变
-    - 仅在所有适配器都关闭时才停止路由器和清理全局事件处理器
-    - 与 `adapter.startup()` 方法保持一致的参数设计和使用体验
+  - `adapter.shutdown()` 支持指定平台关闭（传入 `platforms` 参数），同时新增逐平台状态变化事件
+  - `adapter.startup()` 新增后台任务追踪机制（`_adapter_tasks`），`shutdown()` 时自动取消对应任务
+  - `module` 模块新增 `get_status_summary()` 和 `get_info()` 方法
 
-### 变更
+### 优化
 - @wsu2059q
-  - `adapter.shutdown()` 事件提交增强：
-    - `adapter.stop` 事件新增 `platforms` 字段，记录正在关闭的平台列表
-    - `adapter.stopped` 事件新增 `platforms` 字段，记录已完成关闭的平台列表
-    - 部分关闭时为每个离线的 Bot 单独提交 `adapter.bot.offline` 事件
+  - `adapter.shutdown()` 状态事件与 `startup()` 保持对称
+  - `module.exists()` 同时检查内存注册和配置文件
+  - `module.enable()` 新增模块存在性验证
 
 ### 修复
 - @wsu2059q
-  - 修复 `adapter.shutdown()` 关闭部分平台时错误地清理所有事件处理器的问题
-  - 修复 `adapter.shutdown()` 关闭部分平台时错误地停止路由器的问题
+  - 修复 `Event.confirm()` 确认词集合赋值重复、`MessageBuilder.at` 方法定义被覆盖
+  - 修复 `Event.is_friend_add()`/`is_friend_delete()` 的 `detail_type` 值与 OB12 标准不一致
+  - 修复 `adapter.clear()` 未清理 `_started_instances` 和 `_adapter_tasks`
+  - 修复 `command.wait_reply()` 使用已弃用的 `asyncio.get_event_loop()`
+  - 修复 `Event.collect()` 字段缺少 `key` 时静默跳过、`Event.collect()` 缺少 `key` 时无提示
 
 ---
 
