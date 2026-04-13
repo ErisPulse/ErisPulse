@@ -238,6 +238,12 @@ class ModuleManager(ManagerBase):
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
 
+            # 清理模块注册的路由
+            from .router import router
+            result = router.unregister_all_by_namespace(module_name)
+            if result["http_count"] > 0 or result["websocket_count"] > 0:
+                logger.debug(f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
+
             # 清理缓存
             del self._modules[module_name]
             self._loaded_modules.discard(module_name)
@@ -428,6 +434,14 @@ class ModuleManager(ManagerBase):
         此方法用于反初始化时完全重置模块管理器状态
         {!--< /internal-use >!--}
         """
+        from .router import router
+        
+        # 清理所有模块的路由
+        for module_name in list(self._module_classes.keys()):
+            result = router.unregister_all_by_namespace(module_name)
+            if result["http_count"] > 0 or result["websocket_count"] > 0:
+                logger.debug(f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
+        
         # 清除所有模块实例
         self._modules.clear()
 

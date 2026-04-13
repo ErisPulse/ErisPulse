@@ -174,7 +174,7 @@ sdk.adapter.disable("platform_name")
 
 # 启动/关闭适配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
 ```
 
 ## Module 模块
