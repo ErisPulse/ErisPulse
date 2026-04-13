@@ -206,7 +206,8 @@ class CommandHandler:
                 logger.warning(f"发送提示消息失败: {e}")
 
         # 创建等待 future
-        future = asyncio.get_event_loop().create_future()
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
 
         # 存储等待信息
         wait_key = f"{platform}:{user_id}:{target_id}"
@@ -214,7 +215,7 @@ class CommandHandler:
             "future": future,
             "callback": callback,
             "validator": validator,
-            "timestamp": asyncio.get_event_loop().time(),
+            "timestamp": loop.time(),
         }
 
         try:
