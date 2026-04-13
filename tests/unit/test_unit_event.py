@@ -18,7 +18,7 @@ from ErisPulse.Core.Event import (
     Conversation, CONFIRM_YES_WORDS, CONFIRM_NO_WORDS,
 )
 from ErisPulse.Core.Event.wrapper import Event, _platform_event_methods
-from ErisPulse.Core.Event.base import BaseEventHandler, _EventCopyTracker
+from ErisPulse.Core.Event.base import BaseEventHandler
 from ErisPulse.Core import adapter, config
 
 
@@ -1276,61 +1276,6 @@ class TestParallelEventHandling:
         assert event.is_processed()
 
 
-class TestEventCopyTracker:
-    """事件副本追踪器测试类"""
-
-    def test_lazy_copy_no_modification(self):
-        """测试无修改时不创建副本"""
-        original = Event({"a": 1, "b": 2})
-        tracker = _EventCopyTracker(original)
-
-        assert tracker._event is None
-
-    def test_lazy_copy_on_write(self):
-        """测试写入时创建副本"""
-        original = Event({"a": 1, "b": 2})
-        tracker = _EventCopyTracker(original)
-
-        tracker["c"] = 3
-
-        assert tracker._event is not None
-        assert tracker.get("c") == 3
-
-    def test_no_modification_returns_original(self):
-        """测试无修改时 to_event 返回原始事件"""
-        original = Event({"x": 10})
-        tracker = _EventCopyTracker(original)
-
-        result = tracker.to_event()
-        assert result is original
-
-    def test_was_modified(self):
-        """测试 was_modified 方法"""
-        original = Event({"a": 1})
-        tracker = _EventCopyTracker(original)
-
-        assert tracker.was_modified() is False
-
-        tracker["b"] = 2
-        assert tracker.was_modified() is True
-
-    def test_get_read_from_original(self):
-        """测试读取原始数据"""
-        original = Event({"a": 1, "b": 2})
-        tracker = _EventCopyTracker(original)
-
-        assert tracker.get("a") == 1
-        assert tracker.get("b") == 2
-        assert tracker["a"] == 1
-
-    def test_mark_processed(self):
-        """测试 mark_processed"""
-        original = Event({"type": "message"})
-        tracker = _EventCopyTracker(original)
-
-        tracker.mark_processed()
-        assert tracker.is_processed() is True
-
 
 # ==================== 交互方法测试 ====================
 
@@ -1370,40 +1315,3 @@ class TestInteractiveMethods:
         conv = sample_event.conversation()
         conv.stop()
         assert conv.is_active is False
-
-
-# ==================== 冲突合并测试 ====================
-
-class TestMergeConflict:
-    """冲突合并测试类"""
-
-    def test_merge_message_list(self):
-        """测试消息列表合并"""
-        from ErisPulse.Core.Event.base import _try_merge_values
-
-        result = _try_merge_values("message", [
-            [{"type": "text", "data": {"text": "a"}}],
-            [{"type": "text", "data": {"text": "b"}}]
-        ])
-        assert len(result) == 2
-
-    def test_merge_alt_message(self):
-        """测试 alt_message 合并"""
-        from ErisPulse.Core.Event.base import _try_merge_values
-
-        result = _try_merge_values("alt_message", ["hello", "world"])
-        assert result == "hello world"
-
-    def test_merge_last_wins(self):
-        """测试默认最后值获胜"""
-        from ErisPulse.Core.Event.base import _try_merge_values
-
-        result = _try_merge_values("custom_key", ["first", "second", "third"])
-        assert result == "third"
-
-    def test_merge_single_value(self):
-        """测试单个值直接返回"""
-        from ErisPulse.Core.Event.base import _try_merge_values
-
-        result = _try_merge_values("key", ["only_one"])
-        assert result == "only_one"
