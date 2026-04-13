@@ -2410,8 +2410,8 @@ async def friend_add_handler(event):
 - `is_notice()` - 是否为通知事件
 - `is_group_member_increase()` - 群成员增加事件
 - `is_group_member_decrease()` - 群成员减少事件
-- `is_friend_add()` - 好友添加事件
-- `is_friend_delete()` - 好友删除事件
+- `is_friend_add()` - 好友添加事件（匹配 `detail_type == "friend_increase"`）
+- `is_friend_delete()` - 好友删除事件（匹配 `detail_type == "friend_decrease"`）
 
 ### 请求事件方法
 
@@ -2435,9 +2435,19 @@ async def friend_add_handler(event):
   - 支持 "Text", "Image", "Voice", "Video", "File", "Mention" 等
   - `**kwargs`: 额外参数（如 Mention 方法的 user_id）
 
+- `reply_ob12(message)` - 使用 OneBot12 消息段回复
+  - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 构建
+
 #### 转发功能
-- `forward_to_group(group_id)` - 转发到群组
-- `forward_to_user(user_id)` - 转发给用户
+
+> **注意**：转发功能需要通过适配器的 Send DSL 实现，Event 包装类本身不提供直接的转发方法。
+
+```python
+# 转发消息到群组
+adapter = sdk.adapter.get(event.get_platform())
+target_id = event.get_group_id()  # 或指定其他群组ID
+await adapter.Send.To("group", target_id).Text(event.get_text())
+```
 
 ### 等待回复功能
 
@@ -2447,6 +2457,28 @@ async def friend_add_handler(event):
   - `callback`: 回调函数，当收到回复时执行
   - `validator`: 验证函数，用于验证回复是否有效
   - 返回用户回复的 Event 对象，超时返回 None
+
+#### 交互方法
+
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - 确认对话
+  - 返回 `True`（确认）/ `False`（否定）/ `None`（超时）
+  - 内置中英文确认词自动识别，可自定义词集
+
+- `choose(prompt, options, timeout=60.0)` - 选择菜单
+  - `options`: 选项文本列表
+  - 返回选项索引（0-based），超时返回 `None`
+
+- `collect(fields, timeout_per_field=60.0)` - 表单收集
+  - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`
+  - 返回 `{key: value}` 字典，任一字段超时返回 `None`
+
+- `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
+  - `condition`: 过滤函数，返回 `True` 时匹配
+  - 返回匹配的 Event 对象，超时返回 `None`
+
+- `conversation(timeout=60.0)` - 创建多轮对话上下文
+  - 返回 `Conversation` 对象，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - `is_active` 属性表示对话是否活跃
 
 ### 命令信息
 

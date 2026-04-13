@@ -141,8 +141,8 @@ async def friend_add_handler(event):
 - `is_notice()` - Is it a notice event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
-- `is_friend_add()` - Friend add event
-- `is_friend_delete()` - Friend delete event
+- `is_friend_add()` - Friend add event (matches `detail_type == "friend_increase"`)
+- `is_friend_delete()` - Friend delete event (matches `detail_type == "friend_decrease"`)
 
 ### Request Event Methods
 
@@ -166,9 +166,19 @@ async def friend_add_handler(event):
   - Supports "Text", "Image", "Voice", "Video", "File", "Mention", etc.
   - `**kwargs`: Extra parameters (e.g., user_id for Mention method)
 
+- `reply_ob12(message)` - Reply using OneBot12 message segments
+  - `message`: OneBot12 message segment list or dictionary, can be built using MessageBuilder
+
 #### Forward Functionality
-- `forward_to_group(group_id)` - Forward to group
-- `forward_to_user(user_id)` - Forward to user
+
+> **Note**: The forward functionality needs to be implemented via the Adapter's Send DSL. The Event wrapper class itself does not provide direct forward methods.
+
+```python
+# Forward message to group
+adapter = sdk.adapter.get(event.get_platform())
+target_id = event.get_group_id()  # Or specify other group ID
+await adapter.Send.To("group", target_id).Text(event.get_text())
+```
 
 ### Wait Reply Functionality
 
@@ -178,6 +188,28 @@ async def friend_add_handler(event):
   - `callback`: Callback function, executed when a reply is received
   - `validator`: Validator function, used to validate if the reply is valid
   - Returns the Event object of the user's reply, returns None on timeout
+
+#### Interaction Methods
+
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - Confirmation dialog
+  - Returns `True` (Confirm)/ `False` (Deny)/ `None` (Timeout)
+  - Built-in Chinese/English confirmation word auto-recognition, customizable word set
+
+- `choose(prompt, options, timeout=60.0)` - Selection menu
+  - `options`: List of option text
+  - Returns option index (0-based), returns `None` on timeout
+
+- `collect(fields, timeout_per_field=60.0)` - Form collection
+  - `fields`: List of fields, each item contains `key`, `prompt`, optional `validator`
+  - Returns `{key: value}` dictionary, returns `None` if any field times out
+
+- `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for arbitrary event
+  - `condition`: Filter function, returns `True` when matched
+  - Returns matched Event object, returns `None` on timeout
+
+- `conversation(timeout=60.0)` - Create multi-turn dialog context
+  - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - `is_active` attribute indicates if the dialog is active
 
 ### Command Information
 

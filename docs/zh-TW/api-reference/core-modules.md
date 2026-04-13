@@ -15,11 +15,11 @@ sdk.storage.set("key", "value")
 # 取得值
 value = sdk.storage.get("key", default_value)
 
+# 取得所有鍵
+keys = sdk.storage.keys()
+
 # 刪除值
 sdk.storage.delete("key")
-
-# 檢查鍵是否存在
-exists = sdk.storage.exists("key")
 ```
 
 ### 事務操作
@@ -174,7 +174,13 @@ sdk.adapter.disable("platform_name")
 
 # 啟動/關閉適配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 檢查適配器是否正在執行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在執行的適配器
+running = sdk.adapter.list_running()
 ```
 
 ## Module 模組
@@ -219,6 +225,19 @@ loaded = sdk.module.list_loaded()
 
 # 列出已註冊的模組
 registered = sdk.module.list_registered()
+
+# 取得模組資訊
+info = sdk.module.get_info("ModuleName")
+
+# 取得模組狀態摘要
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# 檢查模組是否正在執行（等價於 is_loaded）
+is_running = sdk.module.is_running("ModuleName")
+
+# 列出所有正在執行的模組
+running = sdk.module.list_running()
 ```
 
 ## Lifecycle 模組
@@ -335,3 +354,38 @@ sdk.router.register_websocket(
     path="/secure_ws",
     handler=manual_websocket_handler,
     auth_handler=auth_handler,
+    auto_accept=False  # 手動控制連線
+)
+
+# 取消路由
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**參數說明：**
+
+- `module_name`: 模組名稱
+- `path`: WebSocket 路徑
+- `handler`: 處理函式
+- `auth_handler`: 可選的認證函式
+- `auto_accept`: 是否自動接受連線（預設 `True`）
+  - `True`: 框架自動呼叫 `websocket.accept()`，handler 無需手動呼叫
+  - `False`: handler 必須自行呼叫 `websocket.accept()` 或 `websocket.close()`
+
+### 路由資訊
+
+```python
+# 取得 FastAPI 應用實例
+app = sdk.router.get_app()
+
+# 新增中介軟體
+@app.middleware("http")
+async def add_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Custom-Header"] = "value"
+    return response
+```
+
+## 相關文件
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API

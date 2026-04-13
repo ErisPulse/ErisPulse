@@ -95,15 +95,15 @@ result = sdk.my_module.some_sync_method()
 
 ### Scenarios Recommended for Lazy Loading (lazy_load=True)
 
-- ✅ Most functional modules
-- ✅ Command processing modules
-- ✅ On-demand extension features
+- Passively called utility classes
+- Passive class modules
 
 ### Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)
 
-- ❌ Lifecycle event listeners
-- ❌ Scheduled task modules
-- ❌ Modules that need to be initialized when the application starts
+- Modules registering triggers (e.g., command handlers, message handlers)
+- Lifecycle event listeners
+- Scheduled task modules
+- Modules that need to be initialized when the application starts
 
 ### Loading Priority
 

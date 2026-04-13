@@ -12,11 +12,14 @@ from ErisPulse import sdk
 # 透過名稱取得介面卡
 adapter = sdk.adapter.get("platform_name")
 
-# 透過屬性存取
+# 或者也可以直接透過屬性存取
 adapter = sdk.adapter.platform_name
 ```
 
-### 介面卡事件監聽
+### 使用介面卡事件監聽
+> 一般情況下，更建議使用 `Event` 模組進行事件的監聽/處理;
+>
+> 同時 `Event` 模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -49,8 +52,15 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 啟動/關閉介面卡
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊介面卡
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 檢查介面卡是否正在執行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在執行的介面卡
+running = sdk.adapter.list_running()
 ```
 
 ## 中介軟體
@@ -96,7 +106,6 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
 ### 查詢支援的發送方法
-> 由於新的標準規範要求使用重寫 `__getattr__` 方法來實現兜底發送機制，導致無法使用 `hasattr` 方法來檢查方法是否存在，故從 `2.3.5-dev.3` 開始，新增 `list_sends` 方法來查詢支援的所有發送方法。
 
 ```python
 # 列出平台支援的所有發送方法
@@ -135,7 +144,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 ## API 呼叫
 
 ### call_api 方法
-> 注意，各個平台的 API 呼叫方式可能不同，請參考對應平台介面卡文件
+> 注意，各個平台的 API 呼叫方式可能不同，請參考對於平台介面卡文件
 > 並不建議直接使用 call_api 方法，建議使用 Send 類別進行訊息發送
 
 ```python
@@ -163,10 +172,12 @@ result = await adapter.call_api(
 ### BaseAdapter 方法
 
 ```python
+from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        self.sdk = sdk
         # 初始化介面卡
         pass
     
@@ -378,12 +389,18 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
+| `adapter.status.change` | 介面卡狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
 # 監聽 Bot 上線事件
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot 上線: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# 監聽介面卡狀態變化
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"介面卡狀態: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > 系統關閉時（`shutdown`），所有 Bot 會自動被標記為 `offline`。
