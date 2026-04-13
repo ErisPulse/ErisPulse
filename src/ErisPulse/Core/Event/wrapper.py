@@ -24,17 +24,51 @@ from .session_type import (
 )
 
 
-CONFIRM_YES_WORDS = frozenset({
-    "是", "yes", "y", "确认", "确定", "好", "好的",
-    "ok", "okay", "true", "对", "嗯", "行",
-    "同意", "没问题", "可以", "当然", "嗯嗯", "是的",
-})
+CONFIRM_YES_WORDS = frozenset(
+    {
+        "是",
+        "yes",
+        "y",
+        "确认",
+        "确定",
+        "好",
+        "好的",
+        "ok",
+        "okay",
+        "true",
+        "对",
+        "嗯",
+        "行",
+        "同意",
+        "没问题",
+        "可以",
+        "当然",
+        "嗯嗯",
+        "是的",
+    }
+)
 
-CONFIRM_NO_WORDS = frozenset({
-    "否", "no", "n", "取消", "不", "不要", "不行",
-    "cancel", "false", "错", "不对", "别",
-    "拒绝", "不可以", "算了", "不需要", "不是",
-})
+CONFIRM_NO_WORDS = frozenset(
+    {
+        "否",
+        "no",
+        "n",
+        "取消",
+        "不",
+        "不要",
+        "不行",
+        "cancel",
+        "false",
+        "错",
+        "不对",
+        "别",
+        "拒绝",
+        "不可以",
+        "算了",
+        "不需要",
+        "不是",
+    }
+)
 
 
 # ==================== 平台事件方法注册系统 ====================
@@ -481,7 +515,7 @@ class Event(dict):
 
         :return: 是否为好友添加事件
         """
-        return self.is_notice() and self.get_detail_type() == "friend_add"
+        return self.is_notice() and self.get_detail_type() == "friend_increase"
 
     def is_friend_delete(self) -> bool:
         """
@@ -489,7 +523,7 @@ class Event(dict):
 
         :return: 是否为好友删除事件
         """
-        return self.is_notice() and self.get_detail_type() == "friend_delete"
+        return self.is_notice() and self.get_detail_type() == "friend_decrease"
 
     # ==================== 请求事件专用方法 ====================
 
@@ -539,16 +573,25 @@ class Event(dict):
         """
         platform = self.get_platform()
         if not platform:
-            raise ValueError("平台信息缺失")
+            raise ValueError(f"事件缺少 'platform' 字段 (event_id={self.get_id()})")
 
         if not (adapter_instance := getattr(adapter, platform, None)):
-            raise ValueError(f"找不到平台 {platform} 的适配器")
+            available = (
+                list(adapter._adapters.keys()) if hasattr(adapter, "_adapters") else []
+            )
+            raise ValueError(
+                f"找不到平台 '{platform}' 的适配器 (可用平台: {available})"
+            )
 
         # 使用会话类型管理模块获取发送类型和目标ID
         send_type, target_id = get_send_type_and_target_id(self, platform)
 
         if not target_id:
-            raise ValueError(f"无法获取目标 ID (platform={platform})")
+            raise ValueError(
+                f"无法获取目标 ID: platform={platform}, "
+                f"detail_type={self.get_detail_type()}, "
+                f"user_id={self.get_user_id()}, group_id={self.get_group_id()}"
+            )
 
         return adapter_instance, send_type, target_id
 
@@ -736,15 +779,14 @@ class Event(dict):
         _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
         _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
         _all = _yes | _no
-        _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
-        _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
-        _all = _yes | _no
 
         def validator(event_dict: dict[str, Any]) -> bool:
             text = event_dict.get("alt_message", "").strip().lower()
             return text in _all
 
-        result = await self.wait_reply(prompt=prompt, timeout=timeout, validator=validator)
+        result = await self.wait_reply(
+            prompt=prompt, timeout=timeout, validator=validator
+        )
 
         if result is None:
             return None
@@ -789,7 +831,9 @@ class Event(dict):
             text = event_dict.get("alt_message", "").strip().lower()
             return text in valid_inputs
 
-        result = await self.wait_reply(prompt=full_prompt, timeout=timeout, validator=validator)
+        result = await self.wait_reply(
+            prompt=full_prompt, timeout=timeout, validator=validator
+        )
 
         if result is None:
             return None
@@ -837,6 +881,9 @@ class Event(dict):
         for field in fields:
             key = field.get("key")
             if not key:
+                from ..logger import logger as _logger
+
+                _logger.warning(f"collect: 字段缺少 'key', 已跳过: {field}")
                 continue
 
             prompt = field.get("prompt", f"请输入 {key}")
@@ -855,7 +902,9 @@ class Event(dict):
                     retries += 1
                     if retries >= max_retries:
                         return None
-                    reply = await self.wait_reply(prompt=retry_prompt, timeout=timeout_per_field)
+                    reply = await self.wait_reply(
+                        prompt=retry_prompt, timeout=timeout_per_field
+                    )
                     if reply is None:
                         return None
 
@@ -902,7 +951,11 @@ class Event(dict):
             try:
                 if condition is None or condition(evt):
                     if not future.done():
-                        raw = event_data if isinstance(event_data, dict) else dict(event_data)
+                        raw = (
+                            event_data
+                            if isinstance(event_data, dict)
+                            else dict(event_data)
+                        )
                         future.set_result(raw)
             except Exception:
                 pass
@@ -1128,7 +1181,9 @@ class Conversation:
         await self._event.reply(content, **kwargs)
         return self
 
-    async def wait(self, prompt: str = None, timeout: float = None) -> Optional["Event"]:
+    async def wait(
+        self, prompt: str = None, timeout: float = None
+    ) -> Optional["Event"]:
         """
         等待用户回复
 
@@ -1172,7 +1227,8 @@ class Conversation:
         if not self._alive:
             return None
         return await self._event.choose(
-            prompt, options,
+            prompt,
+            options,
             timeout=kwargs.pop("timeout", self._timeout),
             **kwargs,
         )

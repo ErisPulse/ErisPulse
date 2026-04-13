@@ -45,6 +45,9 @@ class AdapterManager(ManagerBase):
         self._raw_handlers = defaultdict(list)
         self._sdk = None
 
+        # 后台任务追踪 - {platform: asyncio.Task}
+        self._adapter_tasks: dict[str, asyncio.Task] = {}
+
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
 
@@ -175,8 +178,6 @@ class AdapterManager(ManagerBase):
         scheduled_adapters = set()
 
         for platform in platforms:
-            if platform not in self._adapters:
-                raise ValueError(f"平台 {platform} 未注册")
             adapter = self._adapters[platform]
 
             # 如果该实例已经被启动或已调度，跳过
@@ -185,7 +186,8 @@ class AdapterManager(ManagerBase):
 
             # 加入调度队列
             scheduled_adapters.add(adapter)
-            asyncio.create_task(self._run_adapter(adapter, platform))
+            task = asyncio.create_task(self._run_adapter(adapter, platform))
+            self._adapter_tasks[platform] = task
 
     async def _run_adapter(self, adapter: BaseAdapter, platform: str) -> None:
         """
@@ -234,6 +236,9 @@ class AdapterManager(ManagerBase):
                         data={"platform": platform, "status": "started"},
                     )
 
+                    return
+                except asyncio.CancelledError:
+                    logger.info(f"适配器 {platform} 启动任务被取消")
                     return
                 except Exception as e:
                     retry_count += 1
@@ -294,9 +299,7 @@ class AdapterManager(ManagerBase):
 
         # 提交适配器关闭开始事件
         await lifecycle.submit_event(
-            "adapter.stop", 
-            msg="开始关闭适配器", 
-            data={"platforms": platforms}
+            "adapter.stop", msg="开始关闭适配器", data={"platforms": platforms}
         )
 
         from .router import router
@@ -304,6 +307,13 @@ class AdapterManager(ManagerBase):
         # 需要收集受影响的 adapter 实例（因为多个平台可能共享同一个实例）
         affected_adapters = set()
         bots_to_offline = []  # [(platform, bot_id), ...]
+
+        # 取消目标平台的后台启动任务
+        for platform in platforms:
+            task = self._adapter_tasks.pop(platform, None)
+            if task and not task.done():
+                task.cancel()
+                logger.debug(f"已取消平台 {platform} 的后台启动任务")
 
         for platform in platforms:
             adapter_instance = self._adapters[platform]
@@ -318,17 +328,60 @@ class AdapterManager(ManagerBase):
         # 对每个受影响的 adapter 实例执行 shutdown（如果尚未关闭）
         for adapter_instance in affected_adapters:
             if adapter_instance in self._started_instances:
+                # 找到该实例对应的平台名（用于事件提交）
+                instance_platforms = [
+                    p for p, a in self._adapters.items() if a is adapter_instance
+                ]
+                platform_label = (
+                    instance_platforms[0]
+                    if instance_platforms
+                    else str(id(adapter_instance))
+                )
+
+                # 提交适配器状态变化事件（stopping）
+                for p in instance_platforms:
+                    if p in platforms:
+                        await lifecycle.submit_event(
+                            "adapter.status.change",
+                            msg=f"适配器 {p} 状态变化: stopping",
+                            data={"platform": p, "status": "stopping"},
+                        )
+
                 try:
                     await adapter_instance.shutdown()
                     self._started_instances.remove(adapter_instance)
+
+                    # 提交适配器状态变化事件（stopped）
+                    for p in instance_platforms:
+                        if p in platforms:
+                            await lifecycle.submit_event(
+                                "adapter.status.change",
+                                msg=f"适配器 {p} 状态变化: stopped",
+                                data={"platform": p, "status": "stopped"},
+                            )
                 except Exception as e:
                     logger.error(f"关闭适配器实例 {id(adapter_instance)} 失败: {e}")
+
+                    # 提交适配器状态变化事件（stop_failed）
+                    for p in instance_platforms:
+                        if p in platforms:
+                            await lifecycle.submit_event(
+                                "adapter.status.change",
+                                msg=f"适配器 {p} 状态变化: stop_failed",
+                                data={
+                                    "platform": p,
+                                    "status": "stop_failed",
+                                    "error": str(e),
+                                },
+                            )
 
         # 清理被关闭平台的路由
         for platform in platforms:
             result = router.unregister_all_by_namespace(platform)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
+                logger.debug(
+                    f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                )
 
         # 停止路由器（仅当所有适配器都关闭时）
         if not self._started_instances:
@@ -342,11 +395,7 @@ class AdapterManager(ManagerBase):
                 await lifecycle.submit_event(
                     "adapter.bot.offline",
                     msg=f"Bot {platform}/{bot_id} 离线",
-                    data={
-                        "platform": platform,
-                        "bot_id": bot_id,
-                        "status": "offline"
-                    }
+                    data={"platform": platform, "bot_id": bot_id, "status": "offline"},
                 )
 
         # 如果所有适配器都关闭了，清理事件处理器
@@ -357,9 +406,7 @@ class AdapterManager(ManagerBase):
 
         # 提交适配器关闭完成事件
         await lifecycle.submit_event(
-            "adapter.stopped", 
-            msg="适配器关闭完成",
-            data={"platforms": platforms}
+            "adapter.stopped", msg="适配器关闭完成", data={"platforms": platforms}
         )
 
     def clear(self) -> None:
@@ -371,13 +418,15 @@ class AdapterManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         from .router import router
-        
+
         # 清理所有适配器的路由
         for platform in list(self._adapters.keys()):
             result = router.unregister_all_by_namespace(platform)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}")
-        
+                logger.debug(
+                    f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                )
+
         # 清除所有适配器实例
         self._adapters.clear()
 
@@ -388,6 +437,15 @@ class AdapterManager(ManagerBase):
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
+
+        # 清除已启动实例追踪
+        self._started_instances.clear()
+
+        # 取消并清除所有后台任务
+        for task in self._adapter_tasks.values():
+            if not task.done():
+                task.cancel()
+        self._adapter_tasks.clear()
 
         # 清除Bot状态
         self._bots.clear()
