@@ -39,6 +39,15 @@ class MessageHandler:
 
         return decorator
 
+    def unregister(self, handler: Callable) -> bool:
+        """
+        取消注册的事件处理器
+
+        :param handler: 要取消注册的处理器
+        :return: 是否成功取消注册
+        """
+        return self.handler.unregister(handler)
+
     def remove_message_handler(self, handler: Callable) -> bool:
         """
         取消注册消息事件处理器
