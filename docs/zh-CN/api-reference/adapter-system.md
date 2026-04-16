@@ -12,11 +12,14 @@ from ErisPulse import sdk
 # 通过名称获取适配器
 adapter = sdk.adapter.get("platform_name")
 
-# 通过属性访问
+# 或者也可以直接通过属性访问
 adapter = sdk.adapter.platform_name
 ```
 
-### 适配器事件监听
+### 使用适配器事件监听
+> 一般情况下，更建议使用`Event`模块进行事件的监听/处理;
+>
+> 同时`Event`模块提供了强大的包装器，可以为您的模块开发带来更多便利
 
 ```python
 # 监听 OneBot12 标准事件
@@ -49,8 +52,15 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 启动/关闭适配器
+# 以下方法都只展示了传入参数的情况，无参数时代表启动/停止全部已注册适配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 检查适配器是否正在运行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在运行的适配器
+running = sdk.adapter.list_running()
 ```
 
 ## 中间件
@@ -96,7 +106,6 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
 ### 查询支持的发送方法
-> 由于新的标准规范要求使用重写 `__getattr__` 方法来实现兜底发送机制，导致无法使用 `hasattr` 方法来检查方法是否存在，故从 `2.3.5-dev.3` 开始，新增 `list_sends` 方法来查询支持的所有发送方法。
 
 ```python
 # 列出平台支持的所有发送方法
@@ -163,10 +172,12 @@ result = await adapter.call_api(
 ### BaseAdapter 方法
 
 ```python
+from ErisPulse import sdk
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        self.sdk = sdk
         # 初始化适配器
         pass
     
@@ -378,12 +389,18 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 触发时机 | 数据 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自动发现新 Bot | `{platform, bot_id, status}` |
+| `adapter.status.change` | 适配器状态变化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
 # 监听 Bot 上线事件
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot 上线: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# 监听适配器状态变化
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"适配器状态: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > 系统关闭时（`shutdown`），所有 Bot 会自动被标记为 `offline`。

@@ -55,3 +55,99 @@
 **修复内容**: 在 `Uninitializer` 的清理流程末尾（所有事件提交之后），清空 `lifecycle._handlers`。
 
 **修复日期**: 2026/04/09
+
+---
+
+### [BUG-004] Event.confirm() 确认词集合赋值重复
+
+**问题**: `Event.confirm()` 方法中，`_yes`、`_no`、`_all` 三个变量的赋值代码被完全重复了两次（共6行），导致无意义的重复计算。
+
+**原因**: 代码复制粘贴错误。
+
+**影响版本**: 2.4.0-dev.4
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 删除 `wrapper.py` 中 739-741 行的重复赋值代码。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-005] MessageBuilder.at 方法定义被覆盖（死代码）
+
+**问题**: `MessageBuilder` 类中 `at` 方法被定义了三次：一个实例方法、一个静态方法、最后被 `_DualMethod` 赋值覆盖。前两个定义是永远不会被执行的死代码。
+
+**原因**: 重构为 `_DualMethod` 双模式描述符时，忘记删除旧的手动定义。
+
+**影响版本**: 2.4.0-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 删除 `message_builder.py` 中 159-181 行的两个死 `at` 方法定义，只保留 `_DualMethod` 赋值。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致
+
+**问题**: `Event.is_friend_add()` 检查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 检查 `detail_type == "friend_delete"`，但 OneBot12 标准定义的 `detail_type` 值为 `"friend_increase"` 和 `"friend_decrease"`。与 `notice.py` 中 `on_friend_add`/`on_friend_remove` 装饰器使用的值不一致，导致通过装饰器注册的处理器触发时，对应的 `is_friend_add()`/`is_friend_delete()` 判断方法返回 `False`。
+
+**原因**: `wrapper.py` 中使用了非标准的命名，而 `notice.py` 使用了正确的 OB12 标准命名。
+
+**影响版本**: rq实装至今
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 将 `is_friend_add()` 的匹配值从 `"friend_add"` 改为 `"friend_increase"`，`is_friend_delete()` 从 `"friend_delete"` 改为 `"friend_decrease"`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() 未清理 _started_instances 导致重启后状态不正确
+
+**问题**: `AdapterManager.clear()` 方法清除了 `_adapters`、`_adapter_info`、处理器和 `_bots`，但遗漏了 `_started_instances` 集合。如果适配器正在运行时调用 `clear()`，`_started_instances` 会保留悬空引用，导致重启后状态判断错误。
+
+**原因**: 2.4.0-dev.1 引入 `_started_instances` 时未在 `clear()` 中同步清理。
+
+**影响版本**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 在 `clear()` 方法中添加 `self._started_instances.clear()`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()
+
+**问题**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 创建 future 和获取时间戳，该方法在 Python 3.10+ 中已弃用，在异步上下文中应使用 `asyncio.get_running_loop()`。与同文件中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
+
+**原因**: 开发时使用了旧版 API，后续新增的 `wait_for()` 使用了正确的 API 但未回溯修复旧代码。
+
+**影响版本**: 2.3.0-dev.0
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 将 `command.py` 中两处 `asyncio.get_event_loop()` 替换为 `asyncio.get_running_loop()`。
+
+**修复日期**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() 字段缺少 key 时静默跳过
+
+**问题**: `Event.collect()` 方法在遍历字段列表时，如果某个字段字典缺少 `key`，会静默跳过该字段，不输出任何日志或警告。开发者如果拼写错误（如 `"Key"` 而非 `"key"`），整个字段会被悄悄忽略，导致下游行为难以排查。
+
+**原因**: 缺少输入验证和错误反馈。
+
+**影响版本**: 2.4.0-dev.4
+
+**修复版本**: 2.4.2-dev.1
+
+**修复内容**: 在跳过前添加 `logger.warning()` 记录缺少 `key` 的字段信息。
+
+**修复日期**: 2026/04/13

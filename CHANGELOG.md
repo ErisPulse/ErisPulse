@@ -63,11 +63,38 @@
 
 ---
 
+---
+
+## [2.4.2-dev.0] - 2026/04/13
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `adapter.shutdown()` 支持指定平台关闭（传入 `platforms` 参数），同时新增逐平台状态变化事件
+  - `adapter.startup()` 新增后台任务追踪机制（`_adapter_tasks`），`shutdown()` 时自动取消对应任务
+  - `module` 模块新增 `get_status_summary()` 和 `get_info()` 方法
+
+### 优化
+- @wsu2059q
+  - `adapter.shutdown()` 状态事件与 `startup()` 保持对称
+  - `module.exists()` 同时检查内存注册和配置文件
+  - `module.enable()` 新增模块存在性验证
+
+### 修复
+- @wsu2059q
+  - 修复 `Event.confirm()` 确认词集合赋值重复、`MessageBuilder.at` 方法定义被覆盖
+  - 修复 `Event.is_friend_add()`/`is_friend_delete()` 的 `detail_type` 值与 OB12 标准不一致
+  - 修复 `adapter.clear()` 未清理 `_started_instances` 和 `_adapter_tasks`
+  - 修复 `command.wait_reply()` 使用已弃用的 `asyncio.get_event_loop()`
+  - 修复 `Event.collect()` 字段缺少 `key` 时静默跳过、`Event.collect()` 缺少 `key` 时无提示
+
+---
+
 ## [2.4.1] - 2026/04/10
 > 正式发布
 
 **版本摘要**
-2.4.0 版本是一个重要的功能更新版本，主要新增了 Event 交互方法（confirm/choose/collect/wait_for/conversation）、Bot 状态追踪系统、MessageBuilder 消息构建器、平台事件方法扩展系统；实现了事件处理并行化；标准化了模块/适配器生命周期；全面现代化了类型注解（Python 3.10+）；并修复了重启后多个关键功能问题。
+2.4.1 版本是一个重要的功能更新版本，主要新增了 Event 交互方法（confirm/choose/collect/wait_for/conversation）、Bot 状态追踪系统、MessageBuilder 消息构建器、平台事件方法扩展系统；实现了事件处理并行化；标准化了模块/适配器生命周期；全面现代化了类型注解（Python 3.10+）；并修复了重启后多个关键功能问题。
 
 **升级建议**
 - **建议升级**

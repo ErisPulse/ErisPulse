@@ -15,11 +15,11 @@ sdk.storage.set("key", "value")
 # 获取值
 value = sdk.storage.get("key", default_value)
 
+# 获取所有键
+keys = sdk.storage.keys()
+
 # 删除值
 sdk.storage.delete("key")
-
-# 检查键是否存在
-exists = sdk.storage.exists("key")
 ```
 
 ### 事务操作
@@ -174,7 +174,13 @@ sdk.adapter.disable("platform_name")
 
 # 启动/关闭适配器
 await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown()
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# 检查适配器是否正在运行
+is_running = sdk.adapter.is_running("platform_name")
+
+# 列出所有正在运行的适配器
+running = sdk.adapter.list_running()
 ```
 
 ## Module 模块
@@ -219,6 +225,19 @@ loaded = sdk.module.list_loaded()
 
 # 列出已注册的模块
 registered = sdk.module.list_registered()
+
+# 获取模块信息
+info = sdk.module.get_info("ModuleName")
+
+# 获取模块状态摘要
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# 检查模块是否正在运行（等价于 is_loaded）
+is_running = sdk.module.is_running("ModuleName")
+
+# 列出所有正在运行的模块
+running = sdk.module.list_running()
 ```
 
 ## Lifecycle 模块

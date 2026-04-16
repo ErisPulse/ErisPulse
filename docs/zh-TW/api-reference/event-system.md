@@ -172,19 +172,19 @@ async def friend_add_handler(event):
     await event.reply("歡迎新增我為好友！")
 
 # 好友刪除
-@notice.on_friend_delete()
-async def friend_delete_handler(event):
+@notice.on_friend_remove()
+async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"好友刪除: {user_id}")
 
 # 群成員新增
-@notice.on_group_member_increase()
+@notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"歡迎新成員！")
 
 # 群成員減少
-@notice.on_group_member_decrease()
+@notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"群成員離開: {user_id}")
@@ -306,24 +306,4 @@ user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# 獲取群組資訊
-group_id = event.get_group_id()
-
-# 判斷訊息類型
-is_msg = event.is_message()
-is_private = event.is_private_message()
-is_group = event.is_group_message()
-
-# @訊息相關
-is_at = event.is_at_message()
-has_mention = event.has_mention()
-mentions = event.get_mentions()
-```
-
-### 命令資訊
-
-```python
-# 獲取命令資訊
-cmd_name = event.get_command_name()
-cmd_args = event.get_command_args()
-cmd_raw = event.get
+# �
