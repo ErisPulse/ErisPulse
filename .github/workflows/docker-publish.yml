@@ -1,6 +1,7 @@
 name: 🐳 Docker Hub 发布
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
