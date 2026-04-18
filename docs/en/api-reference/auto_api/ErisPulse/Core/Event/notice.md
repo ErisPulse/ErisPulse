@@ -38,6 +38,16 @@ ErisPulse 通知处理模块
 ---
 
 
+##### `unregister(handler: Callable)`
+
+取消注册的事件处理器
+
+:param handler: 要取消注册的处理器
+:return: 是否成功取消注册
+
+---
+
+
 ##### `remove_notice_handler(handler: Callable)`
 
 取消注册通用通知事件处理器
