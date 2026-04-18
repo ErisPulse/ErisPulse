@@ -1189,7 +1189,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 255,
+        "line": 236,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1357,7 +1357,7 @@
     "7. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 297,
+        "line": 278,
         "level": 3,
         "title": "7. 创建包入口"
       }
@@ -2583,7 +2583,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 304,
+        "line": 285,
         "level": 2,
         "title": "下一步"
       },
