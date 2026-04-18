@@ -21,8 +21,6 @@
 
 ### 扩展开发
 
-1. [CLI 扩展开发](extensions/cli-extensions.md) - 开发自定义 CLI 命令
-
 ## 开发准备
 
 在开始开发之前，请确保你：
@@ -64,20 +62,6 @@
 
 **入门指南：** [适配器开发入门](adapters/getting-started.md)
 
-### CLI 扩展开发
-
-**适用场景：**
-- 扩展命令行工具
-- 提供自定义管理命令
-- 自动化部署流程
-
-**示例：**
-- 部署脚本
-- 数据迁移工具
-- 配置管理工具
-
-**入门指南：** [CLI 扩展开发](extensions/cli-extensions.md)
-
 ## 开发工具
 
 ### 项目模板
@@ -86,7 +70,6 @@ ErisPulse 提供了示例项目作为参考：
 
 - `examples/example-module/` - 模块示例
 - `examples/example-adapter/` - 适配器示例
-- `examples/example-cli-module/` - CLI 扩展示例
 
 ### 开发模式
 
