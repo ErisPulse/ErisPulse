@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 807,
+  "total_keywords": 779,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -120,12 +120,6 @@
         "line": 49,
         "level": 3,
         "title": "1. 建立專案"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 34,
-        "level": 3,
-        "title": "1. 建立專案"
       }
     ],
     "1. 指定類型和 ID": [
@@ -174,14 +168,6 @@
         "line": 92,
         "level": 3,
         "title": "1. 模組開發（推薦）"
-      }
-    ],
-    "1. 清晰的說明資訊": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 307,
-        "level": 3,
-        "title": "1. 清晰的說明資訊"
       }
     ],
     "1. 版本管理": [
@@ -296,14 +282,6 @@
         "title": "2. 參數規範詳解"
       }
     ],
-    "2. 友善的錯誤提示": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 318,
-        "level": 3,
-        "title": "2. 友善的錯誤提示"
-      }
-    ],
     "2. 合理使用延遲載入": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -332,12 +310,6 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 55,
-        "level": 3,
-        "title": "2. 建立 pyproject.toml"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 40,
         "level": 3,
         "title": "2. 建立 pyproject.toml"
       }
@@ -598,14 +570,6 @@
         "title": "3. 完整欄位規範"
       }
     ],
-    "3. 實作指令註冊函式": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 62,
-        "level": 3,
-        "title": "3. 實作指令註冊函式"
-      }
-    ],
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
@@ -692,14 +656,6 @@
         "line": 84,
         "level": 3,
         "title": "3. 資源管理"
-      }
-    ],
-    "3. 進度回饋": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 329,
-        "level": 3,
-        "title": "3. 進度回饋"
       }
     ],
     "3.1 對應原則": [
@@ -796,22 +752,6 @@
         "line": 100,
         "level": 2,
         "title": "4. 實作要求"
-      }
-    ],
-    "4. 建立套件入口": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 106,
-        "level": 3,
-        "title": "4. 建立套件入口"
-      }
-    ],
-    "4. 指令別名": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 341,
-        "level": 3,
-        "title": "4. 指令別名"
       }
     ],
     "4. 擴展欄位說明": [
@@ -1352,38 +1292,6 @@
         "title": "CLI 命令參考"
       }
     ],
-    "CLI 擴充": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 153,
-        "level": 2,
-        "title": "CLI 擴充"
-      }
-    ],
-    "CLI 擴充功能開發": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 67,
-        "level": 3,
-        "title": "CLI 擴充功能開發"
-      }
-    ],
-    "CLI 擴充簡介": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 5,
-        "level": 2,
-        "title": "CLI 擴充簡介"
-      }
-    ],
-    "CLI 擴充開發指南": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 1,
-        "level": 1,
-        "title": "CLI 擴充開發指南"
-      }
-    ],
     "Command 命令模組": [
       {
         "document": "api-reference/event-system.md",
@@ -1756,14 +1664,6 @@
         "title": "Request 請求模組"
       }
     ],
-    "Rich Console 使用": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 113,
-        "level": 2,
-        "title": "Rich Console 使用"
-      }
-    ],
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
@@ -2109,7 +2009,7 @@
     "pyproject.toml 設定": [
       {
         "document": "developer-guide/README.md",
-        "line": 133,
+        "line": 116,
         "level": 3,
         "title": "pyproject.toml 設定"
       }
@@ -2594,28 +2494,12 @@
         "title": "互動訊息類型"
       }
     ],
-    "互斥參數": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 203,
-        "level": 3,
-        "title": "互斥參數"
-      }
-    ],
     "交易使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 140,
         "level": 3,
         "title": "交易使用"
-      }
-    ],
-    "什麼是 CLI 擴充": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 7,
-        "level": 3,
-        "title": "什麼是 CLI 擴充"
       }
     ],
     "什麼是適配器": [
@@ -2762,14 +2646,6 @@
         "title": "使用延遲載入模組"
       }
     ],
-    "使用情境": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 11,
-        "level": 3,
-        "title": "使用情境"
-      }
-    ],
     "使用生命週期事件": [
       {
         "document": "getting-started/common-tasks.md",
@@ -2851,7 +2727,7 @@
     "偵錯技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 99,
+        "line": 82,
         "level": 3,
         "title": "偵錯技巧"
       }
@@ -3025,7 +2901,7 @@
     "列出模組": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 97,
+        "line": 96,
         "level": 3,
         "title": "列出模組"
       }
@@ -3039,7 +2915,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 143,
+        "line": 142,
         "level": 3,
         "title": "初始化專案"
       }
@@ -3099,7 +2975,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 120,
+        "line": 119,
         "level": 3,
         "title": "升級模組"
       }
@@ -3134,14 +3010,6 @@
         "line": 223,
         "level": 3,
         "title": "原始資料"
-      }
-    ],
-    "參數處理": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 169,
-        "level": 2,
-        "title": "參數處理"
       }
     ],
     "參數說明": [
@@ -3391,7 +3259,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 133,
+        "line": 132,
         "level": 3,
         "title": "執行專案"
       }
@@ -3558,14 +3426,6 @@
         "title": "基本資訊"
       }
     ],
-    "基本輸出": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 118,
-        "level": 3,
-        "title": "基本輸出"
-      }
-    ],
     "基礎傳送方法": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3710,28 +3570,12 @@
         "title": "媒體傳送方法"
       }
     ],
-    "子指令": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 214,
-        "level": 3,
-        "title": "子指令"
-      }
-    ],
     "子日誌記錄器": [
       {
         "document": "api-reference/core-modules.md",
         "line": 108,
         "level": 3,
         "title": "子日誌記錄器"
-      }
-    ],
-    "存取 SDK": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 274,
-        "level": 3,
-        "title": "存取 SDK"
       }
     ],
     "存取核心模組": [
@@ -3825,7 +3669,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "安裝模組"
       }
@@ -3913,18 +3757,12 @@
     "專案範本": [
       {
         "document": "developer-guide/README.md",
-        "line": 83,
+        "line": 67,
         "level": 3,
         "title": "專案範本"
       }
     ],
     "專案結構": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 18,
-        "level": 2,
-        "title": "專案結構"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 5,
@@ -4006,14 +3844,6 @@
         "line": 7,
         "level": 2,
         "title": "已修復的 Bug"
-      }
-    ],
-    "布林參數": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 193,
-        "level": 3,
-        "title": "布林參數"
       }
     ],
     "帳戶配置": [
@@ -4103,7 +3933,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 82,
+        "line": 81,
         "level": 2,
         "title": "常見用法"
       }
@@ -4290,14 +4120,6 @@
         "title": "心跳事件"
       }
     ],
-    "必要參數": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 171,
-        "level": 3,
-        "title": "必要參數"
-      }
-    ],
     "必需欄位": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4342,12 +4164,6 @@
         "title": "快速開始"
       },
       {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 32,
-        "level": 2,
-        "title": "快速開始"
-      },
-      {
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
@@ -4373,7 +4189,7 @@
     "打包": [
       {
         "document": "developer-guide/README.md",
-        "line": 119,
+        "line": 102,
         "level": 3,
         "title": "打包"
       }
@@ -4422,14 +4238,6 @@
         "line": 185,
         "level": 3,
         "title": "指令沒有回應？"
-      }
-    ],
-    "指令組織": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 212,
-        "level": 2,
-        "title": "指令組織"
       }
     ],
     "指令裝飾器": [
@@ -4494,14 +4302,6 @@
         "line": 325,
         "level": 2,
         "title": "搜尋功能"
-      }
-    ],
-    "操作設定": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 292,
-        "level": 3,
-        "title": "操作設定"
       }
     ],
     "擴充功能開發": [
@@ -4602,14 +4402,6 @@
         "line": 249,
         "level": 2,
         "title": "效能優化"
-      }
-    ],
-    "整合 ErisPulse API": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 272,
-        "level": 2,
-        "title": "整合 ErisPulse API"
       }
     ],
     "文件內容說明": [
@@ -4862,12 +4654,6 @@
       {
         "document": "advanced/router.md",
         "line": 157,
-        "level": 2,
-        "title": "最佳實務"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 305,
         "level": 2,
         "title": "最佳實務"
       }
@@ -5307,7 +5093,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 39,
+        "line": 37,
         "level": 3,
         "title": "模組開發"
       }
@@ -5588,18 +5374,10 @@
         "title": "用戶使用指南"
       }
     ],
-    "異常捕獲": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 237,
-        "level": 3,
-        "title": "異常捕獲"
-      }
-    ],
     "發布到 PyPI": [
       {
         "document": "developer-guide/README.md",
-        "line": 152,
+        "line": 135,
         "level": 3,
         "title": "發布到 PyPI"
       }
@@ -5607,7 +5385,7 @@
     "發布您的模組": [
       {
         "document": "developer-guide/README.md",
-        "line": 117,
+        "line": 100,
         "level": 2,
         "title": "發布您的模組"
       }
@@ -5731,19 +5509,13 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 162,
+        "line": 145,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 259,
-        "level": 2,
-        "title": "相關文件"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 348,
         "level": 2,
         "title": "相關文件"
       },
@@ -6084,14 +5856,6 @@
         "title": "虛擬環境"
       }
     ],
-    "表格輸出": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 138,
-        "level": 3,
-        "title": "表格輸出"
-      }
-    ],
     "解除安裝模組": [
       {
         "document": "user-guide/README.md",
@@ -6101,7 +5865,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "解除安裝模組"
       }
@@ -6532,14 +6296,6 @@
         "title": "載入策略"
       }
     ],
-    "輸入驗證": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 257,
-        "level": 3,
-        "title": "輸入驗證"
-      }
-    ],
     "轉換器範例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6670,14 +6426,6 @@
         "title": "連線管理"
       }
     ],
-    "進度條": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 155,
-        "level": 3,
-        "title": "進度條"
-      }
-    ],
     "進階主題": [
       {
         "document": "README.md",
@@ -6793,7 +6541,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 53,
+        "line": 51,
         "level": 3,
         "title": "適配器開發"
       }
@@ -6836,14 +6584,6 @@
         "line": 405,
         "level": 3,
         "title": "選擇選單"
-      }
-    ],
-    "選用參數": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 181,
-        "level": 3,
-        "title": "選用參數"
       }
     ],
     "部署": [
@@ -6917,12 +6657,6 @@
       }
     ],
     "錯誤處理": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 235,
-        "level": 2,
-        "title": "錯誤處理"
-      },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 146,
@@ -7017,7 +6751,7 @@
     "開發工具": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 65,
         "level": 2,
         "title": "開發工具"
       }
@@ -7041,7 +6775,7 @@
     "開發模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 91,
+        "line": 74,
         "level": 3,
         "title": "開發模式"
       },
@@ -7055,7 +6789,7 @@
     "開發準備": [
       {
         "document": "developer-guide/README.md",
-        "line": 26,
+        "line": 24,
         "level": 2,
         "title": "開發準備"
       }
@@ -7085,7 +6819,7 @@
     "開發類型選擇": [
       {
         "document": "developer-guide/README.md",
-        "line": 35,
+        "line": 33,
         "level": 2,
         "title": "開發類型選擇"
       }

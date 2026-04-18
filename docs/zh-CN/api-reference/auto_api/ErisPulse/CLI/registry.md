@@ -23,7 +23,6 @@ CLI 命令注册器
 > **提示**
 > 1. 使用单例模式确保全局唯一
 > 2. 支持命令的动态注册和查找
-> 3. 支持第三方命令的兼容
 
 :ivar _commands: 已注册的命令字典 {name: Command}
 
@@ -48,16 +47,6 @@ CLI 命令注册器
 ---
 
 
-##### `register_external(name: str, command: Command)`
-
-注册第三方命令
-
-:param name: 命令名称
-:param command: 命令实例
-
----
-
-
 ##### `get(name: str)`
 
 获取命令
@@ -70,7 +59,7 @@ CLI 命令注册器
 
 ##### `get_all()`
 
-获取所有命令（包括外部命令）
+获取所有命令
 
 :return: 所有命令列表
 
@@ -95,28 +84,12 @@ CLI 命令注册器
 ---
 
 
-##### `list_external()`
-
-列出外部命令名称
-
-:return: 外部命令名称列表
-
----
-
-
 ##### `exists(name: str)`
 
 检查命令是否存在
 
 :param name: 命令名称
 :return: 命令是否存在
-
----
-
-
-##### `clear_external()`
-
-清空外部命令
 
 ---
 
