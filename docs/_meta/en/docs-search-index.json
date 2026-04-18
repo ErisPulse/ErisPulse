@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 888,
+  "total_keywords": 860,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -56,14 +56,6 @@
         "title": "1. Categorized Exception Handling"
       }
     ],
-    "1. Clear Help Information": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 307,
-        "level": 3,
-        "title": "1. Clear Help Information"
-      }
-    ],
     "1. Core Concepts": [
       {
         "document": "standards/session-types.md",
@@ -84,12 +76,6 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 49,
-        "level": 3,
-        "title": "1. Create Project"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 34,
         "level": 3,
         "title": "1. Create Project"
       }
@@ -468,12 +454,6 @@
         "line": 55,
         "level": 3,
         "title": "2. Create pyproject.toml"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. Create pyproject.toml"
       }
     ],
     "2. Embedded Development": [
@@ -506,14 +486,6 @@
         "line": 112,
         "level": 4,
         "title": "2. Event System"
-      }
-    ],
-    "2. Friendly Error Messages": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 318,
-        "level": 3,
-        "title": "2. Friendly Error Messages"
       }
     ],
     "2. Input Validation": [
@@ -858,14 +830,6 @@
         "title": "3. Heartbeat Keep-Alive and Meta Heartbeat"
       }
     ],
-    "3. Implement Command Registration Function": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 62,
-        "level": 3,
-        "title": "3. Implement Command Registration Function"
-      }
-    ],
     "3. Improve Code Quality": [
       {
         "document": "standards/README.md",
@@ -904,14 +868,6 @@
         "line": 176,
         "level": 2,
         "title": "3. Platform-Specific Method Naming"
-      }
-    ],
-    "3. Progress Feedback": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 329,
-        "level": 3,
-        "title": "3. Progress Feedback"
       }
     ],
     "3. Resource Management": [
@@ -1018,28 +974,12 @@
         "title": "4. Combine Usage"
       }
     ],
-    "4. Command Aliases": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 341,
-        "level": 3,
-        "title": "4. Command Aliases"
-      }
-    ],
     "4. Core Modules": [
       {
         "document": "getting-started/README.md",
         "line": 129,
         "level": 4,
         "title": "4. Core Modules"
-      }
-    ],
-    "4. Create Package Entry": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 106,
-        "level": 3,
-        "title": "4. Create Package Entry"
       }
     ],
     "4. Custom Type Extensions": [
@@ -1642,14 +1582,6 @@
         "title": "Accessing Core Modules"
       }
     ],
-    "Accessing SDK": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 274,
-        "level": 3,
-        "title": "Accessing SDK"
-      }
-    ],
     "Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -1747,7 +1679,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 53,
+        "line": 51,
         "level": 3,
         "title": "Adapter Development"
       }
@@ -1942,14 +1874,6 @@
         "line": 60,
         "level": 3,
         "title": "Architecture Overview"
-      }
-    ],
-    "Argument Handling": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 169,
-        "level": 2,
-        "title": "Argument Handling"
       }
     ],
     "Async Processing Mechanism": [
@@ -2190,14 +2114,6 @@
         "title": "Basic Operations"
       }
     ],
-    "Basic Output": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 118,
-        "level": 3,
-        "title": "Basic Output"
-      }
-    ],
     "Basic Reply": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -2318,12 +2234,6 @@
         "title": "Best Practices"
       },
       {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 305,
-        "level": 2,
-        "title": "Best Practices"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 333,
         "level": 2,
@@ -2350,14 +2260,6 @@
         "line": 168,
         "level": 3,
         "title": "Blacklist Filtering"
-      }
-    ],
-    "Boolean Arguments": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 193,
-        "level": 3,
-        "title": "Boolean Arguments"
       }
     ],
     "Bot Identification in Events": [
@@ -2474,30 +2376,6 @@
         "title": "CLI Command Reference"
       }
     ],
-    "CLI Extension Development": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 67,
-        "level": 3,
-        "title": "CLI Extension Development"
-      }
-    ],
-    "CLI Extension Development Guide": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 1,
-        "level": 1,
-        "title": "CLI Extension Development Guide"
-      }
-    ],
-    "CLI Extensions": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 153,
-        "level": 2,
-        "title": "CLI Extensions"
-      }
-    ],
     "Chain Calling": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -2611,7 +2489,7 @@
     "Choosing a Development Type": [
       {
         "document": "developer-guide/README.md",
-        "line": 35,
+        "line": 33,
         "level": 2,
         "title": "Choosing a Development Type"
       }
@@ -2756,14 +2634,6 @@
         "title": "Command Module"
       }
     ],
-    "Command Organization": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 212,
-        "level": 2,
-        "title": "Command Organization"
-      }
-    ],
     "Command Permissions": [
       {
         "document": "getting-started/event-handling.md",
@@ -2853,7 +2723,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 82,
+        "line": 81,
         "level": 2,
         "title": "Common Usage"
       }
@@ -3291,7 +3161,7 @@
     "Debugging Tips": [
       {
         "document": "developer-guide/README.md",
-        "line": 99,
+        "line": 82,
         "level": 3,
         "title": "Debugging Tips"
       }
@@ -3351,7 +3221,7 @@
     "Development Mode": [
       {
         "document": "developer-guide/README.md",
-        "line": 91,
+        "line": 74,
         "level": 3,
         "title": "Development Mode"
       },
@@ -3373,7 +3243,7 @@
     "Development Tools": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 65,
         "level": 2,
         "title": "Development Tools"
       }
@@ -3642,12 +3512,6 @@
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 572,
-        "level": 2,
-        "title": "Error Handling"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 235,
         "level": 2,
         "title": "Error Handling"
       },
@@ -3942,14 +3806,6 @@
         "line": 197,
         "level": 3,
         "title": "Exception Catching"
-      }
-    ],
-    "Exception Handling": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 237,
-        "level": 3,
-        "title": "Exception Handling"
       }
     ],
     "Execution Control Commands": [
@@ -4421,17 +4277,9 @@
     "Initializing Projects": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 143,
+        "line": 142,
         "level": 3,
         "title": "Initializing Projects"
-      }
-    ],
-    "Input Validation": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 257,
-        "level": 3,
-        "title": "Input Validation"
       }
     ],
     "Install ErisPulse": [
@@ -4545,17 +4393,9 @@
     "Installing Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "Installing Modules"
-      }
-    ],
-    "Integrating ErisPulse API": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 272,
-        "level": 2,
-        "title": "Integrating ErisPulse API"
       }
     ],
     "Inter-module Communication": [
@@ -4630,14 +4470,6 @@
         "line": 42,
         "level": 3,
         "title": "Interactive Message Types"
-      }
-    ],
-    "Introduction to CLI Extensions": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 5,
-        "level": 2,
-        "title": "Introduction to CLI Extensions"
       }
     ],
     "Introduction to Module Development": [
@@ -4817,7 +4649,7 @@
     "Listing Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 97,
+        "line": 96,
         "level": 3,
         "title": "Listing Modules"
       }
@@ -4950,14 +4782,6 @@
         "line": 306,
         "level": 3,
         "title": "Management Interface"
-      }
-    ],
-    "Managing Configuration": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 292,
-        "level": 3,
-        "title": "Managing Configuration"
       }
     ],
     "Manual Project Creation": [
@@ -5325,7 +5149,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 39,
+        "line": 37,
         "level": 3,
         "title": "Module Development"
       }
@@ -5472,14 +5296,6 @@
         "line": 465,
         "level": 3,
         "title": "Multi-round Conversation"
-      }
-    ],
-    "Mutually Exclusive Arguments": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 203,
-        "level": 3,
-        "title": "Mutually Exclusive Arguments"
       }
     ],
     "Naming Conventions": [
@@ -5736,14 +5552,6 @@
         "title": "Operating Mode"
       }
     ],
-    "Optional Arguments": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 181,
-        "level": 3,
-        "title": "Optional Arguments"
-      }
-    ],
     "Other Terms": [
       {
         "document": "terminology.md",
@@ -5777,7 +5585,7 @@
     "Packaging": [
       {
         "document": "developer-guide/README.md",
-        "line": 119,
+        "line": 102,
         "level": 3,
         "title": "Packaging"
       }
@@ -5953,7 +5761,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 26,
+        "line": 24,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -5964,14 +5772,6 @@
         "line": 145,
         "level": 4,
         "title": "Proactively Sending Meta Events"
-      }
-    ],
-    "Progress Bar": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 155,
-        "level": 3,
-        "title": "Progress Bar"
       }
     ],
     "Project Directory Structure": [
@@ -6000,12 +5800,6 @@
     ],
     "Project Structure": [
       {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 18,
-        "level": 2,
-        "title": "Project Structure"
-      },
-      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 5,
         "level": 2,
@@ -6021,7 +5815,7 @@
     "Project Templates": [
       {
         "document": "developer-guide/README.md",
-        "line": 83,
+        "line": 67,
         "level": 3,
         "title": "Project Templates"
       }
@@ -6045,7 +5839,7 @@
     "Publishing Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 117,
+        "line": 100,
         "level": 2,
         "title": "Publishing Your Module"
       }
@@ -6053,7 +5847,7 @@
     "Publishing to PyPI": [
       {
         "document": "developer-guide/README.md",
-        "line": 152,
+        "line": 135,
         "level": 3,
         "title": "Publishing to PyPI"
       }
@@ -6206,12 +6000,6 @@
         "title": "Quick Start"
       },
       {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 32,
-        "level": 2,
-        "title": "Quick Start"
-      },
-      {
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
@@ -6345,7 +6133,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 162,
+        "line": 145,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6364,12 +6152,6 @@
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 259,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 348,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6528,14 +6310,6 @@
         "title": "Request Type Judgment"
       }
     ],
-    "Required Arguments": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 171,
-        "level": 3,
-        "title": "Required Arguments"
-      }
-    ],
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6663,7 +6437,7 @@
     "Running Projects": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 133,
+        "line": 132,
         "level": 3,
         "title": "Running Projects"
       }
@@ -7204,14 +6978,6 @@
         "title": "Style Guide"
       }
     ],
-    "Subcommands": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 214,
-        "level": 3,
-        "title": "Subcommands"
-      }
-    ],
     "Submitting Lifecycle Events": [
       {
         "document": "advanced/lifecycle.md",
@@ -7298,14 +7064,6 @@
         "line": 130,
         "level": 3,
         "title": "TOML"
-      }
-    ],
-    "Table Output": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 138,
-        "level": 3,
-        "title": "Table Output"
       }
     ],
     "Table of Contents": [
@@ -7463,7 +7221,7 @@
     "Uninstalling Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "Uninstalling Modules"
       }
@@ -7511,7 +7269,7 @@
     "Upgrading Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 120,
+        "line": 119,
         "level": 3,
         "title": "Upgrading Modules"
       }
@@ -7528,14 +7286,6 @@
         "line": 49,
         "level": 2,
         "title": "Usage Examples"
-      }
-    ],
-    "Use Cases": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 11,
-        "level": 3,
-        "title": "Use Cases"
       }
     ],
     "Use Storage System": [
@@ -7622,14 +7372,6 @@
         "line": 95,
         "level": 3,
         "title": "Using Method"
-      }
-    ],
-    "Using Rich Console": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 113,
-        "level": 2,
-        "title": "Using Rich Console"
       }
     ],
     "Using the Event System": [
@@ -7770,14 +7512,6 @@
         "line": 317,
         "level": 3,
         "title": "WebSocket Routes"
-      }
-    ],
-    "What is a CLI Extension": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 7,
-        "level": 3,
-        "title": "What is a CLI Extension"
       }
     ],
     "What is an Adapter": [
@@ -8023,7 +7757,7 @@
     "pyproject.toml Configuration": [
       {
         "document": "developer-guide/README.md",
-        "line": 133,
+        "line": 116,
         "level": 3,
         "title": "pyproject.toml Configuration"
       },

@@ -18,7 +18,7 @@ ErisPulse 命令行接口主入口
 
 ErisPulse 命令行接口主类
 
-提供完整的命令行交互功能，支持动态加载第三方命令
+提供完整的命令行交互功能
 
 
 #### 方法列表
@@ -57,13 +57,6 @@ ErisPulse 命令行接口主类
 ---
 
 
-##### `_load_external_commands()`
-
-加载第三方 CLI 命令
-
----
-
-
 ##### `_print_version()`
 
 打印版本信息
@@ -77,15 +70,6 @@ ErisPulse 命令行接口主类
 
 **异常**: `KeyboardInterrupt` - 用户中断时抛出
 **异常**: `Exception` - 命令执行失败时抛出
-
----
-
-
-##### `_execute_external_command(args)`
-
-执行第三方命令
-
-:param args: 解析后的参数
 
 ---
 

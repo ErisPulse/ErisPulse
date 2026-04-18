@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 876,
+  "total_keywords": 849,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -92,12 +92,6 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 49,
-        "level": 3,
-        "title": "1. 创建项目"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 34,
         "level": 3,
         "title": "1. 创建项目"
       }
@@ -218,14 +212,6 @@
         "line": 92,
         "level": 3,
         "title": "1. 模块开发（推荐）"
-      }
-    ],
-    "1. 清晰的帮助信息": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 307,
-        "level": 3,
-        "title": "1. 清晰的帮助信息"
       }
     ],
     "1. 版本管理": [
@@ -434,12 +420,6 @@
         "line": 55,
         "level": 3,
         "title": "2. 创建 pyproject.toml"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 40,
-        "level": 3,
-        "title": "2. 创建 pyproject.toml"
       }
     ],
     "2. 参数规范详解": [
@@ -448,14 +428,6 @@
         "line": 57,
         "level": 2,
         "title": "2. 参数规范详解"
-      }
-    ],
-    "2. 友好的错误提示": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 318,
-        "level": 3,
-        "title": "2. 友好的错误提示"
       }
     ],
     "2. 发送 Meta 事件": [
@@ -806,14 +778,6 @@
         "title": "3. 完整字段规范"
       }
     ],
-    "3. 实现命令注册函数": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 62,
-        "level": 3,
-        "title": "3. 实现命令注册函数"
-      }
-    ],
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
@@ -910,14 +874,6 @@
         "title": "3. 资源管理"
       }
     ],
-    "3. 进度反馈": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 329,
-        "level": 3,
-        "title": "3. 进度反馈"
-      }
-    ],
     "3. 适配器": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -1006,28 +962,12 @@
         "title": "4. `self` 字段自动发现"
       }
     ],
-    "4. 创建包入口": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 106,
-        "level": 3,
-        "title": "4. 创建包入口"
-      }
-    ],
     "4. 参数命名规范": [
       {
         "document": "standards/send-method-spec.md",
         "line": 207,
         "level": 2,
         "title": "4. 参数命名规范"
-      }
-    ],
-    "4. 命令别名": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 341,
-        "level": 3,
-        "title": "4. 命令别名"
       }
     ],
     "4. 实现必需方法": [
@@ -1760,38 +1700,6 @@
         "title": "CLI 命令参考"
       }
     ],
-    "CLI 扩展": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 153,
-        "level": 2,
-        "title": "CLI 扩展"
-      }
-    ],
-    "CLI 扩展开发": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 67,
-        "level": 3,
-        "title": "CLI 扩展开发"
-      }
-    ],
-    "CLI 扩展开发指南": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 1,
-        "level": 1,
-        "title": "CLI 扩展开发指南"
-      }
-    ],
-    "CLI 扩展简介": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 5,
-        "level": 2,
-        "title": "CLI 扩展简介"
-      }
-    ],
     "Command 命令模块": [
       {
         "document": "api-reference/event-system.md",
@@ -2204,14 +2112,6 @@
         "line": 193,
         "level": 2,
         "title": "Request 请求模块"
-      }
-    ],
-    "Rich Console 使用": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 113,
-        "level": 2,
-        "title": "Rich Console 使用"
       }
     ],
     "Router 模块": [
@@ -2631,7 +2531,7 @@
     "pyproject.toml 配置": [
       {
         "document": "developer-guide/README.md",
-        "line": 133,
+        "line": 116,
         "level": 3,
         "title": "pyproject.toml 配置"
       },
@@ -3096,14 +2996,6 @@
         "title": "云湖平台特性文档"
       }
     ],
-    "互斥参数": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 203,
-        "level": 3,
-        "title": "互斥参数"
-      }
-    ],
     "交互式初始化": [
       {
         "document": "user-guide/installation.md",
@@ -3168,14 +3060,6 @@
         "line": 42,
         "level": 3,
         "title": "交互消息类型"
-      }
-    ],
-    "什么是 CLI 扩展": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 7,
-        "level": 3,
-        "title": "什么是 CLI 扩展"
       }
     ],
     "什么是适配器": [
@@ -3280,14 +3164,6 @@
         "line": 80,
         "level": 3,
         "title": "使用事件系统"
-      }
-    ],
-    "使用场景": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 11,
-        "level": 3,
-        "title": "使用场景"
       }
     ],
     "使用存储系统": [
@@ -3517,7 +3393,7 @@
     "列出模块": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 97,
+        "line": 96,
         "level": 3,
         "title": "列出模块"
       }
@@ -3585,7 +3461,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 143,
+        "line": 142,
         "level": 3,
         "title": "初始化项目"
       }
@@ -3639,7 +3515,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 120,
+        "line": 119,
         "level": 3,
         "title": "升级模块"
       }
@@ -3669,7 +3545,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "卸载模块"
       }
@@ -3704,14 +3580,6 @@
         "line": 214,
         "level": 2,
         "title": "参与贡献"
-      }
-    ],
-    "参数处理": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 169,
-        "level": 2,
-        "title": "参数处理"
       }
     ],
     "参数说明": [
@@ -3757,7 +3625,7 @@
     "发布你的模块": [
       {
         "document": "developer-guide/README.md",
-        "line": 117,
+        "line": 100,
         "level": 2,
         "title": "发布你的模块"
       }
@@ -3765,7 +3633,7 @@
     "发布到 PyPI": [
       {
         "document": "developer-guide/README.md",
-        "line": 152,
+        "line": 135,
         "level": 3,
         "title": "发布到 PyPI"
       }
@@ -3842,14 +3710,6 @@
         "line": 312,
         "level": 3,
         "title": "可用属性"
-      }
-    ],
-    "可选参数": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 181,
-        "level": 3,
-        "title": "可选参数"
       }
     ],
     "同步初始化": [
@@ -3982,14 +3842,6 @@
         "line": 105,
         "level": 3,
         "title": "命令组"
-      }
-    ],
-    "命令组织": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 212,
-        "level": 2,
-        "title": "命令组织"
       }
     ],
     "命令装饰器": [
@@ -4212,14 +4064,6 @@
         "title": "基本调用方式"
       }
     ],
-    "基本输出": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 118,
-        "level": 3,
-        "title": "基本输出"
-      }
-    ],
     "基本配置": [
       {
         "document": "platform-guide/telegram.md",
@@ -4392,14 +4236,6 @@
         "title": "媒体发送方法"
       }
     ],
-    "子命令": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 214,
-        "level": 3,
-        "title": "子命令"
-      }
-    ],
     "子日志记录器": [
       {
         "document": "api-reference/core-modules.md",
@@ -4523,7 +4359,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "安装模块"
       }
@@ -4636,14 +4472,6 @@
         "title": "已修复的 Bug"
       }
     ],
-    "布尔参数": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 193,
-        "level": 3,
-        "title": "布尔参数"
-      }
-    ],
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
@@ -4687,7 +4515,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 82,
+        "line": 81,
         "level": 2,
         "title": "常见用法"
       }
@@ -4837,7 +4665,7 @@
     "开发准备": [
       {
         "document": "developer-guide/README.md",
-        "line": 26,
+        "line": 24,
         "level": 2,
         "title": "开发准备"
       }
@@ -4845,7 +4673,7 @@
     "开发工具": [
       {
         "document": "developer-guide/README.md",
-        "line": 81,
+        "line": 65,
         "level": 2,
         "title": "开发工具"
       }
@@ -4869,7 +4697,7 @@
     "开发模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 91,
+        "line": 74,
         "level": 3,
         "title": "开发模式"
       },
@@ -4891,7 +4719,7 @@
     "开发类型选择": [
       {
         "document": "developer-guide/README.md",
-        "line": 35,
+        "line": 33,
         "level": 2,
         "title": "开发类型选择"
       }
@@ -4919,12 +4747,6 @@
       }
     ],
     "异常捕获": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 237,
-        "level": 3,
-        "title": "异常捕获"
-      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 197,
@@ -4992,14 +4814,6 @@
         "title": "心跳事件"
       }
     ],
-    "必需参数": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 171,
-        "level": 3,
-        "title": "必需参数"
-      }
-    ],
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5040,12 +4854,6 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
-        "level": 2,
-        "title": "快速开始"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 32,
         "level": 2,
         "title": "快速开始"
       },
@@ -5123,7 +4931,7 @@
     "打包": [
       {
         "document": "developer-guide/README.md",
-        "line": 119,
+        "line": 102,
         "level": 3,
         "title": "打包"
       }
@@ -5260,14 +5068,6 @@
         "line": 325,
         "level": 2,
         "title": "搜索功能"
-      }
-    ],
-    "操作配置": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 292,
-        "level": 3,
-        "title": "操作配置"
       }
     ],
     "支持的消息发送类型": [
@@ -5570,12 +5370,6 @@
       {
         "document": "advanced/router.md",
         "line": 157,
-        "level": 2,
-        "title": "最佳实践"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 305,
         "level": 2,
         "title": "最佳实践"
       },
@@ -6011,7 +5805,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 39,
+        "line": 37,
         "level": 3,
         "title": "模块开发"
       }
@@ -6677,7 +6471,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 162,
+        "line": 145,
         "level": 2,
         "title": "相关文档"
       },
@@ -6696,12 +6490,6 @@
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 259,
-        "level": 2,
-        "title": "相关文档"
-      },
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 348,
         "level": 2,
         "title": "相关文档"
       },
@@ -7086,14 +6874,6 @@
         "title": "虚拟环境"
       }
     ],
-    "表格输出": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 138,
-        "level": 3,
-        "title": "表格输出"
-      }
-    ],
     "计时器": [
       {
         "document": "api-reference/core-modules.md",
@@ -7116,14 +6896,6 @@
         "line": 105,
         "level": 2,
         "title": "认证机制"
-      }
-    ],
-    "访问 SDK": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 274,
-        "level": 3,
-        "title": "访问 SDK"
       }
     ],
     "访问核心模块": [
@@ -7211,7 +6983,7 @@
     "调试技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 99,
+        "line": 82,
         "level": 3,
         "title": "调试技巧"
       }
@@ -7324,14 +7096,6 @@
         "title": "转换流程"
       }
     ],
-    "输入验证": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 257,
-        "level": 3,
-        "title": "输入验证"
-      }
-    ],
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -7365,7 +7129,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 133,
+        "line": 132,
         "level": 3,
         "title": "运行项目"
       }
@@ -7384,14 +7148,6 @@
         "line": 521,
         "level": 4,
         "title": "返回值规范"
-      }
-    ],
-    "进度条": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 155,
-        "level": 3,
-        "title": "进度条"
       }
     ],
     "连接事件": [
@@ -7493,7 +7249,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 53,
+        "line": 51,
         "level": 3,
         "title": "适配器开发"
       }
@@ -7932,12 +7688,6 @@
         "title": "错误处理"
       },
       {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 235,
-        "level": 2,
-        "title": "错误处理"
-      },
-      {
         "document": "developer-guide/modules/best-practices.md",
         "line": 146,
         "level": 2,
@@ -7962,14 +7712,6 @@
         "title": "错误处理"
       }
     ],
-    "集成 ErisPulse API": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 272,
-        "level": 2,
-        "title": "集成 ErisPulse API"
-      }
-    ],
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
@@ -7989,7 +7731,7 @@
     "项目模板": [
       {
         "document": "developer-guide/README.md",
-        "line": 83,
+        "line": 67,
         "level": 3,
         "title": "项目模板"
       }
@@ -8011,12 +7753,6 @@
       }
     ],
     "项目结构": [
-      {
-        "document": "developer-guide/extensions/cli-extensions.md",
-        "line": 18,
-        "level": 2,
-        "title": "项目结构"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 5,
