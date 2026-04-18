@@ -25,7 +25,7 @@ class ListRemoteCommand(Command):
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
             '--type', '-t',
-            choices=['modules', 'adapters', 'cli', 'all'],
+            choices=['modules', 'adapters', 'all'],
             default='all',
             help='列出类型 (默认: all)'
         )
@@ -42,7 +42,6 @@ class ListRemoteCommand(Command):
         if pkg_type == "all":
             self._print_remote_packages("modules", force_refresh)
             self._print_remote_packages("adapters", force_refresh)
-            self._print_remote_packages("cli", force_refresh)
         else:
             self._print_remote_packages(pkg_type, force_refresh)
     
@@ -98,26 +97,5 @@ class ListRemoteCommand(Command):
                 )
             
             console.print(table)
-            
-        elif pkg_type == "cli" and remote_packages.get("cli_extensions"):
-            table = Table(
-                title="远程CLI扩展",
-                box=SIMPLE,
-                header_style="cli"
-            )
-            table.add_column("命令名", style="cli")
-            table.add_column("包名")
-            table.add_column("最新版本")
-            table.add_column("描述")
-            
-            for name, info in remote_packages["cli_extensions"].items():
-                table.add_row(
-                    name,
-                    info["package"],
-                    info["version"],
-                    info.get("description", "")
-                )
-            
-            console.print(table)
-        elif not remote_packages.get(pkg_type.replace("cli", "cli_extensions"), {}):
+        elif not remote_packages.get(pkg_type, {}):
             console.print(f"[dim]远程没有找到 {pkg_type}[/]")

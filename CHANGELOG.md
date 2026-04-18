@@ -88,6 +88,19 @@
   - 修复 `command.wait_reply()` 使用已弃用的 `asyncio.get_event_loop()`
   - 修复 `Event.collect()` 字段缺少 `key` 时静默跳过、`Event.collect()` 缺少 `key` 时无提示
 
+### 移除
+- @wsu2059q
+  - 移除第三方 CLI 扩展功能：
+    - 删除 `CLIFinder` 及其相关代码
+    - 删除 CLI 第三方命令加载和执行机制
+    - 移除 `CommandRegistry` 中的外部命令管理功能
+    - 从包管理器中移除 CLI 扩展的安装、卸载、升级和查询功能
+    - 删除 `install`、`list`、`list-remote`、`uninstall` 命令中的 CLI 扩展选项
+    - 删除 CLI 扩展示例代码 `examples/example-cli-module/`
+    - 删除 CLI 扩展开发文档（所有语言版本）
+    - 更新用户指南，移除 CLI 扩展相关说明
+  - 移除原因：CLI 扩展功能过于复杂，使用场景有限，简化架构以降低维护成本
+
 ---
 
 ## [2.4.1] - 2026/04/10
