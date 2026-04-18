@@ -58,8 +58,7 @@ ErisPulse包管理器
 :return:
     dict: {
         "modules": {模块名: 模块信息},
-        "adapters": {适配器名: 适配器信息},
-        "cli_extensions": {扩展名: 扩展信息}
+        "adapters": {适配器名: 适配器信息}
     }
 
 ---
@@ -74,8 +73,7 @@ ErisPulse包管理器
 :return:
     dict: {
         "modules": {模块名: 模块信息},
-        "adapters": {适配器名: 适配器信息},
-        "cli_extensions": {扩展名: 扩展信息}
+        "adapters": {适配器名: 适配器信息}
     }
 
 ---
