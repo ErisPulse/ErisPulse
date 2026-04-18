@@ -25,7 +25,7 @@ class ListCommand(Command):
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
             '--type', '-t',
-            choices=['modules', 'adapters', 'cli', 'all'],
+            choices=['modules', 'adapters', 'all'],
             default='all',
             help='列出类型 (默认: all)'
         )
@@ -42,7 +42,6 @@ class ListCommand(Command):
         if pkg_type == "all":
             self._print_installed_packages("modules", outdated_only)
             self._print_installed_packages("adapters", outdated_only)
-            self._print_installed_packages("cli", outdated_only)
         else:
             self._print_installed_packages(pkg_type, outdated_only)
     
@@ -105,31 +104,7 @@ class ListCommand(Command):
                 )
             
             console.print(table)
-            
-        elif pkg_type == "cli" and installed["cli_extensions"]:
-            table = Table(
-                title="已安装CLI扩展",
-                box=SIMPLE,
-                header_style="cli"
-            )
-            table.add_column("命令名", style="cli")
-            table.add_column("包名")
-            table.add_column("版本")
-            table.add_column("描述")
-            
-            for name, info in installed["cli_extensions"].items():
-                if outdated_only and not self._is_package_outdated(info["package"], info["version"]):
-                    continue
-                    
-                table.add_row(
-                    name,
-                    info["package"],
-                    info["version"],
-                    info["summary"]
-                )
-            
-            console.print(table)
-        elif not installed.get(pkg_type.replace("cli", "cli_extensions"), {}):
+        elif not installed.get(pkg_type, {}):
             pass
     
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
@@ -151,10 +126,5 @@ class ListCommand(Command):
         for adapter_info in remote_packages["adapters"].values():
             if adapter_info["package"] == package_name:
                 return adapter_info["version"] != current_version
-                
-        # 检查CLI扩展
-        for cli_info in remote_packages.get("cli_extensions", {}).values():
-            if cli_info["package"] == package_name:
-                return cli_info["version"] != current_version
                 
         return False
