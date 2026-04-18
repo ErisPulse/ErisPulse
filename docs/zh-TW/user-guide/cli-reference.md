@@ -55,7 +55,7 @@ ErisPulse 命令列工具提供專案管理和套件管理功能。
 
 | 參數 | 說明 |
 |------|------|
-| `--type` | `-t` | 指定類型：`modules`, `adapters`, `cli`, `all` |
+| `--type` | `-t` | 指定類型：`modules`, `adapters`, `all` |
 | `--outdated` | `-o` | 僅顯示可升級的套件 |
 
 ### run 參數
@@ -76,8 +76,7 @@ epsdk install
 互動介面提供：
 1. 適配器選擇
 2. 模組選擇
-3. CLI 擴充選擇
-4. 自訂安裝
+3. 自訂安裝
 
 ## 常見用法
 
@@ -148,10 +147,3 @@ epsdk init
 
 # 快速初始化
 epsdk init -q -n my_bot
-```
-
-## CLI 擴充
-
-ErisPulse 支援第三方 CLI 擴充。安裝後可使用自訂命令。
-
-開發 CLI 擴充請參考：[CLI 擴充開發指南](../developer-guide/extensions/cli-extensions.md)

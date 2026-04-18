@@ -55,7 +55,7 @@ The ErisPulse command-line tool provides project management and package manageme
 
 | Parameter | Description |
 |------|------|
-| `--type` | `-t` | Specify type: `modules`, `adapters`, `cli`, `all` |
+| `--type` | `-t` | Specify type: `modules`, `adapters`, `all` |
 | `--outdated` | `-o` | Only show upgradable packages |
 
 ### run Parameters
@@ -76,8 +76,7 @@ epsdk install
 The interactive interface provides:
 1. Adapter selection
 2. Module selection
-3. CLI extension selection
-4. Custom installation
+3. Custom installation
 
 ## Common Usage
 
@@ -148,10 +147,3 @@ epsdk init
 
 # Quick initialization
 epsdk init -q -n my_bot
-```
-
-## CLI Extensions
-
-ErisPulse supports third-party CLI extensions. After installation, custom commands can be used.
-
-For information on developing CLI extensions, please refer to: [CLI Extension Development Guide](../developer-guide/extensions/cli-extensions.md)
