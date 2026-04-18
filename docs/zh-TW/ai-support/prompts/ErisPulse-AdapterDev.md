@@ -927,25 +927,6 @@ class MyAdapter(BaseAdapter):
     # ... 其他程式碼 ...
     
     class Send(BaseAdapter.Send):
-        # 方法名稱映射表（小寫 -> 實際方法名稱）
-        _METHOD_MAP = {
-            "text": "Text",
-            "image": "Image",
-            "video": "Video",
-            # ... 其他方法
-        }
-        
-        def __getattr__(self, name):
-            """
-            支援大小寫不敏感呼叫，未定義方法返回文字提示
-            """
-            name_lower = name.lower()
-            if name_lower in self._METHOD_MAP:
-                return getattr(self, self._METHOD_MAP[name_lower])
-            
-            def unsupported(*args, **kwargs):
-                return self.Text(f"[不支援的發送類型] {name}")
-            return unsupported
         
         def Text(self, text: str):
             """發送文字訊息"""

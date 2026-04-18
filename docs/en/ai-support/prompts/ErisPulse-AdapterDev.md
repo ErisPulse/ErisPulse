@@ -1392,25 +1392,6 @@ class MyAdapter(BaseAdapter):
     # ... other code ...
     
     class Send(BaseAdapter.Send):
-        # Method name mapping table (lowercase -> actual method name)
-        _METHOD_MAP = {
-            "text": "Text",
-            "image": "Image",
-            "video": "Video",
-            # ... other methods
-        }
-        
-        def __getattr__(self, name):
-            """
-            Supports case-insensitive calls, returns text prompt for undefined methods
-            """
-            name_lower = name.lower()
-            if name_lower in self._METHOD_MAP:
-                return getattr(self, self._METHOD_MAP[name_lower])
-            
-            def unsupported(*args, **kwargs):
-                return self.Text(f"[Unsupported send type] {name}")
-            return unsupported
         
         def Text(self, text: str):
             """Send text message"""
