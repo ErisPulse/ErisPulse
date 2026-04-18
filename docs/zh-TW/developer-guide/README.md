@@ -21,8 +21,6 @@
 
 ### 擴充功能開發
 
-1. [CLI 擴充功能開發](extensions/cli-extensions.md) - 開發自訂 CLI 指令
-
 ## 開發準備
 
 在開始開發之前，請確保您：
@@ -64,20 +62,6 @@
 
 **入門指南：** [適配器開發入門](adapters/getting-started.md)
 
-### CLI 擴充功能開發
-
-**適用場景：**
-- 擴充命令列工具
-- 提供自訂管理指令
-- 自動化部署流程
-
-**範例：**
-- 部署腳本
-- 資料遷移工具
-- 組態管理工具
-
-**入門指南：** [CLI 擴充功能開發](extensions/cli-extensions.md)
-
 ## 開發工具
 
 ### 專案範本
@@ -86,7 +70,6 @@ ErisPulse 提供了範例專案作為參考：
 
 - `examples/example-module/` - 模組範例
 - `examples/example-adapter/` - 適配器範例
-- `examples/example-cli-module/` - CLI 擴充範例
 
 ### 開發模式
 

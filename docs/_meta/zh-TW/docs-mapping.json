@@ -92,7 +92,7 @@
     },
     "開發者指南": {
       "description": "模組和適配器開發指南",
-      "count": 10,
+      "count": 9,
       "documents": [
         {
           "title": "開發者指南",
@@ -137,11 +137,6 @@
         {
           "title": "配接器開發最佳實踐",
           "path": "developer-guide/adapters/best-practices.md",
-          "level": 1
-        },
-        {
-          "title": "CLI 擴充開發指南",
-          "path": "developer-guide/extensions/cli-extensions.md",
           "level": 1
         }
       ]
