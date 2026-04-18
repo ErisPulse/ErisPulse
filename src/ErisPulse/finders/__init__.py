@@ -1,7 +1,7 @@
 """
 ErisPulse 发现器模块
 
-提供模块、适配器和 CLI 扩展的发现功能
+提供模块和适配器的发现功能
 
 {!--< tips >!--}
 1. 每个 Finder 专门负责一类资源的发现
@@ -14,11 +14,9 @@ ErisPulse 发现器模块
 from .bases.finder import BaseFinder
 from .module import ModuleFinder
 from .adapter import AdapterFinder
-from .cli import CLIFinder
 
 __all__ = [
     "BaseFinder",
     "ModuleFinder",
     "AdapterFinder",
-    "CLIFinder",
 ]
