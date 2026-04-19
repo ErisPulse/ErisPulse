@@ -144,7 +144,7 @@ ErisPulse包管理器
 
 ##### `_run_pip_command_with_output(args: List[str], description: str)`
 
-执行pip命令并捕获输出
+执行pip命令并捕获输出，显示真实进度条
 
 :param args: pip命令参数列表
 :param description: 进度条描述
