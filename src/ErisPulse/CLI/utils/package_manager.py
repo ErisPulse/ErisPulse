@@ -309,12 +309,72 @@ class PackageManager:
     
     def _run_pip_command_with_output(self, args: List[str], description: str) -> Tuple[bool, str, str]:
         """
-        执行pip命令并捕获输出
+        执行pip命令并捕获输出，显示真实进度条
         
         :param args: pip命令参数列表
         :param description: 进度条描述
         :return: (是否成功, 标准输出, 标准错误)
         """
+        import re
+        from threading import Thread, Event
+        
+        stop_event = Event()
+        stdout_lines = []
+        stderr_lines = []
+        current_size = 0
+        total_size = 0
+        
+        def parse_download_progress(line: str) -> Tuple[int, int]:
+            """
+            解析pip下载进度行，返回(当前大小, 总大小)
+            
+            pip输出格式示例：
+            Downloading xxx-1.0.0-py3-none-any.whl (123KB)
+            12%|██████▌                       | 15KB/123KB [00:01<00:08, 12.3KB/s]
+            """
+            pattern = r'(\d+(?:\.\d+)?)%.*?(\d+(?:\.\d+)?[KMGT]?B)/(\d+(?:\.\d+)?[KMGT]?B)'
+            match = re.search(pattern, line)
+            if match:
+                percentage = float(match.group(1))
+                return percentage, 100
+            return None, None
+        
+        def parse_download_total(line: str) -> Tuple[int, int]:
+            """
+            解析下载文件大小信息
+            格式：Downloading xxx-1.0.0-py3-none-any.whl (123KB)
+            """
+            pattern = r'Downloading.*?\((\d+(?:\.\d+)?[KMGT]?B)\)'
+            match = re.search(pattern, line)
+            if match:
+                return 0, 100
+            return None, None
+        
+        def read_output(pipe, lines_list, is_stderr=False):
+            try:
+                for line in iter(pipe.readline, ''):
+                    lines_list.append(line)
+                    
+                    if not is_stderr:
+                        progress_info = parse_download_progress(line)
+                        if progress_info[0] is not None:
+                            progress.update(task, completed=progress_info[0], total=100)
+                            continue
+                        
+                        total_info = parse_download_total(line)
+                        if total_info[0] is not None:
+                            progress.update(task, completed=0, total=100)
+                            continue
+                        
+                        if "Collecting" in line or "Requirement already satisfied" in line:
+                            progress.update(task, completed=0, total=100)
+                        elif "Successfully installed" in line or "Installing collected packages" in line:
+                            progress.update(task, completed=100, total=100)
+                
+                pipe.close()
+            except Exception:
+                pass
+        
         with Progress(
             TextColumn(f"[progress.description]{description}"),
             BarColumn(complete_style="progress.download"),
@@ -328,31 +388,15 @@ class PackageManager:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
-                    bufsize=1  # 行缓冲
+                    bufsize=1
                 )
                 
-                stdout_lines = []
-                stderr_lines = []
-                
-                # 使用超时机制避免永久阻塞
-                import threading
-                
-                def read_output(pipe, lines_list):
-                    try:
-                        for line in iter(pipe.readline, ''):
-                            lines_list.append(line)
-                            progress.update(task, advance=5)  # 每行增加进度
-                        pipe.close()
-                    except Exception:
-                        pass
-                
-                stdout_thread = threading.Thread(target=read_output, args=(process.stdout, stdout_lines))
-                stderr_thread = threading.Thread(target=read_output, args=(process.stderr, stderr_lines))
+                stdout_thread = Thread(target=read_output, args=(process.stdout, stdout_lines, False))
+                stderr_thread = Thread(target=read_output, args=(process.stderr, stderr_lines, True))
                 
                 stdout_thread.start()
                 stderr_thread.start()
                 
-                # 等待进程结束，最多等待5分钟
                 try:
                     process.wait(timeout=300)
                 except subprocess.TimeoutExpired:
@@ -366,6 +410,8 @@ class PackageManager:
                 
                 stdout = ''.join(stdout_lines)
                 stderr = ''.join(stderr_lines)
+                
+                progress.update(task, completed=100, total=100)
                 
                 return process.returncode == 0, stdout, stderr
             except subprocess.CalledProcessError as e:
