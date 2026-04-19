@@ -20,7 +20,7 @@ from ..base import Command
 
 class InstallCommand(Command):
     name = "install"
-    description = "安装模块/适配器包（不指定包名时进入交互式安装）"
+    description = "安装模块/适配器包"
     
     def __init__(self):
         self.package_manager = PackageManager()
@@ -256,7 +256,7 @@ class InstallCommand(Command):
         :param pre: 是否包含预发布版本
         """
         console.print(Panel(
-            "[bold cyan]ErisPulse 交互式安装向导[/]\n"
+            "[bold cyan]ErisPulse 安装组件[/]\n"
             "选择您要安装的组件类型",
             title="欢迎",
             border_style="cyan"
@@ -275,7 +275,7 @@ class InstallCommand(Command):
             console.print("  q. 退出")
             
             choice = Prompt.ask(
-                "\n请输入选项 [1/2/3/q]",
+                "\n请输入选项 ",
                 choices=["1", "2", "3", "q"],
                 default="q"
             )
