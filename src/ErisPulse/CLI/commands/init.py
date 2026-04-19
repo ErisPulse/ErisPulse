@@ -27,7 +27,7 @@ class InitCommand(Command):
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
             '--project-name', '-n',
-            help='项目名称 (可选，交互式初始化时将会询问)'
+            help='项目名称 (可选)'
         )
         parser.add_argument(
             '--quick', '-q',
