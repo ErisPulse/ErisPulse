@@ -21,8 +21,6 @@ This guide helps you develop custom modules and adapters to extend the functiona
 
 ### Extension Development
 
-1. [CLI Extension Development](extensions/cli-extensions.md) - Developing custom CLI commands
-
 ## Prerequisites
 
 Before starting development, ensure that you:
@@ -64,20 +62,6 @@ Choose the appropriate development type based on your needs:
 
 **Getting Started Guide:** [Getting Started with Adapters](adapters/getting-started.md)
 
-### CLI Extension Development
-
-**Use Cases:**
-- Extending command-line tools
-- Providing custom management commands
-- Automating deployment processes
-
-**Examples:**
-- Deployment scripts
-- Data migration tools
-- Configuration management tools
-
-**Getting Started Guide:** [CLI Extension Development](extensions/cli-extensions.md)
-
 ## Development Tools
 
 ### Project Templates
@@ -86,7 +70,6 @@ ErisPulse provides example projects for reference:
 
 - `examples/example-module/` - Module example
 - `examples/example-adapter/` - Adapter example
-- `examples/example-cli-module/` - CLI extension example
 
 ### Development Mode
 

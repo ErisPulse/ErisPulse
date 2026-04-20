@@ -18,7 +18,7 @@ from rich.progress import Progress, BarColumn, TextColumn
 from rich.prompt import Confirm
 
 from ..console import console
-from ...finders import ModuleFinder, AdapterFinder, CLIFinder
+from ...finders import ModuleFinder, AdapterFinder
 
 class PackageManager:
     """
@@ -46,7 +46,6 @@ class PackageManager:
         self._pypi_cache_time = {}  # PyPI版本缓存时间
         self._module_finder = ModuleFinder()
         self._adapter_finder = AdapterFinder()
-        self._cli_finder = CLIFinder()
         
     async def _fetch_remote_packages(self, url: str) -> Optional[dict]:
         """
@@ -82,8 +81,7 @@ class PackageManager:
         :return:
             dict: {
                 "modules": {模块名: 模块信息},
-                "adapters": {适配器名: 适配器信息},
-                "cli_extensions": {扩展名: 扩展信息}
+                "adapters": {适配器名: 适配器信息}
             }
         """
         # 检查缓存
@@ -92,14 +90,13 @@ class PackageManager:
             if time.time() - self._cache_time[cache_key] < self.CACHE_EXPIRY:
                 return self._cache[cache_key]
         
-        result = {"modules": {}, "adapters": {}, "cli_extensions": {}}
+        result = {"modules": {}, "adapters": {}}
         
         for url in self.REMOTE_SOURCES:
             data = await self._fetch_remote_packages(url)
             if data:
                 result["modules"].update(data.get("modules", {}))
                 result["adapters"].update(data.get("adapters", {}))
-                result["cli_extensions"].update(data.get("cli_extensions", {}))
                 break
         
         # 更新缓存
@@ -117,14 +114,12 @@ class PackageManager:
         :return:
             dict: {
                 "modules": {模块名: 模块信息},
-                "adapters": {适配器名: 适配器信息},
-                "cli_extensions": {扩展名: 扩展信息}
+                "adapters": {适配器名: 适配器信息}
             }
         """
         packages = {
             "modules": {},
-            "adapters": {},
-            "cli_extensions": {}
+            "adapters": {}
         }
         
         try:
@@ -144,16 +139,6 @@ class PackageManager:
             for entry in adapter_entries:
                 if hasattr(entry, 'dist') and entry.dist:
                     packages["adapters"][entry.name] = {
-                        "package": entry.dist.name,
-                        "version": entry.dist.version,
-                        "summary": entry.dist.metadata.get("Summary", "")
-                    }
-            
-            # 使用 CLIFinder 查找 CLI 扩展
-            cli_entries = self._cli_finder.find_all()
-            for entry in cli_entries:
-                if hasattr(entry, 'dist') and entry.dist:
-                    packages["cli_extensions"][entry.name] = {
                         "package": entry.dist.name,
                         "version": entry.dist.version,
                         "summary": entry.dist.metadata.get("Summary", "")
@@ -224,14 +209,6 @@ class PackageManager:
             if self._normalize_name(info["package"]) == normalized_alias:
                 return info["package"]
                 
-        # 检查CLI扩展
-        for name, info in remote_packages.get("cli_extensions", {}).items():
-            if self._normalize_name(name) == normalized_alias:
-                return info["package"]
-            # 同时检查PyPI包名
-            if self._normalize_name(info["package"]) == normalized_alias:
-                return info["package"]
-                
         return None
     
     def _find_installed_package_by_name(self, name: str) -> Optional[str]:
@@ -253,11 +230,6 @@ class PackageManager:
         for adapter_info in installed["adapters"].values():
             if self._normalize_name(adapter_info["package"]) == normalized_name:
                 return adapter_info["package"]
-                    
-        # 在已安装的CLI扩展中查找
-        for cli_info in installed["cli_extensions"].values():
-            if self._normalize_name(cli_info["package"]) == normalized_name:
-                return cli_info["package"]
                 
         return None
 
@@ -274,12 +246,12 @@ class PackageManager:
         
         # 构建远程包索引：PyPI包名 -> 版本
         remote_index = {}
-        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+        for pkg_type in ["modules", "adapters"]:
             for name, info in remote_packages[pkg_type].items():
                 remote_index[info["package"]] = info["version"]
         
         # 检查每个已安装包
-        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+        for pkg_type in ["modules", "adapters"]:
             for entry_name, pkg_info in installed[pkg_type].items():
                 current_version = pkg_info["version"]
                 package_name = pkg_info["package"]
@@ -337,12 +309,72 @@ class PackageManager:
     
     def _run_pip_command_with_output(self, args: List[str], description: str) -> Tuple[bool, str, str]:
         """
-        执行pip命令并捕获输出
+        执行pip命令并捕获输出，显示真实进度条
         
         :param args: pip命令参数列表
         :param description: 进度条描述
         :return: (是否成功, 标准输出, 标准错误)
         """
+        import re
+        from threading import Thread, Event
+        
+        stop_event = Event()
+        stdout_lines = []
+        stderr_lines = []
+        current_size = 0
+        total_size = 0
+        
+        def parse_download_progress(line: str) -> Tuple[int, int]:
+            """
+            解析pip下载进度行，返回(当前大小, 总大小)
+            
+            pip输出格式示例：
+            Downloading xxx-1.0.0-py3-none-any.whl (123KB)
+            12%|██████▌                       | 15KB/123KB [00:01<00:08, 12.3KB/s]
+            """
+            pattern = r'(\d+(?:\.\d+)?)%.*?(\d+(?:\.\d+)?[KMGT]?B)/(\d+(?:\.\d+)?[KMGT]?B)'
+            match = re.search(pattern, line)
+            if match:
+                percentage = float(match.group(1))
+                return percentage, 100
+            return None, None
+        
+        def parse_download_total(line: str) -> Tuple[int, int]:
+            """
+            解析下载文件大小信息
+            格式：Downloading xxx-1.0.0-py3-none-any.whl (123KB)
+            """
+            pattern = r'Downloading.*?\((\d+(?:\.\d+)?[KMGT]?B)\)'
+            match = re.search(pattern, line)
+            if match:
+                return 0, 100
+            return None, None
+        
+        def read_output(pipe, lines_list, is_stderr=False):
+            try:
+                for line in iter(pipe.readline, ''):
+                    lines_list.append(line)
+                    
+                    if not is_stderr:
+                        progress_info = parse_download_progress(line)
+                        if progress_info[0] is not None:
+                            progress.update(task, completed=progress_info[0], total=100)
+                            continue
+                        
+                        total_info = parse_download_total(line)
+                        if total_info[0] is not None:
+                            progress.update(task, completed=0, total=100)
+                            continue
+                        
+                        if "Collecting" in line or "Requirement already satisfied" in line:
+                            progress.update(task, completed=0, total=100)
+                        elif "Successfully installed" in line or "Installing collected packages" in line:
+                            progress.update(task, completed=100, total=100)
+                
+                pipe.close()
+            except Exception:
+                pass
+        
         with Progress(
             TextColumn(f"[progress.description]{description}"),
             BarColumn(complete_style="progress.download"),
@@ -356,31 +388,15 @@ class PackageManager:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
-                    bufsize=1  # 行缓冲
+                    bufsize=1
                 )
                 
-                stdout_lines = []
-                stderr_lines = []
-                
-                # 使用超时机制避免永久阻塞
-                import threading
-                
-                def read_output(pipe, lines_list):
-                    try:
-                        for line in iter(pipe.readline, ''):
-                            lines_list.append(line)
-                            progress.update(task, advance=5)  # 每行增加进度
-                        pipe.close()
-                    except Exception:
-                        pass
-                
-                stdout_thread = threading.Thread(target=read_output, args=(process.stdout, stdout_lines))
-                stderr_thread = threading.Thread(target=read_output, args=(process.stderr, stderr_lines))
+                stdout_thread = Thread(target=read_output, args=(process.stdout, stdout_lines, False))
+                stderr_thread = Thread(target=read_output, args=(process.stderr, stderr_lines, True))
                 
                 stdout_thread.start()
                 stderr_thread.start()
                 
-                # 等待进程结束，最多等待5分钟
                 try:
                     process.wait(timeout=300)
                 except subprocess.TimeoutExpired:
@@ -394,6 +410,8 @@ class PackageManager:
                 
                 stdout = ''.join(stdout_lines)
                 stderr = ''.join(stderr_lines)
+                
+                progress.update(task, completed=100, total=100)
                 
                 return process.returncode == 0, stdout, stderr
             except subprocess.CalledProcessError as e:
@@ -473,11 +491,6 @@ class PackageManager:
         
         # 检查适配器
         for name, info in remote_packages["adapters"].items():
-            if self._normalize_name(name) == normalized_name:
-                return info
-        
-        # 检查CLI扩展
-        for name, info in remote_packages.get("cli_extensions", {}).items():
             if self._normalize_name(name) == normalized_name:
                 return info
         
@@ -719,7 +732,7 @@ class PackageManager:
             # 检查当前版本和远程版本
             installed = self.get_installed_packages()
             current_version = None
-            for pkg_type in ["modules", "adapters", "cli_extensions"]:
+            for pkg_type in ["modules", "adapters"]:
                 for pkg_info in installed[pkg_type].values():
                     if pkg_info["package"] == current_package_name:
                         current_version = pkg_info["version"]
@@ -803,7 +816,7 @@ class PackageManager:
         
         # 搜索已安装的包
         installed = self.get_installed_packages()
-        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+        for pkg_type in ["modules", "adapters"]:
             for name, info in installed[pkg_type].items():
                 if (normalized_query in self._normalize_name(name) or 
                     normalized_query in self._normalize_name(info["package"]) or
@@ -818,7 +831,7 @@ class PackageManager:
         
         # 搜索远程包
         remote = asyncio.run(self.get_remote_packages())
-        for pkg_type in ["modules", "adapters", "cli_extensions"]:
+        for pkg_type in ["modules", "adapters"]:
             for name, info in remote[pkg_type].items():
                 if (normalized_query in self._normalize_name(name) or 
                     normalized_query in self._normalize_name(info["package"]) or

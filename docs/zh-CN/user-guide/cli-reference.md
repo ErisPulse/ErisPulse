@@ -55,7 +55,7 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 
 | 参数 | 说明 |
 |------|------|
-| `--type` | `-t` | 指定类型：`modules`, `adapters`, `cli`, `all` |
+| `--type` | `-t` | 指定类型：`modules`, `adapters`, `all` |
 | `--outdated` | `-o` | 仅显示可升级的包 |
 
 ### run 参数
@@ -73,11 +73,10 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 epsdk install
 ```
 
-交互界面提供：
+ 交互界面提供：
 1. 适配器选择
 2. 模块选择
-3. CLI 扩展选择
-4. 自定义安装
+3. 自定义安装
 
 ## 常见用法
 
@@ -149,9 +148,3 @@ epsdk init
 # 快速初始化
 epsdk init -q -n my_bot
 ```
-
-## CLI 扩展
-
-ErisPulse 支持第三方 CLI 扩展。安装后可使用自定义命令。
-
-开发 CLI 扩展请参考：[CLI 扩展开发指南](../developer-guide/extensions/cli-extensions.md)
