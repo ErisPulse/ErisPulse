@@ -44,7 +44,7 @@ ErisPulse is a Python-based event-driven multi-platform bot development framewor
 ### Using Docker (Recommended)
 
 ```bash
-docker pull wsu2059/erispulse:latest
+docker pull erispulse/erispulse:latest
 ```
 
 <details>
