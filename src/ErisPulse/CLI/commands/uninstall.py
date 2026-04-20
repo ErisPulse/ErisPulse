@@ -74,15 +74,6 @@ class UninstallCommand(Command):
                 "version": info["version"]
             })
         
-        # 添加 CLI 扩展
-        for name, info in installed.get("cli_extensions", {}).items():
-            all_packages.append({
-                "type": "CLI",
-                "name": name,
-                "package": info["package"],
-                "version": info["version"]
-            })
-        
         if not all_packages:
             console.print("[yellow]没有已安装的包[/]")
             return

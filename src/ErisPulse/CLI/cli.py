@@ -6,9 +6,6 @@ ErisPulse 命令行接口主入口
 
 import sys
 import importlib
-import importlib.metadata
-import asyncio
-import inspect
 import traceback
 import pkgutil
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -24,7 +21,7 @@ class CLI:
     """
     ErisPulse 命令行接口主类
     
-    提供完整的命令行交互功能，支持动态加载第三方命令
+    提供完整的命令行交互功能
     """
     
     def __init__(self):
@@ -32,7 +29,6 @@ class CLI:
         self.registry = CommandRegistry()
         self.parser = self._create_parser()
         self._register_builtin_commands()
-        self._load_external_commands()
     
     def _create_parser(self) -> ArgumentParser:
         """
@@ -128,30 +124,6 @@ class CLI:
             )
             command.add_arguments(parser)
     
-    def _load_external_commands(self):
-        """
-        加载第三方 CLI 命令
-        """
-        try:
-            entry_points = importlib.metadata.entry_points()
-            if hasattr(entry_points, 'select'):
-                cli_entries = entry_points.select(group='erispulse.cli')
-            else:
-                cli_entries = entry_points.get('erispulse.cli', [])
-            
-            for entry in cli_entries:
-                try:
-                    cli_func = entry.load()
-                    if callable(cli_func):
-                        # 传入 subparsers 和 console，保持兼容性
-                        cli_func(self.subparsers, console)
-                    else:
-                        console.print(f"[warning]模块 {entry.name} 的入口点不是可调用对象[/]")
-                except Exception as e:
-                    console.print(f"[error]加载第三方命令 {entry.name} 失败: {e}[/]")
-        except Exception as e:
-            console.print(f"[warning]加载第三方CLI命令失败: {e}[/]")
-    
     def _print_version(self):
         """打印版本信息"""
         from ErisPulse import __version__
@@ -192,40 +164,15 @@ class CLI:
             if command:
                 command.execute(args)
             else:
-                # 第三方命令处理
-                self._execute_external_command(args)
+                console.print(f"[error]未知命令: {args.command}[/]")
+                self.parser.print_help()
+                sys.exit(1)
                 
         except KeyboardInterrupt:
             console.print("\n[warning]操作被用户中断[/]")
             sys.exit(1)
         except Exception as e:
             console.print(f"[error]执行命令时出错: {e}[/]")
-            if args.verbose >= 1:
-                console.print(traceback.format_exc())
-            sys.exit(1)
-    
-    def _execute_external_command(self, args):
-        """
-        执行第三方命令
-        
-        :param args: 解析后的参数
-        """
-        try:
-            # 第三方命令在注册时已经通过 set_defaults(func=handle_command) 设置了处理函数
-            # 所以 args.func 就是处理函数
-            if hasattr(args, 'func') and args.func:
-                handler_func = args.func
-                if inspect.iscoroutinefunction(handler_func):
-                    # 异步函数：使用 asyncio.run() 运行
-                    asyncio.run(handler_func(args))
-                else:
-                    # 同步函数：直接调用
-                    handler_func(args)
-            else:
-                console.print(f"[error]命令 {args.command} 没有处理函数[/]")
-                sys.exit(1)
-        except Exception as e:
-            console.print(f"[error]执行第三方命令失败: {e}[/]")
             if args.verbose >= 1:
                 console.print(traceback.format_exc())
             sys.exit(1)

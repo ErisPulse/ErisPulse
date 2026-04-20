@@ -1,7 +1,7 @@
 """
 Install 命令实现
 
-支持交互式和批量安装模块、适配器、CLI 扩展
+支持交互式和批量安装模块、适配器
 """
 
 import sys
@@ -20,7 +20,7 @@ from ..base import Command
 
 class InstallCommand(Command):
     name = "install"
-    description = "安装模块/适配器包（不指定包名时进入交互式安装）"
+    description = "安装模块/适配器包"
     
     def __init__(self):
         self.package_manager = PackageManager()
@@ -256,7 +256,7 @@ class InstallCommand(Command):
         :param pre: 是否包含预发布版本
         """
         console.print(Panel(
-            "[bold cyan]ErisPulse 交互式安装向导[/]\n"
+            "[bold cyan]ErisPulse 安装组件[/]\n"
             "选择您要安装的组件类型",
             title="欢迎",
             border_style="cyan"
@@ -271,13 +271,12 @@ class InstallCommand(Command):
             console.print("[bold cyan]请选择组件类型:[/]")
             console.print("  1. 适配器")
             console.print("  2. 模块")
-            console.print("  3. CLI 扩展")
-            console.print("  4. 自定义安装")
+            console.print("  3. 自定义安装")
             console.print("  q. 退出")
             
             choice = Prompt.ask(
-                "\n请输入选项 [1/2/3/4/q]",
-                choices=["1", "2", "3", "4", "q"],
+                "\n请输入选项 ",
+                choices=["1", "2", "3", "q"],
                 default="q"
             )
             
@@ -290,8 +289,6 @@ class InstallCommand(Command):
             elif choice == "2":
                 self._install_modules(remote_packages, upgrade, pre)
             elif choice == "3":
-                self._install_cli_extensions(remote_packages, upgrade, pre)
-            elif choice == "4":
                 self._install_custom(upgrade, pre)
             
             if not Confirm.ask("\n[cyan]是否继续安装其他组件？[/cyan]", default=False):
@@ -400,61 +397,6 @@ class InstallCommand(Command):
             if selected_packages:
                 if Confirm.ask(
                     f"\n[cyan]确认安装以下 {len(selected_packages)} 个模块吗？[/cyan]",
-                    default=True
-                ):
-                    self.package_manager.install_package(selected_packages, upgrade=upgrade, pre=pre)
-        
-        except ValueError:
-            console.print("[red]输入格式错误，请输入数字序号[/]")
-    
-    def _install_cli_extensions(self, remote_packages: dict, upgrade: bool, pre: bool):
-        console.print("\n[bold]可用的 CLI 扩展:[/bold]")
-        
-        cli_extensions = remote_packages.get("cli_extensions", {})
-        
-        if not cli_extensions:
-            console.print("[yellow]没有可用的 CLI 扩展[/yellow]")
-            return
-        
-        table = Table(box=SIMPLE, header_style="cli")
-        table.add_column("序号", style="cyan")
-        table.add_column("命令名", style="cli")
-        table.add_column("包名")
-        table.add_column("描述")
-        
-        cli_list = list(cli_extensions.items())
-        for i, (name, info) in enumerate(cli_list, 1):
-            table.add_row(
-                str(i),
-                name,
-                info.get("package", ""),
-                info.get("description", "")
-            )
-        
-        console.print(table)
-        
-        selected = Prompt.ask(
-            "\n[cyan]请输入要安装的 CLI 扩展序号（多个用逗号分隔，如: 1,3）或按 q 返回:[/cyan]"
-        )
-        
-        if selected.lower() == 'q':
-            return
-        
-        try:
-            indices = [int(idx.strip()) for idx in selected.split(",")]
-            selected_packages = []
-            
-            for idx in indices:
-                if 1 <= idx <= len(cli_list):
-                    cli_name = cli_list[idx - 1][0]
-                    selected_packages.append(cli_name)
-                    console.print(f"[green]已选择: {cli_name}[/]")
-                else:
-                    console.print(f"[red]无效的序号: {idx}[/]")
-            
-            if selected_packages:
-                if Confirm.ask(
-                    f"\n[cyan]确认安装以下 {len(selected_packages)} 个 CLI 扩展吗？[/cyan]",
                     default=True
                 ):
                     self.package_manager.install_package(selected_packages, upgrade=upgrade, pre=pre)
