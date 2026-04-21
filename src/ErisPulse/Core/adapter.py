@@ -51,6 +51,9 @@ class AdapterManager(ManagerBase):
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
 
+        # 标记是否正在关闭，避免重复提交离线事件
+        self._is_being_shutdown = False
+
     def set_sdk_ref(self, sdk) -> bool:
         """
         设置 SDK 引用
@@ -287,127 +290,134 @@ class AdapterManager(ManagerBase):
         >>> # 关闭多个适配器
         >>> await adapter.shutdown(["Platform1", "Platform2"])
         """
-        if platforms is None:
-            platforms = list(self._adapters.keys())
-        if not isinstance(platforms, list):
-            platforms = [platforms]
-        for platform in platforms:
-            if platform not in self._adapters:
-                raise ValueError(f"平台 {platform} 未注册")
+        # 设置关闭标志，避免重复提交离线事件
+        self._is_being_shutdown = True
 
-        logger.info(f"关闭适配器 {platforms}")
+        try:
+            if platforms is None:
+                platforms = list(self._adapters.keys())
+            if not isinstance(platforms, list):
+                platforms = [platforms]
+            for platform in platforms:
+                if platform not in self._adapters:
+                    raise ValueError(f"平台 {platform} 未注册")
 
-        # 提交适配器关闭开始事件
-        await lifecycle.submit_event(
-            "adapter.stop", msg="开始关闭适配器", data={"platforms": platforms}
-        )
+            logger.info(f"关闭适配器 {platforms}")
 
-        from .router import router
+            # 提交适配器关闭开始事件
+            await lifecycle.submit_event(
+                "adapter.stop", msg="开始关闭适配器", data={"platforms": platforms}
+            )
 
-        # 需要收集受影响的 adapter 实例（因为多个平台可能共享同一个实例）
-        affected_adapters = set()
-        bots_to_offline = []  # [(platform, bot_id), ...]
+            from .router import router
 
-        # 取消目标平台的后台启动任务
-        for platform in platforms:
-            task = self._adapter_tasks.pop(platform, None)
-            if task and not task.done():
-                task.cancel()
-                logger.debug(f"已取消平台 {platform} 的后台启动任务")
+            # 需要收集受影响的 adapter 实例（因为多个平台可能共享同一个实例）
+            affected_adapters = set()
+            bots_to_offline = []  # [(platform, bot_id), ...]
 
-        for platform in platforms:
-            adapter_instance = self._adapters[platform]
-            affected_adapters.add(adapter_instance)
+            # 取消目标平台的后台启动任务
+            for platform in platforms:
+                task = self._adapter_tasks.pop(platform, None)
+                if task and not task.done():
+                    task.cancel()
+                    logger.debug(f"已取消平台 {platform} 的后台启动任务")
 
-            # 收集该平台下需要标记为离线的 Bot
-            if platform in self._bots:
-                for bot_id, bot_info in self._bots[platform].items():
-                    if bot_info.get("status") != "offline":
-                        bots_to_offline.append((platform, bot_id))
+            for platform in platforms:
+                adapter_instance = self._adapters[platform]
+                affected_adapters.add(adapter_instance)
 
-        # 对每个受影响的 adapter 实例执行 shutdown（如果尚未关闭）
-        for adapter_instance in affected_adapters:
-            if adapter_instance in self._started_instances:
-                # 找到该实例对应的平台名（用于事件提交）
-                instance_platforms = [
-                    p for p, a in self._adapters.items() if a is adapter_instance
-                ]
-                platform_label = (
-                    instance_platforms[0]
-                    if instance_platforms
-                    else str(id(adapter_instance))
-                )
+                # 收集该平台下需要标记为离线的 Bot
+                if platform in self._bots:
+                    for bot_id, bot_info in self._bots[platform].items():
+                        if bot_info.get("status") != "offline":
+                            bots_to_offline.append((platform, bot_id))
 
-                # 提交适配器状态变化事件（stopping）
-                for p in instance_platforms:
-                    if p in platforms:
-                        await lifecycle.submit_event(
-                            "adapter.status.change",
-                            msg=f"适配器 {p} 状态变化: stopping",
-                            data={"platform": p, "status": "stopping"},
-                        )
+            # 对每个受影响的 adapter 实例执行 shutdown（如果尚未关闭）
+            for adapter_instance in affected_adapters:
+                if adapter_instance in self._started_instances:
+                    # 找到该实例对应的平台名（用于事件提交）
+                    instance_platforms = [
+                        p for p, a in self._adapters.items() if a is adapter_instance
+                    ]
+                    platform_label = (
+                        instance_platforms[0]
+                        if instance_platforms
+                        else str(id(adapter_instance))
+                    )
 
-                try:
-                    await adapter_instance.shutdown()
-                    self._started_instances.remove(adapter_instance)
-
-                    # 提交适配器状态变化事件（stopped）
+                    # 提交适配器状态变化事件（stopping）
                     for p in instance_platforms:
                         if p in platforms:
                             await lifecycle.submit_event(
                                 "adapter.status.change",
-                                msg=f"适配器 {p} 状态变化: stopped",
-                                data={"platform": p, "status": "stopped"},
-                            )
-                except Exception as e:
-                    logger.error(f"关闭适配器实例 {id(adapter_instance)} 失败: {e}")
-
-                    # 提交适配器状态变化事件（stop_failed）
-                    for p in instance_platforms:
-                        if p in platforms:
-                            await lifecycle.submit_event(
-                                "adapter.status.change",
-                                msg=f"适配器 {p} 状态变化: stop_failed",
-                                data={
-                                    "platform": p,
-                                    "status": "stop_failed",
-                                    "error": str(e),
-                                },
+                                msg=f"适配器 {p} 状态变化: stopping",
+                                data={"platform": p, "status": "stopping"},
                             )
 
-        # 清理被关闭平台的路由
-        for platform in platforms:
-            result = router.unregister_all_by_namespace(platform)
-            if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(
-                    f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
-                )
+                    try:
+                        await adapter_instance.shutdown()
+                        self._started_instances.remove(adapter_instance)
 
-        # 停止路由器（仅当所有适配器都关闭时）
-        if not self._started_instances:
-            await router.stop()
+                        # 提交适配器状态变化事件（stopped）
+                        for p in instance_platforms:
+                            if p in platforms:
+                                await lifecycle.submit_event(
+                                    "adapter.status.change",
+                                    msg=f"适配器 {p} 状态变化: stopped",
+                                    data={"platform": p, "status": "stopped"},
+                                )
+                    except Exception as e:
+                        logger.error(f"关闭适配器实例 {id(adapter_instance)} 失败: {e}")
 
-        # 将相关 Bot 标记为离线
-        for platform, bot_id in bots_to_offline:
-            if platform in self._bots and bot_id in self._bots[platform]:
-                self._bots[platform][bot_id]["status"] = "offline"
-                # 提交 Bot 离线事件
-                await lifecycle.submit_event(
-                    "adapter.bot.offline",
-                    msg=f"Bot {platform}/{bot_id} 离线",
-                    data={"platform": platform, "bot_id": bot_id, "status": "offline"},
-                )
+                        # 提交适配器状态变化事件（stop_failed）
+                        for p in instance_platforms:
+                            if p in platforms:
+                                await lifecycle.submit_event(
+                                    "adapter.status.change",
+                                    msg=f"适配器 {p} 状态变化: stop_failed",
+                                    data={
+                                        "platform": p,
+                                        "status": "stop_failed",
+                                        "error": str(e),
+                                    },
+                                )
 
-        # 如果所有适配器都关闭了，清理事件处理器
-        if not self._started_instances:
-            self._onebot_handlers.clear()
-            self._raw_handlers.clear()
-            self._onebot_middlewares.clear()
+            # 清理被关闭平台的路由
+            for platform in platforms:
+                result = router.unregister_all_by_namespace(platform)
+                if result["http_count"] > 0 or result["websocket_count"] > 0:
+                    logger.debug(
+                        f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                    )
 
-        # 提交适配器关闭完成事件
-        await lifecycle.submit_event(
-            "adapter.stopped", msg="适配器关闭完成", data={"platforms": platforms}
-        )
+            # 停止路由器（仅当所有适配器都关闭时）
+            if not self._started_instances:
+                await router.stop()
+
+            # 将相关 Bot 标记为离线
+            for platform, bot_id in bots_to_offline:
+                if platform in self._bots and bot_id in self._bots[platform]:
+                    self._bots[platform][bot_id]["status"] = "offline"
+                    # 提交 Bot 离线事件
+                    await lifecycle.submit_event(
+                        "adapter.bot.offline",
+                        msg=f"Bot {platform}/{bot_id} 离线",
+                        data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                    )
+
+            # 如果所有适配器都关闭了，清理事件处理器
+            if not self._started_instances:
+                self._onebot_handlers.clear()
+                self._raw_handlers.clear()
+                self._onebot_middlewares.clear()
+
+            # 提交适配器关闭完成事件
+            await lifecycle.submit_event(
+                "adapter.stopped", msg="适配器关闭完成", data={"platforms": platforms}
+            )
+        finally:
+            # 清除关闭标志
+            self._is_being_shutdown = False
 
     def clear(self) -> None:
         """
@@ -473,12 +483,11 @@ class AdapterManager(ManagerBase):
 
     def exists(self, platform: str) -> bool:
         """
-        检查平台是否存在
+        检查平台是否已注册
 
         :param platform: 平台名称
-        :return: [bool] 平台是否存在
+        :return: 平台是否已注册（即 adapter.register() 已被调用）
         """
-        # 检查平台是否已注册（在 _adapters 中）
         return platform in self._adapters
 
     def is_enabled(self, platform: str) -> bool:
@@ -486,20 +495,25 @@ class AdapterManager(ManagerBase):
         检查平台适配器是否启用
 
         :param platform: 平台名称
-        :return: [bool] 平台适配器是否启用
+        :return: 平台适配器是否启用
+
+        {!--< tips >!--}
+        适配器启用条件：
+        1. 适配器在配置文件中（ErisPulse.adapters.status.{platform} 存在）
+        2. 配置值为启用状态
+
+        如果适配器未在配置中，返回 False
+        {!--< /tips >!--}
         """
-        # 不使用默认值，如果配置不存在则返回 None
+        from .config import parse_bool_config
+
         status = config.getConfig(f"ErisPulse.adapters.status.{platform}")
 
-        # 如果状态不存在，说明是新适配器
+        # 适配器未在配置中，返回 False
         if status is None:
-            return False  # 新适配器默认不启用，需要在初始化时处理
+            return False
 
-        # 处理字符串形式的布尔值
-        if isinstance(status, str):
-            return status.lower() not in ("false", "0", "no", "off")
-
-        return bool(status)
+        return parse_bool_config(status)
 
     def enable(self, platform: str) -> bool:
         """
@@ -541,7 +555,7 @@ class AdapterManager(ManagerBase):
         :return: 是否取消成功
 
         {!--< internal-use >!--}
-        注意：此方法仅取消注册，不关闭已启动的适配器
+        注意: 此方法仅取消注册, 不关闭已启动的适配器
         {!--< /internal-use >!--}
         """
         if platform not in self._adapters:
@@ -837,13 +851,15 @@ class AdapterManager(ManagerBase):
                 )
 
         if status == "offline":
-            asyncio.ensure_future(
-                lifecycle.submit_event(
-                    "adapter.bot.offline",
-                    msg=f"Bot {platform}/{bot_id} 离线",
-                    data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+            # 只有在非主动关闭的情况下才提交事件（避免与 shutdown() 重复）
+            if not self._is_being_shutdown:
+                asyncio.ensure_future(
+                    lifecycle.submit_event(
+                        "adapter.bot.offline",
+                        msg=f"Bot {platform}/{bot_id} 离线",
+                        data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                    )
                 )
-            )
 
     def _update_bot_heartbeat(self, platform: str, self_info: dict) -> None:
         """
