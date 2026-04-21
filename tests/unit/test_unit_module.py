@@ -243,16 +243,15 @@ class TestModuleManager:
 
     # ==================== 配置管理测试 ====================
 
-    def test_module_exists(self, manager):
-        """测试检查模块是否存在"""
-        # Mock config
-        with patch.object(config, "getConfig") as mock_get:
-            # 存在的模块
-            mock_get.return_value = {"test_module": True}
-            assert manager.exists("test_module") is True
+    def test_module_exists(self, manager, test_module_class):
+        """测试检查模块是否存在（已注册）"""
+        # 未注册的模块
+        assert manager.exists("test_module") is False
+        assert manager.exists("nonexistent") is False
 
-            # 不存在的模块
-            assert manager.exists("nonexistent") is False
+        # 注册后存在
+        manager.register("test_module", test_module_class)
+        assert manager.exists("test_module") is True
 
     def test_module_is_enabled(self, manager):
         """测试检查模块是否启用"""
