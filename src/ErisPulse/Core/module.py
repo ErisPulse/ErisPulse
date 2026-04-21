@@ -272,15 +272,17 @@ class ModuleManager(ManagerBase):
 
     def exists(self, module_name: str) -> bool:
         """
-        检查模块是否存在（已注册或在配置中）
+        检查模块是否已注册
 
-        :param module_name: [str] 模块名称
-        :return: [bool] 模块是否存在
+        :param module_name: 模块名称
+        :return: 模块是否已注册（即 module.register() 已被调用）
+
+        {!--< tips >!--}
+        exists() 只检查模块类是否已注册到管理器，用于验证模块是否可以加载。
+        如需检查模块是否启用，请使用 is_enabled()。
+        {!--< /tips >!--}
         """
-        if module_name in self._module_classes:
-            return True
-        module_statuses = config.getConfig("ErisPulse.modules.status", {})
-        return module_name in module_statuses
+        return module_name in self._module_classes
 
     def is_loaded(self, module_name: str) -> bool:
         """
@@ -350,9 +352,9 @@ class ModuleManager(ManagerBase):
         {!--< internal-use >!--}
         此方法仅供内部使用
 
-        :param module_name: [str] 模块名称
-        :param enabled: [bool] 是否启用模块 (默认: False)
-        :return: [bool] 操作是否成功
+        :param module_name: 模块名称
+        :param enabled: 是否启用模块 (默认: False)
+        :return: 操作是否成功
         """
         if self.exists(module_name):
             return True
@@ -367,18 +369,27 @@ class ModuleManager(ManagerBase):
         """
         检查模块是否启用
 
-        :param module_name: [str] 模块名称
-        :return: [bool] 模块是否启用
+        :param module_name: 模块名称
+        :return: 模块是否启用
+
+        {!--< tips >!--}
+        模块启用条件：
+        1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
+        2. 配置值为启用状态
+
+        如果模块未在配置中，返回 False
+        {!--< /tips >!--}
         """
-        if (
-            status := config.getConfig(f"ErisPulse.modules.status.{module_name}")
-        ) is None:
+        from .config import parse_bool_config
+
+        status = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+
+        # 模块未在配置中，返回 False
+        if status is None:
             return False
 
-        if isinstance(status, str):
-            return status.lower() not in ("false", "0", "no", "off")
-
-        return bool(status)
+        # 解析配置值
+        return parse_bool_config(status)
 
     def enable(self, module_name: str) -> bool:
         """
