@@ -65,6 +65,55 @@
 
 ---
 
+## [2.4.2-dev.1] - 2026/04/21
+> 开发版本
+
+### 修复
+- @wsu2059q
+  - 修复 LazyModule 同步访问 BaseModule 导致未初始化完成的问题：
+    - 在同步上下文中，BaseModule 使用 `asyncio.run()` 确保初始化完成
+    - 保持透明代理特性，用户无需感知同步/异步差异
+  - 修复配置系统多线程写入导致数据丢失的问题：
+    - 添加文件锁机制（`_file_lock`）确保文件操作原子性
+    - 使用临时文件写入后原子性重命名（`os.replace`/`os.rename`）
+    - 改进 `_schedule_write` 的 Timer 取消和重新调度逻辑
+  - 修复 Router 停止时异常未记录的问题：
+    - 区分不同类型的异常（CancelledError、TimeoutError、其他异常）
+    - 分别记录不同级别的日志，并使用 `exc_info=True` 输出完整堆栈
+  - 修复 Bot 离线事件重复提交的问题：
+    - 在 `AdapterManager` 中添加 `_is_being_shutdown` 标志
+    - `shutdown()` 开始时设置为 True，结束时清除
+    - `_update_bot_status()` 检查该标志，避免在关闭过程中重复提交离线事件
+  - 修复模块管理器 `exists()` 和 `is_enabled()` 逻辑混乱的问题：
+    - `exists()`: 只检查模块类是否已注册（`_module_classes`），语义明确为"是否可加载"
+    - `is_enabled()`: 检查配置中是否存在且状态为启用，不存在直接返回 False
+  - 修复生命周期事件处理器在事件提交完成前被清理的问题：
+    - 在提交事件后添加 `await asyncio.sleep(0.1)` 确保事件处理完成
+    - 然后再清理 `lifecycle._handlers`
+
+### 优化
+- @wsu2059q
+  - 优化 SDK 属性访问的错误提示：
+    - 根据属性名称区分不同场景提供准确的错误提示
+    - 已注册但未启用：提示模块/适配器未启用
+    - 完全不存在：提示检查名称拼写
+  - 优化 Uninitializer 的清理逻辑：
+    - 简化清理逻辑，只处理已初始化的 LazyModule
+    - 跳过未初始化的 LazyModule，不创建临时实例
+    - 只为已初始化的模块调用 `on_unload`
+  - `restart()` 方法添加详细的设计说明和使用示例：
+    - 说明使用 `asyncio.ensure_future()` 的设计意图
+    - 解释返回值语义（任务是否成功调度，而非重启是否完成）
+    - 提供多个使用场景示例和最佳实践
+
+### 重构
+- @wsu2059q
+  - 新增 `parse_bool_config()` 工具函数统一处理布尔值配置：
+    - 支持 bool、int、str 等多种类型
+    - 标准化 "true"/"false"、"yes"/"no"、"on"/"off" 等常见布尔值表示
+
+---
+
 ## [2.4.2-dev.0] - 2026/04/13
 > 开发版本
 
