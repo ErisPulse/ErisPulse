@@ -485,9 +485,14 @@ class RouterManager:
             self._server_task.cancel()
             try:
                 await asyncio.wait_for(self._server_task, timeout=5.0)
-            except (asyncio.CancelledError, asyncio.TimeoutError, Exception):
-                 logger.info("路由服务器已停止")
-            self._server_task = None
+            except asyncio.CancelledError:
+                logger.info("路由服务器已被取消")
+            except asyncio.TimeoutError:
+                logger.warning("路由服务器停止超时，强制终止")
+            except Exception as e:
+                logger.error(f"路由服务器停止时发生错误: {e}", exc_info=True)
+            finally:
+                self._server_task = None
 
         # 清理所有注册的路由
         logger.debug("清理所有注册的路由...")
