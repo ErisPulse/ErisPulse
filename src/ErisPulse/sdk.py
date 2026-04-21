@@ -144,8 +144,17 @@ class SDK:
             return object.__getattribute__(self, name)
         except AttributeError:
             from .Core.logger import logger as _logger
-            _logger.error(f"[SDK] 未找到属性 {name}, 您可能使用了错误的SDK注册对象")
-            raise AttributeError
+
+            # 区分不同场景，提供更准确的错误提示
+            if not name.startswith('_'):
+                if name in self.module._module_classes:
+                    _logger.error(f"[SDK] 模块 '{name}' 已注册但未加载或未启用，请检查模块配置")
+                elif name in self.adapter._adapters:
+                    _logger.error(f"[SDK] 适配器 '{name}' 已注册但未启用，请检查适配器配置")
+                else:
+                    _logger.error(f"[SDK] 未找到属性或模块/适配器 '{name}'，请检查名称是否正确")
+
+            raise AttributeError(f"ErisPulse SDK has no attribute '{name}'")
 
     def __repr__(self) -> str:
         """
@@ -363,55 +372,37 @@ class SDK:
                 loaded_modules = module_manager.list_loaded()
                 if loaded_modules:
                     await module_manager.unload()
-                
+
                 # 3. 收集 SDK 对象上的模块属性（在 clear 之前）
                 instance_dict = object.__getattribute__(self._sdk, '__dict__')
                 module_properties_to_clear = set()
-                
+
                 # 收集已加载模块的属性名
                 for module_name in loaded_modules:
                     if module_name in instance_dict:
                         module_properties_to_clear.add(module_name)
-                
-                # 收集所有 LazyModule 代理的属性名（包括从未被访问过的）
+
+                # 处理已初始化的 LazyModule（已访问过，有实例）
                 for attr_name, attr_value in list(instance_dict.items()):
                     if attr_name.startswith('_'):
                         continue
                     from .loaders.module import LazyModule
                     if isinstance(attr_value, LazyModule):
-                        lm_name = object.__getattribute__(attr_value, '_module_name')
-                        if lm_name not in module_properties_to_clear:
-                            # LazyModule 从未被触发初始化，需要手动调用 on_unload
-                            try:
-                                lm_class = object.__getattribute__(attr_value, '_module_class')
-                                lm_manager = object.__getattribute__(attr_value, '_manager_instance')
-                                lm_info = object.__getattribute__(attr_value, '_module_info')
-                                lm_initialized = object.__getattribute__(attr_value, '_initialized')
-                                lm_is_base = object.__getattribute__(attr_value, '_is_base_module')
-                                
-                                if lm_is_base and not lm_initialized:
+                        # 只处理已初始化的 LazyModule
+                        lm_initialized = object.__getattribute__(attr_value, '_initialized')
+                        if lm_initialized:
+                            lm_name = object.__getattribute__(attr_value, '_module_name')
+                            instance = object.__getattribute__(attr_value, '_instance')
+                            if hasattr(instance, 'on_unload'):
+                                try:
                                     import inspect
-                                    try:
-                                        if lm_manager._sdk is None:
-                                            lm_sdk = self._sdk
-                                        else:
-                                            lm_sdk = lm_manager._sdk
-                                        
-                                        params = [p for p in inspect.signature(lm_class.__init__).parameters.values() if p.name != "self"]
-                                        tmp_instance = lm_class(lm_sdk) if params else lm_class()
-                                        if tmp_instance is None:
-                                            raise ValueError(f"模块 {lm_name} __init__ 返回 None")
-                                        if hasattr(tmp_instance, 'on_unload'):
-                                            if inspect.iscoroutinefunction(tmp_instance.on_unload):
-                                                await tmp_instance.on_unload({"module_name": lm_name})
-                                            else:
-                                                tmp_instance.on_unload({"module_name": lm_name})
-                                    except Exception as e:
-                                        logger.warning(f"清理未初始化懒加载模块 {lm_name} 的 on_unload 失败: {e}")
-                            except Exception as e:
-                                logger.warning(f"清理未初始化懒加载模块 {lm_name} 失败: {e}")
-                        
-                        module_properties_to_clear.add(attr_name)
+                                    if inspect.iscoroutinefunction(instance.on_unload):
+                                        await instance.on_unload({"module_name": lm_name})
+                                    else:
+                                        instance.on_unload({"module_name": lm_name})
+                                except Exception as e:
+                                    logger.warning(f"清理懒加载模块 {lm_name} 的 on_unload 失败: {e}")
+                            module_properties_to_clear.add(attr_name)
                 
                 # 4. 清理所有事件处理器
                 Event._clear_all_handlers()
@@ -460,10 +451,13 @@ class SDK:
                         "module_properties_to_clear": list(module_properties_to_clear),
                     },
                 )
-                
-                # 9. 清理生命周期事件处理器（在所有事件提交之后）
+
+                # 等待一小段时间，确保事件处理完成
+                await asyncio.sleep(0.1)
+
+                # 9. 清理生命周期事件处理器（在所有事件完成之后）
                 lifecycle._handlers.clear()
-                
+
                 logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
                 return True
                 
@@ -478,6 +472,13 @@ class SDK:
                         "error": str(e),
                     },
                 )
+
+                # 等待一小段时间，确保事件处理完成
+                await asyncio.sleep(0.1)
+
+                # 清理生命周期事件处理器（即使在失败时也要清理）
+                lifecycle._handlers.clear()
+
                 if "attached to a different loop" in str(e):
                     # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
                     # 在这种情况下，我们直接返回True即可
@@ -734,20 +735,51 @@ if __name__ == "__main__":
     async def restart(self) -> bool:
         """
         SDK 重新启动
-        
-        执行完整的反初始化后再初始化过程，并重新启动适配器
-        
-        {!--< tips >!--}
-        使用 asyncio.ensure_future 将重启任务注册到事件循环调度器，
-        与调用栈完全解耦，确保即使调用方被取消，重启流程也能完整执行。
 
-        注意：设计上就是如此，不需要进行更改 | 针对场景：事件内的模块进行ErisPulse的restart调用
+        执行完整的反初始化后再初始化过程，并重新启动适配器。
+
+        {!--< tips >!--}
+        **重要设计说明**：
+
+        此方法使用 `asyncio.ensure_future()` 将重启任务注册到事件循环调度器，
+        与调用栈完全解耦。这是有意为之的设计，原因如下：
+
+        1. **事件链路保护**：如果模块在事件处理器内部调用 `restart()`，而重启过程
+           是同步等待的，那么重启会中断当前事件链路，导致事件处理不完整。
+
+        2. **后台执行**：重启是一个耗时操作（需要关闭适配器、卸载模块、重新加载），
+           使用 `ensure_future` 可以让它在后台执行，不阻塞调用者。
+
+        3. **返回值语义**：方法立即返回 `True` 表示"重启任务已成功调度"，
+           而不是"重启已完成"。实际的重启过程在后台进行。
+
+        **使用场景示例**：
+
+        >>> # 场景1: 在模块的事件处理器中调用重启
+        >>> @Event.on("message")
+        >>> async def handle_reload_command(event):
+        >>>     if event["message"] == "/reload":
+        >>>         # 使用 ensure_future 确保事件链路不被中断
+        >>>         await sdk.restart()  # ✅ 正确
+        >>>         # 不要使用 await sdk.restart()，这会导致事件链路中断
+        >>>
+        >>> # 场景2: 等待重启完成
+        >>> # 如果需要等待重启完成，可以使用生命周期事件监听
+        >>> @lifecycle.on("core.init.complete")
+        >>> async def on_restart_complete(event):
+        >>>     if event["data"]["success"]:
+        >>>         logger.info("重启成功！")
+        >>>
+        >>> # 场景3: 命令触发重启
+        >>> @command("restart")
+        >>> async def restart_command():
+        >>>     logger.info("正在重启 SDK...")
+        >>>     await sdk.restart()
+        >>>     logger.info("重启任务已调度，将在后台执行")
         {!--< /tips >!--}
-        
-        :return: bool 重新加载是否成功
-        
-        :raises RuntimeError: 当初始化失败时抛出
-        
+
+        :return: bool 重启任务是否成功调度（并非重启是否完成）
+
         :example:
         >>> await sdk.restart()
         """

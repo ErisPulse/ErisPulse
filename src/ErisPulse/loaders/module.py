@@ -549,11 +549,15 @@ class LazyModule:
         """
         确保模块已初始化
 
-        :raises RuntimeError: 当模块需要异步初始化时抛出
-
         {!--< internal-use >!--}
         内部方法，检查并确保模块已初始化
         {!--< /internal-use >!--}
+        
+        设计说明：
+        - 支持同步/异步透明的懒加载机制，用户无需感知差异
+        - BaseModule 在同步上下文中使用 asyncio.run() 确保初始化完成
+        - 非 BaseModule 保持原有逻辑，支持同步初始化
+        {!--< internal-use >!--}
         """
         if not object.__getattribute__(self, "_initialized"):
             try:
@@ -561,8 +565,12 @@ class LazyModule:
                 
                 if object.__getattribute__(self, "_is_base_module"):
                     # BaseModule 必须通过 manager.load() 异步初始化
-                    # 同步创建实例后调度异步 on_load 会导致双重实例化
-                    loop.create_task(self._initialize())
+                    # 在同步上下文中，使用 asyncio.run() 确保初始化完成
+                    # 在异步上下文中，使用 loop.create_task() 避免阻塞
+                    if loop.is_running():
+                        loop.create_task(self._initialize())
+                    else:
+                        asyncio.run(self._initialize())
                     return
 
                 init_method = getattr(
