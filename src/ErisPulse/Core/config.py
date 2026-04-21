@@ -24,8 +24,9 @@ class ConfigManager:
         self._cache_timestamp = 0  # 缓存时间戳
         self._cache_timeout = 60  # 缓存超时时间（秒）
         self._write_delay = 5  # 写入延迟（秒）
-        self._write_timer = None  # 写入定时器
+        self._write_timer: threading.Timer | None = None  # 写入定时器
         self._lock = threading.RLock()  # 线程安全锁
+        self._file_lock = threading.RLock()  # 文件操作锁，确保原子性
         self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
 
@@ -138,56 +139,79 @@ class ConfigManager:
     def _flush_config(self) -> None:
         """
         将待写入的配置刷新到文件
+        
+        使用文件锁确保多线程环境下的原子性操作
         """
         with self._lock:
             if not self._dirty_keys:
                 return  # 没有需要写入的内容
 
-            try:
-                # 从文件读取完整配置
-                if os.path.exists(self.CONFIG_FILE):
-                    with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
-                        config = toml.load(f)
-                else:
-                    config = {}
+            with self._file_lock:  # 确保文件操作原子性
+                try:
+                    # 从文件读取完整配置
+                    if os.path.exists(self.CONFIG_FILE):
+                        with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
+                            config = toml.load(f)
+                    else:
+                        config = {}
 
-                # 应用待写入的更改
-                for key, value in self._dirty_keys.items():
-                    keys = key.split(".")
-                    current = config
-                    for k in keys[:-1]:
-                        if k not in current:
-                            current[k] = {}
-                        current = current[k]
-                    current[keys[-1]] = value
+                    # 应用待写入的更改
+                    for key, value in self._dirty_keys.items():
+                        keys = key.split(".")
+                        current = config
+                        for k in keys[:-1]:
+                            if k not in current:
+                                current[k] = {}
+                            current = current[k]
+                        current[keys[-1]] = value
 
-                # 对配置字典进行排序，确保同一模块的配置项排列在一起
-                sorted_config = self._sort_config_dict(config)
+                    # 对配置字典进行排序，确保同一模块的配置项排列在一起
+                    sorted_config = self._sort_config_dict(config)
 
-                # 写入文件
-                with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
-                    toml.dump(sorted_config, f)
+                    # 写入临时文件，确保原子性
+                    temp_file = self.CONFIG_FILE + ".tmp"
+                    with open(temp_file, "w", encoding="utf-8") as f:
+                        toml.dump(sorted_config, f)
 
-                # 更新缓存并清除待写入队列
-                self._cache = sorted_config
-                self._cache_timestamp = time.time()
-                self._dirty_keys.clear()
+                    # 原子性重命名（跨平台兼容）
+                    if os.name == 'nt':  # Windows
+                        if os.path.exists(self.CONFIG_FILE):
+                            os.replace(temp_file, self.CONFIG_FILE)
+                        else:
+                            os.rename(temp_file, self.CONFIG_FILE)
+                    else:  # Unix/Linux/macOS
+                        os.rename(temp_file, self.CONFIG_FILE)
 
-            except Exception as e:
-                from .logger import logger
+                    # 更新缓存并清除待写入队列
+                    self._cache = sorted_config
+                    self._cache_timestamp = time.time()
+                    self._dirty_keys.clear()
 
-                logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                except Exception as e:
+                    from .logger import logger
+
+                    logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                    # 清理临时文件
+                    temp_file = self.CONFIG_FILE + ".tmp"
+                    if os.path.exists(temp_file):
+                        try:
+                            os.remove(temp_file)
+                        except Exception:
+                            pass
 
     def _schedule_write(self) -> None:
         """
         安排延迟写入
+        
+        线程安全：使用锁保护 Timer 的取消和创建
         """
-        if self._write_timer:
-            self._write_timer.cancel()
+        with self._lock:
+            if self._write_timer:
+                self._write_timer.cancel()
 
-        self._write_timer = threading.Timer(self._write_delay, self._flush_config)
-        self._write_timer.daemon = True
-        self._write_timer.start()
+            self._write_timer = threading.Timer(self._write_delay, self._flush_config)
+            self._write_timer.daemon = True
+            self._write_timer.start()
 
     def _check_cache_validity(self) -> None:
         """
@@ -268,4 +292,30 @@ class ConfigManager:
 
 config: ConfigManager = ConfigManager()
 
-__all__ = ["config"]
+
+def parse_bool_config(value: Any) -> bool:
+    """
+    解析配置中的布尔值
+
+    :param value: 配置值（可以是 bool, int, str 等）
+    :return: 解析后的布尔值
+
+    支持的值：
+    - True: True, 1, "true", "True", "1", "yes", "Yes", "on", "On"
+    - False: False, 0, "false", "False", "0", "no", "No", "off", "Off"
+    """
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, int):
+        return value != 0
+
+    if isinstance(value, str):
+        normalized = value.lower().strip()
+        return normalized in ("true", "1", "yes", "on")
+
+    # 其他类型尝试转换为布尔值
+    return bool(value)
+
+
+__all__ = ["config", "parse_bool_config"]
