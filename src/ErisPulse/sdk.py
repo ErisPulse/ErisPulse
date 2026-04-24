@@ -20,8 +20,8 @@ from typing import TYPE_CHECKING
 # 导入核心模块
 from .Core import Event, lifecycle, logger
 from .Core import storage, env, config
-from .Core import adapter, AdapterFather, BaseAdapter, SendDSL
-from .Core import module, router, adapter_server
+from .Core import adapter, BaseAdapter, SendDSL
+from .Core import module, router
 from .Core.lifecycle import LifecycleManager
 from .Core.adapter import AdapterManager
 from .Core.storage import StorageManager
@@ -55,12 +55,10 @@ class SDK:
     - env: 存储管理器别名
     - config: 配置管理器
     - adapter: 适配器管理器
-    - AdapterFather: 适配器基类别名
     - BaseAdapter: 适配器基类
     - SendDSL: DSL 发送接口基类
     - module: 模块管理器
     - router: 路由管理器
-    - adapter_server: 路由管理器别名
     {!--< /tips >!--}
     """
     
@@ -77,7 +75,7 @@ class SDK:
     
     storage: StorageManager
     """存储管理器"""
-    
+
     env: StorageManager
     """存储管理器别名"""
     
@@ -86,9 +84,6 @@ class SDK:
     
     adapter: AdapterManager
     """适配器管理器"""
-    
-    AdapterFather: type[BaseAdapter]
-    """适配器基类别名"""
     
     BaseAdapter: type[BaseAdapter]
     """适配器基类"""
@@ -101,9 +96,6 @@ class SDK:
     
     router: RouterManager
     """路由管理器"""
-    
-    adapter_server: RouterManager
-    """路由管理器别名"""
     
     def __init__(self):
         """
@@ -124,7 +116,6 @@ class SDK:
         # 设置 adapter 的 SDK 引用
         adapter.set_sdk_ref(self)
 
-        self.AdapterFather = AdapterFather
         self.BaseAdapter = BaseAdapter
         self.SendDSL = SendDSL
         
@@ -133,7 +124,6 @@ class SDK:
         module.set_sdk_ref(self)
         
         self.router = router
-        self.adapter_server = adapter_server
         
         # 初始化协调器（在需要时创建）
         self._initializer: SDK.Initializer | None = None

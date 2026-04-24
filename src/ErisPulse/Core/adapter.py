@@ -8,6 +8,7 @@ import functools
 import asyncio
 import inspect
 import time
+import warnings
 from typing import Any
 from collections.abc import Callable
 from collections import defaultdict
@@ -586,13 +587,11 @@ class AdapterManager(ManagerBase):
 
     # 兼容性方法 - 保持向后兼容
     def list_adapters(self) -> dict[str, bool]:
-        """
-        列出所有平台适配器状态
-
-        {!--< deprecated >!--} 请使用 list_items() 代替
-
-        :return: [dict[str, bool]] 平台适配器状态字典
-        """
+        warnings.warn(
+            "list_adapters() 已弃用，请使用 list_items() 代替",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.list_items()
 
     # ==================== 事件处理与消息发送 ====================
@@ -851,15 +850,19 @@ class AdapterManager(ManagerBase):
                 )
 
         if status == "offline":
-            # 只有在非主动关闭的情况下才提交事件（避免与 shutdown() 重复）
             if not self._is_being_shutdown:
-                asyncio.ensure_future(
-                    lifecycle.submit_event(
-                        "adapter.bot.offline",
-                        msg=f"Bot {platform}/{bot_id} 离线",
-                        data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                try:
+                    loop = asyncio.get_running_loop()
+                    task = loop.create_task(
+                        lifecycle.submit_event(
+                            "adapter.bot.offline",
+                            msg=f"Bot {platform}/{bot_id} 离线",
+                            data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                        )
                     )
-                )
+                    self._adapter_tasks.setdefault(f"_bot_offline_{platform}_{bot_id}", task)
+                except RuntimeError:
+                    pass
 
     def _update_bot_heartbeat(self, platform: str, self_info: dict) -> None:
         """
@@ -1170,6 +1173,11 @@ class AdapterManager(ManagerBase):
         :return: [bool] 平台是否存在且启用
         """
         return self.exists(platform) and self.is_enabled(platform)
+
+    def __repr__(self) -> str:
+        registered = list(self._adapters.keys())
+        running = [p for p, a in self._adapters.items() if a in self._started_instances]
+        return f"<AdapterManager registered={registered} running={running}>"
 
 
 adapter: AdapterManager = AdapterManager()

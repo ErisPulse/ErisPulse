@@ -21,12 +21,10 @@ from .Core import (
     env,
     config,
     adapter,
-    AdapterFather,
     BaseAdapter,
     SendDSL,
     module,
     router,
-    adapter_server,
 )
 
 # 导入实际的SDK对象
