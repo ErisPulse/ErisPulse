@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 864,
+  "total_keywords": 863,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -123,7 +123,7 @@
     "1. Module Development (Recommended)": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 96,
         "level": 3,
         "title": "1. Module Development (Recommended)"
       }
@@ -459,7 +459,7 @@
     "2. Embedded Development": [
       {
         "document": "README.md",
-        "line": 96,
+        "line": 100,
         "level": 3,
         "title": "2. Embedded Development"
       }
@@ -1489,7 +1489,7 @@
     "AI-Assisted Development": [
       {
         "document": "README.md",
-        "line": 80,
+        "line": 84,
         "level": 3,
         "title": "AI-Assisted Development"
       },
@@ -1527,7 +1527,7 @@
     "API Reference": [
       {
         "document": "README.md",
-        "line": 62,
+        "line": 63,
         "level": 3,
         "title": "API Reference"
       },
@@ -1667,7 +1667,7 @@
     "Adapter Development": [
       {
         "document": "README.md",
-        "line": 42,
+        "line": 43,
         "level": 4,
         "title": "Adapter Development"
       },
@@ -1679,7 +1679,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 51,
+        "line": 53,
         "level": 3,
         "title": "Adapter Development"
       }
@@ -1837,7 +1837,7 @@
     "Advanced Topics": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 75,
         "level": 3,
         "title": "Advanced Topics"
       },
@@ -2489,7 +2489,7 @@
     "Choosing a Development Type": [
       {
         "document": "developer-guide/README.md",
-        "line": 33,
+        "line": 35,
         "level": 2,
         "title": "Choosing a Development Type"
       }
@@ -3161,7 +3161,7 @@
     "Debugging Tips": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 84,
         "level": 3,
         "title": "Debugging Tips"
       }
@@ -3199,7 +3199,7 @@
     "Developer Guide": [
       {
         "document": "README.md",
-        "line": 33,
+        "line": 34,
         "level": 3,
         "title": "Developer Guide"
       },
@@ -3213,7 +3213,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 92,
         "level": 2,
         "title": "Development Methods"
       }
@@ -3221,7 +3221,7 @@
     "Development Mode": [
       {
         "document": "developer-guide/README.md",
-        "line": 74,
+        "line": 76,
         "level": 3,
         "title": "Development Mode"
       },
@@ -3243,7 +3243,7 @@
     "Development Tools": [
       {
         "document": "developer-guide/README.md",
-        "line": 65,
+        "line": 67,
         "level": 2,
         "title": "Development Tools"
       }
@@ -3838,20 +3838,6 @@
         "title": "Extended Field Descriptions"
       }
     ],
-    "Extension Development": [
-      {
-        "document": "README.md",
-        "line": 49,
-        "level": 4,
-        "title": "Extension Development"
-      },
-      {
-        "document": "developer-guide/README.md",
-        "line": 22,
-        "level": 3,
-        "title": "Extension Development"
-      }
-    ],
     "Extension Field Descriptions": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4005,7 +3991,7 @@
     "Getting Help": [
       {
         "document": "README.md",
-        "line": 117,
+        "line": 121,
         "level": 2,
         "title": "Getting Help"
       },
@@ -5137,7 +5123,7 @@
     "Module Development": [
       {
         "document": "README.md",
-        "line": 35,
+        "line": 36,
         "level": 4,
         "title": "Module Development"
       },
@@ -5149,7 +5135,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 37,
+        "line": 39,
         "level": 3,
         "title": "Module Development"
       }
@@ -5582,14 +5568,6 @@
         "title": "Package Management Commands"
       }
     ],
-    "Packaging": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 102,
-        "level": 3,
-        "title": "Packaging"
-      }
-    ],
     "Parallel Event Handling": [
       {
         "document": "getting-started/event-handling.md",
@@ -5691,7 +5669,7 @@
     "Platform Features Guide": [
       {
         "document": "README.md",
-        "line": 53,
+        "line": 54,
         "level": 3,
         "title": "Platform Features Guide"
       }
@@ -5761,7 +5739,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 24,
+        "line": 26,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -5815,7 +5793,7 @@
     "Project Templates": [
       {
         "document": "developer-guide/README.md",
-        "line": 67,
+        "line": 69,
         "level": 3,
         "title": "Project Templates"
       }
@@ -5836,20 +5814,28 @@
         "title": "Proxy Configuration"
       }
     ],
+    "Publishing": [
+      {
+        "document": "README.md",
+        "line": 50,
+        "level": 4,
+        "title": "Publishing"
+      }
+    ],
+    "Publishing Guide": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 22,
+        "level": 3,
+        "title": "Publishing Guide"
+      }
+    ],
     "Publishing Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 100,
+        "line": 102,
         "level": 2,
         "title": "Publishing Your Module"
-      }
-    ],
-    "Publishing to PyPI": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 135,
-        "level": 3,
-        "title": "Publishing to PyPI"
       }
     ],
     "Purpose": [
@@ -5979,6 +5965,12 @@
       }
     ],
     "Quick Reference": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 110,
+        "level": 3,
+        "title": "Quick Reference"
+      },
       {
         "document": "user-guide/README.md",
         "line": 11,
@@ -6133,7 +6125,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 145,
+        "line": 120,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6203,7 +6195,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 123,
+        "line": 127,
         "level": 2,
         "title": "Related Links"
       }
@@ -6967,7 +6959,7 @@
     "Style Guide": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 88,
         "level": 3,
         "title": "Style Guide"
       },
@@ -7105,7 +7097,7 @@
     "Technical Standards": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 69,
         "level": 3,
         "title": "Technical Standards"
       },
@@ -7787,12 +7779,6 @@
       }
     ],
     "pyproject.toml Configuration": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 116,
-        "level": 3,
-        "title": "pyproject.toml Configuration"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 19,
