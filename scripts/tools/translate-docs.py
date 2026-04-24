@@ -619,8 +619,10 @@ class DocsTranslator:
         print("=" * 60)
         
         if self.stats['failed_files'] > 0:
-            print(f"\n❌ 有 {self.stats['failed_files']} 个文件翻译失败！")
-            sys.exit(1)
+            print(f"\n⚠️  有 {self.stats['failed_files']} 个文件翻译失败!")
+            print("💡 已成功的翻译已保存,可以稍后重试失败的文件")
+            # 不退出,让工作流继续处理已成功翻译的文件
+            # sys.exit(1)  # 注释掉,避免中断 CI/CD
 
 
 async def main():
