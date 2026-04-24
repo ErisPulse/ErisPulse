@@ -101,7 +101,6 @@ class PromptGenerator:
 - OneBot12 事件标准和平台适配
 - SDK 核心模块 (Storage, Config, Logger, Router, Lifecycle)
 - Event 包装类和事件处理系统
-- CLI 命令开发和扩展
 - 懒加载系统和生命周期管理
 - SendDSL 消息发送系统
 - 路由系统和 FastAPI 集成
@@ -109,7 +108,7 @@ class PromptGenerator:
 你擅长：
 - 编写高质量的异步 Python 代码
 - 设计模块化、可扩展的架构
-- 开发模块、适配器和 CLI 扩展
+- 开发模块、适配器
 - 使用 ErisPulse 的所有核心功能
 - 遵循 ErisPulse 的最佳实践和代码规范
 - 解决跨平台兼容性问题
@@ -237,6 +236,10 @@ class PromptGenerator:
         sections.append(self.read_file('developer-guide/adapters/best-practices.md'))
         sections.append("\n")
         
+        sections.append(self._subsection_header("事件转换器"))
+        sections.append(self.read_file('developer-guide/adapters/converter.md'))
+        sections.append("\n")
+        
         # 技术标准
         sections.append(self._section_header("技术标准"))
         
@@ -315,6 +318,10 @@ class PromptGenerator:
         sections.append(self.read_file('user-guide/configuration.md'))
         sections.append("\n")
         
+        sections.append(self._subsection_header("部署指南"))
+        sections.append(self.read_file('user-guide/deployment.md'))
+        sections.append("\n")
+        
         # 开发者指南
         sections.append(self._section_header("开发者指南"))
         
@@ -360,8 +367,12 @@ class PromptGenerator:
         sections.append(self.read_file('developer-guide/adapters/best-practices.md'))
         sections.append("\n")
         
-        sections.append(self._subsection_header("CLI 扩展开发"))
-        sections.append(self.read_file('developer-guide/extensions/cli-extensions.md'))
+        sections.append(self._subsection_header("事件转换器"))
+        sections.append(self.read_file('developer-guide/adapters/converter.md'))
+        sections.append("\n")
+        
+        sections.append(self._subsection_header("发布与模块商店指南"))
+        sections.append(self.read_file('developer-guide/publishing.md'))
         sections.append("\n")
         
         # API 参考
@@ -411,6 +422,18 @@ class PromptGenerator:
         
         sections.append(self._subsection_header("路由系统"))
         sections.append(self.read_file('advanced/router.md'))
+        sections.append("\n")
+        
+        sections.append(self._subsection_header("MessageBuilder 详解"))
+        sections.append(self.read_file('advanced/message-builder.md'))
+        sections.append("\n")
+        
+        sections.append(self._subsection_header("会话类型系统"))
+        sections.append(self.read_file('advanced/session-types.md'))
+        sections.append("\n")
+        
+        sections.append(self._subsection_header("Conversation 多轮对话"))
+        sections.append(self.read_file('advanced/conversation.md'))
         sections.append("\n")
         
         # 平台特性
