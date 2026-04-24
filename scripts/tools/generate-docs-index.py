@@ -152,6 +152,7 @@ class DocsIndexGenerator:
         "user-guide/installation.md": 2,
         "user-guide/configuration.md": 3,
         "user-guide/cli-reference.md": 4,
+        "user-guide/deployment.md": 5,
         
         # 开发者指南
         "developer-guide/README.md": 1,
@@ -163,7 +164,8 @@ class DocsIndexGenerator:
         "developer-guide/adapters/core-concepts.md": 7,
         "developer-guide/adapters/send-dsl.md": 8,
         "developer-guide/adapters/best-practices.md": 9,
-        "developer-guide/extensions/cli-extensions.md": 10,
+        "developer-guide/publishing.md": 10,
+        "developer-guide/adapters/converter.md": 11,
         
         # 平台特性指南
         "platform-guide/README.md": 1,
@@ -185,6 +187,9 @@ class DocsIndexGenerator:
         "advanced/lifecycle.md": 2,
         "advanced/lazy-loading.md": 3,
         "advanced/router.md": 4,
+        "advanced/message-builder.md": 5,
+        "advanced/session-types.md": 6,
+        "advanced/conversation.md": 7,
         
         # AI 辅助开发
         "ai-support/README.md": 1,
