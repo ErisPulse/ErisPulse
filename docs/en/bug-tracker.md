@@ -151,3 +151,76 @@ Interactive initialization failed: unsupported operand type(s) for /: 'str' and 
 **Fix Details**: Added `logger.warning()` before skipping to record information about the field missing the `key`.
 
 **Fix Date**: 2026/04/13
+
+---
+
+### [BUG-010] LazyModule Synchronous Access to BaseModule Leads to Incomplete Initialization
+
+**Issue**: When a user accesses a lazily loaded BaseModule attribute in a synchronous context, the module uses `loop.create_task()` for asynchronous initialization but does not wait, causing the attribute access to potentially occur before initialization is complete, leading to a race condition.
+
+**Root Cause**: `_ensure_initialized()` returns immediately after using `loop.create_task(self._initialize())` for BaseModule, without ensuring initialization is complete.
+
+**Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix Details**: In a synchronous context, BaseModule initialization is changed to use `asyncio.run(self._initialize())` to ensure initialization is complete before returning. Maintains transparent proxy characteristics, so users do not need to perceive the synchronous/asynchronous difference.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-011] Configuration System Multi-threaded Write Causes Data Loss
+
+**Issue**: In a multi-threaded environment, when multiple threads call `config.setConfig()` simultaneously, the read-modify-write operation of `_flush_config()` is not atomic, potentially causing partial writes to be lost.
+
+**Root Cause**: Although `_flush_config()` uses `RLock`, there is no file lock protection between file reading and writing, and the Timer for `_schedule_write` may be triggered multiple times causing overwrites.
+
+**Affected Versions**: 2.3.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix Details**:
+1. Added file lock mechanism (`_file_lock`) to ensure file operation atomicity.
+2. Use atomic rename (`os.replace`/`os.rename`) after writing to a temporary file.
+3. Improved the Timer cancellation and rescheduling logic for `_schedule_write`.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-012] SDK Attribute Access Error Message Inaccurate
+
+**Issue**: When accessing a non-existent attribute, the error message "You may be using the wrong SDK registration object" may mislead users. The actual issue could be that the module is not enabled or the name is misspelled.
+
+**Root Cause**: The error message in `__getattribute__` does not distinguish between different scenarios and uniformly provides a vague hint.
+
+**Affected Versions**: 2.0.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix Details**: Distinguishes different scenarios based on the attribute name:
+1. Registered but not enabled: Prompts that the module/adapter is not enabled.
+2. Does not exist at all: Prompts to check name spelling.
+Also re-raises the original AttributeError to facilitate catching by upper layers.
+
+**Fix Date**: 2026/04/21
+
+---
+
+### [BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex
+
+**Issue**: The `Uninitializer` creates temporary instances for LazyModules that have never been accessed to call `on_unload`, resulting in complex and error-prone code.
+
+**Root Cause**: Attempted to call lifecycle methods for all LazyModules, but uninitialized modules do not need and should not be initialized.
+
+**Affected Versions**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Fixed Version**: 2.4.2-dev.2
+
+**Fix Details**: Simplified cleanup logic to only handle initialized LazyModules:
+1. Skips uninitialized LazyModules without creating temporary instances.
+2. Calls `on_unload` only for initialized modules.
+3. Deletes complex temporary instance creation logic.
+
+**Fix Date**: 2026/04/21
