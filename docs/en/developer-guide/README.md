@@ -19,7 +19,9 @@ This guide helps you develop custom modules and adapters to extend the functiona
 4. [Event Converter](adapters/converter.md) - Implementing event converters
 5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
-### Extension Development
+### Publishing Guide
+
+- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse Module Store
 
 ## Prerequisites
 
@@ -99,48 +101,21 @@ logger.debug("Debug info")
 
 ## Publishing Your Module
 
-### Packaging
+For the complete publishing process, refer to [Publishing and Module Store Guide](publishing.md), including:
 
-Ensure the project contains the following files:
+- PyPI publishing steps
+- ErisPulse Module Store submission process
+- Publishing adapters
 
-```
-MyModule/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-└── MyModule/
-    ├── __init__.py
-    └── Core.py
-```
-
-### pyproject.toml Configuration
-
-```toml
-[project]
-name = "ErisPulse-MyModule"
-version = "1.0.0"
-description = "Description of module functionality"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-[project.entry-points."erispulse.module"]
-"MyModule" = "MyModule:Main"
-```
-
-### Publishing to PyPI
+### Quick Reference
 
 ```bash
-# Build distribution packages
+# Build and publish to PyPI
 python -m build
-
-# Publish to PyPI
 python -m twine upload dist/*
 ```
+
+Then go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit to the module store.
 
 ## Related Documentation
 
