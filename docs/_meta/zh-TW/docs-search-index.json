@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 779,
+  "total_keywords": 782,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1868,6 +1868,30 @@
         "line": 93,
         "level": 3,
         "title": "[BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
+      }
+    ],
+    "[BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
+      {
+        "document": "bug-tracker.md",
+        "line": 109,
+        "level": 3,
+        "title": "[BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
+      }
+    ],
+    "[BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
+      {
+        "document": "bug-tracker.md",
+        "line": 125,
+        "level": 3,
+        "title": "[BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
+      }
+    ],
+    "[BUG-009] Event.collect() 字段缺少 key 時靜默跳過": [
+      {
+        "document": "bug-tracker.md",
+        "line": 141,
+        "level": 3,
+        "title": "[BUG-009] Event.collect() 字段缺少 key 時靜默跳過"
       }
     ],
     "__init__.py": [
