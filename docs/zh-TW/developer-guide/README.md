@@ -19,7 +19,9 @@
 4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
 5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
 
-### 擴充功能開發
+### 發布指南
+
+- [發布與模組商店指南](publishing.md) - 將您的作品發布到 PyPI 和 ErisPulse 模組商店
 
 ## 開發準備
 
@@ -79,7 +81,7 @@ ErisPulse 提供了範例專案作為參考：
 epsdk run main.py --reload
 ```
 
-### 偵錯技巧
+### 除錯技巧
 
 啟用 DEBUG 層級日誌：
 
@@ -99,48 +101,21 @@ logger.debug("除錯資訊")
 
 ## 發布您的模組
 
-### 打包
+完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括：
 
-確保專案包含以下檔案：
+- PyPI 發布步驟
+- ErisPulse 模組商店提交流程
+- 適配器的發布
 
-```
-MyModule/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-└── MyModule/
-    ├── __init__.py
-    └── Core.py
-```
-
-### pyproject.toml 設定
-
-```toml
-[project]
-name = "ErisPulse-MyModule"
-version = "1.0.0"
-description = "模組功能描述"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-[project.entry-points."erispulse.module"]
-"MyModule" = "MyModule:Main"
-```
-
-### 發布到 PyPI
+### 快速參考
 
 ```bash
-# 建構分發套件
+# 建構並發布到 PyPI
 python -m build
-
-# 發布到 PyPI
 python -m twine upload dist/*
 ```
+
+然後前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交到模組商店。
 
 ## 相關文件
 
