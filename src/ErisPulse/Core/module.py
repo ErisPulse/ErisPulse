@@ -5,6 +5,7 @@ ErisPulse 模块系统
 """
 
 import inspect
+import warnings
 from typing import Any
 from .logger import logger
 from .config import config
@@ -530,13 +531,11 @@ class ModuleManager(ManagerBase):
 
     # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> dict[str, bool]:
-        """
-        列出所有模块状态
-
-        {!--< deprecated >!--} 请使用 list_items() 代替
-
-        :return: [dict[str, bool]] 模块状态字典
-        """
+        warnings.warn(
+            "list_modules() 已弃用，请使用 list_items() 代替",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.list_items()
 
     # ==================== 工具方法 ====================
@@ -567,6 +566,11 @@ class ModuleManager(ManagerBase):
         >>> if "MyModule" in module: ...
         """
         return self.exists(module_name) and self.is_enabled(module_name)
+
+    def __repr__(self) -> str:
+        registered = list(self._module_classes.keys())
+        loaded = list(self._loaded_modules)
+        return f"<ModuleManager registered={registered} loaded={loaded}>"
 
 
 module: ModuleManager = ModuleManager()
