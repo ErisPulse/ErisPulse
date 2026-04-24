@@ -83,7 +83,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
-          set -e
           echo "艾莉丝开始翻译文档啦~"
           
           # 检查是否需要强制翻译
@@ -94,12 +93,13 @@ jobs:
           fi
           
           # 运行翻译脚本（自动为所有语言翻译）
+          TRANSLATE_EXIT_CODE=0
           if [ -f "scripts/tools/translate-docs.py" ]; then
             # 检查是否配置了 API 密钥
             if [ -n "$OPENAI_API_KEY" ]; then
               echo "开始翻译文档..."
-              python scripts/tools/translate-docs.py $FORCE_FLAG
-              echo "文档翻译完成"
+              python scripts/tools/translate-docs.py $FORCE_FLAG || TRANSLATE_EXIT_CODE=$?
+              echo "文档翻译完成 (退出码: $TRANSLATE_EXIT_CODE)"
             else
               echo "未配置 OPENAI_API_KEY，跳过翻译步骤"
               echo "翻译需要在仓库 Secrets 中配置 OPENAI_API_KEY"
@@ -115,6 +115,14 @@ jobs:
           else
             echo "发现了翻译文档更新"
             echo "docs_updated=true" >> $GITHUB_OUTPUT
+          fi
+          
+          # 记录翻译失败状态（但不中断工作流）
+          if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
+            echo "⚠️ 部分文件翻译失败，但已成功翻译的文件将被提交"
+            echo "translate_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "translate_failed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: 生成 AI Prompt 文档（多语言）
@@ -201,9 +209,17 @@ jobs:
           
           # 提交更改
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
-          # 先拉取远程最新变更再推送，避免因翻译期间有人推送导致 push 被拒绝
-          git pull --rebase --autostash || echo "拉取远程更新失败，尝试直接推送"
+          # 先拉取远程最新变更再推送,避免因翻译期间有人推送导致 push 被拒绝
+          git pull --rebase --autostash || echo "拉取远程更新失败,尝试直接推送"
           git push || echo "没有新的提交需要推送"
+          
+          # 如果有翻译失败,输出警告信息
+          if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
+            echo ""
+            echo "⚠️ 注意: 本次有部分文件翻译失败"
+            echo "💡 已成功的翻译已保存并提交"
+            echo "🔄 可以稍后重新触发工作流来重试失败的文件"
+          fi
 
       - name: 文档更新完成
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
@@ -217,6 +233,9 @@ jobs:
           if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
             echo "  - 翻译文档"
             echo "  - 翻译缓存"
+            if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
+              echo "  ⚠️ 注意: 有部分文件翻译失败,可以稍后重试"
+            fi
           fi
           if [ "${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}" == "true" ]; then
             echo "  - AI Prompt 文档（多语言）"
