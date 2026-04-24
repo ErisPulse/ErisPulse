@@ -100,4 +100,44 @@
 
 **修復版本**: 2.4.2-dev.1
 
-**修復內容**: 將 `is_friend_add()` 的匹配值從
+**修復內容**: 將 `is_friend_add()` 的匹配值從 `"friend_add"` 改為 `"friend_increase"`，`is_friend_delete()` 從 `"friend_delete"` 改為 `"friend_decrease"`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確
+
+**問題**: `AdapterManager.clear()` 方法清除了 `_adapters`、`_adapter_info`、處理器和 `_bots`，但遺漏了 `_started_instances` 集合。如果適配器正在運行時呼叫 `clear()`，`_started_instances` 會保留懸空引用，導致重啟後狀態判斷錯誤。
+
+**原因**: 2.4.0-dev.1 引入 `_started_instances` 時未在 `clear()` 中同步清理。
+
+**影響版本**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 在 `clear()` 方法中添加 `self._started_instances.clear()`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()
+
+**問題**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 建立 future 和獲取時間戳，該方法在 Python 3.10+ 中已棄用，在非同步上下文中應使用 `asyncio.get_running_loop()`。與同檔案中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
+
+**原因**: 開發時使用了舊版 API，後續新增的 `wait_for()` 使用了正確的 API 但未回溯修復舊代碼。
+
+**影響版本**: 2.3.0-dev.0
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 將 `command.py` 中兩處 `asyncio.get_event_loop()` 替換為 `asyncio.get_running_loop()`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() 字段缺少 key 時靜默跳過
+
+**問題**: `Event.collect()` 方法在遍歷字段列表時，如果某個字段字典缺少 `key`，會靜默跳過該字段，不輸出任何日誌或警告。開發者如果拼寫錯誤（如 `"Key"` 而非 `"key"`），整個字段會被悄悄忽略，導致下游
