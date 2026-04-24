@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 849,
+  "total_keywords": 853,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2374,6 +2374,38 @@
         "line": 141,
         "level": 3,
         "title": "[BUG-009] Event.collect() 字段缺少 key 时静默跳过"
+      }
+    ],
+    "[BUG-010] LazyModule 同步访问 BaseModule 导致未初始化完成": [
+      {
+        "document": "bug-tracker.md",
+        "line": 157,
+        "level": 3,
+        "title": "[BUG-010] LazyModule 同步访问 BaseModule 导致未初始化完成"
+      }
+    ],
+    "[BUG-011] 配置系统多线程写入导致数据丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 173,
+        "level": 3,
+        "title": "[BUG-011] 配置系统多线程写入导致数据丢失"
+      }
+    ],
+    "[BUG-012] SDK 属性访问错误信息不准确": [
+      {
+        "document": "bug-tracker.md",
+        "line": 192,
+        "level": 3,
+        "title": "[BUG-012] SDK 属性访问错误信息不准确"
+      }
+    ],
+    "[BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂": [
+      {
+        "document": "bug-tracker.md",
+        "line": 211,
+        "level": 3,
+        "title": "[BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂"
       }
     ],
     "__init__.py": [

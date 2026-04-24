@@ -117,10 +117,14 @@ ErisPulse 模块系统
 
 ##### `exists(module_name: str)`
 
-检查模块是否存在（已注册或在配置中）
+检查模块是否已注册
 
-- **module_name** (`str`): 模块名称
-**返回值** (`bool`): 模块是否存在
+:param module_name: 模块名称
+:return: 模块是否已注册（即 module.register() 已被调用）
+
+> **提示**
+> exists() 只检查模块类是否已注册到管理器，用于验证模块是否可以加载。
+> 如需检查模块是否启用，请使用 is_enabled()。
 
 ---
 
@@ -206,9 +210,9 @@ ErisPulse 模块系统
 > **内部方法** 
 此方法仅供内部使用
 
-- **module_name** (`str`): 模块名称
-- **enabled** (`bool`): 是否启用模块 (默认: False)
-**返回值** (`bool`): 操作是否成功
+:param module_name: 模块名称
+:param enabled: 是否启用模块 (默认: False)
+:return: 操作是否成功
 
 ---
 
@@ -217,8 +221,14 @@ ErisPulse 模块系统
 
 检查模块是否启用
 
-- **module_name** (`str`): 模块名称
-**返回值** (`bool`): 模块是否启用
+:param module_name: 模块名称
+:return: 模块是否启用
+
+> **提示**
+> 模块启用条件：
+> 1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
+> 2. 配置值为启用状态
+> 如果模块未在配置中，返回 False
 
 ---
 
@@ -311,17 +321,6 @@ ErisPulse 模块系统
 >>> #     }
 >>> # }
 ```
-
----
-
-
-##### `list_modules()`
-
-列出所有模块状态
-
-> **已弃用** 请使用 list_items() 代替
-
-**返回值** (`dict[str, bool`): ] 模块状态字典
 
 ---
 
