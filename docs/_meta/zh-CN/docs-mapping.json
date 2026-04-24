@@ -66,7 +66,7 @@
     },
     "用户使用指南": {
       "description": "ErisPulse 配置和命令参考",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "用户使用指南",
@@ -87,12 +87,17 @@
           "title": "CLI 命令参考",
           "path": "user-guide/cli-reference.md",
           "level": 1
+        },
+        {
+          "title": "部署指南",
+          "path": "user-guide/deployment.md",
+          "level": 1
         }
       ]
     },
     "开发者指南": {
       "description": "模块和适配器开发指南",
-      "count": 9,
+      "count": 11,
       "documents": [
         {
           "title": "开发者指南",
@@ -137,6 +142,16 @@
         {
           "title": "适配器开发最佳实践",
           "path": "developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "发布与模块商店指南",
+          "path": "developer-guide/publishing.md",
+          "level": 1
+        },
+        {
+          "title": "事件转换器实现指南",
+          "path": "developer-guide/adapters/converter.md",
           "level": 1
         }
       ]
@@ -210,7 +225,7 @@
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 4,
+      "count": 7,
       "documents": [
         {
           "title": "高级主题",
@@ -230,6 +245,21 @@
         {
           "title": "路由管理器",
           "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "MessageBuilder 详解",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "会话类型系统",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation 多轮对话",
+          "path": "advanced/conversation.md",
           "level": 1
         }
       ]

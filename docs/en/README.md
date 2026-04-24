@@ -29,6 +29,7 @@ If this is your first time using ErisPulse, we recommend reading the following i
 - [Installation and Configuration](user-guide/installation.md)
 - [CLI Command Reference](user-guide/cli-reference.md)
 - [Configuration File Guide](user-guide/configuration.md)
+- [Deployment Guide](user-guide/deployment.md)
 
 ### Developer Guide
 
@@ -46,9 +47,9 @@ If this is your first time using ErisPulse, we recommend reading the following i
 - [SendDSL Detailed Explanation](developer-guide/adapters/send-dsl.md)
 - [Adapter Development Best Practices](developer-guide/adapters/best-practices.md)
 
-#### Extension Development
+#### Publishing
 
-- [CLI Extension Development](developer-guide/extensions/cli-extensions.md)
+- [Publishing and Module Store Guide](developer-guide/publishing.md) - Publish modules and adapters to the ErisPulse Module Store
 
 ### Platform Features Guide
 
@@ -76,6 +77,9 @@ If this is your first time using ErisPulse, we recommend reading the following i
 - [Lazy Loading System](advanced/lazy-loading.md)
 - [Lifecycle Management](advanced/lifecycle.md)
 - [Router System](advanced/router.md)
+- [MessageBuilder Detailed Explanation](advanced/message-builder.md)
+- [Session Type System](advanced/session-types.md)
+- [Conversation Multi-turn Dialogue](advanced/conversation.md)
 
 ### AI-Assisted Development
 
