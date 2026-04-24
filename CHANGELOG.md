@@ -65,6 +65,27 @@
 
 ---
 
+## [2.4.2-dev.2] - 2026/04/24
+> 开发版本
+
+### 移除
+- @wsu2059q
+  - 弃用移除 `AdapterFather`/`adapter_server` 兼容别名
+
+### 修复
+- @wsu2059q
+  - 修复 `lifecycle.submit_event()` 使用可变默认参数 `data={}` 的隐患
+  - 修复 `_migrate_config()` 迁移异常被静默吞掉无任何提示的问题
+  - 修复 `BaseAdapter.emit()` 仅记录日志不抛异常，调用方可能忽略废弃方法的问题（改为 `raise NotImplementedError`）
+  - 修复 `_update_bot_status()` 使用 `asyncio.ensure_future` 无 task 引用追踪的问题（改为 `create_task` 并保存引用）
+
+### 优化
+- @wsu2059q
+  - `AdapterManager`/`ModuleManager` 新增 `__repr__()` 方法，便于调试时查看注册和运行状态
+  - `list_adapters()`/`list_modules()` 已弃用方法添加 `warnings.warn(DeprecationWarning)` 实际触发弃用警告
+
+---
+
 ## [2.4.2-dev.1] - 2026/04/21
 > 开发版本
 

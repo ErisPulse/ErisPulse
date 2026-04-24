@@ -90,8 +90,9 @@ class ConfigManager:
             os.remove(old_config_path)
 
         except Exception as e:
-            # 静默处理迁移失败
-            pass
+            from .logger import logger
+
+            logger.warning(f"配置文件迁移失败: {e}")
 
     def _load_config(self) -> None:
         """
