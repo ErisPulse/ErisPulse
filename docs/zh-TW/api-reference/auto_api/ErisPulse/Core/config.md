@@ -13,6 +13,23 @@ ErisPulse 配置中心
 
 ---
 
+## 函数列表
+
+
+### `parse_bool_config(value: Any)`
+
+解析配置中的布尔值
+
+:param value: 配置值（可以是 bool, int, str 等）
+:return: 解析后的布尔值
+
+支持的值：
+- True: True, 1, "true", "True", "1", "yes", "Yes", "on", "On"
+- False: False, 0, "false", "False", "0", "no", "No", "off", "Off"
+
+---
+
+
 ## 类列表
 
 
@@ -52,12 +69,16 @@ ConfigManager 类提供相关功能。
 
 将待写入的配置刷新到文件
 
+使用文件锁确保多线程环境下的原子性操作
+
 ---
 
 
 ##### `_schedule_write()`
 
 安排延迟写入
+
+线程安全：使用锁保护 Timer 的取消和创建
 
 ---
 
