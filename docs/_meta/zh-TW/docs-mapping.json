@@ -66,7 +66,7 @@
     },
     "使用者指南": {
       "description": "ErisPulse 配置和命令參考",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "用戶使用指南",
@@ -87,12 +87,17 @@
           "title": "CLI 命令參考",
           "path": "user-guide/cli-reference.md",
           "level": 1
+        },
+        {
+          "title": "部署指南",
+          "path": "user-guide/deployment.md",
+          "level": 1
         }
       ]
     },
     "開發者指南": {
       "description": "模組和適配器開發指南",
-      "count": 9,
+      "count": 10,
       "documents": [
         {
           "title": "開發者指南",
@@ -137,6 +142,11 @@
         {
           "title": "配接器開發最佳實踐",
           "path": "developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "發布與模組商店指南",
+          "path": "developer-guide/publishing.md",
           "level": 1
         }
       ]
@@ -210,7 +220,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "進階主題",
@@ -230,6 +240,11 @@
         {
           "title": "路由管理器",
           "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "會話類型系統",
+          "path": "advanced/session-types.md",
           "level": 1
         }
       ]
