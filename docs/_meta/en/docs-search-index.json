@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 860,
+  "total_keywords": 864,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -7624,6 +7624,38 @@
         "line": 141,
         "level": 3,
         "title": "[BUG-009] `Event.collect()` Silently Skips When Field is Missing `key`"
+      }
+    ],
+    "[BUG-010] LazyModule Synchronous Access to BaseModule Leads to Incomplete Initialization": [
+      {
+        "document": "bug-tracker.md",
+        "line": 157,
+        "level": 3,
+        "title": "[BUG-010] LazyModule Synchronous Access to BaseModule Leads to Incomplete Initialization"
+      }
+    ],
+    "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss": [
+      {
+        "document": "bug-tracker.md",
+        "line": 173,
+        "level": 3,
+        "title": "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss"
+      }
+    ],
+    "[BUG-012] SDK Attribute Access Error Message Inaccurate": [
+      {
+        "document": "bug-tracker.md",
+        "line": 192,
+        "level": 3,
+        "title": "[BUG-012] SDK Attribute Access Error Message Inaccurate"
+      }
+    ],
+    "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex": [
+      {
+        "document": "bug-tracker.md",
+        "line": 211,
+        "level": 3,
+        "title": "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex"
       }
     ],
     "__init__.py": [
