@@ -7,6 +7,9 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 - [Lazy Loading System](lazy-loading.md) - How the lazy loading module system works and its configuration
 - [Lifecycle Management](lifecycle.md) - Usage of the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
+- [MessageBuilder Detailed Guide](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
+- [Session Type System](session-types.md) - Session type definitions, mappings, and custom type registration
+- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue contexts
 
 ## Target Audience
 
