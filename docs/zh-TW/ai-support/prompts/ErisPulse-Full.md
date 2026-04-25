@@ -5172,7 +5172,245 @@ def _convert_timestamp(self, timestamp):
 
 ### 事件转换器
 
+# 事件轉換器實現指南
 
+事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。
+
+## Converter 職責
+
+```
+平台原生事件 ──→ Converter.convert() ──→ OneBot12 標準事件
+```
+
+Converter 只負責**正向轉換**（接收方向），即將平台的原生事件數據轉換為 OneBot12 標準格式。反向轉換（發送方向）由 `Send.Raw_ob12()` 方法處理。
+
+### 核心原則
+
+1. **無損轉換**：原始數據必須完整保留在 `{platform}_raw` 欄位中
+2. **標準兼容**：轉換後的事件必須符合 OneBot12 標準格式
+3. **平台擴展**：平台特有數據使用 `{platform}_` 前綴欄位儲存
+
+## convert() 方法
+
+### 方法簽名
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    將平台原生事件轉換為 OneBot12 標準格式
+
+    :param raw_event: 平台原生事件數據
+    :return: OneBot12 標準格式事件字典
+    """
+    pass
+```
+
+### 返回值結構
+
+轉換後的事件字典應包含以下標準欄位：
+
+```python
+{
+    "id": "事件唯一ID",
+    "time": 1234567890,           # Unix 時間戳（秒）
+    "type": "message",             # 事件類型
+    "detail_type": "private",      # 詳細類型
+    "platform": "myplatform",      # 平台名稱
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # 訊息事件欄位
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 訊息段列表
+    "alt_message": "純文本內容",
+
+    # 必須保留原始數據
+    "myplatform_raw": { ... },     # 平台原生事件完整數據
+    "myplatform_raw_type": "原生事件類型名",
+}
+```
+
+## 必填欄位映射
+
+### 通用欄位（所有事件類型）
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `id` | str | 事件唯一標識符 |
+| `time` | int | Unix 時間戳（秒） |
+| `type` | str | 事件類型：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 詳細類型：`private` / `group` / `friend` 等 |
+| `platform` | str | 平台名稱，與適配器註冊名一致 |
+| `self` | dict | 機器人信息：`{"platform": "...", "user_id": "..."}` |
+
+### 訊息事件額外欄位
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `user_id` | str | 發送者 ID |
+| `message` | list[dict] | OneBot12 訊息段列表 |
+| `alt_message` | str | 純文本備用內容 |
+
+### 通知事件額外欄位
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `user_id` | str | 相關用戶 ID |
+| `operator_id` | str | 操作者 ID（如群成員變動） |
+
+## 訊息段轉換
+
+OneBot12 標準定義了以下訊息段類型：
+
+```python
+# 文本
+{"type": "text", "data": {"text": "Hello"}}
+
+# 圖片
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# 音頻
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# 影片
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# 檔案
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# @提及
+{"type": "mention", "data": {"user_id": "123"}}
+
+# @全體
+{"type": "mention_all", "data": {}}
+
+# 回覆
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+如果平台有不支持的訊息段類型，可以省略該段或轉換為最接近的標準類型。
+
+## 平台擴展欄位
+
+平台特有的數據應使用 `{platform}_` 前綴儲存，避免與標準欄位衝突：
+
+```python
+{
+    # 標準欄位
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # 平台擴展欄位
+    "myplatform_raw": { ... },          # 原始事件數據（必須）
+    "myplatform_raw_type": "chat",      # 原始事件類型（必須）
+
+    # 其他平台特有欄位
+    "myplatform_group_name": "群名稱",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **重要**：`{platform}_raw` 欄位是必須的，ErisPulse 的事件系統和模組可能依賴它來存取平台原始數據。
+
+## 完整示例
+
+以下是一個完整的 Converter 實現：
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## 最佳實踐
+
+1. **總是保留原始數據**：`{platform}_raw` 欄位不能省略
+2. **使用標準訊息段**：盡量將平台訊息轉換為 OneBot12 標準訊息段
+3. **合理設置 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自定義
+4. **處理邊界情況**：原始事件可能缺少某些欄位，使用 `.get()` 並提供合理預設值
+5. **性能考慮**：`convert()` 在每個事件上調用，避免在其中執行耗時操作
+
+## 相關文檔
+
+- [適配器核心概念](core-concepts.md) - 適配器整體架構
+- [SendDSL 詳解](send-dsl.md) - 反向轉換（發送方向）
+- [事件轉換標準](../../standards/event-conversion.md) - 正式的事件轉換規範
+- [會話類型系統](../../advanced/session-types.md) - 會話類型映射規則
 
 
 
@@ -8061,7 +8299,186 @@ async def on_server_stop(event):
 
 ### MessageBuilder 详解
 
+# MessageBuilder 詳解
 
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準消息段構建工具，用於構建結構化的消息內容，配合 `Send.Raw_ob12()` 使用。
+
+## 雙模式機制
+
+MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類級別和實例級別的不同行為：
+
+### 鏈式調用模式（實例）
+
+通過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支持鏈式調用，最後用 `.build()` 獲取消息段列表：
+
+```python
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+segments = (
+    MessageBuilder()
+    .text("你好！")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+# [
+#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
+# ]
+```
+
+### 快速構建模式（靜態）
+
+通過類直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+
+```python
+# 直接返回 list[dict]，無需 .build()
+segments = MessageBuilder.text("你好！")
+# [{"type": "text", "data": {"text": "你好！"}}]
+```
+
+## 消息段類型
+
+| 方法 | 類型 | 數據參數 | 說明 |
+|------|------|---------|------|
+| `text(text)` | text | `text` | 文本消息 |
+| `image(file)` | image | `file` | 圖片消息 |
+| `audio(file)` | audio | `file` | 音頻消息 |
+| `video(file)` | video | `file` | 視頻消息 |
+| `file(file, filename?)` | file | `file`, `filename` | 文件消息 |
+| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | @提及用戶 |
+| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | `mention` 的別名 |
+| `reply(message_id)` | reply | `message_id` | 回覆消息 |
+| `at_all()` | mention_all | - | @全體成員 |
+| `custom(type, data)` | 自定義 | 自定義 | 自定義消息段 |
+
+## 配合 Send 使用
+
+構建的消息段列表通過 `Send.Raw_ob12()` 發送：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+# 鏈式構建 + 發送
+segments = (
+    MessageBuilder()
+    .mention("user123", "張三")
+    .text(" 請查看這張圖片")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+await sdk.adapter.myplatform.Send.To("group", "group456").Raw_ob12(segments)
+```
+
+### 配合 Event 回覆
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("report")
+async def report_handler(event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .text("📊 日報匯總\n")
+        .text("今日完成任務: 5\n")
+        .text("進行中任務: 3")
+        .build()
+    )
+```
+
+## 工具方法
+
+### copy()
+
+複製當前構建器，用於基於同一基礎內容創建多個消息變體：
+
+```python
+base = MessageBuilder().text("基礎內容").mention("admin")
+
+# 基於相同前綴構建不同消息
+msg1 = base.copy().text(" 變體A").build()
+msg2 = base.copy().text(" 變體B").image("img.jpg").build()
+```
+
+### clear()
+
+清空已添加的消息段，複用同一個構建器：
+
+```python
+builder = MessageBuilder()
+
+for user_id in ["user1", "user2", "user3"]:
+    builder.clear()
+    msg = builder.mention(user_id).text(" 你好！").build()
+    await adapter.Send.To("user", user_id).Raw_ob12(msg)
+```
+
+### len() / bool()
+
+```python
+builder = MessageBuilder()
+print(bool(builder))   # False
+
+builder.text("Hello")
+print(len(builder))    # 1
+print(bool(builder))   # True
+```
+
+## 自定義消息段
+
+使用 `custom()` 方法添加平台擴展消息段：
+
+```python
+# 添加平台特有的消息段
+segments = (
+    MessageBuilder()
+    .text("請填寫表單：")
+    .custom("yunhu_form", {"form_id": "12345"})
+    .build()
+)
+```
+
+> 自定義消息段只在對應平台的適配器中有效，其他適配器會忽略不認識的消息段。
+
+## 完整示例
+
+### 多元素消息
+
+```python
+segments = (
+    MessageBuilder()
+    .reply(event.get_id())                    # 回覆原消息
+    .mention(event.get_user_id())             # @發送者
+    .text(" 這是你的查詢結果：\n")             # 文本
+    .image("https://example.com/chart.png")   # 圖片
+    .text("\n詳細數據見附件：")
+    .file("https://example.com/data.csv", filename="data.csv")
+    .build()
+)
+await event.reply_ob12(segments)
+```
+
+### 靜態工廠 + 鏈式混合
+
+```python
+# 快速構建單段消息
+simple_msg = MessageBuilder.text("簡單文本")
+
+# 鏈式構建複雜消息
+complex_msg = (
+    MessageBuilder()
+    .at_all()
+    .text(" 📢 公告：")
+    .text("今天下午3點開會")
+    .build()
+)
+```
+
+## 相關文檔
+
+- [適配器 SendDSL 詳解](../../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
+- [事件轉換標準](../../standards/event-conversion.md) - 消息段轉換規範
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
 
 
 
@@ -8251,7 +8668,225 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 ### Conversation 多轮对话
 
+# Conversation 多輪對話
 
+`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、信息收集、對話式問答等場景。
+
+## 創建對話
+
+通過 `Event` 對象的 `conversation()` 方法創建：
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+
+    await conv.say("🎮 歡迎參加知識問答！")
+
+    answer = await conv.choose("第一題：Python 的創造者是誰？", [
+        "Guido van Rossum",
+        "James Gosling",
+        "Dennis Ritchie",
+    ])
+
+    if answer is None:
+        await conv.say("超時了，下次再來吧！")
+        return
+
+    if answer == 0:
+        await conv.say("正確！")
+    else:
+        await conv.say("錯誤了，正確答案是 Guido van Rossum")
+
+    conv.stop()
+```
+
+## 核心 API
+
+### say(content, **kwargs)
+
+發送消息，返回 `self` 支援鏈式調用：
+
+```python
+await conv.say("第一行").say("第二行").say("第三行")
+```
+
+也可以指定發送方法：
+
+```python
+await conv.say("https://example.com/image.jpg", method="Image")
+```
+
+### wait(prompt=None, timeout=None)
+
+等待用戶回覆，返回 `Event` 對象或 `None`（超時）：
+
+```python
+# 簡單等待
+resp = await conv.wait()
+if resp:
+    text = resp.get_text()
+
+# 發送提示後等待
+resp = await conv.wait(prompt="請輸入你的名字：")
+
+# 使用自訂超時（對話預設超時）
+resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
+```
+
+### confirm(prompt=None, **kwargs)
+
+等待用戶確認（是/否），返回 `True` / `False` / `None`（超時）：
+
+```python
+result = await conv.confirm("確定要刪除所有數據嗎？")
+if result is True:
+    await conv.say("已刪除")
+elif result is False:
+    await conv.say("已取消")
+else:
+    await conv.say("超時未回覆")
+```
+
+內置識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
+
+內置識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
+
+### choose(prompt, options, **kwargs)
+
+等待用戶從選項中選擇，返回選項索引（0-based）或 `None`：
+
+```python
+choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+if choice is not None:
+    colors = ["紅色", "綠色", "藍色"]
+    await conv.say(f"你選擇了 {colors[choice]}")
+```
+
+用戶可以通過輸入編號（`1`/`2`/`3`）或選項文本（`紅色`）來選擇。
+
+### collect(fields, **kwargs)
+
+多步驟收集信息，返回數據字典或 `None`：
+
+```python
+data = await conv.collect([
+    {"key": "name", "prompt": "請輸入姓名"},
+    {"key": "age", "prompt": "請輸入年齡",
+     "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
+     "retry_prompt": "年齡必須是數字，請重新輸入"},
+    {"key": "city", "prompt": "請輸入城市"},
+])
+
+if data:
+    await conv.say(f"註冊成功！\n姓名: {data['name']}\n年齡: {data['age']}\n城市: {data['city']}")
+else:
+    await conv.say("註冊過程中斷")
+```
+
+字段配置：
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `key` | 字段鍵名（必須） | - |
+| `prompt` | 提示消息 | `"請輸入 {key}"` |
+| `validator` | 驗證函數，接收 Event，返回 bool | 無 |
+| `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
+| `max_retries` | 最大重試次數 | 3 |
+
+### stop()
+
+手動結束對話，設置 `is_active` 為 `False`：
+
+```python
+conv.stop()
+```
+
+### is_active
+
+對話是否處於活躍狀態：
+
+```python
+if conv.is_active:
+    await conv.say("對話還在進行中")
+```
+
+## 活躍狀態管理
+
+對話在以下情況會自動變為非活躍狀態：
+
+1. 調用 `stop()` 方法
+2. `wait()` 超時返回 `None`
+3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
+
+非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
+
+## 典型流程模式
+
+### 引導式註冊
+
+```python
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+
+    await conv.say("歡迎註冊！")
+
+    data = await conv.collect([
+        {"key": "username", "prompt": "請輸入用戶名（3-20個字符）",
+         "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
+        {"key": "email", "prompt": "請輸入郵箱地址",
+         "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
+         "retry_prompt": "郵箱格式不正確，請重新輸入"},
+    ])
+
+    if not data:
+        await event.reply("註冊已取消")
+        return
+
+    confirmed = await conv.confirm(
+        f"確認註冊信息？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+    )
+
+    if confirmed:
+        await conv.say("✅ 註冊成功！")
+    else:
+        await conv.say("❌ 已取消註冊")
+```
+
+### 循環對話
+
+```python
+@command("chat")
+async def chat_handler(event):
+    conv = event.conversation(timeout=120)
+    await conv.say("進入對話模式，輸入「退出」結束")
+
+    while conv.is_active:
+        resp = await conv.wait()
+        if resp is None:
+            await conv.say("超時，對話結束")
+            break
+
+        text = resp.get_text().strip()
+
+        if text == "退出":
+            await conv.say("再見！")
+            conv.stop()
+        elif text == "帮助":
+            await conv.say("可用命令：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("對話活躍中")
+        else:
+            await conv.say(f"你說的是：{text}")
+```
+
+## 相關文檔
+
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
+- [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎
 
 
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 830,
+  "total_keywords": 869,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1308,6 +1308,22 @@
         "title": "Config 模組"
       }
     ],
+    "Conversation 多輪對話": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 1,
+        "level": 1,
+        "title": "Conversation 多輪對話"
+      }
+    ],
+    "Converter 職責": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 5,
+        "level": 2,
+        "title": "Converter 職責"
+      }
+    ],
     "Core.py - 基礎模組": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -1498,6 +1514,14 @@
         "line": 112,
         "level": 2,
         "title": "Message 訊息模組"
+      }
+    ],
+    "MessageBuilder 詳解": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 1,
+        "level": 1,
+        "title": "MessageBuilder 詳解"
       }
     ],
     "Meta 元事件模組": [
@@ -1998,12 +2022,60 @@
         "title": "channel"
       }
     ],
+    "choose(prompt, options, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 87,
+        "level": 3,
+        "title": "choose(prompt, options, **kwargs)"
+      }
+    ],
+    "clear()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 102,
+        "level": 3,
+        "title": "clear()"
+      }
+    ],
+    "collect(fields, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 100,
+        "level": 3,
+        "title": "collect(fields, **kwargs)"
+      }
+    ],
+    "confirm(prompt=None, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 69,
+        "level": 3,
+        "title": "confirm(prompt=None, **kwargs)"
+      }
+    ],
     "connect — 連線上線": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 243,
         "level": 4,
         "title": "connect — 連線上線"
+      }
+    ],
+    "convert() 方法": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 19,
+        "level": 2,
+        "title": "convert() 方法"
+      }
+    ],
+    "copy()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "copy()"
       }
     ],
     "disconnect — 斷開連線": [
@@ -2060,6 +2132,22 @@
         "line": 46,
         "level": 3,
         "title": "install 參數"
+      }
+    ],
+    "is_active": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 137,
+        "level": 3,
+        "title": "is_active"
+      }
+    ],
+    "len() / bool()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 115,
+        "level": 3,
+        "title": "len() / bool()"
       }
     ],
     "list 參數": [
@@ -2134,12 +2222,28 @@
         "title": "run 參數"
       }
     ],
+    "say(content, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 38,
+        "level": 3,
+        "title": "say(content, **kwargs)"
+      }
+    ],
     "self 欄位擴展": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 229,
         "level": 3,
         "title": "self 欄位擴展"
+      }
+    ],
+    "stop()": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 129,
+        "level": 3,
+        "title": "stop()"
       }
     ],
     "systemd (Linux)": [
@@ -2164,6 +2268,14 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "wait(prompt=None, timeout=None)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 52,
+        "level": 3,
+        "title": "wait(prompt=None, timeout=None)"
       }
     ],
     "一步獲取發送資訊": [
@@ -2514,6 +2626,14 @@
         "line": 367,
         "level": 2,
         "title": "事件轉換器"
+      }
+    ],
+    "事件轉換器實現指南": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 1,
+        "level": 1,
+        "title": "事件轉換器實現指南"
       }
     ],
     "事件配置": [
@@ -3008,6 +3128,14 @@
         "title": "其他術語"
       }
     ],
+    "典型流程模式": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 156,
+        "level": 2,
+        "title": "典型流程模式"
+      }
+    ],
     "列出平台": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3079,9 +3207,17 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 22,
         "level": 2,
         "title": "前置知識"
+      }
+    ],
+    "創建對話": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 5,
+        "level": 2,
+        "title": "創建對話"
       }
     ],
     "功能概覽": [
@@ -3622,6 +3758,14 @@
         "title": "基類"
       }
     ],
+    "多元素消息": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 144,
+        "level": 3,
+        "title": "多元素消息"
+      }
+    ],
     "多實例部署": [
       {
         "document": "user-guide/deployment.md",
@@ -3854,6 +3998,20 @@
         "title": "完整格式（適用於複雜方法）"
       }
     ],
+    "完整示例": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 142,
+        "level": 2,
+        "title": "完整示例"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 144,
+        "level": 2,
+        "title": "完整示例"
+      }
+    ],
     "完整範例": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3995,6 +4153,12 @@
       }
     ],
     "工具方法": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 88,
+        "level": 2,
+        "title": "工具方法"
+      },
       {
         "document": "advanced/session-types.md",
         "line": 147,
@@ -4152,6 +4316,14 @@
         "title": "平台擴充方法"
       }
     ],
+    "平台擴展欄位": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 121,
+        "level": 2,
+        "title": "平台擴展欄位"
+      }
+    ],
     "平台特定功能": [
       {
         "document": "platform-guide/README.md",
@@ -4264,6 +4436,14 @@
         "title": "建議停用延遲載入的情境 (lazy_load=False)"
       }
     ],
+    "引導式註冊": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 158,
+        "level": 3,
+        "title": "引導式註冊"
+      }
+    ],
     "從 GitHub Releases 下載": [
       {
         "document": "ai-support/README.md",
@@ -4288,12 +4468,28 @@
         "title": "從遠端倉庫安裝"
       }
     ],
+    "循環對話": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 189,
+        "level": 3,
+        "title": "循環對話"
+      }
+    ],
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
         "line": 263,
         "level": 3,
         "title": "心跳事件"
+      }
+    ],
+    "必填欄位映射": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 61,
+        "level": 2,
+        "title": "必填欄位映射"
       }
     ],
     "必需欄位": [
@@ -4338,6 +4534,14 @@
         "line": 9,
         "level": 3,
         "title": "快速啟動"
+      }
+    ],
+    "快速構建模式（靜態）": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 28,
+        "level": 3,
+        "title": "快速構建模式（靜態）"
       }
     ],
     "快速開始": [
@@ -4770,6 +4974,14 @@
         "title": "方法名稱對應"
       }
     ],
+    "方法簽名": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 21,
+        "level": 3,
+        "title": "方法簽名"
+      }
+    ],
     "方法註解": [
       {
         "document": "styleguide/docstring.md",
@@ -4888,6 +5100,12 @@
         "title": "最佳實踐"
       },
       {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 226,
+        "level": 2,
+        "title": "最佳實踐"
+      },
+      {
         "document": "platform-guide/onebot12.md",
         "line": 333,
         "level": 2,
@@ -4972,6 +5190,12 @@
     ],
     "核心 API": [
       {
+        "document": "advanced/conversation.md",
+        "line": 36,
+        "level": 2,
+        "title": "核心 API"
+      },
+      {
         "document": "advanced/session-types.md",
         "line": 67,
         "level": 2,
@@ -5003,6 +5227,12 @@
       }
     ],
     "核心原則": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 13,
+        "level": 3,
+        "title": "核心原則"
+      },
       {
         "document": "standards/README.md",
         "line": 16,
@@ -5500,6 +5730,22 @@
         "title": "注意事項"
       }
     ],
+    "活躍狀態管理": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 146,
+        "level": 2,
+        "title": "活躍狀態管理"
+      }
+    ],
+    "消息段類型": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 38,
+        "level": 2,
+        "title": "消息段類型"
+      }
+    ],
     "測試": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -5934,6 +6180,26 @@
         "title": "相關文件"
       }
     ],
+    "相關文檔": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 216,
+        "level": 2,
+        "title": "相關文檔"
+      },
+      {
+        "document": "advanced/message-builder.md",
+        "line": 176,
+        "level": 2,
+        "title": "相關文檔"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 234,
+        "level": 2,
+        "title": "相關文檔"
+      }
+    ],
     "相關連結": [
       {
         "document": "README.md",
@@ -6218,6 +6484,14 @@
         "title": "自動推斷"
       }
     ],
+    "自定義消息段": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 126,
+        "level": 2,
+        "title": "自定義消息段"
+      }
+    ],
     "自訂類型註冊": [
       {
         "document": "advanced/session-types.md",
@@ -6316,6 +6590,14 @@
         "title": "訊息事件處理"
       }
     ],
+    "訊息事件額外欄位": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 74,
+        "level": 3,
+        "title": "訊息事件額外欄位"
+      }
+    ],
     "訊息傳送失敗": [
       {
         "document": "platform-guide/README.md",
@@ -6354,6 +6636,14 @@
         "line": 303,
         "level": 3,
         "title": "訊息段標準"
+      }
+    ],
+    "訊息段轉換": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 89,
+        "level": 2,
+        "title": "訊息段轉換"
       }
     ],
     "訊息管理方法": [
@@ -6728,6 +7018,14 @@
         "title": "返回值"
       }
     ],
+    "返回值結構": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 34,
+        "level": 3,
+        "title": "返回值結構"
+      }
+    ],
     "透過 CLI 安裝": [
       {
         "document": "quick-start.md",
@@ -6758,6 +7056,14 @@
         "line": 39,
         "level": 3,
         "title": "通用參數"
+      }
+    ],
+    "通用欄位（所有事件類型）": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 63,
+        "level": 3,
+        "title": "通用欄位（所有事件類型）"
       }
     ],
     "通知事件": [
@@ -6794,6 +7100,14 @@
         "line": 182,
         "level": 2,
         "title": "通知事件處理"
+      }
+    ],
+    "通知事件額外欄位": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 82,
+        "level": 3,
+        "title": "通知事件額外欄位"
       }
     ],
     "通知操作者": [
@@ -6859,7 +7173,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 11,
+        "line": 14,
         "level": 2,
         "title": "適用對象"
       },
@@ -7024,6 +7338,22 @@
         "title": "郵件平台特性文檔"
       }
     ],
+    "配合 Event 回覆": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 72,
+        "level": 3,
+        "title": "配合 Event 回覆"
+      }
+    ],
+    "配合 Send 使用": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 53,
+        "level": 2,
+        "title": "配合 Send 使用"
+      }
+    ],
     "配接器開發最佳實踐": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -7162,6 +7492,14 @@
         "title": "鏈式調用"
       }
     ],
+    "鏈式調用模式（實例）": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 9,
+        "level": 3,
+        "title": "鏈式調用模式（實例）"
+      }
+    ],
     "開始學習": [
       {
         "document": "getting-started/README.md",
@@ -7278,6 +7616,14 @@
         "title": "除錯技巧"
       }
     ],
+    "雙模式機制": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "雙模式機制"
+      }
+    ],
     "雲湖平台特性文件": [
       {
         "document": "platform-guide/yunhu.md",
@@ -7292,6 +7638,14 @@
         "line": 67,
         "level": 2,
         "title": "需求描述模板"
+      }
+    ],
+    "靜態工廠 + 鏈式混合": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 160,
+        "level": 3,
+        "title": "靜態工廠 + 鏈式混合"
       }
     ],
     "非同步初始化": [

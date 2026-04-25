@@ -3930,13 +3930,410 @@ sender = event.get_sender()
 
 ### Conversation 多轮对话
 
+# Conversation 多輪對話
 
+`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、信息收集、對話式問答等場景。
+
+## 創建對話
+
+通過 `Event` 對象的 `conversation()` 方法創建：
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+
+    await conv.say("🎮 歡迎參加知識問答！")
+
+    answer = await conv.choose("第一題：Python 的創造者是誰？", [
+        "Guido van Rossum",
+        "James Gosling",
+        "Dennis Ritchie",
+    ])
+
+    if answer is None:
+        await conv.say("超時了，下次再來吧！")
+        return
+
+    if answer == 0:
+        await conv.say("正確！")
+    else:
+        await conv.say("錯誤了，正確答案是 Guido van Rossum")
+
+    conv.stop()
+```
+
+## 核心 API
+
+### say(content, **kwargs)
+
+發送消息，返回 `self` 支援鏈式調用：
+
+```python
+await conv.say("第一行").say("第二行").say("第三行")
+```
+
+也可以指定發送方法：
+
+```python
+await conv.say("https://example.com/image.jpg", method="Image")
+```
+
+### wait(prompt=None, timeout=None)
+
+等待用戶回覆，返回 `Event` 對象或 `None`（超時）：
+
+```python
+# 簡單等待
+resp = await conv.wait()
+if resp:
+    text = resp.get_text()
+
+# 發送提示後等待
+resp = await conv.wait(prompt="請輸入你的名字：")
+
+# 使用自訂超時（對話預設超時）
+resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
+```
+
+### confirm(prompt=None, **kwargs)
+
+等待用戶確認（是/否），返回 `True` / `False` / `None`（超時）：
+
+```python
+result = await conv.confirm("確定要刪除所有數據嗎？")
+if result is True:
+    await conv.say("已刪除")
+elif result is False:
+    await conv.say("已取消")
+else:
+    await conv.say("超時未回覆")
+```
+
+內置識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
+
+內置識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
+
+### choose(prompt, options, **kwargs)
+
+等待用戶從選項中選擇，返回選項索引（0-based）或 `None`：
+
+```python
+choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+if choice is not None:
+    colors = ["紅色", "綠色", "藍色"]
+    await conv.say(f"你選擇了 {colors[choice]}")
+```
+
+用戶可以通過輸入編號（`1`/`2`/`3`）或選項文本（`紅色`）來選擇。
+
+### collect(fields, **kwargs)
+
+多步驟收集信息，返回數據字典或 `None`：
+
+```python
+data = await conv.collect([
+    {"key": "name", "prompt": "請輸入姓名"},
+    {"key": "age", "prompt": "請輸入年齡",
+     "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
+     "retry_prompt": "年齡必須是數字，請重新輸入"},
+    {"key": "city", "prompt": "請輸入城市"},
+])
+
+if data:
+    await conv.say(f"註冊成功！\n姓名: {data['name']}\n年齡: {data['age']}\n城市: {data['city']}")
+else:
+    await conv.say("註冊過程中斷")
+```
+
+字段配置：
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `key` | 字段鍵名（必須） | - |
+| `prompt` | 提示消息 | `"請輸入 {key}"` |
+| `validator` | 驗證函數，接收 Event，返回 bool | 無 |
+| `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
+| `max_retries` | 最大重試次數 | 3 |
+
+### stop()
+
+手動結束對話，設置 `is_active` 為 `False`：
+
+```python
+conv.stop()
+```
+
+### is_active
+
+對話是否處於活躍狀態：
+
+```python
+if conv.is_active:
+    await conv.say("對話還在進行中")
+```
+
+## 活躍狀態管理
+
+對話在以下情況會自動變為非活躍狀態：
+
+1. 調用 `stop()` 方法
+2. `wait()` 超時返回 `None`
+3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
+
+非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
+
+## 典型流程模式
+
+### 引導式註冊
+
+```python
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+
+    await conv.say("歡迎註冊！")
+
+    data = await conv.collect([
+        {"key": "username", "prompt": "請輸入用戶名（3-20個字符）",
+         "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
+        {"key": "email", "prompt": "請輸入郵箱地址",
+         "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
+         "retry_prompt": "郵箱格式不正確，請重新輸入"},
+    ])
+
+    if not data:
+        await event.reply("註冊已取消")
+        return
+
+    confirmed = await conv.confirm(
+        f"確認註冊信息？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+    )
+
+    if confirmed:
+        await conv.say("✅ 註冊成功！")
+    else:
+        await conv.say("❌ 已取消註冊")
+```
+
+### 循環對話
+
+```python
+@command("chat")
+async def chat_handler(event):
+    conv = event.conversation(timeout=120)
+    await conv.say("進入對話模式，輸入「退出」結束")
+
+    while conv.is_active:
+        resp = await conv.wait()
+        if resp is None:
+            await conv.say("超時，對話結束")
+            break
+
+        text = resp.get_text().strip()
+
+        if text == "退出":
+            await conv.say("再見！")
+            conv.stop()
+        elif text == "帮助":
+            await conv.say("可用命令：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("對話活躍中")
+        else:
+            await conv.say(f"你說的是：{text}")
+```
+
+## 相關文檔
+
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
+- [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎
 
 
 
 ### MessageBuilder 详解
 
+# MessageBuilder 詳解
 
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準消息段構建工具，用於構建結構化的消息內容，配合 `Send.Raw_ob12()` 使用。
+
+## 雙模式機制
+
+MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類級別和實例級別的不同行為：
+
+### 鏈式調用模式（實例）
+
+通過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支持鏈式調用，最後用 `.build()` 獲取消息段列表：
+
+```python
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+segments = (
+    MessageBuilder()
+    .text("你好！")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+# [
+#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
+# ]
+```
+
+### 快速構建模式（靜態）
+
+通過類直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+
+```python
+# 直接返回 list[dict]，無需 .build()
+segments = MessageBuilder.text("你好！")
+# [{"type": "text", "data": {"text": "你好！"}}]
+```
+
+## 消息段類型
+
+| 方法 | 類型 | 數據參數 | 說明 |
+|------|------|---------|------|
+| `text(text)` | text | `text` | 文本消息 |
+| `image(file)` | image | `file` | 圖片消息 |
+| `audio(file)` | audio | `file` | 音頻消息 |
+| `video(file)` | video | `file` | 視頻消息 |
+| `file(file, filename?)` | file | `file`, `filename` | 文件消息 |
+| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | @提及用戶 |
+| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | `mention` 的別名 |
+| `reply(message_id)` | reply | `message_id` | 回覆消息 |
+| `at_all()` | mention_all | - | @全體成員 |
+| `custom(type, data)` | 自定義 | 自定義 | 自定義消息段 |
+
+## 配合 Send 使用
+
+構建的消息段列表通過 `Send.Raw_ob12()` 發送：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+# 鏈式構建 + 發送
+segments = (
+    MessageBuilder()
+    .mention("user123", "張三")
+    .text(" 請查看這張圖片")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+await sdk.adapter.myplatform.Send.To("group", "group456").Raw_ob12(segments)
+```
+
+### 配合 Event 回覆
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("report")
+async def report_handler(event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .text("📊 日報匯總\n")
+        .text("今日完成任務: 5\n")
+        .text("進行中任務: 3")
+        .build()
+    )
+```
+
+## 工具方法
+
+### copy()
+
+複製當前構建器，用於基於同一基礎內容創建多個消息變體：
+
+```python
+base = MessageBuilder().text("基礎內容").mention("admin")
+
+# 基於相同前綴構建不同消息
+msg1 = base.copy().text(" 變體A").build()
+msg2 = base.copy().text(" 變體B").image("img.jpg").build()
+```
+
+### clear()
+
+清空已添加的消息段，複用同一個構建器：
+
+```python
+builder = MessageBuilder()
+
+for user_id in ["user1", "user2", "user3"]:
+    builder.clear()
+    msg = builder.mention(user_id).text(" 你好！").build()
+    await adapter.Send.To("user", user_id).Raw_ob12(msg)
+```
+
+### len() / bool()
+
+```python
+builder = MessageBuilder()
+print(bool(builder))   # False
+
+builder.text("Hello")
+print(len(builder))    # 1
+print(bool(builder))   # True
+```
+
+## 自定義消息段
+
+使用 `custom()` 方法添加平台擴展消息段：
+
+```python
+# 添加平台特有的消息段
+segments = (
+    MessageBuilder()
+    .text("請填寫表單：")
+    .custom("yunhu_form", {"form_id": "12345"})
+    .build()
+)
+```
+
+> 自定義消息段只在對應平台的適配器中有效，其他適配器會忽略不認識的消息段。
+
+## 完整示例
+
+### 多元素消息
+
+```python
+segments = (
+    MessageBuilder()
+    .reply(event.get_id())                    # 回覆原消息
+    .mention(event.get_user_id())             # @發送者
+    .text(" 這是你的查詢結果：\n")             # 文本
+    .image("https://example.com/chart.png")   # 圖片
+    .text("\n詳細數據見附件：")
+    .file("https://example.com/data.csv", filename="data.csv")
+    .build()
+)
+await event.reply_ob12(segments)
+```
+
+### 靜態工廠 + 鏈式混合
+
+```python
+# 快速構建單段消息
+simple_msg = MessageBuilder.text("簡單文本")
+
+# 鏈式構建複雜消息
+complex_msg = (
+    MessageBuilder()
+    .at_all()
+    .text(" 📢 公告：")
+    .text("今天下午3點開會")
+    .build()
+)
+```
+
+## 相關文檔
+
+- [適配器 SendDSL 詳解](../../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
+- [事件轉換標準](../../standards/event-conversion.md) - 消息段轉換規範
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
 
 
 
