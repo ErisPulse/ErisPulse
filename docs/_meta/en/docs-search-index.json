@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 863,
+  "total_keywords": 952,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1626,7 +1626,21 @@
         "title": "Activate Virtual Environment"
       }
     ],
+    "Active State Management": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 146,
+        "level": 2,
+        "title": "Active State Management"
+      }
+    ],
     "Adapter": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 74,
+        "level": 4,
+        "title": "Adapter"
+      },
       {
         "document": "terminology.md",
         "line": 17,
@@ -1970,12 +1984,28 @@
         "title": "Auto-Discovery via Normal Events"
       }
     ],
+    "Automatic Inference": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 49,
+        "level": 2,
+        "title": "Automatic Inference"
+      }
+    ],
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 312,
         "level": 3,
         "title": "Available Properties"
+      }
+    ],
+    "Backup": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 245,
+        "level": 3,
+        "title": "Backup"
       }
     ],
     "Base Classes": [
@@ -2043,6 +2073,12 @@
       }
     ],
     "Basic Information": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 120,
+        "level": 4,
+        "title": "Basic Information"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 12,
@@ -2234,6 +2270,12 @@
         "title": "Best Practices"
       },
       {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 226,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
         "document": "platform-guide/onebot12.md",
         "line": 333,
         "level": 2,
@@ -2334,6 +2376,14 @@
         "line": 185,
         "level": 3,
         "title": "Bot does not respond?"
+      }
+    ],
+    "Browse and Discover": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 9,
+        "level": 3,
+        "title": "Browse and Discover"
       }
     ],
     "Bug Tracker": [
@@ -2446,6 +2496,14 @@
         "title": "Chained Modifying Methods"
       }
     ],
+    "Chaining Mode (Instance)": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 9,
+        "level": 3,
+        "title": "Chaining Mode (Instance)"
+      }
+    ],
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
@@ -2460,6 +2518,14 @@
         "line": 125,
         "level": 4,
         "title": "Checking Platform Status"
+      }
+    ],
+    "Checklist": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 140,
+        "level": 4,
+        "title": "Checklist"
       }
     ],
     "Child Loggers": [
@@ -2666,6 +2732,14 @@
         "title": "Common Configuration Locations"
       }
     ],
+    "Common Fields (All Event Types)": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 63,
+        "level": 3,
+        "title": "Common Fields (All Event Types)"
+      }
+    ],
     "Common Interfaces": [
       {
         "document": "platform-guide/README.md",
@@ -2736,7 +2810,21 @@
         "title": "Complete Configuration Example"
       }
     ],
+    "Complete Example": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 144,
+        "level": 2,
+        "title": "Complete Example"
+      }
+    ],
     "Complete Examples": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 142,
+        "level": 2,
+        "title": "Complete Examples"
+      },
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 221,
@@ -2962,6 +3050,14 @@
         "title": "Contribution Flow"
       }
     ],
+    "Conversation Multi-turn Dialogue": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 1,
+        "level": 1,
+        "title": "Conversation Multi-turn Dialogue"
+      }
+    ],
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2976,6 +3072,28 @@
         "line": 399,
         "level": 3,
         "title": "Converter Example"
+      }
+    ],
+    "Converter Responsibilities": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 5,
+        "level": 2,
+        "title": "Converter Responsibilities"
+      }
+    ],
+    "Core API": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 36,
+        "level": 2,
+        "title": "Core API"
+      },
+      {
+        "document": "advanced/session-types.md",
+        "line": 67,
+        "level": 2,
+        "title": "Core API"
       }
     ],
     "Core Components": [
@@ -3112,6 +3230,12 @@
     ],
     "Core Principles": [
       {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 13,
+        "level": 3,
+        "title": "Core Principles"
+      },
+      {
         "document": "standards/README.md",
         "line": 16,
         "level": 3,
@@ -3150,11 +3274,49 @@
         "title": "Create project and install"
       }
     ],
+    "Creating a Conversation": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 5,
+        "level": 2,
+        "title": "Creating a Conversation"
+      }
+    ],
+    "Custom Message Segments": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 126,
+        "level": 2,
+        "title": "Custom Message Segments"
+      }
+    ],
+    "Custom Type Registration": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 122,
+        "level": 2,
+        "title": "Custom Type Registration"
+      }
+    ],
+    "Dashboard Management Panel": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 56,
+        "level": 2,
+        "title": "Dashboard Management Panel"
+      }
+    ],
     "Data Persistence": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 16,
         "level": 2,
+        "title": "Data Persistence"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 49,
+        "level": 3,
         "title": "Data Persistence"
       }
     ],
@@ -3186,6 +3348,14 @@
         "line": 354,
         "level": 2,
         "title": "Deployment"
+      }
+    ],
+    "Deployment Guide": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 1,
+        "level": 1,
+        "title": "Deployment Guide"
       }
     ],
     "Detailed Explanation of the Event Wrapper Class": [
@@ -3232,6 +3402,14 @@
         "title": "Development Mode"
       }
     ],
+    "Development Mode Testing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 178,
+        "level": 2,
+        "title": "Development Mode Testing"
+      }
+    ],
     "Development Related Terms": [
       {
         "document": "terminology.md",
@@ -3270,6 +3448,22 @@
         "line": 115,
         "level": 3,
         "title": "Do Not Wait for Result"
+      }
+    ],
+    "Docker Deployment (Recommended)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 5,
+        "level": 2,
+        "title": "Docker Deployment (Recommended)"
+      }
+    ],
+    "Docker Method": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 228,
+        "level": 3,
+        "title": "Docker Method"
       }
     ],
     "Document Format Standards": [
@@ -3398,6 +3592,14 @@
         "title": "Dot-notation Events"
       }
     ],
+    "Double Mode Mechanism": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "Double Mode Mechanism"
+      }
+    ],
     "Downloading from GitHub Releases": [
       {
         "document": "ai-support/README.md",
@@ -3412,6 +3614,14 @@
         "line": 18,
         "level": 3,
         "title": "Embedded Development (Suitable for Fast Prototyping)"
+      }
+    ],
+    "Environment Variables": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 41,
+        "level": 3,
+        "title": "Environment Variables"
       }
     ],
     "ErisPulse Adapter Standardized Return Specification": [
@@ -3592,6 +3802,14 @@
         "line": 367,
         "level": 2,
         "title": "Event Converter"
+      }
+    ],
+    "Event Converter Implementation Guide": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 1,
+        "level": 1,
+        "title": "Event Converter Implementation Guide"
       }
     ],
     "Event Data Access": [
@@ -3854,6 +4072,14 @@
         "title": "Extension: Adding More Features"
       }
     ],
+    "FAQ": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 190,
+        "level": 2,
+        "title": "FAQ"
+      }
+    ],
     "Failure Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3868,6 +4094,14 @@
         "line": 49,
         "level": 4,
         "title": "Failure Response Example"
+      }
+    ],
+    "Feature Overview": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 60,
+        "level": 3,
+        "title": "Feature Overview"
       }
     ],
     "Fixed Bugs": [
@@ -3964,6 +4198,14 @@
         "line": 84,
         "level": 3,
         "title": "Get Method Details"
+      }
+    ],
+    "Get Target ID": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 113,
+        "level": 3,
+        "title": "Get Target ID"
       }
     ],
     "Getting Adapter Instances": [
@@ -4098,6 +4340,14 @@
         "title": "Group/Channel Information"
       }
     ],
+    "Guided Registration": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 158,
+        "level": 3,
+        "title": "Guided Registration"
+      }
+    ],
     "HTTP Routes": [
       {
         "document": "api-reference/core-modules.md",
@@ -4111,6 +4361,12 @@
         "document": "advanced/router.md",
         "line": 128,
         "level": 3,
+        "title": "Health Check"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 84,
+        "level": 2,
         "title": "Health Check"
       }
     ],
@@ -4166,6 +4422,14 @@
         "line": 201,
         "level": 3,
         "title": "How to support multiple platforms?"
+      }
+    ],
+    "ID Field Query": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 86,
+        "level": 3,
+        "title": "ID Field Query"
       }
     ],
     "Image Download and Storage": [
@@ -4382,6 +4646,14 @@
         "line": 83,
         "level": 3,
         "title": "Installing Modules"
+      }
+    ],
+    "Installing Modules via Dashboard": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 75,
+        "level": 3,
+        "title": "Installing Modules via Dashboard"
       }
     ],
     "Inter-module Communication": [
@@ -4734,6 +5006,14 @@
         "title": "Logging Configuration"
       }
     ],
+    "Looping Conversation": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 189,
+        "level": 3,
+        "title": "Looping Conversation"
+      }
+    ],
     "Mail Platform Feature Documentation": [
       {
         "document": "platform-guide/email.md",
@@ -4768,6 +5048,14 @@
         "line": 306,
         "level": 3,
         "title": "Management Interface"
+      }
+    ],
+    "Manual Deployment (pip)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 140,
+        "level": 2,
+        "title": "Manual Deployment (pip)"
       }
     ],
     "Manual Project Creation": [
@@ -4816,6 +5104,14 @@
         "line": 129,
         "level": 3,
         "title": "Message Event"
+      }
+    ],
+    "Message Event Additional Fields": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 74,
+        "level": 3,
+        "title": "Message Event Additional Fields"
       }
     ],
     "Message Event Handling": [
@@ -4888,12 +5184,28 @@
         "title": "Message Module"
       }
     ],
+    "Message Segment Conversion": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 89,
+        "level": 2,
+        "title": "Message Segment Conversion"
+      }
+    ],
     "Message Segment Standard": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 303,
         "level": 3,
         "title": "Message Segment Standard"
+      }
+    ],
+    "Message Segment Types": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 38,
+        "level": 2,
+        "title": "Message Segment Types"
       }
     ],
     "Message Sending Failed": [
@@ -4932,6 +5244,14 @@
         "line": 126,
         "level": 3,
         "title": "Message Type Judgment"
+      }
+    ],
+    "MessageBuilder Detailed Explanation": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 1,
+        "level": 1,
+        "title": "MessageBuilder Detailed Explanation"
       }
     ],
     "Meta Event": [
@@ -5044,6 +5364,14 @@
         "title": "Method Quick Reference"
       }
     ],
+    "Method Signature": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 21,
+        "level": 3,
+        "title": "Method Signature"
+      }
+    ],
     "Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5089,6 +5417,12 @@
       }
     ],
     "Module": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 56,
+        "level": 4,
+        "title": "Module"
+      },
       {
         "document": "terminology.md",
         "line": 22,
@@ -5212,6 +5546,14 @@
         "title": "Module Requirement Template"
       }
     ],
+    "Module Store Overview": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 5,
+        "level": 2,
+        "title": "Module Store Overview"
+      }
+    ],
     "Module-level Control": [
       {
         "document": "advanced/lazy-loading.md",
@@ -5266,6 +5608,22 @@
         "line": 545,
         "level": 2,
         "title": "Multi-account Support"
+      }
+    ],
+    "Multi-element Message": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 144,
+        "level": 3,
+        "title": "Multi-element Message"
+      }
+    ],
+    "Multi-instance Deployment": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 218,
+        "level": 2,
+        "title": "Multi-instance Deployment"
       }
     ],
     "Multi-platform Adaptation": [
@@ -5376,6 +5734,14 @@
         "title": "Notice Event"
       }
     ],
+    "Notice Event Additional Fields": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 82,
+        "level": 3,
+        "title": "Notice Event Additional Fields"
+      }
+    ],
     "Notice Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5444,6 +5810,14 @@
         "line": 322,
         "level": 3,
         "title": "Old Configuration Compatibility"
+      }
+    ],
+    "One-Step Send Information Retrieval": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 100,
+        "level": 3,
+        "title": "One-Step Send Information Retrieval"
       }
     ],
     "OneBot11": [
@@ -5632,6 +6006,14 @@
         "title": "Platform Event Method Extension"
       }
     ],
+    "Platform Extension Fields": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 121,
+        "level": 2,
+        "title": "Platform Extension Fields"
+      }
+    ],
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -5733,7 +6115,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 19,
+        "line": 22,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -5750,6 +6132,14 @@
         "line": 145,
         "level": 4,
         "title": "Proactively Sending Meta Events"
+      }
+    ],
+    "Production Configuration": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 144,
+        "level": 3,
+        "title": "Production Configuration"
       }
     ],
     "Project Directory Structure": [
@@ -5830,12 +6220,28 @@
         "title": "Publishing Guide"
       }
     ],
+    "Publishing Process": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "Publishing Process"
+      }
+    ],
     "Publishing Your Module": [
       {
         "document": "developer-guide/README.md",
         "line": 102,
         "level": 2,
         "title": "Publishing Your Module"
+      }
+    ],
+    "Publishing and Module Store Guide": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 1,
+        "level": 1,
+        "title": "Publishing and Module Store Guide"
       }
     ],
     "Purpose": [
@@ -5886,12 +6292,44 @@
         "title": "Q5: How to handle special platforms like email?"
       }
     ],
+    "Q: Can a single package register multiple modules?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 196,
+        "level": 3,
+        "title": "Q: Can a single package register multiple modules?"
+      }
+    ],
     "Q: How can I get AI to generate higher quality code?": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: How can I get AI to generate higher quality code?"
+      }
+    ],
+    "Q: How long does the review take?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 218,
+        "level": 3,
+        "title": "Q: How long does the review take?"
+      }
+    ],
+    "Q: How to specify minimum SDK version requirements?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 206,
+        "level": 3,
+        "title": "Q: How to specify minimum SDK version requirements?"
+      }
+    ],
+    "Q: Must package names start with `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 192,
+        "level": 3,
+        "title": "Q: Must package names start with `ErisPulse-`?"
       }
     ],
     "Q: What AI tools are recommended?": [
@@ -5950,6 +6388,14 @@
         "title": "Querying Registered Methods"
       }
     ],
+    "Quick Build Mode (Static)": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 28,
+        "level": 3,
+        "title": "Quick Build Mode (Static)"
+      }
+    ],
     "Quick Initialization": [
       {
         "document": "quick-start.md",
@@ -5995,6 +6441,12 @@
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
+        "title": "Quick Start"
+      },
+      {
+        "document": "user-guide/deployment.md",
+        "line": 9,
+        "level": 3,
         "title": "Quick Start"
       }
     ],
@@ -6042,6 +6494,14 @@
         "line": 102,
         "level": 3,
         "title": "Reading Configuration"
+      }
+    ],
+    "Receive Type": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 7,
+        "level": 3,
+        "title": "Receive Type"
       }
     ],
     "Reference Documents": [
@@ -6094,6 +6554,12 @@
     ],
     "Related Documentation": [
       {
+        "document": "advanced/conversation.md",
+        "line": 216,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 128,
         "level": 2,
@@ -6106,8 +6572,20 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/message-builder.md",
+        "line": 176,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/router.md",
         "line": 164,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/session-types.md",
+        "line": 175,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6132,6 +6610,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 617,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 234,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6238,6 +6722,14 @@
         "title": "Reply Method"
       }
     ],
+    "Replying with Events": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 72,
+        "level": 3,
+        "title": "Replying with Events"
+      }
+    ],
     "Request Event": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -6302,6 +6794,14 @@
         "title": "Request Type Judgment"
       }
     ],
+    "Required Field Mapping": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 61,
+        "level": 2,
+        "title": "Required Field Mapping"
+      }
+    ],
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6324,6 +6824,14 @@
         "line": 96,
         "level": 4,
         "title": "Reserved Error Ranges"
+      }
+    ],
+    "Return Value Structure": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 34,
+        "level": 3,
+        "title": "Return Value Structure"
       }
     ],
     "Return Values": [
@@ -6362,6 +6870,14 @@
         "line": 521,
         "level": 2,
         "title": "Reverse Conversion and Message Construction"
+      }
+    ],
+    "Reverse Proxy": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 108,
+        "level": 2,
+        "title": "Reverse Proxy"
       }
     ],
     "Route Information": [
@@ -6506,6 +7022,14 @@
         "title": "Security"
       }
     ],
+    "Security Recommendations": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 209,
+        "level": 2,
+        "title": "Security Recommendations"
+      }
+    ],
     "Self Field Extension": [
       {
         "document": "api-reference/adapter-system.md",
@@ -6552,6 +7076,14 @@
         "line": 197,
         "level": 3,
         "title": "Send Nested Class"
+      }
+    ],
+    "Send Type": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 20,
+        "level": 3,
+        "title": "Send Type"
       }
     ],
     "SendDSL": [
@@ -6662,6 +7194,14 @@
         "line": 72,
         "level": 3,
         "title": "Server Lifecycle Events"
+      }
+    ],
+    "Session Type System": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 1,
+        "level": 1,
+        "title": "Session Type System"
       }
     ],
     "Shutting Down Adapters": [
@@ -6872,6 +7412,14 @@
         "title": "Startup and Shutdown"
       }
     ],
+    "Static Factory + Chaining Mix": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 160,
+        "level": 3,
+        "title": "Static Factory + Chaining Mix"
+      }
+    ],
     "Step 1: Create Project": [
       {
         "document": "getting-started/first-bot.md",
@@ -6880,12 +7428,36 @@
         "title": "Step 1: Create Project"
       }
     ],
+    "Step 1: Prepare Project": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 38,
+        "level": 3,
+        "title": "Step 1: Prepare Project"
+      }
+    ],
+    "Step 2: Configure pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 52,
+        "level": 3,
+        "title": "Step 2: Configure pyproject.toml"
+      }
+    ],
     "Step 2: View Project Structure": [
       {
         "document": "getting-started/first-bot.md",
         "line": 23,
         "level": 2,
         "title": "Step 2: View Project Structure"
+      }
+    ],
+    "Step 3: Publish to PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 89,
+        "level": 3,
+        "title": "Step 3: Publish to PyPI"
       }
     ],
     "Step 3: Write Your First Command": [
@@ -6902,6 +7474,22 @@
         "line": 92,
         "level": 2,
         "title": "Step 4: Run the Bot"
+      }
+    ],
+    "Step 4: Submit to ErisPulse Module Store": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 108,
+        "level": 3,
+        "title": "Step 4: Submit to ErisPulse Module Store"
+      }
+    ],
+    "Step 5: Review and Launch": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 148,
+        "level": 3,
+        "title": "Step 5: Review and Launch"
       }
     ],
     "Step 5: Test the Bot": [
@@ -6970,6 +7558,14 @@
         "title": "Style Guide"
       }
     ],
+    "Submission Type": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 114,
+        "level": 4,
+        "title": "Submission Type"
+      }
+    ],
     "Submitting Lifecycle Events": [
       {
         "document": "advanced/lifecycle.md",
@@ -6992,6 +7588,14 @@
         "line": 33,
         "level": 4,
         "title": "Success Response Example"
+      }
+    ],
+    "Supervisor": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 194,
+        "level": 3,
+        "title": "Supervisor"
       }
     ],
     "Supported Message Sending Types": [
@@ -7024,6 +7628,14 @@
         "line": 20,
         "level": 2,
         "title": "Supported Message Sending Types"
+      }
+    ],
+    "Supported Submission Types": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 27,
+        "level": 3,
+        "title": "Supported Submission Types"
       }
     ],
     "Synchronous Initialization": [
@@ -7072,10 +7684,18 @@
         "title": "Table of Contents"
       }
     ],
+    "Tags": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 136,
+        "level": 4,
+        "title": "Tags"
+      }
+    ],
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 11,
+        "line": 14,
         "level": 2,
         "title": "Target Audience"
       },
@@ -7092,6 +7712,14 @@
         "line": 187,
         "level": 3,
         "title": "Task Object"
+      }
+    ],
+    "Technical Information": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 129,
+        "level": 4,
+        "title": "Technical Information"
       }
     ],
     "Technical Standards": [
@@ -7202,6 +7830,38 @@
         "title": "Type Annotation"
       }
     ],
+    "Type Conversion": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 69,
+        "level": 3,
+        "title": "Type Conversion"
+      }
+    ],
+    "Type Definitions": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 5,
+        "level": 2,
+        "title": "Type Definitions"
+      }
+    ],
+    "Type Mapping": [
+      {
+        "document": "advanced/session-types.md",
+        "line": 32,
+        "level": 2,
+        "title": "Type Mapping"
+      }
+    ],
+    "Typical Flow Patterns": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 156,
+        "level": 2,
+        "title": "Typical Flow Patterns"
+      }
+    ],
     "Uninstall Modules": [
       {
         "document": "user-guide/README.md",
@@ -7248,6 +7908,22 @@
         "line": 6,
         "level": 2,
         "title": "Update Requirements"
+      }
+    ],
+    "Updates and Maintenance": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 226,
+        "level": 2,
+        "title": "Updates and Maintenance"
+      }
+    ],
+    "Updating Published Modules": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 160,
+        "level": 2,
+        "title": "Updating Published Modules"
       }
     ],
     "Upgrade Modules": [
@@ -7374,7 +8050,27 @@
         "title": "Using the Event System"
       }
     ],
+    "Using with Send": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 53,
+        "level": 2,
+        "title": "Using with Send"
+      }
+    ],
     "Utility Methods": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 88,
+        "level": 2,
+        "title": "Utility Methods"
+      },
+      {
+        "document": "advanced/session-types.md",
+        "line": 147,
+        "level": 2,
+        "title": "Utility Methods"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 406,
@@ -7690,6 +8386,38 @@
         "title": "channel"
       }
     ],
+    "choose(prompt, options, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 87,
+        "level": 3,
+        "title": "choose(prompt, options, **kwargs)"
+      }
+    ],
+    "clear()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 102,
+        "level": 3,
+        "title": "clear()"
+      }
+    ],
+    "collect(fields, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 100,
+        "level": 3,
+        "title": "collect(fields, **kwargs)"
+      }
+    ],
+    "confirm(prompt=None, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 69,
+        "level": 3,
+        "title": "confirm(prompt=None, **kwargs)"
+      }
+    ],
     "connect — Connection Online": [
       {
         "document": "api-reference/adapter-system.md",
@@ -7698,12 +8426,36 @@
         "title": "connect — Connection Online"
       }
     ],
+    "convert() Method": [
+      {
+        "document": "developer-guide/adapters/converter.md",
+        "line": 19,
+        "level": 2,
+        "title": "convert() Method"
+      }
+    ],
+    "copy()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "copy()"
+      }
+    ],
     "disconnect — Disconnection": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 283,
         "level": 4,
         "title": "disconnect — Disconnection"
+      }
+    ],
+    "docker-compose.yml": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 24,
+        "level": 3,
+        "title": "docker-compose.yml"
       }
     ],
     "get() Method": [
@@ -7746,6 +8498,22 @@
         "title": "install Parameters"
       }
     ],
+    "is_active": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 137,
+        "level": 3,
+        "title": "is_active"
+      }
+    ],
+    "len() / bool()": [
+      {
+        "document": "advanced/message-builder.md",
+        "line": 115,
+        "level": 3,
+        "title": "len() / bool()"
+      }
+    ],
     "list Parameters": [
       {
         "document": "user-guide/cli-reference.md",
@@ -7768,6 +8536,14 @@
         "line": 38,
         "level": 3,
         "title": "on_unload Method"
+      }
+    ],
+    "pip Method": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 238,
+        "level": 3,
+        "title": "pip Method"
       }
     ],
     "private": [
@@ -7794,6 +8570,30 @@
         "title": "run Parameters"
       }
     ],
+    "say(content, **kwargs)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 38,
+        "level": 3,
+        "title": "say(content, **kwargs)"
+      }
+    ],
+    "stop()": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 129,
+        "level": 3,
+        "title": "stop()"
+      }
+    ],
+    "systemd (Linux)": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 162,
+        "level": 3,
+        "title": "systemd (Linux)"
+      }
+    ],
     "thread": [
       {
         "document": "standards/session-types.md",
@@ -7808,6 +8608,14 @@
         "line": 50,
         "level": 4,
         "title": "user"
+      }
+    ],
+    "wait(prompt=None, timeout=None)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 52,
+        "level": 3,
+        "title": "wait(prompt=None, timeout=None)"
       }
     ],
     "📦 AI Documentation Assets": [
