@@ -66,7 +66,7 @@
     },
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "User Guide",
@@ -87,12 +87,17 @@
           "title": "CLI Command Reference",
           "path": "user-guide/cli-reference.md",
           "level": 1
+        },
+        {
+          "title": "Deployment Guide",
+          "path": "user-guide/deployment.md",
+          "level": 1
         }
       ]
     },
     "Developer Guide": {
       "description": "Module and adapter development guides",
-      "count": 9,
+      "count": 11,
       "documents": [
         {
           "title": "Developer Guide",
@@ -137,6 +142,16 @@
         {
           "title": "Adapter Development Best Practices",
           "path": "developer-guide/adapters/best-practices.md",
+          "level": 1
+        },
+        {
+          "title": "Publishing and Module Store Guide",
+          "path": "developer-guide/publishing.md",
+          "level": 1
+        },
+        {
+          "title": "Event Converter Implementation Guide",
+          "path": "developer-guide/adapters/converter.md",
           "level": 1
         }
       ]
@@ -210,7 +225,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 4,
+      "count": 7,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -230,6 +245,21 @@
         {
           "title": "Router Manager",
           "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "MessageBuilder Detailed Explanation",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "Session Type System",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation Multi-turn Dialogue",
+          "path": "advanced/conversation.md",
           "level": 1
         }
       ]
