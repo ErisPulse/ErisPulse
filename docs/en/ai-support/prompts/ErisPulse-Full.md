@@ -2862,7 +2862,259 @@ api_url = config.get("api_url", "https://default.api.com")
 
 ### 部署指南
 
+# Deployment Guide
 
+Best practices for deploying ErisPulse bot to production environments.
+
+## Docker Deployment (Recommended)
+
+ErisPulse provides official Docker images with the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
+
+### Quick Start
+
+```bash
+# Pull the image
+docker pull erispulse/erispulse:latest
+
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# Set Dashboard login token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+After startup, access `http://localhost:8000/Dashboard` and login using the token you set as the password.
+
+### docker-compose.yml
+
+```yaml
+services:
+  erispulse:
+    image: erispulse/erispulse:latest
+    container_name: erispulse
+    ports:
+      - "${ERISPULSE_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
+```
+
+### Environment Variables
+
+| Variable | Default Value | Description |
+|----------|--------------|-------------|
+| `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
+| `ERISPULSE_DASHBOARD_TOKEN` | Auto-generated | Dashboard login token (highly recommended to set) |
+| `TZ` | `Asia/Shanghai` | Timezone |
+
+### Data Persistence
+
+The `./config` directory is mounted for configuration files and database, containing:
+
+- `config/config.toml` — Configuration file
+- `config/config.db` — SQLite storage database
+
+## Dashboard Management Panel
+
+The ErisPulse Docker image includes a Dashboard module that provides a web-based management interface.
+
+### Feature Overview
+
+| Feature | Description |
+|---------|-------------|
+| Dashboard | System overview, CPU/memory monitoring, uptime, event statistics |
+| Bot Management | View online status and information of bots on various platforms |
+| Event Viewer | Real-time event stream with filtering by type and platform |
+| Log Viewer | Log viewer with filtering by module and level |
+| Module Management | View, load, and unload installed modules and adapters |
+| Module Store | Browse remotely available packages with one-click installation |
+| Configuration Editor | Edit `config.toml` online |
+| Storage Management | Browse and edit Key-Value storage data |
+| Backup | Export/import configuration and storage data |
+| Audit Log | Record all management operations |
+
+### Installing Modules via Dashboard
+
+The Dashboard integrates a module store function where you can:
+
+1. **Install from Store**: Browse the remote module list and install needed modules with one click
+2. **Upload Local Package**: Directly upload `.whl` or `.zip` files for installation, convenient for testing personally developed modules
+
+> **Quick testing workflow for module developers**: After deploying with Docker, directly upload your built `.whl` file through the "Upload Local Package" function in Dashboard for testing, without manual container operations.
+
+## Health Check
+
+The SDK has built-in health check endpoints:
+
+```bash
+# Simple check
+curl http://localhost:8000/ping
+
+# Detailed status
+curl http://localhost:8000/health
+```
+
+Docker health check can be added in `docker-compose.yml`:
+
+```yaml
+services:
+  erispulse:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+## Reverse Proxy
+
+If you need to expose the Dashboard through a reverse proxy like Nginx:
+
+```nginx
+server {
+    listen 80;
+    server_name bot.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # WebSocket support (required for Dashboard real-time event stream)
+    location /Dashboard/ws {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+SSL can be set up with Let's Encrypt:
+
+```bash
+sudo certbot --nginx -d bot.example.com
+```
+
+## Manual Deployment (pip)
+
+If not using Docker, manual deployment is also possible.
+
+### Production Configuration
+
+```toml
+# config/config.toml
+
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+file_output = true
+max_lines = 5000
+
+[ErisPulse.module]
+lazy_load = true
+```
+
+### systemd (Linux)
+
+Create `/etc/systemd/system/erispulse-bot.service`:
+
+```ini
+[Unit]
+Description=ErisPulse Bot
+After=network.target
+
+[Service]
+Type=simple
+User=bot
+WorkingDirectory=/opt/erispulse-bot
+ExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Management:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start erispulse-bot
+sudo systemctl enable erispulse-bot
+sudo journalctl -u erispulse-bot -f
+```
+
+### Supervisor
+
+Create `/etc/supervisor/conf.d/erispulse-bot.conf`:
+
+```ini
+[program:erispulse-bot]
+command=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py
+directory=/opt/erispulse-bot
+user=bot
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/erispulse-bot/err.log
+stdout_logfile=/var/log/erispulse-bot/out.log
+```
+
+## Security Recommendations
+
+1. **Set Dashboard Token**: Use a strong random token, don't use default values
+2. **Don't Expose Port to Public Network**: Unless using reverse proxy + SSL, restrict Dashboard port to internal network
+3. **Protect Data Directory**: The `config/` directory contains configuration and database, set appropriate file permissions
+4. **Regular Updates**: Use `epsdk self-update` or pull the latest Docker image
+5. **Don't Run as Root**: Create a dedicated user for manual deployment
+6. **Use Docker Restart Policy**: `restart: unless-stopped` ensures automatic restart after unexpected exits
+
+## Multi-instance Deployment
+
+When running multiple bot instances:
+
+1. Each instance should use a separate project directory and `docker-compose.yml`
+2. Use different ports: `ERISPULSE_PORT=8001`
+3. Use different container names: `container_name: erispulse-bot2`
+
+## Updates and Maintenance
+
+### Docker Method
+
+```bash
+# Pull latest image
+docker compose pull
+
+# Restart with new image
+docker compose up -d
+```
+
+### pip Method
+
+```bash
+epsdk self-update
+epsdk upgrade
+```
+
+### Backup
+
+Regularly backup the `config/` directory:
+
+```bash
+# Docker deployment
+tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
+
+# Or export using the "Backup" function in Dashboard
 
 
 
@@ -6009,13 +6261,470 @@ version = "2.0.0"  # Update version number
 
 ### 事件转换器
 
+# Event Converter Implementation Guide
 
+Event Converter is one of the core components of an adapter, responsible for converting platform native events to the ErisPulse unified OneBot12 standard event format.
+
+## Converter Responsibilities
+
+```
+Platform Native Event ──→ Converter.convert() ──→ OneBot12 Standard Event
+```
+
+The Converter is only responsible for **forward conversion** (receiving direction), that is, converting platform native event data to OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+
+### Core Principles
+
+1. **Lossless Conversion**: Original data must be completely preserved in the `{platform}_raw` field
+2. **Standard Compatibility**: Converted events must conform to OneBot12 standard format
+3. **Platform Extension**: Platform-specific data is stored in fields with `{platform}_` prefix
+
+## convert() Method
+
+### Method Signature
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    Convert platform native events to OneBot12 standard format
+
+    :param raw_event: Platform native event data
+    :return: OneBot12 standard format event dictionary
+    """
+    pass
+```
+
+### Return Value Structure
+
+The converted event dictionary should include the following standard fields:
+
+```python
+{
+    "id": "Event unique ID",
+    "time": 1234567890,           # Unix timestamp (seconds)
+    "type": "message",             # Event type
+    "detail_type": "private",      # Detail type
+    "platform": "myplatform",      # Platform name
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # Message event fields
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 message segment list
+    "alt_message": "Plain text content",
+
+    # Must preserve original data
+    "myplatform_raw": { ... },     # Complete platform native event data
+    "myplatform_raw_type": "Native event type name",
+}
+```
+
+## Required Field Mapping
+
+### Common Fields (All Event Types)
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `id` | str | Event unique identifier |
+| `time` | int | Unix timestamp (seconds) |
+| `type` | str | Event type: `message` / `notice` / `request` / `meta` |
+| `detail_type` | str | Detail type: `private` / `group` / `friend` etc. |
+| `platform` | str | Platform name, matches adapter registration name |
+| `self` | dict | Bot info: `{"platform": "...", "user_id": "..."}` |
+
+### Message Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Sender ID |
+| `message` | list[dict] | OneBot12 message segment list |
+| `alt_message` | str | Plain text fallback content |
+
+### Notice Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Related user ID |
+| `operator_id` | str | Operator ID (e.g., group member changes) |
+
+## Message Segment Conversion
+
+OneBot12 standard defines the following message segment types:
+
+```python
+# Text
+{"type": "text", "data": {"text": "Hello"}}
+
+# Image
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# Audio
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# Video
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# File
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# Mention
+{"type": "mention", "data": {"user_id": "123"}}
+
+# Mention All
+{"type": "mention_all", "data": {}}
+
+# Reply
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+If a platform doesn't support certain message segment types, they can be omitted or converted to the closest standard type.
+
+## Platform Extension Fields
+
+Platform-specific data should be stored with `{platform}_` prefix to avoid conflicts with standard fields:
+
+```python
+{
+    # Standard fields
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # Platform extension fields
+    "myplatform_raw": { ... },          # Original event data (required)
+    "myplatform_raw_type": "chat",      # Original event type (required)
+
+    # Other platform-specific fields
+    "myplatform_group_name": "Group name",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform raw data.
+
+## Complete Example
+
+Here's a complete Converter implementation:
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## Best Practices
+
+1. **Always preserve original data**: The `{platform}_raw` field cannot be omitted
+2. **Use standard message segments**: Try to convert platform messages to OneBot12 standard message segments
+3. **Set detail_type appropriately**: Use standard types (`private`/`group`/channel` etc.), don't customize
+4. **Handle edge cases**: Raw events might be missing certain fields, use `.get()` and provide reasonable defaults
+5. **Performance considerations**: `convert()` is called for every event, avoid executing time-consuming operations inside it
+
+## Related Documentation
+
+- [Adapter Core Concepts](core-concepts.md) - Overall adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Reverse conversion (sending direction)
+- [Event Conversion Standard](../../standards/event-conversion.md) - Formal event conversion specification
+- [Session Type System](../../advanced/session-types.md) - Session type mapping rules
 
 
 
 ### 发布与模块商店指南
 
+# Publishing and Module Store Guide
 
+Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+
+## Module Store Overview
+
+The ErisPulse Module Store is a centralized module registry where users can browse, search, and install community-contributed modules and adapters through CLI tools.
+
+### Browse and Discover
+
+```bash
+# List all remote available packages
+epsdk list-remote
+
+# Only view modules
+epsdk list-remote -t modules
+
+# Only view adapters
+epsdk list-remote -t adapters
+
+# Force refresh remote package list
+epsdk list-remote -r
+```
+
+You can also visit the [ErisPulse official website](https://www.erisdev.com/#market) to browse the Module Store online.
+
+### Supported Submission Types
+
+| Type | Description | Entry-point Group |
+|------|------|----------------|
+| Module | Extend bot functionality, implement business logic | `erispulse.module` |
+| Adapter | Connect to new messaging platforms | `erispulse.adapter` |
+
+## Publishing Process
+
+The entire publishing process is divided into four steps: Prepare Project → Publish to PyPI → Submit to Module Store → Review and Launch.
+
+### Step 1: Prepare Project
+
+Ensure your project contains the following files:
+
+```
+MyModule/
+├── pyproject.toml      # Project configuration (required)
+├── README.md           # Project description (required)
+├── LICENSE             # Open source license (recommended)
+└── MyModule/
+    ├── __init__.py     # Package entry point
+    └── ...
+```
+
+### Step 2: Configure pyproject.toml
+
+According to the type you want to publish, correctly configure `entry-points`:
+
+#### Module
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "Module functionality description"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [ { name = "yourname" } ]
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+#### Adapter
+
+```toml
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "Adapter functionality description"
+requires-python = ">=3.10"
+
+[project.entry-points."erispulse.adapter"]
+"myplatform" = "MyAdapter:MyAdapter"
+```
+
+> **Note**: It's recommended that package names start with `ErisPulse-` for easy user recognition. The entry-point key name (such as `"MyModule"`) will be used as the access name for the module in the SDK.
+
+### Step 3: Publish to PyPI
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build distribution packages
+python -m build
+
+# Publish to PyPI
+python -m twine upload dist/*
+```
+
+After successful publication, confirm that your package can be installed via `pip install`:
+
+```bash
+pip install ErisPulse-MyModule
+```
+
+### Step 4: Submit to ErisPulse Module Store
+
+After confirming your package is published to PyPI, go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit your application.
+
+Fill in the following information:
+
+#### Submission Type
+
+Select the type you want to submit:
+- Module
+- Adapter
+
+#### Basic Information
+
+| Field | Description | Example |
+|------|------|------|
+| **Name** | Module/Adapter name | Weather |
+| **Description** | Brief functional description | Weather query module supporting global cities |
+| **Author** | Your name or GitHub username | MyName |
+| **Repository URL** | Code repository URL | https://github.com/MyName/MyModule |
+
+#### Technical Information
+
+| Field | Description |
+|------|------|
+| **Minimum SDK Version Requirement** | e.g. `>=2.0.0` (if applicable) |
+| **Dependencies** | Additional dependencies besides ErisPulse (if applicable) |
+
+#### Tags
+
+Separate with commas to help users search and discover your module. For example: `weather, query, tool`
+
+#### Checklist
+
+Before submitting, please confirm:
+- Code follows ErisPulse development standards
+- Contains appropriate documentation (README.md)
+- Contains test cases (if applicable)
+- Published on PyPI
+
+### Step 5: Review and Launch
+
+After submission, maintainers will review your application. Review points:
+
+1. The package can be installed normally from PyPI
+2. Entry-point configuration is correct and can be properly discovered by the SDK
+3. Functionality matches the description
+4. No security issues or malicious code
+5. No significant conflicts with existing modules
+
+After passing the review, your module will automatically appear in the Module Store.
+
+## Updating Published Modules
+
+When you update a module version:
+
+1. Update `version` in `pyproject.toml`
+2. Rebuild and upload to PyPI:
+   ```bash
+   python -m build
+   python -m twine upload dist/*
+   ```
+3. The Module Store will automatically sync the latest version information from PyPI
+
+Users can upgrade using the following command:
+
+```bash
+epsdk upgrade MyModule
+```
+
+## Development Mode Testing
+
+Before official publication, you can test locally in editable mode:
+
+```bash
+# Install in editable mode
+epsdk install -e /path/to/MyModule
+
+# Or use pip
+pip install -e /path/to/MyModule
+```
+
+## FAQ
+
+### Q: Must package names start with `ErisPulse-`?
+
+Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
+
+### Q: Can a single package register multiple modules?
+
+Yes. Configure multiple key-value pairs in `entry-points`:
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### Q: How to specify minimum SDK version requirements?
+
+Set in `dependencies` in `pyproject.toml`:
+
+```toml
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+```
+
+The Module Store will check version compatibility to prevent users from installing incompatible modules.
+
+### Q: How long does the review take?
+
+Usually completed within 1-3 business days. You can check the review progress in the Issue.
 
 
 
@@ -9215,19 +9924,594 @@ async def on_server_stop(event):
 
 ### MessageBuilder 详解
 
+# MessageBuilder Detailed Explanation
 
+`MessageBuilder` is the OneBot12 standard message segment construction tool provided by ErisPulse, used to build structured message content to be used with `Send.Raw_ob12()`.
+
+## Double Mode Mechanism
+
+MessageBuilder provides two usage modes, implementing different behaviors at the class level and instance level through Python descriptor mechanism:
+
+### Chaining Mode (Instance)
+
+Used by instantiating `MessageBuilder()`, each method returns `self`, supporting chaining calls, finally using `.build()` to get the message segment list:
+
+```python
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+segments = (
+    MessageBuilder()
+    .text("你好！")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+# [
+#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
+# ]
+```
+
+### Quick Build Mode (Static)
+
+Called directly on the class, each method returns a message segment list directly, suitable for single-segment messages:
+
+```python
+# Directly returns list[dict], no need for .build()
+segments = MessageBuilder.text("你好！")
+# [{"type": "text", "data": {"text": "你好！"}}]
+```
+
+## Message Segment Types
+
+| Method | Type | Data Parameters | Description |
+|--------|------|-----------------|-------------|
+| `text(text)` | text | `text` | Text message |
+| `image(file)` | image | `file` | Image message |
+| `audio(file)` | audio | `file` | Audio message |
+| `video(file)` | video | `file` | Video message |
+| `file(file, filename?)` | file | `file`, `filename` | File message |
+| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | @Mention user |
+| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | Alias for `mention` |
+| `reply(message_id)` | reply | `message_id` | Reply message |
+| `at_all()` | mention_all | - | @All members |
+| `custom(type, data)` | Custom | Custom | Custom message segment |
+
+## Using with Send
+
+The message segment list is sent through `Send.Raw_ob12()`:
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+# Chaining build + send
+segments = (
+    MessageBuilder()
+    .mention("user123", "张三")
+    .text(" 请查看这张图片")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+await sdk.adapter.myplatform.Send.To("group", "group456").Raw_ob12(segments)
+```
+
+### Replying with Events
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("report")
+async def report_handler(event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .text("📊 日报汇总\n")
+        .text("今日完成任务: 5\n")
+        .text("进行中任务: 3")
+        .build()
+    )
+```
+
+## Utility Methods
+
+### copy()
+
+Copy the current builder, used to create multiple message variants based on the same base content:
+
+```python
+base = MessageBuilder().text("基础内容").mention("admin")
+
+# Build different messages based on the same prefix
+msg1 = base.copy().text(" 变体A").build()
+msg2 = base.copy().text(" 变体B").image("img.jpg").build()
+```
+
+### clear()
+
+Clear added message segments, reuse the same builder:
+
+```python
+builder = MessageBuilder()
+
+for user_id in ["user1", "user2", "user3"]:
+    builder.clear()
+    msg = builder.mention(user_id).text(" 你好！").build()
+    await adapter.Send.To("user", user_id).Raw_ob12(msg)
+```
+
+### len() / bool()
+
+```python
+builder = MessageBuilder()
+print(bool(builder))   # False
+
+builder.text("Hello")
+print(len(builder))    # 1
+print(bool(builder))   # True
+```
+
+## Custom Message Segments
+
+Use the `custom()` method to add platform-specific extended message segments:
+
+```python
+# Add platform-specific message segments
+segments = (
+    MessageBuilder()
+    .text("请填写表单：")
+    .custom("yunhu_form", {"form_id": "12345"})
+    .build()
+)
+```
+
+> Custom message segments are only valid in the corresponding platform's adapter, other adapters will ignore unknown message segments.
+
+## Complete Examples
+
+### Multi-element Message
+
+```python
+segments = (
+    MessageBuilder()
+    .reply(event.get_id())                    # Reply to original message
+    .mention(event.get_user_id())             # @Sender
+    .text(" 这是你的查询结果：\n")             # Text
+    .image("https://example.com/chart.png")   # Image
+    .text("\n详细数据见附件：")
+    .file("https://example.com/data.csv", filename="data.csv")
+    .build()
+)
+await event.reply_ob12(segments)
+```
+
+### Static Factory + Chaining Mix
+
+```python
+# Quick build single-segment message
+simple_msg = MessageBuilder.text("简单文本")
+
+# Chaining build complex message
+complex_msg = (
+    MessageBuilder()
+    .at_all()
+    .text(" 📢 公告：")
+    .text("今天下午3点开会")
+    .build()
+)
+```
+
+## Related Documentation
+
+- [Adapter SendDSL Detailed Explanation](../../developer-guide/adapters/send-dsl.md) - Send chaining send interface
+- [Event Conversion Standard](../../standards/event-conversion.md) - Message segment conversion specification
+- [Event Wrapper Class](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
 
 
 
 ### 会话类型系统
 
+# Session Type System
 
+The ErisPulse Session Type System is responsible for defining and managing message session types (private chat, group chat, channel, etc.) and providing automatic conversion between receive types and send types.
+
+## Type Definitions
+
+### Receive Type
+
+Receive types come from the `detail_type` field in OneBot12 events, representing the session scenario of the event:
+
+| Type | Description | ID Field |
+|------|------------|----------|
+| `private` | Private chat message | `user_id` |
+| `group` | Group chat message | `group_id` |
+| `channel` | Channel message | `channel_id` |
+| `guild` | Server message | `guild_id` |
+| `thread` | Thread/sub-channel message | `thread_id` |
+| `user` | User message (extended) | `user_id` |
+
+### Send Type
+
+Send types are used in `Send.To(type, id)` to specify the sending target:
+
+| Type | Description |
+|------|------------|
+| `user` | Send to user |
+| `group` | Send to group |
+| `channel` | Send to channel |
+| `guild` | Send to server |
+| `thread` | Send to thread |
+
+## Type Mapping
+
+There is a default mapping relationship between receive types and send types:
+
+```
+Receive              Send
+────────────        ──────────
+private        ──→     user
+group          ──→     group
+channel        ──→     channel
+guild          ──→     guild
+thread         ──→     thread
+user           ──→     user
+```
+
+Key difference: **Use `private` for receiving, `user` for sending**. This is the design of the OneBot12 standard - the event describes a "private chat scenario" while sending describes a "user target".
+
+## Automatic Inference
+
+When an event doesn't have a clear `detail_type` field, the system automatically infers the session type based on the ID fields present in the event:
+
+**Priority**: `group_id` > `channel_id` > `guild_id` > `thread_id` > `user_id`
+
+```python
+from ErisPulse.Core.Event.session_type import infer_receive_type
+
+# Has group_id → inferred as group
+event1 = {"group_id": "123", "user_id": "456"}
+print(infer_receive_type(event1))  # "group"
+
+# Only user_id → inferred as private
+event2 = {"user_id": "456"}
+print(infer_receive_type(event2))  # "private"
+```
+
+## Core API
+
+### Type Conversion
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    convert_to_send_type,
+    convert_to_receive_type,
+)
+
+# Receive Type → Send Type
+convert_to_send_type("private")  # → "user"
+convert_to_send_type("group")    # → "group"
+
+# Send Type → Receive Type
+convert_to_receive_type("user")   # → "private"
+convert_to_receive_type("group")  # → "group"
+```
+
+### ID Field Query
+
+```python
+from ErisPulse.Core.Event.session_type import get_id_field, get_receive_type
+
+# Get ID field name based on type
+get_id_field("group")    # → "group_id"
+get_id_field("private")  # → "user_id"
+
+# Get type based on ID field
+get_receive_type("group_id")  # → "group"
+get_receive_type("user_id")   # → "private"
+```
+
+### One-Step Send Information Retrieval
+
+```python
+from ErisPulse.Core.Event.session_type import get_send_type_and_target_id
+
+event = {"detail_type": "private", "user_id": "123"}
+send_type, target_id = get_send_type_and_target_id(event)
+# send_type = "user", target_id = "123"
+
+# Direct use in Send.To()
+await adapter.Send.To(send_type, target_id).Text("Hello")
+```
+
+### Get Target ID
+
+```python
+from ErisPulse.Core.Event.session_type import get_target_id
+
+event = {"detail_type": "group", "group_id": "456"}
+get_target_id(event)  # → "456"
+```
+
+## Custom Type Registration
+
+Adapters can register custom mappings for platform-specific session types:
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type, unregister_custom_type
+
+# Register custom type
+register_custom_type(
+    receive_type="thread_reply",     # Receive type name
+    send_type="thread",              # Corresponding send type
+    id_field="thread_reply_id",      # Corresponding ID field
+    platform="discord"               # Platform name (optional)
+)
+
+# Use custom type
+convert_to_send_type("thread_reply", platform="discord")  # → "thread"
+get_id_field("thread_reply", platform="discord")          # → "thread_reply_id"
+
+# Unregister custom type
+unregister_custom_type("thread_reply", platform="discord")
+```
+
+> **When specifying platform**, the registered receive type will have a platform prefix (e.g., `discord_thread_reply`) to avoid type conflicts between different platforms.
+
+## Utility Methods
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    is_standard_type,
+    is_valid_send_type,
+    get_standard_types,
+    get_send_types,
+    clear_custom_types,
+)
+
+# Check if it's a standard type
+is_standard_type("private")  # True
+is_standard_type("custom_type")  # False
+
+# Check if send type is valid
+is_valid_send_type("user")  # True
+is_valid_send_type("invalid")  # False
+
+# Get all standard types
+get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user"}
+get_send_types()      # {"user", "group", "channel", "guild", "thread"}
+
+# Clear custom types
+clear_custom_types()                # Clear all
+clear_custom_types(platform="discord")  # Clear only specified platform
+```
+
+## Related Documentation
+
+- [Event Conversion Standard](../standards/event-conversion.md) - Event conversion specification
+- [Session Type Standard](../standards/session-types.md) - Formal definition of session types
+- [Event Converter Implementation](../../developer-guide/adapters/converter.md) - Converter development guide
 
 
 
 ### Conversation 多轮对话
 
+# Conversation Multi-turn Dialogue
 
+The `Conversation` class provides convenient methods for multi-turn interaction within the same session, suitable for implementing guided operations, information collection, conversational Q&A, and other scenarios.
+
+## Creating a Conversation
+
+Create through the `Event` object's `conversation()` method:
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+
+    await conv.say("🎮 Welcome to the knowledge quiz!")
+
+    answer = await conv.choose("Question 1: Who created Python?", [
+        "Guido van Rossum",
+        "James Gosling",
+        "Dennis Ritchie",
+    ])
+
+    if answer is None:
+        await conv.say("Timeout, please come back next time!")
+        return
+
+    if answer == 0:
+        await conv.say("Correct!")
+    else:
+        await conv.say("Wrong, the correct answer is Guido van Rossum")
+
+    conv.stop()
+```
+
+## Core API
+
+### say(content, **kwargs)
+
+Send a message, returns `self` to support method chaining:
+
+```python
+await conv.say("First line").say("Second line").say("Third line")
+```
+
+You can also specify the sending method:
+
+```python
+await conv.say("https://example.com/image.jpg", method="Image")
+```
+
+### wait(prompt=None, timeout=None)
+
+Wait for user response, returns an `Event` object or `None` (timeout):
+
+```python
+# Simple wait
+resp = await conv.wait()
+if resp:
+    text = resp.get_text()
+
+# Wait after sending prompt
+resp = await conv.wait(prompt="Please enter your name:")
+
+# Use custom timeout (overrides conversation default)
+resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
+```
+
+### confirm(prompt=None, **kwargs)
+
+Wait for user confirmation (yes/no), returns `True` / `False` / `None` (timeout):
+
+```python
+result = await conv.confirm("Are you sure you want to delete all data?")
+if result is True:
+    await conv.say("Deleted")
+elif result is False:
+    await conv.say("Cancelled")
+else:
+    await conv.say("Timeout, no reply")
+```
+
+Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
+
+Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+
+### choose(prompt, options, **kwargs)
+
+Wait for user to select from options, returns option index (0-based) or `None`:
+
+```python
+choice = await conv.choose("Please choose a color:", ["Red", "Green", "Blue"])
+if choice is not None:
+    colors = ["Red", "Green", "Blue"]
+    await conv.say(f"You chose {colors[choice]}")
+```
+
+Users can select by entering numbers (`1`/`2`/`3`) or option text (`Red`).
+
+### collect(fields, **kwargs)
+
+Multi-step information collection, returns a data dictionary or `None`:
+
+```python
+data = await conv.collect([
+    {"key": "name", "prompt": "Please enter name"},
+    {"key": "age", "prompt": "Please enter age",
+     "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
+     "retry_prompt": "Age must be a number, please re-enter"},
+    {"key": "city", "prompt": "Please enter city"},
+])
+
+if data:
+    await conv.say(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nCity: {data['city']}")
+else:
+    await conv.say("Registration process interrupted")
+```
+
+Field configuration:
+
+| Parameter | Description | Default Value |
+|-----------|-------------|---------------|
+| `key` | Field key name (required) | - |
+| `prompt` | Prompt message | `"请输入 {key}"` |
+| `validator` | Validation function, receives Event, returns bool | None |
+| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
+| `max_retries` | Maximum retry times | 3 |
+
+### stop()
+
+Manually end the conversation, sets `is_active` to `False`:
+
+```python
+conv.stop()
+```
+
+### is_active
+
+Whether the conversation is active:
+
+```python
+if conv.is_active:
+    await conv.say("Conversation is still in progress")
+```
+
+## Active State Management
+
+The conversation automatically becomes inactive in the following situations:
+
+1. The `stop()` method is called
+2. `wait()` times out and returns `None`
+3. `collect()` returns `None` due to any step timing out or retries being exhausted
+
+After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without continuing to wait for user input.
+
+## Typical Flow Patterns
+
+### Guided Registration
+
+```python
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+
+    await conv.say("Welcome to register!")
+
+    data = await conv.collect([
+        {"key": "username", "prompt": "Please enter username (3-20 characters)",
+         "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
+        {"key": "email", "prompt": "Please enter email address",
+         "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
+         "retry_prompt": "Email format is incorrect, please re-enter"},
+    ])
+
+    if not data:
+        await event.reply("Registration cancelled")
+        return
+
+    confirmed = await conv.confirm(
+        f"Confirm registration information?\nUsername: {data['username']}\nEmail: {data['email']}"
+    )
+
+    if confirmed:
+        await conv.say("✅ Registration successful!")
+    else:
+        await conv.say("❌ Registration cancelled")
+```
+
+### Looping Conversation
+
+```python
+@command("chat")
+async def chat_handler(event):
+    conv = event.conversation(timeout=120)
+    await conv.say("Enter conversation mode, type 'exit' to end")
+
+    while conv.is_active:
+        resp = await conv.wait()
+        if resp is None:
+            await conv.say("Timeout, conversation ended")
+            break
+
+        text = resp.get_text().strip()
+
+        if text == "exit":
+            await conv.say("Goodbye!")
+            conv.stop()
+        elif text == "help":
+            await conv.say("Available commands: exit, help, status")
+        elif text == "status":
+            await conv.say("Conversation active")
+        else:
+            await conv.say(f"You said: {text}")
+```
+
+## Related Documentation
+
+- [Event Wrapper](../../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Introduction to Event Handling](../../getting-started/event-handling.md) - Event handling basics
 
 
 

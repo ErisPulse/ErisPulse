@@ -97,7 +97,7 @@
     },
     "開發者指南": {
       "description": "模組和適配器開發指南",
-      "count": 10,
+      "count": 11,
       "documents": [
         {
           "title": "開發者指南",
@@ -147,6 +147,11 @@
         {
           "title": "發布與模組商店指南",
           "path": "developer-guide/publishing.md",
+          "level": 1
+        },
+        {
+          "title": "事件轉換器實現指南",
+          "path": "developer-guide/adapters/converter.md",
           "level": 1
         }
       ]
@@ -220,7 +225,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "進階主題",
@@ -243,8 +248,18 @@
           "level": 1
         },
         {
+          "title": "MessageBuilder 詳解",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
           "title": "會話類型系統",
           "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation 多輪對話",
+          "path": "advanced/conversation.md",
           "level": 1
         }
       ]
