@@ -1,10 +1,10 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "total_categories": 10,
   "categories": {
     "快速開始": {
       "description": "ErisPulse 快速入門指南",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "ErisPulse 文檔",
@@ -31,11 +31,12 @@
           "path": "terminology.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "入門指南": {
       "description": "ErisPulse 基礎概念和使用教程",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "建立第一個機器人",
@@ -62,11 +63,12 @@
           "path": "getting-started/event-handling.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "使用者指南": {
       "description": "ErisPulse 配置和命令參考",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "用戶使用指南",
@@ -93,11 +95,12 @@
           "path": "user-guide/deployment.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "開發者指南": {
       "description": "模組和適配器開發指南",
-      "count": 11,
+      "count": 22,
       "documents": [
         {
           "title": "開發者指南",
@@ -105,60 +108,72 @@
           "level": 1
         },
         {
-          "title": "模組開發入門",
-          "path": "developer-guide/modules/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "模組核心概念",
-          "path": "developer-guide/modules/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "Event 包裝類詳解",
-          "path": "developer-guide/modules/event-wrapper.md",
-          "level": 1
-        },
-        {
-          "title": "模組開發最佳實務",
-          "path": "developer-guide/modules/best-practices.md",
-          "level": 1
-        },
-        {
-          "title": "適配器開發入門",
-          "path": "developer-guide/adapters/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "介接器核心概念",
-          "path": "developer-guide/adapters/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "SendDSL 詳解",
-          "path": "developer-guide/adapters/send-dsl.md",
-          "level": 1
-        },
-        {
-          "title": "配接器開發最佳實踐",
-          "path": "developer-guide/adapters/best-practices.md",
-          "level": 1
-        },
-        {
           "title": "發布與模組商店指南",
           "path": "developer-guide/publishing.md",
           "level": 1
-        },
-        {
-          "title": "事件轉換器實現指南",
-          "path": "developer-guide/adapters/converter.md",
-          "level": 1
         }
-      ]
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "模組開發",
+          "documents": [
+            {
+              "title": "模組開發入門",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "模組核心概念",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "Event 包裝類詳解",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1
+            },
+            {
+              "title": "模組開發最佳實務",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1
+            }
+          ]
+        },
+        "adapters": {
+          "name": "適配器開發",
+          "documents": [
+            {
+              "title": "適配器開發入門",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "介接器核心概念",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "SendDSL 詳解",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1
+            },
+            {
+              "title": "配接器開發最佳實踐",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1
+            },
+            {
+              "title": "事件轉換器實現指南",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1
+            }
+          ]
+        }
+      }
     },
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
-      "count": 7,
+      "count": 14,
       "documents": [
         {
           "title": "ErisPulse 平台功能文件",
@@ -195,11 +210,12 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "API 參考": {
       "description": "核心 API 和介面文檔",
-      "count": 4,
+      "count": 8,
       "documents": [
         {
           "title": "API 參考",
@@ -221,11 +237,12 @@
           "path": "api-reference/event-system.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 7,
+      "count": 14,
       "documents": [
         {
           "title": "進階主題",
@@ -262,22 +279,24 @@
           "path": "advanced/conversation.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "AI 輔助開發": {
       "description": "使用 AI 輔助開發 ErisPulse",
-      "count": 1,
+      "count": 2,
       "documents": [
         {
           "title": "AI 輔助開發",
           "path": "ai-support/README.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "技術標準": {
       "description": "框架的技術規範和標準",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "技術標準",
@@ -304,11 +323,12 @@
           "path": "standards/send-method-spec.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "風格指南": {
       "description": "代碼和文檔風格規範",
-      "count": 2,
+      "count": 4,
       "documents": [
         {
           "title": "風格指南",
@@ -320,7 +340,8 @@
           "path": "styleguide/docstring.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     }
   }
 }
