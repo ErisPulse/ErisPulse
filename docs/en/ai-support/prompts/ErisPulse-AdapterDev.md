@@ -3464,7 +3464,245 @@ version = "2.0.0"  # Update version number
 
 ### 事件转换器
 
+# Event Converter Implementation Guide
 
+Event Converter is one of the core components of an adapter, responsible for converting platform native events to the ErisPulse unified OneBot12 standard event format.
+
+## Converter Responsibilities
+
+```
+Platform Native Event ──→ Converter.convert() ──→ OneBot12 Standard Event
+```
+
+The Converter is only responsible for **forward conversion** (receiving direction), that is, converting platform native event data to OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+
+### Core Principles
+
+1. **Lossless Conversion**: Original data must be completely preserved in the `{platform}_raw` field
+2. **Standard Compatibility**: Converted events must conform to OneBot12 standard format
+3. **Platform Extension**: Platform-specific data is stored in fields with `{platform}_` prefix
+
+## convert() Method
+
+### Method Signature
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    Convert platform native events to OneBot12 standard format
+
+    :param raw_event: Platform native event data
+    :return: OneBot12 standard format event dictionary
+    """
+    pass
+```
+
+### Return Value Structure
+
+The converted event dictionary should include the following standard fields:
+
+```python
+{
+    "id": "Event unique ID",
+    "time": 1234567890,           # Unix timestamp (seconds)
+    "type": "message",             # Event type
+    "detail_type": "private",      # Detail type
+    "platform": "myplatform",      # Platform name
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # Message event fields
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 message segment list
+    "alt_message": "Plain text content",
+
+    # Must preserve original data
+    "myplatform_raw": { ... },     # Complete platform native event data
+    "myplatform_raw_type": "Native event type name",
+}
+```
+
+## Required Field Mapping
+
+### Common Fields (All Event Types)
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `id` | str | Event unique identifier |
+| `time` | int | Unix timestamp (seconds) |
+| `type` | str | Event type: `message` / `notice` / `request` / `meta` |
+| `detail_type` | str | Detail type: `private` / `group` / `friend` etc. |
+| `platform` | str | Platform name, matches adapter registration name |
+| `self` | dict | Bot info: `{"platform": "...", "user_id": "..."}` |
+
+### Message Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Sender ID |
+| `message` | list[dict] | OneBot12 message segment list |
+| `alt_message` | str | Plain text fallback content |
+
+### Notice Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Related user ID |
+| `operator_id` | str | Operator ID (e.g., group member changes) |
+
+## Message Segment Conversion
+
+OneBot12 standard defines the following message segment types:
+
+```python
+# Text
+{"type": "text", "data": {"text": "Hello"}}
+
+# Image
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# Audio
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# Video
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# File
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# Mention
+{"type": "mention", "data": {"user_id": "123"}}
+
+# Mention All
+{"type": "mention_all", "data": {}}
+
+# Reply
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+If a platform doesn't support certain message segment types, they can be omitted or converted to the closest standard type.
+
+## Platform Extension Fields
+
+Platform-specific data should be stored with `{platform}_` prefix to avoid conflicts with standard fields:
+
+```python
+{
+    # Standard fields
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # Platform extension fields
+    "myplatform_raw": { ... },          # Original event data (required)
+    "myplatform_raw_type": "chat",      # Original event type (required)
+
+    # Other platform-specific fields
+    "myplatform_group_name": "Group name",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform raw data.
+
+## Complete Example
+
+Here's a complete Converter implementation:
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## Best Practices
+
+1. **Always preserve original data**: The `{platform}_raw` field cannot be omitted
+2. **Use standard message segments**: Try to convert platform messages to OneBot12 standard message segments
+3. **Set detail_type appropriately**: Use standard types (`private`/`group`/channel` etc.), don't customize
+4. **Handle edge cases**: Raw events might be missing certain fields, use `.get()` and provide reasonable defaults
+5. **Performance considerations**: `convert()` is called for every event, avoid executing time-consuming operations inside it
+
+## Related Documentation
+
+- [Adapter Core Concepts](core-concepts.md) - Overall adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Reverse conversion (sending direction)
+- [Event Conversion Standard](../../standards/event-conversion.md) - Formal event conversion specification
+- [Session Type System](../../advanced/session-types.md) - Session type mapping rules
 
 
 
@@ -3475,7 +3713,226 @@ version = "2.0.0"  # Update version number
 
 ### 发布适配器到模块商店
 
+# Publishing and Module Store Guide
 
+Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+
+## Module Store Overview
+
+The ErisPulse Module Store is a centralized module registry where users can browse, search, and install community-contributed modules and adapters through CLI tools.
+
+### Browse and Discover
+
+```bash
+# List all remote available packages
+epsdk list-remote
+
+# Only view modules
+epsdk list-remote -t modules
+
+# Only view adapters
+epsdk list-remote -t adapters
+
+# Force refresh remote package list
+epsdk list-remote -r
+```
+
+You can also visit the [ErisPulse official website](https://www.erisdev.com/#market) to browse the Module Store online.
+
+### Supported Submission Types
+
+| Type | Description | Entry-point Group |
+|------|------|----------------|
+| Module | Extend bot functionality, implement business logic | `erispulse.module` |
+| Adapter | Connect to new messaging platforms | `erispulse.adapter` |
+
+## Publishing Process
+
+The entire publishing process is divided into four steps: Prepare Project → Publish to PyPI → Submit to Module Store → Review and Launch.
+
+### Step 1: Prepare Project
+
+Ensure your project contains the following files:
+
+```
+MyModule/
+├── pyproject.toml      # Project configuration (required)
+├── README.md           # Project description (required)
+├── LICENSE             # Open source license (recommended)
+└── MyModule/
+    ├── __init__.py     # Package entry point
+    └── ...
+```
+
+### Step 2: Configure pyproject.toml
+
+According to the type you want to publish, correctly configure `entry-points`:
+
+#### Module
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "Module functionality description"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [ { name = "yourname" } ]
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+#### Adapter
+
+```toml
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "Adapter functionality description"
+requires-python = ">=3.10"
+
+[project.entry-points."erispulse.adapter"]
+"myplatform" = "MyAdapter:MyAdapter"
+```
+
+> **Note**: It's recommended that package names start with `ErisPulse-` for easy user recognition. The entry-point key name (such as `"MyModule"`) will be used as the access name for the module in the SDK.
+
+### Step 3: Publish to PyPI
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build distribution packages
+python -m build
+
+# Publish to PyPI
+python -m twine upload dist/*
+```
+
+After successful publication, confirm that your package can be installed via `pip install`:
+
+```bash
+pip install ErisPulse-MyModule
+```
+
+### Step 4: Submit to ErisPulse Module Store
+
+After confirming your package is published to PyPI, go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit your application.
+
+Fill in the following information:
+
+#### Submission Type
+
+Select the type you want to submit:
+- Module
+- Adapter
+
+#### Basic Information
+
+| Field | Description | Example |
+|------|------|------|
+| **Name** | Module/Adapter name | Weather |
+| **Description** | Brief functional description | Weather query module supporting global cities |
+| **Author** | Your name or GitHub username | MyName |
+| **Repository URL** | Code repository URL | https://github.com/MyName/MyModule |
+
+#### Technical Information
+
+| Field | Description |
+|------|------|
+| **Minimum SDK Version Requirement** | e.g. `>=2.0.0` (if applicable) |
+| **Dependencies** | Additional dependencies besides ErisPulse (if applicable) |
+
+#### Tags
+
+Separate with commas to help users search and discover your module. For example: `weather, query, tool`
+
+#### Checklist
+
+Before submitting, please confirm:
+- Code follows ErisPulse development standards
+- Contains appropriate documentation (README.md)
+- Contains test cases (if applicable)
+- Published on PyPI
+
+### Step 5: Review and Launch
+
+After submission, maintainers will review your application. Review points:
+
+1. The package can be installed normally from PyPI
+2. Entry-point configuration is correct and can be properly discovered by the SDK
+3. Functionality matches the description
+4. No security issues or malicious code
+5. No significant conflicts with existing modules
+
+After passing the review, your module will automatically appear in the Module Store.
+
+## Updating Published Modules
+
+When you update a module version:
+
+1. Update `version` in `pyproject.toml`
+2. Rebuild and upload to PyPI:
+   ```bash
+   python -m build
+   python -m twine upload dist/*
+   ```
+3. The Module Store will automatically sync the latest version information from PyPI
+
+Users can upgrade using the following command:
+
+```bash
+epsdk upgrade MyModule
+```
+
+## Development Mode Testing
+
+Before official publication, you can test locally in editable mode:
+
+```bash
+# Install in editable mode
+epsdk install -e /path/to/MyModule
+
+# Or use pip
+pip install -e /path/to/MyModule
+```
+
+## FAQ
+
+### Q: Must package names start with `ErisPulse-`?
+
+Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
+
+### Q: Can a single package register multiple modules?
+
+Yes. Configure multiple key-value pairs in `entry-points`:
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### Q: How to specify minimum SDK version requirements?
+
+Set in `dependencies` in `pyproject.toml`:
+
+```toml
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+```
+
+The Module Store will check version compatibility to prevent users from installing incompatible modules.
+
+### Q: How long does the review take?
+
+Usually completed within 1-3 business days. You can check the review progress in the Issue.
 
 
 
