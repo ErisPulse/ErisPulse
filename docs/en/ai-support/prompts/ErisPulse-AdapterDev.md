@@ -7,13 +7,17 @@
 - SendDSL 链式消息发送系统
 - 事件转换器 (Converter) 设计
 - API 响应标准化
+- 各平台特性（OneBot11/12、Telegram、云湖、邮件等）
+- 适配器发布流程和代码规范
 
 你擅长：
 - 将平台原生事件转换为 OneBot12 标准格式
 - 实现可靠的网络连接和重试机制
 - 设计优雅的链式调用 API
-- 遵循 ErisPulse 适配器开发规范
+- 参考已有平台适配器的实现模式
+- 遵循 ErisPulse 适配器开发规范和文档字符串规范
 - 处理多账户和配置管理
+- 通过 CLI 管理适配器和发布到模块商店
 
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
@@ -31,8 +35,347 @@ ErisPulse 适配器开发指南
 
 
 ====
-快速开始
+框架理解
 ====
+
+
+### 架构概览
+
+# Architecture Overview
+
+This document introduces the technical architecture of ErisPulse SDK through visual diagrams, helping you quickly understand the design philosophy and module relationships of the framework.
+
+## SDK Core Architecture
+
+The diagram below shows the composition of the SDK's core modules and their relationships:
+
+```mermaid
+graph TB
+    SDK["sdk<br/>Unified Entry"]
+
+    SDK --> Event["Event<br/>Event System"]
+    SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
+    SDK --> Logger["Logger<br/>Logger Management"]
+    SDK --> Storage["Storage / env<br/>Storage Management"]
+    SDK --> Config["Config<br/>Configuration Management"]
+    SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
+    SDK --> ModuleMgr["Module<br/>Module Management"]
+    SDK --> Router["Router<br/>Router Management"]
+
+    Event --> Command["command"]
+    Event --> Message["message"]
+    Event --> Notice["notice"]
+    Event --> Request["request"]
+    Event --> Meta["meta"]
+
+    AdapterMgr --> BaseAdapter["BaseAdapter"]
+    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P2["Telegram"]
+    BaseAdapter --> P3["OneBot11/12"]
+    BaseAdapter --> PN["..."]
+
+    ModuleMgr --> BaseModule["BaseModule"]
+    BaseModule --> CM["Custom Modules"]
+
+    BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+```
+
+### Core Module Description
+
+| Module | Description |
+|------|------|
+| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta |
+| **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
+| **Module** | Module manager, managing plugin registration, loading, and unloading |
+| **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
+| **Storage** | SQLite-based key-value storage system |
+| **Config** | TOML format configuration file management |
+| **Logger** | Modular logging system, supporting sub-loggers |
+| **Router** | FastAPI-based HTTP/WebSocket route management |
+
+## Initialization Process
+
+The diagram below shows the complete initialization process of `sdk.init()`:
+
+```mermaid
+flowchart TD
+    A["sdk.init()"] --> B["Prepare Runtime Environment"]
+    B --> B1["Load Configuration Files"]
+    B1 --> B2["Set Global Exception Handling"]
+    B2 --> C["Adapter & Module Discovery"]
+    C --> D{"Parallel Loading"}
+    D --> D1["Load Adapters from PyPI"]
+    D --> D2["Load Modules from PyPI"]
+    D1 & D2 --> E["Register Adapters"]
+    E --> F["Register Modules"]
+    F --> G["Initialize Modules<br/>(Instantiate + on_load)"]
+    G --> H["adapter.startup()"]
+    H --> I["Start Router Server"]
+    I --> J["Async Start Platform Adapters"]
+    J --> K["Ready"]
+```
+
+### Initialization Stage Breakdown
+
+1.  **Environment Preparation** - Load TOML configuration files, set up global exception handling
+2.  **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
+3.  **Registration Phase** - Register discovered adapters and modules to their corresponding managers
+4.  **Module Initialization** - Create module instances, call the `on_load` lifecycle method
+5.  **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+
+## Event Handling Process
+
+The diagram below shows the complete flow path of messages from the platform to the handler:
+
+```mermaid
+flowchart LR
+    A["Platform Raw Message"] --> B["Adapter Receive"]
+    B --> C["Convert to OneBot12 Standard"]
+    C --> D["adapter.emit()"]
+    D --> E["Execute Middleware Chain"]
+    E --> F{"Event Dispatch"}
+    F --> G1["command<br/>Command Handler"]
+    F --> G2["message<br/>Message Handler"]
+    F --> G3["notice<br/>Notice Handler"]
+    F --> G4["request<br/>Request Handler"]
+    F --> G5["meta<br/>Meta Event Handler"]
+    G1 & G2 & G3 & G4 & G5 --> H["Handler Callback Execution"]
+    H --> I["event.reply()<br/>Reply via SendDSL"]
+    I --> J["Adapter Send to Platform"]
+```
+
+### Key Steps in Event Handling
+
+-   **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
+-   **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
+-   **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
+-   **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
+-   **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+
+## Lifecycle Events
+
+The diagram below shows the triggering sequence of lifecycle events for various framework components:
+
+```mermaid
+flowchart LR
+    subgraph Core["Core"]
+        direction LR
+        C1["core.init.start"] --> C2["core.init.complete"]
+    end
+
+    subgraph AdapterLife["Adapter"]
+        direction LR
+        A1["adapter.start"] --> A2["adapter.status.change"] --> A3["adapter.stop"] --> A4["adapter.stopped"]
+    end
+
+    subgraph ModuleLife["Module"]
+        direction LR
+        M1["module.load"] --> M2["module.init"] --> M3["module.unload"]
+    end
+
+    subgraph BotLife["Bot"]
+        direction LR
+        B1["adapter.bot.online"] --> B2["adapter.bot.offline"]
+    end
+
+    Core --> AdapterLife
+    AdapterLife --> ModuleLife
+    AdapterLife -.-> BotLife
+```
+
+### Listening to Lifecycle Events
+
+You can listen to these events via `lifecycle.on()` to execute custom logic:
+
+```python
+from ErisPulse import sdk
+
+# Listen to all adapter events
+@sdk.lifecycle.on("adapter")
+async def on_adapter_event(event_data):
+    print(f"Adapter event: {event_data}")
+
+# Listen for module load completion
+@sdk.lifecycle.on("module.load")
+async def on_module_loaded(event_data):
+    print(f"Module loaded: {event_data}")
+
+# Listen for Bot online
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(event_data):
+    print(f"Bot online: {event_data}")
+```
+
+## Module Loading Strategy
+
+ErisPulse supports two module loading strategies:
+
+```mermaid
+flowchart TD
+    A["Register Module to ModuleManager"] --> B{"Loading Strategy"}
+    B -->|"lazy_load = true"| C["Create LazyModule Proxy"]
+    C --> D["Mount to sdk attributes"]
+    D --> E["Initialize on First Access"]
+    B -->|"lazy_load = false"| F["Create Instance Immediately"]
+    F --> G["Call on_load()"]
+    G --> D2["Mount to sdk attributes"]
+```
+
+> For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
+
+
+
+### 术语表
+
+# ErisPulse Glossary
+
+This document explains common technical terms used in ErisPulse to help you better understand the framework's concepts.
+
+## Core Concepts
+
+### Event-Driven Architecture
+**Simple Explanation:** Like a restaurant ordering system. Customers (users) order dishes (send messages), waiters (event system) pass the order (event) to the kitchen (modules), and after the kitchen processes it, the waiter serves the food (reply) to the customer.
+
+**Technical Explanation:** The program's execution flow is triggered by external events rather than executing in a fixed sequence. Whenever a new event occurs (such as receiving a message), the framework automatically calls the corresponding handler function.
+
+### OneBot12 Standard
+**Simple Explanation:** Like the standard for sockets and plugs. The "plugs" (native event formats) of different platforms vary, but through converters, they all become a unified "plug" (OneBot12 format), so your code can act like a socket to adapt to all platforms.
+
+**Technical Explanation:** A unified chatbot application interface standard that defines unified formats for events, messages, APIs, etc., allowing code to be reused across different platforms.
+
+### Adapter
+**Simple Explanation:** Like a translator. Different platforms speak different "languages" (API formats). The adapter translates these "languages" into "Mandarin" (OneBot12 standard) that ErisPulse can understand, and also translates ErisPulse's instructions back into the "languages" of each platform.
+
+**Technical Explanation:** A component responsible for communicating with a specific platform. It receives native events from the platform and converts them into a standard format, or sends standard format requests to the platform.
+
+### Module
+**Simple Explanation:** Like an APP on a phone. Each module is an independent feature pack that can be added, deleted, or updated. Examples include "Weather Forecast Module", "Music Player Module", etc.
+
+**Technical Explanation:** The basic unit of feature extension, containing specific business logic, event handlers, and configuration, which can be installed and uninstalled independently.
+
+### Event
+**Simple Explanation:** Like a notification on a phone. When there is a new message, new friend, or new group chat, the platform sends a "notification" (event) to your bot.
+
+**Technical Explanation:** Anything notable happening on the platform, such as receiving a message, a user joining a group, a friend request, etc., is passed to the program in the form of structured data.
+
+### Event Handler
+**Simple Explanation:** Like a courier's delivery rules. When a "package" (event) is received, it decides who handles this package based on the package type (message, notice, request, etc.).
+
+**Technical Explanation:** Functions marked with decorators that are automatically executed when a specific type of event occurs, such as `@command`, `@message`, etc.
+
+## Development Related Terms
+
+### SDK
+**Simple Explanation:** Like a toolbox. It contains various common tools (storage, configuration, logs, etc.) that you can use directly when writing code, without reinventing the wheel.
+
+**Technical Explanation:** Software Development Kit, which provides a set of pre-built components and tools to simplify the development process.
+
+### Virtual Environment
+**Simple Explanation:** Like an independent "workshop". Each project has its own "workshop", and the software packages installed inside do not interfere with each other, avoiding version conflicts.
+
+**Technical Explanation:** An isolated Python environment where each environment has an independent package list and versions, preventing dependency conflicts between different projects.
+
+### Asynchronous Programming
+**Simple Explanation:** Like multitasking. The bot can do multiple things at once. For example, while waiting for a network response, it can still process messages from other users without freezing.
+
+**Technical Explanation:** A programming style using `async`/`await` keywords that allows the program to switch to other tasks while waiting for time-consuming operations (such as network requests, file reading/writing), improving efficiency.
+
+### Hot Reload
+**Simple Explanation:** Like auto-refresh on a webpage. After you modify the code, you don't need to manually restart the bot; it automatically loads the new code, taking effect immediately.
+
+**Technical Explanation:** In development mode, the program automatically detects file changes and reloads, allowing code modifications to take effect without a manual restart.
+
+### Lazy Loading
+**Simple Explanation:** Like drawers opened on demand. Unused drawers (modules) stay closed first and are only opened when needed, so you don't have to wait for all drawers to open during startup.
+
+**Technical Explanation:** A delayed loading strategy where modules are initialized and loaded only when first accessed, reducing startup time and resource usage.
+
+## Function Related Terms
+
+### Command
+**Simple Explanation:** Like a command in a game. When a user types a command like `/hello`, the bot executes the corresponding function.
+
+**Technical Explanation:** A message starting with a specific prefix (such as `/`) that is recognized by the framework as a command and routed to the corresponding handler function.
+
+### Reply
+**Simple Explanation:** It is the "answer" the bot gives to the user. Whether it is text, image, or voice, it is a reply to the user's message.
+
+**Technical Explanation:** The process where the adapter sends processing results back to the platform to be displayed to the user.
+
+### Storage
+**Simple Explanation:** Like the bot's "notepad". It can remember user information, settings, chat history, etc., so they can be found next time.
+
+**Technical Explanation:** A persistent data storage system based on SQLite that implements key-value pair storage, used to save data that needs to be retained for a long time.
+
+### Configuration
+**Simple Explanation:** Like the bot's "settings". You can modify the bot's behavior through configuration files, such as changing port numbers, log levels, etc.
+
+**Technical Explanation:** A configuration management system using TOML format, used to set various parameters for the framework and modules.
+
+### Log
+**Simple Explanation:** Like the bot's "diary". It records what the bot did and what problems it encountered, facilitating debugging and troubleshooting.
+
+**Technical Explanation:** Recorded information generated during system runtime, including different levels such as info, warning, error, etc., used for monitoring and debugging.
+
+### Router
+**Simple Explanation:** Like traffic police directing traffic. Decides which request should go to which place to be processed, such as web requests, WebSocket connections, etc.
+
+**Technical Explanation:** HTTP and WebSocket router manager that distributes requests to corresponding handler functions based on URL paths.
+
+## Platform Related Terms
+
+### Platform
+**Simple Explanation:** The place where the bot works, such as Yunhu, Telegram, QQ, etc. Each platform has its own rules and API.
+
+**Technical Explanation:** An application or service that provides chatbot services, such as Yunhu Enterprise Communication, Telegram, etc.
+
+### OneBot11/12
+**Simple Explanation:** Like the "International Standard" for chatbots. It defines unified formats for messages, events, etc., so that different software can understand each other.
+
+**Technical Explanation:** OneBot is a universal chatbot application interface standard that defines formats for events, messages, APIs, etc. 11 and 12 are different versions of the standard.
+
+### SendDSL
+**Simple Explanation:** Like a "shortcut" for sending messages. You can send various types of messages (text, images, @someone, etc.) with a simple one-line statement.
+
+**Technical Explanation:** A chained message sending interface that provides concise syntax to build and send complex messages.
+
+## Other Terms
+
+### Lifecycle
+**Simple Explanation:** The bot's "life": Birth (startup), Work (running), Rest (stop). The lifecycle refers to events triggered at these key moments.
+
+**Technical Explanation:** Key stages during the program's runtime, such as startup, loading modules, unloading modules, shutdown, etc. Operations can be executed by listening to these events.
+
+### Annotation/Decorator
+**Simple Explanation:** It is putting a "label" on a function. For example, the `@command("hello")` label tells the framework: This is a command handler named "hello".
+
+**Technical Explanation:** Python syntactic sugar used to modify the behavior of functions or classes. In ErisPulse, it is used to mark event handlers, routes, etc.
+
+### Type Annotation
+**Simple Explanation:** It is telling the function what "type" the parameters are. For example, `request: Request` indicates that this parameter is a Request object.
+
+**Technical Explanation:** A feature introduced in Python 3.5+ used to annotate the types of variables and parameters, improving code readability and type safety.
+
+### TOML
+**Simple Explanation:** A configuration file format that is more readable than JSON and stricter than YAML, suitable for writing configurations.
+
+**Technical Explanation:** Tom's Obvious Minimal Language, a configuration file format with concise and clear syntax, widely used in Python project configuration management.
+
+## Getting Help
+
+If you find other terms in the documentation that you do not understand, feel free to ask via the following methods:
+- Submit a GitHub Issue
+- Participate in community discussions
+- Contact the maintainers
+
+
+
+====
+基础概念
+====
+
+
+### 入门指南总览
 
 # Getting Started Guide
 
@@ -178,9 +521,7 @@ Are you ready? Let's start creating your first bot.
 
 
 
-====
-基础概念
-====
+### 基础概念
 
 # Basic Concepts
 
@@ -552,9 +893,7 @@ class MyModule(BaseModule):
 
 
 
-======
-事件处理入门
-======
+### 事件处理入门
 
 # Getting Started with Event Handling
 
@@ -3123,6 +3462,1770 @@ version = "2.0.0"  # Update version number
 
 
 
+### 事件转换器
+
+# Event Converter Implementation Guide
+
+Event Converter is one of the core components of an adapter, responsible for converting platform native events to the ErisPulse unified OneBot12 standard event format.
+
+## Converter Responsibilities
+
+```
+Platform Native Event ──→ Converter.convert() ──→ OneBot12 Standard Event
+```
+
+The Converter is only responsible for **forward conversion** (receiving direction), that is, converting platform native event data to OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+
+### Core Principles
+
+1. **Lossless Conversion**: Original data must be completely preserved in the `{platform}_raw` field
+2. **Standard Compatibility**: Converted events must conform to OneBot12 standard format
+3. **Platform Extension**: Platform-specific data is stored in fields with `{platform}_` prefix
+
+## convert() Method
+
+### Method Signature
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    Convert platform native events to OneBot12 standard format
+
+    :param raw_event: Platform native event data
+    :return: OneBot12 standard format event dictionary
+    """
+    pass
+```
+
+### Return Value Structure
+
+The converted event dictionary should include the following standard fields:
+
+```python
+{
+    "id": "Event unique ID",
+    "time": 1234567890,           # Unix timestamp (seconds)
+    "type": "message",             # Event type
+    "detail_type": "private",      # Detail type
+    "platform": "myplatform",      # Platform name
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # Message event fields
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 message segment list
+    "alt_message": "Plain text content",
+
+    # Must preserve original data
+    "myplatform_raw": { ... },     # Complete platform native event data
+    "myplatform_raw_type": "Native event type name",
+}
+```
+
+## Required Field Mapping
+
+### Common Fields (All Event Types)
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `id` | str | Event unique identifier |
+| `time` | int | Unix timestamp (seconds) |
+| `type` | str | Event type: `message` / `notice` / `request` / `meta` |
+| `detail_type` | str | Detail type: `private` / `group` / `friend` etc. |
+| `platform` | str | Platform name, matches adapter registration name |
+| `self` | dict | Bot info: `{"platform": "...", "user_id": "..."}` |
+
+### Message Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Sender ID |
+| `message` | list[dict] | OneBot12 message segment list |
+| `alt_message` | str | Plain text fallback content |
+
+### Notice Event Additional Fields
+
+| OB12 Field | Type | Description |
+|------------|------|-------------|
+| `user_id` | str | Related user ID |
+| `operator_id` | str | Operator ID (e.g., group member changes) |
+
+## Message Segment Conversion
+
+OneBot12 standard defines the following message segment types:
+
+```python
+# Text
+{"type": "text", "data": {"text": "Hello"}}
+
+# Image
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# Audio
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# Video
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# File
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# Mention
+{"type": "mention", "data": {"user_id": "123"}}
+
+# Mention All
+{"type": "mention_all", "data": {}}
+
+# Reply
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+If a platform doesn't support certain message segment types, they can be omitted or converted to the closest standard type.
+
+## Platform Extension Fields
+
+Platform-specific data should be stored with `{platform}_` prefix to avoid conflicts with standard fields:
+
+```python
+{
+    # Standard fields
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # Platform extension fields
+    "myplatform_raw": { ... },          # Original event data (required)
+    "myplatform_raw_type": "chat",      # Original event type (required)
+
+    # Other platform-specific fields
+    "myplatform_group_name": "Group name",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform raw data.
+
+## Complete Example
+
+Here's a complete Converter implementation:
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## Best Practices
+
+1. **Always preserve original data**: The `{platform}_raw` field cannot be omitted
+2. **Use standard message segments**: Try to convert platform messages to OneBot12 standard message segments
+3. **Set detail_type appropriately**: Use standard types (`private`/`group`/channel` etc.), don't customize
+4. **Handle edge cases**: Raw events might be missing certain fields, use `.get()` and provide reasonable defaults
+5. **Performance considerations**: `convert()` is called for every event, avoid executing time-consuming operations inside it
+
+## Related Documentation
+
+- [Adapter Core Concepts](core-concepts.md) - Overall adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Reverse conversion (sending direction)
+- [Event Conversion Standard](../../standards/event-conversion.md) - Formal event conversion specification
+- [Session Type System](../../advanced/session-types.md) - Session type mapping rules
+
+
+
+=====
+发布与工具
+=====
+
+
+### 发布适配器到模块商店
+
+# Publishing and Module Store Guide
+
+Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+
+## Module Store Overview
+
+The ErisPulse Module Store is a centralized module registry where users can browse, search, and install community-contributed modules and adapters through CLI tools.
+
+### Browse and Discover
+
+```bash
+# List all remote available packages
+epsdk list-remote
+
+# Only view modules
+epsdk list-remote -t modules
+
+# Only view adapters
+epsdk list-remote -t adapters
+
+# Force refresh remote package list
+epsdk list-remote -r
+```
+
+You can also visit the [ErisPulse official website](https://www.erisdev.com/#market) to browse the Module Store online.
+
+### Supported Submission Types
+
+| Type | Description | Entry-point Group |
+|------|------|----------------|
+| Module | Extend bot functionality, implement business logic | `erispulse.module` |
+| Adapter | Connect to new messaging platforms | `erispulse.adapter` |
+
+## Publishing Process
+
+The entire publishing process is divided into four steps: Prepare Project → Publish to PyPI → Submit to Module Store → Review and Launch.
+
+### Step 1: Prepare Project
+
+Ensure your project contains the following files:
+
+```
+MyModule/
+├── pyproject.toml      # Project configuration (required)
+├── README.md           # Project description (required)
+├── LICENSE             # Open source license (recommended)
+└── MyModule/
+    ├── __init__.py     # Package entry point
+    └── ...
+```
+
+### Step 2: Configure pyproject.toml
+
+According to the type you want to publish, correctly configure `entry-points`:
+
+#### Module
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "Module functionality description"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [ { name = "yourname" } ]
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+#### Adapter
+
+```toml
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "Adapter functionality description"
+requires-python = ">=3.10"
+
+[project.entry-points."erispulse.adapter"]
+"myplatform" = "MyAdapter:MyAdapter"
+```
+
+> **Note**: It's recommended that package names start with `ErisPulse-` for easy user recognition. The entry-point key name (such as `"MyModule"`) will be used as the access name for the module in the SDK.
+
+### Step 3: Publish to PyPI
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build distribution packages
+python -m build
+
+# Publish to PyPI
+python -m twine upload dist/*
+```
+
+After successful publication, confirm that your package can be installed via `pip install`:
+
+```bash
+pip install ErisPulse-MyModule
+```
+
+### Step 4: Submit to ErisPulse Module Store
+
+After confirming your package is published to PyPI, go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit your application.
+
+Fill in the following information:
+
+#### Submission Type
+
+Select the type you want to submit:
+- Module
+- Adapter
+
+#### Basic Information
+
+| Field | Description | Example |
+|------|------|------|
+| **Name** | Module/Adapter name | Weather |
+| **Description** | Brief functional description | Weather query module supporting global cities |
+| **Author** | Your name or GitHub username | MyName |
+| **Repository URL** | Code repository URL | https://github.com/MyName/MyModule |
+
+#### Technical Information
+
+| Field | Description |
+|------|------|
+| **Minimum SDK Version Requirement** | e.g. `>=2.0.0` (if applicable) |
+| **Dependencies** | Additional dependencies besides ErisPulse (if applicable) |
+
+#### Tags
+
+Separate with commas to help users search and discover your module. For example: `weather, query, tool`
+
+#### Checklist
+
+Before submitting, please confirm:
+- Code follows ErisPulse development standards
+- Contains appropriate documentation (README.md)
+- Contains test cases (if applicable)
+- Published on PyPI
+
+### Step 5: Review and Launch
+
+After submission, maintainers will review your application. Review points:
+
+1. The package can be installed normally from PyPI
+2. Entry-point configuration is correct and can be properly discovered by the SDK
+3. Functionality matches the description
+4. No security issues or malicious code
+5. No significant conflicts with existing modules
+
+After passing the review, your module will automatically appear in the Module Store.
+
+## Updating Published Modules
+
+When you update a module version:
+
+1. Update `version` in `pyproject.toml`
+2. Rebuild and upload to PyPI:
+   ```bash
+   python -m build
+   python -m twine upload dist/*
+   ```
+3. The Module Store will automatically sync the latest version information from PyPI
+
+Users can upgrade using the following command:
+
+```bash
+epsdk upgrade MyModule
+```
+
+## Development Mode Testing
+
+Before official publication, you can test locally in editable mode:
+
+```bash
+# Install in editable mode
+epsdk install -e /path/to/MyModule
+
+# Or use pip
+pip install -e /path/to/MyModule
+```
+
+## FAQ
+
+### Q: Must package names start with `ErisPulse-`?
+
+Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
+
+### Q: Can a single package register multiple modules?
+
+Yes. Configure multiple key-value pairs in `entry-points`:
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### Q: How to specify minimum SDK version requirements?
+
+Set in `dependencies` in `pyproject.toml`:
+
+```toml
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+```
+
+The Module Store will check version compatibility to prevent users from installing incompatible modules.
+
+### Q: How long does the review take?
+
+Usually completed within 1-3 business days. You can check the review progress in the Issue.
+
+
+
+### CLI 命令参考
+
+# CLI Command Reference
+
+The ErisPulse command-line tool provides project management and package management capabilities.
+
+## Package Management Commands
+
+| Command | Arguments | Description | Example |
+|-------|------|------|------|
+| `install` | `[package]... [--upgrade/-U] [--pre]` | Install modules/adapters | `epsdk install Yunhu` |
+| `uninstall` | `<package>...` | Uninstall modules/adapters | `epsdk uninstall old-module` |
+| `upgrade` | `[package]... [--force/-f] [--pre]` | Upgrade specified modules or all | `epsdk upgrade --force` |
+| `self-update` | `[version] [--pre] [--force/-f]` | Update SDK itself | `epsdk self-update` |
+
+## Information Query Commands
+
+| Command | Arguments | Description | Example |
+|-------|------|------|------|
+| `list` | `[--type/-t <type>]` | List installed modules/adapters | `epsdk list -t modules` |
+| | `[--outdated/-o]` | Only show upgradable packages | `epsdk list -o` |
+| `list-remote` | `[--type/-t <type>]` | List remote available packages | `epsdk list-remote` |
+| | `[--refresh/-r]` | Force refresh package list | `epsdk list-remote -r` |
+
+## Execution Control Commands
+
+| Command | Arguments | Description | Example |
+|-------|------|------|------|
+| `run` | `<script> [--reload]` | Run specified script | `epsdk run main.py --reload` |
+
+## Project Management Commands
+
+| Command | Arguments | Description | Example |
+|-------|------|------|------|
+| `init` | `[--project-name/-n <name>]` | Interactive project initialization | `epsdk init -n my_bot` |
+| | `[--quick/-q]` | Quick mode, skip interaction | `epsdk init -q -n bot` |
+| | `[--force/-f]` | Force override existing configuration | `epsdk init -f` |
+
+## Parameter Reference
+
+### Common Parameters
+
+| Parameter | Short Option | Description |
+|------|---------|------|
+| `--help` | `-h` | Display help information |
+| `--verbose` | `-v` | Display verbose output |
+
+### install Parameters
+
+| Parameter | Description |
+|------|------|
+| `[package]` | Package name to install, multiple can be specified |
+| `--upgrade` | `-U` | Upgrade to latest version during install |
+| `--pre` | Allow installing pre-release versions |
+
+### list Parameters
+
+| Parameter | Description |
+|------|------|
+| `--type` | `-t` | Specify type: `modules`, `adapters`, `all` |
+| `--outdated` | `-o` | Only show upgradable packages |
+
+### run Parameters
+
+| Parameter | Description |
+|------|------|
+| `--reload` | Enable hot reload mode to monitor file changes |
+| `--no-reload` | Disable hot reload mode |
+
+## Interactive Installation
+
+Running `epsdk install` without specifying a package name enters interactive installation:
+
+```bash
+epsdk install
+```
+
+The interactive interface provides:
+1. Adapter selection
+2. Module selection
+3. Custom installation
+
+## Common Usage
+
+### Installing Modules
+
+```bash
+# Install a single module
+epsdk install Weather
+
+# Install multiple modules
+epsdk install Yunhu Weather
+
+# Upgrade module
+epsdk install Weather -U
+```
+
+### Listing Modules
+
+```bash
+# List all modules
+epsdk list
+
+# List only adapters
+epsdk list -t adapters
+
+# List only upgradable modules
+epsdk list -o
+```
+
+### Uninstalling Modules
+
+```bash
+# Uninstall a single module
+epsdk uninstall Weather
+
+# Uninstall multiple modules
+epsdk uninstall Yunhu Weather
+```
+
+### Upgrading Modules
+
+```bash
+# Upgrade all modules
+epsdk upgrade
+
+# Upgrade specified module
+epsdk upgrade Weather
+
+# Force upgrade
+epsdk upgrade -f
+```
+
+### Running Projects
+
+```bash
+# Normal run
+epsdk run main.py
+
+# Hot reload mode
+epsdk run main.py --reload
+```
+
+### Initializing Projects
+
+```bash
+# Interactive initialization
+epsdk init
+
+# Quick initialization
+epsdk init -q -n my_bot
+
+
+
+======
+API 参考
+======
+
+
+### 适配器系统 API
+
+# Adapter System API
+
+This document details the API of the ErisPulse adapter system.
+
+## Adapter Manager
+
+### Getting Adapters
+
+```python
+from ErisPulse import sdk
+
+# Get adapter by name
+adapter = sdk.adapter.get("platform_name")
+
+# Or access directly via property
+adapter = sdk.adapter.platform_name
+```
+
+### Using Adapter Event Listening
+> Generally, it is recommended to use the `Event` module for event listening/processing;
+>
+> Meanwhile, the `Event` module provides powerful wrappers, bringing more convenience to your module development.
+
+```python
+# Listen to OneBot12 standard events
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+# Listen to standard events of a specific platform
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+
+# Listen to platform native events
+@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
+async def handle_raw_event(data):
+    pass
+```
+
+### Adapter Management
+
+```python
+# Get all platforms
+platforms = sdk.adapter.platforms
+
+# Check if adapter exists
+exists = sdk.adapter.exists("platform_name")
+
+# Enable/Disable adapter
+sdk.adapter.enable("platform_name")
+sdk.adapter.disable("platform_name")
+
+# Start/Shutdown adapter
+# The methods below show cases with parameters passed; without parameters, it means starting/stopping all registered adapters
+await sdk.adapter.startup(["platform1", "platform2"])
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# Check if adapter is running
+is_running = sdk.adapter.is_running("platform_name")
+
+# List all running adapters
+running = sdk.adapter.list_running()
+```
+
+## Middleware
+
+### Registering Middleware
+
+```python
+# Add middleware
+@sdk.adapter.middleware
+async def my_middleware(event):
+    # Process event
+    sdk.logger.info(f"Middleware processing: {event}")
+    return event
+```
+
+### Middleware Execution Order
+
+Middleware executes in the order of registration, running before the event is dispatched to handlers.
+
+## Send Message Sending
+
+### Basic Sending
+
+```python
+# Get adapter
+adapter = sdk.adapter.get("platform")
+
+# Send text message
+await adapter.Send.To("user", "123").Text("Hello")
+
+# Send image message
+await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
+```
+
+### Specify Sending Account
+
+```python
+# Use account name
+await adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# Use account ID
+await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+```
+
+### Query Supported Sending Methods
+
+```python
+# List all sending methods supported by the platform
+methods = sdk.adapter.list_sends("onebot11")
+# Returns: ["Text", "Image", "Voice", "Markdown", ...]
+
+# Get detailed information for a specific method
+info = sdk.adapter.send_info("onebot11", "Text")
+# Returns:
+# {
+#     "name": "Text",
+#     "parameters": [
+#         {"name": "text", "type": "str", "default": null, "annotation": "str"}
+#     ],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "Send text message..."
+# }
+```
+
+### Chained Modifiers
+
+```python
+# Mention user
+await adapter.Send.To("group", "456").At("789").Text("Hello")
+
+# Mention all members
+await adapter.Send.To("group", "456").AtAll().Text("Hello everyone")
+
+# Reply to message
+await adapter.Send.To("group", "456").Reply("msg_id").Text("Reply content")
+
+# Combined use
+await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("Reply to mentioned message")
+```
+
+## API Calls
+
+### call_api Method
+> Note that the API calling methods may vary for different platforms. Please refer to the corresponding platform adapter documentation.
+> Direct use of the `call_api` method is not recommended; it is suggested to use the `Send` class for message sending.
+
+```python
+# Call platform API
+result = await adapter.call_api(
+    endpoint="/send",
+    content="Hello",
+    recvId="123",
+    recvType="user"
+)
+
+# Standardized response
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "msg_id",
+    "message": "",
+    "{platform}_raw": raw_response
+}
+```
+
+## Adapter Base Class
+
+### BaseAdapter Methods
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        self.sdk = sdk
+        # Initialize adapter
+        pass
+    
+    async def start(self):
+        """Start adapter (must implement)"""
+        pass
+    
+    async def shutdown(self):
+        """Shutdown adapter (must implement)"""
+        pass
+    
+    async def call_api(self, endpoint: str, **params):
+        """Call platform API (must implement)"""
+        pass
+```
+
+### Send Nested Class
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        def Text(self, text: str):
+            """Send text message"""
+            import asyncio
+            return asyncio.create_task(
+                self._adapter.call_api(
+                    endpoint="/send",
+                    content=text,
+                    recvId=self._target_id,
+                    recvType=self._target_type
+                )
+            )
+```
+
+## Bot Status Management
+
+The adapter informs the framework of the Bot's connection status by sending OneBot12 standard **`meta` events**. The system automatically extracts Bot information from these events for status tracking.
+
+### Meta Event Types
+
+The adapter should send the following three types of `meta` events:
+
+| `type` | `detail_type` | Description | Trigger Timing |
+|--------|--------------|------|---------|
+| `meta` | `connect` | Bot goes online | After the adapter successfully establishes a connection with the platform |
+| `meta` | `heartbeat` | Bot heartbeat | Sent periodically (recommended 30-60 seconds) |
+| `meta` | `disconnect` | Bot disconnects | When a disconnection is detected |
+
+### Self Field Extension
+
+ErisPulse extends the OneBot12 standard `self` field with the following optional fields:
+
+| Field | Type | Description |
+|------|------|------|
+| `self.platform` | string | Platform name (OB12 standard) |
+| `self.user_id` | string | Bot user ID (OB12 standard) |
+| `self.user_name` | string | Bot nickname (ErisPulse extension) |
+| `self.avatar` | string | Bot avatar URL (ErisPulse extension) |
+| `self.account_id` | string | Multi-account identifier (ErisPulse extension) |
+
+### Meta Event Format
+
+#### connect — Connection Online
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345678,
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456",
+        "user_name": "MyBot",
+        "avatar": "https://example.com/avatar.jpg"
+    },
+    "telegram_raw": {...},
+    "telegram_raw_type": "bot_connected"
+})
+```
+
+System Processing: Register the Bot, mark as `online`, and trigger the `adapter.bot.online` lifecycle event.
+
+#### heartbeat — Heartbeat
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345708,
+    "type": "meta",
+    "detail_type": "heartbeat",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+System Processing: Update `last_active` time (metadata updates are also supported in heartbeats).
+
+#### disconnect — Disconnection
+
+```python
+await adapter.emit({
+    "id": "unique_id",
+    "time": 1712345738,
+    "type": "meta",
+    "detail_type": "disconnect",
+    "platform": "telegram",
+    "self": {
+        "platform": "telegram",
+        "user_id": "123456"
+    }
+})
+```
+
+System Processing: Mark the Bot as `offline` and trigger the `adapter.bot.offline` lifecycle event.
+
+### Auto-Discovery via Normal Events
+
+In addition to `meta` events, the `self` field in normal events (`message`/`notice`/`request`) also triggers automatic discovery and registration of the Bot, as well as updating the active time. This means that even if the adapter does not send a `connect` event, the framework can discover the Bot from the first normal event.
+
+### Adapter Integration Example
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        # Establish connection with platform...
+        connection = await self._connect()
+        
+        # Connection successful, send connect event
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id,
+                "user_name": self.bot_name,
+                "avatar": self.bot_avatar
+            },
+            "myplatform_raw": raw_data,
+            "myplatform_raw_type": "connected"
+        })
+    
+    async def on_disconnect(self):
+        # Disconnect, send disconnect event
+        await adapter.emit({
+            "id": str(uuid4()),
+            "time": int(time.time()),
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": self.bot_id
+            }
+        })
+```
+
+### Querying Bot Status
+
+```python
+# Get complete status of all adapters and Bots (WebUI friendly)
+summary = sdk.adapter.get_status_summary()
+# {
+#     "adapters": {
+#         "telegram": {
+#             "status": "started",
+#             "bots": {
+#                 "123456": {
+#                     "status": "online",
+#                     "last_active": 1712345678.0,
+#                     "info": {"nickname": "MyBot"}
+#                 }
+#             }
+#         }
+#     }
+# }
+
+# List all Bots
+all_bots = sdk.adapter.list_bots()
+
+# List Bots for a specific platform
+tg_bots = sdk.adapter.list_bots("telegram")
+
+# Get details of a single Bot
+info = sdk.adapter.get_bot_info("telegram", "123456")
+
+# Check if Bot is online
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    print("Bot is online")
+```
+
+### Bot Status Values
+
+| Status | Description |
+|------|------|
+| `online` | Online (continuously receiving events or actively marked by the adapter) |
+| `offline` | Offline (actively marked by the adapter or automatically set on system shutdown) |
+| `unknown` | Unknown (registered but status unconfirmed) |
+
+### Lifecycle Events
+
+| Event Name | Trigger Timing | Data |
+|--------|---------|------|
+| `adapter.bot.online` | When a new Bot is automatically discovered for the first time | `{platform, bot_id, status}` |
+| `adapter.status.change` | Adapter status change (starting/started/stopping/stopped/stop_failed) | `{platform, status}` |
+
+```python
+# Listen to Bot online event
+@sdk.lifecycle.on("adapter.bot.online")
+def on_bot_online(event):
+    print(f"Bot online: {event['data']['platform']}/{event['data']['bot_id']}")
+
+# Listen to adapter status change
+@sdk.lifecycle.on("adapter.status.change")
+def on_status_change(event):
+    print(f"Adapter status: {event['data']['platform']} -> {event['data']['status']}")
+```
+
+> When the system shuts down (`shutdown`), all Bots will automatically be marked as `offline`.
+
+## Related Documentation
+
+- [Core Modules API](core-modules.md) - Core Modules API
+- [Event System API](event-system.md) - Event Module API
+- [Adapter Development Guide](../developer-guide/adapters/) - Developing Platform Adapters
+
+
+
+### 核心模块 API
+
+# Core Module API
+
+This document details the ErisPulse core module API.
+
+## Storage Module
+
+### Basic Operations
+
+```python
+from ErisPulse import sdk
+
+# Set value
+sdk.storage.set("key", "value")
+
+# Get value
+value = sdk.storage.get("key", default_value)
+
+# Get all keys
+keys = sdk.storage.keys()
+
+# Delete value
+sdk.storage.delete("key")
+```
+
+### Transaction Operations
+
+```python
+# Use transactions to ensure data consistency
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+    # If any operation fails, all changes will be rolled back
+```
+
+### Batch Operations
+
+```python
+# Batch set
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2",
+    "key3": "value3"
+})
+
+# Batch get
+values = sdk.storage.get_multi(["key1", "key2", "key3"])
+
+# Batch delete
+sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+## Config Module
+
+### Reading Configuration
+
+```python
+from ErisPulse import sdk
+
+# Get configuration
+config = sdk.config.getConfig("MyModule", {})
+
+# Get nested configuration
+value = sdk.config.getConfig("MyModule.subkey.value", "default")
+```
+
+### Writing Configuration
+
+```python
+# Set configuration
+sdk.config.setConfig("MyModule", {"key": "value"})
+
+# Set nested configuration
+sdk.config.setConfig("MyModule.subkey.value", "new_value")
+```
+
+### Configuration Example
+
+```python
+def _load_config(self):
+    config = sdk.config.getConfig("MyModule")
+    if not config:
+        # Create default configuration
+        default_config = {
+            "api_url": "https://api.example.com",
+            "timeout": 30,
+            "cache_ttl": 3600
+        }
+        sdk.config.setConfig("MyModule", default_config, immediate=True)  # When the third parameter is True, save the configuration immediately, making it convenient for users to directly modify the configuration file
+        return default_config
+    return config
+```
+
+## Logger Module
+
+### Basic Logging
+
+```python
+from ErisPulse import sdk
+
+# Different log levels
+sdk.logger.debug("Debug info")
+sdk.logger.info("Runtime info")
+sdk.logger.warning("Warning info")
+sdk.logger.error("Error info")
+sdk.logger.critical("Fatal error")
+```
+
+### Child Loggers
+
+```python
+# Get child logger
+child_logger = sdk.logger.get_child("MyModule")
+child_logger.info("Submodule log")
+
+# Submodules can have their own child loggers, allowing for more precise control over log output
+child_logger.get_child("utils")
+```
+
+### Log Output
+
+```python
+# Set output file
+sdk.logger.set_output_file("app.log")
+
+# Save logs to file
+sdk.logger.save_logs("log.txt")
+```
+
+## Adapter Module
+
+### Getting Adapters
+
+```python
+from ErisPulse import sdk
+
+# Get adapter instance
+adapter = sdk.adapter.get("platform_name")
+
+# Access via attribute
+adapter = sdk.adapter.platform_name
+```
+
+### Adapter Events
+
+```python
+# Listen for standard events
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+# Listen for events on a specific platform
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+
+# Listen for platform native events
+@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
+async def handle_raw_event(data):
+    pass
+```
+
+### Adapter Management
+
+```python
+# Get all platforms
+platforms = sdk.adapter.platforms
+
+# Check if adapter exists
+exists = sdk.adapter.exists("platform_name")
+
+# Enable/Disable adapter
+sdk.adapter.enable("platform_name")
+sdk.adapter.disable("platform_name")
+
+# Start/Shutdown adapter
+await sdk.adapter.startup(["platform1", "platform2"])
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# Check if adapter is running
+is_running = sdk.adapter.is_running("platform_name")
+
+# List all running adapters
+running = sdk.adapter.list_running()
+```
+
+## Module Module
+
+### Getting Modules
+
+```python
+from ErisPulse import sdk
+
+# Get module instance
+module = sdk.module.get("ModuleName")
+
+# Access via attribute
+module = sdk.module.ModuleName
+module = sdk.ModuleName
+```
+
+### Module Management
+
+```python
+# Check if module exists
+exists = sdk.module.exists("ModuleName")
+
+# Check if module is loaded
+is_loaded = sdk.module.is_loaded("ModuleName")
+
+# Check if module is enabled
+is_enabled = sdk.module.is_enabled("ModuleName")
+
+# Enable/Disable module
+sdk.module.enable("ModuleName")
+sdk.module.disable("ModuleName")
+
+# Load module
+await sdk.module.load("ModuleName")
+
+# Unload module
+await sdk.module.unload("ModuleName")
+
+# List loaded modules
+loaded = sdk.module.list_loaded()
+
+# List registered modules
+registered = sdk.module.list_registered()
+
+# Get module information
+info = sdk.module.get_info("ModuleName")
+
+# Get module status summary
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# Check if module is running (equivalent to is_loaded)
+is_running = sdk.module.is_running("ModuleName")
+
+# List all running modules
+running = sdk.module.list_running()
+```
+
+## Lifecycle Module
+
+### Event Submission
+
+```python
+from ErisPulse import sdk
+
+# Submit custom event
+await sdk.lifecycle.submit_event(
+    "custom.event",
+    data={"key": "value"},
+    source="MyModule",
+    msg="Custom event description"
+)
+```
+
+### Event Listening
+
+```python
+# Listen for specific event
+@sdk.lifecycle.on("module.init")
+async def handle_module_init(event_data):
+    print(f"Module initialization: {event_data}")
+
+# Listen for parent event
+@sdk.lifecycle.on("module")
+async def handle_any_module_event(event_data):
+    print(f"Module event: {event_data}")
+
+# Listen for all events
+@sdk.lifecycle.on("*")
+async def handle_any_event(event_data):
+    print(f"System event: {event_data}")
+```
+
+### Timer
+
+```python
+# Start timer
+sdk.lifecycle.start_timer("my_operation")
+
+# ... Perform operations ...
+
+# Get duration
+duration = sdk.lifecycle.get_duration("my_operation")
+
+# Stop timer
+total_time = sdk.lifecycle.stop_timer("my_operation")
+```
+
+## Router Module
+
+### HTTP Routes
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+# Register HTTP route
+async def handler(request: Request):
+    data = await request.json()
+    return {"status": "ok", "data": data}
+
+sdk.router.register_http_route(
+    module_name="MyModule",
+    path="/api",
+    handler=handler,
+    methods=["POST"]
+)
+
+# Unregister route
+sdk.router.unregister_http_route("MyModule", "/api")
+```
+
+### WebSocket Routes
+
+```python
+from ErisPulse import sdk
+from fastapi import WebSocket
+
+# Register WebSocket route (automatically accepts connection by default)
+async def websocket_handler(websocket: WebSocket):
+    # No manual accept needed by default, it is called internally automatically
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+    auto_accept=True  # Default is True, can be omitted
+)
+
+# Register WebSocket route (manual connection control)
+async def manual_websocket_handler(websocket: WebSocket):
+    # Decide whether to accept connection based on condition
+    if some_condition:
+        await websocket.accept()
+        # Handle connection...
+    else:
+        await websocket.close(code=1008, reason="Not allowed")
+
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    if token == "<PASSWORD>":
+        return True
+    return False
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=manual_websocket_handler,
+    auth_handler=auth_handler,
+    auto_accept=False  # Manual connection control
+)
+
+# Unregister route
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**Parameter Description:**
+
+- `module_name`: Module name
+- `path`: WebSocket path
+- `handler`: Handler function
+- `auth_handler`: Optional authentication function
+- `auto_accept`: Whether to automatically accept connection (default `True`)
+  - `True`: Framework automatically calls `websocket.accept()`, handler does not need to call it manually
+  - `False`: handler must call `websocket.accept()` or `websocket.close()` itself
+
+### Route Information
+
+```python
+# Get FastAPI application instance
+app = sdk.router.get_app()
+
+# Add middleware
+@app.middleware("http")
+async def add_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Custom-Header"] = "value"
+    return response
+```
+
+## Related Documents
+
+- [Event System API](event-system.md) - Event Module API
+- [Adapter System API](adapter-system.md) - Adapter Management API
+
+
+
+====
+高级主题
+====
+
+
+### 生命周期管理
+
+# Lifecycle Management
+
+ErisPulse provides a complete lifecycle event system for monitoring the running status of various system components. Lifecycle events support dot-notation event listening; for example, you can listen to `module.init` to capture all module initialization events.
+
+## Standard Lifecycle Events
+
+The system defines the following standard event categories:
+
+```python
+STANDARD_EVENTS = {
+    "core": ["init.start", "init.complete"],
+    "module": ["load", "init", "unload"],
+    "adapter": ["load", "start", "status.change", "stop", "stopped"],
+    "server": ["start", "stop"]
+}
+```
+
+## Event Data Format
+
+All lifecycle events follow a standard format:
+
+```json
+{
+    "event": "Event Name",
+    "timestamp": 1234567890,
+    "data": {},
+    "source": "ErisPulse",
+    "msg": "Event Description"
+}
+```
+
+## Event Handling Mechanism
+
+### Dot-notation Events
+
+ErisPulse supports dot-notation event naming, such as `module.init`. When a specific event is triggered, its parent events are also triggered:
+
+- When the `module.init` event is triggered, the `module` event is also triggered.
+- When the `adapter.status.change` event is triggered, the `adapter.status` and `adapter` events are also triggered.
+
+### Wildcard Event Handlers
+
+You can register a `*` event handler to capture all events.
+
+## Standard Lifecycle Events
+
+### Core Initialization Events
+
+| Event Name | Trigger Timing | Data Structure |
+|---------|---------|---------|
+| `core.init.start` | When core initialization starts | `{}` |
+| `core.init.complete` | When core initialization completes | `{"duration": "Initialization duration (seconds)", "success": true/false}` |
+
+### Module Lifecycle Events
+
+| Event Name | Trigger Timing | Data Structure |
+|---------|---------|---------|
+| `module.load` | When module loading completes | `{"module_name": "Module Name", "success": true/false}` |
+| `module.init` | When module initialization completes | `{"module_name": "Module Name", "success": true/false}` |
+| `module.unload` | When module is unloaded | `{"module_name": "Module Name", "success": true/false}` |
+
+### Adapter Lifecycle Events
+
+| Event Name | Trigger Timing | Data Structure |
+|---------|---------|---------|
+| `adapter.load` | When adapter loading completes | `{"platform": "Platform Name", "success": true/false}` |
+| `adapter.start` | When adapter starts launching | `{"platforms": ["List of Platform Names"]}` |
+| `adapter.status.change` | When adapter status changes | `{"platform": "Platform Name", "status": "Status", "retry_count": Retry Count, "error": "Error Message"}` |
+| `adapter.stop` | When adapter starts shutting down | `{}` |
+| `adapter.stopped` | When adapter has shut down completely | `{}` |
+
+### Server Lifecycle Events
+
+| Event Name | Trigger Timing | Data Structure |
+|---------|---------|---------|
+| `server.start` | When server starts | `{"base_url": "Base URL","host": "Host Address", "port": "Port Number"}` |
+| `server.stop` | When server stops | `{}` |
+
+## Usage Examples
+
+### Lifecycle Event Listening
+
+```python
+from ErisPulse.Core import lifecycle
+
+# Listen to specific event
+@lifecycle.on("module.init")
+async def module_init_handler(event_data):
+    print(f"Module {event_data['data']['module_name']} initialization completed")
+
+# Listen to parent event (dot-notation)
+@lifecycle.on("module")
+async def on_any_module_event(event_data):
+    print(f"Module event: {event_data['event']}")
+
+# Listen to all events (wildcard)
+@lifecycle.on("*")
+async def on_any_event(event_data):
+    print(f"System event: {event_data['event']}")
+```
+
+### Submitting Lifecycle Events
+
+```python
+from ErisPulse.Core import lifecycle
+
+# Basic event submission
+await lifecycle.submit_event(
+    "custom.event",
+    data={"custom_field": "custom_value"},
+    source="MyModule",
+    msg="Custom event description"
+)
+```
+
+### Timer Functionality
+
+The lifecycle system provides timer functionality for performance measurement:
+
+```python
+from ErisPulse.Core import lifecycle
+
+# Start timing
+lifecycle.start_timer("my_operation")
+
+# Execute some operations...
+
+# Get duration (without stopping the timer)
+elapsed = lifecycle.get_duration("my_operation")
+print(f"Has run for {elapsed} seconds")
+
+# Stop timer and get duration
+total_time = lifecycle.stop_timer("my_operation")
+print(f"Operation completed, total time taken {total_time} seconds")
+```
+
+## Using Lifecycle in Modules
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+
+class Main(BaseModule):
+    async def on_load(self, event):
+        # Listen to module lifecycle events
+        @sdk.lifecycle.on("module.load")
+        async def on_module_load(event_data):
+            module_name = event_data['data'].get('module_name')
+            if module_name != "MyModule":
+                sdk.logger.info(f"Other module loaded: {module_name}")
+        
+        # Submit custom event
+        await sdk.lifecycle.submit_event(
+            "custom.ready",
+            source="MyModule",
+            msg="MyModule is ready to receive events"
+        )
+```
+
+## Notes
+
+1.  **Event Source Identification**: When submitting custom events, it is recommended to set a clear `source` value to facilitate tracking the event source.
+2.  **Event Naming Conventions**: It is recommended to use dot-notation for event naming to facilitate parent-level listening.
+3.  **Timer Naming**: Timer IDs should be descriptive to avoid conflicts with other components.
+4.  **Asynchronous Processing**: All lifecycle event handlers are asynchronous; do not block the event loop.
+5.  **Error Handling**: Exception handling should be implemented in event handlers to prevent affecting other listeners.
+6.  **Loading Priority**: It is recommended to set high priority for loading strategies and disable lazy loading.
+
+## Related Documentation
+
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module lifecycle methods
+- [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using lifecycle events
+
+
+
+### 懒加载系统
+
+# Lazy Loading Module System
+
+The ErisPulse SDK provides a powerful lazy loading module system, allowing modules to be initialized only when actually needed, thereby significantly improving application startup speed and memory efficiency.
+
+## Overview
+
+The lazy loading module system is one of the core features of ErisPulse. It works through the following mechanisms:
+
+- **Delayed Initialization**: Modules are actually loaded and initialized only when they are accessed for the first time.
+- **Transparent Usage**: For developers, there is almost no difference in usage between lazy-loaded modules and ordinary modules.
+- **Automatic Dependency Management**: Module dependencies are automatically initialized when used.
+- **Lifecycle Support**: For modules inheriting from `BaseModule`, lifecycle methods are automatically called.
+
+## How It Works
+
+### The LazyModule Class
+
+The core of the lazy loading system is the `LazyModule` class, which acts as a wrapper that actually initializes the module only upon first access.
+
+### Initialization Process
+
+When a module is accessed for the first time, `LazyModule` performs the following operations:
+
+1. Retrieves the `__init__` parameter information of the module class.
+2. Decides whether to pass the `sdk` reference based on the parameters.
+3. Sets the `moduleInfo` attribute of the module.
+4. For modules inheriting from `BaseModule`, calls the `on_load` method.
+5. Triggers the `module.init` lifecycle event.
+
+## Configuring Lazy Loading
+
+### Global Configuration
+
+Enable/disable global lazy loading in the configuration file:
+
+```toml
+[ErisPulse.framework]
+enable_lazy_loading = true  # true=enable lazy loading (default), false=disable lazy loading
+```
+
+### Module-level Control
+
+Modules can control their loading strategy by implementing the static method `get_load_strategy()`:
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        """Return the module loading strategy"""
+        return ModuleLoadStrategy(
+            lazy_load=False,  # Returning False means immediate loading
+            priority=100      # Loading priority, higher value means higher priority
+        )
+```
+
+## Using Lazy Loaded Modules
+
+### Basic Usage
+
+For developers, lazy-loaded modules are almost indistinguishable from ordinary modules in terms of usage:
+
+```python
+# Access lazy-loaded modules via SDK
+from ErisPulse import sdk
+
+# The following access will trigger module lazy loading
+result = await sdk.my_module.my_method()
+```
+
+### Asynchronous Initialization
+
+For modules requiring asynchronous initialization, it is recommended to load them explicitly first:
+
+```python
+# Explicitly load the module first
+await sdk.load_module("my_module")
+
+# Then use the module
+result = await sdk.my_module.my_method()
+```
+
+### Synchronous Initialization
+
+For modules that do not require asynchronous initialization, you can access them directly:
+
+```python
+# Direct access will automatically trigger synchronous initialization
+result = sdk.my_module.some_sync_method()
+```
+
+## Best Practices
+
+### Scenarios Recommended for Lazy Loading (lazy_load=True)
+
+- Passively called utility classes
+- Passive class modules
+
+### Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)
+
+- Modules registering triggers (e.g., command handlers, message handlers)
+- Lifecycle event listeners
+- Scheduled task modules
+- Modules that need to be initialized when the application starts
+
+### Loading Priority
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,  # Load immediately
+            priority=100      # High priority, higher value means higher priority
+        )
+```
+
+## Notes
+
+1. If your module uses lazy loading, it will never be initialized if it is never called within ErisPulse by other modules.
+2. If your module includes components such as Event listeners, or other similar active monitoring modules, please be sure to declare that they need to be loaded immediately, otherwise it will affect the normal business logic of your module.
+3. We do not recommend disabling lazy loading; unless there are special requirements, doing so may lead to issues such as dependency management and lifecycle event problems.
+
+## Related Documentation
+
+- [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn to develop modules
+- [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
+
+
+
 ====
 技术标准
 ====
@@ -4532,4 +6635,1817 @@ if builder:
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specifications, extension naming, and message segment standards
 - [API Response Standard](api-response.md) - Adapter API response format standards
 - [Session Type Standard](session-types.md) - Session type definitions and mapping relationships
+
+
+
+======
+平台特性指南
+======
+
+
+### 平台特性总览
+
+# ErisPulse Platform Features Documentation
+
+> Base Protocol: [OneBot12](https://12.onebot.dev/) 
+> 
+> This document is a **Platform-Specific Features Guide** containing:
+> - Chain invocation examples of the Send method supported by each adapter
+> - Explanations of platform-specific events/message formats
+> 
+> For general usage methods, please refer to:
+> - [Basic Concepts](../getting-started/basic-concepts.md)
+> - [Event Conversion Standards](../standards/event-conversion.md)  
+> - [API Response Specifications](../standards/api-response.md)
+
+---
+
+## Platform Specific Features
+
+This section is maintained by developers of each adapter to explain the differences and extended features of that adapter compared to the OneBot12 standard. Please refer to the detailed documentation for the following platforms:
+
+- [Maintenance Notes](maintain-notes.md)
+
+- [Yunhu Platform Features](yunhu.md)
+- [Telegram Platform Features](telegram.md)
+- [OneBot11 Platform Features](onebot11.md)
+- [OneBot12 Platform Features](onebot12.md)
+- [Email Platform Features](email.md)
+
+---
+
+## Common Interfaces
+
+### Send Chained Invocation
+All adapters support the following standard calling methods:
+
+> **Note:** The `{AdapterName}` in the document needs to be replaced with the actual adapter name (e.g., `yunhu`, `telegram`, `onebot11`, `email`, etc.).
+
+1. Specify type and ID: `To(type,id).Func()`
+   ```python
+   # Get adapter instance
+   my_adapter = adapter.get("{AdapterName}")
+   
+   # Send message
+   await my_adapter.Send.To("user", "U1001").Text("Hello")
+   
+   # Example:
+   yunhu = adapter.get("yunhu")
+   await yunhu.Send.To("user", "U1001").Text("Hello")
+   ```
+2. Specify ID only: `To(id).Func()`
+   ```python
+   my_adapter = adapter.get("{AdapterName}")
+   await my_adapter.Send.To("U1001").Text("Hello")
+   
+   # Example:
+   telegram = adapter.get("telegram")
+   await telegram.Send.To("U1001").Text("Hello")
+   ```
+3. Specify sending account: `Using(account_id)`
+   ```python
+   my_adapter = adapter.get("{AdapterName}")
+   await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
+   
+   # Example:
+   onebot11 = adapter.get("onebot11")
+   await onebot11.Send.Using("bot1").To("U1001").Text("Hello")
+   ```
+4. Direct call: `Func()`
+   ```python
+   my_adapter = adapter.get("{AdapterName}")
+   await my_adapter.Send.Text("Broadcast message")
+   
+   # Example:
+   email = adapter.get("email")
+   await email.Send.Text("Broadcast message")
+   ```
+
+#### Asynchronous Sending and Result Processing
+
+Methods of the Send DSL return `asyncio.Task` objects, which means you can choose whether to wait for the result immediately:
+
+```python
+# Get adapter instance
+my_adapter = adapter.get("{AdapterName}")
+
+# Do not wait for result, message sent in background
+task = my_adapter.Send.To("user", "123").Text("Hello")
+
+# If you need to get the send result, you can wait later
+result = await task
+```
+
+### Event Listening
+There are three ways to listen for events:
+
+1. Platform native event listening:
+   ```python
+   from ErisPulse.Core import adapter, logger
+   
+   @adapter.on("event_type", raw=True, platform="{AdapterName}")
+   async def handler(data):
+       logger.info(f"Received {AdapterName} native event: {data}")
+   ```
+
+2. OneBot12 standard event listening:
+   ```python
+   from ErisPulse.Core import adapter, logger
+
+   # Listen for OneBot12 standard events
+   @adapter.on("event_type")
+   async def handler(data):
+       logger.info(f"Received standard event: {data}")
+
+   # Listen for specific platform's standard events
+   @adapter.on("event_type", platform="{AdapterName}")
+   async def handler(data):
+       logger.info(f"Received {AdapterName} standard event: {data}")
+   ```
+
+3. Event module listening:
+    The events of the `Event` module are based on the `adapter.on()` function, so the event format provided by `Event` is a OneBot12 standard event
+
+    ```python
+    from ErisPulse.Core.Event import message, notice, request, command
+
+    message.on_message()(message_handler)
+    notice.on_notice()(notice_handler)
+    request.on_request()(request_handler)
+    command("hello", help="Send greeting message", usage="hello")(command_handler)
+
+    async def message_handler(event):
+        logger.info(f"Received message: {event}")
+    async def notice_handler(event):
+        logger.info(f"Received notice: {event}")
+    async def request_handler(event):
+        logger.info(f"Received request: {event}")
+    async def command_handler(event):
+        logger.info(f"Received command: {event}")
+    ```
+
+Among these, using the `Event` module is the most recommended approach for event handling, as it provides a variety of event types, as well as rich event processing methods.
+
+---
+
+## Standard Formats
+For reference purposes, simple event formats are provided here. For detailed information, please refer to the links above.
+
+> **Note:** The following format is based on the basic OneBot12 standard format. Each adapter may have extended fields on top of this. For details, please refer to the specific feature documentation of each adapter.
+
+### Standard Event Format
+Event conversion format that all adapters must implement:
+```json
+{
+  "id": "event_123",
+  "time": 1752241220,
+  "type": "message",
+  "detail_type": "group",
+  "platform": "example_platform",
+  "self": {"platform": "example_platform", "user_id": "bot_123"},
+  "message_id": "msg_abc",
+  "message": [
+    {"type": "text", "data": {"text": "你好"}}
+  ],
+  "alt_message": "你好",
+  "user_id": "user_456",
+  "user_nickname": "ExampleUser",
+  "group_id": "group_789"
+}
+```
+
+### Standard Response Format
+#### Message Sending Success
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {
+    "message_id": "1234",
+    "time": 1632847927.599013
+  },
+  "message_id": "1234",
+  "message": "",
+  "echo": "1234",
+  "{platform}_raw": {...}
+}
+```
+
+#### Message Sending Failed
+```json
+{
+  "status": "failed",
+  "retcode": 10003,
+  "data": null,
+  "message_id": "",
+  "message": "Missing required parameters",
+  "echo": "1234",
+  "{platform}_raw": {...}
+}
+```
+
+---
+
+## References
+ErisPulse Project:
+- [Main Repository](https://github.com/ErisPulse/ErisPulse/)
+- [Yunhu Adapter Library](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [Telegram Adapter Library](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [OneBot Adapter Library](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+
+Related Official Documentation:
+- [OneBot V11 Protocol Documentation](https://github.com/botuniverse/onebot-11)
+- [Telegram Bot API Official Documentation](https://core.telegram.org/bots/api)
+- [Yunhu Official Documentation](https://www.yhchat.com/document/1-3)
+
+## Contributing
+
+We welcome more developers to participate in writing and maintaining adapter documentation! Please submit contributions by following these steps:
+1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) repository.
+2. Create a Markdown file in the `docs/platform-features/` directory with the naming format `<platform-name>.md`.
+3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
+4. Submit Pull Request.
+
+Thank you for your support!
+
+
+
+### OneBot11 适配
+
+# OneBot11 Platform Features Documentation
+
+OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
+
+---
+
+## Documentation Information
+
+- Corresponding Module Version: 3.6.0
+- Maintainer: ErisPulse
+
+## Basic Information
+
+- Platform Introduction: OneBot is a chatbot application interface standard
+- Adapter Name: OneBotAdapter
+- Supported Protocol/API Version: OneBot V11
+- Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously
+- Legacy Configuration Compatibility: Compatible with old version configuration formats, provides migration reminders (non-automatic migration)
+
+## Supported Message Sending Types
+
+All sending methods are implemented via chaining syntax, for example:
+```python
+from ErisPulse.Core import adapter
+onebot = adapter.get("onebot11")
+
+# Send using default account
+await onebot.Send.To("group", group_id).Text("Hello World!")
+
+# Send using specific account
+await onebot.Send.Using("main").To("group", group_id).Text("Message from main account")
+
+# Chain modifiers: @ user + reply
+await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("Reply message")
+
+# @ all members
+await onebot.Send.To("group", group_id).AtAll().Text("Announcement message")
+```
+
+### Basic Sending Methods
+
+- `.Text(text: str)`: Send plain text message.
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send image (supports URL, Base64, or bytes).
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`: Send voice message.
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send video message.
+- `.Face(id: Union[str, int])`: Send QQ emoticon.
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`: Send file (auto-detect type).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format message (auto-converted to OB11).
+- `.Recall(message_id: Union[str, int])`: Recall message.
+
+### Chained Modifier Methods (Combinable)
+
+Chained modifier methods return `self`, support chaining, and must be called before the final sending method:
+
+- `.At(user_id: Union[str, int], name: str = None)`: @ specific user (can be called multiple times).
+- `.AtAll()`: @ all members.
+- `.Reply(message_id: Union[str, int])`: Reply to specific message.
+
+### Chained Call Examples
+
+```python
+# Basic send
+await onebot.Send.To("group", 123456).Text("Hello")
+
+# @ single user
+await onebot.Send.To("group", 123456).At(789012).Text("Hello")
+
+# @ multiple users
+await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("Hello everyone")
+
+# Send OneBot12 format message
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+```
+
+### Unsupported Type Handling
+
+If an undefined sending method is called, the adapter returns a text prompt:
+```python
+# Call non-existent method
+await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
+# Actual send: "[Unsupported send type] Method Name: SomeUnsupportedMethod, Arguments: [...]"
+```
+
+## Specific Event Types
+
+OneBot11 events are converted to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but there are the following differences:
+
+### Core Differences
+
+1.  **Specific Event Types:**
+    -   CQ Code Extension Event: `onebot11_cq_{type}`
+    -   Honor Change Event: `onebot11_honor`
+    -   Poke Event: `onebot11_poke`
+    -   Group Red Packet Lucky King Event: `onebot11_lucky_king`
+
+2.  **Extension Fields:**
+    -   All specific fields are identified with the `onebot11_` prefix
+    -   Original CQ code message retained in the `onebot11_raw_message` field
+    -   Original event data retained in the `onebot11_raw` field
+
+### Special Field Examples
+
+```python
+// Honor change event
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "onebot11_honor_type": "talkative",
+  "onebot11_operation": "set"
+}
+
+// Poke event
+{
+  "type": "notice",
+  "detail_type": "onebot11_poke",
+  "group_id": "123456",
+  "user_id": "789012",
+  "target_id": "345678",
+  "onebot11_poke_type": "normal"
+}
+
+// Group red packet lucky king event
+{
+  "type": "notice",
+  "detail_type": "onebot11_lucky_king",
+  "group_id": "123456",
+  "user_id": "789012",
+  "target_id": "345678"
+}
+
+// CQ code message segment
+{
+  "type": "message",
+  "message": [
+    {
+      "type": "onebot11_face",
+      "data": {"id": "123"}
+    },
+    {
+      "type": "onebot11_shake",
+      "data": {} 
+    }
+  ]
+}
+```
+
+### Extension Field Descriptions
+
+-   All specific fields are identified with the `onebot11_` prefix
+-   Original CQ code message retained in the `onebot11_raw_message` field
+-   Original event data retained in the `onebot11_raw` field
+-   CQ codes within message content are converted to corresponding message segments
+-   Reply messages will add `reply` type message segments
+-   @ messages will add `mention` type message segments
+
+## Configuration Options
+
+Each account in the OneBot adapter is configured with the following options independently:
+
+### Account Configuration
+- `mode`: Running mode of this account ("server" or "client")
+- `server_path`: WebSocket path in Server mode
+- `server_token`: Authentication Token in Server mode (optional)
+- `client_url`: WebSocket address to connect to in Client mode
+- `client_token`: Authentication Token in Client mode (optional)
+- `enabled`: Whether this account is enabled
+
+### Built-in Defaults
+- Reconnect Interval: 30 seconds
+- API Call Timeout: 30 seconds
+- Maximum Retry Count: 3 times
+
+### Configuration Example
+```toml
+[OneBotv11_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot-main"
+server_token = "main_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### Default Configuration
+
+If no account is configured, the adapter will automatically create:
+```toml
+[OneBotv11_Adapter.accounts.default]
+mode = "server"
+server_path = "/"
+enabled = true
+```
+
+## Sending Method Return Values
+
+All sending methods return a Task object, which can be directly awaited to get the send result. The returned result follows the ErisPulse adapter standardized return specification:
+
+```python
+{
+    "status": "ok",           // Execution status
+    "retcode": 0,             // Return code
+    "data": {...},            // Response data
+    "self": {...},            // Self information
+    "message_id": "123456",   // Message ID
+    "message": "",            // Error message
+    "onebot_raw": {...}       // Raw response data
+}
+```
+
+### Multi-account Sending Syntax
+
+```python
+# Account selection method
+await onebot.Send.Using("main").To("group", 123456).Text("Main account message")
+await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API call method
+await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
+```
+
+## Async Processing Mechanism
+
+The OneBot adapter adopts an asynchronous non-blocking design, ensuring:
+1.  Message sending does not block the event processing loop
+2.  Multiple concurrent send operations can proceed simultaneously
+3.  API responses are handled in a timely manner
+4.  WebSocket connections remain active
+5.  Multi-account concurrent processing, with each account running independently
+
+## Error Handling
+
+The adapter provides comprehensive error handling mechanisms:
+1.  Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
+2.  API call timeout handling (fixed 30-second timeout)
+3.  Message send failure retry (up to 3 retries)
+
+## Event Processing Enhancement
+
+In multi-account mode, account information is automatically added to all events:
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "main"},  // New: Account ID that sent the event (standard field)
+    "platform": "onebot11",
+    // ... other event fields
+}
+```
+
+## Management Interface
+
+```python
+# Get all account information
+accounts = onebot.accounts
+
+# Check account connection status
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot.connections.items()
+}
+
+# Dynamically enable/disable accounts (requires restarting adapter)
+onebot.accounts["test"].enabled = False
+
+
+
+### OneBot12 适配
+
+# OneBot12 Platform Features Documentation
+
+OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as the baseline protocol adapter for the ErisPulse framework.
+
+---
+
+## Document Information
+
+- Corresponding Module Version: 1.0.0
+- Maintainer: ErisPulse
+- Protocol Version: OneBot V12
+
+## Basic Information
+
+- Platform Introduction: OneBot V12 is a general chatbot application interface standard and serves as the baseline protocol for the ErisPulse framework.
+- Adapter Name: OneBot12Adapter
+- Supported Protocol/API Version: OneBot V12
+- Multi-Account Support: Fully multi-account architecture, supports configuring and running multiple OneBot12 accounts simultaneously.
+
+## Supported Message Sending Types
+
+All sending methods are implemented via chain syntax, for example:
+
+```python
+from ErisPulse.Core import adapter
+onebot12 = adapter.get("onebot12")
+
+# Send using the default account
+await onebot12.Send.To("group", group_id).Text("Hello World!")
+
+# Send using a specific account
+await onebot12.Send.To("group", group_id).Account("main").Text("Message from main account")
+```
+
+### Basic Message Types
+
+- `.Text(text: str)`: Send a plain text message
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send an image message (supports URL, Base64, or bytes)
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: Send an audio message
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send a video message
+
+### Interactive Message Types
+
+- `.Mention(user_id: Union[str, int], user_name: str = None)`: Send an @ mention message
+- `.Reply(message_id: Union[str, int], content: str = None)`: Send a reply message
+- `.Sticker(file_id: str)`: Send a sticker/E-mote
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: Send a location
+
+### Management Functions
+
+- `.Recall(message_id: Union[str, int])`: Recall a message
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`: Edit a message
+- `.Raw(message_segments: List[Dict])`: Send native OneBot12 message segments
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`: Send messages in batch
+
+## OneBot12 Standard Events
+
+The OneBot12 adapter fully adheres to the OneBot12 standard. The event format requires no conversion and is submitted directly to the framework.
+
+### Message Events (Message Events)
+
+```python
+# Private message
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+
+# Group message
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "group_id": "group-id",
+    "message": [{"type": "text", "data": {"text": "Hello group"}}],
+    "alt_message": "Hello group",
+    "time": 1234567890
+}
+```
+
+### Notice Events (Notice Events)
+
+```python
+# Group member increase
+{
+    "id": "event-id",
+    "type": "notice",
+    "detail_type": "group_member_increase",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "approve",
+    "time": 1234567890
+}
+
+# Group member decrease
+{
+    "id": "event-id",
+    "type": "notice", 
+    "detail_type": "group_member_decrease",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "leave",
+    "time": 1234567890
+}
+```
+
+### Request Events (Request Events)
+
+```python
+# Friend request
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "friend",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "comment": "Application message",
+    "flag": "request-flag",
+    "time": 1234567890
+}
+
+# Group invite request
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "comment": "Application message",
+    "flag": "request-flag",
+    "sub_type": "invite",
+    "time": 1234567890
+}
+```
+
+### Meta Events (Meta Events)
+
+```python
+# Lifecycle event
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "lifecycle",
+    "self": {"user_id": "bot-id"},
+    "sub_type": "enable",
+    "time": 1234567890
+}
+
+# Heartbeat event
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "heartbeat",
+    "self": {"user_id": "bot-id"},
+    "interval": 5000,
+    "status": {"online": true},
+    "time": 1234567890
+}
+```
+
+## Configuration Options
+
+### Account Configuration
+
+Each account is configured independently with the following options:
+
+- `mode`: The operating mode of the account ("server" or "client")
+- `server_path`: WebSocket path in Server mode
+- `server_token`: Authentication Token in Server mode (optional)
+- `client_url`: WebSocket address to connect to in Client mode
+- `client_token`: Authentication Token in Client mode (optional)
+- `enabled`: Whether to enable this account
+- `platform`: Platform identifier, defaults to "onebot12"
+- `implementation`: Implementation identifier, e.g., "go-cqhttp" (optional)
+
+### Configuration Example
+
+```toml
+[OneBotv12_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot12-main"
+server_token = "main_token"
+enabled = true
+platform = "onebot12"
+implementation = "go-cqhttp"
+
+[OneBotv12_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+platform = "onebot12"
+implementation = "shinonome"
+
+[OneBotv12_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### Default Configuration
+
+If no accounts are configured, the adapter will automatically create:
+
+```toml
+[OneBotv12_Adapter.accounts.default]
+mode = "server"
+server_path = "/onebot12"
+enabled = true
+platform = "onebot12"
+```
+
+## Return Values of Sending Methods
+
+All sending methods return a Task object, which can be directly awaited to obtain the sending result. The returned result follows the OneBot12 standard:
+
+```python
+{
+    "status": "ok",           // Execution status
+    "retcode": 0,             // Return code
+    "data": {...},            // Response data
+    "self": {"user_id": "account-id"},  // Account information
+    "message_id": "123456",   // Message ID
+    "message": ""             // Error message
+}
+```
+
+### Multi-Account Sending Syntax
+
+```python
+# Account selection method
+await onebot12.Send.Using("main").To("group", 123456).Text("Message from main account")
+await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API call method
+await onebot12.call_api("send_message", account_id="main", 
+    detail_type="group", group_id=123456, 
+    content=[{"type": "text", "data": {"text": "Hello"}}])
+```
+
+## Asynchronous Processing Mechanism
+
+The OneBot12 adapter adopts an asynchronous non-blocking design:
+
+1.  Message sending does not block the event handling loop
+2.  Multiple concurrent sending operations can proceed simultaneously
+3.  API responses can be processed in a timely manner
+4.  WebSocket connections remain active
+5.  Multi-account concurrency processing, with each account running independently
+
+## Error Handling
+
+The adapter provides comprehensive error handling mechanisms:
+
+1.  Automatic reconnection for network connection exceptions (supports independent reconnection for each account, interval of 30 seconds)
+2.  API call timeout handling (fixed 30-second timeout)
+3.  Automatic retry for failed message sending (maximum 3 retries)
+
+## Event Processing Enhancement
+
+In multi-account mode, account information is automatically added to all events:
+
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "platform": "onebot12",
+    // ... other event fields
+}
+```
+
+## Management Interface
+
+```python
+# Get information for all accounts
+accounts = onebot12.accounts
+
+# Check account connection status
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot12.connections.items()
+}
+
+# Dynamically enable/disable an account (requires adapter restart)
+onebot12.accounts["test"].enabled = False
+```
+
+## OneBot12 Standard Features
+
+### Message Segment Standard
+
+OneBot12 uses a standardized message segment format:
+
+```python
+# Text message segment
+{"type": "text", "data": {"text": "Hello"}}
+
+# Image message segment
+{"type": "image", "data": {"file_id": "image-id"}}
+
+# Mention message segment
+{"type": "mention", "data": {"user_id": "user-id", "user_name": "Username"}}
+
+# Reply message segment
+{"type": "reply", "data": {"message_id": "msg-id"}}
+```
+
+### API Standard
+
+Follows the OneBot12 standard API specification:
+
+- `send_message`: Send message
+- `delete_message`: Recall message
+- `edit_message`: Edit message
+- `get_message`: Get message
+- `get_self_info`: Get self information
+- `get_user_info`: Get user information
+- `get_group_info`: Get group information
+
+## Best Practices
+
+1.  **Configuration Management**: It is recommended to use multi-account configuration to manage bots of different purposes separately.
+2.  **Error Handling**: Always check the return status of API calls.
+3.  **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
+4.  **Connection Monitoring**: Regularly check connection status to ensure service availability.
+5.  **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
+
+
+
+### Telegram 适配
+
+# Telegram Platform Features Documentation
+
+TelegramAdapter is an adapter built based on the Telegram Bot API, supporting multiple message types and event handling.
+
+---
+
+## Document Information
+
+- Corresponding Module Version: 3.5.0
+- Maintainer: ErisPulse
+
+## Basic Information
+
+- Platform Introduction: Telegram is a cross-platform instant messaging software
+- Adapter Name: TelegramAdapter
+- Supported Protocols/API Versions: Telegram Bot API
+
+## Supported Message Sending Types
+
+All sending methods are implemented via chained syntax, for example:
+```python
+from ErisPulse.Core import adapter
+telegram = adapter.get("telegram")
+
+await telegram.Send.To("user", user_id).Text("Hello World!")
+```
+
+### Basic Sending Methods
+
+- `.Text(text: str)`: Sends a plain text message.
+- `.Face(emoji: str)`: Sends an emoji message.
+- `.Markdown(text: str, content_type: str = "MarkdownV2")`: Sends a Markdown format message.
+- `.HTML(text: str)`: Sends an HTML format message.
+
+### Media Sending Methods
+
+All media methods support two input methods:
+- **URL Method**: Pass a string URL directly
+- **File Upload**: Pass `bytes` type data
+
+- `.Image(file: bytes | str, caption: str = "", content_type: str = None)`: Sends an image message
+- `.Video(file: bytes | str, caption: str = "", content_type: str = None)`: Sends a video message
+- `.Voice(file: bytes | str, caption: str = "")`: Sends a voice message
+- `.Audio(file: bytes | str, caption: str = "", content_type: str = None)`: Sends an audio message
+- `.File(file: bytes | str, caption: str = "")`: Sends a file message
+- `.Document(file: bytes | str, caption: str = "", content_type: str = None)`: Sends a document message (Alias of File)
+
+### Message Management Methods
+
+- `.Edit(message_id: int, text: str, content_type: str = None)`: Edits an existing message.
+- `.Recall(message_id: int)`: Deletes a specified message.
+
+### Raw Message Sending
+
+- `.Raw_ob12(message: List[Dict])`: Sends a OneBot12 standard format message
+  - Supports complex combined messages (text + @user + reply + media)
+  - Automatically treats text as the media message's caption
+- `.Raw_json(json_str: str)`: Sends a raw JSON format message
+
+### Chained Modifying Methods
+
+- `.At(user_id: str)`: Mentions a specific user (can be called multiple times)
+- `.AtAll()`: Mentions all members
+- `.Reply(message_id: str)`: Replies to a specified message
+
+### Method Name Mapping
+
+Sending methods support case-insensitive calls and automatically convert to standard method names via a mapping table:
+```python
+# The following are equivalent
+telegram.Send.To("group", 123).Text("hello")
+telegram.Send.To("group", 123).text("hello")
+telegram.Send.To("group", 123).TEXT("hello")
+```
+
+### Sending Examples
+
+```python
+# Basic text sending
+await telegram.Send.To("group", group_id).Text("Hello World!")
+
+# Media sending (URL Method)
+await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="This is an image")
+
+# Media sending (File Upload)
+with open("image.jpg", "rb") as f:
+    await telegram.Send.To("group", group_id).Image(f.read())
+
+# @User
+await telegram.Send.To("group", group_id).At("6117725680").Text("Hello!")
+
+# Reply to message
+await telegram.Send.To("group", group_id).Reply("12345").Text("Reply content")
+
+# Combined usage
+await telegram.Send.To("group", group_id).Reply("12345").At("6117725680").Image("https://example.com/image.jpg", caption="Look at this picture")
+
+# OneBot12 combined message
+ob12_message = [
+    {"type": "text", "data": {"text": "Complex combined message:"}},
+    {"type": "mention", "data": {"user_id": "6117725680", "name": "Username"}},
+    {"type": "reply", "data": {"message_id": "12345"}},
+    {"type": "image", "data": {"file": "https://http.cat/200"}}
+]
+await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
+```
+
+### Unsupported Method Notifications
+
+When calling unsupported sending methods, a text notification is automatically sent:
+```python
+# Unsupported sending type
+await telegram.Send.To("group", group_id).UnknownMethod("data")
+# Will send: [Unsupported sending type] Method name: UnknownMethod, Parameters: [...]
+```
+
+## Specific Event Types
+
+Telegram events are converted to the OneBot12 protocol. While standard fields fully comply with the OneBot12 protocol, the following differences exist:
+
+### Core Differences
+
+1. Specific Event Types:
+   - Inline Query: `telegram_inline_query`
+   - Callback Query: `telegram_callback_query`
+   - Poll Event: `telegram_poll`
+   - Poll Answer: `telegram_poll_answer`
+
+2. Extended Fields:
+   - All specific fields are identified with the `telegram_` prefix
+   - Original data is preserved in the `telegram_raw` field
+   - Channel messages use `detail_type="channel"`
+
+### Event Listening Methods
+
+The Telegram adapter supports two methods for listening to events:
+
+```python
+# Using original event name
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+
+# Using mapped event name
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+```
+
+### Special Field Examples
+
+```python
+# Callback Query event
+{
+  "type": "notice",
+  "detail_type": "telegram_callback_query",
+  "user_id": "123456",
+  "user_nickname": "YingXinche",
+  "telegram_callback_data": {
+    "id": "cb_123",
+    "data": "callback_data",
+    "message_id": "msg_456"
+  }
+}
+
+# Inline Query event
+{
+  "type": "notice",
+  "detail_type": "telegram_inline_query",
+  "user_id": "789012",
+  "user_nickname": "YingXinche",
+  "telegram_inline_query": {
+    "id": "iq_789",
+    "query": "search_text",
+    "offset": "0"
+  }
+}
+
+# Channel message
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message_id": "msg_345",
+  "channel_id": "channel_123",
+  "telegram_chat": {
+    "title": "News Channel",
+    "username": "news_official"
+  }
+}
+```
+
+## Extended Field Descriptions
+
+- All specific fields are identified with the `telegram_` prefix
+- Original data is preserved in the `telegram_raw` field
+- Channel messages use `detail_type="channel"`
+- Entities within message content (e.g., bold, links) are converted into corresponding message segments
+- Reply messages will have a message segment of type `telegram_reply` added
+
+## Configuration Options
+
+The Telegram adapter supports the following configuration options:
+
+### Basic Configuration
+- `token`: Telegram Bot Token
+- `proxy_enabled`: Whether to enable proxy
+
+### Proxy Configuration
+- `proxy.host`: Proxy server address
+- `proxy.port`: Proxy port
+- `proxy.type`: Proxy type ("socks4" or "socks5")
+
+### Operating Mode
+
+The Telegram adapter only supports **Polling** mode. The Webhook mode has been removed.
+
+Configuration Example:
+```toml
+[Telegram_Adapter]
+token = "YOUR_BOT_TOKEN"
+proxy_enabled = false
+
+[Telegram_Adapter.proxy]
+host = "127.0.0.1"
+port = 1080
+type = "socks5"
+
+
+
+### 云湖适配
+
+# Yunhu Platform Feature Documentation
+
+YunhuAdapter is an adapter built on the Yunhu protocol, integrating all Yunhu functional modules and providing unified event handling and message operation interfaces.
+
+---
+
+## Document Information
+
+- Corresponding Module Version: 3.5.1
+- Maintainer: ErisPulse
+
+## Basic Information
+
+- Platform Overview: Yunhu (Yunhu) is an enterprise-level instant messaging platform.
+- Adapter Name: YunhuAdapter
+- Multi-account Support: Supports identifying and configuring multiple Yunhu bot accounts via `bot_id`
+- Chained Modifier Support: Supports chainable modifier methods such as `.Reply()`
+- OneBot12 Compatibility: Supports sending messages in OneBot12 format
+
+## Supported Message Sending Types
+
+All sending methods are implemented using chain syntax, for example:
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("user", user_id).Text("Hello World!")
+```
+
+Supported sending types include:
+- `.Text(text: str, buttons: List = None, parent_id: str = "")`: Send plain text message, with optional buttons and parent message ID.
+- `.Html(html: str, buttons: List = None, parent_id: str = "")`: Send HTML format message.
+- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`: Send Markdown format message.
+- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send image message, supports streaming upload and custom filename.
+- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send video message, supports streaming upload and custom filename.
+- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send file message, supports streaming upload and custom filename.
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Send messages in batch.
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edit existing message.
+- `.Recall(msg_id: str)`: Recall message.
+- `.Board(scope: str, content: str, **kwargs)`: Announce board, scope supports `local` and `global`.
+- `.DismissBoard(scope: str, **kwargs)`: Dissolve/Revoke board.
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Send stream message.
+
+Board board_type supports the following types:
+- `local`: Specified user board
+- `global`: Global board
+
+### Button Parameter Description
+
+The `buttons` parameter is a nested list representing the layout and function of buttons. Each button object contains the following fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `text` | string | Yes | Text on the button |
+| `actionType` | int | Yes | Action type: <br>`1`: Jump URL <br>`2`: Copy <br>`3`: Report |
+| `url` | string | No | Used when `actionType=1`, indicating the target URL to jump to |
+| `value` | string | No | When `actionType=2`, this value is copied to the clipboard <br>When `actionType=3`, this value is sent to the subscriber endpoint |
+
+Example:
+```python
+buttons = [
+    [
+        {"text": "Copy", "actionType": 2, "value": "xxxx"},
+        {"text": "Jump URL", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "Report Event", "actionType": 3, "value": "xxxxx"}
+    ]
+]
+await yunhu.Send.To("user", user_id).Text("Message with buttons", buttons=buttons)
+```
+> **Note:**
+> - Push notifications are only received when a user clicks the **"Report Event"** button. Neither **"Copy"** nor **"Jump URL"** will trigger a push notification.
+
+### Chained Modifier Methods (Composable)
+
+Chainable modifier methods return `self`, supporting chained calls. They must be called before the final sending method:
+
+- `.Reply(message_id: str)`: Reply to a specific message.
+- `.At(user_id: str)`: Mention a specific user.
+- `.AtAll()`: Mention everyone.
+- `.Buttons(buttons: List)`: Add buttons.
+
+### Chained Call Examples
+
+```python
+# Basic send
+await yunhu.Send.To("user", user_id).Text("Hello")
+
+# Reply to message
+await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Reply message")
+
+# Reply + Buttons
+await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Message with reply and buttons")
+```
+
+### OneBot12 Message Support
+
+The adapter supports sending messages in OneBot12 format to facilitate cross-platform message compatibility:
+
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format message.
+
+```python
+# Send OneBot12 format message
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# Combined with chained modifiers
+ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
+await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## Return Values of Sending Methods
+
+All sending methods return a Task object, which can be awaited directly to obtain the sending result. The returned result follows the ErisPulse adapter standardized return specification:
+
+```python
+{
+    "status": "ok",           // Execution status
+    "retcode": 0,             // Return code
+    "data": {...},            // Response data
+    "self": {...},            // Self information (contains bot_id)
+    "message_id": "123456",   // Message ID
+    "message": "",            // Error message
+    "yunhu_raw": {...}        // Raw response data
+}
+```
+
+## Platform-Specific Event Types
+
+Must detect `platform=="yunhu"` before using platform-specific features.
+
+### Core Differences
+
+1. Platform-Specific Event Types:
+    - Forms (e.g., Form command): `yunhu_form`
+    - Button Click: `yunhu_button_click`
+    - Bot Setting: `yunhu_bot_setting`
+    - Shortcut Menu: `yunhu_shortcut_menu`
+2. Extended Fields:
+    - All platform-specific fields are identified with the `yunhu_` prefix
+    - Original data is preserved in the `yunhu_raw` field
+    - In private chats, `self.user_id` represents the bot ID
+
+### Special Field Examples
+
+```python
+# Form command
+{
+  "type": "message",
+  "detail_type": "private",
+  "yunhu_command": {
+    "name": "Form command name",
+    "id": "Command ID",
+    "form": {
+      "FieldID1": {
+        "id": "FieldID1",
+        "type": "input/textarea/select/radio/checkbox/switch",
+        "label": "Field label",
+        "value": "Field value"
+      }
+    }
+  }
+}
+
+# Button event
+{
+  "type": "notice",
+  "detail_type": "yunhu_button_click",
+  "user_id": "User ID who clicked the button",
+  "user_nickname": "User nickname",
+  "message_id": "Message ID",
+  "yunhu_button": {
+    "id": "Button ID (may be empty)",
+    "value": "Button value"
+  }
+}
+
+# Bot setting
+{
+  "type": "notice",
+  "detail_type": "yunhu_bot_setting",
+  "group_id": "Group ID (may be empty)",
+  "user_nickname": "User nickname",
+  "yunhu_setting": {
+    "SettingItemID": {
+      "id": "Setting Item ID",
+      "type": "input/radio/checkbox/select/switch",
+      "value": "Setting value"
+    }
+  }
+}
+
+# Shortcut menu
+{
+  "type": "notice",
+  "detail_type": "yunhu_shortcut_menu",
+  "user_id": "User ID who triggered the menu",
+  "user_nickname": "User nickname",
+  "group_id": "Group ID (if group chat)",
+  "yunhu_menu": {
+    "id": "Menu ID",
+    "type": "Menu type (integer)",
+    "action": "Menu action (integer)"
+  }
+}
+```
+
+## Extended Field Description
+
+- All platform-specific fields are identified with the `yunhu_` prefix to avoid conflicts with standard fields.
+- Original data is preserved in the `yunhu_raw` field for easy access to complete raw data from the Yunhu platform.
+- `self.user_id` represents the bot ID (obtained from `bot_id` in the configuration).
+- Form commands provide structured data via the `yunhu_command` field.
+- Button click events provide button-related information via the `yunhu_button` field.
+- Bot setting changes provide setting item data via the `yunhu_setting` field.
+- Shortcut menu operations provide menu-related information via the `yunhu_menu` field.
+
+---
+
+## Multi-Bot Configuration
+
+### Configuration Description
+
+The Yunhu adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
+
+```toml
+# config.toml
+[Yunhu_Adapter.bots.bot1]
+bot_id = "30535459"  # Bot ID (Required)
+token = "your_bot1_token"  # Bot token (Required)
+webhook_path = "/webhook/bot1"  # Webhook path (Optional, default to "/webhook")
+enabled = true  # Whether to enable (Optional, default to true)
+
+[Yunhu_Adapter.bots.bot2]
+bot_id = "12345678"  # ID of the second bot
+token = "your_bot2_token"  # Token of the second bot
+webhook_path = "/webhook/bot2"  # Independent webhook path
+enabled = true
+```
+
+**Configuration Item Description:**
+- `bot_id`: Unique identifier ID of the bot (Required), used to identify which bot triggered the event.
+- `token`: API token provided by the Yunhu platform (Required).
+- `webhook_path`: HTTP path to receive Yunhu events (Optional, default to "/webhook").
+- `enabled`: Whether to enable this bot (Optional, default to true).
+
+**Important Notes:**
+1. Events from the Yunhu platform do not contain the bot ID, therefore it must be explicitly specified in the configuration as `bot_id`.
+2. Each bot should have an independent `webhook_path` to receive respective webhook events.
+3. When configuring webhooks on the Yunhu platform, please configure the corresponding URL for each bot, for example:
+   - Bot1: `https://your-domain.com/webhook/bot1`
+   - Bot2: `https://your-domain.com/webhook/bot2`
+
+### Specifying Bot using Send DSL
+
+You can specify which bot to use for sending messages via the `Using()` method. This method supports two parameters:
+- **Account Name**: The bot name in the configuration (e.g., `bot1`, `bot2`)
+- **bot_id**: The `bot_id` value in the configuration
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Send message using account name
+await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
+
+# Send message using bot_id (automatically matches corresponding account)
+await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
+
+# Use the first enabled bot if not specified
+await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
+```
+
+> **Tip:** When using `bot_id`, the system will automatically search for the matching account in the configuration. This is particularly useful when handling event replies, as you can directly use `event["self"]["user_id"]` to reply using the same account.
+
+### Bot Identification in Events
+
+Received events automatically include the corresponding `bot_id` information:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu":
+        # Get the bot ID that triggered the event
+        bot_id = event["self"]["user_id"]
+        print(f"Message from Bot: {bot_id}")
+        
+        # Reply to the message using the same bot
+        yunhu = adapter.get("yunhu")
+        await yunhu.Send.Using(bot_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("Reply message")
+```
+
+### Log Information
+
+The adapter automatically includes `bot_id` information in the logs for debugging and tracking:
+
+```
+[INFO] [yunhu] [bot:30535459] Received private chat message from user user123
+[INFO] [yunhu] [bot:12345678] Message sent successfully, message_id: abc123
+```
+
+### Management Interface
+
+```python
+# Get all account information
+bots = yunhu.bots
+
+# Check if account is enabled
+bot_status = {
+    bot_name: bot_config.enabled
+    for bot_name, bot_config in yunhu.bots.items()
+}
+
+# Dynamically enable/disable account (requires adapter restart)
+yunhu.bots["bot1"].enabled = False
+```
+
+### Old Configuration Compatibility
+
+The system automatically supports old format configurations, but migration to the new configuration format is recommended for better multi-bot support.
+
+
+
+### 邮件适配
+
+# Mail Platform Feature Documentation
+
+MailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting email sending, receiving, and processing.
+
+---
+
+## Documentation Information
+
+- Corresponding Module Version: 1.0.0
+- Maintainer: ErisPulse
+
+
+## Supported Message Sending Types
+
+All sending methods are implemented using chained syntax, for example:
+```python
+from ErisPulse.Core import adapter
+mail = adapter.get("email")
+
+# Simple text email
+await mail.Send.Using("from@example.com").To("to@example.com").Subject("测试").Text("内容")
+
+# HTML email with attachments
+await mail.Send.Using("from@example.com")
+    .To("to@example.com")
+    .Subject("HTML邮件")
+    .Cc(["cc1@example.com", "cc2@example.com"])
+    .Attachment("report.pdf")
+    .Html("<h1>HTML内容</h1>")
+
+# Note: When using chained syntax, parameter methods must be set before the sending methods (Text, Html)
+```
+
+Supported sending types include:
+- `.Text(text: str)`: Send plain text email
+- `.Html(html: str)`: Send HTML email
+- `.Attachment(file: str, filename: str = None)`: Add attachment
+- `.Cc(emails: Union[str, List[str]])`: Set CC
+- `.Bcc(emails: Union[str, List[str]])`: Set BCC
+- `.ReplyTo(email: str)`: Set reply-to address
+
+### Special Parameters Explanation
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| Subject | str | Email subject |
+| From | str | Sender address (set via Using) |
+| To | str | Recipient address |
+| Cc | str or List[str] | CC address list |
+| Bcc | str or List[str] | BCC address list |
+| Attachment | str or Path | Attachment file path |
+
+## Special Event Types
+
+Email receiving event format:
+```python
+{
+  "type": "message",
+  "detail_type": "private",  # Default private chat for email
+  "platform": "email",
+  "self": {"platform": "email", "user_id": account_id},
+  "message": [
+    {
+      "type": "text",
+      "data": {
+        "text": f"Subject: {subject}\nFrom: {from_}\n\n{text_content}"
+      }
+    }
+  ],
+  "email_raw": {
+    "subject": subject,
+    "from": from_,
+    "to": to,
+    "date": date,
+    "text_content": text_content,
+    "html_content": html_content,
+    "attachments": [att["filename"] for att in attachments]
+  },
+  "attachments": [  # List of attachment data
+    {
+      "filename": "document.pdf",
+      "content_type": "application/pdf",
+      "size": 1024,
+      "data": b"..."  # Attachment binary data
+    }
+  ]
+}
+```
+
+## Extended Field Descriptions
+
+- `email_raw`: Contains raw email data
+- `attachments`: List of attachment data
+
+## OneBot12 Protocol Conversion Explanation
+
+Conversion of email events to OneBot12 protocol, main differences:
+
+### Core Differences
+
+1. Special fields:
+   - `email_raw`: Contains raw email data
+   - `attachments`: List of attachment data
+
+2. Special handling:
+   - Email subject and sender information will be included in the message text
+   - Attachment data will be provided in binary form
+   - HTML content will be retained in the email_raw field
+
+### Example
+
+```python
+{
+  "type": "message",
+  "platform": "email",
+  "message": [
+    {
+      "type": "text",
+      "data": {
+        "text": "Subject: Meeting Notice\nFrom: sender@example.com\n\nPlease check the attachment"
+      }
+    }
+  ],
+  "email_raw": {
+    "subject": "Meeting Notice",
+    "from": "sender@example.com",
+    "to": "receiver@example.com",
+    "html_content": "<p>Please check the attachment</p>",
+    "attachments": ["document.pdf"]
+  },
+  "attachments": [
+    {
+      "filename": "document.pdf",
+      "data": b"...",  # Attachment binary data
+      "size": 1024
+    }
+  ]
+}
+
+
+
+### 平台文档维护说明
+
+# Documentation Maintenance Guidelines
+
+This document is maintained by adapter developers to explain the differences between this adapter and the OneBot12 standard, as well as its extended functionalities.
+Please update this document synchronously when releasing a new version.
+
+## Update Requirements
+
+1. Accurately describe platform-specific sending methods and parameters.
+2. Detail the differences with the OneBot12 standard.
+3. Provide clear code examples and parameter descriptions.
+4. Maintain consistent document formatting for easy user reference.
+5. Timely update version information and maintainer contact details.
+
+## Document Structure Standards
+
+### 1. Basic Information Section
+Each platform feature document should contain the following basic information:
+```markdown
+# [Platform Name] Adapter Documentation
+
+Adapter Name: [Adapter Class Name]
+Platform Introduction: [Brief introduction]
+Supported Protocol/API Version: [Specific protocol or API version]
+Maintainer: [Maintainer Name/Team]
+Corresponding Module Version: [Version Number]
+```
+
+### 2. Supported Message Sending Types
+List all supported sending methods and their parameters in detail:
+```markdown
+## Supported Message Sending Types
+
+All sending methods are implemented via chained syntax, for example:
+[Code Example]
+
+Supported sending types include:
+- Method 1: Description
+- Method 2: Description
+- ...
+
+### Parameter Description
+| Parameter | Type | Description |
+|------|------|------|
+| Parameter Name | Type | Description |
+```
+
+### 3. Platform-Specific Event Types
+Describe platform-specific event types and formats in detail:
+```markdown
+## Platform-Specific Event Types
+
+[Platform Name] event conversion to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but the following differences exist:
+
+### Core Differences
+1. Platform-specific event types:
+   - Event Type 1: Description
+   - Event Type 2: Description
+2. Extended fields:
+   - Field Description
+
+### Special Field Examples
+[JSON Example]
+```
+
+### 4. Extended Field Description
+```markdown
+## Extended Field Description
+
+- All platform-specific fields are identified with the `[platform]_` prefix.
+- Original data is preserved in the `[platform]_raw` field.
+- [Other special field descriptions]
+```
+
+### 5. Configuration Options (if applicable)
+```markdown
+## Configuration Options
+
+The [Platform Name] adapter supports the following configuration options:
+
+### Basic Configuration
+- Config Item 1: Description
+- Config Item 2: Description
+
+### Special Configuration
+- Special Config Item 1: Description
+```
+
+## Content Writing Standards
+
+### Code Example Standards
+1. All code examples must be runnable complete examples.
+2. Use standard import methods:
+```python
+from ErisPulse.Core import adapter
+[Adapter Instance] = adapter.get("[Adapter Name]")
+```
+3. Provide examples for multiple usage scenarios.
+
+### Document Format Standards
+1. Use standard Markdown syntax.
+2. Clear title hierarchy, maximum 4 levels.
+3. Use standard Markdown table format.
+4. Code blocks should use appropriate language identifiers.
+
+### Version Update Notes
+When updating the document, update version information at the top:
+```markdown
+## Document Information
+
+- Corresponding Module Version: [New Version Number]
+- Maintainer: [Maintainer Information]
+- Last Updated: [Date]
+```
+
+## Quality Checklist
+
+Before submitting a document update, please check the following:
+
+- [ ] Document structure complies with requirements
+- [ ] All code examples run correctly
+- [ ] Parameter descriptions are complete and accurate
+- [ ] Event format examples match actual output
+- [ ] Links and references are correct
+- [ ] No syntax or spelling errors
+- [ ] Version information has been updated
+- [ ] Maintainer information is accurate
+
+## Reference Documents
+
+Refer to the following documents when writing to ensure consistency:
+- [OneBot12 Standard Documentation](https://12.onebot.dev/)
+- [ErisPulse Core Concepts](../core/concepts.md)
+- [Event Conversion Standards](../standards/event-conversion.md)
+- [API Response Specifications](../standards/api-response.md)
+- [Other Platform Adapter Documentation](./)
+
+## Contribution Flow
+
+1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository
+2. Modify the corresponding platform documentation under the `docs/platform-features/` directory
+3. Ensure the documentation complies with the above requirements
+4. Submit a Pull Request with a detailed description of the changes
+
+If you have any questions, please contact the relevant adapter maintainer or ask in the project Issues.
+
+
+
+====
+代码规范
+====
+
+
+### 文档字符串规范
+
+# ErisPulse Comment Style Guide
+
+Method comments are mandatory when creating EP core methods. The comment format is as follows:
+
+## Module-level Documentation Comment
+
+Each module file should start with module documentation:
+
+```python
+"""
+[Module Name]
+[Module Description]
+
+{!--< tips >!--}
+Important usage instructions or notes
+{!--< /tips >!--}
+"""
+```
+
+## Method Comments
+
+### Basic Format
+```python
+def func(param1: type1, param2: type2) -> return_type:
+    """
+    [Function Description]
+    
+    :param param1: [Type1] [Parameter Description 1]
+    :param param2: [Type2] [Parameter Description 2]
+    :return: [Return Type] [Return Description]
+    """
+    pass
+```
+
+### Full Format (For complex methods)
+```python
+def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
+    """
+    [Detailed Function Description]
+    [Can contain multi-line description]
+    
+    :param param1: [Type1] [Parameter Description 1]
+    :param param2: [Type2] [Optional Parameter Description 2] (Default: None)
+    
+    :return: 
+        type1: [Return Parameter Description 1]
+        type2: [Return Parameter Description 2]
+    
+    :raises ErrorType: [Error Description]
+    """
+    pass
+```
+
+## Special Tags (For API Documentation Generation)
+
+When method comments contain the following content, corresponding effects will occur during API documentation generation:
+
+| Tag Format | Purpose | Example |
+|---------|------|------|
+| `{!--< internal-use >!--}` | Marks as internal use, does not generate documentation | `{!--< internal-use >!--}` |
+| `{!--< ignore >!--}` | Ignores this method, does not generate documentation | `{!--< ignore >!--}` |
+| `{!--< deprecated >!--}` | Marks as deprecated method | `{!--< deprecated >!--} Please use new_func() instead` |
+| `{!--< experimental >!--}` | Marks as experimental feature | `{!--< experimental >!--} May be unstable` |
+| `{!--< tips >!--}...{!--< /tips >!--}` | Multi-line tips content | `{!--< tips >!--}\nImportant tip content\n{!--< /tips >!--}` |
+| `{!--< tips >!--}` | Single-line tips content | `{!--< tips >!--} Note: This method needs initialization first` |
+
+## Best Practices
+
+1. **Type Hints**: Use Python type hinting syntax
+   ```python
+   def func(param: int) -> str:
+   ```
+
+2. **Parameter Description**: Note default values for optional parameters
+   ```python
+   :param timeout: [int] Timeout time (seconds) (Default: 30)
+   ```
+
+3. **Return Value**: Use `Tuple` or explicitly state for multiple return values
+   ```python
+   :return: 
+       str: Status information
+       int: Status code
+   ```
+
+4. **Exception Description**: Use `:raises` to annotate possible exceptions
+   ```python
+   :raises ValueError: Raised when parameter is invalid
+   ```
+
+5. **Internal Methods**: Non-public APIs should add the `{!--< internal-use >!--}` tag
+
+6. **Deprecated Methods**: Mark deprecated methods and provide alternatives
+   ```python
+   {!--< deprecated >!--} Please use new_method() instead | 2025-07-09
 

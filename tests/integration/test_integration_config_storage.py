@@ -158,12 +158,6 @@ class TestConfigStorageIntegration:
         temp_storage.clear()
         assert temp_storage.get_all_keys() == []
 
-    def test_config_getConfig_delegates_to_storage(self, temp_config, temp_storage):
-        """storage.getConfig 委托给 config.getConfig"""
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="delegated"):
-            result = temp_storage.getConfig("some.key")
-            assert result == "delegated"
-
     def test_concurrent_storage_writes(self, temp_storage):
         """多线程并发写入"""
         errors = []

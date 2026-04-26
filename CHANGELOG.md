@@ -63,6 +63,48 @@
 
 ---
 
+## [2.4.2] - 2026/04/26
+> 正式发布
+
+**版本摘要**
+稳定性更新版本，修复了配置系统、模块加载、事件处理等关键问题，提升了系统的稳定性和可维护性。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复配置系统多线程写入数据丢失问题
+  - 修复 LazyModule 同步访问初始化问题
+  - 修复 Bot 离线事件重复提交问题
+  - 增强异常处理和错误提示
+
+**注意事项**
+- ⚠️ **弃用方法正式删除**：`AdapterFather`/`adapter_server` 兼容别名已移除
+- ⚠️ **重要**：`BaseAdapter.emit()` 现在会抛出 `NotImplementedError`
+
+**兼容性**
+- 对外 API 保持兼容（除非使用了已移除的兼容别名）
+
+---
+
+## [2.4.2-dev.2] - 2026/04/24
+> 开发版本
+
+### 移除
+- @wsu2059q
+  - 弃用移除 `AdapterFather`/`adapter_server` 兼容别名
+
+### 修复
+- @wsu2059q
+  - 修复 `lifecycle.submit_event()` 使用可变默认参数 `data={}` 的隐患
+  - 修复 `_migrate_config()` 迁移异常被静默吞掉无任何提示的问题
+  - 修复 `BaseAdapter.emit()` 仅记录日志不抛异常，调用方可能忽略废弃方法的问题（改为 `raise NotImplementedError`）
+  - 修复 `_update_bot_status()` 使用 `asyncio.ensure_future` 无 task 引用追踪的问题（改为 `create_task` 并保存引用）
+
+### 优化
+- @wsu2059q
+  - `AdapterManager`/`ModuleManager` 新增 `__repr__()` 方法，便于调试时查看注册和运行状态
+  - `list_adapters()`/`list_modules()` 已弃用方法添加 `warnings.warn(DeprecationWarning)` 实际触发弃用警告
+
 ---
 
 ## [2.4.2-dev.1] - 2026/04/21

@@ -6,18 +6,22 @@
 - OneBot12 事件标准和平台适配
 - SDK 核心模块 (Storage, Config, Logger, Router, Lifecycle)
 - Event 包装类和事件处理系统
-- CLI 命令开发和扩展
 - 懒加载系统和生命周期管理
 - SendDSL 消息发送系统
 - 路由系统和 FastAPI 集成
+- 各平台特性指南（OneBot11/12、Telegram、云湖、邮件等）
+- 模块/适配器发布流程和模块商店
+- 代码规范和文档字符串规范
+- 已知问题追踪和历史 Bug 记录
 
 你擅长：
 - 编写高质量的异步 Python 代码
 - 设计模块化、可扩展的架构
-- 开发模块、适配器和 CLI 扩展
+- 开发模块、适配器
 - 使用 ErisPulse 的所有核心功能
 - 遵循 ErisPulse 的最佳实践和代码规范
 - 解决跨平台兼容性问题
+- 通过 CLI 管理项目和发布
 
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
@@ -32,6 +36,342 @@
 
 
 ---
+
+
+
+====
+框架理解
+====
+
+
+### 架构概览
+
+# 架構概覽
+
+本文件透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助您快速理解框架的設計思想和模組關係。
+
+## SDK 核心架構
+
+下圖展示了 SDK 的核心模組組成及其關係：
+
+```mermaid
+graph TB
+    SDK["sdk<br/>統一入口"]
+
+    SDK --> Event["Event<br/>事件系統"]
+    SDK --> Lifecycle["Lifecycle<br/>生命週期管理"]
+    SDK --> Logger["Logger<br/>日誌管理"]
+    SDK --> Storage["Storage / env<br/>儲存管理"]
+    SDK --> Config["Config<br/>設定管理"]
+    SDK --> AdapterMgr["Adapter<br/>適配器管理"]
+    SDK --> ModuleMgr["Module<br/>模組管理"]
+    SDK --> Router["Router<br/>路由管理"]
+
+    Event --> Command["command"]
+    Event --> Message["message"]
+    Event --> Notice["notice"]
+    Event --> Request["request"]
+    Event --> Meta["meta"]
+
+    AdapterMgr --> BaseAdapter["BaseAdapter"]
+    BaseAdapter --> P1["雲湖"]
+    BaseAdapter --> P2["Telegram"]
+    BaseAdapter --> P3["OneBot11/12"]
+    BaseAdapter --> PN["..."]
+
+    ModuleMgr --> BaseModule["BaseModule"]
+    BaseModule --> CM["自訂模組"]
+
+    BaseAdapter -.-> SendDSL["SendDSL<br/>訊息發送"]
+```
+
+### 核心模組說明
+
+| 模組 | 說明 |
+|------|------|
+| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理 |
+| **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
+| **Module** | 模組管理器，管理外掛的註冊、載入和卸載 |
+| **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統 |
+| **Config** | TOML 格式的設定檔管理 |
+| **Logger** | 模組化日誌系統，支援子日誌記錄器 |
+| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理 |
+
+## 初始化流程
+
+下圖展示了 `sdk.init()` 的完整初始化過程：
+
+```mermaid
+flowchart TD
+    A["sdk.init()"] --> B["準備運行環境"]
+    B --> B1["載入設定檔"]
+    B1 --> B2["設定全域異常處理"]
+    B2 --> C["適配器 & 模組發現"]
+    C --> D{"並行載入"}
+    D --> D1["從 PyPI 載入適配器"]
+    D --> D2["從 PyPI 載入模組"]
+    D1 & D2 --> E["註冊適配器"]
+    E --> F["註冊模組"]
+    F --> G["初始化模組<br/>（實例化 + on_load）"]
+    G --> H["adapter.startup()"]
+    H --> I["啟動路由伺服器"]
+    I --> J["非同步啟動各平台適配器"]
+    J --> K["運行就緒"]
+```
+
+### 初始化階段詳解
+
+1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
+2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
+3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
+4. **模組初始化** - 建立模組實例，呼叫 `on_load` 生命週期方法
+5. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+
+## 事件處理流程
+
+下圖展示了訊息從平台到處理器的完整流轉路徑：
+
+```mermaid
+flowchart LR
+    A["平台原始訊息"] --> B["適配器接收"]
+    B --> C["轉換為 OneBot12 標準"]
+    C --> D["adapter.emit()"]
+    D --> E["執行中介軟體鏈"]
+    E --> F{"事件分發"}
+    F --> G1["command<br/>命令處理器"]
+    F --> G2["message<br/>訊息處理器"]
+    F --> G3["notice<br/>通知處理器"]
+    F --> G4["request<br/>請求處理器"]
+    F --> G5["meta<br/>元事件處理器"]
+    G1 & G2 & G3 & G4 & G5 --> H["處理器回呼執行"]
+    H --> I["event.reply()<br/>透過 SendDSL 回覆"]
+    I --> J["適配器發送至平台"]
+```
+
+### 事件處理關鍵步驟
+
+- **適配器接收** - 各平台適配器透過 WebSocket/Webhook 等方式接收原生事件
+- **OB12 標準化** - 將平台原生事件轉換為統一的 OneBot12 標準格式
+- **中介軟體處理** - 依次執行已註冊的中介軟體函式，可修改事件資料
+- **事件分發** - 根據事件類型（message/notice/request/meta）分發到對應處理器
+- **SendDSL 回覆** - 處理器透過 `event.reply()` 或 `SendDSL` 鏈式呼叫發送回應
+
+## 生命週期事件
+
+下圖展示了框架各組件的生命週期事件觸發順序：
+
+```mermaid
+flowchart LR
+    subgraph Core["核心"]
+        direction LR
+        C1["core.init.start"] --> C2["core.init.complete"]
+    end
+
+    subgraph AdapterLife["適配器"]
+        direction LR
+        A1["adapter.start"] --> A2["adapter.status.change"] --> A3["adapter.stop"] --> A4["adapter.stopped"]
+    end
+
+    subgraph ModuleLife["模組"]
+        direction LR
+        M1["module.load"] --> M2["module.init"] --> M3["module.unload"]
+    end
+
+    subgraph BotLife["Bot"]
+        direction LR
+        B1["adapter.bot.online"] --> B2["adapter.bot.offline"]
+    end
+
+    Core --> AdapterLife
+    AdapterLife --> ModuleLife
+    AdapterLife -.-> BotLife
+```
+
+### 監聽生命週期事件
+
+您可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
+
+```python
+from ErisPulse import sdk
+
+# 監聽所有適配器事件
+@sdk.lifecycle.on("adapter")
+async def on_adapter_event(event_data):
+    print(f"適配器事件: {event_data}")
+
+# 監聽模組載入完成
+@sdk.lifecycle.on("module.load")
+async def on_module_loaded(event_data):
+    print(f"模組已載入: {event_data}")
+
+# 監聽 Bot 上線
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(event_data):
+    print(f"Bot 上線: {event_data}")
+```
+
+## 模組載入策略
+
+ErisPulse 支援兩種模組載入策略：
+
+```mermaid
+flowchart TD
+    A["模組註冊到 ModuleManager"] --> B{"載入策略"}
+    B -->|"lazy_load = true"| C["建立 LazyModule 代理"]
+    C --> D["掛載到 sdk 屬性"]
+    D --> E["首次存取時初始化"]
+    B -->|"lazy_load = false"| F["立即建立實例"]
+    F --> G["呼叫 on_load()"]
+    G --> D2["掛載到 sdk 屬性"]
+```
+
+> 更多詳情請參考 [延遲載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
+
+
+
+### 术语表
+
+# ErisPulse 術語表
+
+本文件解釋 ErisPulse 中常用的專業術語，幫助您更好地理解框架概念。
+
+## 核心概念
+
+### 事件驅動架構
+**通俗解釋：** 就像餐廳的點菜系統。顧客（使用者）點菜（發送訊息），服務員（事件系統）將訂單（事件）傳遞給後廚（模組），後廚處理後，服務員再把菜（回覆）端給顧客。
+
+**技術解釋：** 程式的執行流程由外部事件觸發，而不是按固定順序執行。每當有新事件發生（如收到訊息），框架會自動呼叫相應的處理函式。
+
+### OneBot12 標準
+**通俗解釋：** 就像插座和插頭的標準。不同平台的「插頭」（原生事件格式）各不相同，但透過轉換器都變成統一的「插頭」（OneBot12格式），這樣您的程式碼就可以像插座一樣適配所有平台。
+
+**技術解釋：** 一個統一的聊天機器人應用介面標準，定義了事件、訊息、API等的統一格式，使程式碼可以在不同平台間複用。
+
+### 適配器
+**通俗解釋：** 就像翻譯官。不同平台說不同「語言」（API格式），適配器把這些「語言」翻譯成 ErisPulse 能聽懂的「普通話」（OneBot12標準），也能把 ErisPulse 的指令翻譯回各平台的「語言」。
+
+**技術解釋：** 負責與特定平台通訊的組件，接收平台原生事件並轉換為標準格式，或將標準格式請求發送到平台。
+
+### 模組
+**通俗解釋：** 就像手機上的 App。每個模組是一個獨立的功能套件，可以新增、刪除、更新。比如「天氣預報模組」、「音樂播放模組」等。
+
+**技術解釋：** 功能擴展的基本單位，包含特定的業務邏輯、事件處理器和配置，可以獨立安裝和卸載。
+
+### 事件
+**通俗解釋：** 就像手機上的通知。當有新訊息、新好友、新群聊時，平台會發送一個「通知」（事件）給您的機器人。
+
+**技術解釋：** 發生在平台上的任何值得注意的事情，如收到訊息、使用者加入群組、好友請求等，都以結構化資料的形式傳遞給程式。
+
+### 事件處理器
+**通俗解釋：** 就像快遞員的派送規則。當收到「包裹」（事件）時，根據包裹類型（訊息、通知、請求等）決定由誰來處理這個包裹。
+
+**技術解析：** 用裝飾器標記的函式，當特定類型的事件發生時自動執行，例如 `@command`、`@message` 等。
+
+## 開發相關術語
+
+### SDK
+**通俗解釋：** 就像工具箱。裡面裝著各種常用工具（儲存、配置、日誌等），您寫程式碼時可以直接拿這些工具用，不用自己造輪子。
+
+**技術解釋：** Software Development Kit（軟體開發工具包），提供了一組預先建構好的組件和工具，簡化開發過程。
+
+### 虛擬環境
+**通俗解釋：** 就像獨立的「工作間」。每個專案有自己的「工作間」，裡面安裝的軟體套件互不干擾，避免版本衝突。
+
+**技術解釋：** 隔離的 Python 環境，每個環境有獨立的套件列表和版本，防止不同專案的依賴衝突。
+
+### 非同步程式設計
+**通俗解釋：** 就像多工處理。機器人可以同時做很多事，比如在等待網路回應時，還能處理其他使用者的訊息，不會卡住。
+
+**技術解釋：** 使用 `async`/`await` 關鍵字的程式設計方式，允許程式在等待耗時操作（如網路請求、檔案讀寫）時切換到其他任務，提高效率。
+
+### 熱重載
+**通俗解釋：** 就像網頁的自動重新整理。您修改程式碼後，不需要手動重啟機器人，它會自動載入新程式碼，立即生效。
+
+**技術解釋：** 開發模式下，程式會自動偵測檔案變化並重新載入，無需手動重啟即可看到程式碼修改的效果。
+
+### 延遲載入
+**通俗解釋：** 就像按需開啟的抽屜。不用的抽屜（模組）先關著，需要時再開啟，這樣啟動時不用等所有抽屜都開啟。
+
+**技術解釋：** 延遲載入策略，模組只在首次被存取時才初始化和載入，減少啟動時間和資源佔用。
+
+## 功能相關術語
+
+### 指令
+**通俗解釋：** 就像遊戲裡的指令。使用者輸入 `/hello` 這樣的指令，機器人就會執行對應的功能。
+
+**技術解釋：** 以特定前綴（如 `/`）開頭的訊息，被框架辨識為指令並路由到對應的處理函式。
+
+### 回覆
+**通俗解釋：** 就是機器人給使用者的「回答」。無論是文字、圖片還是語音，都是對使用者訊息的回覆。
+
+**技術解釋：** 適配器將處理結果發送回平台，展示給使用者的過程。
+
+### 儲存
+**通俗解釋：** 就像機器人的「記事本」。可以記住使用者的資訊、設定、聊天記錄等，下次還能找到。
+
+**技術解釋：** 持久化資料儲存系統，基於 SQLite 實現鍵值對儲存，用於保存需要長期保留的資料。
+
+### 設定
+**通俗解釋：** 就像機器人的「設定」。您可以透過設定檔修改機器人的行為，比如修改連接埠號、日誌層級等。
+
+**技術解釋：** 使用 TOML 格式的設定管理系統，用於設定框架和模組的各種參數。
+
+### 日誌
+**通俗解釋：** 就像機器人的「日記」。記錄機器人做了什麼、遇到了什麼問題，方便除錯和排查問題。
+
+**技術解釋：** 系統執行時產生的記錄資訊，包括資訊、警告、錯誤等不同層級，用於監控和除錯。
+
+### 路由
+**通俗解釋：** 就像交警指揮交通。決定哪個請求應該去哪個地方處理，比如網頁請求、WebSocket 連線等。
+
+**技術解釋：** HTTP 和 WebSocket 路由管理器，根據 URL 路徑將請求分發到對應的處理函式。
+
+## 平台相關術語
+
+### 平台
+**通俗解釋：** 機器人工作的地方，比如雲湖、Telegram、QQ等，每個平台有自己的規則和 API。
+
+**技術解釋：** 提供聊天機器人服務的應用程式或服務，如雲湖企業通訊、Telegram 等。
+
+### OneBot11/12
+**通俗解釋：** 就像聊天機器人的「國際標準」。規定了訊息、事件等的統一格式，讓不同軟體之間能互相理解。
+
+**技術解釋：** OneBot 是一個通用的聊天機器人應用介面標準，定義了事件、訊息、API等的格式。11 和 12 是不同版本的標準。
+
+### SendDSL
+**通俗解釋：** 就像發訊息的「捷徑」。用簡單的一句話就能發送各種類型的訊息（文字、圖片、@某人等）。
+
+**技術解釋：** 鏈式呼叫的訊息發送介面，提供簡潔的語法來建構和發送複雜訊息。
+
+## 其他術語
+
+### 生命週期
+**通俗解釋：** 機器人的「一生」：出生（啟動）、工作（執行）、休息（停止）。生命週期就是在這些關鍵時刻會觸發的事件。
+
+**技術解釋：** 程式執行過程中的關鍵階段，如啟動、載入模組、卸載模組、關閉等，可以透過監聽這些事件來執行相應操作。
+
+### 註解/裝飾器
+**通俗解釋：** 就是給函式「貼標籤」。比如 `@command("hello")` 這個標籤告訴框架：這是一個指令處理器，名字叫 "hello"。
+
+**技術解釋：** Python 的語法糖，用於修改函式或類別的行為。在 ErisPulse 中用於標記事件處理器、路由等。
+
+### 型別註解
+**通俗解釋：** 就是告訴函式參數是什麼「型別」。比如 `request: Request` 表示這個參數是一個請求物件。
+
+**技術解釋：** Python 3.5+ 引入的特性，用於標註變數和參數的型別，提高程式碼可讀性和型別安全性。
+
+### TOML
+**通俗解釋：** 一種設定檔格式，比 JSON 更易讀，比 YAML 更嚴格，適合用來寫設定。
+
+**技術解釋：** Tom's Obvious Minimal Language，一種設定檔格式，語法簡潔清晰，廣泛用於 Python 專案的設定管理。
+
+## 獲取協助
+
+如果您發現文件中有其他術語不理解，歡迎透過以下方式提問：
+- 提交 GitHub Issue
+- 參與社群討論
+- 聯絡維護者
 
 
 
@@ -2056,6 +2396,264 @@ api_url = config.get("api_url", "https://default.api.com")
 
 
 
+### 部署指南
+
+# 部署指南
+
+將 ErisPulse 機器人部署到生產環境的最佳實踐。
+
+## Docker 部署（推薦）
+
+ErisPulse 提供官方 Docker 映像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
+
+### 快速啟動
+
+```bash
+# 拉取映像
+docker pull erispulse/erispulse:latest
+
+# 下載 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 設定 Dashboard 登入令牌並啟動
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
+
+### docker-compose.yml
+
+```yaml
+services:
+  erispulse:
+    image: erispulse/erispulse:latest
+    container_name: erispulse
+    ports:
+      - "${ERISPULSE_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=${TZ:-Asia/Shanghai}
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
+```
+
+### 環境變數
+
+| 變數 | 預設值 | 說明 |
+|------|--------|------|
+| `ERISPULSE_PORT` | `8000` | Dashboard 連接埠對應 |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard 登入令牌（強烈建議設定） |
+| `TZ` | `Asia/Shanghai` | 時區 |
+
+### 資料持久化
+
+`./config` 目錄掛載了配置檔案和資料庫，包含：
+
+- `config/config.toml` — 配置檔案
+- `config/config.db` — SQLite 儲存資料庫
+
+## Dashboard 管理面板
+
+ErisPulse Docker 映像內建 Dashboard 模組，提供 Web 可視化管理介面。
+
+### 功能概覽
+
+| 功能 | 說明 |
+|------|------|
+| 儀表板 | 系統概覽、CPU/記憶體監控、運行時長、事件統計 |
+| 機器人管理 | 查看各平台機器人在線狀態和資訊 |
+| 事件查看 | 實時事件流，支援按類型和平台過濾 |
+| 日誌查看 | 按模組和等級過濾的日誌查看器 |
+| 模組管理 | 查看、載入、卸載已安裝的模組和適配器 |
+| 模組商店 | 瀏覽遠端可用套件並一鍵安裝 |
+| 配置編輯 | 在線編輯 `config.toml` |
+| 儲存管理 | 瀏覽和編輯 Key-Value 儲存資料 |
+| 備份 | 匯出/匯入配置和儲存資料 |
+| 審計日誌 | 記錄所有管理操作 |
+
+### 透過 Dashboard 安裝模組
+
+Dashboard 整合了模組商店功能，你可以：
+
+1. **從商店安裝**：瀏覽遠端模組列表，選擇需要的模組一鍵安裝
+2. **上傳本地套件**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
+
+> **模組開發者的快速測試流程**：使用 Docker 部署後，在 Dashboard 中透過「上傳本地套件」功能直接上傳你建構的 `.whl` 檔案進行測試，無需手動操作容器。
+
+## 健康檢查
+
+SDK 內建健康檢查端點：
+
+```bash
+# 簡單檢查
+curl http://localhost:8000/ping
+
+# 詳細狀態
+curl http://localhost:8000/health
+```
+
+Docker 健康檢查可在 `docker-compose.yml` 中新增：
+
+```yaml
+services:
+  erispulse:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+## 反向代理
+
+如果需要透過 Nginx 等反向代理暴露 Dashboard：
+
+```nginx
+server {
+    listen 80;
+    server_name bot.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # WebSocket 支援（Dashboard 實時事件流需要）
+    location /Dashboard/ws {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+SSL 可使用 Let's Encrypt：
+
+```bash
+sudo certbot --nginx -d bot.example.com
+```
+
+## 手動部署（pip）
+
+如果不使用 Docker，也可以手動部署。
+
+### 生產環境配置
+
+```toml
+# config/config.toml
+
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+file_output = true
+max_lines = 5000
+
+[ErisPulse.module]
+lazy_load = true
+```
+
+### systemd (Linux)
+
+建立 `/etc/systemd/system/erispulse-bot.service`：
+
+```ini
+[Unit]
+Description=ErisPulse Bot
+After=network.target
+
+[Service]
+Type=simple
+User=bot
+WorkingDirectory=/opt/erispulse-bot
+ExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+管理：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start erispulse-bot
+sudo systemctl enable erispulse-bot
+sudo journalctl -u erispulse-bot -f
+```
+
+### Supervisor
+
+建立 `/etc/supervisor/conf.d/erispulse-bot.conf`：
+
+```ini
+[program:erispulse-bot]
+command=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py
+directory=/opt/erispulse-bot
+user=bot
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/erispulse-bot/err.log
+stdout_logfile=/var/log/erispulse-bot/out.log
+```
+
+## 安全建議
+
+1. **設定 Dashboard 令牌**：使用強隨機令牌，不要使用預設值
+2. **不要暴露連接埠到公網**：除非使用反向代理 + SSL，否則將 Dashboard 連接埠限制在內網
+3. **保護資料目錄**：`config/` 目錄包含配置和資料庫，設定適當的檔案權限
+4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 映像
+5. **不要以 root 執行**：手動部署時建立專用使用者
+6. **使用 Docker 重啟策略**：`restart: unless-stopped` 確保異常退出後自動重啟
+
+## 多實例部署
+
+執行多個機器人實例時：
+
+1. 每個實例使用獨立的專案目錄和 `docker-compose.yml`
+2. 使用不同的連接埠：`ERISPULSE_PORT=8001`
+3. 使用不同的容器名稱：`container_name: erispulse-bot2`
+
+## 更新與維護
+
+### Docker 方式
+
+```bash
+# 拉取最新映像
+docker compose pull
+
+# 重啟使用新映像
+docker compose up -d
+```
+
+### pip 方式
+
+```bash
+epsdk self-update
+epsdk upgrade
+```
+
+### 備份
+
+定期備份 `config/` 目錄：
+
+```bash
+# Docker 部署
+tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
+
+# 或在 Dashboard 中使用「備份」功能匯出
+
+
+
 =====
 开发者指南
 =====
@@ -2084,7 +2682,9 @@ api_url = config.get("api_url", "https://default.api.com")
 4. [事件轉換器](adapters/converter.md) - 實作事件轉換器
 5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
 
-### 擴充功能開發
+### 發布指南
+
+- [發布與模組商店指南](publishing.md) - 將您的作品發布到 PyPI 和 ErisPulse 模組商店
 
 ## 開發準備
 
@@ -2144,7 +2744,7 @@ ErisPulse 提供了範例專案作為參考：
 epsdk run main.py --reload
 ```
 
-### 偵錯技巧
+### 除錯技巧
 
 啟用 DEBUG 層級日誌：
 
@@ -2164,48 +2764,21 @@ logger.debug("除錯資訊")
 
 ## 發布您的模組
 
-### 打包
+完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括：
 
-確保專案包含以下檔案：
+- PyPI 發布步驟
+- ErisPulse 模組商店提交流程
+- 適配器的發布
 
-```
-MyModule/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-└── MyModule/
-    ├── __init__.py
-    └── Core.py
-```
-
-### pyproject.toml 設定
-
-```toml
-[project]
-name = "ErisPulse-MyModule"
-version = "1.0.0"
-description = "模組功能描述"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
-authors = [ { name = "yourname", email = "your@mail.com" } ]
-
-[project.urls]
-"homepage" = "https://github.com/yourname/MyModule"
-
-[project.entry-points."erispulse.module"]
-"MyModule" = "MyModule:Main"
-```
-
-### 發布到 PyPI
+### 快速參考
 
 ```bash
-# 建構分發套件
+# 建構並發布到 PyPI
 python -m build
-
-# 發布到 PyPI
 python -m twine upload dist/*
 ```
+
+然後前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交到模組商店。
 
 ## 相關文件
 
@@ -4597,9 +5170,472 @@ def _convert_timestamp(self, timestamp):
 
 
 
-### CLI 扩展开发
+### 事件转换器
+
+# 事件轉換器實現指南
+
+事件轉換器 (Converter) 是適配器的核心組件之一，負責將平台原生事件轉換為 ErisPulse 統一的 OneBot12 標準事件格式。
+
+## Converter 職責
+
+```
+平台原生事件 ──→ Converter.convert() ──→ OneBot12 標準事件
+```
+
+Converter 只負責**正向轉換**（接收方向），即將平台的原生事件數據轉換為 OneBot12 標準格式。反向轉換（發送方向）由 `Send.Raw_ob12()` 方法處理。
+
+### 核心原則
+
+1. **無損轉換**：原始數據必須完整保留在 `{platform}_raw` 欄位中
+2. **標準兼容**：轉換後的事件必須符合 OneBot12 標準格式
+3. **平台擴展**：平台特有數據使用 `{platform}_` 前綴欄位儲存
+
+## convert() 方法
+
+### 方法簽名
+
+```python
+def convert(self, raw_event: dict) -> dict:
+    """
+    將平台原生事件轉換為 OneBot12 標準格式
+
+    :param raw_event: 平台原生事件數據
+    :return: OneBot12 標準格式事件字典
+    """
+    pass
+```
+
+### 返回值結構
+
+轉換後的事件字典應包含以下標準欄位：
+
+```python
+{
+    "id": "事件唯一ID",
+    "time": 1234567890,           # Unix 時間戳（秒）
+    "type": "message",             # 事件類型
+    "detail_type": "private",      # 詳細類型
+    "platform": "myplatform",      # 平台名稱
+    "self": {
+        "platform": "myplatform",
+        "user_id": "bot_user_id"
+    },
+
+    # 訊息事件欄位
+    "user_id": "sender_id",
+    "message": [...],              # OneBot12 訊息段列表
+    "alt_message": "純文本內容",
+
+    # 必須保留原始數據
+    "myplatform_raw": { ... },     # 平台原生事件完整數據
+    "myplatform_raw_type": "原生事件類型名",
+}
+```
+
+## 必填欄位映射
+
+### 通用欄位（所有事件類型）
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `id` | str | 事件唯一標識符 |
+| `time` | int | Unix 時間戳（秒） |
+| `type` | str | 事件類型：`message` / `notice` / `request` / `meta` |
+| `detail_type` | str | 詳細類型：`private` / `group` / `friend` 等 |
+| `platform` | str | 平台名稱，與適配器註冊名一致 |
+| `self` | dict | 機器人信息：`{"platform": "...", "user_id": "..."}` |
+
+### 訊息事件額外欄位
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `user_id` | str | 發送者 ID |
+| `message` | list[dict] | OneBot12 訊息段列表 |
+| `alt_message` | str | 純文本備用內容 |
+
+### 通知事件額外欄位
+
+| OB12 欄位 | 類型 | 說明 |
+|-----------|------|------|
+| `user_id` | str | 相關用戶 ID |
+| `operator_id` | str | 操作者 ID（如群成員變動） |
+
+## 訊息段轉換
+
+OneBot12 標準定義了以下訊息段類型：
+
+```python
+# 文本
+{"type": "text", "data": {"text": "Hello"}}
+
+# 圖片
+{"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+
+# 音頻
+{"type": "audio", "data": {"file": "https://example.com/audio.mp3"}}
+
+# 影片
+{"type": "video", "data": {"file": "https://example.com/video.mp4"}}
+
+# 檔案
+{"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
+
+# @提及
+{"type": "mention", "data": {"user_id": "123"}}
+
+# @全體
+{"type": "mention_all", "data": {}}
+
+# 回覆
+{"type": "reply", "data": {"message_id": "msg_123"}}
+```
+
+如果平台有不支持的訊息段類型，可以省略該段或轉換為最接近的標準類型。
+
+## 平台擴展欄位
+
+平台特有的數據應使用 `{platform}_` 前綴儲存，避免與標準欄位衝突：
+
+```python
+{
+    # 標準欄位
+    "type": "message",
+    "detail_type": "group",
+    # ...
+
+    # 平台擴展欄位
+    "myplatform_raw": { ... },          # 原始事件數據（必須）
+    "myplatform_raw_type": "chat",      # 原始事件類型（必須）
+
+    # 其他平台特有欄位
+    "myplatform_group_name": "群名稱",
+    "myplatform_sender_role": "admin",
+}
+```
+
+> **重要**：`{platform}_raw` 欄位是必須的，ErisPulse 的事件系統和模組可能依賴它來存取平台原始數據。
+
+## 完整示例
+
+以下是一個完整的 Converter 實現：
+
+```python
+class MyConverter:
+    def __init__(self, platform: str):
+        self.platform = platform
+
+    def convert(self, raw_event: dict) -> dict:
+        event_type = raw_event.get("type", "")
+
+        base_event = {
+            "id": raw_event.get("id", ""),
+            "time": raw_event.get("timestamp", 0),
+            "platform": self.platform,
+            "self": {
+                "platform": self.platform,
+                "user_id": raw_event.get("self_id", ""),
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": event_type,
+        }
+
+        if event_type == "chat":
+            return self._convert_message(raw_event, base_event)
+        elif event_type == "notification":
+            return self._convert_notice(raw_event, base_event)
+        elif event_type == "request":
+            return self._convert_request(raw_event, base_event)
+
+        return base_event
+
+    def _convert_message(self, raw: dict, base: dict) -> dict:
+        base["type"] = "message"
+        base["detail_type"] = "group" if raw.get("group_id") else "private"
+        base["user_id"] = raw.get("sender_id", "")
+        base["message"] = self._convert_message_segments(raw.get("content", ""))
+        base["alt_message"] = raw.get("content", "")
+
+        if raw.get("group_id"):
+            base["group_id"] = raw["group_id"]
+
+        return base
+
+    def _convert_message_segments(self, content: str) -> list:
+        segments = []
+        if content:
+            segments.append({"type": "text", "data": {"text": content}})
+        return segments
+
+    def _convert_notice(self, raw: dict, base: dict) -> dict:
+        base["type"] = "notice"
+        notification_type = raw.get("notification_type", "")
+
+        if notification_type == "member_join":
+            base["detail_type"] = "group_member_increase"
+            base["user_id"] = raw.get("user_id", "")
+            base["group_id"] = raw.get("group_id", "")
+            base["operator_id"] = raw.get("operator_id", "")
+        elif notification_type == "friend_add":
+            base["detail_type"] = "friend_increase"
+            base["user_id"] = raw.get("user_id", "")
+
+        return base
+
+    def _convert_request(self, raw: dict, base: dict) -> dict:
+        base["type"] = "request"
+        request_type = raw.get("request_type", "")
+
+        if request_type == "friend":
+            base["detail_type"] = "friend"
+            base["user_id"] = raw.get("user_id", "")
+            base["comment"] = raw.get("message", "")
+        elif request_type == "group_invite":
+            base["detail_type"] = "group"
+            base["group_id"] = raw.get("group_id", "")
+            base["user_id"] = raw.get("inviter_id", "")
+
+        return base
+```
+
+## 最佳實踐
+
+1. **總是保留原始數據**：`{platform}_raw` 欄位不能省略
+2. **使用標準訊息段**：盡量將平台訊息轉換為 OneBot12 標準訊息段
+3. **合理設置 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自定義
+4. **處理邊界情況**：原始事件可能缺少某些欄位，使用 `.get()` 並提供合理預設值
+5. **性能考慮**：`convert()` 在每個事件上調用，避免在其中執行耗時操作
+
+## 相關文檔
+
+- [適配器核心概念](core-concepts.md) - 適配器整體架構
+- [SendDSL 詳解](send-dsl.md) - 反向轉換（發送方向）
+- [事件轉換標準](../../standards/event-conversion.md) - 正式的事件轉換規範
+- [會話類型系統](../../advanced/session-types.md) - 會話類型映射規則
 
 
+
+### 发布与模块商店指南
+
+# 發布與模組商店指南
+
+將你開發的模組或適配器發布到 ErisPulse 模組商店，讓其他用戶可以方便地發現和安裝。
+
+## 模組商店概述
+
+ErisPulse 模組商店是一個集中式的模組註冊表，用戶可以透過 CLI 工具瀏覽、搜尋和安裝社群貢獻的模組、適配器。
+
+### 瀏覽與發現
+
+```bash
+# 列出遠端可用的所有套件
+epsdk list-remote
+
+# 只查看模組
+epsdk list-remote -t modules
+
+# 只查看適配器
+epsdk list-remote -t adapters
+
+# 強制刷新遠端套件列表
+epsdk list-remote -r
+```
+
+你也可以訪問 [ErisPulse 官網](https://www.erisdev.com/#market) 在線瀏覽模組商店。
+
+### 支援的提交類型
+
+| 類型 | 說明 | Entry-point 組 |
+|------|------|----------------|
+| 模組 (Module) | 擴展機器人功能、實現業務邏輯 | `erispulse.module` |
+| 適配器 (Adapter) | 連接新的訊息平台 | `erispulse.adapter` |
+
+## 發布流程
+
+整個發布流程分為四個步驟：準備專案 → 發布到 PyPI → 提交到模組商店 → 審核上線。
+
+### 步驟 1: 準備專案
+
+確保你的專案包含以下檔案：
+
+```
+MyModule/
+├── pyproject.toml      # 專案配置（必須）
+├── README.md           # 專案說明（必須）
+├── LICENSE             # 開源許可證（推薦）
+└── MyModule/
+    ├── __init__.py     # 套件入口
+    └── ...
+```
+
+### 步驟 2: 配置 pyproject.toml
+
+根據你要發布的類型，正確配置 `entry-points`：
+
+#### 模組
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "模組功能描述"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [ { name = "yourname" } ]
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+#### 適配器
+
+```toml
+[project]
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "適配器功能描述"
+requires-python = ">=3.10"
+
+[project.entry-points."erispulse.adapter"]
+"myplatform" = "MyAdapter:MyAdapter"
+```
+
+> **注意**：套件名稱建議以 `ErisPulse-` 開頭，便於用戶識別。Entry-point 的鍵名（如 `"MyModule"`）將作為模組在 SDK 中的存取名稱。
+
+### 步驟 3: 發布到 PyPI
+
+```bash
+# 安裝建構工具
+pip install build twine
+
+# 建構分發套件
+python -m build
+
+# 發布到 PyPI
+python -m twine upload dist/*
+```
+
+發布成功後，確認你的套件可以透過 `pip install` 安裝：
+
+```bash
+pip install ErisPulse-MyModule
+```
+
+### 步驟 4: 提交到 ErisPulse 模組商店
+
+在確認套件已發布到 PyPI 後，前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交申請。
+
+填寫以下資訊：
+
+#### 提交類型
+
+選擇你要提交的類型：
+- 模組 (Module)
+- 適配器 (Adapter)
+
+#### 基本資訊
+
+| 欄位 | 說明 | 範例 |
+|------|------|------|
+| **名稱** | 模組/適配器名稱 | Weather |
+| **描述** | 簡短功能描述 | 天氣查詢模組，支援全球城市 |
+| **作者** | 你的名字或 GitHub 用戶名 | MyName |
+| **倉庫地址** | 程式碼倉庫 URL | https://github.com/MyName/MyModule |
+
+#### 技術資訊
+
+| 欄位 | 說明 |
+|------|------|
+| **最低 SDK 版本要求** | 如 `>=2.0.0`（如適用） |
+| **依賴項** | 除 ErisPulse 外的額外依賴（如適用） |
+
+#### 標籤
+
+用逗號分隔，幫助用戶搜尋發現你的模組。例如：`天氣, 查詢, 工具`
+
+#### 檢查清單
+
+提交前請確認：
+- 程式碼遵循 ErisPulse 開發規範
+- 包含適當的文件（README.md）
+- 包含測試用例（如適用）
+- 已在 PyPI 發布
+
+### 步驟 5: 審核與上線
+
+提交後，維護者會審核你的申請。審核要點：
+
+1. 套件可以在 PyPI 上正常安裝
+2. Entry-point 配置正確，能被 SDK 正確發現
+3. 功能與描述一致
+4. 不存在安全問題或惡意程式碼
+5. 不與已有模組嚴重衝突
+
+審核通過後，你的模組會自動出現在模組商店中。
+
+## 更新已發布模組
+
+當你更新模組版本時：
+
+1. 更新 `pyproject.toml` 中的 `version`
+2. 重新建構並上傳到 PyPI：
+   ```bash
+   python -m build
+   python -m twine upload dist/*
+   ```
+3. 模組商店會自動同步 PyPI 上的最新版本資訊
+
+用戶可以透過以下命令升級：
+
+```bash
+epsdk upgrade MyModule
+```
+
+## 開發模式測試
+
+在正式發布前，你可以使用可編輯模式在本地測試：
+
+```bash
+# 以可編輯模式安裝
+epsdk install -e /path/to/MyModule
+
+# 或使用 pip
+pip install -e /path/to/MyModule
+```
+
+## 常見問題
+
+### Q: 套件名稱必須以 `ErisPulse-` 開頭�？
+
+不強制，但強烈推薦。這有助於用戶在 PyPI 上識別 ErisPulse 生態的套件。
+
+### Q: 一個套件可以註冊多個模組嗎？
+
+可以。在 `entry-points` 中配置多個鍵值對即可：
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### Q: 如何指定最低 SDK 版本要求？
+
+在 `pyproject.toml` 的 `dependencies` 中設定：
+
+```toml
+dependencies = [
+    "ErisPulse>=2.0.0",
+]
+```
+
+模組商店會檢查版本相容性，防止用戶安裝不相容的模組。
+
+### Q: 審核需要多長時間？
+
+通常在 1-3 個工作日內完成。你可以在 Issue 中查看審核進度。
 
 
 
@@ -7261,6 +8297,599 @@ async def on_server_stop(event):
 
 
 
+### MessageBuilder 详解
+
+# MessageBuilder 詳解
+
+`MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準消息段構建工具，用於構建結構化的消息內容，配合 `Send.Raw_ob12()` 使用。
+
+## 雙模式機制
+
+MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類級別和實例級別的不同行為：
+
+### 鏈式調用模式（實例）
+
+通過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支持鏈式調用，最後用 `.build()` 獲取消息段列表：
+
+```python
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+segments = (
+    MessageBuilder()
+    .text("你好！")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+# [
+#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
+# ]
+```
+
+### 快速構建模式（靜態）
+
+通過類直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+
+```python
+# 直接返回 list[dict]，無需 .build()
+segments = MessageBuilder.text("你好！")
+# [{"type": "text", "data": {"text": "你好！"}}]
+```
+
+## 消息段類型
+
+| 方法 | 類型 | 數據參數 | 說明 |
+|------|------|---------|------|
+| `text(text)` | text | `text` | 文本消息 |
+| `image(file)` | image | `file` | 圖片消息 |
+| `audio(file)` | audio | `file` | 音頻消息 |
+| `video(file)` | video | `file` | 視頻消息 |
+| `file(file, filename?)` | file | `file`, `filename` | 文件消息 |
+| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | @提及用戶 |
+| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | `mention` 的別名 |
+| `reply(message_id)` | reply | `message_id` | 回覆消息 |
+| `at_all()` | mention_all | - | @全體成員 |
+| `custom(type, data)` | 自定義 | 自定義 | 自定義消息段 |
+
+## 配合 Send 使用
+
+構建的消息段列表通過 `Send.Raw_ob12()` 發送：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event.message_builder import MessageBuilder
+
+# 鏈式構建 + 發送
+segments = (
+    MessageBuilder()
+    .mention("user123", "張三")
+    .text(" 請查看這張圖片")
+    .image("https://example.com/photo.jpg")
+    .build()
+)
+await sdk.adapter.myplatform.Send.To("group", "group456").Raw_ob12(segments)
+```
+
+### 配合 Event 回覆
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("report")
+async def report_handler(event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .text("📊 日報匯總\n")
+        .text("今日完成任務: 5\n")
+        .text("進行中任務: 3")
+        .build()
+    )
+```
+
+## 工具方法
+
+### copy()
+
+複製當前構建器，用於基於同一基礎內容創建多個消息變體：
+
+```python
+base = MessageBuilder().text("基礎內容").mention("admin")
+
+# 基於相同前綴構建不同消息
+msg1 = base.copy().text(" 變體A").build()
+msg2 = base.copy().text(" 變體B").image("img.jpg").build()
+```
+
+### clear()
+
+清空已添加的消息段，複用同一個構建器：
+
+```python
+builder = MessageBuilder()
+
+for user_id in ["user1", "user2", "user3"]:
+    builder.clear()
+    msg = builder.mention(user_id).text(" 你好！").build()
+    await adapter.Send.To("user", user_id).Raw_ob12(msg)
+```
+
+### len() / bool()
+
+```python
+builder = MessageBuilder()
+print(bool(builder))   # False
+
+builder.text("Hello")
+print(len(builder))    # 1
+print(bool(builder))   # True
+```
+
+## 自定義消息段
+
+使用 `custom()` 方法添加平台擴展消息段：
+
+```python
+# 添加平台特有的消息段
+segments = (
+    MessageBuilder()
+    .text("請填寫表單：")
+    .custom("yunhu_form", {"form_id": "12345"})
+    .build()
+)
+```
+
+> 自定義消息段只在對應平台的適配器中有效，其他適配器會忽略不認識的消息段。
+
+## 完整示例
+
+### 多元素消息
+
+```python
+segments = (
+    MessageBuilder()
+    .reply(event.get_id())                    # 回覆原消息
+    .mention(event.get_user_id())             # @發送者
+    .text(" 這是你的查詢結果：\n")             # 文本
+    .image("https://example.com/chart.png")   # 圖片
+    .text("\n詳細數據見附件：")
+    .file("https://example.com/data.csv", filename="data.csv")
+    .build()
+)
+await event.reply_ob12(segments)
+```
+
+### 靜態工廠 + 鏈式混合
+
+```python
+# 快速構建單段消息
+simple_msg = MessageBuilder.text("簡單文本")
+
+# 鏈式構建複雜消息
+complex_msg = (
+    MessageBuilder()
+    .at_all()
+    .text(" 📢 公告：")
+    .text("今天下午3點開會")
+    .build()
+)
+```
+
+## 相關文檔
+
+- [適配器 SendDSL 詳解](../../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
+- [事件轉換標準](../../standards/event-conversion.md) - 消息段轉換規範
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
+
+
+
+### 会话类型系统
+
+# 會話類型系統
+
+ErisPulse 會話類型系統負責定義和管理訊息的會話類型（私聊、群聊、頻道等），並提供接收類型與發送類型之間的自動轉換。
+
+## 類型定義
+
+### 接收類型
+
+接收類型來自 OneBot12 事件中的 `detail_type` 欄位，表示事件的會話場景：
+
+| 類型 | 說明 | ID 欄位 |
+|------|------|---------|
+| `private` | 私聊訊息 | `user_id` |
+| `group` | 群聊訊息 | `group_id` |
+| `channel` | 頻道訊息 | `channel_id` |
+| `guild` | 服務器訊息 | `guild_id` |
+| `thread` | 話題/子頻道訊息 | `thread_id` |
+| `user` | 用戶訊息（擴展） | `user_id` |
+
+### 發送類型
+
+發送類型用於 `Send.To(type, id)` 中指定發送目標：
+
+| 類型 | 說明 |
+|------|------|
+| `user` | 發送給用戶 |
+| `group` | 發送到群組 |
+| `channel` | 發送到頻道 |
+| `guild` | 發送到服務器 |
+| `thread` | 發送到話題 |
+
+## 類型對應
+
+接收類型和發送類型之間存在預設對應關係：
+
+```
+接收 (Receive)          發送 (Send)
+─────────────          ──────────
+private        ──→     user
+group          ──→     group
+channel        ──→     channel
+guild          ──→     guild
+thread         ──→     thread
+user           ──→     user
+```
+
+關鍵區別：**接收時用 `private`，發送時用 `user`**。這是 OneBot12 標準的設計——事件描述的是"私聊場景"，而發送描述的是"用戶目標"。
+
+## 自動推斷
+
+當事件沒有明確的 `detail_type` 欄位時，系統會根據事件中存在的 ID 欄位自動推斷會話類型：
+
+**優先級**：`group_id` > `channel_id` > `guild_id` > `thread_id` > `user_id`
+
+```python
+from ErisPulse.Core.Event.session_type import infer_receive_type
+
+# 有 group_id → 推斷為 group
+event1 = {"group_id": "123", "user_id": "456"}
+print(infer_receive_type(event1))  # "group"
+
+# 只有 user_id → 推斷為 private
+event2 = {"user_id": "456"}
+print(infer_receive_type(event2))  # "private"
+```
+
+## 核心 API
+
+### 類型轉換
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    convert_to_send_type,
+    convert_to_receive_type,
+)
+
+# 接收類型 → 發送類型
+convert_to_send_type("private")  # → "user"
+convert_to_send_type("group")    # → "group"
+
+# 發送類型 → 接收類型
+convert_to_receive_type("user")   # → "private"
+convert_to_receive_type("group")  # → "group"
+```
+
+### ID 欄位查詢
+
+```python
+from ErisPulse.Core.Event.session_type import get_id_field, get_receive_type
+
+# 根據類型獲取 ID 欄位名
+get_id_field("group")    # → "group_id"
+get_id_field("private")  # → "user_id"
+
+# 根據 ID 欄位獲取類型
+get_receive_type("group_id")  # → "group"
+get_receive_type("user_id")   # → "private"
+```
+
+### 一步獲取發送資訊
+
+```python
+from ErisPulse.Core.Event.session_type import get_send_type_and_target_id
+
+event = {"detail_type": "private", "user_id": "123"}
+send_type, target_id = get_send_type_and_target_id(event)
+# send_type = "user", target_id = "123"
+
+# 直接用於 Send.To()
+await adapter.Send.To(send_type, target_id).Text("Hello")
+```
+
+### 獲取目標 ID
+
+```python
+from ErisPulse.Core.Event.session_type import get_target_id
+
+event = {"detail_type": "group", "group_id": "456"}
+get_target_id(event)  # → "456"
+```
+
+## 自訂類型註冊
+
+適配器可以為平台特有的會話類型註冊自訂對應：
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type, unregister_custom_type
+
+# 註冊自訂類型
+register_custom_type(
+    receive_type="thread_reply",     # 接收類型名
+    send_type="thread",              # 對應的發送類型
+    id_field="thread_reply_id",      # 對應的 ID 欄位
+    platform="discord"               # 平台名稱（可選）
+)
+
+# 使用自訂類型
+convert_to_send_type("thread_reply", platform="discord")  # → "thread"
+get_id_field("thread_reply", platform="discord")          # → "thread_reply_id"
+
+# 註銷自訂類型
+unregister_custom_type("thread_reply", platform="discord")
+```
+
+> **指定 platform 時**，註冊的接收類型會加上平台前綴（如 `discord_thread_reply`），避免不同平台之間的類型衝突。
+
+## 工具方法
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    is_standard_type,
+    is_valid_send_type,
+    get_standard_types,
+    get_send_types,
+    clear_custom_types,
+)
+
+# 檢查是否為標準類型
+is_standard_type("private")  # True
+is_standard_type("custom_type")  # False
+
+# 檢查發送類型是否有效
+is_valid_send_type("user")  # True
+is_valid_send_type("invalid")  # False
+
+# 獲取所有標準類型
+get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user"}
+get_send_types()      # {"user", "group", "channel", "guild", "thread"}
+
+# 清除自訂類型
+clear_custom_types()                # 清除所有
+clear_custom_types(platform="discord")  # 只清除指定平台的
+```
+
+## 相關文件
+
+- [事件轉換標準](../standards/event-conversion.md) - 事件轉換規範
+- [會話類型標準](../standards/session-types.md) - 會話類型正式定義
+- [事件轉換器實現](../../developer-guide/adapters/converter.md) - Converter 開發指南
+
+
+
+### Conversation 多轮对话
+
+# Conversation 多輪對話
+
+`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、信息收集、對話式問答等場景。
+
+## 創建對話
+
+通過 `Event` 對象的 `conversation()` 方法創建：
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+
+    await conv.say("🎮 歡迎參加知識問答！")
+
+    answer = await conv.choose("第一題：Python 的創造者是誰？", [
+        "Guido van Rossum",
+        "James Gosling",
+        "Dennis Ritchie",
+    ])
+
+    if answer is None:
+        await conv.say("超時了，下次再來吧！")
+        return
+
+    if answer == 0:
+        await conv.say("正確！")
+    else:
+        await conv.say("錯誤了，正確答案是 Guido van Rossum")
+
+    conv.stop()
+```
+
+## 核心 API
+
+### say(content, **kwargs)
+
+發送消息，返回 `self` 支援鏈式調用：
+
+```python
+await conv.say("第一行").say("第二行").say("第三行")
+```
+
+也可以指定發送方法：
+
+```python
+await conv.say("https://example.com/image.jpg", method="Image")
+```
+
+### wait(prompt=None, timeout=None)
+
+等待用戶回覆，返回 `Event` 對象或 `None`（超時）：
+
+```python
+# 簡單等待
+resp = await conv.wait()
+if resp:
+    text = resp.get_text()
+
+# 發送提示後等待
+resp = await conv.wait(prompt="請輸入你的名字：")
+
+# 使用自訂超時（對話預設超時）
+resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
+```
+
+### confirm(prompt=None, **kwargs)
+
+等待用戶確認（是/否），返回 `True` / `False` / `None`（超時）：
+
+```python
+result = await conv.confirm("確定要刪除所有數據嗎？")
+if result is True:
+    await conv.say("已刪除")
+elif result is False:
+    await conv.say("已取消")
+else:
+    await conv.say("超時未回覆")
+```
+
+內置識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
+
+內置識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
+
+### choose(prompt, options, **kwargs)
+
+等待用戶從選項中選擇，返回選項索引（0-based）或 `None`：
+
+```python
+choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+if choice is not None:
+    colors = ["紅色", "綠色", "藍色"]
+    await conv.say(f"你選擇了 {colors[choice]}")
+```
+
+用戶可以通過輸入編號（`1`/`2`/`3`）或選項文本（`紅色`）來選擇。
+
+### collect(fields, **kwargs)
+
+多步驟收集信息，返回數據字典或 `None`：
+
+```python
+data = await conv.collect([
+    {"key": "name", "prompt": "請輸入姓名"},
+    {"key": "age", "prompt": "請輸入年齡",
+     "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
+     "retry_prompt": "年齡必須是數字，請重新輸入"},
+    {"key": "city", "prompt": "請輸入城市"},
+])
+
+if data:
+    await conv.say(f"註冊成功！\n姓名: {data['name']}\n年齡: {data['age']}\n城市: {data['city']}")
+else:
+    await conv.say("註冊過程中斷")
+```
+
+字段配置：
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `key` | 字段鍵名（必須） | - |
+| `prompt` | 提示消息 | `"請輸入 {key}"` |
+| `validator` | 驗證函數，接收 Event，返回 bool | 無 |
+| `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
+| `max_retries` | 最大重試次數 | 3 |
+
+### stop()
+
+手動結束對話，設置 `is_active` 為 `False`：
+
+```python
+conv.stop()
+```
+
+### is_active
+
+對話是否處於活躍狀態：
+
+```python
+if conv.is_active:
+    await conv.say("對話還在進行中")
+```
+
+## 活躍狀態管理
+
+對話在以下情況會自動變為非活躍狀態：
+
+1. 調用 `stop()` 方法
+2. `wait()` 超時返回 `None`
+3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
+
+非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
+
+## 典型流程模式
+
+### 引導式註冊
+
+```python
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+
+    await conv.say("歡迎註冊！")
+
+    data = await conv.collect([
+        {"key": "username", "prompt": "請輸入用戶名（3-20個字符）",
+         "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
+        {"key": "email", "prompt": "請輸入郵箱地址",
+         "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
+         "retry_prompt": "郵箱格式不正確，請重新輸入"},
+    ])
+
+    if not data:
+        await event.reply("註冊已取消")
+        return
+
+    confirmed = await conv.confirm(
+        f"確認註冊信息？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+    )
+
+    if confirmed:
+        await conv.say("✅ 註冊成功！")
+    else:
+        await conv.say("❌ 已取消註冊")
+```
+
+### 循環對話
+
+```python
+@command("chat")
+async def chat_handler(event):
+    conv = event.conversation(timeout=120)
+    await conv.say("進入對話模式，輸入「退出」結束")
+
+    while conv.is_active:
+        resp = await conv.wait()
+        if resp is None:
+            await conv.say("超時，對話結束")
+            break
+
+        text = resp.get_text().strip()
+
+        if text == "退出":
+            await conv.say("再見！")
+            conv.stop()
+        elif text == "帮助":
+            await conv.say("可用命令：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("對話活躍中")
+        else:
+            await conv.say(f"你說的是：{text}")
+```
+
+## 相關文檔
+
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
+- [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎
+
+
+
 ======
 平台特性指南
 ======
@@ -7493,7 +9122,1333 @@ ErisPulse 專案：
 
 
 
-### 平台维护说明
+### OneBot11 适配
+
+# OneBot11 平台特性文件
+
+OneBot11Adapter 是基於 OneBot V11 協議建構的適配器。
+
+---
+
+## 文件資訊
+
+- 對應模組版本: 3.6.0
+- 維護者: ErisPulse
+
+## 基本資料
+
+- 平台簡介：OneBot 是一個聊天機器人應用程式介面標準
+- 適配器名稱：OneBotAdapter
+- 支援的協定/API版本：OneBot V11
+- 多帳號支援：預設多帳號架構，支援同時設定和執行多個 OneBot 帳號
+- 舊版設定相容性：相容舊版設定格式，提供遷移提醒（非自動遷移）
+
+## 支援的訊息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+onebot = adapter.get("onebot11")
+
+# 使用預設帳號傳送
+await onebot.Send.To("group", group_id).Text("Hello World!")
+
+# 指定特定帳號傳送
+await onebot.Send.Using("main").To("group", group_id).Text("來自主帳號的訊息")
+
+# 鏈式修飾：@使用者 + 回覆
+await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回覆訊息")
+
+# @全體成員
+await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
+```
+
+### 基礎傳送方法
+
+- `.Text(text: str)`：傳送純文字訊息。
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：傳送圖片（支援 URL、Base64 或 bytes）。
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：傳送語音訊息。
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：傳送視訊訊息。
+- `.Face(id: Union[str, int])`：傳送 QQ 表情。
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`：傳送檔案（自動判斷類型）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息（自動轉換為 OB11）。
+- `.Recall(message_id: Union[str, int])`：撤回訊息。
+
+### 鏈式修飾方法（可組合使用）
+
+鏈式修飾方法傳回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+
+- `.At(user_id: Union[str, int], name: str = None)`：@指定使用者（可多次呼叫）。
+- `.AtAll()`：@全體成員。
+- `.Reply(message_id: Union[str, int])`：回覆指定訊息。
+
+### 鏈式呼叫範例
+
+```python
+# 基礎傳送
+await onebot.Send.To("group", 123456).Text("Hello")
+
+# @單個使用者
+await onebot.Send.To("group", 123456).At(789012).Text("你好")
+
+# @多個使用者
+await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
+
+# 傳送 OneBot12 格式訊息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+```
+
+### 不支援的類型處理
+
+如果呼叫未定義的傳送方法，適配器會傳回文字提示：
+```python
+# 呼叫不存在的方法
+await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
+# 實際發送: "[不支援的傳送類型] 方法名: SomeUnsupportedMethod, 參數: [...]"
+```
+
+## 專屬事件類型
+
+OneBot11 事件轉換到 OneBot12 協議，其中標準欄位完全遵守 OneBot12 協議，但存在以下差異：
+
+### 核心差異點
+
+1. 專屬事件類型：
+   - CQ 碼擴展事件：onebot11_cq_{type}
+   - 榮譽變更事件：onebot11_honor
+   - 戳一戳事件：onebot11_poke
+   - 群紅包運氣王事件：onebot11_lucky_king
+
+2. 擴展欄位：
+   - 所有專屬欄位均以 onebot11_ 前綴識別
+   - 保留原始 CQ 碼訊息在 onebot11_raw_message 欄位
+   - 保留原始事件資料在 onebot11_raw 欄位
+
+### 特殊欄位範例
+
+```python
+// 荣誉变更事件
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "onebot11_honor_type": "talkative",
+  "onebot11_operation": "set"
+}
+
+// 戳一戳事件
+{
+  "type": "notice",
+  "detail_type": "onebot11_poke",
+  "group_id": "123456",
+  "user_id": "789012",
+  "target_id": "345678",
+  "onebot11_poke_type": "normal"
+}
+
+// 群红包运气王事件
+{
+  "type": "notice",
+  "detail_type": "onebot11_lucky_king",
+  "group_id": "123456",
+  "user_id": "789012",
+  "target_id": "345678"
+}
+
+// CQ码消息段
+{
+  "type": "message",
+  "message": [
+    {
+      "type": "onebot11_face",
+      "data": {"id": "123"}
+    },
+    {
+      "type": "onebot11_shake",
+      "data": {} 
+    }
+  ]
+}
+```
+
+### 擴展欄位說明
+
+- 所有專屬欄位均以 `onebot11_` 前綴識別
+- 保留原始 CQ 碼訊息在 `onebot11_raw_message` 欄位
+- 保留原始事件資料在 `onebot11_raw` 欄位
+- 訊息內容中的 CQ 碼會轉換為相應的訊息段
+- 回覆訊息會新增 `reply` 類型的訊息段
+- @訊息會新增 `mention` 類型的訊息段
+
+## 設定選項
+
+OneBot 適配器每個帳號獨立設定以下選項：
+
+### 帳號設定
+- `mode`: 該帳號的運行模式 ("server" 或 "client")
+- `server_path`: Server 模式下的 WebSocket 路徑
+- `server_token`: Server 模式下的認證 Token（選填）
+- `client_url`: Client 模式下要連線的 WebSocket 位址
+- `client_token`: Client 模式下的認證 Token（選填）
+- `enabled`: 是否啟用該帳號
+
+### 內建預設值
+- 重連間隔：30 秒
+- API 呼叫逾時：30 秒
+- 最大重試次數：3 次
+
+### 設定範例
+```toml
+[OneBotv11_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot-main"
+server_token = "main_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+
+[OneBotv11_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### 預設設定
+如果未設定任何帳號，適配器會自動建立：
+```toml
+[OneBotv11_Adapter.accounts.default]
+mode = "server"
+server_path = "/"
+enabled = true
+```
+
+## 傳送方法傳回值
+
+所有傳送方法均傳回一個 Task 物件，可以直接 await 取得傳送結果。傳回結果遵循 ErisPulse 適配器標準化傳回規範：
+
+```python
+{
+    "status": "ok",           // 執行狀態
+    "retcode": 0,             // 回傳碼
+    "data": {...},            // 回應資料
+    "self": {...},            // 自身資訊
+    "message_id": "123456",   // 訊息 ID
+    "message": "",            // 錯誤資訊
+    "onebot_raw": {...}       // 原始回應資料
+}
+```
+
+### 多帳號傳送語法
+
+```python
+# 帳號選擇方法
+await onebot.Send.Using("main").To("group", 123456).Text("主帳號訊息")
+await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API 呼叫方式
+await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
+```
+
+## 非同步處理機制
+
+OneBot 適配器採用非同步非阻擋設計，確保：
+1. 訊息傳送不會阻擋事件處理循環
+2. 多個並發傳送操作可以同時進行
+3. API 回應能夠及時處理
+4. WebSocket 連線保持活躍狀態
+5. 多帳號並發處理，每個帳號獨立運行
+
+## 錯誤處理
+
+適配器提供完善的錯誤處理機制：
+1. 網路連線異常自動重連（支援每個帳號獨立重連，間隔 30 秒）
+2. API 呼叫逾時處理（固定 30 秒逾時）
+3. 訊息傳送失敗重試（最多 3 次重試）
+
+## 事件處理增強
+
+多帳號模式下，所有事件都會自動新增帳號資訊：
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "main"},  // 新增：傳送事件的帳號 ID（標準欄位）
+    "platform": "onebot11",
+    // ... 其他事件欄位
+}
+```
+
+## 管理介面
+
+```python
+# 取得所有帳號資訊
+accounts = onebot.accounts
+
+# 檢查帳號連線狀態
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot.connections.items()
+}
+
+# 動態啟用/禁用帳號（需要重啟適配器）
+onebot.accounts["test"].enabled = False
+
+
+
+### OneBot12 适配
+
+# OneBot12 平台特性文件
+
+OneBot12Adapter 是基於 OneBot V12 協議建構的適配器，作為 ErisPulse 框架的基線協議適配器。
+
+---
+
+## 文件資訊
+
+- 對應模組版本: 1.0.0
+- 維護者: ErisPulse
+- 協議版本: OneBot V12
+
+## 基本資訊
+
+- 平台簡介：OneBot V12 是一個通用的聊天機器人應用介面標準，是 ErisPulse 框架的基線協議
+- 適配器名稱：OneBot12Adapter
+- 支援的協議/API版本：OneBot V12
+- 多帳戶支援：完全多帳戶架構，支援同時配置和執行多個 OneBot12 帳戶
+
+## 支援的訊息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
+
+```python
+from ErisPulse.Core import adapter
+onebot12 = adapter.get("onebot12")
+
+# 使用預設帳戶傳送
+await onebot12.Send.To("group", group_id).Text("Hello World!")
+
+# 指定特定帳戶傳送
+await onebot12.Send.To("group", group_id).Account("main").Text("來自主帳戶的訊息")
+```
+
+### 基礎訊息類型
+
+- `.Text(text: str)`：傳送純文字訊息
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：傳送圖片訊息（支援 URL、Base64 或 bytes）
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：傳送音訊訊息
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：傳送視訊訊息
+
+### 互動訊息類型
+
+- `.Mention(user_id: Union[str, int], user_name: str = None)`：傳送 @ 訊息
+- `.Reply(message_id: Union[str, int], content: str = None)`：傳送回覆訊息
+- `.Sticker(file_id: str)`：傳送貼圖/貼紙
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：傳送位置
+
+### 管理功能
+
+- `.Recall(message_id: Union[str, int])`：撤回訊息
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：編輯訊息
+- `.Raw(message_segments: List[Dict])`：傳送原生 OneBot12 訊息段
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：批量傳送訊息
+
+## OneBot12 標準事件
+
+OneBot12 適配器完全遵循 OneBot12 標準，事件格式無需轉換，直接提交至框架。
+
+### 訊息事件
+
+```python
+# 私聊訊息
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+
+# 群組訊息
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "group_id": "group-id",
+    "message": [{"type": "text", "data": {"text": "Hello group"}}],
+    "alt_message": "Hello group",
+    "time": 1234567890
+}
+```
+
+### 通知事件
+
+```python
+# 群組成員增加
+{
+    "id": "event-id",
+    "type": "notice",
+    "detail_type": "group_member_increase",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "approve",
+    "time": 1234567890
+}
+
+# 群組成員減少
+{
+    "id": "event-id",
+    "type": "notice", 
+    "detail_type": "group_member_decrease",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "leave",
+    "time": 1234567890
+}
+```
+
+### 請求事件
+
+```python
+# 好友請求
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "friend",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "comment": "申請訊息",
+    "flag": "request-flag",
+    "time": 1234567890
+}
+
+# 群組邀請請求
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "comment": "申請訊息",
+    "flag": "request-flag",
+    "sub_type": "invite",
+    "time": 1234567890
+}
+```
+
+### 元事件
+
+```python
+# 生命週期事件
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "lifecycle",
+    "self": {"user_id": "bot-id"},
+    "sub_type": "enable",
+    "time": 1234567890
+}
+
+# 心跳事件
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "heartbeat",
+    "self": {"user_id": "bot-id"},
+    "interval": 5000,
+    "status": {"online": true},
+    "time": 1234567890
+}
+```
+
+## 配置選項
+
+### 帳戶配置
+
+每個帳戶獨立配置以下選項：
+
+- `mode`: 該帳戶的執行模式 ("server" 或 "client")
+- `server_path`: Server 模式下的 WebSocket 路徑
+- `server_token`: Server 模式下的認證 Token（選用）
+- `client_url`: Client 模式下要連線的 WebSocket 位址
+- `client_token`: Client 模式下的認證 Token（選用）
+- `enabled`: 是否啟用該帳戶
+- `platform`: 平台識別，預設為 "onebot12"
+- `implementation`: 實現識別，如 "go-cqhttp"（選用）
+
+### 配置範例
+
+```toml
+[OneBotv12_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot12-main"
+server_token = "main_token"
+enabled = true
+platform = "onebot12"
+implementation = "go-cqhttp"
+
+[OneBotv12_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+platform = "onebot12"
+implementation = "shinonome"
+
+[OneBotv12_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### 預設配置
+
+如果未配置任何帳戶，適配器會自動建立：
+
+```toml
+[OneBotv12_Adapter.accounts.default]
+mode = "server"
+server_path = "/onebot12"
+enabled = true
+platform = "onebot12"
+```
+
+## 傳送方法傳回值
+
+所有傳送方法均傳回一個 Task 物件，可以直接 await 獲取傳送結果。傳回結果遵循 OneBot12 標準：
+
+```python
+{
+    "status": "ok",           // 執行狀態
+    "retcode": 0,             // 傳回碼
+    "data": {...},            // 響應資料
+    "self": {"user_id": "account-id"},  // 帳戶資訊
+    "message_id": "123456",   // 訊息 ID
+    "message": ""             // 錯誤訊息
+}
+```
+
+### 多帳戶傳送語法
+
+```python
+# 帳戶選擇方法
+await onebot12.Send.Using("main").To("group", 123456).Text("主帳戶訊息")
+await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# API 呼叫方式
+await onebot12.call_api("send_message", account_id="main", 
+    detail_type="group", group_id=123456, 
+    content=[{"type": "text", "data": {"text": "Hello"}}])
+```
+
+## 非同步處理機制
+
+OneBot12 適配器採用非同步非阻塞設計：
+
+1. 訊息傳送不會阻斷事件處理迴圈
+2. 多個並發傳送操作可以同時進行
+3. API 響應能夠及時處理
+4. WebSocket 連線保持活躍狀態
+5. 多帳戶並發處理，每個帳戶獨立執行
+
+## 錯誤處理
+
+適配器提供完善的錯誤處理機制：
+
+1. 網路連線異常自動重連（支援每個帳戶獨立重連，間隔 30 秒）
+2. API 呼叫逾時處理（固定 30 秒逾時）
+3. 訊息傳送失敗自動重試（最多 3 次重試）
+
+## 事件處理增強
+
+多帳戶模式下，所有事件都會自動新增帳戶資訊：
+
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "platform": "onebot12",
+    // ... 其他事件欄位
+}
+```
+
+## 管理介面
+
+```python
+# 獲取所有帳戶資訊
+accounts = onebot12.accounts
+
+# 檢查帳戶連線狀態
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot12.connections.items()
+}
+
+# 動態啟用/禁用帳戶（需要重啟適配器）
+onebot12.accounts["test"].enabled = False
+```
+
+## OneBot12 標準特性
+
+### 訊息段標準
+
+OneBot12 使用標準化的訊息段格式：
+
+```python
+# 文字訊息段
+{"type": "text", "data": {"text": "Hello"}}
+
+# 圖片訊息段
+{"type": "image", "data": {"file_id": "image-id"}}
+
+# 提及訊息段
+{"type": "mention", "data": {"user_id": "user-id", "user_name": "Username"}}
+
+# 回覆訊息段
+{"type": "reply", "data": {"message_id": "msg-id"}}
+```
+
+### API 標準
+
+遵循 OneBot12 標準 API 規範：
+
+- `send_message`: 傳送訊息
+- `delete_message`: 撤回訊息
+- `edit_message`: 編輯訊息
+- `get_message`: 獲取訊息
+- `get_self_info`: 獲取自身資訊
+- `get_user_info`: 獲取使用者資訊
+- `get_group_info`: 獲取群組資訊
+
+## 最佳實踐
+
+1. **配置管理**：建議使用多帳戶配置，將不同用途的機器人分開管理
+2. **錯誤處理**：始終檢查 API 呼叫的傳回狀態
+3. **訊息傳送**：使用合適的訊息類型，避免傳送不支援的訊息
+4. **連線監控**：定期檢查連線狀態，確保服務可用性
+5. **效能優化**：批量傳送時使用 Batch 方法，減少網路開銷
+
+
+
+### Telegram 适配
+
+# Telegram 平台特性文件
+
+TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊息類型與事件處理。
+
+---
+
+## 文件資訊
+
+- 對應模組版本: 3.5.0
+- 維護者: ErisPulse
+
+## 基本資訊
+
+- 平台簡介：Telegram 是一個跨平台的即時通訊軟體
+- 適配器名稱：TelegramAdapter
+- 支援的協定/API版本：Telegram Bot API
+
+## 支援的訊息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+telegram = adapter.get("telegram")
+
+await telegram.Send.To("user", user_id).Text("Hello World!")
+```
+
+### 基本傳送方法
+
+- `.Text(text: str)`：傳送純文字訊息。
+- `.Face(emoji: str)`：傳送表情訊息。
+- `.Markdown(text: str, content_type: str = "MarkdownV2")`：傳送 Markdown 格式訊息。
+- `.HTML(text: str)`：傳送 HTML 格式訊息。
+
+### 媒體傳送方法
+
+所有媒體方法支援兩種輸入方式：
+- **URL 方式**：直接傳入字串 URL
+- **檔案上傳**：傳入 bytes 類型資料
+
+- `.Image(file: bytes | str, caption: str = "", content_type: str = None)`：傳送圖片訊息
+- `.Video(file: bytes | str, caption: str = "", content_type: str = None)`：傳送影片訊息
+- `.Voice(file: bytes | str, caption: str = "")`：傳送語音訊息
+- `.Audio(file: bytes | str, caption: str = "", content_type: str = None)`：傳送音訊訊息
+- `.File(file: bytes | str, caption: str = "")`：傳送檔案訊息
+- `.Document(file: bytes | str, caption: str = "", content_type: str = None)`：傳送文件訊息
+
+### 訊息管理方法
+
+- `.Edit(message_id: int, text: str, content_type: str = None)`：編輯既有訊息。
+- `.Recall(message_id: int)`：刪除指定訊息。
+
+### 原始訊息傳送
+
+- `.Raw_ob12(message: List[Dict])`：傳送 OneBot12 標準格式訊息
+  - 支援複雜組合訊息（文字 + @用戶 + 回覆 + 媒體）
+  - 自動將文字作為媒體訊息的 caption
+- `.Raw_json(json_str: str)`：傳送原始 JSON 格式訊息
+
+### 鏈式修飾方法
+
+- `.At(user_id: str)`：@指定用戶（可多次呼叫）
+- `.AtAll()`：@全體成員
+- `.Reply(message_id: str)`：回覆指定訊息
+
+### 方法名稱對應
+
+傳送方法支援大小寫不敏感呼叫，透過對應表自動轉換為標準方法名：
+```python
+# 以下寫法等效
+telegram.Send.To("group", 123).Text("hello")
+telegram.Send.To("group", 123).text("hello")
+telegram.Send.To("group", 123).TEXT("hello")
+```
+
+### 傳送範例
+
+```python
+# 基本文本傳送
+await telegram.Send.To("group", group_id).Text("Hello World!")
+
+# 媒體傳送（URL 方式）
+await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="這是一張圖片")
+
+# 媒體傳送（檔案上傳）
+with open("image.jpg", "rb") as f:
+    await telegram.Send.To("group", group_id).Image(f.read())
+
+# @用戶
+await telegram.Send.To("group", group_id).At("6117725680").Text("你好！")
+
+# 回覆訊息
+await telegram.Send.To("group", group_id).Reply("12345").Text("回覆內容")
+
+# 組合使用
+await telegram.Send.To("group", group_id).Reply("12345").At("6117725680").Image("https://example.com/image.jpg", caption="看這張圖")
+
+# OneBot12 組合訊息
+ob12_message = [
+    {"type": "text", "data": {"text": "複雜組合訊息："}},
+    {"type": "mention", "data": {"user_id": "6117725680", "name": "用戶名"}},
+    {"type": "reply", "data": {"message_id": "12345"}},
+    {"type": "image", "data": {"file": "https://http.cat/200"}}
+]
+await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
+```
+
+### 不支援的方法提示
+
+呼叫不支援的傳送方法時，會自動傳送文字提示：
+```python
+# 不支援的傳送類型
+await telegram.Send.To("group", group_id).UnknownMethod("data")
+# 將傳送：[不支援的傳送類型] 方法名: UnknownMethod, 參數: [...]
+```
+
+## 特有事件類型
+
+Telegram 事件轉換到 OneBot12 協定，其中標準欄位完全遵守 OneBot12 協定，但存在以下差異：
+
+### 核心差異點
+
+1. 特有事件類型：
+   - 內聯查詢：telegram_inline_query
+   - 回調查詢：telegram_callback_query
+   - 投票事件：telegram_poll
+   - 投票答案：telegram_poll_answer
+
+2. 擴展欄位：
+   - 所有特有欄位均以 telegram_ 前綴識別
+   - 保留原始資料在 telegram_raw 欄位
+   - 頻道訊息使用 detail_type="channel"
+
+### 事件監聽方式
+
+Telegram 適配器支援兩種方式監聽事件：
+
+```python
+# 使用原始事件名
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+
+# 使用對應後的事件名
+@sdk.adapter.Telegram.on("message")
+async def handle_message(event):
+    pass
+```
+
+### 特殊欄位範例
+
+```python
+# 回調查詢事件
+{
+  "type": "notice",
+  "detail_type": "telegram_callback_query",
+  "user_id": "123456",
+  "user_nickname": "YingXinche",
+  "telegram_callback_data": {
+    "id": "cb_123",
+    "data": "callback_data",
+    "message_id": "msg_456"
+  }
+}
+
+# 內聯查詢事件
+{
+  "type": "notice",
+  "detail_type": "telegram_inline_query",
+  "user_id": "789012",
+  "user_nickname": "YingXinche",
+  "telegram_inline_query": {
+    "id": "iq_789",
+    "query": "search_text",
+    "offset": "0"
+  }
+}
+
+# 頻道訊息
+{
+  "type": "message",
+  "detail_type": "channel",
+  "message_id": "msg_345",
+  "channel_id": "channel_123",
+  "telegram_chat": {
+    "title": "News Channel",
+    "username": "news_official"
+  }
+}
+```
+
+## 擴展欄位說明
+
+- 所有特有欄位均以 `telegram_` 前綴識別
+- 保留原始資料在 `telegram_raw` 欄位
+- 頻道訊息使用 `detail_type="channel"`
+- 訊息內容中的實體（如粗體、連結等）會轉換為對應的訊息段
+- 回覆訊息會新增 `telegram_reply` 類型的訊息段
+
+## 設定選項
+
+Telegram 適配器支援以下設定選項：
+
+### 基本設定
+- `token`: Telegram Bot Token
+- `proxy_enabled`: 是否啟用代理
+
+### 代理設定
+- `proxy.host`: 代理伺服器位址
+- `proxy.port`: 代理埠號
+- `proxy.type`: 代理類型 ("socks4" 或 "socks5")
+
+### 執行模式
+
+Telegram 適配器僅支援 **Polling（輪詢）** 模式，Webhook 模式已移除。
+
+設定範例：
+```toml
+[Telegram_Adapter]
+token = "YOUR_BOT_TOKEN"
+proxy_enabled = false
+
+[Telegram_Adapter.proxy]
+host = "127.0.0.1"
+port = 1080
+type = "socks5"
+
+
+
+### 云湖适配
+
+# 雲湖平台特性文件
+
+YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功能模組，提供統一的事件處理和訊息操作介面。
+
+---
+
+## 文件資訊
+
+- 對應模組版本: 3.5.1
+- 維護者: ErisPulse
+
+## 基本資訊
+
+- 平台簡介：雲湖（Yunhu）是一個企業級即時通訊平台
+- 適配器名稱：YunhuAdapter
+- 多帳號支援：支援透過 bot_id 識別並設定多個雲湖機器人帳號
+- 鏈式修飾支援：支援 `.Reply()` 等鏈式修飾方法
+- OneBot12 相容：支援傳送 OneBot12 格式訊息
+
+## 支援的訊息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("user", user_id).Text("Hello World!")
+```
+
+支援的傳送類型包括：
+- `.Text(text: str, buttons: List = None, parent_id: str = "")`：傳送純文字訊息，可選添加按鈕和父訊息ID。
+- `.Html(html: str, buttons: List = None, parent_id: str = "")`：傳送 HTML 格式訊息。
+- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：傳送 Markdown 格式訊息。
+- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送圖片訊息，支援流式上傳和自訂檔名。
+- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送影片訊息，支援流式上傳和自訂檔名。
+- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送檔案訊息，支援流式上傳和自訂檔名。
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量傳送訊息。
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：編輯既有訊息。
+- `.Recall(msg_id: str)`：撤回訊息。
+- `.Board(scope: str, content: str, **kwargs)`：發布公告看板，scope支援 `local` 和 `global`。
+- `.DismissBoard(scope: str, **kwargs)`：撤銷公告看板。
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：傳送流式訊息。
+
+Board board_type 支援以下類型：
+- `local`：指定使用者看板
+- `global`：全域看板
+
+### 按鈕參數說明
+
+`buttons` 參數是一個巢狀列表，表示按鈕的佈局和功能。每個按鈕物件包含以下欄位：
+
+| 欄位 | 類型 | 是否必填 | 說明 |
+|------|------|----------|------|
+| `text` | string | 是 | 按鈕上的文字 |
+| `actionType` | int | 是 | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊回報 |
+| `url` | string | 否 | 當 `actionType=1` 時使用，表示跳轉的目標 URL |
+| `value` | string | 否 | 當 `actionType=2` 時，該值會複製到剪貼簿<br>當 `actionType=3` 時，該值會傳送給訂閱端 |
+
+範例：
+```python
+buttons = [
+    [
+        {"text": "複製", "actionType": 2, "value": "xxxx"},
+        {"text": "點擊跳轉", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "回報事件", "actionType": 3, "value": "xxxxx"}
+    ]
+]
+await yunhu.Send.To("user", user_id).Text("帶按鈕的訊息", buttons=buttons)
+```
+> **注意：**
+> - 只有使用者點擊了**按鈕回報事件**的按鈕才會收到推播，**複製**和**跳轉 URL** 均無法收到推播。
+
+### 鏈式修飾方法（可組合使用）
+
+鏈式修飾方法回傳 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+
+- `.Reply(message_id: str)`：回覆指定訊息。
+- `.At(user_id: str)`：@指定使用者。
+- `.AtAll()`：@所有人。
+- `.Buttons(buttons: List)`：添加按鈕。
+
+### 鏈式呼叫範例
+
+```python
+# 基礎傳送
+await yunhu.Send.To("user", user_id).Text("Hello")
+
+# 回覆訊息
+await yunhu.Send.To("group", group_id).Reply(msg_id).Text("回覆訊息")
+
+# 回覆 + 按鈕
+await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("帶回覆和按鈕的訊息")
+```
+
+### OneBot12 訊息支援
+
+適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：
+
+- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
+
+```python
+# 傳送 OneBot12 格式訊息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# 配合鏈式修飾
+ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
+await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## 傳送方法回傳值
+
+所有傳送方法均回傳一個 Task 物件，可以直接 await 取得傳送結果。回傳結果遵循 ErisPulse 適配器標準化回傳規範：
+
+```python
+{
+    "status": "ok",           // 執行狀態
+    "retcode": 0,             // 回傳碼
+    "data": {...},            // 回應資料
+    "self": {...},            // 自身資訊（包含 bot_id）
+    "message_id": "123456",   // 訊息 ID
+    "message": "",            // 錯誤訊息
+    "yunhu_raw": {...}        // 原始回應資料
+}
+```
+
+## 特有事件類型
+
+需要檢測 platform=="yunhu" 才能使用本平台特性
+
+### 核心差異點
+
+1. 特有事件類型：
+    - 表單（如表單指令）：yunhu_form
+    - 按鈕點擊：yunhu_button_click
+    - 機器人設定：yunhu_bot_setting
+    - 快捷選單：yunhu_shortcut_menu
+2. 擴充欄位：
+    - 所有特有欄位均以 yunhu_ 前綴識別
+    - 保留原始資料在 yunhu_raw 欄位
+    - 私聊中 self.user_id 表示機器人 ID
+
+### 特殊欄位範例
+
+```python
+# 表單指令
+{
+  "type": "message",
+  "detail_type": "private",
+  "yunhu_command": {
+    "name": "表單指令名",
+    "id": "指令 ID",
+    "form": {
+      "欄位 ID1": {
+        "id": "欄位 ID1",
+        "type": "input/textarea/select/radio/checkbox/switch",
+        "label": "欄位標籤",
+        "value": "欄位值"
+      }
+    }
+  }
+}
+
+# 按鈕事件
+{
+  "type": "notice",
+  "detail_type": "yunhu_button_click",
+  "user_id": "點擊按鈕的使用者 ID",
+  "user_nickname": "使用者暱稱",
+  "message_id": "訊息 ID",
+  "yunhu_button": {
+    "id": "按鈕 ID（可能為空）",
+    "value": "按鈕值"
+  }
+}
+
+# 機器人設定
+{
+  "type": "notice",
+  "detail_type": "yunhu_bot_setting",
+  "group_id": "群組 ID（可能為空）",
+  "user_nickname": "使用者暱稱",
+  "yunhu_setting": {
+    "設定項 ID": {
+      "id": "設定項 ID",
+      "type": "input/radio/checkbox/select/switch",
+      "value": "設定值"
+    }
+  }
+}
+
+# 快捷選單
+{
+  "type": "notice",
+  "detail_type": "yunhu_shortcut_menu",
+  "user_id": "觸發選單的使用者 ID",
+  "user_nickname": "使用者暱稱",
+  "group_id": "群組 ID（如果是群聊）",
+  "yunhu_menu": {
+    "id": "選單 ID",
+    "type": "選單類型（整數）",
+    "action": "選單動作（整數）"
+  }
+}
+```
+
+## 擴充欄位說明
+
+- 所有特有欄位均以 `yunhu_` 前綴識別，避免與標準欄位衝突
+- 保留原始資料在 `yunhu_raw` 欄位，便於存取雲湖平台的完整原始資料
+- `self.user_id` 表示機器人 ID（從設定中的 bot_id 取得）
+- 表單指令透過 `yunhu_command` 欄位提供結構化資料
+- 按鈕點擊事件透過 `yunhu_button` 欄位提供按鈕相關資訊
+- 機器人設定變更透過 `yunhu_setting` 欄位提供設定項資料
+- 快捷選單操作透過 `yunhu_menu` 欄位提供選單相關資訊
+
+---
+
+## 多機器人設定
+
+### 設定說明
+
+雲湖適配器支援同時設定和執行多個雲湖機器人帳號。
+
+```toml
+# config.toml
+[Yunhu_Adapter.bots.bot1]
+bot_id = "30535459"  # 機器人 ID（必填）
+token = "your_bot1_token"  # 機器人 token（必填）
+webhook_path = "/webhook/bot1"  # Webhook 路徑（可選，預設為 "/webhook"）
+enabled = true  # 是否啟用（可選，預設為 true）
+
+[Yunhu_Adapter.bots.bot2]
+bot_id = "12345678"  # 第二個機器人的 ID
+token = "your_bot2_token"  # 第二個機器人的 token
+webhook_path = "/webhook/bot2"  # 獨立的 webhook 路徑
+enabled = true
+```
+
+**設定項說明：**
+- `bot_id`：機器人的唯一識別 ID（必填），用於識別是哪個機器人觸發的事件
+- `token`：雲湖平台提供的 API token（必填）
+- `webhook_path`：接收雲湖事件的 HTTP 路徑（可選，預設為 "/webhook"）
+- `enabled`：是否啟用該 bot（可選，預設為 true）
+
+**重要提示：**
+1. 雲湖平台的事件中不包含機器人 ID，因此必須在設定中明確指定 `bot_id`
+2. 每個 bot 都應該有獨立的 `webhook_path`，以便接收各自的 webhook 事件
+3. 在雲湖平台設定 webhook 時，請為每個 bot 設定對應的 URL，例如：
+   - Bot1: `https://your-domain.com/webhook/bot1`
+   - Bot2: `https://your-domain.com/webhook/bot2`
+
+### 使用 Send DSL 指定機器人
+
+可以透過 `Using()` 方法指定使用哪個 bot 傳送訊息。此方法支援兩種參數：
+- **帳號名稱**：設定中的 bot 名稱（如 `bot1`, `bot2`）
+- **bot_id**：設定中的 `bot_id` 值
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# 使用帳號名稱傳送訊息
+await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
+
+# 使用 bot_id 傳送訊息（自動匹配對應帳號）
+await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
+
+# 不指定時使用第一個啟用的 bot
+await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
+```
+
+> **提示：** 使用 `bot_id` 時，系統會自動尋找設定中匹配的帳號。這在處理事件回覆時特別有用，可以直接使用 `event["self"]["user_id"]` 來回覆同一帳號。
+
+### 事件中的機器人識別
+
+接收到的事件會自動包含對應的 `bot_id` 資訊：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu":
+        # 取得觸發事件的機器人 ID
+        bot_id = event["self"]["user_id"]
+        print(f"訊息來自 Bot: {bot_id}")
+        
+        # 使用相同 bot 回覆訊息
+        yunhu = adapter.get("yunhu")
+        await yunhu.Send.Using(bot_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("回覆訊息")
+```
+
+### 日誌資訊
+
+適配器會在日誌中自動包含 `bot_id` 資訊，便於除錯和追蹤：
+
+```
+[INFO] [yunhu] [bot:30535459] 收到來自使用者 user123 的私聊訊息
+[INFO] [yunhu] [bot:12345678] 訊息傳送成功，message_id: abc123
+```
+
+### 管理介面
+
+```python
+# 取得所有帳號資訊
+bots = yunhu.bots
+
+# 檢查帳號是否啟用
+bot_status = {
+    bot_name: bot_config.enabled
+    for bot_name, bot_config in yunhu.bots.items()
+}
+
+# 動態啟用/禁用帳號（需要重啟適配器）
+yunhu.bots["bot1"].enabled = False
+```
+
+### 舊設定相容
+
+系統會自動相容舊格式的設定，但建議遷移到新設定格式以獲得更好的多 bot 支援。
+
+
+
+### 邮件适配
+
+# 郵件平台特性文檔
+
+MailAdapter 是基於 SMTP/IMAP 協議的郵件配接器，支援郵件傳送、接收與處理。
+
+---
+
+## 文檔資訊
+
+- 對應模組版本: 1.0.0
+- 維護者: ErisPulse
+
+
+## 支援的訊息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+mail = adapter.get("email")
+
+# 簡單文字郵件
+await mail.Send.Using("from@example.com").To("to@example.com").Subject("測試").Text("內容")
+
+# 帶附件的 HTML 郵件
+await mail.Send.Using("from@example.com")
+    .To("to@example.com")
+    .Subject("HTML 郵件")
+    .Cc(["cc1@example.com", "cc2@example.com"])
+    .Attachment("report.pdf")
+    .Html("<h1>HTML 內容</h1>")
+
+# 注意：使用鏈式語法時，參數方法必須在傳送方法（Text，Html）之前設定
+```
+
+支援的傳送類型包括：
+- `.Text(text: str)`：傳送純文字郵件
+- `.Html(html: str)`：傳送 HTML 格式郵件
+- `.Attachment(file: str, filename: str = None)`：新增附件
+- `.Cc(emails: Union[str, List[str]])`：設定抄送
+- `.Bcc(emails: Union[str, List[str]])`：設定密送
+- `.ReplyTo(email: str)`：設定回覆地址
+
+### 特有參數說明
+
+| 參數       | 類型               | 說明                          |
+|------------|--------------------|-----------------------------|
+| Subject    | str                | 郵件主題                      |
+| From       | str                | 寄件者地址(透過 Using 設定)      |
+| To         | str                | 收件者地址                    |
+| Cc         | str 或 List[str]   | 抄送地址列表                  |
+| Bcc        | str 或 List[str]   | 密送地址列表                  |
+| Attachment | str 或 Path        | 附件檔案路徑                 |
+
+## 特有事件類型
+
+郵件接收事件格式：
+```python
+{
+  "type": "message",
+  "detail_type": "private",  # 郵件預設為私聊
+  "platform": "email",
+  "self": {"platform": "email", "user_id": account_id},
+  "message": [
+    {
+      "type": "text",
+      "data": {
+        "text": f"Subject: {subject}\nFrom: {from_}\n\n{text_content}"
+      }
+    }
+  ],
+  "email_raw": {
+    "subject": subject,
+    "from": from_,
+    "to": to,
+    "date": date,
+    "text_content": text_content,
+    "html_content": html_content,
+    "attachments": [att["filename"] for att in attachments]
+  },
+  "attachments": [  # 附件資料列表
+    {
+      "filename": "document.pdf",
+      "content_type": "application/pdf",
+      "size": 1024,
+      "data": b"..."  # 附件二進位資料
+    }
+  ]
+}
+```
+
+## 擴充欄位說明
+
+- `email_raw`: 包含原始郵件資料
+- `attachments`: 附件資料列表
+
+## OneBot12 協議轉換說明
+
+郵件事件轉換到 OneBot12 協議，主要差異點：
+
+### 核心差異點
+
+1. 特有欄位：
+   - `email_raw`: 包含原始郵件資料
+   - `attachments`: 附件資料列表
+
+2. 特殊處理：
+   - 郵件主題和寄件者資訊會包含在訊息文字中
+   - 附件資料會以二進位形式提供
+   - HTML 內容會保留在 email_raw 欄位中
+
+### 範例
+
+```python
+{
+  "type": "message",
+  "platform": "email",
+  "message": [
+    {
+      "type": "text",
+      "data": {
+        "text": "Subject: 會議通知\nFrom: sender@example.com\n\n請查收附件"
+      }
+    }
+  ],
+  "email_raw": {
+    "subject": "會議通知",
+    "from": "sender@example.com",
+    "to": "receiver@example.com",
+    "html_content": "<p>請查收附件</p>",
+    "attachments": ["document.pdf"]
+  },
+  "attachments": [
+    {
+      "filename": "document.pdf",
+      "data": b"...",  # 附件二進位資料
+      "size": 1024
+    }
+  ]
+}
+
+
+
+### 平台文档维护说明
 
 # 文檔維護說明
 
@@ -7638,4 +10593,261 @@ from ErisPulse.Core import adapter
 4. 提交 Pull Request 並詳細說明修改內容
 
 如有疑問，請聯絡相關適配器維護者或在專案 Issues 中提問。
+
+
+
+====
+代码规范
+====
+
+
+### 文档字符串规范
+
+# ErisPulse 註解風格規範
+
+在建立 EP 核心方法時，必須新增方法註解，註解格式如下：
+
+## 模組層級文件註解
+
+每個模組檔案開頭應包含模組文件註解：
+```python
+"""
+[模組名稱]
+[模組功能描述]
+
+{!--< tips >!--}
+重要使用說明或注意事項
+{!--< /tips >!--}
+"""
+```
+
+## 方法註解
+
+### 基本格式
+```python
+def func(param1: type1, param2: type2) -> return_type:
+    """
+    [功能描述]
+    
+    :param param1: [類型1] [參數描述1]
+    :param param2: [類型2] [參數描述2]
+    :return: [返回類型] [返回描述]
+    """
+    pass
+```
+
+### 完整格式（適用於複雜方法）
+```python
+def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
+    """
+    [功能詳細描述]
+    [可包含多行描述]
+    
+    :param param1: [類型1] [參數描述1]
+    :param param2: [類型2] [可選參數描述2] (預設: None)
+    
+    :return: 
+        type1: [返回參數1描述]
+        type2: [返回參數2描述]
+    
+    :raises ErrorType: [錯誤描述]
+    """
+    pass
+```
+
+## 特殊標籤（用於 API 文件生成）
+
+當方法註解包含以下內容時，將在 API 文件建置時產生對應效果：
+
+| 標籤格式 | 作用 | 範例 |
+|---------|------|------|
+| `{!--< internal-use >!--}` | 標記為內部使用，不生成文件 | `{!--< internal-use >!--}` |
+| `{!--< ignore >!--}` | 忽略此方法，不生成文件 | `{!--< ignore >!--}` |
+| `{!--< deprecated >!--}` | 標記為已棄用方法 | `{!--< deprecated >!--} 請使用new_func()取代` |
+| `{!--< experimental >!--}` | 標記為實驗性功能 | `{!--< experimental >!--} 可能不穩定` |
+| `{!--< tips >!--}...{!--< /tips >!--}` | 多行提示內容 | `{!--< tips >!--}\n重要提示內容\n{!--< /tips >!--}` |
+| `{!--< tips >!--}` | 單行提示內容 | `{!--< tips >!--} 注意: 此方法需要先初始化` |
+
+## 最佳建議
+
+1. **類型標註**：使用 Python 類型標註語法
+   ```python
+   def func(param: int) -> str:
+   ```
+
+2. **參數說明**：對可選參數註明預設值
+   ```python
+   :param timeout: [int] 超時時間(秒) (預設: 30)
+   ```
+
+3. **回傳值**：多回傳值使用 `Tuple` 或明確說明
+   ```python
+   :return: 
+       str: 狀態資訊
+       int: 狀態碼
+   ```
+
+4. **異常說明**：使用 `:raises:` 標註可能拋出的異常
+   ```python
+   :raises ValueError: 當參數無效時拋出
+   ```
+
+5. **內部方法**：非公開 API 應新增 `{!--< internal-use >!--}` 標籤
+
+6. **已棄用方法**：標記已棄用方法並提供替代方案
+   ```python
+   {!--< deprecated >!--} 請使用new_method()取代 | 2025-07-09
+
+
+
+======
+已知问题追踪
+======
+
+
+### 历史 Bug 记录
+
+# Bug 追蹤器
+
+本文檔記錄 ErisPulse SDK 的已知 Bug 和修復情況。
+
+---
+
+## 已修復的 Bug
+
+### [BUG-001] Init 指令適配器配置路徑類型錯誤
+
+**問題**: 使用 `ep init` 指令進行互動式初始化時，選擇配置適配器會出現類型錯誤：
+
+```
+互動式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**原因**: 2.3.7 版本調整配置檔路徑時，方法參數類型不一致。`_configure_adapters_interactive_sync` 接收 `str` 類型參數，但內部使用 `Path` 的 `/` 運算子拼接路徑。
+
+**影響版本**: 2.3.7 - 2.3.9-dev.1
+
+**修復版本**: 2.3.9-dev.1
+
+**修復內容**: 將 `_configure_adapters_interactive_sync` 方法的參數類型從 `str` 改為 `Path`，呼叫時直接傳遞 `Path` 物件。
+
+**修復日期**: 2026/03/23
+
+---
+
+### [BUG-002] 重啟後指令事件失效
+
+**問題**: 呼叫 `sdk.restart()` 後，透過 `@command` 註冊的指令無法被觸發，表現為發送指令後機器人無響應。
+
+**原因**: `adapter.shutdown()` 清空事件總線後，`BaseEventHandler` 的 `_linked_to_adapter_bus` 狀態未重置為 `False`，導致 `_process_event` 方法認為已經掛載到適配器總線，跳過重新掛載操作。
+
+**影響版本**: 2.2.x - 2.4.0-dev.2
+
+**修復版本**: 2.4.0-dev.3
+
+**修復內容**: 引入 `_linked_to_adapter_bus` 狀態追蹤，`_clear_handlers()` 斷開總線連接後，下次 `register()` 自動重新掛載，適配 shutdown/restart 場景。
+
+**修復日期**: 2026/04/09
+
+---
+
+### [BUG-003] 生命週期事件處理器未清理
+
+**問題**: `sdk.restart()` 後，舊的生命週期事件處理器仍然存在並重複觸發，導致同一個事件被多次處理。
+
+**原因**: `lifecycle._handlers` 字典在 `uninit()` 時從未被清理，restart 後舊處理器與新處理器同時存在。
+
+**影響版本**: 2.3.0 - 2.4.0-dev.2
+
+**修復版本**: 2.4.0-dev.3
+
+**修復內容**: 在 `Uninitializer` 的清理流程末尾（所有事件提交之後），清空 `lifecycle._handlers`。
+
+**修復日期**: 2026/04/09
+
+---
+
+### [BUG-004] Event.confirm() 確認詞集合賦值重複
+
+**問題**: `Event.confirm()` 方法中，`_yes`、`_no`、`_all` 三個變數的賦值代碼被完全重複了兩次（共6行），導致無意義的重複計算。
+
+**原因**: 代碼複製貼上錯誤。
+
+**影響版本**: 2.4.0-dev.4
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 刪除 `wrapper.py` 中 739-741 行的重複賦值代碼。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-005] MessageBuilder.at 方法定義被覆蓋（死代碼）
+
+**問題**: `MessageBuilder` 類中 `at` 方法被定義了三次：一個實例方法、一個靜態方法、最後被 `_DualMethod` 賦值覆蓋。前兩個定義是永遠不會被執行的死代碼。
+
+**原因**: 重構為 `_DualMethod` 雙模式描述符時，忘記刪除舊的手動定義。
+
+**影響版本**: 2.4.0-dev.0
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 刪除 `message_builder.py` 中 159-181 行的兩個死 `at` 方法定義，只保留 `_DualMethod` 賦值。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致
+
+**問題**: `Event.is_friend_add()` 檢查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 檢查 `detail_type == "friend_delete"`，但 OneBot12 標準定義的 `detail_type` 值為 `"friend_increase"` 和 `"friend_decrease"`。與 `notice.py` 中 `on_friend_add`/`on_friend_remove` 裝飾器使用的值不一致，導致透過裝飾器註冊的處理器觸發時，對應的 `is_friend_add()`/`is_friend_delete()` 判斷方法返回 `False`。
+
+**原因**: `wrapper.py` 中使用了非標準的命名，而 `notice.py` 使用了正確的 OB12 標準命名。
+
+**影響版本**: rq實裝至今
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 將 `is_friend_add()` 的匹配值從 `"friend_add"` 改為 `"friend_increase"`，`is_friend_delete()` 從 `"friend_delete"` 改為 `"friend_decrease"`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確
+
+**問題**: `AdapterManager.clear()` 方法清除了 `_adapters`、`_adapter_info`、處理器和 `_bots`，但遺漏了 `_started_instances` 集合。如果適配器正在運行時呼叫 `clear()`，`_started_instances` 會保留懸空引用，導致重啟後狀態判斷錯誤。
+
+**原因**: 2.4.0-dev.1 引入 `_started_instances` 時未在 `clear()` 中同步清理。
+
+**影響版本**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 在 `clear()` 方法中添加 `self._started_instances.clear()`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()
+
+**問題**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 建立 future 和獲取時間戳，該方法在 Python 3.10+ 中已棄用，在非同步上下文中應使用 `asyncio.get_running_loop()`。與同檔案中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
+
+**原因**: 開發時使用了舊版 API，後續新增的 `wait_for()` 使用了正確的 API 但未回溯修復舊代碼。
+
+**影響版本**: 2.3.0-dev.0
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 將 `command.py` 中兩處 `asyncio.get_event_loop()` 替換為 `asyncio.get_running_loop()`。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-009] Event.collect() 字段缺少 key 時靜默跳過
+
+**問題**: `Event.collect()` 方法在遍歷字段列表時，如果某個字段字典缺少 `key`，會靜默跳過該字段，不輸出任何日誌或警告。開發者如果拼寫錯誤（如 `"Key"` 而非 `"key"`），整個字段會被悄悄忽略，導致下游
 
