@@ -137,9 +137,11 @@ class LifecycleManager:
         *,
         source: str = "ErisPulse",
         msg: str = "",
-        data: dict = {},
+        data: dict | None = None,
         timestamp=time.time(),
     ) -> None:
+        if data is None:
+            data = {}
         """
         提交生命周期事件
 

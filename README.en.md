@@ -13,7 +13,7 @@
 
 # ErisPulse
 
-**An event-driven multi-platform bot development framework**
+**Event-driven multi-platform bot development framework**
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
@@ -30,15 +30,34 @@
 
 ## Introduction
 
-ErisPulse is a Python-based event-driven multi-platform bot development framework. With the unified OneBot12 standard interface, you can write code once and deploy bots with identical functionality on multiple platforms such as Yunhu, Telegram, and OneBot. The framework provides a flexible module (plugin) system, hot reload support, and a complete developer toolchain, suitable for various scenarios ranging from simple chatbots to complex automation systems.
+ErisPulse is a Python-based event-driven multi-platform bot development framework. Through the unified OneBot12 standard interface, you can write code once and deploy bots with the same functionality on multiple platforms such as Yunhu, Telegram, and OneBot. The framework provides a flexible module (`plugin`) system, hot reload support, and a complete developer toolchain, suitable for various scenarios from simple chatbots to complex automation systems.
 
 ## Core Features
 
-- **Event-Driven Architecture** - Clear event model based on OneBot12 standard
-- **Cross-Platform Compatibility** - Plugin modules written once work on all platforms
+- **Event-Driven Architecture** - A clear event model based on the OneBot12 standard
+- **Cross-Platform Compatibility** - Plugin modules written once can be used on all platforms
 - **Modular Design** - Flexible plugin system, easy to extend and integrate
-- **Hot Reload Support** - Reload code without restarting during development
+- **Hot Reload Support** - Reload code during development without restarting
 - **Complete Toolchain** - Provides CLI tools, package management, and automation scripts
+
+## Supported Adapters
+
+Contributions of adapters are welcome!
+
+| Adapter | Description |
+|--------|------|
+| <img src=".github/assets/adapter_logo/kook.svg" width="20" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook instant messaging platform |
+| <img src=".github/assets/adapter_logo/matrix.svg" width="20" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" width="20" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 universal bot protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" width="20" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
+| <img src=".github/assets/adapter_logo/qqbot.svg" width="20" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ official bot platform |
+| <img src=".github/assets/adapter_logo/sandbox.png" width="20" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to real platform |
+| <img src=".github/assets/adapter_logo/telegram.svg" width="20" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
+| <img src=".github/assets/adapter_logo/email.svg" width="20" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol send/receive adapter |
+| <img src=".github/assets/adapter_logo/yunhu.png" width="20" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise instant messaging platform (bot integration) |
+| <img src=".github/assets/adapter_logo/yunhu.png" width="20" /> [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Access adapter based on Yunhu user protocol |
+
+See [Adapter Details](docs/en/platform-guide/README.md)
 
 ## Quick Start
 
@@ -59,27 +78,27 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-> The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
+> The image includes ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
 </details>
 
-After starting, visit `http://localhost:8000/Dashboard` and log in to the Dashboard management panel using the set token as the password.
+After starting, visit `http://localhost:8000/Dashboard` and use the set token as the password to log in to the Dashboard management panel.
 
-### Installing via pip
+### Installing with pip
 
 ```bash
 pip install ErisPulse
 
-# Domestic mirror
+# Using domestic mirror
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
 
-# Install using uv
+# Install with uv
 uv pip install ErisPulse
 ```
 
 ![Installation Demo](.github/assets/docs/install_pip.gif)
 
-> If your Python version is below 3.10, you can use the one-click install script to automatically configure the environment. See [Installation Script Documentation](scripts/install/) for details.
+> If your Python version is below 3.10, you can use a one-click installation script to automatically configure the environment. See [Installation Script Documentation](scripts/install/).
 
 ### Initialize Project
 
@@ -107,12 +126,12 @@ from ErisPulse.Core.Event import command
 
 @command("hello", help="Send greeting message")
 async def hello_handler(event):
-    user_name = event.get_user_nickname() or "Friend"
+    user_name = event.get_user_nickname() or "friend"
     await event.reply(f"Hello, {user_name}!")
 
-@command("ping", help="Test if bot is online")
+@command("ping", help="Test if the bot is online")
 async def ping_handler(event):
-    await event.reply("Pong! Bot is running normally.")
+    await event.reply("Pong! The bot is running normally.")
 
 if __name__ == "__main__":
     import asyncio
@@ -122,7 +141,7 @@ if __name__ == "__main__":
 </td>
 <td width="50%" valign="top">
 
-**Usage Examples**
+**Effect Description**
 
 Send `/hello`
 
@@ -132,11 +151,11 @@ Bot replies: `Hello, {username}!`
 
 Send `/ping`
 
-Bot replies: `Pong! Bot is running normally.`
+Bot replies: `Pong! The bot is running normally.`
 
 ---
 
-**Running Methods**
+**How to Run**
 
 ```bash
 epsdk run main.py
@@ -154,63 +173,46 @@ For more detailed instructions, please refer to:
 
 ## Use Cases
 
-- **Multi-platform Bots** - Deploy bots with identical functionality across multiple platforms
+- **Multi-platform Bots** - Deploy bots with the same functionality across multiple platforms
 - **Chat Assistants** - Integrate AI chat modules for entertainment and interaction
 - **Automation Tools** - Message notifications, task management, data collection
 - **Message Forwarding** - Cross-platform message synchronization and forwarding
 
-## Supported Adapters
-
-Contributions to adapters are welcome!
-
-| Adapter | Description |
-|--------|------|
-| [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-grade instant messaging platform (bot account) |
-| [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Adapter based on Yunhu user account |
-| [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging software |
-| [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | Universal bot interface standard |
-| [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot12 standard |
-| [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email sending and receiving processing |
-| [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web debugging interface, no need to connect to actual platforms |
-| [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook instant messaging platform |
-
-See [Platform Adapter Details](docs/en/platform-guide/README.md)
-
 ## Documentation Resources
 
-| Simplified Chinese | English | Traditional Chinese |
+| 简体中文 | English | 繁體中文 |
 |----------------|----------------|----------------|
-| [Documentation Entry](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
+| [文档入口](docs/en/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
 
 ## External Resources
 
-| Platform | Main Site | Mirror Site |
+| Platform | Main Site | Alternative Sites |
 |------|--------|---------|
 | Documentation | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) • [GitHub](https://erispulse.github.io/#docs) • [Netlify](https://erispulse.netlify.app/#docs) |
 | Module Market | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) • [GitHub](https://erispulse.github.io/#market) • [Netlify](https://erispulse.netlify.app/#market) |
 
-## Contributing
+## Contribution Guidelines
 
-The robustness of the ErisPulse project needs your help! We welcome various forms of contributions, including but not limited to:
+The health of the ErisPulse project also depends on you! We welcome all forms of contributions, including but not limited to:
 
 1. **Report Issues**
    Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
 
 2. **Feature Requests**
-   Submit new ideas via [Community Discussion](https://github.com/ErisPulse/ErisPulse/discussions)
+   Share new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
 
 3. **Code Contributions**
-   Before submitting a Pull Request, please read our [Code Style](docs/en/styleguide/) and [Contributing Guide](CONTRIBUTING.md)
+   Before submitting a Pull Request, please read our [Code Style Guide](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md)
 
 4. **Documentation Improvements**
    Help improve documentation and example code
 
-[Join Community Discussion](https://github.com/ErisPulse/ErisPulse/discussions)
+[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
 ## Acknowledgments
 
 - Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame)
-- The core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/)
-- Thanks to all developers and authors who contribute to the open source community
+- Core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/)
+- Thank you to all developers and authors who have contributed to the open source community

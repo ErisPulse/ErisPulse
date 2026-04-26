@@ -85,19 +85,6 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `async async submit_event(event_type: str)`
-
-提交生命周期事件
-
-:param event_type: 事件名称
-:param source: 事件来源(默认"ErisPulse")
-:param msg: 事件描述
-:param data: 事件相关数据
-:param timestamp: 时间戳(默认当前时间)
-
----
-
-
 ##### `async async _execute_handlers(event: str, event_data: dict[str, Any])`
 
 执行事件处理器

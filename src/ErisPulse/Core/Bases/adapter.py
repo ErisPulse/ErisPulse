@@ -341,11 +341,10 @@ class BaseAdapter(ABC):
         """
         raise NotImplementedError("适配器必须实现shutdown方法")
 
-    async def emit(self) -> None:
-        from ..logger import logger
-
-        logger.error(
-            "适配器调用了一个被弃用的原生方法emit，请检查适配器的实现，如果你是开发者请查看ErisPulse的文档进行更新。如果你是普通用户请查看本适配器是否有更新"
+    async def emit(self, *args, **kwargs):
+        raise NotImplementedError(
+            "适配器的 emit 方法已被弃用。请使用 adapter.emit() 通过 AdapterManager 提交事件。"
+            "如果你是适配器开发者，请查看 ErisPulse 文档进行更新。"
         )
 
     def send(

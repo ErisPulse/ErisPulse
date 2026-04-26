@@ -1,10 +1,10 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "total_categories": 10,
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "ErisPulse Documentation",
@@ -31,11 +31,12 @@
           "path": "terminology.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "Getting Started": {
       "description": "ErisPulse basic concepts and tutorials",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "Create Your First Bot",
@@ -62,11 +63,12 @@
           "path": "getting-started/event-handling.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
-      "count": 4,
+      "count": 10,
       "documents": [
         {
           "title": "User Guide",
@@ -87,12 +89,18 @@
           "title": "CLI Command Reference",
           "path": "user-guide/cli-reference.md",
           "level": 1
+        },
+        {
+          "title": "Deployment Guide",
+          "path": "user-guide/deployment.md",
+          "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "Developer Guide": {
       "description": "Module and adapter development guides",
-      "count": 9,
+      "count": 22,
       "documents": [
         {
           "title": "Developer Guide",
@@ -100,50 +108,72 @@
           "level": 1
         },
         {
-          "title": "Introduction to Module Development",
-          "path": "developer-guide/modules/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "Module Core Concepts",
-          "path": "developer-guide/modules/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "Detailed Explanation of the Event Wrapper Class",
-          "path": "developer-guide/modules/event-wrapper.md",
-          "level": 1
-        },
-        {
-          "title": "Module Development Best Practices",
-          "path": "developer-guide/modules/best-practices.md",
-          "level": 1
-        },
-        {
-          "title": "Getting Started with Adapter Development",
-          "path": "developer-guide/adapters/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "Adapter Core Concepts",
-          "path": "developer-guide/adapters/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "SendDSL Deep Dive",
-          "path": "developer-guide/adapters/send-dsl.md",
-          "level": 1
-        },
-        {
-          "title": "Adapter Development Best Practices",
-          "path": "developer-guide/adapters/best-practices.md",
+          "title": "Publishing and Module Store Guide",
+          "path": "developer-guide/publishing.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "Modules",
+          "documents": [
+            {
+              "title": "Introduction to Module Development",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "Module Core Concepts",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "Detailed Explanation of the Event Wrapper Class",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1
+            },
+            {
+              "title": "Module Development Best Practices",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1
+            }
+          ]
+        },
+        "adapters": {
+          "name": "Adapters",
+          "documents": [
+            {
+              "title": "Getting Started with Adapter Development",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "Adapter Core Concepts",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "SendDSL Deep Dive",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1
+            },
+            {
+              "title": "Adapter Development Best Practices",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1
+            },
+            {
+              "title": "Event Converter Implementation Guide",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1
+            }
+          ]
+        }
+      }
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
-      "count": 7,
+      "count": 14,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
@@ -180,11 +210,12 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "API Reference": {
       "description": "Core API and interface documentation",
-      "count": 4,
+      "count": 8,
       "documents": [
         {
           "title": "API Reference",
@@ -206,11 +237,12 @@
           "path": "api-reference/event-system.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 4,
+      "count": 14,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -231,23 +263,40 @@
           "title": "Router Manager",
           "path": "advanced/router.md",
           "level": 1
+        },
+        {
+          "title": "MessageBuilder Detailed Explanation",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "Session Type System",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation Multi-turn Dialogue",
+          "path": "advanced/conversation.md",
+          "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
-      "count": 1,
+      "count": 2,
       "documents": [
         {
           "title": "AI-Assisted Development",
           "path": "ai-support/README.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "Technical Standards",
@@ -274,11 +323,12 @@
           "path": "standards/send-method-spec.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "Style Guide": {
       "description": "Code and documentation style guidelines",
-      "count": 2,
+      "count": 4,
       "documents": [
         {
           "title": "Style Guide",
@@ -290,7 +340,8 @@
           "path": "styleguide/docstring.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     }
   }
 }

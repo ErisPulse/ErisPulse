@@ -1,10 +1,10 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "total_categories": 10,
   "categories": {
     "快速开始": {
       "description": "ErisPulse 快速入门指南",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "ErisPulse 文档",
@@ -31,11 +31,12 @@
           "path": "terminology.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "入门指南": {
       "description": "ErisPulse 基础概念和使用教程",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "创建第一个机器人",
@@ -62,11 +63,12 @@
           "path": "getting-started/event-handling.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "用户使用指南": {
       "description": "ErisPulse 配置和命令参考",
-      "count": 4,
+      "count": 10,
       "documents": [
         {
           "title": "用户使用指南",
@@ -87,12 +89,18 @@
           "title": "CLI 命令参考",
           "path": "user-guide/cli-reference.md",
           "level": 1
+        },
+        {
+          "title": "部署指南",
+          "path": "user-guide/deployment.md",
+          "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "开发者指南": {
       "description": "模块和适配器开发指南",
-      "count": 9,
+      "count": 22,
       "documents": [
         {
           "title": "开发者指南",
@@ -100,50 +108,72 @@
           "level": 1
         },
         {
-          "title": "模块开发入门",
-          "path": "developer-guide/modules/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "模块核心概念",
-          "path": "developer-guide/modules/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "Event 包装类详解",
-          "path": "developer-guide/modules/event-wrapper.md",
-          "level": 1
-        },
-        {
-          "title": "模块开发最佳实践",
-          "path": "developer-guide/modules/best-practices.md",
-          "level": 1
-        },
-        {
-          "title": "适配器开发入门",
-          "path": "developer-guide/adapters/getting-started.md",
-          "level": 1
-        },
-        {
-          "title": "适配器核心概念",
-          "path": "developer-guide/adapters/core-concepts.md",
-          "level": 1
-        },
-        {
-          "title": "SendDSL 详解",
-          "path": "developer-guide/adapters/send-dsl.md",
-          "level": 1
-        },
-        {
-          "title": "适配器开发最佳实践",
-          "path": "developer-guide/adapters/best-practices.md",
+          "title": "发布与模块商店指南",
+          "path": "developer-guide/publishing.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "模块开发",
+          "documents": [
+            {
+              "title": "模块开发入门",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "模块核心概念",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "Event 包装类详解",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1
+            },
+            {
+              "title": "模块开发最佳实践",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1
+            }
+          ]
+        },
+        "adapters": {
+          "name": "适配器开发",
+          "documents": [
+            {
+              "title": "适配器开发入门",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "适配器核心概念",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "SendDSL 详解",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1
+            },
+            {
+              "title": "适配器开发最佳实践",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1
+            },
+            {
+              "title": "事件转换器实现指南",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1
+            }
+          ]
+        }
+      }
     },
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
-      "count": 7,
+      "count": 14,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -180,11 +210,12 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "API 参考": {
       "description": "核心 API 和接口文档",
-      "count": 4,
+      "count": 8,
       "documents": [
         {
           "title": "API 参考",
@@ -206,11 +237,12 @@
           "path": "api-reference/event-system.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 4,
+      "count": 14,
       "documents": [
         {
           "title": "高级主题",
@@ -231,23 +263,40 @@
           "title": "路由管理器",
           "path": "advanced/router.md",
           "level": 1
+        },
+        {
+          "title": "MessageBuilder 详解",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "会话类型系统",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation 多轮对话",
+          "path": "advanced/conversation.md",
+          "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "AI 辅助开发": {
       "description": "使用 AI 辅助开发 ErisPulse",
-      "count": 1,
+      "count": 2,
       "documents": [
         {
           "title": "AI 辅助开发",
           "path": "ai-support/README.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "技术标准": {
       "description": "框架的技术规范和标准",
-      "count": 5,
+      "count": 10,
       "documents": [
         {
           "title": "技术标准",
@@ -274,11 +323,12 @@
           "path": "standards/send-method-spec.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     },
     "风格指南": {
       "description": "代码和文档风格规范",
-      "count": 2,
+      "count": 4,
       "documents": [
         {
           "title": "风格指南",
@@ -290,7 +340,8 @@
           "path": "styleguide/docstring.md",
           "level": 1
         }
-      ]
+      ],
+      "subgroups": {}
     }
   }
 }

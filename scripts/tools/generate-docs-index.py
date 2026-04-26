@@ -152,6 +152,7 @@ class DocsIndexGenerator:
         "user-guide/installation.md": 2,
         "user-guide/configuration.md": 3,
         "user-guide/cli-reference.md": 4,
+        "user-guide/deployment.md": 5,
         
         # 开发者指南
         "developer-guide/README.md": 1,
@@ -163,7 +164,8 @@ class DocsIndexGenerator:
         "developer-guide/adapters/core-concepts.md": 7,
         "developer-guide/adapters/send-dsl.md": 8,
         "developer-guide/adapters/best-practices.md": 9,
-        "developer-guide/extensions/cli-extensions.md": 10,
+        "developer-guide/publishing.md": 10,
+        "developer-guide/adapters/converter.md": 11,
         
         # 平台特性指南
         "platform-guide/README.md": 1,
@@ -185,6 +187,9 @@ class DocsIndexGenerator:
         "advanced/lifecycle.md": 2,
         "advanced/lazy-loading.md": 3,
         "advanced/router.md": 4,
+        "advanced/message-builder.md": 5,
+        "advanced/session-types.md": 6,
+        "advanced/conversation.md": 7,
         
         # AI 辅助开发
         "ai-support/README.md": 1,
@@ -203,6 +208,25 @@ class DocsIndexGenerator:
     
     # 需要忽略的目录
     IGNORE_DIRS = {"ai-support/prompts", "api-reference/auto_api"}
+    
+    # 子分组显示名称（按语言映射）
+    SUBGROUP_NAMES = {
+        "modules": {
+            "zh-CN": "模块开发",
+            "en": "Modules",
+            "zh-TW": "模組開發"
+        },
+        "adapters": {
+            "zh-CN": "适配器开发",
+            "en": "Adapters",
+            "zh-TW": "適配器開發"
+        },
+        "prompts": {
+            "zh-CN": "提示词模板",
+            "en": "Prompt Templates",
+            "zh-TW": "提示詞模板"
+        }
+    }
     
     def __init__(self, docs_dir: str, output_dir: str, lang: Optional[str] = None):
         """
@@ -431,6 +455,7 @@ class DocsIndexGenerator:
         :return: 映射索引
         """
         categories = {}
+        reverse_category_map = {v: k for k, v in self.CATEGORY_MAP.items()}
         
         for doc in documents:
             category = doc["category"]
@@ -440,15 +465,44 @@ class DocsIndexGenerator:
                 categories[category] = {
                     "description": self.CATEGORY_DESCRIPTIONS.get(category, ""),
                     "count": 0,
-                    "documents": []
+                    "documents": [],
+                    "_subgroups": {}
                 }
             
-            # 添加文档
-            categories[category]["documents"].append({
+            doc_entry = {
                 "title": doc["title"],
                 "path": doc["path"],
                 "level": doc["level"]
-            })
+            }
+            
+            category_dir = reverse_category_map.get(category, "")
+            subgroup_key = None
+            
+            if category_dir:
+                prefix = category_dir + "/"
+                if doc["path"].startswith(prefix):
+                    remainder = doc["path"][len(prefix):]
+                    parts = remainder.split("/")
+                    if len(parts) > 1:
+                        subgroup_key = parts[0]
+            
+            if subgroup_key:
+                if subgroup_key not in categories[category]["_subgroups"]:
+                    lang = self.lang or "zh-CN"
+                    subgroup_name = self.SUBGROUP_NAMES.get(
+                        subgroup_key, {}
+                    ).get(lang, subgroup_key.replace("-", " ").replace("_", " ").title())
+                    
+                    categories[category]["_subgroups"][subgroup_key] = {
+                        "name": subgroup_name,
+                        "documents": []
+                    }
+                categories[category]["_subgroups"][subgroup_key]["documents"].append(doc_entry)
+            else:
+                categories[category]["documents"].append(doc_entry)
+            
+            categories[category]["count"] += 1
+        
             categories[category]["count"] += 1
         
         # 按分类优先级排序（数值越小越靠前），未定义的分类排最后
@@ -467,9 +521,28 @@ class DocsIndexGenerator:
                 return (priority, path)
             
             category_data["documents"].sort(key=sort_document)
+            
+            if category_data["_subgroups"]:
+                for sg_data in category_data["_subgroups"].values():
+                    sg_data["documents"].sort(key=sort_document)
+                
+                def subgroup_sort_key(item):
+                    sg_docs = item[1]["documents"]
+                    if sg_docs:
+                        first_path = sg_docs[0]["path"]
+                        return self.DOC_PRIORITY.get(first_path, 9999)
+                    return 9999
+                
+                category_data["subgroups"] = dict(
+                    sorted(category_data["_subgroups"].items(), key=subgroup_sort_key)
+                )
+            else:
+                category_data["subgroups"] = {}
+            
+            del category_data["_subgroups"]
         
         result = {
-            "version": "1.0",
+            "version": "1.1",
             # "generated_at": datetime.now(timezone.utc).isoformat(),
             "total_categories": len(sorted_categories),
             "categories": sorted_categories
