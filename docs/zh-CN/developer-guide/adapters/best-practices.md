@@ -586,7 +586,7 @@ class MyAdapter(BaseAdapter):
 
 ### 1. 维护平台特性文档
 
-在 `docs-new/platform-guide/` 下创建 `{platform}.md` 文档：
+在 `docs/zh-CN/platform-guide/` 下创建 `{platform}.md` 文档(其它语言版本会自动生成)：
 
 ```markdown
 # 平台名称适配器文档
