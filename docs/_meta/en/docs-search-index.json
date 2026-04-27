@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 952,
+  "total_keywords": 1003,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -628,14 +628,6 @@
         "line": 242,
         "level": 3,
         "title": "2. Timestamp Normalization"
-      }
-    ],
-    "2. Update Version Information": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 608,
-        "level": 3,
-        "title": "2. Update Version Information"
       }
     ],
     "2.1 Media Message Parameter Specifications": [
@@ -1486,6 +1478,14 @@
         "title": "@ Mention related"
       }
     ],
+    "A2UI Message Segment (a2ui)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 427,
+        "level": 4,
+        "title": "A2UI Message Segment (a2ui)"
+      }
+    ],
     "AI-Assisted Development": [
       {
         "document": "README.md",
@@ -1504,6 +1504,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 144,
+        "level": 2,
+        "title": "API Calls"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 558,
         "level": 2,
         "title": "API Calls"
       }
@@ -1600,6 +1606,14 @@
         "line": 176,
         "level": 3,
         "title": "Account Configuration"
+      }
+    ],
+    "Account Identification in Events": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 508,
+        "level": 3,
+        "title": "Account Identification in Events"
       }
     ],
     "Account Management": [
@@ -1840,6 +1854,14 @@
         "title": "Adding Middleware"
       }
     ],
+    "Additional Operation Methods": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 111,
+        "level": 3,
+        "title": "Additional Operation Methods"
+      }
+    ],
     "Admin Check": [
       {
         "document": "getting-started/common-tasks.md",
@@ -1888,6 +1910,14 @@
         "line": 60,
         "level": 3,
         "title": "Architecture Overview"
+      }
+    ],
+    "Article Message Segment (yunhu_user_post)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 376,
+        "level": 4,
+        "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
     "Async Processing Mechanism": [
@@ -1939,7 +1969,7 @@
     "Asynchronous Sending and Result Processing": [
       {
         "document": "platform-guide/README.md",
-        "line": 77,
+        "line": 83,
         "level": 4,
         "title": "Asynchronous Sending and Result Processing"
       }
@@ -2080,6 +2110,18 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 12,
         "level": 2,
@@ -2092,6 +2134,12 @@
         "title": "Basic Information"
       },
       {
+        "document": "platform-guide/qqbot.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 12,
         "level": 2,
@@ -2099,6 +2147,12 @@
       },
       {
         "document": "platform-guide/yunhu.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
         "line": 12,
         "level": 2,
         "title": "Basic Information"
@@ -2304,6 +2358,14 @@
         "title": "Blacklist Filtering"
       }
     ],
+    "Bot Announcement Board Event Example": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 258,
+        "level": 3,
+        "title": "Bot Announcement Board Event Example"
+      }
+    ],
     "Bot Identification in Events": [
       {
         "document": "platform-guide/yunhu.md",
@@ -2410,10 +2472,24 @@
         "title": "Built-in Defaults"
       }
     ],
+    "Button Message Segment (yunhu_user_button)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 414,
+        "level": 4,
+        "title": "Button Message Segment (yunhu_user_button)"
+      }
+    ],
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 48,
+        "level": 3,
+        "title": "Button Parameter Description"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 59,
         "level": 3,
         "title": "Button Parameter Description"
       }
@@ -2432,6 +2508,14 @@
         "line": 241,
         "level": 3,
         "title": "Chain Calling"
+      }
+    ],
+    "Chain Decoration Methods (Can be used in combination)": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 60,
+        "level": 3,
+        "title": "Chain Decoration Methods (Can be used in combination)"
       }
     ],
     "Chain Modifiers": [
@@ -2454,6 +2538,20 @@
         "line": 82,
         "level": 3,
         "title": "Chained Call Examples"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 93,
+        "level": 3,
+        "title": "Chained Call Examples"
+      }
+    ],
+    "Chained Decorator Methods (Combinable)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 82,
+        "level": 3,
+        "title": "Chained Decorator Methods (Combinable)"
       }
     ],
     "Chained Modifier Methods": [
@@ -2496,12 +2594,50 @@
         "title": "Chained Modifying Methods"
       }
     ],
+    "Chaining Call Examples": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 72,
+        "level": 3,
+        "title": "Chaining Call Examples"
+      }
+    ],
+    "Chaining Example": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 67,
+        "level": 3,
+        "title": "Chaining Example"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 73,
+        "level": 3,
+        "title": "Chaining Example"
+      }
+    ],
+    "Chaining Methods (Can be used in combination)": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 65,
+        "level": 3,
+        "title": "Chaining Methods (Can be used in combination)"
+      }
+    ],
     "Chaining Mode (Instance)": [
       {
         "document": "advanced/message-builder.md",
         "line": 9,
         "level": 3,
         "title": "Chaining Mode (Instance)"
+      }
+    ],
+    "Chaining Modifier Methods (Can be used in combination)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 64,
+        "level": 3,
+        "title": "Chaining Modifier Methods (Can be used in combination)"
       }
     ],
     "Check Installation": [
@@ -2743,7 +2879,7 @@
     "Common Interfaces": [
       {
         "document": "platform-guide/README.md",
-        "line": 30,
+        "line": 36,
         "level": 2,
         "title": "Common Interfaces"
       }
@@ -2880,6 +3016,12 @@
         "title": "Configuration Description"
       },
       {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 444,
+        "level": 3,
+        "title": "Configuration Description"
+      },
+      {
         "document": "user-guide/installation.md",
         "line": 89,
         "level": 3,
@@ -2936,6 +3078,26 @@
         "line": 6,
         "level": 2,
         "title": "Configuration File Location"
+      }
+    ],
+    "Configuration Instructions": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 21,
+        "level": 2,
+        "title": "Configuration Instructions"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 21,
+        "level": 2,
+        "title": "Configuration Instructions"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 21,
+        "level": 2,
+        "title": "Configuration Instructions"
       }
     ],
     "Configuration Management": [
@@ -3010,6 +3172,14 @@
         "title": "Connection Management"
       }
     ],
+    "Connection Process": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 305,
+        "level": 3,
+        "title": "Connection Process"
+      }
+    ],
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3037,7 +3207,7 @@
     "Contributing": [
       {
         "document": "platform-guide/README.md",
-        "line": 214,
+        "line": 220,
         "level": 2,
         "title": "Contributing"
       }
@@ -3134,8 +3304,26 @@
         "title": "Core Differences"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 161,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 147,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 89,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 134,
         "level": 3,
         "title": "Core Differences"
       },
@@ -3148,6 +3336,12 @@
       {
         "document": "platform-guide/yunhu.md",
         "line": 131,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 149,
         "level": 3,
         "title": "Core Differences"
       }
@@ -3434,6 +3628,14 @@
         "title": "Directory Structure"
       }
     ],
+    "Disconnection and Reconnection": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 325,
+        "level": 3,
+        "title": "Disconnection and Reconnection"
+      }
+    ],
     "Discord": [
       {
         "document": "standards/session-types.md",
@@ -3476,7 +3678,25 @@
     ],
     "Document Information": [
       {
+        "document": "platform-guide/kook.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/onebot12.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
         "line": 7,
         "level": 2,
         "title": "Document Information"
@@ -3489,6 +3709,12 @@
       },
       {
         "document": "platform-guide/yunhu.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
         "line": 7,
         "level": 2,
         "title": "Document Information"
@@ -3712,6 +3938,26 @@
         "title": "ErisPulse-ModuleDev.md"
       }
     ],
+    "Error Code Description": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 142,
+        "level": 3,
+        "title": "Error Code Description"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 134,
+        "level": 3,
+        "title": "Error Code Description"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 120,
+        "level": 3,
+        "title": "Error Code Description"
+      }
+    ],
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -3882,6 +4128,14 @@
         "title": "Event Handling"
       }
     ],
+    "Event Handling Example": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 284,
+        "level": 3,
+        "title": "Event Handling Example"
+      }
+    ],
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
@@ -3913,7 +4167,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 92,
+        "line": 98,
         "level": 3,
         "title": "Event Listening"
       }
@@ -3924,6 +4178,14 @@
         "line": 134,
         "level": 3,
         "title": "Event Listening Methods"
+      }
+    ],
+    "Event Mixin Methods": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 270,
+        "level": 3,
+        "title": "Event Mixin Methods"
       }
     ],
     "Event Processing Enhancement": [
@@ -4040,6 +4302,12 @@
         "line": 207,
         "level": 2,
         "title": "Extended Field Description"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 352,
+        "level": 2,
+        "title": "Extended Field Description"
       }
     ],
     "Extended Field Descriptions": [
@@ -4054,6 +4322,26 @@
         "line": 192,
         "level": 2,
         "title": "Extended Field Descriptions"
+      }
+    ],
+    "Extended Fields": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 169,
+        "level": 3,
+        "title": "Extended Fields"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 158,
+        "level": 3,
+        "title": "Extended Fields"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 142,
+        "level": 3,
+        "title": "Extended Fields"
       }
     ],
     "Extension Field Descriptions": [
@@ -4134,6 +4422,14 @@
         "line": 54,
         "level": 3,
         "title": "For Module Developers"
+      }
+    ],
+    "Form Message Segment (yunhu_user_form)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 363,
+        "level": 4,
+        "title": "Form Message Segment (yunhu_user_form)"
       }
     ],
     "Forward Functionality": [
@@ -4356,6 +4652,54 @@
         "title": "HTTP Routes"
       }
     ],
+    "Handling Channel Messages": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 342,
+        "level": 3,
+        "title": "Handling Channel Messages"
+      }
+    ],
+    "Handling Group Messages": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 321,
+        "level": 3,
+        "title": "Handling Group Messages"
+      }
+    ],
+    "Handling Message Editing": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 383,
+        "level": 3,
+        "title": "Handling Message Editing"
+      }
+    ],
+    "Handling Notification Events (Reaction responses, etc.)": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 380,
+        "level": 3,
+        "title": "Handling Notification Events (Reaction responses, etc.)"
+      }
+    ],
+    "Handling Private Messages": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 364,
+        "level": 3,
+        "title": "Handling Private Messages"
+      }
+    ],
+    "Handling Reactions": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 345,
+        "level": 3,
+        "title": "Handling Reactions"
+      }
+    ],
     "Health Check": [
       {
         "document": "advanced/router.md",
@@ -4376,6 +4720,14 @@
         "line": 263,
         "level": 3,
         "title": "Heartbeat Event"
+      }
+    ],
+    "Heartbeat Mechanism": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 308,
+        "level": 3,
+        "title": "Heartbeat Mechanism"
       }
     ],
     "Hot Reload": [
@@ -4754,6 +5106,14 @@
         "title": "Keyword Filtering"
       }
     ],
+    "Kook Platform Features Documentation": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 1,
+        "level": 1,
+        "title": "Kook Platform Features Documentation"
+      }
+    ],
     "Lazy Loading": [
       {
         "document": "terminology.md",
@@ -4880,6 +5240,14 @@
         "title": "Listening to Lifecycle Events"
       }
     ],
+    "Listening to Member Changes": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 396,
+        "level": 3,
+        "title": "Listening to Member Changes"
+      }
+    ],
     "Listening to all messages": [
       {
         "document": "getting-started/event-handling.md",
@@ -4956,6 +5324,12 @@
       {
         "document": "platform-guide/yunhu.md",
         "line": 297,
+        "level": 3,
+        "title": "Log Information"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 530,
         "level": 3,
         "title": "Log Information"
       }
@@ -5048,6 +5422,12 @@
         "line": 306,
         "level": 3,
         "title": "Management Interface"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 540,
+        "level": 3,
+        "title": "Management Interface"
       }
     ],
     "Manual Deployment (pip)": [
@@ -5066,12 +5446,36 @@
         "title": "Manual Project Creation"
       }
     ],
+    "Matrix Platform Features Document": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 1,
+        "level": 1,
+        "title": "Matrix Platform Features Document"
+      }
+    ],
+    "Media File Processing": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 47,
+        "level": 3,
+        "title": "Media File Processing"
+      }
+    ],
     "Media Sending Methods": [
       {
         "document": "platform-guide/telegram.md",
         "line": 35,
         "level": 3,
         "title": "Media Sending Methods"
+      }
+    ],
+    "Mention Message Segment": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 279,
+        "level": 3,
+        "title": "Mention Message Segment"
       }
     ],
     "Message Configuration": [
@@ -5098,6 +5502,14 @@
         "title": "Message Counting"
       }
     ],
+    "Message Edit Notification Example": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 213,
+        "level": 3,
+        "title": "Message Edit Notification Example"
+      }
+    ],
     "Message Event": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -5112,6 +5524,14 @@
         "line": 74,
         "level": 3,
         "title": "Message Event Additional Fields"
+      }
+    ],
+    "Message Event Example": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 187,
+        "level": 3,
+        "title": "Message Event Example"
       }
     ],
     "Message Event Handling": [
@@ -5206,12 +5626,24 @@
         "line": 38,
         "level": 2,
         "title": "Message Segment Types"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 254,
+        "level": 3,
+        "title": "Message Segment Types"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 215,
+        "level": 3,
+        "title": "Message Segment Types"
       }
     ],
     "Message Sending Failed": [
       {
         "document": "platform-guide/README.md",
-        "line": 187,
+        "line": 193,
         "level": 4,
         "title": "Message Sending Failed"
       }
@@ -5219,9 +5651,17 @@
     "Message Sending Success": [
       {
         "document": "platform-guide/README.md",
-        "line": 171,
+        "line": 177,
         "level": 4,
         "title": "Message Sending Success"
+      }
+    ],
+    "Message Sequence Number Mechanism": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 332,
+        "level": 3,
+        "title": "Message Sequence Number Mechanism"
       }
     ],
     "Message Statistics": [
@@ -5362,6 +5802,14 @@
         "line": 87,
         "level": 2,
         "title": "Method Quick Reference"
+      }
+    ],
+    "Method Return Values": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 130,
+        "level": 2,
+        "title": "Method Return Values"
       }
     ],
     "Method Signature": [
@@ -5568,6 +6016,14 @@
         "line": 5,
         "level": 2,
         "title": "Module-level Documentation Comment"
+      }
+    ],
+    "Multi-Account Configuration": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 442,
+        "level": 2,
+        "title": "Multi-Account Configuration"
       }
     ],
     "Multi-Account Sending Syntax": [
@@ -5846,8 +6302,32 @@
     ],
     "OneBot12 Message Support": [
       {
+        "document": "platform-guide/kook.md",
+        "line": 89,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 97,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 92,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 95,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 109,
         "level": 3,
         "title": "OneBot12 Message Support"
       }
@@ -5902,6 +6382,14 @@
         "line": 301,
         "level": 2,
         "title": "OneBot12 Standard Features"
+      }
+    ],
+    "OneBot12 Supported detail_type": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 179,
+        "level": 3,
+        "title": "OneBot12 Supported detail_type"
       }
     ],
     "Operating Mode": [
@@ -6348,6 +6836,14 @@
         "title": "Q: What should I do if the code generated by AI has issues?"
       }
     ],
+    "QQBot Platform Features Documentation": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 1,
+        "level": 1,
+        "title": "QQBot Platform Features Documentation"
+      }
+    ],
     "Quality Checklist": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -6515,7 +7011,7 @@
     "References": [
       {
         "document": "platform-guide/README.md",
-        "line": 202,
+        "line": 208,
         "level": 2,
         "title": "References"
       }
@@ -6604,12 +7100,6 @@
       {
         "document": "developer-guide/README.md",
         "line": 120,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 617,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -6880,6 +7370,14 @@
         "title": "Reverse Proxy"
       }
     ],
+    "Room Invitation": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 314,
+        "level": 3,
+        "title": "Room Invitation"
+      }
+    ],
     "Route Information": [
       {
         "document": "api-reference/core-modules.md",
@@ -7041,7 +7539,7 @@
     "Send Chained Invocation": [
       {
         "document": "platform-guide/README.md",
-        "line": 32,
+        "line": 38,
         "level": 3,
         "title": "Send Chained Invocation"
       }
@@ -7134,10 +7632,36 @@
         "title": "Sending Examples"
       }
     ],
+    "Sending Media Messages": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 362,
+        "level": 3,
+        "title": "Sending Media Messages"
+      }
+    ],
     "Sending Method Return Values": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 127,
+        "level": 2,
+        "title": "Sending Method Return Values"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 119,
+        "level": 2,
+        "title": "Sending Method Return Values"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 206,
+        "level": 2,
+        "title": "Sending Method Return Values"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 105,
         "level": 2,
         "title": "Sending Method Return Values"
       }
@@ -7212,6 +7736,14 @@
         "title": "Shutting Down Adapters"
       }
     ],
+    "Signal Types": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 314,
+        "level": 3,
+        "title": "Signal Types"
+      }
+    ],
     "Simple Counter": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7242,12 +7774,42 @@
         "line": 53,
         "level": 2,
         "title": "Special Event Types"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 130,
+        "level": 2,
+        "title": "Special Event Types"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 145,
+        "level": 2,
+        "title": "Special Event Types"
       }
     ],
     "Special Field Examples": [
       {
+        "document": "platform-guide/kook.md",
+        "line": 175,
+        "level": 3,
+        "title": "Special Field Examples"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 164,
+        "level": 3,
+        "title": "Special Field Examples"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 102,
+        "level": 3,
+        "title": "Special Field Examples"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 149,
         "level": 3,
         "title": "Special Field Examples"
       },
@@ -7262,6 +7824,14 @@
         "line": 143,
         "level": 3,
         "title": "Special Field Examples"
+      }
+    ],
+    "Special Message Segment Types": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 361,
+        "level": 3,
+        "title": "Special Message Segment Types"
       }
     ],
     "Special Parameters Explanation": [
@@ -7329,7 +7899,7 @@
     "Standard Event Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 149,
+        "line": 155,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -7337,7 +7907,7 @@
     "Standard Formats": [
       {
         "document": "platform-guide/README.md",
-        "line": 144,
+        "line": 150,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -7367,7 +7937,7 @@
     "Standard Response Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 170,
+        "line": 176,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -7500,6 +8070,14 @@
         "title": "Step 5: Test the Bot"
       }
     ],
+    "Sticker Message Segment (yunhu_user_sticker)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 397,
+        "level": 4,
+        "title": "Sticker Message Segment (yunhu_user_sticker)"
+      }
+    ],
     "Storage": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -7590,6 +8168,14 @@
         "title": "Success Response Example"
       }
     ],
+    "Super File Sharing Event Example": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 234,
+        "level": 3,
+        "title": "Super File Sharing Event Example"
+      }
+    ],
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
@@ -7606,6 +8192,18 @@
         "title": "Supported Message Sending Types"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 40,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 44,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 20,
         "level": 2,
@@ -7614,6 +8212,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 20,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 47,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -7628,6 +8232,20 @@
         "line": 20,
         "level": 2,
         "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 22,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      }
+    ],
+    "Supported Original Event Types": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 168,
+        "level": 3,
+        "title": "Supported Original Event Types"
       }
     ],
     "Supported Submission Types": [
@@ -7636,6 +8254,22 @@
         "line": 27,
         "level": 3,
         "title": "Supported Submission Types"
+      }
+    ],
+    "Sync API Connection": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 296,
+        "level": 2,
+        "title": "Sync API Connection"
+      }
+    ],
+    "Sync Process": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 298,
+        "level": 3,
+        "title": "Sync Process"
       }
     ],
     "Synchronous Initialization": [
@@ -7878,6 +8512,20 @@
         "title": "Uninstalling Modules"
       }
     ],
+    "Unique Event Types": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 157,
+        "level": 2,
+        "title": "Unique Event Types"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 143,
+        "level": 2,
+        "title": "Unique Event Types"
+      }
+    ],
     "Unregistering Routes": [
       {
         "document": "advanced/router.md",
@@ -7952,6 +8600,18 @@
       {
         "document": "api-reference/README.md",
         "line": 49,
+        "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 340,
+        "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 319,
         "level": 2,
         "title": "Usage Examples"
       }
@@ -8040,6 +8700,14 @@
         "line": 95,
         "level": 3,
         "title": "Using Method"
+      }
+    ],
+    "Using Send DSL to Specify Accounts": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 486,
+        "level": 3,
+        "title": "Using Send DSL to Specify Accounts"
       }
     ],
     "Using the Event System": [
@@ -8192,6 +8860,12 @@
         "line": 442,
         "level": 3,
         "title": "WebSocket Connection"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 303,
+        "level": 2,
+        "title": "WebSocket Connection"
       }
     ],
     "WebSocket Routes": [
@@ -8240,6 +8914,14 @@
         "line": 1,
         "level": 1,
         "title": "Yunhu Platform Feature Documentation"
+      }
+    ],
+    "Yunhu User Platform Features Documentation": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 1,
+        "level": 1,
+        "title": "Yunhu User Platform Features Documentation"
       }
     ],
     "[BUG-001] Init Command Adapter Configuration Path Type Error": [
@@ -8520,6 +9202,14 @@
         "line": 54,
         "level": 3,
         "title": "list Parameters"
+      }
+    ],
+    "mention_all Message Segment": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 292,
+        "level": 3,
+        "title": "mention_all Message Segment"
       }
     ],
     "on_load Method": [

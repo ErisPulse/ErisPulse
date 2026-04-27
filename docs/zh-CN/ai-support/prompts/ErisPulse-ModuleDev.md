@@ -6071,10 +6071,16 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
+- [云湖用户平台特性](yunhu-user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
 - [邮件平台特性](email.md)
+- [Kook(开黑啦)平台特性](kook.md)
+- [Matrix平台特性](matrix.md)
+- [QQ官方机器人平台特性](qqbot.md)
+
+> 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
 ---
 

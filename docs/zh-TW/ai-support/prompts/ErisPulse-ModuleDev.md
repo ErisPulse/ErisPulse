@@ -5328,10 +5328,16 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 - [維護說明](maintain-notes.md)
 
 - [雲湖平台特性](yunhu.md)
+- [雲湖用戶平台特性](yunhu-user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
 - [電子郵件平台特性](email.md)
+- [Kook(開黑啦)平台特性](kook.md)
+- [Matrix平台特性](matrix.md)
+- [QQ官方機器人平台特性](qqbot.md)
+
+> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
 
 ---
 
@@ -5363,7 +5369,7 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. 指定發送帳號: `Using(account_id)`
+3. 指定傳送帳號: `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -5398,7 +5404,7 @@ result = await task
 ```
 
 ### 事件監聽
-有 three 種事件監聽方式：
+有三種事件監聽方式：
 
 1. 平台原生事件監聽：
    ```python
@@ -5425,7 +5431,7 @@ result = await task
    ```
 
 3. Event模組監聽：
-    `Event` 的訊息格式基於 `adapter.on()` 函數，因此 `Event` 提供的訊息格式是一個 OneBot12 標準訊息
+    `Event` 的事件基於 `adapter.on()` 函數，因此`Event`提供的事件格式是一個OneBot12標準事件
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -5445,17 +5451,17 @@ result = await task
         logger.info(f"收到指令: {event}")
     ```
 
-其中，最推薦的是使用 `Event` 模組進行事件處理，因為 `Event` 模組提供了豐富的訊息類型，以及豐富的訊息處理方法。
+其中，最推薦的是使用 `Event` 模組進行事件處理，因為 `Event` 模組提供了豐富的事件類型，以及豐富的事件處理方法。
 
 ---
 
 ## 標準格式
-為了方便參考，這裡給出了簡單的訊息格式，如果需要詳細資訊，請參考上方的連結。
+為方便參考，這裡給出了簡單的事件格式，如果需要詳細資訊，請參考上方的連結。
 
 > **注意：** 以下格式為基礎 OneBot12 標準格式，各適配器可能在此基礎上有擴展欄位。具體請參考各適配器的特定功能說明。
 
 ### 標準事件格式
-所有適配器必須實現的訊息轉換格式：
+所有適配器必須實現的事件轉換格式：
 ```json
 {
   "id": "event_123",
