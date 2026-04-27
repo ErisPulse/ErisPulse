@@ -3427,7 +3427,7 @@ class MyAdapter(BaseAdapter):
 
 ### 1. 维护平台特性文档
 
-在 `docs-new/platform-guide/` 下创建 `{platform}.md` 文档：
+在 `docs/zh-CN/platform-guide/` 下创建 `{platform}.md` 文档(其它语言版本会自动生成)：
 
 ```markdown
 # 平台名称适配器文档
@@ -6678,10 +6678,16 @@ if builder:
 - [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
+- [云湖用户平台特性](yunhu-user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
 - [邮件平台特性](email.md)
+- [Kook(开黑啦)平台特性](kook.md)
+- [Matrix平台特性](matrix.md)
+- [QQ官方机器人平台特性](qqbot.md)
+
+> 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
 ---
 
@@ -8208,6 +8214,1917 @@ await mail.Send.Using("from@example.com")
     }
   ]
 }
+
+
+
+
+### Kook 适配
+
+# Kook平台特性文档
+
+KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器，整合了Kook所有功能模块，提供统一的事件处理和消息操作接口。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 0.1.0
+- 维护者: ShanFish
+
+## 基本信息
+
+- 平台简介：Kook（原开黑啦）是一款支持文字、语音、视频通信的社区平台，提供完整的 Bot 开发接口
+- 适配器名称：KookAdapter
+- 连接方式：WebSocket 长连接（通过Kook网关）
+- 认证方式：基于 Bot Token 进行身份认证
+- 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()` 等链式修饰方法
+- OneBot12兼容：支持发送 OneBot12 格式消息
+
+## 配置说明
+
+```toml
+# config.toml
+[KookAdapter]
+token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必填，格式: Bot xxx/xxx）
+bot_id = ""                   # Bot 用户ID（可选，不填则从 token 中解析）
+compress = true               # 是否启用 WebSocket 压缩（可选，默认为 true）
+```
+
+**配置项说明：**
+- `token`：Kook Bot 的 Token（必填），从 [Kook开发者中心](https://developer.kookapp.cn) 获取，格式为 `Bot xxx/xxx`
+- `bot_id`：Bot 的用户ID（可选），如果不填写，适配器会尝试从 token 中自动解析。建议手动填写以确保准确性
+- `compress`：是否启用 WebSocket 数据压缩（可选，默认为 `true`），启用后使用 zlib 解压数据
+
+**API环境：**
+- Kook API 基础地址：`https://www.kookapp.cn/api/v3`
+- WebSocket 网关通过 API 动态获取：`POST /gateway/index`
+
+## 支持的消息发送类型
+
+所有发送方法均通过链式语法实现，例如：
+```python
+from ErisPulse.Core import adapter
+kook = adapter.get("kook")
+
+await kook.Send.To("group", channel_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: bytes | str)`：发送图片消息，支持文件路径、URL、二进制数据。
+- `.Video(file: bytes | str)`：发送视频消息，支持文件路径、URL、二进制数据。
+- `.File(file: bytes | str, filename: str = None)`：发送文件消息，支持文件路径、URL、二进制数据。
+- `.Voice(file: bytes | str)`：发送语音消息，支持文件路径、URL、二进制数据。
+- `.Markdown(text: str)`：发送KMarkdown格式消息。
+- `.Card(card_data: dict)`：发送卡片消息（CardMessage）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
+
+### 链式修饰方法（可组合使用）
+
+链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
+
+- `.Reply(message_id: str)`：回复（引用）指定消息。
+- `.At(user_id: str)`：@指定用户，可多次调用以@多个用户。
+- `.AtAll()`：@所有人。
+
+### 链式调用示例
+
+```python
+# 基础发送
+await kook.Send.To("group", channel_id).Text("Hello")
+
+# 回复消息
+await kook.Send.To("group", channel_id).Reply(msg_id).Text("回复消息")
+
+# @用户
+await kook.Send.To("group", channel_id).At("user_id").Text("你好")
+
+# @多个用户
+await kook.Send.To("group", channel_id).At("user1").At("user2").Text("多用户@")
+
+# @全体
+await kook.Send.To("group", channel_id).AtAll().Text("公告")
+
+# 组合使用
+await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("复合消息")
+```
+
+### OneBot12消息支持
+
+适配器支持发送 OneBot12 格式的消息，便于跨平台消息兼容：
+
+```python
+# 发送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
+
+# 配合链式修饰
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await kook.Send.To("group", channel_id).Reply(msg_id).Raw_ob12(ob12_msg)
+
+# 在 Raw_ob12 中使用 mention 和 reply 消息段
+ob12_msg = [
+    {"type": "text", "data": {"text": "Hello "}},
+    {"type": "mention", "data": {"user_id": "user_id"}},
+    {"type": "reply", "data": {"message_id": "msg_id"}}
+]
+await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
+```
+
+### 额外操作方法
+
+除发送消息外，Kook适配器还支持以下操作：
+
+```python
+# 编辑消息（仅支持 KMarkdown type=9 和 CardMessage type=10）
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+
+# 撤回消息
+await kook.Send.To("group", channel_id).Recall(msg_id)
+
+# 上传文件（获取文件URL）
+result = await kook.Send.Upload("C:/path/to/file.jpg")
+file_url = result["data"]["url"]
+```
+
+## 发送方法返回值
+
+所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 ErisPulse 适配器标准化返回规范：
+
+```python
+{
+    "status": "ok",           // 执行状态: "ok" 或 "failed"
+    "retcode": 0,             // 返回码（Kook API 的 code）
+    "data": {...},            // 响应数据
+    "message_id": "xxx",      // 消息ID
+    "message": "",            // 错误信息
+    "kook_raw": {...}         // 原始响应数据
+}
+```
+
+### 错误码说明
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 40100 | Token 无效或未提供 |
+| 40101 | Token 过期 |
+| 40102 | Token 与 Bot 不匹配 |
+| 40103 | 缺少权限 |
+| 40000 | 参数错误 |
+| 40400 | 目标不存在 |
+| 40300 | 无权限操作 |
+| 50000 | 服务器内部错误 |
+| -1 | 适配器内部错误 |
+
+## 特有事件类型
+
+需要 `platform=="kook"` 检测再使用本平台特性
+
+### 核心差异点
+
+1. **频道系统**：Kook 使用服务器（Guild）和频道（Channel）两层结构，频道是消息的基本发送目标
+2. **消息类型**：Kook 支持文本(1)、图片(2)、视频(3)、文件(4)、语音(8)、KMarkdown(9)、卡片消息(10)等多种消息类型
+3. **私信系统**：Kook 区分频道消息和私信消息，使用不同的 API 端点
+4. **消息序号**：Kook WebSocket 使用 `sn` 序号保证消息有序性，支持消息暂存和乱序重排
+5. **消息编辑与撤回**：支持编辑已发送的消息（仅 KMarkdown 和 CardMessage）和撤回消息
+
+### 扩展字段
+
+- 所有特有字段均以 `kook_` 前缀标识
+- 保留原始数据在 `kook_raw` 字段
+- `kook_raw_type` 标识原始Kook消息类型编号（如 `1` 为文本、`255` 为通知事件）
+
+### 特殊字段示例
+
+```python
+# 频道文本消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "用户ID",
+  "group_id": "频道ID",
+  "channel_id": "频道ID",
+  "message_id": "消息ID",
+  "kook_raw": {...},
+  "kook_raw_type": "1",
+  "message": [
+    {"type": "text", "data": {"text": "Hello"}}
+  ],
+  "alt_message": "Hello"
+}
+
+# 带图片的消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "用户ID",
+  "group_id": "频道ID",
+  "channel_id": "频道ID",
+  "message_id": "消息ID",
+  "kook_raw": {...},
+  "kook_raw_type": "2",
+  "message": [
+    {"type": "image", "data": {"file": "图片URL", "url": "图片URL"}}
+  ],
+  "alt_message": "图片内容"
+}
+
+# KMarkdown消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "用户ID",
+  "group_id": "频道ID",
+  "message_id": "消息ID",
+  "kook_raw": {...},
+  "kook_raw_type": "9",
+  "message": [
+    {"type": "text", "data": {"text": "解析后的纯文本"}}
+  ]
+}
+
+# 卡片消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "用户ID",
+  "group_id": "频道ID",
+  "message_id": "消息ID",
+  "kook_raw": {...},
+  "kook_raw_type": "10",
+  "message": [
+    {"type": "json", "data": {"data": "卡片JSON内容"}}
+  ]
+}
+
+# 私聊消息
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "用户ID",
+  "message_id": "消息ID",
+  "kook_raw": {...},
+  "kook_raw_type": "1",
+  "message": [
+    {"type": "text", "data": {"text": "私聊内容"}}
+  ]
+}
+```
+
+### 消息段类型
+
+Kook 的消息类型根据 `type` 字段自动转换为对应消息段：
+
+| Kook type | 转换类型 | 说明 |
+|---|---|---|
+| 1 | `text` | 文本消息 |
+| 2 | `image` | 图片消息 |
+| 3 | `video` | 视频消息 |
+| 4 | `file` | 文件消息 |
+| 8 | `record` | 语音消息 |
+| 9 | `text` | KMarkdown消息（提取纯文本内容） |
+| 10 | `json` | 卡片消息（原始JSON） |
+
+消息段结构示例：
+```json
+{
+  "type": "image",
+  "data": {
+    "file": "图片URL",
+    "url": "图片URL"
+  }
+}
+```
+
+### Mention消息段
+
+当消息中包含@信息时，会在消息段前插入 `mention` 消息段：
+
+```json
+{
+  "type": "mention",
+  "data": {
+    "user_id": "被@用户ID"
+  }
+}
+```
+
+### mention_all消息段
+
+当消息为@全体时，会插入 `mention_all` 消息段：
+
+```json
+{
+  "type": "mention_all",
+  "data": {}
+}
+```
+
+## WebSocket连接
+
+### 连接流程
+
+1. 使用 Bot Token 调用 `POST /gateway/index` 获取 WebSocket 网关地址
+2. 连接到 WebSocket 网关
+3. 收到 HELLO（s=1）信令，验证连接状态
+4. 开始心跳循环（PING，s=2，每30秒一次）
+5. 接收消息事件（s=0），使用 sn 序号保证有序性
+6. 收到心跳响应 PONG（s=3）
+
+### 信令类型
+
+| 信令 | s值 | 说明 |
+|------|-----|------|
+| HELLO | 1 | 服务器欢迎信令，连接成功后收到 |
+| PING | 2 | 客户端心跳，每30秒发送一次，携带当前 sn |
+| PONG | 3 | 心跳响应 |
+| RESUME | 4 | 恢复连接信令，携带 sn 恢复会话 |
+| RECONNECT | 5 | 服务器要求重连，需要重新获取网关 |
+| RESUME_ACK | 6 | RESUME 成功响应 |
+
+### 断线重连
+
+- 连接异常断开后，适配器自动重试连接
+- 如果之前有 `sn > 0`，会首先尝试 RESUME（s=4）恢复连接
+- RESUME 失败后，重置 sn 和消息队列，重新进行全新连接（HELLO 流程）
+- 收到 RECONNECT（s=5）信令时，清空状态并重新连接
+
+### 消息序号机制
+
+Kook WebSocket 使用 `sn`（递增序号）保证消息有序性：
+
+- 每收到一条消息事件（s=0），sn 递增
+- 如果收到的消息 sn 不连续，进入暂存模式
+- 暂存区中的消息按 sn 排序，等待缺失消息到达后按序处理
+- 暂存区清空后自动退出暂存模式
+
+## 使用示例
+
+### 处理频道消息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+kook = sdk.adapter.get("kook")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "kook":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    channel_id = event.get("group_id")
+
+    if text == "hello":
+        await kook.Send.To("group", channel_id).Text("Hello!")
+```
+
+### 处理私聊消息
+
+```python
+@message.on_message()
+async def handle_private_msg(event):
+    if event.get("platform") != "kook":
+        return
+    if event.get("detail_type") != "private":
+        return
+
+    text = event.get_text()
+    user_id = event.get("user_id")
+
+    await kook.Send.To("user", user_id).Text(f"你说了: {text}")
+```
+
+### 处理通知事件（表情回应等）
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "added_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 对消息 {msg_id} 添加了表情回应")
+
+    elif sub_type == "deleted_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 移除了消息 {msg_id} 的表情回应")
+```
+
+### 发送媒体消息
+
+```python
+# 发送图片（URL）
+await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
+
+# 发送图片（二进制）
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await kook.Send.To("group", channel_id).Image(image_bytes)
+
+# 发送视频
+await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
+
+# 发送文件
+await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
+
+# 发送语音
+await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
+```
+
+### 发送KMarkdown和卡片消息
+
+```python
+# KMarkdown
+await kook.Send.To("group", channel_id).Markdown("**粗体** *斜体* [链接](https://example.com)")
+
+# 卡片消息
+card = {
+    "type": "card",
+    "theme": "primary",
+    "size": "lg",
+    "modules": [
+        {"type": "header", "text": {"type": "plain-text", "content": "标题"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "内容"}}
+    ]
+}
+await kook.Send.To("group", channel_id).Card(card)
+```
+
+### 消息编辑与撤回
+
+```python
+# 发送消息
+result = await kook.Send.To("group", channel_id).Markdown("**原始内容**")
+msg_id = result["data"]["msg_id"]
+
+# 编辑消息（仅支持 KMarkdown 和 CardMessage）
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+
+# 撤回消息
+await kook.Send.To("group", channel_id).Recall(msg_id)
+```
+
+### 处理私信消息的编辑和删除通知
+
+```python
+@notice.on_notice()
+async def handle_private_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "updated_private_message":
+        msg_id = event.get("message_id")
+        content = event.get("content")
+        print(f"私信消息已更新: {msg_id}, 新内容: {content}")
+
+    elif sub_type == "deleted_private_message":
+        msg_id = event.get("message_id")
+        print(f"私信消息已删除: {msg_id}")
+```
+
+
+
+
+### Matrix 适配
+
+# Matrix平台特性文档
+
+MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配器，整合了Matrix协议的所有核心功能模块，提供统一的事件处理和消息操作接口。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 1.0.0
+- 维护者: ErisPulse
+
+## 基本信息
+
+- 平台简介：Matrix是一个开放的去中心化通信协议，支持私聊、群组等多种场景
+- 适配器名称：MatrixAdapter
+- 连接方式：Long Polling（通过 Matrix Sync API `/sync`）
+- 认证方式：基于 access_token 或 user_id + password 登录获取 token
+- 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()` 等链式修饰方法
+- OneBot12兼容：支持发送 OneBot12 格式消息
+
+## 配置说明
+
+```toml
+# config.toml
+[Matrix_Adapter]
+homeserver = "https://matrix.org"          # Matrix服务器地址（必填）
+access_token = "YOUR_ACCESS_TOKEN"          # 访问令牌（与 user_id+password 二选一）
+user_id = ""                                # Matrix用户ID（如 @bot:matrix.org）
+password = ""                               # Matrix用户密码
+auto_accept_invites = true                  # 是否自动接受房间邀请（可选，默认为true）
+```
+
+**配置项说明：**
+- `homeserver`：Matrix服务器地址（必填），默认为 `https://matrix.org`
+- `access_token`：访问令牌，可从Matrix客户端获取。如果已有 token，直接填写即可
+- `user_id`：Matrix用户ID（如 `@bot:matrix.org`），与 `password` 配合使用进行登录
+- `password`：Matrix用户密码，用于自动登录获取 access_token
+- `auto_accept_invites`：是否自动接受房间邀请，默认为 `true`
+
+**认证方式：**
+- 方式一（推荐）：直接提供 `access_token`
+- 方式二：提供 `user_id` 和 `password`，适配器会自动调用登录接口获取 token
+
+## 支持的消息发送类型
+
+所有发送方法均通过链式语法实现，例如：
+```python
+from ErisPulse.Core import adapter
+matrix = adapter.get("matrix")
+
+await matrix.Send.To("group", room_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: bytes | str)`：发送图片消息，支持文件路径、URL、MXC URI、二进制数据。
+- `.Voice(file: bytes | str)`：发送语音消息，支持文件路径、URL、MXC URI、二进制数据。
+- `.Video(file: bytes | str)`：发送视频消息，支持文件路径、URL、MXC URI、二进制数据。
+- `.File(file: bytes | str, filename: str = "")`：发送文件消息，支持文件路径、URL、MXC URI、二进制数据。
+- `.Notice(text: str)`：发送通知消息（Matrix的 m.notice 类型）。
+- `.Html(html: str, fallback: str = "")`：发送HTML格式消息，支持富文本内容。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
+
+### 链式修饰方法（可组合使用）
+
+链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
+
+- `.Reply(message_id: str)`：回复指定消息（通过 Matrix `m.in_reply_to` 关系）。
+- `.At(user_id: str)`：@指定用户（通过 Matrix `m.mentions` 字段实现）。
+- `.AtAll()`：@房间内所有人（通过 Matrix `@room` 提及实现）。
+
+### 链式调用示例
+
+```python
+# 基础发送
+await matrix.Send.To("user", dm_room_id).Text("Hello")
+
+# 回复消息
+await matrix.Send.To("group", room_id).Reply("$event_id").Text("回复消息")
+
+# @用户
+await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("你好")
+
+# @所有人
+await matrix.Send.To("group", room_id).AtAll().Text("公告通知")
+
+# 组合使用：回复 + @
+await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("复合消息")
+
+# 发送HTML消息
+await matrix.Send.To("group", room_id).Html("<h1>标题</h1><p>内容</p>", fallback="标题\n内容")
+
+# 发送通知消息
+await matrix.Send.To("group", room_id).Notice("系统通知")
+```
+
+### OneBot12消息支持
+
+适配器支持发送 OneBot12 格式的消息，便于跨平台消息兼容：
+
+```python
+# 发送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
+
+# 配合链式修饰
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
+
+# 复杂消息
+ob12_msg = [
+    {"type": "text", "data": {"text": "看这张图片："}},
+    {"type": "image", "data": {"file": "https://example.com/image.png"}},
+    {"type": "text", "data": {"text": "不错吧？"}}
+]
+await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
+```
+
+## 发送方法返回值
+
+所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 ErisPulse 适配器标准化返回规范：
+
+```python
+{
+    "status": "ok",           // 执行状态: "ok" 或 "failed"
+    "retcode": 0,             // 返回码
+    "data": {...},            // 响应数据
+    "message_id": "$event_id", // Matrix事件ID
+    "message": "",            // 错误信息
+    "matrix_raw": {...}       // 原始响应数据
+}
+```
+
+### 错误码说明
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 32000 | 请求超时或媒体上传失败 |
+| 33000 | API调用异常 |
+| 34000 | API返回了意外格式或业务错误 |
+
+## 特有事件类型
+
+需要 `platform=="matrix"` 检测再使用本平台特性
+
+### 核心差异点
+
+1. **去中心化架构**：Matrix 是一个去中心化的通信协议，用户ID格式为 `@user:server.domain`，房间ID格式为 `!room_id:server.domain`
+2. **房间概念**：Matrix 不区分群聊和私聊，所有会话都是"房间"。适配器通过 DM（Direct Message）账户数据自动识别私聊房间
+3. **Long Polling 同步**：使用 `/sync` API 进行长轮询获取新事件，而非 WebSocket
+4. **MXC URI**：媒体文件通过 `mxc://server.domain/media_id` 格式引用
+5. **HTML 富文本**：支持通过 `formatted_body` 发送 HTML 格式消息
+6. **表情回应**：支持消息级别的表情回应（Reaction），区别于传统的回复消息
+7. **消息编辑**：支持通过 `m.replace` 关系编辑已发送的消息
+8. **消息撤回**：支持通过 `m.room.redaction` 撤回/删除消息
+
+### 扩展字段
+
+- 所有特有字段均以 `matrix_` 前缀标识
+- 保留原始数据在 `matrix_raw` 字段
+- `matrix_raw_type` 标识原始Matrix事件类型（如 `m.room.message`、`m.room.member`）
+
+### 特殊字段示例
+
+```python
+# 群组消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "@user:matrix.org",
+  "group_id": "!room_id:matrix.org",
+  "matrix_room_id": "!room_id:matrix.org"
+}
+
+# 私聊消息
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "@user:matrix.org",
+  "matrix_room_id": "!dm_room_id:matrix.org"
+}
+
+# 表情回应
+{
+  "type": "notice",
+  "detail_type": "matrix_reaction",
+  "matrix_reaction_event_id": "$reacted_msg_id",
+  "matrix_reaction_key": "👍"
+}
+
+# 消息撤回
+{
+  "type": "notice",
+  "detail_type": "matrix_redaction",
+  "matrix_redacted_event_id": "$deleted_msg_id"
+}
+
+# 消息编辑
+{
+  "type": "message",
+  "detail_type": "group",
+  "matrix_edit": true,
+  "matrix_original_event_id": "$original_event_id"
+}
+
+# 线程消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "thread_id": "$thread_root_id"
+}
+```
+
+### 消息段类型
+
+Matrix消息根据 `msgtype` 自动转换为对应的消息段：
+
+| msgtype | 转换类型 | 说明 |
+|---|---|---|
+| m.text | `text` | 文本消息 |
+| m.notice | `text` | 通知消息 |
+| m.emote | `text` | 动作消息 |
+| m.image | `image` | 图片消息 |
+| m.audio | `voice` | 音频消息 |
+| m.video | `video` | 视频消息 |
+| m.file | `file` | 文件消息 |
+| m.location | `location` | 位置消息 |
+
+消息段结构示例：
+
+```json
+// 文本消息（带HTML）
+{
+  "type": "text",
+  "data": {
+    "text": "纯文本内容",
+    "html": "<b>HTML内容</b>"
+  }
+}
+
+// 图片消息
+{
+  "type": "image",
+  "data": {
+    "url": "mxc://matrix.org/abc123",
+    "filename": "photo.png",
+    "matrix_mxc": "mxc://matrix.org/abc123",
+    "info": {
+      "mimetype": "image/png",
+      "w": 800,
+      "h": 600,
+      "size": 123456
+    }
+  }
+}
+
+// 位置消息
+{
+  "type": "location",
+  "data": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "matrix_geo_uri": "geo:39.9,116.4",
+    "text": "北京市"
+  }
+}
+```
+
+### Event Mixin 方法
+
+MatrixAdapter 注册了以下事件混入方法，可在事件处理中直接调用：
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `get_room_id()` | `str` | 获取房间ID |
+| `get_matrix_event_type()` | `str` | 获取原始Matrix事件类型 |
+| `get_matrix_sender()` | `str` | 获取原始发送者ID |
+| `get_reaction_key()` | `str` | 获取回应表情 |
+| `is_edited()` | `bool` | 判断消息是否为编辑消息 |
+| `is_notice()` | `bool` | 判断消息是否为 m.notice 类型 |
+
+```python
+@message.on_message()
+async def handle_message(event):
+    if event.get("platform") != "matrix":
+        return
+
+    room_id = event.get_room_id()
+    event_type = event.get_matrix_event_type()
+    sender = event.get_matrix_sender()
+    is_edited = event.is_edited()
+    is_notice = event.is_notice()
+```
+
+## Sync API 连接
+
+### 同步流程
+
+1. 使用 access_token 或 user_id + password 进行认证
+2. 调用 `/_matrix/client/v3/account/whoami` 获取 bot_user_id
+3. 发出 connect 元事件
+4. 执行初始同步（`/_matrix/client/v3/sync?timeout=0`）获取 `next_batch` token
+5. 发现 DM 房间（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
+6. 开始 Long Polling 同步循环（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
+7. 处理每次同步返回的新事件并转换发出
+
+### 心跳机制
+
+- 适配器每 30 秒发出一次 `heartbeat` 元事件
+- 连接成功时发出 `connect` 元事件
+- 关闭时发出 `disconnect` 元事件
+
+### 房间邀请
+
+- 收到房间邀请（`invite` 状态的房间）时，如果 `auto_accept_invites` 配置为 `true`（默认），适配器会自动加入房间
+- 加入房间调用 `/_matrix/client/v3/join/{room_id}` 接口
+
+## 使用示例
+
+### 处理群组消息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+matrix = sdk.adapter.get("matrix")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "matrix":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    room_id = event.get("group_id")
+
+    if text == "hello":
+        await matrix.Send.To("group", room_id).Reply(
+            event.get("message_id")
+        ).Text("Hello!")
+```
+
+### 处理表情回应
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_reaction(event):
+    if event.get("platform") != "matrix":
+        return
+
+    if event.get("detail_type") == "matrix_reaction":
+        reaction_key = event.get("matrix_reaction_key")
+        reacted_event_id = event.get("matrix_reaction_event_id")
+        room_id = event.get_room_id()
+        # 处理表情回应...
+```
+
+### 发送媒体消息
+
+```python
+# 发送图片（URL）
+await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
+
+# 发送图片（MXC URI）
+await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
+
+# 发送图片（二进制数据）
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await matrix.Send.To("group", room_id).Image(image_bytes)
+
+# 发送图片（本地文件路径）
+await matrix.Send.To("group", room_id).Image("/path/to/image.png")
+
+# 发送文件（带文件名）
+await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="文档.pdf")
+```
+
+### 处理消息编辑
+
+```python
+@message.on_message()
+async def handle_edited_message(event):
+    if event.get("platform") != "matrix":
+        return
+
+    if event.is_edited():
+        original_id = event.get("matrix_original_event_id")
+        # 处理编辑消息...
+```
+
+### 监听成员变更
+
+```python
+@notice.on_notice()
+async def handle_member_change(event):
+    if event.get("platform") != "matrix":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "group_member_increase":
+        user_id = event.get("user_id")
+        nickname = event.get("user_nickname")
+        print(f"用户 {nickname} ({user_id}) 加入了房间")
+
+    elif detail_type == "group_member_decrease":
+        user_id = event.get("user_id")
+        operator_id = event.get("operator_id")
+        print(f"用户 {user_id} 被移除，操作者: {operator_id}")
+
+
+
+### QQBot 适配
+
+# QQBot平台特性文档
+
+QQBotAdapter 是基于QQBot（QQ机器人文档）协议构建的适配器，整合了QQBot所有功能模块，提供统一的事件处理和消息操作接口。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 1.0.0
+- 维护者: ErisPulse
+
+## 基本信息
+
+- 平台简介：QQBot是QQ官方提供的机器人的开发接口，支持群聊、私聊、频道等多种场景
+- 适配器名称：QQBotAdapter
+- 连接方式：WebSocket 长连接（通过QQBot网关）
+- 认证方式：基于 appId + clientSecret 获取 access_token
+- 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` 等链式修饰方法
+- OneBot12兼容：支持发送 OneBot12 格式消息
+
+## 配置说明
+
+```toml
+# config.toml
+[QQBot_Adapter]
+appid = "YOUR_APPID"          # QQ机器人应用ID（必填）
+secret = "YOUR_CLIENT_SECRET"  # QQ机器人客户端密钥（必填）
+sandbox = false                 # 是否使用沙盒环境（可选，默认为false）
+intents = [1, 30, 25]          # 订阅的事件 intents 位（可选）
+gateway_url = "wss://api.sgroup.qq.com/websocket/"  # 自定义网关地址（可选）
+```
+
+**配置项说明：**
+- `appid`：QQ机器人的应用ID（必填），从QQ开放平台获取
+- `secret`：QQ机器人的客户端密钥（必填），从QQ开放平台获取
+- `sandbox`：是否使用沙盒环境，沙盒环境API地址为 `https://sandbox.api.sgroup.qq.com`
+- `intents`：事件订阅 intents 列表，每个值会被左移位后按位或运算
+  - `1`：频道相关事件
+  - `25`：频道消息事件
+  - `30`：群@消息事件
+- `gateway_url`：WebSocket 网关地址，默认为 `wss://api.sgroup.qq.com/websocket/`
+
+**API环境：**
+- 正式环境：`https://api.sgroup.qq.com`
+- 沙盒环境：`https://sandbox.api.sgroup.qq.com`
+
+## 支持的消息发送类型
+
+所有发送方法均通过链式语法实现，例如：
+```python
+from ErisPulse.Core import adapter
+qqbot = adapter.get("qqbot")
+
+await qqbot.Send.To("user", user_openid).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str)`：发送纯文本消息。
+- `.Image(file: bytes | str)`：发送图片消息，支持文件路径、URL、二进制数据。
+- `.Markdown(content: str)`：发送Markdown格式消息。
+- `.Ark(template_id: int, kv: list)`：发送Ark模板消息。
+- `.Embed(embed_data: dict)`：发送Embed消息。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
+
+### 链式修饰方法（可组合使用）
+
+链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
+
+- `.Reply(message_id: str)`：回复指定消息。
+- `.At(user_id: str)`：@指定用户（以 `<@user_id>` 格式插入内容）。
+- `.AtAll()`：@所有人（插入 `@所有人` 文本）。
+- `.Keyboard(keyboard: dict)`：添加键盘按钮。
+
+### 链式调用示例
+
+```python
+# 基础发送
+await qqbot.Send.To("user", user_openid).Text("Hello")
+
+# 回复消息
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("回复消息")
+
+# 回复 + 按钮
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("带回复和键盘的消息")
+
+# @用户
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("你好")
+
+# 组合使用
+await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("复合消息")
+```
+
+### OneBot12消息支持
+
+适配器支持发送 OneBot12 格式的消息，便于跨平台消息兼容：
+
+```python
+# 发送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+
+# 配合链式修饰
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## 发送方法返回值
+
+所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 ErisPulse 适配器标准化返回规范：
+
+```python
+{
+    "status": "ok",           // 执行状态: "ok" 或 "failed"
+    "retcode": 0,             // 返回码
+    "data": {...},            // 响应数据
+    "message_id": "123456",   // 消息ID
+    "message": "",            // 错误信息
+    "qqbot_raw": {...}        // 原始响应数据
+}
+```
+
+### 错误码说明
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 10003 | 无法确定发送目标 |
+| 32000 | 请求超时 |
+| 33000 | API调用异常 |
+| 34000 | API返回了意外格式或业务错误 |
+
+## 特有事件类型
+
+需要 `platform=="qqbot"` 检测再使用本平台特性
+
+### 核心差异点
+
+1. **openid体系**：QQBot使用 openid 而非 QQ号，用户和群的标识均为 openid 字符串
+2. **群消息必须@**：群内消息仅在用户@机器人时才会收到（`GROUP_AT_MESSAGE_CREATE`）
+3. **频道系统**：QQBot支持频道（Guild）和子频道（Channel）的消息和事件
+4. **消息审核**：发送的消息可能需要经过审核，通过 `qqbot_audit_pass`/`qqbot_audit_reject` 事件通知结果
+5. **被动回复**：群消息和私聊消息支持被动回复机制，需要在发送时携带 `msg_id`
+
+### 扩展字段
+
+- 所有特有字段均以 `qqbot_` 前缀标识
+- 保留原始数据在 `qqbot_raw` 字段
+- `qqbot_raw_type` 标识原始QQBot事件类型（如 `C2C_MESSAGE_CREATE`）
+- 附件数据通过 `qqbot_attachment` 字段保存原始附件信息
+
+### 特殊字段示例
+
+```python
+# 群@消息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "MEMBER_OPENID",
+  "group_id": "GROUP_OPENID",
+  "qqbot_group_openid": "GROUP_OPENID",
+  "qqbot_member_openid": "MEMBER_OPENID",
+  "qqbot_event_id": "消息事件ID",
+  "qqbot_reply_token": "回复token"
+}
+
+# 私聊消息
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "USER_OPENID",
+  "qqbot_openid": "USER_OPENID",
+  "qqbot_event_id": "消息事件ID",
+  "qqbot_reply_token": "回复token"
+}
+
+# 交互事件
+{
+  "type": "notice",
+  "detail_type": "qqbot_interaction",
+  "qqbot_interaction_id": "交互ID",
+  "qqbot_interaction_type": "交互类型",
+  "qqbot_interaction_data": {
+    "...": "交互数据"
+  }
+}
+
+# 消息审核
+{
+  "type": "notice",
+  "detail_type": "qqbot_audit_pass",
+  "qqbot_audit_id": "审核ID",
+  "qqbot_message_id": "消息ID"
+}
+
+# 消息删除
+{
+  "type": "notice",
+  "detail_type": "qqbot_message_delete",
+  "message_id": "被删除的消息ID",
+  "operator_id": "操作者ID"
+}
+
+# 表情回应
+{
+  "type": "notice",
+  "detail_type": "qqbot_reaction_add",
+  "qqbot_raw": {
+    "...": "原始数据"
+  }
+}
+```
+
+### 频道消息段
+
+频道消息支持 `mentions` 字段，转换后以 `mention` 消息段表示：
+
+```json
+{
+  "type": "mention",
+  "data": {
+    "user_id": "被@用户ID",
+    "user_name": "被@用户昵称"
+  }
+}
+```
+
+### 附件消息段
+
+QQBot的附件根据 `content_type` 自动转换为对应消息段：
+
+| content_type 前缀 | 转换类型 | 说明 |
+|---|---|---|
+| `image` | `image` | 图片消息 |
+| `video` | `video` | 视频消息 |
+| `audio` | `voice` | 语音消息 |
+| 其他 | `file` | 文件消息 |
+
+附件消息段结构：
+```json
+{
+  "type": "image",
+  "data": {
+    "url": "附件URL",
+    "qqbot_attachment": {
+      "content_type": "image/png",
+      "url": "原始附件URL"
+    }
+  }
+}
+```
+
+## WebSocket连接
+
+### 连接流程
+
+1. 使用 appId + clientSecret 获取 access_token
+2. 连接到 WebSocket 网关
+3. 收到 OP_HELLO（op=10）消息，获取心跳间隔
+4. 发送 OP_IDENTIFY（op=2）进行身份验证
+5. 收到 READY 事件，获取 session_id 和 bot_id
+6. 开始心跳循环（OP_HEARTBEAT，op=1）
+7. 接收事件分发（OP_DISPATCH，op=0）
+
+### 断线重连
+
+- 支持自动重连，最大重连次数为50次
+- 重连等待时间采用指数退避算法：`min(5 * 2^min(count, 6), 300)` 秒
+- 支持会话恢复（OP_RESUME，op=6），使用 session_id + seq 恢复
+- 收到 OP_RECONNECT（op=7）或 OP_INVALID_SESSION（op=9）时自动触发重连
+
+### Token刷新
+
+- access_token 有效期通常为7200秒
+- 适配器自动每 7080 秒（7200-120）刷新一次 token
+- 刷新接口：`POST https://bots.qq.com/app/getAppAccessToken`
+
+## 事件订阅（Intents）
+
+intents 值通过位运算组合：
+
+```python
+intents = [1, 30, 25]
+value = 0
+for intent in intents:
+    value |= (1 << intent)
+```
+
+常用的 intent 位：
+| intent值 | 说明 |
+|----------|------|
+| 1 | 频道相关事件（GUILD_CREATE等） |
+| 25 | 频道消息事件（AT_MESSAGE_CREATE等） |
+| 30 | 群@消息事件（GROUP_AT_MESSAGE_CREATE等） |
+
+## 使用示例
+
+### 处理群消息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+qqbot = sdk.adapter.get("qqbot")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "qqbot":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    group_id = event.get("group_id")
+
+    if text == "hello":
+        await qqbot.Send.To("group", group_id).Reply(
+            event.get("message_id")
+        ).Text("Hello!")
+```
+
+### 处理交互事件
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_interaction(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    if event.get("detail_type") == "qqbot_interaction":
+        interaction_id = event.get("qqbot_interaction_id", "")
+        interaction_data = event.get("qqbot_interaction_data", {})
+        # 处理交互...
+```
+
+### 发送媒体消息
+
+```python
+# 发送图片（URL）
+await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+
+# 发送图片（二进制）
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await qqbot.Send.To("user", user_openid).Image(image_bytes)
+```
+
+### 监听消息审核结果
+
+```python
+@notice.on_notice()
+async def handle_audit(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "qqbot_audit_pass":
+        msg_id = event.get("qqbot_message_id")
+        print(f"消息审核通过: {msg_id}")
+
+    elif detail_type == "qqbot_audit_reject":
+        reason = event.get("qqbot_audit_reject_reason", "")
+        print(f"消息审核拒绝: {reason}")
+```
+
+
+
+
+### 云湖用户端适配
+
+# 云湖用户平台特性文档
+
+YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用户邮箱账户登录，使用 WebSocket 接收事件，提供统一的事件处理和消息操作接口。
+
+---
+
+## 文档信息
+
+- 对应模块版本: 1.4.0
+- 维护者: wsu2059
+
+## 基本信息
+
+- 平台简介：云湖（Yunhu）是一个企业级即时通讯平台，本适配器通过**用户账户**（而非机器人账户）与之交互
+- 适配器名称：YunhuUserAdapter
+- 多账户支持：支持通过账户名识别并配置多个用户账户
+- 链式修饰支持：支持 `.Reply()` 等链式修饰方法
+- OneBot12兼容：支持发送 OneBot12 格式消息
+- 通信方式：通过邮箱登录获取 token，使用 WebSocket 接收事件，HTTP + Protobuf 协议发送消息
+- 会话类型：支持私聊（user）、群聊（group）、机器人会话（bot）
+
+## 支持的消息发送类型
+
+所有发送方法均通过链式语法实现，例如：
+```python
+from ErisPulse.Core import adapter
+yunhu_user = adapter.get("yunhu_user")
+
+await yunhu_user.Send.To("user", user_id).Text("Hello World!")
+```
+
+支持的发送类型包括：
+- `.Text(text: str, buttons: Optional[List] = None)`：发送纯文本消息。
+- `.Html(html: str, buttons: Optional[List] = None)`：发送HTML格式消息。
+- `.Markdown(markdown: str, buttons: Optional[List] = None)`：发送Markdown格式消息。
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：发送图片消息，支持URL、本地路径或二进制数据。
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：发送视频消息，支持URL、本地路径或二进制数据。
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：发送语音消息，支持URL、本地路径或二进制数据，自动检测音频时长。
+- `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()` 的别名。
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：发送文件消息，支持URL、本地路径或二进制数据。
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：发送表情/贴纸消息，支持贴纸ID、贴纸URL或二进制图片数据。
+- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：发送A2UI消息（消息类型14），A2UI JSON 数据会填入 text 字段发送。
+- `.Edit(msg_id: str, text: str, content_type: str = "text")`：编辑已有消息。
+- `.Recall(msg_id: str)`：撤回消息。
+- `.Raw_ob12(message: Union[List, Dict])`：发送 OneBot12 格式消息。
+
+### 媒体文件处理
+
+所有媒体类型（图片、视频、音频、文件）支持以下输入方式：
+- **URL**：`"https://example.com/image.jpg"` — 自动下载后上传
+- **本地路径**：`"/path/to/file.jpg"` — 自动读取后上传
+- **二进制数据**：`open("file.jpg", "rb").read()` — 直接上传
+
+媒体文件会自动上传到七牛云存储，支持以下特性：
+- 自动通过 `filetype` 库检测文件类型和 MIME
+- 自动计算文件大小
+- 音频文件自动检测时长（支持 MP3、MP4/M4A 格式）
+
+### 按钮参数说明
+
+`buttons` 参数是一个嵌套列表，表示按钮的布局和功能。每个按钮对象包含以下字段：
+
+| 字段         | 类型   | 是否必填 | 说明                                                                 |
+|--------------|--------|----------|----------------------------------------------------------------------|
+| `text`       | string | 是       | 按钮上的文字                                                         |
+| `actionType` | int    | 是       | 动作类型：<br>`1`: 跳转 URL<br>`2`: 复制<br>`3`: 点击汇报            |
+| `url`        | string | 否       | 当 `actionType=1` 时使用，表示跳转的目标 URL                         |
+| `value`      | string | 否       | 当 `actionType=2` 时，该值会复制到剪贴板<br>当 `actionType=3` 时，该值会发送给订阅端 |
+
+示例：
+```python
+buttons = [
+    [
+        {"text": "复制", "actionType": 2, "value": "xxxx"},
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
+    ]
+]
+await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("带按钮的消息")
+```
+
+### 链式修饰方法（可组合使用）
+
+链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
+
+- `.Reply(message_id: str)`：回复指定消息。
+- `.At(user_id: str)`：@指定用户（文本形式 @user_id）。
+- `.AtAll()`：@所有人（伪@全体，发送 @all 文本）。
+- `.Buttons(buttons: List)`：添加按钮。
+
+> **注意：** 因为用户账户较为特殊，即便不是管理员也可以 @全体，但这里的 `AtAll()` 只会发送一个艾特全体的文本，是一个伪@全体。
+
+### 链式调用示例
+
+```python
+# 基础发送
+await yunhu_user.Send.To("user", user_id).Text("Hello")
+
+# 回复消息
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("回复消息")
+
+# 回复 + 按钮
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("带回复和按钮的消息")
+
+# 指定账户 + 回复 + 按钮
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完整链式调用")
+```
+
+### OneBot12消息支持
+
+适配器支持发送 OneBot12 格式的消息，便于跨平台消息兼容：
+
+- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
+
+```python
+# 发送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# 配合链式修饰
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+Raw_ob12 支持自动将混合消息段分组处理：
+- `text`、`mention` 类型可合并为一组发送
+- `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` 等类型各自独立成组
+- `reply` 类型可附加到任何组
+
+## 发送方法返回值
+
+所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 ErisPulse 适配器标准化返回规范：
+
+```python
+{
+    "status": "ok",           // 执行状态
+    "retcode": 0,             // 返回码
+    "data": {...},            // 响应数据
+    "message_id": "123456",   // 消息ID
+    "message": "",            // 错误信息
+    "yunhu_user_raw": {...}   // 原始响应数据
+}
+```
+
+## 特有事件类型
+
+需要 `platform == "yunhu_user"` 检测再使用本平台特性
+
+### 核心差异点
+
+1. 特有事件类型：
+    - 超级文件分享：`yunhu_user_file_send`
+    - 机器人公告看板：`yunhu_user_bot_board`
+    - 消息编辑通知：`message_edit`
+    - 消息删除通知：`message_delete`（撤回）
+2. 特有消息段类型：
+    - 表单消息段：`yunhu_user_form`
+    - 文章消息段：`yunhu_user_post`
+    - 贴纸消息段：`yunhu_user_sticker`
+    - 按钮消息段：`yunhu_user_button`
+    - A2UI 消息段：`a2ui`
+3. 扩展字段：
+    - 所有特有字段均以 `yunhu_user_` 前缀标识
+    - 保留原始数据在 `yunhu_user_raw` 字段
+    - 原始事件类型记录在 `yunhu_user_raw_type` 字段
+    - 私聊中 `self.user_id` 表示当前登录用户ID
+
+### 支持的原始事件类型
+
+| 原始事件类型 | OneBot12 类型 | 说明 |
+|-------------|--------------|------|
+| `push_message` | `message` | 推送消息（私聊、群聊、Bot 会话） |
+| `edit_message` | `notice` (`message_edit`) | 消息编辑事件 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | 超级文件分享事件 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | 机器人公告看板事件 |
+
+> 其他事件类型（如 `heartbeat_ack`、`draft_input`、`stream_message` 等）会被忽略。
+
+### OneBot12 支持的 detail_type
+
+| OneBot12 detail_type | 云湖 chat_type | 说明 |
+|---------------------|---------------|------|
+| `private` | 1 | 私聊消息 |
+| `group` | 2 | 群聊消息 |
+| `bot` | 3 | 机器人会话 |
+
+### 消息事件示例
+
+```python
+{
+    "id": "event_id",
+    "time": 1234567890,
+    "type": "message",
+    "detail_type": "group",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "message": [
+        {"type": "text", "data": {"text": "消息内容"}}
+    ],
+    "alt_message": "消息内容",
+    "user_id": "sender_user_id",
+    "user_nickname": "发送者昵称",
+    "group_id": "group_id",
+    "message_id": "msg_id",
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "push_message"
+}
+```
+
+### 消息编辑通知示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "message_edit",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "message_id": "msg_id",
+    "user_id": "sender_user_id",
+    "user_nickname": "发送者昵称",
+    "edit_time": 1234567890,
+    "group_id": "group_id",
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "edit_message"
+}
+```
+
+### 超级文件分享事件示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "yunhu_user_file_send",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "user_id": "send_user_id",
+    "user_nickname": "",
+    "yunhu_user_file_send": {
+        "send_user_id": "发送者ID",
+        "user_id": "接收用户ID",
+        "send_type": "发送类型",
+        "data": "文件数据"
+    },
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "file_send_message"
+}
+```
+
+### 机器人公告看板事件示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "yunhu_user_bot_board",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "bot_id": "bot_id",
+    "bot_name": "机器人名称",
+    "yunhu_user_bot_board": {
+        "bot_id": "bot_id",
+        "chat_id": "chat_id",
+        "chat_type": 1,
+        "content": "公告内容",
+        "content_type": 1,
+        "last_update_time": 1234567890
+    },
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "bot_board_message"
+}
+```
+
+### 事件处理示例
+
+```python
+from ErisPulse.Core.Event import message, notice
+
+@message.on_message()
+async def handle_yunhu_user_message(event):
+    """处理云湖用户消息"""
+    if event.get("platform") != "yunhu_user":
+        return
+    
+    user_id = event.get("user_id", "")
+    user_nickname = event.get("user_nickname", "")
+    alt_message = event.get("alt_message", "")
+    
+    print(f"用户 {user_nickname}({user_id}): {alt_message}")
+    
+    # 检查消息段中的特有类型
+    for segment in event.get("message", []):
+        seg_type = segment.get("type", "")
+        
+        if seg_type == "yunhu_user_form":
+            form_data = segment["data"]["form"]
+            print(f"收到表单消息: {form_data}")
+        
+        elif seg_type == "yunhu_user_post":
+            post_data = segment["data"]
+            print(f"收到文章消息: {post_data.get('post_title', '')}")
+        
+        elif seg_type == "yunhu_user_sticker":
+            sticker_url = segment["data"]["file_id"]
+            print(f"收到贴纸消息: {sticker_url}")
+        
+        elif seg_type == "yunhu_user_button":
+            buttons = segment["data"]["buttons"]
+            print(f"消息包含按钮: {buttons}")
+        
+        elif seg_type == "a2ui":
+            a2ui_data = segment["data"]["a2ui"]
+            print(f"收到A2UI消息: {a2ui_data}")
+    
+    # 使用 event.reply() 自动回复
+    await event.reply(f"Echo: {alt_message}")
+
+@notice.on_notice()
+async def handle_yunhu_user_notice(event):
+    """处理云湖用户通知事件"""
+    if event.get("platform") != "yunhu_user":
+        return
+    
+    detail_type = event.get("detail_type", "")
+    
+    if detail_type == "message_edit":
+        message_id = event.get("message_id", "")
+        user_nickname = event.get("user_nickname", "")
+        edit_time = event.get("edit_time", 0)
+        print(f"用户 {user_nickname} 编辑了消息 {message_id}")
+    
+    elif detail_type == "yunhu_user_file_send":
+        file_data = event.get("yunhu_user_file_send", {})
+        print(f"收到超级文件分享: {file_data}")
+    
+    elif detail_type == "yunhu_user_bot_board":
+        board_data = event.get("yunhu_user_bot_board", {})
+        bot_name = event.get("bot_name", "")
+        print(f"机器人 {bot_name} 发布了公告: {board_data.get('content', '')}")
+```
+
+## 扩展字段说明
+
+- 所有特有字段均以 `yunhu_user_` 前缀标识，避免与标准字段冲突
+- 保留原始数据在 `yunhu_user_raw` 字段，便于访问云湖平台的完整原始数据
+- 原始事件类型记录在 `yunhu_user_raw_type` 字段（如 `push_message`、`edit_message` 等）
+- `self.user_id` 表示当前登录用户ID（从登录响应中获取）
+- 超级文件分享通过 `yunhu_user_file_send` 字段提供文件分享数据
+- 机器人公告看板通过 `yunhu_user_bot_board` 字段提供公告数据
+
+### 特有消息段类型
+
+#### 表单消息段 (yunhu_user_form)
+
+当 content_type 为 5 时，消息段类型为 `yunhu_user_form`：
+
+```json
+{
+    "type": "yunhu_user_form",
+    "data": {
+        "form": "表单数据"
+    }
+}
+```
+
+#### 文章消息段 (yunhu_user_post)
+
+当 content_type 为 6 时，消息段类型为 `yunhu_user_post`：
+
+```json
+{
+    "type": "yunhu_user_post",
+    "data": {
+        "post_id": "文章ID",
+        "post_title": "文章标题",
+        "post_content": "文章内容"
+    }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `post_id` | string | 文章唯一标识 |
+| `post_title` | string | 文章标题 |
+| `post_content` | string | 文章内容 |
+
+#### 贴纸消息段 (yunhu_user_sticker)
+
+当 content_type 为 7 时，消息段类型为 `yunhu_user_sticker`：
+
+```json
+{
+    "type": "yunhu_user_sticker",
+    "data": {
+        "file_id": "贴纸图片URL"
+    }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `file_id` | string | 贴纸图片URL |
+
+#### 按钮消息段 (yunhu_user_button)
+
+消息中包含按钮时，会附加 `yunhu_user_button` 消息段：
+
+```json
+{
+    "type": "yunhu_user_button",
+    "data": {
+        "buttons": [[{"text": "按钮文字", "actionType": 3, "value": "值"}]]
+    }
+}
+```
+
+#### A2UI 消息段 (a2ui)
+
+当 content_type 为 14 时，消息段类型为 `a2ui`：
+
+```json
+{
+    "type": "a2ui",
+    "data": {
+        "a2ui": "A2UI JSON数据"
+    }
+}
+```
+
+---
+
+## 多账户配置
+
+### 配置说明
+
+YunhuUserAdapter 支持同时配置和运行多个用户账户。
+
+```toml
+# config.toml
+[YunhuUserAdapter]
+ws_reconnect_interval = 30  # WebSocket重连间隔（秒）
+ws_timeout = 70             # WebSocket超时时间（秒）
+
+[YunhuUserAdapter.accounts.default]
+email = "user1@example.com"  # 用户邮箱（必填）
+password = "password1"       # 用户密码（必填）
+platform = "windows"         # 登录平台（可选，默认windows）
+device_id = ""               # 设备ID（可选，不填自动生成）
+enabled = true               # 是否启用（可选，默认为true）
+
+[YunhuUserAdapter.accounts.account2]
+email = "user2@example.com"
+password = "password2"
+platform = "android"
+device_id = "fixed_device_id_2"
+enabled = true
+```
+
+**配置项说明：**
+- `email`：用户邮箱（必填），用于登录云湖平台
+- `password`：用户密码（必填）
+- `platform`：登录平台标识（可选，默认为 `windows`），可选值：`windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：设备ID（可选，不填自动生成），建议填写固定值以保持会话一致性
+- `enabled`：是否启用该账户（可选，默认为 `true`）
+
+**适配器级别配置：**
+- `ws_reconnect_interval`：WebSocket 重连间隔（秒，默认 30）
+- `ws_timeout`：WebSocket 超时时间（秒，默认 70）
+
+**重要提示：**
+1. 适配器使用邮箱登录方式获取 token，登录后通过 WebSocket 接收事件
+2. WebSocket 连接断开后会自动重连，最多重试 3 次
+3. 建议为每个账户设置固定的 `device_id`，以保持会话一致性
+4. 未修改的模板账户（默认邮箱和密码）会被自动跳过
+
+### 使用Send DSL指定账户
+
+可以通过 `Using()` 方法指定使用哪个账户发送消息。该方法支持两种参数：
+- **账户名**：配置中的账户名称（如 `default`、`account2`）
+- **user_id**：登录后获取的用户 ID
+
+```python
+from ErisPulse.Core import adapter
+yunhu_user = adapter.get("yunhu_user")
+
+# 使用账户名发送消息
+await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
+
+# 使用 user_id 发送消息（自动匹配对应账户）
+await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
+
+# 不指定时使用第一个启用的账户
+await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+> **提示：** 使用 `user_id` 时，系统会自动查找配置中匹配的账户。这在处理事件回复时特别有用，可以直接使用 `event["self"]["user_id"]` 来回复同一账户。
+
+### 事件中的账户标识
+
+接收到的事件会自动包含对应的用户ID信息：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu_user":
+        # 获取当前登录用户ID
+        my_user_id = event["self"]["user_id"]
+        print(f"消息来自账户: {my_user_id}")
+        
+        # 使用相同账户回复消息
+        yunhu_user = adapter.get("yunhu_user")
+        await yunhu_user.Send.Using(my_user_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("回复消息")
+```
+
+### 日志信息
+
+适配器会在日志中自动包含账户信息，便于调试和追踪：
+
+```
+[INFO] 账户 default (user1@example.com) 登录成功，用户ID: 12345678
+[INFO] 账户 default WebSocket 监听任务已启动
+[INFO] 账户 account2 (user2@example.com) 登录成功，用户ID: 87654321
+```
+
+### 管理接口
+
+```python
+# 获取所有账户信息
+accounts = yunhu_user.accounts
+# 返回格式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
+
+# 检查账户是否启用
+for account_name, account_config in yunhu_user._account_configs.items():
+    print(f"{account_name}: enabled={account_config.enabled}")
+
+# 通过账户名获取 HTTP 客户端
+http_client = yunhu_user._get_http_client("default")
+
+# 通过 user_id 查找账户
+account_name = yunhu_user._get_account_by_user_id("12345678")
+```
+
+## API 调用
+
+适配器提供 `call_api` 方法，支持直接调用平台 API：
+
+```python
+# 发送消息
+result = await yunhu_user.call_api("/send", 
+    target_type="group", 
+    target_id="group_id",
+    account_id="default",
+    message={"text": "Hello", "msg_type": 1}
+)
+
+# 编辑消息
+result = await yunhu_user.call_api("/edit",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id",
+    text="新内容",
+    content_type="text"
+)
+
+# 撤回消息
+result = await yunhu_user.call_api("/recall",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id"
+)
+
+# 批量撤回消息
+result = await yunhu_user.call_api("/recall_batch",
+    target_type="group",
+    target_id="group_id",
+    msg_id_list=["msg_id_1", "msg_id_2"]
+)
+
+# 获取消息列表
+result = await yunhu_user.call_api("/list",
+    chat_id="group_id",
+    chat_type=2,
+    msg_count=10,
+    msg_id=""
+)
+
+# 获取消息编辑记录
+result = await yunhu_user.call_api("/list_edit_record",
+    msg_id="msg_id",
+    size=10,
+    page=1
+)
+
+# 按钮事件报告
+result = await yunhu_user.call_api("/button_report",
+    chat_id="group_id",
+    chat_type=2,
+    msg_id="msg_id",
+    user_id="user_id",
+    button_value="button_value"
+)
+```
+
+**支持的 API 端点：**
+
+| 端点 | 说明 |
+|------|------|
+| `/send` | 发送消息 |
+| `/edit` | 编辑消息 |
+| `/recall` | 撤回消息 |
+| `/recall_batch` | 批量撤回消息 |
+| `/list` | 获取消息列表 |
+| `/list_by_seq` | 通过序列获取消息 |
+| `/list_by_mid_seq` | 通过消息ID和序列获取消息 |
+| `/list_edit_record` | 获取消息编辑记录 |
+| `/button_report` | 按钮事件报告 |
 
 
 
