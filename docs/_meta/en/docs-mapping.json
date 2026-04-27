@@ -173,7 +173,7 @@
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
-      "count": 14,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
@@ -208,6 +208,26 @@
         {
           "title": "Documentation Maintenance Guidelines",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Kook Platform Features Documentation",
+          "path": "platform-guide/kook.md",
+          "level": 1
+        },
+        {
+          "title": "Matrix Platform Features Document",
+          "path": "platform-guide/matrix.md",
+          "level": 1
+        },
+        {
+          "title": "QQBot Platform Features Documentation",
+          "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "Yunhu User Platform Features Documentation",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         }
       ],

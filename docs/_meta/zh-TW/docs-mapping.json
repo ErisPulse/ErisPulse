@@ -173,7 +173,7 @@
     },
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
-      "count": 14,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse 平台功能文件",
@@ -208,6 +208,26 @@
         {
           "title": "文檔維護說明",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Kook平台特性文件",
+          "path": "platform-guide/kook.md",
+          "level": 1
+        },
+        {
+          "title": "Matrix平台特性文件",
+          "path": "platform-guide/matrix.md",
+          "level": 1
+        },
+        {
+          "title": "QQBot平台特性文件",
+          "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "雲湖用戶平台特性文件",
+          "path": "platform-guide/yunhu_user.md",
           "level": 1
         }
       ],

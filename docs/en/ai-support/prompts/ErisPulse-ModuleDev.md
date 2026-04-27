@@ -5947,10 +5947,16 @@ This section is maintained by developers of each adapter to explain the differen
 - [Maintenance Notes](maintain-notes.md)
 
 - [Yunhu Platform Features](yunhu.md)
+- [Yunhu User Platform Features](yunhu-user.md)
 - [Telegram Platform Features](telegram.md)
 - [OneBot11 Platform Features](onebot11.md)
 - [OneBot12 Platform Features](onebot12.md)
 - [Email Platform Features](email.md)
+- [Kook (Kaihei La) Platform Features](kook.md)
+- [Matrix Platform Features](matrix.md)
+- [QQ Official Bot Platform Features](qqbot.md)
+
+> Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 
 ---
 
@@ -6085,9 +6091,9 @@ Event conversion format that all adapters must implement:
   "self": {"platform": "example_platform", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {"type": "text", "data": {"text": "你好"}}
+    {"type": "text", "data": {"text": "Hello"}}
   ],
-  "alt_message": "你好",
+  "alt_message": "Hello",
   "user_id": "user_456",
   "user_nickname": "ExampleUser",
   "group_id": "group_789"
@@ -6141,7 +6147,7 @@ Related Official Documentation:
 ## Contributing
 
 We welcome more developers to participate in writing and maintaining adapter documentation! Please submit contributions by following these steps:
-1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) repository.
+1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
 2. Create a Markdown file in the `docs/platform-features/` directory with the naming format `<platform-name>.md`.
 3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
 4. Submit Pull Request.

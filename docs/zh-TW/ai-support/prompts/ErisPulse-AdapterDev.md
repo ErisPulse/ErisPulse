@@ -2248,127 +2248,7 @@ is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
 # 取得完整狀態摘要（適合 WebUI 展示）
 summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
-
-## 連線管理
-
-### 1. 實作連線重試
-
-```python
-import asyncio
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        retry_count = 0
-        max_retries = 5
-        
-        while retry_count < max_retries:
-            try:
-                await self._connect_to_platform()
-                self.logger.info("連線成功")
-                break
-            except Exception as e:
-                retry_count += 1
-                if retry_count < max_retries:
-                    # 指數退避策略
-                    wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(
-                        f"連線失敗，{wait_time}秒後重試 ({retry_count}/{max_retries}): {e}"
-                    )
-                    await asyncio.sleep(wait_time)
-                else:
-                    self.logger.error("連線失敗，已達到最大重試次數")
-                    raise
-```
-
-### 2. 連線狀態管理
-
-```python
-class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()
-        self.connection = None
-        self._connected = False
-    
-    async def _ws_handler(self, websocket: WebSocket):
-        self.connection = websocket
-        self._connected = True
-        self.logger.info("連線已建立")
-        
-        try:
-            while True:
-                data = await websocket.receive_text()
-                await self._process_event(data)
-        except WebSocketDisconnect:
-            self.logger.info("連線已斷線")
-        finally:
-            self.connection = None
-            self._connected = False
-```
-
-### 3. 心跳保活與 Meta 心跳
-
-配接器的心跳應同時完成兩個任務：向平台發送心跳保活，並向框架發送 meta heartbeat 事件。
-
-```python
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        self.connection = await self._connect_to_platform()
-        self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-
-    async def _heartbeat_loop(self):
-        while self.connection:
-            try:
-                # 1. 向平台發送心跳保活
-                await self.connection.send_json({"type": "ping"})
-
-                # 2. 向框架發送 meta heartbeat 事件（更新 Bot 活躍時間）
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
-
-                await asyncio.sleep(30)
-            except Exception as e:
-                self.logger.error(f"心跳失敗: {e}")
-                break
-```
-
-## 事件轉換
-
-### 1. 嚴格遵循 OneBot12 標準
-
-```python
-class MyPlatformConverter:
-    def convert(self, raw_event):
-        """轉換事件"""
-        onebot_event = {
-            "id": str(raw_event.get("event_id", uuid.uuid4())),
-            "time": int(time.time()),
-            "type": self._convert_type(raw_event.get("type")),
-            "detail_type": self._convert_detail_type(raw_event),
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": str(raw_event.get("bot_id", ""))
-            },
-            "myplatform_raw": raw_event,  # 保留原始資料（必須）
-            "myplatform_raw_type": raw_event.get("type", "")  # 原始類型（必須）
-        }
-        return onebot_event
-```
-
-### 2. 時間戳標準化
-
-```python
-def _convert_timestamp(self, timestamp):
-    """轉換為 10 位秒級時間
+# {"adapters": {"myplatform": {"status
 
 
 
@@ -5201,10 +5081,16 @@ class YunhuSend(SendDSL):
 - [維護說明](maintain-notes.md)
 
 - [雲湖平台特性](yunhu.md)
+- [雲湖用戶平台特性](yunhu-user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
 - [電子郵件平台特性](email.md)
+- [Kook(開黑啦)平台特性](kook.md)
+- [Matrix平台特性](matrix.md)
+- [QQ官方機器人平台特性](qqbot.md)
+
+> 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
 
 ---
 
@@ -5236,7 +5122,7 @@ class YunhuSend(SendDSL):
    telegram = adapter.get("telegram")
    await telegram.Send.To("U1001").Text("Hello")
    ```
-3. 指定發送帳號: `Using(account_id)`
+3. 指定傳送帳號: `Using(account_id)`
    ```python
    my_adapter = adapter.get("{AdapterName}")
    await my_adapter.Send.Using("bot1").To("U1001").Text("Hello")
@@ -5271,7 +5157,7 @@ result = await task
 ```
 
 ### 事件監聽
-有 three 種事件監聽方式：
+有三種事件監聽方式：
 
 1. 平台原生事件監聽：
    ```python
@@ -5298,7 +5184,7 @@ result = await task
    ```
 
 3. Event模組監聽：
-    `Event` 的訊息格式基於 `adapter.on()` 函數，因此 `Event` 提供的訊息格式是一個 OneBot12 標準訊息
+    `Event` 的事件基於 `adapter.on()` 函數，因此`Event`提供的事件格式是一個OneBot12標準事件
 
     ```python
     from ErisPulse.Core.Event import message, notice, request, command
@@ -5318,17 +5204,17 @@ result = await task
         logger.info(f"收到指令: {event}")
     ```
 
-其中，最推薦的是使用 `Event` 模組進行事件處理，因為 `Event` 模組提供了豐富的訊息類型，以及豐富的訊息處理方法。
+其中，最推薦的是使用 `Event` 模組進行事件處理，因為 `Event` 模組提供了豐富的事件類型，以及豐富的事件處理方法。
 
 ---
 
 ## 標準格式
-為了方便參考，這裡給出了簡單的訊息格式，如果需要詳細資訊，請參考上方的連結。
+為方便參考，這裡給出了簡單的事件格式，如果需要詳細資訊，請參考上方的連結。
 
 > **注意：** 以下格式為基礎 OneBot12 標準格式，各適配器可能在此基礎上有擴展欄位。具體請參考各適配器的特定功能說明。
 
 ### 標準事件格式
-所有適配器必須實現的訊息轉換格式：
+所有適配器必須實現的事件轉換格式：
 ```json
 {
   "id": "event_123",

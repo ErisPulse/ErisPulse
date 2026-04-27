@@ -2981,7 +2981,7 @@ class MyAdapter(BaseAdapter):
         while retry_count < max_retries:
             try:
                 await self._connect_to_platform()
-                self.logger.info("连接成功")
+                self.logger.info("Connection successful")
                 break
             except Exception as e:
                 retry_count += 1
@@ -2989,11 +2989,11 @@ class MyAdapter(BaseAdapter):
                     # Exponential backoff strategy
                     wait_time = min(60 * (2 ** retry_count), 600)
                     self.logger.warning(
-                        f"连接失败，{wait_time}秒后重试 ({retry_count}/{max_retries}): {e}"
+                        f"Connection failed, retry in {wait_time} seconds ({retry_count}/{max_retries}): {e}"
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("连接失败，已达到最大重试次数")
+                    self.logger.error("Connection failed, maximum retry attempts reached")
                     raise
 ```
 
@@ -3009,14 +3009,14 @@ class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket: WebSocket):
         self.connection = websocket
         self._connected = True
-        self.logger.info("连接已建立")
+        self.logger.info("Connection established")
         
         try:
             while True:
                 data = await websocket.receive_text()
                 await self._process_event(data)
         except WebSocketDisconnect:
-            self.logger.info("连接已断开")
+            self.logger.info("Connection disconnected")
         finally:
             self.connection = None
             self._connected = False
@@ -3051,7 +3051,7 @@ class MyAdapter(BaseAdapter):
 
                 await asyncio.sleep(30)
             except Exception as e:
-                self.logger.error(f"心跳失败: {e}")
+                self.logger.error(f"Heartbeat failed: {e}")
                 break
 ```
 
@@ -3277,19 +3277,19 @@ async def call_api(self, endpoint: str, **params):
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
         # Network error
-        self.logger.error(f"网络错误: {e}")
-        return self._error_response("网络请求失败", 33000)
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
     except asyncio.TimeoutError:
         # Timeout error
-        self.logger.error(f"请求超时: {endpoint}")
-        return self._error_response("请求超时", 32000)
+        self.logger.error(f"Request timeout: {endpoint}")
+        return self._error_response("Request timeout", 32000)
     except json.JSONDecodeError:
         # JSON parsing error
-        self.logger.error("JSON 解析失败")
-        return self._error_response("响应格式错误", 10006)
+        self.logger.error("JSON parsing failed")
+        return self._error_response("Response format error", 10006)
     except Exception as e:
         # Unknown error
-        self.logger.error(f"未知错误: {e}", exc_info=True)
+        self.logger.error(f"Unknown error: {e}", exc_info=True)
         return self._error_response(str(e), 34000)
 ```
 
@@ -3302,14 +3302,14 @@ class MyAdapter(BaseAdapter):
         self.logger = logger.get_child("MyAdapter")
     
     async def start(self):
-        self.logger.info("适配器启动中...")
+        self.logger.info("Adapter starting...")
         # ...
-        self.logger.info("适配器启动完成")
+        self.logger.info("Adapter startup completed")
     
     async def shutdown(self):
-        self.logger.info("适配器关闭中...")
+        self.logger.info("Adapter shutting down...")
         # ...
-        self.logger.info("适配器关闭完成")
+        self.logger.info("Adapter shutdown completed")
 ```
 
 ## Testing
@@ -3429,36 +3429,6 @@ class MyAdapter(BaseAdapter):
 Create a `{platform}.md` document under `docs-new/platform-guide/`:
 
 ```markdown
-# Platform Name Adapter Documentation
-
-## Basic Information
-- Corresponding Module Version: 1.0.0
-- Maintainer: Your Name
-
-## Supported Message Sending Types
-...
-
-## Specific Event Types
-...
-
-## Configuration Options
-...
-```
-
-### 2. Update Version Information
-
-When releasing a new version, update the version information in the documentation:
-
-```toml
-[project]
-version = "2.0.0"  # Update version number
-```
-
-## Related Documentation
-
-- [Adapter Development Getting Started](getting-started.md) - Create your first adapter
-- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
-- [SendDSL Deep Dive](send-dsl.md) - Learn message sending
 
 
 
@@ -6667,10 +6637,16 @@ This section is maintained by developers of each adapter to explain the differen
 - [Maintenance Notes](maintain-notes.md)
 
 - [Yunhu Platform Features](yunhu.md)
+- [Yunhu User Platform Features](yunhu-user.md)
 - [Telegram Platform Features](telegram.md)
 - [OneBot11 Platform Features](onebot11.md)
 - [OneBot12 Platform Features](onebot12.md)
 - [Email Platform Features](email.md)
+- [Kook (Kaihei La) Platform Features](kook.md)
+- [Matrix Platform Features](matrix.md)
+- [QQ Official Bot Platform Features](qqbot.md)
+
+> Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 
 ---
 
@@ -6805,9 +6781,9 @@ Event conversion format that all adapters must implement:
   "self": {"platform": "example_platform", "user_id": "bot_123"},
   "message_id": "msg_abc",
   "message": [
-    {"type": "text", "data": {"text": "你好"}}
+    {"type": "text", "data": {"text": "Hello"}}
   ],
-  "alt_message": "你好",
+  "alt_message": "Hello",
   "user_id": "user_456",
   "user_nickname": "ExampleUser",
   "group_id": "group_789"
@@ -6861,7 +6837,7 @@ Related Official Documentation:
 ## Contributing
 
 We welcome more developers to participate in writing and maintaining adapter documentation! Please submit contributions by following these steps:
-1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) repository.
+1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository.
 2. Create a Markdown file in the `docs/platform-features/` directory with the naming format `<platform-name>.md`.
 3. Add a link to your contributed adapter and related official documentation in this `README.md` file.
 4. Submit Pull Request.
