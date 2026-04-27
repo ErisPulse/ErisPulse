@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 869,
+  "total_keywords": 901,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -90,28 +90,12 @@
         "title": "1. 單元測試"
       }
     ],
-    "1. 嚴格遵循 OneBot12 標準": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 220,
-        "level": 3,
-        "title": "1. 嚴格遵循 OneBot12 標準"
-      }
-    ],
     "1. 基本資訊部分": [
       {
         "document": "platform-guide/maintain-notes.md",
         "line": 15,
         "level": 3,
         "title": "1. 基本資訊部分"
-      }
-    ],
-    "1. 實作連線重試": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 131,
-        "level": 3,
-        "title": "1. 實作連線重試"
       }
     ],
     "1. 建立專案": [
@@ -346,14 +330,6 @@
         "title": "2. 文件完善"
       }
     ],
-    "2. 時間戳標準化": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 242,
-        "level": 3,
-        "title": "2. 時間戳標準化"
-      }
-    ],
     "2. 標準會話類型": [
       {
         "document": "standards/session-types.md",
@@ -416,14 +392,6 @@
         "line": 305,
         "level": 3,
         "title": "2. 輸入驗證"
-      }
-    ],
-    "2. 連線狀態管理": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 160,
-        "level": 3,
-        "title": "2. 連線狀態管理"
       }
     ],
     "2. 逾時處理": [
@@ -600,14 +568,6 @@
         "line": 59,
         "level": 3,
         "title": "3. 心跳事件"
-      }
-    ],
-    "3. 心跳保活與 Meta 心跳": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
-        "level": 3,
-        "title": "3. 心跳保活與 Meta 心跳"
       }
     ],
     "3. 指定發送帳號": [
@@ -1484,6 +1444,14 @@
         "title": "ID 欄位查詢"
       }
     ],
+    "Kook平台特性文件": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 1,
+        "level": 1,
+        "title": "Kook平台特性文件"
+      }
+    ],
     "LazyModule 類別": [
       {
         "document": "advanced/lazy-loading.md",
@@ -1506,6 +1474,22 @@
         "line": 93,
         "level": 2,
         "title": "Logger 模組"
+      }
+    ],
+    "Matrix平台特性文件": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 1,
+        "level": 1,
+        "title": "Matrix平台特性文件"
+      }
+    ],
+    "Mention消息段": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 280,
+        "level": 3,
+        "title": "Mention消息段"
       }
     ],
     "Message 訊息模組": [
@@ -1632,6 +1616,26 @@
         "title": "OneBot12 訊息支援"
       }
     ],
+    "OneBot12消息支援": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 90,
+        "level": 3,
+        "title": "OneBot12消息支援"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 93,
+        "level": 3,
+        "title": "OneBot12消息支援"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 109,
+        "level": 3,
+        "title": "OneBot12消息支援"
+      }
+    ],
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1736,6 +1740,14 @@
         "title": "Q: 推薦使用什麼 AI 工具？"
       }
     ],
+    "QQBot平台特性文件": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 1,
+        "level": 1,
+        "title": "QQBot平台特性文件"
+      }
+    ],
     "Reply 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1817,7 +1829,7 @@
     "Send 鏈式調用": [
       {
         "document": "platform-guide/README.md",
-        "line": 32,
+        "line": 38,
         "level": 3,
         "title": "Send 鏈式調用"
       }
@@ -1886,6 +1898,14 @@
         "title": "Telegram 平台特性文件"
       }
     ],
+    "Token刷新": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 271,
+        "level": 3,
+        "title": "Token刷新"
+      }
+    ],
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1916,6 +1936,22 @@
         "line": 442,
         "level": 3,
         "title": "WebSocket 連線"
+      }
+    ],
+    "WebSocket連接": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 252,
+        "level": 2,
+        "title": "WebSocket連接"
+      }
+    ],
+    "WebSocket連線": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 304,
+        "level": 2,
+        "title": "WebSocket連線"
       }
     ],
     "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
@@ -2156,6 +2192,14 @@
         "line": 54,
         "level": 3,
         "title": "list 參數"
+      }
+    ],
+    "mention_all消息段": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 293,
+        "level": 3,
+        "title": "mention_all消息段"
       }
     ],
     "meta 事件格式": [
@@ -2485,7 +2529,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 92,
+        "line": 98,
         "level": 3,
         "title": "事件監聽"
       }
@@ -2598,6 +2642,14 @@
         "title": "事件處理關鍵步驟"
       }
     ],
+    "事件訂閱（Intents）": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 277,
+        "level": 2,
+        "title": "事件訂閱（Intents）"
+      }
+    ],
     "事件資料格式": [
       {
         "document": "advanced/lifecycle.md",
@@ -2607,12 +2659,6 @@
       }
     ],
     "事件轉換": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 218,
-        "level": 2,
-        "title": "事件轉換"
-      },
       {
         "document": "standards/README.md",
         "line": 68,
@@ -2894,6 +2940,14 @@
         "title": "使用生命週期事件"
       }
     ],
+    "使用示例": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 296,
+        "level": 2,
+        "title": "使用示例"
+      }
+    ],
     "使用範例": [
       {
         "document": "advanced/lifecycle.md",
@@ -2946,6 +3000,14 @@
         "line": 96,
         "level": 4,
         "title": "保留錯誤段"
+      }
+    ],
+    "信令類型": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 315,
+        "level": 3,
+        "title": "信令類型"
       }
     ],
     "修飾方法": [
@@ -3006,6 +3068,14 @@
         "line": 111,
         "level": 2,
         "title": "傳送方法回傳值"
+      }
+    ],
+    "傳送方法返回值": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 128,
+        "level": 2,
+        "title": "傳送方法返回值"
       }
     ],
     "傳送範例": [
@@ -3301,7 +3371,7 @@
     "參考連結": [
       {
         "document": "platform-guide/README.md",
-        "line": 202,
+        "line": 208,
         "level": 2,
         "title": "參考連結"
       }
@@ -3309,7 +3379,7 @@
     "參與貢獻": [
       {
         "document": "platform-guide/README.md",
-        "line": 214,
+        "line": 220,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -3692,8 +3762,26 @@
         "title": "基本資訊"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
         "document": "platform-guide/onebot12.md",
         "line": 13,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 12,
         "level": 2,
         "title": "基本資訊"
       },
@@ -3705,6 +3793,12 @@
       },
       {
         "document": "platform-guide/yunhu.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
         "line": 12,
         "level": 2,
         "title": "基本資訊"
@@ -3868,6 +3962,14 @@
         "line": 35,
         "level": 3,
         "title": "媒體傳送方法"
+      }
+    ],
+    "媒體文件處理": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 47,
+        "level": 3,
+        "title": "媒體文件處理"
       }
     ],
     "子日誌記錄器": [
@@ -4688,6 +4790,12 @@
         "line": 48,
         "level": 3,
         "title": "按鈕參數說明"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 59,
+        "level": 3,
+        "title": "按鈕參數說明"
       }
     ],
     "接收類型": [
@@ -4744,6 +4852,22 @@
         "title": "擴充：新增更多功能"
       }
     ],
+    "擴展字段": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 144,
+        "level": 3,
+        "title": "擴展字段"
+      }
+    ],
+    "擴展欄位": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 170,
+        "level": 3,
+        "title": "擴展欄位"
+      }
+    ],
     "擴展欄位說明": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4764,6 +4888,28 @@
         "line": 27,
         "level": 3,
         "title": "支援的提交類型"
+      }
+    ],
+    "支援的消息傳送類型": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 40,
+        "level": 2,
+        "title": "支援的消息傳送類型"
+      }
+    ],
+    "支援的消息發送類型": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 47,
+        "level": 2,
+        "title": "支援的消息發送類型"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 22,
+        "level": 2,
+        "title": "支援的消息發送類型"
       }
     ],
     "支援的訊息傳送類型": [
@@ -4862,6 +5008,18 @@
     ],
     "文件資訊": [
       {
+        "document": "platform-guide/kook.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 7,
         "level": 2,
@@ -4874,6 +5032,12 @@
         "title": "文件資訊"
       },
       {
+        "document": "platform-guide/qqbot.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 7,
         "level": 2,
@@ -4881,6 +5045,12 @@
       },
       {
         "document": "platform-guide/yunhu.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
         "line": 7,
         "level": 2,
         "title": "文件資訊"
@@ -4948,6 +5118,20 @@
         "line": 17,
         "level": 3,
         "title": "新手入門"
+      }
+    ],
+    "斷線重連": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 326,
+        "level": 3,
+        "title": "斷線重連"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 264,
+        "level": 3,
+        "title": "斷線重連"
       }
     ],
     "方式一：使用 pip 安裝": [
@@ -5248,8 +5432,20 @@
         "title": "核心差異點"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 162,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 89,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 136,
         "level": 3,
         "title": "核心差異點"
       },
@@ -5262,6 +5458,12 @@
       {
         "document": "platform-guide/yunhu.md",
         "line": 131,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 149,
         "level": 3,
         "title": "核心差異點"
       }
@@ -5375,7 +5577,7 @@
     "標準事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 149,
+        "line": 155,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -5391,7 +5593,7 @@
     "標準回應格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 170,
+        "line": 176,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -5407,7 +5609,7 @@
     "標準格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 144,
+        "line": 150,
         "level": 2,
         "title": "標準格式"
       }
@@ -5744,6 +5946,12 @@
         "line": 38,
         "level": 2,
         "title": "消息段類型"
+      },
+      {
+        "document": "platform-guide/kook.md",
+        "line": 255,
+        "level": 3,
+        "title": "消息段類型"
       }
     ],
     "測試": [
@@ -5818,6 +6026,18 @@
         "title": "特有事件類型"
       },
       {
+        "document": "platform-guide/kook.md",
+        "line": 158,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 132,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 117,
         "level": 2,
@@ -5826,6 +6046,12 @@
       {
         "document": "platform-guide/yunhu.md",
         "line": 127,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 145,
         "level": 2,
         "title": "特有事件類型"
       }
@@ -5838,6 +6064,14 @@
         "title": "特有參數說明"
       }
     ],
+    "特殊字段示例": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 151,
+        "level": 3,
+        "title": "特殊字段示例"
+      }
+    ],
     "特殊標籤（用於 API 文件生成）": [
       {
         "document": "styleguide/docstring.md",
@@ -5847,6 +6081,12 @@
       }
     ],
     "特殊欄位範例": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 176,
+        "level": 3,
+        "title": "特殊欄位範例"
+      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 102,
@@ -6000,6 +6240,14 @@
         "title": "發布與模組商店指南"
       }
     ],
+    "發送媒體消息": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 338,
+        "level": 3,
+        "title": "發送媒體消息"
+      }
+    ],
     "發送方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6014,6 +6262,20 @@
         "line": 86,
         "level": 3,
         "title": "發送方法命名"
+      }
+    ],
+    "發送方法返回值": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 107,
+        "level": 2,
+        "title": "發送方法返回值"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 130,
+        "level": 2,
+        "title": "發送方法返回值"
       }
     ],
     "發送者資訊": [
@@ -6046,6 +6308,14 @@
         "line": 19,
         "level": 3,
         "title": "監聽所有訊息"
+      }
+    ],
+    "監聽消息審核結果": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 350,
+        "level": 3,
+        "title": "監聽消息審核結果"
       }
     ],
     "監聽生命週期事件": [
@@ -6516,6 +6786,22 @@
         "title": "萬用字元事件處理器"
       }
     ],
+    "處理交互事件": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 322,
+        "level": 3,
+        "title": "處理交互事件"
+      }
+    ],
+    "處理群消息": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 298,
+        "level": 3,
+        "title": "處理群消息"
+      }
+    ],
     "虛擬環境": [
       {
         "document": "terminology.md",
@@ -6601,7 +6887,7 @@
     "訊息傳送失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 187,
+        "line": 193,
         "level": 4,
         "title": "訊息傳送失敗"
       }
@@ -6609,7 +6895,7 @@
     "訊息傳送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 171,
+        "line": 177,
         "level": 4,
         "title": "訊息傳送成功"
       }
@@ -7045,7 +7331,7 @@
     "通用介面": [
       {
         "document": "platform-guide/README.md",
-        "line": 30,
+        "line": 36,
         "level": 2,
         "title": "通用介面"
       }
@@ -7126,6 +7412,44 @@
         "title": "通知類型判斷"
       }
     ],
+    "連式修飾方法（可組合使用）": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 60,
+        "level": 3,
+        "title": "連式修飾方法（可組合使用）"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 82,
+        "level": 3,
+        "title": "連式修飾方法（可組合使用）"
+      }
+    ],
+    "連式呼叫範例": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 68,
+        "level": 3,
+        "title": "連式呼叫範例"
+      }
+    ],
+    "連式調用示例": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 93,
+        "level": 3,
+        "title": "連式調用示例"
+      }
+    ],
+    "連接流程": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 254,
+        "level": 3,
+        "title": "連接流程"
+      }
+    ],
     "連線事件": [
       {
         "document": "getting-started/event-handling.md",
@@ -7134,13 +7458,15 @@
         "title": "連線事件"
       }
     ],
-    "連線管理": [
+    "連線流程": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 129,
-        "level": 2,
-        "title": "連線管理"
-      },
+        "document": "platform-guide/kook.md",
+        "line": 306,
+        "level": 3,
+        "title": "連線流程"
+      }
+    ],
+    "連線管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 440,
@@ -7400,12 +7726,46 @@
         "title": "配置範例"
       }
     ],
+    "配置說明": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 21,
+        "level": 2,
+        "title": "配置說明"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 21,
+        "level": 2,
+        "title": "配置說明"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 21,
+        "level": 2,
+        "title": "配置說明"
+      }
+    ],
     "配置選項": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 174,
         "level": 2,
         "title": "配置選項"
+      }
+    ],
+    "錯誤碼說明": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 143,
+        "level": 3,
+        "title": "錯誤碼說明"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 122,
+        "level": 3,
+        "title": "錯誤碼說明"
       }
     ],
     "錯誤處理": [
@@ -7464,6 +7824,12 @@
         "title": "鏈式修飾方法（可組合使用）"
       },
       {
+        "document": "platform-guide/qqbot.md",
+        "line": 65,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 73,
         "level": 3,
@@ -7498,6 +7864,14 @@
         "line": 9,
         "level": 3,
         "title": "鏈式調用模式（實例）"
+      }
+    ],
+    "鏈式調用示例": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 74,
+        "level": 3,
+        "title": "鏈式調用示例"
       }
     ],
     "開始學習": [
@@ -7608,6 +7982,14 @@
         "title": "關閉介接器"
       }
     ],
+    "附件消息段": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 227,
+        "level": 3,
+        "title": "附件消息段"
+      }
+    ],
     "除錯技巧": [
       {
         "document": "developer-guide/README.md",
@@ -7630,6 +8012,14 @@
         "line": 1,
         "level": 1,
         "title": "雲湖平台特性文件"
+      }
+    ],
+    "雲湖用戶平台特性文件": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 1,
+        "level": 1,
+        "title": "雲湖用戶平台特性文件"
       }
     ],
     "需求描述模板": [
@@ -7659,7 +8049,7 @@
     "非同步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
-        "line": 77,
+        "line": 83,
         "level": 4,
         "title": "非同步發送與結果處理"
       }
@@ -7714,6 +8104,22 @@
         "line": 214,
         "level": 3,
         "title": "預設配置"
+      }
+    ],
+    "頻道消息段": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 213,
+        "level": 3,
+        "title": "頻道消息段"
+      }
+    ],
+    "額外操作方法": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 112,
+        "level": 3,
+        "title": "額外操作方法"
       }
     ],
     "類型定義": [
