@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 994,
+  "total_keywords": 995,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2658,6 +2658,14 @@
         "line": 211,
         "level": 3,
         "title": "[BUG-013] Uninitializer 对未初始化 LazyModule 的清理逻辑过于复杂"
+      }
+    ],
+    "[BUG-014] Windows 下 CTRL+C 无法停止程序": [
+      {
+        "document": "bug-tracker.md",
+        "line": 230,
+        "level": 3,
+        "title": "[BUG-014] Windows 下 CTRL+C 无法停止程序"
       }
     ],
     "__init__.py": [
