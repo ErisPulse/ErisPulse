@@ -224,3 +224,23 @@
 3. 删除复杂的临时实例创建逻辑
 
 **修复日期**: 2026/04/21
+
+---
+
+### [BUG-014] Windows 下 CTRL+C 无法停止程序
+
+**问题**: 在 Windows 上直接运行 `python main.py` 时，按下 CTRL+C 无法终止程序。程序正常启动并输出路由服务器信息后，CTRL+C 完全无响应，只能通过任务管理器强杀进程。而通过 `epsdk run` 启动时可以正常停止——但 `epsdk run` 是通过子进程模型运行的。
+
+**原因**: Hypercorn ASGI 服务器的 `serve()` 函数内部通过 `signal.signal(SIGINT, handler)` 注册了自己的 SIGINT 处理器，覆盖了 Python 默认的 `KeyboardInterrupt` 处理机制。当通过 `asyncio.create_task()` 启动 Hypercorn 作为后台任务时，Hypercorn 的内部 shutdown 流程无法正常触发（因为它期望的是 `worker_serve` 模式），导致 CTRL+C 信号被 Hypercorn 吞掉但不会引发任何清理动作。
+
+**影响版本**: [2.3.6 - 2.4.2]
+
+**修复版本**: 2.4.3-dev.0
+
+**修复内容**:
+1. 将 ASGI 服务器从 Hypercorn 切换为 Uvicorn（`pyproject.toml` 依赖变更）
+2. 使用 `uvicorn.Server._serve()` 直接启动服务器，**绕过** `capture_signals()` 信号处理上下文管理器
+3. 通过 `server.should_exit = True` 实现优雅停止，超时则取消后台任务
+4. 同步移除子进程运行模型和 `runtime/cleanup.py` 清理模块（子进程清理机制不再需要）
+
+**修复日期**: 2026/04/28
