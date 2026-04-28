@@ -1,7 +1,7 @@
 """
 Run 命令实现
 
-直接在同一进程中运行主程序，支持热重载模式
+直接运行主程序，支持热重载模式
 """
 
 import os
@@ -21,7 +21,7 @@ class ReloadHandler(FileSystemEventHandler):
     文件系统事件处理器
     
     监控 .py 文件变更并触发 sdk.restart() 热重载
-    
+
     {!--< tips >!--}
     1. 文件监控运行在独立线程
     2. 通过 run_coroutine_threadsafe 安全调度到事件循环
@@ -68,8 +68,8 @@ class RunCommand(Command):
         parser.add_argument(
             'script',
             nargs='?',
-            default='main.py',
-            help='要运行的主程序路径 (默认: main.py)'
+            default=None,
+            help='要运行的主程序路径 (不指定则直接运行 SDK)'
         )
         parser.add_argument(
             '--reload',
@@ -82,17 +82,25 @@ class RunCommand(Command):
         script = args.script
         reload_mode = args.reload
         
-        if not os.path.exists(script):
-            console.print(f"脚本 [path]{script}[/] 不存在，正在创建...")
-            from ... import _prepare_environment
-            asyncio.run(_prepare_environment(script))
+        if script:
+            if not os.path.exists(script):
+                console.print(f"[error]脚本 [path]{script}[/] 不存在[/]")
+                console.print("[info]使用 [cyan]epsdk init[/cyan] 创建新项目[/]")
+                return
+            self._run_script(script, reload_mode)
+        else:
+            self._run_internal(reload_mode)
 
+    def _run_internal(self, reload_mode: bool):
+        """
+        直接运行 SDK（不指定脚本时）
+        """
         async def _run():
             from ... import sdk
 
             if reload_mode:
                 loop = asyncio.get_running_loop()
-                self._setup_watchdog(script, loop)
+                self._setup_watchdog(".", loop)
 
             await sdk.run(keep_running=True)
 
@@ -105,8 +113,30 @@ class RunCommand(Command):
                 self._observer.stop()
                 self._observer.join()
 
-    def _setup_watchdog(self, script_path: str, loop: asyncio.AbstractEventLoop):
-        watch_dir = os.path.dirname(os.path.abspath(script_path))
+    def _run_script(self, script_path: str, reload_mode: bool):
+        """
+        运行指定脚本文件
+        """
+        async def _run():
+            from ... import sdk
+
+            if reload_mode:
+                loop = asyncio.get_running_loop()
+                watch_dir = os.path.dirname(os.path.abspath(script_path))
+                self._setup_watchdog(watch_dir, loop)
+
+            await sdk.run(keep_running=True)
+
+        try:
+            asyncio.run(_run())
+        except KeyboardInterrupt:
+            pass
+        finally:
+            if reload_mode and hasattr(self, '_observer'):
+                self._observer.stop()
+                self._observer.join()
+
+    def _setup_watchdog(self, watch_dir: str, loop: asyncio.AbstractEventLoop):
         if not os.path.exists(watch_dir):
             return
 
