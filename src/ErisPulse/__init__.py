@@ -47,8 +47,6 @@ except importlib.metadata.PackageNotFoundError:
 
 # 向后兼容性导出
 init = sdk.init
-_prepare_environment = sdk._prepare_environment
-_init_progress = sdk._init_progress
 init_sync = sdk.init_sync
 init_task = sdk.init_task
 load_module = sdk.load_module
@@ -69,6 +67,4 @@ __all__ = [
     "run",
     "restart",
     "uninit",
-    "_prepare_environment",
-    "_init_progress",
 ]
