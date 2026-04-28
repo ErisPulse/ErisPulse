@@ -274,7 +274,7 @@ class TestRouterManager:
     async def test_server_start(self, router_manager):
         """测试启动服务器"""
         mock_server = MagicMock()
-        mock_server.serve = AsyncMock(return_value=None)
+        mock_server._serve = AsyncMock(return_value=None)
         with patch('ErisPulse.Core.router.uvicorn.Server', return_value=mock_server), \
              patch('ErisPulse.Core.router.uvicorn.Config', return_value=MagicMock()):
             await router_manager.start(host="127.0.0.1", port=8888)
@@ -286,7 +286,7 @@ class TestRouterManager:
     async def test_server_start_with_ssl(self, router_manager):
         """测试启动带SSL的服务器"""
         mock_server = MagicMock()
-        mock_server.serve = AsyncMock(return_value=None)
+        mock_server._serve = AsyncMock(return_value=None)
         with patch('ErisPulse.Core.router.uvicorn.Server', return_value=mock_server), \
              patch('ErisPulse.Core.router.uvicorn.Config') as mock_config_cls:
             await router_manager.start(
