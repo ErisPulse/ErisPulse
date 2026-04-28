@@ -22,8 +22,7 @@ import ipaddress
 import sys
 import importlib.metadata
 from datetime import datetime
-from hypercorn.config import Config
-from hypercorn.asyncio import serve
+import uvicorn
 
 ERISPULSE_VERSION = "UnknownVersion"
 
@@ -67,6 +66,7 @@ class RouterManager:
         ] = defaultdict(dict)
         self.base_url = ""
         self._server_task: asyncio.Task | None = None
+        self._uvicorn_server: uvicorn.Server | None = None
         self._local_ips: list[dict[str, str]] = []
         self._setup_core_routes()
 
@@ -436,22 +436,23 @@ class RouterManager:
             if self._server_task and not self._server_task.done():
                 raise RuntimeError("服务器已在运行中")
 
-            # 获取本地IP地址
             self._get_local_ips()
 
-            config = Config()
-            config.bind = [f"{host}:{port}"]
-            config.loglevel = "warning"
-
-            if ssl_certfile and ssl_keyfile:
-                config.certfile = ssl_certfile
-                config.keyfile = ssl_keyfile
+            config = uvicorn.Config(
+                self.app,
+                host=host,
+                port=port,
+                log_level="warning",
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+            )
+            self._uvicorn_server = uvicorn.Server(config)
 
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
             logger.info(f"启动路由服务器 {display_url}\n")
 
-            self._server_task = asyncio.create_task(serve(self.app, config))  # type: ignore || 原因: Hypercorn与FastAPIl类型不兼容
+            self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
             await lifecycle.submit_event(
                 "server.start",
@@ -480,26 +481,30 @@ class RouterManager:
         """
         停止服务器并清理所有路由
         """
-        # 停止服务器
+        if hasattr(self, '_uvicorn_server') and self._uvicorn_server:
+            self._uvicorn_server.should_exit = True
+
         if self._server_task:
-            self._server_task.cancel()
             try:
                 await asyncio.wait_for(self._server_task, timeout=5.0)
             except asyncio.CancelledError:
                 logger.info("路由服务器已被取消")
             except asyncio.TimeoutError:
+                self._server_task.cancel()
+                try:
+                    await self._server_task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 logger.warning("路由服务器停止超时，强制终止")
             except Exception as e:
                 logger.error(f"路由服务器停止时发生错误: {e}", exc_info=True)
             finally:
                 self._server_task = None
 
-        # 清理所有注册的路由
         logger.debug("清理所有注册的路由...")
         self._http_routes.clear()
         self._websocket_routes.clear()
 
-        # 重新设置核心路由（因为要清空 FastAPI 的路由表）
         self.app.router.routes.clear()
         self._setup_core_routes()
 

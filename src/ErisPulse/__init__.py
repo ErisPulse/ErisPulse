@@ -33,12 +33,6 @@ from .sdk import sdk
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 
-# 导入清理管理模块
-from .runtime.cleanup import setup_cleanup_subprocess
-
-# 设置子进程清理机制
-setup_cleanup_subprocess()
-
 
 # ==================== 版本信息 ====================
 
@@ -53,8 +47,6 @@ except importlib.metadata.PackageNotFoundError:
 
 # 向后兼容性导出
 init = sdk.init
-_prepare_environment = sdk._prepare_environment
-_init_progress = sdk._init_progress
 init_sync = sdk.init_sync
 init_task = sdk.init_task
 load_module = sdk.load_module
@@ -75,6 +67,4 @@ __all__ = [
     "run",
     "restart",
     "uninit",
-    "_prepare_environment",
-    "_init_progress",
 ]
