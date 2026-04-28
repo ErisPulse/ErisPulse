@@ -163,24 +163,14 @@ SDK 初始化入口
 ---
 
 
-##### `async async _prepare_environment(script_path: str = 'main.py')`
+##### `async async _prepare_environment()`
 
 > **内部方法** 
 准备运行环境
 
-初始化项目环境文件和配置
+初始化配置和全局异常处理
 
 :return: bool 环境准备是否成功
-
----
-
-
-##### `async async _init_progress(script_path: str = 'main.py')`
-
-> **内部方法** 
-初始化项目环境文件
-
-:return: bool 是否创建了新的 main.py 文件
 
 ---
 
