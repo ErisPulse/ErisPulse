@@ -63,6 +63,54 @@
 
 ---
 
+## [2.4.3-dev.0] - 2026/04/28
+> 开发版本
+
+**版本摘要**
+架构优化版本：ASGI 服务器从 Hypercorn 切换为 Uvicorn，移除子进程运行模型和 cleanup 模块，修复 Windows 下 CTRL+C 无法停止程序的问题。`ep run` 不指定脚本时直接内部运行 SDK，模板创建统一由 `epsdk init` 处理。
+
+**注意事项**
+- ⚠️ **依赖变更**：`hypercorn>=0.14.0` 已替换为 `uvicorn>=0.30.0`，升级后需重新安装依赖
+- ⚠️ **移除子进程模型**：`ep run` 不再通过子进程运行，热重载改为事件循环内调用 `sdk.restart()`
+- ⚠️ **移除**：`runtime/cleanup.py` 模块已删除，子进程清理机制不再需要
+- ⚠️ **移除**：`sdk._init_progress()` 方法和自动生成 main.py 的逻辑已移除，模板创建请使用 `epsdk init`
+- ⚠️ **移除**：`__init__.py` 中 `_prepare_environment`、`_init_progress` 的向后兼容导出已移除
+- ⚠️ **行为变更**：`sdk.run()` 的 finally 块改为完整清理（`await sdk.uninit()`），不再需要调用方手动调用 `sdk.uninit()`
+
+**兼容性**
+- 对外 API 完全兼容，现有模块和适配器代码无需修改
+- 仅移除内部辅助方法（`_prepare_environment`、`_init_progress`），不应影响公共 API 使用者
+
+### 变更
+
+- @wsu2059q
+  - ASGI 服务器从 Hypercorn 切换为 Uvicorn：
+    - `pyproject.toml` 依赖 `hypercorn>=0.14.0` → `uvicorn>=0.30.0`
+    - `router.py` 使用 `uvicorn.Server._serve()` 直接启动，绕过 `capture_signals()` 避免信号处理冲突
+    - `router.stop()` 通过 `should_exit = True` 优雅停止，超时则取消任务
+  - `ep run` 行为调整：
+    - 不指定脚本时直接内部运行 SDK，不再自动生成 `main.py` 模板
+    - 指定不存在的脚本时提示使用 `epsdk init` 创建项目
+  - `sdk.run()` finally 块改为完整清理（`await self.uninit()`），替代原来的部分清理（`module.unload()` + `adapter.shutdown()`）
+  - main.py 模板简化：移除冗余的 `finally: await sdk.uninit()`（`sdk.run()` 已处理）
+
+### 移除
+
+- @wsu2059q
+  - 移除 `runtime/cleanup.py` 清理管理模块及其所有子进程相关代码（`CleanupManager` 类、`send_cleanup_signal()`、`setup_cleanup_subprocess()`）
+  - 移除 `sdk._init_progress()` 方法和自动生成 `main.py` 模板的逻辑
+  - 移除 `__init__.py` 中 `_prepare_environment`、`_init_progress` 的向后兼容导出
+  - 移除 `_prepare_environment()` 的 `script_path` 参数，仅保留配置初始化功能
+
+### 修复
+
+- @wsu2059q
+  - 修复 Windows 下 `python main.py` 无法使用 CTRL+C 停止程序的问题：
+    - **根因**：Hypercorn 的 `serve()` 函数注册的 SIGINT 处理器覆盖了默认处理器，且 Hypercorn 内部 shutdown 机制在 `asyncio.create_task()` 模式下无法正常触发
+    - **方案**：切换为 Uvicorn，使用 `_serve()` 绕过 `capture_signals()` 信号处理上下文管理器，将信号控制权交还给 SDK
+
+---
+
 ## [2.4.2] - 2026/04/26
 > 正式发布
 

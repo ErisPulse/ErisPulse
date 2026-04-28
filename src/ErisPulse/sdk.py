@@ -500,16 +500,15 @@ class SDK:
         return self._initialized
 
 
-    async def _prepare_environment(self, script_path: str = "main.py") -> bool:
+    async def _prepare_environment(self) -> bool:
         """
         {!--< internal-use >!--}
         准备运行环境
         
-        初始化项目环境文件和配置
+        初始化配置和全局异常处理
         
         :return: bool 环境准备是否成功
         """
-        # 设置全局异常处理
         from .runtime import setup_exception_handling
         setup_exception_handling()
         
@@ -523,10 +522,6 @@ class SDK:
             from .runtime import get_erispulse_config
             get_erispulse_config()
             logger.info("配置文件已加载")
-
-            main_init = await self._init_progress(script_path)
-            if main_init:
-                logger.info("项目入口已生成, 你可以在 main.py 中编写一些代码")
             return True
         except Exception as e:
             load_duration = lifecycle.stop_timer("core.init")
@@ -539,51 +534,6 @@ class SDK:
                 },
             )
             logger.error(f"环境准备失败: {e}")
-            return False
-
-
-    async def _init_progress(self, script_path: str = "main.py") -> bool:
-        """
-        {!--< internal-use >!--}
-        初始化项目环境文件
-        
-        :return: bool 是否创建了新的 main.py 文件
-        """
-        main_file = Path(f"{script_path}")
-        main_init = False
-        
-        try:
-            if not main_file.exists():
-                main_content = """# ErisPulse 主程序文件
-# 本文件由 SDK 自动创建，您可随意修改
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        # 使用 SDK 的 run 方法
-        # 如果你需要更加精细的控制，可以参考查阅 `我的第一个机器人` 文档中的示例代码
-        # SDK 会自动：
-        # - 初始化和启动适配器
-        # - 保持程序运行
-        await sdk.run(keep_running=True)
-    except Exception as e:
-        sdk.logger.error(e)
-    except KeyboardInterrupt:
-        sdk.logger.info("正在停止程序")
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-"""
-                with open(main_file, "w", encoding="utf-8") as f:
-                    f.write(main_content)
-                main_init = True
-                
-            return main_init
-        except Exception as e:
-            logger.error(f"无法初始化项目环境: {e}")
             return False
 
 
@@ -687,8 +637,10 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error(e)
         finally:
-            await self.module.unload()
-            await self.adapter.shutdown()
+            try:
+                await self.uninit()
+            except Exception:
+                pass
 
     async def _do_restart(self) -> bool:
         """

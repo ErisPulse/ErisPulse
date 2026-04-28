@@ -224,3 +224,23 @@ Also re-raises the original AttributeError to facilitate catching by upper layer
 3. Deletes complex temporary instance creation logic.
 
 **Fix Date**: 2026/04/21
+
+---
+
+### [BUG-014] Cannot Stop Program with CTRL+C on Windows
+
+**Issue**: When running `python main.py` directly on Windows, pressing CTRL+C cannot terminate the program. The program starts normally and outputs the routing server information, but CTRL+C is completely unresponsive, forcing process termination through the Task Manager. However, when started with `epsdk run`, it stops normally—but `epsdk run` runs through a subprocess model.
+
+**Root Cause**: The `serve()` function of the Hypercorn ASGI server internally registers its own SIGINT handler through `signal.signal(SIGINT, handler)`, overriding Python's default `KeyboardInterrupt` handling mechanism. When Hypercorn is started as a background task via `asyncio.create_task()`, Hypercorn's internal shutdown process cannot be properly triggered (because it expects `worker_serve` mode), causing the CTRL+C signal to be swallowed by Hypercorn without triggering any cleanup actions.
+
+**Affected Versions**: [2.3.6 - 2.4.2]
+
+**Fixed Version**: 2.4.3-dev.0
+
+**Fix Details**:
+1. Switched the ASGI server from Hypercorn to Uvicorn (dependency change in `pyproject.toml`)
+2. Use `uvicorn.Server._serve()` to directly start the server, **bypassing** the `capture_signals()` signal handling context manager
+3. Achieve graceful shutdown via `server.should_exit = True`, with timeout cancelling the background task
+4. Synchronously removed the subprocess running model and `runtime/cleanup.py` cleanup module (subprocess cleanup mechanism is no longer needed)
+
+**Fix Date**: 2026/04/28

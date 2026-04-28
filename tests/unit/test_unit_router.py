@@ -273,25 +273,22 @@ class TestRouterManager:
     @pytest.mark.asyncio
     async def test_server_start(self, router_manager):
         """测试启动服务器"""
-        # Mock serve函数
-        with patch('ErisPulse.Core.router.serve', new_callable=AsyncMock) as mock_serve:
-            mock_serve.return_value = None
-            
-            # 执行
+        mock_server = MagicMock()
+        mock_server._serve = AsyncMock(return_value=None)
+        with patch('ErisPulse.Core.router.uvicorn.Server', return_value=mock_server), \
+             patch('ErisPulse.Core.router.uvicorn.Config', return_value=MagicMock()):
             await router_manager.start(host="127.0.0.1", port=8888)
             
-            # 验证
             assert router_manager.base_url == "http://127.0.0.1:8888"
             assert router_manager._server_task is not None
-            mock_serve.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_server_start_with_ssl(self, router_manager):
         """测试启动带SSL的服务器"""
-        with patch('ErisPulse.Core.router.serve', new_callable=AsyncMock) as mock_serve:
-            mock_serve.return_value = None
-            
-            # 执行
+        mock_server = MagicMock()
+        mock_server._serve = AsyncMock(return_value=None)
+        with patch('ErisPulse.Core.router.uvicorn.Server', return_value=mock_server), \
+             patch('ErisPulse.Core.router.uvicorn.Config') as mock_config_cls:
             await router_manager.start(
                 host="127.0.0.1",
                 port=8888,
@@ -299,15 +296,11 @@ class TestRouterManager:
                 ssl_keyfile="key.pem"
             )
             
-            # 验证
             assert router_manager.base_url == "https://127.0.0.1:8888"
-            mock_serve.assert_called_once()
-            
-            # 验证配置
-            call_args = mock_serve.call_args
-            config = call_args[0][1]  # 第二个参数是Config对象
-            assert config.certfile == "cert.pem"
-            assert config.keyfile == "key.pem"
+            mock_config_cls.assert_called_once()
+            call_kwargs = mock_config_cls.call_args[1]
+            assert call_kwargs["ssl_certfile"] == "cert.pem"
+            assert call_kwargs["ssl_keyfile"] == "key.pem"
     
     @pytest.mark.asyncio
     async def test_server_start_already_running(self, router_manager):
