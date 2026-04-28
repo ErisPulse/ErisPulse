@@ -567,12 +567,10 @@ async def main():
         # - 初始化和启动适配器
         # - 保持程序运行
         await sdk.run(keep_running=True)
-    except Exception as e:
-        sdk.logger.error(e)
     except KeyboardInterrupt:
         sdk.logger.info("正在停止程序")
-    finally:
-        await sdk.uninit()
+    except Exception as e:
+        sdk.logger.error(e)
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -687,8 +685,10 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error(e)
         finally:
-            await self.module.unload()
-            await self.adapter.shutdown()
+            try:
+                await self.uninit()
+            except Exception:
+                pass
 
     async def _do_restart(self) -> bool:
         """

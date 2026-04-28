@@ -447,13 +447,12 @@ class RouterManager:
                 ssl_keyfile=ssl_keyfile,
             )
             self._uvicorn_server = uvicorn.Server(config)
-            self._uvicorn_server.install_signal_handlers = lambda: None
 
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
             logger.info(f"启动路由服务器 {display_url}\n")
 
-            self._server_task = asyncio.create_task(self._uvicorn_server.serve())
+            self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
             await lifecycle.submit_event(
                 "server.start",
