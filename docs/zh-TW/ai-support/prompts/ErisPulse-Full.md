@@ -11641,5 +11641,108 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 
 ### [BUG-009] Event.collect() 字段缺少 key 時靜默跳過
 
-**問題**: `Event.collect()` 方法在遍歷字段列表時，如果某個字段字典缺少 `key`，會靜默跳過該字段，不輸出任何日誌或警告。開發者如果拼寫錯誤（如 `"Key"` 而非 `"key"`），整個字段會被悄悄忽略，導致下游
+**問題**: `Event.collect()` 方法在遍歷字段列表時，如果某個字段字典缺少 `key`，會靜默跳過該字段，不輸出任何日誌或警告。開發者如果拼寫錯誤（如 `"Key"` 而非 `"key"`），整個字段會被悄悄忽略，導致下游行為難以排查。
+
+**原因**: 缺少輸入驗證和錯誤反饋。
+
+**影響版本**: 2.4.0-dev.4
+
+**修復版本**: 2.4.2-dev.1
+
+**修復內容**: 在跳過前添加 `logger.warning()` 記錄缺少 `key` 的字段資訊。
+
+**修復日期**: 2026/04/13
+
+---
+
+### [BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成
+
+**問題**: 使用者在同步上下文中存取懶載入的 BaseModule 屬性時，模組使用 `loop.create_task()` 非同步初始化但不等待，導致屬性存取時可能未初始化完成，引發競態條件。
+
+**原因**: `_ensure_initialized()` 對 BaseModule 使用 `loop.create_task(self._initialize())` 後立即返回，未確保初始化完成。
+
+**影響版本**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修復版本**: 2.4.2-dev.2
+
+**修復內容**: 在同步上下文中，BaseModule 的初始化改為使用 `asyncio.run(self._initialize())`，確保初始化完成後再返回。保持透明代理特性，使用者無需感知同步/非同步差異。
+
+**修復日期**: 2026/04/21
+
+---
+
+### [BUG-011] 配置系統多線寫入導致資料遺失
+
+**問題**: 在多線程環境下，多個線程同時呼叫 `config.setConfig()` 時，`_flush_config()` 讀取-修改-寫入操作不是原子性的，可能導致部分寫入遺失。
+
+**原因**: `_flush_config()` 雖然使用了 `RLock`，但檔案讀取和寫入之間沒有檔案鎖保護，且 `_schedule_write` 的 Timer 可能被多次觸發導致覆蓋。
+
+**影響版本**: 2.3.0 - 2.4.2-dev.1
+
+**修復版本**: 2.4.2-dev.2
+
+**修復內容**:
+1. 添加檔案鎖機制（`_file_lock`）確保檔案操作原子性
+2. 使用暫存檔案寫入後原子性重新命名（`os.replace`/`os.rename`）
+3. 改進 `_schedule_write` 的 Timer 取消和重新排程邏輯
+
+**修復日期**: 2026/04/21
+
+---
+
+### [BUG-012] SDK 屬性存取錯誤資訊不準確
+
+**問題**: 存取不存在的屬性時，錯誤提示"您可能使用了錯誤的SDK註冊物件"，可能誤導使用者，實際可能是模組未啟用或名稱拼寫錯誤。
+
+**原因**: `__getattribute__` 的錯誤資訊沒有區分不同場景，統一給出模糊的提示。
+
+**影響版本**: 2.0.0 - 2.4.2-dev.1
+
+**修復版本**: 2.4.2-dev.2
+
+**修復內容**: 根據屬性名稱區分不同場景：
+1. 已註冊但未啟用：提示模組/適配器未啟用
+2. 完全不存在：提示檢查名稱拼寫
+同時將原始 AttributeError 重新拋出，便於上層捕捉。
+
+**修復日期**: 2026/04/21
+
+---
+
+### [BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜
+
+**問題**: `Uninitializer` 為從未被存取過的 LazyModule 建立臨時實例來呼叫 `on_unload`，代碼複雜且容易出錯。
+
+**原因**: 企圖為所有 LazyModule 呼叫生命週期方法，但未初始化的模組不需要也不應該被初始化。
+
+**影響版本**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**修復版本**: 2.4.2-dev.2
+
+**修復內容**: 簡化清理邏輯，只處理已初始化的 LazyModule：
+1. 跳過未初始化的 LazyModule，不建立臨時實例
+2. 只為已初始化的模組呼叫 `on_unload`
+3. 刪除複雜的臨時實例建立邏輯
+
+**修復日期**: 2026/04/21
+
+---
+
+### [BUG-014] Windows 下 CTRL+C 無法停止程式
+
+**問題**: 在 Windows 上直接執行 `python main.py` 時，按下 CTRL+C 無法終止程式。程式正常啟動並輸出路由伺服器資訊後，CTRL+C 完全無響應，只能透過工作管理員強殺進程。而透過 `epsdk run` 啟動時可以正常停止——但 `epsdk run` 是透過子進程模型執行的。
+
+**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部透過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 預設的 `KeyboardInterrupt` 處理機制。當透過 `asyncio.create_task()` 啟動 Hypercorn 作為後台任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因為它期望的是 `worker_serve` 模式），導致 CTRL+C 訊號被 Hypercorn 吞掉但會引發任何清理動作。
+
+**影響版本**: [2.3.6 - 2.4.2]
+
+**修復版本**: 2.4.3-dev.0
+
+**修復內容**:
+1. 將 ASGI 伺服器從 Hypercorn 切換為 Uvicorn（`pyproject.toml` 依賴變更）
+2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 訊號處理上下文管理器
+3. 透過 `server.should_exit = True` 實現優雅停止，超時則取消後台任務
+4. 同步移除子進程執行模型和 `runtime/cleanup.py` 清理模組（子進程清理機制不再需要）
+
+**修復日期**: 2026/04/28
 

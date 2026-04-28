@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 901,
+  "total_keywords": 906,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2024,6 +2024,46 @@
         "line": 141,
         "level": 3,
         "title": "[BUG-009] Event.collect() 字段缺少 key 時靜默跳過"
+      }
+    ],
+    "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成": [
+      {
+        "document": "bug-tracker.md",
+        "line": 157,
+        "level": 3,
+        "title": "[BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成"
+      }
+    ],
+    "[BUG-011] 配置系統多線寫入導致資料遺失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 173,
+        "level": 3,
+        "title": "[BUG-011] 配置系統多線寫入導致資料遺失"
+      }
+    ],
+    "[BUG-012] SDK 屬性存取錯誤資訊不準確": [
+      {
+        "document": "bug-tracker.md",
+        "line": 192,
+        "level": 3,
+        "title": "[BUG-012] SDK 屬性存取錯誤資訊不準確"
+      }
+    ],
+    "[BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜": [
+      {
+        "document": "bug-tracker.md",
+        "line": 211,
+        "level": 3,
+        "title": "[BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜"
+      }
+    ],
+    "[BUG-014] Windows 下 CTRL+C 無法停止程式": [
+      {
+        "document": "bug-tracker.md",
+        "line": 230,
+        "level": 3,
+        "title": "[BUG-014] Windows 下 CTRL+C 無法停止程式"
       }
     ],
     "__init__.py": [
