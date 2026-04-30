@@ -24,4 +24,5 @@ services:
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    command: ["epsdk", "run"]
     restart: unless-stopped
