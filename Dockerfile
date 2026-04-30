@@ -3,13 +3,13 @@
 # https://github.com/ErisPulse/ErisPulse
 #
 # Usage:
-#   docker build -t wsu2059/erispulse .
+#   docker build -t erispulse/erispulse .
 #
 # Dashboard:
 #   Set ERISPULSE_DASHBOARD_TOKEN env to configure login token.
 #   Access via http://localhost:8000
 #
-# Docker Hub: https://hub.docker.com/r/wsu2059/erispulse
+# Docker Hub: https://hub.docker.com/r/erispulse/erispulse
 # ===========================================================================
 
 FROM python:3.13-slim AS production
@@ -40,4 +40,4 @@ VOLUME ["/app/config"]
 EXPOSE 8000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["python", "main.py"]
+CMD ["epsdk", "run"]

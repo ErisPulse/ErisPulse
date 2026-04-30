@@ -4,37 +4,10 @@ set -e
 ERISPULSE_DIR="/app"
 CONFIG_DIR="${ERISPULSE_DIR}/config"
 CONFIG_FILE="${CONFIG_DIR}/config.toml"
-MAIN_FILE="${ERISPULSE_DIR}/main.py"
+
 
 ensure_config_dir() {
     mkdir -p "${CONFIG_DIR}"
-}
-
-ensure_main_py() {
-    if [ ! -f "${MAIN_FILE}" ]; then
-        cat > "${MAIN_FILE}" <<'ENTRY'
-# ErisPulse 主程序文件
-# 本文件由 Docker 自动创建，您可通过挂载 config/ 来自定义配置
-import asyncio
-from ErisPulse import sdk
-
-
-async def main():
-    try:
-        await sdk.run(keep_running=True)
-    except Exception as e:
-        sdk.logger.error(e)
-    except KeyboardInterrupt:
-        sdk.logger.info("正在停止程序")
-    finally:
-        await sdk.uninit()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-ENTRY
-        echo "[ErisPulse] 已生成默认 main.py"
-    fi
 }
 
 ensure_dashboard_config() {
@@ -90,7 +63,6 @@ echo "  ErisPulse Docker"
 echo "==========================================="
 
 ensure_config_dir
-ensure_main_py
 ensure_dashboard_config
 
 if [ -f "${CONFIG_FILE}" ]; then
