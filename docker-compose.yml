@@ -3,6 +3,10 @@
 # Usage:
 #   docker compose up -d
 #
+# China Mirror (if Docker Hub is inaccessible):
+#   Replace the image with:
+#     image: ghcr.io/erispulse/erispulse:latest
+#
 # Environment variables:
 #   ERISPULSE_PORT            - Dashboard 端口 (默认: 8000)
 #   ERISPULSE_DASHBOARD_TOKEN - Dashboard 登录令牌
@@ -15,7 +19,7 @@ services:
     build:
       context: .
       target: production
-    image: wsu2059/erispulse:latest
+    image: erispulse/erispulse:latest
     container_name: erispulse
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
@@ -24,4 +28,5 @@ services:
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    command: ["epsdk", "run"]
     restart: unless-stopped

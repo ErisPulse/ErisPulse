@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1004,
+  "total_keywords": 1005,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2033,7 +2033,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 245,
+        "line": 261,
         "level": 3,
         "title": "Backup"
       }
@@ -3495,7 +3495,7 @@
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
-        "line": 56,
+        "line": 72,
         "level": 2,
         "title": "Dashboard Management Panel"
       }
@@ -3509,7 +3509,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 49,
+        "line": 65,
         "level": 3,
         "title": "Data Persistence"
       }
@@ -3663,7 +3663,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 228,
+        "line": 244,
         "level": 3,
         "title": "Docker Method"
       }
@@ -3802,6 +3802,14 @@
         "title": "Documentation Types"
       }
     ],
+    "Domestic Mirror Acceleration": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 24,
+        "level": 3,
+        "title": "Domestic Mirror Acceleration"
+      }
+    ],
     "Dot Notation Access": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -3845,7 +3853,7 @@
     "Environment Variables": [
       {
         "document": "user-guide/deployment.md",
-        "line": 41,
+        "line": 57,
         "level": 3,
         "title": "Environment Variables"
       }
@@ -4387,7 +4395,7 @@
     "Feature Overview": [
       {
         "document": "user-guide/deployment.md",
-        "line": 60,
+        "line": 76,
         "level": 3,
         "title": "Feature Overview"
       }
@@ -4709,7 +4717,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 84,
+        "line": 100,
         "level": 2,
         "title": "Health Check"
       }
@@ -5003,7 +5011,7 @@
     "Installing Modules via Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 75,
+        "line": 91,
         "level": 3,
         "title": "Installing Modules via Dashboard"
       }
@@ -5433,7 +5441,7 @@
     "Manual Deployment (pip)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 140,
+        "line": 156,
         "level": 2,
         "title": "Manual Deployment (pip)"
       }
@@ -6077,7 +6085,7 @@
     "Multi-instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 218,
+        "line": 234,
         "level": 2,
         "title": "Multi-instance Deployment"
       }
@@ -6625,7 +6633,7 @@
     "Production Configuration": [
       {
         "document": "user-guide/deployment.md",
-        "line": 144,
+        "line": 160,
         "level": 3,
         "title": "Production Configuration"
       }
@@ -7365,7 +7373,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 108,
+        "line": 124,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -7523,7 +7531,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 209,
+        "line": 225,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -8179,7 +8187,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 194,
+        "line": 210,
         "level": 3,
         "title": "Supervisor"
       }
@@ -8561,7 +8569,7 @@
     "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 226,
+        "line": 242,
         "level": 2,
         "title": "Updates and Maintenance"
       }
@@ -9143,7 +9151,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -9239,7 +9247,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 238,
+        "line": 254,
         "level": 3,
         "title": "pip Method"
       }
@@ -9287,7 +9295,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 162,
+        "line": 178,
         "level": 3,
         "title": "systemd (Linux)"
       }
