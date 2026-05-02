@@ -2421,6 +2421,22 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
 
+### 國內映像加速
+
+如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取映像：
+
+```bash
+docker pull ghcr.io/erispulse/erispulse:latest
+```
+
+使用 ghcr.io 映像時，需要修改 `docker-compose.yml` 中的 image：
+
+```yaml
+services:
+  erispulse:
+    image: ghcr.io/erispulse/erispulse:latest
+```
+
 ### docker-compose.yml
 
 ```yaml
