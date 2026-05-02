@@ -68,6 +68,22 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
+<summary>Docker Hub不可用？</summary>
+
+如果 Docker Hub 无法访问，可以使用 GitHub Container Registry：
+
+```bash
+docker pull ghcr.io/erispulse/erispulse:latest
+```
+
+使用 ghcr.io 镜像时，需要修改 `docker-compose.yml` 中的 image：
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+<details>
 <summary>快速启动</summary>
 
 ```bash
@@ -80,9 +96,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 > 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
-</details>
+启动后访问 `http://<host>:<port>/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
 
-启动后访问 `http://localhost:8000/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
+</details>
 
 ### 使用 pip 安装
 
