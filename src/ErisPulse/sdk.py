@@ -14,6 +14,7 @@ example:
 from __future__ import annotations
 
 import asyncio
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -653,15 +654,19 @@ class SDK:
         :return: bool 重新加载是否成功
         """
         try:
-            # 先执行反初始化
+            # 获取所有已加载包的顶层 Python 模块名
+            top_level_modules = self._collect_top_level_modules()
+            
             await self.uninit()
             
-            # 再执行初始化
+            # 清除所有已加载包的缓存
+            self._invalidate_module_cache(top_level_modules)
+            
             if not await self.init():
                 logger.error("[Reload] 初始化失败，请检查日志")
                 return False
             
-            # 启动适配器
+            # 重新启动适配器
             await self.adapter.startup()
             
             logger.info("[Reload] 重新加载完成")
@@ -672,6 +677,76 @@ class SDK:
         except Exception as e:
             logger.error(f"[Reload] 重启失败: {e}")
             return False
+
+    def _collect_top_level_modules(self) -> set[str]:
+        """
+        {!--< internal-use >!--}
+        从模块和适配器管理器中收集所有已加载包的顶层 Python 模块名
+        
+        必须在 uninit() 之前调用，因为 uninit 会清除管理器中的注册信息
+        
+        :return: set[str] 顶层 Python 模块名集合
+        """
+        top_level_set = set()
+        
+        for module_name, info in self.module._module_info.items():
+            tl = info.get("meta", {}).get("top_level", [])
+            if tl:
+                top_level_set.update(tl)
+            else:
+                fallback = self._infer_top_level(info)
+                if fallback:
+                    top_level_set.update(fallback)
+        
+        for adapter_name, info in self.adapter._adapter_info.items():
+            tl = info.get("meta", {}).get("top_level", [])
+            if tl:
+                top_level_set.update(tl)
+            else:
+                fallback = self._infer_top_level(info)
+                if fallback:
+                    top_level_set.update(fallback)
+        
+        logger.debug(f"[Reload] 收集到 top_level 模块: {top_level_set}")
+        return top_level_set
+
+    @staticmethod
+    def _infer_top_level(info: dict) -> list[str]:
+        """
+        {!--< internal-use >!--}
+        从模块/适配器信息中推导顶层 Python 模块名
+        
+        优先使用 top_level.txt，fallback 从 entry-point value 推导
+        
+        :param info: 模块或适配器信息字典
+        :return: 顶层 Python 模块名列表
+        """
+        module_class = info.get("module_class") or info.get("adapter_class")
+        if module_class and hasattr(module_class, "__module__"):
+            top_level_name = module_class.__module__.split(".")[0]
+            return [top_level_name]
+        return []
+
+    def _invalidate_module_cache(self, top_level_modules: set[str]) -> None:
+        """
+        {!--< internal-use >!--}
+        清理 sys.modules 中属于已加载包的缓存，并刷新 importlib.metadata 缓存
+        
+        :param top_level_modules: 需要清理的顶层 Python 模块名集合
+        """
+        if not top_level_modules:
+            return
+        
+        modules_to_remove = [
+            key for key in sys.modules
+            if any(key == name or key.startswith(name + ".") for name in top_level_modules)
+        ]
+        
+        for key in modules_to_remove:
+            del sys.modules[key]
+        
+        if modules_to_remove:
+            logger.debug(f"[Reload] 已清理 {len(modules_to_remove)} 个 sys.modules 缓存: {modules_to_remove}")
 
 
     async def restart(self) -> bool:

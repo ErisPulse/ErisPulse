@@ -450,7 +450,9 @@ class RouterManager:
 
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
-            logger.info(f"启动路由服务器 {display_url}\n")
+            registered_routes = [r.path for r in self.app.router.routes if hasattr(r, 'path')]
+            logger.info(f"启动路由服务器 {display_url}")
+            logger.debug(f"已注册 {len(registered_routes)} 条路由: {registered_routes}")
 
             self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
@@ -485,8 +487,10 @@ class RouterManager:
             self._uvicorn_server.should_exit = True
 
         if self._server_task:
+            logger.debug("正在停止路由服务器...")
             try:
                 await asyncio.wait_for(self._server_task, timeout=5.0)
+                logger.debug("路由服务器已正常停止")
             except asyncio.CancelledError:
                 logger.info("路由服务器已被取消")
             except asyncio.TimeoutError:
@@ -500,6 +504,7 @@ class RouterManager:
                 logger.error(f"路由服务器停止时发生错误: {e}", exc_info=True)
             finally:
                 self._server_task = None
+                self._uvicorn_server = None
 
         logger.debug("清理所有注册的路由...")
         self._http_routes.clear()
