@@ -22,7 +22,7 @@
 - **模块总数**: 53
 - **类总数**: 44（包括 4 个嵌套类）
 - **函数总数**: 36
-- **方法总数**: 430
+- **方法总数**: 434
 
 ---
 
@@ -241,7 +241,7 @@
 
 ### [ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)
 
-📦 1 个类 | 🔧 13 个方法
+📦 1 个类 | 🔧 14 个方法
 
 
 ### [ErisPulse.finders.module](ErisPulse/finders/module.md)
@@ -291,5 +291,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 11 个方法
+📦 1 个类 | 🔧 14 个方法
 
