@@ -68,6 +68,22 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
+<summary>Docker Hub unavailable?</summary>
+
+If Docker Hub is not accessible, you can use GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/erispulse/erispulse:latest
+```
+
+When using ghcr.io image, you need to modify the image in `docker-compose.yml`:
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+<details>
 <summary>Quick Start</summary>
 
 ```bash
@@ -80,9 +96,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 > The image includes ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
-</details>
+After starting, visit `http://<host>:<port>/Dashboard` and use the set token as the password to log in to the Dashboard management panel.
 
-After starting, visit `http://localhost:8000/Dashboard` and use the set token as the password to log in to the Dashboard management panel.
+</details>
 
 ### Installing with pip
 
