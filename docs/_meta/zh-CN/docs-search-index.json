@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 995,
+  "total_keywords": 996,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1765,7 +1765,7 @@
     "Dashboard 管理面板": [
       {
         "document": "user-guide/deployment.md",
-        "line": 56,
+        "line": 72,
         "level": 2,
         "title": "Dashboard 管理面板"
       }
@@ -1781,7 +1781,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 228,
+        "line": 244,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -2457,7 +2457,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 194,
+        "line": 210,
         "level": 3,
         "title": "Supervisor"
       }
@@ -2783,7 +2783,7 @@
     "docker-compose.yml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 24,
+        "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
       }
@@ -2895,7 +2895,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 238,
+        "line": 254,
         "level": 3,
         "title": "pip 方式"
       }
@@ -2951,7 +2951,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 162,
+        "line": 178,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -3749,7 +3749,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 84,
+        "line": 100,
         "level": 2,
         "title": "健康检查"
       }
@@ -3995,7 +3995,7 @@
     "功能概览": [
       {
         "document": "user-guide/deployment.md",
-        "line": 60,
+        "line": 76,
         "level": 3,
         "title": "功能概览"
       }
@@ -4143,7 +4143,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 108,
+        "line": 124,
         "level": 2,
         "title": "反向代理"
       }
@@ -4538,6 +4538,14 @@
         "title": "回复功能"
       }
     ],
+    "国内镜像加速": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 24,
+        "level": 3,
+        "title": "国内镜像加速"
+      }
+    ],
     "图片下载和存储": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4867,7 +4875,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 245,
+        "line": 261,
         "level": 3,
         "title": "备份"
       }
@@ -4891,7 +4899,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 218,
+        "line": 234,
         "level": 2,
         "title": "多实例部署"
       }
@@ -5061,7 +5069,7 @@
     "安全建议": [
       {
         "document": "user-guide/deployment.md",
-        "line": 209,
+        "line": 225,
         "level": 2,
         "title": "安全建议"
       }
@@ -5823,7 +5831,7 @@
     "手动部署（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 140,
+        "line": 156,
         "level": 2,
         "title": "手动部署（pip）"
       }
@@ -6101,7 +6109,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 49,
+        "line": 65,
         "level": 3,
         "title": "数据持久化"
       }
@@ -6403,7 +6411,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 226,
+        "line": 242,
         "level": 2,
         "title": "更新与维护"
       }
@@ -7575,7 +7583,7 @@
     "环境变量": [
       {
         "document": "user-guide/deployment.md",
-        "line": 41,
+        "line": 57,
         "level": 3,
         "title": "环境变量"
       }
@@ -7583,7 +7591,7 @@
     "生产环境配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 144,
+        "line": 160,
         "level": 3,
         "title": "生产环境配置"
       }
@@ -8929,7 +8937,7 @@
     "通过 Dashboard 安装模块": [
       {
         "document": "user-guide/deployment.md",
-        "line": 75,
+        "line": 91,
         "level": 3,
         "title": "通过 Dashboard 安装模块"
       }
