@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 996,
+  "total_keywords": 997,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2666,6 +2666,14 @@
         "line": 230,
         "level": 3,
         "title": "[BUG-014] Windows 下 CTRL+C 无法停止程序"
+      }
+    ],
+    "[BUG-015] 热重启后已更新模块的 Python 代码未生效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 250,
+        "level": 3,
+        "title": "[BUG-015] 热重启后已更新模块的 Python 代码未生效"
       }
     ],
     "__init__.py": [

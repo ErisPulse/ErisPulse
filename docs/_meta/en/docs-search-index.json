@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1005,
+  "total_keywords": 1006,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -9042,6 +9042,14 @@
         "line": 230,
         "level": 3,
         "title": "[BUG-014] Cannot Stop Program with CTRL+C on Windows"
+      }
+    ],
+    "[BUG-015] Updated Module Python Code Not Effective After Hot Restart": [
+      {
+        "document": "bug-tracker.md",
+        "line": 250,
+        "level": 3,
+        "title": "[BUG-015] Updated Module Python Code Not Effective After Hot Restart"
       }
     ],
     "__init__.py": [

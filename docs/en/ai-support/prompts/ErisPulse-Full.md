@@ -14190,3 +14190,23 @@ Also re-raises the original AttributeError to facilitate catching by upper layer
 
 **Fix Date**: 2026/04/28
 
+---
+
+### [BUG-015] Updated Module Python Code Not Effective After Hot Restart
+
+**Issue**: After calling `sdk.restart()`, updated modules (such as those updated through the dashboard) have their frontend static files updated correctly, but the Python logic code (such as newly added API routes) does not take effect, with new interfaces returning 404. A complete process restart with Ctrl+C is required to restore normal functionality.
+
+**Root Cause**: In `_do_restart()` when executing the `uninit()` → `init()` process, `entry_point.load()` internally calls `importlib.import_module()`. Python's `sys.modules` caching mechanism causes the second import of the same module to directly return the old object in memory, completely ignoring the new code on disk. Static files are unaffected because they are read in real-time by FastAPI from disk and do not go through Python's import cache.
+
+**Affected Versions**: 2.4.3-dev.0 - 2.4.3-dev.1
+
+**Fixed Version**: 2.4.3-dev.1
+
+**Fix Details**:
+1. `BaseFinder` added `get_top_level_modules()` method to derive top-level Python module names from `top_level.txt` or entry-point value
+2. `ModuleLoader` / `AdapterLoader` stores `top_level` information in `moduleInfo["meta"]` / `adapterInfo["meta"]` during loading
+3. `SDK._do_restart()` collects loaded package information via `_collect_top_level_modules()` before `uninit()`, and clears corresponding caches in `sys.modules` via `_invalidate_module_cache()` after `uninit()`, enabling `entry_point.load()` in the `init()` phase to load the latest code from disk
+4. `RouterManager.stop()` additionally resets `_uvicorn_server = None` during cleanup
+
+**Fix Date**: 2026/05/03
+
