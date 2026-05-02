@@ -135,6 +135,40 @@ class BaseFinder(ABC):
         """
         return self._get_entry_point_group()
 
+    def get_top_level_modules(self, package_name: str) -> list[str]:
+        """
+        获取指定 PyPI 包的顶层 Python 模块名
+
+        :param package_name: PyPI 包名
+        :return: 顶层 Python 模块名列表
+
+        {!--< tips >!--}
+        通过读取包的 top_level.txt 获取顶层模块名。
+        如果 top_level.txt 不可用，则从 entry-points 的模块路径推导。
+        用于重启时清理 sys.modules 缓存。
+        {!--< /tips >!--}
+        """
+        try:
+            dist = importlib.metadata.distribution(package_name)
+            if top_level := dist.read_text("top_level.txt"):
+                return [name.strip() for name in top_level.strip().splitlines() if name.strip()]
+        except Exception:
+            pass
+
+        top_level_set = set()
+        for entry in self.find_all():
+            if not (hasattr(entry, 'dist') and entry.dist and entry.dist.name == package_name):
+                continue
+            try:
+                value = entry.value
+                module_path = value.split(":")[0]
+                top_level_name = module_path.split(".")[0]
+                if top_level_name:
+                    top_level_set.add(top_level_name)
+            except Exception:
+                continue
+        return list(top_level_set)
+
     def clear_cache(self) -> None:
         """
         清除缓存
