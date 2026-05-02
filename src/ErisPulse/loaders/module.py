@@ -161,6 +161,10 @@ class ModuleLoader(BaseLoader):
             lazy_load = self._extract_strategy_value(strategy, "lazy_load", True)
             priority = self._extract_strategy_value(strategy, "priority", 0)
 
+            top_level = []
+            if entry_point.dist:
+                top_level = self._finder.get_top_level_modules(entry_point.dist.name)
+
             module_info = {
                 "meta": {
                     "name": meta_name,
@@ -174,6 +178,7 @@ class ModuleLoader(BaseLoader):
                     "lazy_load": lazy_load,
                     "priority": priority,
                     "is_base_module": is_base_module,
+                    "top_level": top_level,
                 },
                 "module_class": loaded_obj,
                 "strategy": strategy,
