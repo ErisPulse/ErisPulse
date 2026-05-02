@@ -185,8 +185,7 @@ class ModuleLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except Exception as e:
-            logger.warning(f"从 entry-point 加载模块 {meta_name} 失败: {e}")
-            raise ImportError(f"无法加载模块 {meta_name}: {e}")
+            logger.error(f"从 entry-point 加载模块 {meta_name} 失败，已跳过: {e}")
 
         return objs, enabled_list, disabled_list, is_new
 
