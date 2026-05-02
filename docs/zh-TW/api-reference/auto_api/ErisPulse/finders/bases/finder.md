@@ -104,6 +104,21 @@ ErisPulse 基础发现器
 ---
 
 
+##### `get_top_level_modules(package_name: str)`
+
+获取指定 PyPI 包的顶层 Python 模块名
+
+:param package_name: PyPI 包名
+:return: 顶层 Python 模块名列表
+
+> **提示**
+> 通过读取包的 top_level.txt 获取顶层模块名。
+> 如果 top_level.txt 不可用，则从 entry-points 的模块路径推导。
+> 用于重启时清理 sys.modules 缓存。
+
+---
+
+
 ##### `clear_cache()`
 
 清除缓存

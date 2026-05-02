@@ -14651,4 +14651,24 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 
 **修复日期**: 2026/04/28
 
+---
+
+### [BUG-015] 热重启后已更新模块的 Python 代码未生效
+
+**问题**: 调用 `sdk.restart()` 后，已更新（如通过仪表盘模块）的模块前端静态文件能正常更新，但 Python 逻辑代码（如新增的 API 路由）未生效，访问新接口返回 404。需要 Ctrl+C 完全重启进程才能恢复正常。
+
+**原因**: `_do_restart()` 在执行 `uninit()` → `init()` 流程时，`entry_point.load()` 底层调用 `importlib.import_module()`，Python 的 `sys.modules` 缓存机制使得第二次 import 同一模块时直接返回内存中的旧对象，完全忽略磁盘上的新代码。静态文件不受影响是因为它们由 FastAPI 从磁盘实时读取，不经过 Python 的 import 缓存。
+
+**影响版本**: 2.4.3-dev.0 - 2.4.3-dev.1
+
+**修复版本**: 2.4.3-dev.1
+
+**修复内容**:
+1. `BaseFinder` 新增 `get_top_level_modules()` 方法，从 `top_level.txt` 或 entry-point value 推导包的顶层 Python 模块名
+2. `ModuleLoader` / `AdapterLoader` 加载时将 `top_level` 信息存入 `moduleInfo["meta"]` / `adapterInfo["meta"]`
+3. `SDK._do_restart()` 在 `uninit()` 之前通过 `_collect_top_level_modules()` 收集已加载包信息，`uninit()` 之后通过 `_invalidate_module_cache()` 清理 `sys.modules` 中对应的缓存，使 `init()` 阶段 `entry_point.load()` 从磁盘加载最新代码
+4. `RouterManager.stop()` 清理时额外重置 `_uvicorn_server = None`
+
+**修复日期**: 2026/05/03
+
 
