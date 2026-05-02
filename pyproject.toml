@@ -55,7 +55,7 @@ dependencies = [
     "watchdog>=4.0.0",
     "toml>=0.10.2",
     "fastapi>=0.116.1",
-    "uvicorn>=0.30.0",
+    "uvicorn[standard]>=0.30.0",
     "packaging>=25.0",
 ]
 

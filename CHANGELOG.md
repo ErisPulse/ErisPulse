@@ -63,12 +63,22 @@
 
 ---
 
-## [2.4.3-dev.1] - 2026/05/02
-> 开发版本
+  ## [2.4.3-dev.1] - 2026/05/02
+  > 开发版本
 
-### 优化
-- @wsu2059q
-  - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载 
+  ### 优化
+  - @wsu2059q
+    - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载 
+
+  ### 修复
+  - @wsu2059q
+    - 修复热重启（`sdk.restart()`）后已更新模块的 Python 代码未生效的问题：
+      - **根因**：`_do_restart()` 在重新初始化时，`entry_point.load()` 从 `sys.modules` 返回了旧版本的缓存模块对象，导致新安装/更新的模块逻辑（如新增 API 路由）未生效
+      - **方案**：在 `uninit()` 后、`init()` 前清理 `sys.modules` 中已加载模块/适配器包的缓存，使 `entry_point.load()` 从磁盘加载最新代码
+      - `BaseFinder` 新增 `get_top_level_modules()` 方法，从 `top_level.txt` 或 entry-point value 推导包的顶层 Python 模块名
+      - `ModuleLoader` / `AdapterLoader` 加载时将 `top_level` 信息存入 `moduleInfo["meta"]` / `adapterInfo["meta"]`
+      - `SDK._do_restart()` 新增 `_collect_top_level_modules()` 和 `_invalidate_module_cache()` 辅助方法
+    - `RouterManager.stop()` 清理时额外重置 `_uvicorn_server = None`，避免重启时残留引用
 
 ---
 
