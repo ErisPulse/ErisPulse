@@ -21,6 +21,22 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 After startup, access `http://localhost:8000/Dashboard` and login using the token you set as the password.
 
+### Domestic Mirror Acceleration
+
+If Docker Hub is not accessible, you can pull images from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/erispulse/erispulse:latest
+```
+
+When using ghcr.io images, you need to modify the `image` in `docker-compose.yml`:
+
+```yaml
+services:
+  erispulse:
+    image: ghcr.io/erispulse/erispulse:latest
+```
+
 ### docker-compose.yml
 
 ```yaml
