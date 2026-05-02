@@ -237,6 +237,41 @@ SDK 初始化入口，返回 Task 对象
 ---
 
 
+##### `_collect_top_level_modules()`
+
+> **内部方法** 
+从模块和适配器管理器中收集所有已加载包的顶层 Python 模块名
+
+必须在 uninit() 之前调用，因为 uninit 会清除管理器中的注册信息
+
+:return: set[str] 顶层 Python 模块名集合
+
+---
+
+
+##### `_infer_top_level(info: dict)`
+
+> **内部方法** 
+从模块/适配器信息中推导顶层 Python 模块名
+
+优先使用 top_level.txt，fallback 从 entry-point value 推导
+
+:param info: 模块或适配器信息字典
+:return: 顶层 Python 模块名列表
+
+---
+
+
+##### `_invalidate_module_cache(top_level_modules: set[str])`
+
+> **内部方法** 
+清理 sys.modules 中属于已加载包的缓存，并刷新 importlib.metadata 缓存
+
+:param top_level_modules: 需要清理的顶层 Python 模块名集合
+
+---
+
+
 ##### `async async restart()`
 
 SDK 重新启动
