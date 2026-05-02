@@ -165,8 +165,7 @@ class AdapterLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except Exception as e:
-            logger.error(f"加载适配器 {meta_name} 失败: {e}")
-            raise ImportError(f"无法加载适配器 {meta_name}: {e}")
+            logger.error(f"加载适配器 {meta_name} 失败，已跳过: {e}")
 
         return objs, enabled_list, disabled_list, is_new
 
