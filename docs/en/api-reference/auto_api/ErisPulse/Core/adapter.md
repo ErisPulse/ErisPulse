@@ -208,6 +208,17 @@ ErisPulse 适配器系统
 ---
 
 
+##### `list_adapters()`
+
+兼容性方法 - 保持向后兼容
+
+:return: {平台名: 是否启用} 字典
+
+> **已弃用** 此方法已弃用，请使用 list_items() 代替
+
+---
+
+
 ##### `on(event_type: str = '*')`
 
 OneBot12协议事件监听装饰器
