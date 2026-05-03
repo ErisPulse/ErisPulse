@@ -8,6 +8,7 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 - [Lifecycle Management](lifecycle.md) - Usage of the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
 - [MessageBuilder Detailed Guide](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
+- [SQL Query Builder](sql-builder.md) - Universal SQL chain query builder and storage backend abstraction
 - [Session Type System](session-types.md) - Session type definitions, mappings, and custom type registration
 - [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue contexts
 
