@@ -34,7 +34,7 @@ class AdapterManager(ManagerBase):
     """
 
     def __init__(self):
-        # 适配器存储 - 简化数据结构
+        # 适配器存储
         self._adapters: dict[str, BaseAdapter] = {}  # 平台名到实例的映射
         self._started_instances: set[BaseAdapter] = set()  # 已启动的实例
         self._adapter_info: dict[str, dict] = {}  # 适配器信息
@@ -587,6 +587,13 @@ class AdapterManager(ManagerBase):
 
     # 兼容性方法 - 保持向后兼容
     def list_adapters(self) -> dict[str, bool]:
+        """
+        兼容性方法 - 保持向后兼容
+
+        :return: {平台名: 是否启用} 字典
+
+        {!--< deprecated >!--} 此方法已弃用，请使用 list_items() 代替
+        """
         warnings.warn(
             "list_adapters() 已弃用，请使用 list_items() 代替",
             DeprecationWarning,

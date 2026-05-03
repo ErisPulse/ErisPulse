@@ -8,28 +8,28 @@ from typing import Dict, Any, Union, Optional
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
-    "server": {              # 服务器配置
-        "host": "0.0.0.0",      # 监听地址
-        "port": 8000,           # 监听端口
-        "ssl_certfile": None,   # SSL 证书文件路径
-        "ssl_keyfile": None     # SSL 密钥文件路径
+    "server": {                         # 服务器配置
+        "host": "0.0.0.0",              # 监听地址
+        "port": 8000,                   # 监听端口
+        "ssl_certfile": None,           # SSL 证书文件路径
+        "ssl_keyfile": None             # SSL 密钥文件路径
     },
-    "logger": {              # 日志配置
-        "level": "INFO",        # 日志级别
-        "log_files": [],        # 日志文件列表
-        "memory_limit": 1000    # 日志内存限制（条）
+    "logger": {                         # 日志配置
+        "level": "INFO",                # 日志级别
+        "log_files": [],                # 日志文件列表
+        "memory_limit": 1000            # 日志内存限制（条）
     },
-    "storage":  {            # 存储配置
-        "use_global_db": False, # 是否使用全局数据库
+    "storage":  {                       # 存储配置
+        "use_global_db": False,         # 是否使用全局数据库
     },
-    "modules": {},           # 模块配置（可以控制模块启用等）
-    "adapters": {},          # 适配器配置（可以控制适配器启用等）
-    "event": {               # 事件系统配置
-        "message": {            # 消息事件配置
+    "modules": {},                      # 模块配置（可以控制模块启用等）
+    "adapters": {},                     # 适配器配置（可以控制适配器启用等）
+    "event": {                          # 事件系统配置
+        "message": {                    # 消息事件配置
             "ignore_self": True,        # 是否忽略自身消息
                                         #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
         },
-        "command": {            # 命令系统配置
+        "command": {                    # 命令系统配置
             "prefix": "/",              # 命令前缀
             "case_sensitive": True,     # 是否区分大小写
             "allow_space_prefix": False,# 是否允许前缀存在空格
@@ -37,7 +37,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         },
 
     },
-    "framework": {           # 框架配置
+    "framework": {                      # 框架配置
         "enable_lazy_loading": True     # 是否启用延迟加载
     }
 }
