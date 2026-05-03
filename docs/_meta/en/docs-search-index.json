@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1029,
+  "total_keywords": 1015,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2120,12 +2120,6 @@
     ],
     "Basic Information": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 120,
-        "level": 4,
-        "title": "Basic Information"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -2686,14 +2680,6 @@
         "line": 125,
         "level": 4,
         "title": "Checking Platform Status"
-      }
-    ],
-    "Checklist": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 140,
-        "level": 4,
-        "title": "Checklist"
       }
     ],
     "Child Loggers": [
@@ -3668,14 +3654,6 @@
         "title": "Development Mode"
       }
     ],
-    "Development Mode Testing": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 2,
-        "title": "Development Mode Testing"
-      }
-    ],
     "Development Related Terms": [
       {
         "document": "terminology.md",
@@ -4446,14 +4424,6 @@
         "line": 143,
         "level": 2,
         "title": "Extension: Adding More Features"
-      }
-    ],
-    "FAQ": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 190,
-        "level": 2,
-        "title": "FAQ"
       }
     ],
     "Failure Response": [
@@ -6892,44 +6862,12 @@
         "title": "Q5: How to handle special platforms like email?"
       }
     ],
-    "Q: Can a single package register multiple modules?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Q: Can a single package register multiple modules?"
-      }
-    ],
     "Q: How can I get AI to generate higher quality code?": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: How can I get AI to generate higher quality code?"
-      }
-    ],
-    "Q: How long does the review take?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 218,
-        "level": 3,
-        "title": "Q: How long does the review take?"
-      }
-    ],
-    "Q: How to specify minimum SDK version requirements?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 206,
-        "level": 3,
-        "title": "Q: How to specify minimum SDK version requirements?"
-      }
-    ],
-    "Q: Must package names start with `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 3,
-        "title": "Q: Must package names start with `ErisPulse-`?"
       }
     ],
     "Q: What AI tools are recommended?": [
@@ -8182,14 +8120,6 @@
         "title": "Step 2: View Project Structure"
       }
     ],
-    "Step 3: Publish to PyPI": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 89,
-        "level": 3,
-        "title": "Step 3: Publish to PyPI"
-      }
-    ],
     "Step 3: Write Your First Command": [
       {
         "document": "getting-started/first-bot.md",
@@ -8204,22 +8134,6 @@
         "line": 92,
         "level": 2,
         "title": "Step 4: Run the Bot"
-      }
-    ],
-    "Step 4: Submit to ErisPulse Module Store": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 108,
-        "level": 3,
-        "title": "Step 4: Submit to ErisPulse Module Store"
-      }
-    ],
-    "Step 5: Review and Launch": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 148,
-        "level": 3,
-        "title": "Step 5: Review and Launch"
       }
     ],
     "Step 5: Test the Bot": [
@@ -8302,14 +8216,6 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
-      }
-    ],
-    "Submission Type": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 114,
-        "level": 4,
-        "title": "Submission Type"
       }
     ],
     "Submitting Lifecycle Events": [
@@ -8494,14 +8400,6 @@
         "title": "Table of Contents"
       }
     ],
-    "Tags": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 136,
-        "level": 4,
-        "title": "Tags"
-      }
-    ],
     "Target Audience": [
       {
         "document": "advanced/README.md",
@@ -8522,14 +8420,6 @@
         "line": 187,
         "level": 3,
         "title": "Task Object"
-      }
-    ],
-    "Technical Information": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 129,
-        "level": 4,
-        "title": "Technical Information"
       }
     ],
     "Technical Standards": [
@@ -8748,14 +8638,6 @@
         "line": 242,
         "level": 2,
         "title": "Updates and Maintenance"
-      }
-    ],
-    "Updating Published Modules": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 160,
-        "level": 2,
-        "title": "Updating Published Modules"
       }
     ],
     "Upgrade Modules": [

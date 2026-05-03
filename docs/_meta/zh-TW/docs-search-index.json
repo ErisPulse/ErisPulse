@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 931,
+  "total_keywords": 920,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1692,44 +1692,12 @@
         "title": "Q: AI 產生的程式碼有問題怎麼辦？"
       }
     ],
-    "Q: 一個套件可以註冊多個模組嗎？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Q: 一個套件可以註冊多個模組嗎？"
-      }
-    ],
-    "Q: 套件名稱必須以 `ErisPulse-` 開頭�？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 3,
-        "title": "Q: 套件名稱必須以 `ErisPulse-` 開頭�？"
-      }
-    ],
-    "Q: 如何指定最低 SDK 版本要求？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 206,
-        "level": 3,
-        "title": "Q: 如何指定最低 SDK 版本要求？"
-      }
-    ],
     "Q: 如何讓 AI 產生更高品質的程式碼？": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: 如何讓 AI 產生更高品質的程式碼？"
-      }
-    ],
-    "Q: 審核需要多長時間？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 218,
-        "level": 3,
-        "title": "Q: 審核需要多長時間？"
       }
     ],
     "Q: 推薦使用什麼 AI 工具？": [
@@ -3868,12 +3836,6 @@
     ],
     "基本資訊": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 120,
-        "level": 4,
-        "title": "基本資訊"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -4474,12 +4436,6 @@
         "title": "常見問題"
       },
       {
-        "document": "developer-guide/publishing.md",
-        "line": 190,
-        "level": 2,
-        "title": "常見問題"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 183,
         "level": 2,
@@ -4840,14 +4796,6 @@
         "title": "技術標準"
       }
     ],
-    "技術資訊": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 129,
-        "level": 4,
-        "title": "技術資訊"
-      }
-    ],
     "指令": [
       {
         "document": "terminology.md",
@@ -4948,14 +4896,6 @@
         "line": 102,
         "level": 3,
         "title": "提交生命週期事件"
-      }
-    ],
-    "提交類型": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 114,
-        "level": 4,
-        "title": "提交類型"
       }
     ],
     "插入資料": [
@@ -5388,14 +5328,6 @@
         "title": "普通事件的自動發現"
       }
     ],
-    "更新已發布模組": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 160,
-        "level": 2,
-        "title": "更新已發布模組"
-      }
-    ],
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
@@ -5820,14 +5752,6 @@
         "title": "標準遵循檢查清單"
       }
     ],
-    "標籤": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 136,
-        "level": 4,
-        "title": "標籤"
-      }
-    ],
     "模組": [
       {
         "document": "developer-guide/publishing.md",
@@ -6030,14 +5954,6 @@
         "title": "檢查平台狀態"
       }
     ],
-    "檢查清單": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 140,
-        "level": 4,
-        "title": "檢查清單"
-      }
-    ],
     "檢查表是否存在": [
       {
         "document": "advanced/sql-builder.md",
@@ -6086,20 +6002,12 @@
         "title": "步驟 3: 發布到 PyPI"
       }
     ],
-    "步驟 4: 提交到 ErisPulse 模組商店": [
+    "步驟 4: 提交": [
       {
         "document": "developer-guide/publishing.md",
         "line": 108,
         "level": 3,
-        "title": "步驟 4: 提交到 ErisPulse 模組商店"
-      }
-    ],
-    "步驟 5: 審核與上線": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 148,
-        "level": 3,
-        "title": "步驟 5: 審核與上線"
+        "title": "步驟 4: 提交"
       }
     ],
     "注意事項": [
@@ -8164,14 +8072,6 @@
         "line": 43,
         "level": 2,
         "title": "開發模式"
-      }
-    ],
-    "開發模式測試": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 2,
-        "title": "開發模式測試"
       }
     ],
     "開發準備": [
