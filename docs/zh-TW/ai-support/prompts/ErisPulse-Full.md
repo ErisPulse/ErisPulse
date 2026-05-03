@@ -11758,5 +11758,7 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 1. 將 ASGI 伺服器從 Hypercorn 切換為 Uvicorn（`pyproject.toml` 依賴變更）
 2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 訊號處理上下文管理器
 3. 透過 `server.should_exit = True` 實現優雅停止，超時則取消後台任務
-4. 同步移除子進程執行模型和 `runtime/cleanup.py` 清理模組（子進程清理機制
+4. 同步移除子進程執行模型和 `runtime/cleanup.py` 清理模組（子進程清理機制不再需要）
+
+**修復日期**: 2026/04/28
 
