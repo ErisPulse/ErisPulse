@@ -1,6 +1,6 @@
 # 架構概覽
 
-本文件透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助您快速理解框架的設計思想和模組關係。
+本文檔透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計思想和模組關係。
 
 ## SDK 核心架構
 
@@ -45,9 +45,9 @@ graph TB
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
 | **Module** | 模組管理器，管理外掛的註冊、載入和卸載 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
-| **Storage** | 基於 SQLite 的鍵值儲存系統 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
 | **Config** | TOML 格式的設定檔管理 |
-| **Logger** | 模組化日誌系統，支援子日誌記錄器 |
+| **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理 |
 
 ## 初始化流程
@@ -142,7 +142,7 @@ flowchart LR
 
 ### 監聽生命週期事件
 
-您可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
+你可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
 
 ```python
 from ErisPulse import sdk

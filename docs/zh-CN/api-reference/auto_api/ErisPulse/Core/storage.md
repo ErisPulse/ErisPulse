@@ -7,31 +7,166 @@
 
 ErisPulse 存储管理模块
 
-提供键提供键值存储和事务支持，用于管理框架运行时数据。
-基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+提供键值存储、通用 SQL 链式查询和事务支持，用于管理框架运行时数据。
+基于 SQLite 实现持久化存储，支持复杂数据类型和原子操作。
 
 > **提示**
 > 1. 支持JSON序列化存储复杂数据类型
 > 2. 提供事务支持确保数据一致性
+> 3. 提供链式调用风格的通用 SQL 查询构建器
 
 ---
 
 ## 类列表
 
 
-### `class StorageManager`
+### `class SQLiteQueryBuilder(BaseQueryBuilder)`
 
-存储管理器
+SQLite 查询构建器
 
-单例模式实现，提供键值存储的增删改查和事务管理
+链式调用风格的 SQL 查询构建器，配合 StorageManager 使用。
+
+> **提示**
+> 使用方式：
+> 1. storage.Table("users").Insert({"name": "Alice"}).Execute()
+> 2. storage.Table("users").Select("name").Where("age > ?", 18).OrderBy("name").Limit(10).Execute()
+> 3. 通过 copy() 复用基础查询条件
+
+
+#### 方法列表
+
+
+##### `Execute()`
+
+执行构建的查询
+
+- SELECT 返回 list[tuple]
+- INSERT/INSERT_MULTI 返回受影响行数 int
+- UPDATE/DELETE 返回受影响行数 int
+
+:return: 查询结果列表或受影响行数
+
+**示例**:
+```python
+>>> rows = storage.Table("users").Select("name", "age").Execute()
+>>> affected = storage.Table("users").Delete().Where("age < ?", 18).Execute()
+```
+
+---
+
+
+##### `ExecuteOne()`
+
+执行查询并返回单条结果
+
+:return: 单行元组或 None
+
+**示例**:
+```python
+>>> row = storage.Table("users").Select("*").Where("id = ?", 1).ExecuteOne()
+```
+
+---
+
+
+##### `Count()`
+
+执行 COUNT 查询
+
+:return: 匹配的行数
+
+**示例**:
+```python
+>>> total = storage.Table("users").Where("age > ?", 18).Count()
+```
+
+---
+
+
+##### `Exists()`
+
+检查是否存在匹配的记录
+
+:return: 是否存在
+
+**示例**:
+```python
+>>> if storage.Table("users").Where("name = ?", "Alice").Exists():
+>>>     print("Alice exists")
+```
+
+---
+
+
+### `class AlterTableBuilder`
+
+ALTER TABLE 构建器
+
+链式调用风格的表结构修改构建器。
+
+> **提示**
+> 使用方式：
+> 1. storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+> 2. storage.AlterTable("users").RenameTo("members").Execute()
+
+
+#### 方法列表
+
+
+##### `AddColumn(column_name: str, column_type: str)`
+
+添加列
+
+:param column_name: 列名
+:param column_type: 列类型（如 "TEXT", "INTEGER DEFAULT 0"）
+:return: self
+
+**示例**:
+```python
+>>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+```
+
+---
+
+
+##### `RenameTo(new_name: str)`
+
+重命名表
+
+:param new_name: 新表名
+:return: self
+
+**示例**:
+```python
+>>> storage.AlterTable("users").RenameTo("members").Execute()
+```
+
+---
+
+
+##### `Execute()`
+
+执行所有已收集的 ALTER TABLE 操作
+
+:return: 操作是否成功
+
+---
+
+
+### `class StorageManager(BaseStorage)`
+
+存储管理器（SQLite 实现）
+
+单例模式实现，提供键值存储的增删改查、通用 SQL 链式查询和事务管理。
 
 支持两种数据库模式：
 1. 项目数据库（默认）：位于项目目录下的 config/config.db
 2. 全局数据库：位于包内的 data/config.db
 
 > **提示**
-> 1. 使用get/set方法操作存储项
-> 2. 使用transaction上下文管理事务
+> 1. 使用 get/set 方法操作键值存储项
+> 2. 使用 Table() 链式调用操作自定义表
+> 3. 使用 transaction 上下文管理事务
 
 
 #### 嵌套类
@@ -86,12 +221,9 @@ ErisPulse 存储管理模块
 ##### `_auto_commit(conn)`
 
 > **内部方法** 
-
 非事务模式下自动提交更改
 
 :param conn: 数据库连接
-
-:return: None
 
 ---
 
@@ -114,8 +246,6 @@ ErisPulse 存储管理模块
 > **内部方法** 
 确保必要的目录存在
 
-:return: None
-
 ---
 
 
@@ -124,7 +254,7 @@ ErisPulse 存储管理模块
 > **内部方法** 
 初始化数据库
 
-:return: None
+创建默认 config 键值表
 
 ---
 
@@ -203,10 +333,10 @@ ErisPulse 存储管理模块
 **示例**:
 ```python
 >>> storage.set_multi({
->>>     "app.name": "MyApp",
->>>     "app.version": "1.0.0",
->>>     "app.debug": True
->>> })
+...     "app.name": "MyApp",
+...     "app.version": "1.0.0",
+...     "app.debug": True
+... })
 ```
 
 ---
@@ -292,8 +422,8 @@ ErisPulse 存储管理模块
 **示例**:
 ```python
 >>> with storage.transaction():
->>>     storage.set("key1", "value1")
->>>     storage.set("key2", "value2")
+...     storage.set("key1", "value1")
+...     storage.set("key2", "value2")
 ```
 
 ---
@@ -307,7 +437,90 @@ ErisPulse 存储管理模块
 
 **示例**:
 ```python
->>> storage.clear()  # 清空所有存储
+>>> storage.clear()
+```
+
+---
+
+
+##### `Table(table_name: str)`
+
+获取指定表的查询构建器
+
+:param table_name: 表名
+:return: SQLiteQueryBuilder 实例
+
+**示例**:
+```python
+>>> rows = storage.Table("users").Select("name", "age").Where("age > ?", 18).Execute()
+>>> storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+```
+
+---
+
+
+##### `CreateTable(table_name: str, columns: dict[str, str])`
+
+创建表
+
+:param table_name: 表名
+:param columns: 列定义字典（列名 → SQL 类型定义）
+:return: 操作是否成功
+
+**示例**:
+```python
+>>> storage.CreateTable("users", {
+...     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+...     "name": "TEXT NOT NULL",
+...     "age": "INTEGER DEFAULT 0"
+... })
+```
+
+---
+
+
+##### `DropTable(table_name: str)`
+
+删除表
+
+:param table_name: 表名
+:return: 操作是否成功
+
+**示例**:
+```python
+>>> storage.DropTable("users")
+```
+
+---
+
+
+##### `HasTable(table_name: str)`
+
+检查表是否存在
+
+:param table_name: 表名
+:return: 是否存在
+
+**示例**:
+```python
+>>> if storage.HasTable("users"):
+...     print("users 表已存在")
+```
+
+---
+
+
+##### `AlterTable(table_name: str)`
+
+获取 ALTER TABLE 构建器
+
+:param table_name: 表名
+:return: AlterTableBuilder 实例
+
+**示例**:
+```python
+>>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+>>> storage.AlterTable("users").RenameTo("members").Execute()
 ```
 
 ---
