@@ -45,7 +45,7 @@ graph TB
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
 | **Module** | Module manager, managing plugin registration, loading, and unloading |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system |
+| **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
 | **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | FastAPI-based HTTP/WebSocket route management |
