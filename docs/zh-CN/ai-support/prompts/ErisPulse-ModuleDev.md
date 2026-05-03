@@ -87,7 +87,7 @@ graph TB
 | **Adapter** | 适配器管理器，管理多平台适配器的注册、启动和关闭 |
 | **Module** | 模块管理器，管理插件的注册、加载和卸载 |
 | **Lifecycle** | 生命周期管理器，提供事件驱动的生命周期钩子 |
-| **Storage** | 基于 SQLite 的键值存储系统 |
+| **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理 |
@@ -3732,6 +3732,84 @@ values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
 # 批量删除
 sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+### SQL 链式查询
+
+Storage 模块提供链式调用风格的通用 SQL 查询构建器，支持自定义表的 CRUD 操作。
+
+> 详见 [SQL 查询构建器](../advanced/sql-builder.md) 获取完整文档。
+
+```python
+from ErisPulse import sdk
+
+# 创建自定义表
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# 插入数据
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 批量插入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# 查询数据
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# 更新数据
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# 删除数据
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# 计数
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性检查
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# 获取单条记录
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# 修改表结构
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# 检查表是否存在
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# 事务中的链式操作
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# 复用查询条件
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### 存储后端抽象
+
+`StorageManager` 继承自 `BaseStorage` 抽象基类，支持未来拓展其他存储介质（Redis、MySQL 等）。
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage 定义了统一接口：get/set/delete/Table/CreateTable/DropTable 等
+# BaseQueryBuilder 定义了链式查询接口：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模块

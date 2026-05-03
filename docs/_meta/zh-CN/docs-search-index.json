@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 996,
+  "total_keywords": 1020,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1587,7 +1587,7 @@
     "Adapter 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 129,
+        "line": 207,
         "level": 2,
         "title": "Adapter 模块"
       }
@@ -1725,7 +1725,7 @@
     "Config 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 52,
+        "line": 130,
         "level": 2,
         "title": "Config 模块"
       }
@@ -1925,7 +1925,7 @@
     "HTTP 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
+        "line": 373,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -1957,7 +1957,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 243,
+        "line": 321,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -1965,7 +1965,7 @@
     "Logger 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 93,
+        "line": 171,
         "level": 2,
         "title": "Logger 模块"
       }
@@ -2029,7 +2029,7 @@
     "Module 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 186,
+        "line": 264,
         "level": 2,
         "title": "Module 模块"
       }
@@ -2291,7 +2291,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 293,
+        "line": 371,
         "level": 2,
         "title": "Router 模块"
       }
@@ -2332,6 +2332,22 @@
         "line": 5,
         "level": 2,
         "title": "SDK 核心架构"
+      }
+    ],
+    "SQL 查询构建器": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 1,
+        "level": 1,
+        "title": "SQL 查询构建器"
+      }
+    ],
+    "SQL 链式查询": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 52,
+        "level": 3,
+        "title": "SQL 链式查询"
       }
     ],
     "Send 嵌套类": [
@@ -2529,7 +2545,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 317,
+        "line": 395,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3269,7 +3285,7 @@
     "事件提交": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 245,
+        "line": 323,
         "level": 3,
         "title": "事件提交"
       }
@@ -3301,7 +3317,7 @@
     "事件监听": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 337,
         "level": 3,
         "title": "事件监听"
       },
@@ -3416,6 +3432,14 @@
         "line": 7,
         "level": 3,
         "title": "事件驱动架构"
+      }
+    ],
+    "事务中使用": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 209,
+        "level": 2,
+        "title": "事务中使用"
       }
     ],
     "事务使用": [
@@ -3732,6 +3756,14 @@
         "title": "信息查询命令"
       }
     ],
+    "修改表结构": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 58,
+        "level": 3,
+        "title": "修改表结构"
+      }
+    ],
     "修饰方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3879,7 +3911,7 @@
     "写入配置": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 66,
+        "line": 144,
         "level": 3,
         "title": "写入配置"
       }
@@ -3930,6 +3962,14 @@
         "line": 37,
         "level": 4,
         "title": "创建虚拟环境"
+      }
+    ],
+    "创建表": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 34,
+        "level": 3,
+        "title": "创建表"
       }
     ],
     "创建项目并安装": [
@@ -3984,10 +4024,26 @@
         "title": "初始化项目"
       }
     ],
+    "删除数据": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 157,
+        "level": 3,
+        "title": "删除数据"
+      }
+    ],
+    "删除表": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 52,
+        "level": 3,
+        "title": "删除表"
+      }
+    ],
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "前置知识"
       }
@@ -4106,6 +4162,14 @@
         "line": 220,
         "level": 2,
         "title": "参与贡献"
+      }
+    ],
+    "参数化查询": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 242,
+        "level": 2,
+        "title": "参数化查询"
       }
     ],
     "参数说明": [
@@ -4707,7 +4771,7 @@
     "基本日志": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 173,
         "level": 3,
         "title": "基本日志"
       }
@@ -4880,6 +4944,14 @@
         "title": "备份"
       }
     ],
+    "复用查询条件": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 181,
+        "level": 2,
+        "title": "复用查询条件"
+      }
+    ],
     "多Bot配置": [
       {
         "document": "platform-guide/yunhu.md",
@@ -5023,7 +5095,7 @@
     "子日志记录器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 108,
+        "line": 186,
         "level": 3,
         "title": "子日志记录器"
       }
@@ -5034,6 +5106,14 @@
         "line": 76,
         "level": 3,
         "title": "存储"
+      }
+    ],
+    "存储后端抽象": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 119,
+        "level": 3,
+        "title": "存储后端抽象"
       }
     ],
     "存储系统": [
@@ -5222,6 +5302,14 @@
         "line": 48,
         "level": 3,
         "title": "对适配器开发者"
+      }
+    ],
+    "导入": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 21,
+        "level": 2,
+        "title": "导入"
       }
     ],
     "属性访问": [
@@ -5972,6 +6060,14 @@
         "title": "按钮消息段 (yunhu_user_button)"
       }
     ],
+    "排序、分页": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 121,
+        "level": 3,
+        "title": "排序、分页"
+      }
+    ],
     "接收类型 (ReceiveType)": [
       {
         "document": "advanced/session-types.md",
@@ -6010,6 +6106,14 @@
         "line": 114,
         "level": 4,
         "title": "提交类型"
+      }
+    ],
+    "插入数据": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 76,
+        "level": 3,
+        "title": "插入数据"
       }
     ],
     "搜索功能": [
@@ -6371,7 +6475,7 @@
     "日志输出": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 119,
+        "line": 197,
         "level": 3,
         "title": "日志输出"
       }
@@ -6422,6 +6526,14 @@
         "line": 160,
         "level": 2,
         "title": "更新已发布模块"
+      }
+    ],
+    "更新数据": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 142,
+        "level": 3,
+        "title": "更新数据"
       }
     ],
     "更新要求": [
@@ -6522,6 +6634,14 @@
         "title": "条件监听"
       }
     ],
+    "条件过滤": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 106,
+        "level": 3,
+        "title": "条件过滤"
+      }
+    ],
     "架构概览": [
       {
         "document": "README.md",
@@ -6540,6 +6660,14 @@
         "line": 60,
         "level": 3,
         "title": "架构概览"
+      }
+    ],
+    "架构设计": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "架构设计"
       }
     ],
     "查看可用模块": [
@@ -6586,6 +6714,14 @@
         "line": 108,
         "level": 3,
         "title": "查询支持的发送方法"
+      }
+    ],
+    "查询数据": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "查询数据"
       }
     ],
     "标准事件格式": [
@@ -6882,6 +7018,14 @@
         "title": "检查清单"
       }
     ],
+    "检查表是否存在": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 45,
+        "level": 3,
+        "title": "检查表是否存在"
+      }
+    ],
     "概述": [
       {
         "document": "advanced/lazy-loading.md",
@@ -7021,7 +7165,7 @@
     "模块管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 279,
         "level": 3,
         "title": "模块管理"
       }
@@ -7790,6 +7934,12 @@
         "title": "相关文档"
       },
       {
+        "document": "advanced/sql-builder.md",
+        "line": 288,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 130,
         "level": 2,
@@ -7803,7 +7953,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 388,
+        "line": 466,
         "level": 2,
         "title": "相关文档"
       },
@@ -8194,6 +8344,14 @@
         "title": "自动推断"
       }
     ],
+    "自定义存储后端": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 254,
+        "level": 2,
+        "title": "自定义存储后端"
+      }
+    ],
     "自定义消息段": [
       {
         "document": "advanced/message-builder.md",
@@ -8235,7 +8393,7 @@
     "获取模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 188,
+        "line": 266,
         "level": 3,
         "title": "获取模块"
       }
@@ -8265,7 +8423,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 209,
         "level": 3,
         "title": "获取适配器"
       }
@@ -8294,10 +8452,26 @@
         "title": "表单消息段 (yunhu_user_form)"
       }
     ],
+    "表管理": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 32,
+        "level": 2,
+        "title": "表管理"
+      }
+    ],
+    "计数与存在性检查": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 170,
+        "level": 3,
+        "title": "计数与存在性检查"
+      }
+    ],
     "计时器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 278,
+        "line": 356,
         "level": 3,
         "title": "计时器"
       }
@@ -8389,7 +8563,7 @@
     "读取配置": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 54,
+        "line": 132,
         "level": 3,
         "title": "读取配置"
       },
@@ -8487,7 +8661,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 374,
+        "line": 452,
         "level": 3,
         "title": "路由信息"
       }
@@ -8594,6 +8768,14 @@
         "title": "返回值规范"
       }
     ],
+    "返回值说明": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 229,
+        "level": 2,
+        "title": "返回值说明"
+      }
+    ],
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
@@ -8641,7 +8823,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "适用对象"
       },
@@ -8669,7 +8851,7 @@
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 143,
+        "line": 221,
         "level": 3,
         "title": "适配器事件"
       }
@@ -8797,7 +8979,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 162,
+        "line": 240,
         "level": 3,
         "title": "适配器管理"
       }
@@ -9049,7 +9231,7 @@
     "配置示例": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 76,
+        "line": 154,
         "level": 3,
         "title": "配置示例"
       },
@@ -9146,6 +9328,14 @@
         "title": "配置错误"
       }
     ],
+    "重置构建器": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 198,
+        "level": 2,
+        "title": "重置构建器"
+      }
+    ],
     "链式修饰": [
       {
         "document": "api-reference/adapter-system.md",
@@ -9210,6 +9400,14 @@
         "line": 82,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
+      }
+    ],
+    "链式查询": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "链式查询"
       }
     ],
     "链式调用": [
