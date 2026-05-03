@@ -1,12 +1,13 @@
 """
 ErisPulse 存储管理模块
 
-提供键提供键值存储和事务支持，用于管理框架运行时数据。
-基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
+提供键值存储、通用 SQL 链式查询和事务支持，用于管理框架运行时数据。
+基于 SQLite 实现持久化存储，支持复杂数据类型和原子操作。
 
 {!--< tips >!--}
 1. 支持JSON序列化存储复杂数据类型
 2. 提供事务支持确保数据一致性
+3. 提供链式调用风格的通用 SQL 查询构建器
 {!--< /tips >!--}
 """
 
@@ -17,23 +18,302 @@ import threading
 from typing import Any, TypeAlias
 from contextlib import contextmanager
 
+from .Bases.storage import BaseStorage, BaseQueryBuilder
+
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
 
 
-class StorageManager:
+class SQLiteQueryBuilder(BaseQueryBuilder):
     """
-    存储管理器
+    SQLite 查询构建器
 
-    单例模式实现，提供键值存储的增删改查和事务管理
+    链式调用风格的 SQL 查询构建器，配合 StorageManager 使用。
+
+    {!--< tips >!--}
+    使用方式：
+    1. storage.Table("users").Insert({"name": "Alice"}).Execute()
+    2. storage.Table("users").Select("name").Where("age > ?", 18).OrderBy("name").Limit(10).Execute()
+    3. 通过 copy() 复用基础查询条件
+    {!--< /tips >!--}
+    """
+
+    def Execute(self) -> list[tuple] | int:
+        """
+        执行构建的查询
+
+        - SELECT 返回 list[tuple]
+        - INSERT/INSERT_MULTI 返回受影响行数 int
+        - UPDATE/DELETE 返回受影响行数 int
+
+        :return: 查询结果列表或受影响行数
+
+        :example:
+        >>> rows = storage.Table("users").Select("name", "age").Execute()
+        >>> affected = storage.Table("users").Delete().Where("age < ?", 18).Execute()
+        """
+        storage: "StorageManager" = self._storage  # type: ignore
+
+        if self._operation == "insert_multi":
+            return self._execute_insert_multi(storage)
+
+        sql, params = self._build_sql()
+
+        with storage._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, params)
+
+            if self._operation == "select":
+                result = cursor.fetchall()
+            else:
+                result = cursor.rowcount
+                storage._auto_commit(conn)
+
+        return result
+
+    def _execute_insert_multi(self, storage: "StorageManager") -> int:
+        if not isinstance(self._data, list) or not self._data:
+            raise ValueError("InsertMulti 需要非空列表类型数据")
+
+        columns = list(self._data[0].keys())
+        cols = ", ".join(columns)
+        placeholders = ", ".join(["?"] * len(columns))
+        sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
+
+        rows_params = [tuple(row.get(col) for col in columns) for row in self._data]
+
+        with storage._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.executemany(sql, rows_params)
+            result = cursor.rowcount
+            storage._auto_commit(conn)
+
+        return result
+
+    def ExecuteOne(self) -> tuple | None:
+        """
+        执行查询并返回单条结果
+
+        :return: 单行元组或 None
+
+        :example:
+        >>> row = storage.Table("users").Select("*").Where("id = ?", 1).ExecuteOne()
+        """
+        storage: "StorageManager" = self._storage  # type: ignore
+        sql, params = self._build_sql()
+
+        with storage._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, params)
+            return cursor.fetchone()
+
+    def Count(self) -> int:
+        """
+        执行 COUNT 查询
+
+        :return: 匹配的行数
+
+        :example:
+        >>> total = storage.Table("users").Where("age > ?", 18).Count()
+        """
+        storage: "StorageManager" = self._storage  # type: ignore
+        sql, params = self._build_count_sql()
+
+        with storage._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+            return result[0] if result else 0
+
+    def Exists(self) -> bool:
+        """
+        检查是否存在匹配的记录
+
+        :return: 是否存在
+
+        :example:
+        >>> if storage.Table("users").Where("name = ?", "Alice").Exists():
+        >>>     print("Alice exists")
+        """
+        return self.Count() > 0
+
+    def _build_sql(self) -> tuple[str, list[Any]]:
+        if self._operation == "select":
+            return self._build_select_sql()
+        elif self._operation == "insert":
+            return self._build_insert_sql()
+        elif self._operation == "update":
+            return self._build_update_sql()
+        elif self._operation == "delete":
+            return self._build_delete_sql()
+        else:
+            raise ValueError("未设置操作类型，请先调用 Select/Insert/Update/Delete")
+
+    def _build_select_sql(self) -> tuple[str, list[Any]]:
+        cols = ", ".join(self._columns) if self._columns else "*"
+        sql = f"SELECT {cols} FROM {self._table}"
+        params: list[Any] = []
+
+        sql, params = self._apply_where(sql, params)
+        sql = self._apply_order_by(sql)
+        sql, params = self._apply_limit_offset(sql, params)
+
+        return sql, params
+
+    def _build_insert_sql(self) -> tuple[str, list[Any]]:
+        data = self._data
+        if not isinstance(data, dict):
+            raise ValueError("Insert 需要字典类型数据")
+        columns = list(data.keys())
+        placeholders = ", ".join(["?"] * len(columns))
+        cols = ", ".join(columns)
+        sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
+        params = list(data.values())
+        return sql, params
+
+    def _build_update_sql(self) -> tuple[str, list[Any]]:
+        data = self._data
+        if not isinstance(data, dict):
+            raise ValueError("Update 需要字典类型数据")
+
+        set_clause = ", ".join(f"{k} = ?" for k in data.keys())
+        sql = f"UPDATE {self._table} SET {set_clause}"
+        params = list(data.values())
+
+        sql, params = self._apply_where(sql, params)
+
+        return sql, params
+
+    def _build_delete_sql(self) -> tuple[str, list[Any]]:
+        sql = f"DELETE FROM {self._table}"
+        params: list[Any] = []
+
+        sql, params = self._apply_where(sql, params)
+
+        return sql, params
+
+    def _build_count_sql(self) -> tuple[str, list[Any]]:
+        sql = f"SELECT COUNT(*) FROM {self._table}"
+        params: list[Any] = []
+        sql, params = self._apply_where(sql, params)
+        return sql, params
+
+    def _apply_where(self, sql: str, params: list[Any]) -> tuple[str, list[Any]]:
+        if self._where_clauses:
+            where = " AND ".join(self._where_clauses)
+            sql += f" WHERE {where}"
+            params.extend(self._where_params)
+        return sql, params
+
+    def _apply_order_by(self, sql: str) -> str:
+        if self._order_by:
+            order_parts = []
+            for col, desc in self._order_by:
+                order_parts.append(f"{col} DESC" if desc else f"{col} ASC")
+            sql += f" ORDER BY {', '.join(order_parts)}"
+        return sql
+
+    def _apply_limit_offset(self, sql: str, params: list[Any]) -> tuple[str, list[Any]]:
+        if self._limit is not None:
+            sql += " LIMIT ?"
+            params.append(self._limit)
+        if self._offset is not None:
+            sql += " OFFSET ?"
+            params.append(self._offset)
+        return sql, params
+
+
+class AlterTableBuilder:
+    """
+    ALTER TABLE 构建器
+
+    链式调用风格的表结构修改构建器。
+
+    {!--< tips >!--}
+    使用方式：
+    1. storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+    2. storage.AlterTable("users").RenameTo("members").Execute()
+    {!--< /tips >!--}
+    """
+
+    def __init__(self, storage: "StorageManager", table_name: str):
+        self._storage = storage
+        self._table_name = table_name
+        self._operations: list[tuple[str, tuple[Any, ...]]] = []
+
+    def AddColumn(self, column_name: str, column_type: str) -> "AlterTableBuilder":
+        """
+        添加列
+
+        :param column_name: 列名
+        :param column_type: 列类型（如 "TEXT", "INTEGER DEFAULT 0"）
+        :return: self
+
+        :example:
+        >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+        """
+        self._operations.append(("add_column", (column_name, column_type)))
+        return self
+
+    def RenameTo(self, new_name: str) -> "AlterTableBuilder":
+        """
+        重命名表
+
+        :param new_name: 新表名
+        :return: self
+
+        :example:
+        >>> storage.AlterTable("users").RenameTo("members").Execute()
+        """
+        self._operations.append(("rename", (new_name,)))
+        return self
+
+    def Execute(self) -> bool:
+        """
+        执行所有已收集的 ALTER TABLE 操作
+
+        :return: 操作是否成功
+        """
+        if not self._operations:
+            return True
+
+        try:
+            with self._storage._get_connection() as conn:
+                cursor = conn.cursor()
+                for op_type, args in self._operations:
+                    if op_type == "add_column":
+                        col_name, col_type = args
+                        cursor.execute(
+                            f"ALTER TABLE {self._table_name} ADD COLUMN {col_name} {col_type}"
+                        )
+                    elif op_type == "rename":
+                        (new_name,) = args
+                        cursor.execute(
+                            f"ALTER TABLE {self._table_name} RENAME TO {new_name}"
+                        )
+                self._storage._auto_commit(conn)
+            return True
+        except Exception as e:
+            from .logger import logger
+
+            logger.error(f"修改表 {self._table_name} 失败: {e}")
+            return False
+
+
+class StorageManager(BaseStorage):
+    """
+    存储管理器（SQLite 实现）
+
+    单例模式实现，提供键值存储的增删改查、通用 SQL 链式查询和事务管理。
 
     支持两种数据库模式：
     1. 项目数据库（默认）：位于项目目录下的 config/config.db
     2. 全局数据库：位于包内的 data/config.db
 
     {!--< tips >!--}
-    1. 使用get/set方法操作存储项
-    2. 使用transaction上下文管理事务
+    1. 使用 get/set 方法操作键值存储项
+    2. 使用 Table() 链式调用操作自定义表
+    3. 使用 transaction 上下文管理事务
     {!--< /tips >!--}
     """
 
@@ -87,12 +367,9 @@ class StorageManager:
     def _auto_commit(self, conn) -> None:
         """
         {!--< internal-use >!--}
-
         非事务模式下自动提交更改
-        
-        :param conn: 数据库连接
 
-        :return: None
+        :param conn: 数据库连接
         """
         if not (
             hasattr(self._local, "transaction_conn")
@@ -132,8 +409,6 @@ class StorageManager:
         """
         {!--< internal-use >!--}
         确保必要的目录存在
-
-        :return: None
         """
         # 确保项目数据库目录存在
         try:
@@ -146,7 +421,7 @@ class StorageManager:
         {!--< internal-use >!--}
         初始化数据库
 
-        :return: None
+        创建默认 config 键值表
         """
         from .logger import logger
 
@@ -296,10 +571,10 @@ class StorageManager:
 
         :example:
         >>> storage.set_multi({
-        >>>     "app.name": "MyApp",
-        >>>     "app.version": "1.0.0",
-        >>>     "app.debug": True
-        >>> })
+        ...     "app.name": "MyApp",
+        ...     "app.version": "1.0.0",
+        ...     "app.debug": True
+        ... })
         """
         if not self._is_ready():
             return False
@@ -442,8 +717,8 @@ class StorageManager:
 
         :example:
         >>> with storage.transaction():
-        >>>     storage.set("key1", "value1")
-        >>>     storage.set("key2", "value2")
+        ...     storage.set("key1", "value1")
+        ...     storage.set("key2", "value2")
         """
         if not self._is_ready():
             # 返回一个空的事务对象
@@ -537,7 +812,7 @@ class StorageManager:
         :return: 操作是否成功
 
         :example:
-        >>> storage.clear()  # 清空所有存储
+        >>> storage.clear()
         """
         if not self._is_ready():
             return False
@@ -551,6 +826,115 @@ class StorageManager:
             return True
         except Exception:
             return False
+
+    def Table(self, table_name: str) -> SQLiteQueryBuilder:
+        """
+        获取指定表的查询构建器
+
+        :param table_name: 表名
+        :return: SQLiteQueryBuilder 实例
+
+        :example:
+        >>> rows = storage.Table("users").Select("name", "age").Where("age > ?", 18).Execute()
+        >>> storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+        """
+        return SQLiteQueryBuilder(self, table_name)
+
+    def CreateTable(self, table_name: str, columns: dict[str, str]) -> bool:
+        """
+        创建表
+
+        :param table_name: 表名
+        :param columns: 列定义字典（列名 → SQL 类型定义）
+        :return: 操作是否成功
+
+        :example:
+        >>> storage.CreateTable("users", {
+        ...     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        ...     "name": "TEXT NOT NULL",
+        ...     "age": "INTEGER DEFAULT 0"
+        ... })
+        """
+        if not self._is_ready():
+            return False
+
+        try:
+            col_defs = ", ".join(f"{col} {typ}" for col, typ in columns.items())
+            sql = f"CREATE TABLE IF NOT EXISTS {table_name} ({col_defs})"
+
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(sql)
+                self._auto_commit(conn)
+            return True
+        except Exception as e:
+            from .logger import logger
+
+            logger.error(f"创建表 {table_name} 失败: {e}")
+            return False
+
+    def DropTable(self, table_name: str) -> bool:
+        """
+        删除表
+
+        :param table_name: 表名
+        :return: 操作是否成功
+
+        :example:
+        >>> storage.DropTable("users")
+        """
+        if not self._is_ready():
+            return False
+
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+                self._auto_commit(conn)
+            return True
+        except Exception as e:
+            from .logger import logger
+
+            logger.error(f"删除表 {table_name} 失败: {e}")
+            return False
+
+    def HasTable(self, table_name: str) -> bool:
+        """
+        检查表是否存在
+
+        :param table_name: 表名
+        :return: 是否存在
+
+        :example:
+        >>> if storage.HasTable("users"):
+        ...     print("users 表已存在")
+        """
+        if not self._is_ready():
+            return False
+
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    (table_name,),
+                )
+                return cursor.fetchone() is not None
+        except Exception:
+            return False
+
+    def AlterTable(self, table_name: str) -> AlterTableBuilder:
+        """
+        获取 ALTER TABLE 构建器
+
+        :param table_name: 表名
+        :return: AlterTableBuilder 实例
+
+        :example:
+        >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+        >>> storage.AlterTable("users").RenameTo("members").Execute()
+        """
+        return AlterTableBuilder(self, table_name)
 
     def __getattr__(self, key: str) -> Any:
         """
@@ -580,6 +964,8 @@ class StorageManager:
                 cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
                 if (result := cursor.fetchone()) is None:
                     raise AttributeError(f"存储项 {key} 不存在")
+        except AttributeError:
+            raise
         except Exception:
             raise AttributeError(f"存储项 {key} 不存在或访问出错")
 
@@ -601,12 +987,12 @@ class StorageManager:
         """
         # 避免在初始化过程中出现问题
         if key.startswith("_"):
-            super().__setattr__(key, value)
+            object.__setattr__(self, key, value)
             return
 
         # 如果还未初始化完成，直接设置属性
         if not self._is_ready():
-            super().__setattr__(key, value)
+            object.__setattr__(self, key, value)
             return
 
         try:

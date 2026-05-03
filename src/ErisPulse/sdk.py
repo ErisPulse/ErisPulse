@@ -21,11 +21,13 @@ from typing import TYPE_CHECKING
 # 导入核心模块
 from .Core import Event, lifecycle, logger
 from .Core import storage, env, config
-from .Core import adapter, BaseAdapter, SendDSL
+from .Core import adapter, BaseAdapter, SendDSL, BaseStorage, BaseQueryBuilder
 from .Core import module, router
 from .Core.lifecycle import LifecycleManager
 from .Core.adapter import AdapterManager
 from .Core.storage import StorageManager
+from .Core.Bases.storage import BaseStorage as _BaseStorage
+from .Core.Bases.storage import BaseQueryBuilder as _BaseQueryBuilder
 from .Core.logger import Logger
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
@@ -92,6 +94,12 @@ class SDK:
     SendDSL: type[SendDSL]
     """DSL 发送接口基类"""
     
+    BaseStorage: type[_BaseStorage]
+    """存储后端抽象基类"""
+    
+    BaseQueryBuilder: type[_BaseQueryBuilder]
+    """查询构建器抽象基类"""
+    
     module: ModuleManager
     """模块管理器"""
     
@@ -119,6 +127,9 @@ class SDK:
 
         self.BaseAdapter = BaseAdapter
         self.SendDSL = SendDSL
+        
+        self.BaseStorage = BaseStorage
+        self.BaseQueryBuilder = BaseQueryBuilder
         
         self.module = module
         # 设置 module 的 SDK 引用
