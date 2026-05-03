@@ -63,22 +63,35 @@
 
 ---
 
-  ## [2.4.3-dev.1] - 2026/05/02
-  > 开发版本
+## [2.4.3-dev.1] - 2026/05/03
+> 开发版本
 
-  ### 优化
-  - @wsu2059q
-    - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载 
+### 新增
+- @wsu2059q
+  - `Core.Storage` 存储模块新增通用 SQL 链式查询构建器：
+    - 新增 `Bases/storage.py`，定义 `BaseStorage(ABC)` 和 `BaseQueryBuilder(ABC)` 抽象基类，支持未来拓展其他存储介质（Redis、MySQL 等）
+    - 新增 `SQLiteQueryBuilder(BaseQueryBuilder)`，链式调用风格的 SQL 查询构建器
+    - 新增 `AlterTableBuilder`，链式调用风格的表结构修改构建器（支持 `AddColumn`、`RenameTo`）
+    - `StorageManager` 继承 `BaseStorage`，新增 `Table()`、`CreateTable()`、`DropTable()`、`HasTable()`、`AlterTable()` 方法
+    - 链式方法：`Select`、`Insert`、`InsertMulti`、`Update`、`Delete`、`Where`、`OrderBy`、`Limit`、`Offset`、`copy`、`clear`
+    - 终止方法：`Execute`、`ExecuteOne`、`Count`、`Exists`
+    - 所有 WHERE 参数使用 `?` 占位符，防止 SQL 注入
+    - 完全支持事务，复用 `_get_connection()` 和 `_auto_commit()`
+    - 现有键值 API（`get`/`set`/`delete` 等）完全向后兼容
 
-  ### 修复
-  - @wsu2059q
-    - 修复热重启（`sdk.restart()`）后已更新模块的 Python 代码未生效的问题：
-      - **根因**：`_do_restart()` 在重新初始化时，`entry_point.load()` 从 `sys.modules` 返回了旧版本的缓存模块对象，导致新安装/更新的模块逻辑（如新增 API 路由）未生效
-      - **方案**：在 `uninit()` 后、`init()` 前清理 `sys.modules` 中已加载模块/适配器包的缓存，使 `entry_point.load()` 从磁盘加载最新代码
-      - `BaseFinder` 新增 `get_top_level_modules()` 方法，从 `top_level.txt` 或 entry-point value 推导包的顶层 Python 模块名
-      - `ModuleLoader` / `AdapterLoader` 加载时将 `top_level` 信息存入 `moduleInfo["meta"]` / `adapterInfo["meta"]`
-      - `SDK._do_restart()` 新增 `_collect_top_level_modules()` 和 `_invalidate_module_cache()` 辅助方法
-    - `RouterManager.stop()` 清理时额外重置 `_uvicorn_server = None`，避免重启时残留引用
+### 优化
+- @wsu2059q
+  - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载
+
+### 修复
+- @wsu2059q
+  - 修复热重启（`sdk.restart()`）后已更新模块的 Python 代码未生效的问题：
+    - **根因**：`_do_restart()` 在重新初始化时，`entry_point.load()` 从 `sys.modules` 返回了旧版本的缓存模块对象，导致新安装/更新的模块逻辑（如新增 API 路由）未生效
+    - **方案**：在 `uninit()` 后、`init()` 前清理 `sys.modules` 中已加载模块/适配器包的缓存，使 `entry_point.load()` 从磁盘加载最新代码
+    - `BaseFinder` 新增 `get_top_level_modules()` 方法，从 `top_level.txt` 或 entry-point value 推导包的顶层 Python 模块名
+    - `ModuleLoader` / `AdapterLoader` 加载时将 `top_level` 信息存入 `moduleInfo["meta"]` / `adapterInfo["meta"]`
+    - `SDK._do_restart()` 新增 `_collect_top_level_modules()` 和 `_invalidate_module_cache()` 辅助方法
+  - `RouterManager.stop()` 清理时额外重置 `_uvicorn_server = None`，避免重启时残留引用
 
 ---
 
