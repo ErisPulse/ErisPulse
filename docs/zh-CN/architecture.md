@@ -45,7 +45,7 @@ graph TB
 | **Adapter** | 适配器管理器，管理多平台适配器的注册、启动和关闭 |
 | **Module** | 模块管理器，管理插件的注册、加载和卸载 |
 | **Lifecycle** | 生命周期管理器，提供事件驱动的生命周期钩子 |
-| **Storage** | 基于 SQLite 的键值存储系统 |
+| **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理 |

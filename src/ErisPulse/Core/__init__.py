@@ -6,7 +6,7 @@ ErisPulse 核心模块
 
 from .lifecycle import lifecycle, LifecycleManager
 from .adapter import adapter, AdapterManager
-from .Bases import BaseAdapter, BaseModule, SendDSL
+from .Bases import BaseAdapter, BaseModule, SendDSL, BaseStorage, BaseQueryBuilder
 from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
@@ -32,6 +32,8 @@ __all__ = [
 
     'storage',          # 存储模块单例
     'StorageManager',   # 存储管理器类
+    'BaseStorage',      # 存储后端抽象基类
+    'BaseQueryBuilder', # 查询构建器抽象基类
     'config',           # 配置模块单例
     'env',              # 配置管理器别名
     'ConfigManager',    # 配置管理器类
