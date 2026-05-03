@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 907,
+  "total_keywords": 920,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1137,7 +1137,7 @@
     "Adapter 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 129,
+        "line": 207,
         "level": 2,
         "title": "Adapter 模組"
       }
@@ -1263,7 +1263,7 @@
     "Config 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 52,
+        "line": 130,
         "level": 2,
         "title": "Config 模組"
       }
@@ -1431,7 +1431,7 @@
     "HTTP 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
+        "line": 373,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -1463,7 +1463,7 @@
     "Lifecycle 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 243,
+        "line": 321,
         "level": 2,
         "title": "Lifecycle 模組"
       }
@@ -1471,7 +1471,7 @@
     "Logger 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 93,
+        "line": 171,
         "level": 2,
         "title": "Logger 模組"
       }
@@ -1519,7 +1519,7 @@
     "Module 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 186,
+        "line": 264,
         "level": 2,
         "title": "Module 模組"
       }
@@ -1692,44 +1692,12 @@
         "title": "Q: AI 產生的程式碼有問題怎麼辦？"
       }
     ],
-    "Q: 一個套件可以註冊多個模組嗎？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Q: 一個套件可以註冊多個模組嗎？"
-      }
-    ],
-    "Q: 套件名稱必須以 `ErisPulse-` 開頭�？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 3,
-        "title": "Q: 套件名稱必須以 `ErisPulse-` 開頭�？"
-      }
-    ],
-    "Q: 如何指定最低 SDK 版本要求？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 206,
-        "level": 3,
-        "title": "Q: 如何指定最低 SDK 版本要求？"
-      }
-    ],
     "Q: 如何讓 AI 產生更高品質的程式碼？": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: 如何讓 AI 產生更高品質的程式碼？"
-      }
-    ],
-    "Q: 審核需要多長時間？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 218,
-        "level": 3,
-        "title": "Q: 審核需要多長時間？"
       }
     ],
     "Q: 推薦使用什麼 AI 工具？": [
@@ -1767,7 +1735,7 @@
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 293,
+        "line": 371,
         "level": 2,
         "title": "Router 模組"
       }
@@ -1800,6 +1768,22 @@
         "line": 127,
         "level": 3,
         "title": "SDK 物件"
+      }
+    ],
+    "SQL 查詢建構器": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 1,
+        "level": 1,
+        "title": "SQL 查詢建構器"
+      }
+    ],
+    "SQL 鏈式查詢": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 52,
+        "level": 3,
+        "title": "SQL 鏈式查詢"
       }
     ],
     "Send 巢狀類別": [
@@ -1925,7 +1909,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 317,
+        "line": 395,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -2541,7 +2525,7 @@
     "事件提交": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 245,
+        "line": 323,
         "level": 3,
         "title": "事件提交"
       }
@@ -2557,7 +2541,7 @@
     "事件監聽": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 337,
         "level": 3,
         "title": "事件監聽"
       },
@@ -2750,6 +2734,14 @@
         "line": 7,
         "level": 3,
         "title": "事件驅動架構"
+      }
+    ],
+    "事務中使用": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 209,
+        "level": 2,
+        "title": "事務中使用"
       }
     ],
     "事務操作": [
@@ -3050,6 +3042,14 @@
         "title": "信令類型"
       }
     ],
+    "修改表結構": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 58,
+        "level": 3,
+        "title": "修改表結構"
+      }
+    ],
     "修飾方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3314,10 +3314,26 @@
         "title": "初始化階段詳解"
       }
     ],
+    "刪除表": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 52,
+        "level": 3,
+        "title": "刪除表"
+      }
+    ],
+    "刪除資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 157,
+        "level": 3,
+        "title": "刪除資料"
+      }
+    ],
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "前置知識"
       }
@@ -3344,6 +3360,14 @@
         "line": 64,
         "level": 2,
         "title": "功能相關術語"
+      }
+    ],
+    "匯入": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 21,
+        "level": 2,
+        "title": "匯入"
       }
     ],
     "升級模組": [
@@ -3390,6 +3414,14 @@
         "line": 223,
         "level": 3,
         "title": "原始資料"
+      }
+    ],
+    "參數化查詢": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 242,
+        "level": 2,
+        "title": "參數化查詢"
       }
     ],
     "參數說明": [
@@ -3459,7 +3491,7 @@
     "取得模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 188,
+        "line": 266,
         "level": 3,
         "title": "取得模組"
       }
@@ -3475,7 +3507,7 @@
     "取得適配器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 209,
         "level": 3,
         "title": "取得適配器"
       }
@@ -3749,7 +3781,7 @@
     "基本日誌": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 173,
         "level": 3,
         "title": "基本日誌"
       }
@@ -3803,12 +3835,6 @@
       }
     ],
     "基本資訊": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 120,
-        "level": 4,
-        "title": "基本資訊"
-      },
       {
         "document": "platform-guide/kook.md",
         "line": 12,
@@ -4023,9 +4049,17 @@
     "子日誌記錄器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 108,
+        "line": 186,
         "level": 3,
         "title": "子日誌記錄器"
+      }
+    ],
+    "存儲後端抽象": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 119,
+        "level": 3,
+        "title": "存儲後端抽象"
       }
     ],
     "存取核心模組": [
@@ -4189,7 +4223,7 @@
     "寫入配置": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 66,
+        "line": 144,
         "level": 3,
         "title": "寫入配置"
       }
@@ -4402,12 +4436,6 @@
         "title": "常見問題"
       },
       {
-        "document": "developer-guide/publishing.md",
-        "line": 190,
-        "level": 2,
-        "title": "常見問題"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 183,
         "level": 2,
@@ -4568,6 +4596,14 @@
         "line": 37,
         "level": 4,
         "title": "建立虛擬環境"
+      }
+    ],
+    "建立表": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 34,
+        "level": 3,
+        "title": "建立表"
       }
     ],
     "建議使用延遲載入的情境 (lazy_load=True)": [
@@ -4760,14 +4796,6 @@
         "title": "技術標準"
       }
     ],
-    "技術資訊": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 129,
-        "level": 4,
-        "title": "技術資訊"
-      }
-    ],
     "指令": [
       {
         "document": "terminology.md",
@@ -4846,6 +4874,14 @@
         "title": "按鈕參數說明"
       }
     ],
+    "排序、分頁": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 121,
+        "level": 3,
+        "title": "排序、分頁"
+      }
+    ],
     "接收類型": [
       {
         "document": "advanced/session-types.md",
@@ -4862,12 +4898,12 @@
         "title": "提交生命週期事件"
       }
     ],
-    "提交類型": [
+    "插入資料": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 114,
-        "level": 4,
-        "title": "提交類型"
+        "document": "advanced/sql-builder.md",
+        "line": 76,
+        "level": 3,
+        "title": "插入資料"
       }
     ],
     "搜尋功能": [
@@ -5271,7 +5307,7 @@
     "日誌輸出": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 119,
+        "line": 197,
         "level": 3,
         "title": "日誌輸出"
       }
@@ -5292,14 +5328,6 @@
         "title": "普通事件的自動發現"
       }
     ],
-    "更新已發布模組": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 160,
-        "level": 2,
-        "title": "更新已發布模組"
-      }
-    ],
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
@@ -5314,6 +5342,14 @@
         "line": 5,
         "level": 2,
         "title": "更新要求"
+      }
+    ],
+    "更新資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 142,
+        "level": 3,
+        "title": "更新資料"
       }
     ],
     "最佳實務": [
@@ -5388,6 +5424,14 @@
         "title": "架構概覽"
       }
     ],
+    "架構設計": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "架構設計"
+      }
+    ],
     "查看可用模組": [
       {
         "document": "user-guide/README.md",
@@ -5418,6 +5462,14 @@
         "line": 108,
         "level": 3,
         "title": "查詢支援的發送方法"
+      }
+    ],
+    "查詢資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "查詢資料"
       }
     ],
     "核心 API": [
@@ -5608,6 +5660,14 @@
         "title": "條件監聽"
       }
     ],
+    "條件過濾": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 106,
+        "level": 3,
+        "title": "條件過濾"
+      }
+    ],
     "概述": [
       {
         "document": "advanced/lazy-loading.md",
@@ -5690,14 +5750,6 @@
         "line": 66,
         "level": 2,
         "title": "標準遵循檢查清單"
-      }
-    ],
-    "標籤": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 136,
-        "level": 4,
-        "title": "標籤"
       }
     ],
     "模組": [
@@ -5789,7 +5841,7 @@
     "模組管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 279,
         "level": 3,
         "title": "模組管理"
       }
@@ -5902,12 +5954,12 @@
         "title": "檢查平台狀態"
       }
     ],
-    "檢查清單": [
+    "檢查表是否存在": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 140,
-        "level": 4,
-        "title": "檢查清單"
+        "document": "advanced/sql-builder.md",
+        "line": 45,
+        "level": 3,
+        "title": "檢查表是否存在"
       }
     ],
     "檢視可用模組": [
@@ -5950,20 +6002,12 @@
         "title": "步驟 3: 發布到 PyPI"
       }
     ],
-    "步驟 4: 提交到 ErisPulse 模組商店": [
+    "步驟 4: 提交": [
       {
         "document": "developer-guide/publishing.md",
         "line": 108,
         "level": 3,
-        "title": "步驟 4: 提交到 ErisPulse 模組商店"
-      }
-    ],
-    "步驟 5: 審核與上線": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 148,
-        "level": 3,
-        "title": "步驟 5: 審核與上線"
+        "title": "步驟 4: 提交"
       }
     ],
     "注意事項": [
@@ -6432,6 +6476,12 @@
         "title": "相關文件"
       },
       {
+        "document": "advanced/sql-builder.md",
+        "line": 288,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 130,
         "level": 2,
@@ -6445,7 +6495,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 388,
+        "line": 466,
         "level": 2,
         "title": "相關文件"
       },
@@ -6810,6 +6860,14 @@
         "title": "自定義消息段"
       }
     ],
+    "自訂儲存後端": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 254,
+        "level": 2,
+        "title": "自訂儲存後端"
+      }
+    ],
     "自訂類型註冊": [
       {
         "document": "advanced/session-types.md",
@@ -6858,6 +6916,22 @@
         "title": "虛擬環境"
       }
     ],
+    "表管理": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 32,
+        "level": 2,
+        "title": "表管理"
+      }
+    ],
+    "複用查詢條件": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 181,
+        "level": 2,
+        "title": "複用查詢條件"
+      }
+    ],
     "解除安裝模組": [
       {
         "document": "user-guide/README.md",
@@ -6872,10 +6946,18 @@
         "title": "解除安裝模組"
       }
     ],
+    "計數與存在性檢查": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 170,
+        "level": 3,
+        "title": "計數與存在性檢查"
+      }
+    ],
     "計時器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 278,
+        "line": 356,
         "level": 3,
         "title": "計時器"
       }
@@ -7221,7 +7303,7 @@
     "讀取配置": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 54,
+        "line": 132,
         "level": 3,
         "title": "讀取配置"
       }
@@ -7299,7 +7381,7 @@
     "路由資訊": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 374,
+        "line": 452,
         "level": 3,
         "title": "路由資訊"
       }
@@ -7358,6 +7440,14 @@
         "line": 34,
         "level": 3,
         "title": "返回值結構"
+      }
+    ],
+    "返回值說明": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 229,
+        "level": 2,
+        "title": "返回值說明"
       }
     ],
     "透過 CLI 安裝": [
@@ -7547,7 +7637,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "適用對象"
       },
@@ -7575,7 +7665,7 @@
     "適配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 143,
+        "line": 221,
         "level": 3,
         "title": "適配器事件"
       }
@@ -7615,7 +7705,7 @@
     "適配器管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 162,
+        "line": 240,
         "level": 3,
         "title": "適配器管理"
       }
@@ -7763,7 +7853,7 @@
     "配置範例": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 76,
+        "line": 154,
         "level": 3,
         "title": "配置範例"
       },
@@ -7800,6 +7890,14 @@
         "line": 174,
         "level": 2,
         "title": "配置選項"
+      }
+    ],
+    "重置建構器": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 198,
+        "level": 2,
+        "title": "重置建構器"
       }
     ],
     "錯誤碼說明": [
@@ -7898,6 +7996,14 @@
         "title": "鏈式呼叫範例"
       }
     ],
+    "鏈式查詢": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "鏈式查詢"
+      }
+    ],
     "鏈式調用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7966,14 +8072,6 @@
         "line": 43,
         "level": 2,
         "title": "開發模式"
-      }
-    ],
-    "開發模式測試": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 2,
-        "title": "開發模式測試"
       }
     ],
     "開發準備": [

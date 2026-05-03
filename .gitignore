@@ -5,6 +5,7 @@ venvs
 config.toml
 uv.lock
 snapshots/
+logs/
 config.db*
 .website
 

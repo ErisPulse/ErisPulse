@@ -6,7 +6,7 @@ ErisPulse 核心模块
 
 from .lifecycle import lifecycle, LifecycleManager
 from .adapter import adapter, AdapterManager
-from .Bases import BaseAdapter, BaseModule, SendDSL
+from .Bases import BaseAdapter, BaseModule, SendDSL, BaseStorage, BaseQueryBuilder
 from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
@@ -15,33 +15,35 @@ from .config import config, ConfigManager
 from . import Event
 from .Event.message_builder import MessageBuilder
 
-env             = storage       # 存储管理器别名
+env = storage       # 存储管理器别名
 
 __all__ = [
-    'Event',
+    'Event',            # 事件模块包
 
-    'adapter',
-    'AdapterManager',
-    'BaseAdapter',
-    'SendDSL',
-    'MessageBuilder',
+    'adapter',          # 适配器模块单例
+    'AdapterManager',   # 适配器管理器类
+    'BaseAdapter',      # 适配器基类
+    'SendDSL',          # 发送DSL类
+    'MessageBuilder',   # 消息构建器类
 
-    'module',
-    'ModuleManager',
-    'BaseModule',
+    'module',           # 模块模块单例
+    'ModuleManager',    # 模块管理器类
+    'BaseModule',       # 模块基类
 
-    'storage',
-    'StorageManager',
-    'config',
+    'storage',          # 存储模块单例
+    'StorageManager',   # 存储管理器类
+    'BaseStorage',      # 存储后端抽象基类
+    'BaseQueryBuilder', # 查询构建器抽象基类
+    'config',           # 配置模块单例
     'env',              # 配置管理器别名
-    'ConfigManager',
+    'ConfigManager',    # 配置管理器类
 
-    'router',
-    'RouterManager',
+    'router',           # 路由模块单例
+    'RouterManager',    # 路由管理器类
 
-    'logger',
-    'Logger',
-    'LoggerChild',
-    'lifecycle',
-    'LifecycleManager',
+    'logger',           # 日志模块单例
+    'Logger',           # 日志类
+    'LoggerChild',      # 日志子类
+    'lifecycle',        # 生命周期模块单例
+    'LifecycleManager', # 生命周期管理器类
 ]

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1005,
+  "total_keywords": 1015,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1723,7 +1723,7 @@
     "Adapter Events": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 143,
+        "line": 221,
         "level": 3,
         "title": "Adapter Events"
       }
@@ -1761,7 +1761,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 162,
+        "line": 240,
         "level": 3,
         "title": "Adapter Management"
       }
@@ -1777,7 +1777,7 @@
     "Adapter Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 129,
+        "line": 207,
         "level": 2,
         "title": "Adapter Module"
       }
@@ -1884,12 +1884,28 @@
         "title": "Advanced Topics"
       }
     ],
+    "Alter Table Structure": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 58,
+        "level": 3,
+        "title": "Alter Table Structure"
+      }
+    ],
     "Annotation/Decorator": [
       {
         "document": "terminology.md",
         "line": 120,
         "level": 3,
         "title": "Annotation/Decorator"
+      }
+    ],
+    "Architecture Design": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "Architecture Design"
       }
     ],
     "Architecture Overview": [
@@ -2104,12 +2120,6 @@
     ],
     "Basic Information": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 120,
-        "level": 4,
-        "title": "Basic Information"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -2169,7 +2179,7 @@
     "Basic Logging": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 95,
+        "line": 173,
         "level": 3,
         "title": "Basic Logging"
       }
@@ -2526,6 +2536,14 @@
         "title": "Chain Modifiers"
       }
     ],
+    "Chain-style Queries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "Chain-style Queries"
+      }
+    ],
     "Chained Call Examples": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2648,6 +2666,14 @@
         "title": "Check Installation"
       }
     ],
+    "Check if Table Exists": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 45,
+        "level": 3,
+        "title": "Check if Table Exists"
+      }
+    ],
     "Checking Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2656,18 +2682,10 @@
         "title": "Checking Platform Status"
       }
     ],
-    "Checklist": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 140,
-        "level": 4,
-        "title": "Checklist"
-      }
-    ],
     "Child Loggers": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 108,
+        "line": 186,
         "level": 3,
         "title": "Child Loggers"
       }
@@ -2976,6 +2994,14 @@
         "title": "Component Relationships"
       }
     ],
+    "Conditional Filtering": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 106,
+        "level": 3,
+        "title": "Conditional Filtering"
+      }
+    ],
     "Conditional Listening": [
       {
         "document": "api-reference/event-system.md",
@@ -2995,7 +3021,7 @@
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 52,
+        "line": 130,
         "level": 2,
         "title": "Config Module"
       }
@@ -3039,7 +3065,7 @@
     "Configuration Example": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 76,
+        "line": 154,
         "level": 3,
         "title": "Configuration Example"
       },
@@ -3444,6 +3470,22 @@
         "title": "Core.py - Basic Module"
       }
     ],
+    "Count and Existence Check": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 170,
+        "level": 3,
+        "title": "Count and Existence Check"
+      }
+    ],
+    "Create Table": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 34,
+        "level": 3,
+        "title": "Create Table"
+      }
+    ],
     "Create Your First Bot": [
       {
         "document": "getting-started/first-bot.md",
@@ -3482,6 +3524,14 @@
         "line": 126,
         "level": 2,
         "title": "Custom Message Segments"
+      }
+    ],
+    "Custom Storage Backend": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 254,
+        "level": 2,
+        "title": "Custom Storage Backend"
       }
     ],
     "Custom Type Registration": [
@@ -3534,6 +3584,14 @@
         "line": 214,
         "level": 3,
         "title": "Default Configuration"
+      }
+    ],
+    "Delete Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 157,
+        "level": 3,
+        "title": "Delete Data"
       }
     ],
     "Deployment": [
@@ -3594,14 +3652,6 @@
         "line": 43,
         "level": 2,
         "title": "Development Mode"
-      }
-    ],
-    "Development Mode Testing": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 2,
-        "title": "Development Mode Testing"
       }
     ],
     "Development Related Terms": [
@@ -3840,6 +3890,14 @@
         "line": 19,
         "level": 4,
         "title": "Downloading from GitHub Releases"
+      }
+    ],
+    "Drop Table": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 52,
+        "level": 3,
+        "title": "Drop Table"
       }
     ],
     "Embedded Development (Suitable for Fast Prototyping)": [
@@ -4163,7 +4221,7 @@
     "Event Listening": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 337,
         "level": 3,
         "title": "Event Listening"
       },
@@ -4221,7 +4279,7 @@
     "Event Submission": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 245,
+        "line": 323,
         "level": 3,
         "title": "Event Submission"
       }
@@ -4366,14 +4424,6 @@
         "line": 143,
         "level": 2,
         "title": "Extension: Adding More Features"
-      }
-    ],
-    "FAQ": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 190,
-        "level": 2,
-        "title": "FAQ"
       }
     ],
     "Failure Response": [
@@ -4529,7 +4579,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 131,
+        "line": 209,
         "level": 3,
         "title": "Getting Adapters"
       }
@@ -4551,7 +4601,7 @@
     "Getting Modules": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 188,
+        "line": 266,
         "level": 3,
         "title": "Getting Modules"
       }
@@ -4655,7 +4705,7 @@
     "HTTP Routes": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
+        "line": 373,
         "level": 3,
         "title": "HTTP Routes"
       }
@@ -4824,6 +4874,14 @@
         "title": "Immediate Loading"
       }
     ],
+    "Import": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 21,
+        "level": 2,
+        "title": "Import"
+      }
+    ],
     "Information Query Commands": [
       {
         "document": "user-guide/cli-reference.md",
@@ -4890,6 +4948,14 @@
         "line": 142,
         "level": 3,
         "title": "Initializing Projects"
+      }
+    ],
+    "Insert Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 76,
+        "level": 3,
+        "title": "Insert Data"
       }
     ],
     "Install ErisPulse": [
@@ -5211,7 +5277,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 243,
+        "line": 321,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -5345,7 +5411,7 @@
     "Log Output": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 119,
+        "line": 197,
         "level": 3,
         "title": "Log Output"
       }
@@ -5361,7 +5427,7 @@
     "Logger Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 93,
+        "line": 171,
         "level": 2,
         "title": "Logger Module"
       }
@@ -5981,7 +6047,7 @@
     "Module Management": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 279,
         "level": 3,
         "title": "Module Management"
       }
@@ -5989,7 +6055,7 @@
     "Module Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 186,
+        "line": 264,
         "level": 2,
         "title": "Module Module"
       }
@@ -6454,6 +6520,14 @@
         "title": "Parameter Reference"
       }
     ],
+    "Parameterized Queries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 242,
+        "level": 2,
+        "title": "Parameterized Queries"
+      }
+    ],
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6611,7 +6685,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -6788,44 +6862,12 @@
         "title": "Q5: How to handle special platforms like email?"
       }
     ],
-    "Q: Can a single package register multiple modules?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Q: Can a single package register multiple modules?"
-      }
-    ],
     "Q: How can I get AI to generate higher quality code?": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: How can I get AI to generate higher quality code?"
-      }
-    ],
-    "Q: How long does the review take?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 218,
-        "level": 3,
-        "title": "Q: How long does the review take?"
-      }
-    ],
-    "Q: How to specify minimum SDK version requirements?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 206,
-        "level": 3,
-        "title": "Q: How to specify minimum SDK version requirements?"
-      }
-    ],
-    "Q: Must package names start with `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 3,
-        "title": "Q: Must package names start with `ErisPulse-`?"
       }
     ],
     "Q: What AI tools are recommended?": [
@@ -6858,6 +6900,14 @@
         "line": 115,
         "level": 2,
         "title": "Quality Checklist"
+      }
+    ],
+    "Query Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "Query Data"
       }
     ],
     "Query Registered Platform Methods": [
@@ -6989,7 +7039,7 @@
     "Reading Configuration": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 54,
+        "line": 132,
         "level": 3,
         "title": "Reading Configuration"
       },
@@ -7168,8 +7218,8 @@
     ],
     "Related Documents": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 388,
+        "document": "advanced/sql-builder.md",
+        "line": 288,
         "level": 2,
         "title": "Related Documents"
       }
@@ -7324,6 +7374,22 @@
         "title": "Reserved Error Ranges"
       }
     ],
+    "Reset Builder": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 198,
+        "level": 2,
+        "title": "Reset Builder"
+      }
+    ],
+    "Return Value Explanation": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 229,
+        "level": 2,
+        "title": "Return Value Explanation"
+      }
+    ],
     "Return Value Structure": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -7352,6 +7418,14 @@
         "line": 111,
         "level": 2,
         "title": "Return Values of Sending Methods"
+      }
+    ],
+    "Reuse Query Conditions": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 181,
+        "level": 2,
+        "title": "Reuse Query Conditions"
       }
     ],
     "Reverse Conversion": [
@@ -7384,14 +7458,6 @@
         "line": 314,
         "level": 3,
         "title": "Room Invitation"
-      }
-    ],
-    "Route Information": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 374,
-        "level": 3,
-        "title": "Route Information"
       }
     ],
     "Route List": [
@@ -7427,7 +7493,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 293,
+        "line": 371,
         "level": 2,
         "title": "Router Module"
       }
@@ -7486,6 +7552,22 @@
         "line": 127,
         "level": 3,
         "title": "SDK Objects"
+      }
+    ],
+    "SQL Chain Query": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 52,
+        "level": 3,
+        "title": "SQL Chain Query"
+      }
+    ],
+    "SQL Query Builder": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 1,
+        "level": 1,
+        "title": "SQL Query Builder"
       }
     ],
     "Scenarios Recommended for Disabling Lazy Loading (lazy_load=False)": [
@@ -7776,6 +7858,14 @@
         "title": "Simple Timer"
       }
     ],
+    "Sorting, Pagination": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 121,
+        "level": 3,
+        "title": "Sorting, Pagination"
+      }
+    ],
     "Special Event Types": [
       {
         "document": "platform-guide/email.md",
@@ -8030,14 +8120,6 @@
         "title": "Step 2: View Project Structure"
       }
     ],
-    "Step 3: Publish to PyPI": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 89,
-        "level": 3,
-        "title": "Step 3: Publish to PyPI"
-      }
-    ],
     "Step 3: Write Your First Command": [
       {
         "document": "getting-started/first-bot.md",
@@ -8052,22 +8134,6 @@
         "line": 92,
         "level": 2,
         "title": "Step 4: Run the Bot"
-      }
-    ],
-    "Step 4: Submit to ErisPulse Module Store": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 108,
-        "level": 3,
-        "title": "Step 4: Submit to ErisPulse Module Store"
-      }
-    ],
-    "Step 5: Review and Launch": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 148,
-        "level": 3,
-        "title": "Step 5: Review and Launch"
       }
     ],
     "Step 5: Test the Bot": [
@@ -8098,6 +8164,14 @@
         "line": 76,
         "level": 3,
         "title": "Storage"
+      }
+    ],
+    "Storage Backend Abstraction": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 119,
+        "level": 3,
+        "title": "Storage Backend Abstraction"
       }
     ],
     "Storage Configuration": [
@@ -8142,14 +8216,6 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
-      }
-    ],
-    "Submission Type": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 114,
-        "level": 4,
-        "title": "Submission Type"
       }
     ],
     "Submitting Lifecycle Events": [
@@ -8312,6 +8378,14 @@
         "title": "TOML"
       }
     ],
+    "Table Management": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 32,
+        "level": 2,
+        "title": "Table Management"
+      }
+    ],
     "Table of Contents": [
       {
         "document": "developer-guide/README.md",
@@ -8326,18 +8400,10 @@
         "title": "Table of Contents"
       }
     ],
-    "Tags": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 136,
-        "level": 4,
-        "title": "Tags"
-      }
-    ],
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "Target Audience"
       },
@@ -8354,14 +8420,6 @@
         "line": 187,
         "level": 3,
         "title": "Task Object"
-      }
-    ],
-    "Technical Information": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 129,
-        "level": 4,
-        "title": "Technical Information"
       }
     ],
     "Technical Standards": [
@@ -8435,7 +8493,7 @@
     "Timer": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 278,
+        "line": 356,
         "level": 3,
         "title": "Timer"
       }
@@ -8558,6 +8616,14 @@
         "title": "Unsupported Type Handling"
       }
     ],
+    "Update Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 142,
+        "level": 3,
+        "title": "Update Data"
+      }
+    ],
     "Update Requirements": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -8572,14 +8638,6 @@
         "line": 242,
         "level": 2,
         "title": "Updates and Maintenance"
-      }
-    ],
-    "Updating Published Modules": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 160,
-        "level": 2,
-        "title": "Updating Published Modules"
       }
     ],
     "Upgrade Modules": [
@@ -8716,6 +8774,14 @@
         "line": 486,
         "level": 3,
         "title": "Using Send DSL to Specify Accounts"
+      }
+    ],
+    "Using in Transactions": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 209,
+        "level": 2,
+        "title": "Using in Transactions"
       }
     ],
     "Using the Event System": [
@@ -8879,7 +8945,7 @@
     "WebSocket Routes": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 317,
+        "line": 395,
         "level": 3,
         "title": "WebSocket Routes"
       }
@@ -8911,7 +8977,7 @@
     "Writing Configuration": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 66,
+        "line": 144,
         "level": 3,
         "title": "Writing Configuration"
       }
@@ -9042,6 +9108,14 @@
         "line": 230,
         "level": 3,
         "title": "[BUG-014] Cannot Stop Program with CTRL+C on Windows"
+      }
+    ],
+    "[BUG-015] Updated Module Python Code Not Effective After Hot Restart": [
+      {
+        "document": "bug-tracker.md",
+        "line": 250,
+        "level": 3,
+        "title": "[BUG-015] Updated Module Python Code Not Effective After Hot Restart"
       }
     ],
     "__init__.py": [

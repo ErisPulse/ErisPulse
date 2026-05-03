@@ -48,7 +48,7 @@
 
 # 架構概覽
 
-本文件透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助您快速理解框架的設計思想和模組關係。
+本文檔透過視覺化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計思想和模組關係。
 
 ## SDK 核心架構
 
@@ -93,9 +93,9 @@ graph TB
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
 | **Module** | 模組管理器，管理外掛的註冊、載入和卸載 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
-| **Storage** | 基於 SQLite 的鍵值儲存系統 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
 | **Config** | TOML 格式的設定檔管理 |
-| **Logger** | 模組化日誌系統，支援子日誌記錄器 |
+| **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理 |
 
 ## 初始化流程
@@ -190,7 +190,7 @@ flowchart LR
 
 ### 監聽生命週期事件
 
-您可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
+你可以透過 `lifecycle.on()` 監聽這些事件，執行自訂邏輯：
 
 ```python
 from ErisPulse import sdk
@@ -5419,119 +5419,7 @@ python -m twine upload dist/*
 pip install ErisPulse-MyModule
 ```
 
-### 步驟 4: 提交到 ErisPulse 模組商店
-
-在確認套件已發布到 PyPI 後，前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交申請。
-
-填寫以下資訊：
-
-#### 提交類型
-
-選擇你要提交的類型：
-- 模組 (Module)
-- 適配器 (Adapter)
-
-#### 基本資訊
-
-| 欄位 | 說明 | 範例 |
-|------|------|------|
-| **名稱** | 模組/適配器名稱 | Weather |
-| **描述** | 簡短功能描述 | 天氣查詢模組，支援全球城市 |
-| **作者** | 你的名字或 GitHub 用戶名 | MyName |
-| **倉庫地址** | 程式碼倉庫 URL | https://github.com/MyName/MyModule |
-
-#### 技術資訊
-
-| 欄位 | 說明 |
-|------|------|
-| **最低 SDK 版本要求** | 如 `>=2.0.0`（如適用） |
-| **依賴項** | 除 ErisPulse 外的額外依賴（如適用） |
-
-#### 標籤
-
-用逗號分隔，幫助用戶搜尋發現你的模組。例如：`天氣, 查詢, 工具`
-
-#### 檢查清單
-
-提交前請確認：
-- 程式碼遵循 ErisPulse 開發規範
-- 包含適當的文件（README.md）
-- 包含測試用例（如適用）
-- 已在 PyPI 發布
-
-### 步驟 5: 審核與上線
-
-提交後，維護者會審核你的申請。審核要點：
-
-1. 套件可以在 PyPI 上正常安裝
-2. Entry-point 配置正確，能被 SDK 正確發現
-3. 功能與描述一致
-4. 不存在安全問題或惡意程式碼
-5. 不與已有模組嚴重衝突
-
-審核通過後，你的模組會自動出現在模組商店中。
-
-## 更新已發布模組
-
-當你更新模組版本時：
-
-1. 更新 `pyproject.toml` 中的 `version`
-2. 重新建構並上傳到 PyPI：
-   ```bash
-   python -m build
-   python -m twine upload dist/*
-   ```
-3. 模組商店會自動同步 PyPI 上的最新版本資訊
-
-用戶可以透過以下命令升級：
-
-```bash
-epsdk upgrade MyModule
-```
-
-## 開發模式測試
-
-在正式發布前，你可以使用可編輯模式在本地測試：
-
-```bash
-# 以可編輯模式安裝
-epsdk install -e /path/to/MyModule
-
-# 或使用 pip
-pip install -e /path/to/MyModule
-```
-
-## 常見問題
-
-### Q: 套件名稱必須以 `ErisPulse-` 開頭�？
-
-不強制，但強烈推薦。這有助於用戶在 PyPI 上識別 ErisPulse 生態的套件。
-
-### Q: 一個套件可以註冊多個模組嗎？
-
-可以。在 `entry-points` 中配置多個鍵值對即可：
-
-```toml
-[project.entry-points."erispulse.module"]
-"ModuleA" = "MyPackage:ModuleA"
-"ModuleB" = "MyPackage:ModuleB"
-```
-
-### Q: 如何指定最低 SDK 版本要求？
-
-在 `pyproject.toml` 的 `dependencies` 中設定：
-
-```toml
-dependencies = [
-    "ErisPulse>=2.0.0",
-]
-```
-
-模組商店會檢查版本相容性，防止用戶安裝不相容的模組。
-
-### Q: 審核需要多長時間？
-
-通常在 1-3 個工作日內完成。你可以在 Issue 中查看審核進度。
+### 步驟 4: 提交
 
 
 
@@ -5544,7 +5432,7 @@ API 参考
 
 # 核心模組 API
 
-本文件詳細介紹了 ErisPulse 的核心模組 API。
+本文檔詳細介紹了 ErisPulse 的核心模組 API。
 
 ## Storage 模組
 
@@ -5591,6 +5479,84 @@ values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
 # 批次刪除
 sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+### SQL 鏈式查詢
+
+Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
+
+> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
+
+```python
+from ErisPulse import sdk
+
+# 建立自訂表
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# 插入資料
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 批次插入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# 查詢資料
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# 更新資料
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# 刪除資料
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# 計數
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性檢查
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# 取得單條記錄
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# 修改表結構
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# 檢查表是否存在
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# 事務中的鏈式操作
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# 複用查詢條件
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### 存儲後端抽象
+
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援未來拓展其他存儲介質（Redis、MySQL 等）。
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage 定義了統一介面：get/set/delete/Table/CreateTable/DropTable 等
+# BaseQueryBuilder 定義了鏈式查詢介面：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模組
@@ -5931,8 +5897,7 @@ async def add_headers(request: Request, call_next):
 
 ## 相關文件
 
-- [事件系統 API](event-system.md) - Event 模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [事件系統 API](event-system.md) -
 
 
 

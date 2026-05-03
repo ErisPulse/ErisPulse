@@ -87,7 +87,7 @@ graph TB
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
 | **Module** | Module manager, managing plugin registration, loading, and unloading |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system |
+| **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
 | **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | FastAPI-based HTTP/WebSocket route management |
@@ -3373,149 +3373,7 @@ dependencies = [
 
 ```toml
 [project]
-name = "ErisPulse-MyAdapter"
-version = "1.0.0"
-description = "Adapter functionality description"
-requires-python = ">=3.10"
-
-[project.entry-points."erispulse.adapter"]
-"myplatform" = "MyAdapter:MyAdapter"
-```
-
-> **Note**: It's recommended that package names start with `ErisPulse-` for easy user recognition. The entry-point key name (such as `"MyModule"`) will be used as the access name for the module in the SDK.
-
-### Step 3: Publish to PyPI
-
-```bash
-# Install build tools
-pip install build twine
-
-# Build distribution packages
-python -m build
-
-# Publish to PyPI
-python -m twine upload dist/*
-```
-
-After successful publication, confirm that your package can be installed via `pip install`:
-
-```bash
-pip install ErisPulse-MyModule
-```
-
-### Step 4: Submit to ErisPulse Module Store
-
-After confirming your package is published to PyPI, go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) to submit your application.
-
-Fill in the following information:
-
-#### Submission Type
-
-Select the type you want to submit:
-- Module
-- Adapter
-
-#### Basic Information
-
-| Field | Description | Example |
-|------|------|------|
-| **Name** | Module/Adapter name | Weather |
-| **Description** | Brief functional description | Weather query module supporting global cities |
-| **Author** | Your name or GitHub username | MyName |
-| **Repository URL** | Code repository URL | https://github.com/MyName/MyModule |
-
-#### Technical Information
-
-| Field | Description |
-|------|------|
-| **Minimum SDK Version Requirement** | e.g. `>=2.0.0` (if applicable) |
-| **Dependencies** | Additional dependencies besides ErisPulse (if applicable) |
-
-#### Tags
-
-Separate with commas to help users search and discover your module. For example: `weather, query, tool`
-
-#### Checklist
-
-Before submitting, please confirm:
-- Code follows ErisPulse development standards
-- Contains appropriate documentation (README.md)
-- Contains test cases (if applicable)
-- Published on PyPI
-
-### Step 5: Review and Launch
-
-After submission, maintainers will review your application. Review points:
-
-1. The package can be installed normally from PyPI
-2. Entry-point configuration is correct and can be properly discovered by the SDK
-3. Functionality matches the description
-4. No security issues or malicious code
-5. No significant conflicts with existing modules
-
-After passing the review, your module will automatically appear in the Module Store.
-
-## Updating Published Modules
-
-When you update a module version:
-
-1. Update `version` in `pyproject.toml`
-2. Rebuild and upload to PyPI:
-   ```bash
-   python -m build
-   python -m twine upload dist/*
-   ```
-3. The Module Store will automatically sync the latest version information from PyPI
-
-Users can upgrade using the following command:
-
-```bash
-epsdk upgrade MyModule
-```
-
-## Development Mode Testing
-
-Before official publication, you can test locally in editable mode:
-
-```bash
-# Install in editable mode
-epsdk install -e /path/to/MyModule
-
-# Or use pip
-pip install -e /path/to/MyModule
-```
-
-## FAQ
-
-### Q: Must package names start with `ErisPulse-`?
-
-Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
-
-### Q: Can a single package register multiple modules?
-
-Yes. Configure multiple key-value pairs in `entry-points`:
-
-```toml
-[project.entry-points."erispulse.module"]
-"ModuleA" = "MyPackage:ModuleA"
-"ModuleB" = "MyPackage:ModuleB"
-```
-
-### Q: How to specify minimum SDK version requirements?
-
-Set in `dependencies` in `pyproject.toml`:
-
-```toml
-dependencies = [
-    "ErisPulse>=2.0.0",
-]
-```
-
-The Module Store will check version compatibility to prevent users from installing incompatible modules.
-
-### Q: How long does the review take?
-
-Usually completed within 1-3 business days. You can check the review progress in the Issue.
+name
 
 
 
@@ -3729,6 +3587,84 @@ values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
 # Batch delete
 sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+### SQL Chain Query
+
+The Storage module provides a general-purpose SQL query builder with a chaining-style API, supporting CRUD operations for custom tables.
+
+> See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
+
+```python
+from ErisPulse import sdk
+
+# Create custom table
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# Insert data
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# Batch insert
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# Query data
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# Update data
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# Delete data
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# Count
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# Existence check
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# Get single record
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# Modify table structure
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# Check if table exists
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# Chained operations in transaction
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# Reuse query conditions
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### Storage Backend Abstraction
+
+The `StorageManager` inherits from the `BaseStorage` abstract base class, supporting future expansion to other storage media (Redis, MySQL, etc.).
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage defines the unified interface: get/set/delete/Table/CreateTable/DropTable, etc.
+# BaseQueryBuilder defines the chained query interface: Select/Insert/Update/Delete/Where/OrderBy/Limit, etc.
 ```
 
 ## Config Module
@@ -4010,67 +3946,7 @@ async def websocket_handler(websocket: WebSocket):
         await websocket.send_text(f"Echo: {data}")
 
 sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-    auto_accept=True  # Default is True, can be omitted
-)
-
-# Register WebSocket route (manual connection control)
-async def manual_websocket_handler(websocket: WebSocket):
-    # Decide whether to accept connection based on condition
-    if some_condition:
-        await websocket.accept()
-        # Handle connection...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=manual_websocket_handler,
-    auth_handler=auth_handler,
-    auto_accept=False  # Manual connection control
-)
-
-# Unregister route
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**Parameter Description:**
-
-- `module_name`: Module name
-- `path`: WebSocket path
-- `handler`: Handler function
-- `auth_handler`: Optional authentication function
-- `auto_accept`: Whether to automatically accept connection (default `True`)
-  - `True`: Framework automatically calls `websocket.accept()`, handler does not need to call it manually
-  - `False`: handler must call `websocket.accept()` or `websocket.close()` itself
-
-### Route Information
-
-```python
-# Get FastAPI application instance
-app = sdk.router.get_app()
-
-# Add middleware
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
-```
-
-## Related Documents
-
-- [Event System API](event-system.md) - Event Module API
-- [Adapter System API](adapter-system.md) - Adapter Management API
+    module_name="my
 
 
 
