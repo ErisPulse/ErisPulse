@@ -1,7 +1,7 @@
 """
 ErisPulse 存储管理模块
 
-提供键值存储和事务支持，用于管理框架运行时数据。
+提供键提供键值存储和事务支持，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
 {!--< tips >!--}
@@ -76,11 +76,24 @@ class StorageManager:
         self._initialized = True
 
     def _is_ready(self) -> bool:
-        """检查存储管理器是否已初始化完成"""
+        """
+        {!--< internal-use >!--}
+        检查存储管理器是否已初始化完成
+
+        :return: bool 反馈是否已初始化完成
+        """
         return hasattr(self, "_initialized") and self._initialized
 
     def _auto_commit(self, conn) -> None:
-        """非事务模式下自动提交更改"""
+        """
+        {!--< internal-use >!--}
+
+        非事务模式下自动提交更改
+        
+        :param conn: 数据库连接
+
+        :return: None
+        """
         if not (
             hasattr(self._local, "transaction_conn")
             and self._local.transaction_conn is not None
@@ -88,12 +101,15 @@ class StorageManager:
             conn.commit()
 
     @contextmanager
-    def _get_connection(self):
+    def _get_connection(self) -> sqlite3.Connection:    # type: ignore
         """
+        {!--< internal-use >!--}
         获取数据库连接（支持事务）
 
         如果在事务中，返回事务的连接
         否则创建新连接
+
+        :return: sqlite3.Connection 数据库连接
         """
         # 检查是否在线程本地存储中有活动事务连接
         if (
@@ -114,7 +130,10 @@ class StorageManager:
 
     def _ensure_directories(self) -> None:
         """
+        {!--< internal-use >!--}
         确保必要的目录存在
+
+        :return: None
         """
         # 确保项目数据库目录存在
         try:
@@ -126,6 +145,8 @@ class StorageManager:
         """
         {!--< internal-use >!--}
         初始化数据库
+
+        :return: None
         """
         from .logger import logger
 
@@ -226,6 +247,11 @@ class StorageManager:
     def keys(self) -> list[str]:
         """
         标准字典接口方法，返回所有存储项的键名 -> 代理 --> get_all_keys
+
+        :return: 键名列表
+        :example:
+        >>> all_keys = storage.keys()
+        >>> print(f"共有 {len(all_keys)} 个存储项")
         """
         return self.get_all_keys()
 
@@ -296,9 +322,12 @@ class StorageManager:
     def getConfig(self, key: str, default: Any = None) -> Any:
         """
         获取模块/适配器配置项（委托给config模块）
+
         :param key: 配置项的键(支持点分隔符如"module.sub.key")
         :param default: 默认值
         :return: 配置项的值
+
+        {!--< deprecated >!--} 请使用 `config.getConfig` 来获取配置项，这个API已弃用
         """
         try:
             from .config import config
@@ -310,9 +339,12 @@ class StorageManager:
     def setConfig(self, key: str, value: Any) -> bool:
         """
         设置模块/适配器配置（委托给config模块）
+
         :param key: 配置项键名(支持点分隔符如"module.sub.key")
         :param value: 配置项值
         :return: 操作是否成功
+
+        {!--< deprecated >!--} 请使用 `config.setConfig` 来设置配置项，这个API已弃用
         """
         try:
             from .config import config
@@ -457,6 +489,8 @@ class StorageManager:
         def __enter__(self) -> "StorageManager._Transaction":
             """
             进入事务上下文
+
+            :return: 事务对象
             """
             self.conn = sqlite3.connect(self.storage_manager.db_path)
             self.cursor = self.conn.cursor()
@@ -470,6 +504,12 @@ class StorageManager:
         ) -> None:
             """
             退出事务上下文
+
+            :param exc_type: 异常类型
+            :param exc_val: 异常对象
+            :param exc_tb: 异常堆栈
+
+            :return: None
             """
             # 清除线程本地存储中的连接引用
             if hasattr(self.storage_manager._local, "transaction_conn"):
