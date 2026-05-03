@@ -262,7 +262,7 @@
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 14,
+      "count": 16,
       "documents": [
         {
           "title": "高级主题",
@@ -297,6 +297,11 @@
         {
           "title": "Conversation 多轮对话",
           "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "SQL 查询构建器",
+          "path": "advanced/sql-builder.md",
           "level": 1
         }
       ],
