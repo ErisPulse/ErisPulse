@@ -262,7 +262,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 14,
+      "count": 16,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -297,6 +297,11 @@
         {
           "title": "Conversation Multi-turn Dialogue",
           "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "SQL Query Builder",
+          "path": "advanced/sql-builder.md",
           "level": 1
         }
       ],

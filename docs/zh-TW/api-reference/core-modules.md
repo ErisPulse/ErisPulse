@@ -1,6 +1,6 @@
 # 核心模組 API
 
-本文件詳細介紹了 ErisPulse 的核心模組 API。
+本文檔詳細介紹了 ErisPulse 的核心模組 API。
 
 ## Storage 模組
 
@@ -47,6 +47,84 @@ values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
 # 批次刪除
 sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+### SQL 鏈式查詢
+
+Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
+
+> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
+
+```python
+from ErisPulse import sdk
+
+# 建立自訂表
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# 插入資料
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 批次插入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# 查詢資料
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# 更新資料
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# 刪除資料
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# 計數
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性檢查
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# 取得單條記錄
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# 修改表結構
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# 檢查表是否存在
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# 事務中的鏈式操作
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# 複用查詢條件
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### 存儲後端抽象
+
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援未來拓展其他存儲介質（Redis、MySQL 等）。
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage 定義了統一介面：get/set/delete/Table/CreateTable/DropTable 等
+# BaseQueryBuilder 定義了鏈式查詢介面：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模組
@@ -387,5 +465,4 @@ async def add_headers(request: Request, call_next):
 
 ## 相關文件
 
-- [事件系統 API](event-system.md) - Event 模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [事件系統 API](event-system.md) -

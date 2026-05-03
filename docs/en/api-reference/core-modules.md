@@ -49,6 +49,84 @@ values = sdk.storage.get_multi(["key1", "key2", "key3"])
 sdk.storage.delete_multi(["key1", "key2", "key3"])
 ```
 
+### SQL Chain Query
+
+The Storage module provides a general-purpose SQL query builder with a chaining-style API, supporting CRUD operations for custom tables.
+
+> See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
+
+```python
+from ErisPulse import sdk
+
+# Create custom table
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# Insert data
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# Batch insert
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# Query data
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# Update data
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# Delete data
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# Count
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# Existence check
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# Get single record
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# Modify table structure
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# Check if table exists
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# Chained operations in transaction
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# Reuse query conditions
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### Storage Backend Abstraction
+
+The `StorageManager` inherits from the `BaseStorage` abstract base class, supporting future expansion to other storage media (Redis, MySQL, etc.).
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage defines the unified interface: get/set/delete/Table/CreateTable/DropTable, etc.
+# BaseQueryBuilder defines the chained query interface: Select/Insert/Update/Delete/Where/OrderBy/Limit, etc.
+```
+
 ## Config Module
 
 ### Reading Configuration
@@ -328,64 +406,4 @@ async def websocket_handler(websocket: WebSocket):
         await websocket.send_text(f"Echo: {data}")
 
 sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-    auto_accept=True  # Default is True, can be omitted
-)
-
-# Register WebSocket route (manual connection control)
-async def manual_websocket_handler(websocket: WebSocket):
-    # Decide whether to accept connection based on condition
-    if some_condition:
-        await websocket.accept()
-        # Handle connection...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=manual_websocket_handler,
-    auth_handler=auth_handler,
-    auto_accept=False  # Manual connection control
-)
-
-# Unregister route
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**Parameter Description:**
-
-- `module_name`: Module name
-- `path`: WebSocket path
-- `handler`: Handler function
-- `auth_handler`: Optional authentication function
-- `auto_accept`: Whether to automatically accept connection (default `True`)
-  - `True`: Framework automatically calls `websocket.accept()`, handler does not need to call it manually
-  - `False`: handler must call `websocket.accept()` or `websocket.close()` itself
-
-### Route Information
-
-```python
-# Get FastAPI application instance
-app = sdk.router.get_app()
-
-# Add middleware
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
-```
-
-## Related Documents
-
-- [Event System API](event-system.md) - Event Module API
-- [Adapter System API](adapter-system.md) - Adapter Management API
+    module_name="my
