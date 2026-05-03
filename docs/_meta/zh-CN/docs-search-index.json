@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1020,
+  "total_keywords": 1029,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -86,6 +86,14 @@
         "line": 148,
         "level": 3,
         "title": "1. 分类异常处理"
+      }
+    ],
+    "1. 创建 Dockerfile": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 232,
+        "level": 3,
+        "title": "1. 创建 Dockerfile"
       }
     ],
     "1. 创建项目": [
@@ -412,6 +420,14 @@
         "line": 561,
         "level": 3,
         "title": "2. 使用装饰器注册单个方法"
+      }
+    ],
+    "2. 创建 GitHub Actions 工作流": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 288,
+        "level": 3,
+        "title": "2. 创建 GitHub Actions 工作流"
       }
     ],
     "2. 创建 pyproject.toml": [
@@ -866,6 +882,14 @@
         "title": "3. 特有事件类型"
       }
     ],
+    "3. 触发构建": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 357,
+        "level": 3,
+        "title": "3. 触发构建"
+      }
+    ],
     "3. 资源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -1034,6 +1058,14 @@
         "title": "4. 自定义类型扩展"
       }
     ],
+    "4. 设置镜像为公开": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 372,
+        "level": 3,
+        "title": "4. 设置镜像为公开"
+      }
+    ],
     "4.1 标准消息段": [
       {
         "document": "standards/event-conversion.md",
@@ -1104,6 +1136,14 @@
         "line": 171,
         "level": 2,
         "title": "5. 未知事件处理"
+      }
+    ],
+    "5. 用户使用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 379,
+        "level": 3,
+        "title": "5. 用户使用"
       }
     ],
     "5. 自动类型推断": [
@@ -1792,6 +1832,14 @@
         "line": 5,
         "level": 2,
         "title": "Docker 部署（推荐）"
+      }
+    ],
+    "Docker 镜像 vs PyPI 发布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 434,
+        "level": 3,
+        "title": "Docker 镜像 vs PyPI 发布"
       }
     ],
     "ErisPulse PlatformFeatures 文档": [
@@ -4400,6 +4448,14 @@
         "line": 312,
         "level": 3,
         "title": "可用属性"
+      }
+    ],
+    "同时发布到 Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 411,
+        "level": 3,
+        "title": "同时发布到 Docker Hub"
       }
     ],
     "同步初始化": [
@@ -8820,6 +8876,14 @@
         "title": "连接重试"
       }
     ],
+    "适用场景": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 226,
+        "level": 3,
+        "title": "适用场景"
+      }
+    ],
     "适用对象": [
       {
         "document": "advanced/README.md",
@@ -9122,6 +9186,14 @@
         "line": 91,
         "level": 3,
         "title": "通过 Dashboard 安装模块"
+      }
+    ],
+    "通过 Docker 镜像分发应用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 222,
+        "level": 2,
+        "title": "通过 Docker 镜像分发应用"
       }
     ],
     "通配符事件处理器": [
