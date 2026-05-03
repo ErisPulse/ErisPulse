@@ -8,6 +8,7 @@
 - [生命周期管理](lifecycle.md) - 生命周期事件系统的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
 - [MessageBuilder 详解](message-builder.md) - OneBot12 消息段构建器的双模式用法
+- [SQL 查询构建器](sql-builder.md) - 通用 SQL 链式查询构建器及存储后端抽象
 - [会话类型系统](session-types.md) - 会话类型定义、映射与自定义类型注册
 - [Conversation 多轮对话](conversation.md) - 多轮对话上下文的交互方法
 
