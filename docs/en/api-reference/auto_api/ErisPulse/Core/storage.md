@@ -7,7 +7,7 @@
 
 ErisPulse 存储管理模块
 
-提供键值存储和事务支持，用于管理框架运行时数据。
+提供键提供键值存储和事务支持，用于管理框架运行时数据。
 基于SQLite实现持久化存储，支持复杂数据类型和原子操作。
 
 > **提示**
@@ -52,12 +52,20 @@ ErisPulse 存储管理模块
 
 进入事务上下文
 
+:return: 事务对象
+
 ---
 
 
 ####### `__exit__(exc_type: type[Exception], exc_val: Exception, exc_tb: Any)`
 
 退出事务上下文
+
+:param exc_type: 异常类型
+:param exc_val: 异常对象
+:param exc_tb: 异常堆栈
+
+:return: None
 
 ---
 
@@ -67,31 +75,46 @@ ErisPulse 存储管理模块
 
 ##### `_is_ready()`
 
+> **内部方法** 
 检查存储管理器是否已初始化完成
+
+:return: bool 反馈是否已初始化完成
 
 ---
 
 
 ##### `_auto_commit(conn)`
 
+> **内部方法** 
+
 非事务模式下自动提交更改
+
+:param conn: 数据库连接
+
+:return: None
 
 ---
 
 
 ##### `_get_connection()`
 
+> **内部方法** 
 获取数据库连接（支持事务）
 
 如果在事务中，返回事务的连接
 否则创建新连接
+
+:return: sqlite3.Connection 数据库连接
 
 ---
 
 
 ##### `_ensure_directories()`
 
+> **内部方法** 
 确保必要的目录存在
+
+:return: None
 
 ---
 
@@ -100,6 +123,8 @@ ErisPulse 存储管理模块
 
 > **内部方法** 
 初始化数据库
+
+:return: None
 
 ---
 
@@ -139,6 +164,14 @@ ErisPulse 存储管理模块
 ##### `keys()`
 
 标准字典接口方法，返回所有存储项的键名 -> 代理 --> get_all_keys
+
+:return: 键名列表
+
+**示例**:
+```python
+>>> all_keys = storage.keys()
+>>> print(f"共有 {len(all_keys)} 个存储项")
+```
 
 ---
 
@@ -182,9 +215,12 @@ ErisPulse 存储管理模块
 ##### `getConfig(key: str, default: Any = None)`
 
 获取模块/适配器配置项（委托给config模块）
+
 :param key: 配置项的键(支持点分隔符如"module.sub.key")
 :param default: 默认值
 :return: 配置项的值
+
+> **已弃用** 请使用 `config.getConfig` 来获取配置项，这个API已弃用
 
 ---
 
@@ -192,9 +228,12 @@ ErisPulse 存储管理模块
 ##### `setConfig(key: str, value: Any)`
 
 设置模块/适配器配置（委托给config模块）
+
 :param key: 配置项键名(支持点分隔符如"module.sub.key")
 :param value: 配置项值
 :return: 操作是否成功
+
+> **已弃用** 请使用 `config.setConfig` 来设置配置项，这个API已弃用
 
 ---
 

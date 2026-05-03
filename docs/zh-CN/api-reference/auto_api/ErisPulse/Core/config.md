@@ -51,6 +51,7 @@ ConfigManager 类提供相关功能。
 
 ##### `_load_config()`
 
+> **内部方法** 
 从文件加载配置到缓存
 
 ---
@@ -58,7 +59,9 @@ ConfigManager 类提供相关功能。
 
 ##### `_sort_config_dict(config_dict: dict[str, Any])`
 
+> **内部方法** 
 递归地对配置字典进行排序，确保同一模块的配置项排列在一起
+
 :param config_dict: 待排序的配置字典
 :return: 排序后的配置字典
 
@@ -67,6 +70,7 @@ ConfigManager 类提供相关功能。
 
 ##### `_flush_config()`
 
+> **内部方法** 
 将待写入的配置刷新到文件
 
 使用文件锁确保多线程环境下的原子性操作
@@ -76,6 +80,7 @@ ConfigManager 类提供相关功能。
 
 ##### `_schedule_write()`
 
+> **内部方法** 
 安排延迟写入
 
 线程安全：使用锁保护 Timer 的取消和创建
@@ -85,6 +90,7 @@ ConfigManager 类提供相关功能。
 
 ##### `_check_cache_validity()`
 
+> **内部方法** 
 检查缓存有效性，必要时重新加载
 
 ---
@@ -92,7 +98,8 @@ ConfigManager 类提供相关功能。
 
 ##### `getConfig(key: str, default: Any = None)`
 
-获取模块/适配器配置项（优先从缓存获取）
+获取模块/适配器配置项
+
 :param key: 配置项的键(支持点分隔符如"module.sub.key")
 :param default: 默认值
 :return: 配置项的值
@@ -102,7 +109,7 @@ ConfigManager 类提供相关功能。
 
 ##### `setConfig(key: str, value: Any, immediate: bool = False)`
 
-设置模块/适配器配置（缓存+延迟写入）
+设置模块/适配器配置
 :param key: 配置项键名(支持点分隔符如"module.sub.key")
 :param value: 配置项值
 :param immediate: 是否立即写入磁盘（默认为False，延迟写入）
@@ -115,12 +122,16 @@ ConfigManager 类提供相关功能。
 
 强制立即保存所有待写入的配置到磁盘
 
+注意！除非您知道您在干什么，否则请勿直接强制保存！
+
 ---
 
 
 ##### `reload()`
 
 重新从磁盘加载配置，丢弃所有未保存的更改
+
+注意！reload时，未持久化的配置项会被丢弃，并重新从配置文件中加载
 
 ---
 
