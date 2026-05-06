@@ -63,6 +63,67 @@
 
 ---
 
+## [2.4.3] - 2026/05/06
+> 正式发布
+
+**版本摘要**
+2.4.3 版本新增了通用 SQL 链式查询构建器，改进了 Docker 运行模式（后台服务 + 日志查看命令），并修复了热重启后模块缓存未更新的关键问题。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - SQL 查询构建器提供了更灵活的数据库操作能力
+  - Docker 后台服务模式改善了容器内交互体验
+  - 热重启缓存修复解决了重启后模块代码不生效的问题
+
+**注意事项**
+- Docker 运行模式变更：`epsdk run` 现在以后台服务方式运行，控制台可用于交互
+- Docker 新增 `ep-logs` 命令，可在容器内快速查看 ErisPulse 实时日志
+- Docker 默认配置新增日志文件输出（`/app/logs/erispulse.log`）
+
+**兼容性**
+- 完全向后兼容，现有模块和适配器代码无需修改
+
+### 新增
+
+- @wsu2059q
+  - `Core.Storage` 存储模块新增通用 SQL 链式查询构建器：
+    - 新增 `Bases/storage.py`，定义 `BaseStorage(ABC)` 和 `BaseQueryBuilder(ABC)` 抽象基类，支持未来拓展其他存储介质（Redis、MySQL 等）
+    - 新增 `SQLiteQueryBuilder(BaseQueryBuilder)`，链式调用风格的 SQL 查询构建器
+    - 新增 `AlterTableBuilder`，链式调用风格的表结构修改构建器（支持 `AddColumn`、`RenameTo`）
+    - `StorageManager` 继承 `BaseStorage`，新增 `Table()`、`CreateTable()`、`DropTable()`、`HasTable()`、`AlterTable()` 方法
+    - 链式方法：`Select`、`Insert`、`InsertMulti`、`Update`、`Delete`、`Where`、`OrderBy`、`Limit`、`Offset`、`copy`、`clear`
+    - 终止方法：`Execute`、`ExecuteOne`、`Count`、`Exists`
+    - 所有 WHERE 参数使用 `?` 占位符，防止 SQL 注入
+    - 现有键值 API 完全向后兼容
+  - Docker 运行模式改进：
+    - `epsdk run` 以后台服务方式运行，释放控制台供用户交互（`docker exec -it erispulse bash`）
+    - 新增 `ep-logs` 命令，支持在容器内快速查看 ErisPulse 实时日志（`tail -f`）
+    - 默认配置新增 `log_files` 输出到 `/app/logs/erispulse.log`（可通过 `ERISPULSE_LOG_FILE` 环境变量自定义）
+    - 已有配置文件自动补充 `log_files` 配置项
+    - 优化信号处理（SIGTERM/SIGINT），确保容器停止时优雅关闭
+
+### 优化
+
+- @wsu2059q
+  - 修改加载失败逻辑，某部分模块加载失败时不会影响整体加载
+
+### 修复
+
+- @wsu2059q
+  - 修复 `logger` 文件日志输出 `[ErisPulse] [ErisPulse]` 模块名前缀重复的问题：
+    - **根因**：`FileHandler` 格式化器使用 `[%(name)s] %(message)s`，而 `%(message)s` 中已包含 `[{caller_module}]` 前缀
+    - **方案**：文件日志格式化器改为 `%(message)s`，去除重复的 logger name 前缀
+  - 修复热重启（`sdk.restart()`）后已更新模块的 Python 代码未生效的问题：
+    - **根因**：`_do_restart()` 在重新初始化时，`entry_point.load()` 从 `sys.modules` 返回了旧版本的缓存模块对象
+    - **方案**：在 `uninit()` 后、`init()` 前清理 `sys.modules` 中已加载模块/适配器包的缓存
+    - `BaseFinder` 新增 `get_top_level_modules()` 方法
+    - `ModuleLoader` / `AdapterLoader` 加载时将 `top_level` 信息存入 meta
+    - `SDK._do_restart()` 新增 `_collect_top_level_modules()` 和 `_invalidate_module_cache()` 辅助方法
+  - `RouterManager.stop()` 清理时额外重置 `_uvicorn_server = None`，避免重启时残留引用
+
+---
+
 ## [2.4.3-dev.1] - 2026/05/03
 > 开发版本
 
