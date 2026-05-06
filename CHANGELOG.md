@@ -63,6 +63,34 @@
 
 ---
 
+## [2.4.3] - 2026/05/06
+> 正式发布
+
+**版本摘要**
+架构优化版本：ASGI 服务器从 Hypercorn 切换为 Uvicorn，新增通用 SQL 链式查询构建器，移除子进程运行模型，修复热重启模块缓存和 Windows CTRL+C 等关键问题。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复热重启后已更新模块代码未生效的关键问题
+  - 修复 Windows 下 CTRL+C 无法停止程序的问题
+  - ASGI 服务器切换为 Uvicorn，稳定性更好
+  - 新增 SQL 链式查询构建器，增强存储模块能力
+
+**注意事项**
+- ⚠️ **依赖变更**：`hypercorn>=0.14.0` 已替换为 `uvicorn>=0.30.0`，升级后需重新安装依赖
+- ⚠️ **移除子进程模型**：`ep run` 不再通过子进程运行，热重载改为事件循环内调用 `sdk.restart()`
+- ⚠️ **移除**：`runtime/cleanup.py` 模块已删除，子进程清理机制不再需要
+- ⚠️ **移除**：`sdk._init_progress()` 方法和自动生成 main.py 的逻辑已移除，模板创建请使用 `epsdk init`
+- ⚠️ **移除**：`__init__.py` 中 `_prepare_environment`、`_init_progress` 的向后兼容导出已移除
+- ⚠️ **行为变更**：`sdk.run()` 的 finally 块改为完整清理（`await sdk.uninit()`），不再需要调用方手动调用 `sdk.uninit()`
+
+**兼容性**
+- 对外 API 完全兼容，现有模块和适配器代码无需修改
+- 仅移除内部辅助方法（`_prepare_environment`、`_init_progress`），不影响公共 API 使用者
+
+---
+
 ## [2.4.3-dev.1] - 2026/05/03
 > 开发版本
 
