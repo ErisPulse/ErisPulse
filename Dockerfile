@@ -34,9 +34,10 @@ WORKDIR /app
 RUN uv pip install --system ErisPulse ErisPulse-Dashboard
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+COPY docker-ep-logs.sh /usr/local/bin/ep-logs
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/ep-logs
 
-VOLUME ["/app/config"]
+VOLUME ["/app/config", "/app/logs"]
 EXPOSE 8000
 
 ENTRYPOINT ["docker-entrypoint.sh"]

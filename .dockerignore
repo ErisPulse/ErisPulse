@@ -55,5 +55,6 @@ LICENSE
 
 # 确保构建所需文件不被忽略
 !docker-entrypoint.sh
+!docker-ep-logs.sh
 !Dockerfile
 !docker-compose.yml
