@@ -120,7 +120,7 @@ class Logger:
             try:
                 self._file_handler = logging.FileHandler(p, encoding="utf-8")
                 # 使用自定义格式化器去除rich markup标签
-                self._file_handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
+                self._file_handler.setFormatter(logging.Formatter("%(message)s"))
                 self._logger.addHandler(self._file_handler)
                 return True
             except Exception as e:
