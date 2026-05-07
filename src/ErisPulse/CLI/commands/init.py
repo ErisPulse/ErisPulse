@@ -16,7 +16,6 @@ from ..console import console
 from ..utils import PackageManager
 from ..base import Command
 
-
 class InitCommand(Command):
     name = "init"
     description = "初始化 ErisPulse 项目"
@@ -119,18 +118,7 @@ class InitCommand(Command):
                     f.write("import asyncio\n")
                     f.write("from ErisPulse import sdk\n\n")
                     f.write("async def main():\n")
-                    f.write('    """主程序入口"""\n')
-                    f.write("    # 初始化 SDK\n")
-                    f.write("    await sdk.init()\n\n")
-                    f.write("    # 启动适配器\n")
-                    f.write("    await sdk.adapter.startup()\n\n")
-                    f.write('    print("ErisPulse 已启动，按 Ctrl+C 退出")\n')
-                    f.write("    try:\n")
-                    f.write("        while True:\n")
-                    f.write("            await asyncio.sleep(1)\n")
-                    f.write("    except KeyboardInterrupt:\n")
-                    f.write("        print(\"\\n正在关闭...\")\n")
-                    f.write("        await sdk.adapter.shutdown()\n\n")
+                    f.write("    await sdk.run(keep_running=True)\n\n")
                     f.write("if __name__ == \"__main__\":\n")
                     f.write("    asyncio.run(main())\n")
                 
