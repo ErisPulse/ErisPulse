@@ -162,7 +162,12 @@ class RunCommand(Command):
         ))
 
         try:
-            reload_state["process"].wait()
+            while True:
+                proc = reload_state["process"]
+                proc.wait()
+                time.sleep(0.3)
+                if reload_state["process"] is proc:
+                    break
         except KeyboardInterrupt:
             reload_state["process"].terminate()
         finally:
