@@ -42,10 +42,3 @@ Run 命令
 
 ---
 
-
-##### `_run_script(script_path: str, reload_mode: bool)`
-
-运行指定脚本文件
-
----
-
