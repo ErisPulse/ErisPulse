@@ -646,6 +646,8 @@ class SDK:
             if keep_running:
                 # 保持程序运行
                 await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            logger.info("收到关闭信号，正在清理...")
         except Exception as e:
             logger.error(e)
         finally:

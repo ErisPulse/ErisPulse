@@ -5,8 +5,11 @@ Run 命令实现
 """
 
 import os
+import sys
 import time
 import asyncio
+import subprocess
+import runpy
 from argparse import ArgumentParser
 from watchdog.observers import Observer
 from rich.panel import Panel
@@ -114,27 +117,57 @@ class RunCommand(Command):
                 self._observer.join()
 
     def _run_script(self, script_path: str, reload_mode: bool):
-        """
-        运行指定脚本文件
-        """
-        async def _run():
-            from ... import sdk
+        script_path_abs = os.path.abspath(script_path)
 
-            if reload_mode:
-                loop = asyncio.get_running_loop()
-                watch_dir = os.path.dirname(os.path.abspath(script_path))
-                self._setup_watchdog(watch_dir, loop)
+        if reload_mode:
+            self._run_script_with_reload(script_path_abs)
+        else:
+            try:
+                runpy.run_path(script_path_abs, run_name="__main__")
+            except SystemExit:
+                pass
+            except KeyboardInterrupt:
+                pass
 
-            await sdk.run(keep_running=True)
+    def _run_script_with_reload(self, script_path_abs: str):
+        watch_dir = os.path.dirname(script_path_abs)
+
+        process = subprocess.Popen([sys.executable, script_path_abs])
+
+        reload_state = {
+            "process": process,
+            "last_reload": 0.0,
+        }
+
+        class _ScriptReloadHandler(FileSystemEventHandler):
+            def on_modified(self, event):
+                now = time.time()
+                if now - reload_state["last_reload"] < 1.0:
+                    return
+                if event.src_path.endswith(".py"):
+                    reload_state["last_reload"] = now
+                    console.print(f"检测到文件变更 ({os.path.basename(event.src_path)})，正在重启...")
+                    reload_state["process"].terminate()
+                    reload_state["process"].wait()
+                    reload_state["process"] = subprocess.Popen([sys.executable, script_path_abs])
+
+        observer = Observer()
+        observer.schedule(_ScriptReloadHandler(), watch_dir, recursive=True)
+        observer.start()
+
+        console.print(Panel(
+            f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
+            title="热重载已启动",
+            border_style="info"
+        ))
 
         try:
-            asyncio.run(_run())
+            reload_state["process"].wait()
         except KeyboardInterrupt:
-            pass
+            reload_state["process"].terminate()
         finally:
-            if reload_mode and hasattr(self, '_observer'):
-                self._observer.stop()
-                self._observer.join()
+            observer.stop()
+            observer.join()
 
     def _setup_watchdog(self, watch_dir: str, loop: asyncio.AbstractEventLoop):
         if not os.path.exists(watch_dir):
