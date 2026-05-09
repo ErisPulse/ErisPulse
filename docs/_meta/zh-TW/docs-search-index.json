@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 920,
+  "total_keywords": 923,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1616,6 +1616,14 @@
         "title": "OneBot12 訊息支援"
       }
     ],
+    "OneBot12消息支持": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 82,
+        "level": 3,
+        "title": "OneBot12消息支持"
+      }
+    ],
     "OneBot12消息支援": [
       {
         "document": "platform-guide/kook.md",
@@ -1813,7 +1821,7 @@
     "Send 鏈式調用": [
       {
         "document": "platform-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "Send 鏈式調用"
       }
@@ -2553,7 +2561,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 98,
+        "line": 99,
         "level": 3,
         "title": "事件監聽"
       }
@@ -3443,7 +3451,7 @@
     "參考連結": [
       {
         "document": "platform-guide/README.md",
-        "line": 208,
+        "line": 209,
         "level": 2,
         "title": "參考連結"
       }
@@ -3451,7 +3459,7 @@
     "參與貢獻": [
       {
         "document": "platform-guide/README.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -3835,6 +3843,12 @@
       }
     ],
     "基本資訊": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 12,
@@ -4984,6 +4998,12 @@
     ],
     "支援的消息發送類型": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 20,
+        "level": 2,
+        "title": "支援的消息發送類型"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 47,
         "level": 2,
@@ -5091,6 +5111,12 @@
       }
     ],
     "文件資訊": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 7,
@@ -5532,6 +5558,12 @@
         "title": "核心差異點"
       },
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 118,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 162,
         "level": 3,
@@ -5685,7 +5717,7 @@
     "標準事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -5701,7 +5733,7 @@
     "標準回應格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -5717,7 +5749,7 @@
     "標準格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 150,
+        "line": 151,
         "level": 2,
         "title": "標準格式"
       }
@@ -6118,6 +6150,12 @@
         "title": "特有事件類型"
       },
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 114,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 158,
         "level": 2,
@@ -6332,6 +6370,14 @@
         "title": "發布與模組商店指南"
       }
     ],
+    "發送到不同目標": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 69,
+        "level": 3,
+        "title": "發送到不同目標"
+      }
+    ],
     "發送媒體消息": [
       {
         "document": "platform-guide/qqbot.md",
@@ -6357,6 +6403,12 @@
       }
     ],
     "發送方法返回值": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 98,
+        "level": 2,
+        "title": "發送方法返回值"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 107,
@@ -6884,6 +6936,14 @@
         "title": "舊設定相容"
       }
     ],
+    "花楓咖啡館（Ideaura）平台特性文件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 1,
+        "level": 1,
+        "title": "花楓咖啡館（Ideaura）平台特性文件"
+      }
+    ],
     "萬用字元事件處理器": [
       {
         "document": "advanced/lifecycle.md",
@@ -7017,7 +7077,7 @@
     "訊息傳送失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "訊息傳送失敗"
       }
@@ -7025,7 +7085,7 @@
     "訊息傳送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 177,
+        "line": 178,
         "level": 4,
         "title": "訊息傳送成功"
       }
@@ -7469,7 +7529,7 @@
     "通用介面": [
       {
         "document": "platform-guide/README.md",
-        "line": 36,
+        "line": 37,
         "level": 2,
         "title": "通用介面"
       }
@@ -7964,6 +8024,12 @@
     ],
     "鏈式修飾方法（可組合使用）": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 42,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 51,
         "level": 3,
@@ -8021,6 +8087,12 @@
       }
     ],
     "鏈式調用示例": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 50,
+        "level": 3,
+        "title": "鏈式調用示例"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 74,
@@ -8195,7 +8267,7 @@
     "非同步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
-        "line": 83,
+        "line": 84,
         "level": 4,
         "title": "非同步發送與結果處理"
       }

@@ -173,7 +173,7 @@
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
-      "count": 22,
+      "count": 24,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
@@ -208,6 +208,11 @@
         {
           "title": "Documentation Maintenance Guidelines",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Ideaura Platform Features Documentation",
+          "path": "platform-guide/ideaura.md",
           "level": 1
         },
         {
