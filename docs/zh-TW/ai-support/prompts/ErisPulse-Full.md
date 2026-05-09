@@ -8788,6 +8788,7 @@ async def chat_handler(event):
 - [Kook(開黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [QQ官方機器人平台特性](qqbot.md)
+- [花楓咖啡館](ideaura.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
 
@@ -8973,7 +8974,7 @@ ErisPulse 專案：
 - [OneBot 適配器庫](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
 相關官方文件：
-- [OneBot V11 協定文件](https://github.com/botuniverse/onebot-11)
+- [OneBot V11 協議文件](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API 官方文件](https://core.telegram.org/bots/api)
 - [雲湖官方文件](https://www.yhchat.com/document/1-3)
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1029,
+  "total_keywords": 1044,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2178,6 +2178,12 @@
     ],
     "OneBot12消息支持": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 82,
+        "level": 3,
+        "title": "OneBot12消息支持"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 90,
         "level": 3,
@@ -2425,7 +2431,7 @@
     "Send 链式调用": [
       {
         "document": "platform-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "Send 链式调用"
       }
@@ -3200,6 +3206,12 @@
     ],
     "事件中的账户标识": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 377,
+        "level": 3,
+        "title": "事件中的账户标识"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 508,
         "level": 3,
@@ -3324,6 +3336,12 @@
     ],
     "事件处理示例": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 284,
+        "level": 3,
+        "title": "事件处理示例"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 284,
         "level": 3,
@@ -3377,7 +3395,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 98,
+        "line": 99,
         "level": 3,
         "title": "事件监听"
       }
@@ -3658,6 +3676,14 @@
         "line": 1,
         "level": 1,
         "title": "会话类型系统"
+      }
+    ],
+    "使用 Send DSL 指定账户": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 359,
+        "level": 3,
+        "title": "使用 Send DSL 指定账户"
       }
     ],
     "使用 pip 安装": [
@@ -4207,7 +4233,7 @@
     "参与贡献": [
       {
         "document": "platform-guide/README.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "参与贡献"
       }
@@ -4239,7 +4265,7 @@
     "参考链接": [
       {
         "document": "platform-guide/README.md",
-        "line": 208,
+        "line": 209,
         "level": 2,
         "title": "参考链接"
       }
@@ -4324,6 +4350,14 @@
         "title": "发送KMarkdown和卡片消息"
       }
     ],
+    "发送到不同目标": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 69,
+        "level": 3,
+        "title": "发送到不同目标"
+      }
+    ],
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
@@ -4375,6 +4409,12 @@
       }
     ],
     "发送方法返回值": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 98,
+        "level": 2,
+        "title": "发送方法返回值"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 128,
@@ -4730,6 +4770,12 @@
         "title": "基本信息"
       },
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本信息"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -5070,6 +5116,12 @@
     ],
     "多账户配置": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 324,
+        "level": 2,
+        "title": "多账户配置"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 442,
         "level": 2,
@@ -5100,6 +5152,22 @@
         "title": "失败响应示例"
       }
     ],
+    "好友上线事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 197,
+        "level": 3,
+        "title": "好友上线事件"
+      }
+    ],
+    "好友下线事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 211,
+        "level": 3,
+        "title": "好友下线事件"
+      }
+    ],
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
@@ -5108,12 +5176,28 @@
         "title": "好友添加"
       }
     ],
+    "好友被拒事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 250,
+        "level": 3,
+        "title": "好友被拒事件"
+      }
+    ],
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
         "line": 218,
         "level": 3,
         "title": "好友请求"
+      }
+    ],
+    "好友请求事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 236,
+        "level": 3,
+        "title": "好友请求事件"
       }
     ],
     "如何修改命令前缀？": [
@@ -5747,7 +5831,7 @@
     "异步发送与结果处理": [
       {
         "document": "platform-guide/README.md",
-        "line": 83,
+        "line": 84,
         "level": 4,
         "title": "异步发送与结果处理"
       }
@@ -6008,6 +6092,12 @@
         "title": "扩展字段说明"
       },
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 393,
+        "level": 2,
+        "title": "扩展字段说明"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 150,
         "level": 3,
@@ -6196,10 +6286,24 @@
         "title": "支持的提交类型"
       }
     ],
+    "支持的文件类型": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 415,
+        "level": 3,
+        "title": "支持的文件类型"
+      }
+    ],
     "支持的消息发送类型": [
       {
         "document": "platform-guide/email.md",
         "line": 13,
+        "level": 2,
+        "title": "支持的消息发送类型"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 20,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -6274,9 +6378,23 @@
         "title": "数据持久化"
       }
     ],
+    "文件处理特性": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 407,
+        "level": 3,
+        "title": "文件处理特性"
+      }
+    ],
     "文档信息": [
       {
         "document": "platform-guide/email.md",
+        "line": 7,
+        "level": 2,
+        "title": "文档信息"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
         "line": 7,
         "level": 2,
         "title": "文档信息"
@@ -6783,7 +6901,7 @@
     "标准事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "标准事件格式"
       }
@@ -6799,7 +6917,7 @@
     "标准响应格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "标准响应格式"
       }
@@ -6815,7 +6933,7 @@
     "标准格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 150,
+        "line": 151,
         "level": 2,
         "title": "标准格式"
       }
@@ -6914,6 +7032,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 99,
+        "level": 3,
+        "title": "核心差异点"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 118,
         "level": 3,
         "title": "核心差异点"
       },
@@ -7318,6 +7442,12 @@
         "line": 160,
         "level": 2,
         "title": "注意事项"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 428,
+        "level": 2,
+        "title": "注意事项"
       }
     ],
     "注解/装饰器": [
@@ -7461,7 +7591,7 @@
     "消息发送失败": [
       {
         "document": "platform-guide/README.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "消息发送失败"
       }
@@ -7469,9 +7599,17 @@
     "消息发送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 177,
+        "line": 178,
         "level": 4,
         "title": "消息发送成功"
+      }
+    ],
+    "消息已读事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 184,
+        "level": 3,
+        "title": "消息已读事件"
       }
     ],
     "消息序号机制": [
@@ -7480,6 +7618,14 @@
         "line": 331,
         "level": 3,
         "title": "消息序号机制"
+      }
+    ],
+    "消息撤回事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 153,
+        "level": 3,
+        "title": "消息撤回事件"
       }
     ],
     "消息方法": [
@@ -7564,6 +7710,14 @@
         "title": "消息编辑与撤回"
       }
     ],
+    "消息编辑事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 138,
+        "level": 3,
+        "title": "消息编辑事件"
+      }
+    ],
     "消息编辑通知示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -7578,6 +7732,14 @@
         "line": 283,
         "level": 3,
         "title": "消息计数"
+      }
+    ],
+    "消息转发事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 169,
+        "level": 3,
+        "title": "消息转发事件"
       }
     ],
     "消息过滤": [
@@ -7672,6 +7834,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 53,
+        "level": 2,
+        "title": "特有事件类型"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 114,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -7862,6 +8030,14 @@
         "line": 36,
         "level": 3,
         "title": "用户数据存储"
+      }
+    ],
+    "用户状态变更事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 223,
+        "level": 3,
+        "title": "用户状态变更事件"
       }
     ],
     "用户：使用平台扩展方法": [
@@ -8424,6 +8600,14 @@
         "title": "自定义类型注册"
       }
     ],
+    "花枫咖啡馆（Ideaura）平台特性文档": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 1,
+        "level": 1,
+        "title": "花枫咖啡馆（Ideaura）平台特性文档"
+      }
+    ],
     "获取帮助": [
       {
         "document": "README.md",
@@ -8744,6 +8928,14 @@
         "line": 172,
         "level": 4,
         "title": "转发功能"
+      }
+    ],
+    "转发消息段 (ideaura_forwarded)": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 265,
+        "level": 3,
+        "title": "转发消息段 (ideaura_forwarded)"
       }
     ],
     "转换器示例": [
@@ -9099,7 +9291,7 @@
     "通用接口": [
       {
         "document": "platform-guide/README.md",
-        "line": 36,
+        "line": 37,
         "level": 2,
         "title": "通用接口"
       }
@@ -9336,6 +9528,12 @@
     ],
     "配置说明": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 326,
+        "level": 3,
+        "title": "配置说明"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 21,
         "level": 2,
@@ -9438,6 +9636,12 @@
     ],
     "链式修饰方法（可组合使用）": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 42,
+        "level": 3,
+        "title": "链式修饰方法（可组合使用）"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 60,
         "level": 3,
@@ -9499,6 +9703,12 @@
       }
     ],
     "链式调用示例": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 50,
+        "level": 3,
+        "title": "链式调用示例"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 68,
