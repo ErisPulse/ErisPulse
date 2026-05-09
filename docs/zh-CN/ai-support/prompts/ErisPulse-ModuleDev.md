@@ -6381,6 +6381,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [QQ官方机器人平台特性](qqbot.md)
+- [花枫咖啡馆](ideaura.md)
 
 > 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
