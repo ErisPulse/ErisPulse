@@ -55,6 +55,7 @@ ErisPulse 是一个基于 Python 的事件驱动型多平台机器人开发框�
 | [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
 | [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
 | [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
+| [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
