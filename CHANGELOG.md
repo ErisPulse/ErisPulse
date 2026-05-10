@@ -63,6 +63,39 @@
 
 ---
 
+## [2.4.5-dev.0] - 2026/05/10
+> 开发版本
+
+### 新增
+
+- @wsu2059q
+  - `Event` 模块新增多Bot模式支持：
+    - 新增 `get_self_account_id()` 方法，优先返回 `account_id`（ErisPulse扩展），不存在时回退到 `user_id`（OB12标准）
+    - `reply()`、`reply_ob12()` 方法自动使用接收事件的Bot发送消息（通过 `SendDSL.Using(bot_id)`）
+    - `wait_reply()` 的等待键新增 `bot_id` 维度，区分不同Bot的同用户同目标会话
+    - `_get_adapter_and_target()` 返回值扩展为四元组，新增 `bot_id`
+  - `Docker` 新增多版本通道支持和自动更新功能：
+    - 新增 `dev` 和 `stable` 两个版本通道，通过 `ERISPULSE_CHANNEL` 环境变量控制
+    - 实现启动时自动更新功能，支持 `ERISPULSE_UPDATE_ON_START` 配置
+    - Dockerfile 重构为多阶段构建，分离 `production` 和 `dev` 目标
+    - 新增 `docker-entrypoint.sh` 入口脚本，集成版本检测和自动升级逻辑
+    - `docker-compose.yml` 支持动态构建目标和标签配置
+  - 添加花枫咖啡馆（Ideaura）适配器到平台支持列表及特性文档
+
+### 优化
+
+- @wsu2059q
+  - 改进 `CLI install` 命令的交互式安装体验
+  - 调整 `lifecycle` 和 `router` 中的参数验证逻辑
+
+### 修复
+
+- @wsu2059q
+  - 改进适配器管理器的错误处理机制
+  - Code Review 修复：涉及 `logger`、`storage`、`module`、`sdk`、`loader`、`finder`、`frame_config`、`exceptions` 等多个模块的参数校验和异常处理改进
+
+---
+
 ## [2.4.4] - 2026/05/07
 > 正式发布
 
