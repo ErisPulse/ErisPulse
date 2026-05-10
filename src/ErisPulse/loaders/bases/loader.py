@@ -63,7 +63,7 @@ class BaseLoader(ABC):
         enabled_list: list[str],
         disabled_list: list[str],
         manager_instance: Any,
-    ) -> tuple[dict[str, Any], list[str], list[str]]:
+    ) -> tuple[dict[str, Any], list[str], list[str], bool]:
         """
         处理单个 entry-point
 
@@ -72,7 +72,7 @@ class BaseLoader(ABC):
         :param enabled_list: 启用列表
         :param disabled_list: 禁用列表
         :param manager_instance: 管理器实例（用于调用 exists/is_enabled 等方法）
-        :return: (更新后的对象字典, 更新后的启用列表, 更新后的禁用列表)
+        :return: (更新后的对象字典, 更新后的启用列表, 更新后的禁用列表, 是否为新项)
 
         {!--< internal-use >!--}
         子类必须实现此方法
@@ -111,7 +111,7 @@ class BaseLoader(ABC):
 
             # 处理每个 entry-point
             for entry_point in entries:
-                objs, enabled_list, disabled_list = await self._process_entry_point(
+                objs, enabled_list, disabled_list, _ = await self._process_entry_point(
                     entry_point, objs, enabled_list, disabled_list, manager_instance
                 )
 
