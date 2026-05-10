@@ -1,16 +1,25 @@
 # ErisPulse Docker Compose
 #
 # Usage:
-#   docker compose up -d
+#   Stable (default):
+#     docker compose up -d
+#
+#   Pre-release / Dev:
+#     ERISPULSE_CHANNEL=dev docker compose up -d
+#     # or use the dev target:
+#     docker compose --profile dev up -d
 #
 # China Mirror (if Docker Hub is inaccessible):
 #   Replace the image with:
 #     image: ghcr.io/erispulse/erispulse:latest
 #
 # Environment variables:
-#   ERISPULSE_PORT            - Dashboard 端口 (默认: 8000)
-#   ERISPULSE_DASHBOARD_TOKEN - Dashboard 登录令牌
-#   TZ                        - 时区 (默认: Asia/Shanghai)
+#   ERISPULSE_CHANNEL           - "stable" or "dev" (default: stable)
+#                                  dev: auto-update to latest pre-release on start
+#   ERISPULSE_UPDATE_ON_START   - "true" to auto-update on every start (default: true for dev, false for stable)
+#   ERISPULSE_PORT              - Dashboard 端口 (默认: 8000)
+#   ERISPULSE_DASHBOARD_TOKEN   - Dashboard 登录令牌
+#   TZ                          - 时区 (默认: Asia/Shanghai)
 #
 # Docs: https://github.com/ErisPulse/ErisPulse
 
@@ -18,8 +27,8 @@ services:
   erispulse:
     build:
       context: .
-      target: production
-    image: erispulse/erispulse:latest
+      target: ${ERISPULSE_BUILD_TARGET:-production}
+    image: erispulse/erispulse:${ERISPULSE_TAG:-latest}
     container_name: erispulse
     ports:
       - "${ERISPULSE_PORT:-8000}:8000"
@@ -28,5 +37,7 @@ services:
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+      - ERISPULSE_CHANNEL=${ERISPULSE_CHANNEL:-}
+      - ERISPULSE_UPDATE_ON_START=${ERISPULSE_UPDATE_ON_START:-}
     command: ["epsdk", "run"]
     restart: unless-stopped
