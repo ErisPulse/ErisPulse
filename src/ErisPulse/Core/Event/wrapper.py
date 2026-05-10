@@ -970,13 +970,15 @@ class Event(dict):
             evt = event_data if isinstance(event_data, Event) else Event(event_data)
             try:
                 if condition is None or condition(evt):
-                    if not future.done():
-                        raw = (
-                            event_data
-                            if isinstance(event_data, dict)
-                            else dict(event_data)
-                        )
+                    raw = (
+                        event_data
+                        if isinstance(event_data, dict)
+                        else dict(event_data)
+                    )
+                    try:
                         future.set_result(raw)
+                    except asyncio.InvalidStateError:
+                        pass
             except Exception:
                 pass
 

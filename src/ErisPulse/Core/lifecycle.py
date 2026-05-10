@@ -138,7 +138,7 @@ class LifecycleManager:
         source: str = "ErisPulse",
         msg: str = "",
         data: dict | None = None,
-        timestamp=time.time(),
+        timestamp: float | None = None,
     ) -> None:
         """
         提交生命周期事件
@@ -149,6 +149,8 @@ class LifecycleManager:
         :param data: 事件相关数据
         :param timestamp: 时间戳(默认当前时间)
         """
+        if timestamp is None:
+            timestamp = time.time()
         if data is None:
             data = {}
         # 验证事件类型

@@ -116,20 +116,25 @@ class Logger:
         if isinstance(path, str):
             path = [path]
 
+        success = False
+        last_handler = None
         for p in path:
             try:
-                self._file_handler = logging.FileHandler(p, encoding="utf-8")
-                # 使用自定义格式化器去除rich markup标签
-                self._file_handler.setFormatter(logging.Formatter("%(message)s"))
-                self._logger.addHandler(self._file_handler)
-                return True
+                handler = logging.FileHandler(p, encoding="utf-8")
+                handler.setFormatter(logging.Formatter("%(message)s"))
+                self._logger.addHandler(handler)
+                last_handler = handler
+                success = True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
-                self._file_handler = None
-                return False
 
-        self._logger.warning("出现极端错误，无法设置日志文件。")
-        return False
+        if last_handler:
+            self._file_handler = last_handler
+
+        if not success:
+            self._logger.warning("未能成功设置任何日志文件。")
+
+        return success
 
     def save_logs(self, path) -> bool:
         """
@@ -138,7 +143,6 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        # 检查是否有日志记录
         if not self._logs or all(len(logs) == 0 for logs in self._logs.values()):
             self._logger.warning("没有log记录可供保存。")
             return False
@@ -146,6 +150,7 @@ class Logger:
         if isinstance(path, str):
             path = [path]
 
+        success = False
         for p in path:
             try:
                 with open(p, "w", encoding="utf-8") as file:
@@ -153,14 +158,12 @@ class Logger:
                         file.write(f"Module: {module}\n")
                         for log in logs:
                             file.write(f"  {log}\n")
-                    self._logger.info(f"日志已被保存到：{p}。")
-                    return True
+                self._logger.info(f"日志已被保存到：{p}。")
+                success = True
             except Exception as e:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
-                return False
 
-        self._logger.warning("出现极端错误，无法保存日志。")
-        return False
+        return success
 
     def get_logs(self, module_name: str = None) -> dict:
         """
@@ -235,8 +238,6 @@ class Logger:
                 module_name = "Main"
             elif module_name.endswith(".Core"):
                 module_name = module_name[:-5]
-            elif module_name.startswith("ErisPulse"):
-                module_name = "ErisPulse"
 
             return module_name
         except Exception:

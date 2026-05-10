@@ -145,9 +145,9 @@ class PackageManager:
                     }
                 
         except Exception as e:
-            print(f"[error] 获取已安装包信息失败: {e}")
+            console.print(f"[error] 获取已安装包信息失败: {e}[/]")
             import traceback
-            print(traceback.format_exc())
+            console.print(traceback.format_exc())
         
         return packages
     
@@ -923,6 +923,10 @@ class PackageManager:
         # 确定要安装的版本
         package_spec = "ErisPulse"
         if target_version:
+            import re
+            if not re.match(r'^[a-zA-Z0-9._+\-]+$', target_version):
+                console.print(f"[error]无效的版本号: {target_version}[/]")
+                return False
             package_spec += f"=={target_version}"
         
         # 检查是否在Windows上且尝试更新自身

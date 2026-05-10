@@ -39,7 +39,6 @@ theme = Theme({
 console = Console(
     theme=theme, 
     color_system="auto", 
-    force_terminal=True,
     highlighter=CommandHighlighter()
 )
 

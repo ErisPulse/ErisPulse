@@ -140,8 +140,7 @@ class ModuleLoader(BaseLoader):
         try:
             loaded_obj = entry_point.load()
             module_obj = sys.modules[loaded_obj.__module__]
-            if dist := importlib.metadata.distribution(entry_point.dist.name):
-                pass
+            dist = importlib.metadata.distribution(entry_point.dist.name) if entry_point.dist else None
 
             # 检查模块是否继承自 BaseModule
             from ..Core.Bases.module import BaseModule
@@ -174,7 +173,7 @@ class ModuleLoader(BaseLoader):
                     "description": getattr(module_obj, "__description__", ""),
                     "author": getattr(module_obj, "__author__", ""),
                     "license": getattr(module_obj, "__license__", ""),
-                    "package": entry_point.dist.name,
+                    "package": entry_point.dist.name if entry_point.dist else None,
                     "lazy_load": lazy_load,
                     "priority": priority,
                     "is_base_module": is_base_module,
@@ -555,10 +554,11 @@ class LazyModule:
 
         {!--< internal-use >!--}
         内部方法，检查并确保模块已初始化
-        {!--< /internal-use >!--}
+        {!--< internal-use >!--}
         
         设计说明：
         - 支持同步/异步透明的懒加载机制，用户无需感知差异
+        - BaseModule 在异步上下文中通过辅助线程完成初始化
         - BaseModule 在同步上下文中使用 asyncio.run() 确保初始化完成
         - 非 BaseModule 保持原有逻辑，支持同步初始化
         {!--< internal-use >!--}
@@ -568,13 +568,10 @@ class LazyModule:
                 loop = asyncio.get_running_loop()
                 
                 if object.__getattribute__(self, "_is_base_module"):
-                    # BaseModule 必须通过 manager.load() 异步初始化
-                    # 在同步上下文中，使用 asyncio.run() 确保初始化完成
-                    # 在异步上下文中，使用 loop.create_task() 避免阻塞
                     if loop.is_running():
-                        loop.create_task(self._initialize())
+                        self._init_in_background_thread()
                     else:
-                        asyncio.run(self._initialize())
+                        loop.run_until_complete(self._initialize())
                     return
 
                 init_method = getattr(
@@ -591,6 +588,38 @@ class LazyModule:
                     self._initialize_sync()
             except RuntimeError:
                 asyncio.run(self._initialize())
+
+    def _init_in_background_thread(self) -> None:
+        """
+        在辅助线程中运行异步初始化，当前线程同步等待完成
+
+        {!--< internal-use >!--}
+        当 _ensure_initialized 在已有事件循环中被调用时，无法使用
+        run_until_complete (会死锁)。通过在新线程中创建独立的事件循环
+        来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
+        {!--< internal-use >!--}
+        """
+        import threading
+
+        init_done = threading.Event()
+        init_error = [None]
+
+        def _run_init():
+            new_loop = asyncio.new_event_loop()
+            try:
+                new_loop.run_until_complete(self._initialize())
+            except Exception as e:
+                init_error[0] = e
+            finally:
+                new_loop.close()
+                init_done.set()
+
+        t = threading.Thread(target=_run_init, daemon=True)
+        t.start()
+        init_done.wait()
+
+        if init_error[0] is not None:
+            raise init_error[0]
 
     def _initialize_sync(self) -> None:
         """
@@ -762,11 +791,9 @@ class LazyModule:
 
         :return: list[str] 属性列表
         """
-        logger.debug(
-            f"正在获取懒加载模块 {object.__getattribute__(self, '_module_name')} 的属性列表..."
-        )
-        self._ensure_initialized()
-        return dir(object.__getattribute__(self, "_instance"))
+        if object.__getattribute__(self, "_initialized"):
+            return dir(object.__getattribute__(self, "_instance"))
+        return list(object.__getattribute__(self, "_module_class").__dict__.keys())
 
     def __repr__(self) -> str:
         """
