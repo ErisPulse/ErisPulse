@@ -72,7 +72,7 @@ class ConfigManager:
 
 ## 原配置内容
 
-``toml
+```toml
 {toml.dumps(old_config)}
 ```
 

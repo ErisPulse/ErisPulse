@@ -388,7 +388,6 @@ class SDK:
                 for attr_name, attr_value in list(instance_dict.items()):
                     if attr_name.startswith('_'):
                         continue
-                    from .loaders.module import LazyModule
                     if isinstance(attr_value, LazyModule):
                         # 只处理已初始化的 LazyModule
                         lm_initialized = object.__getattribute__(attr_value, '_initialized')
@@ -579,7 +578,11 @@ class SDK:
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            return loop.create_task(_async_init())
+            try:
+                return loop.create_task(_async_init())
+            except Exception:
+                loop.close()
+                raise
 
 
     async def load_module(self, module_name: str) -> bool:
@@ -644,8 +647,8 @@ class SDK:
             await self.adapter.startup()
             
             if keep_running:
-                # 保持程序运行
-                await asyncio.Event().wait()
+                shutdown_event = asyncio.Event()
+                await shutdown_event.wait()
         except asyncio.CancelledError:
             logger.info("收到关闭信号，正在清理...")
         except Exception as e:
