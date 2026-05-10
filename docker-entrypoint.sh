@@ -5,6 +5,46 @@ ERISPULSE_DIR="/app"
 CONFIG_DIR="${ERISPULSE_DIR}/config"
 CONFIG_FILE="${CONFIG_DIR}/config.toml"
 
+ERISPULSE_CHANNEL="${ERISPULSE_CHANNEL:-}"
+ERISPULSE_UPDATE_ON_START="${ERISPULSE_UPDATE_ON_START:-}"
+
+resolve_channel() {
+    if [ -z "${ERISPULSE_CHANNEL}" ]; then
+        if pip show ErisPulse 2>/dev/null | grep -qE 'Version:.*dev'; then
+            ERISPULSE_CHANNEL="dev"
+        else
+            ERISPULSE_CHANNEL="stable"
+        fi
+    fi
+}
+
+resolve_update_flag() {
+    if [ -z "${ERISPULSE_UPDATE_ON_START}" ]; then
+        ERISPULSE_UPDATE_ON_START="false"
+    fi
+}
+
+update_erispulse() {
+    local pre_flag=""
+    if [ "${ERISPULSE_CHANNEL}" = "dev" ]; then
+        pre_flag="--pre"
+    fi
+
+    echo "[ErisPulse] 正在检查更新 (channel: ${ERISPULSE_CHANNEL})..."
+
+    local old_version new_version
+    old_version=$(python3 -c "import importlib.metadata; print(importlib.metadata.version('ErisPulse'))" 2>/dev/null || echo "unknown")
+
+    uv pip install --system ${pre_flag} --upgrade ErisPulse ErisPulse-Dashboard 2>&1 | tail -1
+
+    new_version=$(python3 -c "import importlib.metadata; print(importlib.metadata.version('ErisPulse'))" 2>/dev/null || echo "unknown")
+
+    if [ "${old_version}" != "${new_version}" ]; then
+        echo "[ErisPulse] 已更新: ${old_version} -> ${new_version}"
+    else
+        echo "[ErisPulse] 已是最新版本: ${new_version}"
+    fi
+}
 
 ensure_config_dir() {
     mkdir -p "${CONFIG_DIR}"
@@ -62,7 +102,15 @@ echo "==========================================="
 echo "  ErisPulse Docker"
 echo "==========================================="
 
+resolve_channel
+resolve_update_flag
+
 ensure_config_dir
+
+if [ "${ERISPULSE_UPDATE_ON_START}" = "true" ]; then
+    update_erispulse
+fi
+
 ensure_dashboard_config
 
 if [ -f "${CONFIG_FILE}" ]; then
@@ -77,6 +125,7 @@ else
     echo "[ErisPulse] Dashboard 令牌: 未设置 (可通过 ERISPULSE_DASHBOARD_TOKEN 环境变量配置)"
 fi
 
+echo "[ErisPulse] Channel: ${ERISPULSE_CHANNEL}"
 echo "[ErisPulse] Dashboard: http://0.0.0.0:8000"
 echo "[ErisPulse] 正在启动..."
 echo "==========================================="
