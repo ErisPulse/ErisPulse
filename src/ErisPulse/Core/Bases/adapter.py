@@ -128,7 +128,10 @@ class SendDSL:
                 "message": f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
             }
 
-        return asyncio.create_task(_not_impl())
+        try:
+            return asyncio.create_task(_not_impl())
+        except RuntimeError:
+            return asyncio.ensure_future(_not_impl())
 
     def To(self, target_type: str = None, target_id: str | int = None) -> "SendDSL":
         """
@@ -306,7 +309,10 @@ class BaseAdapter(ABC):
                     "message": f"适配器 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
                 }
 
-            return asyncio.create_task(_send_raw())
+            try:
+                return asyncio.create_task(_send_raw())
+            except RuntimeError:
+                return asyncio.ensure_future(_send_raw())
 
     def __init__(self):
         self.Send = self.__class__.Send(self)
@@ -378,7 +384,10 @@ class BaseAdapter(ABC):
                 )
             return await method(message, **kwargs)
 
-        return asyncio.create_task(_send_wrapper())
+        try:
+            return asyncio.create_task(_send_wrapper())
+        except RuntimeError:
+            return asyncio.ensure_future(_send_wrapper())
 
 
 __all__ = [
