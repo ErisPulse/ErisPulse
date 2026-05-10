@@ -3294,6 +3294,7 @@ async def friend_add_handler(event):
 #### 機器人資訊
 - `get_self_platform()` - 取得機器人平台名稱
 - `get_self_user_id()` - 取得機器人使用者 ID
+- `get_self_account_id()` - 取得機器人帳戶 ID（多 Bot 模式）
 - `get_self_info()` - 取得機器人完整資訊字典
 
 ### 訊息事件方法
