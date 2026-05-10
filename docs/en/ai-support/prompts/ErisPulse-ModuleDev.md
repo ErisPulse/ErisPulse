@@ -2701,6 +2701,7 @@ async def friend_add_handler(event):
 #### Bot Information
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
+- `get_self_account_id()` - Get bot account ID (multi-bot mode)
 - `get_self_info()` - Get bot complete information dictionary
 
 ### Message Event Methods

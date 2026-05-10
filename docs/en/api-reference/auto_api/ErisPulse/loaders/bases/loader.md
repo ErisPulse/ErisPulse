@@ -67,7 +67,7 @@ ErisPulse 基础加载器
 :param enabled_list: 启用列表
 :param disabled_list: 禁用列表
 :param manager_instance: 管理器实例（用于调用 exists/is_enabled 等方法）
-:return: (更新后的对象字典, 更新后的启用列表, 更新后的禁用列表)
+:return: (更新后的对象字典, 更新后的启用列表, 更新后的禁用列表, 是否为新项)
 
 > **内部方法** 
 子类必须实现此方法
