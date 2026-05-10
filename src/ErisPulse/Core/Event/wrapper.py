@@ -297,6 +297,17 @@ class Event(dict):
         """
         return self.get("self", {}).get("user_id", "")
 
+    def get_self_account_id(self) -> str:
+        """
+        获取机器人账户标识（多Bot模式）
+
+        优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+
+        :return: 机器人账户标识，单Bot模式下返回空字符串
+        """
+        self_info = self.get("self", {})
+        return self_info.get("account_id", "") or self_info.get("user_id", "")
+
     def get_self_info(self) -> dict[str, Any]:
         """
         获取机器人完整信息
@@ -569,7 +580,7 @@ class Event(dict):
 
         使用会话类型管理模块自动处理类型转换和ID获取
 
-        :return: (适配器实例, 发送目标类型, 目标ID)
+        :return: (适配器实例, 发送目标类型, 目标ID, 账户ID)
         """
         platform = self.get_platform()
         if not platform:
@@ -593,7 +604,9 @@ class Event(dict):
                 f"user_id={self.get_user_id()}, group_id={self.get_group_id()}"
             )
 
-        return adapter_instance, send_type, target_id
+        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+        return adapter_instance, send_type, target_id, bot_id
 
     async def reply(
         self,
@@ -637,10 +650,14 @@ class Event(dict):
         >>> # 组合使用：@用户 + 回复消息
         >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
         """
-        adapter_instance, detail_type, target_id = self._get_adapter_and_target()
+        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
 
         # 构建发送链
         send_chain = adapter_instance.Send.To(detail_type, target_id)
+
+        # 多Bot: 使用接收事件的Bot发送
+        if bot_id:
+            send_chain = send_chain.Using(bot_id)
 
         # 处理@用户
         if at_users:
@@ -711,8 +728,11 @@ class Event(dict):
         >>>         .build()
         >>> )
         """
-        adapter_instance, detail_type, target_id = self._get_adapter_and_target()
-        return await adapter_instance.Send.To(detail_type, target_id).Raw_ob12(message)
+        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
+        send_chain = adapter_instance.Send.To(detail_type, target_id)
+        if bot_id:
+            send_chain = send_chain.Using(bot_id)
+        return await send_chain.Raw_ob12(message)
 
     # ==================== 等待回复功能 ====================
 
