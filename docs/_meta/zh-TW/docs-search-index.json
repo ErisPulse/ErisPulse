@@ -1061,7 +1061,7 @@
     "@ 訊息相關": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 122,
+        "line": 123,
         "level": 4,
         "title": "@ 訊息相關"
       }
@@ -2069,7 +2069,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 281,
+        "line": 282,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -2807,7 +2807,7 @@
     "互動方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 192,
+        "line": 193,
         "level": 4,
         "title": "互動方法"
       }
@@ -3419,7 +3419,7 @@
     "原始資料": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 223,
+        "line": 224,
         "level": 3,
         "title": "原始資料"
       }
@@ -3641,7 +3641,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 157,
+        "line": 158,
         "level": 3,
         "title": "回覆功能"
       }
@@ -3903,7 +3903,7 @@
     "基礎判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 128,
+        "line": 129,
         "level": 4,
         "title": "基礎判斷"
       }
@@ -3911,7 +3911,7 @@
     "基礎回覆": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 159,
+        "line": 160,
         "level": 4,
         "title": "基礎回覆"
       }
@@ -4365,7 +4365,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "工具方法"
       }
@@ -4497,13 +4497,13 @@
     "平台擴充方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "平台擴充方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 252,
+        "line": 253,
         "level": 2,
         "title": "平台擴充方法"
       }
@@ -4821,7 +4821,7 @@
     "指令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 216,
+        "line": 217,
         "level": 4,
         "title": "指令基礎"
       }
@@ -4845,7 +4845,7 @@
     "指令資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "指令資訊"
       }
@@ -5477,7 +5477,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 272,
+        "line": 273,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -6425,7 +6425,7 @@
     "發送者資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 111,
+        "line": 112,
         "level": 4,
         "title": "發送者資訊"
       }
@@ -6577,7 +6577,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 290,
+        "line": 291,
         "level": 2,
         "title": "相關文件"
       },
@@ -6727,7 +6727,7 @@
     "等待回覆功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 183,
+        "line": 184,
         "level": 3,
         "title": "等待回覆功能"
       }
@@ -6859,7 +6859,7 @@
     "群組/頻道資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 117,
         "level": 4,
         "title": "群組/頻道資訊"
       }
@@ -7053,7 +7053,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 103,
+        "line": 104,
         "level": 3,
         "title": "訊息事件方法"
       }
@@ -7093,7 +7093,7 @@
     "訊息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 105,
+        "line": 106,
         "level": 4,
         "title": "訊息內容"
       }
@@ -7171,7 +7171,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 126,
+        "line": 127,
         "level": 3,
         "title": "訊息類型判斷"
       }
@@ -7323,7 +7323,7 @@
     "請求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "請求事件方法"
       }
@@ -7339,7 +7339,7 @@
     "請求資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 149,
+        "line": 150,
         "level": 4,
         "title": "請求資訊"
       }
@@ -7347,7 +7347,7 @@
     "請求類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 153,
         "level": 4,
         "title": "請求類型判斷"
       }
@@ -7481,7 +7481,7 @@
     "轉發功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 172,
+        "line": 173,
         "level": 4,
         "title": "轉發功能"
       }
@@ -7573,7 +7573,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -7597,7 +7597,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 136,
+        "line": 137,
         "level": 4,
         "title": "通知操作者"
       }
@@ -7605,7 +7605,7 @@
     "通知類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 140,
+        "line": 141,
         "level": 4,
         "title": "通知類型判斷"
       }
@@ -8397,7 +8397,7 @@
     "點式存取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 242,
+        "line": 243,
         "level": 3,
         "title": "點式存取"
       }
