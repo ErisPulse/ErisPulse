@@ -68,7 +68,7 @@ ErisPulse 路由系统
 ---
 
 
-##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] = ['POST'])`
+##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None)`
 
 注册HTTP路由
 
