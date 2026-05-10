@@ -100,6 +100,48 @@ After starting, access `http://<host>:<port>/Dashboard` and use the set token as
 
 </details>
 
+<details>
+<summary>Using Pre-release Version (Dev)</summary>
+
+Set `ERISPULSE_CHANNEL=dev` to use the pre-release version:
+
+```bash
+# Method 1: Use environment variables (recommended)
+ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+
+# Method 2: Build dev image
+ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
+```
+
+If you want to automatically update to the latest version on startup (whether stable or dev), explicitly set `ERISPULSE_UPDATE_ON_START=true`:
+
+```bash
+ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
+```
+
+You can also pull the pre-built dev image:
+
+```bash
+docker pull erispulse/erispulse:dev
+```
+
+</details>
+
+<details>
+<summary>Docker Environment Variables</summary>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ERISPULSE_CHANNEL` | `stable` | Version channel: `stable` (stable version) or `dev` (pre-release version) |
+| `ERISPULSE_UPDATE_ON_START` | `false` | Whether to automatically update to the latest version on container start (needs to be explicitly enabled) |
+| `ERISPULSE_DASHBOARD_TOKEN` | Empty | Dashboard login token |
+| `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
+| `TZ` | `Asia/Shanghai` | Container timezone |
+
+> Enabling `ERISPULSE_UPDATE_ON_START=true` ensures that even if the image is outdated, the container will automatically get the latest version on startup.
+
+</details>
+
 ### Installation with pip
 
 ```bash
