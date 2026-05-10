@@ -153,9 +153,12 @@ class AdapterManager(ManagerBase):
             platforms = list(self._adapters.keys())
         if not isinstance(platforms, list):
             platforms = [platforms]
-        for platform in platforms:
+        skipped_platforms = []
+        for platform in list(platforms):
             if platform not in self._adapters:
-                raise ValueError(f"平台 {platform} 未注册")
+                logger.warning(f"平台 {platform} 未注册，已跳过")
+                platforms.remove(platform)
+                skipped_platforms.append(platform)
 
         logger.info(f"启动适配器 {platforms}")
 
@@ -175,9 +178,12 @@ class AdapterManager(ManagerBase):
         ssl_key = server_config.get("ssl_keyfile", None)
 
         # 启动服务器
-        await router.start(
-            host=host, port=port, ssl_certfile=ssl_cert, ssl_keyfile=ssl_key
-        )
+        try:
+            await router.start(
+                host=host, port=port, ssl_certfile=ssl_cert, ssl_keyfile=ssl_key
+            )
+        except Exception as e:
+            logger.warning(f"路由服务器启动失败: {e}")
         # 已经被调度过的 adapter 实例集合（防止重复调度）
         scheduled_adapters = set()
 
@@ -299,9 +305,10 @@ class AdapterManager(ManagerBase):
                 platforms = list(self._adapters.keys())
             if not isinstance(platforms, list):
                 platforms = [platforms]
-            for platform in platforms:
+            for platform in list(platforms):
                 if platform not in self._adapters:
-                    raise ValueError(f"平台 {platform} 未注册")
+                    logger.warning(f"平台 {platform} 未注册，已跳过")
+                    platforms.remove(platform)
 
             logger.info(f"关闭适配器 {platforms}")
 

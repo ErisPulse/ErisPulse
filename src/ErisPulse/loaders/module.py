@@ -95,7 +95,6 @@ class ModuleLoader(BaseLoader):
 
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
-            raise ImportError(f"无法加载 {group_name}: {e}")
 
         return objs, enabled_list, disabled_list
 
@@ -360,11 +359,19 @@ class ModuleLoader(BaseLoader):
         # 等待所有注册任务完成
         register_results = await asyncio.gather(*register_tasks, return_exceptions=True)
 
-        # 检查是否有注册失败的情况
-        return not any(
-            isinstance(result, Exception) or result is False
-            for result in register_results
-        )
+        # 记录失败的模块并从列表中移除
+        failed_modules = []
+        for i, result in enumerate(register_results):
+            module_name = modules[i]
+            if isinstance(result, Exception) or result is False:
+                logger.warning(f"模块 {module_name} 注册失败，已跳过")
+                failed_modules.append(module_name)
+
+        for name in failed_modules:
+            if name in modules:
+                modules.remove(name)
+
+        return True
 
     async def initialize_modules(
         self,
@@ -390,30 +397,30 @@ class ModuleLoader(BaseLoader):
         这里处理模块的实例化和挂载
         """
         for module_name in modules:
-            module_obj = module_objs[module_name]
-            meta_name = module_obj.moduleInfo["meta"]["name"]
-            lazy_load = module_obj.moduleInfo["meta"].get("lazy_load", True)
+            try:
+                module_obj = module_objs[module_name]
+                meta_name = module_obj.moduleInfo["meta"]["name"]
+                lazy_load = module_obj.moduleInfo["meta"].get("lazy_load", True)
 
-            if lazy_load:
-                # 使用懒加载方式挂载
-                lazy_module = LazyModule(
-                    meta_name,
-                    module_obj.moduleInfo["module_class"],
-                    sdk_instance,
-                    module_obj.moduleInfo,
-                    manager_instance,
-                )
-                setattr(sdk_instance, meta_name, lazy_module)
-                logger.debug(f"挂载懒加载模块到 sdk: {meta_name}")
-            else:
-                # 立即加载的模块
-                result = await manager_instance.load(meta_name)
-                if result:
-                    setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
-                    logger.debug(f"挂载立即加载模块到 sdk: {meta_name}")
+                if lazy_load:
+                    lazy_module = LazyModule(
+                        meta_name,
+                        module_obj.moduleInfo["module_class"],
+                        sdk_instance,
+                        module_obj.moduleInfo,
+                        manager_instance,
+                    )
+                    setattr(sdk_instance, meta_name, lazy_module)
+                    logger.debug(f"挂载懒加载模块到 sdk: {meta_name}")
                 else:
-                    logger.error(f"立即加载模块 {meta_name} 失败")
-                    return False
+                    result = await manager_instance.load(meta_name)
+                    if result:
+                        setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
+                        logger.debug(f"挂载立即加载模块到 sdk: {meta_name}")
+                    else:
+                        logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
+            except Exception as e:
+                logger.warning(f"初始化模块 {module_name} 失败，已跳过: {e}")
 
         return True
 
@@ -546,7 +553,8 @@ class LazyModule:
             logger.error(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化失败: {e}"
             )
-            raise e
+            object.__setattr__(self, "_initialized", False)
+            object.__setattr__(self, "_init_failed", True)
 
     def _ensure_initialized(self) -> None:
         """
@@ -610,6 +618,7 @@ class LazyModule:
                 new_loop.run_until_complete(self._initialize())
             except Exception as e:
                 init_error[0] = e
+                object.__setattr__(self, "_init_failed", True)
             finally:
                 new_loop.close()
                 init_done.set()
@@ -619,7 +628,9 @@ class LazyModule:
         init_done.wait()
 
         if init_error[0] is not None:
-            raise init_error[0]
+            logger.warning(
+                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 后台初始化失败: {init_error[0]}"
+            )
 
     def _initialize_sync(self) -> None:
         """
@@ -663,7 +674,8 @@ class LazyModule:
             logger.error(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化失败: {e}"
             )
-            raise e
+            object.__setattr__(self, "_initialized", False)
+            object.__setattr__(self, "_init_failed", True)
 
     async def _complete_async_init(self) -> None:
         """
@@ -776,6 +788,10 @@ class LazyModule:
             return object.__getattribute__(self, name)
 
         if not initialized:
+            init_failed = object.__getattribute__(self, "_init_failed") if hasattr(self, "_init_failed") else False
+            if init_failed:
+                module_name = object.__getattribute__(self, "_module_name")
+                raise RuntimeError(f"模块 {module_name} 初始化失败，无法访问属性 '{name}'")
             self._ensure_initialized()
             initialized = object.__getattribute__(self, "_initialized")
 
