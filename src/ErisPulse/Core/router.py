@@ -127,7 +127,7 @@ class RouterManager:
         module_name: str,
         path: str,
         handler: Callable,
-        methods: list[str] = ["POST"],
+        methods: list[str] | None = None,
     ) -> None:
         """
         注册HTTP路由
@@ -139,6 +139,8 @@ class RouterManager:
 
         :raises ValueError: 当路径和方法都已注册时抛出
         """
+        if methods is None:
+            methods = ["POST"]
         full_path = self._normalize_path(module_name, path)
 
         # 检查是否有冲突的方法
