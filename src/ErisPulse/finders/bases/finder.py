@@ -11,6 +11,7 @@ ErisPulse 基础发现器
 """
 
 import importlib.metadata
+import time
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from typing import Any
@@ -62,8 +63,6 @@ class BaseFinder(ABC):
         内部方法，使用缓存机制获取 entry-points
         {!--< /internal-use >!--}
         """
-        import time
-
         group_name = self._get_entry_point_group()
 
         # 检查缓存
@@ -109,10 +108,7 @@ class BaseFinder(ABC):
         :param name: entry-point 名称
         :return: entry-point 对象，未找到返回 None
         """
-        # 确保缓存已加载
-        if self._cache is None:
-            self._get_entry_points()
-
+        self._ensure_cache()
         return self._cache.get(name) if self._cache else None
 
     def get_entry_point_map(self) -> dict[str, Any]:
@@ -121,11 +117,19 @@ class BaseFinder(ABC):
 
         :return: {name: entry_point} 字典
         """
-        # 确保缓存已加载
-        if self._cache is None:
-            self._get_entry_points()
-
+        self._ensure_cache()
         return self._cache.copy() if self._cache else {}
+
+    def _ensure_cache(self) -> None:
+        """
+        确保缓存已加载且未过期
+        """
+        if self._cache is None or self._cache_time is None:
+            self._get_entry_points()
+            return
+
+        if time.time() - self._cache_time >= self._cache_expiry:
+            self._get_entry_points()
 
     def get_group_name(self) -> str:
         """
@@ -152,8 +156,8 @@ class BaseFinder(ABC):
             dist = importlib.metadata.distribution(package_name)
             if top_level := dist.read_text("top_level.txt"):
                 return [name.strip() for name in top_level.strip().splitlines() if name.strip()]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"读取 {package_name} 的 top_level.txt 失败: {e}")
 
         top_level_set = set()
         for entry in self.find_all():

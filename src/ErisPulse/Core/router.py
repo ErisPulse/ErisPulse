@@ -21,7 +21,7 @@ import socket
 import ipaddress
 import sys
 import importlib.metadata
-from datetime import datetime
+from datetime import datetime, timezone
 import uvicorn
 
 ERISPULSE_VERSION = "UnknownVersion"
@@ -120,7 +120,7 @@ class RouterManager:
             :return:
                 dict[str, Any]: 包含响应状态和时间戳的字典
             """
-            return {"pong": True, "timestamp": datetime.utcnow().isoformat() + "Z"}
+            return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
     def register_http_route(
         self,

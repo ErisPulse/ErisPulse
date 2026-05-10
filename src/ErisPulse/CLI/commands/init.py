@@ -61,6 +61,10 @@ class InitCommand(Command):
         :param adapter_list: 需要初始化的适配器列表
         :return: 是否初始化成功
         """
+        if not project_name or not all(c.isalnum() or c in ('_', '-', '.') for c in project_name):
+            console.print("[error]项目名称只能包含字母、数字、下划线、连字符和点号[/]")
+            return False
+
         try:
             project_path = Path(project_name)
             if project_path.exists():
