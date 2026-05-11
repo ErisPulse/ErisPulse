@@ -7,7 +7,7 @@
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
-<img src=".github/assets/erispulse_logo_1024.png" width="280" alt="ErisPulse" />
+<img src=".github/assets/erispulse_logo_hp.png" width="280" alt="ErisPulse" />
 </td>
 <td width="65%" valign="middle">
 
@@ -29,7 +29,7 @@
 
 ## 簡介
 
-ErisPulse 是一個基於 Python 的事件驅動型多平台機器人開發框架。透過統一的 OneBot12 標準介面，您可以一次編寫代碼，同時在雲湖、Telegram、OneBot 等多個平台部署相同功能的機器人。框架提供靈活的模組(`插件`)系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
+ErisPulse 是一個基於 Python 的事件驅動型多平台機器人開發框架。透過統一的 OneBot12 標準介面，您可以一次編寫代碼，同時在雲湖、Telegram、OneBot 等多個平台部署相同功能的機器人。框架提供靈活的模組(`插件`)系統、熱重載支持和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
 
 ## 核心特性
 
@@ -238,7 +238,7 @@ epsdk run main.py --reload
 
 ## 文檔資源
 
-| 簡體中文 | English | 繁體中文 |
+| 简体中文 | English | 繁體中文 |
 |----------------|----------------|----------------|
 | [文檔入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
 
@@ -246,4 +246,4 @@ epsdk run main.py --reload
 
 | 平台 | 主站點 | 備用站點 |
 |------|--------|---------|
-| 文檔 | [erisdev.com
+| 文檔 | [erisdev.com](https
