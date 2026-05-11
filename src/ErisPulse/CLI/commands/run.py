@@ -11,12 +11,19 @@ import asyncio
 import subprocess
 import runpy
 from argparse import ArgumentParser
-from watchdog.observers import Observer
 from rich.panel import Panel
-from watchdog.events import FileSystemEventHandler
 
 from ..console import console
 from ..base import Command
+
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    _WATCHDOG_AVAILABLE = True
+except ImportError:
+    _WATCHDOG_AVAILABLE = False
+    Observer = None
+    FileSystemEventHandler = object
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -84,6 +91,10 @@ class RunCommand(Command):
     def execute(self, args):
         script = args.script
         reload_mode = args.reload
+        
+        if reload_mode and not _WATCHDOG_AVAILABLE:
+            console.print("[error]热重载需要 watchdog 库，请运行: pip install watchdog[/]")
+            reload_mode = False
         
         if script:
             if not os.path.exists(script):

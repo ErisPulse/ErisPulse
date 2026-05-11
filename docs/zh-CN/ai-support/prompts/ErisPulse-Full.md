@@ -3764,6 +3764,7 @@ async def friend_add_handler(event):
 #### 机器人信息
 - `get_self_platform()` - 获取机器人平台名称
 - `get_self_user_id()` - 获取机器人用户ID
+- `get_self_account_id()` - 获取机器人账户ID（多Bot模式）
 - `get_self_info()` - 获取机器人完整信息字典
 
 ### 消息事件方法
@@ -11001,6 +11002,7 @@ async def chat_handler(event):
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [QQ官方机器人平台特性](qqbot.md)
+- [花枫咖啡馆](ideaura.md)
 
 > 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 

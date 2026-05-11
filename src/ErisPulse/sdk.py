@@ -223,15 +223,15 @@ class SDK:
                     return_exceptions=True
                 )
                 
-                # 检查是否有异常
+                # 检查是否有异常，使用空结果继续而非终止
                 if isinstance(adapter_result, Exception):
                     logger.error(f"适配器加载失败: {adapter_result}")
-                    return False
-                    
+                    adapter_result = ({}, [], [])
+
                 if isinstance(module_result, Exception):
                     logger.error(f"模块加载失败: {module_result}")
-                    return False
-                
+                    module_result = ({}, [], [])
+
                 # 解包结果
                 adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
                 module_objs, enabled_modules, disabled_modules = module_result      # type: ignore
@@ -241,14 +241,14 @@ class SDK:
                 if not await self._adapter_loader.register_to_manager(
                     enabled_adapters, adapter_objs, adapter_manager
                 ):
-                    return False
-                
+                    logger.warning("部分适配器注册失败，已跳过")
+
                 # 3. 注册模块
                 logger.print_section_header("模块注册阶段")
                 if not await self._module_loader.register_to_manager(
                     enabled_modules, module_objs, module_manager
                 ):
-                    return False
+                    logger.warning("部分模块注册失败，已跳过")
                 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
                 logger.print_section_header("模块初始化阶段")
@@ -256,6 +256,8 @@ class SDK:
                     success = await self._module_loader.initialize_modules(
                         enabled_modules, module_objs, module_manager, self._sdk
                     )
+                    if not success:
+                        logger.warning("部分模块初始化失败，已跳过")
                 else:
                     success = True
                 
@@ -295,7 +297,7 @@ class SDK:
                 
                 await lifecycle.submit_event(
                     "core.init.complete",
-                    msg="模块初始化完成" if success else "模块初始化失败",
+                    msg="模块初始化完成" if success else "模块初始化部分失败",
                     data={
                         "duration": load_duration,
                         "success": success,
@@ -309,7 +311,7 @@ class SDK:
                         }
                     }
                 )
-                return success
+                return True
                 
             except Exception as e:
                 load_duration = lifecycle.stop_timer("core.init")
@@ -323,7 +325,7 @@ class SDK:
                     }
                 )
                 logger.critical(f"SDK初始化严重错误: {e}")
-                return False
+                return False  # 核心初始化级别的异常仍然返回 False
 
     class Uninitializer:
         """
@@ -388,7 +390,6 @@ class SDK:
                 for attr_name, attr_value in list(instance_dict.items()):
                     if attr_name.startswith('_'):
                         continue
-                    from .loaders.module import LazyModule
                     if isinstance(attr_value, LazyModule):
                         # 只处理已初始化的 LazyModule
                         lm_initialized = object.__getattribute__(attr_value, '_initialized')
@@ -579,7 +580,11 @@ class SDK:
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            return loop.create_task(_async_init())
+            try:
+                return loop.create_task(_async_init())
+            except Exception:
+                loop.close()
+                raise
 
 
     async def load_module(self, module_name: str) -> bool:
@@ -644,8 +649,8 @@ class SDK:
             await self.adapter.startup()
             
             if keep_running:
-                # 保持程序运行
-                await asyncio.Event().wait()
+                shutdown_event = asyncio.Event()
+                await shutdown_event.wait()
         except asyncio.CancelledError:
             logger.info("收到关闭信号，正在清理...")
         except Exception as e:

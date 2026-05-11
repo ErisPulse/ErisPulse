@@ -14,6 +14,17 @@ ErisPulse 框架配置管理模块
 ## 函数列表
 
 
+### `_deep_merge(base: Dict[str, Any], override: Dict[str, Any])`
+
+深度合并两个字典，override 中的值覆盖 base 中的对应值
+
+:param base: 基础字典
+:param override: 覆盖字典
+:return: 合并后的新字典
+
+---
+
+
 ### `_ensure_erispulse_config_structure(config_dict: Dict[str, Any])`
 
 确保 ErisPulse 配置结构完整，补全缺失的配置项

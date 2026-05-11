@@ -7,7 +7,7 @@
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
-<img src=".github/assets/erispulse_logo_1024.png" width="280" alt="ErisPulse" />
+<img src=".github/assets/erispulse_logo_hp.png" width="280" alt="ErisPulse" />
 </td>
 <td width="65%" valign="middle">
 
@@ -29,7 +29,7 @@
 
 ## 簡介
 
-ErisPulse 是一個基於 Python 的事件驅動型多平台機器人開發框架。透過統一的 OneBot12 標準接口，您可以一次編寫代碼，同時在雲湖、Telegram、OneBot 等多個平台部署相同功能的機器人。框架提供靈活的模組(`插件`)系統、熱重載支持和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
+ErisPulse 是一個基於 Python 的事件驅動型多平台機器人開發框架。透過統一的 OneBot12 標準介面，您可以一次編寫代碼，同時在雲湖、Telegram、OneBot 等多個平台部署相同功能的機器人。框架提供靈活的模組(`插件`)系統、熱重載支持和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
 
 ## 核心特性
 
@@ -55,6 +55,7 @@ ErisPulse 是一個基於 Python 的事件驅動型多平台機器人開發框�
 | [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協議收發適配器 |
 | [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
 | [雲湖用戶](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖用戶協議的接入適配器 |
+| [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
 
@@ -96,6 +97,48 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 > 鏡像內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 啟動後訪問 `http://<host>:<port>/Dashboard`，使用設定的令牌作為密碼登入 Dashboard 管理面板。
+
+</details>
+
+<details>
+<summary>使用預發布版本 (Dev)</summary>
+
+設置 `ERISPULSE_CHANNEL=dev` 即可使用預發布版本：
+
+```bash
+# 方式一：使用環境變量（推薦）
+ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+
+# 方式二：建置 dev 鏡像
+ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
+```
+
+如需啟動時自動更新到最新版本（無論 stable 還是 dev），顯式設置 `ERISPULSE_UPDATE_ON_START=true`：
+
+```bash
+ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
+```
+
+也可以拉取預建置的 dev 鏡像：
+
+```bash
+docker pull erispulse/erispulse:dev
+```
+
+</details>
+
+<details>
+<summary>Docker 環境變量</summary>
+
+| 變數 | 預設值 | 說明 |
+|------|--------|------|
+| `ERISPULSE_CHANNEL` | `stable` | 版本通道：`stable`（穩定版）或 `dev`（預發布版） |
+| `ERISPULSE_UPDATE_ON_START` | `false` | 容器啟動時是否自動更新到最新版本（需顯式啟用） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登入令牌 |
+| `ERISPULSE_PORT` | `8000` | Dashboard 埠對映 |
+| `TZ` | `Asia/Shanghai` | 容器時區 |
+
+> 啟用 `ERISPULSE_UPDATE_ON_START=true` 可確保即使鏡像較舊，容器也能在啟動時自動獲取最新版本。
 
 </details>
 
@@ -195,7 +238,7 @@ epsdk run main.py --reload
 
 ## 文檔資源
 
-| 簡體中文 | English | 繁體中文 |
+| 简体中文 | English | 繁體中文 |
 |----------------|----------------|----------------|
 | [文檔入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
 
@@ -203,31 +246,4 @@ epsdk run main.py --reload
 
 | 平台 | 主站點 | 備用站點 |
 |------|--------|---------|
-| 文檔 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) • [GitHub](https://erispulse.github.io/#docs) • [Netlify](https://erispulse.netlify.app/#docs) |
-| 模組市場 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) • [GitHub](https://erispulse.github.io/#market) • [Netlify](https://erispulse.netlify.app/#market) |
-
-## 貢獻指南
-
-ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻，包括但不限於：
-
-1. **報告問題**
-   在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
-
-2. **功能請求**
-   透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
-
-3. **代碼貢獻**
-   提交 Pull Request 前請閱讀我們的 [代碼風格](docs/zh-TW/styleguide/) 以及 [貢獻指南](CONTRIBUTING.md)
-
-4. **文檔改進**
-   幫助完善文檔和示例代碼
-
-[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
-
----
-
-## 致謝
-
-- 本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)
-- 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/)
-- 感謝所有為開源社區做出貢獻的開發者和作者
+| 文檔 | [erisdev.com](https

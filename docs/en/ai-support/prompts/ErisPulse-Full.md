@@ -3758,6 +3758,7 @@ async def friend_add_handler(event):
 #### Bot Information
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
+- `get_self_account_id()` - Get bot account ID (multi-bot mode)
 - `get_self_info()` - Get bot complete information dictionary
 
 ### Message Event Methods
@@ -10414,6 +10415,7 @@ This section is maintained by developers of each adapter to explain the differen
 - [Kook (Kaihei La) Platform Features](kook.md)
 - [Matrix Platform Features](matrix.md)
 - [QQ Official Bot Platform Features](qqbot.md)
+- [Ideaura Platform Features](ideaura.md)
 
 > Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 

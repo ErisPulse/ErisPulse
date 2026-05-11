@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 920,
+  "total_keywords": 923,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1061,7 +1061,7 @@
     "@ 訊息相關": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 122,
+        "line": 123,
         "level": 4,
         "title": "@ 訊息相關"
       }
@@ -1616,6 +1616,14 @@
         "title": "OneBot12 訊息支援"
       }
     ],
+    "OneBot12消息支持": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 82,
+        "level": 3,
+        "title": "OneBot12消息支持"
+      }
+    ],
     "OneBot12消息支援": [
       {
         "document": "platform-guide/kook.md",
@@ -1813,7 +1821,7 @@
     "Send 鏈式調用": [
       {
         "document": "platform-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "Send 鏈式調用"
       }
@@ -2061,7 +2069,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 281,
+        "line": 282,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -2553,7 +2561,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 98,
+        "line": 99,
         "level": 3,
         "title": "事件監聽"
       }
@@ -2799,7 +2807,7 @@
     "互動方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 192,
+        "line": 193,
         "level": 4,
         "title": "互動方法"
       }
@@ -3411,7 +3419,7 @@
     "原始資料": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 223,
+        "line": 224,
         "level": 3,
         "title": "原始資料"
       }
@@ -3443,7 +3451,7 @@
     "參考連結": [
       {
         "document": "platform-guide/README.md",
-        "line": 208,
+        "line": 209,
         "level": 2,
         "title": "參考連結"
       }
@@ -3451,7 +3459,7 @@
     "參與貢獻": [
       {
         "document": "platform-guide/README.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -3633,7 +3641,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 157,
+        "line": 158,
         "level": 3,
         "title": "回覆功能"
       }
@@ -3836,6 +3844,12 @@
     ],
     "基本資訊": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 12,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -3889,7 +3903,7 @@
     "基礎判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 128,
+        "line": 129,
         "level": 4,
         "title": "基礎判斷"
       }
@@ -3897,7 +3911,7 @@
     "基礎回覆": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 159,
+        "line": 160,
         "level": 4,
         "title": "基礎回覆"
       }
@@ -4351,7 +4365,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "工具方法"
       }
@@ -4483,13 +4497,13 @@
     "平台擴充方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "平台擴充方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 252,
+        "line": 253,
         "level": 2,
         "title": "平台擴充方法"
       }
@@ -4807,7 +4821,7 @@
     "指令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 216,
+        "line": 217,
         "level": 4,
         "title": "指令基礎"
       }
@@ -4831,7 +4845,7 @@
     "指令資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "指令資訊"
       }
@@ -4984,6 +4998,12 @@
     ],
     "支援的消息發送類型": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 20,
+        "level": 2,
+        "title": "支援的消息發送類型"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 47,
         "level": 2,
@@ -5091,6 +5111,12 @@
       }
     ],
     "文件資訊": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 7,
+        "level": 2,
+        "title": "文件資訊"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 7,
@@ -5451,7 +5477,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 272,
+        "line": 273,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -5528,6 +5554,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 99,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 118,
         "level": 3,
         "title": "核心差異點"
       },
@@ -5685,7 +5717,7 @@
     "標準事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -5701,7 +5733,7 @@
     "標準回應格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -5717,7 +5749,7 @@
     "標準格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 150,
+        "line": 151,
         "level": 2,
         "title": "標準格式"
       }
@@ -6118,6 +6150,12 @@
         "title": "特有事件類型"
       },
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 114,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 158,
         "level": 2,
@@ -6332,6 +6370,14 @@
         "title": "發布與模組商店指南"
       }
     ],
+    "發送到不同目標": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 69,
+        "level": 3,
+        "title": "發送到不同目標"
+      }
+    ],
     "發送媒體消息": [
       {
         "document": "platform-guide/qqbot.md",
@@ -6358,6 +6404,12 @@
     ],
     "發送方法返回值": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 98,
+        "level": 2,
+        "title": "發送方法返回值"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 107,
         "level": 2,
@@ -6373,7 +6425,7 @@
     "發送者資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 111,
+        "line": 112,
         "level": 4,
         "title": "發送者資訊"
       }
@@ -6525,7 +6577,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 290,
+        "line": 291,
         "level": 2,
         "title": "相關文件"
       },
@@ -6675,7 +6727,7 @@
     "等待回覆功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 183,
+        "line": 184,
         "level": 3,
         "title": "等待回覆功能"
       }
@@ -6807,7 +6859,7 @@
     "群組/頻道資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 117,
         "level": 4,
         "title": "群組/頻道資訊"
       }
@@ -6882,6 +6934,14 @@
         "line": 322,
         "level": 3,
         "title": "舊設定相容"
+      }
+    ],
+    "花楓咖啡館（Ideaura）平台特性文件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 1,
+        "level": 1,
+        "title": "花楓咖啡館（Ideaura）平台特性文件"
       }
     ],
     "萬用字元事件處理器": [
@@ -6993,7 +7053,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 103,
+        "line": 104,
         "level": 3,
         "title": "訊息事件方法"
       }
@@ -7017,7 +7077,7 @@
     "訊息傳送失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "訊息傳送失敗"
       }
@@ -7025,7 +7085,7 @@
     "訊息傳送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 177,
+        "line": 178,
         "level": 4,
         "title": "訊息傳送成功"
       }
@@ -7033,7 +7093,7 @@
     "訊息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 105,
+        "line": 106,
         "level": 4,
         "title": "訊息內容"
       }
@@ -7111,7 +7171,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 126,
+        "line": 127,
         "level": 3,
         "title": "訊息類型判斷"
       }
@@ -7263,7 +7323,7 @@
     "請求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "請求事件方法"
       }
@@ -7279,7 +7339,7 @@
     "請求資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 149,
+        "line": 150,
         "level": 4,
         "title": "請求資訊"
       }
@@ -7287,7 +7347,7 @@
     "請求類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 153,
         "level": 4,
         "title": "請求類型判斷"
       }
@@ -7421,7 +7481,7 @@
     "轉發功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 172,
+        "line": 173,
         "level": 4,
         "title": "轉發功能"
       }
@@ -7469,7 +7529,7 @@
     "通用介面": [
       {
         "document": "platform-guide/README.md",
-        "line": 36,
+        "line": 37,
         "level": 2,
         "title": "通用介面"
       }
@@ -7513,7 +7573,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -7537,7 +7597,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 136,
+        "line": 137,
         "level": 4,
         "title": "通知操作者"
       }
@@ -7545,7 +7605,7 @@
     "通知類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 140,
+        "line": 141,
         "level": 4,
         "title": "通知類型判斷"
       }
@@ -7964,6 +8024,12 @@
     ],
     "鏈式修飾方法（可組合使用）": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 42,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 51,
         "level": 3,
@@ -8021,6 +8087,12 @@
       }
     ],
     "鏈式調用示例": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 50,
+        "level": 3,
+        "title": "鏈式調用示例"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 74,
@@ -8195,7 +8267,7 @@
     "非同步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
-        "line": 83,
+        "line": 84,
         "level": 4,
         "title": "非同步發送與結果處理"
       }
@@ -8325,7 +8397,7 @@
     "點式存取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 242,
+        "line": 243,
         "level": 3,
         "title": "點式存取"
       }

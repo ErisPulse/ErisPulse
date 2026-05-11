@@ -21,7 +21,7 @@ import socket
 import ipaddress
 import sys
 import importlib.metadata
-from datetime import datetime
+from datetime import datetime, timezone
 import uvicorn
 
 ERISPULSE_VERSION = "UnknownVersion"
@@ -120,14 +120,14 @@ class RouterManager:
             :return:
                 dict[str, Any]: 包含响应状态和时间戳的字典
             """
-            return {"pong": True, "timestamp": datetime.utcnow().isoformat() + "Z"}
+            return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
     def register_http_route(
         self,
         module_name: str,
         path: str,
         handler: Callable,
-        methods: list[str] = ["POST"],
+        methods: list[str] | None = None,
     ) -> None:
         """
         注册HTTP路由
@@ -139,6 +139,8 @@ class RouterManager:
 
         :raises ValueError: 当路径和方法都已注册时抛出
         """
+        if methods is None:
+            methods = ["POST"]
         full_path = self._normalize_path(module_name, path)
 
         # 检查是否有冲突的方法

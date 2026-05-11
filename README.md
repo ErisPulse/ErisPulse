@@ -7,7 +7,7 @@
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
-<img src=".github/assets/erispulse_logo_1024.png" width="280" alt="ErisPulse" />
+<img src=".github/assets/erispulse_logo_hp.png" width="280" alt="ErisPulse" />
 </td>
 <td width="65%" valign="middle">
 
@@ -55,6 +55,7 @@ ErisPulse 是一个基于 Python 的事件驱动型多平台机器人开发框�
 | [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
 | [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
 | [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
+| [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
@@ -96,6 +97,48 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 > 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
 启动后访问 `http://<host>:<port>/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
+
+</details>
+
+<details>
+<summary>使用预发布版本 (Dev)</summary>
+
+设置 `ERISPULSE_CHANNEL=dev` 即可使用预发布版本：
+
+```bash
+# 方式一：使用环境变量（推荐）
+ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+
+# 方式二：构建 dev 镜像
+ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
+```
+
+如需启动时自动更新到最新版本（无论 stable 还是 dev），显式设置 `ERISPULSE_UPDATE_ON_START=true`：
+
+```bash
+ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
+```
+
+也可以拉取预构建的 dev 镜像：
+
+```bash
+docker pull erispulse/erispulse:dev
+```
+
+</details>
+
+<details>
+<summary>Docker 环境变量</summary>
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `ERISPULSE_CHANNEL` | `stable` | 版本通道：`stable`（稳定版）或 `dev`（预发布版） |
+| `ERISPULSE_UPDATE_ON_START` | `false` | 容器启动时是否自动更新到最新版本（需显式启用） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登录令牌 |
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `TZ` | `Asia/Shanghai` | 容器时区 |
+
+> 启用 `ERISPULSE_UPDATE_ON_START=true` 可确保即使镜像较旧，容器也能在启动时自动获取最新版本。
 
 </details>
 
