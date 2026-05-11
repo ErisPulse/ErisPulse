@@ -7,7 +7,7 @@
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
-<img src=".github/assets/erispulse_logo_1024.png" width="280" alt="ErisPulse" />
+<img src=".github/assets/erispulse_logo_hp.png" width="280" alt="ErisPulse" />
 </td>
 <td width="65%" valign="middle">
 
