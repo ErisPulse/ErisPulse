@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1015,
+  "total_keywords": 1030,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1473,7 +1473,7 @@
     "@ Mention related": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 122,
+        "line": 123,
         "level": 4,
         "title": "@ Mention related"
       }
@@ -1985,7 +1985,7 @@
     "Asynchronous Sending and Result Processing": [
       {
         "document": "platform-guide/README.md",
-        "line": 83,
+        "line": 84,
         "level": 4,
         "title": "Asynchronous Sending and Result Processing"
       }
@@ -2120,6 +2120,12 @@
     ],
     "Basic Information": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 12,
+        "level": 2,
+        "title": "Basic Information"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 12,
         "level": 2,
@@ -2171,7 +2177,7 @@
     "Basic Judgment": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 128,
+        "line": 129,
         "level": 4,
         "title": "Basic Judgment"
       }
@@ -2217,7 +2223,7 @@
     "Basic Reply": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 159,
+        "line": 160,
         "level": 4,
         "title": "Basic Reply"
       }
@@ -2634,7 +2640,21 @@
         "title": "Chaining Example"
       }
     ],
+    "Chaining Examples": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 49,
+        "level": 3,
+        "title": "Chaining Examples"
+      }
+    ],
     "Chaining Methods (Can be used in combination)": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 42,
+        "level": 3,
+        "title": "Chaining Methods (Can be used in combination)"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 65,
@@ -2773,7 +2793,7 @@
     "Command Basic": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 216,
+        "line": 217,
         "level": 4,
         "title": "Command Basic"
       }
@@ -2833,7 +2853,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "Command Information"
       }
@@ -2897,7 +2917,7 @@
     "Common Interfaces": [
       {
         "document": "platform-guide/README.md",
-        "line": 36,
+        "line": 37,
         "level": 2,
         "title": "Common Interfaces"
       }
@@ -3027,6 +3047,12 @@
       }
     ],
     "Configuration": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 324,
+        "level": 3,
+        "title": "Configuration"
+      },
       {
         "document": "terminology.md",
         "line": 81,
@@ -3233,7 +3259,7 @@
     "Contributing": [
       {
         "document": "platform-guide/README.md",
-        "line": 220,
+        "line": 221,
         "level": 2,
         "title": "Contributing"
       }
@@ -3326,6 +3352,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 99,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 116,
         "level": 3,
         "title": "Core Differences"
       },
@@ -3728,6 +3760,12 @@
     ],
     "Document Information": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 7,
         "level": 2,
@@ -3863,7 +3901,7 @@
     "Dot Notation Access": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 242,
+        "line": 243,
         "level": 3,
         "title": "Dot Notation Access"
       }
@@ -4196,6 +4234,12 @@
     ],
     "Event Handling Example": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 282,
+        "level": 3,
+        "title": "Event Handling Example"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 284,
         "level": 3,
@@ -4233,7 +4277,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 98,
+        "line": 99,
         "level": 3,
         "title": "Event Listening"
       }
@@ -4493,9 +4537,17 @@
     "Forward Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 172,
+        "line": 173,
         "level": 4,
         "title": "Forward Functionality"
+      }
+    ],
+    "Forwarded Message Segment (ideaura_forwarded)": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 263,
+        "level": 3,
+        "title": "Forwarded Message Segment (ideaura_forwarded)"
       }
     ],
     "Framework Configuration": [
@@ -4522,12 +4574,44 @@
         "title": "Friend Add"
       }
     ],
+    "Friend Offline Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 209,
+        "level": 3,
+        "title": "Friend Offline Event"
+      }
+    ],
+    "Friend Online Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 195,
+        "level": 3,
+        "title": "Friend Online Event"
+      }
+    ],
+    "Friend Rejected Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 248,
+        "level": 3,
+        "title": "Friend Rejected Event"
+      }
+    ],
     "Friend Request": [
       {
         "document": "getting-started/event-handling.md",
         "line": 218,
         "level": 3,
         "title": "Friend Request"
+      }
+    ],
+    "Friend Request Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 234,
+        "level": 3,
+        "title": "Friend Request Event"
       }
     ],
     "Full Format (For complex methods)": [
@@ -4689,7 +4773,7 @@
     "Group/Channel Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 117,
         "level": 4,
         "title": "Group/Channel Information"
       }
@@ -4840,6 +4924,14 @@
         "line": 86,
         "level": 3,
         "title": "ID Field Query"
+      }
+    ],
+    "Ideaura Platform Features Documentation": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 1,
+        "level": 1,
+        "title": "Ideaura Platform Features Documentation"
       }
     ],
     "Image Download and Storage": [
@@ -5099,7 +5191,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 192,
+        "line": 193,
         "level": 4,
         "title": "Interaction Methods"
       }
@@ -5563,7 +5655,7 @@
     "Message Content": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 105,
+        "line": 106,
         "level": 4,
         "title": "Message Content"
       }
@@ -5574,6 +5666,14 @@
         "line": 283,
         "level": 3,
         "title": "Message Counting"
+      }
+    ],
+    "Message Edit Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 136,
+        "level": 3,
+        "title": "Message Edit Event"
       }
     ],
     "Message Edit Notification Example": [
@@ -5625,7 +5725,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 103,
+        "line": 104,
         "level": 3,
         "title": "Message Event Methods"
       }
@@ -5654,6 +5754,14 @@
         "title": "Message Filtering"
       }
     ],
+    "Message Forward Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 167,
+        "level": 3,
+        "title": "Message Forward Event"
+      }
+    ],
     "Message Management Methods": [
       {
         "document": "platform-guide/telegram.md",
@@ -5676,6 +5784,22 @@
         "line": 112,
         "level": 2,
         "title": "Message Module"
+      }
+    ],
+    "Message Read Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 182,
+        "level": 3,
+        "title": "Message Read Event"
+      }
+    ],
+    "Message Recall Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 151,
+        "level": 3,
+        "title": "Message Recall Event"
       }
     ],
     "Message Segment Conversion": [
@@ -5717,7 +5841,7 @@
     "Message Sending Failed": [
       {
         "document": "platform-guide/README.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "Message Sending Failed"
       }
@@ -5725,7 +5849,7 @@
     "Message Sending Success": [
       {
         "document": "platform-guide/README.md",
-        "line": 177,
+        "line": 178,
         "level": 4,
         "title": "Message Sending Success"
       }
@@ -5755,7 +5879,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 126,
+        "line": 127,
         "level": 3,
         "title": "Message Type Judgment"
       }
@@ -6124,6 +6248,14 @@
         "title": "Multi-Bot Configuration"
       }
     ],
+    "Multi-account Configuration": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 322,
+        "level": 2,
+        "title": "Multi-account Configuration"
+      }
+    ],
     "Multi-account Sending Syntax": [
       {
         "document": "platform-guide/onebot11.md",
@@ -6281,7 +6413,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 134,
+        "line": 135,
         "level": 3,
         "title": "Notice Event Methods"
       }
@@ -6313,7 +6445,7 @@
     "Notice Operator": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 136,
+        "line": 137,
         "level": 4,
         "title": "Notice Operator"
       }
@@ -6321,7 +6453,7 @@
     "Notice Type Judgment": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 140,
+        "line": 141,
         "level": 4,
         "title": "Notice Type Judgment"
       }
@@ -6375,6 +6507,12 @@
       }
     ],
     "OneBot12 Message Support": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 81,
+        "level": 3,
+        "title": "OneBot12 Message Support"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 89,
@@ -6593,13 +6731,13 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 229,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 252,
+        "line": 253,
         "level": 2,
         "title": "Platform Extension Methods"
       },
@@ -6937,7 +7075,7 @@
     "Querying Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 272,
+        "line": 273,
         "level": 3,
         "title": "Querying Registered Methods"
       }
@@ -7007,7 +7145,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 223,
+        "line": 224,
         "level": 3,
         "title": "Raw Data"
       }
@@ -7069,7 +7207,7 @@
     "References": [
       {
         "document": "platform-guide/README.md",
-        "line": 208,
+        "line": 209,
         "level": 2,
         "title": "References"
       }
@@ -7193,7 +7331,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 290,
+        "line": 291,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7257,7 +7395,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 157,
+        "line": 158,
         "level": 3,
         "title": "Reply Functionality"
       }
@@ -7297,7 +7435,7 @@
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 147,
+        "line": 148,
         "level": 3,
         "title": "Request Event Methods"
       }
@@ -7321,7 +7459,7 @@
     "Request Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 149,
+        "line": 150,
         "level": 4,
         "title": "Request Information"
       }
@@ -7337,7 +7475,7 @@
     "Request Type Judgment": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 153,
         "level": 4,
         "title": "Request Type Judgment"
       }
@@ -7407,6 +7545,12 @@
       }
     ],
     "Return Values of Sending Methods": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 96,
+        "level": 2,
+        "title": "Return Values of Sending Methods"
+      },
       {
         "document": "platform-guide/onebot12.md",
         "line": 226,
@@ -7629,7 +7773,7 @@
     "Send Chained Invocation": [
       {
         "document": "platform-guide/README.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "Send Chained Invocation"
       }
@@ -7709,7 +7853,7 @@
     "Sender Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 111,
+        "line": 112,
         "level": 4,
         "title": "Sender Information"
       }
@@ -7784,6 +7928,14 @@
         "line": 135,
         "level": 3,
         "title": "Sending a Reply"
+      }
+    ],
+    "Sending to Different Targets": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 68,
+        "level": 3,
+        "title": "Sending to Different Targets"
       }
     ],
     "Sending with Specific Account": [
@@ -7870,6 +8022,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 53,
+        "level": 2,
+        "title": "Special Event Types"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 112,
         "level": 2,
         "title": "Special Event Types"
       },
@@ -7997,7 +8155,7 @@
     "Standard Event Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "Standard Event Format"
       }
@@ -8005,7 +8163,7 @@
     "Standard Formats": [
       {
         "document": "platform-guide/README.md",
-        "line": 150,
+        "line": 151,
         "level": 2,
         "title": "Standard Formats"
       }
@@ -8035,7 +8193,7 @@
     "Standard Response Format": [
       {
         "document": "platform-guide/README.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "Standard Response Format"
       }
@@ -8262,6 +8420,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 13,
+        "level": 2,
+        "title": "Supported Message Sending Types"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 20,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -8682,6 +8846,14 @@
         "title": "Usage Examples"
       }
     ],
+    "Use Send DSL to Specify Account": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 357,
+        "level": 3,
+        "title": "Use Send DSL to Specify Account"
+      }
+    ],
     "Use Storage System": [
       {
         "document": "getting-started/first-bot.md",
@@ -8710,6 +8882,14 @@
         "line": 1,
         "level": 1,
         "title": "User Guide"
+      }
+    ],
+    "User Status Change Event": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 221,
+        "level": 3,
+        "title": "User Status Change Event"
       }
     ],
     "Users: Using Platform Extension Methods": [
@@ -8821,7 +9001,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -8867,7 +9047,7 @@
     "Wait Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 183,
+        "line": 184,
         "level": 3,
         "title": "Wait Reply Functionality"
       }
@@ -9129,7 +9309,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 281,
+        "line": 282,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }

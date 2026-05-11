@@ -318,18 +318,26 @@ class StorageManager(BaseStorage):
     """
 
     _instance = None
+    _instance_lock = threading.Lock()
     # 默认数据库放在项目下的 config/config.db
-    DEFAULT_PROJECT_DB_PATH = os.path.join(os.getcwd(), "config", "config.db")
-    # 包内全局数据库路径
     GLOBAL_DB_PATH = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "../data/config.db")
     )
     # 线程本地存储，用于跟踪活动事务的连接
     _local = threading.local()
 
+    @staticmethod
+    def _get_default_project_db_path() -> str:
+        return os.path.join(os.getcwd(), "config", "config.db")
+
+    @property
+    def DEFAULT_PROJECT_DB_PATH(self) -> str:
+        return self._get_default_project_db_path()
+
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
+        with cls._instance_lock:
+            if not cls._instance:
+                cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):
@@ -410,11 +418,10 @@ class StorageManager(BaseStorage):
         {!--< internal-use >!--}
         确保必要的目录存在
         """
-        # 确保项目数据库目录存在
         try:
-            os.makedirs(os.path.dirname(self.DEFAULT_PROJECT_DB_PATH), exist_ok=True)
+            os.makedirs(os.path.dirname(self._get_default_project_db_path()), exist_ok=True)
         except Exception:
-            pass  # 如果无法创建项目目录，则跳过
+            pass
 
     def _init_db(self) -> None:
         """

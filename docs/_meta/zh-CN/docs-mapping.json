@@ -173,7 +173,7 @@
     },
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
-      "count": 22,
+      "count": 24,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -208,6 +208,11 @@
         {
           "title": "文档维护说明",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "花枫咖啡馆（Ideaura）平台特性文档",
+          "path": "platform-guide/ideaura.md",
           "level": 1
         },
         {

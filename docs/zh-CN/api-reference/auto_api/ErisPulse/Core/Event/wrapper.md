@@ -191,6 +191,17 @@ ErisPulse 事件包装类
 ---
 
 
+##### `get_self_account_id()`
+
+获取机器人账户标识（多Bot模式）
+
+优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+
+:return: 机器人账户标识，单Bot模式下返回空字符串
+
+---
+
+
 ##### `get_self_info()`
 
 获取机器人完整信息
@@ -458,7 +469,7 @@ ErisPulse 事件包装类
 
 使用会话类型管理模块自动处理类型转换和ID获取
 
-:return: (适配器实例, 发送目标类型, 目标ID)
+:return: (适配器实例, 发送目标类型, 目标ID, 账户ID)
 
 ---
 

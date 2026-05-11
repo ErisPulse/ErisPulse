@@ -95,6 +95,13 @@ ErisPulse 基础发现器
 ---
 
 
+##### `_ensure_cache()`
+
+确保缓存已加载且未过期
+
+---
+
+
 ##### `get_group_name()`
 
 获取 entry-point 组名
