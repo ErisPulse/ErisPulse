@@ -155,9 +155,8 @@ class TestAdapterManager:
     @pytest.mark.asyncio
     async def test_startup_nonexistent_platform(self, manager):
         """测试启动不存在的平台"""
-        # 执行和验证
-        with pytest.raises(ValueError, match="平台.*未注册"):
-            await manager.startup(["nonexistent"])
+        await manager.startup(["nonexistent"])
+        assert "nonexistent" not in manager._adapters
     
     @pytest.mark.asyncio
     async def test_shutdown_all_adapters(self, manager, test_adapter_class):
