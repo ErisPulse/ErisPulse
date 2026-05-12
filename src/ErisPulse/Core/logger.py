@@ -222,14 +222,23 @@ class Logger:
     def _get_caller(self):
         try:
             frame = inspect.currentframe()
-            # 安全地获取调用栈帧
-            if frame is None or frame.f_back is None or frame.f_back.f_back is None:
+            if frame is None:
                 return "Unknown"
 
-            frame = frame.f_back.f_back
-            module = inspect.getmodule(frame)
+            logger_module = inspect.getmodule(frame)
 
-            # 处理模块为None的情况
+            while frame is not None:
+                frame = frame.f_back
+                if frame is None:
+                    return "Unknown"
+                module = inspect.getmodule(frame)
+                if module is not None and module is not logger_module:
+                    break
+
+            if frame is None:
+                return "Unknown"
+
+            module = inspect.getmodule(frame)
             if module is None:
                 return "Unknown"
 
@@ -395,9 +404,16 @@ class LoggerChild:
         :param level_const: 日志级别常量
         :param msg: 日志消息
         """
-        if self._parent._get_effective_level(self._name.split(".")[0]) <= level_const:
-            self._parent._save_in_memory(self._name, msg)
-            getattr(self._parent._logger, level_name)(f"[{self._name}] {msg}", *args, **kwargs)
+        parts = self._name.split(".")
+        deduped = [parts[0]]
+        for p in parts[1:]:
+            if p != deduped[-1]:
+                deduped.append(p)
+        display_name = ".".join(deduped)
+
+        if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
+            self._parent._save_in_memory(display_name, msg)
+            getattr(self._parent._logger, level_name)(f"[{display_name}] {msg}", *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""
