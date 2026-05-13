@@ -432,7 +432,7 @@ class StorageManager(BaseStorage):
         """
         from .logger import logger
 
-        logger.info(f"初始化数据库: {self.db_path}")
+        logger.debug(f"初始化数据库: {self.db_path}")
 
         try:
             os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
