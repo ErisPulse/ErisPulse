@@ -12,7 +12,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from rich.panel import Panel
 
-from .console import console
+from .console import console, print_banner
 from .registry import CommandRegistry
 from .base import Command
 
@@ -142,6 +142,8 @@ class CLI:
         """
         args, unknown = self.parser.parse_known_args()
         args._unknown_args = unknown
+        
+        print_banner()
         
         # 处理版本选项
         if args.version:

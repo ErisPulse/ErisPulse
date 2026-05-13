@@ -3,6 +3,36 @@ from rich.console import Console
 from rich.theme import Theme
 from rich.highlighter import RegexHighlighter
 
+BANNER = (
+    "\n\n"
+    "███████╗██████╗ ██╗███████╗██████╗ ██╗   ██╗██╗     ███████╗███████╗\n"
+    "██╔════╝██╔══██╗██║██╔════╝██╔══██╗██║   ██║██║     ██╔════╝██╔════╝\n"
+    "█████╗  ██████╔╝██║███████╗██████╔╝██║   ██║██║     ███████╗█████╗  \n"
+    "██╔══╝  ██╔══██╗██║╚════██║██╔═══╝ ██║   ██║██║     ╚════██║██╔══╝  \n"
+    "███████╗██║  ██║██║███████║██║     ╚██████╔╝███████╗███████║███████╗\n"
+    "╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝\n"
+    "\n\n"
+)
+
+_BANNER_MINI = (
+    "\n\n"
+    "███████╗██████╗ ███████╗██████╗ ██╗  ██╗\n"
+    "██╔════╝██╔══██╗██╔════╝██╔══██╗██║ ██╔╝\n"
+    "█████╗  ██████╔╝███████╗██║  ██║█████╔╝ \n"
+    "██╔══╝  ██╔═══╝ ╚════██║██║  ██║██╔═██╗ \n"
+    "███████╗██║     ███████║██████╔╝██║  ██╗\n"
+    "╚══════╝╚═╝     ╚══════╝╚═════╝ ╚═╝  ╚═╝\n"
+    "\n\n"
+)
+
+
+def print_banner():
+    width = console.width
+    if width >= 75:
+        console.print(BANNER, style="bold white", highlight=False)
+    else:
+        console.print(_BANNER_MINI, style="bold white", highlight=False)
+
 class CommandHighlighter(RegexHighlighter):
     """
     高亮CLI命令和参数
@@ -44,4 +74,5 @@ console = Console(
 
 __all__ = [
     "console",
+    "print_banner",
 ]
