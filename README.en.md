@@ -83,15 +83,6 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-### 1Panel App Store
-
-Install ErisPulse with one click via the [1Panel](https://1panel.cn) App Store. See [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel) for details.
-
-```bash
-bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
-```
-
-
 <details>
 <summary>Quick Start</summary>
 
@@ -150,6 +141,15 @@ docker pull erispulse/erispulse:dev
 > Enabling `ERISPULSE_UPDATE_ON_START=true` ensures that even if the image is outdated, the container will automatically get the latest version on startup.
 
 </details>
+
+
+### 1Panel App Store
+
+Install ErisPulse with one click via the [1Panel](https://1panel.cn) App Store. See [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel) for details.
+
+```bash
+bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
+```
 
 ### Installation with pip
 
