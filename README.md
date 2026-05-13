@@ -142,6 +142,14 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
+### 1Panel 应用商店
+
+通过 [1Panel](https://1panel.cn) 应用商店一键安装 ErisPulse，详见 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
+
+```bash
+bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
+```
+
 ### 使用 pip 安装
 
 ```bash
