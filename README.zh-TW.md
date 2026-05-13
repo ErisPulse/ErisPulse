@@ -142,6 +142,14 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
+### 1Panel 應用商店
+
+透過 [1Panel](https://1panel.cn) 應用商店一鍵安裝 ErisPulse，詳見 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
+
+```bash
+bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
+```
+
 ### 使用 pip 安裝
 
 ```bash
@@ -246,4 +254,31 @@ epsdk run main.py --reload
 
 | 平台 | 主站點 | 備用站點 |
 |------|--------|---------|
-| 文檔 | [erisdev.com](https
+| 文檔 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) • [GitHub](https://erispulse.github.io/#docs) • [Netlify](https://erispulse.netlify.app/#docs) |
+| 模組市場 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) • [GitHub](https://erispulse.github.io/#market) • [Netlify](https://erispulse.netlify.app/#market) |
+
+## 貢獻指南
+
+ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻，包括但不限於：
+
+1. **報告問題**
+   在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
+
+2. **功能請求**
+   透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+
+3. **代碼貢獻**
+   提交 Pull Request 前請閱讀我們的 [代碼風格](docs/zh-CN/styleguide/) 以及 [貢獻指南](CONTRIBUTING.md)
+
+4. **文檔改進**
+   幫助完善文檔和示例代碼
+
+[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+## 致謝
+
+- 本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame)
+- 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/)
+- 感謝所有為開源社區做出貢獻的開發者和作者
