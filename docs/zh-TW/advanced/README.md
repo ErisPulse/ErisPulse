@@ -11,6 +11,7 @@
 - [SQL 查詢構建器](sql-builder.md) - 通用 SQL 鏈式查詢構建器及儲存後端抽象
 - [會話類型系統](session-types.md) - 會話類型定義、映射與自定義類型註冊
 - [Conversation 多輪對話](conversation.md) - 多輪對話上下文的交互方法
+- [Dashboard 視窗註冊](dashboard-view.md) - 將模組管理頁面註冊到 Dashboard 側邊欄
 
 ## 適用對象
 
