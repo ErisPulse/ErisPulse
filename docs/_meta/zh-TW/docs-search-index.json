@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 923,
+  "total_keywords": 933,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1298,6 +1298,14 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard 管理面板"
+      }
+    ],
+    "Dashboard 視窗註冊": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 1,
+        "level": 1,
+        "title": "Dashboard 視窗註冊"
       }
     ],
     "Discord": [
@@ -3080,6 +3088,14 @@
         "title": "健康檢查"
       }
     ],
+    "側邊欄分組": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 138,
+        "level": 2,
+        "title": "側邊欄分組"
+      }
+    ],
     "備份": [
       {
         "document": "user-guide/deployment.md",
@@ -3238,6 +3254,14 @@
         "title": "全域設定"
       }
     ],
+    "兩種注入模式": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 68,
+        "level": 2,
+        "title": "兩種注入模式"
+      }
+    ],
     "其他術語": [
       {
         "document": "terminology.md",
@@ -3341,7 +3365,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "前置知識"
       }
@@ -3433,6 +3457,12 @@
       }
     ],
     "參數說明": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 47,
+        "level": 3,
+        "title": "參數說明"
+      },
       {
         "document": "user-guide/cli-reference.md",
         "line": 37,
@@ -4196,6 +4226,14 @@
         "title": "完整格式（適用於複雜方法）"
       }
     ],
+    "完整模組範例": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 229,
+        "level": 2,
+        "title": "完整模組範例"
+      }
+    ],
     "完整示例": [
       {
         "document": "advanced/message-builder.md",
@@ -4338,6 +4376,12 @@
     ],
     "工作原理": [
       {
+        "document": "advanced/dashboard-view.md",
+        "line": 15,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 14,
         "level": 2,
@@ -4416,6 +4460,14 @@
         "line": 340,
         "level": 3,
         "title": "帶驗證的等待回覆"
+      }
+    ],
+    "常用 CSS 類名": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 166,
+        "level": 2,
+        "title": "常用 CSS 類名"
       }
     ],
     "常用命令": [
@@ -5784,6 +5836,22 @@
         "title": "標準遵循檢查清單"
       }
     ],
+    "模式一：HTML/JS 注入（推薦）": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 70,
+        "level": 3,
+        "title": "模式一：HTML/JS 注入（推薦）"
+      }
+    ],
+    "模式二：iframe 嵌入": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 121,
+        "level": 3,
+        "title": "模式二：iframe 嵌入"
+      }
+    ],
     "模組": [
       {
         "document": "developer-guide/publishing.md",
@@ -6043,6 +6111,12 @@
       }
     ],
     "注意事項": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 356,
+        "level": 2,
+        "title": "注意事項"
+      },
       {
         "document": "advanced/lazy-loading.md",
         "line": 122,
@@ -7250,6 +7324,14 @@
         "title": "設定錯誤"
       }
     ],
+    "註冊 API": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 28,
+        "level": 2,
+        "title": "註冊 API"
+      }
+    ],
     "註冊 HTTP 路由": [
       {
         "document": "advanced/router.md",
@@ -7290,6 +7372,14 @@
         "title": "註解/裝飾器"
       }
     ],
+    "註銷視窗": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 342,
+        "level": 2,
+        "title": "註銷視窗"
+      }
+    ],
     "註銷路由": [
       {
         "document": "advanced/router.md",
@@ -7304,6 +7394,14 @@
         "line": 105,
         "level": 2,
         "title": "認證機制"
+      }
+    ],
+    "認證與 API 呼叫": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 203,
+        "level": 2,
+        "title": "認證與 API 呼叫"
       }
     ],
     "請求事件": [
@@ -7697,7 +7795,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "適用對象"
       },
