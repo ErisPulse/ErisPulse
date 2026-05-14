@@ -190,6 +190,7 @@ class DocsIndexGenerator:
         "advanced/message-builder.md": 5,
         "advanced/session-types.md": 6,
         "advanced/conversation.md": 7,
+        "advanced/dashboard-view.md": 8,
         
         # AI 辅助开发
         "ai-support/README.md": 1,
