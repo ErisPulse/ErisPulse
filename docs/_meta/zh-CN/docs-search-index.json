@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1044,
+  "total_keywords": 1054,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1810,6 +1810,14 @@
         "title": "Dashboard 管理面板"
       }
     ],
+    "Dashboard 视窗注册": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 1,
+        "level": 1,
+        "title": "Dashboard 视窗注册"
+      }
+    ],
     "Discord": [
       {
         "document": "standards/session-types.md",
@@ -3144,6 +3152,14 @@
         "title": "不等待结果"
       }
     ],
+    "两种注入模式": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 68,
+        "level": 2,
+        "title": "两种注入模式"
+      }
+    ],
     "中间件": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3806,6 +3822,14 @@
         "title": "使用配置"
       }
     ],
+    "侧边栏分组": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 138,
+        "level": 2,
+        "title": "侧边栏分组"
+      }
+    ],
     "保留错误段": [
       {
         "document": "standards/api-response.md",
@@ -4117,7 +4141,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "前置知识"
       }
@@ -4247,6 +4271,12 @@
       }
     ],
     "参数说明": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 47,
+        "level": 3,
+        "title": "参数说明"
+      },
       {
         "document": "user-guide/cli-reference.md",
         "line": 37,
@@ -5384,6 +5414,14 @@
         "title": "完整格式（适用于复杂方法）"
       }
     ],
+    "完整模块示例": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 229,
+        "level": 2,
+        "title": "完整模块示例"
+      }
+    ],
     "完整示例": [
       {
         "document": "advanced/message-builder.md",
@@ -5470,6 +5508,12 @@
     ],
     "工作原理": [
       {
+        "document": "advanced/dashboard-view.md",
+        "line": 15,
+        "level": 2,
+        "title": "工作原理"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 14,
         "level": 2,
@@ -5530,6 +5574,14 @@
         "line": 340,
         "level": 3,
         "title": "带验证的等待回复"
+      }
+    ],
+    "常用 CSS 类名": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 166,
+        "level": 2,
+        "title": "常用 CSS 类名"
       }
     ],
     "常用命令": [
@@ -7398,6 +7450,30 @@
         "title": "模块需求模板"
       }
     ],
+    "模式一：HTML/JS 注入（推荐）": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 70,
+        "level": 3,
+        "title": "模式一：HTML/JS 注入（推荐）"
+      }
+    ],
+    "模式二：iframe 嵌入": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 121,
+        "level": 3,
+        "title": "模式二：iframe 嵌入"
+      }
+    ],
+    "注册 API": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 28,
+        "level": 2,
+        "title": "注册 API"
+      }
+    ],
     "注册 HTTP 路由": [
       {
         "document": "advanced/router.md",
@@ -7432,6 +7508,12 @@
     ],
     "注意事项": [
       {
+        "document": "advanced/dashboard-view.md",
+        "line": 356,
+        "level": 2,
+        "title": "注意事项"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 122,
         "level": 2,
@@ -7464,6 +7546,14 @@
         "line": 546,
         "level": 4,
         "title": "注销方法"
+      }
+    ],
+    "注销视窗": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 342,
+        "level": 2,
+        "title": "注销视窗"
       }
     ],
     "注销路由": [
@@ -8724,6 +8814,14 @@
         "title": "计时器功能"
       }
     ],
+    "认证与 API 调用": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 203,
+        "level": 2,
+        "title": "认证与 API 调用"
+      }
+    ],
     "认证机制": [
       {
         "document": "advanced/router.md",
@@ -9079,7 +9177,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "适用对象"
       },
