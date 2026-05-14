@@ -267,7 +267,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 16,
+      "count": 18,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -302,6 +302,11 @@
         {
           "title": "Conversation Multi-turn Dialogue",
           "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "Dashboard View Registration",
+          "path": "advanced/dashboard-view.md",
           "level": 1
         },
         {

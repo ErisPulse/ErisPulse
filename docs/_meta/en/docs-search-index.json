@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1030,
+  "total_keywords": 1042,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2014,6 +2014,14 @@
         "title": "Authentication Mechanism"
       }
     ],
+    "Authentication and API Calls": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 203,
+        "level": 2,
+        "title": "Authentication and API Calls"
+      }
+    ],
     "Auto-Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2890,6 +2898,14 @@
         "title": "Command Priority"
       }
     ],
+    "Common CSS Class Names": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 166,
+        "level": 2,
+        "title": "Common CSS Class Names"
+      }
+    ],
     "Common Commands": [
       {
         "document": "user-guide/README.md",
@@ -3004,6 +3020,14 @@
         "line": 221,
         "level": 2,
         "title": "Complete Examples"
+      }
+    ],
+    "Complete Module Example": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 229,
+        "level": 2,
+        "title": "Complete Module Example"
       }
     ],
     "Component Relationships": [
@@ -3238,6 +3262,14 @@
         "line": 574,
         "level": 3,
         "title": "Connection Retry"
+      }
+    ],
+    "Considerations": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 356,
+        "level": 2,
+        "title": "Considerations"
       }
     ],
     "Content List": [
@@ -3580,6 +3612,14 @@
         "line": 72,
         "level": 2,
         "title": "Dashboard Management Panel"
+      }
+    ],
+    "Dashboard View Registration": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 1,
+        "level": 1,
+        "title": "Dashboard View Registration"
       }
     ],
     "Data Persistence": [
@@ -4890,6 +4930,12 @@
     ],
     "How It Works": [
       {
+        "document": "advanced/dashboard-view.md",
+        "line": 15,
+        "level": 2,
+        "title": "How It Works"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 14,
         "level": 2,
@@ -6046,6 +6092,22 @@
         "title": "Middleware Execution Order"
       }
     ],
+    "Mode 1: HTML/JS Injection (Recommended)": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 70,
+        "level": 3,
+        "title": "Mode 1: HTML/JS Injection (Recommended)"
+      }
+    ],
+    "Mode 2: iframe Embedding": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 121,
+        "level": 3,
+        "title": "Mode 2: iframe Embedding"
+      }
+    ],
     "Modifier Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -6650,6 +6712,14 @@
         "title": "Parallel Event Handling"
       }
     ],
+    "Parameter Description": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 47,
+        "level": 3,
+        "title": "Parameter Description"
+      }
+    ],
     "Parameter Reference": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6823,7 +6893,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -7242,6 +7312,14 @@
         "line": 35,
         "level": 3,
         "title": "Registering WebSocket Routes"
+      }
+    ],
+    "Registration API": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 28,
+        "level": 2,
+        "title": "Registration API"
       }
     ],
     "Related Documentation": [
@@ -7978,6 +8056,14 @@
         "title": "Shutting Down Adapters"
       }
     ],
+    "Sidebar Groups": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 138,
+        "level": 2,
+        "title": "Sidebar Groups"
+      }
+    ],
     "Signal Types": [
       {
         "document": "platform-guide/kook.md",
@@ -8567,7 +8653,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 15,
+        "line": 16,
         "level": 2,
         "title": "Target Audience"
       },
@@ -8686,6 +8772,14 @@
         "title": "Transaction Usage"
       }
     ],
+    "Two Injection Modes": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 68,
+        "level": 2,
+        "title": "Two Injection Modes"
+      }
+    ],
     "Type Annotation": [
       {
         "document": "terminology.md",
@@ -8762,6 +8856,14 @@
         "line": 81,
         "level": 3,
         "title": "Unregistering Routes"
+      }
+    ],
+    "Unregistering Views": [
+      {
+        "document": "advanced/dashboard-view.md",
+        "line": 342,
+        "level": 2,
+        "title": "Unregistering Views"
       }
     ],
     "Unsupported Method Notifications": [
