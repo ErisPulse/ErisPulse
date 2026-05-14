@@ -216,6 +216,9 @@ class PromptGenerator:
         sections.append(self._subsection_header("会话类型系统"))
         sections.append(self.read_file('advanced/session-types.md'))
         sections.append("\n")
+        sections.append(self._subsection_header("Dashboard 视窗注册"))
+        sections.append(self.read_file('advanced/dashboard-view.md'))
+        sections.append("\n")
         
         sections.append(self._section_header("技术标准"))
         sections.append(self._subsection_header("会话类型标准"))
@@ -297,6 +300,9 @@ class PromptGenerator:
         sections.append("\n")
         sections.append(self._subsection_header("懒加载系统"))
         sections.append(self.read_file('advanced/lazy-loading.md'))
+        sections.append("\n")
+        sections.append(self._subsection_header("Dashboard 视窗注册"))
+        sections.append(self.read_file('advanced/dashboard-view.md'))
         sections.append("\n")
         
         sections.append(self._section_header("技术标准"))
@@ -496,6 +502,9 @@ class PromptGenerator:
         sections.append("\n")
         sections.append(self._subsection_header("Conversation 多轮对话"))
         sections.append(self.read_file('advanced/conversation.md'))
+        sections.append("\n")
+        sections.append(self._subsection_header("Dashboard 视窗注册"))
+        sections.append(self.read_file('advanced/dashboard-view.md'))
         sections.append("\n")
         
         sections.append(self._section_header("平台特性指南"))
