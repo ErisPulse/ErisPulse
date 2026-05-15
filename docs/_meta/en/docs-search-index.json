@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1042,
+  "total_keywords": 1033,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -9326,78 +9326,6 @@
         "line": 93,
         "level": 3,
         "title": "[BUG-006] `detail_type` of `Event.is_friend_add/is_friend_delete` Inconsistent with OB12 Standard"
-      }
-    ],
-    "[BUG-007] `adapter.clear()` Fails to Clear `_started_instances` Causing Incorrect Status After Restart": [
-      {
-        "document": "bug-tracker.md",
-        "line": 109,
-        "level": 3,
-        "title": "[BUG-007] `adapter.clear()` Fails to Clear `_started_instances` Causing Incorrect Status After Restart"
-      }
-    ],
-    "[BUG-008] `command.wait_reply()` Uses Deprecated `asyncio.get_event_loop()`": [
-      {
-        "document": "bug-tracker.md",
-        "line": 125,
-        "level": 3,
-        "title": "[BUG-008] `command.wait_reply()` Uses Deprecated `asyncio.get_event_loop()`"
-      }
-    ],
-    "[BUG-009] `Event.collect()` Silently Skips When Field is Missing `key`": [
-      {
-        "document": "bug-tracker.md",
-        "line": 141,
-        "level": 3,
-        "title": "[BUG-009] `Event.collect()` Silently Skips When Field is Missing `key`"
-      }
-    ],
-    "[BUG-010] LazyModule Synchronous Access to BaseModule Leads to Incomplete Initialization": [
-      {
-        "document": "bug-tracker.md",
-        "line": 157,
-        "level": 3,
-        "title": "[BUG-010] LazyModule Synchronous Access to BaseModule Leads to Incomplete Initialization"
-      }
-    ],
-    "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss": [
-      {
-        "document": "bug-tracker.md",
-        "line": 173,
-        "level": 3,
-        "title": "[BUG-011] Configuration System Multi-threaded Write Causes Data Loss"
-      }
-    ],
-    "[BUG-012] SDK Attribute Access Error Message Inaccurate": [
-      {
-        "document": "bug-tracker.md",
-        "line": 192,
-        "level": 3,
-        "title": "[BUG-012] SDK Attribute Access Error Message Inaccurate"
-      }
-    ],
-    "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex": [
-      {
-        "document": "bug-tracker.md",
-        "line": 211,
-        "level": 3,
-        "title": "[BUG-013] Uninitializer Cleanup Logic for Uninitialized LazyModule Too Complex"
-      }
-    ],
-    "[BUG-014] Cannot Stop Program with CTRL+C on Windows": [
-      {
-        "document": "bug-tracker.md",
-        "line": 230,
-        "level": 3,
-        "title": "[BUG-014] Cannot Stop Program with CTRL+C on Windows"
-      }
-    ],
-    "[BUG-015] Updated Module Python Code Not Effective After Hot Restart": [
-      {
-        "document": "bug-tracker.md",
-        "line": 250,
-        "level": 3,
-        "title": "[BUG-015] Updated Module Python Code Not Effective After Hot Restart"
       }
     ],
     "__init__.py": [
