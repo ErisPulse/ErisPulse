@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1054,
+  "total_keywords": 1057,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2744,6 +2744,30 @@
         "line": 230,
         "level": 3,
         "title": "[BUG-014] Windows 下 CTRL+C 无法停止程序"
+      }
+    ],
+    "[BUG-015] 模块加载策略排序逻辑错误": [
+      {
+        "document": "bug-tracker.md",
+        "line": 250,
+        "level": 3,
+        "title": "[BUG-015] 模块加载策略排序逻辑错误"
+      }
+    ],
+    "[BUG-016] 适配器中间件返回 None 导致事件数据丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 266,
+        "level": 3,
+        "title": "[BUG-016] 适配器中间件返回 None 导致事件数据丢失"
+      }
+    ],
+    "[BUG-017] 配置文件路径依赖工作目录": [
+      {
+        "document": "bug-tracker.md",
+        "line": 282,
+        "level": 3,
+        "title": "[BUG-017] 配置文件路径依赖工作目录"
       }
     ],
     "__init__.py": [
