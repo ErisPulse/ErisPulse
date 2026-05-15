@@ -66,10 +66,38 @@
 ## [2.4.5-dev.2] - 2026/05/13
 > 开发版本
 
+### 重构
+
+- @wsu2059q
+  - `SDK` 生命周期细化为独立的阶段，Router 启动从 `adapter.startup()` 中解耦：
+    - `Initializer.init()` 新增路由服务器启动步骤（模块初始化之后、适配器启动之前）
+    - `Uninitializer.uninit()` 重构为 9 步有序清理：适配器关闭 → 模块卸载 → 路由停止 → 事件清理 → 管理器清理 → LazyModule 引用清理 → 单例状态清理 → 属性清理 → 状态重置
+    - `adapter.startup()` 不再包含 `router.start()` 调用，仅负责适配器实例启动
+    - `adapter.shutdown()` 不再包含 `router.stop()` 调用，适配器关闭后无条件清理事件处理器
+
 ### 优化
+
 - @wsu2059q
   - `CLI` 添加了 ASCII Art Banner
   - 数据库创建的 `logger` 被调整为 `logger.debug`
+  - `ModuleLoader.register_to_manager()` 复用已加载的 `module_class`，消除重复 `entry_point.load()` 调用
+  - `runtime/frame_config` 缓存 `get_erispulse_config()` 结果，避免重复 `deepcopy`
+  - `SDK._invalidate_module_cache()` 新增 `importlib.invalidate_caches()` 调用，确保 restart 后重新导入使用最新代码
+  - `AdapterManager._update_bot_status()` 中 bot offline 任务完成后自动从 `_adapter_tasks` 中移除，防止无界增长
+
+### 修复
+
+- @wsu2059q
+
+  - 修复 `epsdk run <目录路径>` 导致 CLI 重复实例化和 Banner 重复打印的问题：
+    - `RunCommand.execute()` 新增 `os.path.isdir()` 检查，提示用户指定具体脚本文件
+  - 修复 `CommandRegistry` 重复注册时抛出 `ValueError` 导致错误信息泄漏的问题（改为幂等跳过）
+  - 修复 `print_banner()` 在同一进程中重复打印的问题（添加全局标志）
+  - 修复 `Uninitializer.uninit()` 清理不完整导致 restart 后状态残留的问题：
+    - 新增 `config.force_save()` 清理待写入定时器
+    - 新增 `lifecycle._timers.clear()` 清理残留计时器
+    - 新增 `logger._logs.clear()` 和 `logger._module_levels.clear()` 清理日志内存缓存
+    - 新增 LazyModule 内部引用清理（`_sdk_ref`、`_instance`、`_manager_instance`、`_module_class`），打破循环引用链
 
 ---
 
