@@ -40,7 +40,7 @@ class CommandRegistry:
         :raises ValueError: 命令名称已存在时抛出
         """
         if command.name in self._commands:
-            raise ValueError(f"命令 '{command.name}' 已存在")
+            return
         self._commands[command.name] = command
     
     def get(self, name: str) -> Optional[Command]:

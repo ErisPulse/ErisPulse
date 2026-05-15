@@ -26,7 +26,13 @@ _BANNER_MINI = (
 )
 
 
+_banner_printed = False
+
 def print_banner():
+    global _banner_printed
+    if _banner_printed:
+        return
+    _banner_printed = True
     width = console.width
     if width >= 75:
         console.print(BANNER, style="bold white", highlight=False)
