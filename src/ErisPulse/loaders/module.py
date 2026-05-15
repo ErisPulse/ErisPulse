@@ -397,6 +397,12 @@ class ModuleLoader(BaseLoader):
         并行注册所有模块类（已在 register_to_manager 中完成）
         这里处理模块的实例化和挂载
         """
+        modules = sorted(
+            modules,
+            key=lambda name: module_objs[name].moduleInfo["meta"].get("priority", 0),
+            reverse=True,
+        )
+
         for module_name in modules:
             try:
                 module_obj = module_objs[module_name]

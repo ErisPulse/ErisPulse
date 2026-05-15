@@ -18,6 +18,8 @@ ConfigKey: TypeAlias = str
 
 class ConfigManager:
     def __init__(self, config_file: str = "config/config.toml"):
+        if not os.path.isabs(config_file):
+            config_file = os.path.abspath(config_file)
         self.CONFIG_FILE: str = config_file
         self._cache: dict[str, Any] = {}  # 内存缓存
         self._dirty_keys: dict[str, Any] = {}  # 待写入的键值对
