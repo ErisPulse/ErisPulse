@@ -267,7 +267,7 @@
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 16,
+      "count": 18,
       "documents": [
         {
           "title": "高级主题",
@@ -302,6 +302,11 @@
         {
           "title": "Conversation 多轮对话",
           "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "Dashboard 视窗注册",
+          "path": "advanced/dashboard-view.md",
           "level": 1
         },
         {

@@ -338,15 +338,16 @@ class ModuleLoader(BaseLoader):
         for module_name in modules:
             module_obj = module_objs[module_name]
             meta_name = module_obj.moduleInfo["meta"]["name"]
+            module_class = module_obj.moduleInfo.get("module_class")
 
-            async def register_module(name: str, obj: Any) -> bool:
+            async def register_module(name: str, obj: Any, cls: Any) -> bool:
                 """注册单个模块"""
                 try:
-                    # 使用 ModuleFinder 获取 entry-point
+                    if cls is not None:
+                        manager_instance.register(name, cls, obj.moduleInfo)
+                        return True
                     if entry_point := self._finder.find_by_name(name):
                         module_class = entry_point.load()
-
-                        # 调用管理器的 register 方法
                         manager_instance.register(name, module_class, obj.moduleInfo)
                         return True
                     return False
@@ -354,7 +355,7 @@ class ModuleLoader(BaseLoader):
                     logger.error(f"注册模块 {name} 失败: {e}")
                     return False
 
-            register_tasks.append(register_module(meta_name, module_obj))
+            register_tasks.append(register_module(meta_name, module_obj, module_class))
 
         # 等待所有注册任务完成
         register_results = await asyncio.gather(*register_tasks, return_exceptions=True)

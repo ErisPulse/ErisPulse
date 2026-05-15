@@ -78,6 +78,7 @@ ErisPulse SDK 主类
 3. 注册适配器
 4. 注册模块
 5. 初始化模块
+6. 启动路由服务器
 
 :return: bool 初始化是否成功
 
@@ -115,11 +116,15 @@ ErisPulse SDK 主类
 执行反初始化
 
 执行步骤:
-1. 关闭所有适配器
+1. 关闭所有适配器实例
 2. 卸载所有模块
-3. 清理事件处理器
-4. 清理管理器
-5. 清理 SDK 模块属性
+3. 停止路由服务器
+4. 清理所有事件处理器
+5. 清理适配器管理器和模块管理器
+6. 清理 LazyModule 引用
+7. 清理单例残留状态
+8. 清理 SDK 模块属性
+9. 重置初始化状态
 
 :return: bool 反初始化是否成功
 
@@ -265,7 +270,7 @@ SDK 初始化入口，返回 Task 对象
 ##### `_invalidate_module_cache(top_level_modules: set[str])`
 
 > **内部方法** 
-清理 sys.modules 中属于已加载包的缓存，并刷新 importlib.metadata 缓存
+清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
 
 :param top_level_modules: 需要清理的顶层 Python 模块名集合
 

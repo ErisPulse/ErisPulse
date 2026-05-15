@@ -101,6 +101,10 @@ class RunCommand(Command):
                 console.print(f"[error]脚本 [path]{script}[/] 不存在[/]")
                 console.print("[info]使用 [cyan]epsdk init[/cyan] 创建新项目[/]")
                 return
+            if os.path.isdir(script):
+                console.print(f"[error][path]{script}[/] 是一个目录，无法直接运行[/]")
+                console.print("[info]请指定具体的脚本文件，例如: [cyan]epsdk run {0}/main.py[/]".format(script))
+                return
             self._run_script(script, reload_mode)
         else:
             self._run_internal(reload_mode)
