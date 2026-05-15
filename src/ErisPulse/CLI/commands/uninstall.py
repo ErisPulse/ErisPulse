@@ -7,7 +7,6 @@ Uninstall 命令实现
 import sys
 from argparse import ArgumentParser
 
-from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 from rich.box import SIMPLE
@@ -43,13 +42,6 @@ class UninstallCommand(Command):
             self._interactive_uninstall()
     
     def _interactive_uninstall(self):
-        console.print(Panel(
-            "[bold cyan]ErisPulse 卸载向导[/]\n"
-            "选择要卸载的包",
-            title="卸载向导",
-            border_style="cyan"
-        ))
-        
         # 获取已安装的包
         installed = self.package_manager.get_installed_packages()
         
@@ -80,7 +72,7 @@ class UninstallCommand(Command):
         
         # 显示包列表
         table = Table(box=SIMPLE)
-        table.add_column("序号", style="cyan")
+        table.add_column("序号", style="#A0B0C0")
         table.add_column("类型", style="bold")
         table.add_column("名称")
         table.add_column("包名")
