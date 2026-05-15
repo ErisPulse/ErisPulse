@@ -11,7 +11,7 @@ BANNER = (
     "██╔══╝  ██╔══██╗██║╚════██║██╔═══╝ ██║   ██║██║     ╚════██║██╔══╝  \n"
     "███████╗██║  ██║██║███████║██║     ╚██████╔╝███████╗███████║███████╗\n"
     "╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝\n"
-    "\n\n"
+    "\n"
 )
 
 _BANNER_MINI = (
@@ -22,7 +22,7 @@ _BANNER_MINI = (
     "██╔══╝  ██╔═══╝ ╚════██║██║  ██║██╔═██╗ \n"
     "███████╗██║     ███████║██████╔╝██║  ██╗\n"
     "╚══════╝╚═╝     ╚══════╝╚═════╝ ╚═╝  ╚═╝\n"
-    "\n\n"
+    "\n"
 )
 
 
@@ -55,20 +55,20 @@ class CommandHighlighter(RegexHighlighter):
 
 # 主题配置
 theme = Theme({
-    "info": "dim cyan",
-    "success": "bold green",
-    "warning": "bold yellow",
-    "error": "bold red",
-    "title": "bold magenta",
+    "info": "#A0B0C0",
+    "success": "#A5D6A7",
+    "warning": "#FFCC80",
+    "error": "#FFCDD2",
+    "title": "#7DBFE0",
     "default": "default",
-    "progress": "green",
-    "progress.remaining": "white",
-    "cmd": "bold blue",
-    "param": "italic cyan",
-    "switch": "bold yellow",
-    "module": "bold green",
-    "adapter": "bold yellow",
-    "cli": "bold magenta",
+    "progress": "#A5D6A7",
+    "progress.remaining": "#283545",
+    "cmd": "#90CAF9",
+    "param": "#80CBC4",
+    "switch": "#FFCC80",
+    "module": "#80CBC4",
+    "adapter": "#7DBFE0",
+    "cli": "#A0B0C0",
 })
 
 # 全局控制台实例
