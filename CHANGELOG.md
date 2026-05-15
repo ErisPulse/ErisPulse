@@ -84,6 +84,10 @@
   - `runtime/frame_config` 缓存 `get_erispulse_config()` 结果，避免重复 `deepcopy`
   - `SDK._invalidate_module_cache()` 新增 `importlib.invalidate_caches()` 调用，确保 restart 后重新导入使用最新代码
   - `AdapterManager._update_bot_status()` 中 bot offline 任务完成后自动从 `_adapter_tasks` 中移除，防止无界增长
+  - `CLI` 命令交互界面风格简化：
+    - 移除 `install` / `self-update` / `uninstall` 命令中的冗余 `Panel` 介绍框
+    - 在 `print_banner()` 后统一注入 `[title]{command.description}[/]` 命令标题行
+    - Banner 尾部空行从 `\n\n` 缩减为 `\n`，消除 banner 与内容之间的大间距
 
 ### 修复
 
