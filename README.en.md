@@ -142,6 +142,15 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
+
+### 1Panel App Store
+
+Install ErisPulse with one click via the [1Panel](https://1panel.cn) App Store. See [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel) for details.
+
+```bash
+bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
+```
+
 ### Installation with pip
 
 ```bash
