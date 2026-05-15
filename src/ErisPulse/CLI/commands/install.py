@@ -8,7 +8,6 @@ import sys
 import asyncio
 from argparse import ArgumentParser
 
-from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.box import SIMPLE
@@ -249,13 +248,6 @@ class InstallCommand(Command):
             self._interactive_install(args.upgrade, args.pre)
 
     def _interactive_install(self, upgrade: bool = False, pre: bool = False):
-        console.print(Panel(
-            "[bold cyan]ErisPulse 安装组件[/]\n"
-            "选择您要安装的组件类型",
-            title="欢迎",
-            border_style="cyan"
-        ))
-
         with console.status("[bold green]正在获取远程包列表...", spinner="dots"):
             remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         console.print("[success]✔ 远程包列表获取完成[/]\n")
@@ -297,7 +289,7 @@ class InstallCommand(Command):
             return
 
         table = Table(box=SIMPLE, header_style="adapter", show_lines=False)
-        table.add_column("序号", style="cyan", width=4)
+        table.add_column("序号", style="#A0B0C0", width=4)
         table.add_column("适配器名", style="adapter")
         table.add_column("包名")
         table.add_column("描述")
@@ -352,7 +344,7 @@ class InstallCommand(Command):
             return
 
         table = Table(box=SIMPLE, header_style="module", show_lines=False)
-        table.add_column("序号", style="cyan", width=4)
+        table.add_column("序号", style="#A0B0C0", width=4)
         table.add_column("模块名", style="module")
         table.add_column("包名")
         table.add_column("描述")

@@ -8,7 +8,6 @@ import sys
 import asyncio
 from argparse import ArgumentParser
 from rich.prompt import Confirm, Prompt
-from rich.panel import Panel
 
 from ..utils import PackageManager
 from ..console import console
@@ -41,11 +40,7 @@ class SelfUpdateCommand(Command):
     
     def execute(self, args):
         current_version = self.package_manager.get_installed_version()
-        console.print(Panel(
-            f"[title]ErisPulse SDK 自更新[/]\n"
-            f"当前版本: [bold]{current_version}[/]",
-            title_align="left"
-        ))
+        console.print(f"当前版本: [bold]{current_version}[/]")
         
         # 获取可用版本
         with console.status("[bold green]正在获取版本信息...", spinner="dots"):
