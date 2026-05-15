@@ -164,6 +164,7 @@ class CLI:
             # 执行命令
             command = self.registry.get(args.command)
             if command:
+                console.print(f"[title]{command.description}[/]")
                 command.execute(args)
             else:
                 console.print(f"[error]未知命令: {args.command}[/]")
