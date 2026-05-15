@@ -162,29 +162,10 @@ class AdapterManager(ManagerBase):
 
         logger.info(f"启动适配器 {platforms}")
 
-        # 提交适配器启动开始事件
         await lifecycle.submit_event(
             "adapter.start", msg="开始启动适配器", data={"platforms": platforms}
         )
 
-        from .router import router
-        from ..runtime import get_server_config
-
-        server_config = get_server_config()
-
-        host = server_config["host"]
-        port = server_config["port"]
-        ssl_cert = server_config.get("ssl_certfile", None)
-        ssl_key = server_config.get("ssl_keyfile", None)
-
-        # 启动服务器
-        try:
-            await router.start(
-                host=host, port=port, ssl_certfile=ssl_cert, ssl_keyfile=ssl_key
-            )
-        except Exception as e:
-            logger.warning(f"路由服务器启动失败: {e}")
-        # 已经被调度过的 adapter 实例集合（防止重复调度）
         scheduled_adapters = set()
 
         for platform in platforms:
@@ -398,26 +379,20 @@ class AdapterManager(ManagerBase):
                         f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
                     )
 
-            # 停止路由器（仅当所有适配器都关闭时）
-            if not self._started_instances:
-                await router.stop()
-
             # 将相关 Bot 标记为离线
             for platform, bot_id in bots_to_offline:
                 if platform in self._bots and bot_id in self._bots[platform]:
                     self._bots[platform][bot_id]["status"] = "offline"
-                    # 提交 Bot 离线事件
                     await lifecycle.submit_event(
                         "adapter.bot.offline",
                         msg=f"Bot {platform}/{bot_id} 离线",
                         data={"platform": platform, "bot_id": bot_id, "status": "offline"},
                     )
 
-            # 如果所有适配器都关闭了，清理事件处理器
-            if not self._started_instances:
-                self._onebot_handlers.clear()
-                self._raw_handlers.clear()
-                self._onebot_middlewares.clear()
+            # 清理事件处理器
+            self._onebot_handlers.clear()
+            self._raw_handlers.clear()
+            self._onebot_middlewares.clear()
 
             # 提交适配器关闭完成事件
             await lifecycle.submit_event(
@@ -867,14 +842,20 @@ class AdapterManager(ManagerBase):
             if not self._is_being_shutdown:
                 try:
                     loop = asyncio.get_running_loop()
-                    task = loop.create_task(
-                        lifecycle.submit_event(
-                            "adapter.bot.offline",
-                            msg=f"Bot {platform}/{bot_id} 离线",
-                            data={"platform": platform, "bot_id": bot_id, "status": "offline"},
-                        )
-                    )
-                    self._adapter_tasks.setdefault(f"_bot_offline_{platform}_{bot_id}", task)
+                    task_key = f"_bot_offline_{platform}_{bot_id}"
+
+                    async def _offline_event():
+                        try:
+                            await lifecycle.submit_event(
+                                "adapter.bot.offline",
+                                msg=f"Bot {platform}/{bot_id} 离线",
+                                data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                            )
+                        finally:
+                            self._adapter_tasks.pop(task_key, None)
+
+                    task = loop.create_task(_offline_event())
+                    self._adapter_tasks[task_key] = task
                 except RuntimeError:
                     pass
 
