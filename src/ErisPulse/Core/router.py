@@ -778,19 +778,24 @@ class RouterManager:
         if namespace in self._http_routes:
             paths = list(self._http_routes[namespace].keys())
             for path in paths:
-                if self.unregister_http_route(namespace, path):
-                    result["http_count"] += 1
-            # 清理空命名空间
+                self._http_routes[namespace].pop(path, None)
+                result["http_count"] += 1
+            self.app.router.routes = [
+                route for route in self.app.router.routes
+                if not (isinstance(route, APIRoute) and route.path in paths)
+            ]
             if namespace in self._http_routes:
                 del self._http_routes[namespace]
         
-        # 清理 WebSocket 路由
         if namespace in self._websocket_routes:
             paths = list(self._websocket_routes[namespace].keys())
             for path in paths:
-                if self.unregister_websocket(namespace, path):
-                    result["websocket_count"] += 1
-            # 清理空命名空间
+                self._websocket_routes[namespace].pop(path, None)
+                result["websocket_count"] += 1
+            self.app.router.routes = [
+                route for route in self.app.router.routes
+                if not (hasattr(route, "path") and route.path in paths)
+            ]
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
 

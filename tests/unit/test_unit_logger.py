@@ -264,13 +264,13 @@ class TestLogger:
             
             # 验证
             assert result is True
-            assert temp_logger._file_handler is not None
+            assert len(temp_logger._file_handlers) == 1
         finally:
             # 清理 - 先关闭handler再删除文件
-            if temp_logger._file_handler:
-                temp_logger._logger.removeHandler(temp_logger._file_handler)
-                temp_logger._file_handler.close()
-                temp_logger._file_handler = None
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
             if os.path.exists(temp_file):
                 os.remove(temp_file)
     
@@ -285,12 +285,13 @@ class TestLogger:
             
             # 验证
             assert result is True
+            assert len(temp_logger._file_handlers) == 2
             
-            # 清理 - 关闭handler
-            if temp_logger._file_handler:
-                temp_logger._logger.removeHandler(temp_logger._file_handler)
-                temp_logger._file_handler.close()
-                temp_logger._file_handler = None
+            # 清理 - 关闭所有handler
+            for handler in temp_logger._file_handlers:
+                temp_logger._logger.removeHandler(handler)
+                handler.close()
+            temp_logger._file_handlers.clear()
     
     def test_save_logs(self, temp_logger):
         """测试保存日志到文件"""
