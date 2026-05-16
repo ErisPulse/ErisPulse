@@ -168,6 +168,36 @@ def _load_config(self):
     return config
 ```
 
+### 配置审计
+
+Config 模块内置调用方感知和审计功能，可追踪配置的读写来源：
+
+```python
+# 启用审计（默认关闭）
+sdk.config.enable_audit(True)
+
+# 监听配置变更
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"配置变更: {key}")
+    print(f"  旧值: {old_value} -> 新值: {new_value}")
+    print(f"  调用方: {caller.file}:{caller.lineno} ({caller.function})")
+
+# 获取审计日志
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# 关闭审计
+sdk.config.enable_audit(False)
+```
+
+审计日志中每条记录包含：
+- `operation`: 操作类型（`get` / `set`）
+- `key`: 配置键路径
+- `caller`: 调用方信息（文件名、行号、函数名、模块名）
+- `timestamp`: 操作时间戳
+
 ## Logger 模块
 
 ### 基本日志
@@ -368,15 +398,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics 模块
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 注册内置指标（HTTP 请求数、模块加载耗时等）
+sdk.metrics.register_builtin_metrics()
+
+# 获取所有指标快照
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### 指标类型
+
+#### Counter — 计数器
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="HTTP 请求总数")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge — 仪表盘
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="活跃连接数")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # 设为 42
+print(gauge.value)       # 42
+```
+
+#### Histogram — 直方图
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="请求耗时")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### 自定义指标
+
+```python
+from ErisPulse import sdk
+
+# 通过 MetricsManager 注册自定义指标
+sdk.metrics.counter("my_module.errors", description="模块错误计数")
+sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+
+# 获取并使用
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed 装饰器
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+```
+
 ## Router 模块
 
-### HTTP 路由
+### 装饰器路由（推荐）
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# 注册 HTTP 路由
+# HTTP 路由装饰器
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 快捷方法装饰器
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket 装饰器
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 带认证的 WebSocket 装饰器
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 传统注册方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -385,10 +544,12 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="数据接口",
+    tags=["API"],
 )
 
-# 取消路由
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
@@ -398,41 +559,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 注册 WebSocket 路由（默认自动接受连接）
 async def websocket_handler(websocket: WebSocket):
-    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 基本注册（自动接受连接）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 默认为 True，可省略
 )
 
-# 注册 WebSocket 路由（手动控制连接）
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根据 condition 决定是否接受连接
-    if some_condition:
-        await websocket.accept()
-        # 处理连接...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
+# 带认证的注册（推荐：使用 auth_handler 控制连接）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
 sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
+    handler=websocket_handler,
     auth_handler=auth_handler,
-    auto_accept=False  # 手动控制连接
 )
 
 # 取消路由
@@ -441,26 +589,113 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 
 **参数说明：**
 
-- `module_name`: 模块名称
-- `path`: WebSocket 路径
-- `handler`: 处理函数
-- `auth_handler`: 可选的认证函数
-- `auto_accept`: 是否自动接受连接（默认 `True`）
-  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
-  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `module_name` | 模块名称（必须） | - |
+| `path` | WebSocket 路径 | - |
+| `handler` | 处理函数 | - |
+| `auth_handler` | 认证函数，返回 `False` 会自动关闭连接 | `None` |
+| `auto_accept` | 是否自动 `accept()` | `True` |
+
+> **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
+
+### 路由分组
+
+```python
+# 创建路由组
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在组内注册路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 带版本号的分组
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中间件
+
+```python
+# 全局中间件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路径中间件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 对路由设置速率限制（滑动窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代码方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全头
+
+```python
+# 自动添加安全响应头
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自动文档
+
+```python
+# Router 默认启用 OpenAPI 文档
+# 禁用文档
+sdk.router.disable_docs()
+
+# 自定义文档信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文档",
+    version="1.0.0"
+)
+```
 
 ### 路由信息
 
 ```python
-# 获取 FastAPI 应用实例
 app = sdk.router.get_app()
-
-# 添加中间件
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
 ```
 
 ## 相关文档
