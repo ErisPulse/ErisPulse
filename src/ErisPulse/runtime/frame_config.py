@@ -28,7 +28,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "event": {                          # 事件系统配置
         "message": {                    # 消息事件配置
             "ignore_self": True,        # 是否忽略自身消息
-                                        #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
+             #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
         },
         "command": {                    # 命令系统配置
             "prefix": "/",              # 命令前缀
@@ -36,11 +36,13 @@ DEFAULT_ERISPULSE_CONFIG = {
             "allow_space_prefix": False,# 是否允许前缀存在空格
             "must_at_bot": False,       # 是否必须@机器人触发
         },
-
     },
     "framework": {                      # 框架配置
         "enable_lazy_loading": True     # 是否启用延迟加载
-    }
+    },
+    "metrics": {                        # 指标监控配置
+        "enabled": False,               # 是否启用指标采集
+    },
 }
 
 def _get_config_service():

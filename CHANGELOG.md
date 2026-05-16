@@ -63,8 +63,60 @@
 
 ---
 
-## [2.4.5-dev.3] - 2026/05/15
+## [2.4.5-dev.3] - 2026/05/16
 > 开发版本
+
+### 新增
+
+- @wsu2059q
+  - `Config` 模块新增调用方感知和配置审计系统：
+    - 新增 `_detect_caller()` 方法，使用 `sys._getframe()` 检测配置读写的调用来源
+    - 新增 `AuditEntry` 数据类，记录操作类型、配置键、调用方信息和时间戳
+    - 新增 `enable_audit(enabled)` 方法，开启/关闭审计日志
+    - 新增 `get_audit_log(limit)` 方法，获取最近的审计记录
+    - 新增 `on_change(key)` 装饰器，监听指定配置键的变更回调
+    - 调用方信息包含文件名、行号、函数名、模块名
+  - `Metrics` 新增指标监控模块 (`Core/metrics.py`)：
+    - 新增 `MetricsManager` 管理器，提供 `counter()`、`gauge()`、`histogram()` 工厂方法
+    - 新增 `Counter` 计数器指标，支持 `inc(n)` 和 `value` 属性
+    - 新增 `Gauge` 仪表盘指标，支持 `inc()`、`dec()`、`set(v)` 和 `value` 属性
+    - 新增 `Histogram` 直方图指标，支持 `observe(v)` 和 P50/P95/P99 百分位计算
+    - 新增 `@timed(metric_name)` 装饰器，自动记录函数执行耗时
+    - 新增 `register_builtin_metrics()` 方法，注册 HTTP 请求数、模块加载耗时等内置指标
+    - 新增 `get_all_metrics()` 方法，返回所有指标的当前快照
+  - `Router` 路由系统全面增强：
+    - 新增 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 装饰器快捷注册路由
+    - 新增 `RouteGroup` 路由分组，支持前缀、版本号和嵌套分组
+    - 新增路由中间件系统（`FuncMiddleware`），支持 glob 模式路径匹配和前/后置处理
+    - 新增 `@middleware(*paths)` 装饰器，根据函数参数数量自动判断前置/后置
+    - 新增 `add_middleware(before, after, *paths)` 函数式中间件注册
+    - 新增路由限流功能，滑动窗口算法，支持 `rate_limit` 参数（如 `"10/minute"`）
+    - 新增 `setup_cors()` 方法，配置化 CORS 中间件
+    - 新增 `setup_security_headers()` 方法，自动添加安全响应头
+    - 新增 `disable_docs()` / `set_docs_info()` 方法，控制 API 文档
+    - 新增 `_apply_config()` 方法，从配置文件自动应用 CORS 和安全头
+    - `register_http_route` 新增 `rate_limit`、`summary`、`description`、`tags`、`response_model`、`deprecated` 参数，与装饰器粒度对齐
+  - `Conversation` 多轮对话扩展：
+    - 新增 `@conv.branch(name)` 装饰器，注册对话分支
+    - 新增 `conv.goto(name)` 方法，在分支间跳转
+    - 新增 `conv.start(name=None)` 方法，启动对话（默认从第一个分支开始）
+    - 新增 `conv.context` 字典，分支间共享状态
+    - 新增 `conv.save()` / `conv.resume()` / `conv.clear_saved()` 方法，支持对话持久化
+    - `collect()` 字段新增 `condition` 参数，支持条件字段（动态表单）
+  - `Module` 模块加载新增依赖管理：
+    - 新增 `_validate_dependencies()` 方法，验证模块声明的 `depends` 依赖是否已注册
+    - 新增 `_topological_sort()` 方法，基于 Kahn 算法按依赖关系排序加载顺序
+    - 同层级模块按 `priority` 降序排列
+    - 缺失依赖的模块自动跳过并记录警告
+  - `CLI init` 命令增强：
+    - `epsdk init` 现在生成精简的 `config.toml` 和完整的 `config.full.example`
+    - 新增 `_get_full_example_config()` 静态方法，生成带注释的完整配置示例
+    - 配置示例覆盖：server、logger、storage、event、framework、config.audit、metrics、router.cors、router.security、adapters.status、modules.status
+
+### 变更
+
+- @wsu2059q
+  - `Router` 路由中间件路径模式为 glob 匹配（如 `"/MyModule/*"`），而非 `(module_name, pattern)` 元组
 
 ### 修复
 
