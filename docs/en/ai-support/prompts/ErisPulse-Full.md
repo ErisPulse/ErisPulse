@@ -62,16 +62,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
+    SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management"]
+    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["Yunhu"]
@@ -89,14 +91,15 @@ graph TB
 
 | Module | Description |
 |------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta |
+| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
 | **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
+| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management |
+| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
@@ -113,20 +116,26 @@ flowchart TD
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
     E --> F["Register Modules"]
-    F --> G["Initialize Modules<br/>(Instantiate + on_load)"]
+    F --> F1{"Dependency Validation"}
+    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
+    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["Start Router Server"]
-    I --> J["Async Start Platform Adapters"]
-    J --> K["Ready"]
+    I --> J["Asynchronously Start Platform Adapters"]
+    J --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
-1.  **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2.  **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3.  **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4.  **Module Initialization** - Create module instances, call the `on_load` lifecycle method
-5.  **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
+2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
+3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
+4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
 
 ## Event Handling Process
 
@@ -151,11 +160,11 @@ flowchart LR
 
 ### Key Steps in Event Handling
 
--   **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
--   **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
--   **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
--   **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
--   **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
+- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
+- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
+- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
 
 ## Lifecycle Events
 
@@ -3339,7 +3348,8 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
-            priority=0
+            priority=0,
+            depends=[]  # Optional: List of other modules this module depends on
         )
     
     async def on_load(self, event):
@@ -3444,9 +3454,12 @@ class MyModule(BaseModule):
         """Return module load strategy"""
         return ModuleLoadStrategy(
             lazy_load=True,   # Lazy load or immediate load
-            priority=0        # Load priority
+            priority=0,       # Load priority (higher values load first)
+            depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
+
+> `depends` declared modules that are not registered will cause the current module to be skipped with a warning. The loading order is determined by topological sorting, with the same level loaded in descending order of `priority`.
 
 ### on_load Method
 
@@ -6633,7 +6646,7 @@ sdk.storage.delete_multi(["key1", "key2", "key3"])
 
 ### SQL Chain Query
 
-The Storage module provides a general-purpose SQL query builder with a chaining-style API, supporting CRUD operations for custom tables.
+The Storage module provides a chain-style API general-purpose SQL query builder, supporting CRUD operations for custom tables.
 
 > See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
 
@@ -6749,6 +6762,36 @@ def _load_config(self):
         return default_config
     return config
 ```
+
+### Configuration Auditing
+
+Config module has built-in caller-aware and auditing functionality to track read/write sources of configurations:
+
+```python
+# Enable auditing (disabled by default)
+sdk.config.enable_audit(True)
+
+# Listen for configuration changes
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"Configuration changed: {key}")
+    print(f"  Old value: {old_value} -> New value: {new_value}")
+    print(f"  Caller: {caller.file}:{caller.lineno} ({caller.function})")
+
+# Get audit logs
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# Disable auditing
+sdk.config.enable_audit(False)
+```
+
+Audit logs contain:
+- `operation`: Operation type (`get` / `set`)
+- `key`: Configuration key path
+- `caller`: Caller information (file name, line number, function name, module name)
+- `timestamp`: Operation timestamp
 
 ## Logger Module
 
@@ -6950,15 +6993,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics Module
+
+### Basic Usage
+
+```python
+from ErisPulse import sdk
+
+# Register built-in metrics (HTTP requests count, module loading time, etc.)
+sdk.metrics.register_builtin_metrics()
+
+# Get all metrics snapshot
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### Metric Types
+
+#### Counter
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="Total HTTP requests")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="Active connections count")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # Set to 42
+print(gauge.value)       # 42
+```
+
+#### Histogram
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="Request duration")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### Custom Metrics
+
+```python
+from ErisPulse import sdk
+
+# Register custom metrics via MetricsManager
+sdk.metrics.counter("my_module.errors", description="Module error count")
+sdk.metrics.gauge("my_module.queue_size", description="Queue size")
+sdk.metrics.histogram("my_module.process_time", description="Processing time")
+
+# Get and use
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed Decorator
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # Function execution time will be automatically recorded to Histogram metric
+    await do_something()
+```
+
 ## Router Module
 
-### HTTP Routes
+### Decorator Routing (Recommended)
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# Register HTTP route
+# HTTP route decorator
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# Shortcut method decorators
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket decorator
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Authenticated WebSocket decorator
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### Traditional Registration
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -6967,28 +7139,164 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data API",
+    tags=["API"],
 )
 
-# Unregister route
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
-### WebSocket Routes
+### WebSocket Routing
 
 ```python
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# Register WebSocket route (automatically accepts connection by default)
 async def websocket_handler(websocket: WebSocket):
-    # No manual accept needed by default, it is called internally automatically
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# Basic registration (auto accepts connection)
 sdk.router.register_websocket(
-    module_name="my
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# Authenticated registration (recommended: use auth_handler to control connection)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# Unregister route
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**Parameter Description:**
+
+| Parameter | Description | Default Value |
+|----------|-------------|--------------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Auth function, returns `False` to auto-close connection | `None` |
+| `auto_accept` | Whether to auto `accept()` | `True` |
+
+> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
+
+### Route Grouping
+
+```python
+# Create route group
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# Register routes in group
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Versioned grouping
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### Route Middleware
+
+```python
+# Global middleware (glob matching)
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# Specific path middleware
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### Rate Limiting
+
+```python
+# Set rate limit for route (sliding window)
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS Configuration
+
+```python
+# Programmatic way
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# Configuration file way (config.toml)
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### Security Headers
+
+```python
+# Automatically add security response headers
+sdk.router.setup_security_headers()
+
+# Configuration file way (config.toml)
+# [router.security]
+# enabled = true
+```
+
+### Auto Documentation
+
+```python
+# Router enables OpenAPI documentation by default
+# Disable documentation
+sdk.router.disable_docs()
+
+# Custom documentation info
+sdk.router.set_docs_info(
+    title="My API",
+    description="API documentation",
+    version="1.0.0"
+)
+```
+
+### Route Information
+
+```python
+app = sdk.router.get_app()
+```
+
+## Related Documentation
+
+- [Event System API](event-system.md) - Event module API
+- [Adapter System API](adapter-system.md) - Adapter management API
 
 
 
@@ -9623,89 +9931,242 @@ The ErisPulse Router Manager provides unified HTTP and WebSocket route managemen
 
 Key features of the Router Manager:
 
-- **HTTP Route Management**: Supports route registration for various HTTP methods
+- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
+- **Route Middleware**: Supports request interception with glob pattern matching
+- **Rate Limiting**: Built-in sliding window rate limiting
+- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **Security Headers**: Automatically adds security response headers
+- **Auto Documentation**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management and custom authentication
 - **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system
-- **Unified Error Handling**: Provides unified error handling and logging
 - **SSL/TLS Support**: Supports HTTPS and WSS secure connections
 
-## Basic Usage
+## Decorator Routes (Recommended)
 
-### Registering HTTP Routes
+### HTTP Decorators
 
 ```python
-from fastapi import Request
 from ErisPulse.Core import router
+from fastapi import Request
 
-async def hello_handler(request: Request):
-    return {"message": "Hello World"}
+# General HTTP routes
+@router.http("my_module", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"message": "Hello"}
 
-# Register GET route
-router.register_http_route(
-    module_name="my_module",
-    path="/hello",
-    handler=hello_handler,
-    methods=["GET"]
-)
+# Shortcut methods
+@router.get("my_module", "/info")
+async def get_info(request: Request):
+    return {"info": "data"}
+
+@router.post("my_module", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@router.put("my_module", "/data/{item_id}")
+async def update_data(request: Request):
+    return {"updated": True}
+
+@router.delete("my_module", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
 ```
 
-### Registering WebSocket Routes
+> **Note**: `module_name` must be explicitly passed as the first parameter, and the route path will automatically have the module name prefix added.
+
+### WebSocket Decorators
 
 ```python
 from fastapi import WebSocket
 
-# Automatically accepts connection by default
+# Basic WebSocket
+@router.ws("my_module", "/ws")
 async def websocket_handler(websocket: WebSocket):
-    # No manual accept needed by default, automatically called internally
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# WebSocket with authentication (Recommended: use auth_handler to control connection)
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+## Traditional Registration Method
+
+```python
+from fastapi import Request
+
+async def hello_handler(request: Request):
+    return {"message": "Hello World"}
+
+# Basic registration
+router.register_http_route(
+    module_name="my_module",
+    path="/hello",
+    handler=hello_handler,
+    methods=["GET"],
+)
+
+# Registration with rate limiting and documentation info
+router.register_http_route(
+    module_name="my_module",
+    path="/api/data",
+    handler=data_handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data API",
+    tags=["API"],
+)
+```
+
+### WebSocket Registration
+
+```python
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Basic registration
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # Defaults to True, can be omitted
 )
 
-# Manually control connection
-async def manual_websocket_handler(websocket: WebSocket):
-    # Decide whether to accept connection based on condition
-    if some_condition:
-        await websocket.accept()
-        # Handle connection...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
+# Registration with authentication (Recommended)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
 
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
-    auto_accept=False  # Manually control connection
+    handler=websocket_handler,
+    auth_handler=auth_handler,
 )
 ```
 
 **Parameter Description:**
 
-- `module_name`: Module name
-- `path`: WebSocket path
-- `handler`: Handler function
-- `auth_handler`: Optional authentication function
-- `auto_accept`: Whether to automatically accept the connection (default `True`)
-  - `True`: The framework automatically calls `websocket.accept()`, the handler does not need to call it manually
-  - `False`: The handler must call `websocket.accept()` or `websocket.close()` itself
+| Parameter | Description | Default Value |
+|----------|-------------|---------------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
+| `auto_accept` | Whether to automatically `accept()` | `True` |
 
-### Unregistering Routes
+> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need complete control over the connection flow.
+
+## Route Grouping
 
 ```python
-router.unregister_http_route(
-    module_name="my_module",
-    path="/hello"
-)
+# Create a route group with prefix
+group = router.group("my_module", prefix="/v1")
 
-router.unregister_websocket(
-    module_name="my_module",
-    path="/ws"
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Actual path: /my_module/v1/users
+```
+
+## Route Middleware
+
+Middleware supports glob pattern matching for paths:
+
+```python
+@router.middleware("/my_module/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    return await call_next(request)
+
+@router.middleware("/my_module/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+## Rate Limiting
+
+Use sliding window algorithm to rate limit routes:
+
+```python
+@router.get("my_module", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@router.post("my_module", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+Rate limiting format: `{count}/{time window}`, e.g., `10/minute`, `100/hour`.
+
+## CORS Configuration
+
+```python
+router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+Can also configure through `config.toml`:
+
+```toml
+[router.cors]
+allow_origins = ["https://example.com"]
+allow_methods = ["GET", "POST"]
+allow_headers = ["*"]
+```
+
+## Security Headers
+
+```python
+router.setup_security_headers()
+```
+
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, etc.
+
+Can also configure through `config.toml`:
+
+```toml
+[router.security]
+enabled = true
+```
+
+## Auto Documentation
+
+Router defaults to OpenAPI interactive documentation:
+
+```python
+# Disable documentation
+router.disable_docs()
+
+# Customize documentation info
+router.set_docs_info(
+    title="My API",
+    description="API Documentation",
+    version="1.0.0"
 )
 ```
 
@@ -9721,22 +10182,32 @@ router.register_http_route("my_module", "/api", handler)
 
 ## Authentication Mechanism
 
-WebSocket supports custom authentication logic:
+Recommended to use `auth_handler` to control connection access:
 
 ```python
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
+# Decorator method
+@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
+async def secure_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Traditional registration method
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
     handler=websocket_handler,
-    auth_handler=auth_handler
+    auth_handler=auth_handler,
 )
 ```
+
+The `auth_handler` is executed after the connection is established. Returning `False` will automatically close the connection (status code 1008).
+
+> Only set `auto_accept=False` when you need complete control over the connection flow (e.g., custom handshake protocol).
 
 ## System Routes
 
@@ -9773,10 +10244,12 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Route Naming Conventions**: Use clear, descriptive path names
-2. **Security Considerations**: Implement authentication mechanisms for sensitive operations
-3. **Error Handling**: Implement appropriate error handling and response formats
-4. **Connection Management**: Implement appropriate connection cleanup
+1. **Prioritize Decorators**: `@router.get()` etc. are more concise than `register_http_route()`
+2. **Explicitly Pass module_name**: The first parameter to decorators must be the module name and cannot be omitted
+3. **Use Route Groups**: Use `create_group()` to organize multiple routes for the same module
+4. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
+5. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
+6. **Error Handling**: Implement appropriate error handling and response formats
 
 ## Related Documentation
 
@@ -10279,10 +10752,21 @@ Field configuration:
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
 | `key` | Field key name (required) | - |
-| `prompt` | Prompt message | `"请输入 {key}"` |
+| `prompt` | Prompt message | `"Please enter {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
-| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
+| `retry_prompt` | Retry prompt on validation failure | `"Input invalid, please re-enter"` |
 | `max_retries` | Maximum retry times | 3 |
+| `condition` | Condition function, receives collected data dict, returns bool | None |
+
+**Conditional Fields**: Using `condition` can implement dynamic forms, collecting a field only when the condition is met:
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
+    {"key": "car_brand", "prompt": "Please enter car brand",
+     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
+])
+```
 
 ### stop()
 
@@ -10310,6 +10794,96 @@ The conversation automatically becomes inactive in the following situations:
 3. `collect()` returns `None` due to any step timing out or retries being exhausted
 
 After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without continuing to wait for user input.
+
+## Branches and Jumps
+
+### @conv.branch(name) Decorator
+
+Use `branch()` to register conversation branches and jump between them with `goto()`:
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("Goodbye!")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # Start from the first registered branch
+```
+
+### conv.start(name=None)
+
+Start the conversation, defaults to starting from the first registered branch:
+
+```python
+await conv.start()          # Start from the first branch
+await conv.start("settings") # Start from the specified branch
+```
+
+## Context and Persistence
+
+### conv.context
+
+Each conversation instance has a built-in `context` dictionary for sharing state between branches:
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "Unknown")
+    await conv.say(f"Hello, {name}!")
+```
+
+### save() / resume() / clear_saved()
+
+Conversation supports persistence and can be restored after timeout or interruption:
+
+```python
+# Save conversation state
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # Auto-generated based on user and group
+
+# ... later in the same session ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("Welcome back! Continuing the previous conversation")
+else:
+    await conv2.say("No previous conversation found")
+
+# Clear saved conversation
+conv.clear_saved()
+```
 
 ## Typical Flow Patterns
 
