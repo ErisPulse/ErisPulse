@@ -721,7 +721,11 @@ class AdapterManager(ManagerBase):
         # 先执行OneBot12中间件
         processed_data = data
         for middleware in self._onebot_middlewares:
-            processed_data = await middleware(processed_data)
+            result = await middleware(processed_data)
+            if result is not None:
+                processed_data = result
+            else:
+                logger.warning(f"中间件 {middleware.__qualname__} 返回 None，已忽略并保留原数据")
 
         # 分发到OneBot12事件处理器
         handlers_to_call = []
