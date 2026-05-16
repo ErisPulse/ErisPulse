@@ -33,6 +33,7 @@ from .Core.logger import Logger
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
 from .Core.config import ConfigManager
+from .Core.metrics import metrics, MetricsManager
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
@@ -63,6 +64,7 @@ class SDK:
     - SendDSL: DSL 发送接口基类
     - module: 模块管理器
     - router: 路由管理器
+    - metrics: 指标监控管理器
     {!--< /tips >!--}
     """
     
@@ -107,13 +109,15 @@ class SDK:
     router: RouterManager
     """路由管理器"""
     
+    metrics: MetricsManager
+    """指标监控管理器"""
+    
     def __init__(self):
         """
         初始化 SDK 实例
         
         挂载所有核心模块到 SDK 实例
         """
-        # 挂载核心模块
         self.Event = Event
         self.lifecycle = lifecycle
         self.logger = logger
@@ -123,7 +127,6 @@ class SDK:
         self.config = config
         
         self.adapter = adapter
-        # 设置 adapter 的 SDK 引用
         adapter.set_sdk_ref(self)
 
         self.BaseAdapter = BaseAdapter
@@ -133,12 +136,11 @@ class SDK:
         self.BaseQueryBuilder = BaseQueryBuilder
         
         self.module = module
-        # 设置 module 的 SDK 引用
         module.set_sdk_ref(self)
         
         self.router = router
+        self.metrics = metrics
         
-        # 初始化协调器（在需要时创建）
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
     
