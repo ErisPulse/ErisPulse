@@ -36,7 +36,7 @@ class Logger:
         self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
         self._logger.setLevel(logging.DEBUG)
-        self._file_handler = None
+        self._file_handlers: list[logging.FileHandler] = []
         self._console = Console()
         if not self._logger.handlers:
             console_handler = RichHandler(
@@ -108,28 +108,25 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        if self._file_handler:
-            self._logger.removeHandler(self._file_handler)
-            self._file_handler.close()
-            self._file_handler = None
+        if self._file_handlers:
+            for handler in self._file_handlers:
+                self._logger.removeHandler(handler)
+                handler.close()
+            self._file_handlers.clear()
 
         if isinstance(path, str):
             path = [path]
 
         success = False
-        last_handler = None
         for p in path:
             try:
                 handler = logging.FileHandler(p, encoding="utf-8")
                 handler.setFormatter(logging.Formatter("%(message)s"))
                 self._logger.addHandler(handler)
-                last_handler = handler
+                self._file_handlers.append(handler)
                 success = True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
-
-        if last_handler:
-            self._file_handler = last_handler
 
         if not success:
             self._logger.warning("未能成功设置任何日志文件。")
