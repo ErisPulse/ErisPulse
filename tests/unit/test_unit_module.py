@@ -626,3 +626,146 @@ class TestModuleLifecycleIntegration:
             mock_lifecycle.submit_event.assert_called()
             call_args = mock_lifecycle.submit_event.call_args
             assert call_args[0][0] == "module.unload"
+
+
+# ==================== 模块依赖管理测试 ====================
+
+class TestModuleDependencies:
+    """模块依赖管理测试"""
+
+    @pytest.fixture
+    def loader(self):
+        """创建模块加载器实例"""
+        from ErisPulse.loaders.module import ModuleLoader
+        return ModuleLoader()
+
+    def _make_mock_module(self, name, depends=None, priority=0):
+        """创建模拟模块对象"""
+        mock_mod = Mock()
+        mock_mod.moduleInfo = {
+            "meta": {
+                "name": name,
+                "priority": priority,
+                **({"depends": depends} if depends else {}),
+            }
+        }
+        return mock_mod
+
+    def test_validate_dependencies_all_satisfied(self, loader):
+        """测试依赖全部满足"""
+        modules = ["A", "B", "C"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["B"]),
+            "B": self._make_mock_module("B"),
+            "C": self._make_mock_module("C"),
+        }
+        missing = loader._validate_dependencies(modules, module_objs)
+        assert missing == {}
+
+    def test_validate_dependencies_missing(self, loader):
+        """测试存在缺失依赖"""
+        modules = ["A", "B"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["C"]),
+            "B": self._make_mock_module("B"),
+        }
+        missing = loader._validate_dependencies(modules, module_objs)
+        assert "A" in missing
+        assert "C" in missing["A"]
+
+    def test_validate_dependencies_no_depends(self, loader):
+        """测试无依赖模块"""
+        modules = ["A"]
+        module_objs = {
+            "A": self._make_mock_module("A"),
+        }
+        missing = loader._validate_dependencies(modules, module_objs)
+        assert missing == {}
+
+    def test_validate_dependencies_multiple_missing(self, loader):
+        """测试多个缺失依赖"""
+        modules = ["A"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["B", "C"]),
+        }
+        missing = loader._validate_dependencies(modules, module_objs)
+        assert len(missing["A"]) == 2
+
+    def test_topological_sort_simple(self, loader):
+        """测试简单拓扑排序"""
+        modules = ["A", "B"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["B"]),
+            "B": self._make_mock_module("B"),
+        }
+        result = loader._topological_sort(modules, module_objs)
+        assert result.index("B") < result.index("A")
+
+    def test_topological_sort_chain(self, loader):
+        """测试链式依赖排序"""
+        modules = ["A", "B", "C"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["B"]),
+            "B": self._make_mock_module("B", depends=["C"]),
+            "C": self._make_mock_module("C"),
+        }
+        result = loader._topological_sort(modules, module_objs)
+        assert result.index("C") < result.index("B")
+        assert result.index("B") < result.index("A")
+
+    def test_topological_sort_no_deps(self, loader):
+        """测试无依赖排序（按优先级）"""
+        modules = ["A", "B", "C"]
+        module_objs = {
+            "A": self._make_mock_module("A", priority=1),
+            "B": self._make_mock_module("B", priority=10),
+            "C": self._make_mock_module("C", priority=5),
+        }
+        result = loader._topological_sort(modules, module_objs)
+        assert result[0] == "B"  # priority=10 最高
+        assert result[1] == "C"  # priority=5
+        assert result[2] == "A"  # priority=1
+
+    def test_topological_sort_priority_with_deps(self, loader):
+        """测试带依赖的优先级排序"""
+        modules = ["A", "B", "C", "D"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["D"], priority=100),
+            "B": self._make_mock_module("B", depends=["D"], priority=1),
+            "C": self._make_mock_module("C", depends=["D"], priority=50),
+            "D": self._make_mock_module("D"),
+        }
+        result = loader._topological_sort(modules, module_objs)
+        assert result[0] == "D"
+        assert result.index("A") < result.index("B")
+        assert result.index("C") < result.index("B")
+
+    def test_topological_sort_cycle_raises(self, loader):
+        """测试循环依赖抛出异常"""
+        modules = ["A", "B"]
+        module_objs = {
+            "A": self._make_mock_module("A", depends=["B"]),
+            "B": self._make_mock_module("B", depends=["A"]),
+        }
+        with pytest.raises(RuntimeError, match="循环依赖"):
+            loader._topological_sort(modules, module_objs)
+
+    def test_topological_sort_diamond(self, loader):
+        """测试菱形依赖"""
+        #   D (top)
+        #  / \
+        # B   C
+        #  \ /
+        #   A (bottom)
+        modules = ["A", "B", "C", "D"]
+        module_objs = {
+            "D": self._make_mock_module("D", depends=["B", "C"]),
+            "B": self._make_mock_module("B", depends=["A"]),
+            "C": self._make_mock_module("C", depends=["A"]),
+            "A": self._make_mock_module("A"),
+        }
+        result = loader._topological_sort(modules, module_objs)
+        assert result.index("A") < result.index("B")
+        assert result.index("A") < result.index("C")
+        assert result.index("B") < result.index("D")
+        assert result.index("C") < result.index("D")
