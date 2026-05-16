@@ -14,16 +14,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命週期管理"]
     SDK --> Logger["Logger<br/>日誌管理"]
     SDK --> Storage["Storage / env<br/>儲存管理"]
-    SDK --> Config["Config<br/>設定管理"]
+    SDK --> Config["Config<br/>設定管理 + 審計"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
     SDK --> Router["Router<br/>路由管理"]
+    SDK --> Metrics["Metrics<br/>指標監控"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>分支 + 持久化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["雲湖"]
@@ -41,14 +43,15 @@ graph TB
 
 | 模組 | 說明 |
 |------|------|
-| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理 |
+| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
-| **Module** | 模組管理器，管理外掛的註冊、載入和卸載 |
+| **Module** | 模組管理器，管理外掛的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
-| **Config** | TOML 格式的設定檔管理 |
+| **Config** | TOML 格式的設定檔管理，支援呼叫方感知和設定審計 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理 |
+| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **Metrics** | 指標監控系統，提供 Counter / Gauge / Histogram 三種指標類型 |
 
 ## 初始化流程
 
@@ -65,7 +68,11 @@ flowchart TD
     D --> D2["從 PyPI 載入模組"]
     D1 & D2 --> E["註冊適配器"]
     E --> F["註冊模組"]
-    F --> G["初始化模組<br/>（實例化 + on_load）"]
+    F --> F1{"依賴驗證"}
+    F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
+    F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
+    F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["啟動路由伺服器"]
     I --> J["非同步啟動各平台適配器"]
@@ -77,8 +84,10 @@ flowchart TD
 1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
 2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
 3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
-4. **模組初始化** - 建立模組實例，呼叫 `on_load` 生命週期方法
-5. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+4. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+5. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+6. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
+7. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
 
 ## 事件處理流程
 

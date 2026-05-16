@@ -121,10 +121,21 @@ Field configuration:
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
 | `key` | Field key name (required) | - |
-| `prompt` | Prompt message | `"请输入 {key}"` |
+| `prompt` | Prompt message | `"Please enter {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
-| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
+| `retry_prompt` | Retry prompt on validation failure | `"Input invalid, please re-enter"` |
 | `max_retries` | Maximum retry times | 3 |
+| `condition` | Condition function, receives collected data dict, returns bool | None |
+
+**Conditional Fields**: Using `condition` can implement dynamic forms, collecting a field only when the condition is met:
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
+    {"key": "car_brand", "prompt": "Please enter car brand",
+     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
+])
+```
 
 ### stop()
 
@@ -152,6 +163,96 @@ The conversation automatically becomes inactive in the following situations:
 3. `collect()` returns `None` due to any step timing out or retries being exhausted
 
 After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without continuing to wait for user input.
+
+## Branches and Jumps
+
+### @conv.branch(name) Decorator
+
+Use `branch()` to register conversation branches and jump between them with `goto()`:
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("Goodbye!")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # Start from the first registered branch
+```
+
+### conv.start(name=None)
+
+Start the conversation, defaults to starting from the first registered branch:
+
+```python
+await conv.start()          # Start from the first branch
+await conv.start("settings") # Start from the specified branch
+```
+
+## Context and Persistence
+
+### conv.context
+
+Each conversation instance has a built-in `context` dictionary for sharing state between branches:
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "Unknown")
+    await conv.say(f"Hello, {name}!")
+```
+
+### save() / resume() / clear_saved()
+
+Conversation supports persistence and can be restored after timeout or interruption:
+
+```python
+# Save conversation state
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # Auto-generated based on user and group
+
+# ... later in the same session ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("Welcome back! Continuing the previous conversation")
+else:
+    await conv2.say("No previous conversation found")
+
+# Clear saved conversation
+conv.clear_saved()
+```
 
 ## Typical Flow Patterns
 
