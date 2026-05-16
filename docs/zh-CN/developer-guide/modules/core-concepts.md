@@ -16,9 +16,12 @@ class MyModule(BaseModule):
         """返回模块加载策略"""
         return ModuleLoadStrategy(
             lazy_load=True,   # 懒加载还是立即加载
-            priority=0        # 加载优先级
+            priority=0,       # 加载优先级（数值越大越先加载）
+            depends=["OtherModule"]  # 可选：声明依赖的其他模块
         )
 ```
+
+> `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
 ### on_load 方法
 

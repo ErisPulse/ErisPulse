@@ -125,6 +125,17 @@ else:
 | `validator` | 验证函数，接收 Event，返回 bool | 无 |
 | `retry_prompt` | 验证失败重试提示 | `"输入无效，请重新输入"` |
 | `max_retries` | 最大重试次数 | 3 |
+| `condition` | 条件函数，接收已收集数据 dict，返回 bool | 无 |
+
+**条件字段**：使用 `condition` 可以实现动态表单，只有条件满足时才收集该字段：
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "你有车吗？（是/否）"},
+    {"key": "car_brand", "prompt": "请输入车型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+])
+```
 
 ### stop()
 
@@ -152,6 +163,96 @@ if conv.is_active:
 3. `collect()` 因任何步骤超时或重试耗尽而返回 `None`
 
 非活跃后，所有交互方法（`wait`/`confirm`/`choose`/`collect`）会立即返回 `None`，不会继续等待用户输入。
+
+## 分支与跳转
+
+### @conv.branch(name) 装饰器
+
+使用 `branch()` 注册对话分支，通过 `goto()` 在分支间跳转：
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("再见！")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== 个人信息 ===\n姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== 设置 ===\n1. 通知开关\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # 从第一个注册的分支开始
+```
+
+### conv.start(name=None)
+
+启动对话，默认从第一个注册的分支开始：
+
+```python
+await conv.start()          # 从第一个分支开始
+await conv.start("settings") # 从指定分支开始
+```
+
+## 上下文与持久化
+
+### conv.context
+
+每个对话实例内置 `context` 字典，用于在分支间共享状态：
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
+```
+
+### save() / resume() / clear_saved()
+
+对话支持持久化，可在超时或中断后恢复：
+
+```python
+# 保存对话状态
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # 基于用户和群组自动生成
+
+# ... 之后在同一会话中恢复 ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("欢迎回来！继续之前的对话")
+else:
+    await conv2.say("没有找到之前的对话")
+
+# 清除保存的对话
+conv.clear_saved()
+```
 
 ## 典型流程模式
 

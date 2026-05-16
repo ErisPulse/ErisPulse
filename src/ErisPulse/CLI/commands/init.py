@@ -84,31 +84,31 @@ class InitCommand(Command):
                 dir_path.mkdir(exist_ok=True)
                 console.print(f"[green]创建目录: {dir_name}[/green]")
             
-            # 创建配置文件
+            # 创建配置文件 (最小必须配置)
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with open(config_file, "w", encoding="utf-8") as f:
-                    f.write("# ErisPulse 配置文件\n\n")
-                    f.write("[ErisPulse]\n")
-                    f.write("# 全局配置\n\n")
+                    f.write("# ErisPulse 配置文件\n")
+                    f.write("# 完整配置示例请参考 config.full.example\n\n")
                     f.write("[ErisPulse.server]\n")
                     f.write('host = "0.0.0.0"\n')
                     f.write("port = 8000\n\n")
                     f.write("[ErisPulse.logger]\n")
                     f.write('level = "INFO"\n')
-                    f.write("log_files = [\"logs/app.log\"]\n")
-                    f.write("memory_limit = 1000\n\n")
                     
-                    # 添加适配器配置
                     if adapter_list:
-                        f.write("[ErisPulse.adapters]\n")
-                        f.write("# 适配器配置\n\n")
-                        f.write("[ErisPulse.adapters.status]\n")
+                        f.write("\n[ErisPulse.adapters.status]\n")
                         for adapter in adapter_list:
-                            f.write(f'{adapter} = false  # 默认禁用，需要时启用\n')
-                        f.write("\n")
+                            f.write(f'{adapter} = false\n')
                 
                 console.print("[green]创建配置文件: config/config.toml[/green]")
+            
+            # 创建完整配置示例文件
+            example_file = project_path / "config" / "config.full.example"
+            if not example_file.exists():
+                with open(example_file, "w", encoding="utf-8") as f:
+                    f.write(self._get_full_example_config(adapter_list))
+                console.print("[green]创建配置示例: config/config.full.example[/green]")
             
             # 创建主程序文件
             main_file = project_path / "main.py"
@@ -138,6 +138,112 @@ class InitCommand(Command):
         except Exception as e:
             console.print(f"[red]初始化项目失败: {e}[/]")
             return False
+    
+    @staticmethod
+    def _get_full_example_config(adapter_list=None):
+        """
+        生成完整配置示例文件内容
+        
+        :param adapter_list: list 可用适配器列表
+        :return: str 完整配置示例内容
+        
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        lines = [
+            "# ErisPulse 完整配置示例",
+            "# 此文件展示所有可用配置项及其默认值",
+            "# 如需使用，将所需配置复制到 config.toml 并按需修改",
+            "",
+            "# ==================== 服务器 ====================",
+            "",
+            "[ErisPulse.server]",
+            'host = "0.0.0.0"              # 监听地址',
+            "port = 8000                   # 监听端口",
+            "ssl_certfile = null           # SSL 证书路径",
+            "ssl_keyfile = null            # SSL 密钥路径",
+            "",
+            "# ==================== 日志 ====================",
+            "",
+            "[ErisPulse.logger]",
+            'level = "INFO"                # 日志级别: DEBUG/INFO/WARNING/ERROR',
+            "log_files = []                # 日志文件列表, 如 [\"logs/app.log\"]",
+            "memory_limit = 1000           # 内存日志条数上限",
+            "",
+            "# ==================== 存储 ====================",
+            "",
+            "[ErisPulse.storage]",
+            "use_global_db = false         # 是否使用全局数据库",
+            "",
+            "# ==================== 事件系统 ====================",
+            "",
+            "[ErisPulse.event.message]",
+            "ignore_self = true            # 忽略自身消息",
+            "",
+            "[ErisPulse.event.command]",
+            'prefix = "/"                  # 命令前缀',
+            "case_sensitive = true         # 区分大小写",
+            "allow_space_prefix = false    # 允许前缀前有空格",
+            "must_at_bot = false           # 必须艾特Bot才触发",
+            "",
+            "# ==================== 框架 ====================",
+            "",
+            "[ErisPulse.framework]",
+            "enable_lazy_loading = true    # 启用模块懒加载",
+            "",
+            "# ==================== 配置审计 ====================",
+            "",
+            "[ErisPulse.config.audit]",
+            "enabled = false               # 是否启用配置审计",
+            "max_entries = 1000            # 审计日志最大条数",
+            "",
+            "# ==================== 指标监控 ====================",
+            "",
+            "[ErisPulse.metrics]",
+            "enabled = false               # 是否启用指标采集",
+            "",
+            "# ==================== 路由增强 ====================",
+            "",
+            "[ErisPulse.router.cors]",
+            "enabled = false",
+            'allow_origins = ["*"]',
+            'allow_methods = ["*"]',
+            'allow_headers = ["*"]',
+            "allow_credentials = false",
+            "max_age = 600",
+            "",
+            "[ErisPulse.router.security]",
+            "enabled = false",
+            "",
+            "[ErisPulse.router.security.headers]",
+            'X-Content-Type-Options = "nosniff"',
+            'X-Frame-Options = "DENY"',
+            "",
+            "# ==================== 适配器状态 ====================",
+            "",
+            "[ErisPulse.adapters.status]",
+        ]
+        
+        if adapter_list:
+            for adapter in adapter_list:
+                lines.append(f"# {adapter} = false")
+        else:
+            lines.extend([
+                "# yunhu = false",
+                "# telegram = false",
+                "# onebot11 = false",
+            ])
+        
+        lines.extend([
+            "",
+            "# ==================== 模块状态 ====================",
+            "",
+            "[ErisPulse.modules.status]",
+            "# MyModule = true",
+            "",
+        ])
+        
+        return "\n".join(lines)
     
     async def _fetch_available_adapters(self):
         """
