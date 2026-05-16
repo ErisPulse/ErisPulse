@@ -168,6 +168,36 @@ def _load_config(self):
     return config
 ```
 
+### 配置審計
+
+Config 模組內建呼叫方感知和審計功能，可追蹤配置的讀寫來源：
+
+```python
+# 啟用審計（預設關閉）
+sdk.config.enable_audit(True)
+
+# 監聽配置變更
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"配置變更: {key}")
+    print(f"  舊值: {old_value} -> 新值: {new_value}")
+    print(f"  呼叫方: {caller.file}:{caller.lineno} ({caller.function})")
+
+# 取得審計日誌
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# 關閉審計
+sdk.config.enable_audit(False)
+```
+
+審計日誌中每條記錄包含：
+- `operation`: 操作類型（`get` / `set`）
+- `key`: 配置鍵路徑
+- `caller`: 呼叫方資訊（檔案名、行號、函數名、模組名）
+- `timestamp`: 操作時間戳
+
 ## Logger 模組
 
 ### 基本日誌
@@ -368,15 +398,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics 模組
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 註冊內建指標（HTTP 請求數、模組載入耗時等）
+sdk.metrics.register_builtin_metrics()
+
+# 取得所有指標快照
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### 指標類型
+
+#### Counter — 計數器
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="HTTP 請求總數")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge — 儀表盤
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="活躍連接數")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # 設為 42
+print(gauge.value)       # 42
+```
+
+#### Histogram — 直方圖
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="請求耗時")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### 自訂指標
+
+```python
+from ErisPulse import sdk
+
+# 透過 MetricsManager 註冊自訂指標
+sdk.metrics.counter("my_module.errors", description="模組錯誤計數")
+sdk.metrics.gauge("my_module.queue_size", description="佇列大小")
+sdk.metrics.histogram("my_module.process_time", description="處理耗時")
+
+# 取得並使用
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed 裝飾器
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # 函數執行時間將自動記錄到 Histogram 指標
+    await do_something()
+```
+
 ## Router 模組
 
-### HTTP 路由
+### 裝飾器路由（推薦）
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# 註冊 HTTP 路由
+# HTTP 路由裝飾器
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 快捷方法裝飾器
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket 裝飾器
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 帶認證的 WebSocket 裝飾器
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 傳統註冊方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -385,10 +544,12 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="資料介面",
+    tags=["API"],
 )
 
-# 取消路由
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
@@ -398,41 +559,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 註冊 WebSocket 路由（預設自動接受連線）
 async def websocket_handler(websocket: WebSocket):
-    # 預設情況下無需手動 accept，內部已自動呼叫
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 基本註冊（自動接受連線）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 預設為 True，可省略
 )
 
-# 註冊 WebSocket 路由（手動控制連線）
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根據 condition 決定是否接受連線
-    if some_condition:
-        await websocket.accept()
-        # 處理連線...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
+# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
 sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
+    handler=websocket_handler,
     auth_handler=auth_handler,
-    auto_accept=False  # 手動控制連線
 )
 
 # 取消路由
@@ -441,28 +589,116 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 
 **參數說明：**
 
-- `module_name`: 模組名稱
-- `path`: WebSocket 路徑
-- `handler`: 處理函式
-- `auth_handler`: 可選的認證函式
-- `auto_accept`: 是否自動接受連線（預設 `True`）
-  - `True`: 框架自動呼叫 `websocket.accept()`，handler 無需手動呼叫
-  - `False`: handler 必須自行呼叫 `websocket.accept()` 或 `websocket.close()`
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函式 | - |
+| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
+
+> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
+
+### 路由分組
+
+```python
+# 建立路由組
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在組內註冊路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 帶版本號的分組
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中介軟體
+
+```python
+# 全域中介軟體（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路徑中介軟體
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 對路由設定速率限制（滑動視窗）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 程式碼方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 設定檔案方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全頭
+
+```python
+# 自動新增安全回應頭
+sdk.router.setup_security_headers()
+
+# 設定檔案方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動文件
+
+```python
+# Router 預設啟用 OpenAPI 文件
+# 停用文件
+sdk.router.disable_docs()
+
+# 自訂文件資訊
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文件",
+    version="1.0.0"
+)
+```
 
 ### 路由資訊
 
 ```python
-# 取得 FastAPI 應用實例
 app = sdk.router.get_app()
-
-# 新增中介軟體
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
 ```
 
 ## 相關文件
 
-- [事件系統 API](event-system.md) -
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API

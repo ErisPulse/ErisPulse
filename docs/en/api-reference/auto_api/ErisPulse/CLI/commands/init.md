@@ -33,6 +33,18 @@ InitCommand 类提供相关功能。
 ---
 
 
+##### `_get_full_example_config(adapter_list = None)`
+
+生成完整配置示例文件内容
+
+:param adapter_list: list 可用适配器列表
+:return: str 完整配置示例内容
+
+> **内部方法**
+
+---
+
+
 ##### `async async _fetch_available_adapters()`
 
 从云端获取可用适配器列表

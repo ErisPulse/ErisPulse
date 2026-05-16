@@ -39,6 +39,7 @@ ErisPulse SDK 主类
 > - SendDSL: DSL 发送接口基类
 > - module: 模块管理器
 > - router: 路由管理器
+> - metrics: 指标监控管理器
 
 
 #### 嵌套类
