@@ -374,6 +374,83 @@ class ModuleLoader(BaseLoader):
 
         return True
 
+    def _validate_dependencies(self, modules: list, module_objs: dict) -> dict:
+        """
+        验证所有模块的依赖是否满足
+
+        :param modules: list 模块名称列表
+        :param module_objs: dict 模块对象字典
+        :return: dict 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        registered_names = set()
+        for name in modules:
+            meta = module_objs[name].moduleInfo["meta"]
+            registered_names.add(meta["name"])
+
+        missing = {}
+        for name in modules:
+            meta = module_objs[name].moduleInfo["meta"]
+            meta_name = meta["name"]
+            depends = meta.get("depends", [])
+            if depends:
+                unsatisfied = [d for d in depends if d not in registered_names]
+                if unsatisfied:
+                    missing[meta_name] = unsatisfied
+        return missing
+
+    def _topological_sort(self, modules: list, module_objs: dict) -> list:
+        """
+        基于依赖关系和优先级的拓扑排序
+
+        :param modules: list 模块名称列表
+        :param module_objs: dict 模块对象字典
+        :return: list 排序后的模块 meta_name 列表
+
+        :raises RuntimeError: 当检测到循环依赖时
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        meta_map = {}
+        for name in modules:
+            meta = module_objs[name].moduleInfo["meta"]
+            meta_name = meta["name"]
+            meta_map[meta_name] = meta
+
+        all_names = set(meta_map.keys())
+        graph = {}
+        for name, meta in meta_map.items():
+            deps = meta.get("depends", [])
+            graph[name] = set(d for d in deps if d in all_names)
+
+        in_degree = {name: len(deps) for name, deps in graph.items()}
+        queue = [name for name, deg in in_degree.items() if deg == 0]
+        sorted_list = []
+
+        while queue:
+            queue.sort(
+                key=lambda n: meta_map[n].get("priority", 0),
+                reverse=True,
+            )
+            current = queue.pop(0)
+            sorted_list.append(current)
+
+            for name in all_names:
+                if current in graph[name]:
+                    in_degree[name] -= 1
+                    if in_degree[name] == 0:
+                        queue.append(name)
+
+        if len(sorted_list) != len(all_names):
+            remaining = all_names - set(sorted_list)
+            remaining_deps = {n: graph[n] & remaining for n in remaining}
+            raise RuntimeError(f"检测到循环依赖: {remaining_deps}")
+
+        return sorted_list
+
     async def initialize_modules(
         self,
         modules: list[str],
@@ -392,16 +469,40 @@ class ModuleLoader(BaseLoader):
 
         {!--< tips >!--}
         此方法处理模块的实际初始化和挂载
+        支持模块间依赖声明和拓扑排序加载
         {!--< /tips >!--}
-
-        并行注册所有模块类（已在 register_to_manager 中完成）
-        这里处理模块的实例化和挂载
         """
-        for module_name in modules:
+        missing = self._validate_dependencies(modules, module_objs)
+        if missing:
+            for name, deps in missing.items():
+                logger.warning(f"模块 '{name}' 缺少依赖: {deps}, 已跳过")
+
+        skip_set = set()
+        for name in modules:
+            meta_name = module_objs[name].moduleInfo["meta"]["name"]
+            if meta_name in missing:
+                skip_set.add(name)
+        valid_modules = [m for m in modules if m not in skip_set]
+
+        try:
+            sorted_meta_names = self._topological_sort(valid_modules, module_objs)
+        except RuntimeError as e:
+            logger.error(str(e))
+            sorted_meta_names = [
+                module_objs[m].moduleInfo["meta"]["name"] for m in valid_modules
+            ]
+
+        name_to_entry = {}
+        for name in valid_modules:
+            meta_name = module_objs[name].moduleInfo["meta"]["name"]
+            name_to_entry[meta_name] = name
+
+        for meta_name in sorted_meta_names:
+            entry_name = name_to_entry[meta_name]
             try:
-                module_obj = module_objs[module_name]
-                meta_name = module_obj.moduleInfo["meta"]["name"]
-                lazy_load = module_obj.moduleInfo["meta"].get("lazy_load", True)
+                module_obj = module_objs[entry_name]
+                meta = module_obj.moduleInfo["meta"]
+                lazy_load = meta.get("lazy_load", True)
 
                 if lazy_load:
                     lazy_module = LazyModule(
@@ -421,7 +522,7 @@ class ModuleLoader(BaseLoader):
                     else:
                         logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
             except Exception as e:
-                logger.warning(f"初始化模块 {module_name} 失败，已跳过: {e}")
+                logger.warning(f"初始化模块 {meta_name} 失败，已跳过: {e}")
 
         return True
 

@@ -14,16 +14,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命周期管理"]
     SDK --> Logger["Logger<br/>日志管理"]
     SDK --> Storage["Storage / env<br/>存储管理"]
-    SDK --> Config["Config<br/>配置管理"]
+    SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理"]
+    SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>分支 + 持久化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["云湖"]
@@ -41,14 +43,15 @@ graph TB
 
 | 模块 | 说明 |
 |------|------|
-| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理 |
+| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理，以及 Conversation 多轮对话 |
 | **Adapter** | 适配器管理器，管理多平台适配器的注册、启动和关闭 |
-| **Module** | 模块管理器，管理插件的注册、加载和卸载 |
+| **Module** | 模块管理器，管理插件的注册、加载和卸载，支持依赖声明和拓扑排序 |
 | **Lifecycle** | 生命周期管理器，提供事件驱动的生命周期钩子 |
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
-| **Config** | TOML 格式的配置文件管理 |
+| **Config** | TOML 格式的配置文件管理，支持调用方感知和配置审计 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理 |
+| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Metrics** | 指标监控系统，提供 Counter / Gauge / Histogram 三种指标类型 |
 
 ## 初始化流程
 
@@ -65,7 +68,11 @@ flowchart TD
     D --> D2["从 PyPI 加载模块"]
     D1 & D2 --> E["注册适配器"]
     E --> F["注册模块"]
-    F --> G["初始化模块<br/>（实例化 + on_load）"]
+    F --> F1{"依赖验证"}
+    F1 -->|"缺失依赖"| F2["跳过该模块并记录警告"]
+    F1 -->|"依赖满足"| F3["拓扑排序<br/>（Kahn 算法 + 优先级）"]
+    F3 --> G["按序初始化模块<br/>（实例化 + on_load）"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["启动路由服务器"]
     I --> J["异步启动各平台适配器"]
@@ -77,8 +84,10 @@ flowchart TD
 1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
 2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
 3. **注册阶段** - 将发现的适配器和模块注册到对应管理器
-4. **模块初始化** - 创建模块实例，调用 `on_load` 生命周期方法
-5. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
+4. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
+5. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+6. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
+7. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
 
 ## 事件处理流程
 

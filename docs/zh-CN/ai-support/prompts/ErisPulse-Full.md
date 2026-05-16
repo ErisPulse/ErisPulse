@@ -62,16 +62,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命周期管理"]
     SDK --> Logger["Logger<br/>日志管理"]
     SDK --> Storage["Storage / env<br/>存储管理"]
-    SDK --> Config["Config<br/>配置管理"]
+    SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理"]
+    SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>分支 + 持久化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["云湖"]
@@ -89,14 +91,15 @@ graph TB
 
 | 模块 | 说明 |
 |------|------|
-| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理 |
+| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理，以及 Conversation 多轮对话 |
 | **Adapter** | 适配器管理器，管理多平台适配器的注册、启动和关闭 |
-| **Module** | 模块管理器，管理插件的注册、加载和卸载 |
+| **Module** | 模块管理器，管理插件的注册、加载和卸载，支持依赖声明和拓扑排序 |
 | **Lifecycle** | 生命周期管理器，提供事件驱动的生命周期钩子 |
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
-| **Config** | TOML 格式的配置文件管理 |
+| **Config** | TOML 格式的配置文件管理，支持调用方感知和配置审计 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理 |
+| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Metrics** | 指标监控系统，提供 Counter / Gauge / Histogram 三种指标类型 |
 
 ## 初始化流程
 
@@ -113,7 +116,11 @@ flowchart TD
     D --> D2["从 PyPI 加载模块"]
     D1 & D2 --> E["注册适配器"]
     E --> F["注册模块"]
-    F --> G["初始化模块<br/>（实例化 + on_load）"]
+    F --> F1{"依赖验证"}
+    F1 -->|"缺失依赖"| F2["跳过该模块并记录警告"]
+    F1 -->|"依赖满足"| F3["拓扑排序<br/>（Kahn 算法 + 优先级）"]
+    F3 --> G["按序初始化模块<br/>（实例化 + on_load）"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["启动路由服务器"]
     I --> J["异步启动各平台适配器"]
@@ -125,8 +132,10 @@ flowchart TD
 1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
 2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
 3. **注册阶段** - 将发现的适配器和模块注册到对应管理器
-4. **模块初始化** - 创建模块实例，调用 `on_load` 生命周期方法
-5. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
+4. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
+5. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+6. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
+7. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
 
 ## 事件处理流程
 
@@ -3345,7 +3354,8 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
-            priority=0
+            priority=0,
+            depends=[]  # 可选：依赖的其他模块列表
         )
     
     async def on_load(self, event):
@@ -3450,9 +3460,12 @@ class MyModule(BaseModule):
         """返回模块加载策略"""
         return ModuleLoadStrategy(
             lazy_load=True,   # 懒加载还是立即加载
-            priority=0        # 加载优先级
+            priority=0,       # 加载优先级（数值越大越先加载）
+            depends=["OtherModule"]  # 可选：声明依赖的其他模块
         )
 ```
+
+> `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
 ### on_load 方法
 
@@ -7154,6 +7167,36 @@ def _load_config(self):
     return config
 ```
 
+### 配置审计
+
+Config 模块内置调用方感知和审计功能，可追踪配置的读写来源：
+
+```python
+# 启用审计（默认关闭）
+sdk.config.enable_audit(True)
+
+# 监听配置变更
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"配置变更: {key}")
+    print(f"  旧值: {old_value} -> 新值: {new_value}")
+    print(f"  调用方: {caller.file}:{caller.lineno} ({caller.function})")
+
+# 获取审计日志
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# 关闭审计
+sdk.config.enable_audit(False)
+```
+
+审计日志中每条记录包含：
+- `operation`: 操作类型（`get` / `set`）
+- `key`: 配置键路径
+- `caller`: 调用方信息（文件名、行号、函数名、模块名）
+- `timestamp`: 操作时间戳
+
 ## Logger 模块
 
 ### 基本日志
@@ -7354,15 +7397,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics 模块
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 注册内置指标（HTTP 请求数、模块加载耗时等）
+sdk.metrics.register_builtin_metrics()
+
+# 获取所有指标快照
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### 指标类型
+
+#### Counter — 计数器
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="HTTP 请求总数")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge — 仪表盘
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="活跃连接数")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # 设为 42
+print(gauge.value)       # 42
+```
+
+#### Histogram — 直方图
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="请求耗时")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### 自定义指标
+
+```python
+from ErisPulse import sdk
+
+# 通过 MetricsManager 注册自定义指标
+sdk.metrics.counter("my_module.errors", description="模块错误计数")
+sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+
+# 获取并使用
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed 装饰器
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+```
+
 ## Router 模块
 
-### HTTP 路由
+### 装饰器路由（推荐）
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# 注册 HTTP 路由
+# HTTP 路由装饰器
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 快捷方法装饰器
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket 装饰器
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 带认证的 WebSocket 装饰器
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 传统注册方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -7371,10 +7543,12 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="数据接口",
+    tags=["API"],
 )
 
-# 取消路由
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
@@ -7384,41 +7558,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 注册 WebSocket 路由（默认自动接受连接）
 async def websocket_handler(websocket: WebSocket):
-    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 基本注册（自动接受连接）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 默认为 True，可省略
 )
 
-# 注册 WebSocket 路由（手动控制连接）
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根据 condition 决定是否接受连接
-    if some_condition:
-        await websocket.accept()
-        # 处理连接...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
+# 带认证的注册（推荐：使用 auth_handler 控制连接）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
 sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
+    handler=websocket_handler,
     auth_handler=auth_handler,
-    auto_accept=False  # 手动控制连接
 )
 
 # 取消路由
@@ -7427,26 +7588,113 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 
 **参数说明：**
 
-- `module_name`: 模块名称
-- `path`: WebSocket 路径
-- `handler`: 处理函数
-- `auth_handler`: 可选的认证函数
-- `auto_accept`: 是否自动接受连接（默认 `True`）
-  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
-  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `module_name` | 模块名称（必须） | - |
+| `path` | WebSocket 路径 | - |
+| `handler` | 处理函数 | - |
+| `auth_handler` | 认证函数，返回 `False` 会自动关闭连接 | `None` |
+| `auto_accept` | 是否自动 `accept()` | `True` |
+
+> **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
+
+### 路由分组
+
+```python
+# 创建路由组
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在组内注册路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 带版本号的分组
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中间件
+
+```python
+# 全局中间件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路径中间件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 对路由设置速率限制（滑动窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代码方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全头
+
+```python
+# 自动添加安全响应头
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自动文档
+
+```python
+# Router 默认启用 OpenAPI 文档
+# 禁用文档
+sdk.router.disable_docs()
+
+# 自定义文档信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文档",
+    version="1.0.0"
+)
+```
 
 ### 路由信息
 
 ```python
-# 获取 FastAPI 应用实例
 app = sdk.router.get_app()
-
-# 添加中间件
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
 ```
 
 ## 相关文档
@@ -10207,89 +10455,242 @@ ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支�
 
 路由管理器的主要功能：
 
-- **HTTP 路由管理**：支持多种 HTTP 方法的路由注册
+- **装饰器路由**：支持 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 装饰器快捷注册
+- **路由分组**：支持带前缀和版本号的 `RouteGroup`
+- **路由中间件**：支持 glob 模式匹配的请求拦截
+- **速率限制**：内置滑动窗口限流
+- **CORS 支持**：一键开启跨域资源共享
+- **安全头**：自动添加安全响应头
+- **自动文档**：基于 OpenAPI 的交互式文档
 - **WebSocket 支持**：完整的 WebSocket 连接管理和自定义认证
 - **生命周期集成**：与 ErisPulse 生命周期系统深度集成
-- **统一错误处理**：提供统一的错误处理和日志记录
 - **SSL/TLS 支持**：支持 HTTPS 和 WSS 安全连接
 
-## 基本使用
+## 装饰器路由（推荐）
 
-### 注册 HTTP 路由
+### HTTP 装饰器
 
 ```python
-from fastapi import Request
 from ErisPulse.Core import router
+from fastapi import Request
 
-async def hello_handler(request: Request):
-    return {"message": "Hello World"}
+# 通用 HTTP 路由
+@router.http("my_module", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"message": "Hello"}
 
-# 注册 GET 路由
-router.register_http_route(
-    module_name="my_module",
-    path="/hello",
-    handler=hello_handler,
-    methods=["GET"]
-)
+# 快捷方法
+@router.get("my_module", "/info")
+async def get_info(request: Request):
+    return {"info": "data"}
+
+@router.post("my_module", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@router.put("my_module", "/data/{item_id}")
+async def update_data(request: Request):
+    return {"updated": True}
+
+@router.delete("my_module", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
 ```
 
-### 注册 WebSocket 路由
+> **注意**：`module_name` 必须作为第一个参数显式传入，路由路径会自动添加模块名前缀。
+
+### WebSocket 装饰器
 
 ```python
 from fastapi import WebSocket
 
-# 默认自动接受连接
+# 基本 WebSocket
+@router.ws("my_module", "/ws")
 async def websocket_handler(websocket: WebSocket):
-    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 带认证的 WebSocket（推荐：使用 auth_handler 控制连接）
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+## 传统注册方式
+
+```python
+from fastapi import Request
+
+async def hello_handler(request: Request):
+    return {"message": "Hello World"}
+
+# 基本注册
+router.register_http_route(
+    module_name="my_module",
+    path="/hello",
+    handler=hello_handler,
+    methods=["GET"],
+)
+
+# 带限流和文档信息
+router.register_http_route(
+    module_name="my_module",
+    path="/api/data",
+    handler=data_handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="数据接口",
+    tags=["API"],
+)
+```
+
+### WebSocket 注册
+
+```python
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 基本注册
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 默认为 True，可省略
 )
 
-# 手动控制连接
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根据 condition 决定是否接受连接
-    if some_condition:
-        await websocket.accept()
-        # 处理连接...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
+# 带认证的注册（推荐）
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
 
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
-    auto_accept=False  # 手动控制连接
+    handler=websocket_handler,
+    auth_handler=auth_handler,
 )
 ```
 
 **参数说明：**
 
-- `module_name`: 模块名称
-- `path`: WebSocket 路径
-- `handler`: 处理函数
-- `auth_handler`: 可选的认证函数
-- `auto_accept`: 是否自动接受连接（默认 `True`）
-  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
-  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `module_name` | 模块名称（必须） | - |
+| `path` | WebSocket 路径 | - |
+| `handler` | 处理函数 | - |
+| `auth_handler` | 认证函数，返回 `False` 会自动关闭连接 | `None` |
+| `auto_accept` | 是否自动 `accept()` | `True` |
 
-### 注销路由
+> **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
+
+## 路由分组
 
 ```python
-router.unregister_http_route(
-    module_name="my_module",
-    path="/hello"
-)
+# 创建带前缀的路由组
+group = router.group("my_module", prefix="/v1")
 
-router.unregister_websocket(
-    module_name="my_module",
-    path="/ws"
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 实际路径: /my_module/v1/users
+```
+
+## 路由中间件
+
+中间件支持 glob 模式匹配路径：
+
+```python
+@router.middleware("/my_module/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    return await call_next(request)
+
+@router.middleware("/my_module/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+## 速率限制
+
+使用滑动窗口算法对路由进行限流：
+
+```python
+@router.get("my_module", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@router.post("my_module", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+速率限制格式：`{次数}/{时间窗口}`，如 `10/minute`、`100/hour`。
+
+## CORS 配置
+
+```python
+router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+也可通过 `config.toml` 配置：
+
+```toml
+[router.cors]
+allow_origins = ["https://example.com"]
+allow_methods = ["GET", "POST"]
+allow_headers = ["*"]
+```
+
+## 安全头
+
+```python
+router.setup_security_headers()
+```
+
+自动添加 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全头。
+
+也可通过 `config.toml` 配置：
+
+```toml
+[router.security]
+enabled = true
+```
+
+## 自动文档
+
+Router 默认启用 OpenAPI 交互式文档：
+
+```python
+# 禁用文档
+router.disable_docs()
+
+# 自定义文档信息
+router.set_docs_info(
+    title="My API",
+    description="API 文档",
+    version="1.0.0"
 )
 ```
 
@@ -10305,22 +10706,32 @@ router.register_http_route("my_module", "/api", handler)
 
 ## 认证机制
 
-WebSocket 支持自定义认证逻辑：
+推荐使用 `auth_handler` 控制连接访问：
 
 ```python
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
+# 装饰器方式
+@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
+async def secure_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 传统注册方式
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
     handler=websocket_handler,
-    auth_handler=auth_handler
+    auth_handler=auth_handler,
 )
 ```
+
+`auth_handler` 在连接建立后执行，返回 `False` 会自动关闭连接（状态码 1008）。
+
+> 仅在你需要完全控制连接流程（如自定义握手协议）时才设置 `auto_accept=False`。
 
 ## 系统路由
 
@@ -10357,10 +10768,12 @@ async def on_server_stop(event):
 
 ## 最佳实践
 
-1. **路由命名规范**：使用清晰、描述性的路径名
-2. **安全性考虑**：为敏感操作实现认证机制
-3. **错误处理**：实现适当的错误处理和响应格式
-4. **连接管理**：实现适当的连接清理
+1. **优先使用装饰器**：`@router.get()` 等装饰器比 `register_http_route()` 更简洁
+2. **显式传入 module_name**：装饰器第一个参数必须为模块名，不可省略
+3. **使用路由分组**：对同一模块的多个路由使用 `create_group()` 组织
+4. **安全性考虑**：为敏感操作实现认证机制和安全头
+5. **合理限流**：对高频接口设置速率限制
+6. **错误处理**：实现适当的错误处理和响应格式
 
 ## 相关文档
 
@@ -10869,6 +11282,17 @@ else:
 | `validator` | 验证函数，接收 Event，返回 bool | 无 |
 | `retry_prompt` | 验证失败重试提示 | `"输入无效，请重新输入"` |
 | `max_retries` | 最大重试次数 | 3 |
+| `condition` | 条件函数，接收已收集数据 dict，返回 bool | 无 |
+
+**条件字段**：使用 `condition` 可以实现动态表单，只有条件满足时才收集该字段：
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "你有车吗？（是/否）"},
+    {"key": "car_brand", "prompt": "请输入车型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+])
+```
 
 ### stop()
 
@@ -10896,6 +11320,96 @@ if conv.is_active:
 3. `collect()` 因任何步骤超时或重试耗尽而返回 `None`
 
 非活跃后，所有交互方法（`wait`/`confirm`/`choose`/`collect`）会立即返回 `None`，不会继续等待用户输入。
+
+## 分支与跳转
+
+### @conv.branch(name) 装饰器
+
+使用 `branch()` 注册对话分支，通过 `goto()` 在分支间跳转：
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("再见！")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== 个人信息 ===\n姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== 设置 ===\n1. 通知开关\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # 从第一个注册的分支开始
+```
+
+### conv.start(name=None)
+
+启动对话，默认从第一个注册的分支开始：
+
+```python
+await conv.start()          # 从第一个分支开始
+await conv.start("settings") # 从指定分支开始
+```
+
+## 上下文与持久化
+
+### conv.context
+
+每个对话实例内置 `context` 字典，用于在分支间共享状态：
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
+```
+
+### save() / resume() / clear_saved()
+
+对话支持持久化，可在超时或中断后恢复：
+
+```python
+# 保存对话状态
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # 基于用户和群组自动生成
+
+# ... 之后在同一会话中恢复 ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("欢迎回来！继续之前的对话")
+else:
+    await conv2.say("没有找到之前的对话")
+
+# 清除保存的对话
+conv.clear_saved()
+```
 
 ## 典型流程模式
 
@@ -15324,5 +15838,51 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 4. 同步移除子进程运行模型和 `runtime/cleanup.py` 清理模块（子进程清理机制不再需要）
 
 **修复日期**: 2026/04/28
+
+---
+
+### [BUG-015] 模块加载策略排序逻辑错误
+
+**问题**: `ModuleLoadStrategy` 提供了 `priority` 字段用于声明模块的初始化优先级，但加载策略的实现存在失误，导致模块未按预期的优先级顺序初始化，实际按 `entry_points()` 的默认顺序加载。当模块间存在加载依赖时，无法通过 `priority` 确保正确的初始化先后关系。
+
+**原因**: 加载策略的实现中排序逻辑有误，`initialize_modules()` 未使用 `priority` 对模块列表进行排序。
+
+**影响版本**: 2.3.4 - 2.4.5-dev.2
+
+**修复版本**: 2.4.5-dev.3
+
+**修复内容**: 在 `initialize_modules()` 遍历前，按 `priority` 降序排序模块列表。同 priority 的模块保持原有相对顺序（稳定排序）。
+
+**修复日期**: 2026/05/15
+
+---
+
+### [BUG-016] 适配器中间件返回 None 导致事件数据丢失
+
+**问题**: `adapter.emit()` 在执行 OneBot12 中间件链时，如果某个中间件返回 `None`（例如忘记 `return data`），后续中间件和所有事件处理器收到的 `processed_data` 变为 `None`，导致事件处理完全失效。
+
+**原因**: 中间件链的实现 `processed_data = await middleware(processed_data)` 未检查返回值是否为 `None`，直接覆盖了上一步的处理结果。
+
+**影响版本**: unknown - 2.4.5-dev.3
+
+**修复版本**: 2.4.5-dev.4
+
+**修复内容**: 中间件返回 `None` 时忽略该返回值，保留原数据继续传递，并输出 warning 级别日志。
+
+**修复日期**: 2026/05/15
+
+---
+
+### [BUG-017] 配置文件路径依赖工作目录
+
+**问题**: `ConfigManager` 的配置文件路径默认为相对路径 `"config/config.toml"`，在运行时依赖 `os.getcwd()` 解析。如果工作目录在运行期间发生变化（例如通过 `os.chdir()`），配置文件的读写操作会指向错误的位置，导致配置丢失或读取到旧数据。
+
+**原因**: `__init__` 中直接存储相对路径，未在初始化时将其解析为绝对路径。
+
+**影响版本**: 2.3.7 - 2.4.5-dev.3
+
+**修复版本**: 2.4.5-dev.4
+
+**修复内容**: 在 `ConfigManager.__init__()` 中，如果传入的路径为相对路径，自动通过 `os.path.abspath()` 解析为绝对路径。
 
 

@@ -57,16 +57,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
+    SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management"]
+    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["Yunhu"]
@@ -84,14 +86,15 @@ graph TB
 
 | Module | Description |
 |------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta |
+| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
 | **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
+| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management |
+| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
@@ -108,20 +111,26 @@ flowchart TD
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
     E --> F["Register Modules"]
-    F --> G["Initialize Modules<br/>(Instantiate + on_load)"]
+    F --> F1{"Dependency Validation"}
+    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
+    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["Start Router Server"]
-    I --> J["Async Start Platform Adapters"]
-    J --> K["Ready"]
+    I --> J["Asynchronously Start Platform Adapters"]
+    J --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
-1.  **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2.  **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3.  **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4.  **Module Initialization** - Create module instances, call the `on_load` lifecycle method
-5.  **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
+2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
+3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
+4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
 
 ## Event Handling Process
 
@@ -146,11 +155,11 @@ flowchart LR
 
 ### Key Steps in Event Handling
 
--   **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
--   **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
--   **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
--   **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
--   **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
+- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
+- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
+- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
 
 ## Lifecycle Events
 
@@ -4395,7 +4404,7 @@ sdk.storage.delete_multi(["key1", "key2", "key3"])
 
 ### SQL Chain Query
 
-The Storage module provides a general-purpose SQL query builder with a chaining-style API, supporting CRUD operations for custom tables.
+The Storage module provides a chain-style API general-purpose SQL query builder, supporting CRUD operations for custom tables.
 
 > See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
 
@@ -4511,6 +4520,36 @@ def _load_config(self):
         return default_config
     return config
 ```
+
+### Configuration Auditing
+
+Config module has built-in caller-aware and auditing functionality to track read/write sources of configurations:
+
+```python
+# Enable auditing (disabled by default)
+sdk.config.enable_audit(True)
+
+# Listen for configuration changes
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"Configuration changed: {key}")
+    print(f"  Old value: {old_value} -> New value: {new_value}")
+    print(f"  Caller: {caller.file}:{caller.lineno} ({caller.function})")
+
+# Get audit logs
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# Disable auditing
+sdk.config.enable_audit(False)
+```
+
+Audit logs contain:
+- `operation`: Operation type (`get` / `set`)
+- `key`: Configuration key path
+- `caller`: Caller information (file name, line number, function name, module name)
+- `timestamp`: Operation timestamp
 
 ## Logger Module
 
@@ -4712,15 +4751,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics Module
+
+### Basic Usage
+
+```python
+from ErisPulse import sdk
+
+# Register built-in metrics (HTTP requests count, module loading time, etc.)
+sdk.metrics.register_builtin_metrics()
+
+# Get all metrics snapshot
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### Metric Types
+
+#### Counter
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="Total HTTP requests")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="Active connections count")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # Set to 42
+print(gauge.value)       # 42
+```
+
+#### Histogram
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="Request duration")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### Custom Metrics
+
+```python
+from ErisPulse import sdk
+
+# Register custom metrics via MetricsManager
+sdk.metrics.counter("my_module.errors", description="Module error count")
+sdk.metrics.gauge("my_module.queue_size", description="Queue size")
+sdk.metrics.histogram("my_module.process_time", description="Processing time")
+
+# Get and use
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed Decorator
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # Function execution time will be automatically recorded to Histogram metric
+    await do_something()
+```
+
 ## Router Module
 
-### HTTP Routes
+### Decorator Routing (Recommended)
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# Register HTTP route
+# HTTP route decorator
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# Shortcut method decorators
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket decorator
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Authenticated WebSocket decorator
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### Traditional Registration
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -4729,28 +4897,164 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data API",
+    tags=["API"],
 )
 
-# Unregister route
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
-### WebSocket Routes
+### WebSocket Routing
 
 ```python
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# Register WebSocket route (automatically accepts connection by default)
 async def websocket_handler(websocket: WebSocket):
-    # No manual accept needed by default, it is called internally automatically
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# Basic registration (auto accepts connection)
 sdk.router.register_websocket(
-    module_name="my
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# Authenticated registration (recommended: use auth_handler to control connection)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# Unregister route
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**Parameter Description:**
+
+| Parameter | Description | Default Value |
+|----------|-------------|--------------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Auth function, returns `False` to auto-close connection | `None` |
+| `auto_accept` | Whether to auto `accept()` | `True` |
+
+> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
+
+### Route Grouping
+
+```python
+# Create route group
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# Register routes in group
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Versioned grouping
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### Route Middleware
+
+```python
+# Global middleware (glob matching)
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# Specific path middleware
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### Rate Limiting
+
+```python
+# Set rate limit for route (sliding window)
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS Configuration
+
+```python
+# Programmatic way
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# Configuration file way (config.toml)
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### Security Headers
+
+```python
+# Automatically add security response headers
+sdk.router.setup_security_headers()
+
+# Configuration file way (config.toml)
+# [router.security]
+# enabled = true
+```
+
+### Auto Documentation
+
+```python
+# Router enables OpenAPI documentation by default
+# Disable documentation
+sdk.router.disable_docs()
+
+# Custom documentation info
+sdk.router.set_docs_info(
+    title="My API",
+    description="API documentation",
+    version="1.0.0"
+)
+```
+
+### Route Information
+
+```python
+app = sdk.router.get_app()
+```
+
+## Related Documentation
+
+- [Event System API](event-system.md) - Event module API
+- [Adapter System API](adapter-system.md) - Adapter management API
 
 
 
