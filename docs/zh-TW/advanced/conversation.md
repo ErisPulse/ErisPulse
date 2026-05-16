@@ -62,7 +62,7 @@ if resp:
 # 發送提示後等待
 resp = await conv.wait(prompt="請輸入你的名字：")
 
-# 使用自訂超時（對話預設超時）
+# 使用自訂超時（覆蓋對話預設超時）
 resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 ```
 
@@ -80,9 +80,9 @@ else:
     await conv.say("超時未回覆")
 ```
 
-內置識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
+內建識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
 
-內置識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
+內建識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
 
 ### choose(prompt, options, **kwargs)
 
@@ -125,6 +125,17 @@ else:
 | `validator` | 驗證函數，接收 Event，返回 bool | 無 |
 | `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
 | `max_retries` | 最大重試次數 | 3 |
+| `condition` | 條件函數，接收已收集數據 dict，返回 bool | 無 |
+
+**條件字段**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該字段：
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "你有車嗎？（是/否）"},
+    {"key": "car_brand", "prompt": "請輸入車型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+])
+```
 
 ### stop()
 
@@ -153,6 +164,96 @@ if conv.is_active:
 
 非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
 
+## 分支與跳轉
+
+### @conv.branch(name) 裝飾器
+
+使用 `branch()` 註冊對話分支，通過 `goto()` 在分支間跳轉：
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("再見！")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== 個人資訊 ===\n姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== 設定 ===\n1. 通知開關\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # 從第一個註冊的分支開始
+```
+
+### conv.start(name=None)
+
+啟動對話，預設從第一個註冊的分支開始：
+
+```python
+await conv.start()          # 從第一個分支開始
+await conv.start("settings") # 從指定分支開始
+```
+
+## 上下文與持久化
+
+### conv.context
+
+每個對話實例內建 `context` 字典，用於在分支間共享狀態：
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
+```
+
+### save() / resume() / clear_saved()
+
+對話支援持久化，可在超時或中斷後恢復：
+
+```python
+# 保存對話狀態
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # 基於用戶和群組自動生成
+
+# ... 之後在同一會話中恢復 ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("歡迎回來！繼續之前的對話")
+else:
+    await conv2.say("沒有找到之前的對話")
+
+# 清除保存的對話
+conv.clear_saved()
+```
+
 ## 典型流程模式
 
 ### 引導式註冊
@@ -177,7 +278,7 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"確認註冊信息？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+        f"確認註冊資訊？\n用戶名: {data['username']}\n郵箱: {data['email']}"
     )
 
     if confirmed:
@@ -205,9 +306,9 @@ async def chat_handler(event):
         if text == "退出":
             await conv.say("再見！")
             conv.stop()
-        elif text == "帮助":
-            await conv.say("可用命令：退出、帮助、状态")
-        elif text == "状态":
+        elif text == "幫助":
+            await conv.say("可用命令：退出、幫助、狀態")
+        elif text == "狀態":
             await conv.say("對話活躍中")
         else:
             await conv.say(f"你說的是：{text}")
@@ -215,5 +316,5 @@ async def chat_handler(event):
 
 ## 相關文檔
 
-- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
 - [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎

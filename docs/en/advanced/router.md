@@ -6,89 +6,242 @@ The ErisPulse Router Manager provides unified HTTP and WebSocket route managemen
 
 Key features of the Router Manager:
 
-- **HTTP Route Management**: Supports route registration for various HTTP methods
+- **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
+- **Route Middleware**: Supports request interception with glob pattern matching
+- **Rate Limiting**: Built-in sliding window rate limiting
+- **CORS Support**: One-click enable Cross-Origin Resource Sharing
+- **Security Headers**: Automatically adds security response headers
+- **Auto Documentation**: Interactive documentation based on OpenAPI
 - **WebSocket Support**: Complete WebSocket connection management and custom authentication
 - **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system
-- **Unified Error Handling**: Provides unified error handling and logging
 - **SSL/TLS Support**: Supports HTTPS and WSS secure connections
 
-## Basic Usage
+## Decorator Routes (Recommended)
 
-### Registering HTTP Routes
+### HTTP Decorators
 
 ```python
-from fastapi import Request
 from ErisPulse.Core import router
+from fastapi import Request
 
-async def hello_handler(request: Request):
-    return {"message": "Hello World"}
+# General HTTP routes
+@router.http("my_module", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"message": "Hello"}
 
-# Register GET route
-router.register_http_route(
-    module_name="my_module",
-    path="/hello",
-    handler=hello_handler,
-    methods=["GET"]
-)
+# Shortcut methods
+@router.get("my_module", "/info")
+async def get_info(request: Request):
+    return {"info": "data"}
+
+@router.post("my_module", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@router.put("my_module", "/data/{item_id}")
+async def update_data(request: Request):
+    return {"updated": True}
+
+@router.delete("my_module", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
 ```
 
-### Registering WebSocket Routes
+> **Note**: `module_name` must be explicitly passed as the first parameter, and the route path will automatically have the module name prefix added.
+
+### WebSocket Decorators
 
 ```python
 from fastapi import WebSocket
 
-# Automatically accepts connection by default
+# Basic WebSocket
+@router.ws("my_module", "/ws")
 async def websocket_handler(websocket: WebSocket):
-    # No manual accept needed by default, automatically called internally
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# WebSocket with authentication (Recommended: use auth_handler to control connection)
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+## Traditional Registration Method
+
+```python
+from fastapi import Request
+
+async def hello_handler(request: Request):
+    return {"message": "Hello World"}
+
+# Basic registration
+router.register_http_route(
+    module_name="my_module",
+    path="/hello",
+    handler=hello_handler,
+    methods=["GET"],
+)
+
+# Registration with rate limiting and documentation info
+router.register_http_route(
+    module_name="my_module",
+    path="/api/data",
+    handler=data_handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data API",
+    tags=["API"],
+)
+```
+
+### WebSocket Registration
+
+```python
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Basic registration
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # Defaults to True, can be omitted
 )
 
-# Manually control connection
-async def manual_websocket_handler(websocket: WebSocket):
-    # Decide whether to accept connection based on condition
-    if some_condition:
-        await websocket.accept()
-        # Handle connection...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
+# Registration with authentication (Recommended)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
 
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
-    auto_accept=False  # Manually control connection
+    handler=websocket_handler,
+    auth_handler=auth_handler,
 )
 ```
 
 **Parameter Description:**
 
-- `module_name`: Module name
-- `path`: WebSocket path
-- `handler`: Handler function
-- `auth_handler`: Optional authentication function
-- `auto_accept`: Whether to automatically accept the connection (default `True`)
-  - `True`: The framework automatically calls `websocket.accept()`, the handler does not need to call it manually
-  - `False`: The handler must call `websocket.accept()` or `websocket.close()` itself
+| Parameter | Description | Default Value |
+|----------|-------------|---------------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
+| `auto_accept` | Whether to automatically `accept()` | `True` |
 
-### Unregistering Routes
+> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need complete control over the connection flow.
+
+## Route Grouping
 
 ```python
-router.unregister_http_route(
-    module_name="my_module",
-    path="/hello"
-)
+# Create a route group with prefix
+group = router.group("my_module", prefix="/v1")
 
-router.unregister_websocket(
-    module_name="my_module",
-    path="/ws"
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Actual path: /my_module/v1/users
+```
+
+## Route Middleware
+
+Middleware supports glob pattern matching for paths:
+
+```python
+@router.middleware("/my_module/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    return await call_next(request)
+
+@router.middleware("/my_module/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+## Rate Limiting
+
+Use sliding window algorithm to rate limit routes:
+
+```python
+@router.get("my_module", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@router.post("my_module", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+Rate limiting format: `{count}/{time window}`, e.g., `10/minute`, `100/hour`.
+
+## CORS Configuration
+
+```python
+router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+Can also configure through `config.toml`:
+
+```toml
+[router.cors]
+allow_origins = ["https://example.com"]
+allow_methods = ["GET", "POST"]
+allow_headers = ["*"]
+```
+
+## Security Headers
+
+```python
+router.setup_security_headers()
+```
+
+Automatically adds security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, etc.
+
+Can also configure through `config.toml`:
+
+```toml
+[router.security]
+enabled = true
+```
+
+## Auto Documentation
+
+Router defaults to OpenAPI interactive documentation:
+
+```python
+# Disable documentation
+router.disable_docs()
+
+# Customize documentation info
+router.set_docs_info(
+    title="My API",
+    description="API Documentation",
+    version="1.0.0"
 )
 ```
 
@@ -104,22 +257,32 @@ router.register_http_route("my_module", "/api", handler)
 
 ## Authentication Mechanism
 
-WebSocket supports custom authentication logic:
+Recommended to use `auth_handler` to control connection access:
 
 ```python
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
+# Decorator method
+@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
+async def secure_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Traditional registration method
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
     handler=websocket_handler,
-    auth_handler=auth_handler
+    auth_handler=auth_handler,
 )
 ```
+
+The `auth_handler` is executed after the connection is established. Returning `False` will automatically close the connection (status code 1008).
+
+> Only set `auto_accept=False` when you need complete control over the connection flow (e.g., custom handshake protocol).
 
 ## System Routes
 
@@ -156,10 +319,12 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Route Naming Conventions**: Use clear, descriptive path names
-2. **Security Considerations**: Implement authentication mechanisms for sensitive operations
-3. **Error Handling**: Implement appropriate error handling and response formats
-4. **Connection Management**: Implement appropriate connection cleanup
+1. **Prioritize Decorators**: `@router.get()` etc. are more concise than `register_http_route()`
+2. **Explicitly Pass module_name**: The first parameter to decorators must be the module name and cannot be omitted
+3. **Use Route Groups**: Use `create_group()` to organize multiple routes for the same module
+4. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
+5. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
+6. **Error Handling**: Implement appropriate error handling and response formats
 
 ## Related Documentation
 

@@ -16,9 +16,12 @@ class MyModule(BaseModule):
         """Return module load strategy"""
         return ModuleLoadStrategy(
             lazy_load=True,   # Lazy load or immediate load
-            priority=0        # Load priority
+            priority=0,       # Load priority (higher values load first)
+            depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
+
+> `depends` declared modules that are not registered will cause the current module to be skipped with a warning. The loading order is determined by topological sorting, with the same level loaded in descending order of `priority`.
 
 ### on_load Method
 

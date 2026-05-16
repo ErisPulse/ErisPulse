@@ -178,6 +178,34 @@ ErisPulse 模块加载器
 ---
 
 
+##### `_validate_dependencies(modules: list, module_objs: dict)`
+
+验证所有模块的依赖是否满足
+
+:param modules: list 模块名称列表
+:param module_objs: dict 模块对象字典
+:return: dict 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
+
+> **内部方法**
+
+---
+
+
+##### `_topological_sort(modules: list, module_objs: dict)`
+
+基于依赖关系和优先级的拓扑排序
+
+:param modules: list 模块名称列表
+:param module_objs: dict 模块对象字典
+:return: list 排序后的模块 meta_name 列表
+
+**异常**: `RuntimeError` - 当检测到循环依赖时
+
+> **内部方法**
+
+---
+
+
 ##### `async async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
 
 初始化模块（创建实例并挂载到 SDK）
@@ -190,9 +218,7 @@ ErisPulse 模块加载器
 
 > **提示**
 > 此方法处理模块的实际初始化和挂载
-
-并行注册所有模块类（已在 register_to_manager 中完成）
-这里处理模块的实例化和挂载
+> 支持模块间依赖声明和拓扑排序加载
 
 ---
 

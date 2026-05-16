@@ -14,16 +14,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
+    SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management"]
+    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["Yunhu"]
@@ -41,14 +43,15 @@ graph TB
 
 | Module | Description |
 |------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta |
+| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
 | **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
+| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management |
+| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
@@ -65,20 +68,26 @@ flowchart TD
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
     E --> F["Register Modules"]
-    F --> G["Initialize Modules<br/>(Instantiate + on_load)"]
+    F --> F1{"Dependency Validation"}
+    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
+    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["Start Router Server"]
-    I --> J["Async Start Platform Adapters"]
-    J --> K["Ready"]
+    I --> J["Asynchronously Start Platform Adapters"]
+    J --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
-1.  **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2.  **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3.  **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4.  **Module Initialization** - Create module instances, call the `on_load` lifecycle method
-5.  **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
+2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
+3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
+4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
 
 ## Event Handling Process
 
@@ -103,11 +112,11 @@ flowchart LR
 
 ### Key Steps in Event Handling
 
--   **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
--   **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
--   **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
--   **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
--   **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
+- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
+- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
+- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
 
 ## Lifecycle Events
 

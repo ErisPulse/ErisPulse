@@ -16,9 +16,12 @@ class MyModule(BaseModule):
         """傳回模組載入策略"""
         return ModuleLoadStrategy(
             lazy_load=True,   # 延遲載入還是立即載入
-            priority=0        # 載入優先級
+            priority=0,       # 載入優先級（數值越大越先載入）
+            depends=["OtherModule"]  # 可選：聲明依賴的其他模組
         )
 ```
+
+> `depends` 聲明的模組如果未註冊，當前模組將被跳過並記錄警告。載入順序由拓撲排序決定，同層級按 `priority` 降序。
 
 ### on_load 方法
 
@@ -27,7 +30,7 @@ class MyModule(BaseModule):
 ```python
 async def on_load(self, event):
     # 註冊事件處理器
-    @command("hello", help="問候指令")
+    @command("hello", help="問候命令")
     async def hello_handler(event):
         await event.reply("你好！")
     
