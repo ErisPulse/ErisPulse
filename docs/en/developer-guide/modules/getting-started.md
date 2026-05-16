@@ -62,7 +62,8 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
-            priority=0
+            priority=0,
+            depends=[]  # Optional: List of other modules this module depends on
         )
     
     async def on_load(self, event):
