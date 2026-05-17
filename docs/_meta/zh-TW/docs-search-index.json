@@ -37,7 +37,7 @@
     "1. 使用交易": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "1. 使用交易"
       }
@@ -45,7 +45,7 @@
     "1. 使用快取": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 251,
+        "line": 257,
         "level": 3,
         "title": "1. 使用快取"
       }
@@ -61,7 +61,7 @@
     "1. 分類異常處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 148,
+        "line": 154,
         "level": 3,
         "title": "1. 分類異常處理"
       }
@@ -69,7 +69,7 @@
     "1. 合理使用日誌層級": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 217,
+        "line": 223,
         "level": 3,
         "title": "1. 合理使用日誌層級"
       }
@@ -85,7 +85,7 @@
     "1. 單元測試": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
+        "line": 331,
         "level": 3,
         "title": "1. 單元測試"
       }
@@ -117,7 +117,7 @@
     "1. 敏感資料保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 288,
+        "line": 294,
         "level": 3,
         "title": "1. 敏感資料保護"
       }
@@ -157,7 +157,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 356,
+        "line": 362,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -301,7 +301,7 @@
     "2. 批次操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 200,
+        "line": 206,
         "level": 3,
         "title": "2. 批次操作"
       }
@@ -317,7 +317,7 @@
     "2. 整合測試": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 340,
+        "line": 346,
         "level": 3,
         "title": "2. 整合測試"
       }
@@ -325,7 +325,7 @@
     "2. 文件完善": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 370,
+        "line": 376,
         "level": 3,
         "title": "2. 文件完善"
       }
@@ -373,7 +373,7 @@
     "2. 結構化日誌": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 239,
+        "line": 245,
         "level": 3,
         "title": "2. 結構化日誌"
       }
@@ -389,7 +389,7 @@
     "2. 輸入驗證": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 311,
         "level": 3,
         "title": "2. 輸入驗證"
       }
@@ -397,7 +397,7 @@
     "2. 逾時處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 169,
+        "line": 175,
         "level": 3,
         "title": "2. 逾時處理"
       }
@@ -405,7 +405,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 278,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -525,7 +525,7 @@
     "3. 事件處理器註冊": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 130,
+        "line": 136,
         "level": 3,
         "title": "3. 事件處理器註冊"
       }
@@ -3285,7 +3285,7 @@
     "儲存系統": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "儲存系統"
       },
@@ -4271,7 +4271,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 286,
+        "line": 292,
         "level": 2,
         "title": "安全性"
       }
@@ -5265,7 +5265,7 @@
     "效能優化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 249,
+        "line": 255,
         "level": 2,
         "title": "效能優化"
       }
@@ -5517,7 +5517,7 @@
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 215,
+        "line": 221,
         "level": 2,
         "title": "日誌記錄"
       },
@@ -6307,7 +6307,7 @@
     "測試": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 323,
+        "line": 329,
         "level": 2,
         "title": "測試"
       }
@@ -6791,7 +6791,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 383,
+        "line": 389,
         "level": 2,
         "title": "相關文件"
       },
@@ -8147,7 +8147,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 354,
+        "line": 360,
         "level": 2,
         "title": "部署"
       }
@@ -8291,7 +8291,7 @@
     "錯誤處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 146,
+        "line": 152,
         "level": 2,
         "title": "錯誤處理"
       },
