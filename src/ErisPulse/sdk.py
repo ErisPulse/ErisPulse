@@ -444,6 +444,9 @@ class SDK:
                 adapter_manager.clear()
                 module_manager.clear()
                 
+                # 获取清理耗时
+                uninit_duration = lifecycle.stop_timer("core.uninit")
+                
                 # 7. 清理单例残留状态
                 lifecycle._timers.clear()
                 logger._logs.clear()
@@ -463,9 +466,6 @@ class SDK:
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
-                
-                # 获取清理耗时
-                uninit_duration = lifecycle.stop_timer("core.uninit")
                 duration_str = (
                     f"{uninit_duration:.2f}s"
                     if uninit_duration >= 1
