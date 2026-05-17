@@ -2450,7 +2450,7 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 # 模組開發最佳實務
 
-本文件提供了 ErisPulse 模組開發的最佳實務建議。
+本文檔提供了 ErisPulse 模組開發的最佳實務建議。
 
 ## 模組設計
 
@@ -2564,17 +2564,23 @@ async def info_command(event):
 ### 2. 合理使用延遲載入
 
 ```python
-# 命令處理模組適合延遲載入
+# 命令處理模組需要立即載入
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=True)
+        return ModuleLoadStrategy(lazy_load=False)
 
 # 監聽器模組需要立即載入
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
+
+# 工具模組適合延遲載入
+class UtilityModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True)
 ```
 
 ### 3. 事件處理器註冊
