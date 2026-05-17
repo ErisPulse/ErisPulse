@@ -14,6 +14,7 @@ example:
 from __future__ import annotations
 
 import asyncio
+import importlib
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -32,6 +33,7 @@ from .Core.logger import Logger
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
 from .Core.config import ConfigManager
+from .Core.metrics import metrics, MetricsManager
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
@@ -62,6 +64,7 @@ class SDK:
     - SendDSL: DSL 发送接口基类
     - module: 模块管理器
     - router: 路由管理器
+    - metrics: 指标监控管理器
     {!--< /tips >!--}
     """
     
@@ -106,13 +109,15 @@ class SDK:
     router: RouterManager
     """路由管理器"""
     
+    metrics: MetricsManager
+    """指标监控管理器"""
+    
     def __init__(self):
         """
         初始化 SDK 实例
         
         挂载所有核心模块到 SDK 实例
         """
-        # 挂载核心模块
         self.Event = Event
         self.lifecycle = lifecycle
         self.logger = logger
@@ -122,7 +127,6 @@ class SDK:
         self.config = config
         
         self.adapter = adapter
-        # 设置 adapter 的 SDK 引用
         adapter.set_sdk_ref(self)
 
         self.BaseAdapter = BaseAdapter
@@ -132,12 +136,11 @@ class SDK:
         self.BaseQueryBuilder = BaseQueryBuilder
         
         self.module = module
-        # 设置 module 的 SDK 引用
         module.set_sdk_ref(self)
         
         self.router = router
+        self.metrics = metrics
         
-        # 初始化协调器（在需要时创建）
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
     
@@ -201,6 +204,7 @@ class SDK:
             3. 注册适配器
             4. 注册模块
             5. 初始化模块
+            6. 启动路由服务器
             
             :return: bool 初始化是否成功
             
@@ -223,15 +227,15 @@ class SDK:
                     return_exceptions=True
                 )
                 
-                # 检查是否有异常
+                # 检查是否有异常，使用空结果继续而非终止
                 if isinstance(adapter_result, Exception):
                     logger.error(f"适配器加载失败: {adapter_result}")
-                    return False
-                    
+                    adapter_result = ({}, [], [])
+
                 if isinstance(module_result, Exception):
                     logger.error(f"模块加载失败: {module_result}")
-                    return False
-                
+                    module_result = ({}, [], [])
+
                 # 解包结果
                 adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
                 module_objs, enabled_modules, disabled_modules = module_result      # type: ignore
@@ -241,14 +245,14 @@ class SDK:
                 if not await self._adapter_loader.register_to_manager(
                     enabled_adapters, adapter_objs, adapter_manager
                 ):
-                    return False
-                
+                    logger.warning("部分适配器注册失败，已跳过")
+
                 # 3. 注册模块
                 logger.print_section_header("模块注册阶段")
                 if not await self._module_loader.register_to_manager(
                     enabled_modules, module_objs, module_manager
                 ):
-                    return False
+                    logger.warning("部分模块注册失败，已跳过")
                 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
                 logger.print_section_header("模块初始化阶段")
@@ -256,8 +260,24 @@ class SDK:
                     success = await self._module_loader.initialize_modules(
                         enabled_modules, module_objs, module_manager, self._sdk
                     )
+                    if not success:
+                        logger.warning("部分模块初始化失败，已跳过")
                 else:
                     success = True
+                
+                # 5. 启动路由服务器
+                logger.print_section_header("路由服务器启动")
+                from ErisPulse.runtime import get_server_config
+                _server_config = get_server_config()
+                try:
+                    await router.start(
+                        host=_server_config["host"],
+                        port=_server_config["port"],
+                        ssl_certfile=_server_config.get("ssl_certfile"),
+                        ssl_keyfile=_server_config.get("ssl_keyfile"),
+                    )
+                except Exception as e:
+                    logger.warning(f"路由服务器启动失败: {e}")
                 
                 # 获取加载耗时
                 load_duration = lifecycle.stop_timer("core.init")
@@ -295,7 +315,7 @@ class SDK:
                 
                 await lifecycle.submit_event(
                     "core.init.complete",
-                    msg="模块初始化完成" if success else "模块初始化失败",
+                    msg="模块初始化完成" if success else "模块初始化部分失败",
                     data={
                         "duration": load_duration,
                         "success": success,
@@ -309,7 +329,7 @@ class SDK:
                         }
                     }
                 )
-                return success
+                return True
                 
             except Exception as e:
                 load_duration = lifecycle.stop_timer("core.init")
@@ -323,7 +343,7 @@ class SDK:
                     }
                 )
                 logger.critical(f"SDK初始化严重错误: {e}")
-                return False
+                return False  # 核心初始化级别的异常仍然返回 False
 
     class Uninitializer:
         """
@@ -351,11 +371,15 @@ class SDK:
             执行反初始化
             
             执行步骤:
-            1. 关闭所有适配器
+            1. 关闭所有适配器实例
             2. 卸载所有模块
-            3. 清理事件处理器
-            4. 清理管理器
-            5. 清理 SDK 模块属性
+            3. 停止路由服务器
+            4. 清理所有事件处理器
+            5. 清理适配器管理器和模块管理器
+            6. 清理 LazyModule 引用
+            7. 清理单例残留状态
+            8. 清理 SDK 模块属性
+            9. 重置初始化状态
             
             :return: bool 反初始化是否成功
             """
@@ -364,6 +388,7 @@ class SDK:
             try:
                 adapter_manager = self._sdk.adapter
                 module_manager = self._sdk.module
+                router_manager = self._sdk.router
                 
                 # 1. 关闭所有适配器
                 registered_adapters = adapter_manager.list_registered()
@@ -375,22 +400,23 @@ class SDK:
                 if loaded_modules:
                     await module_manager.unload()
 
-                # 3. 收集 SDK 对象上的模块属性（在 clear 之前）
+                # 3. 停止路由服务器
+                if router_manager._server_task and not router_manager._server_task.done():
+                    await router_manager.stop()
+
+                # 4. 收集 SDK 对象上的模块属性（在 clear 之前）
                 instance_dict = object.__getattribute__(self._sdk, '__dict__')
                 module_properties_to_clear = set()
 
-                # 收集已加载模块的属性名
                 for module_name in loaded_modules:
                     if module_name in instance_dict:
                         module_properties_to_clear.add(module_name)
 
-                # 处理已初始化的 LazyModule（已访问过，有实例）
+                # 处理 LazyModule（包括已初始化和未初始化的）
                 for attr_name, attr_value in list(instance_dict.items()):
                     if attr_name.startswith('_'):
                         continue
-                    from .loaders.module import LazyModule
                     if isinstance(attr_value, LazyModule):
-                        # 只处理已初始化的 LazyModule
                         lm_initialized = object.__getattribute__(attr_value, '_initialized')
                         if lm_initialized:
                             lm_name = object.__getattribute__(attr_value, '_module_name')
@@ -404,21 +430,30 @@ class SDK:
                                         instance.on_unload({"module_name": lm_name})
                                 except Exception as e:
                                     logger.warning(f"清理懒加载模块 {lm_name} 的 on_unload 失败: {e}")
-                            module_properties_to_clear.add(attr_name)
+                        # 清除 LazyModule 内部引用，打破循环引用链
+                        object.__setattr__(attr_value, '_sdk_ref', None)
+                        object.__setattr__(attr_value, '_instance', None)
+                        object.__setattr__(attr_value, '_manager_instance', None)
+                        object.__setattr__(attr_value, '_module_class', None)
+                        module_properties_to_clear.add(attr_name)
                 
-                # 4. 清理所有事件处理器
+                # 5. 清理所有事件处理器
                 Event._clear_all_handlers()
                 
-                # 5. 清理管理器
+                # 6. 清理管理器
                 adapter_manager.clear()
                 module_manager.clear()
                 
-                # 6. 停止路由服务器
-                router_manager = self._sdk.router
-                if router_manager._server_task and not router_manager._server_task.done():
-                    await router_manager.stop()
+                # 获取清理耗时
+                uninit_duration = lifecycle.stop_timer("core.uninit")
                 
-                # 7. 清理 SDK 对象上的模块属性（使用之前收集的列表）
+                # 7. 清理单例残留状态
+                lifecycle._timers.clear()
+                logger._logs.clear()
+                logger._module_levels.clear()
+                config.force_save()
+                
+                # 8. 清理 SDK 对象上的模块属性
                 module_properties_cleared = 0
                 for module_name in module_properties_to_clear:
                     try:
@@ -428,12 +463,9 @@ class SDK:
                     except Exception as e:
                         logger.warning(f"清理模块属性 {module_name} 失败: {e}")
                 
-                # 8. 重置初始化状态
+                # 9. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
-                
-                # 获取清理耗时
-                uninit_duration = lifecycle.stop_timer("core.uninit")
                 duration_str = (
                     f"{uninit_duration:.2f}s"
                     if uninit_duration >= 1
@@ -579,7 +611,11 @@ class SDK:
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            return loop.create_task(_async_init())
+            try:
+                return loop.create_task(_async_init())
+            except Exception:
+                loop.close()
+                raise
 
 
     async def load_module(self, module_name: str) -> bool:
@@ -644,8 +680,8 @@ class SDK:
             await self.adapter.startup()
             
             if keep_running:
-                # 保持程序运行
-                await asyncio.Event().wait()
+                shutdown_event = asyncio.Event()
+                await shutdown_event.wait()
         except asyncio.CancelledError:
             logger.info("收到关闭信号，正在清理...")
         except Exception as e:
@@ -743,7 +779,7 @@ class SDK:
     def _invalidate_module_cache(self, top_level_modules: set[str]) -> None:
         """
         {!--< internal-use >!--}
-        清理 sys.modules 中属于已加载包的缓存，并刷新 importlib.metadata 缓存
+        清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
         
         :param top_level_modules: 需要清理的顶层 Python 模块名集合
         """
@@ -757,6 +793,8 @@ class SDK:
         
         for key in modules_to_remove:
             del sys.modules[key]
+        
+        importlib.invalidate_caches()
         
         if modules_to_remove:
             logger.debug(f"[Reload] 已清理 {len(modules_to_remove)} 个 sys.modules 缓存: {modules_to_remove}")

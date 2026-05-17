@@ -178,6 +178,34 @@ ErisPulse 模块加载器
 ---
 
 
+##### `_validate_dependencies(modules: list, module_objs: dict)`
+
+验证所有模块的依赖是否满足
+
+:param modules: list 模块名称列表
+:param module_objs: dict 模块对象字典
+:return: dict 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
+
+> **内部方法**
+
+---
+
+
+##### `_topological_sort(modules: list, module_objs: dict)`
+
+基于依赖关系和优先级的拓扑排序
+
+:param modules: list 模块名称列表
+:param module_objs: dict 模块对象字典
+:return: list 排序后的模块 meta_name 列表
+
+**异常**: `RuntimeError` - 当检测到循环依赖时
+
+> **内部方法**
+
+---
+
+
 ##### `async async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
 
 初始化模块（创建实例并挂载到 SDK）
@@ -190,9 +218,7 @@ ErisPulse 模块加载器
 
 > **提示**
 > 此方法处理模块的实际初始化和挂载
-
-并行注册所有模块类（已在 register_to_manager 中完成）
-这里处理模块的实例化和挂载
+> 支持模块间依赖声明和拓扑排序加载
 
 ---
 
@@ -243,11 +269,26 @@ ErisPulse 模块加载器
 
 > **内部方法** 
 内部方法，检查并确保模块已初始化
+> **内部方法** 
 
 设计说明：
 - 支持同步/异步透明的懒加载机制，用户无需感知差异
+- BaseModule 在异步上下文中通过辅助线程完成初始化
 - BaseModule 在同步上下文中使用 asyncio.run() 确保初始化完成
 - 非 BaseModule 保持原有逻辑，支持同步初始化
+> **内部方法**
+
+---
+
+
+##### `_init_in_background_thread()`
+
+在辅助线程中运行异步初始化，当前线程同步等待完成
+
+> **内部方法** 
+当 _ensure_initialized 在已有事件循环中被调用时，无法使用
+run_until_complete (会死锁)。通过在新线程中创建独立的事件循环
+来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
 > **内部方法**
 
 ---

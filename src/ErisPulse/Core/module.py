@@ -143,7 +143,7 @@ class ModuleManager(ManagerBase):
             if module_name in self._module_info:
                 setattr(instance, "moduleInfo", self._module_info[module_name])
 
-            # 调用模块的on_load卸载方法
+            # 调用模块的on_load加载方法
             if hasattr(instance, "on_load"):
                 try:
                     if inspect.iscoroutinefunction(instance.on_load):
@@ -418,6 +418,20 @@ class ModuleManager(ManagerBase):
         logger.info(f"模块 {module_name} 已禁用")
 
         if module_name in self._modules:
+            instance = self._modules.get(module_name)
+            if instance and hasattr(instance, "on_unload"):
+                try:
+                    if inspect.iscoroutinefunction(instance.on_unload):
+                        import asyncio
+                        try:
+                            loop = asyncio.get_running_loop()
+                            loop.create_task(instance.on_unload({"module_name": module_name}))
+                        except RuntimeError:
+                            asyncio.run(instance.on_unload({"module_name": module_name}))
+                    else:
+                        instance.on_unload({"module_name": module_name})
+                except Exception as e:
+                    logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
             del self._modules[module_name]
         self._loaded_modules.discard(module_name)
         return True

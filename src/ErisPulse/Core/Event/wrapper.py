@@ -297,6 +297,17 @@ class Event(dict):
         """
         return self.get("self", {}).get("user_id", "")
 
+    def get_self_account_id(self) -> str:
+        """
+        获取机器人账户标识（多Bot模式）
+
+        优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+
+        :return: 机器人账户标识，单Bot模式下返回空字符串
+        """
+        self_info = self.get("self", {})
+        return self_info.get("account_id", "") or self_info.get("user_id", "")
+
     def get_self_info(self) -> dict[str, Any]:
         """
         获取机器人完整信息
@@ -569,7 +580,7 @@ class Event(dict):
 
         使用会话类型管理模块自动处理类型转换和ID获取
 
-        :return: (适配器实例, 发送目标类型, 目标ID)
+        :return: (适配器实例, 发送目标类型, 目标ID, 账户ID)
         """
         platform = self.get_platform()
         if not platform:
@@ -593,7 +604,9 @@ class Event(dict):
                 f"user_id={self.get_user_id()}, group_id={self.get_group_id()}"
             )
 
-        return adapter_instance, send_type, target_id
+        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+        return adapter_instance, send_type, target_id, bot_id
 
     async def reply(
         self,
@@ -637,10 +650,14 @@ class Event(dict):
         >>> # 组合使用：@用户 + 回复消息
         >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
         """
-        adapter_instance, detail_type, target_id = self._get_adapter_and_target()
+        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
 
         # 构建发送链
         send_chain = adapter_instance.Send.To(detail_type, target_id)
+
+        # 多Bot: 使用接收事件的Bot发送
+        if bot_id:
+            send_chain = send_chain.Using(bot_id)
 
         # 处理@用户
         if at_users:
@@ -711,8 +728,11 @@ class Event(dict):
         >>>         .build()
         >>> )
         """
-        adapter_instance, detail_type, target_id = self._get_adapter_and_target()
-        return await adapter_instance.Send.To(detail_type, target_id).Raw_ob12(message)
+        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
+        send_chain = adapter_instance.Send.To(detail_type, target_id)
+        if bot_id:
+            send_chain = send_chain.Using(bot_id)
+        return await send_chain.Raw_ob12(message)
 
     # ==================== 等待回复功能 ====================
 
@@ -950,13 +970,15 @@ class Event(dict):
             evt = event_data if isinstance(event_data, Event) else Event(event_data)
             try:
                 if condition is None or condition(evt):
-                    if not future.done():
-                        raw = (
-                            event_data
-                            if isinstance(event_data, dict)
-                            else dict(event_data)
-                        )
+                    raw = (
+                        event_data
+                        if isinstance(event_data, dict)
+                        else dict(event_data)
+                    )
+                    try:
                         future.set_result(raw)
+                    except asyncio.InvalidStateError:
+                        pass
             except Exception:
                 pass
 
@@ -1142,12 +1164,15 @@ class Conversation:
     """
     多轮对话上下文
 
-    提供在同一会话中进行多轮交互的便捷方法
+    提供在同一会话中进行多轮交互的便捷方法，支持分支跳转、上下文持久化
 
     {!--< tips >!--}
     1. 通过 event.conversation() 方法创建
     2. 超时后自动标记为非活跃状态
     3. 支持链式调用 say() 方法
+    4. 支持 branch() 定义分支和 goto() 跳转
+    5. 支持 context 字典存储对话状态
+    6. 支持 save()/resume() 持久化到 storage
     {!--< /tips >!--}
     """
 
@@ -1161,6 +1186,10 @@ class Conversation:
         self._event = event
         self._timeout = timeout
         self._alive = True
+        self._branches: dict[str, Callable] = {}
+        self._current_branch: str | None = None
+        self._branch_task: asyncio.Task | None = None
+        self.context: dict[str, Any] = {}
 
     @property
     def is_active(self) -> bool:
@@ -1237,18 +1266,33 @@ class Conversation:
         """
         多步骤收集信息
 
-        :param fields: list[dict] - 字段列表
+        :param fields: list[dict] - 字段列表，支持 condition 字段:
+            - condition: callable - 接收已收集数据 dict, 返回 bool 决定是否收集此字段
         :return: dict|None - 收集到的数据字典或 None
         """
         if not self._alive:
             return None
+
+        filtered_fields = []
+        for f in fields:
+            cond = f.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(self.context):
+                        continue
+                except Exception:
+                    continue
+            filtered_fields.append(f)
+
         result = await self._event.collect(
-            fields,
+            filtered_fields,
             timeout_per_field=kwargs.pop("timeout_per_field", self._timeout),
             **kwargs,
         )
         if result is None:
             self._alive = False
+        else:
+            self.context.update(result)
         return result
 
     def stop(self):
@@ -1256,6 +1300,193 @@ class Conversation:
         结束对话
         """
         self._alive = False
+        if self._branch_task and not self._branch_task.done():
+            self._branch_task.cancel()
+
+    # 分支系统
+
+    def branch(self, name: str):
+        """
+        注册分支处理器
+
+        :param name: str 分支名称
+        :return: Callable 装饰器
+
+        :example:
+        >>> conv = event.conversation()
+        >>>
+        >>> @conv.branch("menu")
+        ... async def menu_branch(conv, event):
+        ...     await conv.say("1.饮品 2.主食")
+        ...     resp = await conv.wait()
+        ...     if resp and resp.get_text() == "1":
+        ...         conv.goto("drink")
+        ...
+        >>> @conv.branch("drink")
+        ... async def drink_branch(conv, event):
+        ...     await conv.say("请选择饮品")
+        ...     resp = await conv.wait()
+        ...     conv.context["drink"] = resp.get_text()
+        ...     conv.goto("confirm")
+        ...
+        >>> conv.start("menu")
+        """
+        def decorator(func: Callable):
+            self._branches[name] = func
+            return func
+        return decorator
+
+    def goto(self, branch_name: str, event: "Event" = None):
+        """
+        跳转到指定分支
+
+        :param branch_name: str 目标分支名称
+        :param event: Event 传递给分支的事件对象 (可选)
+
+        :raises ValueError: 当目标分支不存在时
+
+        :example:
+        >>> conv.goto("drink")
+        """
+        if branch_name not in self._branches:
+            raise ValueError(f"分支 '{branch_name}' 未定义")
+        self._current_branch = branch_name
+
+        evt = event or self._event
+
+        if self._branch_task and not self._branch_task.done():
+            self._branch_task.cancel()
+
+        async def _run_branch():
+            handler = self._branches[branch_name]
+            try:
+                if asyncio.iscoroutinefunction(handler):
+                    await handler(self, evt)
+                else:
+                    handler(self, evt)
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                from ..logger import logger as _logger
+                _logger.warning(f"分支 '{branch_name}' 执行异常: {e}")
+                self._alive = False
+
+        try:
+            loop = asyncio.get_running_loop()
+            self._branch_task = loop.create_task(_run_branch())
+        except RuntimeError:
+            pass
+
+    def start(self, branch_name: str, event: "Event" = None):
+        """
+        启动对话，从指定分支开始
+
+        :param branch_name: str 起始分支名称
+        :param event: Event 初始事件对象 (可选)
+
+        :raises ValueError: 当起始分支不存在时
+
+        :example:
+        >>> conv.start("menu")
+        """
+        self._alive = True
+        self.goto(branch_name, event)
+
+    def get_current_branch(self) -> str | None:
+        """
+        获取当前分支名称
+
+        :return: str|None 当前分支名, 未在分支中时返回 None
+        """
+        return self._current_branch
+
+    def has_branch(self, name: str) -> bool:
+        """
+        检查分支是否存在
+
+        :param name: str 分支名称
+        :return: bool 是否存在
+        """
+        return name in self._branches
+
+    # ==================== 持久化 ====================
+
+    async def save(self):
+        """
+        保存对话状态到 storage
+
+        :example:
+        >>> await conv.save()
+
+        {!--< tips >!--}
+        保存内容包括: 当前分支、上下文数据、活跃状态
+        可用于重启后恢复对话
+        {!--< /tips >!--}
+        """
+        try:
+            from ..storage import storage
+            user_id = self._event.get_user_id()
+            platform = self._event.get_platform()
+            key = f"conversation:{platform}:{user_id}"
+            storage.set(key, {
+                "branch": self._current_branch,
+                "context": self.context,
+                "alive": self._alive,
+                "timeout": self._timeout,
+            })
+        except Exception:
+            pass
+
+    async def resume(self, event: "Event" = None) -> bool:
+        """
+        从 storage 恢复对话状态
+
+        :param event: Event 新的事件对象 (可选, 不传则使用原事件)
+        :return: bool 是否恢复成功
+
+        :example:
+        >>> conv = event.conversation()
+        >>> # ... 注册分支 ...
+        >>> if await conv.resume():
+        ...     conv.goto(conv.get_current_branch())
+
+        {!--< tips >!--}
+        需要在 resume() 之前先注册好所有分支
+        {!--< /tips >!--}
+        """
+        try:
+            from ..storage import storage
+            evt = event or self._event
+            user_id = evt.get_user_id()
+            platform = evt.get_platform()
+            key = f"conversation:{platform}:{user_id}"
+            data = storage.get(key)
+            if data and isinstance(data, dict):
+                self.context = data.get("context", {})
+                self._current_branch = data.get("branch")
+                self._alive = data.get("alive", False)
+                if event:
+                    self._event = event
+                return True
+        except Exception:
+            pass
+        return False
+
+    async def clear_saved(self):
+        """
+        清除保存的对话状态
+
+        :example:
+        >>> await conv.clear_saved()
+        """
+        try:
+            from ..storage import storage
+            user_id = self._event.get_user_id()
+            platform = self._event.get_platform()
+            key = f"conversation:{platform}:{user_id}"
+            storage.delete(key)
+        except Exception:
+            pass
 
 
 __all__ = [

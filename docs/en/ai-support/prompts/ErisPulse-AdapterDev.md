@@ -57,16 +57,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management"]
+    SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management"]
+    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["Yunhu"]
@@ -84,14 +86,15 @@ graph TB
 
 | Module | Description |
 |------|------|
-| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta |
+| **Event** | Event system, providing five types of event processing: command / message / notice / request / meta, and Conversation multi-round dialogue |
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
-| **Module** | Module manager, managing plugin registration, loading, and unloading |
+| **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
 | **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management |
+| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management |
+| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
@@ -108,20 +111,26 @@ flowchart TD
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
     E --> F["Register Modules"]
-    F --> G["Initialize Modules<br/>(Instantiate + on_load)"]
+    F --> F1{"Dependency Validation"}
+    F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
+    F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
+    F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["Start Router Server"]
-    I --> J["Async Start Platform Adapters"]
-    J --> K["Ready"]
+    I --> J["Asynchronously Start Platform Adapters"]
+    J --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
-1.  **Environment Preparation** - Load TOML configuration files, set up global exception handling
-2.  **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3.  **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4.  **Module Initialization** - Create module instances, call the `on_load` lifecycle method
-5.  **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
+2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
+3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
+4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
 
 ## Event Handling Process
 
@@ -146,11 +155,11 @@ flowchart LR
 
 ### Key Steps in Event Handling
 
--   **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
--   **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
--   **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
--   **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
--   **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
+- **Adapter Receive** - Platform adapters receive native events via WebSocket/Webhook, etc.
+- **OB12 Standardization** - Convert platform native events to the unified OneBot12 standard format
+- **Middleware Processing** - Execute registered middleware functions sequentially, allowing modification of event data
+- **Event Dispatch** - Dispatch to corresponding handlers based on event type (message/notice/request/meta)
+- **SendDSL Reply** - Handlers send responses via `event.reply()` or `SendDSL` chain calls
 
 ## Lifecycle Events
 
@@ -4395,7 +4404,7 @@ sdk.storage.delete_multi(["key1", "key2", "key3"])
 
 ### SQL Chain Query
 
-The Storage module provides a general-purpose SQL query builder with a chaining-style API, supporting CRUD operations for custom tables.
+The Storage module provides a chain-style API general-purpose SQL query builder, supporting CRUD operations for custom tables.
 
 > See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
 
@@ -4511,6 +4520,36 @@ def _load_config(self):
         return default_config
     return config
 ```
+
+### Configuration Auditing
+
+Config module has built-in caller-aware and auditing functionality to track read/write sources of configurations:
+
+```python
+# Enable auditing (disabled by default)
+sdk.config.enable_audit(True)
+
+# Listen for configuration changes
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"Configuration changed: {key}")
+    print(f"  Old value: {old_value} -> New value: {new_value}")
+    print(f"  Caller: {caller.file}:{caller.lineno} ({caller.function})")
+
+# Get audit logs
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# Disable auditing
+sdk.config.enable_audit(False)
+```
+
+Audit logs contain:
+- `operation`: Operation type (`get` / `set`)
+- `key`: Configuration key path
+- `caller`: Caller information (file name, line number, function name, module name)
+- `timestamp`: Operation timestamp
 
 ## Logger Module
 
@@ -4712,15 +4751,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics Module
+
+### Basic Usage
+
+```python
+from ErisPulse import sdk
+
+# Register built-in metrics (HTTP requests count, module loading time, etc.)
+sdk.metrics.register_builtin_metrics()
+
+# Get all metrics snapshot
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### Metric Types
+
+#### Counter
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="Total HTTP requests")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="Active connections count")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # Set to 42
+print(gauge.value)       # 42
+```
+
+#### Histogram
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="Request duration")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### Custom Metrics
+
+```python
+from ErisPulse import sdk
+
+# Register custom metrics via MetricsManager
+sdk.metrics.counter("my_module.errors", description="Module error count")
+sdk.metrics.gauge("my_module.queue_size", description="Queue size")
+sdk.metrics.histogram("my_module.process_time", description="Processing time")
+
+# Get and use
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed Decorator
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # Function execution time will be automatically recorded to Histogram metric
+    await do_something()
+```
+
 ## Router Module
 
-### HTTP Routes
+### Decorator Routing (Recommended)
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# Register HTTP route
+# HTTP route decorator
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# Shortcut method decorators
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket decorator
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Authenticated WebSocket decorator
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### Traditional Registration
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -4729,28 +4897,164 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data API",
+    tags=["API"],
 )
 
-# Unregister route
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
-### WebSocket Routes
+### WebSocket Routing
 
 ```python
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# Register WebSocket route (automatically accepts connection by default)
 async def websocket_handler(websocket: WebSocket):
-    # No manual accept needed by default, it is called internally automatically
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# Basic registration (auto accepts connection)
 sdk.router.register_websocket(
-    module_name="my
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# Authenticated registration (recommended: use auth_handler to control connection)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# Unregister route
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**Parameter Description:**
+
+| Parameter | Description | Default Value |
+|----------|-------------|--------------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Auth function, returns `False` to auto-close connection | `None` |
+| `auto_accept` | Whether to auto `accept()` | `True` |
+
+> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
+
+### Route Grouping
+
+```python
+# Create route group
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# Register routes in group
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Versioned grouping
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### Route Middleware
+
+```python
+# Global middleware (glob matching)
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# Specific path middleware
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### Rate Limiting
+
+```python
+# Set rate limit for route (sliding window)
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS Configuration
+
+```python
+# Programmatic way
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# Configuration file way (config.toml)
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### Security Headers
+
+```python
+# Automatically add security response headers
+sdk.router.setup_security_headers()
+
+# Configuration file way (config.toml)
+# [router.security]
+# enabled = true
+```
+
+### Auto Documentation
+
+```python
+# Router enables OpenAPI documentation by default
+# Disable documentation
+sdk.router.disable_docs()
+
+# Custom documentation info
+sdk.router.set_docs_info(
+    title="My API",
+    description="API documentation",
+    version="1.0.0"
+)
+```
+
+### Route Information
+
+```python
+app = sdk.router.get_app()
+```
+
+## Related Documentation
+
+- [Event System API](event-system.md) - Event module API
+- [Adapter System API](adapter-system.md) - Adapter management API
 
 
 
@@ -5069,6 +5373,375 @@ class MyModule(BaseModule):
 
 - [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn to develop modules
 - [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
+
+
+
+### Dashboard 视窗注册
+
+# Dashboard View Registration
+
+Dashboard supports other ErisPulse modules to register custom management pages into the Dashboard sidebar. After registration, users can directly switch to the module's exclusive view page within Dashboard without needing to develop a separate frontend interface.
+
+> **Prerequisites**
+>
+> Dashboard view registration is an **optional feature** that requires the installation and loading of the [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) module.
+>
+> - If the Dashboard module is **not installed** or **not loaded**, calling `sdk.Dashboard.register_view()` will throw an exception
+> - Be sure to wrap the registration code with `try/except` to ensure other functionality of the module itself is not affected
+> - It is recommended to check if Dashboard is available before registration: `hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## How It Works
+
+```
+Module on_load()
+  → Call sdk.Dashboard.register_view(...)
+  → Dashboard backend stores view information
+  → WebSocket notifies frontend
+  → Frontend dynamically creates sidebar navigation item + page container
+  → User clicks to view module window
+```
+
+---
+
+## Registration API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # Required, unique identifier
+    title="My Module",                # Chinese display name
+    title_en="My Module",             # English display name
+    icon_svg='<svg>...</svg>',        # Sidebar icon SVG
+    html_content='<div>...</div>',     # Page HTML content
+    js_content='function xxx() {}',    # Page JavaScript logic
+    css_content='.my-style {}',        # Optional custom CSS
+    iframe_url='',                     # iframe mode URL (exclusive with html_content)
+    loader="loadMyModuleView",         # JS function name to call when switching to this page
+    group="group_extensions",          # Sidebar group
+    group_title="",                    # Custom group Chinese name
+    group_title_en="",                 # Custom group English name
+)
+```
+
+### Parameter Description
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | `str` | Yes | Unique identifier for the view, module name recommended |
+| `title` | `str` | No | Chinese display name, defaults to `id` |
+| `title_en` | `str` | No | English display name, defaults to `title` |
+| `icon_svg` | `str` | No | Complete SVG string for the sidebar icon |
+| `html_content` | `str` | No* | Page HTML content for injection mode |
+| `js_content` | `str` | No | Page JavaScript code |
+| `css_content` | `str` | No | Page custom CSS styles |
+| `iframe_url` | `str` | No* | URL for iframe mode, `html_content` will be ignored when set |
+| `loader` | `str` | No | JavaScript function name that is automatically called when the page is activated |
+| `group` | `str` | No | Sidebar group identifier, defaults to `group_extensions` |
+| `group_title` | `str` | No | Custom group Chinese title |
+| `group_title_en` | `str` | No | Custom group English title |
+
+> *At least one of `html_content` or `iframe_url` must be provided, otherwise the page will be blank.
+
+---
+
+## Two Injection Modes
+
+### Mode 1: HTML/JS Injection (Recommended)
+
+Directly provide HTML, JS, and CSS strings, and Dashboard will inject the content into the page. This mode is fully consistent with Dashboard styles, and it is recommended to use the CSS class names provided by Dashboard.
+
+```python
+sdk.Dashboard.register_view(
+    id="Weather",
+    title="天气", title_en="Weather",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    html_content='''
+        <h1 class="page-title">天气查询</h1>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">当前天气</div>
+                <div class="card-body">
+                    <div id="weather-info">加载中...</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">操作</div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                </div>
+            </div>
+        </div>
+    ''',
+    js_content='''
+        async function loadWeatherView() {
+            await refreshWeather();
+        }
+        async function refreshWeather() {
+            var el = document.getElementById('weather-info');
+            if (!el) return;
+            try {
+                var token = localStorage.getItem('__ep_tk__');
+                var resp = await fetch('/Weather/api/current', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await resp.json();
+                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+            } catch (e) {
+                el.textContent = '加载失败: ' + e.message;
+            }
+        }
+    ''',
+    loader="loadWeatherView",
+    group="group_tools",
+)
+```
+
+### Mode 2: iframe Embedding
+
+The module provides its own HTML page URL (which needs to register its own route), and Dashboard embeds it via iframe. Suitable for scenarios requiring completely independent UI or complex interactions.
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="数据可视化", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> iframe mode will automatically append a `token` parameter to the URL for authentication.
+
+---
+
+## Sidebar Groups
+
+Modules can specify the sidebar group where their view should be placed. Dashboard has the following built-in groups:
+
+| Group ID | Chinese Name | Position |
+|----------|--------------|----------|
+| `group_overview` | 概览 | Group 1 |
+| `group_events` | 事件 | Group 2 |
+| `group_extensions` | 扩展 | Group 3 (Default) |
+| `group_system` | 系统 | Group 4 |
+| `group_tools` | 工具 | Group 5 |
+
+Specifying a built-in group name will append the module view to the end of that group:
+
+```python
+group="group_tools"  # Appended to "Tools" group
+```
+
+Custom group names (not starting with `group_`) can also be used, and Dashboard will automatically create a new group:
+
+```python
+group="my_group",
+group_title="我的分组",
+group_title_en="My Group",
+```
+
+---
+
+## Common CSS Class Names
+
+When module views use HTML injection mode, Dashboard's existing CSS class names can be used directly to maintain visual consistency:
+
+| Class Name | Purpose |
+|------------|---------|
+| `page-title` | Page title, e.g., `<h1 class="page-title">Title</h1>` |
+| `card` | Card container |
+| `card-header` | Card title bar |
+| `card-body` | Card content area |
+| `grid-2` | Two-column grid layout |
+| `grid-3` | Three-column grid layout |
+| `btn` | Basic button |
+| `btn-primary` | Primary button (blue) |
+| `btn-secondary` | Secondary button |
+| `btn-icon` | Icon button |
+| `btn-danger` | Danger operation button |
+
+Dashboard uses CSS variables to control theme colors, which can be directly referenced in module views:
+
+| CSS Variable | Purpose |
+|--------------|---------|
+| `var(--bg-p)` | Primary background color |
+| `var(--bg-s)` | Secondary background color |
+| `var(--bg-t)` | Tertiary background color (cards, etc.) |
+| `var(--tx-p)` | Primary text color |
+| `var(--tx-s)` | Secondary text color |
+| `var(--tx-t)` | Auxiliary text color |
+| `var(--bd)` | Border color |
+| `var(--accent)` | Accent color |
+| `var(--ok-c)` | Success color |
+| `var(--er-c)` | Error color |
+
+These variables will automatically switch based on Dashboard's light/dark theme, and no additional processing is needed from the module.
+
+---
+
+## Authentication and API Calls
+
+When calling the module's own API from JavaScript in a module view, you need to carry Dashboard's Token for authentication:
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+The module's API endpoints can decide whether to validate the token. If validation is needed, it can be extracted from the request header:
+
+```python
+from fastapi.responses import JSONResponse
+
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    return JSONResponse({"data": "hello"})
+```
+
+---
+
+## Complete Module Example
+
+Here is a complete weather module example showing how to register a view, provide API data, and clean up resources when unloading:
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("天气模块已加载")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("天气模块已卸载")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "北京", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({
+            "city": self.config.get("city", "北京"),
+            "temp": 25,
+            "humidity": 60,
+        })
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="天气", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">天气查询</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">当前天气</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">操作</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = '加载中...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
+                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = '加载失败: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
+```
+
+---
+
+## Unregistering Views
+
+When a module is unloaded, `unregister_view()` should be called to clean up registered views:
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+After unregistering, the Dashboard frontend will remove the sidebar navigation items and page content through WebSocket in real time, no page refresh needed.
+
+---
+
+## Considerations
+
+1. **Loading Order** — Dashboard has a loading priority of `99999` (high priority). Your module's priority should be lower than this value (e.g., `50`) to ensure Dashboard loads first
+2. **Defensive Programming** — Use `try/except` when registering views because the Dashboard module may not be installed or loaded
+3. **Resource Cleanup** — Call `unregister_view()` in `on_unload` to remove registered views
+4. **ID Uniqueness** — The `id` parameter must be unique throughout Dashboard. It is recommended to use the module name directly
+5. **SVG Icons** — `icon_svg` should be a complete `<svg>` tag. It is recommended to use `viewBox="0 0 24 24"` and `stroke="currentColor"` to inherit Dashboard theme colors
+6. **JS Function Naming** — Function names in `js_content` should be unique (e.g., `loadWeatherView`) to avoid conflicts with other modules
+7. **Dynamic Updates** — After registering/unregistering module views, the Dashboard frontend will update the sidebar through WebSocket in real time, no page refresh needed
 
 
 
@@ -6521,6 +7194,7 @@ This section is maintained by developers of each adapter to explain the differen
 - [Kook (Kaihei La) Platform Features](kook.md)
 - [Matrix Platform Features](matrix.md)
 - [QQ Official Bot Platform Features](qqbot.md)
+- [Ideaura Platform Features](ideaura.md)
 
 > Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 

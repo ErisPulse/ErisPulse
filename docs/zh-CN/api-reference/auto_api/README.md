@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 54
-- **类总数**: 48（包括 4 个嵌套类）
-- **函数总数**: 36
-- **方法总数**: 475
+- **模块总数**: 55
+- **类总数**: 54（包括 4 个嵌套类）
+- **函数总数**: 37
+- **方法总数**: 531
 
 ---
 
@@ -51,12 +51,12 @@
 
 ### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
 
-📦 1 个类 | 🔧 5 个方法
+📦 1 个类 | 🔧 6 个方法
 
 
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
 
-📦 1 个类 | 🔧 1 个方法
+📄 模块文档
 
 
 ### [ErisPulse.CLI.commands.list](ErisPulse/CLI/commands/list.md)
@@ -106,7 +106,7 @@
 
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
-📦 1 个类 | 🔧 24 个方法
+📦 1 个类
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -181,7 +181,7 @@
 
 ### [ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)
 
-📦 2 个类 | 🔧 67 个方法 | ⚙️ 6 个函数
+📦 2 个类 | 🔧 76 个方法 | ⚙️ 6 个函数
 
 
 ### [ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)
@@ -196,17 +196,22 @@
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
-📦 1 个类 | 🔧 10 个方法 | ⚙️ 1 个函数
+📦 2 个类 | 🔧 20 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
-📦 1 个类 | 🔧 6 个方法
+📦 1 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
 
 📦 2 个类 | 🔧 28 个方法
+
+
+### [ErisPulse.Core.metrics](ErisPulse/Core/metrics.md)
+
+📦 4 个类 | 🔧 26 个方法
 
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
@@ -216,7 +221,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 1 个类 | 🔧 15 个方法
+📦 3 个类 | 🔧 45 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
@@ -246,7 +251,7 @@
 
 ### [ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)
 
-📦 1 个类 | 🔧 14 个方法
+📦 1 个类 | 🔧 15 个方法
 
 
 ### [ErisPulse.finders.module](ErisPulse/finders/module.md)
@@ -271,7 +276,7 @@
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-📦 2 个类 | 🔧 23 个方法
+📦 2 个类 | 🔧 26 个方法
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
@@ -291,7 +296,7 @@
 
 ### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
 
-⚙️ 9 个函数
+⚙️ 10 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)

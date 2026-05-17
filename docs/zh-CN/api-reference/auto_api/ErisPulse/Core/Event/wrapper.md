@@ -191,6 +191,17 @@ ErisPulse 事件包装类
 ---
 
 
+##### `get_self_account_id()`
+
+获取机器人账户标识（多Bot模式）
+
+优先返回 account_id（ErisPulse扩展），若不存在则回退到 user_id（OB12标准）
+
+:return: 机器人账户标识，单Bot模式下返回空字符串
+
+---
+
+
 ##### `get_self_info()`
 
 获取机器人完整信息
@@ -458,7 +469,7 @@ ErisPulse 事件包装类
 
 使用会话类型管理模块自动处理类型转换和ID获取
 
-:return: (适配器实例, 发送目标类型, 目标ID)
+:return: (适配器实例, 发送目标类型, 目标ID, 账户ID)
 
 ---
 
@@ -809,12 +820,15 @@ ErisPulse 事件包装类
 
 多轮对话上下文
 
-提供在同一会话中进行多轮交互的便捷方法
+提供在同一会话中进行多轮交互的便捷方法，支持分支跳转、上下文持久化
 
 > **提示**
 > 1. 通过 event.conversation() 方法创建
 > 2. 超时后自动标记为非活跃状态
 > 3. 支持链式调用 say() 方法
+> 4. 支持 branch() 定义分支和 goto() 跳转
+> 5. 支持 context 字典存储对话状态
+> 6. 支持 save()/resume() 持久化到 storage
 
 
 #### 方法列表
@@ -885,7 +899,8 @@ ErisPulse 事件包装类
 
 多步骤收集信息
 
-:param fields: list[dict] - 字段列表
+:param fields: list[dict] - 字段列表，支持 condition 字段:
+    - condition: callable - 接收已收集数据 dict, 返回 bool 决定是否收集此字段
 :return: dict|None - 收集到的数据字典或 None
 
 ---
@@ -894,6 +909,139 @@ ErisPulse 事件包装类
 ##### `stop()`
 
 结束对话
+
+---
+
+
+##### `branch(name: str)`
+
+注册分支处理器
+
+:param name: str 分支名称
+:return: Callable 装饰器
+
+**示例**:
+```python
+>>> conv = event.conversation()
+>>>
+>>> @conv.branch("menu")
+... async def menu_branch(conv, event):
+...     await conv.say("1.饮品 2.主食")
+...     resp = await conv.wait()
+...     if resp and resp.get_text() == "1":
+...         conv.goto("drink")
+...
+>>> @conv.branch("drink")
+... async def drink_branch(conv, event):
+...     await conv.say("请选择饮品")
+...     resp = await conv.wait()
+...     conv.context["drink"] = resp.get_text()
+...     conv.goto("confirm")
+...
+>>> conv.start("menu")
+```
+
+---
+
+
+##### `goto(branch_name: str, event: 'Event' = None)`
+
+跳转到指定分支
+
+:param branch_name: str 目标分支名称
+:param event: Event 传递给分支的事件对象 (可选)
+
+**异常**: `ValueError` - 当目标分支不存在时
+
+**示例**:
+```python
+>>> conv.goto("drink")
+```
+
+---
+
+
+##### `start(branch_name: str, event: 'Event' = None)`
+
+启动对话，从指定分支开始
+
+:param branch_name: str 起始分支名称
+:param event: Event 初始事件对象 (可选)
+
+**异常**: `ValueError` - 当起始分支不存在时
+
+**示例**:
+```python
+>>> conv.start("menu")
+```
+
+---
+
+
+##### `get_current_branch()`
+
+获取当前分支名称
+
+:return: str|None 当前分支名, 未在分支中时返回 None
+
+---
+
+
+##### `has_branch(name: str)`
+
+检查分支是否存在
+
+:param name: str 分支名称
+:return: bool 是否存在
+
+---
+
+
+##### `async async save()`
+
+保存对话状态到 storage
+
+**示例**:
+```python
+>>> await conv.save()
+
+> **提示**
+> 保存内容包括: 当前分支、上下文数据、活跃状态
+> 可用于重启后恢复对话
+```
+
+---
+
+
+##### `async async resume(event: 'Event' = None)`
+
+从 storage 恢复对话状态
+
+:param event: Event 新的事件对象 (可选, 不传则使用原事件)
+:return: bool 是否恢复成功
+
+**示例**:
+```python
+>>> conv = event.conversation()
+>>> # ... 注册分支 ...
+>>> if await conv.resume():
+...     conv.goto(conv.get_current_branch())
+
+> **提示**
+> 需要在 resume() 之前先注册好所有分支
+```
+
+---
+
+
+##### `async async clear_saved()`
+
+清除保存的对话状态
+
+**示例**:
+```python
+>>> await conv.clear_saved()
+```
 
 ---
 

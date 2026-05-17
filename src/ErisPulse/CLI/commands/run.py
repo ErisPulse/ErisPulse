@@ -11,12 +11,19 @@ import asyncio
 import subprocess
 import runpy
 from argparse import ArgumentParser
-from watchdog.observers import Observer
 from rich.panel import Panel
-from watchdog.events import FileSystemEventHandler
 
 from ..console import console
 from ..base import Command
+
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    _WATCHDOG_AVAILABLE = True
+except ImportError:
+    _WATCHDOG_AVAILABLE = False
+    Observer = None
+    FileSystemEventHandler = object
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -85,10 +92,18 @@ class RunCommand(Command):
         script = args.script
         reload_mode = args.reload
         
+        if reload_mode and not _WATCHDOG_AVAILABLE:
+            console.print("[error]热重载需要 watchdog 库，请运行: pip install watchdog[/]")
+            reload_mode = False
+        
         if script:
             if not os.path.exists(script):
                 console.print(f"[error]脚本 [path]{script}[/] 不存在[/]")
                 console.print("[info]使用 [cyan]epsdk init[/cyan] 创建新项目[/]")
+                return
+            if os.path.isdir(script):
+                console.print(f"[error][path]{script}[/] 是一个目录，无法直接运行[/]")
+                console.print("[info]请指定具体的脚本文件，例如: [cyan]epsdk run {0}/main.py[/]".format(script))
                 return
             self._run_script(script, reload_mode)
         else:
@@ -162,7 +177,12 @@ class RunCommand(Command):
         ))
 
         try:
-            reload_state["process"].wait()
+            while True:
+                proc = reload_state["process"]
+                proc.wait()
+                time.sleep(0.3)
+                if reload_state["process"] is proc:
+                    break
         except KeyboardInterrupt:
             reload_state["process"].terminate()
         finally:

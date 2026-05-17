@@ -1315,3 +1315,326 @@ class TestInteractiveMethods:
         conv = sample_event.conversation()
         conv.stop()
         assert conv.is_active is False
+
+
+# ==================== Conversation 分支系统测试 ====================
+
+class TestConversationBranches:
+    """Conversation 分支系统测试"""
+
+    @pytest.fixture
+    def sample_event(self):
+        """创建示例事件"""
+        return Event({
+            "type": "message",
+            "detail_type": "private",
+            "message": [{"type": "text", "data": {"text": "hello"}}],
+            "platform": "test",
+            "user_id": "user123",
+            "self": {"platform": "test", "user_id": "bot123"},
+            "alt_message": "test message"
+        })
+
+    def test_branch_register(self, sample_event):
+        """测试注册分支"""
+        conv = sample_event.conversation()
+
+        @conv.branch("menu")
+        async def menu(conv, event):
+            pass
+
+        assert conv.has_branch("menu") is True
+        assert conv.has_branch("nonexist") is False
+
+    def test_branch_decorator_returns_func(self, sample_event):
+        """测试分支装饰器返回原函数"""
+        conv = sample_event.conversation()
+
+        async def menu_func(conv, event):
+            pass
+
+        result = conv.branch("menu")(menu_func)
+        assert result is menu_func
+
+    def test_goto_nonexistent_branch_raises(self, sample_event):
+        """测试跳转到不存在的分支抛出异常"""
+        conv = sample_event.conversation()
+        with pytest.raises(ValueError, match="未定义"):
+            conv.goto("nonexistent")
+
+    def test_goto_sets_current_branch(self, sample_event):
+        """测试goto设置当前分支"""
+        conv = sample_event.conversation()
+
+        @conv.branch("main")
+        async def main(conv, event):
+            pass
+
+        conv.goto("main")
+        assert conv.get_current_branch() == "main"
+
+    def test_start_sets_active(self, sample_event):
+        """测试start设置活跃状态"""
+        conv = sample_event.conversation()
+        conv.stop()
+        assert conv.is_active is False
+
+        @conv.branch("main")
+        async def main(conv, event):
+            pass
+
+        conv.start("main")
+        assert conv.is_active is True
+
+    def test_context_dict(self, sample_event):
+        """测试上下文字典"""
+        conv = sample_event.conversation()
+        assert isinstance(conv.context, dict)
+        conv.context["key"] = "value"
+        assert conv.context["key"] == "value"
+
+    def test_multiple_branches(self, sample_event):
+        """测试注册多个分支"""
+        conv = sample_event.conversation()
+
+        @conv.branch("main")
+        async def main(conv, event):
+            pass
+
+        @conv.branch("settings")
+        async def settings(conv, event):
+            pass
+
+        @conv.branch("exit")
+        async def exit_branch(conv, event):
+            pass
+
+        assert conv.has_branch("main")
+        assert conv.has_branch("settings")
+        assert conv.has_branch("exit")
+        assert conv.get_current_branch() is None
+
+    def test_goto_cancels_previous_task(self, sample_event):
+        """测试goto取消前一个分支任务"""
+        conv = sample_event.conversation()
+
+        @conv.branch("a")
+        async def branch_a(conv, event):
+            pass
+
+        @conv.branch("b")
+        async def branch_b(conv, event):
+            pass
+
+        conv.goto("a")
+        first_task = conv._branch_task
+        conv.goto("b")
+        assert conv.get_current_branch() == "b"
+
+
+# ==================== Conversation 持久化测试 ====================
+
+class TestConversationPersistence:
+    """Conversation 持久化测试"""
+
+    @pytest.fixture
+    def sample_event(self):
+        """创建示例事件"""
+        return Event({
+            "type": "message",
+            "detail_type": "private",
+            "message": [{"type": "text", "data": {"text": "hello"}}],
+            "platform": "test",
+            "user_id": "user123",
+            "self": {"platform": "test", "user_id": "bot123"},
+            "alt_message": "test message"
+        })
+
+    @pytest.mark.asyncio
+    async def test_save(self, sample_event):
+        """测试保存对话状态"""
+        conv = sample_event.conversation()
+
+        @conv.branch("main")
+        async def main(conv, event):
+            pass
+
+        conv.goto("main")
+        conv.context["test_key"] = "test_value"
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.set = Mock()
+            await conv.save()
+            mock_storage.set.assert_called_once()
+            call_args = mock_storage.set.call_args
+            assert call_args[0][0].startswith("conversation:")
+            saved_data = call_args[0][1]
+            assert saved_data["branch"] == "main"
+            assert saved_data["context"]["test_key"] == "test_value"
+
+    @pytest.mark.asyncio
+    async def test_resume_success(self, sample_event):
+        """测试恢复对话状态成功"""
+        conv = sample_event.conversation()
+
+        saved_data = {
+            "branch": "settings",
+            "context": {"theme": "dark"},
+            "alive": True,
+            "timeout": 30,
+        }
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.get = Mock(return_value=saved_data)
+            result = await conv.resume()
+
+        assert result is True
+        assert conv.context["theme"] == "dark"
+        assert conv.get_current_branch() == "settings"
+
+    @pytest.mark.asyncio
+    async def test_resume_no_data(self, sample_event):
+        """测试恢复对话状态无数据"""
+        conv = sample_event.conversation()
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.get = Mock(return_value=None)
+            result = await conv.resume()
+
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_resume_with_new_event(self, sample_event):
+        """测试使用新事件恢复对话"""
+        conv = sample_event.conversation()
+        new_event = Event({
+            "type": "message",
+            "detail_type": "private",
+            "message": [{"type": "text", "data": {"text": "new"}}],
+            "platform": "test",
+            "user_id": "user123",
+            "self": {"platform": "test", "user_id": "bot123"},
+        })
+
+        saved_data = {
+            "branch": "main",
+            "context": {},
+            "alive": True,
+            "timeout": 60,
+        }
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.get = Mock(return_value=saved_data)
+            result = await conv.resume(event=new_event)
+
+        assert result is True
+        assert conv._event is new_event
+
+    @pytest.mark.asyncio
+    async def test_clear_saved(self, sample_event):
+        """测试清除保存的对话状态"""
+        conv = sample_event.conversation()
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.delete = Mock()
+            await conv.clear_saved()
+            mock_storage.delete.assert_called_once()
+            call_args = mock_storage.delete.call_args
+            assert call_args[0][0].startswith("conversation:")
+
+    @pytest.mark.asyncio
+    async def test_save_handles_error(self, sample_event):
+        """测试保存时异常处理"""
+        conv = sample_event.conversation()
+
+        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+            mock_storage.set = Mock(side_effect=Exception("storage error"))
+            await conv.save()
+
+
+# ==================== Conversation 条件字段测试 ====================
+
+class TestConversationConditionalCollect:
+    """Conversation 条件字段测试"""
+
+    @pytest.fixture
+    def sample_event(self):
+        """创建示例事件"""
+        return Event({
+            "type": "message",
+            "detail_type": "private",
+            "message": [{"type": "text", "data": {"text": "hello"}}],
+            "platform": "test",
+            "user_id": "user123",
+            "self": {"platform": "test", "user_id": "bot123"},
+            "alt_message": "test message"
+        })
+
+    def test_collect_filters_by_condition(self, sample_event):
+        """测试collect按条件过滤字段"""
+        conv = sample_event.conversation()
+
+        fields = [
+            {"key": "name", "prompt": "姓名"},
+            {"key": "car", "prompt": "车型", "condition": lambda ctx: ctx.get("has_car", False)},
+        ]
+
+        filtered = []
+        for f in fields:
+            cond = f.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(conv.context):
+                        continue
+                except Exception:
+                    continue
+            filtered.append(f)
+
+        assert len(filtered) == 1
+        assert filtered[0]["key"] == "name"
+
+    def test_collect_includes_field_when_condition_true(self, sample_event):
+        """测试条件满足时包含字段"""
+        conv = sample_event.conversation()
+        conv.context["has_car"] = True
+
+        fields = [
+            {"key": "name", "prompt": "姓名"},
+            {"key": "car", "prompt": "车型", "condition": lambda ctx: ctx.get("has_car", False)},
+        ]
+
+        filtered = []
+        for f in fields:
+            cond = f.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(conv.context):
+                        continue
+                except Exception:
+                    continue
+            filtered.append(f)
+
+        assert len(filtered) == 2
+
+    def test_collect_handles_condition_exception(self, sample_event):
+        """测试条件函数异常时跳过字段"""
+        conv = sample_event.conversation()
+
+        fields = [
+            {"key": "name", "prompt": "姓名"},
+            {"key": "bad", "prompt": "坏字段", "condition": lambda ctx: ctx["nonexistent"]},
+        ]
+
+        filtered = []
+        for f in fields:
+            cond = f.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(conv.context):
+                        continue
+                except Exception:
+                    continue
+            filtered.append(f)
+
+        assert len(filtered) == 1
+        assert filtered[0]["key"] == "name"

@@ -22,15 +22,15 @@ class ExceptionHandler:
         :param exc_traceback: 追踪信息
         :return: 格式化后的异常信息
         """
-        tb_list = traceback.extract_tb(exc_traceback)
-        if tb_list:
-            last_frame = tb_list[-1]
-            filename = os.path.basename(last_frame.filename)
-            line_number = last_frame.lineno
-            function_name = last_frame.name
-            return f"ERROR: {filename}:{function_name}:{line_number}: {exc_type.__name__}: {exc_value}"
-        else:
-            return f"ERROR: {exc_type.__name__}: {exc_value}"
+        if exc_traceback is not None:
+            tb_list = traceback.extract_tb(exc_traceback)
+            if tb_list:
+                last_frame = tb_list[-1]
+                filename = os.path.basename(last_frame.filename)
+                line_number = last_frame.lineno
+                function_name = last_frame.name
+                return f"ERROR: {filename}:{function_name}:{line_number}: {exc_type.__name__}: {exc_value}"
+        return f"ERROR: {exc_type.__name__}: {exc_value}"
         
     @staticmethod
     def format_async_exception(exception: Exception) -> str:

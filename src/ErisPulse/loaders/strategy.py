@@ -76,7 +76,7 @@ class ModuleLoadStrategy:
             return None
         return data[name]
 
-    def __setattr__(self, name: str, value: Any) -> Any:
+    def __setattr__(self, name: str, value: Any) -> None:
         """
         设置属性值
 

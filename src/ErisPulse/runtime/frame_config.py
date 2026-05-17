@@ -4,6 +4,7 @@ ErisPulse 框架配置管理模块
 提供默认配置定义及配置完整性管理功能
 """
 
+import copy
 from typing import Dict, Any, Union, Optional
 
 # 默认配置
@@ -27,7 +28,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "event": {                          # 事件系统配置
         "message": {                    # 消息事件配置
             "ignore_self": True,        # 是否忽略自身消息
-                                        #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
+             #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
         },
         "command": {                    # 命令系统配置
             "prefix": "/",              # 命令前缀
@@ -35,16 +36,34 @@ DEFAULT_ERISPULSE_CONFIG = {
             "allow_space_prefix": False,# 是否允许前缀存在空格
             "must_at_bot": False,       # 是否必须@机器人触发
         },
-
     },
     "framework": {                      # 框架配置
         "enable_lazy_loading": True     # 是否启用延迟加载
-    }
+    },
+    "metrics": {                        # 指标监控配置
+        "enabled": False,               # 是否启用指标采集
+    },
 }
 
 def _get_config_service():
     from ..Core.config import config as global_config
     return global_config
+
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    深度合并两个字典，override 中的值覆盖 base 中的对应值
+    
+    :param base: 基础字典
+    :param override: 覆盖字典
+    :return: 合并后的新字典
+    """
+    result = copy.deepcopy(base)
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = copy.deepcopy(value)
+    return result
 
 def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -57,16 +76,16 @@ def _ensure_erispulse_config_structure(config_dict: Dict[str, Any]) -> Dict[str,
     # 深度合并配置
     for section, default_values in DEFAULT_ERISPULSE_CONFIG.items():
         if section not in config_dict:
-            config_dict[section] = default_values.copy()
+            config_dict[section] = copy.deepcopy(default_values)
             continue
             
         if not isinstance(config_dict[section], dict):
-            config_dict[section] = default_values.copy()
+            config_dict[section] = copy.deepcopy(default_values)
             continue
             
         for key, default_value in default_values.items():
             if key not in config_dict[section]:
-                config_dict[section][key] = default_value
+                config_dict[section][key] = copy.deepcopy(default_value) if isinstance(default_value, dict) else default_value
                 
     return config_dict
 
@@ -84,14 +103,18 @@ def get_erispulse_config() -> Dict[str, Any]:
     
     # 如果完全没有配置，设置默认配置
     if current_config is None:
-        config_service.setConfig("ErisPulse", DEFAULT_ERISPULSE_CONFIG)
-        return DEFAULT_ERISPULSE_CONFIG
+        default_copy = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+        config_service.setConfig("ErisPulse", default_copy)
+        return default_copy
+    
+    # 保存原始配置的快照用于比较
+    original_snapshot = copy.deepcopy(current_config)
     
     # 检查并补全缺失的配置项
     complete_config = _ensure_erispulse_config_structure(current_config)
     
     # 如果配置有变化，更新到存储
-    if current_config != complete_config:
+    if original_snapshot != complete_config:
         config_service.setConfig("ErisPulse", complete_config)
     
     return complete_config
@@ -120,9 +143,9 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     """
     config_service = _get_config_service()
     
-    # 获取当前配置并合并新配置
+    # 获取当前配置并深合并新配置
     current = get_erispulse_config()
-    merged = {**current, **new_config}
+    merged = _deep_merge(current, new_config)
     
     # 确保合并后的配置结构完整
     complete_config = _ensure_erispulse_config_structure(merged)
@@ -177,7 +200,6 @@ def get_framework_config() -> Dict[str, Any]:
 
 __all__ = [
     'DEFAULT_ERISPULSE_CONFIG',
-    '_ensure_erispulse_config_structure',
     'get_erispulse_config',
     'get_config',
     'update_erispulse_config',

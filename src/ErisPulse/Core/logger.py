@@ -36,7 +36,7 @@ class Logger:
         self._module_levels = {}
         self._logger = logging.getLogger("ErisPulse")
         self._logger.setLevel(logging.DEBUG)
-        self._file_handler = None
+        self._file_handlers: list[logging.FileHandler] = []
         self._console = Console()
         if not self._logger.handlers:
             console_handler = RichHandler(
@@ -108,28 +108,30 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        if self._file_handler:
-            self._logger.removeHandler(self._file_handler)
-            self._file_handler.close()
-            self._file_handler = None
+        if self._file_handlers:
+            for handler in self._file_handlers:
+                self._logger.removeHandler(handler)
+                handler.close()
+            self._file_handlers.clear()
 
         if isinstance(path, str):
             path = [path]
 
+        success = False
         for p in path:
             try:
-                self._file_handler = logging.FileHandler(p, encoding="utf-8")
-                # 使用自定义格式化器去除rich markup标签
-                self._file_handler.setFormatter(logging.Formatter("%(message)s"))
-                self._logger.addHandler(self._file_handler)
-                return True
+                handler = logging.FileHandler(p, encoding="utf-8")
+                handler.setFormatter(logging.Formatter("%(message)s"))
+                self._logger.addHandler(handler)
+                self._file_handlers.append(handler)
+                success = True
             except Exception as e:
                 self._logger.error(f"无法设置日志文件 {p}: {e}")
-                self._file_handler = None
-                return False
 
-        self._logger.warning("出现极端错误，无法设置日志文件。")
-        return False
+        if not success:
+            self._logger.warning("未能成功设置任何日志文件。")
+
+        return success
 
     def save_logs(self, path) -> bool:
         """
@@ -138,7 +140,6 @@ class Logger:
         :param path: 日志文件路径 Str/List
         :return: bool 设置是否成功
         """
-        # 检查是否有日志记录
         if not self._logs or all(len(logs) == 0 for logs in self._logs.values()):
             self._logger.warning("没有log记录可供保存。")
             return False
@@ -146,6 +147,7 @@ class Logger:
         if isinstance(path, str):
             path = [path]
 
+        success = False
         for p in path:
             try:
                 with open(p, "w", encoding="utf-8") as file:
@@ -153,14 +155,12 @@ class Logger:
                         file.write(f"Module: {module}\n")
                         for log in logs:
                             file.write(f"  {log}\n")
-                    self._logger.info(f"日志已被保存到：{p}。")
-                    return True
+                self._logger.info(f"日志已被保存到：{p}。")
+                success = True
             except Exception as e:
                 self._logger.error(f"无法保存日志到 {p}: {e}。")
-                return False
 
-        self._logger.warning("出现极端错误，无法保存日志。")
-        return False
+        return success
 
     def get_logs(self, module_name: str = None) -> dict:
         """
@@ -219,14 +219,23 @@ class Logger:
     def _get_caller(self):
         try:
             frame = inspect.currentframe()
-            # 安全地获取调用栈帧
-            if frame is None or frame.f_back is None or frame.f_back.f_back is None:
+            if frame is None:
                 return "Unknown"
 
-            frame = frame.f_back.f_back
-            module = inspect.getmodule(frame)
+            logger_module = inspect.getmodule(frame)
 
-            # 处理模块为None的情况
+            while frame is not None:
+                frame = frame.f_back
+                if frame is None:
+                    return "Unknown"
+                module = inspect.getmodule(frame)
+                if module is not None and module is not logger_module:
+                    break
+
+            if frame is None:
+                return "Unknown"
+
+            module = inspect.getmodule(frame)
             if module is None:
                 return "Unknown"
 
@@ -235,8 +244,6 @@ class Logger:
                 module_name = "Main"
             elif module_name.endswith(".Core"):
                 module_name = module_name[:-5]
-            elif module_name.startswith("ErisPulse"):
-                module_name = "ErisPulse"
 
             return module_name
         except Exception:
@@ -394,9 +401,16 @@ class LoggerChild:
         :param level_const: 日志级别常量
         :param msg: 日志消息
         """
-        if self._parent._get_effective_level(self._name.split(".")[0]) <= level_const:
-            self._parent._save_in_memory(self._name, msg)
-            getattr(self._parent._logger, level_name)(f"[{self._name}] {msg}", *args, **kwargs)
+        parts = self._name.split(".")
+        deduped = [parts[0]]
+        for p in parts[1:]:
+            if p != deduped[-1]:
+                deduped.append(p)
+        display_name = ".".join(deduped)
+
+        if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
+            self._parent._save_in_memory(display_name, msg)
+            getattr(self._parent._logger, level_name)(f"[{display_name}] {msg}", *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""

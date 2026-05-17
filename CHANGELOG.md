@@ -63,6 +63,183 @@
 
 ---
 
+## [2.4.5] - 2026/05/17
+> 正式发布
+
+**版本摘要**
+2.4.5 版本是一个重大功能更新版本，主要新增了 Event 多 Bot 模式优化、配置审计系统、指标监控模块、路由系统全面增强（装饰器注册、路由分组、中间件、限流、CORS）、多轮对话扩展（分支/跳转/持久化）、模块依赖管理；重构了 SDK 生命周期为独立阶段（Router 启动从适配器解耦）；优化了日志调用方检测和 CLI 交互体验；修复了优先级加载、适配器中间件空返回、配置文件路径等多个关键问题。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - Event 多 Bot 模式，提供完整的 Bot 生命周期管理
+  - 路由系统全面增强，支持装饰器注册、路由分组、中间件、限流、CORS、安全头等
+  - 配置审计和指标监控模块，增强系统可观测性
+  - 多轮对话扩展，支持分支跳转和持久化
+  - 模块依赖管理，基于拓扑排序确保加载顺序正确
+  - SDK 生命周期细化，Router 启动与适配器启动解耦，清理流程更完整
+
+**注意事项**
+- ⚠️ **路由中间件路径模式变更**：路径模式为 glob 匹配（如 `"/MyModule/*"`），而非 `(module_name, pattern)` 元组
+- ⚠️ **Router 启动解耦**：`adapter.startup()` 不再包含 `router.start()` 调用，Router 由 SDK 生命周期独立启动
+
+**兼容性**
+- 对外 API 完全兼容，现有模块和适配器代码无需修改
+
+### 修复
+- @wsu2059q
+  - 修复在本版本dev版本中反初始化耗时在显示之前就被清理导致显示耗时为0ms的问题
+
+---
+
+## [2.4.5-dev.3] - 2026/05/16
+> 开发版本
+
+### 新增
+
+- @wsu2059q
+  - `Config` 模块新增调用方感知和配置审计系统：
+    - 新增 `_detect_caller()` 方法，使用 `sys._getframe()` 检测配置读写的调用来源
+    - 新增 `AuditEntry` 数据类，记录操作类型、配置键、调用方信息和时间戳
+    - 新增 `enable_audit(enabled)` 方法，开启/关闭审计日志
+    - 新增 `get_audit_log(limit)` 方法，获取最近的审计记录
+    - 新增 `on_change(key)` 装饰器，监听指定配置键的变更回调
+    - 调用方信息包含文件名、行号、函数名、模块名
+  - `Metrics` 新增指标监控模块 (`Core/metrics.py`)：
+    - 新增 `MetricsManager` 管理器，提供 `counter()`、`gauge()`、`histogram()` 工厂方法
+    - 新增 `Counter` 计数器指标，支持 `inc(n)` 和 `value` 属性
+    - 新增 `Gauge` 仪表盘指标，支持 `inc()`、`dec()`、`set(v)` 和 `value` 属性
+    - 新增 `Histogram` 直方图指标，支持 `observe(v)` 和 P50/P95/P99 百分位计算
+    - 新增 `@timed(metric_name)` 装饰器，自动记录函数执行耗时
+    - 新增 `register_builtin_metrics()` 方法，注册 HTTP 请求数、模块加载耗时等内置指标
+    - 新增 `get_all_metrics()` 方法，返回所有指标的当前快照
+  - `Router` 路由系统全面增强：
+    - 新增 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 装饰器快捷注册路由
+    - 新增 `RouteGroup` 路由分组，支持前缀、版本号和嵌套分组
+    - 新增路由中间件系统（`FuncMiddleware`），支持 glob 模式路径匹配和前/后置处理
+    - 新增 `@middleware(*paths)` 装饰器，根据函数参数数量自动判断前置/后置
+    - 新增 `add_middleware(before, after, *paths)` 函数式中间件注册
+    - 新增路由限流功能，滑动窗口算法，支持 `rate_limit` 参数（如 `"10/minute"`）
+    - 新增 `setup_cors()` 方法，配置化 CORS 中间件
+    - 新增 `setup_security_headers()` 方法，自动添加安全响应头
+    - 新增 `disable_docs()` / `set_docs_info()` 方法，控制 API 文档
+    - 新增 `_apply_config()` 方法，从配置文件自动应用 CORS 和安全头
+    - `register_http_route` 新增 `rate_limit`、`summary`、`description`、`tags`、`response_model`、`deprecated` 参数，与装饰器粒度对齐
+  - `Conversation` 多轮对话扩展：
+    - 新增 `@conv.branch(name)` 装饰器，注册对话分支
+    - 新增 `conv.goto(name)` 方法，在分支间跳转
+    - 新增 `conv.start(name=None)` 方法，启动对话（默认从第一个分支开始）
+    - 新增 `conv.context` 字典，分支间共享状态
+    - 新增 `conv.save()` / `conv.resume()` / `conv.clear_saved()` 方法，支持对话持久化
+    - `collect()` 字段新增 `condition` 参数，支持条件字段（动态表单）
+  - `Module` 模块加载新增依赖管理：
+    - 新增 `_validate_dependencies()` 方法，验证模块声明的 `depends` 依赖是否已注册
+    - 新增 `_topological_sort()` 方法，基于 Kahn 算法按依赖关系排序加载顺序
+    - 同层级模块按 `priority` 降序排列
+    - 缺失依赖的模块自动跳过并记录警告
+  - `CLI init` 命令增强：
+    - `epsdk init` 现在生成精简的 `config.toml` 和完整的 `config.full.example`
+    - 新增 `_get_full_example_config()` 静态方法，生成带注释的完整配置示例
+    - 配置示例覆盖：server、logger、storage、event、framework、config.audit、metrics、router.cors、router.security、adapters.status、modules.status
+
+### 变更
+
+- @wsu2059q
+  - `Router` 路由中间件路径模式为 glob 匹配（如 `"/MyModule/*"`），而非 `(module_name, pattern)` 元组
+
+### 修复
+
+- @wsu2059q
+  - 修复优先级加载策略的相关问题，在 `initialize_modules()` 遍历前，按 `priority` 降序排序模块列表。同 priority 的模块保持原有相对顺序（稳定排序）。
+  - 修复 `adapter.emit()` 中间件返回 `None` 时导致后续中间件和事件处理器收到空数据的问题
+  - 修复 `config` 配置文件路径为相对路径时依赖 CWD 的问题，启动时自动解析为绝对路径
+
+---
+
+## [2.4.5-dev.2] - 2026/05/13
+> 开发版本
+
+### 重构
+
+- @wsu2059q
+  - `SDK` 生命周期细化为独立的阶段，Router 启动从 `adapter.startup()` 中解耦：
+    - `Initializer.init()` 新增路由服务器启动步骤（模块初始化之后、适配器启动之前）
+    - `Uninitializer.uninit()` 重构为 9 步有序清理：适配器关闭 → 模块卸载 → 路由停止 → 事件清理 → 管理器清理 → LazyModule 引用清理 → 单例状态清理 → 属性清理 → 状态重置
+    - `adapter.startup()` 不再包含 `router.start()` 调用，仅负责适配器实例启动
+    - `adapter.shutdown()` 不再包含 `router.stop()` 调用，适配器关闭后无条件清理事件处理器
+
+### 优化
+
+- @wsu2059q
+  - `CLI` 添加了 ASCII Art Banner
+  - 数据库创建的 `logger` 被调整为 `logger.debug`
+  - `ModuleLoader.register_to_manager()` 复用已加载的 `module_class`，消除重复 `entry_point.load()` 调用
+  - `runtime/frame_config` 缓存 `get_erispulse_config()` 结果，避免重复 `deepcopy`
+  - `SDK._invalidate_module_cache()` 新增 `importlib.invalidate_caches()` 调用，确保 restart 后重新导入使用最新代码
+  - `AdapterManager._update_bot_status()` 中 bot offline 任务完成后自动从 `_adapter_tasks` 中移除，防止无界增长
+  - `CLI` 命令交互界面风格简化：
+    - 移除 `install` / `self-update` / `uninstall` 命令中的冗余 `Panel` 介绍框
+    - 在 `print_banner()` 后统一注入 `[title]{command.description}[/]` 命令标题行
+    - Banner 尾部空行从 `\n\n` 缩减为 `\n`，消除 banner 与内容之间的大间距
+
+### 修复
+
+- @wsu2059q
+
+  - 修复 `epsdk run <目录路径>` 导致 CLI 重复实例化和 Banner 重复打印的问题：
+    - `RunCommand.execute()` 新增 `os.path.isdir()` 检查，提示用户指定具体脚本文件
+  - 修复 `CommandRegistry` 重复注册时抛出 `ValueError` 导致错误信息泄漏的问题（改为幂等跳过）
+  - 修复 `print_banner()` 在同一进程中重复打印的问题（添加全局标志）
+  - 修复 `Uninitializer.uninit()` 清理不完整导致 restart 后状态残留的问题：
+    - 新增 `config.force_save()` 清理待写入定时器
+    - 新增 `lifecycle._timers.clear()` 清理残留计时器
+    - 新增 `logger._logs.clear()` 和 `logger._module_levels.clear()` 清理日志内存缓存
+    - 新增 LazyModule 内部引用清理（`_sdk_ref`、`_instance`、`_manager_instance`、`_module_class`），打破循环引用链
+
+---
+
+## [2.4.5-dev.1] - 2026/05/12
+> 开发版本
+
+### 优化
+- @wsu2059q
+  - `logger` 的 `caller` 检测进行了优化，现在显示的调用方更加智能
+
+---
+
+## [2.4.5-dev.0] - 2026/05/10
+> 开发版本
+
+### 新增
+
+- @wsu2059q
+  - `Event` 模块新增多Bot模式支持：
+    - 新增 `get_self_account_id()` 方法，优先返回 `account_id`（ErisPulse扩展），不存在时回退到 `user_id`（OB12标准）
+    - `reply()`、`reply_ob12()` 方法自动使用接收事件的Bot发送消息（通过 `SendDSL.Using(bot_id)`）
+    - `wait_reply()` 的等待键新增 `bot_id` 维度，区分不同Bot的同用户同目标会话
+    - `_get_adapter_and_target()` 返回值扩展为四元组，新增 `bot_id`
+  - `Docker` 新增多版本通道支持和自动更新功能：
+    - 新增 `dev` 和 `stable` 两个版本通道，通过 `ERISPULSE_CHANNEL` 环境变量控制
+    - 实现启动时自动更新功能，支持 `ERISPULSE_UPDATE_ON_START` 配置
+    - Dockerfile 重构为多阶段构建，分离 `production` 和 `dev` 目标
+    - 新增 `docker-entrypoint.sh` 入口脚本，集成版本检测和自动升级逻辑
+    - `docker-compose.yml` 支持动态构建目标和标签配置
+  - 添加花枫咖啡馆（Ideaura）适配器到平台支持列表及特性文档
+
+### 优化
+
+- @wsu2059q
+  - 改进 `CLI install` 命令的交互式安装体验
+  - 调整 `lifecycle` 和 `router` 中的参数验证逻辑
+
+### 修复
+
+- @wsu2059q
+  - 改进适配器管理器的错误处理机制
+  - Code Review 修复：涉及 `logger`、`storage`、`module`、`sdk`、`loader`、`finder`、`frame_config`、`exceptions` 等多个模块的参数校验和异常处理改进
+
+---
+
 ## [2.4.4] - 2026/05/07
 > 正式发布
 
