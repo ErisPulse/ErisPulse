@@ -51,7 +51,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 148,
+        "line": 154,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -139,7 +139,7 @@
     "1. Proper Use of Log Levels": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 217,
+        "line": 223,
         "level": 3,
         "title": "1. Proper Use of Log Levels"
       }
@@ -155,7 +155,7 @@
     "1. Sensitive Data Protection": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 288,
+        "line": 294,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -203,7 +203,7 @@
     "1. Unit Testing": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
+        "line": 331,
         "level": 3,
         "title": "1. Unit Testing"
       }
@@ -227,7 +227,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 251,
+        "line": 257,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -243,7 +243,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -251,7 +251,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 356,
+        "line": 362,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -395,7 +395,7 @@
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 278,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -411,7 +411,7 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 200,
+        "line": 206,
         "level": 3,
         "title": "2. Batch Operations"
       }
@@ -427,7 +427,7 @@
     "2. Complete Documentation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 370,
+        "line": 376,
         "level": 3,
         "title": "2. Complete Documentation"
       }
@@ -491,7 +491,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 311,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -499,7 +499,7 @@
     "2. Integration Testing": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 340,
+        "line": 346,
         "level": 3,
         "title": "2. Integration Testing"
       }
@@ -601,7 +601,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 239,
+        "line": 245,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -617,7 +617,7 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 169,
+        "line": 175,
         "level": 3,
         "title": "2. Timeout Handling"
       }
@@ -793,7 +793,7 @@
     "3. Event Handler Registration": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 130,
+        "line": 136,
         "level": 3,
         "title": "3. Event Handler Registration"
       }
@@ -3769,7 +3769,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 354,
+        "line": 360,
         "level": 2,
         "title": "Deployment"
       }
@@ -4217,7 +4217,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 146,
+        "line": 152,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5689,7 +5689,7 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 215,
+        "line": 221,
         "level": 2,
         "title": "Logging"
       },
@@ -6887,7 +6887,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 249,
+        "line": 255,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -7533,7 +7533,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 383,
+        "line": 389,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7999,7 +7999,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 286,
+        "line": 292,
         "level": 2,
         "title": "Security"
       }
@@ -8623,7 +8623,7 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "Storage System"
       },
@@ -8897,7 +8897,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 323,
+        "line": 329,
         "level": 2,
         "title": "Testing"
       }
