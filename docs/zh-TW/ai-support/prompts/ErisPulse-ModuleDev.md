@@ -56,16 +56,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命週期管理"]
     SDK --> Logger["Logger<br/>日誌管理"]
     SDK --> Storage["Storage / env<br/>儲存管理"]
-    SDK --> Config["Config<br/>設定管理"]
+    SDK --> Config["Config<br/>設定管理 + 審計"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
     SDK --> Router["Router<br/>路由管理"]
+    SDK --> Metrics["Metrics<br/>指標監控"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>分支 + 持久化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["雲湖"]
@@ -83,14 +85,15 @@ graph TB
 
 | 模組 | 說明 |
 |------|------|
-| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理 |
+| **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
-| **Module** | 模組管理器，管理外掛的註冊、載入和卸載 |
+| **Module** | 模組管理器，管理外掛的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
-| **Config** | TOML 格式的設定檔管理 |
+| **Config** | TOML 格式的設定檔管理，支援呼叫方感知和設定審計 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理 |
+| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **Metrics** | 指標監控系統，提供 Counter / Gauge / Histogram 三種指標類型 |
 
 ## 初始化流程
 
@@ -107,7 +110,11 @@ flowchart TD
     D --> D2["從 PyPI 載入模組"]
     D1 & D2 --> E["註冊適配器"]
     E --> F["註冊模組"]
-    F --> G["初始化模組<br/>（實例化 + on_load）"]
+    F --> F1{"依賴驗證"}
+    F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
+    F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
+    F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["啟動路由伺服器"]
     I --> J["非同步啟動各平台適配器"]
@@ -119,8 +126,10 @@ flowchart TD
 1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
 2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
 3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
-4. **模組初始化** - 建立模組實例，呼叫 `on_load` 生命週期方法
-5. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+4. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+5. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+6. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
+7. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
 
 ## 事件處理流程
 
@@ -1817,7 +1826,8 @@ class Main(BaseModule):
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
-            priority=0
+            priority=0,
+            depends=[]  # 可選：依賴的其他模組列表
         )
     
     async def on_load(self, event):
@@ -1922,9 +1932,12 @@ class MyModule(BaseModule):
         """傳回模組載入策略"""
         return ModuleLoadStrategy(
             lazy_load=True,   # 延遲載入還是立即載入
-            priority=0        # 載入優先級
+            priority=0,       # 載入優先級（數值越大越先載入）
+            depends=["OtherModule"]  # 可選：聲明依賴的其他模組
         )
 ```
+
+> `depends` 聲明的模組如果未註冊，當前模組將被跳過並記錄警告。載入順序由拓撲排序決定，同層級按 `priority` 降序。
 
 ### on_load 方法
 
@@ -1933,7 +1946,7 @@ class MyModule(BaseModule):
 ```python
 async def on_load(self, event):
     # 註冊事件處理器
-    @command("hello", help="問候指令")
+    @command("hello", help="問候命令")
     async def hello_handler(event):
         await event.reply("你好！")
     
@@ -2236,6 +2249,7 @@ async def friend_add_handler(event):
 #### 機器人資訊
 - `get_self_platform()` - 取得機器人平台名稱
 - `get_self_user_id()` - 取得機器人使用者 ID
+- `get_self_account_id()` - 取得機器人帳戶 ID（多 Bot 模式）
 - `get_self_info()` - 取得機器人完整資訊字典
 
 ### 訊息事件方法
@@ -2436,7 +2450,7 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 # 模組開發最佳實務
 
-本文件提供了 ErisPulse 模組開發的最佳實務建議。
+本文檔提供了 ErisPulse 模組開發的最佳實務建議。
 
 ## 模組設計
 
@@ -2550,17 +2564,23 @@ async def info_command(event):
 ### 2. 合理使用延遲載入
 
 ```python
-# 命令處理模組適合延遲載入
+# 命令處理模組需要立即載入
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=True)
+        return ModuleLoadStrategy(lazy_load=False)
 
 # 監聽器模組需要立即載入
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
+
+# 工具模組適合延遲載入
+class UtilityModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True)
 ```
 
 ### 3. 事件處理器註冊
@@ -3273,6 +3293,36 @@ def _load_config(self):
     return config
 ```
 
+### 配置審計
+
+Config 模組內建呼叫方感知和審計功能，可追蹤配置的讀寫來源：
+
+```python
+# 啟用審計（預設關閉）
+sdk.config.enable_audit(True)
+
+# 監聽配置變更
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"配置變更: {key}")
+    print(f"  舊值: {old_value} -> 新值: {new_value}")
+    print(f"  呼叫方: {caller.file}:{caller.lineno} ({caller.function})")
+
+# 取得審計日誌
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# 關閉審計
+sdk.config.enable_audit(False)
+```
+
+審計日誌中每條記錄包含：
+- `operation`: 操作類型（`get` / `set`）
+- `key`: 配置鍵路徑
+- `caller`: 呼叫方資訊（檔案名、行號、函數名、模組名）
+- `timestamp`: 操作時間戳
+
 ## Logger 模組
 
 ### 基本日誌
@@ -3473,15 +3523,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics 模組
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 註冊內建指標（HTTP 請求數、模組載入耗時等）
+sdk.metrics.register_builtin_metrics()
+
+# 取得所有指標快照
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### 指標類型
+
+#### Counter — 計數器
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="HTTP 請求總數")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge — 儀表盤
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="活躍連接數")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # 設為 42
+print(gauge.value)       # 42
+```
+
+#### Histogram — 直方圖
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="請求耗時")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### 自訂指標
+
+```python
+from ErisPulse import sdk
+
+# 透過 MetricsManager 註冊自訂指標
+sdk.metrics.counter("my_module.errors", description="模組錯誤計數")
+sdk.metrics.gauge("my_module.queue_size", description="佇列大小")
+sdk.metrics.histogram("my_module.process_time", description="處理耗時")
+
+# 取得並使用
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed 裝飾器
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # 函數執行時間將自動記錄到 Histogram 指標
+    await do_something()
+```
+
 ## Router 模組
 
-### HTTP 路由
+### 裝飾器路由（推薦）
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# 註冊 HTTP 路由
+# HTTP 路由裝飾器
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 快捷方法裝飾器
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket 裝飾器
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 帶認證的 WebSocket 裝飾器
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 傳統註冊方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -3490,10 +3669,12 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="資料介面",
+    tags=["API"],
 )
 
-# 取消路由
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
@@ -3503,41 +3684,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 註冊 WebSocket 路由（預設自動接受連線）
 async def websocket_handler(websocket: WebSocket):
-    # 預設情況下無需手動 accept，內部已自動呼叫
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 基本註冊（自動接受連線）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 預設為 True，可省略
 )
 
-# 註冊 WebSocket 路由（手動控制連線）
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根據 condition 決定是否接受連線
-    if some_condition:
-        await websocket.accept()
-        # 處理連線...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
+# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
 sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
+    handler=websocket_handler,
     auth_handler=auth_handler,
-    auto_accept=False  # 手動控制連線
 )
 
 # 取消路由
@@ -3546,31 +3714,119 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 
 **參數說明：**
 
-- `module_name`: 模組名稱
-- `path`: WebSocket 路徑
-- `handler`: 處理函式
-- `auth_handler`: 可選的認證函式
-- `auto_accept`: 是否自動接受連線（預設 `True`）
-  - `True`: 框架自動呼叫 `websocket.accept()`，handler 無需手動呼叫
-  - `False`: handler 必須自行呼叫 `websocket.accept()` 或 `websocket.close()`
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函式 | - |
+| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
+
+> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
+
+### 路由分組
+
+```python
+# 建立路由組
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在組內註冊路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 帶版本號的分組
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中介軟體
+
+```python
+# 全域中介軟體（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路徑中介軟體
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 對路由設定速率限制（滑動視窗）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 程式碼方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 設定檔案方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全頭
+
+```python
+# 自動新增安全回應頭
+sdk.router.setup_security_headers()
+
+# 設定檔案方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動文件
+
+```python
+# Router 預設啟用 OpenAPI 文件
+# 停用文件
+sdk.router.disable_docs()
+
+# 自訂文件資訊
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文件",
+    version="1.0.0"
+)
+```
 
 ### 路由資訊
 
 ```python
-# 取得 FastAPI 應用實例
 app = sdk.router.get_app()
-
-# 新增中介軟體
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
 ```
 
 ## 相關文件
 
-- [事件系統 API](event-system.md) -
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
 
 
 
@@ -3959,7 +4215,7 @@ if resp:
 # 發送提示後等待
 resp = await conv.wait(prompt="請輸入你的名字：")
 
-# 使用自訂超時（對話預設超時）
+# 使用自訂超時（覆蓋對話預設超時）
 resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 ```
 
@@ -3977,9 +4233,9 @@ else:
     await conv.say("超時未回覆")
 ```
 
-內置識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
+內建識別的確認詞：`是/yes/y/確認/確定/好/ok/true/對/嗯/行/同意/沒問題/可以/當然...`
 
-內置識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
+內建識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
 
 ### choose(prompt, options, **kwargs)
 
@@ -4022,6 +4278,17 @@ else:
 | `validator` | 驗證函數，接收 Event，返回 bool | 無 |
 | `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
 | `max_retries` | 最大重試次數 | 3 |
+| `condition` | 條件函數，接收已收集數據 dict，返回 bool | 無 |
+
+**條件字段**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該字段：
+
+```python
+data = await conv.collect([
+    {"key": "has_car", "prompt": "你有車嗎？（是/否）"},
+    {"key": "car_brand", "prompt": "請輸入車型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+])
+```
 
 ### stop()
 
@@ -4050,6 +4317,96 @@ if conv.is_active:
 
 非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待用戶輸入。
 
+## 分支與跳轉
+
+### @conv.branch(name) 裝飾器
+
+使用 `branch()` 註冊對話分支，通過 `goto()` 在分支間跳轉：
+
+```python
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        resp = await conv.wait()
+        if resp is None:
+            return
+        text = resp.get_text().strip()
+        if text == "1":
+            await conv.goto("profile")
+        elif text == "2":
+            await conv.goto("settings")
+        elif text == "3":
+            await conv.say("再見！")
+            conv.stop()
+
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("=== 個人資訊 ===\n姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    @conv.branch("settings")
+    async def settings():
+        await conv.say("=== 設定 ===\n1. 通知開關\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+
+    await conv.start()  # 從第一個註冊的分支開始
+```
+
+### conv.start(name=None)
+
+啟動對話，預設從第一個註冊的分支開始：
+
+```python
+await conv.start()          # 從第一個分支開始
+await conv.start("settings") # 從指定分支開始
+```
+
+## 上下文與持久化
+
+### conv.context
+
+每個對話實例內建 `context` 字典，用於在分支間共享狀態：
+
+```python
+@conv.branch("step1")
+async def step1():
+    conv.context["username"] = resp.get_text().strip()
+    await conv.goto("step2")
+
+@conv.branch("step2")
+async def step2():
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
+```
+
+### save() / resume() / clear_saved()
+
+對話支援持久化，可在超時或中斷後恢復：
+
+```python
+# 保存對話狀態
+conv_id = conv.save()
+# conv_id = "user_123_group_456"  # 基於用戶和群組自動生成
+
+# ... 之後在同一會話中恢復 ...
+conv2 = event.conversation()
+if conv2.resume():
+    await conv2.say("歡迎回來！繼續之前的對話")
+else:
+    await conv2.say("沒有找到之前的對話")
+
+# 清除保存的對話
+conv.clear_saved()
+```
+
 ## 典型流程模式
 
 ### 引導式註冊
@@ -4074,7 +4431,7 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"確認註冊信息？\n用戶名: {data['username']}\n郵箱: {data['email']}"
+        f"確認註冊資訊？\n用戶名: {data['username']}\n郵箱: {data['email']}"
     )
 
     if confirmed:
@@ -4102,9 +4459,9 @@ async def chat_handler(event):
         if text == "退出":
             await conv.say("再見！")
             conv.stop()
-        elif text == "帮助":
-            await conv.say("可用命令：退出、帮助、状态")
-        elif text == "状态":
+        elif text == "幫助":
+            await conv.say("可用命令：退出、幫助、狀態")
+        elif text == "狀態":
             await conv.say("對話活躍中")
         else:
             await conv.say(f"你說的是：{text}")
@@ -4112,7 +4469,7 @@ async def chat_handler(event):
 
 ## 相關文檔
 
-- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 對象的所有方法
+- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
 - [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎
 
 
@@ -4312,89 +4669,242 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 
 路由管理器的主要功能：
 
-- **HTTP 路由管理**：支援多種 HTTP 方法的路由註冊
+- **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊
+- **路由分組**：支援帶前綴和版本號的 `RouteGroup`
+- **路由中間件**：支援 glob 模式匹配的請求攔截
+- **速率限制**：內建滑動窗口限流
+- **CORS 支援**：一鍵開啟跨域資源共享
+- **安全頭**：自動添加安全回應頭
+- **自動文件**：基於 OpenAPI 的互動式文件
 - **WebSocket 支援**：完整的 WebSocket 連線管理和自訂認證
 - **生命週期整合**：與 ErisPulse 生命週期系統深度整合
-- **統一錯誤處理**：提供統一的錯誤處理和日誌記錄
 - **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連線
 
-## 基本使用
+## 裝飾器路由（推薦）
 
-### 註冊 HTTP 路由
+### HTTP 裝飾器
 
 ```python
-from fastapi import Request
 from ErisPulse.Core import router
+from fastapi import Request
 
-async def hello_handler(request: Request):
-    return {"message": "Hello World"}
+# 通用 HTTP 路由
+@router.http("my_module", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"message": "Hello"}
 
-# 註冊 GET 路由
-router.register_http_route(
-    module_name="my_module",
-    path="/hello",
-    handler=hello_handler,
-    methods=["GET"]
-)
+# 快捷方法
+@router.get("my_module", "/info")
+async def get_info(request: Request):
+    return {"info": "data"}
+
+@router.post("my_module", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@router.put("my_module", "/data/{item_id}")
+async def update_data(request: Request):
+    return {"updated": True}
+
+@router.delete("my_module", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
 ```
 
-### 註冊 WebSocket 路由
+> **注意**：`module_name` 必須作為第一個參數顯式傳入，路由路徑會自動添加模組名前綴。
+
+### WebSocket 裝飾器
 
 ```python
 from fastapi import WebSocket
 
-# 預設自動接受連線
+# 基本 WebSocket
+@router.ws("my_module", "/ws")
 async def websocket_handler(websocket: WebSocket):
-    # 預設情況下無需手動 accept，內部已自動呼叫
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 帶認證的 WebSocket（推薦：使用 auth_handler 控制連接）
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+## 傳統註冊方式
+
+```python
+from fastapi import Request
+
+async def hello_handler(request: Request):
+    return {"message": "Hello World"}
+
+# 基本註冊
+router.register_http_route(
+    module_name="my_module",
+    path="/hello",
+    handler=hello_handler,
+    methods=["GET"],
+)
+
+# 帶限流和文件資訊
+router.register_http_route(
+    module_name="my_module",
+    path="/api/data",
+    handler=data_handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="數據介面",
+    tags=["API"],
+)
+```
+
+### WebSocket 註冊
+
+```python
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 基本註冊
 router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 預設為 True，可省略
 )
 
-# 手動控制連線
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根據 condition 決定是否接受連線
-    if some_condition:
-        await websocket.accept()
-        # 處理連線...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
+# 帶認證的註冊（推薦）
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
 
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
-    auto_accept=False  # 手動控制連線
+    handler=websocket_handler,
+    auth_handler=auth_handler,
 )
 ```
 
 **參數說明：**
 
-- `module_name`: 模組名稱
-- `path`: WebSocket 路徑
-- `handler`: 處理函式
-- `auth_handler`: 可選的認證函式
-- `auto_accept`: 是否自動接受連線（預設 `True`）
-  - `True`: 框架自動呼叫 `websocket.accept()`，handler 無需手動呼叫
-  - `False`: handler 必須自行呼叫 `websocket.accept()` 或 `websocket.close()`
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函式 | - |
+| `auth_handler` | 認證函式，返回 `False` 會自動關閉連接 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
 
-### 註銷路由
+> **推薦**：使用 `auth_handler` 進行連接確認，而非關閉 `auto_accept`。僅在你需要完全控制連接流程時才設置 `auto_accept=False`。
+
+## 路由分組
 
 ```python
-router.unregister_http_route(
-    module_name="my_module",
-    path="/hello"
-)
+# 創建帶前綴的路由組
+group = router.group("my_module", prefix="/v1")
 
-router.unregister_websocket(
-    module_name="my_module",
-    path="/ws"
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 實際路徑: /my_module/v1/users
+```
+
+## 路由中間件
+
+中間件支援 glob 模式匹配路徑：
+
+```python
+@router.middleware("/my_module/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    return await call_next(request)
+
+@router.middleware("/my_module/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+## 速率限制
+
+使用滑動窗口演算法對路由進行限流：
+
+```python
+@router.get("my_module", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@router.post("my_module", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+速率限制格式：`{次數}/{時間視窗}`，如 `10/minute`、`100/hour`。
+
+## CORS 配置
+
+```python
+router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+也可通過 `config.toml` 配置：
+
+```toml
+[router.cors]
+allow_origins = ["https://example.com"]
+allow_methods = ["GET", "POST"]
+allow_headers = ["*"]
+```
+
+## 安全頭
+
+```python
+router.setup_security_headers()
+```
+
+自動添加 `X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection` 等安全頭。
+
+也可通過 `config.toml` 配置：
+
+```toml
+[router.security]
+enabled = true
+```
+
+## 自動文件
+
+Router 預設啟用 OpenAPI 互動式文件：
+
+```python
+# 禁用文件
+router.disable_docs()
+
+# 自定義文件資訊
+router.set_docs_info(
+    title="My API",
+    description="API 文件",
+    version="1.0.0"
 )
 ```
 
@@ -4410,22 +4920,32 @@ router.register_http_route("my_module", "/api", handler)
 
 ## 認證機制
 
-WebSocket 支援自訂認證邏輯：
+推薦使用 `auth_handler` 控制連接訪問：
 
 ```python
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
+# 裝飾器方式
+@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
+async def secure_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 傳統註冊方式
 router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
     handler=websocket_handler,
-    auth_handler=auth_handler
+    auth_handler=auth_handler,
 )
 ```
+
+`auth_handler` 在連接建立後執行，返回 `False` 會自動關閉連接（狀態碼 1008）。
+
+> 僅在你需要完全控制連接流程（如自訂握手協定）時才設置 `auto_accept=False`。
 
 ## 系統路由
 
@@ -4460,17 +4980,19 @@ async def on_server_stop(event):
     print("伺服器正在停止...")
 ```
 
-## 最佳實務
+## 最佳實踐
 
-1. **路由命名規範**：使用清晰、描述性的路徑名稱
-2. **安全性考量**：為敏感操作實作認證機制
-3. **錯誤處理**：實作適當的錯誤處理和回應格式
-4. **連線管理**：實作適當的連線清理
+1. **優先使用裝飾器**：`@router.get()` 等裝飾器比 `register_http_route()` 更簡潔
+2. **顯式傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
+3. **使用路由分組**：對同一模組的多個路由使用 `create_group()` 組織
+4. **安全性考量**：為敏感操作實作認證機制和安全頭
+5. **合理限流**：對高頻介面設置速率限制
+6. **錯誤處理**：實作適當的錯誤處理和回應格式
 
 ## 相關文件
 
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組路由註冊
-- [最佳實務](../developer-guide/modules/best-practices.md) - 路由使用建議
+- [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議
 
 
 
@@ -4971,6 +5493,373 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 
 
+### Dashboard 视窗注册
+
+# Dashboard 視窗註冊
+
+Dashboard 支援其他 ErisPulse 模組將自訂的管理頁面註冊到 Dashboard 的側邊欄中。註冊後，使用者可以直接在 Dashboard 中切換到該模組的專屬視窗頁面，無需額外開發獨立的前端介面。
+
+> **前提條件**
+>
+> Dashboard 視窗註冊是**可選功能**，需要安裝並載入 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 模組。
+>
+> - 如果 Dashboard 模組**未安裝**或**未載入**，呼叫 `sdk.Dashboard.register_view()` 會拋出異常
+> - 請務必使用 `try/except` 包裹註冊程式碼，確保模組本身的其他功能不受影響
+> - 建議在註冊前檢查 Dashboard 是否可用：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## 工作原理
+
+```
+模組 on_load()
+  → 呼叫 sdk.Dashboard.register_view(...)
+  → Dashboard 後端儲存視窗資訊
+  → WebSocket 通知前端
+  → 前端動態建立側邊欄導航項 + 頁面容器
+  → 使用者點擊即可查看模組視窗
+```
+
+---
+
+## 註冊 API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # 必填，唯一標識
+    title="我的模組",                  # 中文名稱
+    title_en="My Module",             # 英文名稱
+    icon_svg='<svg>...</svg>',        # 側邊欄圖標 SVG
+    html_content='<div>...</div>',     # 頁面 HTML 內容
+    js_content='function xxx() {}',    # 頁面 JavaScript 邏輯
+    css_content='.my-style {}',        # 可選自訂 CSS
+    iframe_url='',                     # iframe 模式 URL（與 html_content 二選一）
+    loader="loadMyModuleView",         # 切換到該頁面時呼叫的 JS 函數名
+    group="group_extensions",          # 側邊欄分組
+    group_title="",                    # 自訂分組中文名
+    group_title_en="",                 # 自訂分組英文名
+)
+```
+
+### 參數說明
+
+| 參數 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| `id` | `str` | 是 | 視窗唯一標識，建議使用模組名稱 |
+| `title` | `str` | 否 | 中文顯示名稱，預設使用 `id` |
+| `title_en` | `str` | 否 | 英文顯示名稱，預設使用 `title` |
+| `icon_svg` | `str` | 否 | 側邊欄圖標的完整 SVG 字符串 |
+| `html_content` | `str` | 否* | 注入模式的頁面 HTML 內容 |
+| `js_content` | `str` | 否 | 頁面 JavaScript 程式碼 |
+| `css_content` | `str` | 否 | 頁面自訂 CSS 樣式 |
+| `iframe_url` | `str` | 否* | iframe 模式的 URL，設定後忽略 `html_content` |
+| `loader` | `str` | 否 | 頁面激活時自動呼叫的 JS 函數名 |
+| `group` | `str` | 否 | 側邊欄分組標識，預設 `group_extensions` |
+| `group_title` | `str` | 否 | 自訂分組的中文標題 |
+| `group_title_en` | `str` | 否 | 自訂分組的英文標題 |
+
+> *`html_content` 和 `iframe_url` 至少提供一個，否則頁面為空白。
+
+---
+
+## 兩種注入模式
+
+### 模式一：HTML/JS 注入（推薦）
+
+直接提供 HTML、JS、CSS 字符串，Dashboard 會將內容注入到頁面中。該模式與 Dashboard 樣式完全一致，推薦使用 Dashboard 提供的 CSS 類名。
+
+```python
+sdk.Dashboard.register_view(
+    id="Weather",
+    title="天氣", title_en="Weather",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    html_content='''
+        <h1 class="page-title">天氣查詢</h1>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">當前天氣</div>
+                <div class="card-body">
+                    <div id="weather-info">載入中...</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">操作</div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                </div>
+            </div>
+        </div>
+    ''',
+    js_content='''
+        async function loadWeatherView() {
+            await refreshWeather();
+        }
+        async function refreshWeather() {
+            var el = document.getElementById('weather-info');
+            if (!el) return;
+            try {
+                var token = localStorage.getItem('__ep_tk__');
+                var resp = await fetch('/Weather/api/current', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await resp.json();
+                el.innerHTML = '<p>溫度: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>濕度: ' + (data.humidity || '--') + '%</p>';
+            } catch (e) {
+                el.textContent = '載入失敗: ' + e.message;
+            }
+        }
+    ''',
+    loader="loadWeatherView",
+    group="group_tools",
+)
+```
+
+### 模式二：iframe 嵌入
+
+模組提供自己的 HTML 頁面 URL（需自行註冊路由），Dashboard 以 iframe 方式嵌入。適合需要完全獨立 UI 或複雜互動的場景。
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="數據可視化", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> iframe 模式會自動在 URL 後追加 `token` 參數用於認證。
+
+---
+
+## 側邊欄分組
+
+模組可指定視窗所在的側邊欄分組。Dashboard 內建以下分組：
+
+| 分組標識 | 中文名 | 位置 |
+|---------|--------|------|
+| `group_overview` | 概覽 | 第1組 |
+| `group_events` | 事件 | 第2組 |
+| `group_extensions` | 擴展 | 第3組（預設） |
+| `group_system` | 系統 | 第4組 |
+| `group_tools` | 工具 | 第5組 |
+
+指定內建分組名，模組視窗會追加到該分組末尾：
+
+```python
+group="group_tools"  # 追加到"工具"分組
+```
+
+也可以使用自訂分組名（不以 `group_` 開頭），Dashboard 會自動建立新分組：
+
+```python
+group="my_group",
+group_title="我的分組",
+group_title_en="My Group",
+```
+
+---
+
+## 常用 CSS 類名
+
+模組視窗使用 HTML 注入模式時，可直接使用 Dashboard 已有的 CSS 類名來保持視覺一致性：
+
+| 類名 | 用途 |
+|------|------|
+| `page-title` | 頁面標題，如 `<h1 class="page-title">標題</h1>` |
+| `card` | 卡片容器 |
+| `card-header` | 卡片標題欄 |
+| `card-body` | 卡片內容區域 |
+| `grid-2` | 兩列網格佈局 |
+| `grid-3` | 三列網格佈局 |
+| `btn` | 基礎按鈕 |
+| `btn-primary` | 主按鈕（藍色） |
+| `btn-secondary` | 次要按鈕 |
+| `btn-icon` | 圖標按鈕 |
+| `btn-danger` | 危險操作按鈕 |
+
+Dashboard 使用 CSS 變量控制主題色，你可以在模組視窗中直接引用：
+
+| CSS 變量 | 用途 |
+|----------|------|
+| `var(--bg-p)` | 主背景色 |
+| `var(--bg-s)` | 次背景色 |
+| `var(--bg-t)` | 三級背景色（卡片等） |
+| `var(--tx-p)` | 主文字色 |
+| `var(--tx-s)` | 次文字色 |
+| `var(--tx-t)` | 輔助文字色 |
+| `var(--bd)` | 邊框色 |
+| `var(--accent)` | 強調色 |
+| `var(--ok-c)` | 成功色 |
+| `var(--er-c)` | 錯誤色 |
+
+這些變量會根據 Dashboard 的亮色/暗色主題自動切換，模組無需額外處理。
+
+---
+
+## 認證與 API 呼叫
+
+在模組視窗的 JS 中呼叫模組自己的 API 時，需要攜帶 Dashboard 的 Token 進行認證：
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+模組的 API 端點可以自行決定是否驗證 Token。如果需要驗證，可以從請求頭中提取：
+
+```python
+from fastapi.responses import JSONResponse
+
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    return JSONResponse({"data": "hello"})
+```
+
+---
+
+## 完整模組範例
+
+以下是一個完整的天氣模組範例，展示如何註冊視窗、提供 API 數據、以及在卸載時清理資源：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("天氣模組已載入")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("天氣模組已卸載")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "北京", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({
+            "city": self.config.get("city", "北京"),
+            "temp": 25,
+            "humidity": 60,
+        })
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="天氣", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">天氣查詢</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">查看當前天氣信息</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">當前天氣</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">點擊刷新載入</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">操作</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = '載入中...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
+                                           '<p>溫度: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>濕度: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = '載入失敗: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"註冊 Dashboard 視窗失敗: {e}")
+```
+
+---
+
+## 註銷視窗
+
+模組卸載時應呼叫 `unregister_view()` 清理已註冊的視窗：
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+註銷後 Dashboard 前端會透過 WebSocket 即時移除側邊欄導航項和頁面內容，無需使用者刷新。
+
+---
+
+## 注意事項
+
+1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），你的模組優先級應低於此值（如 `50`），確保 Dashboard 先載入完成
+2. **防禦性編程** — 註冊視窗時使用 `try/except` 包裹，因為 Dashboard 模組可能未安裝或未載入
+3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 移除已註冊的視窗
+4. **ID 唯一性** — `id` 參數在整個 Dashboard 中必須唯一，建議直接使用模組名稱
+5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼
+
+
+
 ====
 技术标准
 ====
@@ -5301,6 +6190,7 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 - [Kook(開黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [QQ官方機器人平台特性](qqbot.md)
+- [花楓咖啡館](ideaura.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
 
@@ -5486,7 +6376,7 @@ ErisPulse 專案：
 - [OneBot 適配器庫](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
 相關官方文件：
-- [OneBot V11 協定文件](https://github.com/botuniverse/onebot-11)
+- [OneBot V11 協議文件](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API 官方文件](https://core.telegram.org/bots/api)
 - [雲湖官方文件](https://www.yhchat.com/document/1-3)
 

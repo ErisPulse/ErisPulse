@@ -93,7 +93,6 @@ class AdapterLoader(BaseLoader):
 
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
-            raise ImportError(f"无法加载 {group_name}: {e}")
 
         return objs, enabled_list, disabled_list
 
@@ -140,7 +139,7 @@ class AdapterLoader(BaseLoader):
         try:
             loaded_class = entry_point.load()
             adapter_obj = sys.modules[loaded_class.__module__]
-            dist = importlib.metadata.distribution(entry_point.dist.name)
+            dist = importlib.metadata.distribution(entry_point.dist.name) if entry_point.dist else None
 
             adapter_info = {
                 "meta": {
@@ -151,7 +150,7 @@ class AdapterLoader(BaseLoader):
                     "description": getattr(adapter_obj, "__description__", ""),
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
-                    "package": entry_point.dist.name,
+                    "package": entry_point.dist.name if entry_point.dist else None,
                     "top_level": self._finder.get_top_level_modules(entry_point.dist.name) if entry_point.dist else [],
                 },
                 "adapter_class": loaded_class,
@@ -232,8 +231,16 @@ class AdapterLoader(BaseLoader):
         # 等待所有注册任务完成
         register_results = await asyncio.gather(*register_tasks, return_exceptions=True)
 
-        # 检查是否有注册失败的情况
-        return not any(
-            isinstance(result, Exception) or result is False
-            for result in register_results
-        )
+        # 记录失败的适配器并从列表中移除
+        failed_adapters = []
+        for i, result in enumerate(register_results):
+            adapter_name = adapters[i]
+            if isinstance(result, Exception) or result is False:
+                logger.warning(f"适配器 {adapter_name} 注册失败，已跳过")
+                failed_adapters.append(adapter_name)
+
+        for name in failed_adapters:
+            if name in adapters:
+                adapters.remove(name)
+
+        return True

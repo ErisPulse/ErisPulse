@@ -11,6 +11,7 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 - [SQL Query Builder](sql-builder.md) - Universal SQL chain query builder and storage backend abstraction
 - [Session Type System](session-types.md) - Session type definitions, mappings, and custom type registration
 - [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue contexts
+- [Dashboard View Registration](dashboard-view.md) - Register module management pages to the Dashboard sidebar
 
 ## Target Audience
 

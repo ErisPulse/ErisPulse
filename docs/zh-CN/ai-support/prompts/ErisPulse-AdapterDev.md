@@ -57,16 +57,18 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命周期管理"]
     SDK --> Logger["Logger<br/>日志管理"]
     SDK --> Storage["Storage / env<br/>存储管理"]
-    SDK --> Config["Config<br/>配置管理"]
+    SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理"]
+    SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
     Event --> Request["request"]
     Event --> Meta["meta"]
+    Event --> Conversation["Conversation<br/>分支 + 持久化"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
     BaseAdapter --> P1["云湖"]
@@ -84,14 +86,15 @@ graph TB
 
 | 模块 | 说明 |
 |------|------|
-| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理 |
+| **Event** | 事件系统，提供 command / message / notice / request / meta 五类事件处理，以及 Conversation 多轮对话 |
 | **Adapter** | 适配器管理器，管理多平台适配器的注册、启动和关闭 |
-| **Module** | 模块管理器，管理插件的注册、加载和卸载 |
+| **Module** | 模块管理器，管理插件的注册、加载和卸载，支持依赖声明和拓扑排序 |
 | **Lifecycle** | 生命周期管理器，提供事件驱动的生命周期钩子 |
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
-| **Config** | TOML 格式的配置文件管理 |
+| **Config** | TOML 格式的配置文件管理，支持调用方感知和配置审计 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理 |
+| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Metrics** | 指标监控系统，提供 Counter / Gauge / Histogram 三种指标类型 |
 
 ## 初始化流程
 
@@ -108,7 +111,11 @@ flowchart TD
     D --> D2["从 PyPI 加载模块"]
     D1 & D2 --> E["注册适配器"]
     E --> F["注册模块"]
-    F --> G["初始化模块<br/>（实例化 + on_load）"]
+    F --> F1{"依赖验证"}
+    F1 -->|"缺失依赖"| F2["跳过该模块并记录警告"]
+    F1 -->|"依赖满足"| F3["拓扑排序<br/>（Kahn 算法 + 优先级）"]
+    F3 --> G["按序初始化模块<br/>（实例化 + on_load）"]
+    F2 --> G
     G --> H["adapter.startup()"]
     H --> I["启动路由服务器"]
     I --> J["异步启动各平台适配器"]
@@ -120,8 +127,10 @@ flowchart TD
 1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
 2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
 3. **注册阶段** - 将发现的适配器和模块注册到对应管理器
-4. **模块初始化** - 创建模块实例，调用 `on_load` 生命周期方法
-5. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
+4. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
+5. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+6. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
+7. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
 
 ## 事件处理流程
 
@@ -4913,6 +4922,36 @@ def _load_config(self):
     return config
 ```
 
+### 配置审计
+
+Config 模块内置调用方感知和审计功能，可追踪配置的读写来源：
+
+```python
+# 启用审计（默认关闭）
+sdk.config.enable_audit(True)
+
+# 监听配置变更
+@sdk.config.on_change("MyModule")
+def on_config_change(key, old_value, new_value, caller):
+    print(f"配置变更: {key}")
+    print(f"  旧值: {old_value} -> 新值: {new_value}")
+    print(f"  调用方: {caller.file}:{caller.lineno} ({caller.function})")
+
+# 获取审计日志
+log = sdk.config.get_audit_log(limit=10)
+for entry in log:
+    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
+
+# 关闭审计
+sdk.config.enable_audit(False)
+```
+
+审计日志中每条记录包含：
+- `operation`: 操作类型（`get` / `set`）
+- `key`: 配置键路径
+- `caller`: 调用方信息（文件名、行号、函数名、模块名）
+- `timestamp`: 操作时间戳
+
 ## Logger 模块
 
 ### 基本日志
@@ -5113,15 +5152,144 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
+## Metrics 模块
+
+### 基本使用
+
+```python
+from ErisPulse import sdk
+
+# 注册内置指标（HTTP 请求数、模块加载耗时等）
+sdk.metrics.register_builtin_metrics()
+
+# 获取所有指标快照
+snapshot = sdk.metrics.get_all_metrics()
+```
+
+### 指标类型
+
+#### Counter — 计数器
+
+```python
+from ErisPulse.Core.metrics import Counter
+
+counter = Counter("http_requests_total", description="HTTP 请求总数")
+counter.inc()            # +1
+counter.inc(5)           # +5
+print(counter.value)     # 6
+```
+
+#### Gauge — 仪表盘
+
+```python
+from ErisPulse.Core.metrics import Gauge
+
+gauge = Gauge("active_connections", description="活跃连接数")
+gauge.inc()              # +1
+gauge.dec()              # -1
+gauge.set(42)            # 设为 42
+print(gauge.value)       # 42
+```
+
+#### Histogram — 直方图
+
+```python
+from ErisPulse.Core.metrics import Histogram
+
+hist = Histogram("request_duration_seconds", description="请求耗时")
+hist.observe(0.15)
+hist.observe(0.32)
+hist.observe(1.2)
+print(hist.count)        # 3
+print(hist.sum)          # 1.67
+print(hist.percentile(50))  # P50
+print(hist.percentile(95))  # P95
+print(hist.percentile(99))  # P99
+```
+
+### 自定义指标
+
+```python
+from ErisPulse import sdk
+
+# 通过 MetricsManager 注册自定义指标
+sdk.metrics.counter("my_module.errors", description="模块错误计数")
+sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+
+# 获取并使用
+sdk.metrics.get("my_module.errors").inc()
+```
+
+### @timed 装饰器
+
+```python
+from ErisPulse.Core.metrics import timed
+
+@timed("my_module.handler_duration")
+async def handle_request():
+    # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+```
+
 ## Router 模块
 
-### HTTP 路由
+### 装饰器路由（推荐）
 
 ```python
 from ErisPulse import sdk
 from fastapi import Request
 
-# 注册 HTTP 路由
+# HTTP 路由装饰器
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 快捷方法装饰器
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket 装饰器
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 带认证的 WebSocket 装饰器
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 传统注册方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
 async def handler(request: Request):
     data = await request.json()
     return {"status": "ok", "data": data}
@@ -5130,10 +5298,12 @@ sdk.router.register_http_route(
     module_name="MyModule",
     path="/api",
     handler=handler,
-    methods=["POST"]
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="数据接口",
+    tags=["API"],
 )
 
-# 取消路由
 sdk.router.unregister_http_route("MyModule", "/api")
 ```
 
@@ -5143,41 +5313,28 @@ sdk.router.unregister_http_route("MyModule", "/api")
 from ErisPulse import sdk
 from fastapi import WebSocket
 
-# 注册 WebSocket 路由（默认自动接受连接）
 async def websocket_handler(websocket: WebSocket):
-    # 默认情况下无需手动 accept，内部已自动调用
     while True:
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
+# 基本注册（自动接受连接）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
-    auto_accept=True  # 默认为 True，可省略
 )
 
-# 注册 WebSocket 路由（手动控制连接）
-async def manual_websocket_handler(websocket: WebSocket):
-    # 根据 condition 决定是否接受连接
-    if some_condition:
-        await websocket.accept()
-        # 处理连接...
-    else:
-        await websocket.close(code=1008, reason="Not allowed")
-
+# 带认证的注册（推荐：使用 auth_handler 控制连接）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
-    if token == "<PASSWORD>":
-        return True
-    return False
+    return token == "secret"
 
 sdk.router.register_websocket(
     module_name="my_module",
     path="/secure_ws",
-    handler=manual_websocket_handler,
+    handler=websocket_handler,
     auth_handler=auth_handler,
-    auto_accept=False  # 手动控制连接
 )
 
 # 取消路由
@@ -5186,26 +5343,113 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 
 **参数说明：**
 
-- `module_name`: 模块名称
-- `path`: WebSocket 路径
-- `handler`: 处理函数
-- `auth_handler`: 可选的认证函数
-- `auto_accept`: 是否自动接受连接（默认 `True`）
-  - `True`: 框架自动调用 `websocket.accept()`，handler 无需手动调用
-  - `False`: handler 必须自行调用 `websocket.accept()` 或 `websocket.close()`
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `module_name` | 模块名称（必须） | - |
+| `path` | WebSocket 路径 | - |
+| `handler` | 处理函数 | - |
+| `auth_handler` | 认证函数，返回 `False` 会自动关闭连接 | `None` |
+| `auto_accept` | 是否自动 `accept()` | `True` |
+
+> **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
+
+### 路由分组
+
+```python
+# 创建路由组
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在组内注册路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 带版本号的分组
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中间件
+
+```python
+# 全局中间件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路径中间件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 对路由设置速率限制（滑动窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代码方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全头
+
+```python
+# 自动添加安全响应头
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自动文档
+
+```python
+# Router 默认启用 OpenAPI 文档
+# 禁用文档
+sdk.router.disable_docs()
+
+# 自定义文档信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文档",
+    version="1.0.0"
+)
+```
 
 ### 路由信息
 
 ```python
-# 获取 FastAPI 应用实例
 app = sdk.router.get_app()
-
-# 添加中间件
-@app.middleware("http")
-async def add_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Custom-Header"] = "value"
-    return response
 ```
 
 ## 相关文档
@@ -5530,6 +5774,376 @@ class MyModule(BaseModule):
 
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
 - [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
+
+
+
+### Dashboard 视窗注册
+
+# Dashboard 视窗注册
+
+Dashboard 支持其他 ErisPulse 模块将自定义的管理页面注册到 Dashboard 的侧边栏中。注册后，用户可以直接在 Dashboard 中切换到该模块的专属视窗页面，无需额外开发独立的前端界面。
+
+> **前提条件**
+>
+> Dashboard 视窗注册是**可选功能**，需要安装并加载 [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) 模块。
+>
+> - 如果 Dashboard 模块**未安装**或**未加载**，调用 `sdk.Dashboard.register_view()` 会抛出异常
+> - 请务必使用 `try/except` 包裹注册代码，确保模块本身的其他功能不受影响
+> - 建议在注册前检查 Dashboard 是否可用：`hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+
+---
+
+## 工作原理
+
+```
+模块 on_load()
+  → 调用 sdk.Dashboard.register_view(...)
+  → Dashboard 后端存储视窗信息
+  → WebSocket 通知前端
+  → 前端动态创建侧边栏导航项 + 页面容器
+  → 用户点击即可查看模块视窗
+```
+
+---
+
+## 注册 API
+
+```python
+sdk.Dashboard.register_view(
+    id="MyModule",                    # 必填，唯一标识
+    title="我的模块",                  # 中文名称
+    title_en="My Module",             # 英文名称
+    icon_svg='<svg>...</svg>',        # 侧边栏图标 SVG
+    html_content='<div>...</div>',     # 页面 HTML 内容
+    js_content='function xxx() {}',    # 页面 JavaScript 逻辑
+    css_content='.my-style {}',        # 可选自定义 CSS
+    iframe_url='',                     # iframe 模式 URL（与 html_content 二选一）
+    loader="loadMyModuleView",         # 切换到该页面时调用的 JS 函数名
+    group="group_extensions",          # 侧边栏分组
+    group_title="",                    # 自定义分组中文名
+    group_title_en="",                 # 自定义分组英文名
+)
+```
+
+### 参数说明
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | `str` | 是 | 视窗唯一标识，建议使用模块名称 |
+| `title` | `str` | 否 | 中文显示名称，默认使用 `id` |
+| `title_en` | `str` | 否 | 英文显示名称，默认使用 `title` |
+| `icon_svg` | `str` | 否 | 侧边栏图标的完整 SVG 字符串 |
+| `html_content` | `str` | 否* | 注入模式的页面 HTML 内容 |
+| `js_content` | `str` | 否 | 页面 JavaScript 代码 |
+| `css_content` | `str` | 否 | 页面自定义 CSS 样式 |
+| `iframe_url` | `str` | 否* | iframe 模式的 URL，设置后忽略 `html_content` |
+| `loader` | `str` | 否 | 页面激活时自动调用的 JS 函数名 |
+| `group` | `str` | 否 | 侧边栏分组标识，默认 `group_extensions` |
+| `group_title` | `str` | 否 | 自定义分组的中文标题 |
+| `group_title_en` | `str` | 否 | 自定义分组的英文标题 |
+
+> *`html_content` 和 `iframe_url` 至少提供一个，否则页面为空白。
+
+---
+
+## 两种注入模式
+
+### 模式一：HTML/JS 注入（推荐）
+
+直接提供 HTML、JS、CSS 字符串，Dashboard 会将内容注入到页面中。该模式与 Dashboard 样式完全一致，推荐使用 Dashboard 提供的 CSS 类名。
+
+```python
+sdk.Dashboard.register_view(
+    id="Weather",
+    title="天气", title_en="Weather",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    html_content='''
+        <h1 class="page-title">天气查询</h1>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">当前天气</div>
+                <div class="card-body">
+                    <div id="weather-info">加载中...</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">操作</div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                </div>
+            </div>
+        </div>
+    ''',
+    js_content='''
+        async function loadWeatherView() {
+            await refreshWeather();
+        }
+        async function refreshWeather() {
+            var el = document.getElementById('weather-info');
+            if (!el) return;
+            try {
+                var token = localStorage.getItem('__ep_tk__');
+                var resp = await fetch('/Weather/api/current', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await resp.json();
+                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+            } catch (e) {
+                el.textContent = '加载失败: ' + e.message;
+            }
+        }
+    ''',
+    loader="loadWeatherView",
+    group="group_tools",
+)
+```
+
+### 模式二：iframe 嵌入
+
+模块提供自己的 HTML 页面 URL（需自行注册路由），Dashboard 以 iframe 方式嵌入。适合需要完全独立 UI 或复杂交互的场景。
+
+```python
+sdk.Dashboard.register_view(
+    id="MyVisualizer",
+    title="数据可视化", title_en="Data Visualizer",
+    iframe_url="/MyVisualizer/view",
+    group="group_tools",
+)
+```
+
+> iframe 模式会自动在 URL 后追加 `token` 参数用于认证。
+
+---
+
+## 侧边栏分组
+
+模块可指定视窗所在的侧边栏分组。Dashboard 内置以下分组：
+
+| 分组标识 | 中文名 | 位置 |
+|---------|--------|------|
+| `group_overview` | 概览 | 第1组 |
+| `group_events` | 事件 | 第2组 |
+| `group_extensions` | 扩展 | 第3组（默认） |
+| `group_system` | 系统 | 第4组 |
+| `group_tools` | 工具 | 第5组 |
+
+指定内置分组名，模块视窗会追加到该分组末尾：
+
+```python
+group="group_tools"  # 追加到"工具"分组
+```
+
+也可以使用自定义分组名（不以 `group_` 开头），Dashboard 会自动创建新分组：
+
+```python
+group="my_group",
+group_title="我的分组",
+group_title_en="My Group",
+```
+
+---
+
+## 常用 CSS 类名
+
+模块视窗使用 HTML 注入模式时，可直接使用 Dashboard 已有的 CSS 类名来保持视觉一致性：
+
+| 类名 | 用途 |
+|------|------|
+| `page-title` | 页面标题，如 `<h1 class="page-title">标题</h1>` |
+| `card` | 卡片容器 |
+| `card-header` | 卡片标题栏 |
+| `card-body` | 卡片内容区域 |
+| `grid-2` | 两列网格布局 |
+| `grid-3` | 三列网格布局 |
+| `btn` | 基础按钮 |
+| `btn-primary` | 主按钮（蓝色） |
+| `btn-secondary` | 次要按钮 |
+| `btn-icon` | 图标按钮 |
+| `btn-danger` | 危险操作按钮 |
+
+Dashboard 使用 CSS 变量控制主题色，你可以在模块视窗中直接引用：
+
+| CSS 变量 | 用途 |
+|----------|------|
+| `var(--bg-p)` | 主背景色 |
+| `var(--bg-s)` | 次背景色 |
+| `var(--bg-t)` | 三级背景色（卡片等） |
+| `var(--tx-p)` | 主文字色 |
+| `var(--tx-s)` | 次文字色 |
+| `var(--tx-t)` | 辅助文字色 |
+| `var(--bd)` | 边框色 |
+| `var(--accent)` | 强调色 |
+| `var(--ok-c)` | 成功色 |
+| `var(--er-c)` | 错误色 |
+
+这些变量会根据 Dashboard 的亮色/暗色主题自动切换，模块无需额外处理。
+
+---
+
+## 认证与 API 调用
+
+在模块视窗的 JS 中调用模块自己的 API 时，需要携带 Dashboard 的 Token 进行认证：
+
+```javascript
+var token = localStorage.getItem('__ep_tk__');
+var resp = await fetch('/YourModule/api/data', {
+    headers: { 'Authorization': 'Bearer ' + token }
+});
+var data = await resp.json();
+```
+
+模块的 API 端点可以自行决定是否验证 Token。如果需要验证，可以从请求头中提取：
+
+```python
+from fastapi.responses import JSONResponse
+
+async def _api_data(self, request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    return JSONResponse({"data": "hello"})
+```
+
+---
+
+## 完整模块示例
+
+以下是一个完整的天气模块示例，展示如何注册视窗、提供 API 数据、以及在卸载时清理资源：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("Weather")
+        self.config = self._load_config()
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(lazy_load=False, priority=50)
+
+    async def on_load(self, event):
+        self._register_routes()
+        self._register_dashboard_view()
+        self.logger.info("天气模块已加载")
+
+    async def on_unload(self, event):
+        self._unregister_routes()
+        if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+            self.sdk.Dashboard.unregister_view("Weather")
+        self.logger.info("天气模块已卸载")
+
+    def _load_config(self):
+        config = self.sdk.config.getConfig("Weather")
+        if not config:
+            default = {"city": "北京", "api_key": ""}
+            self.sdk.config.setConfig("Weather", default)
+            return default
+        return config
+
+    def _register_routes(self):
+        r = self.sdk.router
+        r.register_http_route("Weather", "/api/current",
+                              handler=self._api_current, methods=["GET"])
+
+    def _unregister_routes(self):
+        r = self.sdk.router
+        try:
+            r.unregister_http_route("Weather", "/api/current")
+        except Exception:
+            pass
+
+    async def _api_current(self, request):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({
+            "city": self.config.get("city", "北京"),
+            "temp": 25,
+            "humidity": 60,
+        })
+
+    def _register_dashboard_view(self):
+        try:
+            dashboard = self.sdk.Dashboard
+            dashboard.register_view(
+                id="Weather",
+                title="天气", title_en="Weather",
+                icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+                html_content='''
+                    <h1 class="page-title">天气查询</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">当前天气</div>
+                            <div class="card-body">
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">操作</div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                            </div>
+                        </div>
+                    </div>
+                ''',
+                js_content='''
+                    async function loadWeatherView() { await refreshWeather(); }
+                    async function refreshWeather() {
+                        var el = document.getElementById('weather-info');
+                        if (!el) return;
+                        el.textContent = '加载中...';
+                        try {
+                            var resp = await fetch('/Weather/api/current', {
+                                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
+                            });
+                            var data = await resp.json();
+                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
+                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                        } catch (e) {
+                            el.textContent = '加载失败: ' + e.message;
+                        }
+                    }
+                ''',
+                loader="loadWeatherView",
+                group="group_tools",
+            )
+        except Exception as e:
+            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
+```
+
+---
+
+## 注销视窗
+
+模块卸载时应调用 `unregister_view()` 清理已注册的视窗：
+
+```python
+async def on_unload(self, event):
+    if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
+        self.sdk.Dashboard.unregister_view("Weather")
+```
+
+注销后 Dashboard 前端会通过 WebSocket 实时移除侧边栏导航项和页面内容，无需用户刷新。
+
+---
+
+## 注意事项
+
+1. **加载顺序** — Dashboard 的加载优先级为 `99999`（高优先级），你的模块优先级应低于此值（如 `50`），确保 Dashboard 先加载完成
+2. **防御性编程** — 注册视窗时使用 `try/except` 包裹，因为 Dashboard 模块可能未安装或未加载
+3. **资源清理** — 在 `on_unload` 中调用 `unregister_view()` 移除已注册的视窗
+4. **ID 唯一性** — `id` 参数在整个 Dashboard 中必须唯一，建议直接使用模块名称
+5. **SVG 图标** — `icon_svg` 应为完整的 `<svg>` 标签，建议尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 继承 Dashboard 主题色
+6. **JS 函数命名** — `js_content` 中的函数名应具有唯一性（如 `loadWeatherView`），避免与其他模块冲突
+7. **动态更新** — 模块注册/注销视窗后，Dashboard 前端会通过 WebSocket 实时更新侧边栏，无需刷新页面
+
 
 
 
@@ -6988,6 +7602,7 @@ if builder:
 - [Kook(开黑啦)平台特性](kook.md)
 - [Matrix平台特性](matrix.md)
 - [QQ官方机器人平台特性](qqbot.md)
+- [花枫咖啡馆](ideaura.md)
 
 > 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
