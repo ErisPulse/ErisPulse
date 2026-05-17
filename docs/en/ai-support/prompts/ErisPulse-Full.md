@@ -4086,17 +4086,23 @@ async def info_command(event):
 ### 2. Proper Use of Lazy Loading
 
 ```python
-# Command handling modules are suitable for lazy loading
+# Command handling modules need to be loaded immediately
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=True)
+        return ModuleLoadStrategy(lazy_load=False)
 
 # Listener modules need to be loaded immediately
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
+
+# Utility modules are suitable for lazy loading
+class UtilityModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True)
 ```
 
 ### 3. Event Handler Registration
@@ -4124,7 +4130,7 @@ async def handle_event(self, event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business logic error
+        # Expected business error
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Invalid argument: {e}")
     except aiohttp.ClientError as e:
