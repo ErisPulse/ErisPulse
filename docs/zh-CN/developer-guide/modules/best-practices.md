@@ -114,17 +114,23 @@ async def info_command(event):
 ### 2. 合理使用懒加载
 
 ```python
-# 命令处理模块适合懒加载
+# 命令处理模块需要立即加载
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        return ModuleLoadStrategy(lazy_load=True)
+        return ModuleLoadStrategy(lazy_load=False)
 
 # 监听器模块需要立即加载
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
+
+# 工具模块适合懒加载
+class UtilityModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(lazy_load=True)
 ```
 
 ### 3. 事件处理器注册
