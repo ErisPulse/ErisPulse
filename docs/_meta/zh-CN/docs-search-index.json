@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1078,
+  "total_keywords": 1091,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1976,6 +1976,14 @@
         "title": "ErisPulse-ModuleDev.md"
       }
     ],
+    "Event Mixin 扩展方法": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 254,
+        "level": 2,
+        "title": "Event Mixin 扩展方法"
+      }
+    ],
     "Event Mixin 方法": [
       {
         "document": "platform-guide/matrix.md",
@@ -2273,7 +2281,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "OneBot12消息支持"
       },
@@ -3262,14 +3270,6 @@
         "title": "下一步"
       }
     ],
-    "不支持的方法提示": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 108,
-        "level": 3,
-        "title": "不支持的方法提示"
-      }
-    ],
     "不支持的类型处理": [
       {
         "document": "platform-guide/onebot11.md",
@@ -3349,7 +3349,7 @@
     "事件中的Bot标识": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 275,
+        "line": 417,
         "level": 3,
         "title": "事件中的Bot标识"
       }
@@ -3550,12 +3550,12 @@
         "title": "事件监听"
       }
     ],
-    "事件监听方式": [
+    "事件示例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
+        "line": 182,
         "level": 3,
-        "title": "事件监听方式"
+        "title": "事件示例"
       }
     ],
     "事件类型": [
@@ -3791,7 +3791,7 @@
     "代理配置": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 356,
         "level": 3,
         "title": "代理配置"
       }
@@ -3877,7 +3877,7 @@
     "使用Send DSL指定Bot": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 253,
+        "line": 395,
         "level": 3,
         "title": "使用Send DSL指定Bot"
       }
@@ -3951,6 +3951,12 @@
         "document": "platform-guide/qqbot.md",
         "line": 295,
         "level": 2,
+        "title": "使用示例"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 287,
+        "level": 3,
         "title": "使用示例"
       }
     ],
@@ -4152,6 +4158,14 @@
         "line": 171,
         "level": 3,
         "title": "内置默认值"
+      }
+    ],
+    "内联查询事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 221,
+        "level": 4,
+        "title": "内联查询事件"
       }
     ],
     "写入配置": [
@@ -4405,7 +4419,7 @@
     "原始消息发送": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 53,
+        "line": 65,
         "level": 3,
         "title": "原始消息发送"
       }
@@ -4528,6 +4542,14 @@
         "title": "发布流程"
       }
     ],
+    "发送A2UI消息": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 273,
+        "level": 1,
+        "title": "发送A2UI消息"
+      }
+    ],
     "发送KMarkdown和卡片消息": [
       {
         "document": "platform-guide/kook.md",
@@ -4570,6 +4592,22 @@
         "line": 337,
         "level": 3,
         "title": "发送媒体消息"
+      }
+    ],
+    "发送带按钮的消息到用户私聊": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 262,
+        "level": 1,
+        "title": "发送带按钮的消息到用户私聊"
+      }
+    ],
+    "发送带按钮的消息到群组": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 259,
+        "level": 1,
+        "title": "发送带按钮的消息到群组"
       }
     ],
     "发送方法": [
@@ -4633,7 +4671,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -4647,7 +4685,7 @@
     "发送示例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 76,
+        "line": 81,
         "level": 3,
         "title": "发送示例"
       }
@@ -4884,6 +4922,22 @@
         "title": "回复功能"
       }
     ],
+    "回调查询事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 208,
+        "level": 4,
+        "title": "回调查询事件"
+      }
+    ],
+    "回调查询相关": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 271,
+        "level": 3,
+        "title": "回调查询相关"
+      }
+    ],
     "国内镜像加速": [
       {
         "document": "user-guide/deployment.md",
@@ -5021,7 +5075,7 @@
     "基本发送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "基本发送方法"
       }
@@ -5091,7 +5145,7 @@
     "基本配置": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 204,
+        "line": 352,
         "level": 3,
         "title": "基本配置"
       }
@@ -5243,7 +5297,7 @@
     "多Bot配置": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 219,
+        "line": 361,
         "level": 2,
         "title": "多Bot配置"
       }
@@ -5405,7 +5459,7 @@
     "媒体发送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 35,
+        "line": 42,
         "level": 3,
         "title": "媒体发送方法"
       }
@@ -5730,6 +5784,14 @@
         "title": "已修复的 Bug"
       }
     ],
+    "带内联键盘的消息": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 234,
+        "level": 4,
+        "title": "带内联键盘的消息"
+      }
+    ],
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
@@ -5876,6 +5938,14 @@
         "line": 547,
         "level": 3,
         "title": "平台扩展方法"
+      }
+    ],
+    "平台扩展消息段": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 171,
+        "level": 3,
+        "title": "平台扩展消息段"
       }
     ],
     "平台方法隔离": [
@@ -6327,13 +6397,13 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 192,
+        "line": 338,
         "level": 2,
         "title": "扩展字段说明"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 207,
+        "line": 307,
         "level": 2,
         "title": "扩展字段说明"
       },
@@ -6417,7 +6487,7 @@
     "按钮参数说明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "按钮参数说明"
       },
@@ -6569,7 +6639,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -6800,14 +6870,6 @@
         "title": "方式二：使用 uv 安装（推荐）"
       }
     ],
-    "方法名映射": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 66,
-        "level": 3,
-        "title": "方法名映射"
-      }
-    ],
     "方法注释": [
       {
         "document": "styleguide/docstring.md",
@@ -6851,7 +6913,7 @@
     "日志信息": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 297,
+        "line": 439,
         "level": 3,
         "title": "日志信息"
       },
@@ -6895,7 +6957,7 @@
     "旧配置兼容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 322,
+        "line": 464,
         "level": 3,
         "title": "旧配置兼容"
       }
@@ -7176,6 +7238,14 @@
         "title": "标准概述"
       }
     ],
+    "标准消息段类型": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 155,
+        "level": 3,
+        "title": "标准消息段类型"
+      }
+    ],
     "标准生命周期事件": [
       {
         "document": "advanced/lifecycle.md",
@@ -7296,14 +7366,8 @@
         "title": "核心差异点"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 121,
-        "level": 3,
-        "title": "核心差异点"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 131,
+        "line": 132,
         "level": 3,
         "title": "核心差异点"
       },
@@ -7786,6 +7850,14 @@
         "title": "消息事件 (Message Events)"
       }
     ],
+    "消息事件 detail_type 映射": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 131,
+        "level": 3,
+        "title": "消息事件 detail_type 映射"
+      }
+    ],
     "消息事件处理": [
       {
         "document": "getting-started/event-handling.md",
@@ -7880,6 +7952,14 @@
         "title": "消息方法"
       }
     ],
+    "消息段数据提取": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 278,
+        "level": 3,
+        "title": "消息段数据提取"
+      }
+    ],
     "消息段标准": [
       {
         "document": "platform-guide/onebot12.md",
@@ -7916,10 +7996,18 @@
         "title": "消息段转换"
       }
     ],
+    "消息相关": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 258,
+        "level": 3,
+        "title": "消息相关"
+      }
+    ],
     "消息管理方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 48,
+        "line": 55,
         "level": 3,
         "title": "消息管理方法"
       }
@@ -8113,13 +8201,19 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
         "title": "特有事件类型"
       },
       {
+        "document": "platform-guide/telegram.md",
+        "line": 140,
+        "level": 3,
+        "title": "特有事件类型"
+      },
+      {
         "document": "platform-guide/yunhu.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -8172,14 +8266,8 @@
         "title": "特殊字段示例"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 150,
-        "level": 3,
-        "title": "特殊字段示例"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "特殊字段示例"
       }
@@ -8673,7 +8761,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 306,
+        "line": 448,
         "level": 3,
         "title": "管理接口"
       },
@@ -8794,6 +8882,14 @@
         "line": 266,
         "level": 3,
         "title": "群组权限"
+      }
+    ],
+    "群聊消息（含 @提及）": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 184,
+        "level": 4,
+        "title": "群聊消息（含 @提及）"
       }
     ],
     "群邀请请求": [
@@ -8956,6 +9052,14 @@
         "line": 363,
         "level": 4,
         "title": "表单消息段 (yunhu_user_form)"
+      }
+    ],
+    "表情包/贴纸消息段 (yunhu_expression)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 319,
+        "level": 3,
+        "title": "表情包/贴纸消息段 (yunhu_expression)"
       }
     ],
     "表管理": [
@@ -9281,7 +9385,7 @@
     "运行模式": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 213,
+        "line": 361,
         "level": 3,
         "title": "运行模式"
       }
@@ -9891,7 +9995,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 221,
+        "line": 363,
         "level": 3,
         "title": "配置说明"
       },
@@ -9923,7 +10027,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 200,
+        "line": 348,
         "level": 2,
         "title": "配置选项"
       }
@@ -9967,7 +10071,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 60,
+        "line": 70,
         "level": 3,
         "title": "链式修饰方法"
       }
@@ -10005,7 +10109,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 74,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
@@ -10073,7 +10177,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "链式调用示例"
       },
