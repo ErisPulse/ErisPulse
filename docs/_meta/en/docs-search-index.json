@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1057,
+  "total_keywords": 1062,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2143,7 +2143,7 @@
     "Basic Configuration": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 204,
+        "line": 352,
         "level": 3,
         "title": "Basic Configuration"
       }
@@ -2289,7 +2289,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "Basic Sending Methods"
       }
@@ -2420,14 +2420,6 @@
         "title": "Bot Announcement Board Event Example"
       }
     ],
-    "Bot Identification in Events": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 275,
-        "level": 3,
-        "title": "Bot Identification in Events"
-      }
-    ],
     "Bot Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -2545,7 +2537,7 @@
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "Button Parameter Description"
       },
@@ -2576,6 +2568,22 @@
         "line": 652,
         "level": 3,
         "title": "CORS Configuration"
+      }
+    ],
+    "Callback Query Event": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 208,
+        "level": 4,
+        "title": "Callback Query Event"
+      }
+    ],
+    "Callback Query-related": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 271,
+        "level": 3,
+        "title": "Callback Query-related"
       }
     ],
     "Chain Calling": [
@@ -2619,7 +2627,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "Chained Call Examples"
       },
@@ -2657,7 +2665,7 @@
     "Chained Modifier Methods (Composable)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 74,
         "level": 3,
         "title": "Chained Modifier Methods (Composable)"
       }
@@ -2673,7 +2681,7 @@
     "Chained Modifying Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 60,
+        "line": 70,
         "level": 3,
         "title": "Chained Modifying Methods"
       }
@@ -3146,12 +3154,6 @@
     ],
     "Configuration Description": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 221,
-        "level": 3,
-        "title": "Configuration Description"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 444,
         "level": 3,
@@ -3265,7 +3267,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 200,
+        "line": 348,
         "level": 2,
         "title": "Configuration Options"
       }
@@ -3486,14 +3488,8 @@
         "title": "Core Differences"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 121,
-        "level": 3,
-        "title": "Core Differences"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 131,
+        "line": 132,
         "level": 3,
         "title": "Core Differences"
       },
@@ -4326,6 +4322,14 @@
         "title": "Event Distribution Mechanism"
       }
     ],
+    "Event Examples": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 182,
+        "level": 3,
+        "title": "Event Examples"
+      }
+    ],
     "Event Flow": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -4422,12 +4426,12 @@
         "title": "Event Listening"
       }
     ],
-    "Event Listening Methods": [
+    "Event Mixin Extension Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
-        "level": 3,
-        "title": "Event Listening Methods"
+        "line": 254,
+        "level": 2,
+        "title": "Event Mixin Extension Methods"
       }
     ],
     "Event Mixin Methods": [
@@ -4548,12 +4552,6 @@
     ],
     "Extended Field Description": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 207,
-        "level": 2,
-        "title": "Extended Field Description"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 352,
         "level": 2,
@@ -4569,7 +4567,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 192,
+        "line": 338,
         "level": 2,
         "title": "Extended Field Descriptions"
       }
@@ -4884,6 +4882,14 @@
         "line": 32,
         "level": 3,
         "title": "Global Configuration"
+      }
+    ],
+    "Group Chat Message (with @mention)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 184,
+        "level": 4,
+        "title": "Group Chat Message (with @mention)"
       }
     ],
     "Group Invite Request": [
@@ -5202,6 +5208,14 @@
         "line": 142,
         "level": 3,
         "title": "Initializing Projects"
+      }
+    ],
+    "Inline Query Event": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 221,
+        "level": 4,
+        "title": "Inline Query Event"
       }
     ],
     "Insert Data": [
@@ -5650,12 +5664,6 @@
     ],
     "Log Information": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 297,
-        "level": 3,
-        "title": "Log Information"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 530,
         "level": 3,
@@ -5746,12 +5754,6 @@
         "title": "Management Interface"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 306,
-        "level": 3,
-        "title": "Management Interface"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 540,
         "level": 3,
@@ -5793,7 +5795,7 @@
     "Media Sending Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 35,
+        "line": 42,
         "level": 3,
         "title": "Media Sending Methods"
       }
@@ -5892,6 +5894,14 @@
         "title": "Message Event Methods"
       }
     ],
+    "Message Event detail_type Mapping": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 131,
+        "level": 3,
+        "title": "Message Event detail_type Mapping"
+      }
+    ],
     "Message Events": [
       {
         "document": "api-reference/event-system.md",
@@ -5927,7 +5937,7 @@
     "Message Management Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 48,
+        "line": 55,
         "level": 3,
         "title": "Message Management Methods"
       }
@@ -5970,6 +5980,14 @@
         "line": 89,
         "level": 2,
         "title": "Message Segment Conversion"
+      }
+    ],
+    "Message Segment Data Extraction": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 278,
+        "level": 3,
+        "title": "Message Segment Data Extraction"
       }
     ],
     "Message Segment Standard": [
@@ -6044,6 +6062,22 @@
         "line": 127,
         "level": 3,
         "title": "Message Type Judgment"
+      }
+    ],
+    "Message with Inline Keyboard": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 234,
+        "level": 4,
+        "title": "Message with Inline Keyboard"
+      }
+    ],
+    "Message-related": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 258,
+        "level": 3,
+        "title": "Message-related"
       }
     ],
     "MessageBuilder Detailed Explanation": [
@@ -6146,14 +6180,6 @@
         "line": 20,
         "level": 2,
         "title": "Method Comments"
-      }
-    ],
-    "Method Name Mapping": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 66,
-        "level": 3,
-        "title": "Method Name Mapping"
       }
     ],
     "Method Quick Reference": [
@@ -6434,14 +6460,6 @@
         "title": "Multi-Account Support"
       }
     ],
-    "Multi-Bot Configuration": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 219,
-        "level": 2,
-        "title": "Multi-Bot Configuration"
-      }
-    ],
     "Multi-account Configuration": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6660,14 +6678,6 @@
         "title": "Notification Event Handling"
       }
     ],
-    "Old Configuration Compatibility": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 322,
-        "level": 3,
-        "title": "Old Configuration Compatibility"
-      }
-    ],
     "One-Step Send Information Retrieval": [
       {
         "document": "advanced/session-types.md",
@@ -6727,7 +6737,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -6801,7 +6811,7 @@
     "Operating Mode": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 213,
+        "line": 361,
         "level": 3,
         "title": "Operating Mode"
       }
@@ -6924,6 +6934,14 @@
         "title": "Platform Extension Fields"
       }
     ],
+    "Platform Extension Message Segments": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 171,
+        "level": 3,
+        "title": "Platform Extension Message Segments"
+      }
+    ],
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -7001,7 +7019,7 @@
     "Platform-Specific Event Types": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "Platform-Specific Event Types"
       }
@@ -7109,7 +7127,7 @@
     "Proxy Configuration": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 356,
         "level": 3,
         "title": "Proxy Configuration"
       }
@@ -7369,7 +7387,7 @@
     "Raw Message Sending": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 53,
+        "line": 65,
         "level": 3,
         "title": "Raw Message Sending"
       }
@@ -7773,7 +7791,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "Return Values of Sending Methods"
       }
@@ -8125,7 +8143,7 @@
     "Sending Examples": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 76,
+        "line": 81,
         "level": 3,
         "title": "Sending Examples"
       }
@@ -8342,14 +8360,8 @@
         "title": "Special Field Examples"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 150,
-        "level": 3,
-        "title": "Special Field Examples"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "Special Field Examples"
       }
@@ -8387,8 +8399,14 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
+        "title": "Specific Event Types"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 140,
+        "level": 3,
         "title": "Specific Event Types"
       }
     ],
@@ -8398,14 +8416,6 @@
         "line": 98,
         "level": 3,
         "title": "Specify Sending Account"
-      }
-    ],
-    "Specifying Bot using Send DSL": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 253,
-        "level": 3,
-        "title": "Specifying Bot using Send DSL"
       }
     ],
     "Standard Compliance Checklist": [
@@ -8452,6 +8462,14 @@
         "line": 45,
         "level": 2,
         "title": "Standard Lifecycle Events"
+      }
+    ],
+    "Standard Message Segment Types": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 155,
+        "level": 3,
+        "title": "Standard Message Segment Types"
       }
     ],
     "Standard Overview": [
@@ -8733,7 +8751,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -9060,14 +9078,6 @@
         "title": "Unregistering Views"
       }
     ],
-    "Unsupported Method Notifications": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 108,
-        "level": 3,
-        "title": "Unsupported Method Notifications"
-      }
-    ],
     "Unsupported Type Handling": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9139,6 +9149,12 @@
         "document": "platform-guide/matrix.md",
         "line": 319,
         "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 287,
+        "level": 3,
         "title": "Usage Examples"
       }
     ],
