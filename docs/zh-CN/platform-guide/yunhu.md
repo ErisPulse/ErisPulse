@@ -6,7 +6,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 3.5.1
+- 对应模块版本: 3.10.1
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -28,12 +28,13 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支持的发送类型包括：
-- `.Text(text: str, buttons: List = None, parent_id: str = "")`：发送纯文本消息，可选添加按钮和父消息ID。
-- `.Html(html: str, buttons: List = None, parent_id: str = "")`：发送HTML格式消息。
-- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：发送Markdown格式消息。
-- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
-- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
-- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送文件消息，支持流式上传和自定义文件名。
+- `.Text(text: str)`：发送纯文本消息。
+- `.Html(html: str)`：发送HTML格式消息。
+- `.Markdown(markdown: str)`：发送Markdown格式消息。
+- `.A2UI(text: str)`：发送A2UI格式消息。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：发送文件消息，支持流式上传和自定义文件名。
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量发送消息。
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：编辑已有消息。
 - `.Recall(msg_id: str)`：撤回消息。
@@ -65,7 +66,7 @@ buttons = [
         {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("带按钮的消息")
 ```
 > **注意：**
 > - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制**和**跳转URL**均无法收到推送。
@@ -132,7 +133,9 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
 1. 特有事件类型：
     - 表单（如表单指令）：yunhu_form
+    - 表情包/贴纸消息段：yunhu_expression
     - 按钮点击：yunhu_button_click
+    - A2UI按钮点击：yunhu_a2ui_button
     - 机器人设置：yunhu_bot_setting
     - 快捷菜单：yunhu_shortcut_menu
 2. 扩展字段：
@@ -174,6 +177,103 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   }
 }
 
+# A2UI按钮事件
+{
+  "type": "notice",
+  "detail_type": "yunhu_a2ui_button",
+  "user_id": "操作用户ID",
+  "user_nickname": "用户昵称",
+  "message_id": "消息ID",
+  "yunhu_a2ui": {
+    "recv_id": "接收者ID",
+    "recv_type": "接收者类型",
+    "action_name": "操作名称",
+    "source_component_id": "来源组件ID",
+    "form_context": {},
+    "interaction_json": "交互数据JSON字符串"
+  }
+}
+
+### 按钮点击事件处理示例
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    """处理云湖通知事件
+
+    使用通用的 on_notice() 装饰器来处理所有通知事件，
+    然后通过 detail_type 区分不同类型的通知
+    event.reply() 会自动通过云湖平台回复
+    """
+    # 检查是否是按钮点击事件
+    if event.get("detail_type") == "yunhu_button_click":
+        user_id = event.get_user_id()
+        user_nickname = event.get_user_nickname()
+        button_value = event.get("yunhu_button", {}).get("value", "")
+
+        print(f"用户 {user_nickname}({user_id}) 点击了按钮: {button_value}")
+
+        # 使用 event.reply() 自动回复（会根据平台自动选择正确的发送方式）
+        if button_value == "confirm":
+            await event.reply("你点击了确认按钮！")
+        elif button_value == "cancel":
+            await event.reply("操作已取消")
+        else:
+            await event.reply(f"收到你的选择: {button_value}")
+
+    # 处理快捷菜单事件
+    elif event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get("yunhu_menu", {}).get("id", "")
+        await event.reply(f"触发了快捷菜单: {menu_id}")
+
+    # 处理机器人设置变更
+    elif event.get("detail_type") == "yunhu_bot_setting":
+        settings = event.get("yunhu_setting", {})
+        await event.reply(f"设置已更新: {settings}")
+
+    # 处理A2UI按钮事件
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI操作: {action_name}, 表单数据: {form_context}")
+```
+
+### 使用链式调用发送带按钮消息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+buttons = [
+    [
+        {"text": "确认", "actionType": 3, "value": "confirm"},
+        {"text": "取消", "actionType": 3, "value": "cancel"},
+        {"text": "查看详情", "actionType": 1, "url": "http://example.com/detail"}
+    ]
+]
+
+# 发送带按钮的消息到群组
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("请确认以下操作")
+
+# 发送带按钮的消息到用户私聊
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("请选择你的偏好设置")
+```
+
+### 发送A2UI消息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+# 发送A2UI消息
+await yunhu.Send.To("user", user_id).A2UI("A2UI交互卡片内容")
+```
+
 # 机器人设置
 {
   "type": "notice",
@@ -211,8 +311,50 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 - `self.user_id` 表示机器人ID（从配置中的bot_id获取）
 - 表单指令通过 `yunhu_command` 字段提供结构化数据
 - 按钮点击事件通过 `yunhu_button` 字段提供按钮相关信息
+- A2UI按钮事件通过 `yunhu_a2ui` 字段提供A2UI交互相关信息
 - 机器人设置变更通过 `yunhu_setting` 字段提供设置项数据
 - 快捷菜单操作通过 `yunhu_menu` 字段提供菜单相关信息
+- 表情包/贴纸消息通过 `yunhu_expression` 消息段提供贴纸数据（sticker_id、贴纸包ID、图片尺寸等）
+
+### 表情包/贴纸消息段 (yunhu_expression)
+
+当用户发送表情包或贴纸时，消息段类型为 `yunhu_expression`：
+
+```json
+{
+  "type": "yunhu_expression",
+  "data": {
+    "sticker_id": "35154",
+    "sticker_pack_id": "1670",
+    "expression_id": "0",
+    "image_name": "sticker/fabb9077f2ba302402ea871cab3686ad7a3fc52c.gif",
+    "width": 500,
+    "height": 500
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `sticker_id` | string | 贴纸唯一标识 |
+| `sticker_pack_id` | string | 贴纸包ID |
+| `expression_id` | string | 表情ID |
+| `image_name` | string | 表情图片文件路径 |
+| `width` | int | 图片宽度（可选） |
+| `height` | int | 图片高度（可选） |
+
+使用示例：
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "yunhu":
+        for segment in event.get("message", []):
+            if segment.get("type") == "yunhu_expression":
+                data = segment["data"]
+                print(f"收到表情包: sticker_id={data['sticker_id']}, 包ID={data['sticker_pack_id']}")
+```
 
 ---
 
