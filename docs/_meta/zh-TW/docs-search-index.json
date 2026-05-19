@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 954,
+  "total_keywords": 963,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1458,6 +1458,14 @@
         "title": "ErisPulse-ModuleDev.md"
       }
     ],
+    "Event Mixin 擴展方法": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 254,
+        "level": 2,
+        "title": "Event Mixin 擴展方法"
+      }
+    ],
     "Event 包裝類": [
       {
         "document": "api-reference/event-system.md",
@@ -2540,14 +2548,6 @@
         "title": "下一步"
       }
     ],
-    "不支援的方法提示": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 108,
-        "level": 3,
-        "title": "不支援的方法提示"
-      }
-    ],
     "不支援的類型處理": [
       {
         "document": "platform-guide/onebot11.md",
@@ -2684,12 +2684,12 @@
         "title": "事件監聽"
       }
     ],
-    "事件監聽方式": [
+    "事件範例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
+        "line": 182,
         "level": 3,
-        "title": "事件監聽方式"
+        "title": "事件範例"
       }
     ],
     "事件系統": [
@@ -3005,7 +3005,7 @@
     "代理設定": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 356,
         "level": 3,
         "title": "代理設定"
       }
@@ -3117,6 +3117,12 @@
         "document": "api-reference/README.md",
         "line": 49,
         "level": 2,
+        "title": "使用範例"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 287,
+        "level": 3,
         "title": "使用範例"
       }
     ],
@@ -3269,7 +3275,7 @@
     "傳送範例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 76,
+        "line": 81,
         "level": 3,
         "title": "傳送範例"
       }
@@ -3368,6 +3374,14 @@
         "line": 171,
         "level": 3,
         "title": "內建預設值"
+      }
+    ],
+    "內聯查詢事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 221,
+        "level": 4,
+        "title": "內聯查詢事件"
       }
     ],
     "全域設定": [
@@ -3559,7 +3573,7 @@
     "原始訊息傳送": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 53,
+        "line": 65,
         "level": 3,
         "title": "原始訊息傳送"
       }
@@ -3808,6 +3822,22 @@
         "title": "回覆功能"
       }
     ],
+    "回調查詢事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 208,
+        "level": 4,
+        "title": "回調查詢事件"
+      }
+    ],
+    "回調查詢相關": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 271,
+        "level": 3,
+        "title": "回調查詢相關"
+      }
+    ],
     "國內映像加速": [
       {
         "document": "user-guide/deployment.md",
@@ -3873,7 +3903,7 @@
     "執行模式": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 213,
+        "line": 361,
         "level": 3,
         "title": "執行模式"
       }
@@ -3913,7 +3943,7 @@
     "基本傳送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "基本傳送方法"
       }
@@ -3983,7 +4013,7 @@
     "基本設定": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 204,
+        "line": 352,
         "level": 3,
         "title": "基本設定"
       }
@@ -4209,7 +4239,7 @@
     "媒體傳送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 35,
+        "line": 42,
         "level": 3,
         "title": "媒體傳送方法"
       }
@@ -4592,6 +4622,14 @@
         "title": "帳號設定"
       }
     ],
+    "帶內聯鍵盤的訊息": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 234,
+        "level": 4,
+        "title": "帶內聯鍵盤的訊息"
+      }
+    ],
     "帶回呼的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
@@ -4712,6 +4750,14 @@
         "line": 121,
         "level": 2,
         "title": "平台擴展欄位"
+      }
+    ],
+    "平台擴展訊息段": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 171,
+        "level": 3,
+        "title": "平台擴展訊息段"
       }
     ],
     "平台特定功能": [
@@ -5181,7 +5227,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 192,
+        "line": 338,
         "level": 2,
         "title": "擴展欄位說明"
       }
@@ -5243,7 +5289,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "支援的訊息傳送類型"
       },
@@ -5464,14 +5510,6 @@
         "line": 23,
         "level": 3,
         "title": "方式二：使用 uv 安裝（推薦）"
-      }
-    ],
-    "方法名稱對應": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 66,
-        "level": 3,
-        "title": "方法名稱對應"
       }
     ],
     "方法簽名": [
@@ -5786,12 +5824,6 @@
         "title": "核心差異點"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 121,
-        "level": 3,
-        "title": "核心差異點"
-      },
-      {
         "document": "platform-guide/yunhu.md",
         "line": 131,
         "level": 3,
@@ -5978,6 +6010,14 @@
         "line": 45,
         "level": 2,
         "title": "標準生命週期事件"
+      }
+    ],
+    "標準訊息段類型": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 155,
+        "level": 3,
+        "title": "標準訊息段類型"
       }
     ],
     "標準遵循檢查清單": [
@@ -6395,8 +6435,14 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
+        "title": "特有事件類型"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 140,
+        "level": 3,
         "title": "特有事件類型"
       },
       {
@@ -6446,12 +6492,6 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 102,
-        "level": 3,
-        "title": "特殊欄位範例"
-      },
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 150,
         "level": 3,
         "title": "特殊欄位範例"
       },
@@ -7122,6 +7162,14 @@
         "title": "群組邀請請求"
       }
     ],
+    "群聊訊息（含 @提及）": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 184,
+        "level": 4,
+        "title": "群聊訊息（含 @提及）"
+      }
+    ],
     "自動推斷": [
       {
         "document": "advanced/session-types.md",
@@ -7306,6 +7354,14 @@
         "title": "訊息事件"
       }
     ],
+    "訊息事件 detail_type 映射": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 131,
+        "level": 3,
+        "title": "訊息事件 detail_type 映射"
+      }
+    ],
     "訊息事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -7376,6 +7432,14 @@
         "title": "訊息段標準"
       }
     ],
+    "訊息段資料提取": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 278,
+        "level": 3,
+        "title": "訊息段資料提取"
+      }
+    ],
     "訊息段轉換": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -7384,10 +7448,18 @@
         "title": "訊息段轉換"
       }
     ],
+    "訊息相關": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 258,
+        "level": 3,
+        "title": "訊息相關"
+      }
+    ],
     "訊息管理方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 48,
+        "line": 55,
         "level": 3,
         "title": "訊息管理方法"
       }
@@ -7499,7 +7571,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 200,
+        "line": 348,
         "level": 2,
         "title": "設定選項"
       }
@@ -8331,7 +8403,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 60,
+        "line": 70,
         "level": 3,
         "title": "鏈式修飾方法"
       }
