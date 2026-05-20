@@ -4,66 +4,74 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 
 ## 包管理命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `install` | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器 | `epsdk install Yunhu` |
-| `uninstall` | `<package>...` | 卸载模块/适配器 | `epsdk uninstall old-module` |
-| `upgrade` | `[package]... [--force/-f] [--pre]` | 升级指定模块或所有 | `epsdk upgrade --force` |
-| `self-update` | `[version] [--pre] [--force/-f]` | 更新SDK本身 | `epsdk self-update` |
+| 命令          | 参数                                  | 说明               | 示例                         |
+| ------------- | ------------------------------------- | ------------------ | ---------------------------- |
+| `install`     | `[package]... [--upgrade/-U] [--pre]` | 安装模块/适配器    | `epsdk install Yunhu`        |
+| `uninstall`   | `<package>...`                        | 卸载模块/适配器    | `epsdk uninstall old-module` |
+| `upgrade`     | `[package]... [--force/-f] [--pre]`   | 升级指定模块或所有 | `epsdk upgrade --force`      |
+| `self-update` | `[version] [--pre] [--force/-f]`      | 更新SDK本身        | `epsdk self-update`          |
 
 ## 信息查询命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `list` | `[--type/-t <type>]` | 列出已安装的模块/适配器 | `epsdk list -t modules` |
-| | `[--outdated/-o]` | 仅显示可升级的包 | `epsdk list -o` |
-| `list-remote` | `[--type/-t <type>]` | 列出远程可用的包 | `epsdk list-remote` |
-| | `[--refresh/-r]` | 强制刷新包列表 | `epsdk list-remote -r` |
+| 命令          | 参数                 | 说明                    | 示例                    |
+| ------------- | -------------------- | ----------------------- | ----------------------- |
+| `list`        | `[--type/-t <type>]` | 列出已安装的模块/适配器 | `epsdk list -t modules` |
+|               | `[--outdated/-o]`    | 仅显示可升级的包        | `epsdk list -o`         |
+| `list-remote` | `[--type/-t <type>]` | 列出远程可用的包        | `epsdk list-remote`     |
+|               | `[--refresh/-r]`     | 强制刷新包列表          | `epsdk list-remote -r`  |
 
 ## 运行控制命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
+| 命令  | 参数                  | 说明         | 示例                         |
+| ----- | --------------------- | ------------ | ---------------------------- |
 | `run` | `<script> [--reload]` | 运行指定脚本 | `epsdk run main.py --reload` |
 
 ## 项目管理命令
 
-| 命令 | 参数 | 说明 | 示例 |
-|-------|------|------|------|
-| `init` | `[--project-name/-n <name>]` | 交互式初始化项目 | `epsdk init -n my_bot` |
-| | `[--quick/-q]` | 快速模式，跳过交互 | `epsdk init -q -n bot` |
-| | `[--force/-f]` | 强制覆盖现有配置 | `epsdk init -f` |
+| 命令   | 参数                         | 说明               | 示例                   |
+| ------ | ---------------------------- | ------------------ | ---------------------- |
+| `init` | `[--project-name/-n <name>]` | 交互式初始化项目   | `epsdk init -n my_bot` |
+|        | `[--quick/-q]`               | 快速模式，跳过交互 | `epsdk init -q -n bot` |
+|        | `[--force/-f]`               | 强制覆盖现有配置   | `epsdk init -f`        |
+
+## 项目打包命令
+
+| 命令       | 参数                            | 说明                           | 示例                             |
+| ---------- | ------------------------------- | ------------------------------ | -------------------------------- |
+| `ebpython` | `[--install/-i <version/arch>]` | 安装 ebpython 到项目           | `epsdk ebpython -i latest/amd64` |
+|            | `[--generate/-g]`               | 交互式生成 ebpython 配置       | `epsdk ebpython -g`              |
+|            | `[--config/-c <name>]`          | 使用指定配置调用 ebpython 打包 | `epsdk ebpython -c default`      |
 
 ## 参数说明
 
 ### 通用参数
 
-| 参数 | 短参数 | 说明 |
-|------|---------|------|
-| `--help` | `-h` | 显示帮助信息 |
-| `--verbose` | `-v` | 显示详细输出 |
+| 参数        | 短参数 | 说明         |
+| ----------- | ------ | ------------ |
+| `--help`    | `-h`   | 显示帮助信息 |
+| `--verbose` | `-v`   | 显示详细输出 |
 
 ### install 参数
 
-| 参数 | 说明 |
-|------|------|
+| 参数        | 说明                       |
+| ----------- | -------------------------- | -------------------- |
 | `[package]` | 要安装的包名称，可指定多个 |
-| `--upgrade` | `-U` | 安装时升级到最新版本 |
-| `--pre` | 允许安装预发布版本 |
+| `--upgrade` | `-U`                       | 安装时升级到最新版本 |
+| `--pre`     | 允许安装预发布版本         |
 
 ### list 参数
 
-| 参数 | 说明 |
-|------|------|
-| `--type` | `-t` | 指定类型：`modules`, `adapters`, `all` |
-| `--outdated` | `-o` | 仅显示可升级的包 |
+| 参数         | 说明 |
+| ------------ | ---- | -------------------------------------- |
+| `--type`     | `-t` | 指定类型：`modules`, `adapters`, `all` |
+| `--outdated` | `-o` | 仅显示可升级的包                       |
 
 ### run 参数
 
-| 参数 | 说明 |
-|------|------|
-| `--reload` | 启用热重载模式，监控文件变化 |
-| `--no-reload` | 禁用热重载模式 |
+| 参数          | 说明                         |
+| ------------- | ---------------------------- |
+| `--reload`    | 启用热重载模式，监控文件变化 |
+| `--no-reload` | 禁用热重载模式               |
 
 ## 交互式安装
 
@@ -73,7 +81,8 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 epsdk install
 ```
 
- 交互界面提供：
+交互界面提供：
+
 1. 适配器选择
 2. 模块选择
 3. 自定义安装
