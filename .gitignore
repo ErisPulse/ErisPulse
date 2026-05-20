@@ -226,3 +226,6 @@ pyvenv.cfg
 
 # 但保留源中文文档
 !docs/zh-CN/
+
+# ebpython
+.ebpython/
