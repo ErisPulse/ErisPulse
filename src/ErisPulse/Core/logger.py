@@ -15,6 +15,7 @@ import inspect
 import datetime
 from rich.logging import RichHandler
 from rich.console import Console
+from rich.text import Text
 
 
 class Logger:
@@ -41,10 +42,11 @@ class Logger:
         if not self._logger.handlers:
             console_handler = RichHandler(
                 console=self._console,
-                show_time=False,
+                show_time=True,
                 show_level=True,
                 show_path=False,
                 markup=False,
+                log_time_format="[%H:%M:%S]",
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
@@ -311,20 +313,25 @@ class Logger:
         """
         self._log('critical', logging.CRITICAL, msg, *args, **kwargs)
 
+    # ==================== 视觉输出方法 ====================
+
     def print_section_header(self, title: str):
         """
-        打印日志分组标题（树状结构）
+        打印日志分组标题
 
         :param title: 分组标题
         """
-        self._console.print(f"\n┌─ {title}")
-        self._console.print("│")
+        self._console.print()
+        line = Text()
+        line.append("  ── ", style="dim")
+        line.append(title, style="bold")
+        self._console.print(line)
 
     def print_section_footer(self):
         """
         打印分组结束标记
         """
-        self._console.print("└")
+        self._console.print(Text("  " + "─" * 48, style="dim"))
 
     def print_tree_item(self, text: str, level: int = 0, is_last: bool = False):
         """
@@ -334,19 +341,27 @@ class Logger:
         :param level: 缩进层级
         :param is_last: 是否是最后一项
         """
-        prefix = "│  " * level
-        connector = "└─ " if is_last else "├─ "
-        self._console.print(f"{prefix}{connector}{text}")
+        indent = "    " * (level + 1)
+        connector = "╰─ " if is_last else "├─ "
+        line = Text()
+        line.append(indent)
+        line.append(connector, style="dim")
+        line.append(text)
+        self._console.print(line)
 
     def print_info(self, text: str, level: int = 1):
         """
-        打印信息（树状结构）
+        打印信息
 
         :param text: 文本内容
         :param level: 缩进层级
         """
-        prefix = "│  " * level
-        self._console.print(f"{prefix}• {text}")
+        indent = "    " * level
+        line = Text()
+        line.append(indent)
+        line.append("· ", style="dim")
+        line.append(text)
+        self._console.print(line)
 
     def print_section_separator(self):
         """

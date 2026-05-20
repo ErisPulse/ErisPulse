@@ -455,7 +455,8 @@ class AdapterManager(ManagerBase):
         :param enabled: [bool] 是否启用适配器
         :return: [bool] 操作是否成功
         """
-        if self.exists(platform):
+        existing = config.getConfig(f"ErisPulse.adapters.status.{platform}")
+        if existing is not None:
             return True
 
         # 平台不存在，进行注册
