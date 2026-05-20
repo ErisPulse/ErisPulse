@@ -10891,7 +10891,7 @@ YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功�
 
 ## 文件資訊
 
-- 對應模組版本: 3.5.1
+- 對應模組版本: 3.10.1
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -10913,16 +10913,17 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支援的傳送類型包括：
-- `.Text(text: str, buttons: List = None, parent_id: str = "")`：傳送純文字訊息，可選添加按鈕和父訊息ID。
-- `.Html(html: str, buttons: List = None, parent_id: str = "")`：傳送 HTML 格式訊息。
-- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：傳送 Markdown 格式訊息。
-- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送圖片訊息，支援流式上傳和自訂檔名。
-- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送影片訊息，支援流式上傳和自訂檔名。
-- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送檔案訊息，支援流式上傳和自訂檔名。
+- `.Text(text: str)`：傳送純文字訊息。
+- `.Html(html: str)`：傳送 HTML 格式訊息。
+- `.Markdown(markdown: str)`：傳送 Markdown 格式訊息。
+- `.A2UI(text: str)`：傳送 A2UI 格式訊息。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：傳送圖片訊息，支援流式上傳和自訂檔名。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：傳送影片訊息，支援流式上傳和自訂檔名。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：傳送檔案訊息，支援流式上傳和自訂檔名。
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量傳送訊息。
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：編輯既有訊息。
 - `.Recall(msg_id: str)`：撤回訊息。
-- `.Board(scope: str, content: str, **kwargs)`：發布公告看板，scope支援 `local` 和 `global`。
+- `.Board(scope: str, content: str, **kwargs)`：發布公告看板，scope 支援 `local` 和 `global`。
 - `.DismissBoard(scope: str, **kwargs)`：撤銷公告看板。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：傳送流式訊息。
 
@@ -10950,7 +10951,7 @@ buttons = [
         {"text": "回報事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Text("帶按鈕的訊息", buttons=buttons)
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 ```
 > **注意：**
 > - 只有使用者點擊了**按鈕回報事件**的按鈕才會收到推播，**複製**和**跳轉 URL** 均無法收到推播。
@@ -11017,7 +11018,9 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
 1. 特有事件類型：
     - 表單（如表單指令）：yunhu_form
+    - 表情包/貼紙訊息段：yunhu_expression
     - 按鈕點擊：yunhu_button_click
+    - A2UI 按鈕點擊：yunhu_a2ui_button
     - 機器人設定：yunhu_bot_setting
     - 快捷選單：yunhu_shortcut_menu
 2. 擴充欄位：
@@ -11059,6 +11062,103 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   }
 }
 
+# A2UI按鈕事件
+{
+  "type": "notice",
+  "detail_type": "yunhu_a2ui_button",
+  "user_id": "操作使用者 ID",
+  "user_nickname": "使用者暱稱",
+  "message_id": "訊息 ID",
+  "yunhu_a2ui": {
+    "recv_id": "接收者 ID",
+    "recv_type": "接收者類型",
+    "action_name": "操作名稱",
+    "source_component_id": "來源組件 ID",
+    "form_context": {},
+    "interaction_json": "交互資料 JSON 字串"
+  }
+}
+
+### 按鈕點擊事件處理範例
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    """處理雲湖通知事件
+
+    使用通用的 on_notice() 裝飾器來處理所有通知事件，
+    然後通過 detail_type 區分不同類型的通知
+    event.reply() 會自動通過雲湖平台回覆
+    """
+    # 檢查是否是按鈕點擊事件
+    if event.get("detail_type") == "yunhu_button_click":
+        user_id = event.get_user_id()
+        user_nickname = event.get_user_nickname()
+        button_value = event.get("yunhu_button", {}).get("value", "")
+
+        print(f"使用者 {user_nickname}({user_id}) 點擊了按鈕: {button_value}")
+
+        # 使用 event.reply() 自動回覆（會根據平台自動選擇正確的傳送方式）
+        if button_value == "confirm":
+            await event.reply("你點擊了確認按鈕！")
+        elif button_value == "cancel":
+            await event.reply("操作已取消")
+        else:
+            await event.reply(f"收到你的選擇: {button_value}")
+
+    # 處理快捷選單事件
+    elif event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get("yunhu_menu", {}).get("id", "")
+        await event.reply(f"觸發了快捷選單: {menu_id}")
+
+    # 處理機器人設定變更
+    elif event.get("detail_type") == "yunhu_bot_setting":
+        settings = event.get("yunhu_setting", {})
+        await event.reply(f"設定已更新: {settings}")
+
+    # 處理 A2UI 按鈕事件
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI 操作: {action_name}, 表單資料: {form_context}")
+```
+
+### 使用鏈式呼叫傳送帶按鈕訊息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+buttons = [
+    [
+        {"text": "確認", "actionType": 3, "value": "confirm"},
+        {"text": "取消", "actionType": 3, "value": "cancel"},
+        {"text": "查看詳情", "actionType": 1, "url": "http://example.com/detail"}
+    ]
+]
+
+# 傳送帶按鈕的訊息到群組
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("請確認以下操作")
+
+# 傳送帶按鈕的訊息到使用者私聊
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("請選擇你的偏好設定")
+```
+
+### 傳送 A2UI 訊息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+# 傳送 A2UI 訊息
+await yunhu.Send.To("user", user_id).A2UI("A2UI 交互卡片內容")
+```
+
 # 機器人設定
 {
   "type": "notice",
@@ -11096,8 +11196,50 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 - `self.user_id` 表示機器人 ID（從設定中的 bot_id 取得）
 - 表單指令透過 `yunhu_command` 欄位提供結構化資料
 - 按鈕點擊事件透過 `yunhu_button` 欄位提供按鈕相關資訊
+- A2UI 按鈕事件透過 `yunhu_a2ui` 欄位提供 A2UI 交互相關資訊
 - 機器人設定變更透過 `yunhu_setting` 欄位提供設定項資料
 - 快捷選單操作透過 `yunhu_menu` 欄位提供選單相關資訊
+- 表情包/貼紙訊息透過 `yunhu_expression` 訊息段提供貼紙資料（sticker_id、貼紙包 ID、圖片尺寸等）
+
+### 表情包/貼紙訊息段 (yunhu_expression)
+
+當使用者傳送表情包或貼紙時，訊息段類型為 `yunhu_expression`：
+
+```json
+{
+  "type": "yunhu_expression",
+  "data": {
+    "sticker_id": "35154",
+    "sticker_pack_id": "1670",
+    "expression_id": "0",
+    "image_name": "sticker/fabb9077f2ba302402ea871cab3686ad7a3fc52c.gif",
+    "width": 500,
+    "height": 500
+  }
+}
+```
+
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| `sticker_id` | string | 貼紙唯一識別 |
+| `sticker_pack_id` | string | 貼紙包 ID |
+| `expression_id` | string | 表情 ID |
+| `image_name` | string | 表情圖片檔案路徑 |
+| `width` | int | 圖片寬度（可選） |
+| `height` | int | 圖片高度（可選） |
+
+使用範例：
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "yunhu":
+        for segment in event.get("message", []):
+            if segment.get("type") == "yunhu_expression":
+                data = segment["data"]
+                print(f"收到表情包: sticker_id={data['sticker_id']}, 包ID={data['sticker_pack_id']}")
+```
 
 ---
 
@@ -11139,7 +11281,7 @@ enabled = true
 
 可以透過 `Using()` 方法指定使用哪個 bot 傳送訊息。此方法支援兩種參數：
 - **帳號名稱**：設定中的 bot 名稱（如 `bot1`, `bot2`）
-- **bot_id**：設定中的 `bot_id` 值
+- `bot_id`：設定中的 `bot_id` 值
 
 ```python
 from ErisPulse.Core import adapter
