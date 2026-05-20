@@ -63,6 +63,23 @@
 
 ---
 
+## [2.4.6-dev.0] - 2026/05/20
+> 开发版本
+
+### 修复
+- @wsu2059q
+  - 修复 adapter/module 加载的启用状态检测在部分场景下可能失效的问题
+
+### 优化
+- @wsu2059q
+  - 优化 `logger` 的显示样式
+  - 优化热重启（`sdk.restart()`）的缓存清理机制，确保更新后的模块/适配器/框架代码能正确生效：
+    - 新增 `_invalidate_metadata_cache()` 清除 `importlib.metadata` 缓存
+    - 新增 `_invalidate_framework_cache()` 清除 `ErisPulse.*` 子模块缓存
+    - 增强诊断日志输出
+
+---
+
 ## [2.4.5] - 2026/05/17
 > 正式发布
 
