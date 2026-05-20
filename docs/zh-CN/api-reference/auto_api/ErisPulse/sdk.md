@@ -238,6 +238,15 @@ SDK 初始化入口，返回 Task 对象
 在后台任务中运行，与调用 restart() 的事件处理器解耦
 确保即使调用者被取消，重启流程也能完整执行
 
+重启流程:
+1. 收集已加载包的顶层模块名（必须在 uninit 之前）
+2. 反初始化（关闭适配器、卸载模块、清理状态）
+3. 清除外部包的 sys.modules 缓存
+4. 清除 ErisPulse 框架子模块缓存（支持框架自身热更新）
+5. 清除 importlib.metadata 缓存（确保 entry_points 返回最新数据）
+6. 重新初始化
+7. 重新启动适配器
+
 :return: bool 重新加载是否成功
 
 ---
@@ -274,6 +283,42 @@ SDK 初始化入口，返回 Task 对象
 清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
 
 :param top_level_modules: 需要清理的顶层 Python 模块名集合
+
+---
+
+
+##### `_invalidate_framework_cache()`
+
+> **内部方法** 
+清理 ErisPulse 框架自身的子模块缓存，以支持框架热更新
+
+清除所有 ErisPulse.* 子模块的 sys.modules 缓存，但保留 ErisPulse 包本身。
+这样可以避免重新运行 __init__.py（防止创建新的 SDK 实例），
+同时确保后续的 import 语句从磁盘加载最新的框架代码。
+
+设计说明:
+- 保留 ErisPulse 包本身（不删除 sys.modules['ErisPulse']），
+  防止 __init__.py 重新执行导致创建新的 SDK 单例
+- 清除所有 ErisPulse.* 子模块，使后续 import 从磁盘重新加载
+- 当前正在执行的代码（self 及其方法）不受影响，
+  因为 Python 函数/方法持有对代码对象的直接引用
+- 新的 import 语句将加载更新后的框架代码
+
+---
+
+
+##### `_invalidate_metadata_cache()`
+
+> **内部方法** 
+清理 importlib.metadata 相关缓存，确保 entry_points() 返回最新数据
+
+当 pip install --upgrade 更新包后，importlib.metadata 的内部缓存
+可能仍然引用旧的分发元数据。清除这些缓存可以强制重新扫描
+.dist-info 目录，获取最新的 entry_points 数据。
+
+这对于以下场景至关重要:
+- Dashboard 热更新模块/适配器后，需要发现新安装的版本
+- 框架自身更新后，需要获取最新的 entry_points 配置
 
 ---
 

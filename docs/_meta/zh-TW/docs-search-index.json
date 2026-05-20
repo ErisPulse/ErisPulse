@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 963,
+  "total_keywords": 967,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1689,7 +1689,7 @@
     "OneBot12 訊息支援": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "OneBot12 訊息支援"
       }
@@ -2619,7 +2619,7 @@
     "事件中的機器人識別": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 275,
+        "line": 417,
         "level": 3,
         "title": "事件中的機器人識別"
       }
@@ -3029,7 +3029,7 @@
     "使用 Send DSL 指定機器人": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 253,
+        "line": 395,
         "level": 3,
         "title": "使用 Send DSL 指定機器人"
       }
@@ -3234,12 +3234,36 @@
         "title": "傳統註冊方式"
       }
     ],
+    "傳送 A2UI 訊息": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 273,
+        "level": 1,
+        "title": "傳送 A2UI 訊息"
+      }
+    ],
     "傳送回覆": [
       {
         "document": "getting-started/first-bot.md",
         "line": 135,
         "level": 3,
         "title": "傳送回覆"
+      }
+    ],
+    "傳送帶按鈕的訊息到使用者私聊": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 262,
+        "level": 1,
+        "title": "傳送帶按鈕的訊息到使用者私聊"
+      }
+    ],
+    "傳送帶按鈕的訊息到群組": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 259,
+        "level": 1,
+        "title": "傳送帶按鈕的訊息到群組"
       }
     ],
     "傳送方法傳回值": [
@@ -3259,7 +3283,7 @@
     "傳送方法回傳值": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "傳送方法回傳值"
       }
@@ -4175,7 +4199,7 @@
     "多機器人設定": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 219,
+        "line": 361,
         "level": 2,
         "title": "多機器人設定"
       }
@@ -5129,7 +5153,7 @@
     "按鈕參數說明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "按鈕參數說明"
       },
@@ -5189,7 +5213,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 207,
+        "line": 307,
         "level": 2,
         "title": "擴充欄位說明"
       }
@@ -5569,7 +5593,7 @@
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 297,
+        "line": 439,
         "level": 3,
         "title": "日誌資訊"
       }
@@ -5825,7 +5849,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 131,
+        "line": 132,
         "level": 3,
         "title": "核心差異點"
       },
@@ -6447,7 +6471,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -6497,7 +6521,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "特殊欄位範例"
       }
@@ -7021,7 +7045,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 306,
+        "line": 448,
         "level": 3,
         "title": "管理介面"
       }
@@ -7227,7 +7251,7 @@
     "舊設定相容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 322,
+        "line": 464,
         "level": 3,
         "title": "舊設定相容"
       }
@@ -7270,6 +7294,14 @@
         "line": 44,
         "level": 3,
         "title": "虛擬環境"
+      }
+    ],
+    "表情包/貼紙訊息段 (yunhu_expression)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 319,
+        "level": 3,
+        "title": "表情包/貼紙訊息段 (yunhu_expression)"
       }
     ],
     "表管理": [
@@ -7551,7 +7583,7 @@
     "設定說明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 221,
+        "line": 363,
         "level": 3,
         "title": "設定說明"
       },
@@ -8429,7 +8461,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 74,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
       }
@@ -8443,7 +8475,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "鏈式呼叫範例"
       }

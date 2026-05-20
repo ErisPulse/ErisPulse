@@ -178,7 +178,7 @@ ErisPulse 日志系统
 
 ##### `print_section_header(title: str)`
 
-打印日志分组标题（树状结构）
+打印日志分组标题
 
 :param title: 分组标题
 
@@ -205,7 +205,7 @@ ErisPulse 日志系统
 
 ##### `print_info(text: str, level: int = 1)`
 
-打印信息（树状结构）
+打印信息
 
 :param text: 文本内容
 :param level: 缩进层级
