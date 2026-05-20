@@ -218,8 +218,8 @@ class SDK:
                 adapter_manager = self._sdk.adapter
                 module_manager = self._sdk.module
                 
-                # 适配器发现阶段
-                logger.print_section_header("适配器发现阶段")
+                # 模块发现阶段
+                logger.print_section_header("入口发现阶段")
                 
                 (adapter_result, module_result) = await asyncio.gather(
                     self._adapter_loader.load(adapter_manager),
@@ -700,17 +700,35 @@ class SDK:
         在后台任务中运行，与调用 restart() 的事件处理器解耦
         确保即使调用者被取消，重启流程也能完整执行
         
+        重启流程:
+        1. 收集已加载包的顶层模块名（必须在 uninit 之前）
+        2. 反初始化（关闭适配器、卸载模块、清理状态）
+        3. 清除外部包的 sys.modules 缓存
+        4. 清除 ErisPulse 框架子模块缓存（支持框架自身热更新）
+        5. 清除 importlib.metadata 缓存（确保 entry_points 返回最新数据）
+        6. 重新初始化
+        7. 重新启动适配器
+        
         :return: bool 重新加载是否成功
         """
         try:
-            # 获取所有已加载包的顶层 Python 模块名
+            # 获取所有已加载包的顶层 Python 模块名（必须在 uninit 之前，因为 uninit 会清除管理器注册信息）
             top_level_modules = self._collect_top_level_modules()
+            logger.debug(f"[Reload] 收集到外部包顶层模块: {top_level_modules}")
             
+            # 反初始化
             await self.uninit()
             
-            # 清除所有已加载包的缓存
+            # 清除外部包的 sys.modules 缓存
             self._invalidate_module_cache(top_level_modules)
             
+            # 清除 ErisPulse 框架子模块缓存（支持框架自身热更新）
+            self._invalidate_framework_cache()
+            
+            # 清除 importlib.metadata 缓存（确保 entry_points 返回最新数据）
+            self._invalidate_metadata_cache()
+            
+            # 重新初始化
             if not await self.init():
                 logger.error("[Reload] 初始化失败，请检查日志")
                 return False
@@ -746,6 +764,8 @@ class SDK:
                 fallback = self._infer_top_level(info)
                 if fallback:
                     top_level_set.update(fallback)
+                else:
+                    logger.warning(f"[Reload] 模块 '{module_name}' 无法推导顶层模块名，其缓存可能无法被清除")
         
         for adapter_name, info in self.adapter._adapter_info.items():
             tl = info.get("meta", {}).get("top_level", [])
@@ -755,6 +775,8 @@ class SDK:
                 fallback = self._infer_top_level(info)
                 if fallback:
                     top_level_set.update(fallback)
+                else:
+                    logger.warning(f"[Reload] 适配器 '{adapter_name}' 无法推导顶层模块名，其缓存可能无法被清除")
         
         logger.debug(f"[Reload] 收集到 top_level 模块: {top_level_set}")
         return top_level_set
@@ -797,7 +819,66 @@ class SDK:
         importlib.invalidate_caches()
         
         if modules_to_remove:
-            logger.debug(f"[Reload] 已清理 {len(modules_to_remove)} 个 sys.modules 缓存: {modules_to_remove}")
+            logger.debug(f"[Reload] 已清理 {len(modules_to_remove)} 个外部包 sys.modules 缓存: {modules_to_remove}")
+
+    def _invalidate_framework_cache(self) -> None:
+        """
+        {!--< internal-use >!--}
+        清理 ErisPulse 框架自身的子模块缓存，以支持框架热更新
+        
+        清除所有 ErisPulse.* 子模块的 sys.modules 缓存，但保留 ErisPulse 包本身。
+        这样可以避免重新运行 __init__.py（防止创建新的 SDK 实例），
+        同时确保后续的 import 语句从磁盘加载最新的框架代码。
+        
+        设计说明:
+        - 保留 ErisPulse 包本身（不删除 sys.modules['ErisPulse']），
+          防止 __init__.py 重新执行导致创建新的 SDK 单例
+        - 清除所有 ErisPulse.* 子模块，使后续 import 从磁盘重新加载
+        - 当前正在执行的代码（self 及其方法）不受影响，
+          因为 Python 函数/方法持有对代码对象的直接引用
+        - 新的 import 语句将加载更新后的框架代码
+        """
+        framework_modules = [
+            key for key in sys.modules
+            if key.startswith("ErisPulse.")
+        ]
+        
+        for key in framework_modules:
+            del sys.modules[key]
+        
+        importlib.invalidate_caches()
+        
+        if framework_modules:
+            logger.debug(f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存")
+
+    def _invalidate_metadata_cache(self) -> None:
+        """
+        {!--< internal-use >!--}
+        清理 importlib.metadata 相关缓存，确保 entry_points() 返回最新数据
+        
+        当 pip install --upgrade 更新包后，importlib.metadata 的内部缓存
+        可能仍然引用旧的分发元数据。清除这些缓存可以强制重新扫描
+        .dist-info 目录，获取最新的 entry_points 数据。
+        
+        这对于以下场景至关重要:
+        - Dashboard 热更新模块/适配器后，需要发现新安装的版本
+        - 框架自身更新后，需要获取最新的 entry_points 配置
+        """
+        metadata_modules = [
+            key for key in list(sys.modules)
+            if key.startswith("importlib.metadata")
+        ]
+        
+        for key in metadata_modules:
+            try:
+                del sys.modules[key]
+            except KeyError:
+                pass
+        
+        importlib.invalidate_caches()
+        
+        if metadata_modules:
+            logger.debug(f"[Reload] 已清理 {len(metadata_modules)} 个 importlib.metadata 缓存")
 
 
     async def restart(self) -> bool:

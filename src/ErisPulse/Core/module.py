@@ -357,7 +357,8 @@ class ModuleManager(ManagerBase):
         :param enabled: 是否启用模块 (默认: False)
         :return: 操作是否成功
         """
-        if self.exists(module_name):
+        existing = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        if existing is not None:
             return True
 
         # 模块不存在，进行注册
