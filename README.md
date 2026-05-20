@@ -1,19 +1,21 @@
 <div align="center">
 
-[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md)
+[English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
 
-</div>
+<br/>
 
-<table>
-<tr>
-<td width="35%" valign="middle" align="center">
-<img src=".github/assets/erispulse_logo_hp.png" width="280" alt="ErisPulse" />
-</td>
-<td width="65%" valign="middle">
+<img src=".github/assets/erispulse_logo_hp.png" width="160" alt="ErisPulse" />
+
+<br/>
 
 # ErisPulse
 
 **事件驱动的多平台机器人开发框架**
+
+> 知道吗？ErisPulse 支持完整的 Vibe Coding 工作流，让 AI 直接生成可用模块
+> [查看](docs/zh-CN/ai-support/README.md)
+
+<br/>
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
@@ -21,25 +23,66 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
 
+</div>
+
+<br/>
+
+<div align="center">
+
+基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
+
+</div>
+
+---
+
+<div align="center">
+
+### 核心特性
+
+</div>
+
+<table>
+<tr>
+<td width="50%" align="center" valign="top">
+<br/>
+
+### 事件驱动架构
+
+基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效
+
+</td>
+<td width="50%" align="center" valign="top">
+<br/>
+
+### 跨平台兼容
+
+插件模块编写一次即可在所有平台使用，无需为不同平台重复开发
+
+</td>
+</tr>
+<tr>
+<td width="50%" align="center" valign="top">
+<br/>
+
+### 模块化设计
+
+灵活的插件系统，易于扩展和集成，支持热插拔模块管理
+
+</td>
+<td width="50%" align="center" valign="top">
+<br/>
+
+### 热重载支持
+
+开发时无需重启即可重新加载代码，大幅提升开发迭代效率
+
 </td>
 </tr>
 </table>
 
 ---
 
-## 简介
-
-ErisPulse 是一个基于 Python 的事件驱动型多平台机器人开发框架。通过统一的 OneBot12 标准接口，您可以一次编写代码，同时在云湖、Telegram、OneBot 等多个平台部署相同功能的机器人。框架提供灵活的模块(`插件`)系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
-
-## 核心特性
-
-- **事件驱动架构** - 基于 OneBot12 标准的清晰事件模型
-- **跨平台兼容** - 插件模块编写一次即可在所有平台使用
-- **模块化设计** - 灵活的插件系统，易于扩展和集成
-- **热重载支持** - 开发时无需重启即可重新加载代码
-- **完整工具链** - 提供 CLI 工具、包管理和自动化脚本
-
-## 支持的适配器
+### 支持的适配器
 
 欢迎您贡献适配器！
 
@@ -59,9 +102,11 @@ ErisPulse 是一个基于 Python 的事件驱动型多平台机器人开发框�
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
-## 快速开始
+---
 
-### 使用 Docker (推荐)
+### 快速开始
+
+#### 使用 Docker (推荐)
 
 ```bash
 docker pull erispulse/erispulse:latest
@@ -142,7 +187,7 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
-### 1Panel 应用商店
+#### 1Panel 应用商店
 
 通过 [1Panel](https://1panel.cn) 应用商店一键安装 ErisPulse，详见 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
@@ -150,7 +195,7 @@ docker pull erispulse/erispulse:dev
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
 
-### 使用 pip 安装
+#### 使用 pip 安装
 
 ```bash
 pip install ErisPulse
@@ -166,7 +211,7 @@ uv pip install ErisPulse
 
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
 
-### 初始化项目
+#### 初始化项目
 
 ```bash
 # 交互式初始化
@@ -176,7 +221,7 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### 创建第一个机器人
+#### 创建第一个机器人
 
 创建 `main.py` 文件：
 
@@ -237,48 +282,50 @@ epsdk run main.py --reload
 - [快速开始指南](docs/zh-CN/quick-start.md)
 - [入门指南](docs/zh-CN/getting-started/)
 
-## 应用场景
+---
 
-- **多平台机器人** - 在多个平台部署相同功能的机器人
-- **聊天助手** - 接入 AI 聊天模块，实现娱乐和交互
-- **自动化工具** - 消息通知、任务管理、数据收集
-- **消息转发** - 跨平台消息同步和转发
+### 应用场景
 
-## 文档资源
+<div align="center">
+
+| 多平台机器人 | 聊天助手 | 自动化工具 | 消息转发 |
+|:---:|:---:|:---:|:---:|
+| 在多个平台部署<br>相同功能的机器人 | 接入 AI 聊天模块<br>实现娱乐和交互 | 消息通知、任务管理<br>数据收集 | 跨平台消息<br>同步和转发 |
+
+</div>
+
+---
+
+### 文档与资源
 
 | 简体中文 | English | 繁體中文 |
-|----------------|----------------|----------------|
+|:---:|:---:|:---:|
 | [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
-
-## 外部资源
 
 | 平台 | 主站点 | 备用站点 |
 |------|--------|---------|
-| 文档 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) • [GitHub](https://erispulse.github.io/#docs) • [Netlify](https://erispulse.netlify.app/#docs) |
-| 模块市场 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) • [GitHub](https://erispulse.github.io/#market) • [Netlify](https://erispulse.netlify.app/#market) |
+| 文档 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
+| 模块市场 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
 
-## 贡献指南
+---
 
-ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式的贡献，包括但不限于：
+### 贡献指南
 
-1. **报告问题**
-   在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 报告
+ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式的贡献：
 
-2. **功能请求**
-   通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
-
-3. **代码贡献**
-   提交 Pull Request 前请阅读我们的 [代码风格](docs/zh-CN/styleguide/) 以及 [贡献指南](CONTRIBUTING.md)
-
-4. **文档改进**
-   帮助完善文档和示例代码
+1. **报告问题** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 报告
+2. **功能请求** — 通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+3. **代码贡献** — 提交 PR 前请阅读 [代码风格](docs/zh-CN/styleguide/) 及 [贡献指南](CONTRIBUTING.md)
+4. **文档改进** — 帮助完善文档和示例代码
 
 [加入社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
-## 致谢
+<div align="center">
 
-- 本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame)
-- 核心适配器标准化层基于 [OneBot12 规范](https://12.onebot.dev/)
-- 感谢所有为开源社区做出贡献的开发者和作者
+### 致谢
+
+本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心适配器标准化层基于 [OneBot12 规范](https://12.onebot.dev/) · 感谢所有为开源社区做出贡献的开发者和作者
+
+</div>
