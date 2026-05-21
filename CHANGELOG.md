@@ -78,6 +78,7 @@
     - 新增 `_invalidate_metadata_cache()` 清除 `importlib.metadata` 缓存
     - 新增 `_invalidate_framework_cache()` 清除 `ErisPulse.*` 子模块缓存
     - 增强诊断日志输出
+  - 并入 `适配器启动` 到 `sdk.init`
 
 ---
 
