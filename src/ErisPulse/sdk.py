@@ -199,9 +199,9 @@ class SDK:
             初始化所有模块和适配器
             
             执行步骤:
-            1. 从 PyPI 包加载适配器
-            2. 从 PyPI 包加载模块
-            3. 注册适配器
+            1. 并行发现适配器和模块
+            2. 注册适配器
+            3. 启动适配器
             4. 注册模块
             5. 初始化模块
             6. 启动路由服务器
@@ -247,7 +247,12 @@ class SDK:
                 ):
                     logger.warning("部分适配器注册失败，已跳过")
 
-                # 3. 注册模块
+                # 3. 启动适配器
+                if enabled_adapters:
+                    logger.print_section_header("适配器启动阶段")
+                    await adapter_manager.startup()
+
+                # 4. 注册模块
                 logger.print_section_header("模块注册阶段")
                 if not await self._module_loader.register_to_manager(
                     enabled_modules, module_objs, module_manager
@@ -265,7 +270,7 @@ class SDK:
                 else:
                     success = True
                 
-                # 5. 启动路由服务器
+                # 6. 启动路由服务器
                 logger.print_section_header("路由服务器启动")
                 from ErisPulse.runtime import get_server_config
                 _server_config = get_server_config()
@@ -677,8 +682,6 @@ class SDK:
                 logger.error("ErisPulse 初始化失败，请检查日志")
                 return
             
-            await self.adapter.startup()
-            
             if keep_running:
                 shutdown_event = asyncio.Event()
                 await shutdown_event.wait()
@@ -732,9 +735,6 @@ class SDK:
             if not await self.init():
                 logger.error("[Reload] 初始化失败，请检查日志")
                 return False
-            
-            # 重新启动适配器
-            await self.adapter.startup()
             
             logger.info("[Reload] 重新加载完成")
             logger.info(
