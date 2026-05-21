@@ -5,7 +5,9 @@ ErisPulse SDK 工具模块
 """
 
 from .package_manager import PackageManager
+from . import display
 
 __all__ = [
-    "PackageManager"
+    "PackageManager",
+    "display",
 ]

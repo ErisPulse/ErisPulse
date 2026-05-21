@@ -11,6 +11,7 @@ from rich.table import Table
 from rich.box import SIMPLE
 
 from ..utils import PackageManager
+from ..utils.display import section_header
 from ..console import console
 from ..base import Command
 
@@ -36,66 +37,42 @@ class ListRemoteCommand(Command):
         )
     
     def execute(self, args):
+        with console.status("[bold green]正在获取远程包列表...", spinner="dots"):
+            remote_packages = asyncio.run(
+                self.package_manager.get_remote_packages(force_refresh=args.refresh)
+            )
+        
         pkg_type = args.type
-        force_refresh = args.refresh
+        modules = remote_packages.get("modules", {})
+        adapters = remote_packages.get("adapters", {})
         
-        if pkg_type == "all":
-            self._print_remote_packages("modules", force_refresh)
-            self._print_remote_packages("adapters", force_refresh)
-        else:
-            self._print_remote_packages(pkg_type, force_refresh)
+        if pkg_type in ("all", "modules"):
+            self._print_group("模块", modules, "module", "模块名")
+        if pkg_type in ("all", "adapters"):
+            self._print_group("适配器", adapters, "adapter", "适配器名")
+        
+        total = len(modules) + len(adapters)
+        console.print(f"[dim]  共 {total} 个远程组件[/]")
     
-    def _print_remote_packages(self, pkg_type: str, force_refresh: bool = False):
-        """
-        打印远程包信息
+    def _print_group(self, title: str, items: dict, style: str, name_col: str):
+        if not items:
+            return
         
-        :param pkg_type: 包类型 (modules/adapters/cli)
-        :param force_refresh: 是否强制刷新缓存
-        """
-        remote_packages = asyncio.run(
-            self.package_manager.get_remote_packages(force_refresh=force_refresh)
-        )
+        section_header(title)
         
-        if pkg_type == "modules" and remote_packages["modules"]:
-            table = Table(
-                title="远程模块",
-                box=SIMPLE,
-                header_style="module"
+        table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
+        table.add_column(name_col, style=style, min_width=12)
+        table.add_column("包名", min_width=20)
+        table.add_column("最新版本", width=10)
+        table.add_column("描述")
+        
+        for name, info in items.items():
+            table.add_row(
+                name,
+                info.get("package", ""),
+                info.get("version", ""),
+                info.get("description", "")
             )
-            table.add_column("模块名", style="module")
-            table.add_column("包名")
-            table.add_column("最新版本")
-            table.add_column("描述")
-            
-            for name, info in remote_packages["modules"].items():
-                table.add_row(
-                    name,
-                    info["package"],
-                    info["version"],
-                    info.get("description", "")
-                )
-            
-            console.print(table)
-            
-        elif pkg_type == "adapters" and remote_packages["adapters"]:
-            table = Table(
-                title="远程适配器",
-                box=SIMPLE,
-                header_style="adapter"
-            )
-            table.add_column("适配器名", style="adapter")
-            table.add_column("包名")
-            table.add_column("最新版本")
-            table.add_column("描述")
-            
-            for name, info in remote_packages["adapters"].items():
-                table.add_row(
-                    name,
-                    info["package"],
-                    info["version"],
-                    info.get("description", "")
-                )
-            
-            console.print(table)
-        elif not remote_packages.get(pkg_type, {}):
-            console.print(f"[dim]远程没有找到 {pkg_type}[/]")
+        
+        console.print(table)
+        console.print(f"[dim]  {len(items)} 个{title}[/]")
