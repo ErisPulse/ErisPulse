@@ -73,6 +73,7 @@
 ### 优化
 - @wsu2059q
   - 优化 `logger` 的显示样式
+  - 优化 `cli` 的显示样式，新增display辅助模块
   - 优化热重启（`sdk.restart()`）的缓存清理机制，确保更新后的模块/适配器/框架代码能正确生效：
     - 新增 `_invalidate_metadata_cache()` 清除 `importlib.metadata` 缓存
     - 新增 `_invalidate_framework_cache()` 清除 `ErisPulse.*` 子模块缓存

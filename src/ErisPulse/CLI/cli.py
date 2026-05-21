@@ -11,10 +11,12 @@ import pkgutil
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from rich.panel import Panel
+from rich.text import Text
 
 from .console import console, print_banner
 from .registry import CommandRegistry
 from .base import Command
+from .utils.display import section_header
 
 
 class CLI:
@@ -164,7 +166,9 @@ class CLI:
             # 执行命令
             command = self.registry.get(args.command)
             if command:
-                console.print(f"[title]{command.description}[/]")
+                console.print()
+                console.print(Text(f"  ── ", style="dim"), Text(command.description, style="bold"), sep="")
+                console.print()
                 command.execute(args)
             else:
                 console.print(f"[error]未知命令: {args.command}[/]")

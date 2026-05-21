@@ -497,7 +497,7 @@ class PackageManager:
 
         return success
 
-    def uninstall_package(self, package_names: List[str]) -> bool:
+    def uninstall_package(self, package_names: List[str], skip_confirm: bool = False) -> bool:
         all_success = True
 
         packages_to_uninstall = []
@@ -506,22 +506,23 @@ class PackageManager:
             actual_package = asyncio.run(self._find_package_by_alias(package_name))
 
             if actual_package:
-                console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]")
+                console.print(f"[info]  别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]")
                 packages_to_uninstall.append(actual_package)
             else:
                 installed_package = self._find_installed_package_by_name(package_name)
                 if installed_package:
                     package_name = installed_package
-                    console.print(f"[info]找到已安装包: [bold]{package_name}[/][/]")
+                    console.print(f"[info]  找到已安装包: [bold]{package_name}[/][/]")
                     packages_to_uninstall.append(package_name)
                 else:
-                    console.print(f"[warning]未找到别名映射，将尝试直接卸载: [package]{package_name}[/][/]")
+                    console.print(f"[warning]  未找到别名，将尝试直接卸载: [package]{package_name}[/][/]")
                     packages_to_uninstall.append(package_name)
 
-        package_list = "\n".join([f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall])
-        if not Confirm.ask(f"确认卸载以下包吗？\n{package_list}", default=False):
-            console.print("[info]操作已取消[/]")
-            return False
+        if not skip_confirm:
+            package_list = "\n".join([f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall])
+            if not Confirm.ask(f"确认卸载以下包吗？\n{package_list}", default=False):
+                console.print("[info]  操作已取消[/]")
+                return False
 
         for package_name in packages_to_uninstall:
             success = self._run_pip_command_with_output(

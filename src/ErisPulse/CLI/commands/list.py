@@ -46,85 +46,70 @@ class ListCommand(Command):
             self._print_installed_packages(pkg_type, outdated_only)
     
     def _print_installed_packages(self, pkg_type: str, outdated_only: bool = False):
-        """
-        打印已安装包信息
-        
-        :param pkg_type: 包类型 (modules/adapters/cli)
-        :param outdated_only: 是否只显示可升级的包
-        """
         installed = self.package_manager.get_installed_packages()
         
         if pkg_type == "modules" and installed["modules"]:
-            table = Table(
-                title="已安装模块",
-                box=SIMPLE,
-                header_style="module"
-            )
-            table.add_column("模块名", style="module")
-            table.add_column("包名")
-            table.add_column("版本")
-            table.add_column("状态")
+            table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
+            table.add_column("模块名", style="module", min_width=12)
+            table.add_column("包名", min_width=20)
+            table.add_column("版本", width=10)
+            table.add_column("状态", width=8)
             table.add_column("描述")
             
+            count = 0
             for name, info in installed["modules"].items():
                 if outdated_only and not self._is_package_outdated(info["package"], info["version"]):
                     continue
-                    
-                status = "[green]已启用[/]" if info.get("enabled", True) else "[yellow]已禁用[/]"
+                status = "[green]启用[/]" if info.get("enabled", True) else "[yellow]禁用[/]"
                 table.add_row(
                     name,
                     info["package"],
                     info["version"],
                     status,
-                    info["summary"]
+                    info["summary"],
                 )
+                count += 1
             
-            console.print(table)
+            if count > 0:
+                console.print(table)
+                console.print(f"[dim]  {count} 个模块[/]")
+            else:
+                console.print("[dim]  没有符合条件的模块[/]")
             
         elif pkg_type == "adapters" and installed["adapters"]:
-            table = Table(
-                title="已安装适配器",
-                box=SIMPLE,
-                header_style="adapter"
-            )
-            table.add_column("适配器名", style="adapter")
-            table.add_column("包名")
-            table.add_column("版本")
+            table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
+            table.add_column("适配器名", style="adapter", min_width=12)
+            table.add_column("包名", min_width=20)
+            table.add_column("版本", width=10)
             table.add_column("描述")
             
+            count = 0
             for name, info in installed["adapters"].items():
                 if outdated_only and not self._is_package_outdated(info["package"], info["version"]):
                     continue
-                    
                 table.add_row(
                     name,
                     info["package"],
                     info["version"],
-                    info["summary"]
+                    info["summary"],
                 )
+                count += 1
             
-            console.print(table)
+            if count > 0:
+                console.print(table)
+                console.print(f"[dim]  {count} 个适配器[/]")
+            else:
+                console.print("[dim]  没有符合条件的适配器[/]")
+
         elif not installed.get(pkg_type, {}):
-            pass
+            console.print(f"[dim]  没有{pkg_type}[/]")
     
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
-        """
-        检查包是否过时
-        
-        :param package_name: 包名
-        :param current_version: 当前版本
-        :return: 是否有新版本可用
-        """
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
-        
-        # 检查模块
         for module_info in remote_packages["modules"].values():
             if module_info["package"] == package_name:
                 return module_info["version"] != current_version
-                
-        # 检查适配器
         for adapter_info in remote_packages["adapters"].values():
             if adapter_info["package"] == package_name:
                 return adapter_info["version"] != current_version
-                
         return False
