@@ -109,27 +109,28 @@ flowchart TD
     D --> D1["从 PyPI 加载适配器"]
     D --> D2["从 PyPI 加载模块"]
     D1 & D2 --> E["注册适配器"]
-    E --> F["注册模块"]
+    E --> E1["启动适配器"]
+    E1 --> F["注册模块"]
     F --> F1{"依赖验证"}
     F1 -->|"缺失依赖"| F2["跳过该模块并记录警告"]
     F1 -->|"依赖满足"| F3["拓扑排序<br/>（Kahn 算法 + 优先级）"]
     F3 --> G["按序初始化模块<br/>（实例化 + on_load）"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["启动路由服务器"]
-    I --> J["异步启动各平台适配器"]
-    J --> K["运行就绪"]
+    G --> H["启动路由服务器"]
+    H --> K["运行就绪"]
 ```
 
 ### 初始化阶段详解
 
 1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
 2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
-3. **注册阶段** - 将发现的适配器和模块注册到对应管理器
-4. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-5. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
-6. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-7. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
+3. **注册适配器** - 将发现的适配器注册到适配器管理器
+4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
+5. **注册模块** - 将发现的模块注册到模块管理器
+6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
+7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
+9. **启动路由服务器** - 启动路由服务器（FastAPI）
 
 ## 事件处理流程
 
@@ -596,31 +597,125 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-> 除了直接使用 `sdk.run()` 之外，你还可以更细致化的控制运行流程，如：
+### 逐阶段手动控制
+
+`sdk.init()` 内部自动完成了环境准备 → 适配器发现与启动 → 模块发现与初始化 → 路由启动。你也可以手动控制每个阶段，适合需要插入自定义逻辑的场景。
+
+#### 完整手动启动
+
 ```python
 import asyncio
 from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+from ErisPulse.runtime import get_erispulse_config, setup_exception_handling
+
+@command("hello", help="问候")
+async def hello(event):
+    await event.reply("你好！")
 
 async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失败，请检查日志")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程序运行, 如果有其它需要执行的操作，你也可以不维持事件，但需要自行处理
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
+    # ── 1. 环境准备 ──
+    # 加载 TOML 配置文件、设置全局异常处理器
+    get_erispulse_config()
+    setup_exception_handling()
+
+    # ── 2. 注册适配器 ──
+    # 每种平台需要注册一个适配器类
+    # 实际开发中通常由 pip install 的包自动注册（通过 entry_points）
+    # from MyAdapter import MyPlatformAdapter
+    # sdk.adapter.register("myplatform", MyPlatformAdapter)
+
+    # ── 3. 启动适配器 ──
+    # 异步启动所有已注册的平台适配器，建立与平台的连接
+    await sdk.adapter.startup()
+
+    # ── 4. 注册并加载模块 ──
+    # 注册模块类后，调用 load() 会创建实例并触发 on_load()
+    # from MyModule import MyModuleClass
+    # sdk.module.register("MyModule", MyModuleClass)
+    # await sdk.module.load("MyModule")
+
+    # ── 5. 启动路由服务器 ──
+    # FastAPI 服务器，提供 HTTP / WebSocket 路由
+    # 如需自定义端口，直接传入 host 和 port
+    await sdk.router.start(host="0.0.0.0", port=8000)
+
+    # ── 6. 保持运行 ──
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+#### 混合模式：init() 前后插入逻辑
+
+大多数情况下，在 `sdk.init()` 前后插入自定义逻辑即可：
+
+```python
+async def main():
+    # init 前的自定义操作
+    # sdk.adapter.register("custom", CustomAdapter)
+
+    if not await sdk.init():
+        sdk.logger.error("初始化失败")
+        return
+
+    # init 后适配器和模块已就绪，可执行额外操作
+    # await sdk.load_module("LazyModule")        # 强制加载懒加载模块
+    # await sdk.adapter.startup("new_platform")  # 启动新注册的适配器
+
+    await asyncio.Event().wait()
+```
+
+#### 运行时动态管理
+
+```python
+async def main():
+    if not await sdk.init():
+        return
+
+    # 注册新适配器并启动
+    sdk.adapter.register("dynamic", DynamicAdapter)
+    await sdk.adapter.startup("dynamic")
+
+    # 注册新模块并加载
+    sdk.module.register("DynamicModule", DynamicModuleClass)
+    await sdk.module.load("DynamicModule")
+    # 现在可以通过 sdk.DynamicModule 访问
+
+    # 查询状态
+    print("运行中的适配器:", sdk.adapter.list_running())
+    print("已加载的模块:", sdk.module.list_loaded())
+
+    await asyncio.Event().wait()
+```
+
+#### 清理
+
+```python
+# 关闭指定适配器
+await sdk.adapter.shutdown("yunhu")
+
+# 卸载指定模块
+await sdk.module.unload("MyModule")
+
+# 停止路由服务器
+await sdk.router.stop()
+
+# 完整清理（关闭适配器 → 卸载模块 → 停路由 → 清事件 → 清缓存）
+await sdk.uninit()
+```
+
+| 阶段 | 方法 | 说明 |
+|------|------|------|
+| 环境准备 | `get_erispulse_config()` + `setup_exception_handling()` | 加载配置、设置异常处理 |
+| 注册适配器 | `sdk.adapter.register(platform, class)` | 注册平台适配器类 |
+| 启动适配器 | `await sdk.adapter.startup()` | 异步启动已注册的适配器 |
+| 注册模块 | `sdk.module.register(name, class)` | 注册模块类 |
+| 加载模块 | `await sdk.module.load(name)` | 实例化模块并触发 `on_load()` |
+| 启动路由 | `await sdk.router.start(host, port)` | 启动 FastAPI HTTP/WebSocket 服务器 |
+| 保持运行 | `await asyncio.Event().wait()` | 阻塞等待，防止进程退出 |
+| 清理 | `await sdk.adapter.shutdown()` / `await sdk.module.unload()` / `await sdk.uninit()` | 关闭适配器、卸载模块、清理资源 |
 
 ## 第四步：运行机器人
 
