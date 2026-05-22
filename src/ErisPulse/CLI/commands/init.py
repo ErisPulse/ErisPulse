@@ -23,41 +23,38 @@ from ..base import Command
 class InitCommand(Command):
     name = "init"
     description = "初始化 ErisPulse 项目"
-    
+
     def __init__(self):
         self.package_manager = PackageManager()
-    
+
     def add_arguments(self, parser: ArgumentParser):
+        parser.add_argument("--project-name", "-n", help="项目名称 (可选)")
         parser.add_argument(
-            '--project-name', '-n',
-            help='项目名称 (可选)'
+            "--quick", "-q", action="store_true", help="快速模式，跳过交互式配置"
         )
         parser.add_argument(
-            '--quick', '-q',
-            action='store_true',
-            help='快速模式，跳过交互式配置'
+            "--force", "-f", action="store_true", help="强制覆盖现有配置"
         )
-        parser.add_argument(
-            '--force', '-f',
-            action='store_true',
-            help='强制覆盖现有配置'
-        )
-    
+
     def execute(self, args):
         if args.quick and args.project_name:
             success = self._init_project(args.project_name, [])
         else:
             success = self._interactive_init(args.project_name, args.force)
-        
+
         if success:
             console.print("[success]  项目初始化完成[/]")
         else:
             console.print("[error]  项目初始化失败[/]")
             sys.exit(1)
-    
+
     def _init_project(self, project_name: str, adapter_list: list = None) -> bool:
-        if not project_name or not all(c.isalnum() or c in ('_', '-', '.') for c in project_name):
-            console.print("[error]  项目名称只能包含字母、数字、下划线、连字符和点号[/]")
+        if not project_name or not all(
+            c.isalnum() or c in ("_", "-", ".") for c in project_name
+        ):
+            console.print(
+                "[error]  项目名称只能包含字母、数字、下划线、连字符和点号[/]"
+            )
             return False
 
         try:
@@ -71,10 +68,10 @@ class InitCommand(Command):
             else:
                 project_path.mkdir()
                 console.print(f"[success]  创建项目目录: {project_name}[/]")
-            
+
             for dir_name in ["config", "logs"]:
                 (project_path / dir_name).mkdir(exist_ok=True)
-            
+
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with open(config_file, "w", encoding="utf-8") as f:
@@ -88,13 +85,13 @@ class InitCommand(Command):
                     if adapter_list:
                         f.write("\n[ErisPulse.adapters.status]\n")
                         for adapter in adapter_list:
-                            f.write(f'{adapter} = false\n')
-            
+                            f.write(f"{adapter} = false\n")
+
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
                 with open(example_file, "w", encoding="utf-8") as f:
                     f.write(self._get_full_example_config(adapter_list))
-            
+
             main_file = project_path / "main.py"
             if not main_file.exists():
                 with open(main_file, "w", encoding="utf-8") as f:
@@ -107,18 +104,18 @@ class InitCommand(Command):
                     f.write("    await sdk.run(keep_running=True)\n\n")
                     f.write('if __name__ == "__main__":\n')
                     f.write("    asyncio.run(main())\n")
-            
+
             console.print(f"[success]  项目 {project_name} 初始化成功[/]")
             console.print()
             console.print(Text("  接下来:", style="bold"))
             console.print(f"    · 编辑 {project_name}/config/config.toml 配置适配器")
             console.print(f"    · cd {project_name} && epsdk run")
             return True
-            
+
         except Exception as e:
             console.print(f"[error]  初始化项目失败: {e}[/]")
             return False
-    
+
     @staticmethod
     def _get_full_example_config(adapter_list=None):
         lines = [
@@ -138,7 +135,7 @@ class InitCommand(Command):
             "",
             "[ErisPulse.logger]",
             'level = "INFO"                # 日志级别: DEBUG/INFO/WARNING/ERROR',
-            "log_files = []                # 日志文件列表, 如 [\"logs/app.log\"]",
+            'log_files = []                # 日志文件列表, 如 ["logs/app.log"]',
             "memory_limit = 1000           # 内存日志条数上限",
             "",
             "# ==================== 存储 ====================",
@@ -194,28 +191,32 @@ class InitCommand(Command):
             "",
             "[ErisPulse.adapters.status]",
         ]
-        
+
         if adapter_list:
             for adapter in adapter_list:
                 lines.append(f"# {adapter} = false")
         else:
-            lines.extend([
-                "# yunhu = false",
-                "# telegram = false",
-                "# onebot11 = false",
-            ])
-        
-        lines.extend([
-            "",
-            "# ==================== 模块状态 ====================",
-            "",
-            "[ErisPulse.modules.status]",
-            "# MyModule = true",
-            "",
-        ])
-        
+            lines.extend(
+                [
+                    "# yunhu = false",
+                    "# telegram = false",
+                    "# onebot11 = false",
+                ]
+            )
+
+        lines.extend(
+            [
+                "",
+                "# ==================== 模块状态 ====================",
+                "",
+                "[ErisPulse.modules.status]",
+                "# MyModule = true",
+                "",
+            ]
+        )
+
         return "\n".join(lines)
-    
+
     async def _fetch_available_adapters(self):
         try:
             remote_packages = await self.package_manager.get_remote_packages()
@@ -226,47 +227,56 @@ class InitCommand(Command):
                 return adapters
         except Exception as e:
             console.print(f"[warning]  获取远程适配器列表失败: {e}[/]")
-        
+
         return {
             "yunhu": "云湖平台适配器",
             "telegram": "Telegram机器人适配器",
             "onebot11": "OneBot11标准适配器",
             "email": "邮件适配器",
         }
-    
+
     def _interactive_init(self, project_name: str = None, force: bool = False) -> bool:
         try:
             if not project_name:
                 project_name = Prompt.ask("  项目名称", default="my_erispulse_project")
-            
+
             project_path = Path(project_name)
             if project_path.exists() and not force:
-                if not Confirm.ask(f"  [cyan]目录 {project_name} 已存在，是否覆盖？[/]", default=False):
+                if not Confirm.ask(
+                    f"  [cyan]目录 {project_name} 已存在，是否覆盖？[/]", default=False
+                ):
                     console.print("[info]  操作已取消[/]")
                     return False
-            
+
             if not self._init_project(project_name, []):
                 return False
-            
+
             from ErisPulse import config
+
             project_config_path = project_path / "config" / "config.toml"
             config.CONFIG_FILE = str(project_config_path)
             config.reload()
-            
+
             section_header("基本配置")
-            
+
             current_level = config.getConfig("ErisPulse.logger.level", "INFO")
             console.print(f"  日志级别 [dim]({current_level})[/]")
             new_level = _input(">")
-            if new_level and new_level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+            if new_level and new_level.upper() in [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL",
+            ]:
                 config.setConfig("ErisPulse.logger.level", new_level.upper())
-            
+
             current_host = config.getConfig("ErisPulse.server.host", "0.0.0.0")
             console.print(f"  监听地址 [dim]({current_host})[/]")
             new_host = _input(">")
             if new_host:
                 config.setConfig("ErisPulse.server.host", new_host)
-            
+
             current_port = str(config.getConfig("ErisPulse.server.port", 8000))
             console.print(f"  监听端口 [dim]({current_port})[/]")
             new_port = _input(">")
@@ -275,29 +285,31 @@ class InitCommand(Command):
                     config.setConfig("ErisPulse.server.port", int(new_port))
                 except ValueError:
                     console.print(f"[warning]  无效的端口号: {new_port}[/]")
-            
+
             if Confirm.ask("\n  [cyan]是否配置适配器？[/]", default=True):
                 self._configure_adapters(project_path)
-            
+
             config.force_save()
             return True
-            
+
         except Exception as e:
             console.print(f"[error]  初始化失败: {e}[/]")
             return False
-    
+
     def _configure_adapters(self, project_path: Path):
         from ErisPulse import config
-        
+
         with console.status("[bold green]正在获取适配器列表...", spinner="dots"):
             try:
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(asyncio.run, self._fetch_available_adapters())
+                    future = executor.submit(
+                        asyncio.run, self._fetch_available_adapters()
+                    )
                     adapters = future.result(timeout=10)
             except Exception as e:
                 console.print(f"[error]  获取适配器列表失败: {e}[/]")
                 return
-        
+
         if not adapters:
             console.print("[dim]  没有可用适配器[/]")
             return
@@ -336,7 +348,7 @@ class InitCommand(Command):
 
         if enabled and Confirm.ask("  [cyan]是否安装选中的适配器？[/]", default=True):
             self._install_adapters(enabled, adapters)
-    
+
     def _install_adapters(self, adapter_names, adapters_info):
         pkg_manager = PackageManager()
         for adapter_name in adapter_names:
@@ -345,25 +357,31 @@ class InitCommand(Command):
                 remote_packages = pkg_manager._cache.get("remote_packages", {})
                 if not remote_packages:
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        future = executor.submit(asyncio.run, pkg_manager.get_remote_packages())
+                        future = executor.submit(
+                            asyncio.run, pkg_manager.get_remote_packages()
+                        )
                         remote_packages = future.result(timeout=10)
                 if adapter_name in remote_packages.get("adapters", {}):
-                    package_name = remote_packages["adapters"][adapter_name].get("package")
+                    package_name = remote_packages["adapters"][adapter_name].get(
+                        "package"
+                    )
             except Exception:
                 pass
-            
+
             if not package_name:
                 package_name = adapter_name
-            
+
             console.print(f"[info]  正在安装 {adapter_name} ({package_name})[/]")
             success = pkg_manager.install_package([package_name])
-            
+
             if not success:
                 console.print("[warning]  标准安装失败，尝试 uv...[/]")
                 try:
                     result = subprocess.run(
                         [sys.executable, "-m", "uv", "pip", "install", package_name],
-                        capture_output=True, text=True, timeout=300
+                        capture_output=True,
+                        text=True,
+                        timeout=300,
                     )
                     if result.returncode != 0:
                         console.print(f"[error]  {adapter_name} 安装失败[/]")
