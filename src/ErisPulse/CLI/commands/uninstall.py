@@ -16,17 +16,13 @@ from ..base import Command
 class UninstallCommand(Command):
     name = "uninstall"
     description = "卸载模块/适配器包"
-    
+
     def __init__(self):
         self.package_manager = PackageManager()
-    
+
     def add_arguments(self, parser: ArgumentParser):
-        parser.add_argument(
-            'package',
-            nargs='*',
-            help='要卸载的包名（可指定多个）'
-        )
-    
+        parser.add_argument("package", nargs="*", help="要卸载的包名（可指定多个）")
+
     def execute(self, args):
         if args.package:
             success = self.package_manager.uninstall_package(args.package)
@@ -34,26 +30,30 @@ class UninstallCommand(Command):
                 sys.exit(1)
         else:
             self._interactive_uninstall()
-    
+
     def _interactive_uninstall(self):
         installed = self.package_manager.get_installed_packages()
-        
+
         all_packages = []
         for name, info in installed.get("adapters", {}).items():
-            all_packages.append({
-                "type": "适配器",
-                "name": name,
-                "package": info["package"],
-                "version": info["version"],
-            })
+            all_packages.append(
+                {
+                    "type": "适配器",
+                    "name": name,
+                    "package": info["package"],
+                    "version": info["version"],
+                }
+            )
         for name, info in installed.get("modules", {}).items():
-            all_packages.append({
-                "type": "模块",
-                "name": name,
-                "package": info["package"],
-                "version": info["version"],
-            })
-        
+            all_packages.append(
+                {
+                    "type": "模块",
+                    "name": name,
+                    "package": info["package"],
+                    "version": info["version"],
+                }
+            )
+
         if not all_packages:
             console.print("[dim]  没有已安装的包[/]")
             return

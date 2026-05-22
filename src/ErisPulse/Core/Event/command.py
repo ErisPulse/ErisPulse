@@ -201,7 +201,9 @@ class CommandHandler:
         if prompt and platform:
             try:
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get(
+                    "self", {}
+                ).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -214,7 +216,9 @@ class CommandHandler:
         future = loop.create_future()
 
         # 存储等待信息
-        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get(
+            "self", {}
+        ).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
         self._waiting_replies[wait_key] = {
             "future": future,
@@ -438,7 +442,9 @@ class CommandHandler:
         # 使用会话类型管理模块获取发送类型和目标ID
         send_type, target_id = get_send_type_and_target_id(event, platform)
 
-        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get(
+            "self", {}
+        ).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
 
         # 检查是否有等待的处理器
@@ -479,13 +485,13 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get(
+                    "self", {}
+                ).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(
-                    "权限不足，无法执行该命令"
-                )
+                await send_dsl.Text("权限不足，无法执行该命令")
         except Exception as e:
             logger.error(f"发送权限拒绝消息失败: {e}")
 
@@ -507,13 +513,13 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get(
+                    "self", {}
+                ).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(
-                    f"命令执行出错: {error}"
-                )
+                await send_dsl.Text(f"命令执行出错: {error}")
         except Exception as e:
             logger.error(f"发送命令错误消息失败: {e}")
 

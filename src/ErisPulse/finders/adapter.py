@@ -17,9 +17,9 @@ from .bases.finder import BaseFinder
 class AdapterFinder(BaseFinder):
     """
     适配器发现器
-    
+
     负责发现 ErisPulse 适配器的 entry-points
-    
+
     {!--< tips >!--}
     使用方式：
     >>> finder = AdapterFinder()
@@ -34,54 +34,54 @@ class AdapterFinder(BaseFinder):
     ...     print("适配器存在")
     {!--< /tips >!--}
     """
-    
+
     def _get_entry_point_group(self) -> str:
         """
         获取 entry-point 组名
-        
+
         :return: "erispulse.adapter"
         """
         return "erispulse.adapter"
-    
+
     def get_all_names(self) -> List[str]:
         """
         获取所有适配器名称
-        
+
         :return: 适配器名称列表
         """
         return list(self.get_entry_point_map().keys())
-    
+
     def get_all_packages(self) -> List[str]:
         """
         获取所有适配器所属的 PyPI 包名
-        
+
         :return: PyPI 包名列表
         """
         packages = set()
         for entry in self.find_all():
-            if hasattr(entry, 'dist') and entry.dist:
+            if hasattr(entry, "dist") and entry.dist:
                 packages.add(entry.dist.name)
         return list(packages)
-    
+
     def get_package_for_adapter(self, adapter_name: str) -> Optional[str]:
         """
         获取指定适配器所属的 PyPI 包名
-        
+
         :param adapter_name: 适配器名称
         :return: PyPI 包名，未找到返回 None
         """
         entry = self.find_by_name(adapter_name)
-        if entry and hasattr(entry, 'dist') and entry.dist:
+        if entry and hasattr(entry, "dist") and entry.dist:
             return entry.dist.name
         return None
-    
+
     def get_adapter_info(self, adapter_name: str) -> Optional[Dict[str, Any]]:
         """
         获取适配器的完整信息
-        
+
         :param adapter_name: 适配器名称
         :return: 适配器信息字典，未找到返回 None
-        
+
         :return:
             Dict: {
                 "name": 适配器名称,
@@ -93,28 +93,25 @@ class AdapterFinder(BaseFinder):
         entry = self.find_by_name(adapter_name)
         if not entry:
             return None
-        
-        info = {
-            "name": entry.name,
-            "entry_point": entry
-        }
-        
-        if hasattr(entry, 'dist') and entry.dist:
+
+        info = {"name": entry.name, "entry_point": entry}
+
+        if hasattr(entry, "dist") and entry.dist:
             info["package"] = entry.dist.name
             info["version"] = entry.dist.version
-        
+
         return info
-    
+
     def get_adapters_by_package(self, package_name: str) -> List[str]:
         """
         获取指定 PyPI 包下的所有适配器名称
-        
+
         :param package_name: PyPI 包名
         :return: 适配器名称列表
         """
         adapters = []
         for entry in self.find_all():
-            if hasattr(entry, 'dist') and entry.dist:
+            if hasattr(entry, "dist") and entry.dist:
                 if entry.dist.name == package_name:
                     adapters.append(entry.name)
         return adapters

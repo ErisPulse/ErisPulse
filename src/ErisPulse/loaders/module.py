@@ -139,7 +139,11 @@ class ModuleLoader(BaseLoader):
         try:
             loaded_obj = entry_point.load()
             module_obj = sys.modules[loaded_obj.__module__]
-            dist = importlib.metadata.distribution(entry_point.dist.name) if entry_point.dist else None
+            dist = (
+                importlib.metadata.distribution(entry_point.dist.name)
+                if entry_point.dist
+                else None
+            )
 
             # 检查模块是否继承自 BaseModule
             from ..Core.Bases.module import BaseModule
@@ -517,7 +521,9 @@ class ModuleLoader(BaseLoader):
                 else:
                     result = await manager_instance.load(meta_name)
                     if result:
-                        setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
+                        setattr(
+                            sdk_instance, meta_name, manager_instance.get(meta_name)
+                        )
                         logger.debug(f"挂载立即加载模块到 sdk: {meta_name}")
                     else:
                         logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
@@ -583,7 +589,7 @@ class LazyModule:
         if object.__getattribute__(self, "_initialized"):
             return
 
-        module_name = object.__getattribute__(self, '_module_name')
+        module_name = object.__getattribute__(self, "_module_name")
         logger.debug(f"正在初始化懒加载模块 {module_name}...")
 
         try:
@@ -594,20 +600,24 @@ class LazyModule:
                 # 避免 LazyModule 自行创建实例导致双重实例化
                 manager_instance = object.__getattribute__(self, "_manager_instance")
                 success = await manager_instance.load(module_name)
-                
+
                 if not success:
-                    raise RuntimeError(f"模块 {module_name} 通过 manager.load() 加载失败")
-                
+                    raise RuntimeError(
+                        f"模块 {module_name} 通过 manager.load() 加载失败"
+                    )
+
                 # 使用 manager 中创建的实例（唯一的真实实例）
                 instance = manager_instance.get(module_name)
                 if instance is None:
-                    raise RuntimeError(f"模块 {module_name} manager.load() 成功但 get() 返回 None")
-                
+                    raise RuntimeError(
+                        f"模块 {module_name} manager.load() 成功但 get() 返回 None"
+                    )
+
                 # 确保 moduleInfo 已设置
                 module_info = object.__getattribute__(self, "_module_info")
-                if not hasattr(instance, 'moduleInfo') or instance.moduleInfo is None:
+                if not hasattr(instance, "moduleInfo") or instance.moduleInfo is None:
                     setattr(instance, "moduleInfo", module_info)
-                
+
                 object.__setattr__(self, "_instance", instance)
             else:
                 # 非 BaseModule: 保持原有行为，LazyModule 自行实例化
@@ -624,7 +634,9 @@ class LazyModule:
                     instance = object.__getattribute__(self, "_module_class")()
 
                 setattr(
-                    instance, "moduleInfo", object.__getattribute__(self, "_module_info")
+                    instance,
+                    "moduleInfo",
+                    object.__getattribute__(self, "_module_info"),
                 )
 
                 object.__setattr__(self, "_instance", instance)
@@ -665,7 +677,7 @@ class LazyModule:
         {!--< internal-use >!--}
         内部方法，检查并确保模块已初始化
         {!--< internal-use >!--}
-        
+
         设计说明：
         - 支持同步/异步透明的懒加载机制，用户无需感知差异
         - BaseModule 在异步上下文中通过辅助线程完成初始化
@@ -676,7 +688,7 @@ class LazyModule:
         if not object.__getattribute__(self, "_initialized"):
             try:
                 loop = asyncio.get_running_loop()
-                
+
                 if object.__getattribute__(self, "_is_base_module"):
                     if loop.is_running():
                         self._init_in_background_thread()
@@ -890,10 +902,16 @@ class LazyModule:
             return object.__getattribute__(self, name)
 
         if not initialized:
-            init_failed = object.__getattribute__(self, "_init_failed") if hasattr(self, "_init_failed") else False
+            init_failed = (
+                object.__getattribute__(self, "_init_failed")
+                if hasattr(self, "_init_failed")
+                else False
+            )
             if init_failed:
                 module_name = object.__getattribute__(self, "_module_name")
-                raise RuntimeError(f"模块 {module_name} 初始化失败，无法访问属性 '{name}'")
+                raise RuntimeError(
+                    f"模块 {module_name} 初始化失败，无法访问属性 '{name}'"
+                )
             self._ensure_initialized()
             initialized = object.__getattribute__(self, "_initialized")
 

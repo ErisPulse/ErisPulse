@@ -386,7 +386,7 @@ class StorageManager(BaseStorage):
             conn.commit()
 
     @contextmanager
-    def _get_connection(self) -> sqlite3.Connection:    # type: ignore
+    def _get_connection(self) -> sqlite3.Connection:  # type: ignore
         """
         {!--< internal-use >!--}
         获取数据库连接（支持事务）
@@ -419,7 +419,9 @@ class StorageManager(BaseStorage):
         确保必要的目录存在
         """
         try:
-            os.makedirs(os.path.dirname(self._get_default_project_db_path()), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(self._get_default_project_db_path()), exist_ok=True
+            )
         except Exception:
             pass
 

@@ -70,9 +70,15 @@ class RouteGroup:
     ...     return {"users": []}
     """
 
-    def __init__(self, module_name: str, prefix: str,
-                 version: str = None, tags: list[str] = None,
-                 middlewares: list = None, router: "RouterManager" = None):
+    def __init__(
+        self,
+        module_name: str,
+        prefix: str,
+        version: str = None,
+        tags: list[str] = None,
+        middlewares: list = None,
+        router: "RouterManager" = None,
+    ):
         """
         初始化路由分组
 
@@ -187,7 +193,8 @@ class RouteGroup:
         """
         new_prefix = f"{self._prefix.rstrip('/')}/{prefix.strip('/')}"
         return RouteGroup(
-            self._module_name, new_prefix,
+            self._module_name,
+            new_prefix,
             version=kwargs.pop("version", self._version),
             tags=kwargs.pop("tags", self._tags),
             middlewares=kwargs.pop("middlewares", self._middlewares),
@@ -219,7 +226,8 @@ class RouterManager:
         {!--< /tips >!--}
         """
         self.app = FastAPI(
-            title="ErisPulse Router", description="统一路由管理入口点",
+            title="ErisPulse Router",
+            description="统一路由管理入口点",
             version=ERISPULSE_VERSION,
         )
         # HTTP路由：{module_name: {path: {method: handler}}}
@@ -283,7 +291,7 @@ class RouterManager:
             """
             return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
-    # 路由中间件 
+    # 路由中间件
 
     def _ensure_middleware_installed(self):
         """
@@ -302,7 +310,11 @@ class RouterManager:
 
             for mw in self._global_middlewares:
                 if mw._before:
-                    result = await mw._before(request) if inspect.iscoroutinefunction(mw._before) else mw._before(request)
+                    result = (
+                        await mw._before(request)
+                        if inspect.iscoroutinefunction(mw._before)
+                        else mw._before(request)
+                    )
                     if isinstance(result, Response):
                         return result
 
@@ -310,7 +322,11 @@ class RouterManager:
                 if self._match_path(pattern, path):
                     for mw in mws:
                         if mw._before:
-                            result = await mw._before(request) if inspect.iscoroutinefunction(mw._before) else mw._before(request)
+                            result = (
+                                await mw._before(request)
+                                if inspect.iscoroutinefunction(mw._before)
+                                else mw._before(request)
+                            )
                             if isinstance(result, Response):
                                 return result
 
@@ -320,13 +336,21 @@ class RouterManager:
                 if self._match_path(pattern, path):
                     for mw in reversed(mws):
                         if mw._after:
-                            resp = await mw._after(request, response) if inspect.iscoroutinefunction(mw._after) else mw._after(request, response)
+                            resp = (
+                                await mw._after(request, response)
+                                if inspect.iscoroutinefunction(mw._after)
+                                else mw._after(request, response)
+                            )
                             if resp is not None:
                                 response = resp
 
             for mw in reversed(self._global_middlewares):
                 if mw._after:
-                    resp = await mw._after(request, response) if inspect.iscoroutinefunction(mw._after) else mw._after(request, response)
+                    resp = (
+                        await mw._after(request, response)
+                        if inspect.iscoroutinefunction(mw._after)
+                        else mw._after(request, response)
+                    )
                     if resp is not None:
                         response = resp
 
@@ -369,10 +393,12 @@ class RouterManager:
             else:
                 self._global_middlewares.append(mw)
             return func
+
         return decorator
 
-    def add_middleware(self, before: Callable = None, after: Callable = None,
-                      *paths: str):
+    def add_middleware(
+        self, before: Callable = None, after: Callable = None, *paths: str
+    ):
         """
         添加中间件函数
 
@@ -412,14 +438,16 @@ class RouterManager:
 
     # 装饰器路由
 
-    def _http_decorate(self, full_path: str, module_name: str,
-                       methods: list[str] = None, **kwargs):
+    def _http_decorate(
+        self, full_path: str, module_name: str, methods: list[str] = None, **kwargs
+    ):
         """
         HTTP 路由装饰器内部实现
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
+
         def decorator(func):
             resolved_methods = methods or ["POST"]
             route_kwargs = {}
@@ -428,7 +456,9 @@ class RouterManager:
                     route_kwargs[k] = kwargs[k]
 
             route = APIRoute(
-                path=full_path, endpoint=func, methods=resolved_methods,
+                path=full_path,
+                endpoint=func,
+                methods=resolved_methods,
                 name=f"{module_name}_{full_path.replace('/', '_')}",
                 **route_kwargs,
             )
@@ -441,8 +471,11 @@ class RouterManager:
             if rate_limit:
                 self._apply_rate_limit(full_path, rate_limit)
 
-            logger.info(f"[{module_name}] 注册HTTP路由: {full_path} 方法: {resolved_methods}")
+            logger.info(
+                f"[{module_name}] 注册HTTP路由: {full_path} 方法: {resolved_methods}"
+            )
             return func
+
         return decorator
 
     def _ws_decorate(self, full_path: str, module_name: str, **kwargs):
@@ -452,15 +485,18 @@ class RouterManager:
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
+
         def decorator(func):
             auth_handler = kwargs.get("auth_handler")
             auto_accept = kwargs.get("auto_accept", True)
-            self._register_ws_endpoint(full_path, module_name, func, auth_handler, auto_accept)
+            self._register_ws_endpoint(
+                full_path, module_name, func, auth_handler, auto_accept
+            )
             return func
+
         return decorator
 
-    def http(self, module_name: str, path: str,
-             methods: list[str] = None, **kwargs):
+    def http(self, module_name: str, path: str, methods: list[str] = None, **kwargs):
         """
         HTTP 路由装饰器
 
@@ -591,9 +627,13 @@ class RouterManager:
             raise ValueError(f"路径 {full_path} 的方法 {conflicting_methods} 已注册")
 
         route_kwargs = {}
-        for k, v in [("summary", summary), ("description", description),
-                      ("tags", tags), ("response_model", response_model),
-                      ("deprecated", deprecated)]:
+        for k, v in [
+            ("summary", summary),
+            ("description", description),
+            ("tags", tags),
+            ("response_model", response_model),
+            ("deprecated", deprecated),
+        ]:
             if v is not None:
                 route_kwargs[k] = v
 
@@ -656,10 +696,14 @@ class RouterManager:
             logger.error(f"取消注册HTTP路由失败: {e}")
             return False
 
-    def _register_ws_endpoint(self, full_path: str, module_name: str,
-                               handler: Callable[[WebSocket], Awaitable[Any]],
-                               auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
-                               auto_accept: bool = True) -> None:
+    def _register_ws_endpoint(
+        self,
+        full_path: str,
+        module_name: str,
+        handler: Callable[[WebSocket], Awaitable[Any]],
+        auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None,
+        auto_accept: bool = True,
+    ) -> None:
         """
         WebSocket 路由注册内部实现
 
@@ -730,7 +774,9 @@ class RouterManager:
         :raises ValueError: 当路径已注册时抛出
         """
         full_path = self._normalize_path(module_name, path)
-        self._register_ws_endpoint(full_path, module_name, handler, auth_handler, auto_accept)
+        self._register_ws_endpoint(
+            full_path, module_name, handler, auth_handler, auto_accept
+        )
 
     def unregister_websocket(self, module_name: str, path: str) -> bool:
         """
@@ -773,7 +819,7 @@ class RouterManager:
         :return: dict 清理统计 {"http_count": int, "websocket_count": int}
         """
         result = {"http_count": 0, "websocket_count": 0}
-        
+
         # 清理 HTTP 路由
         if namespace in self._http_routes:
             paths = list(self._http_routes[namespace].keys())
@@ -781,19 +827,21 @@ class RouterManager:
                 self._http_routes[namespace].pop(path, None)
                 result["http_count"] += 1
             self.app.router.routes = [
-                route for route in self.app.router.routes
+                route
+                for route in self.app.router.routes
                 if not (isinstance(route, APIRoute) and route.path in paths)
             ]
             if namespace in self._http_routes:
                 del self._http_routes[namespace]
-        
+
         if namespace in self._websocket_routes:
             paths = list(self._websocket_routes[namespace].keys())
             for path in paths:
                 self._websocket_routes[namespace].pop(path, None)
                 result["websocket_count"] += 1
             self.app.router.routes = [
-                route for route in self.app.router.routes
+                route
+                for route in self.app.router.routes
                 if not (hasattr(route, "path") and route.path in paths)
             ]
             if namespace in self._websocket_routes:
@@ -878,11 +926,14 @@ class RouterManager:
             if key not in self._rate_limit_store:
                 self._rate_limit_store[key] = []
 
-            self._rate_limit_store[key] = [t for t in self._rate_limit_store[key] if now - t < window]
+            self._rate_limit_store[key] = [
+                t for t in self._rate_limit_store[key] if now - t < window
+            ]
 
             if len(self._rate_limit_store[key]) >= max_requests:
                 retry_after = window - (now - self._rate_limit_store[key][0])
                 from fastapi.responses import JSONResponse
+
                 return JSONResponse(
                     {"error": "Rate limit exceeded", "retry_after": int(retry_after)},
                     status_code=429,
@@ -914,20 +965,29 @@ class RouterManager:
         unit = parts[1].lower() if len(parts) > 1 else "m"
 
         multipliers = {
-            "s": 1, "second": 1, "seconds": 1,
-            "m": 60, "minute": 60, "minutes": 60,
-            "h": 3600, "hour": 3600, "hours": 3600,
+            "s": 1,
+            "second": 1,
+            "seconds": 1,
+            "m": 60,
+            "minute": 60,
+            "minutes": 60,
+            "h": 3600,
+            "hour": 3600,
+            "hours": 3600,
         }
         return count, multipliers.get(unit, 60)
 
     # CORS / 安全头
 
-    def setup_cors(self, allow_origins: list[str] = None,
-                   allow_methods: list[str] = None,
-                   allow_headers: list[str] = None,
-                   allow_credentials: bool = False,
-                   max_age: int = 600,
-                   expose_headers: list[str] = None):
+    def setup_cors(
+        self,
+        allow_origins: list[str] = None,
+        allow_methods: list[str] = None,
+        allow_headers: list[str] = None,
+        allow_credentials: bool = False,
+        max_age: int = 600,
+        expose_headers: list[str] = None,
+    ):
         """
         配置 CORS
 
@@ -945,6 +1005,7 @@ class RouterManager:
         ... )
         """
         from fastapi.middleware.cors import CORSMiddleware
+
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=allow_origins or ["*"],
@@ -1015,6 +1076,7 @@ class RouterManager:
         """
         try:
             from .config import config
+
             cors = config.getConfig("ErisPulse.router.cors")
             if cors and cors.get("enabled"):
                 self.setup_cors(
@@ -1111,7 +1173,9 @@ class RouterManager:
 
             self.base_url = f"http{'s' if ssl_certfile else ''}://{host}:{port}"
             display_url = self._format_display_url(self.base_url)
-            registered_routes = [r.path for r in self.app.router.routes if hasattr(r, 'path')]
+            registered_routes = [
+                r.path for r in self.app.router.routes if hasattr(r, "path")
+            ]
             logger.info(f"启动路由服务器 {display_url}")
             logger.debug(f"已注册 {len(registered_routes)} 条路由: {registered_routes}")
 
@@ -1144,7 +1208,7 @@ class RouterManager:
         """
         停止服务器并清理所有路由
         """
-        if hasattr(self, '_uvicorn_server') and self._uvicorn_server:
+        if hasattr(self, "_uvicorn_server") and self._uvicorn_server:
             self._uvicorn_server.should_exit = True
 
         if self._server_task:

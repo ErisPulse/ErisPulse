@@ -78,10 +78,17 @@ def paginated_table(
     page_start = 0
 
     while True:
-        t = Table(box=table.box, show_lines=table.show_lines, header_style=table.header_style, pad_edge=table.pad_edge)
+        t = Table(
+            box=table.box,
+            show_lines=table.show_lines,
+            header_style=table.header_style,
+            pad_edge=table.pad_edge,
+        )
         for col in table.columns:
-            t.add_column(col.header, style=col.style, width=col.width, min_width=col.min_width)
-        batch = items[page_start:page_start + ps]
+            t.add_column(
+                col.header, style=col.style, width=col.width, min_width=col.min_width
+            )
+        batch = items[page_start : page_start + ps]
         for idx_offset, item in enumerate(batch):
             row_builder(t, page_start + idx_offset, item)
         console.print(t)
@@ -129,7 +136,7 @@ def interactive_select_table(
         table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
         for col in columns:
             table.add_column(**col)
-        batch = items[start:start + ps]
+        batch = items[start : start + ps]
         for i, item in enumerate(batch):
             gi = start + i
             row_builder(table, gi, item, gi in selected_indices)
@@ -168,7 +175,9 @@ def interactive_select_table(
         choice = _input(_sel_label())
 
         if choice.lower() == "q":
-            return [items[i] for i in sorted(selected_indices)] if selected_indices else []
+            return (
+                [items[i] for i in sorted(selected_indices)] if selected_indices else []
+            )
 
         if choice.strip() == "":
             if selected_indices:
