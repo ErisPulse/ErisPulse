@@ -56,6 +56,12 @@ async def main():
     print("Initializing ErisPulse...")
     # Run SDK and keep it running
     await sdk.run(keep_running=True)
+    # Or
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # You can do whatever you want
+    # Using await sdk.init() is equivalent to `sdk.run(keep_running=False)`
+
     print("ErisPulse initialization complete!")
 
 if __name__ == "__main__":
@@ -215,6 +221,7 @@ async def hello_handler(event):
 
 ## Next Steps
 
+- [Advanced Initialization Control](advanced-init.md) - Hook system, manual control, embedded integration
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions

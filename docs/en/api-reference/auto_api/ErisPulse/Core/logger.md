@@ -227,16 +227,15 @@ ErisPulse 日志系统
 :param name: 子logger名称
 :return: LoggerChild 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
-    
 
 **示例**:
 ```python
 >>> # 自动创建子logger并记录日志
 >>> logger.mymodule.info("message")
->>> 
+>>>
 >>> # 支持嵌套访问
 >>> logger.mymodule.database.info("db message")
->>> 
+>>>
 >>> # 相当于 logger.get_child("mymodule").info("message")
 ```
 
@@ -328,7 +327,6 @@ ErisPulse 日志系统
 :param name: 子logger名称
 :return: LoggerChild 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
-    
 
 **示例**:
 ```python
