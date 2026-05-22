@@ -115,27 +115,28 @@ flowchart TD
     D --> D1["Load Adapters from PyPI"]
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
-    E --> F["Register Modules"]
+    E --> E1["Start Adapters"]
+    E1 --> F["Register Modules"]
     F --> F1{"Dependency Validation"}
     F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
     F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
     F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["Start Router Server"]
-    I --> J["Asynchronously Start Platform Adapters"]
-    J --> K["Running"]
+    G --> H["Start Router Server"]
+    H --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
 1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
 2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
-5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
-6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+3. **Adapter Registration** - Register discovered adapters to the adapter manager
+4. **Adapter Startup** - Asynchronously start platform adapter connections (before module initialization, ensuring modules can immediately send messages)
+5. **Module Registration** - Register discovered modules to the module manager
+6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+9. **Start Router Server** - Start the router server (FastAPI)
 
 ## Event Handling Process
 
@@ -736,6 +737,12 @@ async def main():
     print("Initializing ErisPulse...")
     # Run SDK and keep it running
     await sdk.run(keep_running=True)
+    # Or
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # You can do whatever you want
+    # Using await sdk.init() is equivalent to `sdk.run(keep_running=False)`
+
     print("ErisPulse initialization complete!")
 
 if __name__ == "__main__":
@@ -895,6 +902,7 @@ async def hello_handler(event):
 
 ## Next Steps
 
+- [Advanced Initialization Control](advanced-init.md) - Hook system, manual control, embedded integration
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions

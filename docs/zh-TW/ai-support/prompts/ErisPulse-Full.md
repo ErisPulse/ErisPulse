@@ -121,21 +121,21 @@ flowchart TD
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
     F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["啟動路由伺服器"]
-    I --> J["非同步啟動各平台適配器"]
-    J --> K["運行就緒"]
+    G --> H["啟動路由伺服器"]
+    H --> K["運行就緒"]
 ```
 
 ### 初始化階段詳解
 
 1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
 2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
-3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
-4. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-5. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
-6. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
-7. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+3. **註冊適配器** - 將發現的適配器註冊到適配器管理器
+4. **啟動適配器** - 非同步啟動各平台適配器連接（在模組初始化之前，確保模組能立即發送訊息）
+5. **註冊模組** - 將發現的模組註冊到模組管理器
+6. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
+9. **啟動路由伺服器** - 啟動路由伺服器（FastAPI）
 
 ## 事件處理流程
 
@@ -690,7 +690,7 @@ asyncio.run(sdk.run(keep_running=True))
 # 互動式初始化
 epsdk init
 
-# 或是快速初始化
+# 或者快速初始化
 epsdk init -q -n my_first_bot
 ```
 
@@ -734,38 +734,19 @@ async def ping_handler(event):
 async def main():
     """主入口函數"""
     print("正在初始化 ErisPulse...")
-    # 執行 SDK 並且維持運行
+    # 運行 SDK 並且維持運行
     await sdk.run(keep_running=True)
+    
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等價於 `dk.run(keep_running=False)`
+
     print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> 除了直接使用 `sdk.run()` 之外，你還可以更精細地控制執行流程，如：
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失敗，請檢查日誌")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程式運行，如果有其他需要執行的操作，你也可以不維持事件，但需要自行處理
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -895,6 +876,7 @@ async def hello_handler(event):
 
 ## 下一步
 
+- [高級初始化控制](advanced-init.md) - 鉤子系統、手動控制、嵌入式集成
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能
