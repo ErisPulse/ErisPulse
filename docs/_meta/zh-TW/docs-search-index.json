@@ -2531,7 +2531,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 216,
+        "line": 197,
         "level": 2,
         "title": "下一步"
       },
@@ -2635,7 +2635,7 @@
     "事件參數": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 123,
+        "line": 104,
         "level": 3,
         "title": "事件參數"
       }
@@ -3077,7 +3077,7 @@
     "使用儲存系統": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 170,
+        "line": 151,
         "level": 3,
         "title": "使用儲存系統"
       }
@@ -3245,7 +3245,7 @@
     "傳送回覆": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 116,
         "level": 3,
         "title": "傳送回覆"
       }
@@ -3511,7 +3511,7 @@
     "初始化階段詳解": [
       {
         "document": "architecture.md",
-        "line": 82,
+        "line": 80,
         "level": 3,
         "title": "初始化階段詳解"
       }
@@ -4247,7 +4247,7 @@
     "如何修改指令前綴？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 191,
+        "line": 172,
         "level": 3,
         "title": "如何修改指令前綴？"
       }
@@ -4255,7 +4255,7 @@
     "如何支援多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 201,
+        "line": 182,
         "level": 3,
         "title": "如何支援多平台？"
       }
@@ -4711,7 +4711,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 183,
+        "line": 164,
         "level": 2,
         "title": "常見問題"
       },
@@ -5097,7 +5097,7 @@
     "指令沒有回應？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 185,
+        "line": 166,
         "level": 3,
         "title": "指令沒有回應？"
       }
@@ -5105,7 +5105,7 @@
     "指令裝飾器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 114,
+        "line": 95,
         "level": 3,
         "title": "指令裝飾器"
       }
@@ -5221,7 +5221,7 @@
     "擴充：新增更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 143,
+        "line": 124,
         "level": 2,
         "title": "擴充：新增更多功能"
       }
@@ -5485,7 +5485,7 @@
     "新增訊息監聽": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 145,
+        "line": 126,
         "level": 3,
         "title": "新增訊息監聽"
       }
@@ -5493,7 +5493,7 @@
     "新增通知監聽": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 158,
+        "line": 139,
         "level": 3,
         "title": "新增通知監聽"
       }
@@ -6937,7 +6937,7 @@
     "程式碼說明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 112,
+        "line": 93,
         "level": 2,
         "title": "程式碼說明"
       }
@@ -6977,7 +6977,7 @@
     "第五步：測試機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 102,
+        "line": 83,
         "level": 2,
         "title": "第五步：測試機器人"
       }
@@ -6985,7 +6985,7 @@
     "第四步：執行機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 92,
+        "line": 73,
         "level": 2,
         "title": "第四步：執行機器人"
       }
