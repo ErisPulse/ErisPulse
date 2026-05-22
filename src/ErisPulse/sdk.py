@@ -690,10 +690,11 @@ class SDK:
         except Exception as e:
             logger.error(e)
         finally:
-            try:
-                await self.uninit()
-            except Exception:
-                pass
+            if keep_running:
+                try:
+                    await self.uninit()
+                except Exception:
+                    pass
 
     async def _do_restart(self) -> bool:
         """
