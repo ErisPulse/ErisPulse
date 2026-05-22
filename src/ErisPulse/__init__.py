@@ -41,7 +41,7 @@ __version__ = "UnknownVersion"
 __author__ = "ErisPulse"
 
 try:
-    __version__ = importlib.metadata.version('ErisPulse')
+    __version__ = importlib.metadata.version("ErisPulse")
 except importlib.metadata.PackageNotFoundError:
     pass
 

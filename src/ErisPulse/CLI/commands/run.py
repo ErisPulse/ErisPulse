@@ -19,6 +19,7 @@ from ..base import Command
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+
     _WATCHDOG_AVAILABLE = True
 except ImportError:
     _WATCHDOG_AVAILABLE = False
@@ -29,7 +30,7 @@ except ImportError:
 class ReloadHandler(FileSystemEventHandler):
     """
     文件系统事件处理器
-    
+
     监控 .py 文件变更并触发 sdk.restart() 热重载
 
     {!--< tips >!--}
@@ -56,46 +57,48 @@ class ReloadHandler(FileSystemEventHandler):
         async def _do_reload():
             try:
                 from ... import sdk
+
                 await sdk.restart()
             except Exception as e:
                 console.print(f"[error]热重载失败: {e}[/]")
 
-        console.print(f"检测到文件变更 ({os.path.basename(event.src_path)})，正在热重载...")
+        console.print(
+            f"检测到文件变更 ({os.path.basename(event.src_path)})，正在热重载..."
+        )
         asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
 
 
 class RunCommand(Command):
     """
     Run 命令
-    
+
     运行主程序，支持热重载模式
     """
 
     name = "run"
     description = "运行主程序"
-    
+
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
-            'script',
-            nargs='?',
+            "script",
+            nargs="?",
             default=None,
-            help='要运行的主程序路径 (不指定则直接运行 SDK)'
+            help="要运行的主程序路径 (不指定则直接运行 SDK)",
         )
         parser.add_argument(
-            '--reload',
-            action='store_true',
-            default=False,
-            help='启用热重载模式'
+            "--reload", action="store_true", default=False, help="启用热重载模式"
         )
-    
+
     def execute(self, args):
         script = args.script
         reload_mode = args.reload
-        
+
         if reload_mode and not _WATCHDOG_AVAILABLE:
-            console.print("[error]热重载需要 watchdog 库，请运行: pip install watchdog[/]")
+            console.print(
+                "[error]热重载需要 watchdog 库，请运行: pip install watchdog[/]"
+            )
             reload_mode = False
-        
+
         if script:
             if not os.path.exists(script):
                 console.print(f"[error]脚本 [path]{script}[/] 不存在[/]")
@@ -103,7 +106,11 @@ class RunCommand(Command):
                 return
             if os.path.isdir(script):
                 console.print(f"[error][path]{script}[/] 是一个目录，无法直接运行[/]")
-                console.print("[info]请指定具体的脚本文件，例如: [cyan]epsdk run {0}/main.py[/]".format(script))
+                console.print(
+                    "[info]请指定具体的脚本文件，例如: [cyan]epsdk run {0}/main.py[/]".format(
+                        script
+                    )
+                )
                 return
             self._run_script(script, reload_mode)
         else:
@@ -113,6 +120,7 @@ class RunCommand(Command):
         """
         直接运行 SDK（不指定脚本时）
         """
+
         async def _run():
             from ... import sdk
 
@@ -127,7 +135,7 @@ class RunCommand(Command):
         except KeyboardInterrupt:
             pass
         finally:
-            if reload_mode and hasattr(self, '_observer'):
+            if reload_mode and hasattr(self, "_observer"):
                 self._observer.stop()
                 self._observer.join()
 
@@ -161,20 +169,26 @@ class RunCommand(Command):
                     return
                 if event.src_path.endswith(".py"):
                     reload_state["last_reload"] = now
-                    console.print(f"检测到文件变更 ({os.path.basename(event.src_path)})，正在重启...")
+                    console.print(
+                        f"检测到文件变更 ({os.path.basename(event.src_path)})，正在重启..."
+                    )
                     reload_state["process"].terminate()
                     reload_state["process"].wait()
-                    reload_state["process"] = subprocess.Popen([sys.executable, script_path_abs])
+                    reload_state["process"] = subprocess.Popen(
+                        [sys.executable, script_path_abs]
+                    )
 
         observer = Observer()
         observer.schedule(_ScriptReloadHandler(), watch_dir, recursive=True)
         observer.start()
 
-        console.print(Panel(
-            f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
-            title="热重载已启动",
-            border_style="info"
-        ))
+        console.print(
+            Panel(
+                f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
+                title="热重载已启动",
+                border_style="info",
+            )
+        )
 
         try:
             while True:
@@ -198,8 +212,10 @@ class RunCommand(Command):
         self._observer.schedule(self._handler, watch_dir, recursive=True)
         self._observer.start()
 
-        console.print(Panel(
-            f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
-            title="热重载已启动",
-            border_style="info"
-        ))
+        console.print(
+            Panel(
+                f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
+                title="热重载已启动",
+                border_style="info",
+            )
+        )

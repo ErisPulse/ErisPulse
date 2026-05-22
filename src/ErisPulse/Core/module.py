@@ -424,11 +424,16 @@ class ModuleManager(ManagerBase):
                 try:
                     if inspect.iscoroutinefunction(instance.on_unload):
                         import asyncio
+
                         try:
                             loop = asyncio.get_running_loop()
-                            loop.create_task(instance.on_unload({"module_name": module_name}))
+                            loop.create_task(
+                                instance.on_unload({"module_name": module_name})
+                            )
                         except RuntimeError:
-                            asyncio.run(instance.on_unload({"module_name": module_name}))
+                            asyncio.run(
+                                instance.on_unload({"module_name": module_name})
+                            )
                     else:
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:
