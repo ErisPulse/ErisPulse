@@ -604,7 +604,9 @@ class Event(dict):
                 f"user_id={self.get_user_id()}, group_id={self.get_group_id()}"
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+            "user_id", ""
+        )
 
         return adapter_instance, send_type, target_id, bot_id
 
@@ -650,7 +652,9 @@ class Event(dict):
         >>> # 组合使用：@用户 + 回复消息
         >>> await event.reply("内容", at_users=["user1"], reply_to="msg_id")
         """
-        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
+        adapter_instance, detail_type, target_id, bot_id = (
+            self._get_adapter_and_target()
+        )
 
         # 构建发送链
         send_chain = adapter_instance.Send.To(detail_type, target_id)
@@ -728,7 +732,9 @@ class Event(dict):
         >>>         .build()
         >>> )
         """
-        adapter_instance, detail_type, target_id, bot_id = self._get_adapter_and_target()
+        adapter_instance, detail_type, target_id, bot_id = (
+            self._get_adapter_and_target()
+        )
         send_chain = adapter_instance.Send.To(detail_type, target_id)
         if bot_id:
             send_chain = send_chain.Using(bot_id)
@@ -971,9 +977,7 @@ class Event(dict):
             try:
                 if condition is None or condition(evt):
                     raw = (
-                        event_data
-                        if isinstance(event_data, dict)
-                        else dict(event_data)
+                        event_data if isinstance(event_data, dict) else dict(event_data)
                     )
                     try:
                         future.set_result(raw)
@@ -1331,9 +1335,11 @@ class Conversation:
         ...
         >>> conv.start("menu")
         """
+
         def decorator(func: Callable):
             self._branches[name] = func
             return func
+
         return decorator
 
     def goto(self, branch_name: str, event: "Event" = None):
@@ -1368,6 +1374,7 @@ class Conversation:
                 pass
             except Exception as e:
                 from ..logger import logger as _logger
+
                 _logger.warning(f"分支 '{branch_name}' 执行异常: {e}")
                 self._alive = False
 
@@ -1425,15 +1432,19 @@ class Conversation:
         """
         try:
             from ..storage import storage
+
             user_id = self._event.get_user_id()
             platform = self._event.get_platform()
             key = f"conversation:{platform}:{user_id}"
-            storage.set(key, {
-                "branch": self._current_branch,
-                "context": self.context,
-                "alive": self._alive,
-                "timeout": self._timeout,
-            })
+            storage.set(
+                key,
+                {
+                    "branch": self._current_branch,
+                    "context": self.context,
+                    "alive": self._alive,
+                    "timeout": self._timeout,
+                },
+            )
         except Exception:
             pass
 
@@ -1456,6 +1467,7 @@ class Conversation:
         """
         try:
             from ..storage import storage
+
             evt = event or self._event
             user_id = evt.get_user_id()
             platform = evt.get_platform()
@@ -1481,6 +1493,7 @@ class Conversation:
         """
         try:
             from ..storage import storage
+
             user_id = self._event.get_user_id()
             platform = self._event.get_platform()
             key = f"conversation:{platform}:{user_id}"

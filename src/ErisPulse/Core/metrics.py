@@ -215,8 +215,7 @@ class Histogram:
     >>> h.get_summary()
     """
 
-    def __init__(self, name: str, description: str = "",
-                 buckets: list[float] = None):
+    def __init__(self, name: str, description: str = "", buckets: list[float] = None):
         """
         初始化直方图
 
@@ -226,7 +225,19 @@ class Histogram:
         """
         self._name = name
         self._description = description
-        self._buckets = buckets or [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+        self._buckets = buckets or [
+            0.005,
+            0.01,
+            0.025,
+            0.05,
+            0.1,
+            0.25,
+            0.5,
+            1.0,
+            2.5,
+            5.0,
+            10.0,
+        ]
         self._observations: dict[tuple, list[float]] = {}
         self._lock = threading.Lock()
 
@@ -373,8 +384,9 @@ class MetricsManager:
                 self._gauges[name] = Gauge(name, description)
             return self._gauges[name]
 
-    def histogram(self, name: str, description: str = "",
-                  buckets: list[float] = None) -> Histogram:
+    def histogram(
+        self, name: str, description: str = "", buckets: list[float] = None
+    ) -> Histogram:
         """
         获取或创建直方图
 
@@ -416,7 +428,9 @@ class MetricsManager:
                     return await func(*args, **kwargs)
                 finally:
                     hist.observe(time.monotonic() - start, tags=tags)
+
             return wrapper
+
         return decorator
 
     def register_builtin_metrics(self):
