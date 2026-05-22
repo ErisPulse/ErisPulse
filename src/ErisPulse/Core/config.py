@@ -36,6 +36,7 @@ class AuditEntry:
     由 ConfigManager 内部创建，通过 get_audit_log() 查询
     {!--< /tips >!--}
     """
+
     timestamp: float
     action: str
     key: str
@@ -56,21 +57,21 @@ class ConfigManager:
         if not os.path.isabs(config_file):
             config_file = os.path.abspath(config_file)
         self.CONFIG_FILE: str = config_file
-        self._cache: dict[str, Any] = {}        # 内存缓存
-        self._dirty_keys: dict[str, Any] = {}   # 待写入的配置项
-        self._cache_timestamp = 0       # 缓存时间戳
-        self._cache_timeout = 60        # 缓存超时时间（秒）
-        self._write_delay = 5           # 写入延迟时间（秒）
-        self._write_timer: threading.Timer | None = None    # 写入定时器
-        self._lock = threading.RLock()                      # 线程安全锁
-        self._file_lock = threading.RLock()                 # 文件操作锁
-        self._audit_enabled: bool = False                   # 审计开关
-        self._audit_log: list[AuditEntry] = []              # 审计记录
-        self._audit_max_entries: int = 1000                 # 最大审计记录数
-        self._change_callbacks: list[Callable] = []         # 回调函数列表
-        self._caller_cache: dict[str, tuple[str, str]] = {} # 缓存调用方信息
-        self._migrate_config()          # 迁移旧配置文件
-        self._load_config()             # 初始化时加载配置
+        self._cache: dict[str, Any] = {}  # 内存缓存
+        self._dirty_keys: dict[str, Any] = {}  # 待写入的配置项
+        self._cache_timestamp = 0  # 缓存时间戳
+        self._cache_timeout = 60  # 缓存超时时间（秒）
+        self._write_delay = 5  # 写入延迟时间（秒）
+        self._write_timer: threading.Timer | None = None  # 写入定时器
+        self._lock = threading.RLock()  # 线程安全锁
+        self._file_lock = threading.RLock()  # 文件操作锁
+        self._audit_enabled: bool = False  # 审计开关
+        self._audit_log: list[AuditEntry] = []  # 审计记录
+        self._audit_max_entries: int = 1000  # 最大审计记录数
+        self._change_callbacks: list[Callable] = []  # 回调函数列表
+        self._caller_cache: dict[str, tuple[str, str]] = {}  # 缓存调用方信息
+        self._migrate_config()  # 迁移旧配置文件
+        self._load_config()  # 初始化时加载配置
 
     def _migrate_config(self) -> None:
         """
@@ -221,7 +222,7 @@ class ConfigManager:
                         toml.dump(sorted_config, f)
 
                     # 原子性重命名
-                    if os.name == 'nt':
+                    if os.name == "nt":
                         if os.path.exists(self.CONFIG_FILE):
                             os.replace(temp_file, self.CONFIG_FILE)
                         else:
@@ -350,12 +351,19 @@ class ConfigManager:
                     module_cls = cls_info.get("module_class") or cls_info.get("class")
                     if module_cls and hasattr(module_cls, "__module__"):
                         caller_pkg = module_cls.__module__.split(".")[0]
-                        if module.startswith(caller_pkg) or module == module_cls.__module__:
+                        if (
+                            module.startswith(caller_pkg)
+                            or module == module_cls.__module__
+                        ):
                             return (name, "module")
 
             for name in adapter_mgr._adapters:
                 cls_info = adapter_mgr._adapters.get(name)
-                if cls_info and isinstance(cls_info, type) and hasattr(cls_info, "__module__"):
+                if (
+                    cls_info
+                    and isinstance(cls_info, type)
+                    and hasattr(cls_info, "__module__")
+                ):
                     caller_pkg = cls_info.__module__.split(".")[0]
                     if module.startswith(caller_pkg) or module == cls_info.__module__:
                         return (name, "adapter")
@@ -390,8 +398,9 @@ class ConfigManager:
         """
         self._audit_enabled = False
 
-    def get_audit_log(self, key: str = None, caller: str = None,
-                      action: str = None, limit: int = 100) -> list[AuditEntry]:
+    def get_audit_log(
+        self, key: str = None, caller: str = None, action: str = None, limit: int = 100
+    ) -> list[AuditEntry]:
         """
         查询审计日志
 
@@ -463,7 +472,7 @@ class ConfigManager:
         """
         self._audit_log.append(entry)
         if len(self._audit_log) > self._audit_max_entries:
-            self._audit_log = self._audit_log[-self._audit_max_entries:]
+            self._audit_log = self._audit_log[-self._audit_max_entries :]
 
     # 配置读写
 
@@ -497,14 +506,16 @@ class ConfigManager:
                     value = value[k]
 
         if self._audit_enabled:
-            self._add_audit_entry(AuditEntry(
-                timestamp=time.time(),
-                action="get",
-                key=key,
-                caller=caller,
-                caller_type=caller_type,
-                new_value=value if value is not default else None,
-            ))
+            self._add_audit_entry(
+                AuditEntry(
+                    timestamp=time.time(),
+                    action="get",
+                    key=key,
+                    caller=caller,
+                    caller_type=caller_type,
+                    new_value=value if value is not default else None,
+                )
+            )
 
         return value
 

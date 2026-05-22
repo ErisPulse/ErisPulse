@@ -145,7 +145,7 @@ class Logger:
         if not self._logs or all(len(logs) == 0 for logs in self._logs.values()):
             self._logger.warning("没有log记录可供保存。")
             return False
-        
+
         if isinstance(path, str):
             path = [path]
 
@@ -216,7 +216,9 @@ class Logger:
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
             self._save_in_memory(caller_module, msg)
-            getattr(self._logger, level_name)(f"[{caller_module}] {msg}", *args, **kwargs)
+            getattr(self._logger, level_name)(
+                f"[{caller_module}] {msg}", *args, **kwargs
+            )
 
     def _get_caller(self):
         try:
@@ -276,7 +278,7 @@ class Logger:
         if child_name and not relative:
             # 使用完整的指定名称，不添加前缀
             return LoggerChild(self, child_name)
-        
+
         caller_module = self._get_caller()
         if child_name:
             full_module_name = f"{caller_module}.{child_name}"
@@ -286,19 +288,19 @@ class Logger:
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""
-        self._log('debug', logging.DEBUG, msg, *args, **kwargs)
+        self._log("debug", logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         """记录 INFO 级别日志"""
-        self._log('info', logging.INFO, msg, *args, **kwargs)
+        self._log("info", logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         """记录 WARNING 级别日志"""
-        self._log('warning', logging.WARNING, msg, *args, **kwargs)
+        self._log("warning", logging.WARNING, msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         """记录 ERROR 级别日志"""
-        self._log('error', logging.ERROR, msg, *args, **kwargs)
+        self._log("error", logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
@@ -311,7 +313,7 @@ class Logger:
         2. 会在日志文件中添加 CRITICAL 标记便于后续分析
         {!--< /tips >!--}
         """
-        self._log('critical', logging.CRITICAL, msg, *args, **kwargs)
+        self._log("critical", logging.CRITICAL, msg, *args, **kwargs)
 
     # ==================== 视觉输出方法 ====================
 
@@ -369,21 +371,21 @@ class Logger:
         """
         self._console.print()
 
-    def __getattr__(self, name: str) -> 'LoggerChild':
+    def __getattr__(self, name: str) -> "LoggerChild":
         """
         通过属性访问自动创建子logger
-        
+
         :param name: 子logger名称
         :return: LoggerChild 子logger实例
         :raises AttributeError: 当访问无效属性时抛出
-            
+
         :example:
         >>> # 自动创建子logger并记录日志
         >>> logger.mymodule.info("message")
-        >>> 
+        >>>
         >>> # 支持嵌套访问
         >>> logger.mymodule.database.info("db message")
-        >>> 
+        >>>
         >>> # 相当于 logger.get_child("mymodule").info("message")
         """
 
@@ -425,23 +427,25 @@ class LoggerChild:
 
         if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
             self._parent._save_in_memory(display_name, msg)
-            getattr(self._parent._logger, level_name)(f"[{display_name}] {msg}", *args, **kwargs)
+            getattr(self._parent._logger, level_name)(
+                f"[{display_name}] {msg}", *args, **kwargs
+            )
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""
-        self._log('debug', logging.DEBUG, msg, *args, **kwargs)
+        self._log("debug", logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         """记录 INFO 级别日志"""
-        self._log('info', logging.INFO, msg, *args, **kwargs)
+        self._log("info", logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         """记录 WARNING 级别日志"""
-        self._log('warning', logging.WARNING, msg, *args, **kwargs)
+        self._log("warning", logging.WARNING, msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         """记录 ERROR 级别日志"""
-        self._log('error', logging.ERROR, msg, *args, **kwargs)
+        self._log("error", logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
@@ -449,7 +453,7 @@ class LoggerChild:
         这是最高级别的日志，表示严重的系统错误
         注意：此方法不会触发程序崩溃，仅记录日志
         """
-        self._log('critical', logging.CRITICAL, msg, *args, **kwargs)
+        self._log("critical", logging.CRITICAL, msg, *args, **kwargs)
 
     def get_child(self, child_name: str):
         """
@@ -461,25 +465,25 @@ class LoggerChild:
         full_child_name = f"{self._name}.{child_name}"
         return LoggerChild(self._parent, full_child_name)
 
-    def __getattr__(self, name: str) -> 'LoggerChild':
+    def __getattr__(self, name: str) -> "LoggerChild":
         """
         通过属性访问自动创建子logger
-        
+
         :param name: 子logger名称
         :return: LoggerChild 子logger实例
         :raises AttributeError: 当访问无效属性时抛出
-            
+
         :example:
         >>> # 嵌套创建子logger
         >>> child = logger.mymodule
         >>> nested_child = child.database  # 相当于 logger.mymodule.database
         >>> nested_child.info("db message")
         """
-        
+
         # 返回嵌套的子logger
         return self.get_child(name)
 
 
-logger : Logger = Logger()
+logger: Logger = Logger()
 
 __all__ = ["logger"]
