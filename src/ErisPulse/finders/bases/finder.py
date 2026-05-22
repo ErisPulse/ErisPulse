@@ -155,13 +155,21 @@ class BaseFinder(ABC):
         try:
             dist = importlib.metadata.distribution(package_name)
             if top_level := dist.read_text("top_level.txt"):
-                return [name.strip() for name in top_level.strip().splitlines() if name.strip()]
+                return [
+                    name.strip()
+                    for name in top_level.strip().splitlines()
+                    if name.strip()
+                ]
         except Exception as e:
             logger.debug(f"读取 {package_name} 的 top_level.txt 失败: {e}")
 
         top_level_set = set()
         for entry in self.find_all():
-            if not (hasattr(entry, 'dist') and entry.dist and entry.dist.name == package_name):
+            if not (
+                hasattr(entry, "dist")
+                and entry.dist
+                and entry.dist.name == package_name
+            ):
                 continue
             try:
                 value = entry.value

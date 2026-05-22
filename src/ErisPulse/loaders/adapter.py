@@ -139,7 +139,11 @@ class AdapterLoader(BaseLoader):
         try:
             loaded_class = entry_point.load()
             adapter_obj = sys.modules[loaded_class.__module__]
-            dist = importlib.metadata.distribution(entry_point.dist.name) if entry_point.dist else None
+            dist = (
+                importlib.metadata.distribution(entry_point.dist.name)
+                if entry_point.dist
+                else None
+            )
 
             adapter_info = {
                 "meta": {
@@ -151,7 +155,11 @@ class AdapterLoader(BaseLoader):
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name if entry_point.dist else None,
-                    "top_level": self._finder.get_top_level_modules(entry_point.dist.name) if entry_point.dist else [],
+                    "top_level": self._finder.get_top_level_modules(
+                        entry_point.dist.name
+                    )
+                    if entry_point.dist
+                    else [],
                 },
                 "adapter_class": loaded_class,
             }
