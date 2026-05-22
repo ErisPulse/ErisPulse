@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1096,
+  "total_keywords": 1091,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3247,7 +3247,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 310,
+        "line": 197,
         "level": 2,
         "title": "下一步"
       },
@@ -3379,7 +3379,7 @@
     "事件参数": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 217,
+        "line": 104,
         "level": 3,
         "title": "事件参数"
       }
@@ -3807,7 +3807,7 @@
     "代码说明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 206,
+        "line": 93,
         "level": 2,
         "title": "代码说明"
       }
@@ -3901,7 +3901,7 @@
     "使用存储系统": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 264,
+        "line": 151,
         "level": 3,
         "title": "使用存储系统"
       }
@@ -4569,7 +4569,7 @@
     "发送回复": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 229,
+        "line": 116,
         "level": 3,
         "title": "发送回复"
       }
@@ -4849,7 +4849,7 @@
     "命令没有响应？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 279,
+        "line": 166,
         "level": 3,
         "title": "命令没有响应？"
       }
@@ -4865,7 +4865,7 @@
     "命令装饰器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 208,
+        "line": 95,
         "level": 3,
         "title": "命令装饰器"
       }
@@ -5443,7 +5443,7 @@
     "如何修改命令前缀？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 285,
+        "line": 172,
         "level": 3,
         "title": "如何修改命令前缀？"
       }
@@ -5451,7 +5451,7 @@
     "如何支持多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 295,
+        "line": 182,
         "level": 3,
         "title": "如何支持多平台？"
       }
@@ -5628,14 +5628,6 @@
         "line": 83,
         "level": 3,
         "title": "安装模块"
-      }
-    ],
-    "完整手动启动": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 70,
-        "level": 4,
-        "title": "完整手动启动"
       }
     ],
     "完整格式（适用于复杂方法）": [
@@ -5879,7 +5871,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 277,
+        "line": 164,
         "level": 2,
         "title": "常见问题"
       },
@@ -6425,7 +6417,7 @@
     "扩展：添加更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 237,
+        "line": 124,
         "level": 2,
         "title": "扩展：添加更多功能"
       }
@@ -8098,14 +8090,6 @@
         "title": "消息配置"
       }
     ],
-    "混合模式：init() 前后插入逻辑": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 116,
-        "level": 4,
-        "title": "混合模式：init() 前后插入逻辑"
-      }
-    ],
     "添加中间件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8117,7 +8101,7 @@
     "添加消息监听": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 239,
+        "line": 126,
         "level": 3,
         "title": "添加消息监听"
       }
@@ -8125,17 +8109,9 @@
     "添加通知监听": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 252,
+        "line": 139,
         "level": 3,
         "title": "添加通知监听"
-      }
-    ],
-    "清理": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 159,
-        "level": 4,
-        "title": "清理"
       }
     ],
     "激活虚拟环境": [
@@ -8677,7 +8653,7 @@
     "第五步：测试机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 196,
+        "line": 83,
         "level": 2,
         "title": "第五步：测试机器人"
       }
@@ -8685,7 +8661,7 @@
     "第四步：运行机器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 186,
+        "line": 73,
         "level": 2,
         "title": "第四步：运行机器人"
       }
@@ -9406,14 +9382,6 @@
         "title": "运行控制命令"
       }
     ],
-    "运行时动态管理": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 136,
-        "level": 4,
-        "title": "运行时动态管理"
-      }
-    ],
     "运行模式": [
       {
         "document": "platform-guide/telegram.md",
@@ -9722,14 +9690,6 @@
         "line": 405,
         "level": 3,
         "title": "选择菜单 (choose)"
-      }
-    ],
-    "逐阶段手动控制": [
-      {
-        "document": "getting-started/first-bot.md",
-        "line": 66,
-        "level": 3,
-        "title": "逐阶段手动控制"
       }
     ],
     "通用参数": [

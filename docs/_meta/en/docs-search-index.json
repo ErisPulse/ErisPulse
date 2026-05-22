@@ -1849,7 +1849,7 @@
     "Add Message Listening": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 145,
+        "line": 151,
         "level": 3,
         "title": "Add Message Listening"
       }
@@ -1857,7 +1857,7 @@
     "Add Notification Listening": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 158,
+        "line": 164,
         "level": 3,
         "title": "Add Notification Listening"
       }
@@ -2481,7 +2481,7 @@
     "Bot does not respond?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 185,
+        "line": 191,
         "level": 3,
         "title": "Bot does not respond?"
       }
@@ -2813,7 +2813,7 @@
     "Code Explanation": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 112,
+        "line": 118,
         "level": 2,
         "title": "Code Explanation"
       }
@@ -2877,7 +2877,7 @@
     "Command Decorator": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 114,
+        "line": 120,
         "level": 3,
         "title": "Command Decorator"
       }
@@ -3001,7 +3001,7 @@
     "Common Issues": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 183,
+        "line": 189,
         "level": 2,
         "title": "Common Issues"
       },
@@ -4247,7 +4247,7 @@
     "Event Arguments": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 123,
+        "line": 129,
         "level": 3,
         "title": "Event Arguments"
       }
@@ -4401,7 +4401,7 @@
     "Event Handling Process": [
       {
         "document": "architecture.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "Event Handling Process"
       }
@@ -4603,7 +4603,7 @@
     "Extension: Adding More Features": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 143,
+        "line": 149,
         "level": 2,
         "title": "Extension: Adding More Features"
       }
@@ -5073,7 +5073,7 @@
     "How to change the command prefix?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 191,
+        "line": 197,
         "level": 3,
         "title": "How to change the command prefix?"
       }
@@ -5081,7 +5081,7 @@
     "How to support multiple platforms?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 201,
+        "line": 207,
         "level": 3,
         "title": "How to support multiple platforms?"
       }
@@ -5189,7 +5189,7 @@
     "Initialization Stage Breakdown": [
       {
         "document": "architecture.md",
-        "line": 82,
+        "line": 81,
         "level": 3,
         "title": "Initialization Stage Breakdown"
       }
@@ -5435,7 +5435,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 113,
+        "line": 114,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -5521,7 +5521,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 121,
+        "line": 122,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -5577,7 +5577,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -6383,7 +6383,7 @@
     "Module Loading Strategy": [
       {
         "document": "architecture.md",
-        "line": 175,
+        "line": 176,
         "level": 2,
         "title": "Module Loading Strategy"
       }
@@ -6563,7 +6563,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 216,
+        "line": 222,
         "level": 2,
         "title": "Next Steps"
       },
@@ -8207,7 +8207,7 @@
     "Sending a Reply": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 141,
         "level": 3,
         "title": "Sending a Reply"
       }
@@ -8579,7 +8579,7 @@
     "Step 4: Run the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 92,
+        "line": 98,
         "level": 2,
         "title": "Step 4: Run the Bot"
       }
@@ -8587,7 +8587,7 @@
     "Step 5: Test the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 102,
+        "line": 108,
         "level": 2,
         "title": "Step 5: Test the Bot"
       }
@@ -9169,7 +9169,7 @@
     "Use Storage System": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 170,
+        "line": 176,
         "level": 3,
         "title": "Use Storage System"
       }
