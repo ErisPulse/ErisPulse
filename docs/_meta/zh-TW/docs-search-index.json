@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 967,
+  "total_keywords": 982,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -98,6 +98,14 @@
         "title": "1. 基本資訊部分"
       }
     ],
+    "1. 建立 Dockerfile": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 152,
+        "level": 3,
+        "title": "1. 建立 Dockerfile"
+      }
+    ],
     "1. 建立專案": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -184,6 +192,14 @@
         "line": 103,
         "level": 4,
         "title": "1. 適配器系統"
+      }
+    ],
+    "1. 配置 pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 38,
+        "level": 3,
+        "title": "1. 配置 pyproject.toml"
       }
     ],
     "1.1 接收類型 && 發送類型": [
@@ -290,6 +306,14 @@
         "title": "2. 嵌入式開發"
       }
     ],
+    "2. 建立 GitHub Actions 工作流": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 208,
+        "level": 3,
+        "title": "2. 建立 GitHub Actions 工作流"
+      }
+    ],
     "2. 建立 pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -360,6 +384,14 @@
         "line": 73,
         "level": 3,
         "title": "2. 正確的非同步操作"
+      }
+    ],
+    "2. 發布到 PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 75,
+        "level": 3,
+        "title": "2. 發布到 PyPI"
       }
     ],
     "2. 發送 Meta 事件": [
@@ -578,6 +610,14 @@
         "title": "3. 指定發送帳號"
       }
     ],
+    "3. 提交到模組商店": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 90,
+        "level": 3,
+        "title": "3. 提交到模組商店"
+      }
+    ],
     "3. 提高程式碼品質": [
       {
         "document": "standards/README.md",
@@ -608,6 +648,14 @@
         "line": 46,
         "level": 3,
         "title": "3. 特有事件類型"
+      }
+    ],
+    "3. 觸發建構": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 277,
+        "level": 3,
+        "title": "3. 觸發建構"
       }
     ],
     "3. 資源管理": [
@@ -754,6 +802,14 @@
         "title": "4. 訊息段標準"
       }
     ],
+    "4. 設定鏡像為公開": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 292,
+        "level": 3,
+        "title": "4. 設定鏡像為公開"
+      }
+    ],
     "4.1 註冊自訂類型": [
       {
         "document": "standards/session-types.md",
@@ -816,6 +872,14 @@
         "line": 106,
         "level": 2,
         "title": "5. 擴充規範"
+      }
+    ],
+    "5. 用戶使用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 299,
+        "level": 3,
+        "title": "5. 用戶使用"
       }
     ],
     "5. 自動類型推斷": [
@@ -1368,6 +1432,14 @@
         "line": 5,
         "level": 2,
         "title": "Docker 部署（推薦）"
+      }
+    ],
+    "Docker 鏡像 vs PyPI 發布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 354,
+        "level": 3,
+        "title": "Docker 鏡像 vs PyPI 發布"
       }
     ],
     "ErisPulse 平台功能文件": [
@@ -2040,6 +2112,14 @@
         "title": "WebSocket連線"
       }
     ],
+    "Where 參數傳遞規則": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 285,
+        "level": 3,
+        "title": "Where 參數傳遞規則"
+      }
+    ],
     "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
@@ -2470,6 +2550,14 @@
         "line": 52,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
+      }
+    ],
+    "一個套件可以註冊多個模組嗎？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 128,
+        "level": 3,
+        "title": "一個套件可以註冊多個模組嗎？"
       }
     ],
     "一步獲取發送資訊": [
@@ -3621,7 +3709,7 @@
     "參數化查詢": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 242,
+        "line": 266,
         "level": 2,
         "title": "參數化查詢"
       }
@@ -3726,6 +3814,14 @@
         "line": 312,
         "level": 3,
         "title": "可用屬性"
+      }
+    ],
+    "同時發布到 Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 331,
+        "level": 3,
+        "title": "同時發布到 Docker Hub"
       }
     ],
     "同步初始化": [
@@ -4220,6 +4316,14 @@
         "title": "失敗回應範例"
       }
     ],
+    "套件名稱必須以 `ErisPulse-` 開頭嗎？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 124,
+        "level": 3,
+        "title": "套件名稱必須以 `ErisPulse-` 開頭嗎？"
+      }
+    ],
     "套件管理命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -4472,6 +4576,14 @@
         "title": "定時任務"
       }
     ],
+    "審核需要多長時間？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 138,
+        "level": 3,
+        "title": "審核需要多長時間？"
+      }
+    ],
     "寫入配置": [
       {
         "document": "api-reference/core-modules.md",
@@ -4706,6 +4818,12 @@
       {
         "document": "ai-support/README.md",
         "line": 116,
+        "level": 2,
+        "title": "常見問題"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 122,
         "level": 2,
         "title": "常見問題"
       },
@@ -5010,6 +5128,14 @@
         "line": 28,
         "level": 3,
         "title": "快速構建模式（靜態）"
+      }
+    ],
+    "快速發布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "快速發布"
       }
     ],
     "快速開始": [
@@ -5622,6 +5748,14 @@
         "title": "普通事件的自動發現"
       }
     ],
+    "更新已發布模組": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 104,
+        "level": 2,
+        "title": "更新已發布模組"
+      }
+    ],
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
@@ -6071,7 +6205,7 @@
     "模組": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 56,
+        "line": 42,
         "level": 4,
         "title": "模組"
       },
@@ -6292,38 +6426,6 @@
         "line": 229,
         "level": 2,
         "title": "權限控制"
-      }
-    ],
-    "步驟 1: 準備專案": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 38,
-        "level": 3,
-        "title": "步驟 1: 準備專案"
-      }
-    ],
-    "步驟 2: 配置 pyproject.toml": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 52,
-        "level": 3,
-        "title": "步驟 2: 配置 pyproject.toml"
-      }
-    ],
-    "步驟 3: 發布到 PyPI": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 89,
-        "level": 3,
-        "title": "步驟 3: 發布到 PyPI"
-      }
-    ],
-    "步驟 4: 提交": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 108,
-        "level": 3,
-        "title": "步驟 4: 提交"
       }
     ],
     "注意事項": [
@@ -6644,14 +6746,6 @@
         "title": "發布指南"
       }
     ],
-    "發布流程": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
-        "level": 2,
-        "title": "發布流程"
-      }
-    ],
     "發布與模組商店指南": [
       {
         "document": "developer-guide/publishing.md",
@@ -6819,7 +6913,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 288,
+        "line": 338,
         "level": 2,
         "title": "相關文件"
       },
@@ -7227,7 +7321,7 @@
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 254,
+        "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
       }
@@ -7898,6 +7992,14 @@
         "title": "返回值結構"
       }
     ],
+    "返回值處理範例": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 242,
+        "level": 3,
+        "title": "返回值處理範例"
+      }
+    ],
     "返回值說明": [
       {
         "document": "advanced/sql-builder.md",
@@ -7920,6 +8022,14 @@
         "line": 91,
         "level": 3,
         "title": "透過 Dashboard 安裝模組"
+      }
+    ],
+    "透過 Docker 鏡像分發應用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 142,
+        "level": 2,
+        "title": "透過 Docker 鏡像分發應用"
       }
     ],
     "通用介面": [
@@ -8104,6 +8214,14 @@
         "title": "運行測試"
       }
     ],
+    "適用場景": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 146,
+        "level": 3,
+        "title": "適用場景"
+      }
+    ],
     "適用對象": [
       {
         "document": "advanced/README.md",
@@ -8121,7 +8239,7 @@
     "適配器": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 74,
+        "line": 60,
         "level": 4,
         "title": "適配器"
       },
@@ -8562,6 +8680,14 @@
         "line": 43,
         "level": 2,
         "title": "開發模式"
+      }
+    ],
+    "開發模式測試": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 112,
+        "level": 2,
+        "title": "開發模式測試"
       }
     ],
     "開發準備": [

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1091,
+  "total_keywords": 1088,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -91,7 +91,7 @@
     "1. 创建 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 232,
+        "line": 152,
         "level": 3,
         "title": "1. 创建 Dockerfile"
       }
@@ -270,6 +270,14 @@
         "title": "1. 适配器系统"
       }
     ],
+    "1. 配置 pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 38,
+        "level": 3,
+        "title": "1. 配置 pyproject.toml"
+      }
+    ],
     "1.1 接收类型 && 发送类型": [
       {
         "document": "standards/session-types.md",
@@ -425,7 +433,7 @@
     "2. 创建 GitHub Actions 工作流": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 288,
+        "line": 208,
         "level": 3,
         "title": "2. 创建 GitHub Actions 工作流"
       }
@@ -444,6 +452,14 @@
         "line": 57,
         "level": 2,
         "title": "2. 参数规范详解"
+      }
+    ],
+    "2. 发布到 PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 75,
+        "level": 3,
+        "title": "2. 发布到 PyPI"
       }
     ],
     "2. 发送 Meta 事件": [
@@ -834,6 +850,14 @@
         "title": "3. 指定发送账号"
       }
     ],
+    "3. 提交到模块商店": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 90,
+        "level": 3,
+        "title": "3. 提交到模块商店"
+      }
+    ],
     "3. 提高代码质量": [
       {
         "document": "standards/README.md",
@@ -885,7 +909,7 @@
     "3. 触发构建": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 357,
+        "line": 277,
         "level": 3,
         "title": "3. 触发构建"
       }
@@ -1061,7 +1085,7 @@
     "4. 设置镜像为公开": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 372,
+        "line": 292,
         "level": 3,
         "title": "4. 设置镜像为公开"
       }
@@ -1141,7 +1165,7 @@
     "5. 用户使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 379,
+        "line": 299,
         "level": 3,
         "title": "5. 用户使用"
       }
@@ -1883,7 +1907,7 @@
     "Docker 镜像 vs PyPI 发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 434,
+        "line": 354,
         "level": 3,
         "title": "Docker 镜像 vs PyPI 发布"
       }
@@ -2348,44 +2372,12 @@
         "title": "Q: AI 生成的代码有问题怎么办？"
       }
     ],
-    "Q: 一个包可以注册多个模块吗？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Q: 一个包可以注册多个模块吗？"
-      }
-    ],
-    "Q: 包名必须以 `ErisPulse-` 开头吗？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 3,
-        "title": "Q: 包名必须以 `ErisPulse-` 开头吗？"
-      }
-    ],
-    "Q: 如何指定最低 SDK 版本要求？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 206,
-        "level": 3,
-        "title": "Q: 如何指定最低 SDK 版本要求？"
-      }
-    ],
     "Q: 如何让 AI 生成更高质量的代码？": [
       {
         "document": "ai-support/README.md",
         "line": 133,
         "level": 3,
         "title": "Q: 如何让 AI 生成更高质量的代码？"
-      }
-    ],
-    "Q: 审核需要多长时间？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 218,
-        "level": 3,
-        "title": "Q: 审核需要多长时间？"
       }
     ],
     "Q: 推荐使用什么 AI 工具？": [
@@ -2546,46 +2538,6 @@
         "title": "SendDSL 详解"
       }
     ],
-    "Step 1: 准备项目": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 38,
-        "level": 3,
-        "title": "Step 1: 准备项目"
-      }
-    ],
-    "Step 2: 配置 pyproject.toml": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 52,
-        "level": 3,
-        "title": "Step 2: 配置 pyproject.toml"
-      }
-    ],
-    "Step 3: 发布到 PyPI": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 89,
-        "level": 3,
-        "title": "Step 3: 发布到 PyPI"
-      }
-    ],
-    "Step 4: 提交到 ErisPulse 模块商店": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 108,
-        "level": 3,
-        "title": "Step 4: 提交到 ErisPulse 模块商店"
-      }
-    ],
-    "Step 5: 审核与上线": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 148,
-        "level": 3,
-        "title": "Step 5: 审核与上线"
-      }
-    ],
     "Storage 模块": [
       {
         "document": "api-reference/core-modules.md",
@@ -2718,6 +2670,14 @@
         "line": 252,
         "level": 2,
         "title": "WebSocket连接"
+      }
+    ],
+    "Where 参数传递规则": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 323,
+        "level": 3,
+        "title": "Where 参数传递规则"
       }
     ],
     "[BUG-001] Init 命令适配器配置路径类型错误": [
@@ -3192,6 +3152,14 @@
         "title": "wait(prompt=None, timeout=None)"
       }
     ],
+    "一个包可以注册多个模块吗？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 128,
+        "level": 3,
+        "title": "一个包可以注册多个模块吗？"
+      }
+    ],
     "一步获取发送信息": [
       {
         "document": "advanced/session-types.md",
@@ -3653,7 +3621,7 @@
     "事务中使用": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 209,
+        "line": 247,
         "level": 2,
         "title": "事务中使用"
       }
@@ -4295,7 +4263,7 @@
     "删除数据": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 157,
+        "line": 195,
         "level": 3,
         "title": "删除数据"
       }
@@ -4346,6 +4314,14 @@
         "line": 7,
         "level": 3,
         "title": "加载策略"
+      }
+    ],
+    "包名必须以 `ErisPulse-` 开头吗？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 124,
+        "level": 3,
+        "title": "包名必须以 `ErisPulse-` 开头吗？"
       }
     ],
     "包管理命令": [
@@ -4435,7 +4411,7 @@
     "参数化查询": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 242,
+        "line": 304,
         "level": 2,
         "title": "参数化查询"
       }
@@ -4532,14 +4508,6 @@
         "line": 22,
         "level": 3,
         "title": "发布指南"
-      }
-    ],
-    "发布流程": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
-        "level": 2,
-        "title": "发布流程"
       }
     ],
     "发送A2UI消息": [
@@ -4717,7 +4685,7 @@
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 411,
+        "line": 331,
         "level": 3,
         "title": "同时发布到 Docker Hub"
       }
@@ -5004,12 +4972,6 @@
     ],
     "基本信息": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 120,
-        "level": 4,
-        "title": "基本信息"
-      },
-      {
         "document": "platform-guide/ideaura.md",
         "line": 12,
         "level": 2,
@@ -5289,7 +5251,7 @@
     "复用查询条件": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 181,
+        "line": 219,
         "level": 2,
         "title": "复用查询条件"
       }
@@ -5682,6 +5644,14 @@
         "title": "定时任务"
       }
     ],
+    "审核需要多长时间？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 138,
+        "level": 3,
+        "title": "审核需要多长时间？"
+      }
+    ],
     "对最终用户": [
       {
         "document": "standards/README.md",
@@ -5712,6 +5682,14 @@
         "line": 21,
         "level": 2,
         "title": "导入"
+      }
+    ],
+    "将元组转为字典": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 109,
+        "level": 4,
+        "title": "将元组转为字典"
       }
     ],
     "属性访问": [
@@ -5865,7 +5843,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 190,
+        "line": 122,
         "level": 2,
         "title": "常见问题"
       },
@@ -6061,7 +6039,7 @@
     "开发模式测试": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 178,
+        "line": 112,
         "level": 2,
         "title": "开发模式测试"
       }
@@ -6238,6 +6216,14 @@
         "line": 11,
         "level": 2,
         "title": "快速参考"
+      }
+    ],
+    "快速发布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "快速发布"
       }
     ],
     "快速启动": [
@@ -6438,14 +6424,6 @@
         "title": "批量注册（Mixin 类）"
       }
     ],
-    "技术信息": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 129,
-        "level": 4,
-        "title": "技术信息"
-      }
-    ],
     "技术标准": [
       {
         "document": "README.md",
@@ -6509,7 +6487,7 @@
     "排序、分页": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 121,
+        "line": 159,
         "level": 3,
         "title": "排序、分页"
       }
@@ -6544,14 +6522,6 @@
         "line": 102,
         "level": 3,
         "title": "提交生命周期事件"
-      }
-    ],
-    "提交类型": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 114,
-        "level": 4,
-        "title": "提交类型"
       }
     ],
     "插入数据": [
@@ -6989,7 +6959,7 @@
     "更新已发布模块": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 160,
+        "line": 104,
         "level": 2,
         "title": "更新已发布模块"
       }
@@ -6997,7 +6967,7 @@
     "更新数据": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 142,
+        "line": 180,
         "level": 3,
         "title": "更新数据"
       }
@@ -7103,7 +7073,7 @@
     "条件过滤": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 106,
+        "line": 137,
         "level": 3,
         "title": "条件过滤"
       }
@@ -7266,14 +7236,6 @@
         "line": 66,
         "level": 2,
         "title": "标准遵循检查清单"
-      }
-    ],
-    "标签": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 136,
-        "level": 4,
-        "title": "标签"
       }
     ],
     "核心 API": [
@@ -7484,14 +7446,6 @@
         "title": "检查平台状态"
       }
     ],
-    "检查清单": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 140,
-        "level": 4,
-        "title": "检查清单"
-      }
-    ],
     "检查表是否存在": [
       {
         "document": "advanced/sql-builder.md",
@@ -7517,7 +7471,7 @@
     "模块": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 56,
+        "line": 42,
         "level": 4,
         "title": "模块"
       },
@@ -8499,7 +8453,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 288,
+        "line": 376,
         "level": 2,
         "title": "相关文档"
       },
@@ -8933,7 +8887,7 @@
     "自定义存储后端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 254,
+        "line": 342,
         "level": 2,
         "title": "自定义存储后端"
       }
@@ -8968,6 +8922,14 @@
         "line": 1,
         "level": 1,
         "title": "花枫咖啡馆（Ideaura）平台特性文档"
+      }
+    ],
+    "获取单条记录": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 124,
+        "level": 4,
+        "title": "获取单条记录"
       }
     ],
     "获取帮助": [
@@ -9087,7 +9049,7 @@
     "计数与存在性检查": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 170,
+        "line": 208,
         "level": 3,
         "title": "计数与存在性检查"
       }
@@ -9420,6 +9382,14 @@
         "title": "返回值"
       }
     ],
+    "返回值处理示例": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 280,
+        "level": 3,
+        "title": "返回值处理示例"
+      }
+    ],
     "返回值结构": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -9439,7 +9409,7 @@
     "返回值说明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 229,
+        "line": 267,
         "level": 2,
         "title": "返回值说明"
       }
@@ -9491,7 +9461,7 @@
     "适用场景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 226,
+        "line": 146,
         "level": 3,
         "title": "适用场景"
       }
@@ -9513,7 +9483,7 @@
     "适配器": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 74,
+        "line": 60,
         "level": 4,
         "title": "适配器"
       },
@@ -9803,7 +9773,7 @@
     "通过 Docker 镜像分发应用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 222,
+        "line": 142,
         "level": 2,
         "title": "通过 Docker 镜像分发应用"
       }
@@ -10043,7 +10013,7 @@
     "重置构建器": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 198,
+        "line": 236,
         "level": 2,
         "title": "重置构建器"
       }
