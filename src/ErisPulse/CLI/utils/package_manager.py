@@ -494,6 +494,22 @@ class PackageManager:
                 current_package_name = package_name
 
             package_info = asyncio.run(self._get_package_info(package_name))
+            if package_info and not package_info.get("verified", True):
+                console.print(
+                    Panel(
+                        f"包 [package]{current_package_name}[/] 尚未被官方验证。\n\n"
+                        f"未验证的包可能存在安全风险，请确认你信任该包的作者后再安装。\n"
+                        f"作者: {package_info.get('author', '未知')}\n"
+                        f"仓库: {package_info.get('repository', '未知')}",
+                        title="未验证模块",
+                        border_style="yellow",
+                    )
+                )
+                if not Confirm.ask("是否继续安装？", default=False):
+                    console.print("[info]已取消安装[/]")
+                    all_success = False
+                    continue
+
             if package_info and "min_sdk_version" in package_info:
                 is_compatible, message = self._check_sdk_compatibility(
                     package_info["min_sdk_version"]
