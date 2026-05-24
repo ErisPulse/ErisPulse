@@ -76,10 +76,10 @@ sdk.storage.AlterTable("users") \
 ### Insert Data
 
 ```python
-# Single row insertion
+# Single row insertion (pass dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion
+# Batch insertion (pass list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -89,29 +89,67 @@ sdk.storage.Table("users").InsertMulti([
 
 ### Query Data
 
+> **Important**: `Select()` returns `list[tuple]` (list of tuples), not dictionaries. You need to access values by index following column order.
+
 ```python
 # Query all columns
 rows = sdk.storage.Table("users").Select().Execute()
+# rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
 # Query specific columns
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
+# rows: [("Alice", 30), ("Bob", 25), ...]
 
-# Get single record
+# Access by index
+for row in rows:
+    name = row[0]   # "Alice"
+    age = row[1]    # 30
+```
+
+#### Convert tuples to dictionaries
+
+```python
+columns = ["id", "name", "age"]
+rows = sdk.storage.Table("users").Select(*columns).Execute()
+
+# Method 1: Using zip in loop
+for row in rows:
+    record = dict(zip(columns, row))
+    print(record["name"], record["age"])
+
+# Method 2: Convert to list of dictionaries in one go
+records = [dict(zip(columns, row)) for row in rows]
+```
+
+#### Get single record
+
+```python
 row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
-# Returns tuple | None, e.g., ("Alice", 30)
+
+# row is tuple or None
+if row is not None:
+    name = row[0]  # "Alice"
+    age = row[1]   # 30
 ```
 
 ### Conditional Filtering
 
+> `Where(condition, *params)` supports passing multiple parameters corresponding to multiple `?` placeholders.
+
 ```python
-# Single condition
+# Single condition (one placeholder, one parameter)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Multiple conditions (AND connected)
+# Multiple placeholders in one Where
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ? AND age < ?", 20, 40) \
+    .Execute()
+
+# Multiple Where calls (AND connected)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
@@ -230,8 +268,8 @@ except Exception:
 
 | Operation | Return Type | Description |
 |-----------|------------|-------------|
-| `Select().Execute()` | `list[tuple]` | Query result list |
-| `Select().ExecuteOne()` | `tuple \| None` | Single record |
+| `Select().Execute()` | `list[tuple]` | List of tuples, arranged in column order |
+| `Select().ExecuteOne()` | `tuple \| None` | Single tuple or None |
 | `Insert().Execute()` | `int` | Affected rows count |
 | `InsertMulti().Execute()` | `int` | Inserted rows count |
 | `Update().Execute()` | `int` | Affected rows count |
@@ -239,16 +277,66 @@ except Exception:
 | `Count()` | `int` | Matching rows count |
 | `Exists()` | `bool` | Whether it exists |
 
-## Parameterized Queries
-
-All WHERE parameters use `?` placeholders to prevent SQL injection:
+### Return Value Processing Examples
 
 ```python
-# Correct ✓
-sdk.storage.Table("users").Where("name = ?", user_input).Execute()
+# Select returns tuples, access by index
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # First row, first column (name)
+first_age = rows[0][1]   # First row, second column (age)
+
+# Recommended: Use column names list + zip to convert to dictionary for better readability
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne returns single tuple or None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete return affected rows count
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"Deleted {affected} records")
+```
+
+## Parameterized Queries
+
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as tuples or lists):
+
+```python
+# Correct ✓ — Multiple parameters passed one by one
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# Correct ✓ — Multiple Where calls
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# Incorrect ✗ — Don't pass tuple
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# This would treat the entire tuple as the value for the first placeholder
 
 # Incorrect ✗ — Has SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Where Parameter Passing Rules
+
+```python
+# Where(condition: str, *params: Any)
+# params are variable arguments, pass them one by one
+
+# Single parameter
+.Where("name = ?", "Alice")
+
+# Multiple parameters
+.Where("age > ? AND age < ?", 18, 60)
+
+# LIKE query
+.Where("name LIKE ?", "A%")
+
+# IN query (requires manually constructing placeholders)
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
 ## Custom Storage Backend
