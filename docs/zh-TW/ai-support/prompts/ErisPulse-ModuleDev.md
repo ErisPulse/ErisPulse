@@ -115,21 +115,21 @@ flowchart TD
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
     F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["啟動路由伺服器"]
-    I --> J["非同步啟動各平台適配器"]
-    J --> K["運行就緒"]
+    G --> H["啟動路由伺服器"]
+    H --> K["運行就緒"]
 ```
 
 ### 初始化階段詳解
 
 1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
 2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
-3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
-4. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-5. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
-6. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
-7. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+3. **註冊適配器** - 將發現的適配器註冊到適配器管理器
+4. **啟動適配器** - 非同步啟動各平台適配器連接（在模組初始化之前，確保模組能立即發送訊息）
+5. **註冊模組** - 將發現的模組註冊到模組管理器
+6. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
+9. **啟動路由伺服器** - 啟動路由伺服器（FastAPI）
 
 ## 事件處理流程
 
@@ -543,7 +543,7 @@ asyncio.run(sdk.run(keep_running=True))
 # 互動式初始化
 epsdk init
 
-# 或是快速初始化
+# 或者快速初始化
 epsdk init -q -n my_first_bot
 ```
 
@@ -587,38 +587,19 @@ async def ping_handler(event):
 async def main():
     """主入口函數"""
     print("正在初始化 ErisPulse...")
-    # 執行 SDK 並且維持運行
+    # 運行 SDK 並且維持運行
     await sdk.run(keep_running=True)
+    
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等價於 `dk.run(keep_running=False)`
+
     print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> 除了直接使用 `sdk.run()` 之外，你還可以更精細地控制執行流程，如：
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失敗，請檢查日誌")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程式運行，如果有其他需要執行的操作，你也可以不維持事件，但需要自行處理
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -748,6 +729,7 @@ async def hello_handler(event):
 
 ## 下一步
 
+- [高級初始化控制](advanced-init.md) - 鉤子系統、手動控制、嵌入式集成
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能
@@ -2884,27 +2866,13 @@ epsdk list-remote -r
 | 模組 (Module) | 擴展機器人功能、實現業務邏輯 | `erispulse.module` |
 | 適配器 (Adapter) | 連接新的訊息平台 | `erispulse.adapter` |
 
-## 發布流程
+## 快速發布
 
-整個發布流程分為四個步驟：準備專案 → 發布到 PyPI → 提交到模組商店 → 審核上線。
+整個過程只需要三步：配置專案 → 發布到 PyPI → 提交到模組商店。
 
-### 步驟 1: 準備專案
+### 1. 配置 pyproject.toml
 
-確保你的專案包含以下檔案：
-
-```
-MyModule/
-├── pyproject.toml      # 專案配置（必須）
-├── README.md           # 專案說明（必須）
-├── LICENSE             # 開源許可證（推薦）
-└── MyModule/
-    ├── __init__.py     # 套件入口
-    └── ...
-```
-
-### 步驟 2: 配置 pyproject.toml
-
-根據你要發布的類型，正確配置 `entry-points`：
+確保專案目錄包含 `pyproject.toml`、`README.md`，並根據類型配置 entry-points：
 
 #### 模組
 
@@ -2939,26 +2907,296 @@ requires-python = ">=3.10"
 
 > **注意**：套件名稱建議以 `ErisPulse-` 開頭，便於用戶識別。Entry-point 的鍵名（如 `"MyModule"`）將作為模組在 SDK 中的存取名稱。
 
-### 步驟 3: 發布到 PyPI
+### 2. 發布到 PyPI
 
 ```bash
-# 安裝建構工具
+# 建構 + 發布（需要 PyPI 帳號）
 pip install build twine
-
-# 建構分發套件
 python -m build
-
-# 發布到 PyPI
 python -m twine upload dist/*
 ```
 
-發布成功後，確認你的套件可以透過 `pip install` 安裝：
+發布成功後驗證安裝：
 
 ```bash
 pip install ErisPulse-MyModule
 ```
 
-### 步驟 4: 提交
+### 3. 提交到模組商店
+
+前往 [ErisPulse 模組商店](https://www.erisdev.com/#market)，點擊「提交模組」，登入後填寫模組資訊即可。
+
+填寫要點：
+- 模組名稱、描述、倉庫地址
+- 最低 SDK 版本：如果不確定，填寫 [ErisPulse 最新發行版](https://pypi.org/project/ErisPulse/) 版本號即可
+
+提交後立即生效，用戶可透過模組源安裝。模組會被標記為「未驗證」，維護者審核通過後改為「已驗證」。
+
+> **關於驗證狀態**：
+> - 「未驗證」僅表示尚未經過官方審核，不代表模組有問題
+> - 用戶透過 `epsdk install` 安裝未驗證模組時會收到風險提示，需確認後才可繼續安裝
+
+## 更新已發布模組
+
+1. 更新 `pyproject.toml` 中的 `version`
+2. 重新建構並上傳：`python -m build && python -m twine upload dist/*`
+3. 模組商店會自動同步 PyPI 上的最新版本
+
+用戶透過 `epsdk upgrade MyModule` 即可升級。
+
+## 開發模式測試
+
+在正式發布前，可以使用可編輯模式在本地測試：
+
+```bash
+epsdk install -e /path/to/MyModule
+# 或
+pip install -e /path/to/MyModule
+```
+
+## 常見問題
+
+### 套件名稱必須以 `ErisPulse-` 開頭嗎？
+
+不強制，但強烈推薦。這有助於用戶在 PyPI 上識別 ErisPulse 生態的套件。
+
+### 一個套件可以註冊多個模組嗎？
+
+可以。在 `entry-points` 中配置多個鍵值對即可：
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### 審核需要多長時間？
+
+通常在 1-3 個工作日內完成。你可以在 Issue 中查看審核進度。
+
+## 透過 Docker 鏡像分發應用
+
+如果應用不適合發布到 PyPI（如包含私有依賴、需要預配置環境），可以透過 **GitHub Container Registry (GHCR)** 發布 Docker 鏡像，讓其他用戶 `docker pull` 一鍵啟動。
+
+### 適用場景
+
+- 你有一個**完整的機器人應用**（模組 + 配置 + 入口腳本），想一鍵分發
+- 模組/適配器依賴**私有套件**或有特殊安裝流程，不適合 PyPI
+- 想提供**開箱即用**的部署方案，降低用戶使用門檻
+
+### 1. 建立 Dockerfile
+
+基於 ErisPulse 官方鏡像建構：
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    ERISPULSE_DASHBOARD_TOKEN=""
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt
+
+COPY . .
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+如果模組未發布到 PyPI，可以直接把模組原始碼複製進鏡像：
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1
+
+WORKDIR /app
+
+RUN uv pip install --system ErisPulse ErisPulse-Dashboard
+
+COPY my_modules/ /app/my_modules/
+COPY main.py .
+COPY config/ /app/config/
+
+RUN uv pip install --system -e /app/my_modules/MyModule
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+### 2. 建立 GitHub Actions 工作流
+
+在 `.github/workflows/docker-publish.yml` 中建立：
+
+```yaml
+name: 發布 Docker 鏡像
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/my-bot
+
+jobs:
+  docker-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 檢出程式碼
+        uses: actions/checkout@v4
+
+      - name: 設定 QEMU (多架構支援)
+        uses: docker/setup-qemu-action@v3
+
+      - name: 設定 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登入 GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 提取 Docker 元數據
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: 建構並推送 Docker 鏡像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```
+
+> `GITHUB_TOKEN` 由 GitHub Actions 自動提供，無需手動建立密鑰。
+
+### 3. 觸發建構
+
+推送程式碼或打 Tag 即可自動建構：
+
+```bash
+# 推送到 main 分支觸發
+git push origin main
+
+# 或打 Tag 觸發
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+也可在 GitHub 倉庫的 **Actions** 頁面手動觸發。
+
+### 4. 設定鏡像為公開
+
+GHCR 鏡像預設為 **private**，需要在 GitHub 設定為 Public 後其他用戶才能免登錄拉取：
+
+1. 進入倉庫 → **Packages** → 點擊對應 Package
+2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
+
+### 5. 用戶使用
+
+建構完成後，其他用戶可以直接執行：
+
+```bash
+docker pull ghcr.io/<your-username>/my-bot:latest
+
+docker run -d \
+  --name my-bot \
+  -p 8000:8000 \
+  -v ./config:/app/config \
+  -e ERISPULSE_DASHBOARD_TOKEN=your-token \
+  ghcr.io/<your-username>/my-bot:latest
+```
+
+或使用 `docker-compose.yml`：
+
+```yaml
+services:
+  my-bot:
+    image: ghcr.io/<your-username>/my-bot:latest
+    container_name: my-bot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=Asia/Shanghai
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
+```
+
+### 同時發布到 Docker Hub
+
+擴展工作流，添加 Docker Hub 登入步驟，並在 `images` 中增加 Docker Hub 地址：
+
+```yaml
+      - name: 登入 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 提取 Docker 元數據
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            docker.io/<your-dockerhub-username>/my-bot
+            ghcr.io/${{ github.repository_owner }}/my-bot
+```
+
+> 需要在倉庫 **Settings → Secrets** 中添加 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN`。
+
+### Docker 鏡像 vs PyPI 發布
+
+| 特性 | Docker 鏡像 (GHCR) | PyPI 發布 |
+|------|---------------------|-----------|
+| 分發方式 | `docker pull` 一鍵執行 | `pip install` + 手動配置 |
+| 適用範圍 | 完整應用/解決方案 | 單一模組/適配器 |
+| 私有依賴 | 天然支援 | 需要私有 PyPI 源 |
+| 模組商店 | 不適用 | 可提交到模組商店 |
+| 多架構 | 支援 amd64/arm64 | 與架構無關 |
+
+兩種方式不衝突——你可以同時透過 PyPI 發布模組到模組商店，又透過 GHCR 提供開箱即用的 Docker 鏡像。
 
 
 

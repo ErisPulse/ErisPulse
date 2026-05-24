@@ -110,27 +110,28 @@ flowchart TD
     D --> D1["从 PyPI 加载适配器"]
     D --> D2["从 PyPI 加载模块"]
     D1 & D2 --> E["注册适配器"]
-    E --> F["注册模块"]
+    E --> E1["启动适配器"]
+    E1 --> F["注册模块"]
     F --> F1{"依赖验证"}
     F1 -->|"缺失依赖"| F2["跳过该模块并记录警告"]
     F1 -->|"依赖满足"| F3["拓扑排序<br/>（Kahn 算法 + 优先级）"]
     F3 --> G["按序初始化模块<br/>（实例化 + on_load）"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["启动路由服务器"]
-    I --> J["异步启动各平台适配器"]
-    J --> K["运行就绪"]
+    G --> H["启动路由服务器"]
+    H --> K["运行就绪"]
 ```
 
 ### 初始化阶段详解
 
 1. **环境准备** - 加载 TOML 配置文件，设置全局异常处理
 2. **并行发现** - 同时从已安装的 PyPI 包中发现适配器和模块
-3. **注册阶段** - 将发现的适配器和模块注册到对应管理器
-4. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-5. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
-6. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-7. **适配器启动** - 启动路由服务器（FastAPI），异步启动各平台适配器连接
+3. **注册适配器** - 将发现的适配器注册到适配器管理器
+4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
+5. **注册模块** - 将发现的模块注册到模块管理器
+6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
+7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
+9. **启动路由服务器** - 启动路由服务器（FastAPI）
 
 ## 事件处理流程
 
@@ -3757,27 +3758,13 @@ epsdk list-remote -r
 | 模块 (Module) | 扩展机器人功能、实现业务逻辑 | `erispulse.module` |
 | 适配器 (Adapter) | 连接新的消息平台 | `erispulse.adapter` |
 
-## 发布流程
+## 快速发布
 
-整个发布流程分为四个步骤：准备项目 → 发布到 PyPI → 提交到模块商店 → 审核上线。
+整个过程只需要三步：配置项目 → 发布到 PyPI → 提交到模块商店。
 
-### Step 1: 准备项目
+### 1. 配置 pyproject.toml
 
-确保你的项目包含以下文件：
-
-```
-MyModule/
-├── pyproject.toml      # 项目配置（必须）
-├── README.md           # 项目说明（必须）
-├── LICENSE             # 开源许可证（推荐）
-└── MyModule/
-    ├── __init__.py     # 包入口
-    └── ...
-```
-
-### Step 2: 配置 pyproject.toml
-
-根据你要发布的类型，正确配置 `entry-points`：
+确保项目目录包含 `pyproject.toml`、`README.md`，并根据类型配置 entry-points：
 
 #### 模块
 
@@ -3812,114 +3799,60 @@ requires-python = ">=3.10"
 
 > **注意**：包名建议以 `ErisPulse-` 开头，便于用户识别。Entry-point 的键名（如 `"MyModule"`）将作为模块在 SDK 中的访问名称。
 
-### Step 3: 发布到 PyPI
+### 2. 发布到 PyPI
 
 ```bash
-# 安装构建工具
+# 构建 + 发布（需要 PyPI 账号）
 pip install build twine
-
-# 构建分发包
 python -m build
-
-# 发布到 PyPI
 python -m twine upload dist/*
 ```
 
-发布成功后，确认你的包可以通过 `pip install` 安装：
+发布成功后验证安装：
 
 ```bash
 pip install ErisPulse-MyModule
 ```
 
-### Step 4: 提交到 ErisPulse 模块商店
+### 3. 提交到模块商店
 
-在确认包已发布到 PyPI 后，前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交申请。
+前往 [ErisPulse 模块商店](https://www.erisdev.com/#market)，点击「提交模块」，登录后填写模块信息即可。
 
-填写以下信息：
+填写要点：
+- 模块名称、描述、仓库地址
+- 最低 SDK 版本：如果不确定，填写 [ErisPulse 最新发行版](https://pypi.org/project/ErisPulse/) 版本号即可
 
-#### 提交类型
+提交后立即生效，用户可通过模块源安装。模块会被标记为「未验证」，维护者审核通过后改为「已验证」。
 
-选择你要提交的类型：
-- 模块 (Module)
-- 适配器 (Adapter)
-
-#### 基本信息
-
-| 字段 | 说明 | 示例 |
-|------|------|------|
-| **名称** | 模块/适配器名称 | Weather |
-| **描述** | 简短功能描述 | 天气查询模块，支持全球城市 |
-| **作者** | 你的名字或 GitHub 用户名 | MyName |
-| **仓库地址** | 代码仓库 URL | https://github.com/MyName/MyModule |
-
-#### 技术信息
-
-| 字段 | 说明 |
-|------|------|
-| **最低 SDK 版本要求** | 如 `>=2.0.0`（如适用） |
-| **依赖项** | 除 ErisPulse 外的额外依赖（如适用） |
-
-#### 标签
-
-用逗号分隔，帮助用户搜索发现你的模块。例如：`天气, 查询, 工具`
-
-#### 检查清单
-
-提交前请确认：
-- 代码遵循 ErisPulse 开发规范
-- 包含适当的文档（README.md）
-- 包含测试用例（如适用）
-- 已在 PyPI 发布
-
-### Step 5: 审核与上线
-
-提交后，维护者会审核你的申请。审核要点：
-
-1. 包可以在 PyPI 上正常安装
-2. Entry-point 配置正确，能被 SDK 正确发现
-3. 功能与描述一致
-4. 不存在安全问题或恶意代码
-5. 不与已有模块严重冲突
-
-审核通过后，你的模块会自动出现在模块商店中。
+> **关于验证状态**：
+> - 「未验证」仅表示尚未经过官方审核，不代表模块有问题
+> - 用户通过 `epsdk install` 安装未验证模块时会收到风险提示，需确认后才可继续安装
 
 ## 更新已发布模块
 
-当你更新模块版本时：
-
 1. 更新 `pyproject.toml` 中的 `version`
-2. 重新构建并上传到 PyPI：
-   ```bash
-   python -m build
-   python -m twine upload dist/*
-   ```
-3. 模块商店会自动同步 PyPI 上的最新版本信息
+2. 重新构建并上传：`python -m build && python -m twine upload dist/*`
+3. 模块商店会自动同步 PyPI 上的最新版本
 
-用户可以通过以下命令升级：
-
-```bash
-epsdk upgrade MyModule
-```
+用户通过 `epsdk upgrade MyModule` 即可升级。
 
 ## 开发模式测试
 
-在正式发布前，你可以使用可编辑模式在本地测试：
+在正式发布前，可以使用可编辑模式在本地测试：
 
 ```bash
-# 以可编辑模式安装
 epsdk install -e /path/to/MyModule
-
-# 或使用 pip
+# 或
 pip install -e /path/to/MyModule
 ```
 
 ## 常见问题
 
-### Q: 包名必须以 `ErisPulse-` 开头吗？
+### 包名必须以 `ErisPulse-` 开头吗？
 
 不强制，但强烈推荐。这有助于用户在 PyPI 上识别 ErisPulse 生态的包。
 
-### Q: 一个包可以注册多个模块吗？
+### 一个包可以注册多个模块吗？
 
 可以。在 `entry-points` 中配置多个键值对即可：
 
@@ -3929,19 +3862,7 @@ pip install -e /path/to/MyModule
 "ModuleB" = "MyPackage:ModuleB"
 ```
 
-### Q: 如何指定最低 SDK 版本要求？
-
-在 `pyproject.toml` 的 `dependencies` 中设置：
-
-```toml
-dependencies = [
-    "ErisPulse>=2.0.0",
-]
-```
-
-模块商店会检查版本兼容性，防止用户安装不兼容的模块。
-
-### Q: 审核需要多长时间？
+### 审核需要多长时间？
 
 通常在 1-3 个工作日内完成。你可以在 Issue 中查看审核进度。
 
@@ -8440,7 +8361,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 3.5.0
+- 对应模块版本: 3.6.5
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -8448,6 +8369,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 - 平台简介：Telegram 是一个跨平台的即时通讯软件
 - 适配器名称：TelegramAdapter
 - 支持的协议/API版本：Telegram Bot API
+- 会话类型映射：`private` → 发送时用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
 
 ## 支持的消息发送类型
 
@@ -8461,175 +8383,322 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 ### 基本发送方法
 
-- `.Text(text: str)`：发送纯文本消息。
-- `.Face(emoji: str)`：发送表情消息。
-- `.Markdown(text: str, content_type: str = "MarkdownV2")`：发送Markdown格式消息。
-- `.HTML(text: str)`：发送HTML格式消息。
+| 方法 | 说明 | 参数 |
+|------|------|------|
+| `.Text(text)` | 发送纯文本消息 | `text: str` |
+| `.Face(emoji)` | 发送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
+| `.Markdown(text, content_type)` | 发送 Markdown 格式消息 | `content_type` 默认 `"MarkdownV2"` |
+| `.HTML(text)` | 发送 HTML 格式消息 | `text: str` |
+| `.Sticker(file)` | 发送贴纸 | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | 发送位置 | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | 发送地点 | 含标题和地址 |
+| `.Contact(phone, first, last)` | 发送联系人 | 含电话号码和姓名 |
 
 ### 媒体发送方法
 
-所有媒体方法支持两种输入方式：
-- **URL 方式**：直接传入字符串 URL
-- **文件上传**：传入 bytes 类型数据
+所有媒体方法支持 `bytes`（上传）和 `str`（file_id / URL）两种输入：
 
-- `.Image(file: bytes | str, caption: str = "", content_type: str = None)`：发送图片消息
-- `.Video(file: bytes | str, caption: str = "", content_type: str = None)`：发送视频消息
-- `.Voice(file: bytes | str, caption: str = "")`：发送语音消息
-- `.Audio(file: bytes | str, caption: str = "", content_type: str = None)`：发送音频消息
-- `.File(file: bytes | str, caption: str = "")`：发送文件消息
-- `.Document(file: bytes | str, caption: str = "", content_type: str = None)`：发送文档消息（File 的别名）
+| 方法 | 说明 |
+|------|------|
+| `.Image(file, caption, content_type)` | 发送图片 |
+| `.Video(file, caption, content_type)` | 发送视频 |
+| `.Voice(file, caption)` | 发送语音 |
+| `.Audio(file, caption, content_type)` | 发送音频 |
+| `.File(file, caption)` | 发送文件 |
+| `.Document(file, caption, content_type)` | File 的别名 |
 
 ### 消息管理方法
 
-- `.Edit(message_id: int, text: str, content_type: str = None)`：编辑已有消息。
-- `.Recall(message_id: int)`：删除指定消息。
+| 方法 | 说明 |
+|------|------|
+| `.Edit(message_id, text, content_type)` | 编辑已有消息 |
+| `.Recall(message_id)` | 删除指定消息 |
+| `.Forward(from_chat_id, message_id)` | 转发消息（保留来源） |
+| `.CopyMessage(from_chat_id, message_id)` | 复制消息（不带来源） |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | 应答回调查询 |
 
 ### 原始消息发送
 
 - `.Raw_ob12(message: List[Dict])`：发送 OneBot12 标准格式消息
-  - 支持复杂组合消息（文本 + @用户 + 回复 + 媒体）
-  - 自动将文本作为媒体消息的 caption
 - `.Raw_json(json_str: str)`：发送原始 JSON 格式消息
 
 ### 链式修饰方法
 
-- `.At(user_id: str)`：@指定用户（可多次调用）
-- `.AtAll()`：@全体成员
-- `.Reply(message_id: str)`：回复指定消息
-
-### 方法名映射
-
-发送方法支持大小写不敏感调用，通过映射表自动转换为标准方法名：
-```python
-# 以下写法等效
-telegram.Send.To("group", 123).Text("hello")
-telegram.Send.To("group", 123).text("hello")
-telegram.Send.To("group", 123).TEXT("hello")
-```
+| 方法 | 说明 |
+|------|------|
+| `.At(user_id)` | @指定用户（通过 Telegram entities 实现，可多次调用） |
+| `.AtAll()` | @全体成员（发送 `@All` 文本） |
+| `.Reply(message_id)` | 回复指定消息 |
+| `.Keyboard(inline_keyboard)` | 设置内联键盘（`list[list[dict]]`） |
+| `.ProtectContent(protect)` | 保护内容（防止转发和保存） |
+| `.Silent(silent)` | 静默发送（不通知用户） |
 
 ### 发送示例
 
 ```python
 # 基本文本发送
-await telegram.Send.To("group", group_id).Text("Hello World!")
+await telegram.Send.To("user", user_id).Text("Hello World!")
+
+# 带内联键盘的消息
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+keyboard = [
+    [{"text": "按钮1", "callback_data": "btn1"}, {"text": "按钮2", "callback_data": "btn2"}],
+    [{"text": "访问官网", "url": "https://example.com"}],
+]
+await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("请选择：")
 
 # 媒体发送（URL 方式）
-await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="这是一张图片")
-
-# 媒体发送（文件上传）
-with open("image.jpg", "rb") as f:
-    await telegram.Send.To("group", group_id).Image(f.read())
+await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="图片")
 
 # @用户
 await telegram.Send.To("group", group_id).At("6117725680").Text("你好！")
 
-# 回复消息
-await telegram.Send.To("group", group_id).Reply("12345").Text("回复内容")
+# 回复 + 保护内容
+await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("机密消息")
 
-# 组合使用
-await telegram.Send.To("group", group_id).Reply("12345").At("6117725680").Image("https://example.com/image.jpg", caption="看这张图")
+# 静默发送
+await telegram.Send.To("group", group_id).Silent().Text("静默通知")
+
+# 应答回调查询
+await telegram.Send.AnswerCallback(callback_query_id, text="已处理", show_alert=False)
 
 # OneBot12 组合消息
 ob12_message = [
-    {"type": "text", "data": {"text": "复杂组合消息："}},
-    {"type": "mention", "data": {"user_id": "6117725680", "name": "用户名"}},
+    {"type": "text", "data": {"text": "复杂消息："}},
+    {"type": "mention", "data": {"user_id": "6117725680", "user_name": "用户名"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
 ]
 await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
-```
 
-### 不支持的方法提示
+# 发送贴纸
+await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-调用不支持的发送方法时，会自动发送文本提示：
-```python
-# 不支持的发送类型
-await telegram.Send.To("group", group_id).UnknownMethod("data")
-# 将发送：[不支持的发送类型] 方法名: UnknownMethod, 参数: [...]
+# 发送位置
+await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 ```
 
 ## 特有事件类型
 
-Telegram事件转换到OneBot12协议，其中标准字段完全遵守OneBot12协议，但存在以下差异：
+Telegram 事件转换遵循 OneBot12 标准，同时通过 `telegram_` 前缀提供平台扩展。
 
-### 核心差异点
+### 消息事件 detail_type 映射
 
-1. 特有事件类型：
-   - 内联查询：telegram_inline_query
-   - 回调查询：telegram_callback_query
-   - 投票事件：telegram_poll
-   - 投票答案：telegram_poll_answer
+| Telegram chat.type | OneBot12 detail_type | 发送目标类型 |
+|---|---|---|
+| `private` | `private` | `user` |
+| `group` | `group` | `group` |
+| `supergroup` | `group` | `group` |
+| `channel` | `channel` | `channel` |
 
-2. 扩展字段：
-   - 所有特有字段均以telegram_前缀标识
-   - 保留原始数据在telegram_raw字段
-   - 频道消息使用detail_type="channel"
+### 特有事件类型
 
-### 事件监听方式
+| detail_type | 说明 |
+|---|---|
+| `telegram_callback_query` | 回调查询（内联键盘按钮点击） |
+| `telegram_inline_query` | 内联查询 |
+| `telegram_chosen_inline_result` | 选择的内联结果 |
+| `telegram_poll` | 投票事件 |
+| `telegram_poll_answer` | 投票答案 |
+| `telegram_my_chat_member` | Bot 自身成员状态变更 |
+| `telegram_chat_member` | 聊天成员变更 |
+| `telegram_chat_join_request` | 加入聊天请求 |
+| `telegram_shipping_query` | 运费查询 |
+| `telegram_pre_checkout_query` | 预付款查询 |
 
-Telegram适配器支持两种方式监听事件：
+### 标准消息段类型
 
+转换后的消息段使用 OneBot12 标准格式：
+
+| 消息段类型 | 说明 | data 字段 |
+|---|---|---|
+| `text` | 纯文本（不含 @用户名） | `text` |
+| `mention` | @用户（标准 OB12） | `user_id`, `user_name` |
+| `reply` | 回复引用 | `message_id`, `user_id` |
+| `image` | 图片 | `file_id`, `url` |
+| `video` | 视频 | `file_id`, `url`, `duration`, `width`, `height` |
+| `voice` | 语音 | `file_id`, `url`, `duration` |
+| `audio` | 音频 | `file_id`, `url`, `duration`, `title`, `performer` |
+| `file` | 文件 | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
+| `location` | 位置 | `latitude`, `longitude`, 可选 `title`, `address` |
+
+### 平台扩展消息段
+
+以 `telegram_` 前缀标识的扩展消息段：
+
+| 消息段类型 | 说明 | data 字段 |
+|---|---|---|
+| `telegram_sticker` | 贴纸 | `file_id`, `emoji`, `sticker_type`, `url` |
+| `telegram_animation` | GIF 动画 | `file_id`, `url`, `duration`, `caption` |
+| `telegram_contact` | 联系人 | `phone_number`, `first_name`, `last_name`, `user_id` |
+| `telegram_inline_keyboard` | 内联键盘 | `inline_keyboard` |
+
+### 事件示例
+
+#### 群聊消息（含 @提及）
 ```python
-# 使用原始事件名
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
-
-# 使用映射后的事件名
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
+{
+  "type": "message",
+  "detail_type": "group",
+  "platform": "telegram",
+  "user_id": "6117725680",
+  "user_nickname": "WSu2059",
+  "group_id": "-1002850921906",
+  "message_id": "172",
+  "message": [
+    {"type": "text", "data": {"text": "/it.echo "}},
+    {"type": "mention", "data": {"user_id": "", "user_name": "@nm123_91178"}}
+  ],
+  "alt_message": "/it.echo @nm123_91178",
+  "telegram_chat": {
+    "id": -1002850921906,
+    "title": "ErisPulse",
+    "username": "erispulse",
+    "type": "supergroup"
+  }
+}
 ```
 
-### 特殊字段示例
-
+#### 回调查询事件
 ```python
-# 回调查询事件
 {
   "type": "notice",
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
   "user_nickname": "YingXinche",
-  "telegram_callback_data": {
-    "id": "cb_123",
-    "data": "callback_data",
-    "message_id": "msg_456"
-  }
+  "telegram_callback_id": "cb_123",
+  "telegram_callback_data": "callback_data",
+  "message_id": "msg_456"
 }
+```
 
-# 内联查询事件
+#### 内联查询事件
+```python
 {
-  "type": "notice",
+  "type": "request",
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
   "user_nickname": "YingXinche",
-  "telegram_inline_query": {
-    "id": "iq_789",
-    "query": "search_text",
-    "offset": "0"
-  }
+  "telegram_query_id": "iq_789",
+  "telegram_query_text": "search_text",
+  "telegram_query_offset": "0"
 }
+```
 
-# 频道消息
+#### 带内联键盘的消息
+```python
 {
   "type": "message",
-  "detail_type": "channel",
-  "message_id": "msg_345",
-  "channel_id": "channel_123",
-  "telegram_chat": {
-    "title": "News Channel",
-    "username": "news_official"
-  }
+  "detail_type": "group",
+  "message": [
+    {"type": "text", "data": {"text": "请选择："}},
+    {
+      "type": "telegram_inline_keyboard",
+      "data": {
+        "inline_keyboard": [
+          [{"text": "按钮1", "callback_data": "btn1"}],
+          [{"text": "访问", "url": "https://example.com"}]
+        ]
+      }
+    }
+  ]
 }
+```
+
+## Event Mixin 扩展方法
+
+适配器注册了以下平台专有方法，仅在 `platform == "telegram"` 时可用：
+
+### 消息相关
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `is_bot_message()` | `bool` | 判断消息是否来自机器人 |
+| `is_edited_message()` | `bool` | 判断是否为编辑过的消息 |
+| `is_topic_message()` | `bool` | 判断是否为话题/Topic 消息 |
+| `get_update_id()` | `int` | 获取 Telegram update ID |
+| `get_chat_title()` | `str` | 获取聊天标题 |
+| `get_chat_username()` | `str` | 获取聊天用户名 |
+| `get_forward_from()` | `dict` | 获取转发来源信息 |
+| `get_topic_id()` | `str` | 获取话题 ID |
+
+### 回调查询相关
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `get_callback_data()` | `str` | 获取回调查询的 callback_data |
+| `get_callback_id()` | `str` | 获取回调查询 ID（用于应答） |
+
+### 消息段数据提取
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `get_inline_keyboard()` | `list` | 获取消息中的内联键盘 |
+| `get_sticker_info()` | `dict` | 获取贴纸信息 |
+| `get_contact_info()` | `dict` | 获取联系人信息 |
+| `get_location()` | `dict` | 获取位置信息 |
+
+### 使用示例
+
+```python
+from ErisPulse.Core.Event import message, notice
+
+@message.on_message()
+async def handle_message(event):
+    if event.get("platform") != "telegram":
+        return
+
+    # 消息属性
+    if event.is_bot_message():
+        return  # 忽略机器人消息
+
+    if event.is_edited_message():
+        print("这是编辑过的消息")
+
+    # 聊天信息
+    title = event.get_chat_title()
+    username = event.get_chat_username()
+
+    # 转发来源
+    forward = event.get_forward_from()
+
+    # 消息段数据
+    sticker = event.get_sticker_info()
+    contact = event.get_contact_info()
+    location = event.get_location()
+    keyboard = event.get_inline_keyboard()
+
+    # 话题
+    if event.is_topic_message():
+        topic_id = event.get_topic_id()
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "telegram":
+        return
+
+    if event.get("detail_type") == "telegram_callback_query":
+        callback_data = event.get_callback_data()
+        callback_id = event.get_callback_id()
+
+        # 应答回调查询
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.AnswerCallback(callback_id, text="已点击")
+
+        # 回复消息
+        await event.reply(f"你点击了：{callback_data}")
 ```
 
 ## 扩展字段说明
 
 - 所有特有字段均以 `telegram_` 前缀标识
 - 保留原始数据在 `telegram_raw` 字段
+- 保留原始事件类型在 `telegram_raw_type` 字段
 - 频道消息使用 `detail_type="channel"`
-- 消息内容中的实体（如粗体、链接等）会转换为相应的消息段
-- 回复消息会添加 `telegram_reply` 类型的消息段
+- 私聊消息使用 `detail_type="private"`（发送时需转换为 `user`）
+- 话题消息包含 `thread_id` 字段
+- `@` 提及使用标准 `mention` 消息段类型（`type: "mention"`），文本中不含 @用户名
 
 ## 配置选项
 
@@ -8642,7 +8711,7 @@ Telegram 适配器支持以下配置选项：
 ### 代理配置
 - `proxy.host`: 代理服务器地址
 - `proxy.port`: 代理端口
-- `proxy.type`: 代理类型 ("socks4" 或 "socks5")
+- `proxy.type`: 代理类型 (`"socks4"` 或 `"socks5"`)
 
 ### 运行模式
 
@@ -8658,7 +8727,6 @@ proxy_enabled = false
 host = "127.0.0.1"
 port = 1080
 type = "socks5"
-```
 
 
 
@@ -8672,7 +8740,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 3.5.1
+- 对应模块版本: 3.10.1
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -8694,12 +8762,13 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支持的发送类型包括：
-- `.Text(text: str, buttons: List = None, parent_id: str = "")`：发送纯文本消息，可选添加按钮和父消息ID。
-- `.Html(html: str, buttons: List = None, parent_id: str = "")`：发送HTML格式消息。
-- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：发送Markdown格式消息。
-- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
-- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
-- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：发送文件消息，支持流式上传和自定义文件名。
+- `.Text(text: str)`：发送纯文本消息。
+- `.Html(html: str)`：发送HTML格式消息。
+- `.Markdown(markdown: str)`：发送Markdown格式消息。
+- `.A2UI(text: str)`：发送A2UI格式消息。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：发送图片消息，支持流式上传和自定义文件名。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：发送视频消息，支持流式上传和自定义文件名。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：发送文件消息，支持流式上传和自定义文件名。
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量发送消息。
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：编辑已有消息。
 - `.Recall(msg_id: str)`：撤回消息。
@@ -8731,7 +8800,7 @@ buttons = [
         {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Text("带按钮的消息", buttons=buttons)
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("带按钮的消息")
 ```
 > **注意：**
 > - 只有用户点击了**按钮汇报事件**的按钮才会收到推送，**复制**和**跳转URL**均无法收到推送。
@@ -8798,7 +8867,9 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
 1. 特有事件类型：
     - 表单（如表单指令）：yunhu_form
+    - 表情包/贴纸消息段：yunhu_expression
     - 按钮点击：yunhu_button_click
+    - A2UI按钮点击：yunhu_a2ui_button
     - 机器人设置：yunhu_bot_setting
     - 快捷菜单：yunhu_shortcut_menu
 2. 扩展字段：
@@ -8840,6 +8911,103 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   }
 }
 
+# A2UI按钮事件
+{
+  "type": "notice",
+  "detail_type": "yunhu_a2ui_button",
+  "user_id": "操作用户ID",
+  "user_nickname": "用户昵称",
+  "message_id": "消息ID",
+  "yunhu_a2ui": {
+    "recv_id": "接收者ID",
+    "recv_type": "接收者类型",
+    "action_name": "操作名称",
+    "source_component_id": "来源组件ID",
+    "form_context": {},
+    "interaction_json": "交互数据JSON字符串"
+  }
+}
+
+### 按钮点击事件处理示例
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    """处理云湖通知事件
+
+    使用通用的 on_notice() 装饰器来处理所有通知事件，
+    然后通过 detail_type 区分不同类型的通知
+    event.reply() 会自动通过云湖平台回复
+    """
+    # 检查是否是按钮点击事件
+    if event.get("detail_type") == "yunhu_button_click":
+        user_id = event.get_user_id()
+        user_nickname = event.get_user_nickname()
+        button_value = event.get("yunhu_button", {}).get("value", "")
+
+        print(f"用户 {user_nickname}({user_id}) 点击了按钮: {button_value}")
+
+        # 使用 event.reply() 自动回复（会根据平台自动选择正确的发送方式）
+        if button_value == "confirm":
+            await event.reply("你点击了确认按钮！")
+        elif button_value == "cancel":
+            await event.reply("操作已取消")
+        else:
+            await event.reply(f"收到你的选择: {button_value}")
+
+    # 处理快捷菜单事件
+    elif event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get("yunhu_menu", {}).get("id", "")
+        await event.reply(f"触发了快捷菜单: {menu_id}")
+
+    # 处理机器人设置变更
+    elif event.get("detail_type") == "yunhu_bot_setting":
+        settings = event.get("yunhu_setting", {})
+        await event.reply(f"设置已更新: {settings}")
+
+    # 处理A2UI按钮事件
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI操作: {action_name}, 表单数据: {form_context}")
+```
+
+### 使用链式调用发送带按钮消息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+buttons = [
+    [
+        {"text": "确认", "actionType": 3, "value": "confirm"},
+        {"text": "取消", "actionType": 3, "value": "cancel"},
+        {"text": "查看详情", "actionType": 1, "url": "http://example.com/detail"}
+    ]
+]
+
+# 发送带按钮的消息到群组
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("请确认以下操作")
+
+# 发送带按钮的消息到用户私聊
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("请选择你的偏好设置")
+```
+
+### 发送A2UI消息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+# 发送A2UI消息
+await yunhu.Send.To("user", user_id).A2UI("A2UI交互卡片内容")
+```
+
 # 机器人设置
 {
   "type": "notice",
@@ -8877,8 +9045,50 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 - `self.user_id` 表示机器人ID（从配置中的bot_id获取）
 - 表单指令通过 `yunhu_command` 字段提供结构化数据
 - 按钮点击事件通过 `yunhu_button` 字段提供按钮相关信息
+- A2UI按钮事件通过 `yunhu_a2ui` 字段提供A2UI交互相关信息
 - 机器人设置变更通过 `yunhu_setting` 字段提供设置项数据
 - 快捷菜单操作通过 `yunhu_menu` 字段提供菜单相关信息
+- 表情包/贴纸消息通过 `yunhu_expression` 消息段提供贴纸数据（sticker_id、贴纸包ID、图片尺寸等）
+
+### 表情包/贴纸消息段 (yunhu_expression)
+
+当用户发送表情包或贴纸时，消息段类型为 `yunhu_expression`：
+
+```json
+{
+  "type": "yunhu_expression",
+  "data": {
+    "sticker_id": "35154",
+    "sticker_pack_id": "1670",
+    "expression_id": "0",
+    "image_name": "sticker/fabb9077f2ba302402ea871cab3686ad7a3fc52c.gif",
+    "width": 500,
+    "height": 500
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `sticker_id` | string | 贴纸唯一标识 |
+| `sticker_pack_id` | string | 贴纸包ID |
+| `expression_id` | string | 表情ID |
+| `image_name` | string | 表情图片文件路径 |
+| `width` | int | 图片宽度（可选） |
+| `height` | int | 图片高度（可选） |
+
+使用示例：
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "yunhu":
+        for segment in event.get("message", []):
+            if segment.get("type") == "yunhu_expression":
+                data = segment["data"]
+                print(f"收到表情包: sticker_id={data['sticker_id']}, 包ID={data['sticker_pack_id']}")
+```
 
 ---
 

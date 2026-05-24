@@ -115,27 +115,28 @@ flowchart TD
     D --> D1["Load Adapters from PyPI"]
     D --> D2["Load Modules from PyPI"]
     D1 & D2 --> E["Register Adapters"]
-    E --> F["Register Modules"]
+    E --> E1["Start Adapters"]
+    E1 --> F["Register Modules"]
     F --> F1{"Dependency Validation"}
     F1 -->|"Missing Dependencies"| F2["Skip module and record warning"]
     F1 -->|"Dependencies Met"| F3["Topological Sort<br/> (Kahn Algorithm + Priority)"]
     F3 --> G["Initialize Modules in Order<br/> (Instantiation + on_load)"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["Start Router Server"]
-    I --> J["Asynchronously Start Platform Adapters"]
-    J --> K["Running"]
+    G --> H["Start Router Server"]
+    H --> K["Running"]
 ```
 
 ### Initialization Stage Breakdown
 
 1. **Environment Preparation** - Load TOML configuration files, set up global exception handling
 2. **Parallel Discovery** - Discover adapters and modules from installed PyPI packages simultaneously
-3. **Registration Phase** - Register discovered adapters and modules to their corresponding managers
-4. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
-5. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
-6. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-7. **Adapter Startup** - Start the router server (FastAPI), asynchronously start platform adapter connections
+3. **Adapter Registration** - Register discovered adapters to the adapter manager
+4. **Adapter Startup** - Asynchronously start platform adapter connections (before module initialization, ensuring modules can immediately send messages)
+5. **Module Registration** - Register discovered modules to the module manager
+6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
+7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
+8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
+9. **Start Router Server** - Start the router server (FastAPI)
 
 ## Event Handling Process
 
@@ -736,6 +737,12 @@ async def main():
     print("Initializing ErisPulse...")
     # Run SDK and keep it running
     await sdk.run(keep_running=True)
+    # Or
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # You can do whatever you want
+    # Using await sdk.init() is equivalent to `sdk.run(keep_running=False)`
+
     print("ErisPulse initialization complete!")
 
 if __name__ == "__main__":
@@ -895,6 +902,7 @@ async def hello_handler(event):
 
 ## Next Steps
 
+- [Advanced Initialization Control](advanced-init.md) - Hook system, manual control, embedded integration
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions
@@ -6513,7 +6521,7 @@ class MyConverter:
 
 # Publishing and Module Store Guide
 
-Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
+Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to conveniently discover and install them.
 
 ## Module Store Overview
 
@@ -6544,27 +6552,13 @@ You can also visit the [ErisPulse official website](https://www.erisdev.com/#mar
 | Module | Extend bot functionality, implement business logic | `erispulse.module` |
 | Adapter | Connect to new messaging platforms | `erispulse.adapter` |
 
-## Publishing Process
+## Quick Publishing
 
-The entire publishing process is divided into four steps: Prepare Project → Publish to PyPI → Submit to Module Store → Review and Launch.
+The entire publishing process only requires three steps: Configure Project → Publish to PyPI → Submit to Module Store.
 
-### Step 1: Prepare Project
+### 1. Configure pyproject.toml
 
-Ensure your project contains the following files:
-
-```
-MyModule/
-├── pyproject.toml      # Project configuration (required)
-├── README.md           # Project description (required)
-├── LICENSE             # Open source license (recommended)
-└── MyModule/
-    ├── __init__.py     # Package entry point
-    └── ...
-```
-
-### Step 2: Configure pyproject.toml
-
-According to the type you want to publish, correctly configure `entry-points`:
+Ensure your project directory contains `pyproject.toml` and `README.md`, and configure entry-points based on the type:
 
 #### Module
 
@@ -6588,7 +6582,307 @@ dependencies = [
 
 ```toml
 [project]
-name
+name = "ErisPulse-MyAdapter"
+version = "1.0.0"
+description = "Adapter functionality description"
+requires-python = ">=3.10"
+
+[project.entry-points."erispulse.adapter"]
+"myplatform" = "MyAdapter:MyAdapter"
+```
+
+> **Note**: It is recommended that package names start with `ErisPulse-` for easy recognition by users. The key name in the entry-point (such as `"MyModule"`) will serve as the access name for the module in the SDK.
+
+### 2. Publish to PyPI
+
+```bash
+# Build + publish (requires PyPI account)
+pip install build twine
+python -m build
+python -m twine upload dist/*
+```
+
+Verify successful installation after publishing:
+
+```bash
+pip install ErisPulse-MyModule
+```
+
+### 3. Submit to Module Store
+
+Go to the [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", fill in the module information after logging in.
+
+Key points to fill in:
+- Module name, description, repository URL
+- Minimum SDK version: If unsure, use the version number from the [latest ErisPulse release](https://pypi.org/project/ErisPulse/)
+
+Submission takes effect immediately, users can install through the module source. The module will be marked as "Unverified" and changed to "Verified" after maintainer review.
+
+> **Regarding Verification Status**:
+> - "Unverified" only indicates that it has not undergone official review, not that there is an issue with the module
+> - Users will receive a risk warning when installing unverified modules through `epsdk install` and need to confirm before proceeding with installation
+
+## Update Published Modules
+
+1. Update the `version` in `pyproject.toml`
+2. Rebuild and upload: `python -m build && python -m twine upload dist/*`
+3. The Module Store will automatically sync the latest version from PyPI
+
+Users can upgrade by running `epsdk upgrade MyModule`.
+
+## Development Mode Testing
+
+Before formal publishing, you can test locally in editable mode:
+
+```bash
+epsdk install -e /path/to/MyModule
+# or
+pip install -e /path/to/MyModule
+```
+
+## Common Questions
+
+### Do package names have to start with `ErisPulse-`?
+
+Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
+
+### Can a single package register multiple modules?
+
+Yes. Configure multiple key-value pairs in `entry-points`:
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### How long does the review take?
+
+Usually completed within 1-3 business days. You can check the review progress in Issues.
+
+## Distribute Applications via Docker Images
+
+If your application is not suitable for publishing to PyPI (e.g., contains private dependencies, requires pre-configured environment), you can publish Docker images through **GitHub Container Registry (GHCR)** for other users to `docker pull` and start with one command.
+
+### Applicable Scenarios
+
+- You have a **complete bot application** (modules + configuration + entry script) and want one-click distribution
+- The module/adapter depends on **private packages** or has special installation processes, not suitable for PyPI
+- You want to provide a **ready-to-use** deployment solution to lower the user's entry barrier
+
+### 1. Create Dockerfile
+
+Build based on the official ErisPulse image:
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    ERISPULSE_DASHBOARD_TOKEN=""
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt
+
+COPY . .
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+If the module is not published to PyPI, you can directly copy the module source code into the image:
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1
+
+WORKDIR /app
+
+RUN uv pip install --system ErisPulse ErisPulse-Dashboard
+
+COPY my_modules/ /app/my_modules/
+COPY main.py .
+COPY config/ /app/config/
+
+RUN uv pip install --system -e /app/my_modules/MyModule
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+### 2. Create GitHub Actions Workflow
+
+Create in `.github/workflows/docker-publish.yml`:
+
+```yaml
+name: Publish Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/my-bot
+
+jobs:
+  docker-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch support)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```
+
+> `GITHUB_TOKEN` is automatically provided by GitHub Actions, no need to manually create secrets.
+
+### 3. Trigger Build
+
+Push code or create a Tag to automatically build:
+
+```bash
+# Push to main branch to trigger
+git push origin main
+
+# Or create a Tag to trigger
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+You can also trigger manually in the repository's **Actions** page.
+
+### 4. Set Image as Public
+
+GHCR images are **private** by default, you need to set them as Public in GitHub for other users to pull without login:
+
+1. Go to Repository → **Packages** → Click the corresponding Package
+2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
+
+### 5. User Usage
+
+After building, other users can run directly:
+
+```bash
+docker pull ghcr.io/<your-username>/my-bot:latest
+
+docker run -d \
+  --name my-bot \
+  -p 8000:8000 \
+  -v ./config:/app/config \
+  -e ERISPULSE_DASHBOARD_TOKEN=your-token \
+  ghcr.io/<your-username>/my-bot:latest
+```
+
+Or use `docker-compose.yml`:
+
+```yaml
+services:
+  my-bot:
+    image: ghcr.io/<your-username>/my-bot:latest
+    container_name: my-bot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=Asia/Shanghai
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
+```
+
+### Publish to Docker Hub Simultaneously
+
+Extend the workflow by adding Docker Hub login step and increasing Docker Hub address in `images`:
+
+```yaml
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            docker.io/<your-dockerhub-username>/my-bot
+            ghcr.io/${{ github.repository_owner }}/my-bot
+```
+
+> Need to add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` in repository **Settings → Secrets**.
+
+### Docker Images vs PyPI Publishing
+
+| Feature | Docker Image (GHCR) | PyPI Publishing |
+|---------|---------------------|-----------------|
+| Distribution Method | `docker pull` one-click run | `pip install` + manual configuration |
+| Scope | Complete application/solution | Single module/adapter |
+| Private Dependencies | Naturally supported | Requires private PyPI source |
+| Module Store | Not applicable | Can be submitted to Module Store |
+| Multi-arch | Supports amd64/arm64 | Architecture-independent |
+
+The two methods are not mutually exclusive—you can publish modules to the Module Store via PyPI while also providing ready-to-use Docker images via GHCR.
 
 
 
@@ -12200,7 +12494,7 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 
 ## Document Information
 
-- Corresponding Module Version: 3.5.0
+- Corresponding Module Version: 3.6.5
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -12208,6 +12502,7 @@ TelegramAdapter is an adapter built based on the Telegram Bot API, supporting mu
 - Platform Introduction: Telegram is a cross-platform instant messaging software
 - Adapter Name: TelegramAdapter
 - Supported Protocols/API Versions: Telegram Bot API
+- Session Type Mapping: `private` → Use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
 
 ## Supported Message Sending Types
 
@@ -12221,175 +12516,322 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 ### Basic Sending Methods
 
-- `.Text(text: str)`: Sends a plain text message.
-- `.Face(emoji: str)`: Sends an emoji message.
-- `.Markdown(text: str, content_type: str = "MarkdownV2")`: Sends a Markdown format message.
-- `.HTML(text: str)`: Sends an HTML format message.
+| Method | Description | Parameters |
+|--------|-------------|------------|
+| `.Text(text)` | Sends a plain text message | `text: str` |
+| `.Face(emoji)` | Sends a dice emoji | `emoji: str` (e.g., 🎲 🎯 🏀) |
+| `.Markdown(text, content_type)` | Sends a Markdown format message | `content_type` defaults to `"MarkdownV2"` |
+| `.HTML(text)` | Sends an HTML format message | `text: str` |
+| `.Sticker(file)` | Sends a sticker | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | Sends a location | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | Sends a venue | With title and address |
+| `.Contact(phone, first, last)` | Sends a contact | With phone number and name |
 
 ### Media Sending Methods
 
-All media methods support two input methods:
-- **URL Method**: Pass a string URL directly
-- **File Upload**: Pass `bytes` type data
+All media methods support both `bytes` (upload) and `str` (file_id / URL) as input:
 
-- `.Image(file: bytes | str, caption: str = "", content_type: str = None)`: Sends an image message
-- `.Video(file: bytes | str, caption: str = "", content_type: str = None)`: Sends a video message
-- `.Voice(file: bytes | str, caption: str = "")`: Sends a voice message
-- `.Audio(file: bytes | str, caption: str = "", content_type: str = None)`: Sends an audio message
-- `.File(file: bytes | str, caption: str = "")`: Sends a file message
-- `.Document(file: bytes | str, caption: str = "", content_type: str = None)`: Sends a document message (Alias of File)
+| Method | Description |
+|--------|-------------|
+| `.Image(file, caption, content_type)` | Sends an image |
+| `.Video(file, caption, content_type)` | Sends a video |
+| `.Voice(file, caption)` | Sends a voice message |
+| `.Audio(file, caption, content_type)` | Sends an audio message |
+| `.File(file, caption)` | Sends a file |
+| `.Document(file, caption, content_type)` | Alias of File |
 
 ### Message Management Methods
 
-- `.Edit(message_id: int, text: str, content_type: str = None)`: Edits an existing message.
-- `.Recall(message_id: int)`: Deletes a specified message.
+| Method | Description |
+|--------|-------------|
+| `.Edit(message_id, text, content_type)` | Edits an existing message |
+| `.Recall(message_id)` | Deletes a specified message |
+| `.Forward(from_chat_id, message_id)` | Forwards a message (preserving source) |
+| `.CopyMessage(from_chat_id, message_id)` | Copies a message (without source) |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | Answers a callback query |
 
 ### Raw Message Sending
 
 - `.Raw_ob12(message: List[Dict])`: Sends a OneBot12 standard format message
-  - Supports complex combined messages (text + @user + reply + media)
-  - Automatically treats text as the media message's caption
 - `.Raw_json(json_str: str)`: Sends a raw JSON format message
 
 ### Chained Modifying Methods
 
-- `.At(user_id: str)`: Mentions a specific user (can be called multiple times)
-- `.AtAll()`: Mentions all members
-- `.Reply(message_id: str)`: Replies to a specified message
-
-### Method Name Mapping
-
-Sending methods support case-insensitive calls and automatically convert to standard method names via a mapping table:
-```python
-# The following are equivalent
-telegram.Send.To("group", 123).Text("hello")
-telegram.Send.To("group", 123).text("hello")
-telegram.Send.To("group", 123).TEXT("hello")
-```
+| Method | Description |
+|--------|-------------|
+| `.At(user_id)` | Mentions a specific user (implemented via Telegram entities, can be called multiple times) |
+| `.AtAll()` | Mentions all members (sends `@All` text) |
+| `.Reply(message_id)` | Replies to a specified message |
+| `.Keyboard(inline_keyboard)` | Sets an inline keyboard (`list[list[dict]]`) |
+| `.ProtectContent(protect)` | Protects content (prevents forwarding and saving) |
+| `.Silent(silent)` | Sends silently (without notifying users) |
 
 ### Sending Examples
 
 ```python
 # Basic text sending
-await telegram.Send.To("group", group_id).Text("Hello World!")
+await telegram.Send.To("user", user_id).Text("Hello World!")
 
-# Media sending (URL Method)
-await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="This is an image")
+# Message with inline keyboard
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+keyboard = [
+    [{"text": "Button 1", "callback_data": "btn1"}, {"text": "Button 2", "callback_data": "btn2"}],
+    [{"text": "Visit Website", "url": "https://example.com"}],
+]
+await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Please choose:")
 
-# Media sending (File Upload)
-with open("image.jpg", "rb") as f:
-    await telegram.Send.To("group", group_id).Image(f.read())
+# Media sending (URL method)
+await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="Image")
 
 # @User
 await telegram.Send.To("group", group_id).At("6117725680").Text("Hello!")
 
-# Reply to message
-await telegram.Send.To("group", group_id).Reply("12345").Text("Reply content")
+# Reply + Protect content
+await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Confidential message")
 
-# Combined usage
-await telegram.Send.To("group", group_id).Reply("12345").At("6117725680").Image("https://example.com/image.jpg", caption="Look at this picture")
+# Silent sending
+await telegram.Send.To("group", group_id).Silent().Text("Silent notification")
+
+# Answer callback query
+await telegram.Send.AnswerCallback(callback_query_id, text="Processed", show_alert=False)
 
 # OneBot12 combined message
 ob12_message = [
-    {"type": "text", "data": {"text": "Complex combined message:"}},
-    {"type": "mention", "data": {"user_id": "6117725680", "name": "Username"}},
+    {"type": "text", "data": {"text": "Complex message:"}},
+    {"type": "mention", "data": {"user_id": "6117725680", "user_name": "Username"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
 ]
 await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
-```
 
-### Unsupported Method Notifications
+# Send sticker
+await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-When calling unsupported sending methods, a text notification is automatically sent:
-```python
-# Unsupported sending type
-await telegram.Send.To("group", group_id).UnknownMethod("data")
-# Will send: [Unsupported sending type] Method name: UnknownMethod, Parameters: [...]
+# Send location
+await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 ```
 
 ## Specific Event Types
 
-Telegram events are converted to the OneBot12 protocol. While standard fields fully comply with the OneBot12 protocol, the following differences exist:
+Telegram events follow the OneBot12 standard, with platform extensions provided through the `telegram_` prefix.
 
-### Core Differences
+### Message Event detail_type Mapping
 
-1. Specific Event Types:
-   - Inline Query: `telegram_inline_query`
-   - Callback Query: `telegram_callback_query`
-   - Poll Event: `telegram_poll`
-   - Poll Answer: `telegram_poll_answer`
+| Telegram chat.type | OneBot12 detail_type | Target Type for Sending |
+|---|---|---|
+| `private` | `private` | `user` |
+| `group` | `group` | `group` |
+| `supergroup` | `group` | `group` |
+| `channel` | `channel` | `channel` |
 
-2. Extended Fields:
-   - All specific fields are identified with the `telegram_` prefix
-   - Original data is preserved in the `telegram_raw` field
-   - Channel messages use `detail_type="channel"`
+### Specific Event Types
 
-### Event Listening Methods
+| detail_type | Description |
+|---|---|
+| `telegram_callback_query` | Callback query (inline button click) |
+| `telegram_inline_query` | Inline query |
+| `telegram_chosen_inline_result` | Chosen inline result |
+| `telegram_poll` | Poll event |
+| `telegram_poll_answer` | Poll answer |
+| `telegram_my_chat_member` | Bot's own chat member status change |
+| `telegram_chat_member` | Chat member change |
+| `telegram_chat_join_request` | Chat join request |
+| `telegram_shipping_query` | Shipping query |
+| `telegram_pre_checkout_query` | Pre-checkout query |
 
-The Telegram adapter supports two methods for listening to events:
+### Standard Message Segment Types
 
+Converted message segments use OneBot12 standard format:
+
+| Segment Type | Description | data field |
+|---|---|---|
+| `text` | Plain text (without @username) | `text` |
+| `mention` | @mention (standard OB12) | `user_id`, `user_name` |
+| `reply` | Reply reference | `message_id`, `user_id` |
+| `image` | Image | `file_id`, `url` |
+| `video` | Video | `file_id`, `url`, `duration`, `width`, `height` |
+| `voice` | Voice message | `file_id`, `url`, `duration` |
+| `audio` | Audio | `file_id`, `url`, `duration`, `title`, `performer` |
+| `file` | File | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
+| `location` | Location | `latitude`, `longitude`, optional `title`, `address` |
+
+### Platform Extension Message Segments
+
+Extension message segments identified with `telegram_` prefix:
+
+| Segment Type | Description | data field |
+|---|---|---|
+| `telegram_sticker` | Sticker | `file_id`, `emoji`, `sticker_type`, `url` |
+| `telegram_animation` | GIF animation | `file_id`, `url`, `duration`, `caption` |
+| `telegram_contact` | Contact | `phone_number`, `first_name`, `last_name`, `user_id` |
+| `telegram_inline_keyboard` | Inline keyboard | `inline_keyboard` |
+
+### Event Examples
+
+#### Group Chat Message (with @mention)
 ```python
-# Using original event name
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
-
-# Using mapped event name
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
+{
+  "type": "message",
+  "detail_type": "group",
+  "platform": "telegram",
+  "user_id": "6117725680",
+  "user_nickname": "WSu2059",
+  "group_id": "-1002850921906",
+  "message_id": "172",
+  "message": [
+    {"type": "text", "data": {"text": "/it.echo "}},
+    {"type": "mention", "data": {"user_id": "", "user_name": "@nm123_91178"}}
+  ],
+  "alt_message": "/it.echo @nm123_91178",
+  "telegram_chat": {
+    "id": -1002850921906,
+    "title": "ErisPulse",
+    "username": "erispulse",
+    "type": "supergroup"
+  }
+}
 ```
 
-### Special Field Examples
-
+#### Callback Query Event
 ```python
-# Callback Query event
 {
   "type": "notice",
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
   "user_nickname": "YingXinche",
-  "telegram_callback_data": {
-    "id": "cb_123",
-    "data": "callback_data",
-    "message_id": "msg_456"
-  }
+  "telegram_callback_id": "cb_123",
+  "telegram_callback_data": "callback_data",
+  "message_id": "msg_456"
 }
+```
 
-# Inline Query event
+#### Inline Query Event
+```python
 {
-  "type": "notice",
+  "type": "request",
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
   "user_nickname": "YingXinche",
-  "telegram_inline_query": {
-    "id": "iq_789",
-    "query": "search_text",
-    "offset": "0"
-  }
+  "telegram_query_id": "iq_789",
+  "telegram_query_text": "search_text",
+  "telegram_query_offset": "0"
 }
+```
 
-# Channel message
+#### Message with Inline Keyboard
+```python
 {
   "type": "message",
-  "detail_type": "channel",
-  "message_id": "msg_345",
-  "channel_id": "channel_123",
-  "telegram_chat": {
-    "title": "News Channel",
-    "username": "news_official"
-  }
+  "detail_type": "group",
+  "message": [
+    {"type": "text", "data": {"text": "Please choose:"}},
+    {
+      "type": "telegram_inline_keyboard",
+      "data": {
+        "inline_keyboard": [
+          [{"text": "Button 1", "callback_data": "btn1"}],
+          [{"text": "Visit", "url": "https://example.com"}]
+        ]
+      }
+    }
+  ]
 }
+```
+
+## Event Mixin Extension Methods
+
+The adapter registers platform-specific methods that are only available when `platform == "telegram"`:
+
+### Message-related
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `is_bot_message()` | `bool` | Checks if the message is from a bot |
+| `is_edited_message()` | `bool` | Checks if the message was edited |
+| `is_topic_message()` | `bool` | Checks if it's a topic/Topic message |
+| `get_update_id()` | `int` | Gets Telegram update ID |
+| `get_chat_title()` | `str` | Gets chat title |
+| `get_chat_username()` | `str` | Gets chat username |
+| `get_forward_from()` | `dict` | Gets forward source information |
+| `get_topic_id()` | `str` | Gets topic ID |
+
+### Callback Query-related
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `get_callback_data()` | `str` | Gets callback_data from callback query |
+| `get_callback_id()` | `str` | Gets callback query ID (for answering) |
+
+### Message Segment Data Extraction
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `get_inline_keyboard()` | `list` | Gets inline keyboard from message |
+| `get_sticker_info()` | `dict` | Gets sticker information |
+| `get_contact_info()` | `dict` | Gets contact information |
+| `get_location()` | `dict` | Gets location information |
+
+### Usage Examples
+
+```python
+from ErisPulse.Core.Event import message, notice
+
+@message.on_message()
+async def handle_message(event):
+    if event.get("platform") != "telegram":
+        return
+
+    # Message properties
+    if event.is_bot_message():
+        return  # Ignore bot messages
+
+    if event.is_edited_message():
+        print("This is an edited message")
+
+    # Chat information
+    title = event.get_chat_title()
+    username = event.get_chat_username()
+
+    # Forward source
+    forward = event.get_forward_from()
+
+    # Message segment data
+    sticker = event.get_sticker_info()
+    contact = event.get_contact_info()
+    location = event.get_location()
+    keyboard = event.get_inline_keyboard()
+
+    # Topic
+    if event.is_topic_message():
+        topic_id = event.get_topic_id()
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "telegram":
+        return
+
+    if event.get("detail_type") == "telegram_callback_query":
+        callback_data = event.get_callback_data()
+        callback_id = event.get_callback_id()
+
+        # Answer callback query
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.AnswerCallback(callback_id, text="Clicked")
+
+        # Reply to message
+        await event.reply(f"You clicked: {callback_data}")
 ```
 
 ## Extended Field Descriptions
 
 - All specific fields are identified with the `telegram_` prefix
 - Original data is preserved in the `telegram_raw` field
+- Original event type is preserved in the `telegram_raw_type` field
 - Channel messages use `detail_type="channel"`
-- Entities within message content (e.g., bold, links) are converted into corresponding message segments
-- Reply messages will have a message segment of type `telegram_reply` added
+- Private chat messages use `detail_type="private"` (must be converted to `user` when sending)
+- Topic messages include a `thread_id` field
+- `@` mentions use the standard `mention` message segment type (`type: "mention"`), without @username in the text
 
 ## Configuration Options
 
@@ -12402,7 +12844,7 @@ The Telegram adapter supports the following configuration options:
 ### Proxy Configuration
 - `proxy.host`: Proxy server address
 - `proxy.port`: Proxy port
-- `proxy.type`: Proxy type ("socks4" or "socks5")
+- `proxy.type`: Proxy type (`"socks4"` or `"socks5"`)
 
 ### Operating Mode
 
@@ -12431,12 +12873,12 @@ YunhuAdapter is an adapter built on the Yunhu protocol, integrating all Yunhu fu
 
 ## Document Information
 
-- Corresponding Module Version: 3.5.1
+- Corresponding Module Version: 3.10.1
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Overview: Yunhu (Yunhu) is an enterprise-level instant messaging platform.
+- Platform Overview: Yunhu (Yunhu) is an enterprise-level instant messaging platform
 - Adapter Name: YunhuAdapter
 - Multi-account Support: Supports identifying and configuring multiple Yunhu bot accounts via `bot_id`
 - Chained Modifier Support: Supports chainable modifier methods such as `.Reply()`
@@ -12453,12 +12895,13 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 Supported sending types include:
-- `.Text(text: str, buttons: List = None, parent_id: str = "")`: Send plain text message, with optional buttons and parent message ID.
-- `.Html(html: str, buttons: List = None, parent_id: str = "")`: Send HTML format message.
-- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`: Send Markdown format message.
-- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send image message, supports streaming upload and custom filename.
-- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send video message, supports streaming upload and custom filename.
-- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`: Send file message, supports streaming upload and custom filename.
+- `.Text(text: str)`: Send plain text message.
+- `.Html(html: str)`: Send HTML format message.
+- `.Markdown(markdown: str)`: Send Markdown format message.
+- `.A2UI(text: str)`: Send A2UI format message.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Send image message, supports streaming upload and custom filename.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Send video message, supports streaming upload and custom filename.
+- `.File(file: bytes, stream: bool = False, filename: str = None)`: Send file message, supports streaming upload and custom filename.
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Send messages in batch.
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edit existing message.
 - `.Recall(msg_id: str)`: Recall message.
@@ -12490,10 +12933,10 @@ buttons = [
         {"text": "Report Event", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Text("Message with buttons", buttons=buttons)
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
 > **Note:**
-> - Push notifications are only received when a user clicks the **"Report Event"** button. Neither **"Copy"** nor **"Jump URL"** will trigger a push notification.
+> - Only users clicking the **"Report Event"** button will receive push notifications. Neither **"Copy"** nor **"Jump URL"** will trigger a push notification.
 
 ### Chained Modifier Methods (Composable)
 
@@ -12557,7 +13000,9 @@ Must detect `platform=="yunhu"` before using platform-specific features.
 
 1. Platform-Specific Event Types:
     - Forms (e.g., Form command): `yunhu_form`
+    - Expression/Sticker Message Segment: `yunhu_expression`
     - Button Click: `yunhu_button_click`
+    - A2UI Button Click: `yunhu_a2ui_button`
     - Bot Setting: `yunhu_bot_setting`
     - Shortcut Menu: `yunhu_shortcut_menu`
 2. Extended Fields:
@@ -12599,154 +13044,59 @@ Must detect `platform=="yunhu"` before using platform-specific features.
   }
 }
 
-# Bot setting
+# A2UI Button event
 {
   "type": "notice",
-  "detail_type": "yunhu_bot_setting",
-  "group_id": "Group ID (may be empty)",
+  "detail_type": "yunhu_a2ui_button",
+  "user_id": "User ID who performed the action",
   "user_nickname": "User nickname",
-  "yunhu_setting": {
-    "SettingItemID": {
-      "id": "Setting Item ID",
-      "type": "input/radio/checkbox/select/switch",
-      "value": "Setting value"
-    }
+  "message_id": "Message ID",
+  "yunhu_a2ui": {
+    "recv_id": "Receiver ID",
+    "recv_type": "Receiver type",
+    "action_name": "Action name",
+    "source_component_id": "Source component ID",
+    "form_context": {},
+    "interaction_json": "Interaction data JSON string"
   }
 }
 
-# Shortcut menu
-{
-  "type": "notice",
-  "detail_type": "yunhu_shortcut_menu",
-  "user_id": "User ID who triggered the menu",
-  "user_nickname": "User nickname",
-  "group_id": "Group ID (if group chat)",
-  "yunhu_menu": {
-    "id": "Menu ID",
-    "type": "Menu type (integer)",
-    "action": "Menu action (integer)"
-  }
-}
-```
-
-## Extended Field Description
-
-- All platform-specific fields are identified with the `yunhu_` prefix to avoid conflicts with standard fields.
-- Original data is preserved in the `yunhu_raw` field for easy access to complete raw data from the Yunhu platform.
-- `self.user_id` represents the bot ID (obtained from `bot_id` in the configuration).
-- Form commands provide structured data via the `yunhu_command` field.
-- Button click events provide button-related information via the `yunhu_button` field.
-- Bot setting changes provide setting item data via the `yunhu_setting` field.
-- Shortcut menu operations provide menu-related information via the `yunhu_menu` field.
-
----
-
-## Multi-Bot Configuration
-
-### Configuration Description
-
-The Yunhu adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
-
-```toml
-# config.toml
-[Yunhu_Adapter.bots.bot1]
-bot_id = "30535459"  # Bot ID (Required)
-token = "your_bot1_token"  # Bot token (Required)
-webhook_path = "/webhook/bot1"  # Webhook path (Optional, default to "/webhook")
-enabled = true  # Whether to enable (Optional, default to true)
-
-[Yunhu_Adapter.bots.bot2]
-bot_id = "12345678"  # ID of the second bot
-token = "your_bot2_token"  # Token of the second bot
-webhook_path = "/webhook/bot2"  # Independent webhook path
-enabled = true
-```
-
-**Configuration Item Description:**
-- `bot_id`: Unique identifier ID of the bot (Required), used to identify which bot triggered the event.
-- `token`: API token provided by the Yunhu platform (Required).
-- `webhook_path`: HTTP path to receive Yunhu events (Optional, default to "/webhook").
-- `enabled`: Whether to enable this bot (Optional, default to true).
-
-**Important Notes:**
-1. Events from the Yunhu platform do not contain the bot ID, therefore it must be explicitly specified in the configuration as `bot_id`.
-2. Each bot should have an independent `webhook_path` to receive respective webhook events.
-3. When configuring webhooks on the Yunhu platform, please configure the corresponding URL for each bot, for example:
-   - Bot1: `https://your-domain.com/webhook/bot1`
-   - Bot2: `https://your-domain.com/webhook/bot2`
-
-### Specifying Bot using Send DSL
-
-You can specify which bot to use for sending messages via the `Using()` method. This method supports two parameters:
-- **Account Name**: The bot name in the configuration (e.g., `bot1`, `bot2`)
-- **bot_id**: The `bot_id` value in the configuration
+### Button Click Event Handling Example
 
 ```python
-from ErisPulse.Core import adapter
-yunhu = adapter.get("yunhu")
+from ErisPulse.Core.Event import notice
 
-# Send message using account name
-await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    """Handle Yunhu notice events
 
-# Send message using bot_id (automatically matches corresponding account)
-await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
+    Use the generic on_notice() decorator to handle all notice events,
+    then distinguish different types through detail_type
+    event.reply() will automatically reply via the Yunhu platform
+    """
+    # Check if it's a button click event
+    if event.get("detail_type") == "yunhu_button_click":
+        user_id = event.get_user_id()
+        user_nickname = event.get_user_nickname()
+        button_value = event.get("yunhu_button", {}).get("value", "")
 
-# Use the first enabled bot if not specified
-await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
-```
+        print(f"User {user_nickname}({user_id}) clicked button: {button_value}")
 
-> **Tip:** When using `bot_id`, the system will automatically search for the matching account in the configuration. This is particularly useful when handling event replies, as you can directly use `event["self"]["user_id"]` to reply using the same account.
+        # Use event.reply() to automatically reply (will automatically select the correct sending method based on platform)
+        if button_value == "confirm":
+            await event.reply("You clicked the confirm button!")
+        elif button_value == "cancel":
+            await event.reply("Operation cancelled")
+        else:
+            await event.reply(f"Received your choice: {button_value}")
 
-### Bot Identification in Events
+    # Handle shortcut menu events
+    elif event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get("yunhu_menu", {}).get("id", "")
+        await event.reply(f"Triggered shortcut menu: {menu_id}")
 
-Received events automatically include the corresponding `bot_id` information:
-
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def handle_message(event):
-    if event["platform"] == "yunhu":
-        # Get the bot ID that triggered the event
-        bot_id = event["self"]["user_id"]
-        print(f"Message from Bot: {bot_id}")
-        
-        # Reply to the message using the same bot
-        yunhu = adapter.get("yunhu")
-        await yunhu.Send.Using(bot_id).To(
-            event["detail_type"],
-            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
-        ).Text("Reply message")
-```
-
-### Log Information
-
-The adapter automatically includes `bot_id` information in the logs for debugging and tracking:
-
-```
-[INFO] [yunhu] [bot:30535459] Received private chat message from user user123
-[INFO] [yunhu] [bot:12345678] Message sent successfully, message_id: abc123
-```
-
-### Management Interface
-
-```python
-# Get all account information
-bots = yunhu.bots
-
-# Check if account is enabled
-bot_status = {
-    bot_name: bot_config.enabled
-    for bot_name, bot_config in yunhu.bots.items()
-}
-
-# Dynamically enable/disable account (requires adapter restart)
-yunhu.bots["bot1"].enabled = False
-```
-
-### Old Configuration Compatibility
-
-The system automatically supports old format configurations, but migration to the new configuration format is recommended for better multi-bot support.
+    # Handle bot setting changes
+    elif event
 
 
 

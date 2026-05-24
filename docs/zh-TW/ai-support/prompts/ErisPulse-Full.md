@@ -121,21 +121,21 @@ flowchart TD
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
     F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
-    G --> H["adapter.startup()"]
-    H --> I["啟動路由伺服器"]
-    I --> J["非同步啟動各平台適配器"]
-    J --> K["運行就緒"]
+    G --> H["啟動路由伺服器"]
+    H --> K["運行就緒"]
 ```
 
 ### 初始化階段詳解
 
 1. **環境準備** - 載入 TOML 設定檔，設定全域異常處理
 2. **並行發現** - 同時從已安裝的 PyPI 套件中發現適配器和模組
-3. **註冊階段** - 將發現的適配器和模組註冊到對應管理器
-4. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-5. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
-6. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
-7. **適配器啟動** - 啟動路由伺服器（FastAPI），非同步啟動各平台適配器連線
+3. **註冊適配器** - 將發現的適配器註冊到適配器管理器
+4. **啟動適配器** - 非同步啟動各平台適配器連接（在模組初始化之前，確保模組能立即發送訊息）
+5. **註冊模組** - 將發現的模組註冊到模組管理器
+6. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
+7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
+9. **啟動路由伺服器** - 啟動路由伺服器（FastAPI）
 
 ## 事件處理流程
 
@@ -690,7 +690,7 @@ asyncio.run(sdk.run(keep_running=True))
 # 互動式初始化
 epsdk init
 
-# 或是快速初始化
+# 或者快速初始化
 epsdk init -q -n my_first_bot
 ```
 
@@ -734,38 +734,19 @@ async def ping_handler(event):
 async def main():
     """主入口函數"""
     print("正在初始化 ErisPulse...")
-    # 執行 SDK 並且維持運行
+    # 運行 SDK 並且維持運行
     await sdk.run(keep_running=True)
+    
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等價於 `dk.run(keep_running=False)`
+
     print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> 除了直接使用 `sdk.run()` 之外，你還可以更精細地控制執行流程，如：
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失敗，請檢查日誌")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程式運行，如果有其他需要執行的操作，你也可以不維持事件，但需要自行處理
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -895,6 +876,7 @@ async def hello_handler(event):
 
 ## 下一步
 
+- [高級初始化控制](advanced-init.md) - 鉤子系統、手動控制、嵌入式集成
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能
@@ -5365,27 +5347,13 @@ epsdk list-remote -r
 | 模組 (Module) | 擴展機器人功能、實現業務邏輯 | `erispulse.module` |
 | 適配器 (Adapter) | 連接新的訊息平台 | `erispulse.adapter` |
 
-## 發布流程
+## 快速發布
 
-整個發布流程分為四個步驟：準備專案 → 發布到 PyPI → 提交到模組商店 → 審核上線。
+整個過程只需要三步：配置專案 → 發布到 PyPI → 提交到模組商店。
 
-### 步驟 1: 準備專案
+### 1. 配置 pyproject.toml
 
-確保你的專案包含以下檔案：
-
-```
-MyModule/
-├── pyproject.toml      # 專案配置（必須）
-├── README.md           # 專案說明（必須）
-├── LICENSE             # 開源許可證（推薦）
-└── MyModule/
-    ├── __init__.py     # 套件入口
-    └── ...
-```
-
-### 步驟 2: 配置 pyproject.toml
-
-根據你要發布的類型，正確配置 `entry-points`：
+確保專案目錄包含 `pyproject.toml`、`README.md`，並根據類型配置 entry-points：
 
 #### 模組
 
@@ -5420,26 +5388,296 @@ requires-python = ">=3.10"
 
 > **注意**：套件名稱建議以 `ErisPulse-` 開頭，便於用戶識別。Entry-point 的鍵名（如 `"MyModule"`）將作為模組在 SDK 中的存取名稱。
 
-### 步驟 3: 發布到 PyPI
+### 2. 發布到 PyPI
 
 ```bash
-# 安裝建構工具
+# 建構 + 發布（需要 PyPI 帳號）
 pip install build twine
-
-# 建構分發套件
 python -m build
-
-# 發布到 PyPI
 python -m twine upload dist/*
 ```
 
-發布成功後，確認你的套件可以透過 `pip install` 安裝：
+發布成功後驗證安裝：
 
 ```bash
 pip install ErisPulse-MyModule
 ```
 
-### 步驟 4: 提交
+### 3. 提交到模組商店
+
+前往 [ErisPulse 模組商店](https://www.erisdev.com/#market)，點擊「提交模組」，登入後填寫模組資訊即可。
+
+填寫要點：
+- 模組名稱、描述、倉庫地址
+- 最低 SDK 版本：如果不確定，填寫 [ErisPulse 最新發行版](https://pypi.org/project/ErisPulse/) 版本號即可
+
+提交後立即生效，用戶可透過模組源安裝。模組會被標記為「未驗證」，維護者審核通過後改為「已驗證」。
+
+> **關於驗證狀態**：
+> - 「未驗證」僅表示尚未經過官方審核，不代表模組有問題
+> - 用戶透過 `epsdk install` 安裝未驗證模組時會收到風險提示，需確認後才可繼續安裝
+
+## 更新已發布模組
+
+1. 更新 `pyproject.toml` 中的 `version`
+2. 重新建構並上傳：`python -m build && python -m twine upload dist/*`
+3. 模組商店會自動同步 PyPI 上的最新版本
+
+用戶透過 `epsdk upgrade MyModule` 即可升級。
+
+## 開發模式測試
+
+在正式發布前，可以使用可編輯模式在本地測試：
+
+```bash
+epsdk install -e /path/to/MyModule
+# 或
+pip install -e /path/to/MyModule
+```
+
+## 常見問題
+
+### 套件名稱必須以 `ErisPulse-` 開頭嗎？
+
+不強制，但強烈推薦。這有助於用戶在 PyPI 上識別 ErisPulse 生態的套件。
+
+### 一個套件可以註冊多個模組嗎？
+
+可以。在 `entry-points` 中配置多個鍵值對即可：
+
+```toml
+[project.entry-points."erispulse.module"]
+"ModuleA" = "MyPackage:ModuleA"
+"ModuleB" = "MyPackage:ModuleB"
+```
+
+### 審核需要多長時間？
+
+通常在 1-3 個工作日內完成。你可以在 Issue 中查看審核進度。
+
+## 透過 Docker 鏡像分發應用
+
+如果應用不適合發布到 PyPI（如包含私有依賴、需要預配置環境），可以透過 **GitHub Container Registry (GHCR)** 發布 Docker 鏡像，讓其他用戶 `docker pull` 一鍵啟動。
+
+### 適用場景
+
+- 你有一個**完整的機器人應用**（模組 + 配置 + 入口腳本），想一鍵分發
+- 模組/適配器依賴**私有套件**或有特殊安裝流程，不適合 PyPI
+- 想提供**開箱即用**的部署方案，降低用戶使用門檻
+
+### 1. 建立 Dockerfile
+
+基於 ErisPulse 官方鏡像建構：
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    ERISPULSE_DASHBOARD_TOKEN=""
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt
+
+COPY . .
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+如果模組未發布到 PyPI，可以直接把模組原始碼複製進鏡像：
+
+```dockerfile
+FROM python:3.13-slim AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1
+
+WORKDIR /app
+
+RUN uv pip install --system ErisPulse ErisPulse-Dashboard
+
+COPY my_modules/ /app/my_modules/
+COPY main.py .
+COPY config/ /app/config/
+
+RUN uv pip install --system -e /app/my_modules/MyModule
+
+VOLUME ["/app/config"]
+EXPOSE 8000
+
+CMD ["epsdk", "run", "main.py"]
+```
+
+### 2. 建立 GitHub Actions 工作流
+
+在 `.github/workflows/docker-publish.yml` 中建立：
+
+```yaml
+name: 發布 Docker 鏡像
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/my-bot
+
+jobs:
+  docker-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 檢出程式碼
+        uses: actions/checkout@v4
+
+      - name: 設定 QEMU (多架構支援)
+        uses: docker/setup-qemu-action@v3
+
+      - name: 設定 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登入 GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 提取 Docker 元數據
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: 建構並推送 Docker 鏡像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```
+
+> `GITHUB_TOKEN` 由 GitHub Actions 自動提供，無需手動建立密鑰。
+
+### 3. 觸發建構
+
+推送程式碼或打 Tag 即可自動建構：
+
+```bash
+# 推送到 main 分支觸發
+git push origin main
+
+# 或打 Tag 觸發
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+也可在 GitHub 倉庫的 **Actions** 頁面手動觸發。
+
+### 4. 設定鏡像為公開
+
+GHCR 鏡像預設為 **private**，需要在 GitHub 設定為 Public 後其他用戶才能免登錄拉取：
+
+1. 進入倉庫 → **Packages** → 點擊對應 Package
+2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
+
+### 5. 用戶使用
+
+建構完成後，其他用戶可以直接執行：
+
+```bash
+docker pull ghcr.io/<your-username>/my-bot:latest
+
+docker run -d \
+  --name my-bot \
+  -p 8000:8000 \
+  -v ./config:/app/config \
+  -e ERISPULSE_DASHBOARD_TOKEN=your-token \
+  ghcr.io/<your-username>/my-bot:latest
+```
+
+或使用 `docker-compose.yml`：
+
+```yaml
+services:
+  my-bot:
+    image: ghcr.io/<your-username>/my-bot:latest
+    container_name: my-bot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - TZ=Asia/Shanghai
+      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    restart: unless-stopped
+```
+
+### 同時發布到 Docker Hub
+
+擴展工作流，添加 Docker Hub 登入步驟，並在 `images` 中增加 Docker Hub 地址：
+
+```yaml
+      - name: 登入 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 提取 Docker 元數據
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            docker.io/<your-dockerhub-username>/my-bot
+            ghcr.io/${{ github.repository_owner }}/my-bot
+```
+
+> 需要在倉庫 **Settings → Secrets** 中添加 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN`。
+
+### Docker 鏡像 vs PyPI 發布
+
+| 特性 | Docker 鏡像 (GHCR) | PyPI 發布 |
+|------|---------------------|-----------|
+| 分發方式 | `docker pull` 一鍵執行 | `pip install` + 手動配置 |
+| 適用範圍 | 完整應用/解決方案 | 單一模組/適配器 |
+| 私有依賴 | 天然支援 | 需要私有 PyPI 源 |
+| 模組商店 | 不適用 | 可提交到模組商店 |
+| 多架構 | 支援 amd64/arm64 | 與架構無關 |
+
+兩種方式不衝突——你可以同時透過 PyPI 發布模組到模組商店，又透過 GHCR 提供開箱即用的 Docker 鏡像。
 
 
 
@@ -10512,7 +10750,7 @@ TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊�
 
 ## 文件資訊
 
-- 對應模組版本: 3.5.0
+- 對應模組版本: 3.6.5
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -10520,6 +10758,7 @@ TelegramAdapter 是基於 Telegram Bot API 建立的適配器，支援多種訊�
 - 平台簡介：Telegram 是一個跨平台的即時通訊軟體
 - 適配器名稱：TelegramAdapter
 - 支援的協定/API版本：Telegram Bot API
+- 會話類型映射：`private` → 發送時用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
 
 ## 支援的訊息傳送類型
 
@@ -10533,175 +10772,322 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 ### 基本傳送方法
 
-- `.Text(text: str)`：傳送純文字訊息。
-- `.Face(emoji: str)`：傳送表情訊息。
-- `.Markdown(text: str, content_type: str = "MarkdownV2")`：傳送 Markdown 格式訊息。
-- `.HTML(text: str)`：傳送 HTML 格式訊息。
+| 方法 | 說明 | 參數 |
+|------|------|------|
+| `.Text(text)` | 傳送純文字訊息 | `text: str` |
+| `.Face(emoji)` | 傳送表情骰子 | `emoji: str`（如 🎲 🎯 🏀） |
+| `.Markdown(text, content_type)` | 傳送 Markdown 格式訊息 | `content_type` 預設 `"MarkdownV2"` |
+| `.HTML(text)` | 傳送 HTML 格式訊息 | `text: str` |
+| `.Sticker(file)` | 傳送貼紙 | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | 傳送位置 | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | 傳送地點 | 含標題和地址 |
+| `.Contact(phone, first, last)` | 傳送聯絡人 | 含電話號碼和姓名 |
 
 ### 媒體傳送方法
 
-所有媒體方法支援兩種輸入方式：
-- **URL 方式**：直接傳入字串 URL
-- **檔案上傳**：傳入 bytes 類型資料
+所有媒體方法支援 `bytes`（上傳）和 `str`（file_id / URL）兩種輸入：
 
-- `.Image(file: bytes | str, caption: str = "", content_type: str = None)`：傳送圖片訊息
-- `.Video(file: bytes | str, caption: str = "", content_type: str = None)`：傳送影片訊息
-- `.Voice(file: bytes | str, caption: str = "")`：傳送語音訊息
-- `.Audio(file: bytes | str, caption: str = "", content_type: str = None)`：傳送音訊訊息
-- `.File(file: bytes | str, caption: str = "")`：傳送檔案訊息
-- `.Document(file: bytes | str, caption: str = "", content_type: str = None)`：傳送文件訊息
+| 方法 | 說明 |
+|------|------|
+| `.Image(file, caption, content_type)` | 傳送圖片 |
+| `.Video(file, caption, content_type)` | 傳送影片 |
+| `.Voice(file, caption)` | 傳送語音 |
+| `.Audio(file, caption, content_type)` | 傳送音訊 |
+| `.File(file, caption)` | 傳送檔案 |
+| `.Document(file, caption, content_type)` | File 的別名 |
 
 ### 訊息管理方法
 
-- `.Edit(message_id: int, text: str, content_type: str = None)`：編輯既有訊息。
-- `.Recall(message_id: int)`：刪除指定訊息。
+| 方法 | 說明 |
+|------|------|
+| `.Edit(message_id, text, content_type)` | 編輯既有訊息 |
+| `.Recall(message_id)` | 刪除指定訊息 |
+| `.Forward(from_chat_id, message_id)` | 轉發訊息（保留來源） |
+| `.CopyMessage(from_chat_id, message_id)` | 複製訊息（不帶來源） |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | 應答回調查詢 |
 
 ### 原始訊息傳送
 
 - `.Raw_ob12(message: List[Dict])`：傳送 OneBot12 標準格式訊息
-  - 支援複雜組合訊息（文字 + @用戶 + 回覆 + 媒體）
-  - 自動將文字作為媒體訊息的 caption
 - `.Raw_json(json_str: str)`：傳送原始 JSON 格式訊息
 
 ### 鏈式修飾方法
 
-- `.At(user_id: str)`：@指定用戶（可多次呼叫）
-- `.AtAll()`：@全體成員
-- `.Reply(message_id: str)`：回覆指定訊息
-
-### 方法名稱對應
-
-傳送方法支援大小寫不敏感呼叫，透過對應表自動轉換為標準方法名：
-```python
-# 以下寫法等效
-telegram.Send.To("group", 123).Text("hello")
-telegram.Send.To("group", 123).text("hello")
-telegram.Send.To("group", 123).TEXT("hello")
-```
+| 方法 | 說明 |
+|------|------|
+| `.At(user_id)` | @指定用戶（透過 Telegram entities 實現，可多次呼叫） |
+| `.AtAll()` | @全體成員（傳送 `@All` 文字） |
+| `.Reply(message_id)` | 回覆指定訊息 |
+| `.Keyboard(inline_keyboard)` | 設定內聯鍵盤（`list[list[dict]]`） |
+| `.ProtectContent(protect)` | 保護內容（防止轉發和保存） |
+| `.Silent(silent)` | 靜默傳送（不通知用戶） |
 
 ### 傳送範例
 
 ```python
 # 基本文本傳送
-await telegram.Send.To("group", group_id).Text("Hello World!")
+await telegram.Send.To("user", user_id).Text("Hello World!")
+
+# 帶內聯鍵盤的訊息
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+keyboard = [
+    [{"text": "按鈕1", "callback_data": "btn1"}, {"text": "按鈕2", "callback_data": "btn2"}],
+    [{"text": "訪問官網", "url": "https://example.com"}],
+]
+await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("請選擇：")
 
 # 媒體傳送（URL 方式）
-await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="這是一張圖片")
-
-# 媒體傳送（檔案上傳）
-with open("image.jpg", "rb") as f:
-    await telegram.Send.To("group", group_id).Image(f.read())
+await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="圖片")
 
 # @用戶
 await telegram.Send.To("group", group_id).At("6117725680").Text("你好！")
 
-# 回覆訊息
-await telegram.Send.To("group", group_id).Reply("12345").Text("回覆內容")
+# 回覆 + 保護內容
+await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("機密訊息")
 
-# 組合使用
-await telegram.Send.To("group", group_id).Reply("12345").At("6117725680").Image("https://example.com/image.jpg", caption="看這張圖")
+# 靜默傳送
+await telegram.Send.To("group", group_id).Silent().Text("靜默通知")
+
+# 應答回調查詢
+await telegram.Send.AnswerCallback(callback_query_id, text="已處理", show_alert=False)
 
 # OneBot12 組合訊息
 ob12_message = [
-    {"type": "text", "data": {"text": "複雜組合訊息："}},
-    {"type": "mention", "data": {"user_id": "6117725680", "name": "用戶名"}},
+    {"type": "text", "data": {"text": "複雜訊息："}},
+    {"type": "mention", "data": {"user_id": "6117725680", "user_name": "用戶名"}},
     {"type": "reply", "data": {"message_id": "12345"}},
     {"type": "image", "data": {"file": "https://http.cat/200"}}
 ]
 await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
-```
 
-### 不支援的方法提示
+# 傳送貼紙
+await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-呼叫不支援的傳送方法時，會自動傳送文字提示：
-```python
-# 不支援的傳送類型
-await telegram.Send.To("group", group_id).UnknownMethod("data")
-# 將傳送：[不支援的傳送類型] 方法名: UnknownMethod, 參數: [...]
+# 傳送位置
+await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 ```
 
 ## 特有事件類型
 
-Telegram 事件轉換到 OneBot12 協定，其中標準欄位完全遵守 OneBot12 協定，但存在以下差異：
+Telegram 事件轉換遵循 OneBot12 標準，同時透過 `telegram_` 前綴提供平台擴展。
 
-### 核心差異點
+### 訊息事件 detail_type 映射
 
-1. 特有事件類型：
-   - 內聯查詢：telegram_inline_query
-   - 回調查詢：telegram_callback_query
-   - 投票事件：telegram_poll
-   - 投票答案：telegram_poll_answer
+| Telegram chat.type | OneBot12 detail_type | 傳送目標類型 |
+|---|---|---|
+| `private` | `private` | `user` |
+| `group` | `group` | `group` |
+| `supergroup` | `group` | `group` |
+| `channel` | `channel` | `channel` |
 
-2. 擴展欄位：
-   - 所有特有欄位均以 telegram_ 前綴識別
-   - 保留原始資料在 telegram_raw 欄位
-   - 頻道訊息使用 detail_type="channel"
+### 特有事件類型
 
-### 事件監聽方式
+| detail_type | 說明 |
+|---|---|
+| `telegram_callback_query` | 回調查詢（內聯鍵盤按鈕點擊） |
+| `telegram_inline_query` | 內聯查詢 |
+| `telegram_chosen_inline_result` | 選擇的內聯結果 |
+| `telegram_poll` | 投票事件 |
+| `telegram_poll_answer` | 投票答案 |
+| `telegram_my_chat_member` | Bot 自身成員狀態變更 |
+| `telegram_chat_member` | 聊天成員變更 |
+| `telegram_chat_join_request` | 加入聊天請求 |
+| `telegram_shipping_query` | 運費查詢 |
+| `telegram_pre_checkout_query` | 預付款查詢 |
 
-Telegram 適配器支援兩種方式監聽事件：
+### 標準訊息段類型
 
+轉換後的訊息段使用 OneBot12 標準格式：
+
+| 訊息段類型 | 說明 | data 字段 |
+|---|---|---|
+| `text` | 純文字（不含 @用戶名） | `text` |
+| `mention` | @用戶（標準 OB12） | `user_id`, `user_name` |
+| `reply` | 回覆引用 | `message_id`, `user_id` |
+| `image` | 圖片 | `file_id`, `url` |
+| `video` | 影片 | `file_id`, `url`, `duration`, `width`, `height` |
+| `voice` | 語音 | `file_id`, `url`, `duration` |
+| `audio` | 音訊 | `file_id`, `url`, `duration`, `title`, `performer` |
+| `file` | 檔案 | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
+| `location` | 位置 | `latitude`, `longitude`, 可選 `title`, `address` |
+
+### 平台擴展訊息段
+
+以 `telegram_` 前綴標識的擴展訊息段：
+
+| 訊息段類型 | 說明 | data 字段 |
+|---|---|---|
+| `telegram_sticker` | 貼紙 | `file_id`, `emoji`, `sticker_type`, `url` |
+| `telegram_animation` | GIF 動畫 | `file_id`, `url`, `duration`, `caption` |
+| `telegram_contact` | 聯絡人 | `phone_number`, `first_name`, `last_name`, `user_id` |
+| `telegram_inline_keyboard` | 內聯鍵盤 | `inline_keyboard` |
+
+### 事件範例
+
+#### 群聊訊息（含 @提及）
 ```python
-# 使用原始事件名
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
-
-# 使用對應後的事件名
-@sdk.adapter.Telegram.on("message")
-async def handle_message(event):
-    pass
+{
+  "type": "message",
+  "detail_type": "group",
+  "platform": "telegram",
+  "user_id": "6117725680",
+  "user_nickname": "WSu2059",
+  "group_id": "-1002850921906",
+  "message_id": "172",
+  "message": [
+    {"type": "text", "data": {"text": "/it.echo "}},
+    {"type": "mention", "data": {"user_id": "", "user_name": "@nm123_91178"}}
+  ],
+  "alt_message": "/it.echo @nm123_91178",
+  "telegram_chat": {
+    "id": -1002850921906,
+    "title": "ErisPulse",
+    "username": "erispulse",
+    "type": "supergroup"
+  }
+}
 ```
 
-### 特殊欄位範例
-
+#### 回調查詢事件
 ```python
-# 回調查詢事件
 {
   "type": "notice",
   "detail_type": "telegram_callback_query",
   "user_id": "123456",
   "user_nickname": "YingXinche",
-  "telegram_callback_data": {
-    "id": "cb_123",
-    "data": "callback_data",
-    "message_id": "msg_456"
-  }
+  "telegram_callback_id": "cb_123",
+  "telegram_callback_data": "callback_data",
+  "message_id": "msg_456"
 }
+```
 
-# 內聯查詢事件
+#### 內聯查詢事件
+```python
 {
-  "type": "notice",
+  "type": "request",
   "detail_type": "telegram_inline_query",
   "user_id": "789012",
   "user_nickname": "YingXinche",
-  "telegram_inline_query": {
-    "id": "iq_789",
-    "query": "search_text",
-    "offset": "0"
-  }
+  "telegram_query_id": "iq_789",
+  "telegram_query_text": "search_text",
+  "telegram_query_offset": "0"
 }
+```
 
-# 頻道訊息
+#### 帶內聯鍵盤的訊息
+```python
 {
   "type": "message",
-  "detail_type": "channel",
-  "message_id": "msg_345",
-  "channel_id": "channel_123",
-  "telegram_chat": {
-    "title": "News Channel",
-    "username": "news_official"
-  }
+  "detail_type": "group",
+  "message": [
+    {"type": "text", "data": {"text": "請選擇："}},
+    {
+      "type": "telegram_inline_keyboard",
+      "data": {
+        "inline_keyboard": [
+          [{"text": "按鈕1", "callback_data": "btn1"}],
+          [{"text": "訪問", "url": "https://example.com"}]
+        ]
+      }
+    }
+  ]
 }
+```
+
+## Event Mixin 擴展方法
+
+適配器註冊了以下平台專有方法，僅在 `platform == "telegram"` 時可用：
+
+### 訊息相關
+
+| 方法 | 返回類型 | 說明 |
+|------|----------|------|
+| `is_bot_message()` | `bool` | 判斷訊息是否來自機器人 |
+| `is_edited_message()` | `bool` | 判斷是否為編輯過的訊息 |
+| `is_topic_message()` | `bool` | 判斷是否為話題/Topic 訊息 |
+| `get_update_id()` | `int` | 獲取 Telegram update ID |
+| `get_chat_title()` | `str` | 獲取聊天標題 |
+| `get_chat_username()` | `str` | 獲取聊天用戶名 |
+| `get_forward_from()` | `dict` | 獲取轉發來源資訊 |
+| `get_topic_id()` | `str` | 獲取話題 ID |
+
+### 回調查詢相關
+
+| 方法 | 返回類型 | 說明 |
+|------|----------|------|
+| `get_callback_data()` | `str` | 獲取回調查詢的 callback_data |
+| `get_callback_id()` | `str` | 獲取回調查詢 ID（用於應答） |
+
+### 訊息段資料提取
+
+| 方法 | 返回類型 | 說明 |
+|------|----------|------|
+| `get_inline_keyboard()` | `list` | 獲取訊息中的內聯鍵盤 |
+| `get_sticker_info()` | `dict` | 獲取貼紙資訊 |
+| `get_contact_info()` | `dict` | 獲取聯絡人資訊 |
+| `get_location()` | `dict` | 獲取位置資訊 |
+
+### 使用範例
+
+```python
+from ErisPulse.Core.Event import message, notice
+
+@message.on_message()
+async def handle_message(event):
+    if event.get("platform") != "telegram":
+        return
+
+    # 訊息屬性
+    if event.is_bot_message():
+        return  # 忽略機器人訊息
+
+    if event.is_edited_message():
+        print("這是編輯過的訊息")
+
+    # 聊天資訊
+    title = event.get_chat_title()
+    username = event.get_chat_username()
+
+    # 轉發來源
+    forward = event.get_forward_from()
+
+    # 訊息段資料
+    sticker = event.get_sticker_info()
+    contact = event.get_contact_info()
+    location = event.get_location()
+    keyboard = event.get_inline_keyboard()
+
+    # 話題
+    if event.is_topic_message():
+        topic_id = event.get_topic_id()
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "telegram":
+        return
+
+    if event.get("detail_type") == "telegram_callback_query":
+        callback_data = event.get_callback_data()
+        callback_id = event.get_callback_id()
+
+        # 應答回調查詢
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.AnswerCallback(callback_id, text="已點擊")
+
+        # 回覆訊息
+        await event.reply(f"你點擊了：{callback_data}")
 ```
 
 ## 擴展欄位說明
 
-- 所有特有欄位均以 `telegram_` 前綴識別
+- 所有特有欄位均以 `telegram_` 前綴標識
 - 保留原始資料在 `telegram_raw` 欄位
+- 保留原始事件類型在 `telegram_raw_type` 欄位
 - 頻道訊息使用 `detail_type="channel"`
-- 訊息內容中的實體（如粗體、連結等）會轉換為對應的訊息段
-- 回覆訊息會新增 `telegram_reply` 類型的訊息段
+- 私聊訊息使用 `detail_type="private"`（傳送時需轉換為 `user`）
+- 話題訊息包含 `thread_id` 欄位
+- `@` 提及使用標準 `mention` 訊息段類型（`type: "mention"`），文字中不含 @用戶名
 
 ## 設定選項
 
@@ -10714,7 +11100,7 @@ Telegram 適配器支援以下設定選項：
 ### 代理設定
 - `proxy.host`: 代理伺服器位址
 - `proxy.port`: 代理埠號
-- `proxy.type`: 代理類型 ("socks4" 或 "socks5")
+- `proxy.type`: 代理類型 (`"socks4"` 或 `"socks5"`)
 
 ### 執行模式
 
@@ -10743,7 +11129,7 @@ YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功�
 
 ## 文件資訊
 
-- 對應模組版本: 3.5.1
+- 對應模組版本: 3.10.1
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -10765,16 +11151,17 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支援的傳送類型包括：
-- `.Text(text: str, buttons: List = None, parent_id: str = "")`：傳送純文字訊息，可選添加按鈕和父訊息ID。
-- `.Html(html: str, buttons: List = None, parent_id: str = "")`：傳送 HTML 格式訊息。
-- `.Markdown(markdown: str, buttons: List = None, parent_id: str = "")`：傳送 Markdown 格式訊息。
-- `.Image(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送圖片訊息，支援流式上傳和自訂檔名。
-- `.Video(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送影片訊息，支援流式上傳和自訂檔名。
-- `.File(file: bytes, buttons: List = None, parent_id: str = "", stream: bool = False, filename: str = None)`：傳送檔案訊息，支援流式上傳和自訂檔名。
+- `.Text(text: str)`：傳送純文字訊息。
+- `.Html(html: str)`：傳送 HTML 格式訊息。
+- `.Markdown(markdown: str)`：傳送 Markdown 格式訊息。
+- `.A2UI(text: str)`：傳送 A2UI 格式訊息。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：傳送圖片訊息，支援流式上傳和自訂檔名。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：傳送影片訊息，支援流式上傳和自訂檔名。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：傳送檔案訊息，支援流式上傳和自訂檔名。
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量傳送訊息。
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：編輯既有訊息。
 - `.Recall(msg_id: str)`：撤回訊息。
-- `.Board(scope: str, content: str, **kwargs)`：發布公告看板，scope支援 `local` 和 `global`。
+- `.Board(scope: str, content: str, **kwargs)`：發布公告看板，scope 支援 `local` 和 `global`。
 - `.DismissBoard(scope: str, **kwargs)`：撤銷公告看板。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：傳送流式訊息。
 
@@ -10802,7 +11189,7 @@ buttons = [
         {"text": "回報事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Text("帶按鈕的訊息", buttons=buttons)
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 ```
 > **注意：**
 > - 只有使用者點擊了**按鈕回報事件**的按鈕才會收到推播，**複製**和**跳轉 URL** 均無法收到推播。
@@ -10869,7 +11256,9 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
 1. 特有事件類型：
     - 表單（如表單指令）：yunhu_form
+    - 表情包/貼紙訊息段：yunhu_expression
     - 按鈕點擊：yunhu_button_click
+    - A2UI 按鈕點擊：yunhu_a2ui_button
     - 機器人設定：yunhu_bot_setting
     - 快捷選單：yunhu_shortcut_menu
 2. 擴充欄位：
@@ -10911,6 +11300,103 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
   }
 }
 
+# A2UI按鈕事件
+{
+  "type": "notice",
+  "detail_type": "yunhu_a2ui_button",
+  "user_id": "操作使用者 ID",
+  "user_nickname": "使用者暱稱",
+  "message_id": "訊息 ID",
+  "yunhu_a2ui": {
+    "recv_id": "接收者 ID",
+    "recv_type": "接收者類型",
+    "action_name": "操作名稱",
+    "source_component_id": "來源組件 ID",
+    "form_context": {},
+    "interaction_json": "交互資料 JSON 字串"
+  }
+}
+
+### 按鈕點擊事件處理範例
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_yunhu_notice(event):
+    """處理雲湖通知事件
+
+    使用通用的 on_notice() 裝飾器來處理所有通知事件，
+    然後通過 detail_type 區分不同類型的通知
+    event.reply() 會自動通過雲湖平台回覆
+    """
+    # 檢查是否是按鈕點擊事件
+    if event.get("detail_type") == "yunhu_button_click":
+        user_id = event.get_user_id()
+        user_nickname = event.get_user_nickname()
+        button_value = event.get("yunhu_button", {}).get("value", "")
+
+        print(f"使用者 {user_nickname}({user_id}) 點擊了按鈕: {button_value}")
+
+        # 使用 event.reply() 自動回覆（會根據平台自動選擇正確的傳送方式）
+        if button_value == "confirm":
+            await event.reply("你點擊了確認按鈕！")
+        elif button_value == "cancel":
+            await event.reply("操作已取消")
+        else:
+            await event.reply(f"收到你的選擇: {button_value}")
+
+    # 處理快捷選單事件
+    elif event.get("detail_type") == "yunhu_shortcut_menu":
+        menu_id = event.get("yunhu_menu", {}).get("id", "")
+        await event.reply(f"觸發了快捷選單: {menu_id}")
+
+    # 處理機器人設定變更
+    elif event.get("detail_type") == "yunhu_bot_setting":
+        settings = event.get("yunhu_setting", {})
+        await event.reply(f"設定已更新: {settings}")
+
+    # 處理 A2UI 按鈕事件
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI 操作: {action_name}, 表單資料: {form_context}")
+```
+
+### 使用鏈式呼叫傳送帶按鈕訊息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+buttons = [
+    [
+        {"text": "確認", "actionType": 3, "value": "confirm"},
+        {"text": "取消", "actionType": 3, "value": "cancel"},
+        {"text": "查看詳情", "actionType": 1, "url": "http://example.com/detail"}
+    ]
+]
+
+# 傳送帶按鈕的訊息到群組
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("請確認以下操作")
+
+# 傳送帶按鈕的訊息到使用者私聊
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("請選擇你的偏好設定")
+```
+
+### 傳送 A2UI 訊息
+
+```python
+from ErisPulse import sdk
+
+yunhu = sdk.adapter.get("yunhu")
+
+# 傳送 A2UI 訊息
+await yunhu.Send.To("user", user_id).A2UI("A2UI 交互卡片內容")
+```
+
 # 機器人設定
 {
   "type": "notice",
@@ -10948,8 +11434,50 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 - `self.user_id` 表示機器人 ID（從設定中的 bot_id 取得）
 - 表單指令透過 `yunhu_command` 欄位提供結構化資料
 - 按鈕點擊事件透過 `yunhu_button` 欄位提供按鈕相關資訊
+- A2UI 按鈕事件透過 `yunhu_a2ui` 欄位提供 A2UI 交互相關資訊
 - 機器人設定變更透過 `yunhu_setting` 欄位提供設定項資料
 - 快捷選單操作透過 `yunhu_menu` 欄位提供選單相關資訊
+- 表情包/貼紙訊息透過 `yunhu_expression` 訊息段提供貼紙資料（sticker_id、貼紙包 ID、圖片尺寸等）
+
+### 表情包/貼紙訊息段 (yunhu_expression)
+
+當使用者傳送表情包或貼紙時，訊息段類型為 `yunhu_expression`：
+
+```json
+{
+  "type": "yunhu_expression",
+  "data": {
+    "sticker_id": "35154",
+    "sticker_pack_id": "1670",
+    "expression_id": "0",
+    "image_name": "sticker/fabb9077f2ba302402ea871cab3686ad7a3fc52c.gif",
+    "width": 500,
+    "height": 500
+  }
+}
+```
+
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| `sticker_id` | string | 貼紙唯一識別 |
+| `sticker_pack_id` | string | 貼紙包 ID |
+| `expression_id` | string | 表情 ID |
+| `image_name` | string | 表情圖片檔案路徑 |
+| `width` | int | 圖片寬度（可選） |
+| `height` | int | 圖片高度（可選） |
+
+使用範例：
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "yunhu":
+        for segment in event.get("message", []):
+            if segment.get("type") == "yunhu_expression":
+                data = segment["data"]
+                print(f"收到表情包: sticker_id={data['sticker_id']}, 包ID={data['sticker_pack_id']}")
+```
 
 ---
 
@@ -10991,7 +11519,7 @@ enabled = true
 
 可以透過 `Using()` 方法指定使用哪個 bot 傳送訊息。此方法支援兩種參數：
 - **帳號名稱**：設定中的 bot 名稱（如 `bot1`, `bot2`）
-- **bot_id**：設定中的 `bot_id` 值
+- `bot_id`：設定中的 `bot_id` 值
 
 ```python
 from ErisPulse.Core import adapter

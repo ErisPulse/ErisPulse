@@ -180,8 +180,10 @@ class BaseQueryBuilder(ABC):
         new._operation = self._operation
         new._columns = list(self._columns)
         new._data = (
-            dict(self._data) if isinstance(self._data, dict)
-            else [dict(d) for d in self._data] if isinstance(self._data, list)
+            dict(self._data)
+            if isinstance(self._data, dict)
+            else [dict(d) for d in self._data]
+            if isinstance(self._data, list)
             else None
         )
         new._where_clauses = list(self._where_clauses)
@@ -248,8 +250,7 @@ class BaseQueryBuilder(ABC):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}"
-            f"(table={self._table!r}, op={self._operation!r})"
+            f"{self.__class__.__name__}(table={self._table!r}, op={self._operation!r})"
         )
 
 

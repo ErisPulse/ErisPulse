@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 954,
+  "total_keywords": 982,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -98,6 +98,14 @@
         "title": "1. 基本資訊部分"
       }
     ],
+    "1. 建立 Dockerfile": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 152,
+        "level": 3,
+        "title": "1. 建立 Dockerfile"
+      }
+    ],
     "1. 建立專案": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -184,6 +192,14 @@
         "line": 103,
         "level": 4,
         "title": "1. 適配器系統"
+      }
+    ],
+    "1. 配置 pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 38,
+        "level": 3,
+        "title": "1. 配置 pyproject.toml"
       }
     ],
     "1.1 接收類型 && 發送類型": [
@@ -290,6 +306,14 @@
         "title": "2. 嵌入式開發"
       }
     ],
+    "2. 建立 GitHub Actions 工作流": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 208,
+        "level": 3,
+        "title": "2. 建立 GitHub Actions 工作流"
+      }
+    ],
     "2. 建立 pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -360,6 +384,14 @@
         "line": 73,
         "level": 3,
         "title": "2. 正確的非同步操作"
+      }
+    ],
+    "2. 發布到 PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 75,
+        "level": 3,
+        "title": "2. 發布到 PyPI"
       }
     ],
     "2. 發送 Meta 事件": [
@@ -578,6 +610,14 @@
         "title": "3. 指定發送帳號"
       }
     ],
+    "3. 提交到模組商店": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 90,
+        "level": 3,
+        "title": "3. 提交到模組商店"
+      }
+    ],
     "3. 提高程式碼品質": [
       {
         "document": "standards/README.md",
@@ -608,6 +648,14 @@
         "line": 46,
         "level": 3,
         "title": "3. 特有事件類型"
+      }
+    ],
+    "3. 觸發建構": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 277,
+        "level": 3,
+        "title": "3. 觸發建構"
       }
     ],
     "3. 資源管理": [
@@ -754,6 +802,14 @@
         "title": "4. 訊息段標準"
       }
     ],
+    "4. 設定鏡像為公開": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 292,
+        "level": 3,
+        "title": "4. 設定鏡像為公開"
+      }
+    ],
     "4.1 註冊自訂類型": [
       {
         "document": "standards/session-types.md",
@@ -816,6 +872,14 @@
         "line": 106,
         "level": 2,
         "title": "5. 擴充規範"
+      }
+    ],
+    "5. 用戶使用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 299,
+        "level": 3,
+        "title": "5. 用戶使用"
       }
     ],
     "5. 自動類型推斷": [
@@ -1370,6 +1434,14 @@
         "title": "Docker 部署（推薦）"
       }
     ],
+    "Docker 鏡像 vs PyPI 發布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 354,
+        "level": 3,
+        "title": "Docker 鏡像 vs PyPI 發布"
+      }
+    ],
     "ErisPulse 平台功能文件": [
       {
         "document": "platform-guide/README.md",
@@ -1456,6 +1528,14 @@
         "line": 26,
         "level": 4,
         "title": "ErisPulse-ModuleDev.md"
+      }
+    ],
+    "Event Mixin 擴展方法": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 254,
+        "level": 2,
+        "title": "Event Mixin 擴展方法"
       }
     ],
     "Event 包裝類": [
@@ -1681,7 +1761,7 @@
     "OneBot12 訊息支援": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "OneBot12 訊息支援"
       }
@@ -2030,6 +2110,14 @@
         "line": 304,
         "level": 2,
         "title": "WebSocket連線"
+      }
+    ],
+    "Where 參數傳遞規則": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 285,
+        "level": 3,
+        "title": "Where 參數傳遞規則"
       }
     ],
     "[BUG-001] Init 指令適配器配置路徑類型錯誤": [
@@ -2464,6 +2552,14 @@
         "title": "wait(prompt=None, timeout=None)"
       }
     ],
+    "一個套件可以註冊多個模組嗎？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 128,
+        "level": 3,
+        "title": "一個套件可以註冊多個模組嗎？"
+      }
+    ],
     "一步獲取發送資訊": [
       {
         "document": "advanced/session-types.md",
@@ -2523,7 +2619,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 216,
+        "line": 197,
         "level": 2,
         "title": "下一步"
       },
@@ -2538,14 +2634,6 @@
         "line": 150,
         "level": 2,
         "title": "下一步"
-      }
-    ],
-    "不支援的方法提示": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 108,
-        "level": 3,
-        "title": "不支援的方法提示"
       }
     ],
     "不支援的類型處理": [
@@ -2619,7 +2707,7 @@
     "事件中的機器人識別": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 275,
+        "line": 417,
         "level": 3,
         "title": "事件中的機器人識別"
       }
@@ -2635,7 +2723,7 @@
     "事件參數": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 123,
+        "line": 104,
         "level": 3,
         "title": "事件參數"
       }
@@ -2684,12 +2772,12 @@
         "title": "事件監聽"
       }
     ],
-    "事件監聽方式": [
+    "事件範例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
+        "line": 182,
         "level": 3,
-        "title": "事件監聽方式"
+        "title": "事件範例"
       }
     ],
     "事件系統": [
@@ -3005,7 +3093,7 @@
     "代理設定": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 356,
         "level": 3,
         "title": "代理設定"
       }
@@ -3029,7 +3117,7 @@
     "使用 Send DSL 指定機器人": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 253,
+        "line": 395,
         "level": 3,
         "title": "使用 Send DSL 指定機器人"
       }
@@ -3077,7 +3165,7 @@
     "使用儲存系統": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 170,
+        "line": 151,
         "level": 3,
         "title": "使用儲存系統"
       }
@@ -3117,6 +3205,12 @@
         "document": "api-reference/README.md",
         "line": 49,
         "level": 2,
+        "title": "使用範例"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 287,
+        "level": 3,
         "title": "使用範例"
       }
     ],
@@ -3228,12 +3322,36 @@
         "title": "傳統註冊方式"
       }
     ],
+    "傳送 A2UI 訊息": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 273,
+        "level": 1,
+        "title": "傳送 A2UI 訊息"
+      }
+    ],
     "傳送回覆": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 116,
         "level": 3,
         "title": "傳送回覆"
+      }
+    ],
+    "傳送帶按鈕的訊息到使用者私聊": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 262,
+        "level": 1,
+        "title": "傳送帶按鈕的訊息到使用者私聊"
+      }
+    ],
+    "傳送帶按鈕的訊息到群組": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 259,
+        "level": 1,
+        "title": "傳送帶按鈕的訊息到群組"
       }
     ],
     "傳送方法傳回值": [
@@ -3253,7 +3371,7 @@
     "傳送方法回傳值": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "傳送方法回傳值"
       }
@@ -3269,7 +3387,7 @@
     "傳送範例": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 76,
+        "line": 81,
         "level": 3,
         "title": "傳送範例"
       }
@@ -3368,6 +3486,14 @@
         "line": 171,
         "level": 3,
         "title": "內建預設值"
+      }
+    ],
+    "內聯查詢事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 221,
+        "level": 4,
+        "title": "內聯查詢事件"
       }
     ],
     "全域設定": [
@@ -3473,7 +3599,7 @@
     "初始化階段詳解": [
       {
         "document": "architecture.md",
-        "line": 82,
+        "line": 80,
         "level": 3,
         "title": "初始化階段詳解"
       }
@@ -3559,7 +3685,7 @@
     "原始訊息傳送": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 53,
+        "line": 65,
         "level": 3,
         "title": "原始訊息傳送"
       }
@@ -3583,7 +3709,7 @@
     "參數化查詢": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 242,
+        "line": 266,
         "level": 2,
         "title": "參數化查詢"
       }
@@ -3688,6 +3814,14 @@
         "line": 312,
         "level": 3,
         "title": "可用屬性"
+      }
+    ],
+    "同時發布到 Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 331,
+        "level": 3,
+        "title": "同時發布到 Docker Hub"
       }
     ],
     "同步初始化": [
@@ -3808,6 +3942,22 @@
         "title": "回覆功能"
       }
     ],
+    "回調查詢事件": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 208,
+        "level": 4,
+        "title": "回調查詢事件"
+      }
+    ],
+    "回調查詢相關": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 271,
+        "level": 3,
+        "title": "回調查詢相關"
+      }
+    ],
     "國內映像加速": [
       {
         "document": "user-guide/deployment.md",
@@ -3873,7 +4023,7 @@
     "執行模式": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 213,
+        "line": 361,
         "level": 3,
         "title": "執行模式"
       }
@@ -3913,7 +4063,7 @@
     "基本傳送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "基本傳送方法"
       }
@@ -3983,7 +4133,7 @@
     "基本設定": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 204,
+        "line": 352,
         "level": 3,
         "title": "基本設定"
       }
@@ -4145,7 +4295,7 @@
     "多機器人設定": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 219,
+        "line": 361,
         "level": 2,
         "title": "多機器人設定"
       }
@@ -4164,6 +4314,14 @@
         "line": 49,
         "level": 4,
         "title": "失敗回應範例"
+      }
+    ],
+    "套件名稱必須以 `ErisPulse-` 開頭嗎？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 124,
+        "level": 3,
+        "title": "套件名稱必須以 `ErisPulse-` 開頭嗎？"
       }
     ],
     "套件管理命令": [
@@ -4193,7 +4351,7 @@
     "如何修改指令前綴？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 191,
+        "line": 172,
         "level": 3,
         "title": "如何修改指令前綴？"
       }
@@ -4201,7 +4359,7 @@
     "如何支援多平台？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 201,
+        "line": 182,
         "level": 3,
         "title": "如何支援多平台？"
       }
@@ -4209,7 +4367,7 @@
     "媒體傳送方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 35,
+        "line": 42,
         "level": 3,
         "title": "媒體傳送方法"
       }
@@ -4418,6 +4576,14 @@
         "title": "定時任務"
       }
     ],
+    "審核需要多長時間？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 138,
+        "level": 3,
+        "title": "審核需要多長時間？"
+      }
+    ],
     "寫入配置": [
       {
         "document": "api-reference/core-modules.md",
@@ -4592,6 +4758,14 @@
         "title": "帳號設定"
       }
     ],
+    "帶內聯鍵盤的訊息": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 234,
+        "level": 4,
+        "title": "帶內聯鍵盤的訊息"
+      }
+    ],
     "帶回呼的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
@@ -4648,8 +4822,14 @@
         "title": "常見問題"
       },
       {
+        "document": "developer-guide/publishing.md",
+        "line": 122,
+        "level": 2,
+        "title": "常見問題"
+      },
+      {
         "document": "getting-started/first-bot.md",
-        "line": 183,
+        "line": 164,
         "level": 2,
         "title": "常見問題"
       },
@@ -4712,6 +4892,14 @@
         "line": 121,
         "level": 2,
         "title": "平台擴展欄位"
+      }
+    ],
+    "平台擴展訊息段": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 171,
+        "level": 3,
+        "title": "平台擴展訊息段"
       }
     ],
     "平台特定功能": [
@@ -4942,6 +5130,14 @@
         "title": "快速構建模式（靜態）"
       }
     ],
+    "快速發布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "快速發布"
+      }
+    ],
     "快速開始": [
       {
         "document": "README.md",
@@ -5027,7 +5223,7 @@
     "指令沒有回應？": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 185,
+        "line": 166,
         "level": 3,
         "title": "指令沒有回應？"
       }
@@ -5035,7 +5231,7 @@
     "指令裝飾器": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 114,
+        "line": 95,
         "level": 3,
         "title": "指令裝飾器"
       }
@@ -5083,7 +5279,7 @@
     "按鈕參數說明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "按鈕參數說明"
       },
@@ -5143,7 +5339,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 207,
+        "line": 307,
         "level": 2,
         "title": "擴充欄位說明"
       }
@@ -5151,7 +5347,7 @@
     "擴充：新增更多功能": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 143,
+        "line": 124,
         "level": 2,
         "title": "擴充：新增更多功能"
       }
@@ -5181,7 +5377,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 192,
+        "line": 338,
         "level": 2,
         "title": "擴展欄位說明"
       }
@@ -5243,7 +5439,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "支援的訊息傳送類型"
       },
@@ -5415,7 +5611,7 @@
     "新增訊息監聽": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 145,
+        "line": 126,
         "level": 3,
         "title": "新增訊息監聽"
       }
@@ -5423,7 +5619,7 @@
     "新增通知監聽": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 158,
+        "line": 139,
         "level": 3,
         "title": "新增通知監聽"
       }
@@ -5464,14 +5660,6 @@
         "line": 23,
         "level": 3,
         "title": "方式二：使用 uv 安裝（推薦）"
-      }
-    ],
-    "方法名稱對應": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 66,
-        "level": 3,
-        "title": "方法名稱對應"
       }
     ],
     "方法簽名": [
@@ -5531,7 +5719,7 @@
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 297,
+        "line": 439,
         "level": 3,
         "title": "日誌資訊"
       }
@@ -5558,6 +5746,14 @@
         "line": 301,
         "level": 3,
         "title": "普通事件的自動發現"
+      }
+    ],
+    "更新已發布模組": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 104,
+        "level": 2,
+        "title": "更新已發布模組"
       }
     ],
     "更新與維護": [
@@ -5786,14 +5982,8 @@
         "title": "核心差異點"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 121,
-        "level": 3,
-        "title": "核心差異點"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 131,
+        "line": 132,
         "level": 3,
         "title": "核心差異點"
       },
@@ -5980,6 +6170,14 @@
         "title": "標準生命週期事件"
       }
     ],
+    "標準訊息段類型": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 155,
+        "level": 3,
+        "title": "標準訊息段類型"
+      }
+    ],
     "標準遵循檢查清單": [
       {
         "document": "standards/README.md",
@@ -6007,7 +6205,7 @@
     "模組": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 56,
+        "line": 42,
         "level": 4,
         "title": "模組"
       },
@@ -6230,38 +6428,6 @@
         "title": "權限控制"
       }
     ],
-    "步驟 1: 準備專案": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 38,
-        "level": 3,
-        "title": "步驟 1: 準備專案"
-      }
-    ],
-    "步驟 2: 配置 pyproject.toml": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 52,
-        "level": 3,
-        "title": "步驟 2: 配置 pyproject.toml"
-      }
-    ],
-    "步驟 3: 發布到 PyPI": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 89,
-        "level": 3,
-        "title": "步驟 3: 發布到 PyPI"
-      }
-    ],
-    "步驟 4: 提交": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 108,
-        "level": 3,
-        "title": "步驟 4: 提交"
-      }
-    ],
     "注意事項": [
       {
         "document": "advanced/dashboard-view.md",
@@ -6395,13 +6561,19 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
         "title": "特有事件類型"
       },
       {
+        "document": "platform-guide/telegram.md",
+        "line": 140,
+        "level": 3,
+        "title": "特有事件類型"
+      },
+      {
         "document": "platform-guide/yunhu.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -6450,14 +6622,8 @@
         "title": "特殊欄位範例"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 150,
-        "level": 3,
-        "title": "特殊欄位範例"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "特殊欄位範例"
       }
@@ -6578,14 +6744,6 @@
         "line": 22,
         "level": 3,
         "title": "發布指南"
-      }
-    ],
-    "發布流程": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
-        "level": 2,
-        "title": "發布流程"
       }
     ],
     "發布與模組商店指南": [
@@ -6755,7 +6913,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 288,
+        "line": 338,
         "level": 2,
         "title": "相關文件"
       },
@@ -6873,7 +7031,7 @@
     "程式碼說明": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 112,
+        "line": 93,
         "level": 2,
         "title": "程式碼說明"
       }
@@ -6913,7 +7071,7 @@
     "第五步：測試機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 102,
+        "line": 83,
         "level": 2,
         "title": "第五步：測試機器人"
       }
@@ -6921,7 +7079,7 @@
     "第四步：執行機器人": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 92,
+        "line": 73,
         "level": 2,
         "title": "第四步：執行機器人"
       }
@@ -6981,7 +7139,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 306,
+        "line": 448,
         "level": 3,
         "title": "管理介面"
       }
@@ -7122,6 +7280,14 @@
         "title": "群組邀請請求"
       }
     ],
+    "群聊訊息（含 @提及）": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 184,
+        "level": 4,
+        "title": "群聊訊息（含 @提及）"
+      }
+    ],
     "自動推斷": [
       {
         "document": "advanced/session-types.md",
@@ -7155,7 +7321,7 @@
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 254,
+        "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
       }
@@ -7179,7 +7345,7 @@
     "舊設定相容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 322,
+        "line": 464,
         "level": 3,
         "title": "舊設定相容"
       }
@@ -7222,6 +7388,14 @@
         "line": 44,
         "level": 3,
         "title": "虛擬環境"
+      }
+    ],
+    "表情包/貼紙訊息段 (yunhu_expression)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 319,
+        "level": 3,
+        "title": "表情包/貼紙訊息段 (yunhu_expression)"
       }
     ],
     "表管理": [
@@ -7306,6 +7480,14 @@
         "title": "訊息事件"
       }
     ],
+    "訊息事件 detail_type 映射": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 131,
+        "level": 3,
+        "title": "訊息事件 detail_type 映射"
+      }
+    ],
     "訊息事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -7376,6 +7558,14 @@
         "title": "訊息段標準"
       }
     ],
+    "訊息段資料提取": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 278,
+        "level": 3,
+        "title": "訊息段資料提取"
+      }
+    ],
     "訊息段轉換": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -7384,10 +7574,18 @@
         "title": "訊息段轉換"
       }
     ],
+    "訊息相關": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 258,
+        "level": 3,
+        "title": "訊息相關"
+      }
+    ],
     "訊息管理方法": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 48,
+        "line": 55,
         "level": 3,
         "title": "訊息管理方法"
       }
@@ -7479,7 +7677,7 @@
     "設定說明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 221,
+        "line": 363,
         "level": 3,
         "title": "設定說明"
       },
@@ -7499,7 +7697,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 200,
+        "line": 348,
         "level": 2,
         "title": "設定選項"
       }
@@ -7794,6 +7992,14 @@
         "title": "返回值結構"
       }
     ],
+    "返回值處理範例": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 242,
+        "level": 3,
+        "title": "返回值處理範例"
+      }
+    ],
     "返回值說明": [
       {
         "document": "advanced/sql-builder.md",
@@ -7816,6 +8022,14 @@
         "line": 91,
         "level": 3,
         "title": "透過 Dashboard 安裝模組"
+      }
+    ],
+    "透過 Docker 鏡像分發應用": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 142,
+        "level": 2,
+        "title": "透過 Docker 鏡像分發應用"
       }
     ],
     "通用介面": [
@@ -8000,6 +8214,14 @@
         "title": "運行測試"
       }
     ],
+    "適用場景": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 146,
+        "level": 3,
+        "title": "適用場景"
+      }
+    ],
     "適用對象": [
       {
         "document": "advanced/README.md",
@@ -8017,7 +8239,7 @@
     "適配器": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 74,
+        "line": 60,
         "level": 4,
         "title": "適配器"
       },
@@ -8331,7 +8553,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 60,
+        "line": 70,
         "level": 3,
         "title": "鏈式修飾方法"
       }
@@ -8357,7 +8579,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 74,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
       }
@@ -8371,7 +8593,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "鏈式呼叫範例"
       }
@@ -8458,6 +8680,14 @@
         "line": 43,
         "level": 2,
         "title": "開發模式"
+      }
+    ],
+    "開發模式測試": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 112,
+        "level": 2,
+        "title": "開發模式測試"
       }
     ],
     "開發準備": [

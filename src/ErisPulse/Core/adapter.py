@@ -386,7 +386,11 @@ class AdapterManager(ManagerBase):
                     await lifecycle.submit_event(
                         "adapter.bot.offline",
                         msg=f"Bot {platform}/{bot_id} 离线",
-                        data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                        data={
+                            "platform": platform,
+                            "bot_id": bot_id,
+                            "status": "offline",
+                        },
                     )
 
             # 清理事件处理器
@@ -455,7 +459,8 @@ class AdapterManager(ManagerBase):
         :param enabled: [bool] 是否启用适配器
         :return: [bool] 操作是否成功
         """
-        if self.exists(platform):
+        existing = config.getConfig(f"ErisPulse.adapters.status.{platform}")
+        if existing is not None:
             return True
 
         # 平台不存在，进行注册
@@ -725,7 +730,9 @@ class AdapterManager(ManagerBase):
             if result is not None:
                 processed_data = result
             else:
-                logger.warning(f"中间件 {middleware.__qualname__} 返回 None，已忽略并保留原数据")
+                logger.warning(
+                    f"中间件 {middleware.__qualname__} 返回 None，已忽略并保留原数据"
+                )
 
         # 分发到OneBot12事件处理器
         handlers_to_call = []
@@ -853,7 +860,11 @@ class AdapterManager(ManagerBase):
                             await lifecycle.submit_event(
                                 "adapter.bot.offline",
                                 msg=f"Bot {platform}/{bot_id} 离线",
-                                data={"platform": platform, "bot_id": bot_id, "status": "offline"},
+                                data={
+                                    "platform": platform,
+                                    "bot_id": bot_id,
+                                    "status": "offline",
+                                },
                             )
                         finally:
                             self._adapter_tasks.pop(task_key, None)

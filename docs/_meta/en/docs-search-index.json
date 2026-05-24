@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1057,
+  "total_keywords": 1082,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -56,6 +56,14 @@
         "title": "1. Categorized Exception Handling"
       }
     ],
+    "1. Configure pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 38,
+        "level": 3,
+        "title": "1. Configure pyproject.toml"
+      }
+    ],
     "1. Core Concepts": [
       {
         "document": "standards/session-types.md",
@@ -70,6 +78,14 @@
         "line": 3,
         "level": 2,
         "title": "1. Core Principles"
+      }
+    ],
+    "1. Create Dockerfile": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 152,
+        "level": 3,
+        "title": "1. Create Dockerfile"
       }
     ],
     "1. Create Project": [
@@ -448,6 +464,14 @@
         "title": "2. Correct Asynchronous Operations"
       }
     ],
+    "2. Create GitHub Actions Workflow": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 208,
+        "level": 3,
+        "title": "2. Create GitHub Actions Workflow"
+      }
+    ],
     "2. Create pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -548,6 +572,14 @@
         "line": 114,
         "level": 3,
         "title": "2. Proper Use of Lazy Loading"
+      }
+    ],
+    "2. Publish to PyPI": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 75,
+        "level": 3,
+        "title": "2. Publish to PyPI"
       }
     ],
     "2. Register Single Method Using Decorator": [
@@ -878,12 +910,28 @@
         "title": "3. Specify Sending Account"
       }
     ],
+    "3. Submit to Module Store": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 90,
+        "level": 3,
+        "title": "3. Submit to Module Store"
+      }
+    ],
     "3. Support Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 308,
         "level": 3,
         "title": "3. Support Platform-Specific Methods"
+      }
+    ],
+    "3. Trigger Build": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 277,
+        "level": 3,
+        "title": "3. Trigger Build"
       }
     ],
     "3.1 Common Fields": [
@@ -1030,6 +1078,14 @@
         "title": "4. Parameter Naming Specifications"
       }
     ],
+    "4. Set Image as Public": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 292,
+        "level": 3,
+        "title": "4. Set Image as Public"
+      }
+    ],
     "4.1 Registering Custom Types": [
       {
         "document": "standards/session-types.md",
@@ -1124,6 +1180,14 @@
         "line": 171,
         "level": 2,
         "title": "5. Unknown Event Handling"
+      }
+    ],
+    "5. User Usage": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 299,
+        "level": 3,
+        "title": "5. User Usage"
       }
     ],
     "5.1 Inference Priority": [
@@ -1667,7 +1731,7 @@
     "Adapter": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 74,
+        "line": 60,
         "level": 4,
         "title": "Adapter"
       },
@@ -1849,7 +1913,7 @@
     "Add Message Listening": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 145,
+        "line": 151,
         "level": 3,
         "title": "Add Message Listening"
       }
@@ -1857,7 +1921,7 @@
     "Add Notification Listening": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 158,
+        "line": 164,
         "level": 3,
         "title": "Add Notification Listening"
       }
@@ -1914,6 +1978,14 @@
         "line": 120,
         "level": 3,
         "title": "Annotation/Decorator"
+      }
+    ],
+    "Applicable Scenarios": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 146,
+        "level": 3,
+        "title": "Applicable Scenarios"
       }
     ],
     "Architecture Design": [
@@ -2143,7 +2215,7 @@
     "Basic Configuration": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 204,
+        "line": 352,
         "level": 3,
         "title": "Basic Configuration"
       }
@@ -2289,7 +2361,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "Basic Sending Methods"
       }
@@ -2420,14 +2492,6 @@
         "title": "Bot Announcement Board Event Example"
       }
     ],
-    "Bot Identification in Events": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 275,
-        "level": 3,
-        "title": "Bot Identification in Events"
-      }
-    ],
     "Bot Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -2489,7 +2553,7 @@
     "Bot does not respond?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 185,
+        "line": 191,
         "level": 3,
         "title": "Bot does not respond?"
       }
@@ -2545,7 +2609,7 @@
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "Button Parameter Description"
       },
@@ -2576,6 +2640,30 @@
         "line": 652,
         "level": 3,
         "title": "CORS Configuration"
+      }
+    ],
+    "Callback Query Event": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 208,
+        "level": 4,
+        "title": "Callback Query Event"
+      }
+    ],
+    "Callback Query-related": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 271,
+        "level": 3,
+        "title": "Callback Query-related"
+      }
+    ],
+    "Can a single package register multiple modules?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 128,
+        "level": 3,
+        "title": "Can a single package register multiple modules?"
       }
     ],
     "Chain Calling": [
@@ -2619,7 +2707,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "Chained Call Examples"
       },
@@ -2657,7 +2745,7 @@
     "Chained Modifier Methods (Composable)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 74,
         "level": 3,
         "title": "Chained Modifier Methods (Composable)"
       }
@@ -2673,7 +2761,7 @@
     "Chained Modifying Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 60,
+        "line": 70,
         "level": 3,
         "title": "Chained Modifying Methods"
       }
@@ -2805,7 +2893,7 @@
     "Code Explanation": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 112,
+        "line": 118,
         "level": 2,
         "title": "Code Explanation"
       }
@@ -2869,7 +2957,7 @@
     "Command Decorator": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 114,
+        "line": 120,
         "level": 3,
         "title": "Command Decorator"
       }
@@ -2993,7 +3081,7 @@
     "Common Issues": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 183,
+        "line": 189,
         "level": 2,
         "title": "Common Issues"
       },
@@ -3018,6 +3106,14 @@
         "line": 39,
         "level": 3,
         "title": "Common Parameters"
+      }
+    ],
+    "Common Questions": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 122,
+        "level": 2,
+        "title": "Common Questions"
       }
     ],
     "Common Task Examples": [
@@ -3093,7 +3189,7 @@
     "Conditional Filtering": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 106,
+        "line": 137,
         "level": 3,
         "title": "Conditional Filtering"
       }
@@ -3145,12 +3241,6 @@
       }
     ],
     "Configuration Description": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 221,
-        "level": 3,
-        "title": "Configuration Description"
-      },
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 444,
@@ -3265,7 +3355,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 200,
+        "line": 348,
         "level": 2,
         "title": "Configuration Options"
       }
@@ -3388,6 +3478,14 @@
         "title": "Conversion Process"
       }
     ],
+    "Convert tuples to dictionaries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 109,
+        "level": 4,
+        "title": "Convert tuples to dictionaries"
+      }
+    ],
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3486,14 +3584,8 @@
         "title": "Core Differences"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 121,
-        "level": 3,
-        "title": "Core Differences"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 131,
+        "line": 132,
         "level": 3,
         "title": "Core Differences"
       },
@@ -3605,7 +3697,7 @@
     "Count and Existence Check": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 170,
+        "line": 208,
         "level": 3,
         "title": "Count and Existence Check"
       }
@@ -3677,7 +3769,7 @@
     "Custom Storage Backend": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 254,
+        "line": 342,
         "level": 2,
         "title": "Custom Storage Backend"
       }
@@ -3761,7 +3853,7 @@
     "Delete Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 157,
+        "line": 195,
         "level": 3,
         "title": "Delete Data"
       }
@@ -3826,6 +3918,14 @@
         "title": "Development Mode"
       }
     ],
+    "Development Mode Testing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 112,
+        "level": 2,
+        "title": "Development Mode Testing"
+      }
+    ],
     "Development Related Terms": [
       {
         "document": "terminology.md",
@@ -3866,6 +3966,14 @@
         "title": "Discord"
       }
     ],
+    "Distribute Applications via Docker Images": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 142,
+        "level": 2,
+        "title": "Distribute Applications via Docker Images"
+      }
+    ],
     "Do Not Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3874,12 +3982,28 @@
         "title": "Do Not Wait for Result"
       }
     ],
+    "Do package names have to start with `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 124,
+        "level": 3,
+        "title": "Do package names have to start with `ErisPulse-`?"
+      }
+    ],
     "Docker Deployment (Recommended)": [
       {
         "document": "user-guide/deployment.md",
         "line": 5,
         "level": 2,
         "title": "Docker Deployment (Recommended)"
+      }
+    ],
+    "Docker Images vs PyPI Publishing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 354,
+        "level": 3,
+        "title": "Docker Images vs PyPI Publishing"
       }
     ],
     "Docker Method": [
@@ -4251,7 +4375,7 @@
     "Event Arguments": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 123,
+        "line": 129,
         "level": 3,
         "title": "Event Arguments"
       }
@@ -4326,6 +4450,14 @@
         "title": "Event Distribution Mechanism"
       }
     ],
+    "Event Examples": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 182,
+        "level": 3,
+        "title": "Event Examples"
+      }
+    ],
     "Event Flow": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -4397,7 +4529,7 @@
     "Event Handling Process": [
       {
         "document": "architecture.md",
-        "line": 92,
+        "line": 93,
         "level": 2,
         "title": "Event Handling Process"
       }
@@ -4422,12 +4554,12 @@
         "title": "Event Listening"
       }
     ],
-    "Event Listening Methods": [
+    "Event Mixin Extension Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 134,
-        "level": 3,
-        "title": "Event Listening Methods"
+        "line": 254,
+        "level": 2,
+        "title": "Event Mixin Extension Methods"
       }
     ],
     "Event Mixin Methods": [
@@ -4548,12 +4680,6 @@
     ],
     "Extended Field Description": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 207,
-        "level": 2,
-        "title": "Extended Field Description"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 352,
         "level": 2,
@@ -4569,7 +4695,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 192,
+        "line": 338,
         "level": 2,
         "title": "Extended Field Descriptions"
       }
@@ -4605,7 +4731,7 @@
     "Extension: Adding More Features": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 143,
+        "line": 149,
         "level": 2,
         "title": "Extension: Adding More Features"
       }
@@ -4794,6 +4920,14 @@
         "title": "Get Target ID"
       }
     ],
+    "Get single record": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 124,
+        "level": 4,
+        "title": "Get single record"
+      }
+    ],
     "Getting Adapter Instances": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4884,6 +5018,14 @@
         "line": 32,
         "level": 3,
         "title": "Global Configuration"
+      }
+    ],
+    "Group Chat Message (with @mention)": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 184,
+        "level": 4,
+        "title": "Group Chat Message (with @mention)"
       }
     ],
     "Group Invite Request": [
@@ -5064,10 +5206,18 @@
         "title": "How It Works"
       }
     ],
+    "How long does the review take?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 138,
+        "level": 3,
+        "title": "How long does the review take?"
+      }
+    ],
     "How to change the command prefix?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 191,
+        "line": 197,
         "level": 3,
         "title": "How to change the command prefix?"
       }
@@ -5075,7 +5225,7 @@
     "How to support multiple platforms?": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 201,
+        "line": 207,
         "level": 3,
         "title": "How to support multiple platforms?"
       }
@@ -5183,7 +5333,7 @@
     "Initialization Stage Breakdown": [
       {
         "document": "architecture.md",
-        "line": 82,
+        "line": 81,
         "level": 3,
         "title": "Initialization Stage Breakdown"
       }
@@ -5202,6 +5352,14 @@
         "line": 142,
         "level": 3,
         "title": "Initializing Projects"
+      }
+    ],
+    "Inline Query Event": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 221,
+        "level": 4,
+        "title": "Inline Query Event"
       }
     ],
     "Insert Data": [
@@ -5421,7 +5579,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 113,
+        "line": 114,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -5507,7 +5665,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 121,
+        "line": 122,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -5563,7 +5721,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -5649,12 +5807,6 @@
       }
     ],
     "Log Information": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 297,
-        "level": 3,
-        "title": "Log Information"
-      },
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 530,
@@ -5746,12 +5898,6 @@
         "title": "Management Interface"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 306,
-        "level": 3,
-        "title": "Management Interface"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 540,
         "level": 3,
@@ -5793,7 +5939,7 @@
     "Media Sending Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 35,
+        "line": 42,
         "level": 3,
         "title": "Media Sending Methods"
       }
@@ -5892,6 +6038,14 @@
         "title": "Message Event Methods"
       }
     ],
+    "Message Event detail_type Mapping": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 131,
+        "level": 3,
+        "title": "Message Event detail_type Mapping"
+      }
+    ],
     "Message Events": [
       {
         "document": "api-reference/event-system.md",
@@ -5927,7 +6081,7 @@
     "Message Management Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 48,
+        "line": 55,
         "level": 3,
         "title": "Message Management Methods"
       }
@@ -5970,6 +6124,14 @@
         "line": 89,
         "level": 2,
         "title": "Message Segment Conversion"
+      }
+    ],
+    "Message Segment Data Extraction": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 278,
+        "level": 3,
+        "title": "Message Segment Data Extraction"
       }
     ],
     "Message Segment Standard": [
@@ -6044,6 +6206,22 @@
         "line": 127,
         "level": 3,
         "title": "Message Type Judgment"
+      }
+    ],
+    "Message with Inline Keyboard": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 234,
+        "level": 4,
+        "title": "Message with Inline Keyboard"
+      }
+    ],
+    "Message-related": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 258,
+        "level": 3,
+        "title": "Message-related"
       }
     ],
     "MessageBuilder Detailed Explanation": [
@@ -6146,14 +6324,6 @@
         "line": 20,
         "level": 2,
         "title": "Method Comments"
-      }
-    ],
-    "Method Name Mapping": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 66,
-        "level": 3,
-        "title": "Method Name Mapping"
       }
     ],
     "Method Quick Reference": [
@@ -6259,7 +6429,7 @@
     "Module": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 56,
+        "line": 42,
         "level": 4,
         "title": "Module"
       },
@@ -6357,7 +6527,7 @@
     "Module Loading Strategy": [
       {
         "document": "architecture.md",
-        "line": 175,
+        "line": 176,
         "level": 2,
         "title": "Module Loading Strategy"
       }
@@ -6432,14 +6602,6 @@
         "line": 387,
         "level": 2,
         "title": "Multi-Account Support"
-      }
-    ],
-    "Multi-Bot Configuration": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 219,
-        "level": 2,
-        "title": "Multi-Bot Configuration"
       }
     ],
     "Multi-account Configuration": [
@@ -6545,7 +6707,7 @@
       },
       {
         "document": "getting-started/first-bot.md",
-        "line": 216,
+        "line": 222,
         "level": 2,
         "title": "Next Steps"
       },
@@ -6660,14 +6822,6 @@
         "title": "Notification Event Handling"
       }
     ],
-    "Old Configuration Compatibility": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 322,
-        "level": 3,
-        "title": "Old Configuration Compatibility"
-      }
-    ],
     "One-Step Send Information Retrieval": [
       {
         "document": "advanced/session-types.md",
@@ -6727,7 +6881,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -6801,7 +6955,7 @@
     "Operating Mode": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 213,
+        "line": 361,
         "level": 3,
         "title": "Operating Mode"
       }
@@ -6863,7 +7017,7 @@
     "Parameterized Queries": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 242,
+        "line": 304,
         "level": 2,
         "title": "Parameterized Queries"
       }
@@ -6922,6 +7076,14 @@
         "line": 121,
         "level": 2,
         "title": "Platform Extension Fields"
+      }
+    ],
+    "Platform Extension Message Segments": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 171,
+        "level": 3,
+        "title": "Platform Extension Message Segments"
       }
     ],
     "Platform Extension Methods": [
@@ -7001,7 +7163,7 @@
     "Platform-Specific Event Types": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "Platform-Specific Event Types"
       }
@@ -7109,9 +7271,17 @@
     "Proxy Configuration": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 208,
+        "line": 356,
         "level": 3,
         "title": "Proxy Configuration"
+      }
+    ],
+    "Publish to Docker Hub Simultaneously": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 331,
+        "level": 3,
+        "title": "Publish to Docker Hub Simultaneously"
       }
     ],
     "Publishing": [
@@ -7128,14 +7298,6 @@
         "line": 22,
         "level": 3,
         "title": "Publishing Guide"
-      }
-    ],
-    "Publishing Process": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
-        "level": 2,
-        "title": "Publishing Process"
       }
     ],
     "Publishing Your Module": [
@@ -7304,6 +7466,14 @@
         "title": "Quick Initialization"
       }
     ],
+    "Quick Publishing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "Quick Publishing"
+      }
+    ],
     "Quick Reference": [
       {
         "document": "developer-guide/README.md",
@@ -7369,7 +7539,7 @@
     "Raw Message Sending": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 53,
+        "line": 65,
         "level": 3,
         "title": "Raw Message Sending"
       }
@@ -7571,7 +7741,7 @@
     "Related Documents": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 288,
+        "line": 376,
         "level": 2,
         "title": "Related Documents"
       }
@@ -7729,7 +7899,7 @@
     "Reset Builder": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 198,
+        "line": 236,
         "level": 2,
         "title": "Reset Builder"
       }
@@ -7737,9 +7907,17 @@
     "Return Value Explanation": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 229,
+        "line": 267,
         "level": 2,
         "title": "Return Value Explanation"
+      }
+    ],
+    "Return Value Processing Examples": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 280,
+        "level": 3,
+        "title": "Return Value Processing Examples"
       }
     ],
     "Return Value Structure": [
@@ -7773,7 +7951,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "Return Values of Sending Methods"
       }
@@ -7781,7 +7959,7 @@
     "Reuse Query Conditions": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 181,
+        "line": 219,
         "level": 2,
         "title": "Reuse Query Conditions"
       }
@@ -8125,7 +8303,7 @@
     "Sending Examples": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 76,
+        "line": 81,
         "level": 3,
         "title": "Sending Examples"
       }
@@ -8189,7 +8367,7 @@
     "Sending a Reply": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 135,
+        "line": 141,
         "level": 3,
         "title": "Sending a Reply"
       }
@@ -8285,7 +8463,7 @@
     "Sorting, Pagination": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 121,
+        "line": 159,
         "level": 3,
         "title": "Sorting, Pagination"
       }
@@ -8342,14 +8520,8 @@
         "title": "Special Field Examples"
       },
       {
-        "document": "platform-guide/telegram.md",
-        "line": 150,
-        "level": 3,
-        "title": "Special Field Examples"
-      },
-      {
         "document": "platform-guide/yunhu.md",
-        "line": 143,
+        "line": 146,
         "level": 3,
         "title": "Special Field Examples"
       }
@@ -8387,8 +8559,14 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 117,
+        "line": 127,
         "level": 2,
+        "title": "Specific Event Types"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 140,
+        "level": 3,
         "title": "Specific Event Types"
       }
     ],
@@ -8398,14 +8576,6 @@
         "line": 98,
         "level": 3,
         "title": "Specify Sending Account"
-      }
-    ],
-    "Specifying Bot using Send DSL": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 253,
-        "level": 3,
-        "title": "Specifying Bot using Send DSL"
       }
     ],
     "Standard Compliance Checklist": [
@@ -8452,6 +8622,14 @@
         "line": 45,
         "level": 2,
         "title": "Standard Lifecycle Events"
+      }
+    ],
+    "Standard Message Segment Types": [
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 155,
+        "level": 3,
+        "title": "Standard Message Segment Types"
       }
     ],
     "Standard Overview": [
@@ -8526,22 +8704,6 @@
         "title": "Step 1: Create Project"
       }
     ],
-    "Step 1: Prepare Project": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 38,
-        "level": 3,
-        "title": "Step 1: Prepare Project"
-      }
-    ],
-    "Step 2: Configure pyproject.toml": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 52,
-        "level": 3,
-        "title": "Step 2: Configure pyproject.toml"
-      }
-    ],
     "Step 2: View Project Structure": [
       {
         "document": "getting-started/first-bot.md",
@@ -8561,7 +8723,7 @@
     "Step 4: Run the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 92,
+        "line": 98,
         "level": 2,
         "title": "Step 4: Run the Bot"
       }
@@ -8569,7 +8731,7 @@
     "Step 5: Test the Bot": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 102,
+        "line": 108,
         "level": 2,
         "title": "Step 5: Test the Bot"
       }
@@ -8733,7 +8895,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 19,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -9060,14 +9222,6 @@
         "title": "Unregistering Views"
       }
     ],
-    "Unsupported Method Notifications": [
-      {
-        "document": "platform-guide/telegram.md",
-        "line": 108,
-        "level": 3,
-        "title": "Unsupported Method Notifications"
-      }
-    ],
     "Unsupported Type Handling": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9079,9 +9233,17 @@
     "Update Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 142,
+        "line": 180,
         "level": 3,
         "title": "Update Data"
+      }
+    ],
+    "Update Published Modules": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 104,
+        "level": 2,
+        "title": "Update Published Modules"
       }
     ],
     "Update Requirements": [
@@ -9140,6 +9302,12 @@
         "line": 319,
         "level": 2,
         "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/telegram.md",
+        "line": 287,
+        "level": 3,
+        "title": "Usage Examples"
       }
     ],
     "Use Send DSL to Specify Account": [
@@ -9153,7 +9321,7 @@
     "Use Storage System": [
       {
         "document": "getting-started/first-bot.md",
-        "line": 170,
+        "line": 176,
         "level": 3,
         "title": "Use Storage System"
       }
@@ -9255,7 +9423,7 @@
     "Using in Transactions": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 209,
+        "line": 247,
         "level": 2,
         "title": "Using in Transactions"
       }
@@ -9448,6 +9616,14 @@
         "line": 7,
         "level": 3,
         "title": "What is an Adapter"
+      }
+    ],
+    "Where Parameter Passing Rules": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 323,
+        "level": 3,
+        "title": "Where Parameter Passing Rules"
       }
     ],
     "Why Do We Need Standards?": [
