@@ -66,12 +66,19 @@ class ListRemoteCommand(Command):
         table.add_column("描述")
 
         for name, info in items.items():
+            verified = info.get("verified", True)
+            display_name = name if verified else f"{name}（未验证）"
             table.add_row(
-                name,
+                display_name,
                 info.get("package", ""),
                 info.get("version", ""),
                 info.get("description", ""),
             )
 
         console.print(table)
-        console.print(f"[dim]  {len(items)} 个{title}[/]")
+
+        unverified_count = sum(1 for info in items.values() if not info.get("verified", True))
+        summary = f"[dim]  {len(items)} 个{title}[/]"
+        if unverified_count:
+            summary += f"  [dim]({unverified_count} 个未验证)[/]"
+        console.print(summary)
