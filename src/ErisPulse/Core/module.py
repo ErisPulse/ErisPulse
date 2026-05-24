@@ -357,7 +357,8 @@ class ModuleManager(ManagerBase):
         :param enabled: 是否启用模块 (默认: False)
         :return: 操作是否成功
         """
-        if self.exists(module_name):
+        existing = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        if existing is not None:
             return True
 
         # 模块不存在，进行注册
@@ -423,11 +424,16 @@ class ModuleManager(ManagerBase):
                 try:
                     if inspect.iscoroutinefunction(instance.on_unload):
                         import asyncio
+
                         try:
                             loop = asyncio.get_running_loop()
-                            loop.create_task(instance.on_unload({"module_name": module_name}))
+                            loop.create_task(
+                                instance.on_unload({"module_name": module_name})
+                            )
                         except RuntimeError:
-                            asyncio.run(instance.on_unload({"module_name": module_name}))
+                            asyncio.run(
+                                instance.on_unload({"module_name": module_name})
+                            )
                     else:
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:

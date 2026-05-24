@@ -26,17 +26,18 @@ from ...finders import ModuleFinder, AdapterFinder
 class PackageManager:
     """
     ErisPulse包管理器
-    
+
     提供包安装、卸载、升级和查询功能
-    
+
     {!--< tips >!--}
     1. 支持本地和远程包管理
     2. 包含1小时缓存机制
     {!--< /tips >!--}
     """
+
     REMOTE_SOURCES = [
         "https://erisdev.com/packages.json",
-        "https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json"
+        "https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/packages.json",
     ]
 
     CACHE_EXPIRY = 3600  # 1小时缓存
@@ -53,8 +54,8 @@ class PackageManager:
 
     @staticmethod
     def _parse_size(size_str: str) -> float:
-        units = {'B': 1, 'KB': 1024, 'MB': 1024 ** 2, 'GB': 1024 ** 3, 'TB': 1024 ** 4}
-        match = re.match(r'(\d+(?:\.\d+)?)\s*([KMGT]?B)', size_str, re.IGNORECASE)
+        units = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3, "TB": 1024**4}
+        match = re.match(r"(\d+(?:\.\d+)?)\s*([KMGT]?B)", size_str, re.IGNORECASE)
         if match:
             value = float(match.group(1))
             unit = match.group(2).upper()
@@ -68,7 +69,12 @@ class PackageManager:
         self._system_proxy_checked = True
         result = {}
 
-        for key, env_var in (("http", "HTTP_PROXY"), ("https", "HTTPS_PROXY"), ("https", "https_proxy"), ("http", "http_proxy")):
+        for key, env_var in (
+            ("http", "HTTP_PROXY"),
+            ("https", "HTTPS_PROXY"),
+            ("https", "https_proxy"),
+            ("http", "http_proxy"),
+        ):
             val = os.environ.get(env_var) or os.environ.get("ALL_PROXY")
             if val and key not in result:
                 result[key] = val
@@ -80,7 +86,10 @@ class PackageManager:
         if sys.platform == "win32":
             try:
                 import winreg
-                key_path = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+
+                key_path = (
+                    r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+                )
                 with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as reg_key:
                     proxy_enable, _ = winreg.QueryValueEx(reg_key, "ProxyEnable")
                     if proxy_enable:
@@ -142,10 +151,14 @@ class PackageManager:
         for verify_ssl in (True, False):
             handlers = []
             if proxy:
-                handlers.append(urllib.request.ProxyHandler({
-                    'http': proxy,
-                    'https': proxy,
-                }))
+                handlers.append(
+                    urllib.request.ProxyHandler(
+                        {
+                            "http": proxy,
+                            "https": proxy,
+                        }
+                    )
+                )
             if not verify_ssl:
                 ctx = ssl.create_default_context()
                 ctx.check_hostname = False
@@ -154,9 +167,11 @@ class PackageManager:
 
             opener = urllib.request.build_opener(*handlers)
             try:
-                req = urllib.request.Request(url, headers={'User-Agent': 'ErisPulse/CLI'})
+                req = urllib.request.Request(
+                    url, headers={"User-Agent": "ErisPulse/CLI"}
+                )
                 resp = opener.open(req, timeout=timeout)
-                return resp.read().decode('utf-8')
+                return resp.read().decode("utf-8")
             except Exception:
                 if verify_ssl and proxy:
                     continue
@@ -175,7 +190,9 @@ class PackageManager:
     async def _fetch_remote_packages(self, url: str) -> Optional[dict]:
         loop = asyncio.get_event_loop()
         try:
-            return await loop.run_in_executor(None, self._fetch_remote_packages_sync, url)
+            return await loop.run_in_executor(
+                None, self._fetch_remote_packages_sync, url
+            )
         except Exception:
             return None
 
@@ -200,7 +217,9 @@ class PackageManager:
             if proxy:
                 console.print(f"[dim]  检测到代理: {proxy}[/]")
             else:
-                console.print("[dim]  未检测到系统代理，如需使用代理请设置 HTTPS_PROXY 环境变量[/]")
+                console.print(
+                    "[dim]  未检测到系统代理，如需使用代理请设置 HTTPS_PROXY 环境变量[/]"
+                )
 
         self._cache[cache_key] = result
         self._cache_time[cache_key] = time.time()
@@ -208,34 +227,32 @@ class PackageManager:
         return result
 
     def get_installed_packages(self) -> Dict[str, Dict[str, Dict[str, str]]]:
-        packages = {
-            "modules": {},
-            "adapters": {}
-        }
+        packages = {"modules": {}, "adapters": {}}
 
         try:
             module_entries = self._module_finder.find_all()
             for entry in module_entries:
-                if hasattr(entry, 'dist') and entry.dist:
+                if hasattr(entry, "dist") and entry.dist:
                     packages["modules"][entry.name] = {
                         "package": entry.dist.name,
                         "version": entry.dist.version,
                         "summary": entry.dist.metadata.get("Summary", ""),
-                        "enabled": self._is_module_enabled(entry.name)
+                        "enabled": self._is_module_enabled(entry.name),
                     }
 
             adapter_entries = self._adapter_finder.find_all()
             for entry in adapter_entries:
-                if hasattr(entry, 'dist') and entry.dist:
+                if hasattr(entry, "dist") and entry.dist:
                     packages["adapters"][entry.name] = {
                         "package": entry.dist.name,
                         "version": entry.dist.version,
-                        "summary": entry.dist.metadata.get("Summary", "")
+                        "summary": entry.dist.metadata.get("Summary", ""),
                     }
 
         except Exception as e:
             console.print(f"[error] 获取已安装包信息失败: {e}[/]")
             import traceback
+
             console.print(traceback.format_exc())
 
         return packages
@@ -243,6 +260,7 @@ class PackageManager:
     def _is_module_enabled(self, module_name: str) -> bool:
         try:
             from ErisPulse.Core import module as module_manager
+
             return module_manager.is_enabled(module_name)
         except ImportError:
             return True
@@ -311,7 +329,10 @@ class PackageManager:
                         updates[package_name] = (current_version, remote_version)
                 else:
                     remote_version = await self._get_pypi_package_version(package_name)
-                    if remote_version and self._compare_versions(remote_version, current_version) > 0:
+                    if (
+                        remote_version
+                        and self._compare_versions(remote_version, current_version) > 0
+                    ):
                         updates[package_name] = (current_version, remote_version)
 
         return updates
@@ -327,7 +348,9 @@ class PackageManager:
                 pass
         return None
 
-    async def _get_pypi_package_version(self, package_name: str, force_refresh: bool = False) -> Optional[str]:
+    async def _get_pypi_package_version(
+        self, package_name: str, force_refresh: bool = False
+    ) -> Optional[str]:
         cache_key = package_name.lower()
         if not force_refresh and cache_key in self._pypi_cache:
             if time.time() - self._pypi_cache_time[cache_key] < self.CACHE_EXPIRY:
@@ -335,7 +358,9 @@ class PackageManager:
 
         loop = asyncio.get_event_loop()
         try:
-            version = await loop.run_in_executor(None, self._get_pypi_version_sync, package_name)
+            version = await loop.run_in_executor(
+                None, self._get_pypi_version_sync, package_name
+            )
         except Exception:
             version = None
 
@@ -350,7 +375,9 @@ class PackageManager:
         proxies = self._get_system_proxy()
         proxy_hint = ""
         if proxies:
-            proxy_hint = f" [dim](proxy: {proxies.get('https', proxies.get('http', ''))})[/]"
+            proxy_hint = (
+                f" [dim](proxy: {proxies.get('https', proxies.get('http', ''))})[/]"
+            )
 
         console.print(f"\n[bold blue]⚙ {description}[/]{proxy_hint}")
         console.print("[dim]─────────────────────────────────────────────────[/]")
@@ -385,6 +412,7 @@ class PackageManager:
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         from packaging import version as comparison
+
         try:
             v1 = comparison.parse(version1)
             v2 = comparison.parse(version2)
@@ -405,6 +433,7 @@ class PackageManager:
     def _check_sdk_compatibility(self, min_sdk_version: str) -> Tuple[bool, str]:
         try:
             from ErisPulse import __version__
+
             current_version = __version__
         except ImportError:
             current_version = "unknown"
@@ -415,9 +444,15 @@ class PackageManager:
         try:
             compatibility = self._compare_versions(current_version, min_sdk_version)
             if compatibility >= 0:
-                return True, f"当前SDK版本 {current_version} 满足最低要求 {min_sdk_version}"
+                return (
+                    True,
+                    f"当前SDK版本 {current_version} 满足最低要求 {min_sdk_version}",
+                )
             else:
-                return False, f"当前SDK版本 {current_version} 低于最低要求 {min_sdk_version}"
+                return (
+                    False,
+                    f"当前SDK版本 {current_version} 低于最低要求 {min_sdk_version}",
+                )
         except Exception:
             return True, "无法验证SDK版本兼容性"
 
@@ -435,31 +470,61 @@ class PackageManager:
 
         return None
 
-    def install_package(self, package_names: List[str], upgrade: bool = False, pre: bool = False, extra_pip_args: List[str] = None) -> bool:
+    def install_package(
+        self,
+        package_names: List[str],
+        upgrade: bool = False,
+        pre: bool = False,
+        extra_pip_args: List[str] = None,
+    ) -> bool:
         all_success = True
 
         for package_name in package_names:
             actual_package = asyncio.run(self._find_package_by_alias(package_name))
 
             if actual_package:
-                console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]")
+                console.print(
+                    f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]"
+                )
                 current_package_name = actual_package
             else:
-                console.print(f"[info]未找到别名，将直接安装: [package]{package_name}[/][/]")
+                console.print(
+                    f"[info]未找到别名，将直接安装: [package]{package_name}[/][/]"
+                )
                 current_package_name = package_name
 
             package_info = asyncio.run(self._get_package_info(package_name))
+            if package_info and not package_info.get("verified", True):
+                console.print(
+                    Panel(
+                        f"包 [package]{current_package_name}[/] 尚未被官方验证。\n\n"
+                        f"未验证的包可能存在安全风险，请确认你信任该包的作者后再安装。\n"
+                        f"作者: {package_info.get('author', '未知')}\n"
+                        f"仓库: {package_info.get('repository', '未知')}",
+                        title="未验证模块",
+                        border_style="yellow",
+                    )
+                )
+                if not Confirm.ask("是否继续安装？", default=False):
+                    console.print("[info]已取消安装[/]")
+                    all_success = False
+                    continue
+
             if package_info and "min_sdk_version" in package_info:
-                is_compatible, message = self._check_sdk_compatibility(package_info["min_sdk_version"])
+                is_compatible, message = self._check_sdk_compatibility(
+                    package_info["min_sdk_version"]
+                )
                 if not is_compatible:
-                    console.print(Panel(
-                        f"[warning]SDK版本兼容性警告[/]\n"
-                        f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
-                        f"{message}\n\n"
-                        f"继续安装可能会导致问题。",
-                        title="兼容性警告",
-                        border_style="warning"
-                    ))
+                    console.print(
+                        Panel(
+                            f"[warning]SDK版本兼容性警告[/]\n"
+                            f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
+                            f"{message}\n\n"
+                            f"继续安装可能会导致问题。",
+                            title="兼容性警告",
+                            border_style="warning",
+                        )
+                    )
                     if not Confirm.ask("是否继续安装？", default=False):
                         console.print("[info]已取消安装[/]")
                         all_success = False
@@ -476,7 +541,9 @@ class PackageManager:
                 cmd.extend(extra_pip_args)
             cmd.append(current_package_name)
 
-            success = self._run_pip_command_with_output(cmd, f"安装 {current_package_name}")
+            success = self._run_pip_command_with_output(
+                cmd, f"安装 {current_package_name}"
+            )
 
             if success:
                 console.print(f"[success]✔ 包 {current_package_name} 安装成功[/]")
@@ -486,7 +553,9 @@ class PackageManager:
 
         return all_success
 
-    def install_direct(self, pip_args: List[str], description: str = "pip install") -> bool:
+    def install_direct(
+        self, pip_args: List[str], description: str = "pip install"
+    ) -> bool:
         cmd = ["install"] + pip_args
         success = self._run_pip_command_with_output(cmd, description)
 
@@ -497,7 +566,9 @@ class PackageManager:
 
         return success
 
-    def uninstall_package(self, package_names: List[str]) -> bool:
+    def uninstall_package(
+        self, package_names: List[str], skip_confirm: bool = False
+    ) -> bool:
         all_success = True
 
         packages_to_uninstall = []
@@ -506,27 +577,33 @@ class PackageManager:
             actual_package = asyncio.run(self._find_package_by_alias(package_name))
 
             if actual_package:
-                console.print(f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]")
+                console.print(
+                    f"[info]  别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]"
+                )
                 packages_to_uninstall.append(actual_package)
             else:
                 installed_package = self._find_installed_package_by_name(package_name)
                 if installed_package:
                     package_name = installed_package
-                    console.print(f"[info]找到已安装包: [bold]{package_name}[/][/]")
+                    console.print(f"[info]  找到已安装包: [bold]{package_name}[/][/]")
                     packages_to_uninstall.append(package_name)
                 else:
-                    console.print(f"[warning]未找到别名映射，将尝试直接卸载: [package]{package_name}[/][/]")
+                    console.print(
+                        f"[warning]  未找到别名，将尝试直接卸载: [package]{package_name}[/][/]"
+                    )
                     packages_to_uninstall.append(package_name)
 
-        package_list = "\n".join([f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall])
-        if not Confirm.ask(f"确认卸载以下包吗？\n{package_list}", default=False):
-            console.print("[info]操作已取消[/]")
-            return False
+        if not skip_confirm:
+            package_list = "\n".join(
+                [f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall]
+            )
+            if not Confirm.ask(f"确认卸载以下包吗？\n{package_list}", default=False):
+                console.print("[info]  操作已取消[/]")
+                return False
 
         for package_name in packages_to_uninstall:
             success = self._run_pip_command_with_output(
-                ["uninstall", "-y", package_name],
-                f"卸载 {package_name}"
+                ["uninstall", "-y", package_name], f"卸载 {package_name}"
             )
 
             if success:
@@ -544,14 +621,16 @@ class PackageManager:
             console.print("[success]所有ErisPulse包已是最新版本[/]")
             return True
 
-        console.print(Panel(
-            f"找到 [bold]{len(updates)}[/] 个可升级的包:\n" +
-            "\n".join(
-                f"  - [package]{pkg}[/] [dim]{current_ver}[/] → [success]{new_ver}[/]"
-                for pkg, (current_ver, new_ver) in updates.items()
-            ),
-            title="升级列表"
-        ))
+        console.print(
+            Panel(
+                f"找到 [bold]{len(updates)}[/] 个可升级的包:\n"
+                + "\n".join(
+                    f"  - [package]{pkg}[/] [dim]{current_ver}[/] → [success]{new_ver}[/]"
+                    for pkg, (current_ver, new_ver) in updates.items()
+                ),
+                title="升级列表",
+            )
+        )
 
         if not Confirm.ask("确认升级以上包吗？", default=False):
             console.print("[info]操作已取消[/]")
@@ -563,15 +642,20 @@ class PackageManager:
             results[pkg] = self.install_package([pkg], upgrade=True)
 
         success_count = sum(1 for success in results.values() if success)
-        console.print(f"\n[success]升级完成: {success_count}/{len(results)} 个包成功[/]")
+        console.print(
+            f"\n[success]升级完成: {success_count}/{len(results)} 个包成功[/]"
+        )
 
         failed = [pkg for pkg, success in results.items() if not success]
         if failed:
-            console.print(Panel(
-                "以下包升级失败:\n" + "\n".join(f"  - [error]{pkg}[/]" for pkg in failed),
-                title="警告",
-                style="warning"
-            ))
+            console.print(
+                Panel(
+                    "以下包升级失败:\n"
+                    + "\n".join(f"  - [error]{pkg}[/]" for pkg in failed),
+                    title="警告",
+                    style="warning",
+                )
+            )
             return False
 
         return True
@@ -598,33 +682,45 @@ class PackageManager:
                 if current_version:
                     break
 
-            remote_version = asyncio.run(self._get_pypi_package_version(current_package_name))
+            remote_version = asyncio.run(
+                self._get_pypi_package_version(current_package_name)
+            )
 
             if current_version:
                 if remote_version:
                     comparison = self._compare_versions(remote_version, current_version)
                     if comparison <= 0:
-                        console.print(f"[success]{current_package_name} 已是最新版本 ({current_version})[/]")
+                        console.print(
+                            f"[success]{current_package_name} 已是最新版本 ({current_version})[/]"
+                        )
                         continue
                     else:
-                        console.print(f"[info]{current_package_name}: {current_version} → {remote_version}[/]")
+                        console.print(
+                            f"[info]{current_package_name}: {current_version} → {remote_version}[/]"
+                        )
                 else:
-                    console.print(f"[info]{current_package_name}: 当前版本 {current_version}[/]")
+                    console.print(
+                        f"[info]{current_package_name}: 当前版本 {current_version}[/]"
+                    )
             else:
                 console.print(f"[warning]未找到 {current_package_name} 的安装信息[/]")
 
             package_info = asyncio.run(self._get_package_info(current_package_name))
             if package_info and "min_sdk_version" in package_info:
-                is_compatible, message = self._check_sdk_compatibility(package_info["min_sdk_version"])
+                is_compatible, message = self._check_sdk_compatibility(
+                    package_info["min_sdk_version"]
+                )
                 if not is_compatible:
-                    console.print(Panel(
-                        f"[warning]SDK版本兼容性警告[/]\n"
-                        f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
-                        f"{message}\n\n"
-                        f"继续升级可能会导致问题。",
-                        title="兼容性警告",
-                        border_style="warning"
-                    ))
+                    console.print(
+                        Panel(
+                            f"[warning]SDK版本兼容性警告[/]\n"
+                            f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
+                            f"{message}\n\n"
+                            f"继续升级可能会导致问题。",
+                            title="兼容性警告",
+                            border_style="warning",
+                        )
+                    )
                     if not Confirm.ask("是否继续升级？", default=False):
                         console.print("[info]已取消升级[/]")
                         all_success = False
@@ -637,7 +733,9 @@ class PackageManager:
                 cmd.append("--pre")
             cmd.append(current_package_name)
 
-            success = self._run_pip_command_with_output(cmd, f"升级 {current_package_name}")
+            success = self._run_pip_command_with_output(
+                cmd, f"升级 {current_package_name}"
+            )
 
             if success:
                 console.print(f"[success]✔ 包 {current_package_name} 升级成功[/]")
@@ -654,37 +752,51 @@ class PackageManager:
         installed = self.get_installed_packages()
         for pkg_type in ["modules", "adapters"]:
             for name, info in installed[pkg_type].items():
-                if (normalized_query in self._normalize_name(name) or
-                    normalized_query in self._normalize_name(info["package"]) or
-                    normalized_query in self._normalize_name(info["summary"])):
-                    results["installed"].append({
-                        "type": pkg_type[:-1] if pkg_type.endswith("s") else pkg_type,
-                        "name": name,
-                        "package": info["package"],
-                        "version": info["version"],
-                        "summary": info["summary"]
-                    })
+                if (
+                    normalized_query in self._normalize_name(name)
+                    or normalized_query in self._normalize_name(info["package"])
+                    or normalized_query in self._normalize_name(info["summary"])
+                ):
+                    results["installed"].append(
+                        {
+                            "type": pkg_type[:-1]
+                            if pkg_type.endswith("s")
+                            else pkg_type,
+                            "name": name,
+                            "package": info["package"],
+                            "version": info["version"],
+                            "summary": info["summary"],
+                        }
+                    )
 
         remote = asyncio.run(self.get_remote_packages())
         for pkg_type in ["modules", "adapters"]:
             for name, info in remote[pkg_type].items():
-                if (normalized_query in self._normalize_name(name) or
-                    normalized_query in self._normalize_name(info["package"]) or
-                    normalized_query in self._normalize_name(info.get("description", "")) or
-                    normalized_query in self._normalize_name(info.get("summary", ""))):
-                    results["remote"].append({
-                        "type": pkg_type[:-1] if pkg_type.endswith("s") else pkg_type,
-                        "name": name,
-                        "package": info["package"],
-                        "version": info["version"],
-                        "summary": info.get("description", info.get("summary", ""))
-                    })
+                if (
+                    normalized_query in self._normalize_name(name)
+                    or normalized_query in self._normalize_name(info["package"])
+                    or normalized_query
+                    in self._normalize_name(info.get("description", ""))
+                    or normalized_query in self._normalize_name(info.get("summary", ""))
+                ):
+                    results["remote"].append(
+                        {
+                            "type": pkg_type[:-1]
+                            if pkg_type.endswith("s")
+                            else pkg_type,
+                            "name": name,
+                            "package": info["package"],
+                            "version": info["version"],
+                            "summary": info.get("description", info.get("summary", "")),
+                        }
+                    )
 
         return results
 
     def get_installed_version(self) -> str:
         try:
             from ErisPulse import __version__
+
             return __version__
         except ImportError:
             return "unknown"
@@ -704,7 +816,7 @@ class PackageManager:
                     release_info = {
                         "version": version_str,
                         "uploaded": releases[0].get("upload_time_iso_8601", ""),
-                        "pre_release": self._is_pre_release(version_str)
+                        "pre_release": self._is_pre_release(version_str),
                     }
                     versions.append(release_info)
             versions.sort(key=lambda x: comparison.parse(x["version"]), reverse=True)
@@ -721,7 +833,7 @@ class PackageManager:
             return []
 
     def _is_pre_release(self, version: str) -> bool:
-        pre_release_pattern = re.compile(r'(a|b|rc|dev|alpha|beta)\d*', re.IGNORECASE)
+        pre_release_pattern = re.compile(r"(a|b|rc|dev|alpha|beta)\d*", re.IGNORECASE)
         return bool(pre_release_pattern.search(version))
 
     def update_self(self, target_version: str = None, force: bool = False) -> bool:
@@ -733,7 +845,7 @@ class PackageManager:
 
         package_spec = "ErisPulse"
         if target_version:
-            if not re.match(r'^[a-zA-Z0-9._+\-]+$', target_version):
+            if not re.match(r"^[a-zA-Z0-9._+\-]+$", target_version):
                 console.print(f"[error]无效的版本号: {target_version}[/]")
                 return False
             package_spec += f"=={target_version}"
@@ -767,6 +879,7 @@ except:
     pass
 """
             import tempfile
+
             script_path = os.path.join(tempfile.gettempdir(), "epsdk_update.py")
             with open(script_path, "w", encoding="utf-8") as f:
                 f.write(update_script)
@@ -774,20 +887,23 @@ except:
             console.print("[info]正在启动更新进程...[/]")
             console.print("[info]请稍后重新运行CLI以使用新版本[/]")
 
-            subprocess.Popen([
-                sys.executable, script_path
-            ], creationflags=subprocess.CREATE_NEW_CONSOLE)
+            subprocess.Popen(
+                [sys.executable, script_path],
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
 
             return True
         else:
             success = self._run_pip_command_with_output(
                 ["install", "--upgrade", package_spec],
-                f"更新 ErisPulse SDK {f'到 {target_version}' if target_version else '到最新版本'}"
+                f"更新 ErisPulse SDK {f'到 {target_version}' if target_version else '到最新版本'}",
             )
 
             if success:
                 new_version = target_version or "最新版本"
-                console.print(f"[success]✔ ErisPulse SDK 更新成功: {current_version} → {new_version}[/]")
+                console.print(
+                    f"[success]✔ ErisPulse SDK 更新成功: {current_version} → {new_version}[/]"
+                )
                 if not target_version:
                     console.print("[info]请重新启动CLI以使用新版本[/]")
             else:

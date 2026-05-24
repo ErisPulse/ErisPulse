@@ -39,6 +39,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     except Exception as e:
         logger.error(f"事件处理器执行错误: {e}")
 
+
 class BaseEventHandler:
     """
     基础事件处理器
@@ -147,13 +148,14 @@ class BaseEventHandler:
                 if ignore_self:
                     return
 
-        for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
+        for _priority, group_iter in groupby(
+            self.handlers, key=lambda h: h["priority"]
+        ):
             group = list(group_iter)
 
             # 过滤出满足条件的处理器
             active = [
-                h for h in group
-                if not h.get("condition") or h["condition"](event)
+                h for h in group if not h.get("condition") or h["condition"](event)
             ]
             if not active:
                 continue

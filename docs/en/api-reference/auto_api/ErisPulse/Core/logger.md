@@ -178,7 +178,7 @@ ErisPulse 日志系统
 
 ##### `print_section_header(title: str)`
 
-打印日志分组标题（树状结构）
+打印日志分组标题
 
 :param title: 分组标题
 
@@ -205,7 +205,7 @@ ErisPulse 日志系统
 
 ##### `print_info(text: str, level: int = 1)`
 
-打印信息（树状结构）
+打印信息
 
 :param text: 文本内容
 :param level: 缩进层级
@@ -227,16 +227,15 @@ ErisPulse 日志系统
 :param name: 子logger名称
 :return: LoggerChild 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
-    
 
 **示例**:
 ```python
 >>> # 自动创建子logger并记录日志
 >>> logger.mymodule.info("message")
->>> 
+>>>
 >>> # 支持嵌套访问
 >>> logger.mymodule.database.info("db message")
->>> 
+>>>
 >>> # 相当于 logger.get_child("mymodule").info("message")
 ```
 
@@ -328,7 +327,6 @@ ErisPulse 日志系统
 :param name: 子logger名称
 :return: LoggerChild 子logger实例
 **异常**: `AttributeError` - 当访问无效属性时抛出
-    
 
 **示例**:
 ```python

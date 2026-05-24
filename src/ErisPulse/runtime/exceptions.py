@@ -13,7 +13,9 @@ from typing import Dict, Any, Type
 
 class ExceptionHandler:
     @staticmethod
-    def format_exception(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any) -> str:
+    def format_exception(
+        exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any
+    ) -> str:
         """
         格式化异常信息
 
@@ -31,7 +33,7 @@ class ExceptionHandler:
                 function_name = last_frame.name
                 return f"ERROR: {filename}:{function_name}:{line_number}: {exc_type.__name__}: {exc_value}"
         return f"ERROR: {exc_type.__name__}: {exc_value}"
-        
+
     @staticmethod
     def format_async_exception(exception: Exception) -> str:
         """
@@ -48,62 +50,73 @@ class ExceptionHandler:
                 line_number = last_frame.lineno
                 function_name = last_frame.name
                 return f"ERROR: {filename}:{function_name}:{line_number}: {type(exception).__name__}: {exception}"
-        
+
         return f"ERROR: {type(exception).__name__}: {exception}"
 
 
-def global_exception_handler(exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any) -> None:
+def global_exception_handler(
+    exc_type: Type[Exception], exc_value: Exception, exc_traceback: Any
+) -> None:
     """
     全局异常处理器
-    
+
     :param exc_type: 异常类型
     :param exc_value: 异常值
     :param exc_traceback: 追踪信息
     """
     try:
         from ..Core import logger
+
         err_logger = logger.error
     except ImportError:
         err_logger = sys.stderr.write
 
-    formatted_error = ExceptionHandler.format_exception(exc_type, exc_value, exc_traceback)
+    formatted_error = ExceptionHandler.format_exception(
+        exc_type, exc_value, exc_traceback
+    )
     err_logger(formatted_error)
 
 
-def async_exception_handler(loop: asyncio.AbstractEventLoop, context: Dict[str, Any]) -> None:
+def async_exception_handler(
+    loop: asyncio.AbstractEventLoop, context: Dict[str, Any]
+) -> None:
     """
     异步异常处理器
-    
+
     :param loop: 事件循环
     :param context: 上下文字典
     """
     try:
         from ..Core import logger
+
         err_logger = logger.error
     except ImportError:
         err_logger = sys.stderr.write
-    
-    exception = context.get('exception')
+
+    exception = context.get("exception")
     if exception:
         try:
             formatted_error = ExceptionHandler.format_async_exception(exception)
-            err_logger(formatted_error + '\n')
+            err_logger(formatted_error + "\n")
         except Exception:
-            err_logger(f"ERROR: 捕捉器发生错误，原始异常信息：\n\n{exception}\n\n" + traceback.format_exc())
+            err_logger(
+                f"ERROR: 捕捉器发生错误，原始异常信息：\n\n{exception}\n\n"
+                + traceback.format_exc()
+            )
     else:
-        msg = context.get('message', '未知异步错误')
+        msg = context.get("message", "未知异步错误")
         err_logger(f"ERROR: 未处理的异步错误: {msg}\n")
 
 
 def setup_exception_handling() -> None:
     """
     设置全局异常处理系统
-    
+
     包括同步异常和异步异常的处理钩子
     """
     # 设置同步异常钩子
     sys.excepthook = global_exception_handler
-    
+
     # 尝试设置异步异常处理器
     try:
         loop = asyncio.get_running_loop()
@@ -115,8 +128,8 @@ def setup_exception_handling() -> None:
 
 
 __all__ = [
-    'ExceptionHandler',
-    'global_exception_handler',
-    'async_exception_handler',
-    'setup_exception_handling',
+    "ExceptionHandler",
+    "global_exception_handler",
+    "async_exception_handler",
+    "setup_exception_handling",
 ]

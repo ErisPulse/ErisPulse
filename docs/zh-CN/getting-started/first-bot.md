@@ -56,36 +56,17 @@ async def main():
     print("正在初始化 ErisPulse...")
     # 运行 SDK 并且维持运行
     await sdk.run(keep_running=True)
+
+    # 或者
+    # await sdk.run(keep_running=False)
+    # ...Do Something
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等价于 `dk.run(keep_running=False)`
+
     print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> 除了直接使用 `sdk.run()` 之外，你还可以更细致化的控制运行流程，如：
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse 初始化失败，请检查日志")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # 保持程序运行, 如果有其它需要执行的操作，你也可以不维持事件，但需要自行处理
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -215,6 +196,7 @@ async def hello_handler(event):
 
 ## 下一步
 
+- [高级初始化控制](advanced-init.md) - 钩子系统、手动控制、嵌入式集成
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能

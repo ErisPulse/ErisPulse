@@ -63,6 +63,33 @@
 
 ---
 
+## [2.4.6-dev.0] - 2026/05/24
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `CLI` 新增未验证模块标识：`list-remote`/`install`交互安装中未验证模块显示「（未验证）」标记，安装时弹出风险警告需确认
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter`/`module` 加载的启用状态检测在部分场景下可能失效的问题
+  - 修复 `sdk.run` 的保持运行变量关闭的情况下，会导致继续运行代码`uninit`的bug
+
+### 优化
+- @wsu2059q
+  - `docs` SQL 构建器文档：明确元组返回值、新增 `Where` 多参数用法说明
+  - `docs` 发布文档：精简为 3 步流程，更新商店提交入口
+  - `README` 新增 1Panel 应用商店安装方式
+  - 优化 `logger` 的显示样式
+  - 优化 `cli` 的显示样式，新增display辅助模块
+  - 优化热重启（`sdk.restart()`）的缓存清理机制，确保更新后的模块/适配器/框架代码能正确生效：
+    - 新增 `_invalidate_metadata_cache()` 清除 `importlib.metadata` 缓存
+    - 新增 `_invalidate_framework_cache()` 清除 `ErisPulse.*` 子模块缓存
+    - 增强诊断日志输出
+  - 并入 `适配器启动` 到 `sdk.init`
+
+---
+
 ## [2.4.5] - 2026/05/17
 > 正式发布
 

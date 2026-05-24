@@ -10,81 +10,68 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+
 from rich.prompt import Confirm, Prompt
+from rich.text import Text
 
 from ..console import console
 from ..utils import PackageManager
+from ..utils.display import section_header, _input
 from ..base import Command
+
 
 class InitCommand(Command):
     name = "init"
     description = "初始化 ErisPulse 项目"
-    
+
     def __init__(self):
         self.package_manager = PackageManager()
-    
+
     def add_arguments(self, parser: ArgumentParser):
+        parser.add_argument("--project-name", "-n", help="项目名称 (可选)")
         parser.add_argument(
-            '--project-name', '-n',
-            help='项目名称 (可选)'
+            "--quick", "-q", action="store_true", help="快速模式，跳过交互式配置"
         )
         parser.add_argument(
-            '--quick', '-q',
-            action='store_true',
-            help='快速模式，跳过交互式配置'
+            "--force", "-f", action="store_true", help="强制覆盖现有配置"
         )
-        parser.add_argument(
-            '--force', '-f',
-            action='store_true',
-            help='强制覆盖现有配置'
-        )
-    
+
     def execute(self, args):
         if args.quick and args.project_name:
-            # 快速模式：只创建项目，不进行交互配置
             success = self._init_project(args.project_name, [])
         else:
-            # 交互式模式：引导用户完成项目和配置设置
             success = self._interactive_init(args.project_name, args.force)
-        
+
         if success:
-            console.print("[success]项目初始化完成[/]")
+            console.print("[success]  项目初始化完成[/]")
         else:
-            console.print("[error]项目初始化失败[/]")
+            console.print("[error]  项目初始化失败[/]")
             sys.exit(1)
-    
+
     def _init_project(self, project_name: str, adapter_list: list = None) -> bool:
-        """
-        初始化新项目
-        
-        :param project_name: 项目名称
-        :param adapter_list: 需要初始化的适配器列表
-        :return: 是否初始化成功
-        """
-        if not project_name or not all(c.isalnum() or c in ('_', '-', '.') for c in project_name):
-            console.print("[error]项目名称只能包含字母、数字、下划线、连字符和点号[/]")
+        if not project_name or not all(
+            c.isalnum() or c in ("_", "-", ".") for c in project_name
+        ):
+            console.print(
+                "[error]  项目名称只能包含字母、数字、下划线、连字符和点号[/]"
+            )
             return False
 
         try:
             project_path = Path(project_name)
             if project_path.exists():
                 if project_path.is_dir():
-                    console.print(f"[yellow]目录 {project_name} 已存在[/yellow]")
+                    console.print(f"[warning]  目录 {project_name} 已存在[/]")
                 else:
-                    console.print(f"[red]文件 {project_name} 已存在且不是目录[/red]")
+                    console.print(f"[error]  文件 {project_name} 已存在且不是目录[/]")
                     return False
             else:
                 project_path.mkdir()
-                console.print(f"[green]创建项目目录: {project_name}[/green]")
-            
-            # 创建基本目录结构
-            dirs = ["config", "logs"]
-            for dir_name in dirs:
-                dir_path = project_path / dir_name
-                dir_path.mkdir(exist_ok=True)
-                console.print(f"[green]创建目录: {dir_name}[/green]")
-            
-            # 创建配置文件 (最小必须配置)
+                console.print(f"[success]  创建项目目录: {project_name}[/]")
+
+            for dir_name in ["config", "logs"]:
+                (project_path / dir_name).mkdir(exist_ok=True)
+
             config_file = project_path / "config" / "config.toml"
             if not config_file.exists():
                 with open(config_file, "w", encoding="utf-8") as f:
@@ -95,61 +82,42 @@ class InitCommand(Command):
                     f.write("port = 8000\n\n")
                     f.write("[ErisPulse.logger]\n")
                     f.write('level = "INFO"\n')
-                    
                     if adapter_list:
                         f.write("\n[ErisPulse.adapters.status]\n")
                         for adapter in adapter_list:
-                            f.write(f'{adapter} = false\n')
-                
-                console.print("[green]创建配置文件: config/config.toml[/green]")
-            
-            # 创建完整配置示例文件
+                            f.write(f"{adapter} = false\n")
+
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
                 with open(example_file, "w", encoding="utf-8") as f:
                     f.write(self._get_full_example_config(adapter_list))
-                console.print("[green]创建配置示例: config/config.full.example[/green]")
-            
-            # 创建主程序文件
+
             main_file = project_path / "main.py"
             if not main_file.exists():
                 with open(main_file, "w", encoding="utf-8") as f:
-                    f.write('"""')
-                    f.write(f"\n{project_name} 主程序\n\n")
+                    f.write(f'"""\n{project_name} 主程序\n\n')
                     f.write("这是 ErisPulse 自动生成的主程序文件\n")
-                    f.write("您可以根据需要修改此文件\n")
                     f.write('"""\n\n')
                     f.write("import asyncio\n")
                     f.write("from ErisPulse import sdk\n\n")
                     f.write("async def main():\n")
                     f.write("    await sdk.run(keep_running=True)\n\n")
-                    f.write("if __name__ == \"__main__\":\n")
+                    f.write('if __name__ == "__main__":\n')
                     f.write("    asyncio.run(main())\n")
-                
-                console.print("[green]创建主程序文件: main.py[/green]")
-            
-            console.print("\n[bold green]项目 {} 初始化成功![/bold green]".format(project_name))
-            console.print("\n[cyan]接下来您可以:[/cyan]")
-            console.print(f"1. 编辑 {project_name}/config/config.toml 配置适配器")
-            console.print(f"2. 运行 [cyan]cd {project_name} \n     ep run[/cyan] 启动项目")
-            console.print("\n访问 https://github.com/ErisPulse/ErisPulse/tree/main/docs 获取更多信息和文档")
+
+            console.print(f"[success]  项目 {project_name} 初始化成功[/]")
+            console.print()
+            console.print(Text("  接下来:", style="bold"))
+            console.print(f"    · 编辑 {project_name}/config/config.toml 配置适配器")
+            console.print(f"    · cd {project_name} && epsdk run")
             return True
-            
+
         except Exception as e:
-            console.print(f"[red]初始化项目失败: {e}[/]")
+            console.print(f"[error]  初始化项目失败: {e}[/]")
             return False
-    
+
     @staticmethod
     def _get_full_example_config(adapter_list=None):
-        """
-        生成完整配置示例文件内容
-        
-        :param adapter_list: list 可用适配器列表
-        :return: str 完整配置示例内容
-        
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
         lines = [
             "# ErisPulse 完整配置示例",
             "# 此文件展示所有可用配置项及其默认值",
@@ -167,7 +135,7 @@ class InitCommand(Command):
             "",
             "[ErisPulse.logger]",
             'level = "INFO"                # 日志级别: DEBUG/INFO/WARNING/ERROR',
-            "log_files = []                # 日志文件列表, 如 [\"logs/app.log\"]",
+            'log_files = []                # 日志文件列表, 如 ["logs/app.log"]',
             "memory_limit = 1000           # 内存日志条数上限",
             "",
             "# ==================== 存储 ====================",
@@ -223,271 +191,199 @@ class InitCommand(Command):
             "",
             "[ErisPulse.adapters.status]",
         ]
-        
+
         if adapter_list:
             for adapter in adapter_list:
                 lines.append(f"# {adapter} = false")
         else:
-            lines.extend([
-                "# yunhu = false",
-                "# telegram = false",
-                "# onebot11 = false",
-            ])
-        
-        lines.extend([
-            "",
-            "# ==================== 模块状态 ====================",
-            "",
-            "[ErisPulse.modules.status]",
-            "# MyModule = true",
-            "",
-        ])
-        
+            lines.extend(
+                [
+                    "# yunhu = false",
+                    "# telegram = false",
+                    "# onebot11 = false",
+                ]
+            )
+
+        lines.extend(
+            [
+                "",
+                "# ==================== 模块状态 ====================",
+                "",
+                "[ErisPulse.modules.status]",
+                "# MyModule = true",
+                "",
+            ]
+        )
+
         return "\n".join(lines)
-    
+
     async def _fetch_available_adapters(self):
-        """
-        从云端获取可用适配器列表
-        
-        :return: 适配器名称到描述的映射
-        """
         try:
-            # 使用与 PackageManager 相同的机制获取远程包列表
             remote_packages = await self.package_manager.get_remote_packages()
-            
             adapters = {}
             for name, info in remote_packages.get("adapters", {}).items():
                 adapters[name] = info.get("description", "")
-            
             if adapters:
                 return adapters
-            else:
-                console.print("[yellow]从远程源获取的适配器列表为空[/yellow]")
         except Exception as e:
-            console.print(f"[red]从远程源获取适配器列表时出错: {e}[/red]")
-        
-        # 如果云端请求失败，返回默认适配器列表
-        console.print("[yellow]使用默认适配器列表[/yellow]")
+            console.print(f"[warning]  获取远程适配器列表失败: {e}[/]")
+
         return {
             "yunhu": "云湖平台适配器",
             "telegram": "Telegram机器人适配器",
             "onebot11": "OneBot11标准适配器",
-            "email": "邮件适配器"
+            "email": "邮件适配器",
         }
-    
-    def _configure_adapters_interactive_sync(self, project_path: Path = None):
-        """
-        交互式配置适配器的同步版本
-        
-        :param project_path: 项目路径
-        """
-        from ErisPulse import config
-        
-        # 如果提供了项目路径，则加载项目配置
-        if project_path:
-            project_config_path = project_path / "config" / "config.toml"
-            if project_config_path.exists():
-                config.CONFIG_FILE = str(project_config_path)
-                config.reload()
-                console.print(f"[green]已加载项目配置: {project_config_path}[/green]")
-        
-        console.print("\n[bold]配置适配器[/bold]")
-        console.print("[info]正在从云端获取可用适配器列表...[/info]")
-        
-        # 获取可用适配器列表（同步方式）
+
+    def _interactive_init(self, project_name: str = None, force: bool = False) -> bool:
         try:
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(asyncio.run, self._fetch_available_adapters())
-                adapters = future.result(timeout=10)
+            if not project_name:
+                project_name = Prompt.ask("  项目名称", default="my_erispulse_project")
+
+            project_path = Path(project_name)
+            if project_path.exists() and not force:
+                if not Confirm.ask(
+                    f"  [cyan]目录 {project_name} 已存在，是否覆盖？[/]", default=False
+                ):
+                    console.print("[info]  操作已取消[/]")
+                    return False
+
+            if not self._init_project(project_name, []):
+                return False
+
+            from ErisPulse import config
+
+            project_config_path = project_path / "config" / "config.toml"
+            config.CONFIG_FILE = str(project_config_path)
+            config.reload()
+
+            section_header("基本配置")
+
+            current_level = config.getConfig("ErisPulse.logger.level", "INFO")
+            console.print(f"  日志级别 [dim]({current_level})[/]")
+            new_level = _input(">")
+            if new_level and new_level.upper() in [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL",
+            ]:
+                config.setConfig("ErisPulse.logger.level", new_level.upper())
+
+            current_host = config.getConfig("ErisPulse.server.host", "0.0.0.0")
+            console.print(f"  监听地址 [dim]({current_host})[/]")
+            new_host = _input(">")
+            if new_host:
+                config.setConfig("ErisPulse.server.host", new_host)
+
+            current_port = str(config.getConfig("ErisPulse.server.port", 8000))
+            console.print(f"  监听端口 [dim]({current_port})[/]")
+            new_port = _input(">")
+            if new_port:
+                try:
+                    config.setConfig("ErisPulse.server.port", int(new_port))
+                except ValueError:
+                    console.print(f"[warning]  无效的端口号: {new_port}[/]")
+
+            if Confirm.ask("\n  [cyan]是否配置适配器？[/]", default=True):
+                self._configure_adapters(project_path)
+
+            config.force_save()
+            return True
+
         except Exception as e:
-            console.print(f"[red]获取适配器列表失败: {e}[/red]")
-            adapters = {}
-        
+            console.print(f"[error]  初始化失败: {e}[/]")
+            return False
+
+    def _configure_adapters(self, project_path: Path):
+        from ErisPulse import config
+
+        with console.status("[bold green]正在获取适配器列表...", spinner="dots"):
+            try:
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(
+                        asyncio.run, self._fetch_available_adapters()
+                    )
+                    adapters = future.result(timeout=10)
+            except Exception as e:
+                console.print(f"[error]  获取适配器列表失败: {e}[/]")
+                return
+
         if not adapters:
-            console.print("[red]未能获取到适配器列表[/red]")
+            console.print("[dim]  没有可用适配器[/]")
             return
-        
-        # 显示可用适配器列表
+
+        section_header("适配器")
         adapter_list = list(adapters.items())
         for i, (name, desc) in enumerate(adapter_list, 1):
-            console.print(f"  {i}. {name} - {desc}")
-        
-        # 选择适配器
-        selected_indices = Prompt.ask("\n[cyan]请输入要启用的适配器序号，多个用逗号分隔 (如: 1,3):[/cyan] ")
-        if not selected_indices:
-            console.print("[info]未选择任何适配器[/info]")
+            console.print(f"    [bold]{i}.[/] {name} [dim]— {desc}[/]")
+
+        console.print("  选择要启用的适配器 (序号，逗号分隔)")
+        selected = _input(">")
+        if not selected.strip():
+            console.print("[info]  未选择适配器[/]")
             return
-        
+
         try:
-            indices = [int(idx.strip()) for idx in selected_indices.split(",")]
-            enabled_adapters = []
-            
-            for idx in indices:
-                if 1 <= idx <= len(adapter_list):
-                    adapter_name = adapter_list[idx-1][0]
-                    enabled_adapters.append(adapter_name)
-                    config.setConfig(f"ErisPulse.adapters.status.{adapter_name}", True)
-                    console.print(f"[green]已启用适配器: {adapter_name}[/green]")
-                else:
-                    console.print(f"[red]无效的序号: {idx}[/]")
-            
-            # 禁用未选择的适配器
-            all_adapter_names = [name for name, _ in adapter_list]
-            for name in all_adapter_names:
-                if name not in enabled_adapters:
-                    config.setConfig(f"ErisPulse.adapters.status.{name}", False)
-            
-            console.print(f"\n[info]已启用 {len(enabled_adapters)} 个适配器[/info]")
-            
-            # 询问是否要安装适配器
-            if enabled_adapters and Confirm.ask("\n[cyan]是否要安装选中的适配器？[/cyan]", default=True):
-                self._install_adapters(enabled_adapters, adapters)
-            
-            # 保存配置
-            config.force_save()
-            
+            indices = [int(idx.strip()) for idx in selected.split(",")]
         except ValueError:
-            console.print("[red]输入格式错误，请输入数字序号[/red]")
-    
+            console.print("[warning]  请输入数字序号[/]")
+            return
+
+        enabled = []
+        for idx in indices:
+            if 1 <= idx <= len(adapter_list):
+                name = adapter_list[idx - 1][0]
+                enabled.append(name)
+                config.setConfig(f"ErisPulse.adapters.status.{name}", True)
+            else:
+                console.print(f"[warning]  序号 {idx} 无效[/]")
+
+        for name, _ in adapter_list:
+            if name not in enabled:
+                config.setConfig(f"ErisPulse.adapters.status.{name}", False)
+
+        console.print(f"[dim]  已启用 {len(enabled)} 个适配器[/]")
+
+        if enabled and Confirm.ask("  [cyan]是否安装选中的适配器？[/]", default=True):
+            self._install_adapters(enabled, adapters)
+
     def _install_adapters(self, adapter_names, adapters_info):
-        """
-        安装选中的适配器
-        
-        :param adapter_names: 适配器名称列表
-        :param adapters_info: 适配器信息字典
-        """
-        from ..utils import PackageManager
         pkg_manager = PackageManager()
-        
         for adapter_name in adapter_names:
-            # 获取包名
             package_name = None
             try:
                 remote_packages = pkg_manager._cache.get("remote_packages", {})
                 if not remote_packages:
-                    # 如果没有缓存，尝试同步获取
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        future = executor.submit(asyncio.run, pkg_manager.get_remote_packages())
+                        future = executor.submit(
+                            asyncio.run, pkg_manager.get_remote_packages()
+                        )
                         remote_packages = future.result(timeout=10)
-                
                 if adapter_name in remote_packages.get("adapters", {}):
-                    package_name = remote_packages["adapters"][adapter_name].get("package")
+                    package_name = remote_packages["adapters"][adapter_name].get(
+                        "package"
+                    )
             except Exception:
                 pass
-            
-            # 如果没有找到包名，使用适配器名称作为包名
+
             if not package_name:
                 package_name = adapter_name
-            
-            # 安装适配器
-            console.print(f"[info]正在安装适配器: {adapter_name} ({package_name})[/info]")
+
+            console.print(f"[info]  正在安装 {adapter_name} ({package_name})[/]")
             success = pkg_manager.install_package([package_name])
-            
-            if success:
-                console.print(f"[green]适配器 {adapter_name} 安装成功[/green]")
-            else:
-                # 如果标准安装失败，尝试使用 uv
-                console.print("[yellow]标准安装失败，尝试使用 uv 安装...[/yellow]")
+
+            if not success:
+                console.print("[warning]  标准安装失败，尝试 uv...[/]")
                 try:
                     result = subprocess.run(
                         [sys.executable, "-m", "uv", "pip", "install", package_name],
                         capture_output=True,
                         text=True,
-                        timeout=300
+                        timeout=300,
                     )
-                    
-                    if result.returncode == 0:
-                        console.print(f"[green]适配器 {adapter_name} 通过 uv 安装成功[/green]")
-                    else:
-                        console.print(f"[red]适配器 {adapter_name} 通过 uv 安装失败[/red]")
+                    if result.returncode != 0:
+                        console.print(f"[error]  {adapter_name} 安装失败[/]")
                 except Exception as e:
-                    console.print(f"[red]适配器 {adapter_name} 通过 uv 安装时出错: {e}[/]")
-    
-    def _interactive_init(self, project_name: str = None, force: bool = False) -> bool:
-        """
-        交互式初始化项目
-        
-        :param project_name: 项目名称
-        :param force: 是否强制覆盖
-        :return: 是否初始化成功
-        """
-        try:
-            # 获取项目名称（如果未提供）
-            if not project_name:
-                project_name = Prompt.ask("[cyan]请输入项目名称 (默认: my_erispulse_project):[/cyan] ")
-                if not project_name:
-                    project_name = "my_erispulse_project"
-            
-            # 检查项目是否已存在
-            project_path = Path(project_name)
-            if project_path.exists() and not force:
-                if not Confirm.ask(f"[yellow]目录 {project_name} 已存在，是否覆盖？[/]", default=False):
-                    console.print("[info]操作已取消[/]")
-                    return False
-            
-            # 创建项目
-            if not self._init_project(project_name, []):
-                return False
-            
-            # 加载项目配置
-            from ErisPulse import config
-            project_config_path = project_path / "config" / "config.toml"
-            
-            config.CONFIG_FILE = str(project_config_path)
-            config.reload()
-            
-            # 交互式配置向导
-            console.print("\n[bold blue]现在进行基本配置:[/bold blue]")
-            
-            # 获取日志级别配置
-            current_level = config.getConfig("ErisPulse.logger.level", "INFO")
-            console.print(f"\n当前日志级别: [cyan]{current_level}[/]")
-            new_level = Prompt.ask("[yellow]请输入新的日志级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)，回车保持当前值:[/yellow] ")
-            
-            if new_level and new_level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-                config.setConfig("ErisPulse.logger.level", new_level.upper())
-                console.print(f"[green]日志级别已更新为: {new_level.upper()}[/]")
-            elif new_level:
-                console.print(f"[red]无效的日志级别: {new_level}[/red]")
-            
-            # 获取服务器配置
-            console.print("\n[bold]服务器配置[/bold]")
-            current_host = config.getConfig("ErisPulse.server.host", "0.0.0.0")
-            current_port = config.getConfig("ErisPulse.server.port", 8000)
-            
-            console.print(f"当前主机: [cyan]{current_host}[/]")
-            new_host = Prompt.ask("[yellow]请输入主机地址，回车保持当前值:[/yellow] ")
-            
-            if new_host:
-                config.setConfig("ErisPulse.server.host", new_host)
-                console.print(f"[green]主机地址已更新为: {new_host}[/]")
-            
-            console.print(f"当前端口: [cyan]{current_port}[/]")
-            new_port = Prompt.ask("[yellow]请输入端口号，回车保持当前值:[/yellow] ")
-            
-            if new_port:
-                try:
-                    port_int = int(new_port)
-                    config.setConfig("ErisPulse.server.port", port_int)
-                    console.print(f"[green]端口已更新为: {port_int}[/]")
-                except ValueError:
-                    console.print(f"[red]无效的端口号: {new_port}[/red]")
-            
-            # 询问是否要配置适配器
-            if Confirm.ask("\n[cyan]是否要配置适配器？[/cyan]", default=True):
-                self._configure_adapters_interactive_sync(project_path)
-            
-            # 保存配置
-            config.force_save()
-            console.print("\n[bold green]项目和配置初始化完成![/bold green]")
-            
-            # 显示下一步操作
-            console.print("\n[cyan]接下来您可以:[/cyan]")
-            console.print(f"1. 编辑 {project_name}/config/config.toml 进一步配置")
-            console.print(f"2. 运行 [cyan]cd {project_name} \n        ep run[/] 启动项目")
-            
-            return True
-            
-        except Exception as e:
-            console.print(f"[red]交互式初始化失败: {e}[/]")
-            return False
+                    console.print(f"[error]  {adapter_name} 安装出错: {e}[/]")

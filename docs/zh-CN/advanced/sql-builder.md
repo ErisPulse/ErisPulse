@@ -76,10 +76,10 @@ sdk.storage.AlterTable("users") \
 ### 插入数据
 
 ```python
-# 单行插入
+# 单行插入（传入字典）
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批量插入
+# 批量插入（传入字典列表）
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -89,29 +89,67 @@ sdk.storage.Table("users").InsertMulti([
 
 ### 查询数据
 
+> **重要**：`Select()` 返回的是 `list[tuple]`（元组列表），不是字典。你需要按列顺序用索引访问。
+
 ```python
 # 查询所有列
 rows = sdk.storage.Table("users").Select().Execute()
+# rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
 # 查询指定列
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
+# rows: [("Alice", 30), ("Bob", 25), ...]
 
-# 获取单条记录
+# 按索引取值
+for row in rows:
+    name = row[0]   # "Alice"
+    age = row[1]    # 30
+```
+
+#### 将元组转为字典
+
+```python
+columns = ["id", "name", "age"]
+rows = sdk.storage.Table("users").Select(*columns).Execute()
+
+# 方式一：循环中 zip
+for row in rows:
+    record = dict(zip(columns, row))
+    print(record["name"], record["age"])
+
+# 方式二：一次性转为字典列表
+records = [dict(zip(columns, row)) for row in rows]
+```
+
+#### 获取单条记录
+
+```python
 row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
-# 返回 tuple | None，如 ("Alice", 30)
+
+# row 是 tuple 或 None
+if row is not None:
+    name = row[0]  # "Alice"
+    age = row[1]   # 30
 ```
 
 ### 条件过滤
 
+> `Where(condition, *params)` 支持传入多个参数，对应多个 `?` 占位符。
+
 ```python
-# 单条件
+# 单条件（一个占位符，一个参数）
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# 多条件（AND 连接）
+# 一个 Where 中使用多个占位符
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ? AND age < ?", 20, 40) \
+    .Execute()
+
+# 多次调用 Where（AND 连接）
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
@@ -230,8 +268,8 @@ except Exception:
 
 | 操作 | 返回类型 | 说明 |
 |------|---------|------|
-| `Select().Execute()` | `list[tuple]` | 查询结果列表 |
-| `Select().ExecuteOne()` | `tuple \| None` | 单条记录 |
+| `Select().Execute()` | `list[tuple]` | 元组列表，按列顺序排列 |
+| `Select().ExecuteOne()` | `tuple \| None` | 单条元组或 None |
 | `Insert().Execute()` | `int` | 受影响行数 |
 | `InsertMulti().Execute()` | `int` | 插入行数 |
 | `Update().Execute()` | `int` | 受影响行数 |
@@ -239,16 +277,66 @@ except Exception:
 | `Count()` | `int` | 匹配行数 |
 | `Exists()` | `bool` | 是否存在 |
 
-## 参数化查询
-
-所有 WHERE 参数使用 `?` 占位符，防止 SQL 注入：
+### 返回值处理示例
 
 ```python
-# 正确 ✓
-sdk.storage.Table("users").Where("name = ?", user_input).Execute()
+# Select 返回元组，按索引取值
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
+
+# 推荐：用列名列表 + zip 转为字典，代码更可读
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne 返回单条元组或 None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete 返回受影响行数
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"删除了 {affected} 条记录")
+```
+
+## 参数化查询
+
+所有 WHERE 参数使用 `?` 占位符，参数作为 `Where()` 的后续参数传入（**不是**元组或列表）：
+
+```python
+# 正确 ✓ — 多个参数逐一传入
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# 正确 ✓ — 多次 Where 调用
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# 错误 ✗ — 不要传入元组
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# 这会把整个元组当成第一个占位符的值
 
 # 错误 ✗ — 存在 SQL 注入风险
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Where 参数传递规则
+
+```python
+# Where(condition: str, *params: Any)
+# params 是可变参数，逐个传入即可
+
+# 单个参数
+.Where("name = ?", "Alice")
+
+# 多个参数
+.Where("age > ? AND age < ?", 18, 60)
+
+# LIKE 查询
+.Where("name LIKE ?", "A%")
+
+# IN 查询（需要手动构造占位符）
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
 ## 自定义存储后端
