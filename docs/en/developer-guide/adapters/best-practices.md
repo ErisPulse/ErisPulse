@@ -161,7 +161,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
         super().__init__()
         self.connection = None
         self._connected = False
@@ -457,8 +457,8 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk=None):
-        super().__init__(sdk)
+    def __init__(self):
+        super().__init__()
         self.logger = logger.get_child("MyAdapter")
     
     async def start(self):
@@ -586,6 +586,36 @@ class MyAdapter(BaseAdapter):
 
 ### 1. Maintain Platform Feature Documentation
 
-Create a `{platform}.md` document under `docs-new/platform-guide/`:
+Create a `{platform}.md` document under `docs/zh-CN/platform-guide/` (other language versions will be automatically generated):
 
 ```markdown
+# Platform Name Adapter Documentation
+
+## Basic Information
+- Corresponding module version: 1.0.0
+- Maintainer: Your Name
+
+## Supported Message Sending Types
+...
+
+## Special Event Types
+...
+
+## Configuration Options
+...
+```
+
+### 2. Update Version Information
+
+When releasing a new version, update the version information in the documentation:
+
+```toml
+[project]
+version = "2.0.0"  # Update version number
+```
+
+## Related Documents
+
+- [Adapter Development Getting Started](getting-started.md) - Create your first adapter
+- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn about message sending
