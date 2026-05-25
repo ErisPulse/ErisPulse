@@ -612,20 +612,17 @@ async def message_handler(event):
 ### 3. Conditional Handling
 
 ```python
-def should_handle(event):
-    """Determine if this event should be handled"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """Condition handling - determine within the handler"""
     # Only handle messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # Only handle messages containing specific keywords
-    if "keyword" not in event.get_text():
-        return False
+    if "关键词" not in event.get_text():
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("Condition met, handling message")
 ```
 

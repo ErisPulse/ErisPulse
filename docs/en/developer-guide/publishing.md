@@ -91,6 +91,8 @@ pip install ErisPulse-MyModule
 
 Go to the [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", fill in the module information after logging in.
 
+Supported login methods: **GitHub**, **Codeberg**, **Cloud Lake**, any one of these is sufficient.
+
 Key points to fill in:
 - Module name, description, repository URL
 - Minimum SDK version: If unsure, use the version number from the [latest ErisPulse release](https://pypi.org/project/ErisPulse/)
@@ -100,6 +102,14 @@ Submission takes effect immediately, users can install through the module source
 > **Regarding Verification Status**:
 > - "Unverified" only indicates that it has not undergone official review, not that there is an issue with the module
 > - Users will receive a risk warning when installing unverified modules through `epsdk install` and need to confirm before proceeding with installation
+
+### 4. Manage Published Modules
+
+After clicking "Submit Module" in the Module Store and logging in, switch to the "My Modules" tab to:
+- **Edit** — Modify module description, repository URL, tags and other information, version number will be automatically synchronized from PyPI
+- **Delete** — Remove the module from the Module Store (irreversible)
+
+> Newly submitted modules may take a few minutes to appear in the "My Modules" list.
 
 ## Update Published Modules
 
@@ -137,7 +147,7 @@ Yes. Configure multiple key-value pairs in `entry-points`:
 
 ### How long does the review take?
 
-Usually completed within 1-3 business days. You can check the review progress in Issues.
+Usually completed within 1-3 business days. You can check the review status in the "My Modules" section of the Module Store.
 
 ## Distribute Applications via Docker Images
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1088,
+  "total_keywords": 1089,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -91,7 +91,7 @@
     "1. 创建 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 152,
+        "line": 163,
         "level": 3,
         "title": "1. 创建 Dockerfile"
       }
@@ -326,12 +326,20 @@
         "title": "1.4 推荐的扩展命名约定"
       }
     ],
-    "11. 消息构建器（MessageBuilder）": [
+    "10. 消息构建器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
         "line": 472,
         "level": 2,
-        "title": "11. 消息构建器（MessageBuilder）"
+        "title": "10. 消息构建器（MessageBuilder）"
+      }
+    ],
+    "11. 相关文档": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 561,
+        "level": 2,
+        "title": "11. 相关文档"
       }
     ],
     "11.1 导入": [
@@ -382,14 +390,6 @@
         "title": "11.6 工具方法"
       }
     ],
-    "12. 相关文档": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 561,
-        "level": 2,
-        "title": "12. 相关文档"
-      }
-    ],
     "1xxxx 动作请求错误（Request Error）": [
       {
         "document": "standards/api-response.md",
@@ -433,7 +433,7 @@
     "2. 创建 GitHub Actions 工作流": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 208,
+        "line": 219,
         "level": 3,
         "title": "2. 创建 GitHub Actions 工作流"
       }
@@ -909,7 +909,7 @@
     "3. 触发构建": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 277,
+        "line": 288,
         "level": 3,
         "title": "3. 触发构建"
       }
@@ -1021,7 +1021,7 @@
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 115,
+        "line": 116,
         "level": 3,
         "title": "4. 实现必需方法"
       }
@@ -1066,6 +1066,14 @@
         "title": "4. 消息段标准"
       }
     ],
+    "4. 管理已发布的模块": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 106,
+        "level": 3,
+        "title": "4. 管理已发布的模块"
+      }
+    ],
     "4. 组合使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1085,7 +1093,7 @@
     "4. 设置镜像为公开": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 292,
+        "line": 303,
         "level": 3,
         "title": "4. 设置镜像为公开"
       }
@@ -1141,7 +1149,7 @@
     "5. 实现 Send 类": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 182,
+        "line": 183,
         "level": 3,
         "title": "5. 实现 Send 类"
       }
@@ -1165,7 +1173,7 @@
     "5. 用户使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 310,
         "level": 3,
         "title": "5. 用户使用"
       }
@@ -1253,7 +1261,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 236,
+        "line": 237,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1421,7 +1429,7 @@
     "7. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 278,
+        "line": 279,
         "level": 3,
         "title": "7. 创建包入口"
       }
@@ -1547,7 +1555,7 @@
     "@timed 装饰器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 470,
+        "line": 479,
         "level": 3,
         "title": "@timed 装饰器"
       }
@@ -1613,7 +1621,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 506,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -1643,7 +1651,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 598,
+        "line": 602,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -1707,7 +1715,7 @@
     "BaseAdapter 基类": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 255,
+        "line": 257,
         "level": 2,
         "title": "BaseAdapter 基类"
       }
@@ -1731,7 +1739,7 @@
     "Bot 状态值": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 379,
+        "line": 380,
         "level": 3,
         "title": "Bot 状态值"
       }
@@ -1739,13 +1747,13 @@
     "Bot 状态查询": [
       {
         "document": "api-reference/event-system.md",
-        "line": 240,
+        "line": 239,
         "level": 3,
         "title": "Bot 状态查询"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 683,
+        "line": 687,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -1759,13 +1767,13 @@
     "Bot 状态管理": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 215,
+        "line": 216,
         "level": 2,
         "title": "Bot 状态管理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 616,
+        "line": 620,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -1803,7 +1811,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 652,
+        "line": 665,
         "level": 3,
         "title": "CORS 配置"
       }
@@ -1827,7 +1835,7 @@
     "Config（配置）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 217,
+        "line": 225,
         "level": 3,
         "title": "Config（配置）"
       }
@@ -1859,7 +1867,7 @@
     "Counter — 计数器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 417,
+        "line": 420,
         "level": 4,
         "title": "Counter — 计数器"
       }
@@ -1891,7 +1899,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 244,
+        "line": 241,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -1907,7 +1915,7 @@
     "Docker 镜像 vs PyPI 发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 354,
+        "line": 365,
         "level": 3,
         "title": "Docker 镜像 vs PyPI 发布"
       }
@@ -2019,7 +2027,7 @@
     "Event 包装类": [
       {
         "document": "api-reference/event-system.md",
-        "line": 276,
+        "line": 275,
         "level": 2,
         "title": "Event 包装类"
       }
@@ -2035,7 +2043,7 @@
     "Event 回复方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 328,
+        "line": 336,
         "level": 3,
         "title": "Event 回复方法"
       }
@@ -2051,7 +2059,7 @@
     "Gauge — 仪表盘": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 428,
+        "line": 435,
         "level": 4,
         "title": "Gauge — 仪表盘"
       }
@@ -2067,7 +2075,7 @@
     "Histogram — 直方图": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 440,
+        "line": 447,
         "level": 4,
         "title": "Histogram — 直方图"
       }
@@ -2115,7 +2123,7 @@
     "Logger（日志）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 232,
+        "line": 240,
         "level": 3,
         "title": "Logger（日志）"
       }
@@ -2155,7 +2163,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 638,
+        "line": 642,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2163,7 +2171,7 @@
     "Meta 元事件模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 215,
+        "line": 214,
         "level": 2,
         "title": "Meta 元事件模块"
       }
@@ -2187,7 +2195,7 @@
     "Notice 通知模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 161,
+        "line": 160,
         "level": 2,
         "title": "Notice 通知模块"
       }
@@ -2407,7 +2415,7 @@
     "Request 请求模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 193,
+        "line": 192,
         "level": 2,
         "title": "Request 请求模块"
       }
@@ -2415,7 +2423,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 481,
+        "line": 494,
         "level": 2,
         "title": "Router 模块"
       }
@@ -2423,7 +2431,7 @@
     "Router（路由）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 259,
+        "line": 267,
         "level": 3,
         "title": "Router（路由）"
       }
@@ -2477,7 +2485,7 @@
     "Send 嵌套类": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 197,
+        "line": 198,
         "level": 3,
         "title": "Send 嵌套类"
       }
@@ -2493,7 +2501,7 @@
     "Send 消息发送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 301,
+        "line": 305,
         "level": 2,
         "title": "Send 消息发送 DSL"
       }
@@ -2525,7 +2533,7 @@
     "SendDSL 消息发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 298,
+        "line": 306,
         "level": 2,
         "title": "SendDSL 消息发送"
       }
@@ -2549,7 +2557,7 @@
     "Storage（存储）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 194,
+        "line": 202,
         "level": 3,
         "title": "Storage（存储）"
       }
@@ -2557,7 +2565,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 210,
+        "line": 207,
         "level": 3,
         "title": "Supervisor"
       }
@@ -2621,7 +2629,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 478,
+        "line": 482,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -2645,7 +2653,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 556,
+        "line": 569,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -2653,7 +2661,7 @@
     "WebSocket 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 442,
+        "line": 446,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -2827,7 +2835,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 473,
+        "line": 472,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -2843,7 +2851,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 676,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -2899,7 +2907,7 @@
     "connect — 连接上线": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 243,
+        "line": 244,
         "level": 4,
         "title": "connect — 连接上线"
       }
@@ -2939,7 +2947,7 @@
     "disconnect — 断开连接": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 283,
+        "line": 284,
         "level": 4,
         "title": "disconnect — 断开连接"
       }
@@ -2955,7 +2963,7 @@
     "get() 方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 239,
+        "line": 241,
         "level": 4,
         "title": "get() 方法"
       }
@@ -2979,7 +2987,7 @@
     "heartbeat — 心跳": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 265,
+        "line": 266,
         "level": 4,
         "title": "heartbeat — 心跳"
       }
@@ -3027,7 +3035,7 @@
     "meta 事件格式": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 241,
+        "line": 242,
         "level": 3,
         "title": "meta 事件格式"
       }
@@ -3035,7 +3043,7 @@
     "meta 事件类型": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 219,
+        "line": 220,
         "level": 3,
         "title": "meta 事件类型"
       }
@@ -3059,7 +3067,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 254,
+        "line": 251,
         "level": 3,
         "title": "pip 方式"
       }
@@ -3107,7 +3115,7 @@
     "self 字段扩展": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 229,
+        "line": 230,
         "level": 3,
         "title": "self 字段扩展"
       }
@@ -3123,7 +3131,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 178,
+        "line": 175,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -3155,7 +3163,7 @@
     "一个包可以注册多个模块吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 128,
+        "line": 139,
         "level": 3,
         "title": "一个包可以注册多个模块吗？"
       }
@@ -3185,7 +3193,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 285,
+        "line": 286,
         "level": 2,
         "title": "下一步"
       },
@@ -3197,7 +3205,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 365,
+        "line": 373,
         "level": 2,
         "title": "下一步"
       },
@@ -3209,7 +3217,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 632,
+        "line": 629,
         "level": 2,
         "title": "下一步"
       },
@@ -3233,7 +3241,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 178,
+        "line": 177,
         "level": 2,
         "title": "下一步"
       }
@@ -3301,7 +3309,7 @@
     "主动发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 145,
+        "line": 146,
         "level": 4,
         "title": "主动发送 Meta 事件"
       }
@@ -3385,7 +3393,7 @@
     "事件处理关键步骤": [
       {
         "document": "architecture.md",
-        "line": 114,
+        "line": 118,
         "level": 3,
         "title": "事件处理关键步骤"
       }
@@ -3447,7 +3455,7 @@
     "事件处理流程": [
       {
         "document": "architecture.md",
-        "line": 93,
+        "line": 97,
         "level": 2,
         "title": "事件处理流程"
       }
@@ -3529,7 +3537,7 @@
     "事件类型": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 128,
+        "line": 136,
         "level": 2,
         "title": "事件类型"
       }
@@ -3583,7 +3591,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 367,
+        "line": 371,
         "level": 2,
         "title": "事件转换器"
       }
@@ -3697,7 +3705,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 126,
+        "line": 125,
         "level": 3,
         "title": "交互式安装"
       }
@@ -3705,7 +3713,7 @@
     "交互方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 359,
+        "line": 358,
         "level": 3,
         "title": "交互方法"
       },
@@ -3743,7 +3751,7 @@
     "从本地安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 119,
+        "line": 118,
         "level": 3,
         "title": "从本地安装"
       }
@@ -3751,7 +3759,7 @@
     "从远程仓库安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 109,
+        "line": 108,
         "level": 3,
         "title": "从远程仓库安装"
       }
@@ -3783,7 +3791,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 562,
+        "line": 561,
         "level": 2,
         "title": "优先级系统"
       }
@@ -3805,7 +3813,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 533,
+        "line": 546,
         "level": 3,
         "title": "传统注册方式"
       }
@@ -4009,13 +4017,13 @@
     "元事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 217,
+        "line": 216,
         "level": 3,
         "title": "元事件"
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 179,
+        "line": 187,
         "level": 3,
         "title": "元事件"
       }
@@ -4219,7 +4227,7 @@
     "初始化流程": [
       {
         "document": "architecture.md",
-        "line": 56,
+        "line": 60,
         "level": 2,
         "title": "初始化流程"
       }
@@ -4233,7 +4241,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 280,
+        "line": 283,
         "level": 3,
         "title": "初始化过程"
       }
@@ -4241,7 +4249,7 @@
     "初始化阶段详解": [
       {
         "document": "architecture.md",
-        "line": 81,
+        "line": 85,
         "level": 3,
         "title": "初始化阶段详解"
       }
@@ -4319,7 +4327,7 @@
     "包名必须以 `ErisPulse-` 开头吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 124,
+        "line": 135,
         "level": 3,
         "title": "包名必须以 `ErisPulse-` 开头吗？"
       }
@@ -4357,7 +4365,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 484,
+        "line": 483,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -4457,7 +4465,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 124,
+        "line": 121,
         "level": 2,
         "title": "反向代理"
       }
@@ -4677,7 +4685,7 @@
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 312,
+        "line": 316,
         "level": 3,
         "title": "可用属性"
       }
@@ -4685,7 +4693,7 @@
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 331,
+        "line": 342,
         "level": 3,
         "title": "同时发布到 Docker Hub"
       }
@@ -4733,7 +4741,7 @@
     "命令事件": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 143,
+        "line": 151,
         "level": 3,
         "title": "命令事件"
       }
@@ -4763,7 +4771,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 323,
+        "line": 322,
         "level": 3,
         "title": "命令信息"
       },
@@ -4849,7 +4857,7 @@
     "命名冲突检测": [
       {
         "document": "api-reference/event-system.md",
-        "line": 558,
+        "line": 557,
         "level": 4,
         "title": "命名冲突检测"
       }
@@ -4873,7 +4881,7 @@
     "回复功能": [
       {
         "document": "api-reference/event-system.md",
-        "line": 335,
+        "line": 334,
         "level": 3,
         "title": "回复功能"
       },
@@ -5061,7 +5069,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 324,
+        "line": 328,
         "level": 3,
         "title": "基本方法"
       },
@@ -5091,7 +5099,7 @@
     "基本结构": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 257,
+        "line": 259,
         "level": 3,
         "title": "基本结构"
       }
@@ -5123,7 +5131,7 @@
     "基础发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 302,
+        "line": 310,
         "level": 3,
         "title": "基础发送"
       }
@@ -5243,7 +5251,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 261,
+        "line": 258,
         "level": 3,
         "title": "备份"
       }
@@ -5275,7 +5283,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 234,
+        "line": 231,
         "level": 2,
         "title": "多实例部署"
       }
@@ -5311,7 +5319,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 545,
+        "line": 549,
         "level": 2,
         "title": "多账户支持"
       }
@@ -5341,7 +5349,7 @@
     "失败响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 530,
+        "line": 534,
         "level": 3,
         "title": "失败响应"
       }
@@ -5497,7 +5505,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 669,
+        "line": 682,
         "level": 3,
         "title": "安全头"
       }
@@ -5505,7 +5513,7 @@
     "安全建议": [
       {
         "document": "user-guide/deployment.md",
-        "line": 225,
+        "line": 222,
         "level": 2,
         "title": "安全建议"
       }
@@ -5557,7 +5565,7 @@
     "安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 160,
+        "line": 159,
         "level": 3,
         "title": "安装失败"
       }
@@ -5647,7 +5655,7 @@
     "审核需要多长时间？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 138,
+        "line": 149,
         "level": 3,
         "title": "审核需要多长时间？"
       }
@@ -5695,7 +5703,7 @@
     "属性访问": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 247,
+        "line": 249,
         "level": 4,
         "title": "属性访问"
       }
@@ -5743,7 +5751,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 406,
+        "line": 405,
         "level": 3,
         "title": "工具方法"
       },
@@ -5843,7 +5851,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 122,
+        "line": 133,
         "level": 2,
         "title": "常见问题"
       },
@@ -5855,7 +5863,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 158,
+        "line": 157,
         "level": 2,
         "title": "常见问题"
       }
@@ -5895,7 +5903,7 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 421,
+        "line": 420,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -5929,7 +5937,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 457,
+        "line": 456,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -6039,7 +6047,7 @@
     "开发模式测试": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 112,
+        "line": 123,
         "level": 2,
         "title": "开发模式测试"
       }
@@ -6077,7 +6085,7 @@
     "开始学习": [
       {
         "document": "getting-started/README.md",
-        "line": 137,
+        "line": 138,
         "level": 2,
         "title": "开始学习"
       }
@@ -6185,7 +6193,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 379,
+        "line": 383,
         "level": 3,
         "title": "必需字段"
       }
@@ -6297,7 +6305,7 @@
     "懒加载系统": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 345,
+        "line": 353,
         "level": 2,
         "title": "懒加载系统"
       }
@@ -6305,7 +6313,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 504,
+        "line": 508,
         "level": 3,
         "title": "成功响应"
       }
@@ -6337,7 +6345,7 @@
     "手动部署（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 156,
+        "line": 153,
         "level": 2,
         "title": "手动部署（pip）"
       }
@@ -6419,7 +6427,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 500,
+        "line": 499,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -6449,7 +6457,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 559,
+        "line": 563,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -6457,7 +6465,7 @@
     "指标类型": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 415,
+        "line": 418,
         "level": 3,
         "title": "指标类型"
       }
@@ -6935,7 +6943,7 @@
     "普通事件的自动发现": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
         "title": "普通事件的自动发现"
       }
@@ -6951,7 +6959,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 242,
+        "line": 239,
         "level": 2,
         "title": "更新与维护"
       }
@@ -6959,7 +6967,7 @@
     "更新已发布模块": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 104,
+        "line": 115,
         "level": 2,
         "title": "更新已发布模块"
       }
@@ -7123,7 +7131,7 @@
     "查询 Bot 状态": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 345,
+        "line": 346,
         "level": 3,
         "title": "查询 Bot 状态"
       }
@@ -7139,7 +7147,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 442,
+        "line": 441,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -7343,7 +7351,7 @@
     "核心方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 280,
+        "line": 279,
         "level": 3,
         "title": "核心方法"
       },
@@ -7387,13 +7395,13 @@
     "核心模块说明": [
       {
         "document": "architecture.md",
-        "line": 42,
+        "line": 46,
         "level": 3,
         "title": "核心模块说明"
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 192,
+        "line": 200,
         "level": 2,
         "title": "核心模块说明"
       }
@@ -7433,7 +7441,7 @@
     "检查安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 135,
+        "line": 134,
         "level": 3,
         "title": "检查安装"
       }
@@ -7493,7 +7501,7 @@
     "模块加载策略": [
       {
         "document": "architecture.md",
-        "line": 176,
+        "line": 180,
         "level": 2,
         "title": "模块加载策略"
       }
@@ -7509,7 +7517,7 @@
     "模块安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 107,
+        "line": 106,
         "level": 2,
         "title": "模块安装"
       }
@@ -7517,7 +7525,7 @@
     "模块安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 172,
+        "line": 171,
         "level": 3,
         "title": "模块安装失败"
       }
@@ -7723,7 +7731,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 546,
+        "line": 545,
         "level": 4,
         "title": "注销方法"
       }
@@ -7791,7 +7799,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 130,
+        "line": 138,
         "level": 3,
         "title": "消息事件"
       }
@@ -7901,7 +7909,7 @@
     "消息方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 296,
+        "line": 295,
         "level": 3,
         "title": "消息方法"
       }
@@ -8245,7 +8253,7 @@
     "生产环境配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 160,
+        "line": 157,
         "level": 3,
         "title": "生产环境配置"
       }
@@ -8261,13 +8269,13 @@
     "生命周期事件": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 387,
+        "line": 388,
         "level": 3,
         "title": "生命周期事件"
       },
       {
         "document": "architecture.md",
-        "line": 122,
+        "line": 126,
         "level": 2,
         "title": "生命周期事件"
       }
@@ -8329,7 +8337,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 425,
+        "line": 424,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -8337,7 +8345,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 706,
+        "line": 710,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -8377,7 +8385,7 @@
     "监听生命周期事件": [
       {
         "document": "architecture.md",
-        "line": 153,
+        "line": 157,
         "level": 3,
         "title": "监听生命周期事件"
       }
@@ -8429,7 +8437,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 169,
+        "line": 170,
         "level": 2,
         "title": "相关文档"
       },
@@ -8465,19 +8473,19 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 408,
+        "line": 409,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 701,
+        "line": 714,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 578,
+        "line": 577,
         "level": 2,
         "title": "相关文档"
       },
@@ -8501,7 +8509,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 724,
+        "line": 728,
         "level": 2,
         "title": "相关文档"
       },
@@ -8793,7 +8801,7 @@
     "继承关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 303,
+        "line": 307,
         "level": 3,
         "title": "继承关系"
       }
@@ -8857,7 +8865,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 620,
+        "line": 624,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -8879,7 +8887,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 680,
+        "line": 693,
         "level": 3,
         "title": "自动文档"
       }
@@ -8895,7 +8903,7 @@
     "自定义指标": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 456,
+        "line": 463,
         "level": 3,
         "title": "自定义指标"
       }
@@ -8995,7 +9003,7 @@
     "获取适配器实例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 237,
+        "line": 239,
         "level": 3,
         "title": "获取适配器实例"
       }
@@ -9041,7 +9049,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 483,
+        "line": 496,
         "level": 3,
         "title": "装饰器路由（推荐）"
       }
@@ -9103,13 +9111,13 @@
     "请求事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 195,
+        "line": 194,
         "level": 3,
         "title": "请求事件"
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 167,
+        "line": 175,
         "level": 3,
         "title": "请求事件"
       }
@@ -9195,7 +9203,7 @@
     "账户配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 547,
+        "line": 551,
         "level": 3,
         "title": "账户配置"
       },
@@ -9261,7 +9269,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 621,
+        "line": 634,
         "level": 3,
         "title": "路由中间件"
       }
@@ -9269,7 +9277,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 695,
+        "line": 708,
         "level": 3,
         "title": "路由信息"
       }
@@ -9283,7 +9291,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 602,
+        "line": 615,
         "level": 3,
         "title": "路由分组"
       }
@@ -9323,7 +9331,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 399,
+        "line": 403,
         "level": 3,
         "title": "转换器示例"
       }
@@ -9331,7 +9339,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 369,
+        "line": 373,
         "level": 3,
         "title": "转换流程"
       }
@@ -9355,7 +9363,7 @@
     "运行测试": [
       {
         "document": "user-guide/installation.md",
-        "line": 142,
+        "line": 141,
         "level": 3,
         "title": "运行测试"
       }
@@ -9401,7 +9409,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 521,
+        "line": 520,
         "level": 4,
         "title": "返回值规范"
       }
@@ -9445,7 +9453,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 440,
+        "line": 444,
         "level": 2,
         "title": "连接管理"
       }
@@ -9453,7 +9461,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 574,
+        "line": 578,
         "level": 3,
         "title": "连接重试"
       }
@@ -9461,7 +9469,7 @@
     "适用场景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 146,
+        "line": 157,
         "level": 3,
         "title": "适用场景"
       }
@@ -9505,7 +9513,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 646,
+        "line": 650,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -9565,7 +9573,7 @@
     "适配器接入示例": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 305,
+        "line": 306,
         "level": 3,
         "title": "适配器接入示例"
       }
@@ -9649,7 +9657,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 480,
+        "line": 479,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -9689,13 +9697,13 @@
     "通知事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 163,
+        "line": 162,
         "level": 3,
         "title": "通知事件"
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 155,
+        "line": 163,
         "level": 3,
         "title": "通知事件"
       }
@@ -9773,7 +9781,7 @@
     "通过 Docker 镜像分发应用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 153,
         "level": 2,
         "title": "通过 Docker 镜像分发应用"
       }
@@ -9795,7 +9803,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 639,
+        "line": 652,
         "level": 3,
         "title": "速率限制"
       }
@@ -10005,7 +10013,7 @@
     "配置错误": [
       {
         "document": "user-guide/installation.md",
-        "line": 166,
+        "line": 165,
         "level": 3,
         "title": "配置错误"
       }
@@ -10027,7 +10035,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 315,
+        "line": 323,
         "level": 3,
         "title": "链式修饰"
       }
@@ -10035,7 +10043,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 341,
+        "line": 345,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -10167,7 +10175,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 572,
+        "line": 576,
         "level": 2,
         "title": "错误处理"
       },
@@ -10319,7 +10327,7 @@
     "验证安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 132,
         "level": 2,
         "title": "验证安装"
       }

@@ -4,7 +4,7 @@
 
 ## 1. 標準方法命名
 
-所有發送方法使用 **大駝峰命名法**，首字母大寫。
+所有發送方法使用 **大駝峰命名法（PascalCase）**，首字母大寫。
 
 ### 1.1 標準發送方法
 
@@ -37,9 +37,9 @@
 |-------|------|---------|
 | `Raw_ob12` | 傳送 OneBot12 格式訊息段 | 必須 |
 
-**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
+**`Raw_ob12` 是必須實作的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並將其轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準訊息段發送訊息。
 
-**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄 **error 級別**日誌並返回標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實現此方法。
+**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄 **error 級別**日誌並返回標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實作此方法。
 
 ### 1.4 推薦的擴展命名約定
 
@@ -52,7 +52,7 @@
 
 **注意**：這些方法**不是**基類提供的預設方法，也不強制要求實作。它們僅作為命名約定，適配器可根據需要自行定義。如果適配器不支援這些格式，則無需定義。
 
-**訊息構建器**：ErisPulse 提供了 `MessageBuilder` 工具類別，用於方便地構建 OneBot12 訊息段列表，搭配 `Raw_ob12` 使用。詳見 [訊息構建器](#11-訊息構建器-messagebuilder) 章節。
+**訊息構建器**：ErisPulse 提供了 `MessageBuilder` 工具類別，用於方便地構建 OneBot12 訊息段列表，搭配 `Raw_ob12` 使用。詳見 [訊息構建器](#10-訊息構建器-messagebuilder) 章節。
 
 ## 2. 參數規範詳解
 
@@ -406,4 +406,127 @@ class YunhuSend(SendDSL):
             "data": {"message_id": response.get("msg_id", ""), "time": int(time.time())},
             "message_id": response.get("msg_id", ""),
             "message": "",
-            "yunhu_raw":
+            "yunhu_raw": response
+        }
+```
+
+---
+
+## 7. 方法發現
+
+模組開發者可以透過 API 查詢適配器支持的發送方法：
+
+```python
+from ErisPulse import adapter
+
+# 列出所有發送方法
+methods = adapter.list_sends("myplatform")
+# ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
+
+# 查看方法詳情
+info = adapter.send_info("myplatform", "Form")
+# {
+#     "name": "Form",
+#     "parameters": [{"name": "form_id", "type": "str", ...}],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "發送雲湖表單"
+# }
+```
+
+---
+
+## 8. 已註冊的發送方法擴展
+
+| 平台 | 方法名 | 說明 |
+|------|--------|------|
+| onebot12 | `Mention` | @用戶（OneBot12 風格） |
+| onebot12 | `Sticker` | 發送貼紙 |
+| onebot12 | `Location` | 發送位置 |
+| onebot12 | `Recall` | 撤回訊息 |
+| onebot12 | `Edit` | 編輯訊息 |
+| onebot12 | `Batch` | 批量發送 |
+
+> **注意**：發送方法不加平台前綴，不同平台的同名方法可以有不同的實作。
+
+---
+
+## 9. 適配器實作檢查清單
+
+### 發送方法
+- [ ] 標準方法（`Text`, `Image` 等）已實作
+- [ ] 返回值均為 `asyncio.Task`
+- [ ] 修飾方法（`At`, `Reply`, `AtAll`）返回 `self`
+- [ ] 平台擴展方法使用 PascalCase，無平台前綴
+- [ ] 所有方法有完整的類型註解和文件字串
+
+### 反向轉換
+- [ ] `Raw_ob12` **已實作**（必須，不可跳過）
+- [ ] `Raw_ob12` 能處理所有標準訊息段（`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`）
+- [ ] `Raw_ob12` 能處理平台擴展訊息段（`{platform}_xxx` 類型）
+- [ ] 標準發送方法（`Text`, `Image` 等）內部委託給 `Raw_ob12`，而非獨立實作轉換邏輯
+- [ ] 不支援的訊息段跳過並記錄警告，不拋出異常
+- [ ] 複合訊息段正確處理（合併或按序拆分）
+
+---
+
+## 10. 訊息構建器（MessageBuilder）
+
+`MessageBuilder` 是 ErisPulse 提供的訊息段構建工具，配合 `Raw_ob12` 使用，簡化 OneBot12 訊息段的構建過程。
+
+### 10.1 導入
+
+```python
+from ErisPulse.Core import MessageBuilder
+# 或
+from ErisPulse.Core.Event import MessageBuilder
+```
+
+### 10.2 鏈式呼叫構建
+
+```python
+# 構建包含文字、圖片、@用戶的訊息
+segments = (
+    MessageBuilder()
+    .mention("123456")
+    .text("你好，看看這張圖")
+    .image("https://example.com/img.jpg")
+    .reply("msg_789")
+    .build()
+)
+
+# 發送
+await adapter.Send.To("group", "456").Raw_ob12(segments)
+```
+
+### 10.3 快速構建單段
+
+```python
+# 快速構建單個訊息段（返回 list[dict]，可直接傳給 Raw_ob12）
+await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
+```
+
+### 10.4 配合 Event.reply_ob12 使用
+
+```python
+from ErisPulse.Core import MessageBuilder
+
+@message()
+async def handle(event: Event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .mention(event.get_user_id())
+        .text("收到你的訊息")
+        .build()
+    )
+```
+
+### 10.5 支援的訊息段方法
+
+| 方法 | 說明 | data 字段 |
+|------|------|----------|
+| `text(text)` | 文字 | `text` |
+| `image(file)` | 圖片 | `

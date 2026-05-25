@@ -261,4 +261,4 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告訊�
 - [介接器開發入門](getting-started.md) - 建立介接器
 - [介接器核心概念](core-concepts.md) - 了解介接器架構
 - [介接器最佳實踐](best-practices.md) - 開發高品質介接器
-- [發送方法命名規範](../../standards/send-type-naming.md) - 命名規範
+- [發送方法規範](../../standards/send-method-spec.md) - 發送方法完整規範
