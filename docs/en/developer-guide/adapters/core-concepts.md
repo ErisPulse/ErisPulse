@@ -221,6 +221,8 @@ async def filter_middleware(data):
     return data
 ```
 
+> **Note**: If middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore the return value and preserve the original data to continue propagation, while outputting a warning level log. This ensures that a single middleware mistake won't interrupt the entire event chain.
+
 #### Middleware Execution Order
 
 Middleware executes in registration order; middleware registered later executes first.
@@ -260,7 +262,8 @@ await adapter.Send.To("user", "123").Text("Hello")
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # Initialize adapter
         pass
     
@@ -281,7 +284,8 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # Get SDK reference
         self.sdk = sdk
         

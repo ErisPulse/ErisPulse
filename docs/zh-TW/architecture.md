@@ -17,7 +17,7 @@ graph TB
     SDK --> Config["Config<br/>設定管理 + 審計"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
-    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>指標監控"]
 
     Event --> Command["command"]
@@ -37,6 +37,10 @@ graph TB
     BaseModule --> CM["自訂模組"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>訊息發送"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### 核心模組說明
@@ -67,7 +71,8 @@ flowchart TD
     D --> D1["從 PyPI 載入適配器"]
     D --> D2["從 PyPI 載入模組"]
     D1 & D2 --> E["註冊適配器"]
-    E --> F["註冊模組"]
+    E --> E1["啟動適配器"]
+    E1 --> F["註冊模組"]
     F --> F1{"依賴驗證"}
     F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 演算法 + 優先級）"]
@@ -85,9 +90,9 @@ flowchart TD
 4. **啟動適配器** - 非同步啟動各平台適配器連接（在模組初始化之前，確保模組能立即發送訊息）
 5. **註冊模組** - 將發現的模組註冊到模組管理器
 6. **依賴驗證** - 檢查模組聲明的 `depends` 依賴是否已註冊，跳過缺失依賴的模組
-7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序
+7. **拓撲排序** - 使用 Kahn 演算法按依賴關係排序模組載入順序，同級按 `priority` 降序排列
 8. **模組初始化** - 按排序順序建立模組實例，呼叫 `on_load` 生命週期方法
-9. **啟動路由伺服器** - 啟動路由伺服器（FastAPI）
+9. **啟動路由伺服器** - 使用 Uvicorn 啟動 FastAPI 路由伺服器
 
 ## 事件處理流程
 
