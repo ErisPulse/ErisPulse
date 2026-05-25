@@ -261,4 +261,4 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 - [适配器开发入门](getting-started.md) - 创建适配器
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
-- [发送方法命名规范](../../standards/send-type-naming.md) - 命名规范
+- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
