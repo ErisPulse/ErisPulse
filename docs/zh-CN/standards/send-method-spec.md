@@ -469,7 +469,7 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 11. 消息构建器（MessageBuilder）
+## 10. 消息构建器（MessageBuilder）
 
 `MessageBuilder` 是 ErisPulse 提供的消息段构建工具，配合 `Raw_ob12` 使用，简化 OneBot12 消息段的构建过程。
 
@@ -558,7 +558,7 @@ if builder:
 
 ---
 
-## 12. 相关文档
+## 11. 相关文档
 
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准

@@ -410,6 +410,9 @@ sdk.metrics.register_builtin_metrics()
 
 # 获取所有指标快照
 snapshot = sdk.metrics.get_all_metrics()
+
+# 重置所有指标
+sdk.metrics.reset()
 ```
 
 ### 指标类型
@@ -417,40 +420,44 @@ snapshot = sdk.metrics.get_all_metrics()
 #### Counter — 计数器
 
 ```python
-from ErisPulse.Core.metrics import Counter
-
-counter = Counter("http_requests_total", description="HTTP 请求总数")
+# 通过 MetricsManager 创建计数器
+counter = sdk.metrics.counter("http_requests_total", description="HTTP 请求总数")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # 获取当前值
+print(counter.name)      # 指标名称
+
+# 带标签的计数
+counter.inc(tags={"method": "GET"})
+counter.get(tags={"method": "GET"})  # 获取特定标签值
 ```
 
 #### Gauge — 仪表盘
 
 ```python
-from ErisPulse.Core.metrics import Gauge
-
-gauge = Gauge("active_connections", description="活跃连接数")
+# 通过 MetricsManager 创建仪表盘
+gauge = sdk.metrics.gauge("active_connections", description="活跃连接数")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # 设为 42
-print(gauge.value)       # 42
+print(gauge.get())       # 获取当前值
+print(gauge.name)        # 指标名称
 ```
 
 #### Histogram — 直方图
 
 ```python
-from ErisPulse.Core.metrics import Histogram
-
-hist = Histogram("request_duration_seconds", description="请求耗时")
+# 通过 MetricsManager 创建直方图
+hist = sdk.metrics.histogram("request_duration_seconds", description="请求耗时")
 hist.observe(0.15)
 hist.observe(0.32)
 hist.observe(1.2)
-print(hist.count)        # 3
-print(hist.sum)          # 1.67
-print(hist.percentile(50))  # P50
-print(hist.percentile(95))  # P95
-print(hist.percentile(99))  # P99
+
+# 获取统计摘要
+summary = hist.get_summary()
+# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
+
+print(hist.name)         # 指标名称
 ```
 
 ### 自定义指标
@@ -458,23 +465,29 @@ print(hist.percentile(99))  # P99
 ```python
 from ErisPulse import sdk
 
-# 通过 MetricsManager 注册自定义指标
-sdk.metrics.counter("my_module.errors", description="模块错误计数")
-sdk.metrics.gauge("my_module.queue_size", description="队列大小")
-sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+# 通过 MetricsManager 创建自定义指标
+counter = sdk.metrics.counter("my_module.errors", description="模块错误计数")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+hist = sdk.metrics.histogram("my_module.process_time", description="处理耗时")
 
-# 获取并使用
-sdk.metrics.get("my_module.errors").inc()
+# 直接使用返回的指标对象
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed 装饰器
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# 通过 MetricsManager 的 timed 方法
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
     # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+
+# 带标签的计时
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 

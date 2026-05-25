@@ -612,20 +612,17 @@ async def message_handler(event):
 ### 3. 条件处理
 
 ```python
-def should_handle(event):
-    """判断是否应该处理此事件"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件处理 - 在处理器内部判断"""
     # 只处理特定用户的消息
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # 只处理包含特定关键词的消息
     if "关键词" not in event.get_text():
-        return False
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("条件满足，处理消息")
 ```
 
