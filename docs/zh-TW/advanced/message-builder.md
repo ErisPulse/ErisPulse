@@ -4,7 +4,7 @@
 
 ## 雙模式機制
 
-MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類級別和實例級別的不同行為：
+MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類別級別和實例級別的不同行為：
 
 ### 鏈式調用模式（實例）
 
@@ -27,7 +27,7 @@ segments = (
 
 ### 快速構建模式（靜態）
 
-通過類直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+通過類別直接調用方法，每個方法直接返回消息段列表，適合單段消息：
 
 ```python
 # 直接返回 list[dict]，無需 .build()
@@ -175,6 +175,6 @@ complex_msg = (
 
 ## 相關文檔
 
-- [適配器 SendDSL 詳解](../../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
-- [事件轉換標準](../../standards/event-conversion.md) - 消息段轉換規範
-- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
+- [適配器 SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
+- [事件轉換標準](../standards/event-conversion.md) - 消息段轉換規範
+- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法

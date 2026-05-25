@@ -60,7 +60,7 @@ graph TB
     SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
@@ -80,6 +80,10 @@ graph TB
     BaseModule --> CM["自定义模块"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>消息发送"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### 核心模块说明
@@ -129,9 +133,9 @@ flowchart TD
 4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
 5. **注册模块** - 将发现的模块注册到模块管理器
 6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序排列
 8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-9. **启动路由服务器** - 启动路由服务器（FastAPI）
+9. **启动路由服务器** - 使用 Uvicorn 启动 FastAPI 路由服务器
 
 ## 事件处理流程
 
@@ -521,7 +525,8 @@ asyncio.run(sdk.run(keep_running=True))
 - **Storage**：基于 SQLite 的键值存储
 - **Config**：TOML 格式的配置管理
 - **Logger**：模块化日志系统
-- **Router**：HTTP 和 WebSocket 路由管理
+- **Router**：基于 FastAPI + Uvicorn 的 HTTP 和 WebSocket 路由管理
+- **Metrics**：指标监控系统（Counter / Gauge / Histogram）
 
 ## 开始学习
 
@@ -645,16 +650,24 @@ class MyModule(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
-    
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """模块加载时调用"""
         # 注册事件处理器
         @command("mycmd", help="我的命令")
         async def my_command(event):
             await event.reply("命令执行成功")
-        
+
         self.logger.info("模块已加载")
-    
+
     async def on_unload(self, event):
         """模块卸载时调用"""
         self.logger.info("模块已卸载")
@@ -1520,20 +1533,17 @@ async def message_handler(event):
 ### 3. 条件处理
 
 ```python
-def should_handle(event):
-    """判断是否应该处理此事件"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件处理 - 在处理器内部判断"""
     # 只处理特定用户的消息
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # 只处理包含特定关键词的消息
     if "关键词" not in event.get_text():
-        return False
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("条件满足，处理消息")
 ```
 
@@ -1614,7 +1624,7 @@ name = "ErisPulse-MyAdapter"
 version = "1.0.0"
 description = "MyAdapter平台适配器"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
@@ -1638,7 +1648,8 @@ from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -2066,13 +2077,15 @@ async def filter_middleware(data):
     """事件过滤中间件"""
     # 过滤不需要的事件
     if data.get("type") == "notice":
-        return None  # 返回 None 会阻止事件继续分发
-    return data
+        return None  # 返回 None 时中间件链会忽略该返回值，保留原数据继续传递
+    return data  # 必须返回数据以继续传递
 ```
 
 #### 中间件执行顺序
 
 中间件按照注册顺序执行，后注册的中间件先执行。
+
+> **注意**：如果中间件返回 `None`（例如忘记 `return data`），框架会忽略该返回值并保留原数据继续传递，同时输出 warning 级别日志。这确保了单个中间件的失误不会导致整个事件链中断。
 
 ```python
 # 注册顺序
@@ -2109,7 +2122,8 @@ await adapter.Send.To("user", "123").Text("Hello")
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # 初始化适配器
         pass
     
@@ -2130,7 +2144,8 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # 获取 SDK 引用
         self.sdk = sdk
         
@@ -2843,7 +2858,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 - [适配器开发入门](getting-started.md) - 创建适配器
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
-- [发送方法命名规范](../../standards/send-type-naming.md) - 命名规范
+- [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
 
 
 
@@ -3012,7 +3027,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
         super().__init__()
         self.connection = None
         self._connected = False
@@ -3308,8 +3323,8 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk=None):
-        super().__init__(sdk)
+    def __init__(self):
+        super().__init__()
         self.logger = logger.get_child("MyAdapter")
     
     async def start(self):
@@ -3818,6 +3833,8 @@ pip install ErisPulse-MyModule
 
 前往 [ErisPulse 模块商店](https://www.erisdev.com/#market)，点击「提交模块」，登录后填写模块信息即可。
 
+支持的登录方式：**GitHub**、**Codeberg**、**云湖**，任选其一即可。
+
 填写要点：
 - 模块名称、描述、仓库地址
 - 最低 SDK 版本：如果不确定，填写 [ErisPulse 最新发行版](https://pypi.org/project/ErisPulse/) 版本号即可
@@ -3827,6 +3844,15 @@ pip install ErisPulse-MyModule
 > **关于验证状态**：
 > - 「未验证」仅表示尚未经过官方审核，不代表模块有问题
 > - 用户通过 `epsdk install` 安装未验证模块时会收到风险提示，需确认后才可继续安装
+
+### 4. 管理已发布的模块
+
+在模块商店点击「提交模块」并登录后，切换到「我的模块」标签页，可以：
+
+- **编辑** — 修改模块描述、仓库地址、标签等信息，版本号会自动从 PyPI 同步
+- **删除** — 从模块商店移除模块（不可撤销）
+
+> 刚提交的模块可能需要几分钟才会显示在「我的模块」列表中。
 
 ## 更新已发布模块
 
@@ -3864,7 +3890,7 @@ pip install -e /path/to/MyModule
 
 ### 审核需要多长时间？
 
-通常在 1-3 个工作日内完成。你可以在 Issue 中查看审核进度。
+通常在 1-3 个工作日内完成。你可以在模块商店「我的模块」中查看验证状态。
 
 ## 通过 Docker 镜像分发应用
 
@@ -4434,6 +4460,7 @@ from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
         # 初始化适配器
         pass
@@ -5085,6 +5112,9 @@ sdk.metrics.register_builtin_metrics()
 
 # 获取所有指标快照
 snapshot = sdk.metrics.get_all_metrics()
+
+# 重置所有指标
+sdk.metrics.reset()
 ```
 
 ### 指标类型
@@ -5092,40 +5122,44 @@ snapshot = sdk.metrics.get_all_metrics()
 #### Counter — 计数器
 
 ```python
-from ErisPulse.Core.metrics import Counter
-
-counter = Counter("http_requests_total", description="HTTP 请求总数")
+# 通过 MetricsManager 创建计数器
+counter = sdk.metrics.counter("http_requests_total", description="HTTP 请求总数")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # 获取当前值
+print(counter.name)      # 指标名称
+
+# 带标签的计数
+counter.inc(tags={"method": "GET"})
+counter.get(tags={"method": "GET"})  # 获取特定标签值
 ```
 
 #### Gauge — 仪表盘
 
 ```python
-from ErisPulse.Core.metrics import Gauge
-
-gauge = Gauge("active_connections", description="活跃连接数")
+# 通过 MetricsManager 创建仪表盘
+gauge = sdk.metrics.gauge("active_connections", description="活跃连接数")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # 设为 42
-print(gauge.value)       # 42
+print(gauge.get())       # 获取当前值
+print(gauge.name)        # 指标名称
 ```
 
 #### Histogram — 直方图
 
 ```python
-from ErisPulse.Core.metrics import Histogram
-
-hist = Histogram("request_duration_seconds", description="请求耗时")
+# 通过 MetricsManager 创建直方图
+hist = sdk.metrics.histogram("request_duration_seconds", description="请求耗时")
 hist.observe(0.15)
 hist.observe(0.32)
 hist.observe(1.2)
-print(hist.count)        # 3
-print(hist.sum)          # 1.67
-print(hist.percentile(50))  # P50
-print(hist.percentile(95))  # P95
-print(hist.percentile(99))  # P99
+
+# 获取统计摘要
+summary = hist.get_summary()
+# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
+
+print(hist.name)         # 指标名称
 ```
 
 ### 自定义指标
@@ -5133,23 +5167,29 @@ print(hist.percentile(99))  # P99
 ```python
 from ErisPulse import sdk
 
-# 通过 MetricsManager 注册自定义指标
-sdk.metrics.counter("my_module.errors", description="模块错误计数")
-sdk.metrics.gauge("my_module.queue_size", description="队列大小")
-sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+# 通过 MetricsManager 创建自定义指标
+counter = sdk.metrics.counter("my_module.errors", description="模块错误计数")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+hist = sdk.metrics.histogram("my_module.process_time", description="处理耗时")
 
-# 获取并使用
-sdk.metrics.get("my_module.errors").inc()
+# 直接使用返回的指标对象
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed 装饰器
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# 通过 MetricsManager 的 timed 方法
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
     # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+
+# 带标签的计时
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 
@@ -5554,6 +5594,7 @@ class Main(BaseModule):
 4. **异步处理**：所有生命周期事件处理器都是异步的，不要阻塞事件循环
 5. **错误处理**：在事件处理器中应该做好异常处理，避免影响其他监听器
 6. **加载优先性**：加载策略建议设置高优先级并禁用懒加载
+7. **生命周期清理**：调用 `sdk.uninit()` 时，所有已注册的生命周期事件处理器会被清理
 
 ## 相关文档
 
@@ -6641,7 +6682,7 @@ email       subject           email_subject
 | `self.avatar` | `string` | 机器人头像 URL |
 | `self.account_id` | `string` | 多账户模式下的账户标识 |
 
-> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md)。
+> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../api-reference/adapter-system.md)。
 
 ---
 
@@ -7389,7 +7430,7 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 11. 消息构建器（MessageBuilder）
+## 10. 消息构建器（MessageBuilder）
 
 `MessageBuilder` 是 ErisPulse 提供的消息段构建工具，配合 `Raw_ob12` 使用，简化 OneBot12 消息段的构建过程。
 
@@ -7478,7 +7519,7 @@ if builder:
 
 ---
 
-## 12. 相关文档
+## 11. 相关文档
 
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
@@ -7515,7 +7556,7 @@ if builder:
 - [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
-- [云湖用户平台特性](yunhu-user.md)
+- [云湖用户平台特性](yunhu_user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
@@ -11389,7 +11430,7 @@ from ErisPulse.Core import adapter
 
 编写时请参考以下文档以确保一致性：
 - [OneBot12标准文档](https://12.onebot.dev/)
-- [ErisPulse核心概念](../core/concepts.md)
+- [ErisPulse核心概念](../getting-started/basic-concepts.md)
 - [事件转换标准](../standards/event-conversion.md)
 - [API响应规范](../standards/api-response.md)
 - [其他平台适配器文档](./)

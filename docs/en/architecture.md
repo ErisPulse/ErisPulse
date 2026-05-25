@@ -17,7 +17,7 @@ graph TB
     SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
@@ -37,6 +37,10 @@ graph TB
     BaseModule --> CM["Custom Modules"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### Core Module Description
@@ -88,7 +92,7 @@ flowchart TD
 6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
 7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
 8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the router server (FastAPI)
+9. **Start Router Server** - Start the router server using Uvicorn (FastAPI)
 
 ## Event Handling Process
 
