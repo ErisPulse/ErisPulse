@@ -110,6 +110,14 @@ class MyModule(BaseModule):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
     
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """Called when module loads"""
         # Register event handler

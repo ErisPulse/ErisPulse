@@ -58,9 +58,9 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "Adapter for MyAdapter platform"
+description = "MyAdapter platform adapter"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
@@ -84,7 +84,8 @@ from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -94,7 +95,7 @@ class MyAdapter(BaseAdapter):
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
         
-        self.logger.info("MyAdapter initialized")
+        self.logger.info("MyAdapter initialization completed")
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
@@ -202,7 +203,7 @@ class MyAdapter(BaseAdapter):
         
         def Image(self, file):
             """Send image message"""
-            # See instructions below for implementation
+            # Implementation details below
             pass
         
         def Raw_ob12(self, message, **kwargs):

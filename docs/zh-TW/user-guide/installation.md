@@ -100,8 +100,6 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
-···
-
 ```
 
 ## 模組安裝

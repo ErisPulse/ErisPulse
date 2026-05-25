@@ -59,7 +59,7 @@ graph TB
     SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
@@ -79,6 +79,10 @@ graph TB
     BaseModule --> CM["自定义模块"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>消息发送"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### 核心模块说明
@@ -128,9 +132,9 @@ flowchart TD
 4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
 5. **注册模块** - 将发现的模块注册到模块管理器
 6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序排列
 8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-9. **启动路由服务器** - 启动路由服务器（FastAPI）
+9. **启动路由服务器** - 使用 Uvicorn 启动 FastAPI 路由服务器
 
 ## 事件处理流程
 
@@ -520,7 +524,8 @@ asyncio.run(sdk.run(keep_running=True))
 - **Storage**：基于 SQLite 的键值存储
 - **Config**：TOML 格式的配置管理
 - **Logger**：模块化日志系统
-- **Router**：HTTP 和 WebSocket 路由管理
+- **Router**：基于 FastAPI + Uvicorn 的 HTTP 和 WebSocket 路由管理
+- **Metrics**：指标监控系统（Counter / Gauge / Histogram）
 
 ## 开始学习
 
@@ -595,7 +600,7 @@ async def main():
     # await sdk.run(keep_running=False)
     # ...Do Something
     # 可以做你想做的任何事
-    # 使用 await sdk.init() 等价于 `dk.run(keep_running=False)`
+    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
 
     print("ErisPulse 初始化完成！")
 
@@ -730,7 +735,7 @@ async def hello_handler(event):
 
 ## 下一步
 
-- [高级初始化控制](advanced-init.md) - 钩子系统、手动控制、嵌入式集成
+- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能
@@ -851,16 +856,24 @@ class MyModule(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
-    
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """模块加载时调用"""
         # 注册事件处理器
         @command("mycmd", help="我的命令")
         async def my_command(event):
             await event.reply("命令执行成功")
-        
+
         self.logger.info("模块已加载")
-    
+
     async def on_unload(self, event):
         """模块卸载时调用"""
         self.logger.info("模块已卸载")
@@ -1726,20 +1739,17 @@ async def message_handler(event):
 ### 3. 条件处理
 
 ```python
-def should_handle(event):
-    """判断是否应该处理此事件"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件处理 - 在处理器内部判断"""
     # 只处理特定用户的消息
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # 只处理包含特定关键词的消息
     if "关键词" not in event.get_text():
-        return False
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("条件满足，处理消息")
 ```
 
@@ -2237,7 +2247,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 description = "模块功能描述"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 dependencies = []
@@ -3393,6 +3403,8 @@ pip install ErisPulse-MyModule
 
 前往 [ErisPulse 模块商店](https://www.erisdev.com/#market)，点击「提交模块」，登录后填写模块信息即可。
 
+支持的登录方式：**GitHub**、**Codeberg**、**云湖**，任选其一即可。
+
 填写要点：
 - 模块名称、描述、仓库地址
 - 最低 SDK 版本：如果不确定，填写 [ErisPulse 最新发行版](https://pypi.org/project/ErisPulse/) 版本号即可
@@ -3402,6 +3414,15 @@ pip install ErisPulse-MyModule
 > **关于验证状态**：
 > - 「未验证」仅表示尚未经过官方审核，不代表模块有问题
 > - 用户通过 `epsdk install` 安装未验证模块时会收到风险提示，需确认后才可继续安装
+
+### 4. 管理已发布的模块
+
+在模块商店点击「提交模块」并登录后，切换到「我的模块」标签页，可以：
+
+- **编辑** — 修改模块描述、仓库地址、标签等信息，版本号会自动从 PyPI 同步
+- **删除** — 从模块商店移除模块（不可撤销）
+
+> 刚提交的模块可能需要几分钟才会显示在「我的模块」列表中。
 
 ## 更新已发布模块
 
@@ -3439,7 +3460,7 @@ pip install -e /path/to/MyModule
 
 ### 审核需要多长时间？
 
-通常在 1-3 个工作日内完成。你可以在 Issue 中查看审核进度。
+通常在 1-3 个工作日内完成。你可以在模块商店「我的模块」中查看验证状态。
 
 ## 通过 Docker 镜像分发应用
 
@@ -4242,6 +4263,9 @@ sdk.metrics.register_builtin_metrics()
 
 # 获取所有指标快照
 snapshot = sdk.metrics.get_all_metrics()
+
+# 重置所有指标
+sdk.metrics.reset()
 ```
 
 ### 指标类型
@@ -4249,40 +4273,44 @@ snapshot = sdk.metrics.get_all_metrics()
 #### Counter — 计数器
 
 ```python
-from ErisPulse.Core.metrics import Counter
-
-counter = Counter("http_requests_total", description="HTTP 请求总数")
+# 通过 MetricsManager 创建计数器
+counter = sdk.metrics.counter("http_requests_total", description="HTTP 请求总数")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # 获取当前值
+print(counter.name)      # 指标名称
+
+# 带标签的计数
+counter.inc(tags={"method": "GET"})
+counter.get(tags={"method": "GET"})  # 获取特定标签值
 ```
 
 #### Gauge — 仪表盘
 
 ```python
-from ErisPulse.Core.metrics import Gauge
-
-gauge = Gauge("active_connections", description="活跃连接数")
+# 通过 MetricsManager 创建仪表盘
+gauge = sdk.metrics.gauge("active_connections", description="活跃连接数")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # 设为 42
-print(gauge.value)       # 42
+print(gauge.get())       # 获取当前值
+print(gauge.name)        # 指标名称
 ```
 
 #### Histogram — 直方图
 
 ```python
-from ErisPulse.Core.metrics import Histogram
-
-hist = Histogram("request_duration_seconds", description="请求耗时")
+# 通过 MetricsManager 创建直方图
+hist = sdk.metrics.histogram("request_duration_seconds", description="请求耗时")
 hist.observe(0.15)
 hist.observe(0.32)
 hist.observe(1.2)
-print(hist.count)        # 3
-print(hist.sum)          # 1.67
-print(hist.percentile(50))  # P50
-print(hist.percentile(95))  # P95
-print(hist.percentile(99))  # P99
+
+# 获取统计摘要
+summary = hist.get_summary()
+# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
+
+print(hist.name)         # 指标名称
 ```
 
 ### 自定义指标
@@ -4290,23 +4318,29 @@ print(hist.percentile(99))  # P99
 ```python
 from ErisPulse import sdk
 
-# 通过 MetricsManager 注册自定义指标
-sdk.metrics.counter("my_module.errors", description="模块错误计数")
-sdk.metrics.gauge("my_module.queue_size", description="队列大小")
-sdk.metrics.histogram("my_module.process_time", description="处理耗时")
+# 通过 MetricsManager 创建自定义指标
+counter = sdk.metrics.counter("my_module.errors", description="模块错误计数")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="队列大小")
+hist = sdk.metrics.histogram("my_module.process_time", description="处理耗时")
 
-# 获取并使用
-sdk.metrics.get("my_module.errors").inc()
+# 直接使用返回的指标对象
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed 装饰器
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# 通过 MetricsManager 的 timed 方法
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
     # 函数执行时间将自动记录到 Histogram 指标
+    await do_something()
+
+# 带标签的计时
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 
@@ -4684,18 +4718,17 @@ async def at_handler(event):
 ### 条件监听
 
 ```python
-# 使用条件函数
-def keyword_condition(event):
-    text = event.get_text()
-    return "关键词" in text
-
-@message.on_message(condition=keyword_condition)
-async def keyword_handler(event):
+# 使用优先级控制执行顺序
+@message.on_message(priority=10)  # 数值越小优先级越高
+async def high_priority_handler(event):
     pass
 
-# 使用优先级
-@message.on_message(priority=10)  # 数字越小优先级越高
-async def high_priority_handler(event):
+# 在处理器内部实现条件过滤
+@message.on_message()
+async def filtered_handler(event):
+    if "关键词" not in event.get_text():
+        return
+    # 处理包含关键词的消息
     pass
 ```
 
@@ -5449,8 +5482,8 @@ async def chat_handler(event):
 
 ## 相关文档
 
-- [Event 包装类](../../developer-guide/modules/event-wrapper.md) - Event 对象的所有方法
-- [事件处理入门](../../getting-started/event-handling.md) - 事件处理基础
+- [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event 对象的所有方法
+- [事件处理入门](../getting-started/event-handling.md) - 事件处理基础
 
 
 
@@ -5634,9 +5667,9 @@ complex_msg = (
 
 ## 相关文档
 
-- [适配器 SendDSL 详解](../../developer-guide/adapters/send-dsl.md) - Send 链式发送接口
-- [事件转换标准](../../standards/event-conversion.md) - 消息段转换规范
-- [Event 包装类](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
+- [适配器 SendDSL 详解](../developer-guide/adapters/send-dsl.md) - Send 链式发送接口
+- [事件转换标准](../standards/event-conversion.md) - 消息段转换规范
+- [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
 
 
 
@@ -5645,7 +5678,7 @@ complex_msg = (
 
 # 路由管理器
 
-ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。它基于 FastAPI 构建，提供了完整的 Web 服务功能。
+ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。它基于 FastAPI + Uvicorn 构建，提供了完整的 Web 服务功能。
 
 ## 概述
 
@@ -6147,6 +6180,7 @@ class Main(BaseModule):
 4. **异步处理**：所有生命周期事件处理器都是异步的，不要阻塞事件循环
 5. **错误处理**：在事件处理器中应该做好异常处理，避免影响其他监听器
 6. **加载优先性**：加载策略建议设置高优先级并禁用懒加载
+7. **生命周期清理**：调用 `sdk.uninit()` 时，所有已注册的生命周期事件处理器会被清理
 
 ## 相关文档
 
@@ -6471,7 +6505,7 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 - [事件转换标准](../standards/event-conversion.md) - 事件转换规范
 - [会话类型标准](../standards/session-types.md) - 会话类型正式定义
-- [事件转换器实现](../../developer-guide/adapters/converter.md) - Converter 开发指南
+- [事件转换器实现](../developer-guide/adapters/getting-started.md) - 适配器开发指南
 
 
 
@@ -7167,7 +7201,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
-- [云湖用户平台特性](yunhu-user.md)
+- [云湖用户平台特性](yunhu_user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)

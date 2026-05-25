@@ -128,7 +128,7 @@ from ErisPulse.Core import adapter
 
 編寫時請參考以下文檔以確保一致性：
 - [OneBot12 標準文檔](https://12.onebot.dev/)
-- [ErisPulse 核心概念](../core/concepts.md)
+- [ErisPulse 核心概念](../getting-started/basic-concepts.md)
 - [事件轉換標準](../standards/event-conversion.md)
 - [API 回應規範](../standards/api-response.md)
 - [其他平台適配器文檔](./)

@@ -27,7 +27,7 @@ from ErisPulse.Core.Event import command
 
 @command("hello")
 async def hello(event):
-    await event.reply("你好！")
+    await event.reply("Hello!")
 
 # Run the SDK and keep it running | Needs to run in an async environment
 asyncio.run(sdk.run(keep_running=True))
@@ -61,7 +61,7 @@ Create independent module packages and install and use them via package managers
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
+│                ErisPulse Framework                 │
 ├─────────────────────────────────────────────────────┤
 │                                             │
 │  ┌──────────────┐      ┌──────────────┐    │
@@ -132,7 +132,8 @@ Modules providing basic functions:
 - **Storage**: SQLite-based key-value storage
 - **Config**: Configuration management in TOML format
 - **Logger**: Modular logging system
-- **Router**: HTTP and WebSocket routing management
+- **Router**: FastAPI + Uvicorn-based HTTP and WebSocket routing management
+- **Metrics**: Metrics monitoring system (Counter / Gauge / Histogram)
 
 ## Start Learning
 

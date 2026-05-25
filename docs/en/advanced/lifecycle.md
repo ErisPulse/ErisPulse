@@ -165,6 +165,7 @@ class Main(BaseModule):
 4.  **Asynchronous Processing**: All lifecycle event handlers are asynchronous; do not block the event loop.
 5.  **Error Handling**: Exception handling should be implemented in event handlers to prevent affecting other listeners.
 6.  **Loading Priority**: It is recommended to set high priority for loading strategies and disable lazy loading.
+7.  **Lifecycle Cleanup**: When calling `sdk.uninit()`, all registered lifecycle event handlers will be cleaned up.
 
 ## Related Documentation
 

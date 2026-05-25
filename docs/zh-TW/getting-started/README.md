@@ -34,7 +34,7 @@ asyncio.run(sdk.run(keep_running=True))
 ```
 
 **優點：**
-- 快速上手，無需額外配置
+- 快速上手，無需額外設定
 - 適合專案內部專用功能
 - 便於除錯和測試
 
@@ -88,13 +88,14 @@ asyncio.run(sdk.run(keep_running=True))
 │  │  Config     │                      │
 │  │  Logger     │                      │
 │  │  Router     │                      │
+│  │  Metrics    │                      │
 │  └──────────────┘                      │
 └─────────────────────────────────────────────┘
          │                    │
          ▼                    ▼
     ┌────────┐          ┌────────┐
-    │  平台   │          │ 使用者  │
-    │  API    │          │ 程式碼  │
+    │  平台   │          │  使用者 │
+    │  API    │          │  程式碼 │
     └────────┘          └────────┘
 ```
 
@@ -133,6 +134,7 @@ asyncio.run(sdk.run(keep_running=True))
 - **Config**：TOML 格式的設定管理
 - **Logger**：模組化日誌系統
 - **Router**：HTTP 和 WebSocket 路由管理
+- **Metrics**：指標監控系統（Counter / Gauge / Histogram）
 
 ## 開始學習
 

@@ -1,6 +1,6 @@
 # 事件系統 API
 
-本文件詳細介紹了 ErisPulse 事件系統的 API。
+本文檔詳細介紹了 ErisPulse 事件系統的 API。
 
 ## Command 命令模組
 
@@ -15,7 +15,7 @@ async def hello_handler(event):
     await event.reply("你好！")
 
 # 帶別名的命令
-@command(["help", "h"], aliases=["幫助"], help="顯示說明")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助")
 async def help_handler(event):
     pass
 
@@ -41,7 +41,7 @@ async def reload_handler(event):
 ### 命令資訊
 
 ```python
-# 獲取命令說明
+# 獲取命令幫助
 help_text = command.help()
 
 # 獲取特定命令
@@ -57,8 +57,8 @@ visible_commands = command.get_visible_commands()
 ### 等待回覆
 
 ```python
-# 等待使用者回覆
-@command("ask", help="詢問使用者資訊")
+# 等待用戶回覆
+@command("ask", help="詢問用戶資訊")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
@@ -78,7 +78,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="詢問使用者年齡")
+@command("age", help="詢問用戶年齡")
 async def age_command(event):
     await event.reply("請輸入你的年齡:")
     
@@ -143,18 +143,17 @@ async def at_handler(event):
 ### 條件監聽
 
 ```python
-# 使用條件函數
-def keyword_condition(event):
-    text = event.get_text()
-    return "關鍵字" in text
-
-@message.on_message(condition=keyword_condition)
-async def keyword_handler(event):
+# 使用優先級控制執行順序
+@message.on_message(priority=10)  # 數值越小優先級越高
+async def high_priority_handler(event):
     pass
 
-# 使用優先級
-@message.on_message(priority=10)  # 數字越小優先級越高
-async def high_priority_handler(event):
+# 在處理器內部實現條件過濾
+@message.on_message()
+async def filtered_handler(event):
+    if "關鍵字" not in event.get_text():
+        return
+    # 處理包含關鍵字的訊息
     pass
 ```
 
@@ -306,4 +305,277 @@ user_id = event.get_user_id()
 nickname = event.get_user_nickname()
 sender = event.get_sender()
 
-# �
+# 獲取群組資訊
+group_id = event.get_group_id()
+
+# 判斷訊息類型
+is_msg = event.is_message()
+is_private = event.is_private_message()
+is_group = event.is_group_message()
+
+# @訊息相關
+is_at = event.is_at_message()
+has_mention = event.has_mention()
+mentions = event.get_mentions()
+```
+
+### 命令資訊
+
+```python
+# 獲取命令資訊
+cmd_name = event.get_command_name()
+cmd_args = event.get_command_args()
+cmd_raw = event.get_command_raw()
+
+# 判斷是否為命令
+is_cmd = event.is_command()
+```
+
+### 回覆功能
+
+```python
+# 基本回覆
+await event.reply("這是一則訊息")
+
+# 指定發送方法
+await event.reply("http://example.com/image.jpg", method="Image")
+
+# 带 @用戶 和回覆訊息
+await event.reply("你好", at_users=["user1"], reply_to="msg_id")
+
+# @全體成員
+await event.reply("公告", at_all=True)
+
+# 使用 OneBot12 訊息段回覆
+from ErisPulse.Core.Event import MessageBuilder
+msg = MessageBuilder().text("Hello").image("url").build()
+await event.reply_ob12(msg)
+
+# 等待回覆
+reply = await event.wait_reply(timeout=30)
+```
+
+### 交互方法
+
+```python
+# confirm — 確認對話
+if await event.confirm("確定要執行此操作嗎？"):
+    await event.reply("已確認")
+else:
+    await event.reply("已取消")
+
+# 自定義確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
+
+# choose — 選擇選單
+choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+if choice is not None:
+    await event.reply(f"你選擇了：{['紅色', '綠色', '藍色'][choice]}")
+
+# collect — 表單收集
+data = await event.collect([
+    {"key": "name", "prompt": "請輸入姓名："},
+    {"key": "age", "prompt": "請輸入年齡：",
+     "validator": lambda e: e.get_text().isdigit()},
+])
+if data:
+    await event.reply(f"姓名: {data['name']}, 年齡: {data['age']}")
+
+# wait_for — 等待任意事件
+evt = await event.wait_for(
+    event_type="notice",
+    condition=lambda e: e.get_detail_type() == "group_member_increase",
+    timeout=120
+)
+if evt:
+    await event.reply(f"新成員: {evt.get_user_id()}")
+
+# conversation — 多輪對話
+conv = event.conversation(timeout=60)
+await conv.say("歡迎！輸入'退出'結束。")
+while conv.is_active:
+    reply = await conv.wait()
+    if reply is None or reply.get_text() == "退出":
+        conv.stop()
+        break
+    await conv.say(f"你說: {reply.get_text()}")
+```
+
+### 工具方法
+
+```python
+# 轉換為字典
+event_dict = event.to_dict()
+
+# 檢查是否已處理
+if not event.is_processed():
+    event.mark_processed()
+
+# 獲取原始資料
+raw = event.get_raw()
+raw_type = event.get_raw_type()
+```
+
+### 平台擴展方法
+
+適配器可以為 Event 註冊平台專有方法，僅在對應平台的實例上可用。
+
+#### 用戶：使用平台擴展方法
+
+當適配器註冊了平台專有方法後，你可以在事件處理器中直接調用。各平台的方法不同，請參閱對應的 [平台文檔](../platform-guide/)。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台調用專有方法
+    if platform == "email":
+        subject = event.get_subject()           # 郵件專有
+        attachments = event.get_attachments()   # 郵件專有
+```
+
+#### 查詢平台已註冊方法
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+# 查看某平台註冊了哪些方法
+methods = get_platform_event_methods("email")
+# ["get_subject", "get_from", "get_attachments", ...]
+
+# 動態判斷並調用
+for method_name in get_platform_event_methods(event.get_platform()):
+    method = getattr(event, method_name)
+    print(f"{method_name}: {method()}")
+```
+
+#### 平台方法隔離
+
+不同平台註冊的方法互不干擾：
+
+```python
+# 郵件事件 - 只有郵件方法
+event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
+event.get_subject()      # ✅ "Hello"
+event.get_chat_type()    # ❌ AttributeError
+
+# Telegram 事件 - 只有 Telegram 方法
+event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
+event.get_chat_type()    # ✅ "private"
+event.get_subject()      # ❌ AttributeError
+```
+
+#### `hasattr` / `dir` 支持
+
+```python
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
+"get_subject" in dir(event)     # 同上
+```
+
+### 適配器：註冊平台擴展方法
+
+適配器可以通過裝飾器為 Event 註冊平台專有方法，方法的參數為 `self`（Event 實例），可以自由訪問事件資料。
+
+#### 單個方法註冊
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("email")
+def get_subject(self):
+    """獲取郵件主題"""
+    return self.get("email_raw", {}).get("subject", "")
+
+@register_event_method("email")
+def get_from(self):
+    """獲取發件人"""
+    return self.get("email_raw", {}).get("from", {})
+```
+
+#### 批量註冊（Mixin 類）
+
+當方法較多時，推薦使用 Mixin 類批量註冊：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin
+
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", {})
+
+    def get_attachments(self):
+        return self.get("email_raw", {}).get("attachments", [])
+
+# 一次性註冊所有方法
+register_event_mixin("email", EmailEventMixin)
+```
+
+#### 返回值規範
+
+| 場景 | 返回值 | 用戶使用方式 |
+|------|--------|------------|
+| 返回資料（文本、字典等） | 直接返回值 | `subject = event.get_subject()` |
+| 執行操作（發送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
+
+> **建議**：非資料返回的方法返回 `asyncio.Task`，這樣用戶可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
+
+```python
+@register_event_method("email")
+def forward_email(self, to_address: str):
+    """轉發郵件 — 返回 Task，用戶可自行決定是否 await"""
+    import asyncio
+    return asyncio.create_task(
+        self._do_forward(to_address)
+    )
+
+# 用戶可以 await 等待結果
+await event.forward_email("user@example.com")
+
+# 也可以不 await，操作在後台執行
+event.forward_email("user@example.com")
+```
+
+#### 註銷方法
+
+```python
+from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
+
+# 註銷單個方法
+unregister_event_method("email", "get_subject")
+
+# 註銷某平台全部方法（適配器 shutdown 時調用）
+unregister_platform_event_methods("email")
+```
+
+#### 命名衝突檢測
+
+註冊時如果方法名與 Event 內置方法重名（如 `get_text`、`reply`），系統會發出 warning 並跳過註冊，不會覆蓋內置行為。
+
+## 優先級系統
+
+事件處理器支持優先級，數值越小優先級越高：
+
+```python
+# 高優先級處理器先執行
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    pass
+
+# 低優先級處理器後執行
+@message.on_message(priority=1)
+async def low_priority_handler(event):
+    pass
+```
+
+## 相關文檔
+
+- [核心模組 API](core-modules.md) - 核心模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [模組開發指南](../developer-guide/modules/) - 開發自定義模組

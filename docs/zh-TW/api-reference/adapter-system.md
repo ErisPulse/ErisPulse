@@ -1,6 +1,6 @@
 # 介面卡系統 API
 
-本文件詳細介紹了 ErisPulse 介面卡系統的 API。
+本文檔詳細介紹了 ErisPulse 介面卡系統的 API。
 
 ## Adapter 管理器
 

@@ -149,5 +149,5 @@ api_url = config.get("api_url", "https://default.api.com")
 
 ## Next Steps
 
-- [Module Management](modules-management.md) - Learn how to manage installed modules
+- [CLI Command Reference](cli-reference.md) - Learn about all command line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules

@@ -60,7 +60,7 @@ graph TB
     SDK --> Config["Config<br/>Configuration Management + Audit"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
 
     Event --> Command["command"]
@@ -80,6 +80,10 @@ graph TB
     BaseModule --> CM["Custom Modules"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### Core Module Description
@@ -131,7 +135,7 @@ flowchart TD
 6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
 7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
 8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the router server (FastAPI)
+9. **Start Router Server** - Start the router server using Uvicorn (FastAPI)
 
 ## Event Handling Process
 
@@ -416,7 +420,7 @@ from ErisPulse.Core.Event import command
 
 @command("hello")
 async def hello(event):
-    await event.reply("你好！")
+    await event.reply("Hello!")
 
 # Run the SDK and keep it running | Needs to run in an async environment
 asyncio.run(sdk.run(keep_running=True))
@@ -450,7 +454,7 @@ Create independent module packages and install and use them via package managers
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
+│                ErisPulse Framework                 │
 ├─────────────────────────────────────────────────────┤
 │                                             │
 │  ┌──────────────┐      ┌──────────────┐    │
@@ -521,7 +525,8 @@ Modules providing basic functions:
 - **Storage**: SQLite-based key-value storage
 - **Config**: Configuration management in TOML format
 - **Logger**: Modular logging system
-- **Router**: HTTP and WebSocket routing management
+- **Router**: FastAPI + Uvicorn-based HTTP and WebSocket routing management
+- **Metrics**: Metrics monitoring system (Counter / Gauge / Histogram)
 
 ## Start Learning
 
@@ -645,6 +650,14 @@ class MyModule(BaseModule):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
     
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """Called when module loads"""
         # Register event handler
@@ -1519,20 +1532,17 @@ async def message_handler(event):
 ### 3. Conditional Handling
 
 ```python
-def should_handle(event):
-    """Determine if this event should be handled"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """Condition handling - determine within the handler"""
     # Only handle messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # Only handle messages containing specific keywords
-    if "keyword" not in event.get_text():
-        return False
+    if "关键词" not in event.get_text():
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("Condition met, handling message")
 ```
 
@@ -1611,9 +1621,9 @@ mkdir MyAdapter && cd MyAdapter
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "Adapter for MyAdapter platform"
+description = "MyAdapter platform adapter"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
@@ -1637,7 +1647,8 @@ from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -1647,7 +1658,7 @@ class MyAdapter(BaseAdapter):
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
         
-        self.logger.info("MyAdapter initialized")
+        self.logger.info("MyAdapter initialization completed")
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
@@ -1755,7 +1766,7 @@ class MyAdapter(BaseAdapter):
         
         def Image(self, file):
             """Send image message"""
-            # See instructions below for implementation
+            # Implementation details below
             pass
         
         def Raw_ob12(self, message, **kwargs):
@@ -2069,6 +2080,8 @@ async def filter_middleware(data):
     return data
 ```
 
+> **Note**: If middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore the return value and preserve the original data to continue propagation, while outputting a warning level log. This ensures that a single middleware mistake won't interrupt the entire event chain.
+
 #### Middleware Execution Order
 
 Middleware executes in registration order; middleware registered later executes first.
@@ -2108,7 +2121,8 @@ await adapter.Send.To("user", "123").Text("Hello")
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # Initialize adapter
         pass
     
@@ -2129,7 +2143,8 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # Get SDK reference
         self.sdk = sdk
         
@@ -3011,7 +3026,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
         super().__init__()
         self.connection = None
         self._connected = False
@@ -3307,8 +3322,8 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk=None):
-        super().__init__(sdk)
+    def __init__(self):
+        super().__init__()
         self.logger = logger.get_child("MyAdapter")
     
     async def start(self):
@@ -3436,9 +3451,39 @@ class MyAdapter(BaseAdapter):
 
 ### 1. Maintain Platform Feature Documentation
 
-Create a `{platform}.md` document under `docs-new/platform-guide/`:
+Create a `{platform}.md` document under `docs/zh-CN/platform-guide/` (other language versions will be automatically generated):
 
 ```markdown
+# Platform Name Adapter Documentation
+
+## Basic Information
+- Corresponding module version: 1.0.0
+- Maintainer: Your Name
+
+## Supported Message Sending Types
+...
+
+## Special Event Types
+...
+
+## Configuration Options
+...
+```
+
+### 2. Update Version Information
+
+When releasing a new version, update the version information in the documentation:
+
+```toml
+[project]
+version = "2.0.0"  # Update version number
+```
+
+## Related Documents
+
+- [Adapter Development Getting Started](getting-started.md) - Create your first adapter
+- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn about message sending
 
 
 
@@ -3786,6 +3831,8 @@ pip install ErisPulse-MyModule
 
 Go to the [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", fill in the module information after logging in.
 
+Supported login methods: **GitHub**, **Codeberg**, **Cloud Lake**, any one of these is sufficient.
+
 Key points to fill in:
 - Module name, description, repository URL
 - Minimum SDK version: If unsure, use the version number from the [latest ErisPulse release](https://pypi.org/project/ErisPulse/)
@@ -3795,6 +3842,14 @@ Submission takes effect immediately, users can install through the module source
 > **Regarding Verification Status**:
 > - "Unverified" only indicates that it has not undergone official review, not that there is an issue with the module
 > - Users will receive a risk warning when installing unverified modules through `epsdk install` and need to confirm before proceeding with installation
+
+### 4. Manage Published Modules
+
+After clicking "Submit Module" in the Module Store and logging in, switch to the "My Modules" tab to:
+- **Edit** — Modify module description, repository URL, tags and other information, version number will be automatically synchronized from PyPI
+- **Delete** — Remove the module from the Module Store (irreversible)
+
+> Newly submitted modules may take a few minutes to appear in the "My Modules" list.
 
 ## Update Published Modules
 
@@ -3832,7 +3887,7 @@ Yes. Configure multiple key-value pairs in `entry-points`:
 
 ### How long does the review take?
 
-Usually completed within 1-3 business days. You can check the review progress in Issues.
+Usually completed within 1-3 business days. You can check the review status in the "My Modules" section of the Module Store.
 
 ## Distribute Applications via Docker Images
 
@@ -4400,6 +4455,7 @@ from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
         # Initialize adapter
         pass
@@ -5050,6 +5106,9 @@ sdk.metrics.register_builtin_metrics()
 
 # Get all metrics snapshot
 snapshot = sdk.metrics.get_all_metrics()
+
+# Reset all metrics
+sdk.metrics.reset()
 ```
 
 ### Metric Types
@@ -5062,7 +5121,8 @@ from ErisPulse.Core.metrics import Counter
 counter = Counter("http_requests_total", description="Total HTTP requests")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # Get current value
+print(counter.name)      # Metric name
 ```
 
 #### Gauge
@@ -5074,7 +5134,8 @@ gauge = Gauge("active_connections", description="Active connections count")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # Set to 42
-print(gauge.value)       # 42
+print(gauge.get())       # 42
+print(gauge.name)        # Metric name
 ```
 
 #### Histogram
@@ -5099,22 +5160,28 @@ print(hist.percentile(99))  # P99
 from ErisPulse import sdk
 
 # Register custom metrics via MetricsManager
-sdk.metrics.counter("my_module.errors", description="Module error count")
-sdk.metrics.gauge("my_module.queue_size", description="Queue size")
-sdk.metrics.histogram("my_module.process_time", description="Processing time")
+counter = sdk.metrics.counter("my_module.errors", description="Module error count")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="Queue size")
+hist = sdk.metrics.histogram("my_module.process_time", description="Processing time")
 
-# Get and use
-sdk.metrics.get("my_module.errors").inc()
+# Directly use the returned metric objects
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed Decorator
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# Through MetricsManager's timed method
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
     # Function execution time will be automatically recorded to Histogram metric
+    await do_something()
+
+# Timed with tags
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 
@@ -5519,6 +5586,7 @@ class Main(BaseModule):
 4.  **Asynchronous Processing**: All lifecycle event handlers are asynchronous; do not block the event loop.
 5.  **Error Handling**: Exception handling should be implemented in event handlers to prevent affecting other listeners.
 6.  **Loading Priority**: It is recommended to set high priority for loading strategies and disable lazy loading.
+7.  **Lifecycle Cleanup**: When calling `sdk.uninit()`, all registered lifecycle event handlers will be cleaned up.
 
 ## Related Documentation
 
@@ -6324,11 +6392,11 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 # Adapter Standardization Conversion Specification
 
 ## 1. Core Principles
-1.  **Strict Compatibility:** All standard fields must fully comply with the OneBot12 specification.
-2.  **Explicit Extension:** Platform-specific features must add a `{platform}_` prefix (e.g., yunhu_form).
-3.  **Data Integrity:** Original event data must be preserved in the `{platform}_raw` field, and the original event type must be preserved in the `{platform}_raw_type` field.
-4.  **Time Unification:** All timestamps must be converted to 10-digit Unix timestamps (seconds).
-5.  **Platform Unification:** The `platform` item name must be consistent with the name/alias registered in ErisPulse.
+1. **Strict Compatibility:** All standard fields must fully comply with the OneBot12 specification.
+2. **Explicit Extension:** Platform-specific features must add a `{platform}_` prefix (e.g., yunhu_form).
+3. **Data Integrity:** Original event data must be preserved in the `{platform}_raw` field, and the original event type must be preserved in the `{platform}_raw_type` field.
+4. **Time Unification:** All timestamps must be converted to 10-digit Unix timestamps (seconds).
+5. **Platform Unification:** The `platform` item name must be consistent with the name/alias registered in ErisPulse.
 
 ## 2. Standard Field Requirements
 
@@ -6487,9 +6555,9 @@ Platform-specific message segments need to add platform prefixes:
 ```
 
 **Extension Message Segment Requirements**:
-1.  **No prefix inside data**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2.  **Provide fallback**: Modules may not recognize extension message segments; the adapter should provide a text alternative in `alt_message`.
-3.  **Complete documentation**: Each extension message segment must document its `type`, `data` structure, and usage scenarios in the adapter documentation.
+1. **No prefix inside data**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **Provide fallback**: Modules may not recognize extension message segments; the adapter should provide a text alternative in `alt_message`.
+3. **Complete documentation**: Each extension message segment must document its `type`, `data` structure, and usage scenarios in the adapter documentation.
 
 ## 5. Unknown Event Handling
 
@@ -6606,116 +6674,7 @@ The standard required fields for the `self` object (`platform`, `user_id`) are l
 
 ## 7. Session Type Extensions
 
-ErisPulse extends the following session types based on the OneBot12 standard `private` and `group`:
-
-| Type | OneBot12 Standard | ErisPulse Extension | Description |
-|------|:-----------:|:------------:|------|
-| `private` | ✅ | — | One-on-one private chat |
-| `group` | ✅ | — | Group chat |
-| `user` | — | ✅ | User type (Telegram, etc.) |
-| `channel` | — | ✅ | Channel (broadcast) |
-| `guild` | — | ✅ | Server/Community |
-| `thread` | — | ✅ | Topic/Sub-channel |
-
-**Adapter Custom Type Extensions**:
-
-```python
-from ErisPulse.Core.Event.session_type import register_custom_type
-
-# Register when adapter starts
-register_custom_type(
-    receive_type="email",      # detail_type in receiving events
-    send_type="email",         # Target type when sending
-    id_field="email_id",       # Corresponding ID field name
-    platform="email"           # Platform identifier
-)
-```
-
-**Custom Type Requirements**:
-- Must register during adapter `start()` and unregister during `shutdown()`.
-- `receive_type` should not have the same name as standard types.
-- `id_field` should follow the naming pattern `{target}_id`.
-
-> For complete session type definitions and mapping relationships, see [Session Types Standard](session-types.md).
-
----
-
-## 8. Module Developer Guide
-
-### 8.1 Accessing Extension Fields
-
-```python
-from ErisPulse.Core.Event import message
-
-@message()
-async def handle_message(event):
-    # Access standard fields
-    text = event.get_text()
-    user_id = event.get_user_id()
-
-    # Access platform extension fields - Method 1: Direct get
-    yunhu_command = event.get("yunhu_command")
-
-    # Access platform extension fields - Method 2: Dot access (Event wrapper class)
-    # event.yunhu_command
-
-    # Access raw data
-    raw_data = event.get("yunhu_raw")
-    raw_type = event.get_raw_type()
-
-    # Check platform
-    platform = event.get_platform()
-    if platform == "yunhu":
-        pass
-    elif platform == "telegram":
-        pass
-```
-
-### 8.2 Handling Extension Message Segments
-
-```python
-@message()
-async def handle_message(event):
-    message_segments = event.get("message", [])
-
-    for segment in message_segments:
-        seg_type = segment.get("type")
-        seg_data = segment.get("data", {})
-
-        if seg_type == "text":
-            text = seg_data["text"]
-        elif seg_type.startswith("yunhu_"):
-            if seg_type == "yunhu_form":
-                form_id = seg_data["form_id"]
-        elif seg_type.startswith("telegram_"):
-            if seg_type == "telegram_sticker":
-                file_id = seg_data["file_id"]
-```
-
-### 8.3 Best Practices
-
-1.  **Prioritize standard fields**: Do not assume extension fields always exist.
-2.  **Platform check**: Use `event.get_platform()` to determine the platform, rather than inferring from the existence of extension fields.
-3.  **Graceful degradation**: When unable to handle extension message segments, use `alt_message` as a fallback.
-4.  **Do not hardcode prefixes**: Use the `platform` variable for dynamic concatenation.
-
-```python
-# ✅ Recommended
-platform = event.get_platform()
-raw_data = event.get(f"{platform}_raw")
-
-# ❌ Not recommended
-raw_data = event.get("yunhu_raw")
-```
-
----
-
-## 9. Related Documents
-
-- [Platform Feature Documentation](../platform-guide/README.md) - You can visit this document to understand the features of each platform as well as known extension events and message segments.
-- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
-- [Send Method Specification](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
-- [API Response Standard](api-response.md) - Adapter API response format standard
+E
 
 
 
@@ -7451,7 +7410,7 @@ if builder:
 
 ### 平台特性总览
 
-# ErisPulse Platform Features Documentation
+# ErisPulse PlatformFeatures Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/) 
 > 
@@ -10815,7 +10774,7 @@ Before submitting a document update, please check the following:
 
 Refer to the following documents when writing to ensure consistency:
 - [OneBot12 Standard Documentation](https://12.onebot.dev/)
-- [ErisPulse Core Concepts](../core/concepts.md)
+- [ErisPulse Core Concepts](../getting-started/basic-concepts.md)
 - [Event Conversion Standards](../standards/event-conversion.md)
 - [API Response Specifications](../standards/api-response.md)
 - [Other Platform Adapter Documentation](./)

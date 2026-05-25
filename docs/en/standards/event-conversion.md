@@ -1,11 +1,11 @@
 # Adapter Standardization Conversion Specification
 
 ## 1. Core Principles
-1.  **Strict Compatibility:** All standard fields must fully comply with the OneBot12 specification.
-2.  **Explicit Extension:** Platform-specific features must add a `{platform}_` prefix (e.g., yunhu_form).
-3.  **Data Integrity:** Original event data must be preserved in the `{platform}_raw` field, and the original event type must be preserved in the `{platform}_raw_type` field.
-4.  **Time Unification:** All timestamps must be converted to 10-digit Unix timestamps (seconds).
-5.  **Platform Unification:** The `platform` item name must be consistent with the name/alias registered in ErisPulse.
+1. **Strict Compatibility:** All standard fields must fully comply with the OneBot12 specification.
+2. **Explicit Extension:** Platform-specific features must add a `{platform}_` prefix (e.g., yunhu_form).
+3. **Data Integrity:** Original event data must be preserved in the `{platform}_raw` field, and the original event type must be preserved in the `{platform}_raw_type` field.
+4. **Time Unification:** All timestamps must be converted to 10-digit Unix timestamps (seconds).
+5. **Platform Unification:** The `platform` item name must be consistent with the name/alias registered in ErisPulse.
 
 ## 2. Standard Field Requirements
 
@@ -164,9 +164,9 @@ Platform-specific message segments need to add platform prefixes:
 ```
 
 **Extension Message Segment Requirements**:
-1.  **No prefix inside data**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2.  **Provide fallback**: Modules may not recognize extension message segments; the adapter should provide a text alternative in `alt_message`.
-3.  **Complete documentation**: Each extension message segment must document its `type`, `data` structure, and usage scenarios in the adapter documentation.
+1. **No prefix inside data**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **Provide fallback**: Modules may not recognize extension message segments; the adapter should provide a text alternative in `alt_message`.
+3. **Complete documentation**: Each extension message segment must document its `type`, `data` structure, and usage scenarios in the adapter documentation.
 
 ## 5. Unknown Event Handling
 
@@ -283,113 +283,4 @@ The standard required fields for the `self` object (`platform`, `user_id`) are l
 
 ## 7. Session Type Extensions
 
-ErisPulse extends the following session types based on the OneBot12 standard `private` and `group`:
-
-| Type | OneBot12 Standard | ErisPulse Extension | Description |
-|------|:-----------:|:------------:|------|
-| `private` | ✅ | — | One-on-one private chat |
-| `group` | ✅ | — | Group chat |
-| `user` | — | ✅ | User type (Telegram, etc.) |
-| `channel` | — | ✅ | Channel (broadcast) |
-| `guild` | — | ✅ | Server/Community |
-| `thread` | — | ✅ | Topic/Sub-channel |
-
-**Adapter Custom Type Extensions**:
-
-```python
-from ErisPulse.Core.Event.session_type import register_custom_type
-
-# Register when adapter starts
-register_custom_type(
-    receive_type="email",      # detail_type in receiving events
-    send_type="email",         # Target type when sending
-    id_field="email_id",       # Corresponding ID field name
-    platform="email"           # Platform identifier
-)
-```
-
-**Custom Type Requirements**:
-- Must register during adapter `start()` and unregister during `shutdown()`.
-- `receive_type` should not have the same name as standard types.
-- `id_field` should follow the naming pattern `{target}_id`.
-
-> For complete session type definitions and mapping relationships, see [Session Types Standard](session-types.md).
-
----
-
-## 8. Module Developer Guide
-
-### 8.1 Accessing Extension Fields
-
-```python
-from ErisPulse.Core.Event import message
-
-@message()
-async def handle_message(event):
-    # Access standard fields
-    text = event.get_text()
-    user_id = event.get_user_id()
-
-    # Access platform extension fields - Method 1: Direct get
-    yunhu_command = event.get("yunhu_command")
-
-    # Access platform extension fields - Method 2: Dot access (Event wrapper class)
-    # event.yunhu_command
-
-    # Access raw data
-    raw_data = event.get("yunhu_raw")
-    raw_type = event.get_raw_type()
-
-    # Check platform
-    platform = event.get_platform()
-    if platform == "yunhu":
-        pass
-    elif platform == "telegram":
-        pass
-```
-
-### 8.2 Handling Extension Message Segments
-
-```python
-@message()
-async def handle_message(event):
-    message_segments = event.get("message", [])
-
-    for segment in message_segments:
-        seg_type = segment.get("type")
-        seg_data = segment.get("data", {})
-
-        if seg_type == "text":
-            text = seg_data["text"]
-        elif seg_type.startswith("yunhu_"):
-            if seg_type == "yunhu_form":
-                form_id = seg_data["form_id"]
-        elif seg_type.startswith("telegram_"):
-            if seg_type == "telegram_sticker":
-                file_id = seg_data["file_id"]
-```
-
-### 8.3 Best Practices
-
-1.  **Prioritize standard fields**: Do not assume extension fields always exist.
-2.  **Platform check**: Use `event.get_platform()` to determine the platform, rather than inferring from the existence of extension fields.
-3.  **Graceful degradation**: When unable to handle extension message segments, use `alt_message` as a fallback.
-4.  **Do not hardcode prefixes**: Use the `platform` variable for dynamic concatenation.
-
-```python
-# ✅ Recommended
-platform = event.get_platform()
-raw_data = event.get(f"{platform}_raw")
-
-# ❌ Not recommended
-raw_data = event.get("yunhu_raw")
-```
-
----
-
-## 9. Related Documents
-
-- [Platform Feature Documentation](../platform-guide/README.md) - You can visit this document to understand the features of each platform as well as known extension events and message segments.
-- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
-- [Send Method Specification](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
-- [API Response Standard](api-response.md) - Adapter API response format standard
+E

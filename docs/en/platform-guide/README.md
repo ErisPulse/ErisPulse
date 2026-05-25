@@ -1,4 +1,4 @@
-# ErisPulse Platform Features Documentation
+# ErisPulse PlatformFeatures Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/) 
 > 

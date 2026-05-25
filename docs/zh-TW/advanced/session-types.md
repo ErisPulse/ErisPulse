@@ -4,7 +4,7 @@ ErisPulse 會話類型系統負責定義和管理訊息的會話類型（私聊�
 
 ## 類型定義
 
-### 接收類型
+### 接收類型 (ReceiveType)
 
 接收類型來自 OneBot12 事件中的 `detail_type` 欄位，表示事件的會話場景：
 
@@ -17,7 +17,7 @@ ErisPulse 會話類型系統負責定義和管理訊息的會話類型（私聊�
 | `thread` | 話題/子頻道訊息 | `thread_id` |
 | `user` | 用戶訊息（擴展） | `user_id` |
 
-### 發送類型
+### 發送類型 (SendType)
 
 發送類型用於 `Send.To(type, id)` 中指定發送目標：
 
@@ -176,4 +176,4 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 - [事件轉換標準](../standards/event-conversion.md) - 事件轉換規範
 - [會話類型標準](../standards/session-types.md) - 會話類型正式定義
-- [事件轉換器實現](../../developer-guide/adapters/converter.md) - Converter 開發指南
+- [事件轉換器實現](../../developer-guide/adapters/getting-started.md) - 適配器開發指南

@@ -410,6 +410,9 @@ sdk.metrics.register_builtin_metrics()
 
 # Get all metrics snapshot
 snapshot = sdk.metrics.get_all_metrics()
+
+# Reset all metrics
+sdk.metrics.reset()
 ```
 
 ### Metric Types
@@ -422,7 +425,8 @@ from ErisPulse.Core.metrics import Counter
 counter = Counter("http_requests_total", description="Total HTTP requests")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # Get current value
+print(counter.name)      # Metric name
 ```
 
 #### Gauge
@@ -434,7 +438,8 @@ gauge = Gauge("active_connections", description="Active connections count")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # Set to 42
-print(gauge.value)       # 42
+print(gauge.get())       # 42
+print(gauge.name)        # Metric name
 ```
 
 #### Histogram
@@ -459,22 +464,28 @@ print(hist.percentile(99))  # P99
 from ErisPulse import sdk
 
 # Register custom metrics via MetricsManager
-sdk.metrics.counter("my_module.errors", description="Module error count")
-sdk.metrics.gauge("my_module.queue_size", description="Queue size")
-sdk.metrics.histogram("my_module.process_time", description="Processing time")
+counter = sdk.metrics.counter("my_module.errors", description="Module error count")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="Queue size")
+hist = sdk.metrics.histogram("my_module.process_time", description="Processing time")
 
-# Get and use
-sdk.metrics.get("my_module.errors").inc()
+# Directly use the returned metric objects
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed Decorator
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# Through MetricsManager's timed method
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
     # Function execution time will be automatically recorded to Histogram metric
+    await do_something()
+
+# Timed with tags
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 

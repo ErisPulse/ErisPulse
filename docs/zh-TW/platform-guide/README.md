@@ -1,4 +1,4 @@
-# ErisPulse 平台功能文件
+# ErisPulse PlatformFeatures 文檔
 
 > 基線協定：[OneBot12](https://12.onebot.dev/) 
 > 
@@ -20,7 +20,7 @@
 - [維護說明](maintain-notes.md)
 
 - [雲湖平台特性](yunhu.md)
-- [雲湖用戶平台特性](yunhu-user.md)
+- [雲湖用戶平台特性](yunhu_user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
@@ -221,7 +221,7 @@ ErisPulse 專案：
 ## 參與貢獻
 
 我們歡迎更多開發者參與編寫和維護適配器文件！請按照以下步驟提交貢獻：
-1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 儲存庫。
+1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) 儲存庫。
 2. 在 `docs/platform-features/` 目錄下建立一個 Markdown 檔案，並命名格式為 `<平台名稱>.md`。
 3. 在本 `README.md` 檔案中新增對您貢獻的適配器的連結以及相關官方文件。
 4. 提交 Pull Request。

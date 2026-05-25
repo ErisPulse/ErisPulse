@@ -4,9 +4,9 @@ This guide introduces how to install ErisPulse and configure your project.
 
 ## System Requirements
 
-- Python 3.10 or later version
+- Python 3.10 or higher version
 - pip or uv (recommended)
-- Sufficient disk space (at least 100MB)
+- sufficient disk space (at least 100MB)
 
 ## Installation Methods
 
@@ -22,7 +22,7 @@ pip install ErisPulse --upgrade
 
 ### Method 2: Install via uv (Recommended)
 
-uv is a faster Python toolchain and is recommended for development environments.
+uv is a faster Python toolchain, recommended for development environments.
 
 #### Install uv
 
@@ -34,7 +34,7 @@ pip install uv
 uv --version
 ```
 
-#### Create a Virtual Environment
+#### Create Virtual Environment
 
 ```bash
 # Create project directory
@@ -100,7 +100,6 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
-···
 ```
 
 ## Module Installation
