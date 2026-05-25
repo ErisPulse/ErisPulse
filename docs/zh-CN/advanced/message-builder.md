@@ -175,6 +175,6 @@ complex_msg = (
 
 ## 相关文档
 
-- [适配器 SendDSL 详解](../../developer-guide/adapters/send-dsl.md) - Send 链式发送接口
-- [事件转换标准](../../standards/event-conversion.md) - 消息段转换规范
-- [Event 包装类](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
+- [适配器 SendDSL 详解](../developer-guide/adapters/send-dsl.md) - Send 链式发送接口
+- [事件转换标准](../standards/event-conversion.md) - 消息段转换规范
+- [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
