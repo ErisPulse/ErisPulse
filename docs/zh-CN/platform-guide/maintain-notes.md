@@ -129,7 +129,7 @@ from ErisPulse.Core import adapter
 
 编写时请参考以下文档以确保一致性：
 - [OneBot12标准文档](https://12.onebot.dev/)
-- [ErisPulse核心概念](../core/concepts.md)
+- [ErisPulse核心概念](../getting-started/basic-concepts.md)
 - [事件转换标准](../standards/event-conversion.md)
 - [API响应规范](../standards/api-response.md)
 - [其他平台适配器文档](./)

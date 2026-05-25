@@ -176,4 +176,4 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 - [事件转换标准](../standards/event-conversion.md) - 事件转换规范
 - [会话类型标准](../standards/session-types.md) - 会话类型正式定义
-- [事件转换器实现](../../developer-guide/adapters/converter.md) - Converter 开发指南
+- [事件转换器实现](../developer-guide/adapters/getting-started.md) - 适配器开发指南
