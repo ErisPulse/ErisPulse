@@ -24,7 +24,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 description = "Module functionality description"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 dependencies = []

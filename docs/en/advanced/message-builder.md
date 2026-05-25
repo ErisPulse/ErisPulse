@@ -175,6 +175,6 @@ complex_msg = (
 
 ## Related Documentation
 
-- [Adapter SendDSL Detailed Explanation](../../developer-guide/adapters/send-dsl.md) - Send chaining send interface
-- [Event Conversion Standard](../../standards/event-conversion.md) - Message segment conversion specification
-- [Event Wrapper Class](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
+- [Adapter SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Send chaining send interface
+- [Event Conversion Standard](../standards/event-conversion.md) - Message segment conversion specification
+- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
