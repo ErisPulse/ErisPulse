@@ -161,7 +161,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
         super().__init__()
         self.connection = None
         self._connected = False
@@ -457,8 +457,8 @@ async def call_api(self, endpoint: str, **params):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk=None):
-        super().__init__(sdk)
+    def __init__(self):
+        super().__init__()
         self.logger = logger.get_child("MyAdapter")
     
     async def start(self):

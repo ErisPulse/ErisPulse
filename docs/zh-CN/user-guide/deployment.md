@@ -102,10 +102,7 @@ Dashboard 集成了模块商店功能，你可以：
 SDK 内置健康检查端点：
 
 ```bash
-# 简单检查
-curl http://localhost:8000/ping
-
-# 详细状态
+# 健康检查
 curl http://localhost:8000/health
 ```
 
@@ -115,7 +112,7 @@ Docker 健康检查可在 `docker-compose.yml` 中添加：
 services:
   erispulse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -168,11 +165,11 @@ port = 8000
 
 [ErisPulse.logger]
 level = "INFO"
-file_output = true
-max_lines = 5000
+log_files = ["app.log"]
+memory_limit = 5000
 
-[ErisPulse.module]
-lazy_load = true
+[ErisPulse.framework]
+enable_lazy_loading = true
 ```
 
 ### systemd (Linux)

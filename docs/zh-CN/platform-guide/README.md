@@ -20,7 +20,7 @@
 - [维护说明](maintain-notes.md)
 
 - [云湖平台特性](yunhu.md)
-- [云湖用户平台特性](yunhu-user.md)
+- [云湖用户平台特性](yunhu_user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)

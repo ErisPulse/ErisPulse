@@ -1,6 +1,6 @@
 # 路由管理器
 
-ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。它基于 FastAPI 构建，提供了完整的 Web 服务功能。
+ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。它基于 FastAPI + Uvicorn 构建，提供了完整的 Web 服务功能。
 
 ## 概述
 

@@ -17,7 +17,7 @@ graph TB
     SDK --> Config["Config<br/>配置管理 + 审计"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
     SDK --> Metrics["Metrics<br/>指标监控"]
 
     Event --> Command["command"]
@@ -37,6 +37,10 @@ graph TB
     BaseModule --> CM["自定义模块"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>消息发送"]
+
+    Metrics --> Counter["Counter"]
+    Metrics --> Gauge["Gauge"]
+    Metrics --> Histogram["Histogram"]
 ```
 
 ### 核心模块说明
@@ -86,9 +90,9 @@ flowchart TD
 4. **启动适配器** - 异步启动各平台适配器连接（在模块初始化之前，确保模块能立即发送消息）
 5. **注册模块** - 将发现的模块注册到模块管理器
 6. **依赖验证** - 检查模块声明的 `depends` 依赖是否已注册，跳过缺失依赖的模块
-7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序
+7. **拓扑排序** - 使用 Kahn 算法按依赖关系排序模块加载顺序，同级按 `priority` 降序排列
 8. **模块初始化** - 按排序顺序创建模块实例，调用 `on_load` 生命周期方法
-9. **启动路由服务器** - 启动路由服务器（FastAPI）
+9. **启动路由服务器** - 使用 Uvicorn 启动 FastAPI 路由服务器
 
 ## 事件处理流程
 

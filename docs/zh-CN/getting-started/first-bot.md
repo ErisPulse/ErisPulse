@@ -61,7 +61,7 @@ async def main():
     # await sdk.run(keep_running=False)
     # ...Do Something
     # 可以做你想做的任何事
-    # 使用 await sdk.init() 等价于 `dk.run(keep_running=False)`
+    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
 
     print("ErisPulse 初始化完成！")
 
@@ -196,7 +196,7 @@ async def hello_handler(event):
 
 ## 下一步
 
-- [高级初始化控制](advanced-init.md) - 钩子系统、手动控制、嵌入式集成
+- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能

@@ -100,7 +100,6 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
-···
 
 ```
 
