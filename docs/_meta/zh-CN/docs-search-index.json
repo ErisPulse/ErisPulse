@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1089,
+  "total_keywords": 1095,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -153,7 +153,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 578,
+        "line": 584,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -527,7 +527,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -877,7 +877,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 612,
+        "line": 618,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1555,7 +1555,7 @@
     "@timed 装饰器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 479,
+        "line": 449,
         "level": 3,
         "title": "@timed 装饰器"
       }
@@ -1675,7 +1675,7 @@
     "Adapter 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 237,
+        "line": 207,
         "level": 2,
         "title": "Adapter 模块"
       }
@@ -1759,7 +1759,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 272,
+        "line": 278,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -1811,7 +1811,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 665,
+        "line": 635,
         "level": 3,
         "title": "CORS 配置"
       }
@@ -1867,7 +1867,7 @@
     "Counter — 计数器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 420,
+        "line": 390,
         "level": 4,
         "title": "Counter — 计数器"
       }
@@ -2051,7 +2051,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 501,
+        "line": 507,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -2059,7 +2059,7 @@
     "Gauge — 仪表盘": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 435,
+        "line": 405,
         "level": 4,
         "title": "Gauge — 仪表盘"
       }
@@ -2072,10 +2072,18 @@
         "title": "HTTP 装饰器"
       }
     ],
+    "HTTP 路由": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 160,
+        "level": 3,
+        "title": "HTTP 路由"
+      }
+    ],
     "Histogram — 直方图": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 447,
+        "line": 417,
         "level": 4,
         "title": "Histogram — 直方图"
       }
@@ -2107,7 +2115,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 351,
+        "line": 321,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -2115,7 +2123,7 @@
     "Logger 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 171,
         "level": 2,
         "title": "Logger 模块"
       }
@@ -2179,7 +2187,7 @@
     "Metrics 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 401,
+        "line": 371,
         "level": 2,
         "title": "Metrics 模块"
       }
@@ -2187,7 +2195,7 @@
     "Module 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 294,
+        "line": 264,
         "level": 2,
         "title": "Module 模块"
       }
@@ -2423,7 +2431,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 494,
+        "line": 464,
         "level": 2,
         "title": "Router 模块"
       }
@@ -2634,6 +2642,14 @@
         "title": "WebHook 连接"
       }
     ],
+    "WebSocket": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 175,
+        "level": 3,
+        "title": "WebSocket"
+      }
+    ],
     "WebSocket 注册": [
       {
         "document": "advanced/router.md",
@@ -2653,7 +2669,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 569,
+        "line": 539,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3217,7 +3233,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 629,
+        "line": 635,
         "level": 2,
         "title": "下一步"
       },
@@ -3439,7 +3455,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 576,
+        "line": 582,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -3447,7 +3463,7 @@
     "事件处理机制": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 32,
+        "line": 10,
         "level": 2,
         "title": "事件处理机制"
       }
@@ -3474,26 +3490,26 @@
         "title": "事件处理示例"
       }
     ],
+    "事件接收与处理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 106,
+        "level": 3,
+        "title": "事件接收与处理"
+      }
+    ],
     "事件提交": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 353,
+        "line": 323,
         "level": 3,
         "title": "事件提交"
-      }
-    ],
-    "事件数据格式": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 18,
-        "level": 2,
-        "title": "事件数据格式"
       }
     ],
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 505,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -3509,7 +3525,7 @@
     "事件监听": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 367,
+        "line": 337,
         "level": 3,
         "title": "事件监听"
       },
@@ -3685,7 +3701,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 293,
+        "line": 299,
         "level": 2,
         "title": "交互式处理"
       }
@@ -3788,6 +3804,14 @@
         "title": "代码说明"
       }
     ],
+    "优先级": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 29,
+        "level": 3,
+        "title": "优先级"
+      }
+    ],
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
@@ -3813,7 +3837,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 546,
+        "line": 516,
         "level": 3,
         "title": "传统注册方式"
       }
@@ -3837,7 +3861,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 295,
+        "line": 301,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -3899,12 +3923,6 @@
       }
     ],
     "使用示例": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 79,
-        "level": 2,
-        "title": "使用示例"
-      },
       {
         "document": "api-reference/README.md",
         "line": 49,
@@ -4039,7 +4057,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 245,
+        "line": 251,
         "level": 2,
         "title": "元事件处理"
       }
@@ -4123,7 +4141,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 492,
+        "line": 498,
         "level": 3,
         "title": "内置确认词"
       }
@@ -4749,7 +4767,7 @@
     "命令事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 60,
+        "line": 66,
         "level": 2,
         "title": "命令事件处理"
       }
@@ -4757,7 +4775,7 @@
     "命令优先级": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 130,
+        "line": 136,
         "level": 3,
         "title": "命令优先级"
       }
@@ -4793,7 +4811,7 @@
     "命令别名": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 78,
+        "line": 84,
         "level": 3,
         "title": "命令别名"
       }
@@ -4801,7 +4819,7 @@
     "命令参数": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 91,
+        "line": 97,
         "level": 3,
         "title": "命令参数"
       }
@@ -4817,7 +4835,7 @@
     "命令权限": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 117,
+        "line": 123,
         "level": 3,
         "title": "命令权限"
       }
@@ -4830,10 +4848,18 @@
         "title": "命令没有响应？"
       }
     ],
+    "命令系统": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 145,
+        "level": 3,
+        "title": "命令系统"
+      }
+    ],
     "命令组": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 105,
+        "line": 111,
         "level": 3,
         "title": "命令组"
       }
@@ -4955,7 +4981,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 403,
+        "line": 373,
         "level": 3,
         "title": "基本使用"
       },
@@ -5053,7 +5079,7 @@
     "基本命令": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 62,
+        "line": 68,
         "level": 3,
         "title": "基本命令"
       }
@@ -5083,7 +5109,7 @@
     "基本日志": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 203,
+        "line": 173,
         "level": 3,
         "title": "基本日志"
       }
@@ -5341,7 +5367,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 465,
+        "line": 471,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -5381,7 +5407,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "好友添加"
       }
@@ -5397,7 +5423,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 218,
+        "line": 224,
         "level": 3,
         "title": "好友请求"
       }
@@ -5445,7 +5471,7 @@
     "子日志记录器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 216,
+        "line": 186,
         "level": 3,
         "title": "子日志记录器"
       }
@@ -5505,7 +5531,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 682,
+        "line": 652,
         "level": 3,
         "title": "安全头"
       }
@@ -5598,6 +5624,14 @@
         "line": 83,
         "level": 3,
         "title": "安装模块"
+      }
+    ],
+    "完整 API 参考": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 219,
+        "level": 2,
+        "title": "完整 API 参考"
       }
     ],
     "完整格式（适用于复杂方法）": [
@@ -5736,6 +5770,14 @@
         "title": "工作原理"
       }
     ],
+    "工具": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 237,
+        "level": 3,
+        "title": "工具"
+      }
+    ],
     "工具方法": [
       {
         "document": "advanced/message-builder.md",
@@ -5781,7 +5823,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 367,
+        "line": 373,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -5789,7 +5831,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 340,
+        "line": 346,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -5921,7 +5963,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 547,
+        "line": 553,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -5993,7 +6035,7 @@
     "并行事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 149,
         "level": 3,
         "title": "并行事件处理"
       }
@@ -6169,7 +6211,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 263,
+        "line": 269,
         "level": 3,
         "title": "心跳事件"
       }
@@ -6465,7 +6507,7 @@
     "指标类型": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 418,
+        "line": 388,
         "level": 3,
         "title": "指标类型"
       }
@@ -6522,14 +6564,6 @@
         "line": 101,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
-      }
-    ],
-    "提交生命周期事件": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 102,
-        "level": 3,
-        "title": "提交生命周期事件"
       }
     ],
     "插入数据": [
@@ -6637,7 +6671,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 424,
+        "line": 430,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -6919,7 +6953,7 @@
     "日志输出": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 227,
+        "line": 197,
         "level": 3,
         "title": "日志输出"
       }
@@ -7020,14 +7054,6 @@
         "line": 66,
         "level": 2,
         "title": "最佳建议"
-      }
-    ],
-    "服务器生命周期事件": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 72,
-        "level": 3,
-        "title": "服务器生命周期事件"
       }
     ],
     "服务器配置": [
@@ -7168,6 +7194,14 @@
         "title": "查询数据"
       }
     ],
+    "标准事件定义": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 196,
+        "level": 2,
+        "title": "标准事件定义"
+      }
+    ],
     "标准事件格式": [
       {
         "document": "platform-guide/README.md",
@@ -7224,20 +7258,6 @@
         "title": "标准消息段类型"
       }
     ],
-    "标准生命周期事件": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 5,
-        "level": 2,
-        "title": "标准生命周期事件"
-      },
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 45,
-        "level": 2,
-        "title": "标准生命周期事件"
-      }
-    ],
     "标准遵循检查清单": [
       {
         "document": "standards/README.md",
@@ -7260,12 +7280,12 @@
         "title": "核心 API"
       }
     ],
-    "核心初始化事件": [
+    "核心初始化": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 47,
+        "line": 63,
         "level": 3,
-        "title": "核心初始化事件"
+        "title": "核心初始化"
       }
     ],
     "核心功能": [
@@ -7490,12 +7510,12 @@
         "title": "模块"
       }
     ],
-    "模块中使用生命周期": [
+    "模块中使用示例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 137,
+        "line": 247,
         "level": 2,
-        "title": "模块中使用生命周期"
+        "title": "模块中使用示例"
       }
     ],
     "模块加载策略": [
@@ -7584,24 +7604,22 @@
     ],
     "模块生命周期": [
       {
+        "document": "advanced/lifecycle.md",
+        "line": 85,
+        "level": 3,
+        "title": "模块生命周期"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
         "level": 2,
         "title": "模块生命周期"
       }
     ],
-    "模块生命周期事件": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 54,
-        "level": 3,
-        "title": "模块生命周期事件"
-      }
-    ],
     "模块管理": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 309,
+        "line": 279,
         "level": 3,
         "title": "模块管理"
       }
@@ -7678,6 +7696,14 @@
         "title": "注册 API"
       }
     ],
+    "注册与取消": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 221,
+        "level": 3,
+        "title": "注册与取消"
+      }
+    ],
     "注册中间件": [
       {
         "document": "api-reference/adapter-system.md",
@@ -7692,6 +7718,14 @@
         "line": 7,
         "level": 3,
         "title": "注册命令"
+      }
+    ],
+    "注册处理器": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 12,
+        "level": 3,
+        "title": "注册处理器"
       }
     ],
     "注意事项": [
@@ -7709,7 +7743,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 274,
         "level": 2,
         "title": "注意事项"
       },
@@ -7864,6 +7898,14 @@
         "line": 106,
         "level": 4,
         "title": "消息内容"
+      }
+    ],
+    "消息发送": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 130,
+        "level": 3,
+        "title": "消息发送"
       }
     ],
     "消息发送失败": [
@@ -8087,7 +8129,7 @@
     "点式结构事件": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 34,
+        "line": 43,
         "level": 3,
         "title": "点式结构事件"
       }
@@ -8280,14 +8322,6 @@
         "title": "生命周期事件"
       }
     ],
-    "生命周期事件监听": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 81,
-        "level": 3,
-        "title": "生命周期事件监听"
-      }
-    ],
     "生命周期管理": [
       {
         "document": "advanced/lifecycle.md",
@@ -8353,7 +8387,7 @@
     "监听@消息": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 50,
+        "line": 56,
         "level": 3,
         "title": "监听@消息"
       }
@@ -8369,7 +8403,7 @@
     "监听所有消息": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 19,
+        "line": 25,
         "level": 3,
         "title": "监听所有消息"
       }
@@ -8393,7 +8427,7 @@
     "监听私聊消息": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 31,
+        "line": 37,
         "level": 3,
         "title": "监听私聊消息"
       }
@@ -8401,7 +8435,7 @@
     "监听群聊消息": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 40,
+        "line": 46,
         "level": 3,
         "title": "监听群聊消息"
       }
@@ -8437,7 +8471,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 170,
+        "line": 284,
         "level": 2,
         "title": "相关文档"
       },
@@ -8479,7 +8513,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 714,
+        "line": 684,
         "level": 2,
         "title": "相关文档"
       },
@@ -8567,7 +8601,7 @@
     "确认对话 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 388,
+        "line": 394,
         "level": 3,
         "title": "确认对话 (confirm)"
       }
@@ -8631,7 +8665,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 444,
+        "line": 450,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -8655,7 +8689,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 323,
+        "line": 329,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -8817,7 +8851,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 212,
         "level": 3,
         "title": "群成员减少"
       }
@@ -8825,7 +8859,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 196,
+        "line": 202,
         "level": 3,
         "title": "群成员增加"
       }
@@ -8857,7 +8891,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 234,
+        "line": 240,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -8887,7 +8921,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 693,
+        "line": 663,
         "level": 3,
         "title": "自动文档"
       }
@@ -8903,7 +8937,7 @@
     "自定义指标": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 463,
+        "line": 433,
         "level": 3,
         "title": "自定义指标"
       }
@@ -8965,7 +8999,7 @@
     "获取模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 296,
+        "line": 266,
         "level": 3,
         "title": "获取模块"
       }
@@ -8995,7 +9029,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 239,
+        "line": 209,
         "level": 3,
         "title": "获取适配器"
       }
@@ -9049,9 +9083,17 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 496,
+        "line": 466,
         "level": 3,
         "title": "装饰器路由（推荐）"
+      }
+    ],
+    "触发": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 229,
+        "level": 3,
+        "title": "触发"
       }
     ],
     "计数与存在性检查": [
@@ -9065,17 +9107,9 @@
     "计时器": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 386,
+        "line": 356,
         "level": 3,
         "title": "计时器"
-      }
-    ],
-    "计时器功能": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 116,
-        "level": 3,
-        "title": "计时器功能"
       }
     ],
     "认证与 API 调用": [
@@ -9133,7 +9167,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 216,
+        "line": 222,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -9269,7 +9303,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 634,
+        "line": 604,
         "level": 3,
         "title": "路由中间件"
       }
@@ -9277,7 +9311,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 708,
+        "line": 678,
         "level": 3,
         "title": "路由信息"
       }
@@ -9291,7 +9325,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 615,
+        "line": 585,
         "level": 3,
         "title": "路由分组"
       }
@@ -9425,7 +9459,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 247,
+        "line": 253,
         "level": 3,
         "title": "连接事件"
       }
@@ -9505,7 +9539,7 @@
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 251,
+        "line": 221,
         "level": 3,
         "title": "适配器事件"
       }
@@ -9608,12 +9642,12 @@
         "title": "适配器核心概念"
       }
     ],
-    "适配器生命周期事件": [
+    "适配器生命周期": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 62,
+        "line": 94,
         "level": 3,
-        "title": "适配器生命周期事件"
+        "title": "适配器生命周期"
       }
     ],
     "适配器简介": [
@@ -9633,7 +9667,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 270,
+        "line": 240,
         "level": 3,
         "title": "适配器管理"
       }
@@ -9665,7 +9699,7 @@
     "选择菜单 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 405,
+        "line": 411,
         "level": 3,
         "title": "选择菜单 (choose)"
       }
@@ -9719,7 +9753,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "通知事件处理"
       }
@@ -9786,12 +9820,12 @@
         "title": "通过 Docker 镜像分发应用"
       }
     ],
-    "通配符事件处理器": [
+    "通配符": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 41,
+        "line": 49,
         "level": 3,
-        "title": "通配符事件处理器"
+        "title": "通配符"
       }
     ],
     "速率限制": [
@@ -9803,7 +9837,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 652,
+        "line": 622,
         "level": 3,
         "title": "速率限制"
       }
@@ -9872,12 +9906,12 @@
         "title": "配置"
       }
     ],
-    "配置审计": [
+    "配置变更": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 171,
+        "document": "advanced/lifecycle.md",
+        "line": 71,
         "level": 3,
-        "title": "配置审计"
+        "title": "配置变更"
       }
     ],
     "配置懒加载": [
@@ -10024,6 +10058,14 @@
         "line": 236,
         "level": 2,
         "title": "重置构建器"
+      }
+    ],
+    "钩子断点一览": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 59,
+        "level": 2,
+        "title": "钩子断点一览"
       }
     ],
     "链式修饰": [
