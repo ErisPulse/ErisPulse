@@ -16,7 +16,24 @@ import inspect
 import time
 from typing import Any
 from collections.abc import Callable
-from .logger import logger
+
+
+class _NullLogger:
+    """静默日志器，在 logger 模块尚未初始化时作为替代"""
+    def debug(self, *args, **kwargs): pass
+    def info(self, *args, **kwargs): pass
+    def warning(self, *args, **kwargs): pass
+    def error(self, *args, **kwargs): pass
+    def critical(self, *args, **kwargs): pass
+
+
+def _get_logger():
+    """延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）"""
+    try:
+        from .logger import logger
+        return logger
+    except (ImportError, AttributeError):
+        return _NullLogger()
 
 
 class LifecycleManager:
@@ -46,10 +63,22 @@ class LifecycleManager:
 
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
-        "core": ["init.start", "init.complete"],
-        "module": ["load", "init", "unload"],
-        "adapter": ["load", "start", "status.change", "stop", "stopped"],
-        "server": ["start", "stop"],
+        "core": ["init.start", "init.complete", "uninit.complete"],
+        "module": ["load", "init", "unload", "register"],
+        "adapter": [
+            "load", "start", "status.change", "stop", "stopped",
+            "event.receive", "event.dispatched",
+            "bot.online", "bot.offline",
+        ],
+        "server": [
+            "start", "stop",
+            "request", "response",
+            "websocket.connect", "websocket.disconnect",
+        ],
+        "event": ["pre_process"],
+        "message": ["sending", "sent"],
+        "command": ["matched", "executed"],
+        "config": ["set"],
     }
 
     def __init__(self):
@@ -63,7 +92,7 @@ class LifecycleManager:
         注册事件处理器（装饰器模式）
 
         :param event: str 事件名称，支持点式结构和通配符
-        :param priority: int 优先级，数值越小越先执行 (默认: 0)
+        :param priority: int 优先级，数值越大越先执行 (默认: 0)
         :return: Callable 装饰器
 
         :raises ValueError: 当事件名无效时抛出
@@ -82,7 +111,7 @@ class LifecycleManager:
 
         def decorator(func: Callable) -> Callable:
             self._hooks.setdefault(event, []).append((priority, func))
-            self._hooks[event].sort(key=lambda x: x[0])
+            self._hooks[event].sort(key=lambda x: x[0], reverse=True)
             return func
 
         return decorator
@@ -93,7 +122,7 @@ class LifecycleManager:
 
         :param event: str 事件名称
         :param handler: Callable 处理函数
-        :param priority: int 优先级 (默认: 0)
+        :param priority: int 优先级，数值越大越先执行 (默认: 0)
 
         :example:
         >>> lifecycle.register("config.set", my_handler, priority=10)
@@ -101,9 +130,9 @@ class LifecycleManager:
         if not isinstance(event, str) or not event:
             raise ValueError("事件名称必须是非空字符串")
         self._hooks.setdefault(event, []).append((priority, handler))
-        self._hooks[event].sort(key=lambda x: x[0])
+        self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
-    def off(self, event: str, handler: Callable = None):
+    def unregister(self, event: str, handler: Callable = None):
         """
         取消注册事件处理器
 
@@ -111,8 +140,8 @@ class LifecycleManager:
         :param handler: Callable 指定取消的处理器，为 None 时取消该事件所有处理器
 
         :example:
-        >>> lifecycle.off("config.set", my_handler)  # 取消指定处理器
-        >>> lifecycle.off("config.set")               # 取消所有处理器
+        >>> lifecycle.unregister("config.set", my_handler)  # 取消指定处理器
+        >>> lifecycle.unregister("config.set")               # 取消所有处理器
         """
         if handler is None:
             self._hooks.pop(event, None)
@@ -136,7 +165,7 @@ class LifecycleManager:
         :example:
         >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
         """
-        logger.debug(f"触发生命周期事件: {event}")
+        _get_logger().debug(f"触发生命周期事件: {event}")
 
         # 通配符处理器
         if "*" in self._hooks:
@@ -169,7 +198,7 @@ class LifecycleManager:
         :example:
         >>> result = lifecycle.emit_sync("config.set", {"key": "test"})
         """
-        logger.debug(f"触发生命周期事件: {event}")
+        _get_logger().debug(f"触发生命周期事件: {event}")
 
         if "*" in self._hooks:
             data = self._execute_handlers_sync("*", event, data)
@@ -211,11 +240,11 @@ class LifecycleManager:
         >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
         """
         if event_type is None:
-            logger.error("事件类型不能为None")
+            _get_logger().error("事件类型不能为None")
             return
 
         if not isinstance(event_type, str) or not event_type:
-            logger.error(f"事件类型必须是非空字符串，收到: {event_type}")
+            _get_logger().error(f"事件类型必须是非空字符串，收到: {event_type}")
             return
 
         if timestamp is None:
@@ -288,7 +317,7 @@ class LifecycleManager:
                 if result is not None:
                     data = result
             except Exception as e:
-                logger.error(f"生命周期事件处理器执行错误 {event}: {e}")
+                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
         return data
 
     def _execute_handlers_sync(
@@ -315,7 +344,7 @@ class LifecycleManager:
                     if result is not None:
                         data = result
             except Exception as e:
-                logger.error(f"生命周期事件处理器执行错误 {event}: {e}")
+                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
         return data
 
     # ==================== 工具方法 ====================

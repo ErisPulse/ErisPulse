@@ -308,6 +308,13 @@ class RouterManager:
         async def route_middleware_pipeline(request: Request, call_next):
             path = request.url.path
 
+            # 钩子: HTTP请求接收
+            await lifecycle.emit("server.request", {
+                "method": request.method,
+                "path": path,
+                "client_ip": request.client.host if request.client else None,
+            })
+
             for mw in self._global_middlewares:
                 if mw._before:
                     result = (
@@ -331,6 +338,14 @@ class RouterManager:
                                 return result
 
             response = await call_next(request)
+
+            # 钩子: HTTP响应发送
+            await lifecycle.emit("server.response", {
+                "method": request.method,
+                "path": path,
+                "status_code": response.status_code,
+                "client_ip": request.client.host if request.client else None,
+            })
 
             for pattern, mws in reversed(list(self._route_middlewares.items())):
                 if self._match_path(pattern, path):
@@ -729,13 +744,42 @@ class RouterManager:
                     await websocket.close(code=1008)
                     return
 
+                # 钩子: WebSocket连接建立
+                await lifecycle.emit("server.websocket.connect", {
+                    "path": full_path,
+                    "module_name": module_name,
+                    "client_ip": websocket.client.host if websocket.client else None,
+                })
+
                 await handler(websocket)
 
             except WebSocketDisconnect:
+                # 钩子: WebSocket客户端断开
+                await lifecycle.emit("server.websocket.disconnect", {
+                    "path": full_path,
+                    "module_name": module_name,
+                    "reason": "client_disconnect",
+                })
                 logger.debug(f"客户端断开: {full_path}")
-            except Exception as e:
-                logger.error(f"WebSocket错误: {e}")
-                await websocket.close(code=1011)
+            except (asyncio.CancelledError, Exception) as e:
+                is_cancel = isinstance(e, asyncio.CancelledError)
+                # 钩子: WebSocket异常断开
+                await lifecycle.emit("server.websocket.disconnect", {
+                    "path": full_path,
+                    "module_name": module_name,
+                    "reason": "cancelled" if is_cancel else "error",
+                    "error": "" if is_cancel else str(e),
+                })
+                if is_cancel:
+                    logger.debug(f"WebSocket连接被取消: {full_path}")
+                else:
+                    logger.error(f"WebSocket错误: {e}")
+                    try:
+                        await websocket.close(code=1011)
+                    except Exception:
+                        pass
+                if is_cancel:
+                    raise
 
         self.app.add_api_websocket_route(
             path=full_path,
@@ -1158,6 +1202,7 @@ class RouterManager:
             if self._server_task and not self._server_task.done():
                 raise RuntimeError("服务器已在运行中")
 
+            self._ensure_middleware_installed()
             self._get_local_ips()
             self._apply_config()
 
