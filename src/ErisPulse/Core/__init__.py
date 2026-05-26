@@ -1,7 +1,7 @@
 """
 ErisPulse 核心模块
 
-提供了一系列用于构建和管理应用的核心组件，包括适配器、模块、存储、配置、路由、指标监控和生命周期管理等。
+提供了一系列用于构建和管理应用的核心组件，包括适配器、模块、存储、配置、路由和生命周期管理等。
 """
 
 from .lifecycle import lifecycle, LifecycleManager
@@ -12,7 +12,7 @@ from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager, AuditEntry
-from .metrics import metrics, MetricsManager, Counter, Gauge, Histogram
+
 from . import Event
 from .Event.message_builder import MessageBuilder
 
@@ -44,9 +44,4 @@ __all__ = [
     "LoggerChild",  # 日志子类
     "lifecycle",  # 生命周期模块单例
     "LifecycleManager",  # 生命周期管理器类
-    "metrics",  # 指标模块单例
-    "MetricsManager",  # 指标管理器类
-    "Counter",  # 计数器类
-    "Gauge",  # 仪表类
-    "Histogram",  # 直方图类
 ]
