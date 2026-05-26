@@ -3645,7 +3645,7 @@
     "Core Module Description": [
       {
         "document": "architecture.md",
-        "line": 46,
+        "line": 40,
         "level": 3,
         "title": "Core Module Description"
       }
@@ -4521,7 +4521,7 @@
     "Event Handling Process": [
       {
         "document": "architecture.md",
-        "line": 97,
+        "line": 90,
         "level": 2,
         "title": "Event Handling Process"
       }
@@ -5311,7 +5311,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 60,
+        "line": 53,
         "level": 2,
         "title": "Initialization Process"
       },
@@ -5325,7 +5325,7 @@
     "Initialization Stage Breakdown": [
       {
         "document": "architecture.md",
-        "line": 85,
+        "line": 78,
         "level": 3,
         "title": "Initialization Stage Breakdown"
       }
@@ -5571,7 +5571,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 118,
+        "line": 111,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -5657,7 +5657,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 126,
+        "line": 119,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -5713,7 +5713,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 157,
+        "line": 150,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -6519,7 +6519,7 @@
     "Module Loading Strategy": [
       {
         "document": "architecture.md",
-        "line": 180,
+        "line": 173,
         "level": 2,
         "title": "Module Loading Strategy"
       }

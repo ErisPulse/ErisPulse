@@ -3211,7 +3211,7 @@
     "事件處理流程": [
       {
         "document": "architecture.md",
-        "line": 97,
+        "line": 90,
         "level": 2,
         "title": "事件處理流程"
       }
@@ -3219,7 +3219,7 @@
     "事件處理關鍵步驟": [
       {
         "document": "architecture.md",
-        "line": 118,
+        "line": 111,
         "level": 3,
         "title": "事件處理關鍵步驟"
       }
@@ -3943,7 +3943,7 @@
     "初始化流程": [
       {
         "document": "architecture.md",
-        "line": 60,
+        "line": 53,
         "level": 2,
         "title": "初始化流程"
       }
@@ -3965,7 +3965,7 @@
     "初始化階段詳解": [
       {
         "document": "architecture.md",
-        "line": 85,
+        "line": 78,
         "level": 3,
         "title": "初始化階段詳解"
       }
@@ -6471,7 +6471,7 @@
     "核心模組說明": [
       {
         "document": "architecture.md",
-        "line": 46,
+        "line": 40,
         "level": 3,
         "title": "核心模組說明"
       },
@@ -6735,7 +6735,7 @@
     "模組載入策略": [
       {
         "document": "architecture.md",
-        "line": 180,
+        "line": 173,
         "level": 2,
         "title": "模組載入策略"
       }
@@ -7119,7 +7119,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 126,
+        "line": 119,
         "level": 2,
         "title": "生命週期事件"
       }
@@ -7305,7 +7305,7 @@
     "監聽生命週期事件": [
       {
         "document": "architecture.md",
-        "line": 157,
+        "line": 150,
         "level": 3,
         "title": "監聽生命週期事件"
       }
