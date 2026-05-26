@@ -16,7 +16,6 @@ from __future__ import annotations
 import asyncio
 import importlib
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 # 导入核心模块
@@ -33,7 +32,6 @@ from .Core.logger import Logger
 from .Core.module import ModuleManager
 from .Core.router import RouterManager
 from .Core.config import ConfigManager
-from .Core.metrics import metrics, MetricsManager
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
@@ -65,7 +63,6 @@ class SDK:
     - SendDSL: DSL 发送接口基类
     - module: 模块管理器
     - router: 路由管理器
-    - metrics: 指标监控管理器
     {!--< /tips >!--}
     """
 
@@ -110,9 +107,6 @@ class SDK:
     router: RouterManager
     """路由管理器"""
 
-    metrics: MetricsManager
-    """指标监控管理器"""
-
     def __init__(self):
         """
         初始化 SDK 实例
@@ -140,7 +134,6 @@ class SDK:
         module.set_sdk_ref(self)
 
         self.router = router
-        self.metrics = metrics
 
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
@@ -752,7 +745,7 @@ class SDK:
                 return False
 
             logger.info("[Reload] 重新加载完成")
-            logger.info(f"[Reload] ErisPulse已重新加载 [Reload]")
+            logger.info("[Reload] ErisPulse已重新加载 [Reload]")
             return True
         except Exception as e:
             logger.error(f"[Reload] 重启失败: {e}")
@@ -920,30 +913,6 @@ class SDK:
 
         3. **返回值语义**：方法立即返回 `True` 表示"重启任务已成功调度"，
            而不是"重启已完成"。实际的重启过程在后台进行。
-
-        **使用场景示例**：
-
-        >>> # 场景1: 在模块的事件处理器中调用重启
-        >>> @Event.on("message")
-        >>> async def handle_reload_command(event):
-        >>>     if event["message"] == "/reload":
-        >>>         # 使用 ensure_future 确保事件链路不被中断
-        >>>         await sdk.restart()  # ✅ 正确
-        >>>         # 不要使用 await sdk.restart()，这会导致事件链路中断
-        >>>
-        >>> # 场景2: 等待重启完成
-        >>> # 如果需要等待重启完成，可以使用生命周期事件监听
-        >>> @lifecycle.on("core.init.complete")
-        >>> async def on_restart_complete(event):
-        >>>     if event["data"]["success"]:
-        >>>         logger.info("重启成功！")
-        >>>
-        >>> # 场景3: 命令触发重启
-        >>> @command("restart")
-        >>> async def restart_command():
-        >>>     logger.info("正在重启 SDK...")
-        >>>     await sdk.restart()
-        >>>     logger.info("重启任务已调度，将在后台执行")
         {!--< /tips >!--}
 
         :return: bool 重启任务是否成功调度（并非重启是否完成）
