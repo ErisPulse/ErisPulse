@@ -18,8 +18,6 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
     SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
-    SDK --> Metrics["Metrics<br/>指标监控"]
-
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -37,10 +35,6 @@ graph TB
     BaseModule --> CM["自定义模块"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>消息发送"]
-
-    Metrics --> Counter["Counter"]
-    Metrics --> Gauge["Gauge"]
-    Metrics --> Histogram["Histogram"]
 ```
 
 ### 核心模块说明
@@ -55,7 +49,6 @@ graph TB
 | **Config** | TOML 格式的配置文件管理，支持调用方感知和配置审计 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
-| **Metrics** | 指标监控系统，提供 Counter / Gauge / Histogram 三种指标类型 |
 
 ## 初始化流程
 
