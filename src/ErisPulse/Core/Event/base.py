@@ -17,6 +17,7 @@ import asyncio
 import inspect
 from itertools import groupby
 from .wrapper import Event
+from ..lifecycle import lifecycle
 
 
 _sentinel = object()
@@ -76,7 +77,7 @@ class BaseEventHandler:
         注册事件处理器
 
         :param handler: 事件处理器函数
-        :param priority: 处理器优先级，数值越小优先级越高
+        :param priority: 处理器优先级，数值越大优先级越高
         :param condition: 处理器条件函数，返回True时才会执行处理器
         """
         handler_info = {
@@ -87,8 +88,8 @@ class BaseEventHandler:
         }
         self.handlers.append(handler_info)
         self._handler_map[id(handler)] = handler_info
-        # 按优先级排序
-        self.handlers.sort(key=lambda x: x["priority"])
+        # 按优先级排序（数值越大越先执行）
+        self.handlers.sort(key=lambda x: x["priority"], reverse=True)
 
         # 注册到适配器
         if self.event_type and not self._linked_to_adapter_bus:
@@ -116,7 +117,7 @@ class BaseEventHandler:
         """
         装饰器方式注册事件处理器
 
-        :param priority: 处理器优先级
+        :param priority: 处理器优先级，数值越大优先级越高
         :param condition: 处理器条件函数
         :return: 装饰器函数
         """
@@ -139,6 +140,13 @@ class BaseEventHandler:
         """
         if not isinstance(event, Event):
             event = Event(event)
+
+        # 钩子: 事件预处理
+        await lifecycle.emit("event.pre_process", {
+            "event_type": self.event_type,
+            "platform": event.get("platform", "unknown"),
+            "detail_type": event.get("detail_type", "unknown"),
+        })
 
         # 忽略自己发送的消息
         if self.event_type == "message":
