@@ -40,9 +40,6 @@ DEFAULT_ERISPULSE_CONFIG = {
     "framework": {  # 框架配置
         "enable_lazy_loading": True  # 是否启用延迟加载
     },
-    "metrics": {  # 指标监控配置
-        "enabled": False,  # 是否启用指标采集
-    },
 }
 
 
