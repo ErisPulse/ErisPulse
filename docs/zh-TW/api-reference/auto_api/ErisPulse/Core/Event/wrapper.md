@@ -14,6 +14,7 @@ ErisPulse 事件包装类
 > 2. 提供便捷方法简化事件处理
 > 3. 支持点式访问 event.platform
 > 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
+> 5. 建议在处理器参数中使用类型注解以获得 IDE 自动补全: async def handler(event: Event)
 
 ---
 

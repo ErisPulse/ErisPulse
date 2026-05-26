@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1087,
+  "total_keywords": 1069,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -110,14 +110,6 @@
         "line": 25,
         "level": 3,
         "title": "1. Ensure Cross-Platform Compatibility"
-      }
-    ],
-    "1. Exception Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 578,
-        "level": 3,
-        "title": "1. Exception Handling"
       }
     ],
     "1. Implement Connection Retry": [
@@ -542,12 +534,6 @@
         "line": 456,
         "level": 3,
         "title": "2. Logging"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 596,
-        "level": 3,
-        "title": "2. Logging"
       }
     ],
     "2. Module Naming Conventions": [
@@ -804,14 +790,6 @@
         "line": 29,
         "level": 2,
         "title": "3. Complete Field Specification"
-      }
-    ],
-    "3. Conditional Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 612,
-        "level": 3,
-        "title": "3. Conditional Handling"
       }
     ],
     "3. Create Adapter Main Class": [
@@ -1526,14 +1504,6 @@
         "title": "@conv.branch(name) Decorator"
       }
     ],
-    "@timed Decorator": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 477,
-        "level": 3,
-        "title": "@timed Decorator"
-      }
-    ],
     "A2UI Message Segment (a2ui)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -1776,14 +1746,6 @@
         "title": "Adapter Development Best Practices"
       }
     ],
-    "Adapter Events": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 251,
-        "level": 3,
-        "title": "Adapter Events"
-      }
-    ],
     "Adapter Integration Example": [
       {
         "document": "api-reference/adapter-system.md",
@@ -1800,24 +1762,18 @@
         "title": "Adapter Introduction"
       }
     ],
-    "Adapter Lifecycle Events": [
+    "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 62,
+        "line": 94,
         "level": 3,
-        "title": "Adapter Lifecycle Events"
+        "title": "Adapter Lifecycle"
       }
     ],
     "Adapter Management": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 41,
-        "level": 3,
-        "title": "Adapter Management"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 270,
         "level": 3,
         "title": "Adapter Management"
       }
@@ -1828,14 +1784,6 @@
         "line": 5,
         "level": 2,
         "title": "Adapter Manager"
-      }
-    ],
-    "Adapter Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 237,
-        "level": 2,
-        "title": "Adapter Module"
       }
     ],
     "Adapter Requirement Template": [
@@ -2100,12 +2048,6 @@
         "line": 232,
         "level": 2,
         "title": "Auto Documentation"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 691,
-        "level": 3,
-        "title": "Auto Documentation"
       }
     ],
     "Auto-Discovery Mechanism": [
@@ -2183,7 +2125,7 @@
     "Basic Commands": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 62,
+        "line": 68,
         "level": 3,
         "title": "Basic Commands"
       }
@@ -2366,12 +2308,6 @@
         "title": "Basic Usage"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 403,
-        "level": 3,
-        "title": "Basic Usage"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 58,
         "level": 3,
@@ -2460,14 +2396,6 @@
         "title": "Best Practices"
       }
     ],
-    "Best Practices for Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 576,
-        "level": 2,
-        "title": "Best Practices for Event Handling"
-      }
-    ],
     "Blacklist Filtering": [
       {
         "document": "getting-started/common-tasks.md",
@@ -2529,7 +2457,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 272,
+        "line": 278,
         "level": 3,
         "title": "Bot Status Query"
       }
@@ -2577,7 +2505,7 @@
     "Built-in Confirmation Words": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 492,
+        "line": 498,
         "level": 3,
         "title": "Built-in Confirmation Words"
       }
@@ -2625,12 +2553,6 @@
         "document": "advanced/router.md",
         "line": 198,
         "level": 2,
-        "title": "CORS Configuration"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 663,
-        "level": 3,
         "title": "CORS Configuration"
       }
     ],
@@ -2842,18 +2764,10 @@
         "title": "Checking Platform Status"
       }
     ],
-    "Child Loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 216,
-        "level": 3,
-        "title": "Child Loggers"
-      }
-    ],
     "Choose Menu": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 405,
+        "line": 411,
         "level": 3,
         "title": "Choose Menu"
       }
@@ -2893,7 +2807,7 @@
     "Collect Form": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 424,
+        "line": 430,
         "level": 3,
         "title": "Collect Form"
       }
@@ -2917,7 +2831,7 @@
     "Command Aliases": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 78,
+        "line": 84,
         "level": 3,
         "title": "Command Aliases"
       }
@@ -2925,7 +2839,7 @@
     "Command Arguments": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 91,
+        "line": 97,
         "level": 3,
         "title": "Command Arguments"
       }
@@ -2965,7 +2879,7 @@
     "Command Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 60,
+        "line": 66,
         "level": 2,
         "title": "Command Event Handling"
       }
@@ -2973,7 +2887,7 @@
     "Command Groups": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 105,
+        "line": 111,
         "level": 3,
         "title": "Command Groups"
       }
@@ -3017,7 +2931,7 @@
     "Command Permissions": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 117,
+        "line": 123,
         "level": 3,
         "title": "Command Permissions"
       }
@@ -3025,9 +2939,17 @@
     "Command Priority": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 130,
+        "line": 136,
         "level": 3,
         "title": "Command Priority"
+      }
+    ],
+    "Command System": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 145,
+        "level": 3,
+        "title": "Command System"
       }
     ],
     "Common CSS Class Names": [
@@ -3087,7 +3009,7 @@
     "Common Methods of the Event Object": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 501,
+        "line": 507,
         "level": 3,
         "title": "Common Methods of the Event Object"
       }
@@ -3130,6 +3052,14 @@
         "line": 81,
         "level": 2,
         "title": "Common Usage"
+      }
+    ],
+    "Complete API Reference": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 219,
+        "level": 2,
+        "title": "Complete API Reference"
       }
     ],
     "Complete Configuration Example": [
@@ -3230,6 +3160,14 @@
         "line": 171,
         "level": 3,
         "title": "Configuration Auditing"
+      }
+    ],
+    "Configuration Changes": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 71,
+        "level": 3,
+        "title": "Configuration Changes"
       }
     ],
     "Configuration Description": [
@@ -3363,7 +3301,7 @@
     "Confirm Dialog": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 388,
+        "line": 394,
         "level": 3,
         "title": "Confirm Dialog"
       }
@@ -3371,7 +3309,7 @@
     "Connection Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 247,
+        "line": 253,
         "level": 3,
         "title": "Connection Event"
       }
@@ -3612,12 +3550,12 @@
         "title": "Core Functions"
       }
     ],
-    "Core Initialization Events": [
+    "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 47,
+        "line": 63,
         "level": 3,
-        "title": "Core Initialization Events"
+        "title": "Core Initialization"
       }
     ],
     "Core Methods": [
@@ -3694,14 +3632,6 @@
         "title": "Count and Existence Check"
       }
     ],
-    "Counter": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 420,
-        "level": 4,
-        "title": "Counter"
-      }
-    ],
     "Create Table": [
       {
         "document": "advanced/sql-builder.md",
@@ -3748,14 +3678,6 @@
         "line": 126,
         "level": 2,
         "title": "Custom Message Segments"
-      }
-    ],
-    "Custom Metrics": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 461,
-        "level": 3,
-        "title": "Custom Metrics"
       }
     ],
     "Custom Storage Backend": [
@@ -3818,14 +3740,6 @@
         "line": 20,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
-      }
-    ],
-    "Decorator Routing (Recommended)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 494,
-        "level": 3,
-        "title": "Decorator Routing (Recommended)"
       }
     ],
     "Default Configuration": [
@@ -4162,12 +4076,12 @@
         "title": "Dot Notation Access"
       }
     ],
-    "Dot-notation Events": [
+    "Dot-structured Events": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 34,
+        "line": 43,
         "level": 3,
-        "title": "Dot-notation Events"
+        "title": "Dot-structured Events"
       }
     ],
     "Double Mode Mechanism": [
@@ -4421,17 +4335,9 @@
     "Event Data Access": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 505,
         "level": 2,
         "title": "Event Data Access"
-      }
-    ],
-    "Event Data Format": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 18,
-        "level": 2,
-        "title": "Event Data Format"
       }
     ],
     "Event Distribution Mechanism": [
@@ -4513,7 +4419,7 @@
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 32,
+        "line": 10,
         "level": 2,
         "title": "Event Handling Mechanism"
       }
@@ -4527,12 +4433,6 @@
       }
     ],
     "Event Listening": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 367,
-        "level": 3,
-        "title": "Event Listening"
-      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 153,
@@ -4576,20 +4476,20 @@
         "title": "Event Processing Enhancement"
       }
     ],
+    "Event Reception and Processing": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 106,
+        "level": 3,
+        "title": "Event Reception and Processing"
+      }
+    ],
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 335,
         "level": 3,
         "title": "Event Reply Methods"
-      }
-    ],
-    "Event Submission": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 353,
-        "level": 3,
-        "title": "Event Submission"
       }
     ],
     "Event System": [
@@ -4827,7 +4727,7 @@
     "Friend Add": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "Friend Add"
       }
@@ -4859,7 +4759,7 @@
     "Friend Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 218,
+        "line": 224,
         "level": 3,
         "title": "Friend Request"
       }
@@ -4886,14 +4786,6 @@
         "line": 64,
         "level": 2,
         "title": "Function Related Terms"
-      }
-    ],
-    "Gauge": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 432,
-        "level": 4,
-        "title": "Gauge"
       }
     ],
     "Get Method Details": [
@@ -4934,12 +4826,6 @@
         "line": 7,
         "level": 3,
         "title": "Getting Adapters"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 239,
-        "level": 3,
-        "title": "Getting Adapters"
       }
     ],
     "Getting Help": [
@@ -4954,14 +4840,6 @@
         "line": 135,
         "level": 2,
         "title": "Getting Help"
-      }
-    ],
-    "Getting Modules": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 296,
-        "level": 3,
-        "title": "Getting Modules"
       }
     ],
     "Getting Started": [
@@ -5023,7 +4901,7 @@
     "Group Invite Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 234,
+        "line": 240,
         "level": 3,
         "title": "Group Invite Request"
       }
@@ -5031,7 +4909,7 @@
     "Group Member Decrease": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 212,
         "level": 3,
         "title": "Group Member Decrease"
       }
@@ -5039,7 +4917,7 @@
     "Group Member Increase": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 196,
+        "line": 202,
         "level": 3,
         "title": "Group Member Increase"
       }
@@ -5074,6 +4952,14 @@
         "line": 22,
         "level": 3,
         "title": "HTTP Decorators"
+      }
+    ],
+    "HTTP Routing": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 160,
+        "level": 3,
+        "title": "HTTP Routing"
       }
     ],
     "Handling Channel Messages": [
@@ -5141,7 +5027,7 @@
     "Heartbeat Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 263,
+        "line": 269,
         "level": 3,
         "title": "Heartbeat Event"
       }
@@ -5154,12 +5040,12 @@
         "title": "Heartbeat Mechanism"
       }
     ],
-    "Histogram": [
+    "Hook Points Overview": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 445,
-        "level": 4,
-        "title": "Histogram"
+        "document": "advanced/lifecycle.md",
+        "line": 59,
+        "level": 2,
+        "title": "Hook Points Overview"
       }
     ],
     "Hot Reload": [
@@ -5511,7 +5397,7 @@
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 293,
+        "line": 299,
         "level": 2,
         "title": "Interactive Handling"
       }
@@ -5640,14 +5526,6 @@
         "title": "Lifecycle"
       }
     ],
-    "Lifecycle Event Listening": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 81,
-        "level": 3,
-        "title": "Lifecycle Event Listening"
-      }
-    ],
     "Lifecycle Events": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5678,14 +5556,6 @@
         "title": "Lifecycle Management"
       }
     ],
-    "Lifecycle Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 351,
-        "level": 2,
-        "title": "Lifecycle Module"
-      }
-    ],
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5697,7 +5567,7 @@
     "Listening to @ mentions": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 50,
+        "line": 56,
         "level": 3,
         "title": "Listening to @ mentions"
       }
@@ -5729,7 +5599,7 @@
     "Listening to all messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 19,
+        "line": 25,
         "level": 3,
         "title": "Listening to all messages"
       }
@@ -5737,7 +5607,7 @@
     "Listening to group messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 40,
+        "line": 46,
         "level": 3,
         "title": "Listening to group messages"
       }
@@ -5745,7 +5615,7 @@
     "Listening to private messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 31,
+        "line": 37,
         "level": 3,
         "title": "Listening to private messages"
       }
@@ -5804,14 +5674,6 @@
         "line": 530,
         "level": 3,
         "title": "Log Information"
-      }
-    ],
-    "Log Output": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 227,
-        "level": 3,
-        "title": "Log Output"
       }
     ],
     "Logger": [
@@ -6154,6 +6016,14 @@
         "title": "Message Segment Types"
       }
     ],
+    "Message Sending": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 130,
+        "level": 3,
+        "title": "Message Sending"
+      }
+    ],
     "Message Sending Failed": [
       {
         "document": "platform-guide/README.md",
@@ -6243,7 +6113,7 @@
     "Meta Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 245,
+        "line": 251,
         "level": 2,
         "title": "Meta Event Handling"
       }
@@ -6340,22 +6210,6 @@
         "line": 21,
         "level": 3,
         "title": "Method Signature"
-      }
-    ],
-    "Metric Types": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 418,
-        "level": 3,
-        "title": "Metric Types"
-      }
-    ],
-    "Metrics Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 401,
-        "level": 2,
-        "title": "Metrics Module"
       }
     ],
     "Middleware": [
@@ -6502,18 +6356,16 @@
     ],
     "Module Lifecycle": [
       {
+        "document": "advanced/lifecycle.md",
+        "line": 85,
+        "level": 3,
+        "title": "Module Lifecycle"
+      },
+      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
         "level": 2,
         "title": "Module Lifecycle"
-      }
-    ],
-    "Module Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 54,
-        "level": 3,
-        "title": "Module Lifecycle Events"
       }
     ],
     "Module Loading Strategy": [
@@ -6522,22 +6374,6 @@
         "line": 173,
         "level": 2,
         "title": "Module Loading Strategy"
-      }
-    ],
-    "Module Management": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 309,
-        "level": 3,
-        "title": "Module Management"
-      }
-    ],
-    "Module Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 294,
-        "level": 2,
-        "title": "Module Module"
       }
     ],
     "Module Requirement Template": [
@@ -6647,7 +6483,7 @@
     "Multi-round Conversation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 465,
+        "line": 471,
         "level": 3,
         "title": "Multi-round Conversation"
       }
@@ -6700,12 +6536,6 @@
         "title": "Next Steps"
       },
       {
-        "document": "getting-started/event-handling.md",
-        "line": 629,
-        "level": 2,
-        "title": "Next Steps"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 222,
         "level": 2,
@@ -6739,7 +6569,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 274,
         "level": 2,
         "title": "Notes"
       }
@@ -6817,7 +6647,7 @@
     "Notification Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "Notification Event Handling"
       }
@@ -6993,7 +6823,7 @@
     "Parallel Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 149,
         "level": 3,
         "title": "Parallel Event Handling"
       }
@@ -7107,7 +6937,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 547,
+        "line": 553,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -7196,6 +7026,14 @@
         "line": 26,
         "level": 2,
         "title": "Prerequisites"
+      }
+    ],
+    "Priority": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 29,
+        "level": 3,
+        "title": "Priority"
       }
     ],
     "Priority System": [
@@ -7528,12 +7366,6 @@
         "line": 182,
         "level": 2,
         "title": "Rate Limiting"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 650,
-        "level": 3,
-        "title": "Rate Limiting"
       }
     ],
     "Raw Data": [
@@ -7614,6 +7446,14 @@
         "title": "Registering Commands"
       }
     ],
+    "Registering Handlers": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 12,
+        "level": 3,
+        "title": "Registering Handlers"
+      }
+    ],
     "Registering Individual Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -7638,6 +7478,14 @@
         "title": "Registration API"
       }
     ],
+    "Registration and Unregistration": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 221,
+        "level": 3,
+        "title": "Registration and Unregistration"
+      }
+    ],
     "Related Documentation": [
       {
         "document": "advanced/conversation.md",
@@ -7653,7 +7501,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 170,
+        "line": 284,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7684,12 +7532,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 409,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 712,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7839,7 +7681,7 @@
     "Request Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 216,
+        "line": 222,
         "level": 2,
         "title": "Request Event Handling"
       }
@@ -8038,20 +7880,6 @@
         "line": 148,
         "level": 2,
         "title": "Route Grouping"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 613,
-        "level": 3,
-        "title": "Route Grouping"
-      }
-    ],
-    "Route Information": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 706,
-        "level": 3,
-        "title": "Route Information"
       }
     ],
     "Route List": [
@@ -8067,12 +7895,6 @@
         "document": "advanced/router.md",
         "line": 165,
         "level": 2,
-        "title": "Route Middleware"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 632,
-        "level": 3,
         "title": "Route Middleware"
       }
     ],
@@ -8096,14 +7918,6 @@
         "line": 1,
         "level": 1,
         "title": "Router Manager"
-      }
-    ],
-    "Router Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 492,
-        "level": 2,
-        "title": "Router Module"
       }
     ],
     "Run Project": [
@@ -8223,12 +8037,6 @@
         "document": "advanced/router.md",
         "line": 217,
         "level": 2,
-        "title": "Security Headers"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 680,
-        "level": 3,
         "title": "Security Headers"
       }
     ],
@@ -8395,7 +8203,7 @@
     "Sending Replies using the `reply` Method": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 295,
+        "line": 301,
         "level": 3,
         "title": "Sending Replies using the `reply` Method"
       }
@@ -8430,14 +8238,6 @@
         "line": 47,
         "level": 2,
         "title": "Server Configuration"
-      }
-    ],
-    "Server Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 72,
-        "level": 3,
-        "title": "Server Lifecycle Events"
       }
     ],
     "Session Type System": [
@@ -8630,6 +8430,14 @@
         "title": "Standard Document List"
       }
     ],
+    "Standard Event Definition": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 196,
+        "level": 2,
+        "title": "Standard Event Definition"
+      }
+    ],
     "Standard Event Format": [
       {
         "document": "platform-guide/README.md",
@@ -8644,20 +8452,6 @@
         "line": 151,
         "level": 2,
         "title": "Standard Formats"
-      }
-    ],
-    "Standard Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 5,
-        "level": 2,
-        "title": "Standard Lifecycle Events"
-      },
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 45,
-        "level": 2,
-        "title": "Standard Lifecycle Events"
       }
     ],
     "Standard Message Segment Types": [
@@ -8844,14 +8638,6 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
-      }
-    ],
-    "Submitting Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 102,
-        "level": 3,
-        "title": "Submitting Lifecycle Events"
       }
     ],
     "Success Response": [
@@ -9124,30 +8910,6 @@
         "title": "The LazyModule Class"
       }
     ],
-    "Timer": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 386,
-        "level": 3,
-        "title": "Timer"
-      }
-    ],
-    "Timer Functionality": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 116,
-        "level": 3,
-        "title": "Timer Functionality"
-      }
-    ],
-    "Traditional Registration": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 544,
-        "level": 3,
-        "title": "Traditional Registration"
-      }
-    ],
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
@@ -9170,6 +8932,14 @@
         "line": 143,
         "level": 3,
         "title": "Transaction Usage"
+      }
+    ],
+    "Triggering": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 229,
+        "level": 3,
+        "title": "Triggering"
       }
     ],
     "Two Injection Modes": [
@@ -9322,13 +9092,15 @@
         "title": "Upgrading Modules"
       }
     ],
-    "Usage Examples": [
+    "Usage Example in Modules": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 79,
+        "line": 247,
         "level": 2,
-        "title": "Usage Examples"
-      },
+        "title": "Usage Example in Modules"
+      }
+    ],
+    "Usage Examples": [
       {
         "document": "api-reference/README.md",
         "line": 49,
@@ -9440,14 +9212,6 @@
         "title": "Using Lifecycle Events"
       }
     ],
-    "Using Lifecycle in Modules": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 137,
-        "level": 2,
-        "title": "Using Lifecycle in Modules"
-      }
-    ],
     "Using Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9486,6 +9250,14 @@
         "line": 53,
         "level": 2,
         "title": "Using with Send"
+      }
+    ],
+    "Utilities": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 237,
+        "level": 3,
+        "title": "Utilities"
       }
     ],
     "Utility Methods": [
@@ -9563,7 +9335,7 @@
     "Wait for Any Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 444,
+        "line": 450,
         "level": 3,
         "title": "Wait for Any Event"
       }
@@ -9587,7 +9359,7 @@
     "Waiting for Reply with Callback": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 367,
+        "line": 373,
         "level": 3,
         "title": "Waiting for Reply with Callback"
       }
@@ -9595,7 +9367,7 @@
     "Waiting for Reply with Validation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 340,
+        "line": 346,
         "level": 3,
         "title": "Waiting for Reply with Validation"
       }
@@ -9603,7 +9375,7 @@
     "Waiting for User Reply": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 323,
+        "line": 329,
         "level": 3,
         "title": "Waiting for User Reply"
       }
@@ -9614,6 +9386,14 @@
         "line": 482,
         "level": 3,
         "title": "WebHook Connection"
+      }
+    ],
+    "WebSocket": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 175,
+        "level": 3,
+        "title": "WebSocket"
       }
     ],
     "WebSocket Connection": [
@@ -9646,14 +9426,6 @@
         "title": "WebSocket Registration"
       }
     ],
-    "WebSocket Routing": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 567,
-        "level": 3,
-        "title": "WebSocket Routing"
-      }
-    ],
     "What is an Adapter": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -9678,12 +9450,12 @@
         "title": "Why Do We Need Standards?"
       }
     ],
-    "Wildcard Event Handlers": [
+    "Wildcards": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 41,
+        "line": 49,
         "level": 3,
-        "title": "Wildcard Event Handlers"
+        "title": "Wildcards"
       }
     ],
     "Writing Configuration": [
