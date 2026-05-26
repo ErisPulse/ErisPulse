@@ -11,7 +11,7 @@ from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
-from .config import config, ConfigManager, AuditEntry
+from .config import config, ConfigManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -35,7 +35,6 @@ __all__ = [
     "config",  # 配置模块单例
     "env",  # 配置管理器别名
     "ConfigManager",  # 配置管理器类
-    "AuditEntry",  # 审计条目类
     "router",  # 路由模块单例
     "RouterManager",  # 路由管理器类
     "RouteGroup",  # 路由组类
