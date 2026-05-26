@@ -25,7 +25,6 @@ from .Core import (
     SendDSL,
     module,
     router,
-    metrics,
 )
 
 # 导入实际的SDK对象
