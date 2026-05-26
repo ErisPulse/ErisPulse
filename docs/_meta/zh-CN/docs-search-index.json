@@ -3393,7 +3393,7 @@
     "事件处理关键步骤": [
       {
         "document": "architecture.md",
-        "line": 118,
+        "line": 111,
         "level": 3,
         "title": "事件处理关键步骤"
       }
@@ -3455,7 +3455,7 @@
     "事件处理流程": [
       {
         "document": "architecture.md",
-        "line": 97,
+        "line": 90,
         "level": 2,
         "title": "事件处理流程"
       }
@@ -4227,7 +4227,7 @@
     "初始化流程": [
       {
         "document": "architecture.md",
-        "line": 60,
+        "line": 53,
         "level": 2,
         "title": "初始化流程"
       }
@@ -4249,7 +4249,7 @@
     "初始化阶段详解": [
       {
         "document": "architecture.md",
-        "line": 85,
+        "line": 78,
         "level": 3,
         "title": "初始化阶段详解"
       }
@@ -6085,7 +6085,7 @@
     "开始学习": [
       {
         "document": "getting-started/README.md",
-        "line": 138,
+        "line": 137,
         "level": 2,
         "title": "开始学习"
       }
@@ -7395,7 +7395,7 @@
     "核心模块说明": [
       {
         "document": "architecture.md",
-        "line": 46,
+        "line": 40,
         "level": 3,
         "title": "核心模块说明"
       },
@@ -7501,7 +7501,7 @@
     "模块加载策略": [
       {
         "document": "architecture.md",
-        "line": 180,
+        "line": 173,
         "level": 2,
         "title": "模块加载策略"
       }
@@ -8275,7 +8275,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 126,
+        "line": 119,
         "level": 2,
         "title": "生命周期事件"
       }
@@ -8385,7 +8385,7 @@
     "监听生命周期事件": [
       {
         "document": "architecture.md",
-        "line": 157,
+        "line": 150,
         "level": 3,
         "title": "监听生命周期事件"
       }
