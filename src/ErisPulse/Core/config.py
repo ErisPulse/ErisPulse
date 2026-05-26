@@ -98,9 +98,11 @@ class ConfigManager:
             os.remove(old_config_path)
 
         except Exception as e:
-            from .logger import logger
-
-            logger.warning(f"配置文件迁移失败: {e}")
+            try:
+                from .logger import logger
+                logger.warning(f"配置文件迁移失败: {e}")
+            except (ImportError, AttributeError):
+                pass
 
     def _load_config(self) -> None:
         """
@@ -121,9 +123,11 @@ class ConfigManager:
                     self._cache = config
                     self._cache_timestamp = time.time()
             except Exception as e:
-                from .logger import logger
-
-                logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
+                try:
+                    from .logger import logger
+                    logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
+                except (ImportError, AttributeError):
+                    pass
                 self._cache = {}
                 self._cache_timestamp = time.time()
 
@@ -205,9 +209,11 @@ class ConfigManager:
                     self._dirty_keys.clear()
 
                 except Exception as e:
-                    from .logger import logger
-
-                    logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                    try:
+                        from .logger import logger
+                        logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                    except (ImportError, AttributeError):
+                        pass
                     # 清理临时文件
                     temp_file = self.CONFIG_FILE + ".tmp"
                     if os.path.exists(temp_file):
@@ -311,9 +317,11 @@ class ConfigManager:
 
             return True
         except Exception as e:
-            from .logger import logger
-
-            logger.error(f"设置配置项 {key} 失败: {e}")
+            try:
+                from .logger import logger
+                logger.error(f"设置配置项 {key} 失败: {e}")
+            except (ImportError, AttributeError):
+                pass
             return False
 
     def force_save(self) -> None:

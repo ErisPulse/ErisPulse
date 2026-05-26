@@ -682,6 +682,13 @@ class AdapterManager(ManagerBase):
         platform_raw = data.get(f"{platform}_raw", {})
         raw_event_type = data.get(f"{platform}_raw_type")
 
+        # 钩子: 事件接收（最早期，所有事件都经过此处）
+        await lifecycle.emit("adapter.event.receive", {
+            "platform": platform,
+            "event_type": event_type,
+            "raw_event_type": raw_event_type,
+        })
+
         # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
         # 同时也处理普通事件中的 self 字段（自动发现Bot）
         if (
@@ -721,7 +728,21 @@ class AdapterManager(ManagerBase):
                         pass
             else:
                 # 普通事件：自动发现Bot并更新活跃时间
-                self._auto_register_bot(platform, self_info)
+                is_new = self._auto_register_bot(platform, self_info)
+                if is_new:
+                    bot_id = str(self_info["user_id"])
+                    await lifecycle.submit_event(
+                        "adapter.bot.online",
+                        msg=f"Bot {platform}/{bot_id} 上线",
+                        data={
+                            "platform": platform,
+                            "bot_id": bot_id,
+                            "info": self._bots.get(platform, {})
+                            .get(bot_id, {})
+                            .get("info", {}),
+                            "status": "online",
+                        },
+                    )
 
         # 先执行OneBot12中间件
         processed_data = data
@@ -768,6 +789,14 @@ class AdapterManager(ManagerBase):
                 # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
                 if handler_platform is None or handler_platform == platform:
                     await handler_wrapper["func"](platform_raw)
+
+        # 钩子: 事件分发完成
+        await lifecycle.emit("adapter.event.dispatched", {
+            "platform": platform,
+            "event_type": event_type,
+            "raw_event_type": raw_event_type,
+            "onebot_handlers_count": len(handlers_to_call),
+        })
 
     # ==================== Bot状态管理 ====================
 

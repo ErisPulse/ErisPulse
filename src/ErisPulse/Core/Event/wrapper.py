@@ -8,6 +8,7 @@ ErisPulse 事件包装类
 2. 提供便捷方法简化事件处理
 3. 支持点式访问 event.platform
 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
+5. 建议在处理器参数中使用类型注解以获得 IDE 自动补全: async def handler(event: Event)
 {!--< /tips >!--}
 """
 
@@ -692,7 +693,28 @@ class Event(dict):
         if not send_method or not callable(send_method):
             raise ValueError(f"适配器不支持方法: {method}")
 
-        return await send_method(content)
+        # 钩子: 消息发送前
+        from ..lifecycle import lifecycle
+        await lifecycle.emit("message.sending", {
+            "platform": self.get("platform", "unknown"),
+            "method": method,
+            "detail_type": detail_type,
+            "target_id": target_id,
+            "bot_id": bot_id,
+        })
+
+        result = await send_method(content)
+
+        # 钩子: 消息发送后
+        await lifecycle.emit("message.sent", {
+            "platform": self.get("platform", "unknown"),
+            "method": method,
+            "detail_type": detail_type,
+            "target_id": target_id,
+            "bot_id": bot_id,
+        })
+
+        return result
 
     # ==================== OB12 消息回复 ====================
 
