@@ -403,10 +403,7 @@ class SDK:
                     await module_manager.unload()
 
                 # 3. 停止路由服务器
-                if (
-                    router_manager._server_task
-                    and not router_manager._server_task.done()
-                ):
+                if router_manager._server_task is not None:
                     await router_manager.stop()
 
                 # 4. 收集 SDK 对象上的模块属性（在 clear 之前）

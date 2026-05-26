@@ -63,6 +63,45 @@
 
 ---
 
+## [2.4.6-dev.1] - 2026/05/26
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `lifecycle` 生命周期管理器全面增强：
+    - 新增 `emit(event, data)` 异步触发和 `emit_sync(event, data)` 同步触发 API
+    - 新增 `register(event, handler, priority)` 函数调用模式注册
+    - 新增 `off(event, handler)` 取消注册、`clear()` 清除所有、`list_hooks()` 查询钩子
+    - 支持优先级排序（数值越小越先执行）
+    - 处理器返回非 None 值时可传递给后续处理器（数据链）
+    - 内部存储从 `_handlers` 重构为 `_hooks`，存储 `(priority, handler)` 元组
+
+### 变更
+- @wsu2059q
+  - `config` 配置变更监听从 `on_change` 回调改为统一生命周期钩子 `config.set`：
+    - 移除 `on_change()` 回调注册 API
+    - 移除 `AuditEntry` 数据类及相关导出
+    - 改用 `lifecycle.emit_sync("config.set", {...})` 触发，可通过 `@lifecycle.on("config.set")` 监听
+  - `sdk.py` 清理生命周期时使用 `_hooks` 替代旧版 `_handlers`
+
+### 移除
+- @wsu2059q
+  - `config` 移除配置审计系统：
+    - 移除 `AuditEntry` 数据类（`config.py`、`Core/__init__.py`）
+    - 移除 `enable_audit()`、`disable_audit()`、`get_audit_log()`、`clear_audit_log()` 方法
+    - 移除 `_detect_caller()`、`_resolve_caller()` 调用方感知机制
+    - 移除 `on_change()` 变更回调注册
+    - 移除 `CLI init` 模板中 `[ErisPulse.config.audit]` 配置段
+    - 移除 `test_unit_config.py` 中相关审计/回调测试用例
+
+### 优化
+- @wsu2059q
+  - `docs` 核心模块文档：移除配置审计相关内容，更新生命周期文档为完整钩子参考
+  - `docs` 事件系统文档：修正优先级方向说明
+  - `docs` 架构文档：移除配置审计描述
+
+---
+
 ## [2.4.6-dev.0] - 2026/05/24
 > 开发版本
 

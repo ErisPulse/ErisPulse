@@ -144,7 +144,7 @@ async def at_handler(event):
 
 ```python
 # 使用优先级控制执行顺序
-@message.on_message(priority=10)  # 数值越小优先级越高
+@message.on_message(priority=10)  # 数值越大优先级越高
 async def high_priority_handler(event):
     pass
 
@@ -560,7 +560,7 @@ unregister_platform_event_methods("email")
 
 ## 优先级系统
 
-事件处理器支持优先级，数值越小优先级越高：
+事件处理器支持优先级，数值越大优先级越高：
 
 ```python
 # 高优先级处理器先执行
@@ -569,7 +569,7 @@ async def high_priority_handler(event):
     pass
 
 # 低优先级处理器后执行
-@message.on_message(priority=1)
+@message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
 ```
