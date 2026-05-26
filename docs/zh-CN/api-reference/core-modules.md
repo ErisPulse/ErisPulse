@@ -168,36 +168,6 @@ def _load_config(self):
     return config
 ```
 
-### 配置审计
-
-Config 模块内置调用方感知和审计功能，可追踪配置的读写来源：
-
-```python
-# 启用审计（默认关闭）
-sdk.config.enable_audit(True)
-
-# 监听配置变更
-@sdk.config.on_change("MyModule")
-def on_config_change(key, old_value, new_value, caller):
-    print(f"配置变更: {key}")
-    print(f"  旧值: {old_value} -> 新值: {new_value}")
-    print(f"  调用方: {caller.file}:{caller.lineno} ({caller.function})")
-
-# 获取审计日志
-log = sdk.config.get_audit_log(limit=10)
-for entry in log:
-    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
-
-# 关闭审计
-sdk.config.enable_audit(False)
-```
-
-审计日志中每条记录包含：
-- `operation`: 操作类型（`get` / `set`）
-- `key`: 配置键路径
-- `caller`: 调用方信息（文件名、行号、函数名、模块名）
-- `timestamp`: 操作时间戳
-
 ## Logger 模块
 
 ### 基本日志
