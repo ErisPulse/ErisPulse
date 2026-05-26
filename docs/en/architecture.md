@@ -18,8 +18,6 @@ graph TB
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
-    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
-
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -28,7 +26,7 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["云湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -37,10 +35,6 @@ graph TB
     BaseModule --> CM["Custom Modules"]
 
     BaseAdapter -.-> SendDSL["SendDSL<br/>Message Sending"]
-
-    Metrics --> Counter["Counter"]
-    Metrics --> Gauge["Gauge"]
-    Metrics --> Histogram["Histogram"]
 ```
 
 ### Core Module Description
@@ -55,7 +49,6 @@ graph TB
 | **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
-| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
