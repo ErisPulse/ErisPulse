@@ -96,6 +96,12 @@ class ModuleManager(ManagerBase):
         if module_info:
             self._module_info[module_name] = module_info
 
+        # 触发模块注册事件
+        lifecycle.emit_sync("module.register", {
+            "module_name": module_name,
+            "success": True,
+        })
+
         logger.info(f"模块 {module_name} 已注册")
         return True
 
@@ -166,6 +172,16 @@ class ModuleManager(ManagerBase):
                 },
                 msg=f"模块 {module_name if module_name else 'All'} 加载成功",
             )
+
+            await lifecycle.submit_event(
+                "module.init",
+                data={
+                    "module_name": module_name,
+                    "success": True,
+                },
+                msg=f"模块 {module_name} 初始化完毕",
+            )
+
             logger.info(f"模块 {module_name} 加载成功")
             return True
 
@@ -198,17 +214,17 @@ class ModuleManager(ManagerBase):
             for name in list(self._loaded_modules):
                 if not await self._unload_single_module(name):
                     success = False
-            return success
+            module_name = "All"
         else:
             success = await self._unload_single_module(module_name)
 
         await lifecycle.submit_event(
             "module.unload",
-            msg=f"模块 {module_name if module_name else 'All'} 卸载完成"
+            msg=f"模块 {module_name} 卸载完成"
             if success
-            else f"模块 {module_name if module_name else 'All'} 卸载失败",
+            else f"模块 {module_name} 卸载失败",
             data={
-                "module_name": module_name if module_name else "All",
+                "module_name": module_name,
                 "success": success,
             },
         )
