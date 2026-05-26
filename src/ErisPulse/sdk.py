@@ -504,7 +504,7 @@ class SDK:
                 await asyncio.sleep(0.1)
 
                 # 9. 清理生命周期事件处理器（在所有事件完成之后）
-                lifecycle._handlers.clear()
+                lifecycle._hooks.clear()
 
                 logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
                 return True
@@ -525,7 +525,7 @@ class SDK:
                 await asyncio.sleep(0.1)
 
                 # 清理生命周期事件处理器（即使在失败时也要清理）
-                lifecycle._handlers.clear()
+                lifecycle._hooks.clear()
 
                 if "attached to a different loop" in str(e):
                     # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
