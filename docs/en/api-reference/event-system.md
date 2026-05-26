@@ -15,7 +15,7 @@ async def hello_handler(event):
     await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["帮助"], help="Display help")
+@command(["help", "h"], aliases=["help"], help="Display help")
 async def help_handler(event):
     pass
 
@@ -95,7 +95,7 @@ async def age_command(event):
 # Waiting for reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["是", "yes", "y"]:
+    if text in ["yes", "yes", "y"]:
         await event.reply("Operation confirmed!")
     else:
         await event.reply("Operation cancelled.")
@@ -151,7 +151,7 @@ async def high_priority_handler(event):
 # Implement conditional filtering inside handler
 @message.on_message()
 async def filtered_handler(event):
-    if "关键词" not in event.get_text():
+    if "keyword" not in event.get_text():
         return
     # Process messages containing keyword
     pass
@@ -365,13 +365,13 @@ else:
     await event.reply("Cancelled")
 
 # Custom confirmation words
-if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+if await event.confirm("Continue?", yes_words={"go", "continue"}, no_words={"stop", "stop"}):
     pass
 
 # choose — Selection menu
-choice = await event.choose("Please choose a color:", ["红色", "绿色", "蓝色"])
+choice = await event.choose("Please choose a color:", ["red", "green", "blue"])
 if choice is not None:
-    await event.reply(f"You chose: {['红色', '绿色', '蓝色'][choice]}")
+    await event.reply(f"You chose: {['red', 'green', 'blue'][choice]}")
 
 # collect — Form collection
 data = await event.collect([
@@ -569,7 +569,7 @@ async def high_priority_handler(event):
     pass
 
 # Lower priority handler executes later
-@message.on_message(priority=1)
+@message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
 ```

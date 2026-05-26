@@ -16,13 +16,19 @@ ErisPulse supports the following event types:
 
 ## Message Event Handling
 
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE autocomplete and type checking support.
+
+```python
+from ErisPulse.Core.Event import Event  # Import Event type for annotations
+```
+
 ### Listening to all messages
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_message()
-async def message_handler(event):
+async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     sdk.logger.info(f"Received message from {user_id}: {text}")
@@ -32,7 +38,7 @@ async def message_handler(event):
 
 ```python
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     user_id = event.get_user_id()
     await event.reply(f"Hello, {user_id}! This is a private message.")
 ```
@@ -41,18 +47,18 @@ async def private_handler(event):
 
 ```python
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} sent a message in group {group_id}")
+    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
 ```
 
 ### Listening to @ mentions
 
 ```python
 @message.on_at_message()
-async def at_handler(event):
-    # Get list of users mentioned
+async def at_handler(event: Event):
+    # Get list of mentioned users
     mentions = event.get_mentions()
     await event.reply(f"You mentioned these users: {mentions}")
 ```
@@ -130,7 +136,7 @@ async def admin_handler(event):
 ### Command Priority
 
 ```python
-# The lower the priority value, the earlier it executes
+# The higher the priority value, the earlier it executes
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -142,21 +148,21 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-The ErisPulse event system uses a **same-priority parallel, different-priority serial** scheduling model:
+ErisPulse event system adopts a **same-priority parallel, different-priority serial** scheduling model:
 
 ```
 Event Arrived
     ↓
-priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
+priority=10 Group: [Handler C || Handler D] Parallel → Merge Results
     ↓ (If not interrupted)
-priority=1 Group: [Handler C || Handler D] Parallel → Merge Results
+priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
     ↓
 ...
 ```
 
 - **Same priority parallel**: Multiple handlers with the same priority execute simultaneously to improve throughput
-- **Different priority serial**: Groups of different priorities execute sequentially to ensure high-priority handlers run first
-- **Copy-On-Write**: Copies are not created when handlers do not modify data, ensuring zero overhead
+- **Cross-level serial**: Groups of different priorities execute sequentially (higher values execute first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copies are created when handlers do not modify data, ensuring zero overhead
 - **Conflict handling**: When multiple handlers of the same priority modify the same field, the last modified value is used and a warning is logged
 - **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
 
@@ -175,7 +181,7 @@ async def handler_b(event):
 # Different priorities execute serially
 @message.on_message(priority=10)
 async def handler_c(event):
-    # Execute after priority=0 group completes
+    # Executes first due to higher priority
     pass
 ```
 
@@ -556,78 +562,4 @@ async def handle_message(event):
     platform = event.get_platform()
 
     # Call specific methods based on platform
-    if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram specific method
-    elif platform == "email":
-        subject = event.get_subject()           # Email specific method
-```
-
-If you are not sure whether a platform has registered a specific method, you can query which methods are registered for a platform:
-
-```python
-from ErisPulse.Core.Event import get_platform_event_methods
-
-methods = get_platform_event_methods("telegram")
-# ["get_chat_type", "is_bot_message", ...]
-```
-
-> For platform-specific methods registered by each platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
-
-## Best Practices for Event Handling
-
-### 1. Exception Handling
-
-```python
-@command("process")
-async def process_handler(event):
-    try:
-        # Business logic
-        result = await do_some_work()
-        await event.reply(f"Result: {result}")
-    except ValueError as e:
-        # Expected business errors
-        await event.reply(f"Parameter error: {e}")
-    except Exception as e:
-        # Unexpected errors
-        sdk.logger.error(f"Processing failed: {e}")
-        await event.reply("Processing failed, please try again later")
-```
-
-### 2. Logging
-
-```python
-@message.on_message()
-async def message_handler(event):
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    sdk.logger.info(f"Processing message: {user_id} - {text}")
-    
-    # Use the module's own logger
-    from ErisPulse import sdk
-    logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Detailed debug info")
-```
-
-### 3. Conditional Handling
-
-```python
-@message.on_message(priority=0)
-async def conditional_handler(event):
-    """Condition handling - determine within the handler"""
-    # Only handle messages from specific users
-    if event.get_user_id() in ["bot1", "bot2"]:
-        return
-    
-    # Only handle messages containing specific keywords
-    if "关键词" not in event.get_text():
-        return
-    
-    await event.reply("Condition met, handling message")
-```
-
-## Next Steps
-
-- [Common Task Examples](common-tasks.md) - Learn to implement common features
-- [Detailed Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
-- [User Guide](../user-guide/) - Learn about configuration and module management
+    if platform ==

@@ -60,7 +60,7 @@ ErisPulse 事件处理基础模块
 注册事件处理器
 
 :param handler: 事件处理器函数
-:param priority: 处理器优先级，数值越小优先级越高
+:param priority: 处理器优先级，数值越大优先级越高
 :param condition: 处理器条件函数，返回True时才会执行处理器
 
 ---
@@ -80,7 +80,7 @@ ErisPulse 事件处理基础模块
 
 装饰器方式注册事件处理器
 
-:param priority: 处理器优先级
+:param priority: 处理器优先级，数值越大优先级越高
 :param condition: 处理器条件函数
 :return: 装饰器函数
 

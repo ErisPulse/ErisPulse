@@ -14,7 +14,7 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>生命週期管理"]
     SDK --> Logger["Logger<br/>日誌管理"]
     SDK --> Storage["Storage / env<br/>儲存管理"]
-    SDK --> Config["Config<br/>設定管理 + 審計"]
+    SDK --> Config["Config<br/>設定管理"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
     SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
@@ -46,7 +46,7 @@ graph TB
 | **Module** | 模組管理器，管理外掛的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
-| **Config** | TOML 格式的設定檔管理，支援呼叫方感知和設定審計 |
+| **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
 

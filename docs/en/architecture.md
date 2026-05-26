@@ -14,7 +14,7 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management + Audit"]
+    SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
     SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
@@ -45,8 +45,8 @@ graph TB
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
 | **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
+| **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
+| **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
 

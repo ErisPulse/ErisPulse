@@ -10,12 +10,10 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
-支持调用方感知和配置审计
 
 > **提示**
 > 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
-> 2. 配置变更可通过 on_change 回调监听
-> 3. 启用审计后可追踪所有配置读写操作
+> 2. 配置变更可通过生命周期钩子监听: @lifecycle.on("config.set")
 
 ---
 
@@ -38,14 +36,6 @@ ErisPulse 配置中心
 
 
 ## 类列表
-
-
-### `class AuditEntry`
-
-配置审计记录
-
-> **提示**
-> 由 ConfigManager 内部创建，通过 get_audit_log() 查询
 
 
 ### `class ConfigManager`
@@ -120,123 +110,6 @@ ConfigManager 类提供相关功能。
 ##### `_check_cache_validity()`
 
 检查缓存有效性，必要时重新加载
-
-> **内部方法**
-
----
-
-
-##### `_detect_caller()`
-
-检测配置操作的调用方
-
-:return: tuple[str, str] (调用方名称, 调用方类型)
-    调用方类型: "internal" | "module" | "adapter" | "cli" | "user" | "unknown"
-
-> **内部方法**
-
----
-
-
-##### `_resolve_caller(module: str, filename: str)`
-
-解析模块名为调用方标识
-
-:param module: str Python 模块名 (__name__)
-:param filename: str 源文件路径
-:return: tuple[str, str] (调用方名称, 调用方类型)
-
-> **内部方法**
-
----
-
-
-##### `enable_audit(max_entries: int = 1000)`
-
-启用配置审计
-
-:param max_entries: int 审计日志最大条数 (默认: 1000)
-
-**示例**:
-```python
->>> sdk.config.enable_audit()
-```
-
----
-
-
-##### `disable_audit()`
-
-禁用配置审计
-
-**示例**:
-```python
->>> sdk.config.disable_audit()
-```
-
----
-
-
-##### `get_audit_log(key: str = None, caller: str = None, action: str = None, limit: int = 100)`
-
-查询审计日志
-
-:param key: str 按配置键过滤 (可选)
-:param caller: str 按调用方过滤 (可选)
-:param action: str 按操作类型过滤 "get"|"set" (可选)
-:param limit: int 返回条数上限 (默认: 100)
-:return: list[AuditEntry] 审计记录列表
-
-**示例**:
-```python
->>> log = sdk.config.get_audit_log(key="ErisPulse.adapters.status.telegram")
->>> log = sdk.config.get_audit_log(caller="MyModule")
-```
-
----
-
-
-##### `clear_audit_log()`
-
-清空审计日志
-
-**示例**:
-```python
->>> sdk.config.clear_audit_log()
-```
-
----
-
-
-##### `on_change(callback: Callable)`
-
-注册配置变更回调
-
-:param callback: Callable 回调函数, 签名: (entry: AuditEntry) -> None
-    支持同步和异步函数
-
-**示例**:
-```python
->>> @sdk.config.on_change
-... async def on_config_change(entry):
-...     print(f"{entry.caller} 修改了 {entry.key}")
-```
-
----
-
-
-##### `async async _notify_change(entry: AuditEntry)`
-
-通知变更回调
-
-> **内部方法**
-
----
-
-
-##### `_add_audit_entry(entry: AuditEntry)`
-
-添加审计记录
 
 > **内部方法**
 
