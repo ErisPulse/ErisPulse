@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1095,
+  "total_keywords": 1097,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. 使用 Mixin 类批量注册（推荐）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 535,
+        "line": 533,
         "level": 3,
         "title": "1. 使用 Mixin 类批量注册（推荐）"
       }
@@ -77,7 +77,7 @@
     "1. 分类异常处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 429,
         "level": 3,
         "title": "1. 分类异常处理"
       },
@@ -115,7 +115,7 @@
     "1. 单元测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 477,
+        "line": 475,
         "level": 3,
         "title": "1. 单元测试"
       },
@@ -161,7 +161,7 @@
     "1. 必须返回 Task 对象": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 274,
+        "line": 276,
         "level": 3,
         "title": "1. 必须返回 Task 对象"
       }
@@ -185,7 +185,7 @@
     "1. 标准化响应格式": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 339,
+        "line": 337,
         "level": 3,
         "title": "1. 标准化响应格式"
       }
@@ -241,7 +241,7 @@
     "1. 维护平台特性文档": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 587,
+        "line": 585,
         "level": 3,
         "title": "1. 维护平台特性文档"
       }
@@ -257,7 +257,7 @@
     "1. 账户配置验证": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 389,
+        "line": 387,
         "level": 3,
         "title": "1. 账户配置验证"
       }
@@ -425,7 +425,7 @@
     "2. 使用装饰器注册单个方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 561,
+        "line": 559,
         "level": 3,
         "title": "2. 使用装饰器注册单个方法"
       }
@@ -521,7 +521,7 @@
     "2. 日志记录": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 456,
+        "line": 454,
         "level": 3,
         "title": "2. 日志记录"
       },
@@ -543,7 +543,7 @@
     "2. 更新版本信息": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 608,
+        "line": 606,
         "level": 3,
         "title": "2. 更新版本信息"
       }
@@ -599,7 +599,7 @@
     "2. 账户选择机制": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 409,
+        "line": 407,
         "level": 3,
         "title": "2. 账户选择机制"
       }
@@ -639,7 +639,7 @@
     "2. 链式修饰方法返回 self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 291,
+        "line": 296,
         "level": 3,
         "title": "2. 链式修饰方法返回 self"
       }
@@ -647,7 +647,7 @@
     "2. 错误码规范": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 365,
+        "line": 363,
         "level": 3,
         "title": "2. 错误码规范"
       }
@@ -655,7 +655,7 @@
     "2. 集成测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 501,
+        "line": 499,
         "level": 3,
         "title": "2. 集成测试"
       },
@@ -869,7 +869,7 @@
     "3. 支持平台特有方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 308,
+        "line": 310,
         "level": 3,
         "title": "3. 支持平台特有方法"
       }
@@ -933,7 +933,7 @@
     "3. 适配器关闭时清理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 571,
+        "line": 569,
         "level": 3,
         "title": "3. 适配器关闭时清理"
       }
@@ -1261,7 +1261,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 237,
+        "line": 246,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1429,7 +1429,7 @@
     "7. 创建包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 279,
+        "line": 288,
         "level": 3,
         "title": "7. 创建包入口"
       }
@@ -1607,7 +1607,7 @@
     "API 响应": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 337,
+        "line": 335,
         "level": 2,
         "title": "API 响应"
       },
@@ -1621,7 +1621,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 506,
+        "line": 512,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -1651,7 +1651,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 602,
+        "line": 608,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -1753,7 +1753,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 687,
+        "line": 693,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -1773,7 +1773,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 620,
+        "line": 626,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2171,7 +2171,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 642,
+        "line": 648,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2637,7 +2637,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 482,
+        "line": 488,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -2677,7 +2677,7 @@
     "WebSocket 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 446,
+        "line": 452,
         "level": 3,
         "title": "WebSocket 连接"
       }
@@ -2867,7 +2867,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 676,
+        "line": 682,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3011,7 +3011,7 @@
     "install 参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 46,
+        "line": 54,
         "level": 3,
         "title": "install 参数"
       }
@@ -3035,7 +3035,7 @@
     "list 参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 54,
+        "line": 62,
         "level": 3,
         "title": "list 参数"
       }
@@ -3107,7 +3107,7 @@
     "run 参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 61,
+        "line": 69,
         "level": 3,
         "title": "run 参数"
       }
@@ -3209,7 +3209,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 286,
+        "line": 295,
         "level": 2,
         "title": "下一步"
       },
@@ -3607,7 +3607,7 @@
     "事件转换器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 371,
+        "line": 377,
         "level": 2,
         "title": "事件转换器"
       }
@@ -3715,7 +3715,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 68,
+        "line": 76,
         "level": 2,
         "title": "交互式安装"
       },
@@ -4197,7 +4197,7 @@
     "列出模块": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 96,
+        "line": 104,
         "level": 3,
         "title": "列出模块"
       }
@@ -4216,6 +4216,14 @@
         "line": 1,
         "level": 1,
         "title": "创建第一个机器人"
+      }
+    ],
+    "创建脚手架": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 160,
+        "level": 3,
+        "title": "创建脚手架"
       }
     ],
     "创建虚拟环境": [
@@ -4281,7 +4289,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 142,
+        "line": 150,
         "level": 3,
         "title": "初始化项目"
       }
@@ -4367,7 +4375,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 119,
+        "line": 127,
         "level": 3,
         "title": "升级模块"
       }
@@ -4397,7 +4405,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "卸载模块"
       }
@@ -4451,7 +4459,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 37,
+        "line": 45,
         "level": 2,
         "title": "参数说明"
       }
@@ -4499,7 +4507,7 @@
     "反向转换与消息构建": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 521,
+        "line": 519,
         "level": 2,
         "title": "反向转换与消息构建"
       }
@@ -5095,7 +5103,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 328,
+        "line": 340,
         "level": 3,
         "title": "基本方法"
       },
@@ -5339,13 +5347,13 @@
     "多账户支持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 387,
+        "line": 385,
         "level": 2,
         "title": "多账户支持"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 549,
+        "line": 555,
         "level": 2,
         "title": "多账户支持"
       }
@@ -5375,7 +5383,7 @@
     "失败响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 534,
+        "line": 540,
         "level": 3,
         "title": "失败响应"
       }
@@ -5621,7 +5629,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 83,
+        "line": 91,
         "level": 3,
         "title": "安装模块"
       }
@@ -5871,7 +5879,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 81,
+        "line": 89,
         "level": 2,
         "title": "常见用法"
       }
@@ -5921,7 +5929,7 @@
     "平台事件方法扩展": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 531,
+        "line": 529,
         "level": 2,
         "title": "平台事件方法扩展"
       }
@@ -6235,7 +6243,7 @@
     "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 383,
+        "line": 389,
         "level": 3,
         "title": "必需字段"
       }
@@ -6355,7 +6363,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 508,
+        "line": 514,
         "level": 3,
         "title": "成功响应"
       }
@@ -6499,7 +6507,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 563,
+        "line": 569,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -6823,7 +6831,7 @@
     "文档维护": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 585,
+        "line": 583,
         "level": 2,
         "title": "文档维护"
       }
@@ -7450,6 +7458,14 @@
         "title": "核心组件说明"
       }
     ],
+    "框架辅助方法": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 333,
+        "level": 3,
+        "title": "框架辅助方法"
+      }
+    ],
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
@@ -7789,7 +7805,7 @@
     "测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 475,
+        "line": 473,
         "level": 2,
         "title": "测试"
       },
@@ -8379,7 +8395,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 710,
+        "line": 716,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -8531,7 +8547,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 617,
+        "line": 615,
         "level": 2,
         "title": "相关文档"
       },
@@ -8543,7 +8559,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 728,
+        "line": 734,
         "level": 2,
         "title": "相关文档"
       },
@@ -8899,7 +8915,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 624,
+        "line": 630,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -9237,7 +9253,7 @@
     "账户配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 551,
+        "line": 557,
         "level": 3,
         "title": "账户配置"
       },
@@ -9365,7 +9381,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 403,
+        "line": 409,
         "level": 3,
         "title": "转换器示例"
       }
@@ -9373,7 +9389,7 @@
     "转换流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 373,
+        "line": 379,
         "level": 3,
         "title": "转换流程"
       }
@@ -9411,7 +9427,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 132,
+        "line": 140,
         "level": 3,
         "title": "运行项目"
       }
@@ -9487,7 +9503,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 444,
+        "line": 450,
         "level": 2,
         "title": "连接管理"
       }
@@ -9495,7 +9511,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 578,
+        "line": 584,
         "level": 3,
         "title": "连接重试"
       }
@@ -9547,7 +9563,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 650,
+        "line": 656,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -9707,7 +9723,7 @@
     "通用参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 39,
+        "line": 47,
         "level": 3,
         "title": "通用参数"
       }
@@ -10085,7 +10101,7 @@
     "链式修饰方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 345,
+        "line": 363,
         "level": 3,
         "title": "链式修饰方法"
       },
@@ -10211,13 +10227,13 @@
     "错误处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 429,
+        "line": 427,
         "level": 2,
         "title": "错误处理"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 576,
+        "line": 582,
         "level": 2,
         "title": "错误处理"
       },
