@@ -1744,6 +1744,12 @@ class MyAdapter(BaseAdapter):
 
 ### 5. 实现 Send 类
 
+`At`/`AtAll`/`Reply` 修饰器已由框架 SendDSL 基类内置实现，适配器只需实现 `Raw_ob12` 和具体的发送方法即可。
+
+框架提供两个关键辅助方法：
+- `self._apply_modifiers(message)` — 自动合并 At/AtAll/Reply 修饰器到消息段
+- `self.send_context` — 获取发送上下文字典（`target_type`、`target_id`、`account_id`）
+
 ```python
 import asyncio
 
@@ -1752,32 +1758,34 @@ class MyAdapter(BaseAdapter):
     
     class Send(BaseAdapter.Send):
         
-        def Text(self, text: str):
-            """发送文本消息"""
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-        
-        def Image(self, file):
-            """发送图片消息"""
-            # 实现见下方说明
-            pass
-        
         def Raw_ob12(self, message, **kwargs):
             """
             发送 OneBot12 格式消息（必须实现）
 
-            完整实现规范和示例请参阅：
-            ../../standards/send-method-spec.md#6-反向转换规范onebot12--平台
+            使用 _apply_modifiers 自动合并修饰器状态，
+            使用 send_context 获取发送上下文。
             """
-            if isinstance(message, dict):
-                message = [message]
-            return asyncio.create_task(self._do_send(message))
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs
+                )
+            return asyncio.create_task(_do_send())
+        
+        def Text(self, text: str):
+            """发送文本消息"""
+            return self.Raw_ob12([
+                {"type": "text", "data": {"text": text}}
+            ])
+        
+        def Image(self, file):
+            """发送图片消息"""
+            return self.Raw_ob12([
+                {"type": "image", "data": {"file": file}}
+            ])
 ```
 
 **媒体类发送方法（Image/Video/File）实现要点：**
@@ -1794,7 +1802,8 @@ class MyAdapter(BaseAdapter):
 **`Raw_ob12` 方法：**
 
 - 将 OneBot12 标准消息格式转换为平台格式发送
-- 处理消息段数组，根据 `type` 字段分发到对应的发送方法
+- 使用 `self._apply_modifiers(message)` 自动处理 At/AtAll/Reply 修饰器
+- 使用 `**self.send_context` 传递发送目标信息和账号信息
 
 ### 6. 实现转换器
 
@@ -2182,47 +2191,53 @@ class MyAdapter(BaseAdapter):
 | `_target_to` | 简化目标ID | `To(id)` |
 | `_account_id` | 发送账号ID | `Using(account_id)` |
 | `_adapter` | 适配器实例 | 自动设置 |
+| `_at_user_ids` | @用户列表 | `At(user_id)` |
+| `_reply_message_id` | 回复的消息ID | `Reply(message_id)` |
+| `_at_all` | 是否@全体 | `AtAll()` |
+
+> **推荐**：使用 `self.send_context` 属性一次性获取 `target_type`、`target_id`、`account_id`，比直接访问实例变量更清晰。
+
+### 框架辅助方法
+
+| 方法/属性 | 说明 |
+|-----------|------|
+| `self._apply_modifiers(message)` | 将 At/AtAll/Reply 修饰器状态合并到消息段列表 |
+| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
 
 ### 基本方法
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """发送文本消息（必须返回 Task）"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """推荐实现方式"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        """发送文本消息"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
 ```
 
 ### 链式修饰方法
 
 ```python
 class Send(BaseAdapter.Send):
+
     def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
         super().__init__(adapter, target_type, target_id, account_id)
-        self._at_user_ids = []
-        self._reply_message_id = None
-        self._at_all = False
-    
-    def At(self, user_id: str) -> 'Send':
-        """@用户（可多次调用）"""
-        self._at_user_ids.append(user_id)
-        return self
-    
-    def AtAll(self) -> 'Send':
-        """@全体成员"""
-        self._at_all = True
-        return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回复消息"""
-        self._reply_message_id = message_id
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
         return self
 ```
 
@@ -3135,38 +3150,40 @@ def _generate_event_id(self, raw_event):
 
 ## SendDSL 实现
 
+`At`/`AtAll`/`Reply` 修饰器已由框架 SendDSL 基类内置，适配器只需实现 `Raw_ob12` 和具体发送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 简化开发。
+
 ### 1. 必须返回 Task 对象
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """发送文本消息"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """推荐实现：使用框架辅助方法"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 2. 链式修饰方法返回 self
 
 ```python
 class Send(BaseAdapter.Send):
-    def At(self, user_id: str) -> 'Send':
-        """@用户"""
-        if not hasattr(self, '_at_user_ids'):
-            self._at_user_ids = []
-        self._at_user_ids.append(user_id)
-        return self  # 必须返回 self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回复消息"""
-        self._reply_message_id = message_id
-        return self  # 必须返回 self
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self # 返回 self
 ```
 
 ### 3. 支持平台特有方法
@@ -3175,25 +3192,21 @@ class Send(BaseAdapter.Send):
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
         """发送表情包"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
-                sticker_id=sticker_id,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "sticker", "data": {"id": sticker_id}}],
+                **self.send_context
             )
         )
     
     def Card(self, card_data: dict):
         """发送卡片消息"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                card=card_data,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "card", "data": card_data}],
+                **self.send_context
             )
         )
 ```
@@ -4154,6 +4167,14 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 | `init` | `[--project-name/-n <name>]` | 交互式初始化项目 | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | 快速模式，跳过交互 | `epsdk init -q -n bot` |
 | | `[--force/-f]` | 强制覆盖现有配置 | `epsdk init -f` |
+| `create` | `[module\|adapter]` | 创建脚手架项目 | `epsdk create` |
+| | `[--name/-n <name>]` | 项目名称 (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | 项目描述 | `epsdk create adapter -d "xx适配器"` |
+| | `[--author/-a <name>]` | 作者名称 | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | 作者邮箱 | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | 项目主页 URL | |
+| | `[--output/-o <dir>]` | 输出目录 (默认当前目录) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | 强制覆盖已存在的目录 | `epsdk create -f` |
 
 ## 参数说明
 
@@ -4268,6 +4289,25 @@ epsdk init
 
 # 快速初始化
 epsdk init -q -n my_bot
+```
+
+### 创建脚手架
+
+```bash
+# 交互式创建（引导选择类型和填写信息）
+epsdk create
+
+# 直接创建 Module 项目
+epsdk create module -n MyModule
+
+# 直接创建 Adapter 项目
+epsdk create adapter -n MyAdapter
+
+# 完整参数
+epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"
+
+# 强制覆盖已有目录
+epsdk create module -n MyModule -f
 ```
 
 
