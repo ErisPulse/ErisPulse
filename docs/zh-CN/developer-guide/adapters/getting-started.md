@@ -182,6 +182,12 @@ class MyAdapter(BaseAdapter):
 
 ### 5. 实现 Send 类
 
+`At`/`AtAll`/`Reply` 修饰器已由框架 SendDSL 基类内置实现，适配器只需实现 `Raw_ob12` 和具体的发送方法即可。
+
+框架提供两个关键辅助方法：
+- `self._apply_modifiers(message)` — 自动合并 At/AtAll/Reply 修饰器到消息段
+- `self.send_context` — 获取发送上下文字典（`target_type`、`target_id`、`account_id`）
+
 ```python
 import asyncio
 
@@ -190,32 +196,34 @@ class MyAdapter(BaseAdapter):
     
     class Send(BaseAdapter.Send):
         
-        def Text(self, text: str):
-            """发送文本消息"""
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-        
-        def Image(self, file):
-            """发送图片消息"""
-            # 实现见下方说明
-            pass
-        
         def Raw_ob12(self, message, **kwargs):
             """
             发送 OneBot12 格式消息（必须实现）
 
-            完整实现规范和示例请参阅：
-            ../../standards/send-method-spec.md#6-反向转换规范onebot12--平台
+            使用 _apply_modifiers 自动合并修饰器状态，
+            使用 send_context 获取发送上下文。
             """
-            if isinstance(message, dict):
-                message = [message]
-            return asyncio.create_task(self._do_send(message))
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs
+                )
+            return asyncio.create_task(_do_send())
+        
+        def Text(self, text: str):
+            """发送文本消息"""
+            return self.Raw_ob12([
+                {"type": "text", "data": {"text": text}}
+            ])
+        
+        def Image(self, file):
+            """发送图片消息"""
+            return self.Raw_ob12([
+                {"type": "image", "data": {"file": file}}
+            ])
 ```
 
 **媒体类发送方法（Image/Video/File）实现要点：**
@@ -232,7 +240,8 @@ class MyAdapter(BaseAdapter):
 **`Raw_ob12` 方法：**
 
 - 将 OneBot12 标准消息格式转换为平台格式发送
-- 处理消息段数组，根据 `type` 字段分发到对应的发送方法
+- 使用 `self._apply_modifiers(message)` 自动处理 At/AtAll/Reply 修饰器
+- 使用 `**self.send_context` 传递发送目标信息和账号信息
 
 ### 6. 实现转换器
 
