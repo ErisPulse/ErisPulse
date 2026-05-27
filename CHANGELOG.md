@@ -68,6 +68,12 @@
 
 ### 新增
 - @wsu2059q
+  - `SendDSL` 框架级 At/AtAll/Reply 修饰器实现：
+    - `At(user_id)` / `AtAll()` / `Reply(message_id)` 已由 `SendDSL` 基类内置实现，适配器无需重复编写
+    - 新增 `_apply_modifiers(message)` 辅助方法，自动将修饰器状态合并为 OneBot12 消息段列表
+    - 新增 `send_context` 属性，显式返回 `{target_type, target_id, account_id}` 字典，替代隐式访问 `_target_type` / `_target_id` / `_account_id` 实例变量
+    - 修饰器合并顺序：`mention_all` → `mention` → `reply` → 用户消息段
+    - 现有适配器覆盖的 `At`/`AtAll`/`Reply` 方法不受影响（子类优先）
   - `lifecycle` 生命周期管理器全面增强：
     - 新增 `emit(event, data)` 异步触发和 `emit_sync(event, data)` 同步触发 API
     - 新增 `register(event, handler, priority)` 函数调用模式注册
@@ -78,6 +84,9 @@
 
 ### 变更
 - @wsu2059q
+  - `SendDSL` 基类增强：
+    - `__init__` 新增修饰器状态变量（`_at_user_ids`、`_reply_message_id`、`_at_all`），`To()`/`Using()` 创建新实例时自动重置
+    - `BaseAdapter.Send.Raw_ob12` 文档字符串更新为推荐使用 `_apply_modifiers(message)` 和 `**self.send_context` 的新模式
   - `config` 配置变更监听从 `on_change` 回调改为统一生命周期钩子 `config.set`：
     - 移除 `on_change()` 回调注册 API
     - 移除 `AuditEntry` 数据类及相关导出
@@ -86,6 +95,7 @@
 
 ### 移除
 - @wsu2059q
+  - `SendDSL` 移除 `_unimplemented_modifier()` 方法（`At`/`AtAll`/`Reply` 已有实际实现，不再需要 no-op 垫片）
   - `config` 移除配置审计系统：
     - 移除 `AuditEntry` 数据类（`config.py`、`Core/__init__.py`）
     - 移除 `enable_audit()`、`disable_audit()`、`get_audit_log()`、`clear_audit_log()` 方法
@@ -96,6 +106,10 @@
 
 ### 优化
 - @wsu2059q
+  - `adapter` 简化示例适配器和 CLI 脚手架模板：
+    - 移除 `examples/example-adapter/MyAdapter/Core.py` 中 ~40 行 At/AtAll/Reply 样板代码
+    - 更新 `CLI/commands/create.py` 的 `_ADAPTER_CORE` 模板，使用 `_apply_modifiers()` 和 `send_context`
+  - `docs` 更新中文适配器开发文档（getting-started / core-concepts / send-dsl / best-practices），展示新辅助方法用法
   - `docs` 核心模块文档：移除配置审计相关内容，更新生命周期文档为完整钩子参考
   - `docs` 事件系统文档：修正优先级方向说明
   - `docs` 架构文档：移除配置审计描述
