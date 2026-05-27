@@ -24,9 +24,16 @@ ErisPulse 适配器基础模块
 
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
+内置支持 At/AtAll/Reply 修饰器，适配器子类无需重复实现。
+通过 send_context 属性可显式获取发送上下文（目标类型、目标ID、发送账号）。
+通过 _apply_modifiers() 方法可自动将修饰器状态合并到消息段。
+
 > **提示**
 > 1. 子类应实现具体的消息发送方法(如Text, Image等)
 > 2. 通过__getattr__实现动态方法调用
+> 3. At/AtAll/Reply 已内置实现，无需子类覆盖
+> 4. 使用 self.send_context 获取发送上下文
+> 5. 使用 self._apply_modifiers(message) 合并修饰器到消息段
 
 
 #### 方法列表
@@ -39,7 +46,7 @@ ErisPulse 适配器基础模块
 :param adapter: 所属适配器实例
 :param target_type: 目标类型(可选)
 :param target_id: 目标ID(可选)
-:param _account_id: 发送账号(可选)
+:param account_id: 发送账号(可选)
 
 ---
 
@@ -58,9 +65,90 @@ ErisPulse 适配器基础模块
 ---
 
 
-##### `_unimplemented_modifier(method_name: str)`
+##### `At(user_id: str)`
 
-处理未实现的修饰方法，记录警告并返回自身以保持链式调用
+@指定用户（可链式多次调用）
+
+:param user_id: 要@的用户ID
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> await adapter.Send.To("group", "123").At("456").Text("Hello")
+>>> await adapter.Send.To("group", "123").At("456").At("789").Text("@多人")
+```
+
+---
+
+
+##### `AtAll()`
+
+@全体成员
+
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> await adapter.Send.To("group", "123").AtAll().Text("公告")
+```
+
+---
+
+
+##### `Reply(message_id: str)`
+
+回复指定消息
+
+:param message_id: 要回复的消息ID
+:return: SendDSL实例自身，支持链式调用
+
+**示例**:
+```python
+>>> await adapter.Send.To("group", "123").Reply("msg_456").Text("回复内容")
+```
+
+---
+
+
+##### `_apply_modifiers(message)`
+
+将 At/AtAll/Reply 修饰器应用到消息段
+
+修饰器按以下顺序添加到消息段前：
+1. mention_all (@全体)
+2. mention (@用户，按调用顺序)
+3. reply (回复)
+
+:param message: OneBot12 消息段（dict 或 list[dict]）
+:return: 合并后的消息段列表
+
+**示例**:
+```python
+>>> segments = self._apply_modifiers([
+>>>     {"type": "text", "data": {"text": "Hello"}}
+>>> ])
+```
+
+---
+
+
+##### `send_context()`
+
+获取当前发送上下文（目标信息 + 发送账号）
+
+:return: 包含 target_type, target_id, account_id 的字典
+
+**示例**:
+```python
+>>> ctx = self.send_context
+>>> # {"target_type": "group", "target_id": "123", "account_id": "bot1"}
+>>> await self._adapter.call_api(
+>>>     endpoint="/send_message",
+>>>     message=segments,
+>>>     **self.send_context,
+>>>     **kwargs
+>>> )
+```
 
 ---
 
@@ -183,6 +271,10 @@ ErisPulse 适配器基础模块
 此方法是反向转换（OneBot12 → 平台）的统一入口，适配器必须重写此方法。
 未重写时，基类默认实现会记录错误日志并返回标准错误响应。
 
+推荐使用框架提供的辅助方法：
+- self._apply_modifiers(message) - 合并 At/AtAll/Reply 修饰器到消息段
+- self.send_context - 获取发送上下文 (target_type, target_id, account_id)
+
 :param message: OneBot12 格式的消息段数组或单个消息段
     [
         {"type": "text", "data": {"text": "Hello"}},
@@ -198,19 +290,18 @@ ErisPulse 适配器基础模块
 >>>     {"type": "text", "data": {"text": "Hello"}},
 >>>     {"type": "image", "data": {"file": "https://..."}}
 >>> ])
-
->>> # 适配器子类重写示例（必须）
+>>>
+>>> # 适配器子类重写示例（推荐：使用框架辅助方法）
 >>> def Raw_ob12(self, message, **kwargs):
->>>     return asyncio.create_task(
->>>         self._adapter.call_api(
->>>             "send_message",
->>>             message=message,
->>>             target_type=self._target_type,
->>>             target_id=self._target_id,
->>>             account_id=self._account_id,
+>>>     async def _do_send():
+>>>         segments = self._apply_modifiers(message)
+>>>         return await self._adapter.call_api(
+>>>             endpoint="/send_message",
+>>>             message=segments,
+>>>             **self.send_context,
 >>>             **kwargs
 >>>         )
->>>     )
+>>>     return asyncio.create_task(_do_send())
 ```
 
 ---

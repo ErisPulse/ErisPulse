@@ -3724,6 +3724,14 @@ ErisPulse 命令行工具提供项目管理和包管理功能。
 | `init` | `[--project-name/-n <name>]` | 交互式初始化项目 | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | 快速模式，跳过交互 | `epsdk init -q -n bot` |
 | | `[--force/-f]` | 强制覆盖现有配置 | `epsdk init -f` |
+| `create` | `[module\|adapter]` | 创建脚手架项目 | `epsdk create` |
+| | `[--name/-n <name>]` | 项目名称 (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | 项目描述 | `epsdk create adapter -d "xx适配器"` |
+| | `[--author/-a <name>]` | 作者名称 | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | 作者邮箱 | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | 项目主页 URL | |
+| | `[--output/-o <dir>]` | 输出目录 (默认当前目录) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | 强制覆盖已存在的目录 | `epsdk create -f` |
 
 ## 参数说明
 
@@ -3838,6 +3846,25 @@ epsdk init
 
 # 快速初始化
 epsdk init -q -n my_bot
+```
+
+### 创建脚手架
+
+```bash
+# 交互式创建（引导选择类型和填写信息）
+epsdk create
+
+# 直接创建 Module 项目
+epsdk create module -n MyModule
+
+# 直接创建 Adapter 项目
+epsdk create adapter -n MyAdapter
+
+# 完整参数
+epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.com"
+
+# 强制覆盖已有目录
+epsdk create module -n MyModule -f
 ```
 
 
