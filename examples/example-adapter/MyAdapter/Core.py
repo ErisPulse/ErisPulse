@@ -1,5 +1,5 @@
 import asyncio
-from ErisPulse.Core import BaseAdapter
+from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
 from ErisPulse.Core import logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
@@ -11,9 +11,12 @@ class MyAdapter(BaseAdapter):
     
     At/AtAll/Reply 已由框架 SendDSL 基类内置实现，
     适配器只需实现 Raw_ob12 方法，使用 _apply_modifiers() 和 send_context 即可。
+    
+    同时展示了 Request 内部类的实现方式，用于处理好友请求/群邀请等操作。
     """
     
     def __init__(self, sdk):
+        super().__init__()  # 必须调用：初始化 Send / Request 工厂实例
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -55,7 +58,62 @@ class MyAdapter(BaseAdapter):
             return default_config
         return config
     
-    class Send(BaseAdapter.Send):
+    # ==================== 请求操作实现 ====================
+    
+    class Request(RequestDSL):
+        """
+        请求操作 DSL 实现
+        
+        适配器按需重写 accept/reject 方法以支持平台请求操作。
+        基类默认返回 retcode=10002（不支持的操作）。
+        
+        可用属性：
+        - self._request_id: 请求ID
+        - self._account_id: Bot 账号
+        - self._adapter: 适配器实例（可调用 call_api）
+        """
+        
+        def accept(self, **kwargs):
+            """同意请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            
+            return self._create_task(_do())
+        
+        def reject(self, **kwargs):
+            """拒绝请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=False,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            
+            return self._create_task(_do())
+    
+    # ==================== 消息发送实现 ====================
+    
+    class Send(SendDSL):
         """
         Send消息发送DSL
 

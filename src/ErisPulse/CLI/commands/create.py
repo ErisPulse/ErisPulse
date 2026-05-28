@@ -183,6 +183,7 @@ class {name}(BaseAdapter):
     \"\"\"
 
     def __init__(self, sdk=None):
+        super().__init__()
         from ErisPulse import sdk as _sdk
         self.sdk = _sdk if sdk is None else sdk
         self.logger = logger.get_child("{name}")
@@ -249,6 +250,24 @@ class {name}(BaseAdapter):
 
         def Image(self, file):
             return self.Raw_ob12([{{"type": "image", "data": {{"file": file}}}}])
+
+    class Request(BaseAdapter.Request):
+        \"\"\"
+        Request请求操作DSL
+
+        适配器应重写 accept/reject 实现平台特定的请求处理逻辑。
+        通过 self._adapter.call_api() 调用平台 API。
+        通过 self._request_id 获取请求标识。
+        通过 self._account_id 获取 Bot 账号。
+        \"\"\"
+
+        async def _do_accept(self, **kwargs):
+            # TODO: 实现同意请求的平台 API 调用
+            return await super()._do_accept(**kwargs)
+
+        async def _do_reject(self, **kwargs):
+            # TODO: 实现拒绝请求的平台 API 调用
+            return await super()._do_reject(**kwargs)
 
     async def call_api(self, endpoint: str, **params):
         raise NotImplementedError(f"需要实现平台特定的API调用: {{endpoint}}")
