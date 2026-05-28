@@ -12,7 +12,7 @@ ErisPulse 文档翻译器
 目录结构：
   .github/
   ├── .translate_cache/          # 翻译缓存
-  │   ├── README.en.md.cache    # 根目录 README 英文缓存
+  │   ├── README.md.cache       # 根目录 README 英文缓存
   │   ├── README.zh-TW.md.cache # 根目录 README 繁中缓存
   │   ├── en/                   # 英文缓存（docs 下文档）
   │   │   └── getting-started/first-bot.md.cache
@@ -51,6 +51,12 @@ class DocsTranslator:
         "en": {"name": "English", "direction": "target"}
     }
     
+    LANG_SWITCHER_ITEMS = [
+        {"lang": "en", "label": "English", "file": "README.en.md"},
+        {"lang": "zh-CN", "label": "简体中文", "file": "README.md"},
+        {"lang": "zh-TW", "label": "繁體中文", "file": "README.zh-TW.md"},
+    ]
+
     # 需要忽略的目录
     IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
     
@@ -137,30 +143,55 @@ class DocsTranslator:
         """
         获取源文件相对于 source_dir 的路径（用于缓存和备注定位）
 
-        根目录 README.md 返回 "README.md"，
+        根目录 README.zh-CN.md 返回 "README.md"（逻辑键名），
         其他文件返回相对于 source_dir 的路径如 "getting-started/first-bot.md"
 
         :param file_path: 源文件路径
         :return: 相对路径字符串
         """
-        if file_path.name == "README.md" and file_path.parent == Path("."):
+        if self._is_root_readme(file_path):
             return "README.md"
         return str(file_path.relative_to(self.source_dir))
     
+    ROOT_README_SOURCE = "README.zh-CN.md"
+
     def _is_root_readme(self, file_path: Path) -> bool:
         """
-        判断是否为根目录的 README.md
+        判断是否为根目录的 README 源文件（README.zh-CN.md）
 
         :param file_path: 文件路径
-        :return: 是否为根目录 README
+        :return: 是否为根目录 README 源文件
         """
-        return file_path.name == "README.md" and file_path.parent == Path(".")
+        return file_path.name == self.ROOT_README_SOURCE and file_path.parent == Path(".")
+
+
+    def _build_lang_switcher_hint(self, target_lang: str) -> str:
+        """
+        构建语言切换行的翻译提示
+
+        指导 AI 在翻译 README 时正确生成本地化的语言切换行：
+        当前目标语言用粗体（非链接），其他语言为可点击链接。
+
+        :param target_lang: 目标语言
+        :return: 提示文本
+        """
+        parts = []
+        for item in self.LANG_SWITCHER_ITEMS:
+            if item["lang"] == target_lang:
+                parts.append(f"**{item['label']}**")
+            else:
+                parts.append(f"[{item['label']}]({item['file']})")
+        expected_line = " | ".join(parts)
+        return f"""8. **重要：语言切换行本地化**
+                - 必须将语言切换行替换为以下内容（不要修改）：
+                `{expected_line}`
+                - 规则：当前目标语言（{target_lang}）使用粗体，其他语言为链接"""
 
     def get_cache_key(self, file_path: Path, target_lang: str) -> Path:
         """
         获取缓存文件路径
 
-        根目录 README.md -> .github/.translate_cache/README.{lang}.md.cache
+        根目录 README.zh-CN.md -> .github/.translate_cache/README.md.cache (en) 或 README.zh-TW.md.cache
         docs 下文档 -> .github/.translate_cache/{lang}/{rel_path}.cache
 
         :param file_path: 源文件路径
@@ -168,7 +199,8 @@ class DocsTranslator:
         :return: 缓存文件路径
         """
         if self._is_root_readme(file_path):
-            # 根目录 README 直接放在 cache_dir 下，用目标文件名命名
+            if target_lang == "en":
+                return self.cache_dir / "README.md.cache"
             return self.cache_dir / f"README.{target_lang}.md.cache"
         rel_path = self._get_rel_path(file_path)
         return self.cache_dir / target_lang / f"{rel_path}.cache"
@@ -269,8 +301,11 @@ class DocsTranslator:
         :param target_lang: 目标语言
         :return: 已有翻译内容，不存在则返回 None
         """
-        if file_path.name == "README.md" and file_path.parent == Path("."):
-            ref_file = Path(f"README.{target_lang}.md")
+        if self._is_root_readme(file_path):
+            if target_lang == "en":
+                ref_file = Path("README.md")
+            else:
+                ref_file = Path(f"README.{target_lang}.md")
         else:
             rel_path = file_path.relative_to(self.source_dir)
             ref_file = Path("docs") / target_lang / rel_path
@@ -315,11 +350,13 @@ class DocsTranslator:
         
         path_replacement_hint = ""
         if file_name == "README.md":
+            lang_switcher_hint = self._build_lang_switcher_hint(target_lang)
             path_replacement_hint = f"""
 7. **重要：路径替换规则**
    - 将文档链接中的 `docs/{source_lang}/` 替换为 `docs/{target_lang}/`
    - 例如：`docs/{source_lang}/quick-start.md` 应改为 `docs/{target_lang}/quick-start.md`
-   - 这确保了链接指向正确语言的文档版本"""
+   - 这确保了链接指向正确语言的文档版本
+{lang_switcher_hint}"""
         
         review_section = ""
         if review_notes:
@@ -496,8 +533,11 @@ class DocsTranslator:
                 return False
             
             # 确定目标路径
-            if file_path.name == "README.md" and file_path.parent == Path("."):
-                target_file = Path(f"README.{target_lang}.md")
+            if self._is_root_readme(file_path):
+                if target_lang == "en":
+                    target_file = Path("README.md")
+                else:
+                    target_file = Path(f"README.{target_lang}.md")
             else:
                 target_dir = Path("docs") / target_lang / Path(rel_path).parent
                 target_dir.mkdir(parents=True, exist_ok=True)
@@ -527,7 +567,7 @@ class DocsTranslator:
         """
         files = []
         
-        readme_path = Path("README.md")
+        readme_path = Path(self.ROOT_README_SOURCE)
         if readme_path.exists():
             files.append(readme_path)
         

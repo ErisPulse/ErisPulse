@@ -109,7 +109,7 @@ jobs:
           fi
           
           # 检查翻译文档是否有更新（包括根目录的 README.*.md 文件）
-          if git diff --quiet -- docs/ README.*.md 2>/dev/null; then
+          if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
             echo "翻译文档没有变化"
             echo "docs_updated=false" >> $GITHUB_OUTPUT
           else
@@ -205,7 +205,7 @@ jobs:
           echo "艾莉丝正在保存文档更新~"
           
           # 添加所有更新的文档和缓存
-          git add docs/ .github/.translate_cache/ README.*.md
+          git add docs/ .github/.translate_cache/ README.md README.*.md
           
           # 提交更改
           git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
