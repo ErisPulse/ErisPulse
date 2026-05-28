@@ -292,7 +292,7 @@ class TestLifecycleManager:
     async def test_validate_event_missing_required_field(self, manager):
         """测试验证缺少必填字段的事件"""
         # Mock logger
-        with patch('ErisPulse.Core.lifecycle.logger') as mock_logger:
+        with patch('ErisPulse.Core.logger.logger') as mock_logger:
             # 执行（缺少event字段）
             await manager.submit_event(None, data={})
             
@@ -317,7 +317,7 @@ class TestLifecycleManager:
         manager.on("test_event")(normal_handler)
         
         # Mock logger
-        with patch('ErisPulse.Core.lifecycle.logger') as mock_logger:
+        with patch('ErisPulse.Core.logger.logger') as mock_logger:
             # 执行
             await manager.submit_event("test_event")
             
