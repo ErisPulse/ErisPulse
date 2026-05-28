@@ -60,7 +60,7 @@ def _make_msg(text="test", **kwargs):
 @pytest.fixture
 def clean_state():
     _clear_all_handlers()
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
@@ -68,7 +68,7 @@ def clean_state():
     adapter._bots.clear()
     yield
     _clear_all_handlers()
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
