@@ -11,11 +11,11 @@
 
 # ErisPulse
 
-**Event-Driven Multi-Platform Robot Development Framework**
+**事件驱动的多平台机器人开发框架**
 
-Based on the OneBot12 standard interface, write once and deploy on multiple platforms. Flexible plugin system, hot-reload support, and a complete developer toolchain, suitable for various scenarios from simple chatbots to complex automation systems.
+基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
 
-> Supports Vibe Coding workflow that enables AI to directly generate usable modules — [Learn more](docs/en/ai-support/README.md)
+> 支持 Vibe Coding 工作流，让 AI 直接生成可用模块 — [查看](docs/en/ai-support/README.md)
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
@@ -25,9 +25,9 @@ Based on the OneBot12 standard interface, write once and deploy on multiple plat
 [![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-[![Documentation](https://img.shields.io/badge/Documentation-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
-[![Module Market](https://img.shields.io/badge/Module%20Market-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
-[![Discussions](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+[![文档](https://img.shields.io/badge/文档-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
+[![模块市场](https://img.shields.io/badge/模块市场-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
+[![讨论](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
 
 </td>
 </tr>
@@ -48,7 +48,7 @@ Based on the OneBot12 standard interface, write once and deploy on multiple plat
 
 ### Event-Driven Architecture
 
-A clear event model based on the OneBot12 standard makes message processing logic more intuitive and efficient
+基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效
 
 </td>
 <td width="50%" align="center" valign="top">
@@ -56,7 +56,7 @@ A clear event model based on the OneBot12 standard makes message processing logi
 
 ### Cross-Platform Compatibility
 
-Plugin modules written once can be used on all platforms, eliminating the need for repeated development for different platforms
+插件模块编写一次即可在所有平台使用，无需为不同平台重复开发
 
 </td>
 </tr>
@@ -66,7 +66,7 @@ Plugin modules written once can be used on all platforms, eliminating the need f
 
 ### Modular Design
 
-Flexible plugin system that is easy to extend and integrate, supporting hot-swappable module management
+灵活的插件系统，易于扩展和集成，支持热插拔模块管理
 
 </td>
 <td width="50%" align="center" valign="top">
@@ -74,7 +74,7 @@ Flexible plugin system that is easy to extend and integrate, supporting hot-swap
 
 ### Hot-Reload Support
 
-Reload code without restarting during development, significantly improving development iteration efficiency
+开发时无需重启即可重新加载代码，大幅提升开发迭代效率
 
 </td>
 </tr>
@@ -85,25 +85,37 @@ Reload code without restarting during development, significantly improving devel
 ### Supported Adapters
 
 <div align="center">
-<img src=".github/assets/adapter-showcase.png" width="520" alt="Supported Adapters" />
 
-Contributions of adapters are welcome!
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
 
-| Adapter | Description |
-|---------|-------------|
-| [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Kaihei La) instant messaging platform |
-| [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
-| [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 general robot protocol |
-| [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
-| [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ official robot platform |
-| [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to a real platform |
-| [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
-| [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol send/receive adapter |
-| [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-level instant messaging platform (robot access) |
-| [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Access adapter based on Yunhu user protocol |
+<img src=".github/assets/adapter-showcase.png" width="320" alt="Supported Adapters" />
+
+</td>
+<td valign="middle">
+
+欢迎您贡献适配器！
+
+| 适配器 | 说明 |
+|--------|------|
+| [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（开黑啦）即时通讯平台 |
+| [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通讯协议 |
+| [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用机器人协议 |
+| [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 标准协议 |
+| [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方机器人平台 |
+| [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
+| [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即时通讯平台 |
+| [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
+| [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
+| [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
 | [Ideaura](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
-See [Adapter Details Introduction](docs/en/platform-guide/README.md)
+查看 [适配器详情介绍](docs/en/platform-guide/README.md)
+
+</td>
+</tr>
+</table>
 
 </div>
 
@@ -118,15 +130,15 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
-<summary>Docker Hub unavailable?</summary>
+<summary>Docker Hub不可用？</summary>
 
-If Docker Hub cannot be accessed, you can use GitHub Container Registry:
+如果 Docker Hub 无法访问，可以使用 GitHub Container Registry：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using ghcr.io images, you need to modify the image in `docker-compose.yml`:
+使用 ghcr.io 镜像时，需要修改 `docker-compose.yml` 中的 image：
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
 ```
@@ -134,42 +146,42 @@ image: ghcr.io/erispulse/erispulse:latest
 </details>
 
 <details>
-<summary>Quick Start</summary>
+<summary>快速启动</summary>
 
 ```bash
-# Download docker-compose.yml
+# 下载 docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set Dashboard login token and start
+# 设置 Dashboard 登录令牌并启动
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-> The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
+> 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 
-After starting, access `http://<host>:<port>/Dashboard` and use the set token as the password to log in to the Dashboard management panel.
+启动后访问 `http://<host>:<port>/Dashboard`，使用设置的令牌作为密码登录 Dashboard 管理面板。
 
 </details>
 
 <details>
-<summary>Using Pre-release Version (Dev)</summary>
+<summary>使用预发布版本 (Dev)</summary>
 
-Set `ERISPULSE_CHANNEL=dev` to use the pre-release version:
+设置 `ERISPULSE_CHANNEL=dev` 即可使用预发布版本：
 
 ```bash
-# Method 1: Use environment variables (recommended)
+# 方式一：使用环境变量（推荐）
 ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
-# Method 2: Build dev image
+# 方式二：构建 dev 镜像
 ERISPULSE_BUILD_TARGET=dev docker compose up -d --build
 ```
 
-If you want to automatically update to the latest version on startup (whether stable or dev), explicitly set `ERISPULSE_UPDATE_ON_START=true`:
+如需启动时自动更新到最新版本（无论 stable 还是 dev），显式设置 `ERISPULSE_UPDATE_ON_START=true`：
 
 ```bash
 ERISPULSE_CHANNEL=dev ERISPULSE_UPDATE_ON_START=true docker compose up -d
 ```
 
-You can also pull the pre-built dev image:
+也可以拉取预构建的 dev 镜像：
 
 ```bash
 docker pull erispulse/erispulse:dev
@@ -178,23 +190,23 @@ docker pull erispulse/erispulse:dev
 </details>
 
 <details>
-<summary>Docker Environment Variables</summary>
+<summary>Docker 环境变量</summary>
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ERISPULSE_CHANNEL` | `stable` | Version channel: `stable` (stable version) or `dev` (pre-release version) |
-| `ERISPULSE_UPDATE_ON_START` | `false` | Whether to automatically update to the latest version on container start (needs to be explicitly enabled) |
-| `ERISPULSE_DASHBOARD_TOKEN` | Empty | Dashboard login token |
-| `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
-| `TZ` | `Asia/Shanghai` | Container timezone |
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `ERISPULSE_CHANNEL` | `stable` | 版本通道：`stable`（稳定版）或 `dev`（预发布版） |
+| `ERISPULSE_UPDATE_ON_START` | `false` | 容器启动时是否自动更新到最新版本（需显式启用） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登录令牌 |
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `TZ` | `Asia/Shanghai` | 容器时区 |
 
-> Enabling `ERISPULSE_UPDATE_ON_START=true` ensures that even if the image is outdated, the container will automatically get the latest version on startup.
+> 启用 `ERISPULSE_UPDATE_ON_START=true` 可确保即使镜像较旧，容器也能在启动时自动获取最新版本。
 
 </details>
 
 #### 1Panel App Store
 
-Install ErisPulse with one click via the [1Panel](https://1panel.cn) App Store. See [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel) for details.
+通过 [1Panel](https://1panel.cn) 应用商店一键安装 ErisPulse，详见 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
@@ -204,31 +216,55 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ```bash
 pip install ErisPulse
-
-# Domestic mirror
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
-
-# Installation using uv
-uv pip install ErisPulse
 ```
 
-![Installation Demo](.github/assets/docs/install_pip.gif)
+<img src=".github/assets/docs/install_pip.gif" width="480" alt="安装演示" />
 
-> If your Python version is below 3.10, you can use the one-click installation script to automatically configure the environment. See [Installation Script Instructions](scripts/install/) for details.
+> 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+
+#### 运行效果
+
+同一段代码，多个平台响应：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**Yunhu**
+
+<img src=".github/assets/demo-yunhu.png" alt="Yunhu 演示" />
+
+</td>
+</tr>
+</table>
 
 #### Initialize Project
 
 ```bash
-# Interactive initialization
+# 交互式初始化
 epsdk init
 
-# Quick initialization (specify project name)
+# 快速初始化（指定项目名称）
 epsdk init -q -n my_bot
 ```
 
 #### Create Your First Bot
 
-Create a `main.py` file:
+创建 `main.py` 文件：
 
 <table>
 <tr>
@@ -240,14 +276,14 @@ Create a `main.py` file:
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("hello", help="Send greeting message")
+@command("hello", help="发送问候消息")
 async def hello_handler(event):
-    user_name = event.get_user_nickname() or "friend"
-    await event.reply(f"Hello, {user_name}!")
+    user_name = event.get_user_nickname() or "朋友"
+    await event.reply(f"你好，{user_name}！")
 
-@command("ping", help="Test if the bot is online")
+@command("ping", help="测试机器人是否在线")
 async def ping_handler(event):
-    await event.reply("Pong! The bot is running normally.")
+    await event.reply("Pong！机器人运行正常。")
 
 if __name__ == "__main__":
     import asyncio
@@ -257,25 +293,25 @@ if __name__ == "__main__":
 </td>
 <td width="50%" valign="top">
 
-**Effect Description**
+**效果说明**
 
-Send `/hello`
+发送 `/hello`
 
-Bot replies: `Hello, {username}!`
-
----
-
-Send `/ping`
-
-Bot replies: `Pong! The bot is running normally.`
+机器人回复：`你好，{用户名}！`
 
 ---
 
-**Running Method**
+发送 `/ping`
+
+机器人回复：`Pong！机器人运行正常。`
+
+---
+
+**运行方式**
 
 ```bash
 epsdk run main.py
-# Or development mode
+# 或开发模式
 epsdk run main.py --reload
 ```
 
@@ -283,56 +319,56 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-For more detailed information, please refer to:
-- [Quick Start Guide](docs/en/quick-start.md)
-- [Getting Started Guide](docs/en/getting-started/)
+更多详细说明请参阅：
+- [快速开始指南](docs/en/quick-start.md)
+- [入门指南](docs/en/getting-started/)
 
 ---
 
-### Use Cases
+### 应用场景
 
 <div align="center">
 
-| Multi-Platform Bots | Chat Assistants | Automation Tools | Message Forwarding |
+| 多平台机器人 | 聊天助手 | 自动化工具 | 消息转发 |
 |:---:|:---:|:---:|:---:|
-| Deploy robots with the same functionality<br>on multiple platforms | Integrate AI chat modules<br>for entertainment and interaction | Message notifications, task management,<br>data collection | Cross-platform message<br>synchronization and forwarding |
+| 在多个平台部署<br>相同功能的机器人 | 接入 AI 聊天模块<br>实现娱乐和交互 | 消息通知、任务管理<br>数据收集 | 跨平台消息<br>同步和转发 |
 
 </div>
 
 ---
 
-### Documentation Resources
+### 文档与资源
 
 | 简体中文 | English | 繁體中文 |
 |:---:|:---:|:---:|
-| [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
+| [文档入口](docs/en/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
 
-| Platform | Main Site | Backup Sites |
-|----------|-----------|--------------|
-| Documentation | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
-| Module Market | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
+| 平台 | 主站点 | 备用站点 |
+|------|--------|---------|
+| 文档 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
+| 模块市场 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
 
 ---
 
-### Contribution Guide
+### 贡献指南
 
-The health of the ErisPulse project depends on your contribution! We welcome various forms of contribution:
+ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式的贡献：
 
-1. **Report Issues** — Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Feature Requests** — Share new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Code Contributions** — Before submitting a PR, please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md)
-4. **Documentation Improvements** — Help improve documentation and example code
+1. **报告问题** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 报告
+2. **功能请求** — 通过 [社区讨论](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+3. **代码贡献** — 提交 PR 前请阅读 [代码风格](docs/en/styleguide/) 及 [贡献指南](CONTRIBUTING.md)
+4. **文档改进** — 帮助完善文档和示例代码
 
-[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+[加入社区讨论](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
 <div align="center">
 
-### Acknowledgments
+### 致谢
 
-<img src=".github/assets/thanks.png" width="200" alt="Thanks" />
+<img src=".github/assets/thanks.png" width="200" alt="感谢" />
 
-Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame) · The core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/) · Thank you to all developers and authors who contribute to the open source community
+本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心适配器标准化层基于 [OneBot12 规范](https://12.onebot.dev/) · 感谢所有为开源社区做出贡献的开发者和作者
 
 </div>
