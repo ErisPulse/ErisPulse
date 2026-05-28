@@ -47,6 +47,13 @@
 | user_id | string | 用戶 ID |
 | user_nickname | string | 用戶暱稱（可選） |
 | comment | string | 請求附言（可選） |
+| request_id | string | 請求識別碼（**強烈推薦**，用於同意/拒絕請求操作） |
+
+**`request_id` 欄位說明**：
+- `request_id` 是請求事件的唯一操作識別碼，用於通過 `HandleRequest` DSL 執行同意/拒絕操作
+- 適配器在轉換請求事件時，應將平台原生的請求識別映射到此欄位
+- 如果平台本身沒有請求ID，適配器應生成一個唯一識別（如基於時間戳+用戶ID的哈希）
+- 當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`
 
 ## 3. 事件格式範例
 
@@ -119,6 +126,7 @@
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "comment": "請加好友",
+  "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
 }
@@ -269,127 +277,4 @@ email       subject           email_subject
 
 ### 6.6 `self` 欄位擴展
 
-`self` 物件的標準必選欄位（`platform`、`user_id`）見 §2.1，以下是 ErisPulse 擴充的選擇性欄位：
-
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| `self.user_name` | `string` | 機器人暱稱 |
-| `self.avatar` | `string` | 機器人頭像 URL |
-| `self.account_id` | `string` | 多帳戶模式下的帳戶識別 |
-
-> **Bot 狀態追蹤**：適配器透過傳送 `type: "meta"` 事件告知框架 Bot 的連線狀態。支援的 `detail_type`：`connect`（上線）、`heartbeat`（心跳）、`disconnect`（離線）。系統自動從中提取 `self` 欄位的 Bot 元資訊進行狀態追蹤。此外，普通事件中的 `self` 欄位也會自動發現 Bot。詳見 [適配器系統 API - Bot 狀態管理](../api-reference/adapter-system.md)。
-
----
-
-## 7. 會話類型擴展
-
-ErisPulse 在 OneBot12 標準的 `private`、`group` 基礎上擴充了以下會話類型：
-
-| 類型 | OneBot12 標準 | ErisPulse 擴展 | 說明 |
-|------|:-----------:|:------------:|------|
-| `private` | ✅ | — | 一對一私聊 |
-| `group` | ✅ | — | 群聊 |
-| `user` | — | ✅ | 用戶類型（Telegram 等） |
-| `channel` | — | ✅ | 頻道（廣播式） |
-| `guild` | — | ✅ | 伺服器/社群 |
-| `thread` | — | ✅ | 話題/子頻道 |
-
-**適配器自定義類型擴充**：
-
-```python
-from ErisPulse.Core.Event.session_type import register_custom_type
-
-# 在適配器啟動時註冊
-register_custom_type(
-    receive_type="email",      # 接收事件中的 detail_type
-    send_type="email",         # 發送時的目標類型
-    id_field="email_id",       # 對應的 ID 欄位名
-    platform="email"           # 平台識別
-)
-```
-
-**自定義類型要求**：
-- 必須在適配器 `start()` 時註冊，在 `shutdown()` 時註銷
-- `receive_type` 不應與標準類型重名
-- `id_field` 應遵循 `{目標}_id` 的命名模式
-
-> 完整的會話類型定義和對映關係參見 [會話類型標準](session-types.md)。
-
----
-
-## 8. 模組開發者指南
-
-### 8.1 訪問擴充欄位
-
-```python
-from ErisPulse.Core.Event import message
-
-@message()
-async def handle_message(event):
-    # 訪問標準欄位
-    text = event.get_text()
-    user_id = event.get_user_id()
-
-    # 訪問平台擴充欄位 - 方式1：直接 get
-    yunhu_command = event.get("yunhu_command")
-
-    # 訪問平台擴充欄位 - 方式2：點式存取（Event 包裝類）
-    # event.yunhu_command
-
-    # 訪問原始資料
-    raw_data = event.get("yunhu_raw")
-    raw_type = event.get_raw_type()
-
-    # 判斷平台
-    platform = event.get_platform()
-    if platform == "yunhu":
-        pass
-    elif platform == "telegram":
-        pass
-```
-
-### 8.2 處理擴充訊息段
-
-```python
-@message()
-async def handle_message(event):
-    message_segments = event.get("message", [])
-
-    for segment in message_segments:
-        seg_type = segment.get("type")
-        seg_data = segment.get("data", {})
-
-        if seg_type == "text":
-            text = seg_data["text"]
-        elif seg_type.startswith("yunhu_"):
-            if seg_type == "yunhu_form":
-                form_id = seg_data["form_id"]
-        elif seg_type.startswith("telegram_"):
-            if seg_type == "telegram_sticker":
-                file_id = seg_data["file_id"]
-```
-
-### 8.3 最佳實踐
-
-1. **優先使用標準欄位**：不要假設擴充欄位一定存在
-2. **平台判斷**：透過 `event.get_platform()` 判斷平台，而非透過擴充欄位是否存在來推斷
-3. **優雅降級**：無法處理擴充訊息段時，使用 `alt_message` 作為兜底
-4. **不要硬編碼前綴**：使用 `platform` 變數動態拼接
-
-```python
-# ✅ 推薦
-platform = event.get_platform()
-raw_data = event.get(f"{platform}_raw")
-
-# ❌ 不推薦
-raw_data = event.get("yunhu_raw")
-```
-
----
-
-## 9. 相關文件
-
-- [各平台特性文件](../platform-guide/README.md) - 你可以存取此文件來了解各個平台特性以及已知的擴充事件和訊息段等。
-- [會話類型標準](session-types.md) - 會話類型定義和對映關係
-- [發送方法規範](send-method-spec.md) - Send 類的方法命名、參數規範及反向轉換要求
-- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
+`self` 物件的標準必選欄位（`platform`、`

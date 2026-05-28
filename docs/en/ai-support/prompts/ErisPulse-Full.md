@@ -2535,6 +2535,14 @@ The ErisPulse command-line tool provides project management and package manageme
 | `init` | `[--project-name/-n <name>]` | Interactive project initialization | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | Quick mode, skip interaction | `epsdk init -q -n bot` |
 | | `[--force/-f]` | Force override existing configuration | `epsdk init -f` |
+| `create` | `[module|adapter]` | Create scaffold project | `epsdk create` |
+| | `[--name/-n <name>]` | Project name (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | Project description | `epsdk create adapter -d "xx adapter"` |
+| | `[--author/-a <name>]` | Author name | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | Author email | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | Project homepage URL | |
+| | `[--output/-o <dir>]` | Output directory (default current directory) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | Force overwrite existing directory | `epsdk create -f` |
 
 ## Parameter Reference
 
@@ -2649,6 +2657,25 @@ epsdk init
 
 # Quick initialization
 epsdk init -q -n my_bot
+```
+
+### Creating Scaffolds
+
+```bash
+# Interactive creation (guided selection and information filling)
+epsdk create
+
+# Directly create Module project
+epsdk create module -n MyModule
+
+# Directly create Adapter project
+epsdk create adapter -n MyAdapter
+
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+
+# Force overwrite existing directory
+epsdk create module -n MyModule -f
 
 
 
@@ -4399,210 +4426,7 @@ from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
-        super().__init__()
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter initialization completed")
-    
-    def _setup_converter(self):
-        from .Converter import MyPlatformConverter
-        return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
-```
-
-### 4. Implement Required Methods
-
-```python
-class MyAdapter(BaseAdapter):
-    # ... __init__ code ...
-    
-    async def start(self):
-        """Start the adapter (must implement)"""
-        # Register WebSocket or WebHook routes
-        router.register_websocket(
-            module_name="myplatform",
-            path="/ws",
-            handler=self._ws_handler
-        )
-        self.logger.info("Adapter started")
-    
-    async def shutdown(self):
-        """Shutdown the adapter (must implement)"""
-        router.unregister_websocket(
-            module_name="myplatform",
-            path="/ws"
-        )
-        # Clean up connections and resources
-        self.logger.info("Adapter shutdown")
-    
-    async def call_api(self, endpoint: str, **params):
-        """Call platform API (must implement)"""
-        raise NotImplementedError("Need to implement call_api")
-```
-
-#### Proactively Sending Meta Events
-
-The adapter should proactively send meta events to allow the framework to track the bot's online status:
-
-```python
-class MyAdapter(BaseAdapter):
-    async def _ws_handler(self, websocket):
-        bot_id = self._get_bot_id()
-
-        # Bot online
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
-
-        try:
-            while True:
-                data = await websocket.receive_text()
-                event = self.convert(data)
-                if event:
-                    await self.adapter.emit(event)
-        except WebSocketDisconnect:
-            pass
-        finally:
-            # Bot offline
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
-```
-
-> For detailed information on bot status management and Meta events, please refer to [Adapter Best Practices - Bot Status Management](best-practices.md#bot-status-management-and-meta-events).
-
-### 5. Implement Send Class
-
-```python
-import asyncio
-
-class MyAdapter(BaseAdapter):
-    # ... other code ...
-    
-    class Send(BaseAdapter.Send):
-        
-        def Text(self, text: str):
-            """Send text message"""
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-        
-        def Image(self, file):
-            """Send image message"""
-            # Implementation details below
-            pass
-        
-        def Raw_ob12(self, message, **kwargs):
-            """
-            Send OneBot12 format message (must implement)
-
-            For complete implementation specifications and examples, please refer to:
-            ../../standards/send-method-spec.md#6-reverse-conversion-spec-onebot12--platform
-            """
-            if isinstance(message, dict):
-                message = [message]
-            return asyncio.create_task(self._do_send(message))
-```
-
-**Key points for implementing media sending methods (Image/Video/File):**
-
-- The `file` parameter should support both `bytes` binary data and `str` URL types.
-- When a URL is passed, the file needs to be downloaded first before uploading to the platform.
-- Platforms usually require calling an upload interface to get a file identifier first, then calling the send interface.
-
-**`__getattr__` magic method:**
-
-- Implements case-insensitive method names (calls to `Text`, `text`, `TEXT` all work).
-- Undefined methods should return a prompt message instead of raising an error.
-
-**`Raw_ob12` method:**
-
-- Converts OneBot12 standard message format to platform format for sending.
-- Processes message segment arrays, dispatching to corresponding send methods based on the `type` field.
-
-### 6. Implement Converter
-
-```python
-# MyAdapter/Converter.py
-import time
-import uuid
-
-class MyPlatformConverter:
-    def convert(self, raw_event):
-        """Convert platform native events to OneBot12 standard format"""
-        if not isinstance(raw_event, dict):
-            return None
-        
-        onebot_event = {
-            "id": str(raw_event.get("event_id", uuid.uuid4())),
-            "time": int(time.time()),
-            "type": self._convert_event_type(raw_event.get("type")),
-            "detail_type": self._convert_detail_type(raw_event),
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": str(raw_event.get("bot_id", ""))
-            },
-            "myplatform_raw": raw_event,
-            "myplatform_raw_type": raw_event.get("type", "")
-        }
-        
-        return onebot_event
-    
-    def _convert_event_type(self, event_type):
-        """Convert event type"""
-        type_map = {
-            "message": "message",
-            "notice": "notice"
-        }
-        return type_map.get(event_type, "unknown")
-    
-    def _convert_detail_type(self, raw_event):
-        """Convert detail type"""
-        return "private"  # Simplified example
-```
-
-### 7. Create Package Entry
-
-```python
-# MyAdapter/__init__.py
-from .Core import MyAdapter
-```
-
-## Next Steps
-
-- [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
-- [SendDSL Deep Dive](send-dsl.md) - Learn message sending
-- [Converter Implementation](converter.md) - Understand event conversion
-- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
+        super().__init
 
 
 
@@ -4934,47 +4758,53 @@ The `Send` class automatically sets the following properties when called:
 | `_target_to` | Simplified Target ID | `To(id)` |
 | `_account_id` | Sending Account ID | `Using(account_id)` |
 | `_adapter` | Adapter Instance | Automatically set |
+| `_at_user_ids` | @User List | `At(user_id)` |
+| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
+| `_at_all` | @All Members | `AtAll()` |
+
+> **Recommendation**: Use the `self.send_context` property to get `{target_type, target_id, account_id}` at once, which is clearer than directly accessing instance variables.
+
+### Framework Helper Methods
+
+| Method/Property | Description |
+|-----------------|-------------|
+| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into message segment list |
+| `self.send_context` | Returns `{target_type, target_id, account_id}` dictionary |
 
 ### Basic Methods
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """Send text message (must return Task)"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """Recommended implementation"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        """Send text message"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
 ```
 
 ### Chained Modifier Methods
 
 ```python
 class Send(BaseAdapter.Send):
+
     def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
         super().__init__(adapter, target_type, target_id, account_id)
-        self._at_user_ids = []
-        self._reply_message_id = None
-        self._at_all = False
-    
-    def At(self, user_id: str) -> 'Send':
-        """@user (can be called multiple times)"""
-        self._at_user_ids.append(user_id)
-        return self
-    
-    def AtAll(self) -> 'Send':
-        """@all members"""
-        self._at_all = True
-        return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """Reply to message"""
-        self._reply_message_id = message_id
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
         return self
 ```
 
@@ -5887,38 +5717,40 @@ def _generate_event_id(self, raw_event):
 
 ## SendDSL Implementation
 
+`At`/`AtAll`/`Reply` modifiers are already built into the framework SendDSL base class. Adapters only need to implement `Raw_ob12` and specific sending methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
+
 ### 1. Must Return Task Object
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """Send text message"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """Recommended implementation: use framework helper methods"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 2. Chaining Modifier Methods Return self
 
 ```python
 class Send(BaseAdapter.Send):
-    def At(self, user_id: str) -> 'Send':
-        """@User"""
-        if not hasattr(self, '_at_user_ids'):
-            self._at_user_ids = []
-        self._at_user_ids.append(user_id)
-        return self  # Must return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """Reply message"""
-        self._reply_message_id = message_id
-        return self  # Must return self
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self # Return self
 ```
 
 ### 3. Support Platform-Specific Methods
@@ -5927,25 +5759,21 @@ class Send(BaseAdapter.Send):
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
         """Send sticker"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
-                sticker_id=sticker_id,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "sticker", "data": {"id": sticker_id}}],
+                **self.send_context
             )
         )
     
     def Card(self, card_data: dict):
         """Send card message"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                card=card_data,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "card", "data": card_data}],
+                **self.send_context
             )
         )
 ```
@@ -8422,6 +8250,13 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 | user_id | string | User ID |
 | user_nickname | string | User nickname (optional) |
 | comment | string | Request comment (optional) |
+| request_id | string | Request identifier (**strongly recommended**, for approve/reject request operations) |
+
+**`request_id` Field Description**:
+- `request_id` is the unique operation identifier for request events, used to perform approve/reject operations through `HandleRequest` DSL
+- The adapter should map platform-native request identifiers to this field when converting request events
+- If the platform doesn't have a request ID, the adapter should generate a unique identifier (such as a hash based on timestamp + user ID)
+- When `request_id` is missing, `event.approve()` / `event.reject()` will throw `ValueError`
 
 ## 3. Event Format Examples
 
@@ -8494,6 +8329,7 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "comment": "请加好友",
+  "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
 }
@@ -8652,13 +8488,167 @@ The standard required fields for the `self` object (`platform`, `user_id`) are l
 | `self.avatar` | `string` | Bot avatar URL |
 | `self.account_id` | `string` | Account identifier in multi-account mode |
 
-> **Bot Status Tracking**: The adapter informs the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type`: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts Bot metadata from the `self` field for status tracking. Additionally, the `self` field in regular events is also automatically discovered as a Bot. See [Adapter System API - Bot Status Management](../../api-reference/adapter-system.md).
+> **Bot Status Tracking**: The adapter informs the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type`: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts Bot metadata from the `self` field for status tracking. Additionally, the `self` field in regular events is also automatically discovered as a Bot. See [Adapter System API - Bot Status Management](../api-reference/adapter-system.md).
 
 ---
 
 ## 7. Session Type Extensions
 
-E
+ErisPulse extends the following session types on top of OneBot12 standard `private`, `group`:
+
+| Type | OneBot12 Standard | ErisPulse Extension | Description |
+|------|:-----------:|:------------:|------|
+| `private` | ✅ | — | One-on-one private chat |
+| `group` | ✅ | — | Group chat |
+| `user` | — | ✅ | User type (Telegram etc.) |
+| `channel` | — | ✅ | Channel (broadcast-style) |
+| `guild` | — | ✅ | Server/community |
+| `thread` | — | ✅ | Thread/sub-channel |
+
+**Adapter Custom Type Extension**:
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type
+
+# Register during adapter startup
+register_custom_type(
+    receive_type="email",      # detail_type in receive events
+    send_type="email",         # target type when sending
+    id_field="email_id",       # corresponding ID field name
+    platform="email"           # platform identifier
+)
+```
+
+**Custom Type Requirements**:
+- Must be registered during adapter `start()` and unregistered during `shutdown()`
+- `receive_type` should not conflict with standard types
+- `id_field` should follow the `{target}_id` naming pattern
+
+> For complete session type definitions and mapping relationships, see [Session Types Standard](session-types.md).
+
+---
+
+## 8. Module Developer Guide
+
+### 8.1 Accessing Extension Fields
+
+```python
+from ErisPulse.Core.Event import message
+
+@message()
+async def handle_message(event):
+    # Access standard fields
+    text = event.get_text()
+    user_id = event.get_user_id()
+
+    # Access platform extension fields - Method 1: Direct get
+    yunhu_command = event.get("yunhu_command")
+
+    # Access platform extension fields - Method 2: Dot access (Event wrapper class)
+    # event.yunhu_command
+
+    # Access raw data
+    raw_data = event.get("yunhu_raw")
+    raw_type = event.get_raw_type()
+
+    # Check platform
+    platform = event.get_platform()
+    if platform == "yunhu":
+        pass
+    elif platform == "telegram":
+        pass
+```
+
+### 8.2 Handling Extension Message Segments
+
+```python
+@message()
+async def handle_message(event):
+    message_segments = event.get("message", [])
+
+    for segment in message_segments:
+        seg_type = segment.get("type")
+        seg_data = segment.get("data", {})
+
+        if seg_type == "text":
+            text = seg_data["text"]
+        elif seg_type.startswith("yunhu_"):
+            if seg_type == "yunhu_form":
+                form_id = seg_data["form_id"]
+        elif seg_type.startswith("telegram_"):
+            if seg_type == "telegram_sticker":
+                file_id = seg_data["file_id"]
+```
+
+### 8.3 Best Practices
+
+1. **Prioritize standard fields**: Don't assume extension fields always exist
+2. **Platform checking**: Determine platform through `event.get_platform()`, not by inferring from the existence of extension fields
+3. **Graceful degradation**: When unable to handle extension message segments, use `alt_message` as fallback
+4. **Don't hardcode prefixes**: Use `platform` variable for dynamic concatenation
+
+```python
+# ✅ Recommended
+platform = event.get_platform()
+raw_data = event.get(f"{platform}_raw")
+
+# ❌ Not recommended
+raw_data = event.get("yunhu_raw")
+```
+
+### 8.4 Request Event Handling
+
+Module developers can use `event.approve()` and `event.reject()` to operate on request events:
+
+```python
+from ErisPulse.Core.Event import request
+
+# Friend request: Auto-approve
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    comment = event.get_comment()
+    
+    # Approve request
+    result = await event.approve()
+    if result.get("status") == "ok":
+        print(f"已同意 {user_name} 的好友请求")
+    else:
+        print(f"同意好友请求失败: {result.get('message')}")
+
+# Group invitation: Decide based on conditions
+@request.on_group_request()
+async def handle_group_request(event):
+    comment = event.get_comment()
+    
+    # Reject request
+    result = await event.reject(comment="暂不加入新群")
+```
+
+**Direct operations through adapter** (suitable for non-event handler scenarios):
+
+```python
+from ErisPulse import adapter
+
+# Direct operations via request_id
+await adapter.myplatform.Request("req_abc123").accept()
+await adapter.myplatform.Request("req_abc123").reject()
+
+# Specify Bot account operation
+await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
+
+# With comment
+await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
+```
+
+---
+
+## 9. Related Documentation
+
+- [Platform Features Documentation](../platform-guide/README.md) - You can access this document to understand platform-specific features and known extension events and message segments.
+- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
+- [Send Method Specification](send-method-spec.md) - Method naming, parameter specifications, and reverse conversion requirements for Send classes
+- [API Response Standard](api-response.md) - Adapter API response format standards
 
 
 

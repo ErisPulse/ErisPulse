@@ -47,6 +47,13 @@
 | user_id | string | User ID |
 | user_nickname | string | User nickname (optional) |
 | comment | string | Request comment (optional) |
+| request_id | string | Request identifier (**strongly recommended**, for approve/reject request operations) |
+
+**`request_id` Field Description**:
+- `request_id` is the unique operation identifier for request events, used to perform approve/reject operations through `HandleRequest` DSL
+- The adapter should map platform-native request identifiers to this field when converting request events
+- If the platform doesn't have a request ID, the adapter should generate a unique identifier (such as a hash based on timestamp + user ID)
+- When `request_id` is missing, `event.approve()` / `event.reject()` will throw `ValueError`
 
 ## 3. Event Format Examples
 
@@ -119,6 +126,7 @@
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "comment": "请加好友",
+  "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
 }
@@ -277,10 +285,164 @@ The standard required fields for the `self` object (`platform`, `user_id`) are l
 | `self.avatar` | `string` | Bot avatar URL |
 | `self.account_id` | `string` | Account identifier in multi-account mode |
 
-> **Bot Status Tracking**: The adapter informs the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type`: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts Bot metadata from the `self` field for status tracking. Additionally, the `self` field in regular events is also automatically discovered as a Bot. See [Adapter System API - Bot Status Management](../../api-reference/adapter-system.md).
+> **Bot Status Tracking**: The adapter informs the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type`: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts Bot metadata from the `self` field for status tracking. Additionally, the `self` field in regular events is also automatically discovered as a Bot. See [Adapter System API - Bot Status Management](../api-reference/adapter-system.md).
 
 ---
 
 ## 7. Session Type Extensions
 
-E
+ErisPulse extends the following session types on top of OneBot12 standard `private`, `group`:
+
+| Type | OneBot12 Standard | ErisPulse Extension | Description |
+|------|:-----------:|:------------:|------|
+| `private` | ✅ | — | One-on-one private chat |
+| `group` | ✅ | — | Group chat |
+| `user` | — | ✅ | User type (Telegram etc.) |
+| `channel` | — | ✅ | Channel (broadcast-style) |
+| `guild` | — | ✅ | Server/community |
+| `thread` | — | ✅ | Thread/sub-channel |
+
+**Adapter Custom Type Extension**:
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type
+
+# Register during adapter startup
+register_custom_type(
+    receive_type="email",      # detail_type in receive events
+    send_type="email",         # target type when sending
+    id_field="email_id",       # corresponding ID field name
+    platform="email"           # platform identifier
+)
+```
+
+**Custom Type Requirements**:
+- Must be registered during adapter `start()` and unregistered during `shutdown()`
+- `receive_type` should not conflict with standard types
+- `id_field` should follow the `{target}_id` naming pattern
+
+> For complete session type definitions and mapping relationships, see [Session Types Standard](session-types.md).
+
+---
+
+## 8. Module Developer Guide
+
+### 8.1 Accessing Extension Fields
+
+```python
+from ErisPulse.Core.Event import message
+
+@message()
+async def handle_message(event):
+    # Access standard fields
+    text = event.get_text()
+    user_id = event.get_user_id()
+
+    # Access platform extension fields - Method 1: Direct get
+    yunhu_command = event.get("yunhu_command")
+
+    # Access platform extension fields - Method 2: Dot access (Event wrapper class)
+    # event.yunhu_command
+
+    # Access raw data
+    raw_data = event.get("yunhu_raw")
+    raw_type = event.get_raw_type()
+
+    # Check platform
+    platform = event.get_platform()
+    if platform == "yunhu":
+        pass
+    elif platform == "telegram":
+        pass
+```
+
+### 8.2 Handling Extension Message Segments
+
+```python
+@message()
+async def handle_message(event):
+    message_segments = event.get("message", [])
+
+    for segment in message_segments:
+        seg_type = segment.get("type")
+        seg_data = segment.get("data", {})
+
+        if seg_type == "text":
+            text = seg_data["text"]
+        elif seg_type.startswith("yunhu_"):
+            if seg_type == "yunhu_form":
+                form_id = seg_data["form_id"]
+        elif seg_type.startswith("telegram_"):
+            if seg_type == "telegram_sticker":
+                file_id = seg_data["file_id"]
+```
+
+### 8.3 Best Practices
+
+1. **Prioritize standard fields**: Don't assume extension fields always exist
+2. **Platform checking**: Determine platform through `event.get_platform()`, not by inferring from the existence of extension fields
+3. **Graceful degradation**: When unable to handle extension message segments, use `alt_message` as fallback
+4. **Don't hardcode prefixes**: Use `platform` variable for dynamic concatenation
+
+```python
+# ✅ Recommended
+platform = event.get_platform()
+raw_data = event.get(f"{platform}_raw")
+
+# ❌ Not recommended
+raw_data = event.get("yunhu_raw")
+```
+
+### 8.4 Request Event Handling
+
+Module developers can use `event.approve()` and `event.reject()` to operate on request events:
+
+```python
+from ErisPulse.Core.Event import request
+
+# Friend request: Auto-approve
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    comment = event.get_comment()
+    
+    # Approve request
+    result = await event.approve()
+    if result.get("status") == "ok":
+        print(f"已同意 {user_name} 的好友请求")
+    else:
+        print(f"同意好友请求失败: {result.get('message')}")
+
+# Group invitation: Decide based on conditions
+@request.on_group_request()
+async def handle_group_request(event):
+    comment = event.get_comment()
+    
+    # Reject request
+    result = await event.reject(comment="暂不加入新群")
+```
+
+**Direct operations through adapter** (suitable for non-event handler scenarios):
+
+```python
+from ErisPulse import adapter
+
+# Direct operations via request_id
+await adapter.myplatform.Request("req_abc123").accept()
+await adapter.myplatform.Request("req_abc123").reject()
+
+# Specify Bot account operation
+await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
+
+# With comment
+await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
+```
+
+---
+
+## 9. Related Documentation
+
+- [Platform Features Documentation](../platform-guide/README.md) - You can access this document to understand platform-specific features and known extension events and message segments.
+- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
+- [Send Method Specification](send-method-spec.md) - Method naming, parameter specifications, and reverse conversion requirements for Send classes
+- [API Response Standard](api-response.md) - Adapter API response format standards

@@ -271,38 +271,40 @@ def _generate_event_id(self, raw_event):
 
 ## SendDSL 實作
 
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建，配接器只需實作 `Raw_ob12` 和具體傳送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
+
 ### 1. 必須返回 Task 物件
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """傳送文字訊息"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """推薦實作：使用框架輔助方法"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 ### 2. 鏈式修飾方法返回 self
 
 ```python
 class Send(BaseAdapter.Send):
-    def At(self, user_id: str) -> 'Send':
-        """@使用者"""
-        if not hasattr(self, '_at_user_ids'):
-            self._at_user_ids = []
-        self._at_user_ids.append(user_id)
-        return self  # 必須返回 self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回覆訊息"""
-        self._reply_message_id = message_id
-        return self  # 必須返回 self
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self # 必須返回 self
 ```
 
 ### 3. 支援平台特有方法
@@ -311,25 +313,21 @@ class Send(BaseAdapter.Send):
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
         """傳送表情包"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
-                sticker_id=sticker_id,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "sticker", "data": {"id": sticker_id}}],
+                **self.send_context
             )
         )
     
     def Card(self, card_data: dict):
         """傳送卡片訊息"""
-        import asyncio
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                card=card_data,
-                recvId=self._target_id,
-                recvType=self._target_type
+                message=[{"type": "card", "data": card_data}],
+                **self.send_context
             )
         )
 ```
