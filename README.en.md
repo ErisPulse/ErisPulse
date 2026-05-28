@@ -1,37 +1,37 @@
-<div align="center">
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/mascot-hero.png" width="320" alt="ErisPulse" />
+
+</td>
+<td valign="middle">
 
 [English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
-
-<br/>
-
-<img src=".github/assets/erispulse_logo_hp.png" width="160" alt="ErisPulse" />
-
-<br/>
 
 # ErisPulse
 
 **Event-Driven Multi-Platform Robot Development Framework**
 
-> Did you know? ErisPulse supports a complete Vibe Coding workflow that enables AI to directly generate usable modules
-> [Learn more](docs/en/ai-support/README.md)
-
-<br/>
-
-[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
-
-</div>
-
-<br/>
-
-<div align="center">
-
 Based on the OneBot12 standard interface, write once and deploy on multiple platforms. Flexible plugin system, hot-reload support, and a complete developer toolchain, suitable for various scenarios from simple chatbots to complex automation systems.
 
-</div>
+> Supports Vibe Coding workflow that enables AI to directly generate usable modules — [Learn more](docs/en/ai-support/README.md)
+
+[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
+[![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse)
+[![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+[![Documentation](https://img.shields.io/badge/Documentation-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
+[![Module Market](https://img.shields.io/badge/Module%20Market-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
+[![Discussions](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -48,7 +48,7 @@ Based on the OneBot12 standard interface, write once and deploy on multiple plat
 
 ### Event-Driven Architecture
 
-A clear event model based on OneBot12 standard makes message processing logic more intuitive and efficient
+A clear event model based on the OneBot12 standard makes message processing logic more intuitive and efficient
 
 </td>
 <td width="50%" align="center" valign="top">
@@ -84,6 +84,9 @@ Reload code without restarting during development, significantly improving devel
 
 ### Supported Adapters
 
+<div align="center">
+<img src=".github/assets/adapter-showcase.png" width="520" alt="Supported Adapters" />
+
 Contributions of adapters are welcome!
 
 | Adapter | Description |
@@ -101,6 +104,8 @@ Contributions of adapters are welcome!
 | [Ideaura](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 See [Adapter Details Introduction](docs/en/platform-guide/README.md)
+
+</div>
 
 ---
 
@@ -305,4 +310,29 @@ For more detailed information, please refer to:
 | Platform | Main Site | Backup Sites |
 |----------|-----------|--------------|
 | Documentation | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
-| Module Market | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev
+| Module Market | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
+
+---
+
+### Contribution Guide
+
+The health of the ErisPulse project depends on your contribution! We welcome various forms of contribution:
+
+1. **Report Issues** — Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
+2. **Feature Requests** — Share new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+3. **Code Contributions** — Before submitting a PR, please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md)
+4. **Documentation Improvements** — Help improve documentation and example code
+
+[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+<div align="center">
+
+### Acknowledgments
+
+<img src=".github/assets/thanks.png" width="200" alt="Thanks" />
+
+Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame) · The core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/) · Thank you to all developers and authors who contribute to the open source community
+
+</div>
