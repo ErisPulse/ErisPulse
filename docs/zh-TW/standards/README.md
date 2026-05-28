@@ -8,6 +8,7 @@
 2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴展命名規範、訊息段標準
 3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴展要求
 4. [發送方法規範](send-method-spec.md) - Send 類別方法命名、參數規範及反向轉換要求
+5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實現要求
 
 ## 標準概述
 
@@ -67,12 +68,13 @@ ErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了
 
 ### 事件轉換
 
-- [ ] 所有標準欄位已正確對應
+- [ ] 所有標準欄位已正確映射
 - [ ] 平台特有欄位已添加前綴
 - [ ] 時間戳記已轉換為10位秒級
 - [ ] 原始數據保存在 {platform}_raw
 - [ ] 原始事件類型保存在 {platform}_raw_type
 - [ ] 訊息段的 alt_message 已產生
+- [ ] 請求事件包含 request_id 欄位
 
 ### API 回應
 
@@ -85,10 +87,16 @@ ErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了
 
 ### 發送方法命名
 
-- [ ] 使用大駝峰命名法
+- [ ] 使用大駝峰命名法（PascalCase）
 - [ ] 返回 Task 物件
 - [ ] 修飾方法返回 self
 - [ ] 參數命名符合規範
+
+### 請求操作
+
+- [ ] HandleRequest 類別已實現 _do_accept / _do_reject
+- [ ] 操作返回標準 API 回應格式
+- [ ] 不支援的操作返回 retcode=10002
 
 ## 相關文件
 
