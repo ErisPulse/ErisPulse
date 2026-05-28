@@ -1647,7 +1647,7 @@ from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
-        super().__init__()
+        super().__init__()  # ← 必须！创建 Send / Request 工厂实例
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -1674,6 +1674,8 @@ class MyAdapter(BaseAdapter):
             return default_config
         return config
 ```
+
+> ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` 负责创建 `Send` 和 `Request` 工厂实例。如果忘记调用，所有消息发送和请求操作都会报 `AttributeError`。详见 [__init__ 注意事项](#init-注意事项)。
 
 ### 4. 实现必需方法
 
@@ -1847,12 +1849,141 @@ class MyPlatformConverter:
         return "private"  # 简化示例
 ```
 
-### 7. 创建包入口
+### 7. 实现 Request 类（请求操作）
+
+如果你的平台支持好友请求、群邀请等需要 Bot 做出决策的请求，可以实现 `Request` 内部类：
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    # ... Send 和其他代码 ...
+
+    class Request(RequestDSL):
+        """请求操作实现（好友请求、群邀请等）"""
+
+        def accept(self, **kwargs):
+            """同意请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+
+        def reject(self, **kwargs):
+            """拒绝请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=False,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+```
+
+模块开发者使用方式：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # 通过 Event 便捷方法
+    await event.approve()
+    # 或通过适配器直接操作
+    await adapter.myplatform.Request("req_id").accept()
+```
+
+> 如果平台不支持请求操作，可以不实现 `Request` 内部类。基类默认返回 `retcode=10002`（不支持的操作）。详见 [请求操作规范](../../standards/request-action-spec.md)。
+
+### 8. 创建包入口
 
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 ```
+
+## `__init__` 注意事项
+
+适配器开发中有三个层面可能涉及 `__init__` 重写。以下是每个层面的正确做法。
+
+### 1. BaseAdapter 层（必须调用 `super().__init__()`）
+
+`BaseAdapter.__init__()` 负责**创建 `Send` 和 `Request` 工厂实例**。如果适配器有自己的 `__init__`，必须调用父类初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self, sdk):
+        super().__init__()  # ← 必须！否则 Send / Request 不会被初始化
+        self.sdk = sdk
+        # ... 其他初始化
+```
+
+**忘记调用的后果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都会报 `AttributeError`。
+
+### 2. Send 内部类（大多数情况不需要重写）
+
+`SendDSL.__init__` 负责链式调用的状态传递（目标类型、目标ID、账号等）。**大多数情况下，你只需要重写方法**（`Raw_ob12`、`Text` 等），不需要重写 `__init__`。
+
+如果确实需要（比如初始化平台特有的状态），**必须透传所有参数**：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        # 参数：adapter, target_type, target_id, account_id
+        def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必须透传
+            self._my_state = None  # 平台特有初始化
+```
+
+**为什么必须透传？** 链式调用的每一步都通过 `self.__class__(...)` 创建新实例：
+
+```python
+adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
+adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
+```
+
+如果 `__init__` 签名不匹配或没调 `super()`，链式调用就会中断。
+
+### 3. Request 内部类（大多数情况不需要重写）
+
+与 Send 同理。参数为 `adapter`, `request_id`, `account_id`：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Request(RequestDSL):
+        # 参数：adapter, request_id, account_id
+        def __init__(self, adapter, request_id=None, account_id=None):
+            super().__init__(adapter, request_id, account_id)  # ← 必须透传
+            self._my_state = None  # 平台特有初始化
+```
+
+### 总结
+
+| 层面 | 什么时候重写 | 必须做的事 |
+|------|------------|-----------|
+| **BaseAdapter** | 需要初始化适配器状态时 | `super().__init__()` （无参数） |
+| **Send 内部类** | 需要初始化发送相关状态时 | `super().__init__(adapter, target_type, target_id, account_id)` |
+| **Request 内部类** | 需要初始化请求相关状态时 | `super().__init__(adapter, request_id, account_id)` |
+| 三个层面 | 大多数情况 | **只重写方法，不碰 `__init__`** |
 
 ## 下一步
 
@@ -6575,6 +6706,13 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 | user_id | string | 用户ID |
 | user_nickname | string | 用户昵称（可选） |
 | comment | string | 请求附言（可选） |
+| request_id | string | 请求标识符（**强烈推荐**，用于同意/拒绝请求操作） |
+
+**`request_id` 字段说明**：
+- `request_id` 是请求事件的唯一操作标识符，用于通过 `HandleRequest` DSL 执行同意/拒绝操作
+- 适配器在转换请求事件时，应将平台原生的请求标识映射到此字段
+- 如果平台本身没有请求ID，适配器应生成一个唯一标识（如基于时间戳+用户ID的哈希）
+- 当 `request_id` 缺失时，`event.approve()` / `event.reject()` 将抛出 `ValueError`
 
 ## 3. 事件格式示例
 
@@ -6647,6 +6785,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "comment": "请加好友",
+  "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
 }
@@ -6911,6 +7050,51 @@ raw_data = event.get(f"{platform}_raw")
 
 # ❌ 不推荐
 raw_data = event.get("yunhu_raw")
+```
+
+### 8.4 请求事件处理
+
+模块开发者可以通过 `event.approve()` 和 `event.reject()` 对请求事件进行操作：
+
+```python
+from ErisPulse.Core.Event import request
+
+# 好友请求：自动同意
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    comment = event.get_comment()
+    
+    # 同意请求
+    result = await event.approve()
+    if result.get("status") == "ok":
+        print(f"已同意 {user_name} 的好友请求")
+    else:
+        print(f"同意好友请求失败: {result.get('message')}")
+
+# 群邀请：根据条件决定
+@request.on_group_request()
+async def handle_group_request(event):
+    comment = event.get_comment()
+    
+    # 拒绝请求
+    result = await event.reject(comment="暂不加入新群")
+```
+
+**通过适配器直接操作**（适用于非事件处理器场景）：
+
+```python
+from ErisPulse import adapter
+
+# 通过 request_id 直接操作
+await adapter.myplatform.Request("req_abc123").accept()
+await adapter.myplatform.Request("req_abc123").reject()
+
+# 指定 Bot 账号操作
+await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
+
+# 附带备注
+await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 ```
 
 ---
@@ -7534,7 +7718,15 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 9. 适配器实现检查清单
+## 9. 适配器开发注意事项
+
+关于如何正确重写 `BaseAdapter`、`Send`、`Request` 的 `__init__`，详见 [适配器开发入门 - `__init__` 注意事项](../../developer-guide/adapters/getting-started.md#init-注意事项)。
+
+---
+
+---
+
+## 10. 适配器实现检查清单
 
 ### 发送方法
 - [ ] 标准方法（`Text`, `Image` 等）已实现
@@ -7647,6 +7839,7 @@ if builder:
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
+- [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
 
 
 

@@ -324,47 +324,53 @@ The `Send` class automatically sets the following properties when called:
 | `_target_to` | Simplified Target ID | `To(id)` |
 | `_account_id` | Sending Account ID | `Using(account_id)` |
 | `_adapter` | Adapter Instance | Automatically set |
+| `_at_user_ids` | @User List | `At(user_id)` |
+| `_reply_message_id` | Reply Message ID | `Reply(message_id)` |
+| `_at_all` | @All Members | `AtAll()` |
+
+> **Recommendation**: Use the `self.send_context` property to get `{target_type, target_id, account_id}` at once, which is clearer than directly accessing instance variables.
+
+### Framework Helper Methods
+
+| Method/Property | Description |
+|-----------------|-------------|
+| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into message segment list |
+| `self.send_context` | Returns `{target_type, target_id, account_id}` dictionary |
 
 ### Basic Methods
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """Send text message (must return Task)"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """Recommended implementation"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        """Send text message"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
 ```
 
 ### Chained Modifier Methods
 
 ```python
 class Send(BaseAdapter.Send):
+
     def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
         super().__init__(adapter, target_type, target_id, account_id)
-        self._at_user_ids = []
-        self._reply_message_id = None
-        self._at_all = False
-    
-    def At(self, user_id: str) -> 'Send':
-        """@user (can be called multiple times)"""
-        self._at_user_ids.append(user_id)
-        return self
-    
-    def AtAll(self) -> 'Send':
-        """@all members"""
-        self._at_all = True
-        return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """Reply to message"""
-        self._reply_message_id = message_id
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
         return self
 ```
 

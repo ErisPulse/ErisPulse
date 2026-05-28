@@ -221,6 +221,141 @@ ErisPulse 适配器基础模块
 ---
 
 
+### `class RequestDSL`
+
+请求操作 DSL 基类
+
+用于对请求事件（好友请求、群邀请等）执行同意/拒绝操作。
+采用与 Send 一致的工厂实例模式：``adapter.Request("req_id").accept()``
+
+适配器只需在内部类中重写 ``accept`` / ``reject`` 即可。
+
+> **提示**
+> 1. 使用 ``adapter.Request(request_id).accept()`` 同意请求
+> 2. 使用 ``adapter.Request(request_id).reject()`` 拒绝请求
+> 3. 适配器重写 ``accept`` / ``reject`` 实现平台逻辑
+> 4. 基类默认返回 ``retcode=10002``（不支持的操作）
+
+
+#### 方法列表
+
+
+##### `__init__(adapter: 'BaseAdapter', request_id: str | None = None, account_id: str | None = None)`
+
+初始化请求操作 DSL
+
+:param adapter: 所属适配器实例
+:param request_id: 请求ID
+:param account_id: 执行操作的 Bot 账号
+
+---
+
+
+##### `__call__(request_id: str)`
+
+设置请求ID，返回新的 RequestDSL 实例
+
+使得 ``adapter.Request("req_id")`` 可以直接调用
+
+:param request_id: 请求ID
+:return: 新的 RequestDSL 实例
+
+---
+
+
+##### `Using(account_id: str | int)`
+
+指定执行操作的 Bot 账号
+
+:param account_id: 账号标识
+:return: 新的 RequestDSL 实例
+
+**示例**:
+```python
+>>> adapter.Request("req_123").Using("bot1").accept()
+```
+
+---
+
+
+##### `accept()`
+
+同意请求
+
+:param kwargs: 平台扩展参数（如 comment 备注）
+:return: asyncio.Task，await 后返回标准响应格式
+
+**示例**:
+```python
+>>> result = await adapter.Request("req_123").accept()
+>>> result = await adapter.Request("req_123").accept(comment="欢迎")
+```
+
+---
+
+
+##### `reject()`
+
+拒绝请求
+
+:param kwargs: 平台扩展参数（如 comment 拒绝理由）
+:return: asyncio.Task，await 后返回标准响应格式
+
+**示例**:
+```python
+>>> result = await adapter.Request("req_123").reject()
+>>> result = await adapter.Request("req_123").reject(comment="暂不添加")
+```
+
+---
+
+
+##### `async async _do_accept()`
+
+同意请求的具体实现（适配器子类重写）
+
+:param kwargs: 平台扩展参数
+:return: 标准响应格式
+
+---
+
+
+##### `async async _do_reject()`
+
+拒绝请求的具体实现（适配器子类重写）
+
+:param kwargs: 平台扩展参数
+:return: 标准响应格式
+
+---
+
+
+##### `_not_implemented_response(action: str)`
+
+生成「未实现」的标准错误响应
+
+:param action: 操作名称（accept/reject）
+:return: 标准错误响应字典
+
+---
+
+
+##### `_create_task(coro)`
+
+创建 asyncio.Task
+
+---
+
+
+##### `request_context()`
+
+获取当前请求操作上下文
+
+:return: 包含 request_id, account_id 的字典
+
+---
+
+
 ### `class BaseAdapter(ABC)`
 
 适配器基类
@@ -230,11 +365,26 @@ ErisPulse 适配器基础模块
 > **提示**
 > 1. 必须实现call_api, start和shutdown方法
 > 2. 可以自定义Send类实现平台特定的消息发送逻辑
-> 3. 通过on装饰器注册事件处理器
-> 4. 支持OneBot12协议的事件处理
+> 3. 可以自定义Request类实现平台特定的请求操作逻辑
+> 4. 通过on装饰器注册事件处理器
+> 5. 支持OneBot12协议的事件处理
 
 
 #### 嵌套类
+
+
+##### `class Request(RequestDSL)`
+
+请求操作 DSL 实现
+
+适配器子类重写 ``accept`` / ``reject`` 以实现平台特定逻辑。
+
+> **提示**
+> 1. 默认实现返回 ``retcode=10002``（不支持的操作）
+> 2. 适配器应重写 ``accept`` / ``reject`` 方法
+> 3. 通过 ``self._adapter.call_api()`` 调用平台 API
+> 4. 通过 ``self._request_id`` 获取请求标识
+> 5. 通过 ``self._account_id`` 获取 Bot 账号
 
 
 ##### `class Send(SendDSL)`

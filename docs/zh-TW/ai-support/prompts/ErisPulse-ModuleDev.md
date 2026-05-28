@@ -3467,6 +3467,14 @@ ErisPulse 命令列工具提供專案管理和套件管理功能。
 | `init` | `[--project-name/-n <name>]` | 互動式初始化專案 | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | 快速模式，跳過互動 | `epsdk init -q -n bot` |
 | | `[--force/-f]` | 強制覆蓋現有設定 | `epsdk init -f` |
+| `create` | `[module\|adapter]` | 建立腳手架專案 | `epsdk create` |
+| | `[--name/-n <name>]` | 專案名稱 (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | 專案描述 | `epsdk create adapter -d "xx適配器"` |
+| | `[--author/-a <name>]` | 作者名稱 | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | 作者郵箱 | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | 專案主頁 URL | |
+| | `[--output/-o <dir>]` | 輸出目錄 (預設目前目錄) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | 強制覆蓋已存在的目錄 | `epsdk create -f` |
 
 ## 參數說明
 
@@ -3474,7 +3482,7 @@ ErisPulse 命令列工具提供專案管理和套件管理功能。
 
 | 參數 | 短參數 | 說明 |
 |------|---------|------|
-| `--help` | `-h` | 顯示說明訊息 |
+| `--help` | `-h` | 顯示幫助訊息 |
 | `--verbose` | `-v` | 顯示詳細輸出 |
 
 ### install 參數
@@ -3581,6 +3589,25 @@ epsdk init
 
 # 快速初始化
 epsdk init -q -n my_bot
+```
+
+### 建立腳手架
+
+```bash
+# 互動式建立（引導選擇類型和填寫資訊）
+epsdk create
+
+# 直接建立 Module 專案
+epsdk create module -n MyModule
+
+# 直接建立 Adapter 專案
+epsdk create adapter -n MyAdapter
+
+# 完整參數
+epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.com"
+
+# 強制覆蓋已有目錄
+epsdk create module -n MyModule -f
 
 
 

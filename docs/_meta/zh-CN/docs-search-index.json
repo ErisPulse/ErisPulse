@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1097,
+  "total_keywords": 1129,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -8,6 +8,14 @@
         "line": 64,
         "level": 4,
         "title": "0 成功（OK）"
+      }
+    ],
+    "1. BaseAdapter 层（必须调用 `super().__init__()`）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 366,
+        "level": 3,
+        "title": "1. BaseAdapter 层（必须调用 `super().__init__()`）"
       }
     ],
     "1. SDK 对象": [
@@ -214,6 +222,14 @@
         "title": "1. 核心概念"
       }
     ],
+    "1. 概述": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. 概述"
+      }
+    ],
     "1. 模块开发（推荐）": [
       {
         "document": "README.md",
@@ -233,7 +249,7 @@
     "1. 确保跨平台兼容": [
       {
         "document": "standards/README.md",
-        "line": 25,
+        "line": 26,
         "level": 3,
         "title": "1. 确保跨平台兼容"
       }
@@ -329,15 +345,23 @@
     "10. 消息构建器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 472,
+        "line": 480,
         "level": 2,
         "title": "10. 消息构建器（MessageBuilder）"
+      }
+    ],
+    "10. 适配器实现检查清单": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 461,
+        "level": 2,
+        "title": "10. 适配器实现检查清单"
       }
     ],
     "11. 相关文档": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 561,
+        "line": 569,
         "level": 2,
         "title": "11. 相关文档"
       }
@@ -345,7 +369,7 @@
     "11.1 导入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 476,
+        "line": 484,
         "level": 3,
         "title": "11.1 导入"
       }
@@ -353,7 +377,7 @@
     "11.2 链式调用构建": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 484,
+        "line": 492,
         "level": 3,
         "title": "11.2 链式调用构建"
       }
@@ -361,7 +385,7 @@
     "11.3 快速构建单段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 501,
+        "line": 509,
         "level": 3,
         "title": "11.3 快速构建单段"
       }
@@ -369,7 +393,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 512,
+        "line": 520,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -377,7 +401,7 @@
     "11.5 支持的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 527,
+        "line": 535,
         "level": 3,
         "title": "11.5 支持的消息段方法"
       }
@@ -385,7 +409,7 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 542,
+        "line": 550,
         "level": 3,
         "title": "11.6 工具方法"
       }
@@ -404,6 +428,14 @@
         "line": 64,
         "level": 3,
         "title": "2. Event 对象"
+      }
+    ],
+    "2. Send 内部类（大多数情况不需要重写）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 380,
+        "level": 3,
+        "title": "2. Send 内部类（大多数情况不需要重写）"
       }
     ],
     "2. 事件系统": [
@@ -591,9 +623,17 @@
     "2. 规范 API 接口": [
       {
         "document": "standards/README.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "2. 规范 API 接口"
+      }
+    ],
+    "2. 请求事件字段要求": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 40,
+        "level": 2,
+        "title": "2. 请求事件字段要求"
       }
     ],
     "2. 账户选择机制": [
@@ -690,6 +730,14 @@
         "title": "2.1 必须字段"
       }
     ],
+    "2.1 标准字段": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 42,
+        "level": 3,
+        "title": "2.1 标准字段"
+      }
+    ],
     "2.1.1 字符串参数（URL 或文件路径）": [
       {
         "document": "standards/send-method-spec.md",
@@ -730,6 +778,14 @@
         "title": "2.2 ErisPulse 扩展类型"
       }
     ],
+    "2.2 `request_id` 字段": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 53,
+        "level": 3,
+        "title": "2.2 `request_id` 字段"
+      }
+    ],
     "2.2 消息事件字段": [
       {
         "document": "standards/event-conversion.md",
@@ -744,6 +800,14 @@
         "line": 160,
         "level": 3,
         "title": "2.3 回复消息参数规范"
+      }
+    ],
+    "2.3 请求事件示例": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 64,
+        "level": 3,
+        "title": "2.3 请求事件示例"
       }
     ],
     "2.3 通知事件字段": [
@@ -770,6 +834,22 @@
         "title": "2xxxx 动作处理器错误（Handler Error）"
       }
     ],
+    "3. Request DSL": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 86,
+        "level": 2,
+        "title": "3. Request DSL"
+      }
+    ],
+    "3. Request 内部类（大多数情况不需要重写）": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 404,
+        "level": 3,
+        "title": "3. Request 内部类（大多数情况不需要重写）"
+      }
+    ],
     "3. 事件 ID 生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -789,7 +869,7 @@
     "3. 事件格式示例": [
       {
         "document": "standards/event-conversion.md",
-        "line": 51,
+        "line": 58,
         "level": 2,
         "title": "3. 事件格式示例"
       }
@@ -861,7 +941,7 @@
     "3. 提高代码质量": [
       {
         "document": "standards/README.md",
-        "line": 39,
+        "line": 40,
         "level": 3,
         "title": "3. 提高代码质量"
       }
@@ -949,7 +1029,7 @@
     "3.1 消息事件 (message)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 53,
+        "line": 60,
         "level": 3,
         "title": "3.1 消息事件 (message)"
       }
@@ -962,12 +1042,28 @@
         "title": "3.1 通用字段"
       }
     ],
+    "3.1 链式调用": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 88,
+        "level": 3,
+        "title": "3.1 链式调用"
+      }
+    ],
     "3.2 常见平台映射示例": [
       {
         "document": "standards/session-types.md",
         "line": 90,
         "level": 3,
         "title": "3.2 常见平台映射示例"
+      }
+    ],
+    "3.2 方法列表": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 108,
+        "level": 3,
+        "title": "3.2 方法列表"
       }
     ],
     "3.2 返回码规范": [
@@ -981,7 +1077,7 @@
     "3.2 通知事件 (notice)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 86,
+        "line": 93,
         "level": 3,
         "title": "3.2 通知事件 (notice)"
       }
@@ -989,9 +1085,17 @@
     "3.3 请求事件 (request)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 107,
+        "line": 114,
         "level": 3,
         "title": "3.3 请求事件 (request)"
+      }
+    ],
+    "3.3 返回值格式": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 116,
+        "level": 3,
+        "title": "3.3 返回值格式"
       }
     ],
     "3xxxx 动作执行错误（Execution Error）": [
@@ -1000,6 +1104,14 @@
         "line": 86,
         "level": 4,
         "title": "3xxxx 动作执行错误（Execution Error）"
+      }
+    ],
+    "4. Event 便捷方法": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 153,
+        "level": 2,
+        "title": "4. Event 便捷方法"
       }
     ],
     "4. `self` 字段自动发现": [
@@ -1021,7 +1133,7 @@
     "4. 实现必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 116,
+        "line": 118,
         "level": 3,
         "title": "4. 实现必需方法"
       }
@@ -1061,7 +1173,7 @@
     "4. 消息段标准": [
       {
         "document": "standards/event-conversion.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "4. 消息段标准"
       }
@@ -1098,10 +1210,18 @@
         "title": "4. 设置镜像为公开"
       }
     ],
+    "4.1 Event 方法列表": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 181,
+        "level": 3,
+        "title": "4.1 Event 方法列表"
+      }
+    ],
     "4.1 标准消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 129,
+        "line": 137,
         "level": 3,
         "title": "4.1 标准消息段"
       }
@@ -1125,7 +1245,7 @@
     "4.2 平台扩展消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 154,
+        "line": 162,
         "level": 3,
         "title": "4.2 平台扩展消息段"
       }
@@ -1149,7 +1269,7 @@
     "5. 实现 Send 类": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 183,
+        "line": 185,
         "level": 3,
         "title": "5. 实现 Send 类"
       }
@@ -1165,7 +1285,7 @@
     "5. 未知事件处理": [
       {
         "document": "standards/event-conversion.md",
-        "line": 171,
+        "line": 179,
         "level": 2,
         "title": "5. 未知事件处理"
       }
@@ -1194,6 +1314,14 @@
         "title": "5. 返回值规范"
       }
     ],
+    "5. 适配器实现要求": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 189,
+        "level": 2,
+        "title": "5. 适配器实现要求"
+      }
+    ],
     "5. 配置选项（如适用）": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -1218,6 +1346,22 @@
         "title": "5.1 推断优先级"
       }
     ],
+    "5.1 转换器要求": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 191,
+        "level": 3,
+        "title": "5.1 转换器要求"
+      }
+    ],
+    "5.2 Request 内部类实现": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 234,
+        "level": 3,
+        "title": "5.2 Request 内部类实现"
+      }
+    ],
     "5.2 `{platform}_raw` 原始响应字段": [
       {
         "document": "standards/api-response.md",
@@ -1234,12 +1378,36 @@
         "title": "5.2 使用示例"
       }
     ],
+    "5.3 平台不支持请求操作": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 308,
+        "level": 3,
+        "title": "5.3 平台不支持请求操作"
+      }
+    ],
     "5.3 适配器实现检查清单": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
         "title": "5.3 适配器实现检查清单"
+      }
+    ],
+    "5.4 总结：Send 与 Request 并行": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 316,
+        "level": 3,
+        "title": "5.4 总结：Send 与 Request 并行"
+      }
+    ],
+    "5.5 适配器 `__init__` 注意事项": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 332,
+        "level": 3,
+        "title": "5.5 适配器 `__init__` 注意事项"
       }
     ],
     "6. API 使用示例": [
@@ -1261,7 +1429,7 @@
     "6. 实现转换器": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 246,
+        "line": 248,
         "level": 3,
         "title": "6. 实现转换器"
       }
@@ -1269,7 +1437,7 @@
     "6. 扩展命名规范": [
       {
         "document": "standards/event-conversion.md",
-        "line": 189,
+        "line": 197,
         "level": 2,
         "title": "6. 扩展命名规范"
       }
@@ -1280,6 +1448,14 @@
         "line": 147,
         "level": 2,
         "title": "6. 注意事项"
+      }
+    ],
+    "6. 适配器实现检查清单": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 336,
+        "level": 2,
+        "title": "6. 适配器实现检查清单"
       }
     ],
     "6.1 发送消息": [
@@ -1293,7 +1469,7 @@
     "6.1 字段命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 191,
+        "line": 199,
         "level": 3,
         "title": "6.1 字段命名"
       }
@@ -1325,7 +1501,7 @@
     "6.2 消息段类型命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 210,
+        "line": 218,
         "level": 3,
         "title": "6.2 消息段类型命名"
       }
@@ -1333,7 +1509,7 @@
     "6.3 原始数据字段命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 216,
+        "line": 224,
         "level": 3,
         "title": "6.3 原始数据字段命名"
       }
@@ -1389,7 +1565,7 @@
     "6.4 平台特有字段示例": [
       {
         "document": "standards/event-conversion.md",
-        "line": 230,
+        "line": 238,
         "level": 3,
         "title": "6.4 平台特有字段示例"
       }
@@ -1405,7 +1581,7 @@
     "6.5 嵌套扩展字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 247,
+        "line": 255,
         "level": 3,
         "title": "6.5 嵌套扩展字段"
       }
@@ -1413,7 +1589,7 @@
     "6.6 `self` 字段扩展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 270,
+        "line": 278,
         "level": 3,
         "title": "6.6 `self` 字段扩展"
       }
@@ -1421,17 +1597,17 @@
     "7. 会话类型扩展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 284,
+        "line": 292,
         "level": 2,
         "title": "7. 会话类型扩展"
       }
     ],
-    "7. 创建包入口": [
+    "7. 实现 Request 类（请求操作）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 288,
+        "line": 290,
         "level": 3,
-        "title": "7. 创建包入口"
+        "title": "7. 实现 Request 类（请求操作）"
       }
     ],
     "7. 方法发现": [
@@ -1448,6 +1624,14 @@
         "line": 234,
         "level": 2,
         "title": "7. 最佳实践"
+      }
+    ],
+    "7. 错误码扩展": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 355,
+        "level": 2,
+        "title": "7. 错误码扩展"
       }
     ],
     "7.1 适配器开发者": [
@@ -1474,6 +1658,14 @@
         "title": "7.3 类型推断"
       }
     ],
+    "8. 创建包入口": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 355,
+        "level": 3,
+        "title": "8. 创建包入口"
+      }
+    ],
     "8. 已注册的发送方法扩展": [
       {
         "document": "standards/send-method-spec.md",
@@ -1493,15 +1685,23 @@
     "8. 模块开发者指南": [
       {
         "document": "standards/event-conversion.md",
-        "line": 320,
+        "line": 328,
         "level": 2,
         "title": "8. 模块开发者指南"
+      }
+    ],
+    "8. 相关文档": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 366,
+        "level": 2,
+        "title": "8. 相关文档"
       }
     ],
     "8.1 访问扩展字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 322,
+        "line": 330,
         "level": 3,
         "title": "8.1 访问扩展字段"
       }
@@ -1509,7 +1709,7 @@
     "8.2 处理扩展消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "8.2 处理扩展消息段"
       }
@@ -1517,15 +1717,23 @@
     "8.3 最佳实践": [
       {
         "document": "standards/event-conversion.md",
-        "line": 372,
+        "line": 380,
         "level": 3,
         "title": "8.3 最佳实践"
+      }
+    ],
+    "8.4 请求事件处理": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 396,
+        "level": 3,
+        "title": "8.4 请求事件处理"
       }
     ],
     "9. 相关文档": [
       {
         "document": "standards/event-conversion.md",
-        "line": 390,
+        "line": 443,
         "level": 2,
         "title": "9. 相关文档"
       },
@@ -1536,12 +1744,12 @@
         "title": "9. 相关文档"
       }
     ],
-    "9. 适配器实现检查清单": [
+    "9. 适配器开发注意事项": [
       {
         "document": "standards/send-method-spec.md",
         "line": 453,
         "level": 2,
-        "title": "9. 适配器实现检查清单"
+        "title": "9. 适配器开发注意事项"
       }
     ],
     "@conv.branch(name) 装饰器": [
@@ -1613,7 +1821,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 77,
+        "line": 79,
         "level": 3,
         "title": "API 响应"
       }
@@ -1974,6 +2182,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 注释风格规范"
+      }
+    ],
+    "ErisPulse 请求操作规范": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 请求操作规范"
       }
     ],
     "ErisPulse 适配器标准化返回规范": [
@@ -2848,6 +3064,14 @@
         "title": "__init__.py"
       }
     ],
+    "`__init__` 注意事项": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 362,
+        "level": 2,
+        "title": "`__init__` 注意事项"
+      }
+    ],
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
@@ -3209,7 +3433,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 295,
+        "line": 426,
         "level": 2,
         "title": "下一步"
       },
@@ -3317,7 +3541,7 @@
     "为什么需要标准？": [
       {
         "document": "standards/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "为什么需要标准？"
       }
@@ -3325,7 +3549,7 @@
     "主动发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 146,
+        "line": 148,
         "level": 4,
         "title": "主动发送 Meta 事件"
       }
@@ -3599,7 +3823,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 68,
+        "line": 69,
         "level": 3,
         "title": "事件转换"
       }
@@ -4499,7 +4723,7 @@
     "反向转换": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 462,
+        "line": 470,
         "level": 3,
         "title": "反向转换"
       }
@@ -4621,7 +4845,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 463,
         "level": 3,
         "title": "发送方法"
       }
@@ -4629,7 +4853,7 @@
     "发送方法命名": [
       {
         "document": "standards/README.md",
-        "line": 86,
+        "line": 88,
         "level": 3,
         "title": "发送方法命名"
       }
@@ -5202,6 +5426,14 @@
         "title": "基础消息类型"
       }
     ],
+    "基础要求": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 338,
+        "level": 3,
+        "title": "基础要求"
+      }
+    ],
     "基类": [
       {
         "document": "api-reference/README.md",
@@ -5705,7 +5937,7 @@
     "对最终用户": [
       {
         "document": "standards/README.md",
-        "line": 60,
+        "line": 61,
         "level": 3,
         "title": "对最终用户"
       }
@@ -5713,7 +5945,7 @@
     "对模块开发者": [
       {
         "document": "standards/README.md",
-        "line": 54,
+        "line": 55,
         "level": 3,
         "title": "对模块开发者"
       }
@@ -5721,7 +5953,7 @@
     "对适配器开发者": [
       {
         "document": "standards/README.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "对适配器开发者"
       }
@@ -6326,6 +6558,14 @@
         "line": 255,
         "level": 2,
         "title": "性能优化"
+      }
+    ],
+    "总结": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 417,
+        "level": 3,
+        "title": "总结"
       }
     ],
     "懒加载": [
@@ -7253,7 +7493,7 @@
     "标准概述": [
       {
         "document": "standards/README.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "标准概述"
       }
@@ -7269,7 +7509,7 @@
     "标准遵循检查清单": [
       {
         "document": "standards/README.md",
-        "line": 66,
+        "line": 67,
         "level": 2,
         "title": "标准遵循检查清单"
       }
@@ -7313,7 +7553,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 16,
+        "line": 17,
         "level": 3,
         "title": "核心原则"
       }
@@ -8589,7 +8829,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 93,
+        "line": 101,
         "level": 2,
         "title": "相关文档"
       },
@@ -9196,12 +9436,34 @@
         "title": "请求事件方法"
       }
     ],
+    "请求事件转换": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 341,
+        "level": 3,
+        "title": "请求事件转换"
+      }
+    ],
     "请求信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 150,
         "level": 4,
         "title": "请求信息"
+      }
+    ],
+    "请求操作": [
+      {
+        "document": "standards/README.md",
+        "line": 95,
+        "level": 3,
+        "title": "请求操作"
+      },
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 347,
+        "level": 3,
+        "title": "请求操作"
       }
     ],
     "请求类型判断": [
@@ -9861,7 +10123,7 @@
     "遵循标准的好处": [
       {
         "document": "standards/README.md",
-        "line": 46,
+        "line": 47,
         "level": 2,
         "title": "遵循标准的好处"
       }
