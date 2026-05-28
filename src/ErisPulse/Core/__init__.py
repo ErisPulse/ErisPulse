@@ -6,7 +6,7 @@ ErisPulse 核心模块
 
 from .lifecycle import lifecycle, LifecycleManager
 from .adapter import adapter, AdapterManager
-from .Bases import BaseAdapter, BaseModule, SendDSL, BaseStorage, BaseQueryBuilder
+from .Bases import BaseAdapter, BaseModule, SendDSL, RequestDSL, BaseStorage, BaseQueryBuilder
 from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
@@ -24,6 +24,7 @@ __all__ = [
     "AdapterManager",  # 适配器管理器类
     "BaseAdapter",  # 适配器基类
     "SendDSL",  # 发送DSL类
+    "RequestDSL",  # 请求操作DSL类
     "MessageBuilder",  # 消息构建器类
     "module",  # 模块模块单例
     "ModuleManager",  # 模块管理器类
