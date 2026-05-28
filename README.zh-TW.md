@@ -216,6 +216,36 @@ uv pip install ErisPulse
 
 > 如果您的 Python 版本低於 3.10，可以使用一鍵安裝腳本自動配置環境。詳見 [安裝腳本說明](scripts/install/)。
 
+#### 運行效果
+
+同一段代碼，多個平台響應：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**雲湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="雲湖 演示" />
+
+</td>
+</tr>
+</table>
+
 #### 初始化項目
 
 ```bash
