@@ -1,37 +1,37 @@
-<div align="center">
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/mascot-hero.png" width="320" alt="ErisPulse" />
+
+</td>
+<td valign="middle">
 
 [English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
-
-<br/>
-
-<img src=".github/assets/erispulse_logo_hp.png" width="160" alt="ErisPulse" />
-
-<br/>
 
 # ErisPulse
 
 **事件驅動的多平台機器人開發框架**
 
-> 知道嗎？ErisPulse 支援完整的 Vibe Coding 工作流，讓 AI 直接生成可用模組
-> [查看](docs/zh-TW/ai-support/README.md)
-
-<br/>
-
-[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
-
-</div>
-
-<br/>
-
-<div align="center">
-
 基於 OneBot12 標準介面，一次編寫，多平台部署。靈活的模組系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
 
-</div>
+> 支援 Vibe Coding 工作流，讓 AI 直接生成可用模組 — [查看](docs/zh-TW/ai-support/README.md)
+
+[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
+[![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse)
+[![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+[![文檔](https://img.shields.io/badge/文檔-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
+[![模組市場](https://img.shields.io/badge/模組市場-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
+[![討論](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -84,6 +84,9 @@
 
 ### 支援的適配器
 
+<div align="center">
+<img src=".github/assets/adapter-showcase.png" width="520" alt="支援的適配器" />
+
 歡迎您貢獻適配器！
 
 | 適配器 | 說明 |
@@ -101,6 +104,8 @@
 | [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
+
+</div>
 
 ---
 
@@ -315,7 +320,7 @@ ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式�
 
 1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
 2. **功能請求** — 透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
-3. **代碼貢獻** — 提交 PR 前請閱讀 [代碼風格](docs/zh-CN/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
+3. **代碼貢獻** — 提交 PR 前請閱讀 [代碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
 4. **文檔改進** — 幫助完善文檔和示例代碼
 
 [加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
@@ -325,6 +330,8 @@ ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式�
 <div align="center">
 
 ### 致謝
+
+<img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
 本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/) · 感謝所有為開源社區做出貢獻的開發者和作者
 

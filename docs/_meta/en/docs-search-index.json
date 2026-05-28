@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1096,
+  "total_keywords": 1081,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -326,70 +326,6 @@
         "line": 44,
         "level": 3,
         "title": "1.4 Recommended Extension Naming Conventions"
-      }
-    ],
-    "11. MessageBuilder": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 472,
-        "level": 2,
-        "title": "11. MessageBuilder"
-      }
-    ],
-    "11.1 Import": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 476,
-        "level": 3,
-        "title": "11.1 Import"
-      }
-    ],
-    "11.2 Chaining Calls to Build": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 484,
-        "level": 3,
-        "title": "11.2 Chaining Calls to Build"
-      }
-    ],
-    "11.3 Quick Build for Single Segment": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 501,
-        "level": 3,
-        "title": "11.3 Quick Build for Single Segment"
-      }
-    ],
-    "11.4 Use with Event.reply_ob12": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 512,
-        "level": 3,
-        "title": "11.4 Use with Event.reply_ob12"
-      }
-    ],
-    "11.5 Supported Message Segment Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 527,
-        "level": 3,
-        "title": "11.5 Supported Message Segment Methods"
-      }
-    ],
-    "11.6 Utility Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 542,
-        "level": 3,
-        "title": "11.6 Utility Methods"
-      }
-    ],
-    "12. Related Documents": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 561,
-        "level": 2,
-        "title": "12. Related Documents"
       }
     ],
     "1xxxx Action Request Errors (Request Error)": [
@@ -1472,36 +1408,12 @@
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
     ],
-    "6.3.3 Composite Message Segment Processing": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 316,
-        "level": 4,
-        "title": "6.3.3 Composite Message Segment Processing"
-      }
-    ],
     "6.4 Platform-Specific Field Examples": [
       {
         "document": "standards/event-conversion.md",
         "line": 238,
         "level": 3,
         "title": "6.4 Platform-Specific Field Examples"
-      }
-    ],
-    "6.4 Relationship between `Raw_ob12` and Standard Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 334,
-        "level": 3,
-        "title": "6.4 Relationship between `Raw_ob12` and Standard Methods"
-      }
-    ],
-    "6.5 Implementation Example": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 362,
-        "level": 3,
-        "title": "6.5 Implementation Example"
       }
     ],
     "6.5 Nested Extension Fields": [
@@ -1534,14 +1446,6 @@
         "line": 355,
         "level": 2,
         "title": "7. Error Code Extensions"
-      }
-    ],
-    "7. Method Discovery": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 415,
-        "level": 2,
-        "title": "7. Method Discovery"
       }
     ],
     "7. Session Type Extensions": [
@@ -1592,14 +1496,6 @@
         "title": "8. Module Developer Guide"
       }
     ],
-    "8. Registered Sending Method Extensions": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 438,
-        "level": 2,
-        "title": "8. Registered Sending Method Extensions"
-      }
-    ],
     "8. Related Documentation": [
       {
         "document": "standards/request-action-spec.md",
@@ -1638,14 +1534,6 @@
         "line": 396,
         "level": 3,
         "title": "8.4 Request Event Handling"
-      }
-    ],
-    "9. Adapter Implementation Checklist": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 453,
-        "level": 2,
-        "title": "9. Adapter Implementation Checklist"
       }
     ],
     "9. Related Documentation": [
@@ -8058,14 +7946,6 @@
         "title": "Reuse Query Conditions"
       }
     ],
-    "Reverse Conversion": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 462,
-        "level": 3,
-        "title": "Reverse Conversion"
-      }
-    ],
     "Reverse Conversion and Message Construction": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -8407,12 +8287,6 @@
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 37,
         "level": 2,
-        "title": "Sending Methods"
-      },
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 455,
-        "level": 3,
         "title": "Sending Methods"
       }
     ],
