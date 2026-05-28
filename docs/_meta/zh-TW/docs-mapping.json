@@ -331,7 +331,7 @@
     },
     "技術標準": {
       "description": "框架的技術規範和標準",
-      "count": 10,
+      "count": 12,
       "documents": [
         {
           "title": "技術標準",
@@ -356,6 +356,11 @@
         {
           "title": "ErisPulse 發送方法規範",
           "path": "standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 請求操作規範",
+          "path": "standards/request-action-spec.md",
           "level": 1
         }
       ],
