@@ -57,9 +57,9 @@ class TestBaseEventHandler:
             pass
         
         # 先注册低优先级
-        handler.register(low_priority, priority=10)
+        handler.register(low_priority, priority=1)
         # 后注册高优先级
-        handler.register(high_priority, priority=1)
+        handler.register(high_priority, priority=10)
         
         # 验证排序（高优先级在前）
         assert handler.handlers[0]["func"] is high_priority
@@ -1204,8 +1204,8 @@ class TestParallelEventHandling:
         async def high_priority(event):
             order.append("high")
 
-        handler.register(low_priority, priority=10)
-        handler.register(high_priority, priority=1)
+        handler.register(low_priority, priority=1)
+        handler.register(high_priority, priority=10)
 
         event = Event({
             "type": "message",
@@ -1262,7 +1262,7 @@ class TestParallelEventHandling:
         async def should_not_run(event):
             pytest.fail("should not reach here")
 
-        handler.register(mark_processed, priority=0)
+        handler.register(mark_processed, priority=10)
         handler.register(should_not_run, priority=1)
 
         event = Event({

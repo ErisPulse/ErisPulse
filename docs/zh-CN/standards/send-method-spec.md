@@ -450,7 +450,15 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 9. 适配器实现检查清单
+## 9. 适配器开发注意事项
+
+关于如何正确重写 `BaseAdapter`、`Send`、`Request` 的 `__init__`，详见 [适配器开发入门 - `__init__` 注意事项](../../developer-guide/adapters/getting-started.md#init-注意事项)。
+
+---
+
+---
+
+## 10. 适配器实现检查清单
 
 ### 发送方法
 - [ ] 标准方法（`Text`, `Image` 等）已实现
@@ -563,3 +571,4 @@ if builder:
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
+- [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求

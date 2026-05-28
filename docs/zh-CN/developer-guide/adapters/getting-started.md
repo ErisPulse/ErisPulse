@@ -85,7 +85,7 @@ from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
-        super().__init__()
+        super().__init__()  # ← 必须！创建 Send / Request 工厂实例
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -112,6 +112,8 @@ class MyAdapter(BaseAdapter):
             return default_config
         return config
 ```
+
+> ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` 负责创建 `Send` 和 `Request` 工厂实例。如果忘记调用，所有消息发送和请求操作都会报 `AttributeError`。详见 [__init__ 注意事项](#init-注意事项)。
 
 ### 4. 实现必需方法
 
@@ -285,12 +287,141 @@ class MyPlatformConverter:
         return "private"  # 简化示例
 ```
 
-### 7. 创建包入口
+### 7. 实现 Request 类（请求操作）
+
+如果你的平台支持好友请求、群邀请等需要 Bot 做出决策的请求，可以实现 `Request` 内部类：
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    # ... Send 和其他代码 ...
+
+    class Request(RequestDSL):
+        """请求操作实现（好友请求、群邀请等）"""
+
+        def accept(self, **kwargs):
+            """同意请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+
+        def reject(self, **kwargs):
+            """拒绝请求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=False,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+```
+
+模块开发者使用方式：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # 通过 Event 便捷方法
+    await event.approve()
+    # 或通过适配器直接操作
+    await adapter.myplatform.Request("req_id").accept()
+```
+
+> 如果平台不支持请求操作，可以不实现 `Request` 内部类。基类默认返回 `retcode=10002`（不支持的操作）。详见 [请求操作规范](../../standards/request-action-spec.md)。
+
+### 8. 创建包入口
 
 ```python
 # MyAdapter/__init__.py
 from .Core import MyAdapter
 ```
+
+## `__init__` 注意事项
+
+适配器开发中有三个层面可能涉及 `__init__` 重写。以下是每个层面的正确做法。
+
+### 1. BaseAdapter 层（必须调用 `super().__init__()`）
+
+`BaseAdapter.__init__()` 负责**创建 `Send` 和 `Request` 工厂实例**。如果适配器有自己的 `__init__`，必须调用父类初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self, sdk):
+        super().__init__()  # ← 必须！否则 Send / Request 不会被初始化
+        self.sdk = sdk
+        # ... 其他初始化
+```
+
+**忘记调用的后果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都会报 `AttributeError`。
+
+### 2. Send 内部类（大多数情况不需要重写）
+
+`SendDSL.__init__` 负责链式调用的状态传递（目标类型、目标ID、账号等）。**大多数情况下，你只需要重写方法**（`Raw_ob12`、`Text` 等），不需要重写 `__init__`。
+
+如果确实需要（比如初始化平台特有的状态），**必须透传所有参数**：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        # 参数：adapter, target_type, target_id, account_id
+        def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必须透传
+            self._my_state = None  # 平台特有初始化
+```
+
+**为什么必须透传？** 链式调用的每一步都通过 `self.__class__(...)` 创建新实例：
+
+```python
+adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
+adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
+```
+
+如果 `__init__` 签名不匹配或没调 `super()`，链式调用就会中断。
+
+### 3. Request 内部类（大多数情况不需要重写）
+
+与 Send 同理。参数为 `adapter`, `request_id`, `account_id`：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Request(RequestDSL):
+        # 参数：adapter, request_id, account_id
+        def __init__(self, adapter, request_id=None, account_id=None):
+            super().__init__(adapter, request_id, account_id)  # ← 必须透传
+            self._my_state = None  # 平台特有初始化
+```
+
+### 总结
+
+| 层面 | 什么时候重写 | 必须做的事 |
+|------|------------|-----------|
+| **BaseAdapter** | 需要初始化适配器状态时 | `super().__init__()` （无参数） |
+| **Send 内部类** | 需要初始化发送相关状态时 | `super().__init__(adapter, target_type, target_id, account_id)` |
+| **Request 内部类** | 需要初始化请求相关状态时 | `super().__init__(adapter, request_id, account_id)` |
+| 三个层面 | 大多数情况 | **只重写方法，不碰 `__init__`** |
 
 ## 下一步
 
