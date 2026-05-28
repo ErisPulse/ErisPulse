@@ -8,6 +8,7 @@ This document contains ErisPulse technical standards specifications to ensure co
 2. [Event Conversion Standard](event-conversion.md) - Platform event conversion spec, extension naming conventions, and message segment standards
 3. [API Response Standard](api-response.md) - Standard for adapter API response formats and extension requirements
 4. [Send Method Naming Conventions](send-method-spec.md) - Send class method naming, parameter specifications, and reverse conversion requirements
+5. [Request Action Standard](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
 
 ## Standard Overview
 
@@ -73,6 +74,7 @@ Standard specifications help:
 - [ ] Raw data is saved in {platform}_raw
 - [ ] Original event type is saved in {platform}_raw_type
 - [ ] The alt_message for message segments has been generated
+- [ ] Request events include the request_id field
 
 ### API Response
 
@@ -89,6 +91,12 @@ Standard specifications help:
 - [ ] Returns a Task object
 - [ ] Decorated methods return self
 - [ ] Parameter naming complies with specifications
+
+### Request Action
+
+- [ ] HandleRequest class has implemented _do_accept / _do_reject
+- [ ] Operations return standard API response format
+- [ ] Unsupported operations return retcode=10002
 
 ## Related Documentation
 
