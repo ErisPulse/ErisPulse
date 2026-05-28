@@ -37,7 +37,7 @@
 
 <div align="center">
 
-### Core Features
+### 核心特性
 
 </div>
 
@@ -46,7 +46,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Event-Driven Architecture
+### 事件驱动架构
 
 基于 OneBot12 标准的清晰事件模型，让消息处理逻辑更加直观和高效
 
@@ -54,7 +54,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Cross-Platform Compatibility
+### 跨平台兼容
 
 插件模块编写一次即可在所有平台使用，无需为不同平台重复开发
 
@@ -64,7 +64,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Modular Design
+### 模块化设计
 
 灵活的插件系统，易于扩展和集成，支持热插拔模块管理
 
@@ -72,7 +72,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Hot-Reload Support
+### 热重载支持
 
 开发时无需重启即可重新加载代码，大幅提升开发迭代效率
 
@@ -82,7 +82,7 @@
 
 ---
 
-### Supported Adapters
+### 支持的适配器
 
 <div align="center">
 
@@ -90,7 +90,7 @@
 <tr>
 <td width="35%" valign="middle" align="center">
 
-<img src=".github/assets/adapter-showcase.png" width="320" alt="Supported Adapters" />
+<img src=".github/assets/adapter-showcase.png" width="320" alt="支持的适配器" />
 
 </td>
 <td valign="middle">
@@ -104,14 +104,14 @@
 | [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用机器人协议 |
 | [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 标准协议 |
 | [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方机器人平台 |
-| [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
+| [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
 | [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即时通讯平台 |
-| [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
-| [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
-| [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
-| [Ideaura](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
+| [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
+| [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
+| [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
+| [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
-查看 [适配器详情介绍](docs/en/platform-guide/README.md)
+查看 [详情介绍](docs/en/platform-guide/README.md)
 
 </td>
 </tr>
@@ -121,9 +121,9 @@
 
 ---
 
-### Quick Start
+### 快速开始
 
-#### Using Docker (Recommended)
+#### 使用 Docker (推荐)
 
 ```bash
 docker pull erispulse/erispulse:latest
@@ -204,7 +204,7 @@ docker pull erispulse/erispulse:dev
 
 </details>
 
-#### 1Panel App Store
+#### 1Panel 应用商店
 
 通过 [1Panel](https://1panel.cn) 应用商店一键安装 ErisPulse，详见 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
@@ -212,7 +212,7 @@ docker pull erispulse/erispulse:dev
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
 
-#### Installation with pip
+#### 使用 pip 安装
 
 ```bash
 pip install ErisPulse
@@ -244,15 +244,15 @@ pip install ErisPulse
 </td>
 <td align="center" width="33%">
 
-**Yunhu**
+**云湖**
 
-<img src=".github/assets/demo-yunhu.png" alt="Yunhu 演示" />
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
 
 </td>
 </tr>
 </table>
 
-#### Initialize Project
+#### 初始化项目
 
 ```bash
 # 交互式初始化
@@ -262,7 +262,7 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-#### Create Your First Bot
+#### 创建第一个机器人
 
 创建 `main.py` 文件：
 
@@ -270,7 +270,7 @@ epsdk init -q -n my_bot
 <tr>
 <td width="50%" valign="top">
 
-**Command Handler**
+**命令处理器**
 
 ```python
 from ErisPulse import sdk
