@@ -35,7 +35,7 @@ def _make_msg(text="/hello", **kwargs):
 @pytest.fixture
 def clean_event_state():
     _clear_all_handlers()
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
@@ -43,7 +43,7 @@ def clean_event_state():
     adapter._bots.clear()
     yield
     _clear_all_handlers()
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
@@ -283,11 +283,11 @@ class TestEventBusIntegration:
         """_processed 标记中断后续 handler（通过 message handler condition）"""
         order = []
 
-        @message.on_message(priority=0)
+        @message.on_message(priority=10)
         async def first_handler(event):
             order.append("first")
 
-        @message.on_message(priority=10)
+        @message.on_message(priority=0)
         async def second_handler(event):
             order.append("second")
 
