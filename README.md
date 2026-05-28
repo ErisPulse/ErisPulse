@@ -85,7 +85,15 @@
 ### 支持的适配器
 
 <div align="center">
-<img src=".github/assets/adapter-showcase.png" width="520" alt="支持的适配器" />
+
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/adapter-showcase.png" width="320" alt="支持的适配器" />
+
+</td>
+<td valign="middle">
 
 欢迎您贡献适配器！
 
@@ -104,6 +112,10 @@
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
+
+</td>
+</tr>
+</table>
 
 </div>
 
@@ -204,17 +216,41 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ```bash
 pip install ErisPulse
-
-# 国内镜像
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
-
-# 使用 uv 安装
-uv pip install ErisPulse
 ```
 
-![安装演示](.github/assets/docs/install_pip.gif)
+<img src=".github/assets/docs/install_pip.gif" width="480" alt="安装演示" />
 
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+
+#### 运行效果
+
+同一段代码，多个平台响应：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**云湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+
+</td>
+</tr>
+</table>
 
 #### 初始化项目
 
