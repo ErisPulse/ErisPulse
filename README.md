@@ -86,7 +86,6 @@
 
 <div align="center">
 <img src=".github/assets/adapter-showcase.png" width="520" alt="支持的适配器" />
-</div>
 
 欢迎您贡献适配器！
 
@@ -105,6 +104,8 @@
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
+
+</div>
 
 ---
 
