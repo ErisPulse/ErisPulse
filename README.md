@@ -111,7 +111,7 @@
 | [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
-查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
+查看 [详情介绍](docs/zh-CN/platform-guide/README.md)
 
 </td>
 </tr>
