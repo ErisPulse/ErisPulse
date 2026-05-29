@@ -213,9 +213,10 @@ pip install ErisPulse
 
 #### 运行效果
 
+<!-- 
 ##### 仪表盘：
 
-<img src=".github/assets/docs/dashboard-demo.gif" width="600" alt="Dashboard 演示" />
+<img src=".github/assets/docs/dashboard-demo.gif" width="600" alt="Dashboard 演示" /> -->
 
 
 ##### 同一端代码，多个平台响应：
