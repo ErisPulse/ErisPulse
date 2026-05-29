@@ -168,36 +168,6 @@ def _load_config(self):
     return config
 ```
 
-### 配置審計
-
-Config 模組內建呼叫方感知和審計功能，可追蹤配置的讀寫來源：
-
-```python
-# 啟用審計（預設關閉）
-sdk.config.enable_audit(True)
-
-# 監聽配置變更
-@sdk.config.on_change("MyModule")
-def on_config_change(key, old_value, new_value, caller):
-    print(f"配置變更: {key}")
-    print(f"  舊值: {old_value} -> 新值: {new_value}")
-    print(f"  呼叫方: {caller.file}:{caller.lineno} ({caller.function})")
-
-# 取得審計日誌
-log = sdk.config.get_audit_log(limit=10)
-for entry in log:
-    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
-
-# 關閉審計
-sdk.config.enable_audit(False)
-```
-
-審計日誌中每條記錄包含：
-- `operation`: 操作類型（`get` / `set`）
-- `key`: 配置鍵路徑
-- `caller`: 呼叫方資訊（檔案名、行號、函數名、模組名）
-- `timestamp`: 操作時間戳
-
 ## Logger 模組
 
 ### 基本日誌
@@ -284,10 +254,10 @@ sdk.adapter.disable("platform_name")
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
-# 檢查適配器是否正在執行
+# 檢查適配器是否正在運行
 is_running = sdk.adapter.is_running("platform_name")
 
-# 列出所有正在執行的適配器
+# 列出所有正在運行的適配器
 running = sdk.adapter.list_running()
 ```
 
@@ -315,7 +285,7 @@ exists = sdk.module.exists("ModuleName")
 # 檢查模組是否已載入
 is_loaded = sdk.module.is_loaded("ModuleName")
 
-# 檢查模組是否啟用
+# 檢查模組是否已啟用
 is_enabled = sdk.module.is_enabled("ModuleName")
 
 # 啟用/停用模組
@@ -341,10 +311,10 @@ info = sdk.module.get_info("ModuleName")
 summary = sdk.module.get_status_summary()
 # {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
 
-# 檢查模組是否正在執行（等價於 is_loaded）
+# 檢查模組是否正在運行（等價於 is_loaded）
 is_running = sdk.module.is_running("ModuleName")
 
-# 列出所有正在執行的模組
+# 列出所有正在運行的模組
 running = sdk.module.list_running()
 ```
 
@@ -410,6 +380,9 @@ sdk.metrics.register_builtin_metrics()
 
 # 取得所有指標快照
 snapshot = sdk.metrics.get_all_metrics()
+
+# 重置所有指標
+sdk.metrics.reset()
 ```
 
 ### 指標類型
@@ -417,40 +390,44 @@ snapshot = sdk.metrics.get_all_metrics()
 #### Counter — 計數器
 
 ```python
-from ErisPulse.Core.metrics import Counter
-
-counter = Counter("http_requests_total", description="HTTP 請求總數")
+# 透過 MetricsManager 建立計數器
+counter = sdk.metrics.counter("http_requests_total", description="HTTP 請求總數")
 counter.inc()            # +1
 counter.inc(5)           # +5
-print(counter.value)     # 6
+print(counter.get())     # 取得目前值
+print(counter.name)      # 指標名稱
+
+# 帶標籤的計數
+counter.inc(tags={"method": "GET"})
+counter.get(tags={"method": "GET"})  # 取得特定標籤值
 ```
 
 #### Gauge — 儀表盤
 
 ```python
-from ErisPulse.Core.metrics import Gauge
-
-gauge = Gauge("active_connections", description="活躍連接數")
+# 透過 MetricsManager 建立儀表盤
+gauge = sdk.metrics.gauge("active_connections", description="活躍連接數")
 gauge.inc()              # +1
 gauge.dec()              # -1
 gauge.set(42)            # 設為 42
-print(gauge.value)       # 42
+print(gauge.get())       # 取得目前值
+print(gauge.name)        # 指標名稱
 ```
 
 #### Histogram — 直方圖
 
 ```python
-from ErisPulse.Core.metrics import Histogram
-
-hist = Histogram("request_duration_seconds", description="請求耗時")
+# 透過 MetricsManager 建立直方圖
+hist = sdk.metrics.histogram("request_duration_seconds", description="請求耗時")
 hist.observe(0.15)
 hist.observe(0.32)
 hist.observe(1.2)
-print(hist.count)        # 3
-print(hist.sum)          # 1.67
-print(hist.percentile(50))  # P50
-print(hist.percentile(95))  # P95
-print(hist.percentile(99))  # P99
+
+# 取得統計摘要
+summary = hist.get_summary()
+# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
+
+print(hist.name)         # 指標名稱
 ```
 
 ### 自訂指標
@@ -458,23 +435,29 @@ print(hist.percentile(99))  # P99
 ```python
 from ErisPulse import sdk
 
-# 透過 MetricsManager 註冊自訂指標
-sdk.metrics.counter("my_module.errors", description="模組錯誤計數")
-sdk.metrics.gauge("my_module.queue_size", description="佇列大小")
-sdk.metrics.histogram("my_module.process_time", description="處理耗時")
+# 透過 MetricsManager 建立自訂指標
+counter = sdk.metrics.counter("my_module.errors", description="模組錯誤計數")
+gauge = sdk.metrics.gauge("my_module.queue_size", description="佇列大小")
+hist = sdk.metrics.histogram("my_module.process_time", description="處理耗時")
 
-# 取得並使用
-sdk.metrics.get("my_module.errors").inc()
+# 直接使用返回的指標物件
+counter.inc()
+gauge.set(10)
+hist.observe(0.5)
 ```
 
 ### @timed 裝飾器
 
 ```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
+# 透過 MetricsManager 的 timed 方法
+@sdk.metrics.timed("my_module.handler_duration")
 async def handle_request():
-    # 函數執行時間將自動記錄到 Histogram 指標
+    # 函式執行時間將自動記錄到 Histogram 指標
+    await do_something()
+
+# 帶標籤的計時
+@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
+async def handle_api_request():
     await do_something()
 ```
 
@@ -564,14 +547,14 @@ async def websocket_handler(websocket: WebSocket):
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
-# 基本註冊（自動接受連線）
+# 基本註冊（自動接受連接）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
 )
 
-# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
+# 帶認證的註冊（推薦：使用 auth_handler 控制連接）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
     return token == "secret"
@@ -594,7 +577,7 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 | `module_name` | 模組名稱（必須） | - |
 | `path` | WebSocket 路徑 | - |
 | `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
+| `auth_handler` | 認證函式，返回 `False` 會自動關閉連接 | `None` |
 | `auto_accept` | 是否自動 `accept()` | `True` |
 
 > **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
@@ -659,20 +642,20 @@ sdk.router.setup_cors(
     allow_headers=["*"],
 )
 
-# 設定檔案方式（config.toml）
+# 設定檔方式（config.toml）
 # [router.cors]
 # allow_origins = ["https://example.com"]
 # allow_methods = ["GET", "POST"]
 # allow_headers = ["*"]
 ```
 
-### 安全頭
+### 安全標頭
 
 ```python
-# 自動新增安全回應頭
+# 自動新增安全回應標頭
 sdk.router.setup_security_headers()
 
-# 設定檔案方式（config.toml）
+# 設定檔方式（config.toml）
 # [router.security]
 # enabled = true
 ```
@@ -693,12 +676,3 @@ sdk.router.set_docs_info(
 ```
 
 ### 路由資訊
-
-```python
-app = sdk.router.get_app()
-```
-
-## 相關文件
-
-- [事件系統 API](event-system.md) - Event 模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API

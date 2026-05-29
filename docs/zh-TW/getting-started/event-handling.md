@@ -16,13 +16,19 @@ ErisPulse 支援以下事件類型：
 
 ## 訊息事件處理
 
+> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
+
+```python
+from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
+```
+
 ### 監聽所有訊息
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_message()
-async def message_handler(event):
+async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
@@ -32,7 +38,7 @@ async def message_handler(event):
 
 ```python
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     user_id = event.get_user_id()
     await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
@@ -41,18 +47,18 @@ async def private_handler(event):
 
 ```python
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群組 {group_id} 中 {user_id} 發送了訊息")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了訊息")
 ```
 
 ### 監聽@訊息
 
 ```python
 @message.on_at_message()
-async def at_handler(event):
-    # 取得被@的使用者列表
+async def at_handler(event: Event):
+    # 獲取被@的使用者列表
     mentions = event.get_mentions()
     await event.reply(f"你@了這些使用者: {mentions}")
 ```
@@ -93,7 +99,7 @@ async def help_handler(event):
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 取得命令參數
+    # 獲取命令參數
     args = event.get_command_args()
     
     if not args:
@@ -130,7 +136,7 @@ async def admin_handler(event):
 ### 命令優先級
 
 ```python
-# 優先級數值越小，執行越早
+# 優先級數值越大，執行越早
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高優先級處理器")
@@ -147,16 +153,16 @@ ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調
 ```
 事件到達
     ↓
-priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
+priority=10 組: [處理器C || 處理器D] 並行 → 合併結果
     ↓ (如未中斷)
-priority=1 組: [處理器C || 處理器D] 並行 → 合併結果
+priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
     ↓
 ...
 ```
 
 - **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
-- **跨級串行**：不同優先級的組按順序執行，確保高優先級處理器先執行
-- **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
+- **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
+- **Copy-On-Write**：處理器無修改時不創建副本，確保零開銷
 - **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
 - **中斷機制**：任意處理器呼叫 `event.mark_processed()` 後，跳過後續低優先級組
 
@@ -175,7 +181,7 @@ async def handler_b(event):
 # 不同優先級串行執行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 在 priority=0 組全部完成後執行
+    # 優先級最高，最先執行
     pass
 ```
 
@@ -200,7 +206,7 @@ async def friend_add_handler(event):
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"歡迎新成員 {user_id} 加入群組 {group_id}")
+    await event.reply(f"歡迎新成員 {user_id} 加入群 {group_id}")
 ```
 
 ### 群組成員減少
@@ -210,7 +216,7 @@ async def member_increase_handler(event):
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"成員 {user_id} 離開了群組 {group_id}")
+    await event.reply(f"成員 {user_id} 離開了群 {group_id}")
 ```
 
 ## 請求事件處理
@@ -239,7 +245,7 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"收到群組 {group_id} 的邀請，來自 {user_id}")
+    await event.reply(f"收到群 {group_id} 的邀請，來自 {user_id}")
 ```
 
 ## 元事件處理
@@ -252,12 +258,12 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"{platform} 平台已連線")
+    sdk.logger.info(f"{platform} 平台已連接")
 
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.warning(f"{platform} 平台已斷線")
+    sdk.logger.warning(f"{platform} 平台已斷開連接")
 ```
 
 ### 心跳事件
@@ -373,109 +379,3 @@ async def confirm_handler(event):
         text = reply_event.get_text().lower()
         
         if text in ["是", "yes", "y"]:
-            await event.reply("操作已確認！")
-        else:
-            await event.reply("操作已取消。")
-    
-    await event.reply("確認執行此操作嗎？(是/否)")
-    
-    await event.wait_reply(
-        timeout=30,
-        callback=handle_confirmation
-    )
-```
-
-### 確認對話
-
-等待使用者確認或否定，自動識別內建中英文確認詞：
-
-```python
-@command("confirm", help="確認操作")
-async def confirm_handler(event):
-    if await event.confirm("確定要執行此操作嗎？"):
-        await event.reply("已確認，執行中...")
-    else:
-        await event.reply("已取消")
-
-# 自訂確認詞
-if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
-    pass
-```
-
-### 選擇選單
-
-使用者可回覆選項編號或選項文字：
-
-```python
-@command("choose", help="選擇")
-async def choose_handler(event):
-    choice = await event.choose(
-        "請選擇顏色：",
-        ["紅色", "綠色", "藍色"]
-    )
-    
-    if choice is not None:
-        colors = ["紅色", "綠色", "藍色"]
-        await event.reply(f"你選擇了：{colors[choice]}")
-    else:
-        await event.reply("逾時未選擇")
-```
-
-### 收集表單
-
-多步驟收集使用者輸入：
-
-```python
-@command("register", help="註冊")
-async def register_handler(event):
-    data = await event.collect([
-        {"key": "name", "prompt": "請輸入姓名："},
-        {"key": "age", "prompt": "請輸入年齡：", 
-         "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "請輸入信箱："}
-    ])
-    
-    if data:
-        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n信箱：{data['email']}")
-    else:
-        await event.reply("註冊逾時或輸入無效")
-```
-
-### 等待任意事件
-
-等待滿足條件的任意事件，不限於同一使用者：
-
-```python
-@command("wait_member", help="等待新成員")
-async def wait_member_handler(event):
-    await event.reply("等待群組成員加入...")
-    
-    evt = await event.wait_for(
-        event_type="notice",
-        condition=lambda e: e.get_detail_type() == "group_member_increase",
-        timeout=120
-    )
-    
-    if evt:
-        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
-    else:
-        await event.reply("等待逾時")
-```
-
-### 多輪對話
-
-建立可互動的多輪對話上下文：
-
-```python
-@command("survey", help="問卷調查")
-async def survey_handler(event):
-    conv = event.conversation(timeout=60)
-    
-    await conv.say("歡迎參與問卷調查！")
-    
-    while conv.is_active:
-        reply = await conv.wait()
-        
-        if reply is None:
-            await conv.say("對話逾時，再見！")
-            break

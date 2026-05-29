@@ -4,7 +4,7 @@
 
 ## 創建對話
 
-通過 `Event` 對象的 `conversation()` 方法創建：
+通過 `Event` 物件的 `conversation()` 方法創建：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -51,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-等待用戶回覆，返回 `Event` 對象或 `None`（超時）：
+等待用戶回覆，返回 `Event` 物件或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -316,5 +316,5 @@ async def chat_handler(event):
 
 ## 相關文檔
 
-- [Event 包裝類](../../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
-- [事件處理入門](../../getting-started/event-handling.md) - 事件處理基礎
+- [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event 物件的所有方法
+- [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎

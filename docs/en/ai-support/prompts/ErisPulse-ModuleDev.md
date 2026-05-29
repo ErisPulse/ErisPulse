@@ -56,12 +56,10 @@ graph TB
     SDK --> Lifecycle["Lifecycle<br/>Lifecycle Management"]
     SDK --> Logger["Logger<br/>Logger Management"]
     SDK --> Storage["Storage / env<br/>Storage Management"]
-    SDK --> Config["Config<br/>Configuration Management + Audit"]
+    SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management"]
-    SDK --> Metrics["Metrics<br/>Metrics Monitoring"]
-
+    SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -70,7 +68,7 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["Yunhu"]
+    BaseAdapter --> P1["云湖"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -89,11 +87,10 @@ graph TB
 | **Adapter** | Adapter manager, managing the registration, startup, and shutdown of multi-platform adapters |
 | **Module** | Module manager, managing plugin registration, loading, and unloading, supporting dependency declaration and topological sorting |
 | **Lifecycle** | Lifecycle manager, providing event-driven lifecycle hooks |
-| **Storage** | SQLite-based key-value storage system supporting general SQL chained queries |
-| **Config** | TOML format configuration file management, supporting caller awareness and configuration audit |
+| **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
+| **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
-| **Metrics** | Metrics monitoring system, providing three metric types: Counter / Gauge / Histogram |
 
 ## Initialization Process
 
@@ -130,7 +127,7 @@ flowchart TD
 6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
 7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
 8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the router server (FastAPI)
+9. **Start Router Server** - Start the router server using Uvicorn (FastAPI)
 
 ## Event Handling Process
 
@@ -415,7 +412,7 @@ from ErisPulse.Core.Event import command
 
 @command("hello")
 async def hello(event):
-    await event.reply("你好！")
+    await event.reply("Hello!")
 
 # Run the SDK and keep it running | Needs to run in an async environment
 asyncio.run(sdk.run(keep_running=True))
@@ -449,7 +446,7 @@ Create independent module packages and install and use them via package managers
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
+│                ErisPulse Framework                 │
 ├─────────────────────────────────────────────────────┤
 │                                             │
 │  ┌──────────────┐      ┌──────────────┐    │
@@ -520,7 +517,8 @@ Modules providing basic functions:
 - **Storage**: SQLite-based key-value storage
 - **Config**: Configuration management in TOML format
 - **Logger**: Modular logging system
-- **Router**: HTTP and WebSocket routing management
+- **Router**: FastAPI + Uvicorn-based HTTP and WebSocket routing management
+- **Metrics**: Metrics monitoring system (Counter / Gauge / Histogram)
 
 ## Start Learning
 
@@ -704,7 +702,7 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     """Listen to friend addition events"""
     user_id = event.get_user_id()
-    await event.reply(f"欢迎添加我为好友！你的 ID 是 {user_id}")
+    await event.reply(f"Welcome to add me as a friend! Your ID is {user_id}")
 ```
 
 ### Use Storage System
@@ -717,7 +715,7 @@ count = sdk.storage.get("hello_count", 0)
 count += 1
 sdk.storage.set("hello_count", count)
 
-await event.reply(f"这是第 {count} 次调用 hello 命令")
+await event.reply(f"This is the {count}th time calling hello command")
 ```
 
 ## Common Issues
@@ -748,14 +746,13 @@ async def hello_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("你好！来自云湖")
+        await event.reply("Hello! From Yunhu")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
 ```
 
 ## Next Steps
 
-- [Advanced Initialization Control](advanced-init.md) - Hook system, manual control, embedded integration
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions
@@ -876,6 +873,14 @@ class MyModule(BaseModule):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
     
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """Called when module loads"""
         # Register event handler
@@ -1154,13 +1159,19 @@ ErisPulse supports the following event types:
 
 ## Message Event Handling
 
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE autocomplete and type checking support.
+
+```python
+from ErisPulse.Core.Event import Event  # Import Event type for annotations
+```
+
 ### Listening to all messages
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_message()
-async def message_handler(event):
+async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     sdk.logger.info(f"Received message from {user_id}: {text}")
@@ -1170,7 +1181,7 @@ async def message_handler(event):
 
 ```python
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     user_id = event.get_user_id()
     await event.reply(f"Hello, {user_id}! This is a private message.")
 ```
@@ -1179,18 +1190,18 @@ async def private_handler(event):
 
 ```python
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} sent a message in group {group_id}")
+    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
 ```
 
 ### Listening to @ mentions
 
 ```python
 @message.on_at_message()
-async def at_handler(event):
-    # Get list of users mentioned
+async def at_handler(event: Event):
+    # Get list of mentioned users
     mentions = event.get_mentions()
     await event.reply(f"You mentioned these users: {mentions}")
 ```
@@ -1268,7 +1279,7 @@ async def admin_handler(event):
 ### Command Priority
 
 ```python
-# The lower the priority value, the earlier it executes
+# The higher the priority value, the earlier it executes
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -1280,21 +1291,21 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-The ErisPulse event system uses a **same-priority parallel, different-priority serial** scheduling model:
+ErisPulse event system adopts a **same-priority parallel, different-priority serial** scheduling model:
 
 ```
 Event Arrived
     ↓
-priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
+priority=10 Group: [Handler C || Handler D] Parallel → Merge Results
     ↓ (If not interrupted)
-priority=1 Group: [Handler C || Handler D] Parallel → Merge Results
+priority=0 Group: [Handler A || Handler B] Parallel → Merge Results
     ↓
 ...
 ```
 
 - **Same priority parallel**: Multiple handlers with the same priority execute simultaneously to improve throughput
-- **Different priority serial**: Groups of different priorities execute sequentially to ensure high-priority handlers run first
-- **Copy-On-Write**: Copies are not created when handlers do not modify data, ensuring zero overhead
+- **Cross-level serial**: Groups of different priorities execute sequentially (higher values execute first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copies are created when handlers do not modify data, ensuring zero overhead
 - **Conflict handling**: When multiple handlers of the same priority modify the same field, the last modified value is used and a warning is logged
 - **Interruption mechanism**: After any handler calls `event.mark_processed()`, subsequent lower-priority groups are skipped
 
@@ -1313,7 +1324,7 @@ async def handler_b(event):
 # Different priorities execute serially
 @message.on_message(priority=10)
 async def handler_c(event):
-    # Execute after priority=0 group completes
+    # Executes first due to higher priority
     pass
 ```
 
@@ -1694,84 +1705,7 @@ async def handle_message(event):
     platform = event.get_platform()
 
     # Call specific methods based on platform
-    if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram specific method
-    elif platform == "email":
-        subject = event.get_subject()           # Email specific method
-```
-
-If you are not sure whether a platform has registered a specific method, you can query which methods are registered for a platform:
-
-```python
-from ErisPulse.Core.Event import get_platform_event_methods
-
-methods = get_platform_event_methods("telegram")
-# ["get_chat_type", "is_bot_message", ...]
-```
-
-> For platform-specific methods registered by each platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
-
-## Best Practices for Event Handling
-
-### 1. Exception Handling
-
-```python
-@command("process")
-async def process_handler(event):
-    try:
-        # Business logic
-        result = await do_some_work()
-        await event.reply(f"Result: {result}")
-    except ValueError as e:
-        # Expected business errors
-        await event.reply(f"Parameter error: {e}")
-    except Exception as e:
-        # Unexpected errors
-        sdk.logger.error(f"Processing failed: {e}")
-        await event.reply("Processing failed, please try again later")
-```
-
-### 2. Logging
-
-```python
-@message.on_message()
-async def message_handler(event):
-    user_id = event.get_user_id()
-    text = event.get_text()
-    
-    sdk.logger.info(f"Processing message: {user_id} - {text}")
-    
-    # Use the module's own logger
-    from ErisPulse import sdk
-    logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Detailed debug info")
-```
-
-### 3. Conditional Handling
-
-```python
-def should_handle(event):
-    """Determine if this event should be handled"""
-    # Only handle messages from specific users
-    if event.get_user_id() in ["bot1", "bot2"]:
-        return False
-    
-    # Only handle messages containing specific keywords
-    if "keyword" not in event.get_text():
-        return False
-    
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
-    await event.reply("Condition met, handling message")
-```
-
-## Next Steps
-
-- [Common Task Examples](common-tasks.md) - Learn to implement common features
-- [Detailed Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
-- [User Guide](../user-guide/) - Learn about configuration and module management
+    if platform ==
 
 
 
@@ -2261,7 +2195,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 description = "Module functionality description"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 dependencies = []
@@ -3417,6 +3351,8 @@ pip install ErisPulse-MyModule
 
 Go to the [ErisPulse Module Store](https://www.erisdev.com/#market), click "Submit Module", fill in the module information after logging in.
 
+Supported login methods: **GitHub**, **Codeberg**, **Cloud Lake**, any one of these is sufficient.
+
 Key points to fill in:
 - Module name, description, repository URL
 - Minimum SDK version: If unsure, use the version number from the [latest ErisPulse release](https://pypi.org/project/ErisPulse/)
@@ -3426,6 +3362,14 @@ Submission takes effect immediately, users can install through the module source
 > **Regarding Verification Status**:
 > - "Unverified" only indicates that it has not undergone official review, not that there is an issue with the module
 > - Users will receive a risk warning when installing unverified modules through `epsdk install` and need to confirm before proceeding with installation
+
+### 4. Manage Published Modules
+
+After clicking "Submit Module" in the Module Store and logging in, switch to the "My Modules" tab to:
+- **Edit** — Modify module description, repository URL, tags and other information, version number will be automatically synchronized from PyPI
+- **Delete** — Remove the module from the Module Store (irreversible)
+
+> Newly submitted modules may take a few minutes to appear in the "My Modules" list.
 
 ## Update Published Modules
 
@@ -3463,7 +3407,7 @@ Yes. Configure multiple key-value pairs in `entry-points`:
 
 ### How long does the review take?
 
-Usually completed within 1-3 business days. You can check the review progress in Issues.
+Usually completed within 1-3 business days. You can check the review status in the "My Modules" section of the Module Store.
 
 ## Distribute Applications via Docker Images
 
@@ -3728,6 +3672,14 @@ The ErisPulse command-line tool provides project management and package manageme
 | `init` | `[--project-name/-n <name>]` | Interactive project initialization | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | Quick mode, skip interaction | `epsdk init -q -n bot` |
 | | `[--force/-f]` | Force override existing configuration | `epsdk init -f` |
+| `create` | `[module|adapter]` | Create scaffold project | `epsdk create` |
+| | `[--name/-n <name>]` | Project name (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | Project description | `epsdk create adapter -d "xx adapter"` |
+| | `[--author/-a <name>]` | Author name | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | Author email | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | Project homepage URL | |
+| | `[--output/-o <dir>]` | Output directory (default current directory) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | Force overwrite existing directory | `epsdk create -f` |
 
 ## Parameter Reference
 
@@ -3842,6 +3794,25 @@ epsdk init
 
 # Quick initialization
 epsdk init -q -n my_bot
+```
+
+### Creating Scaffolds
+
+```bash
+# Interactive creation (guided selection and information filling)
+epsdk create
+
+# Directly create Module project
+epsdk create module -n MyModule
+
+# Directly create Adapter project
+epsdk create adapter -n MyAdapter
+
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+
+# Force overwrite existing directory
+epsdk create module -n MyModule -f
 
 
 
@@ -4061,501 +4032,6 @@ from ErisPulse import sdk
 
 # Different log levels
 sdk.logger.debug("Debug info")
-sdk.logger.info("Runtime info")
-sdk.logger.warning("Warning info")
-sdk.logger.error("Error info")
-sdk.logger.critical("Fatal error")
-```
-
-### Child Loggers
-
-```python
-# Get child logger
-child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Submodule log")
-
-# Submodules can have their own child loggers, allowing for more precise control over log output
-child_logger.get_child("utils")
-```
-
-### Log Output
-
-```python
-# Set output file
-sdk.logger.set_output_file("app.log")
-
-# Save logs to file
-sdk.logger.save_logs("log.txt")
-```
-
-## Adapter Module
-
-### Getting Adapters
-
-```python
-from ErisPulse import sdk
-
-# Get adapter instance
-adapter = sdk.adapter.get("platform_name")
-
-# Access via attribute
-adapter = sdk.adapter.platform_name
-```
-
-### Adapter Events
-
-```python
-# Listen for standard events
-@sdk.adapter.on("message")
-async def handle_message(event):
-    pass
-
-# Listen for events on a specific platform
-@sdk.adapter.on("message", platform="yunhu")
-async def handle_yunhu_message(event):
-    pass
-
-# Listen for platform native events
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
-```
-
-### Adapter Management
-
-```python
-# Get all platforms
-platforms = sdk.adapter.platforms
-
-# Check if adapter exists
-exists = sdk.adapter.exists("platform_name")
-
-# Enable/Disable adapter
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# Start/Shutdown adapter
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# Check if adapter is running
-is_running = sdk.adapter.is_running("platform_name")
-
-# List all running adapters
-running = sdk.adapter.list_running()
-```
-
-## Module Module
-
-### Getting Modules
-
-```python
-from ErisPulse import sdk
-
-# Get module instance
-module = sdk.module.get("ModuleName")
-
-# Access via attribute
-module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### Module Management
-
-```python
-# Check if module exists
-exists = sdk.module.exists("ModuleName")
-
-# Check if module is loaded
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# Check if module is enabled
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# Enable/Disable module
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# Load module
-await sdk.module.load("ModuleName")
-
-# Unload module
-await sdk.module.unload("ModuleName")
-
-# List loaded modules
-loaded = sdk.module.list_loaded()
-
-# List registered modules
-registered = sdk.module.list_registered()
-
-# Get module information
-info = sdk.module.get_info("ModuleName")
-
-# Get module status summary
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# Check if module is running (equivalent to is_loaded)
-is_running = sdk.module.is_running("ModuleName")
-
-# List all running modules
-running = sdk.module.list_running()
-```
-
-## Lifecycle Module
-
-### Event Submission
-
-```python
-from ErisPulse import sdk
-
-# Submit custom event
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="Custom event description"
-)
-```
-
-### Event Listening
-
-```python
-# Listen for specific event
-@sdk.lifecycle.on("module.init")
-async def handle_module_init(event_data):
-    print(f"Module initialization: {event_data}")
-
-# Listen for parent event
-@sdk.lifecycle.on("module")
-async def handle_any_module_event(event_data):
-    print(f"Module event: {event_data}")
-
-# Listen for all events
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"System event: {event_data}")
-```
-
-### Timer
-
-```python
-# Start timer
-sdk.lifecycle.start_timer("my_operation")
-
-# ... Perform operations ...
-
-# Get duration
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# Stop timer
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
-
-## Metrics Module
-
-### Basic Usage
-
-```python
-from ErisPulse import sdk
-
-# Register built-in metrics (HTTP requests count, module loading time, etc.)
-sdk.metrics.register_builtin_metrics()
-
-# Get all metrics snapshot
-snapshot = sdk.metrics.get_all_metrics()
-```
-
-### Metric Types
-
-#### Counter
-
-```python
-from ErisPulse.Core.metrics import Counter
-
-counter = Counter("http_requests_total", description="Total HTTP requests")
-counter.inc()            # +1
-counter.inc(5)           # +5
-print(counter.value)     # 6
-```
-
-#### Gauge
-
-```python
-from ErisPulse.Core.metrics import Gauge
-
-gauge = Gauge("active_connections", description="Active connections count")
-gauge.inc()              # +1
-gauge.dec()              # -1
-gauge.set(42)            # Set to 42
-print(gauge.value)       # 42
-```
-
-#### Histogram
-
-```python
-from ErisPulse.Core.metrics import Histogram
-
-hist = Histogram("request_duration_seconds", description="Request duration")
-hist.observe(0.15)
-hist.observe(0.32)
-hist.observe(1.2)
-print(hist.count)        # 3
-print(hist.sum)          # 1.67
-print(hist.percentile(50))  # P50
-print(hist.percentile(95))  # P95
-print(hist.percentile(99))  # P99
-```
-
-### Custom Metrics
-
-```python
-from ErisPulse import sdk
-
-# Register custom metrics via MetricsManager
-sdk.metrics.counter("my_module.errors", description="Module error count")
-sdk.metrics.gauge("my_module.queue_size", description="Queue size")
-sdk.metrics.histogram("my_module.process_time", description="Processing time")
-
-# Get and use
-sdk.metrics.get("my_module.errors").inc()
-```
-
-### @timed Decorator
-
-```python
-from ErisPulse.Core.metrics import timed
-
-@timed("my_module.handler_duration")
-async def handle_request():
-    # Function execution time will be automatically recorded to Histogram metric
-    await do_something()
-```
-
-## Router Module
-
-### Decorator Routing (Recommended)
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP route decorator
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"status": "ok"}
-
-# Shortcut method decorators
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket decorator
-from fastapi import WebSocket
-
-@sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# Authenticated WebSocket decorator
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### Traditional Registration
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="Data API",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket Routing
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# Basic registration (auto accepts connection)
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# Authenticated registration (recommended: use auth_handler to control connection)
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# Unregister route
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**Parameter Description:**
-
-| Parameter | Description | Default Value |
-|----------|-------------|--------------|
-| `module_name` | Module name (required) | - |
-| `path` | WebSocket path | - |
-| `handler` | Handler function | - |
-| `auth_handler` | Auth function, returns `False` to auto-close connection | `None` |
-| `auto_accept` | Whether to auto `accept()` | `True` |
-
-> **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
-
-### Route Grouping
-
-```python
-# Create route group
-group = sdk.router.group("MyModule", prefix="/v1")
-
-# Register routes in group
-@group.get("/users")
-async def list_users(request: Request):
-    return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# Versioned grouping
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
-```
-
-### Route Middleware
-
-```python
-# Global middleware (glob matching)
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
-
-# Specific path middleware
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
-
-### Rate Limiting
-
-```python
-# Set rate limit for route (sliding window)
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS Configuration
-
-```python
-# Programmatic way
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# Configuration file way (config.toml)
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### Security Headers
-
-```python
-# Automatically add security response headers
-sdk.router.setup_security_headers()
-
-# Configuration file way (config.toml)
-# [router.security]
-# enabled = true
-```
-
-### Auto Documentation
-
-```python
-# Router enables OpenAPI documentation by default
-# Disable documentation
-sdk.router.disable_docs()
-
-# Custom documentation info
-sdk.router.set_docs_info(
-    title="My API",
-    description="API documentation",
-    version="1.0.0"
-)
-```
-
-### Route Information
-
-```python
-app = sdk.router.get_app()
-```
-
-## Related Documentation
-
-- [Event System API](event-system.md) - Event module API
-- [Adapter System API](adapter-system.md) - Adapter management API
 
 
 
@@ -4573,12 +4049,12 @@ This document details the API of the ErisPulse event system.
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="发送问候")
+@command("hello", help="Send greeting")
 async def hello_handler(event):
-    await event.reply("你好！")
+    await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["帮助"], help="显示帮助")
+@command(["help", "h"], aliases=["help"], help="Display help")
 async def help_handler(event):
     pass
 
@@ -4586,17 +4062,17 @@ async def help_handler(event):
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
-@command("admin", permission=is_admin, help="管理员命令")
+@command("admin", permission=is_admin, help="Admin command")
 async def admin_handler(event):
     pass
 
 # Hidden command
-@command("secret", hidden=True, help="秘密命令")
+@command("secret", hidden=True, help="Secret command")
 async def secret_handler(event):
     pass
 
 # Command group
-@command("admin.reload", group="admin", help="重新加载模块")
+@command("admin.reload", group="admin", help="Reload module")
 async def reload_handler(event):
     pass
 ```
@@ -4621,17 +4097,17 @@ visible_commands = command.get_visible_commands()
 
 ```python
 # Wait for user reply
-@command("ask", help="询问用户信息")
+@command("ask", help="Ask for user information")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="请输入你的名字:",  # Sent above
+        prompt="Please enter your name:",  # Sent above
         timeout=30.0
     )
     
     if reply:
         name = reply.get_text()
-        await event.reply(f"你好，{name}！")
+        await event.reply(f"Hello, {name}!")
 
 # Waiting for reply with validation
 def validate_age(event_data):
@@ -4641,9 +4117,9 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="询问用户年龄")
+@command("age", help="Ask for user age")
 async def age_command(event):
-    await event.reply("请输入你的年龄:")
+    await event.reply("Please enter your age:")
     
     reply = await command.wait_reply(
         event,
@@ -4653,21 +4129,21 @@ async def age_command(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"你的年龄是 {age} 岁")
+        await event.reply(f"Your age is {age}")
 
 # Waiting for reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["是", "yes", "y"]:
-        await event.reply("操作已确认！")
+    if text in ["yes", "yes", "y"]:
+        await event.reply("Operation confirmed!")
     else:
-        await event.reply("操作已取消。")
+        await event.reply("Operation cancelled.")
 
-@command("confirm", help="确认操作")
+@command("confirm", help="Confirm operation")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="请输入'是'或'否':",
+        prompt="Please enter 'yes' or 'no':",
         callback=handle_confirmation
     )
 ```
@@ -4682,42 +4158,41 @@ from ErisPulse.Core.Event import message
 # Listen to all messages
 @message.on_message()
 async def message_handler(event):
-    sdk.logger.info(f"收到消息: {event.get_text()}")
+    sdk.logger.info(f"Received message: {event.get_text()}")
 
 # Listen to private messages
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"私聊来自: {user_id}")
+    sdk.logger.info(f"Private message from: {user_id}")
 
 # Listen to group messages
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
-    sdk.logger.info(f"群聊来自: {group_id}")
+    sdk.logger.info(f"Group message from: {group_id}")
 
 # Listen to @messages
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"被@的用户: {mentions}")
+    sdk.logger.info(f"Mentioned users: {mentions}")
 ```
 
 ### Conditional Listening
 
 ```python
-# Use condition function
-def keyword_condition(event):
-    text = event.get_text()
-    return "关键词" in text
-
-@message.on_message(condition=keyword_condition)
-async def keyword_handler(event):
-    pass
-
 # Use priority
 @message.on_message(priority=10)  # Smaller number means higher priority
 async def high_priority_handler(event):
+    pass
+
+# Implement conditional filtering inside handler
+@message.on_message()
+async def filtered_handler(event):
+    if "keyword" not in event.get_text():
+        return
+    # Process messages containing keyword
     pass
 ```
 
@@ -4732,25 +4207,25 @@ from ErisPulse.Core.Event import notice
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("欢迎添加我为好友！")
+    await event.reply("Welcome as a friend!")
 
 # Friend removed
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"好友删除: {user_id}")
+    sdk.logger.info(f"Friend removed: {user_id}")
 
 # Group member increased
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"欢迎新成员！")
+    await event.reply(f"Welcome new member!")
 
 # Group member decreased
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"群成员离开: {user_id}")
+    sdk.logger.info(f"Group member left: {user_id}")
 ```
 
 ## Request Module
@@ -4765,14 +4240,14 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"好友请求: {user_id}, 备注: {comment}")
+    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
 
 # Group invitation request
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群邀请: {group_id}, 来自: {user_id}")
+    sdk.logger.info(f"Group invitation: {group_id}, from: {user_id}")
 ```
 
 ## Meta Event Module
@@ -4786,18 +4261,18 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"平台 {platform} 连接成功")
+    sdk.logger.info(f"Platform {platform} connected successfully")
 
 # Disconnection event
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"平台 {platform} 断开连接")
+    sdk.logger.info(f"Platform {platform} disconnected")
 
 # Heartbeat event
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
-    sdk.logger.debug("收到心跳")
+    sdk.logger.debug("Heartbeat received")
 ```
 
 ### Bot Status Query
@@ -4829,11 +4304,11 @@ You can also listen to Bot online/offline events via lifecycle events:
 ```python
 @sdk.lifecycle.on("adapter.bot.online")
 async def on_bot_online(data):
-    sdk.logger.info(f"Bot 上线: {data['platform']}/{data['bot_id']}")
+    sdk.logger.info(f"Bot online: {data['platform']}/{data['bot_id']}")
 
 @sdk.lifecycle.on("adapter.bot.offline")
 async def on_bot_offline(data):
-    sdk.logger.info(f"Bot 下线: {data['platform']}/{data['bot_id']}")
+    sdk.logger.info(f"Bot offline: {data['platform']}/{data['bot_id']}")
 ```
 
 ## Event Wrapper Class
@@ -4899,16 +4374,16 @@ is_cmd = event.is_command()
 
 ```python
 # Basic reply
-await event.reply("这是一条消息")
+await event.reply("This is a message")
 
 # Specify sending method
 await event.reply("http://example.com/image.jpg", method="Image")
 
 # With @users and reply message
-await event.reply("你好", at_users=["user1"], reply_to="msg_id")
+await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
 # @all members
-await event.reply("公告", at_all=True)
+await event.reply("Announcement", at_all=True)
 
 # Reply using OneBot12 message segments
 from ErisPulse.Core.Event import MessageBuilder
@@ -4923,28 +4398,28 @@ reply = await event.wait_reply(timeout=30)
 
 ```python
 # confirm — Confirm dialog
-if await event.confirm("确定要执行此操作吗？"):
-    await event.reply("已确认")
+if await event.confirm("Are you sure you want to perform this operation?"):
+    await event.reply("Confirmed")
 else:
-    await event.reply("已取消")
+    await event.reply("Cancelled")
 
 # Custom confirmation words
-if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+if await event.confirm("Continue?", yes_words={"go", "continue"}, no_words={"stop", "stop"}):
     pass
 
 # choose — Selection menu
-choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+choice = await event.choose("Please choose a color:", ["red", "green", "blue"])
 if choice is not None:
-    await event.reply(f"你选择了：{['红色', '绿色', '蓝色'][choice]}")
+    await event.reply(f"You chose: {['red', 'green', 'blue'][choice]}")
 
 # collect — Form collection
 data = await event.collect([
-    {"key": "name", "prompt": "请输入姓名："},
-    {"key": "age", "prompt": "请输入年龄：",
+    {"key": "name", "prompt": "Please enter name:"},
+    {"key": "age", "prompt": "Please enter age:",
      "validator": lambda e: e.get_text().isdigit()},
 ])
 if data:
-    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
+    await event.reply(f"Name: {data['name']}, Age: {data['age']}")
 
 # wait_for — Wait for any event
 evt = await event.wait_for(
@@ -4953,17 +4428,17 @@ evt = await event.wait_for(
     timeout=120
 )
 if evt:
-    await event.reply(f"新成员: {evt.get_user_id()}")
+    await event.reply(f"New member: {evt.get_user_id()}")
 
 # conversation — Multi-turn conversation
 conv = event.conversation(timeout=60)
-await conv.say("欢迎！输入'退出'结束。")
+await conv.say("Welcome! Type 'exit' to end.")
 while conv.is_active:
     reply = await conv.wait()
-    if reply is None or reply.get_text() == "退出":
+    if reply is None or reply.get_text() == "exit":
         conv.stop()
         break
-    await conv.say(f"你说: {reply.get_text()}")
+    await conv.say(f"You said: {reply.get_text()}")
 ```
 
 ### Utility Methods
@@ -5029,7 +4504,120 @@ event.get_chat_type()    # ❌ AttributeError
 
 # Telegram event - Only Telegram methods
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
-event.get_chat
+event.get_chat_type()    # ✅ "private"
+event.get_subject()      # ❌ AttributeError
+```
+
+#### `hasattr` / `dir` Support
+
+```python
+hasattr(event, "get_subject")   # Returns True only when platform="email"
+"get_subject" in dir(event)     # Same as above
+```
+
+### Adapters: Registering Platform Extension Methods
+
+Adapters can register platform-specific methods for Event using decorators, where the first parameter is `self` (Event instance) with free access to event data.
+
+#### Registering Individual Methods
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("email")
+def get_subject(self):
+    """Get email subject"""
+    return self.get("email_raw", {}).get("subject", "")
+
+@register_event_method("email")
+def get_from(self):
+    """Get sender"""
+    return self.get("email_raw", {}).get("from", {})
+```
+
+#### Batch Registration (Mixin Class)
+
+When there are many methods, it's recommended to use Mixin classes for batch registration:
+
+```python
+from ErisPulse.Core.Event import register_event_mixin
+
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", {})
+
+    def get_attachments(self):
+        return self.get("email_raw", {}).get("attachments", [])
+
+# Register all methods at once
+register_event_mixin("email", EmailEventMixin)
+```
+
+#### Return Value Specifications
+
+| Scenario | Return Value | User Usage |
+|----------|--------------|------------|
+| Return data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
+| Perform operations (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` Optional `await` |
+
+> **Recommendation**: Methods that don't return data should return `asyncio.Task`, allowing users to decide whether to `await`, ensuring the operation completes even if not awaited.
+
+```python
+@register_event_method("email")
+def forward_email(self, to_address: str):
+    """Forward email — Returns Task, user can decide whether to await"""
+    import asyncio
+    return asyncio.create_task(
+        self._do_forward(to_address)
+    )
+
+# User can await to wait for result
+await event.forward_email("user@example.com")
+
+# Or not await, operation executes in background
+event.forward_email("user@example.com")
+```
+
+#### Unregister Methods
+
+```python
+from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
+
+# Unregister a single method
+unregister_event_method("email", "get_subject")
+
+# Unregister all methods for a platform (call when adapter shuts down)
+unregister_platform_event_methods("email")
+```
+
+#### Naming Conflict Detection
+
+When registering, if the method name conflicts with an Event built-in method (like `get_text`, `reply`), the system will issue a warning and skip registration without overriding built-in behavior.
+
+## Priority System
+
+Event handlers support priority, with smaller numbers indicating higher priority:
+
+```python
+# Higher priority handler executes first
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    pass
+
+# Lower priority handler executes later
+@message.on_message(priority=0)
+async def low_priority_handler(event):
+    pass
+```
+
+## Related Documentation
+
+- [Core Modules API](core-modules.md) - Core module API
+- [Adapter System API](adapter-system.md) - Adapter management API
+- [Module Development Guide](../developer-guide/modules/) - Developing custom modules
 
 
 
@@ -5542,9 +5130,9 @@ complex_msg = (
 
 ## Related Documentation
 
-- [Adapter SendDSL Detailed Explanation](../../developer-guide/adapters/send-dsl.md) - Send chaining send interface
-- [Event Conversion Standard](../../standards/event-conversion.md) - Message segment conversion specification
-- [Event Wrapper Class](../../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
+- [Adapter SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Send chaining send interface
+- [Event Conversion Standard](../standards/event-conversion.md) - Message segment conversion specification
+- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
 
 
 
@@ -5552,7 +5140,7 @@ complex_msg = (
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket route management, supporting multi-adapter route registration and lifecycle management. It is built on FastAPI and provides complete web service capabilities.
+The ErisPulse Router Manager provides unified HTTP and WebSocket route management, supporting multi-adapter route registration and lifecycle management. It is built on FastAPI + Uvicorn and provides complete web service capabilities.
 
 ## Overview
 
@@ -5889,141 +5477,251 @@ async def on_server_stop(event):
 
 # Lifecycle Management
 
-ErisPulse provides a complete lifecycle event system for monitoring the running status of various system components. Lifecycle events support dot-notation event listening; for example, you can listen to `module.init` to capture all module initialization events.
+ErisPulse provides a unified hook/lifecycle system for monitoring the operating status of various system components, as well as implementing extension functions such as auditing, statistics, and custom logic.
 
-## Standard Lifecycle Events
-
-The system defines the following standard event categories:
-
-```python
-STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete"],
-    "module": ["load", "init", "unload"],
-    "adapter": ["load", "start", "status.change", "stop", "stopped"],
-    "server": ["start", "stop"]
-}
-```
-
-## Event Data Format
-
-All lifecycle events follow a standard format:
-
-```json
-{
-    "event": "Event Name",
-    "timestamp": 1234567890,
-    "data": {},
-    "source": "ErisPulse",
-    "msg": "Event Description"
-}
-```
+The system supports three trigger methods:
+- `await lifecycle.emit("event", data)` — Simplified version, passing arbitrary data
+- `lifecycle.emit_sync("event", data)` — Synchronous version (for non-async contexts)
+- `await lifecycle.submit_event("event", ...)` — Compatible with legacy versions, automatically builds standard event format
 
 ## Event Handling Mechanism
 
-### Dot-notation Events
-
-ErisPulse supports dot-notation event naming, such as `module.init`. When a specific event is triggered, its parent events are also triggered:
-
-- When the `module.init` event is triggered, the `module` event is also triggered.
-- When the `adapter.status.change` event is triggered, the `adapter.status` and `adapter` events are also triggered.
-
-### Wildcard Event Handlers
-
-You can register a `*` event handler to capture all events.
-
-## Standard Lifecycle Events
-
-### Core Initialization Events
-
-| Event Name | Trigger Timing | Data Structure |
-|---------|---------|---------|
-| `core.init.start` | When core initialization starts | `{}` |
-| `core.init.complete` | When core initialization completes | `{"duration": "Initialization duration (seconds)", "success": true/false}` |
-
-### Module Lifecycle Events
-
-| Event Name | Trigger Timing | Data Structure |
-|---------|---------|---------|
-| `module.load` | When module loading completes | `{"module_name": "Module Name", "success": true/false}` |
-| `module.init` | When module initialization completes | `{"module_name": "Module Name", "success": true/false}` |
-| `module.unload` | When module is unloaded | `{"module_name": "Module Name", "success": true/false}` |
-
-### Adapter Lifecycle Events
-
-| Event Name | Trigger Timing | Data Structure |
-|---------|---------|---------|
-| `adapter.load` | When adapter loading completes | `{"platform": "Platform Name", "success": true/false}` |
-| `adapter.start` | When adapter starts launching | `{"platforms": ["List of Platform Names"]}` |
-| `adapter.status.change` | When adapter status changes | `{"platform": "Platform Name", "status": "Status", "retry_count": Retry Count, "error": "Error Message"}` |
-| `adapter.stop` | When adapter starts shutting down | `{}` |
-| `adapter.stopped` | When adapter has shut down completely | `{}` |
-
-### Server Lifecycle Events
-
-| Event Name | Trigger Timing | Data Structure |
-|---------|---------|---------|
-| `server.start` | When server starts | `{"base_url": "Base URL","host": "Host Address", "port": "Port Number"}` |
-| `server.stop` | When server stops | `{}` |
-
-## Usage Examples
-
-### Lifecycle Event Listening
+### Registering Handlers
 
 ```python
-from ErisPulse.Core import lifecycle
+from ErisPulse import sdk
 
-# Listen to specific event
-@lifecycle.on("module.init")
-async def module_init_handler(event_data):
-    print(f"Module {event_data['data']['module_name']} initialization completed")
+# Decorator pattern
+@sdk.lifecycle.on("module.load")
+async def on_module_load(data):
+    print(f"Module loaded: {data}")
 
-# Listen to parent event (dot-notation)
-@lifecycle.on("module")
-async def on_any_module_event(event_data):
-    print(f"Module event: {event_data['event']}")
+# Programmatic registration
+sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
-# Listen to all events (wildcard)
-@lifecycle.on("*")
-async def on_any_event(event_data):
-    print(f"System event: {event_data['event']}")
+# Unregister
+sdk.lifecycle.unregister("module.load", on_module_load)
 ```
 
-### Submitting Lifecycle Events
+### Priority
+
+Handlers support a `priority` parameter, where higher values execute first (consistent with the module loader):
 
 ```python
-from ErisPulse.Core import lifecycle
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
+async def first_handler(data):
+    pass
 
-# Basic event submission
-await lifecycle.submit_event(
-    "custom.event",
-    data={"custom_field": "custom_value"},
-    source="MyModule",
-    msg="Custom event description"
-)
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Executes later
+async def second_handler(data):
+    pass
 ```
 
-### Timer Functionality
+### Dot-structured Events
 
-The lifecycle system provides timer functionality for performance measurement:
+When a specific event is triggered, its parent events are also triggered:
+- When `module.load` is triggered, `module` is also triggered
+- When `adapter.event.receive` is triggered, `adapter.event` and `adapter` are also triggered
+
+### Wildcards
+
+Register `*` to capture all events:
 
 ```python
-from ErisPulse.Core import lifecycle
-
-# Start timing
-lifecycle.start_timer("my_operation")
-
-# Execute some operations...
-
-# Get duration (without stopping the timer)
-elapsed = lifecycle.get_duration("my_operation")
-print(f"Has run for {elapsed} seconds")
-
-# Stop timer and get duration
-total_time = lifecycle.stop_timer("my_operation")
-print(f"Operation completed, total time taken {total_time} seconds")
+@sdk.lifecycle.on("*")
+async def on_anything(data):
+    print(f"Received event: {data}")
 ```
 
-## Using Lifecycle in Modules
+## Hook Points Overview
+
+The framework includes the following built-in hook points, through which users can listen to any point using `@sdk.lifecycle.on()` to implement custom logic.
+
+### Core Initialization
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `core.init.start` | SDK initialization starts | `{}` |
+| `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(failure only)}` |
+| `core.uninit.complete` | SDK uninitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(failure only)}` |
+
+### Configuration Changes
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `config.set` | Configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
+
+**Example: Configuration Auditing**
+
+```python
+@sdk.lifecycle.on("config.set")
+def audit_config(data):
+    print(f"[Audit] {data['key']}: {data['old_value']} -> {data['new_value']}")
+```
+
+### Module Lifecycle
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `module.register` | Module class is registered to manager | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loading completes (instantiation successful) | `{"module_name": str, "success": bool}` |
+| `module.init` | Module initialization completes (including lazy loading) | `{"module_name": str, "success": bool}` |
+| `module.unload` | Module unloading | `{"module_name": str, "success": bool}` |
+
+### Adapter Lifecycle
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `adapter.load` | Adapter registration completes | `{"platform": str, "success": bool}` |
+| `adapter.start` | Adapter starts | `{"platforms": [str]}` |
+| `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str(failure only)}` |
+| `adapter.stop` | Adapter shuts down | `{"platforms": [str]}` |
+| `adapter.stopped` | Adapter shutdown completes | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot comes online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot goes offline | `{"platform": str, "bot_id": str, "status": str}` |
+
+### Event Reception and Processing
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `adapter.event.receive` | External platform event received (earliest stage) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Event dispatching completes | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | Before event handler execution starts | `{"event_type": str, "platform": str, "detail_type": str}` |
+
+**Example: Event Statistics**
+
+```python
+event_counter = {}
+
+@sdk.lifecycle.on("adapter.event.receive")
+def count_events(data):
+    platform = data["platform"]
+    event_counter[platform] = event_counter.get(platform, 0) + 1
+
+@sdk.lifecycle.on("adapter.event.dispatched")
+def log_unhandled(data):
+    if data["onebot_handlers_count"] == 0:
+        print(f"[Unhandled] {data['platform']}/{data['event_type']}")
+```
+
+### Message Sending
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `message.sending` | Message is about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sending completes | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+
+**Example: Message Sending Auditing**
+
+```python
+@sdk.lifecycle.on("message.sending")
+def log_sending(data):
+    print(f"[Send] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
+```
+
+### Command System
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `command.matched` | Command is matched and about to be executed | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Command execution completes | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(failure only)}` |
+
+**Example: Command Statistics**
+
+```python
+@sdk.lifecycle.on("command.matched")
+def count_commands(data):
+    print(f"[Command] /{data['command']} from {data['user_id']}@{data['platform']}")
+```
+
+### HTTP Routing
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+
+**Example: Request Logging**
+
+```python
+@sdk.lifecycle.on("server.response")
+def log_http(data):
+    print(f"[HTTP] {data['method']} {data['path']} -> {data['status_code']}")
+```
+
+### WebSocket
+
+| Hook Name | Trigger Timing | Data |
+|---------|---------|------|
+| `server.start` | Routing server starts | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | Routing server stops | `{}` |
+| `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket connection disconnected | `{"path": str, "module_name": str, "reason": str, "error": str(exception only)}` |
+
+**Example: WebSocket Connection Monitoring**
+
+```python
+@sdk.lifecycle.on("server.websocket.connect")
+def on_ws_connect(data):
+    print(f"[WS] Connection: {data['path']} from {data['client_ip']}")
+
+@sdk.lifecycle.on("server.websocket.disconnect")
+def on_ws_disconnect(data):
+    print(f"[WS] Disconnected: {data['path']} ({data['reason']})")
+```
+
+## Standard Event Definition
+
+```python
+STANDARD_EVENTS = {
+    "core": ["init.start", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register"],
+    "adapter": [
+        "load", "start", "status.change", "stop", "stopped",
+        "event.receive", "event.dispatched",
+        "bot.online", "bot.offline",
+    ],
+    "server": [
+        "start", "stop",
+        "request", "response",
+        "websocket.connect", "websocket.disconnect",
+    ],
+    "event": ["pre_process"],
+    "message": ["sending", "sent"],
+    "command": ["matched", "executed"],
+    "config": ["set"],
+}
+```
+
+## Complete API Reference
+
+### Registration and Unregistration
+
+| Method | Description |
+|------|------|
+| `@lifecycle.on(event, *, priority=0)` | Decorator to register a handler |
+| `lifecycle.register(event, handler, *, priority=0)` | Programmatic registration |
+| `lifecycle.unregister(event, handler=None)` | Unregister (when handler=None, unregister all handlers for this event) |
+
+### Triggering
+
+| Method | Description |
+|------|------|
+| `await lifecycle.emit(event, data=None)` | Asynchronous trigger, handlers can modify data by returning non-None |
+| `lifecycle.emit_sync(event, data=None)` | Synchronous trigger, async handlers are scheduled with create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Legacy compatible, automatically builds standard event format |
+
+### Utilities
+
+| Method | Description |
+|------|------|
+| `lifecycle.start_timer(timer_id)` | Start timing |
+| `lifecycle.get_duration(timer_id)` | Get elapsed time in seconds |
+| `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed duration |
+| `lifecycle.list_hooks()` | List all registered hooks and handler counts |
+| `lifecycle.clear()` | Clear all handlers and timers |
+
+## Usage Example in Modules
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -6031,29 +5729,34 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # Listen to module lifecycle events
-        @sdk.lifecycle.on("module.load")
-        async def on_module_load(event_data):
-            module_name = event_data['data'].get('module_name')
-            if module_name != "MyModule":
-                sdk.logger.info(f"Other module loaded: {module_name}")
+        # Implement simple message statistics
+        self.msg_count = 0
         
-        # Submit custom event
-        await sdk.lifecycle.submit_event(
-            "custom.ready",
-            source="MyModule",
-            msg="MyModule is ready to receive events"
-        )
+        @sdk.lifecycle.on("adapter.event.receive")
+        async def count(data):
+            if data["event_type"] == "message":
+                self.msg_count += 1
+        
+        # Monitor all commands
+        @sdk.lifecycle.on("command.matched")
+        async def log_cmd(data):
+            sdk.logger.info(f"Command executed: /{data['command']} by {data['user_id']}")
+        
+        # Configuration change auditing
+        @sdk.lifecycle.on("config.set")
+        def audit(data):
+            sdk.logger.info(f"Config changed: {data['key']} = {data['new_value']}")
 ```
 
 ## Notes
 
-1.  **Event Source Identification**: When submitting custom events, it is recommended to set a clear `source` value to facilitate tracking the event source.
-2.  **Event Naming Conventions**: It is recommended to use dot-notation for event naming to facilitate parent-level listening.
-3.  **Timer Naming**: Timer IDs should be descriptive to avoid conflicts with other components.
-4.  **Asynchronous Processing**: All lifecycle event handlers are asynchronous; do not block the event loop.
-5.  **Error Handling**: Exception handling should be implemented in event handlers to prevent affecting other listeners.
-6.  **Loading Priority**: It is recommended to set high priority for loading strategies and disable lazy loading.
+1. **Handlers can be synchronous or asynchronous**: The system automatically recognizes and correctly calls them
+2. **Data passing**: In `emit()` mode, handlers returning non-None values will modify the data passed to subsequent handlers
+3. **Event naming conventions**: It is recommended to use dot-structured naming for events to facilitate parent-level listening
+4. **Error isolation**: Individual handler exceptions will not affect the execution of other handlers
+5. **Synchronous trigger limitations**: In `emit_sync()`, async handlers are scheduled in a fire-and-forget manner, and return values cannot be passed back
+6. **Lifecycle cleanup**: When calling `sdk.uninit()`, all registered handlers and timers will be cleaned up
+7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set high priority and disable lazy loading
 
 ## Related Documentation
 
@@ -7045,7 +6748,7 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 
 ### 平台特性与 SendDSL 通用语法
 
-# ErisPulse Platform Features Documentation
+# ErisPulse PlatformFeatures Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/) 
 > 

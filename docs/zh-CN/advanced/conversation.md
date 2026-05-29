@@ -316,5 +316,5 @@ async def chat_handler(event):
 
 ## 相关文档
 
-- [Event 包装类](../../developer-guide/modules/event-wrapper.md) - Event 对象的所有方法
-- [事件处理入门](../../getting-started/event-handling.md) - 事件处理基础
+- [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event 对象的所有方法
+- [事件处理入门](../getting-started/event-handling.md) - 事件处理基础

@@ -217,13 +217,15 @@ async def filter_middleware(data):
     """事件过滤中间件"""
     # 过滤不需要的事件
     if data.get("type") == "notice":
-        return None  # 返回 None 会阻止事件继续分发
-    return data
+        return None  # 返回 None 时中间件链会忽略该返回值，保留原数据继续传递
+    return data  # 必须返回数据以继续传递
 ```
 
 #### 中间件执行顺序
 
 中间件按照注册顺序执行，后注册的中间件先执行。
+
+> **注意**：如果中间件返回 `None`（例如忘记 `return data`），框架会忽略该返回值并保留原数据继续传递，同时输出 warning 级别日志。这确保了单个中间件的失误不会导致整个事件链中断。
 
 ```python
 # 注册顺序
@@ -260,7 +262,8 @@ await adapter.Send.To("user", "123").Text("Hello")
 from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # 初始化适配器
         pass
     
@@ -281,7 +284,8 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()
         # 获取 SDK 引用
         self.sdk = sdk
         
@@ -320,47 +324,53 @@ class MyAdapter(BaseAdapter):
 | `_target_to` | 简化目标ID | `To(id)` |
 | `_account_id` | 发送账号ID | `Using(account_id)` |
 | `_adapter` | 适配器实例 | 自动设置 |
+| `_at_user_ids` | @用户列表 | `At(user_id)` |
+| `_reply_message_id` | 回复的消息ID | `Reply(message_id)` |
+| `_at_all` | 是否@全体 | `AtAll()` |
+
+> **推荐**：使用 `self.send_context` 属性一次性获取 `target_type`、`target_id`、`account_id`，比直接访问实例变量更清晰。
+
+### 框架辅助方法
+
+| 方法/属性 | 说明 |
+|-----------|------|
+| `self._apply_modifiers(message)` | 将 At/AtAll/Reply 修饰器状态合并到消息段列表 |
+| `self.send_context` | 返回 `{target_type, target_id, account_id}` 字典 |
 
 ### 基本方法
 
 ```python
 class Send(BaseAdapter.Send):
-    def Text(self, text: str):
-        """发送文本消息（必须返回 Task）"""
-        import asyncio
-        return asyncio.create_task(
-            self._adapter.call_api(
-                endpoint="/send",
-                content=text,
-                recvId=self._target_id,
-                recvType=self._target_type
+    def Raw_ob12(self, message, **kwargs):
+        """推荐实现方式"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
             )
-        )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        """发送文本消息"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
 ```
 
 ### 链式修饰方法
 
 ```python
 class Send(BaseAdapter.Send):
+
     def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
         super().__init__(adapter, target_type, target_id, account_id)
-        self._at_user_ids = []
-        self._reply_message_id = None
-        self._at_all = False
-    
-    def At(self, user_id: str) -> 'Send':
-        """@用户（可多次调用）"""
-        self._at_user_ids.append(user_id)
-        return self
-    
-    def AtAll(self) -> 'Send':
-        """@全体成员"""
-        self._at_all = True
-        return self
-    
-    def Reply(self, message_id: str) -> 'Send':
-        """回复消息"""
-        self._reply_message_id = message_id
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
         return self
 ```
 

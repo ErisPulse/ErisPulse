@@ -47,6 +47,13 @@
 | user_id | string | 用户ID |
 | user_nickname | string | 用户昵称（可选） |
 | comment | string | 请求附言（可选） |
+| request_id | string | 请求标识符（**强烈推荐**，用于同意/拒绝请求操作） |
+
+**`request_id` 字段说明**：
+- `request_id` 是请求事件的唯一操作标识符，用于通过 `HandleRequest` DSL 执行同意/拒绝操作
+- 适配器在转换请求事件时，应将平台原生的请求标识映射到此字段
+- 如果平台本身没有请求ID，适配器应生成一个唯一标识（如基于时间戳+用户ID的哈希）
+- 当 `request_id` 缺失时，`event.approve()` / `event.reject()` 将抛出 `ValueError`
 
 ## 3. 事件格式示例
 
@@ -119,6 +126,7 @@
   "user_id": "user_456",
   "user_nickname": "YingXinche",
   "comment": "请加好友",
+  "request_id": "req_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
 }
@@ -277,7 +285,7 @@ email       subject           email_subject
 | `self.avatar` | `string` | 机器人头像 URL |
 | `self.account_id` | `string` | 多账户模式下的账户标识 |
 
-> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../../api-reference/adapter-system.md)。
+> **Bot 状态追踪**：适配器通过发送 `type: "meta"` 事件告知框架 Bot 的连接状态。支持的 `detail_type`：`connect`（上线）、`heartbeat`（心跳）、`disconnect`（离线）。系统自动从中提取 `self` 字段的 Bot 元信息进行状态追踪。此外，普通事件中的 `self` 字段也会自动发现 Bot。详见 [适配器系统 API - Bot 状态管理](../api-reference/adapter-system.md)。
 
 ---
 
@@ -383,6 +391,51 @@ raw_data = event.get(f"{platform}_raw")
 
 # ❌ 不推荐
 raw_data = event.get("yunhu_raw")
+```
+
+### 8.4 请求事件处理
+
+模块开发者可以通过 `event.approve()` 和 `event.reject()` 对请求事件进行操作：
+
+```python
+from ErisPulse.Core.Event import request
+
+# 好友请求：自动同意
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    comment = event.get_comment()
+    
+    # 同意请求
+    result = await event.approve()
+    if result.get("status") == "ok":
+        print(f"已同意 {user_name} 的好友请求")
+    else:
+        print(f"同意好友请求失败: {result.get('message')}")
+
+# 群邀请：根据条件决定
+@request.on_group_request()
+async def handle_group_request(event):
+    comment = event.get_comment()
+    
+    # 拒绝请求
+    result = await event.reject(comment="暂不加入新群")
+```
+
+**通过适配器直接操作**（适用于非事件处理器场景）：
+
+```python
+from ErisPulse import adapter
+
+# 通过 request_id 直接操作
+await adapter.myplatform.Request("req_abc123").accept()
+await adapter.myplatform.Request("req_abc123").reject()
+
+# 指定 Bot 账号操作
+await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
+
+# 附带备注
+await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 ```
 
 ---

@@ -1,140 +1,250 @@
 # 生命週期管理
 
-ErisPulse 提供完整的生命週期事件系統，用於監控系統各組件的運行狀態。生命週期事件支援點式結構事件監聽，例如可以監聽 `module.init` 來捕獲所有模組初始化事件。
+ErisPulse 提供統一的鉤子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自訂邏輯等擴展功能。
 
-## 標準生命週期事件
-
-系統定義了以下標準事件類別：
-
-```python
-STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete"],
-    "module": ["load", "init", "unload"],
-    "adapter": ["load", "start", "status.change", "stop", "stopped"],
-    "server": ["start", "stop"]
-}
-```
-
-## 事件資料格式
-
-所有生命週期事件都遵循標準格式：
-
-```json
-{
-    "event": "事件名稱",
-    "timestamp": 1234567890,
-    "data": {},
-    "source": "ErisPulse",
-    "msg": "事件描述"
-}
-```
+系統支援三種觸發方式：
+- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料
+- `lifecycle.emit_sync("event", data)` — 同步版（用於非非同步上下文）
+- `await lifecycle.submit_event("event", ...)` — 相容舊版，自動建構標準事件格式
 
 ## 事件處理機制
 
+### 註冊處理器
+
+```python
+from ErisPulse import sdk
+
+# 裝飾器模式
+@sdk.lifecycle.on("module.load")
+async def on_module_load(data):
+    print(f"模組載入: {data}")
+
+# 程式式註冊
+sdk.lifecycle.register("module.load", on_module_load, priority=10)
+
+# 取消註冊
+sdk.lifecycle.unregister("module.load", on_module_load)
+```
+
+### 優先級
+
+處理器支援 `priority` 參數，數值越大越先執行（與模組載入器一致）：
+
+```python
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # 最先執行
+async def first_handler(data):
+    pass
+
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # 後執行
+async def second_handler(data):
+    pass
+```
+
 ### 點式結構事件
 
-ErisPulse 支援點式結構的事件命名，例如 `module.init`。當觸發具體事件時，也會觸發其父級事件：
+觸發具體事件時，也會觸發其父級事件：
+- 觸發 `module.load` 時，也會觸發 `module`
+- 觸發 `adapter.event.receive` 時，也會觸發 `adapter.event` 和 `adapter`
 
-- 觸發 `module.init` 事件時，也會觸發 `module` 事件
-- 觸發 `adapter.status.change` 事件時，也會觸發 `adapter.status` 和 `adapter` 事件
+### 萬用字元
 
-### 萬用字元事件處理器
-
-可以註冊 `*` 事件處理器來捕獲所有事件。
-
-## 標準生命週期事件
-
-### 核心初始化事件
-
-| 事件名稱 | 觸發時機 | 資料結構 |
-|---------|---------|---------|
-| `core.init.start` | 核心初始化開始時 | `{}` |
-| `core.init.complete` | 核心初始化完成時 | `{"duration": "初始化耗時(秒)", "success": true/false}` |
-
-### 模組生命週期事件
-
-| 事件名稱 | 觸發時機 | 資料結構 |
-|---------|---------|---------|
-| `module.load` | 模組載入完成時 | `{"module_name": "模組名", "success": true/false}` |
-| `module.init` | 模組初始化完成時 | `{"module_name": "模組名", "success": true/false}` |
-| `module.unload` | 模組卸載時 | `{"module_name": "模組名", "success": true/false}` |
-
-### 適配器生命週期事件
-
-| 事件名稱 | 觸發時機 | 資料結構 |
-|---------|---------|---------|
-| `adapter.load` | 適配器載入完成時 | `{"platform": "平台名", "success": true/false}` |
-| `adapter.start` | 適配器開始啟動時 | `{"platforms": ["平台名列表"]}` |
-| `adapter.status.change` | 適配器狀態發生變化時 | `{"platform": "平台名", "status": "狀態", "retry_count": 重試次數, "error": "錯誤資訊"}` |
-| `adapter.stop` | 適配器開始關閉時 | `{}` |
-| `adapter.stopped` | 適配器關閉完成時 | `{}` |
-
-### 伺服器生命週期事件
-
-| 事件名稱 | 觸發時機 | 資料結構 |
-|---------|---------|---------|
-| `server.start` | 伺服器啟動時 | `{"base_url": "基礎url","host": "主機位址", "port": "埠號"}` |
-| `server.stop` | 伺服器停止時 | `{}` |
-
-## 使用範例
-
-### 生命週期事件監聽
+註冊 `*` 捕獲所有事件：
 
 ```python
-from ErisPulse.Core import lifecycle
-
-# 監聽特定事件
-@lifecycle.on("module.init")
-async def module_init_handler(event_data):
-    print(f"模組 {event_data['data']['module_name']} 初始化完成")
-
-# 監聽父級事件（點式結構）
-@lifecycle.on("module")
-async def on_any_module_event(event_data):
-    print(f"模組事件: {event_data['event']}")
-
-# 監聽所有事件（萬用字元）
-@lifecycle.on("*")
-async def on_any_event(event_data):
-    print(f"系統事件: {event_data['event']}")
+@sdk.lifecycle.on("*")
+async def on_anything(data):
+    print(f"收到事件: {data}")
 ```
 
-### 提交生命週期事件
+## 鉤子中斷點一覽
+
+框架內建了以下鉤子中斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意中斷點實現自訂邏輯。
+
+### 核心初始化
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `core.init.start` | SDK 初始化開始 | `{}` |
+| `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
+| `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
+
+### 配置變更
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
+
+**示例：配置審計**
 
 ```python
-from ErisPulse.Core import lifecycle
-
-# 基本事件提交
-await lifecycle.submit_event(
-    "custom.event",
-    data={"custom_field": "custom_value"},
-    source="MyModule",
-    msg="自訂事件描述"
-)
+@sdk.lifecycle.on("config.set")
+def audit_config(data):
+    print(f"[審計] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### 計時器功能
+### 模組生命週期
 
-生命週期系統提供計時器功能，用於效能測量：
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | 模組初始化完畢（含延遲載入） | `{"module_name": str, "success": bool}` |
+| `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
+
+### 適配器生命週期
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
+| `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
+| `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
+| `adapter.stopped` | 適配器關閉完成 | `{"platforms": [str]}` |
+| `adapter.bot.online` | Bot 上線 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
+| `adapter.bot.offline` | Bot 下線 | `{"platform": str, "bot_id": str, "status": str}` |
+
+### 事件接收與處理
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `adapter.event.receive` | 收到外部平台事件（最早） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
+
+**示例：事件統計**
 
 ```python
-from ErisPulse.Core import lifecycle
+event_counter = {}
 
-# 開始計時
-lifecycle.start_timer("my_operation")
+@sdk.lifecycle.on("adapter.event.receive")
+def count_events(data):
+    platform = data["platform"]
+    event_counter[platform] = event_counter.get(platform, 0) + 1
 
-# 執行一些操作...
-
-# 獲取持續時間（不停止計時器）
-elapsed = lifecycle.get_duration("my_operation")
-print(f"已運行 {elapsed} 秒")
-
-# 停止計時並獲取持續時間
-total_time = lifecycle.stop_timer("my_operation")
-print(f"操作完成，總耗時 {total_time} 秒")
+@sdk.lifecycle.on("adapter.event.dispatched")
+def log_unhandled(data):
+    if data["onebot_handlers_count"] == 0:
+        print(f"[未處理] {data['platform']}/{data['event_type']}")
 ```
 
-## 模組中使用生命週期
+### 訊息發送
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+
+**示例：訊息發送審計**
+
+```python
+@sdk.lifecycle.on("message.sending")
+def log_sending(data):
+    print(f"[發送] -> {data['platform']}/{data['detail_type']}/{data['target_id']} via {data['method']}")
+```
+
+### 命令系統
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
+
+**示例：命令統計**
+
+```python
+@sdk.lifecycle.on("command.matched")
+def count_commands(data):
+    print(f"[命令] /{data['command']} from {data['user_id']}@{data['platform']}")
+```
+
+### HTTP 路由
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+
+**示例：請求日誌**
+
+```python
+@sdk.lifecycle.on("server.response")
+def log_http(data):
+    print(f"[HTTP] {data['method']} {data['path']} -> {data['status_code']}")
+```
+
+### WebSocket
+
+| 鉤子名稱 | 觸發時機 | 資料 |
+|---------|---------|------|
+| `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | 路由伺服器停止 | `{}` |
+| `server.websocket.connect` | WebSocket 連線建立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket 連線斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
+
+**示例：WebSocket 連線監控**
+
+```python
+@sdk.lifecycle.on("server.websocket.connect")
+def on_ws_connect(data):
+    print(f"[WS] 連線: {data['path']} from {data['client_ip']}")
+
+@sdk.lifecycle.on("server.websocket.disconnect")
+def on_ws_disconnect(data):
+    print(f"[WS] 斷開: {data['path']} ({data['reason']})")
+```
+
+## 標準事件定義
+
+```python
+STANDARD_EVENTS = {
+    "core": ["init.start", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register"],
+    "adapter": [
+        "load", "start", "status.change", "stop", "stopped",
+        "event.receive", "event.dispatched",
+        "bot.online", "bot.offline",
+    ],
+    "server": [
+        "start", "stop",
+        "request", "response",
+        "websocket.connect", "websocket.disconnect",
+    ],
+    "event": ["pre_process"],
+    "message": ["sending", "sent"],
+    "command": ["matched", "executed"],
+    "config": ["set"],
+}
+```
+
+## 完整 API 參考
+
+### 註冊與取消
+
+| 方法 | 說明 |
+|------|------|
+| `@lifecycle.on(event, *, priority=0)` | 裝飾器註冊處理器 |
+| `lifecycle.register(event, handler, *, priority=0)` | 程式式註冊 |
+| `lifecycle.unregister(event, handler=None)` | 取消註冊（handler=None 時取消該事件全部處理器） |
+
+### 觸發
+
+| 方法 | 說明 |
+|------|------|
+| `await lifecycle.emit(event, data=None)` | 非同步觸發，處理器返回非 None 可修改 data |
+| `lifecycle.emit_sync(event, data=None)` | 同步觸發，非同步處理器以 create_task 調度 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 相容舊版，自動建構標準事件格式 |
+
+### 工具
+
+| 方法 | 說明 |
+|------|------|
+| `lifecycle.start_timer(timer_id)` | 開始計時 |
+| `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
+| `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
+| `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
+| `lifecycle.clear()` | 清除所有處理器和計時器 |
+
+## 模組中使用範例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -142,29 +252,34 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 監聽模組生命週期事件
-        @sdk.lifecycle.on("module.load")
-        async def on_module_load(event_data):
-            module_name = event_data['data'].get('module_name')
-            if module_name != "MyModule":
-                sdk.logger.info(f"其他模組載入: {module_name}")
+        # 實現簡單的訊息統計
+        self.msg_count = 0
         
-        # 提交自訂事件
-        await sdk.lifecycle.submit_event(
-            "custom.ready",
-            source="MyModule",
-            msg="MyModule 已準備好接收事件"
-        )
+        @sdk.lifecycle.on("adapter.event.receive")
+        async def count(data):
+            if data["event_type"] == "message":
+                self.msg_count += 1
+        
+        # 監控所有命令
+        @sdk.lifecycle.on("command.matched")
+        async def log_cmd(data):
+            sdk.logger.info(f"命令執行: /{data['command']} by {data['user_id']}")
+        
+        # 配置變更審計
+        @sdk.lifecycle.on("config.set")
+        def audit(data):
+            sdk.logger.info(f"配置變更: {data['key']} = {data['new_value']}")
 ```
 
 ## 注意事項
 
-1. **事件來源標識**：提交自訂事件時，建議設置明確的 `source` 值，便於追蹤事件來源
-2. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
-3. **計時器命名**：計時器 ID 應具有描述性，避免與其他組件衝突
-4. **非同步處理**：所有生命週期事件處理器都是非同步的，不要阻塞事件迴圈
-5. **錯誤處理**：在事件處理器中應該做好異常處理，避免影響其他監聽器
-6. **載入優先性**：載入策略建議設置高優先級並停用延遲載入
+1. **處理器可以是同步或非同步**：系統自動識別並正確調用
+2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
+3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
+4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
+5. **同步觸發限制**：`emit_sync()` 中非同步處理器以 fire-and-forge 方式調度，返回值無法回傳
+6. **生命週期清理**：調用 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+7. **載入優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並停用延遲載入
 
 ## 相關文件
 

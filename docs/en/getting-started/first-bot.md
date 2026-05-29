@@ -170,7 +170,7 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     """Listen to friend addition events"""
     user_id = event.get_user_id()
-    await event.reply(f"欢迎添加我为好友！你的 ID 是 {user_id}")
+    await event.reply(f"Welcome to add me as a friend! Your ID is {user_id}")
 ```
 
 ### Use Storage System
@@ -183,7 +183,7 @@ count = sdk.storage.get("hello_count", 0)
 count += 1
 sdk.storage.set("hello_count", count)
 
-await event.reply(f"这是第 {count} 次调用 hello 命令")
+await event.reply(f"This is the {count}th time calling hello command")
 ```
 
 ## Common Issues
@@ -214,14 +214,13 @@ async def hello_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("你好！来自云湖")
+        await event.reply("Hello! From Yunhu")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
 ```
 
 ## Next Steps
 
-- [Advanced Initialization Control](advanced-init.md) - Hook system, manual control, embedded integration
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions

@@ -102,10 +102,7 @@ The Dashboard integrates a module store function where you can:
 The SDK has built-in health check endpoints:
 
 ```bash
-# Simple check
-curl http://localhost:8000/ping
-
-# Detailed status
+# Health check
 curl http://localhost:8000/health
 ```
 
@@ -115,7 +112,7 @@ Docker health check can be added in `docker-compose.yml`:
 services:
   erispulse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -168,11 +165,11 @@ port = 8000
 
 [ErisPulse.logger]
 level = "INFO"
-file_output = true
-max_lines = 5000
+log_files = ["app.log"]
+memory_limit = 5000
 
-[ErisPulse.module]
-lazy_load = true
+[ErisPulse.framework]
+enable_lazy_loading = true
 ```
 
 ### systemd (Linux)

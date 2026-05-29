@@ -1,16 +1,14 @@
 """
 ErisPulse 生命周期管理模块
 
-提供统一的生命周期事件管理和触发机制
+提供统一的钩子/事件管理和触发机制，支持点式结构事件监听
 
-事件标准格式:
-{
-    "event": "事件名称",  # 必填
-    "timestamp": float,  # 必填，Unix时间戳
-    "data": dict,        # 可选，事件相关数据
-    "source": str,       # 必填，事件来源
-    "msg": str           # 可选，事件描述
-}
+{!--< tips >!--}
+1. 使用 @lifecycle.on("event.name") 注册事件处理器
+2. 使用 await lifecycle.emit("event.name", data) 触发事件
+3. 使用 lifecycle.start_timer() / stop_timer() 进行计时
+4. 旧版 submit_event() API 保持兼容
+{!--< /tips >!--}
 """
 
 import asyncio
@@ -18,118 +16,205 @@ import inspect
 import time
 from typing import Any
 from collections.abc import Callable
-from .logger import logger
+
+
+class _NullLogger:
+    """静默日志器，在 logger 模块尚未初始化时作为替代"""
+    def debug(self, *args, **kwargs): pass
+    def info(self, *args, **kwargs): pass
+    def warning(self, *args, **kwargs): pass
+    def error(self, *args, **kwargs): pass
+    def critical(self, *args, **kwargs): pass
+
+
+def _get_logger():
+    """延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）"""
+    try:
+        from .logger import logger
+        return logger
+    except (ImportError, AttributeError):
+        return _NullLogger()
 
 
 class LifecycleManager:
     """
     生命周期管理器
 
-    管理SDK的生命周期事件，提供事件注册和触发功能
-    支持点式结构事件监听，例如 module.init 可以被 module 监听到
+    统一的钩子/事件系统，支持：
+    - 点式结构事件监听（如 module.init 可被 module 监听到）
+    - 通配符监听（* 匹配所有事件）
+    - 优先级排序
+    - 同步/异步处理器
+    - 计时器
+
+    {!--< tips >!--}
+    两种注册方式等价：
+    >>> @lifecycle.on("module.load")
+    ... async def on_load(data):
+    ...     print(data)
+    
+    >>> lifecycle.register("module.load", on_load)
+    
+    两种触发方式等价：
+    >>> await lifecycle.emit("module.load", {"module_name": "Test"})
+    >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+    {!--< /tips >!--}
     """
 
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
-        "core": ["init.start", "init.complete"],
-        "module": ["load", "init", "unload"],
-        "adapter": ["load", "start", "status.change", "stop", "stopped"],
-        "server": ["start", "stop"],
+        "core": ["init.start", "init.complete", "uninit.complete"],
+        "module": ["load", "init", "unload", "register"],
+        "adapter": [
+            "load", "start", "status.change", "stop", "stopped",
+            "event.receive", "event.dispatched",
+            "bot.online", "bot.offline",
+        ],
+        "server": [
+            "start", "stop",
+            "request", "response",
+            "websocket.connect", "websocket.disconnect",
+        ],
+        "event": ["pre_process"],
+        "message": ["sending", "sent"],
+        "command": ["matched", "executed"],
+        "config": ["set"],
     }
 
     def __init__(self):
-        self._handlers: dict[str, list[Callable]] = {}
-        self._timers: dict[str, float] = {}  # 用于存储计时器
+        self._hooks: dict[str, list[tuple[int, Callable]]] = {}
+        self._timers: dict[str, float] = {}
 
-    def _validate_event(self, event_data: dict[str, Any]) -> bool:
+    # ==================== 注册 API ====================
+
+    def on(self, event: str, *, priority: int = 0) -> Callable:
         """
-        验证事件数据格式
+        注册事件处理器（装饰器模式）
 
-        :param event_data: 事件数据字典
-        :return: 是否有效
-        """
-        if not isinstance(event_data, dict):
-            logger.error("事件数据必须是字典，请确保传递的是字典类型")
-            return False
-
-        required_fields = ["event", "timestamp", "source"]
-        missing_fields = [field for field in required_fields if field not in event_data]
-        if missing_fields:
-            logger.error(
-                f"事件缺少必填字段: {', '.join(missing_fields)}。请检查事件数据是否完整"
-            )
-            return False
-
-        if not isinstance(event_data["event"], str):
-            logger.error(
-                f"event字段必须是字符串，当前类型: {type(event_data['event']).__name__}"
-            )
-            return False
-
-        if not isinstance(event_data["timestamp"], (int, float)):
-            logger.error(
-                f"timestamp字段必须是数字，当前类型: {type(event_data['timestamp']).__name__}"
-            )
-            return False
-
-        if "data" in event_data and not isinstance(event_data["data"], dict):
-            logger.error(
-                f"data字段必须是字典，当前类型: {type(event_data['data']).__name__}"
-            )
-            return False
-
-        return True
-
-    def on(self, event: str) -> Callable:
-        """
-        注册生命周期事件处理器
-
-        :param event: 事件名称，支持点式结构如 module.init
-        :return: 装饰器函数
+        :param event: str 事件名称，支持点式结构和通配符
+        :param priority: int 优先级，数值越大越先执行 (默认: 0)
+        :return: Callable 装饰器
 
         :raises ValueError: 当事件名无效时抛出
+
+        :example:
+        >>> @lifecycle.on("module.load")
+        ... async def on_module_load(data):
+        ...     print(f"模块加载: {data}")
+        >>>
+        >>> @lifecycle.on("adapter.*")
+        ... def on_adapter_event(data):
+        ...     pass
         """
         if not isinstance(event, str) or not event:
             raise ValueError("事件名称必须是非空字符串")
 
         def decorator(func: Callable) -> Callable:
-            if event not in self._handlers:
-                self._handlers[event] = []
-            self._handlers[event].append(func)
+            self._hooks.setdefault(event, []).append((priority, func))
+            self._hooks[event].sort(key=lambda x: x[0], reverse=True)
             return func
 
         return decorator
 
-    def start_timer(self, timer_id: str) -> None:
+    def register(self, event: str, handler: Callable, *, priority: int = 0):
         """
-        开始计时
+        注册事件处理器（函数调用模式）
 
-        :param timer_id: 计时器ID
-        """
-        self._timers[timer_id] = time.time()
+        :param event: str 事件名称
+        :param handler: Callable 处理函数
+        :param priority: int 优先级，数值越大越先执行 (默认: 0)
 
-    def get_duration(self, timer_id: str) -> float:
+        :example:
+        >>> lifecycle.register("config.set", my_handler, priority=10)
         """
-        获取指定计时器的持续时间
+        if not isinstance(event, str) or not event:
+            raise ValueError("事件名称必须是非空字符串")
+        self._hooks.setdefault(event, []).append((priority, handler))
+        self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
-        :param timer_id: 计时器ID
-        :return: 持续时间(秒)
+    def unregister(self, event: str, handler: Callable = None):
         """
-        if timer_id in self._timers:
-            return time.time() - self._timers[timer_id]
-        return 0.0
+        取消注册事件处理器
 
-    def stop_timer(self, timer_id: str) -> float:
-        """
-        停止计时并返回持续时间
+        :param event: str 事件名称
+        :param handler: Callable 指定取消的处理器，为 None 时取消该事件所有处理器
 
-        :param timer_id: 计时器ID
-        :return: 持续时间(秒)
+        :example:
+        >>> lifecycle.unregister("config.set", my_handler)  # 取消指定处理器
+        >>> lifecycle.unregister("config.set")               # 取消所有处理器
         """
-        duration = self.get_duration(timer_id)
-        if timer_id in self._timers:
-            del self._timers[timer_id]
-        return duration
+        if handler is None:
+            self._hooks.pop(event, None)
+        else:
+            handlers = self._hooks.get(event, [])
+            self._hooks[event] = [(p, h) for p, h in handlers if h != handler]
+
+    # ==================== 触发 API ====================
+
+    async def emit(self, event: str, data: Any = None) -> Any:
+        """
+        触发事件（异步，精简版）
+
+        按优先级执行匹配的处理器。处理器返回非 None 值时，
+        该值将作为新的 data 传递给后续处理器。
+
+        :param event: str 事件名称
+        :param data: Any 事件数据
+        :return: Any 经过所有处理器处理后的数据
+
+        :example:
+        >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
+        """
+        _get_logger().debug(f"触发生命周期事件: {event}")
+
+        # 通配符处理器
+        if "*" in self._hooks:
+            data = await self._execute_handlers("*", event, data)
+
+        # 完整事件名处理器
+        if event in self._hooks:
+            data = await self._execute_handlers(event, event, data)
+
+        # 父级事件处理器（点式结构）
+        parts = event.split(".")
+        for i in range(len(parts) - 1, 0, -1):
+            parent_event = ".".join(parts[:i])
+            if parent_event in self._hooks:
+                data = await self._execute_handlers(parent_event, event, data)
+
+        return data
+
+    def emit_sync(self, event: str, data: Any = None) -> Any:
+        """
+        触发事件（同步，精简版）
+
+        同步执行所有处理器。异步处理器会在当前事件循环中以 create_task 调度。
+        注意：同步模式下异步处理器的返回值无法回传。
+
+        :param event: str 事件名称
+        :param data: Any 事件数据
+        :return: Any 处理后的数据
+
+        :example:
+        >>> result = lifecycle.emit_sync("config.set", {"key": "test"})
+        """
+        _get_logger().debug(f"触发生命周期事件: {event}")
+
+        if "*" in self._hooks:
+            data = self._execute_handlers_sync("*", event, data)
+
+        if event in self._hooks:
+            data = self._execute_handlers_sync(event, event, data)
+
+        parts = event.split(".")
+        for i in range(len(parts) - 1, 0, -1):
+            parent_event = ".".join(parts[:i])
+            if parent_event in self._hooks:
+                data = self._execute_handlers_sync(parent_event, event, data)
+
+        return data
+
+    # ==================== 兼容 API ====================
 
     async def submit_event(
         self,
@@ -141,28 +226,32 @@ class LifecycleManager:
         timestamp: float | None = None,
     ) -> None:
         """
-        提交生命周期事件
+        提交生命周期事件（兼容旧版 API）
 
-        :param event_type: 事件名称
-        :param source: 事件来源(默认"ErisPulse")
-        :param msg: 事件描述
-        :param data: 事件相关数据
-        :param timestamp: 时间戳(默认当前时间)
+        构建标准事件格式后通过 emit 触发，处理器接收标准事件字典。
+
+        :param event_type: str 事件名称
+        :param source: str 事件来源(默认"ErisPulse")
+        :param msg: str 事件描述
+        :param data: dict 事件相关数据
+        :param timestamp: float 时间戳(默认当前时间)
+
+        :example:
+        >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
         """
+        if event_type is None:
+            _get_logger().error("事件类型不能为None")
+            return
+
+        if not isinstance(event_type, str) or not event_type:
+            _get_logger().error(f"事件类型必须是非空字符串，收到: {event_type}")
+            return
+
         if timestamp is None:
             timestamp = time.time()
         if data is None:
             data = {}
-        # 验证事件类型
-        if event_type is None:
-            logger.error("事件类型不能为None")
-            return
 
-        if not isinstance(event_type, str) or not event_type:
-            logger.error(f"事件类型必须是非空字符串，收到: {event_type}")
-            return
-
-        # 构建完整事件数据
         event_data = {
             "event": event_type,
             "timestamp": timestamp,
@@ -171,40 +260,116 @@ class LifecycleManager:
             "msg": msg,
         }
 
-        # 验证事件格式
-        self._validate_event(event_data)
+        await self.emit(event_type, event_data)
 
-        # 触发通配符处理器（如果存在）
-        if "*" in self._handlers:
-            await self._execute_handlers("*", event_data)
+    # ==================== 计时器 ====================
 
-        # 触发完整事件名的处理器
-        if event_type in self._handlers:
-            await self._execute_handlers(event_type, event_data)
-
-        # 触发父级事件名的处理器（点式结构）
-        parts = event_type.split(".")
-        for i in range(len(parts) - 1, 0, -1):
-            parent_event = ".".join(parts[:i])
-            if parent_event in self._handlers:
-                await self._execute_handlers(parent_event, event_data)
-
-    async def _execute_handlers(self, event: str, event_data: dict[str, Any]) -> None:
+    def start_timer(self, timer_id: str) -> None:
         """
-        执行事件处理器
+        开始计时
 
-        :param event: 事件名称
-        :param event_data: 事件数据
+        :param timer_id: str 计时器ID
         """
-        logger.debug(f"触发生命周期事件: {event}")
-        for handler in self._handlers[event]:
+        self._timers[timer_id] = time.time()
+
+    def get_duration(self, timer_id: str) -> float:
+        """
+        获取指定计时器的持续时间
+
+        :param timer_id: str 计时器ID
+        :return: float 持续时间(秒)
+        """
+        if timer_id in self._timers:
+            return time.time() - self._timers[timer_id]
+        return 0.0
+
+    def stop_timer(self, timer_id: str) -> float:
+        """
+        停止计时并返回持续时间
+
+        :param timer_id: str 计时器ID
+        :return: float 持续时间(秒)
+        """
+        duration = self.get_duration(timer_id)
+        if timer_id in self._timers:
+            del self._timers[timer_id]
+        return duration
+
+    # ==================== 内部方法 ====================
+
+    async def _execute_handlers(
+        self, hook_name: str, event: str, data: Any
+    ) -> Any:
+        """
+        执行匹配的事件处理器（异步）
+
+        :param hook_name: str 注册的钩子名
+        :param event: str 实际事件名
+        :param data: Any 事件数据
+        :return: Any 处理后的数据
+        """
+        for _, handler in self._hooks[hook_name]:
             try:
                 if inspect.iscoroutinefunction(handler):
-                    await handler(event_data)
+                    result = await handler(data)
                 else:
-                    handler(event_data)
+                    result = handler(data)
+                if result is not None:
+                    data = result
             except Exception as e:
-                logger.error(f"生命周期事件处理器执行错误 {event}: {e}")
+                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
+        return data
+
+    def _execute_handlers_sync(
+        self, hook_name: str, event: str, data: Any
+    ) -> Any:
+        """
+        执行匹配的事件处理器（同步）
+
+        :param hook_name: str 注册的钩子名
+        :param event: str 实际事件名
+        :param data: Any 事件数据
+        :return: Any 处理后的数据
+        """
+        for _, handler in self._hooks[hook_name]:
+            try:
+                if inspect.iscoroutinefunction(handler):
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(handler(data))
+                    except RuntimeError:
+                        pass
+                else:
+                    result = handler(data)
+                    if result is not None:
+                        data = result
+            except Exception as e:
+                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
+        return data
+
+    # ==================== 工具方法 ====================
+
+    def clear(self):
+        """
+        清除所有已注册的处理器和计时器
+
+        :example:
+        >>> lifecycle.clear()
+        """
+        self._hooks.clear()
+        self._timers.clear()
+
+    def list_hooks(self) -> dict[str, int]:
+        """
+        列出所有已注册的钩子及其处理器数量
+
+        :return: dict 钩子名称到处理器数量的映射
+
+        :example:
+        >>> info = lifecycle.list_hooks()
+        >>> # {"module.load": 2, "adapter.start": 1}
+        """
+        return {name: len(handlers) for name, handlers in self._hooks.items()}
 
 
 lifecycle: LifecycleManager = LifecycleManager()

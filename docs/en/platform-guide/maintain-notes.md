@@ -129,7 +129,7 @@ Before submitting a document update, please check the following:
 
 Refer to the following documents when writing to ensure consistency:
 - [OneBot12 Standard Documentation](https://12.onebot.dev/)
-- [ErisPulse Core Concepts](../core/concepts.md)
+- [ErisPulse Core Concepts](../getting-started/basic-concepts.md)
 - [Event Conversion Standards](../standards/event-conversion.md)
 - [API Response Specifications](../standards/api-response.md)
 - [Other Platform Adapter Documentation](./)

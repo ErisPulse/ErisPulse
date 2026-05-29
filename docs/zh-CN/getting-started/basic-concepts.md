@@ -110,16 +110,24 @@ class MyModule(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
-    
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
     async def on_load(self, event):
         """模块加载时调用"""
         # 注册事件处理器
         @command("mycmd", help="我的命令")
         async def my_command(event):
             await event.reply("命令执行成功")
-        
+
         self.logger.info("模块已加载")
-    
+
     async def on_unload(self, event):
         """模块卸载时调用"""
         self.logger.info("模块已卸载")

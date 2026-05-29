@@ -22,7 +22,7 @@ class TestLifecycleManager:
     def manager(self):
         """创建生命周期管理器实例"""
         manager = LifecycleManager()
-        manager._handlers.clear()
+        manager._hooks.clear()
         manager._timers.clear()
         return manager
     
@@ -39,10 +39,10 @@ class TestLifecycleManager:
         manager.on("test_event")(test_handler)
         
         # 验证
-        assert "test_event" in manager._handlers
-        assert len(manager._handlers["test_event"]) == 1
+        assert "test_event" in manager._hooks
+        assert len(manager._hooks["test_event"]) == 1
     
-    def test_register_multiple_handlers(self, manager):
+    def test_register_multiple_hooks(self, manager):
         """测试注册多个处理器到同一事件"""
         called = []
         
@@ -57,7 +57,7 @@ class TestLifecycleManager:
         manager.on("test_event")(handler2)
         
         # 验证
-        assert len(manager._handlers["test_event"]) == 2
+        assert len(manager._hooks["test_event"]) == 2
     
     def test_register_invalid_event_name(self, manager):
         """测试注册无效的事件名"""
@@ -222,7 +222,7 @@ class TestLifecycleManager:
         assert any(c[0] == "specific" for c in called)
     
     @pytest.mark.asyncio
-    async def test_submit_event_multiple_handlers(self, manager):
+    async def test_submit_event_multiple_hooks(self, manager):
         """测试事件触发多个处理器"""
         called = []
         
@@ -292,7 +292,7 @@ class TestLifecycleManager:
     async def test_validate_event_missing_required_field(self, manager):
         """测试验证缺少必填字段的事件"""
         # Mock logger
-        with patch('ErisPulse.Core.lifecycle.logger') as mock_logger:
+        with patch('ErisPulse.Core.logger.logger') as mock_logger:
             # 执行（缺少event字段）
             await manager.submit_event(None, data={})
             
@@ -317,7 +317,7 @@ class TestLifecycleManager:
         manager.on("test_event")(normal_handler)
         
         # Mock logger
-        with patch('ErisPulse.Core.lifecycle.logger') as mock_logger:
+        with patch('ErisPulse.Core.logger.logger') as mock_logger:
             # 执行
             await manager.submit_event("test_event")
             
@@ -336,11 +336,11 @@ class TestGlobalLifecycle:
     @pytest.fixture(autouse=True)
     def reset_global(self):
         """重置全局实例"""
-        original_handlers = lifecycle._handlers.copy()
-        lifecycle._handlers.clear()
+        original_hooks = lifecycle._hooks.copy()
+        lifecycle._hooks.clear()
         yield
-        lifecycle._handlers.clear()
-        lifecycle._handlers.update(original_handlers)
+        lifecycle._hooks.clear()
+        lifecycle._hooks.update(original_hooks)
     
     def test_global_instance_exists(self):
         """测试全局实例存在"""
@@ -364,7 +364,7 @@ class TestStandardEvents:
     def manager(self):
         """创建生命周期管理器实例"""
         manager = LifecycleManager()
-        manager._handlers.clear()
+        manager._hooks.clear()
         return manager
     
     @pytest.mark.asyncio

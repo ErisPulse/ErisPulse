@@ -417,14 +417,44 @@ class CommandHandler:
             # 标记事件已被处理
             event["_processed"] = True
 
+            # 钩子: 命令匹配
+            from ..lifecycle import lifecycle
+            await lifecycle.emit("command.matched", {
+                "command": actual_cmd_name,
+                "args": args,
+                "platform": event.get("platform", "unknown"),
+                "user_id": event.get("user_id", ""),
+            })
+
             try:
                 if inspect.iscoroutinefunction(handler):
                     await handler(event)
                 else:
                     handler(event)
+
+                # 钩子: 命令执行完成
+                from ..lifecycle import lifecycle
+                await lifecycle.emit("command.executed", {
+                    "command": actual_cmd_name,
+                    "args": args,
+                    "platform": event.get("platform", "unknown"),
+                    "user_id": event.get("user_id", ""),
+                    "success": True,
+                })
             except Exception as e:
                 logger.error(f"命令执行错误: {e}")
                 await self._send_command_error(event, str(e))
+
+                # 钩子: 命令执行失败
+                from ..lifecycle import lifecycle
+                await lifecycle.emit("command.executed", {
+                    "command": actual_cmd_name,
+                    "args": args,
+                    "platform": event.get("platform", "unknown"),
+                    "user_id": event.get("user_id", ""),
+                    "success": False,
+                    "error": str(e),
+                })
 
             return True
 

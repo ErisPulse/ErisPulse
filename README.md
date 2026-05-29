@@ -1,37 +1,37 @@
-<div align="center">
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/mascot-hero.png" width="320" alt="ErisPulse" />
+
+</td>
+<td valign="middle">
 
 [English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
-
-<br/>
-
-<img src=".github/assets/erispulse_logo_hp.png" width="160" alt="ErisPulse" />
-
-<br/>
 
 # ErisPulse
 
 **事件驱动的多平台机器人开发框架**
 
-> 知道吗？ErisPulse 支持完整的 Vibe Coding 工作流，让 AI 直接生成可用模块
-> [查看](docs/zh-CN/ai-support/README.md)
-
-<br/>
-
-[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/ErisPulse/latest)](https://socket.dev/pypi/package/ErisPulse)
-
-</div>
-
-<br/>
-
-<div align="center">
-
 基于 OneBot12 标准接口，一次编写，多平台部署。灵活的插件系统、热重载支持和完整的开发者工具链，适用于从简单聊天机器人到复杂自动化系统的各种场景。
 
-</div>
+> 支持 Vibe Coding 工作流，让 AI 直接生成可用模块 — [查看](docs/zh-CN/ai-support/README.md)
+
+[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
+[![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse)
+[![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+[![文档](https://img.shields.io/badge/文档-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
+[![模块市场](https://img.shields.io/badge/模块市场-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
+[![讨论](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -84,6 +84,17 @@
 
 ### 支持的适配器
 
+<div align="center">
+
+<table>
+<tr>
+<td width="35%" valign="middle" align="center">
+
+<img src=".github/assets/adapter-showcase.png" width="320" alt="支持的适配器" />
+
+</td>
+<td valign="middle">
+
 欢迎您贡献适配器！
 
 | 适配器 | 说明 |
@@ -100,7 +111,13 @@
 | [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
-查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
+查看 [适配器详情维护文档](docs/zh-CN/platform-guide/README.md)
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
@@ -199,17 +216,41 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ```bash
 pip install ErisPulse
-
-# 国内镜像
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
-
-# 使用 uv 安装
-uv pip install ErisPulse
 ```
 
-![安装演示](.github/assets/docs/install_pip.gif)
+<img src=".github/assets/docs/install_pip.gif" width="480" alt="安装演示" />
 
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+
+#### 运行效果
+
+同一段代码，多个平台响应：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**云湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+
+</td>
+</tr>
+</table>
 
 #### 初始化项目
 
@@ -325,6 +366,8 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 <div align="center">
 
 ### 致谢
+
+<img src=".github/assets/thanks.png" width="200" alt="感谢" />
 
 本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心适配器标准化层基于 [OneBot12 规范](https://12.onebot.dev/) · 感谢所有为开源社区做出贡献的开发者和作者
 

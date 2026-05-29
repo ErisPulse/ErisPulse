@@ -4,47 +4,21 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
-支持调用方感知和配置审计
 
 {!--< tips >!--}
 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
-2. 配置变更可通过 on_change 回调监听
-3. 启用审计后可追踪所有配置读写操作
+2. 配置变更可通过生命周期钩子监听: @lifecycle.on("config.set")
 {!--< /tips >!--}
 """
 
 import os
-import sys
 import time
-import asyncio
-import inspect
 import toml
 import threading
-from typing import Any, Callable, TypeAlias
-from dataclasses import dataclass, field
+from typing import Any, TypeAlias
 
 ConfigValue: TypeAlias = Any
 ConfigKey: TypeAlias = str
-
-
-@dataclass
-class AuditEntry:
-    """
-    配置审计记录
-
-    {!--< tips >!--}
-    由 ConfigManager 内部创建，通过 get_audit_log() 查询
-    {!--< /tips >!--}
-    """
-
-    timestamp: float
-    action: str
-    key: str
-    caller: str
-    caller_type: str
-    old_value: Any = None
-    new_value: Any = None
-    stack_frame: dict = field(default_factory=dict)
 
 
 class ConfigManager:
@@ -65,11 +39,6 @@ class ConfigManager:
         self._write_timer: threading.Timer | None = None  # 写入定时器
         self._lock = threading.RLock()  # 线程安全锁
         self._file_lock = threading.RLock()  # 文件操作锁
-        self._audit_enabled: bool = False  # 审计开关
-        self._audit_log: list[AuditEntry] = []  # 审计记录
-        self._audit_max_entries: int = 1000  # 最大审计记录数
-        self._change_callbacks: list[Callable] = []  # 回调函数列表
-        self._caller_cache: dict[str, tuple[str, str]] = {}  # 缓存调用方信息
         self._migrate_config()  # 迁移旧配置文件
         self._load_config()  # 初始化时加载配置
 
@@ -129,9 +98,11 @@ class ConfigManager:
             os.remove(old_config_path)
 
         except Exception as e:
-            from .logger import logger
-
-            logger.warning(f"配置文件迁移失败: {e}")
+            try:
+                from .logger import logger
+                logger.warning(f"配置文件迁移失败: {e}")
+            except (ImportError, AttributeError):
+                pass
 
     def _load_config(self) -> None:
         """
@@ -152,9 +123,11 @@ class ConfigManager:
                     self._cache = config
                     self._cache_timestamp = time.time()
             except Exception as e:
-                from .logger import logger
-
-                logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
+                try:
+                    from .logger import logger
+                    logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
+                except (ImportError, AttributeError):
+                    pass
                 self._cache = {}
                 self._cache_timestamp = time.time()
 
@@ -236,9 +209,11 @@ class ConfigManager:
                     self._dirty_keys.clear()
 
                 except Exception as e:
-                    from .logger import logger
-
-                    logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                    try:
+                        from .logger import logger
+                        logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+                    except (ImportError, AttributeError):
+                        pass
                     # 清理临时文件
                     temp_file = self.CONFIG_FILE + ".tmp"
                     if os.path.exists(temp_file):
@@ -273,208 +248,7 @@ class ConfigManager:
         if current_time - self._cache_timestamp > self._cache_timeout:
             self._load_config()
 
-    # 调用方感知
-
-    def _detect_caller(self) -> tuple[str, str]:
-        """
-        检测配置操作的调用方
-
-        :return: tuple[str, str] (调用方名称, 调用方类型)
-            调用方类型: "internal" | "module" | "adapter" | "cli" | "user" | "unknown"
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        try:
-            frame = sys._getframe(2)
-        except (AttributeError, ValueError):
-            return ("unknown", "unknown")
-
-        skip_modules = {
-            "ErisPulse.Core.config",
-            "ErisPulse.Core.storage",
-            "ErisPulse.runtime.frame_config",
-        }
-
-        while frame:
-            module = frame.f_globals.get("__name__", "")
-
-            if module in skip_modules:
-                frame = frame.f_back
-                continue
-
-            if module in self._caller_cache:
-                return self._caller_cache[module]
-
-            result = self._resolve_caller(module, frame.f_code.co_filename)
-            self._caller_cache[module] = result
-            return result
-
-        return ("unknown", "unknown")
-
-    def _resolve_caller(self, module: str, filename: str) -> tuple[str, str]:
-        """
-        解析模块名为调用方标识
-
-        :param module: str Python 模块名 (__name__)
-        :param filename: str 源文件路径
-        :return: tuple[str, str] (调用方名称, 调用方类型)
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        if module.startswith("ErisPulse.Core."):
-            parts = module.split(".")
-            if len(parts) >= 3:
-                return (".".join(parts[2:]), "internal")
-            return (module, "internal")
-
-        if module.startswith("ErisPulse.loaders."):
-            return ("loaders", "internal")
-
-        if module.startswith("ErisPulse.CLI"):
-            return ("cli", "cli")
-
-        if module in ("ErisPulse.sdk", "ErisPulse"):
-            return ("sdk", "internal")
-
-        if module.startswith("ErisPulse."):
-            return (module.split(".")[1], "internal")
-
-        try:
-            from .module import module as module_mgr
-            from .adapter import adapter as adapter_mgr
-
-            for name in module_mgr.list_registered():
-                cls_info = module_mgr._module_classes.get(name)
-                if cls_info:
-                    module_cls = cls_info.get("module_class") or cls_info.get("class")
-                    if module_cls and hasattr(module_cls, "__module__"):
-                        caller_pkg = module_cls.__module__.split(".")[0]
-                        if (
-                            module.startswith(caller_pkg)
-                            or module == module_cls.__module__
-                        ):
-                            return (name, "module")
-
-            for name in adapter_mgr._adapters:
-                cls_info = adapter_mgr._adapters.get(name)
-                if (
-                    cls_info
-                    and isinstance(cls_info, type)
-                    and hasattr(cls_info, "__module__")
-                ):
-                    caller_pkg = cls_info.__module__.split(".")[0]
-                    if module.startswith(caller_pkg) or module == cls_info.__module__:
-                        return (name, "adapter")
-        except Exception:
-            pass
-
-        if module == "__main__" or module == "":
-            return ("user", "user")
-
-        return (module.split(".")[0], "unknown")
-
-    # 审计系统
-
-    def enable_audit(self, max_entries: int = 1000):
-        """
-        启用配置审计
-
-        :param max_entries: int 审计日志最大条数 (默认: 1000)
-
-        :example:
-        >>> sdk.config.enable_audit()
-        """
-        self._audit_enabled = True
-        self._audit_max_entries = max_entries
-
-    def disable_audit(self):
-        """
-        禁用配置审计
-
-        :example:
-        >>> sdk.config.disable_audit()
-        """
-        self._audit_enabled = False
-
-    def get_audit_log(
-        self, key: str = None, caller: str = None, action: str = None, limit: int = 100
-    ) -> list[AuditEntry]:
-        """
-        查询审计日志
-
-        :param key: str 按配置键过滤 (可选)
-        :param caller: str 按调用方过滤 (可选)
-        :param action: str 按操作类型过滤 "get"|"set" (可选)
-        :param limit: int 返回条数上限 (默认: 100)
-        :return: list[AuditEntry] 审计记录列表
-
-        :example:
-        >>> log = sdk.config.get_audit_log(key="ErisPulse.adapters.status.telegram")
-        >>> log = sdk.config.get_audit_log(caller="MyModule")
-        """
-        entries = self._audit_log
-        if key:
-            entries = [e for e in entries if e.key == key]
-        if caller:
-            entries = [e for e in entries if e.caller == caller]
-        if action:
-            entries = [e for e in entries if e.action == action]
-        return entries[-limit:]
-
-    def clear_audit_log(self):
-        """
-        清空审计日志
-
-        :example:
-        >>> sdk.config.clear_audit_log()
-        """
-        self._audit_log.clear()
-
-    def on_change(self, callback: Callable):
-        """
-        注册配置变更回调
-
-        :param callback: Callable 回调函数, 签名: (entry: AuditEntry) -> None
-            支持同步和异步函数
-
-        :example:
-        >>> @sdk.config.on_change
-        ... async def on_config_change(entry):
-        ...     print(f"{entry.caller} 修改了 {entry.key}")
-        """
-        self._change_callbacks.append(callback)
-        return callback
-
-    async def _notify_change(self, entry: AuditEntry):
-        """
-        通知变更回调
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        for cb in self._change_callbacks:
-            try:
-                if inspect.iscoroutinefunction(cb):
-                    await cb(entry)
-                else:
-                    cb(entry)
-            except Exception:
-                pass
-
-    def _add_audit_entry(self, entry: AuditEntry):
-        """
-        添加审计记录
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        self._audit_log.append(entry)
-        if len(self._audit_log) > self._audit_max_entries:
-            self._audit_log = self._audit_log[-self._audit_max_entries :]
-
-    # 配置读写
+    # ==================== 配置读写 ====================
 
     def getConfig(self, key: str, default: Any = None) -> Any:
         """
@@ -487,8 +261,6 @@ class ConfigManager:
         :example:
         >>> value = sdk.config.getConfig("ErisPulse.server.port", 8000)
         """
-        caller, caller_type = self._detect_caller()
-
         with self._lock:
             self._check_cache_validity()
 
@@ -505,18 +277,6 @@ class ConfigManager:
                         break
                     value = value[k]
 
-        if self._audit_enabled:
-            self._add_audit_entry(
-                AuditEntry(
-                    timestamp=time.time(),
-                    action="get",
-                    key=key,
-                    caller=caller,
-                    caller_type=caller_type,
-                    new_value=value if value is not default else None,
-                )
-            )
-
         return value
 
     def setConfig(self, key: str, value: Any, immediate: bool = False) -> bool:
@@ -532,8 +292,6 @@ class ConfigManager:
         >>> sdk.config.setConfig("ErisPulse.server.port", 9000)
         >>> sdk.config.setConfig("ErisPulse.server.port", 9000, immediate=True)
         """
-        caller, caller_type = self._detect_caller()
-
         old_value = self.getConfig(key)
 
         try:
@@ -545,42 +303,25 @@ class ConfigManager:
                 else:
                     self._schedule_write()
 
-            if self._audit_enabled or self._change_callbacks:
-                try:
-                    frame_info = sys._getframe(1)
-                    stack_frame = {
-                        "file": frame_info.f_code.co_filename,
-                        "line": frame_info.f_lineno,
-                    }
-                except (AttributeError, ValueError):
-                    stack_frame = {}
+            # 触发配置变更钩子
+            from .lifecycle import lifecycle
 
-                entry = AuditEntry(
-                    timestamp=time.time(),
-                    action="set",
-                    key=key,
-                    caller=caller,
-                    caller_type=caller_type,
-                    old_value=old_value,
-                    new_value=value,
-                    stack_frame=stack_frame,
-                )
-
-                if self._audit_enabled:
-                    self._add_audit_entry(entry)
-
-                if self._change_callbacks:
-                    try:
-                        loop = asyncio.get_running_loop()
-                        loop.create_task(self._notify_change(entry))
-                    except RuntimeError:
-                        pass
+            lifecycle.emit_sync(
+                "config.set",
+                {
+                    "key": key,
+                    "old_value": old_value,
+                    "new_value": value,
+                },
+            )
 
             return True
         except Exception as e:
-            from .logger import logger
-
-            logger.error(f"设置配置项 {key} 失败: {e}")
+            try:
+                from .logger import logger
+                logger.error(f"设置配置项 {key} 失败: {e}")
+            except (ImportError, AttributeError):
+                pass
             return False
 
     def force_save(self) -> None:
@@ -638,4 +379,4 @@ def parse_bool_config(value: Any) -> bool:
     return bool(value)
 
 
-__all__ = ["config", "ConfigManager", "AuditEntry", "parse_bool_config"]
+__all__ = ["config", "ConfigManager", "parse_bool_config"]

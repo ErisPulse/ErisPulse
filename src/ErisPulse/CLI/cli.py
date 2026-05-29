@@ -158,7 +158,7 @@ class CLI:
             self.parser.print_help()
             return
 
-        if unknown and args.command not in ("install",):
+        if unknown and args.command not in ("install", "create"):
             console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
 
         try:

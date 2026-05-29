@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1082,
+  "total_keywords": 1081,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -13,7 +13,7 @@
     "1. Account Configuration Validation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 389,
+        "line": 387,
         "level": 3,
         "title": "1. Account Configuration Validation"
       }
@@ -37,7 +37,7 @@
     "1. Batch Register Using Mixin Classes (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 535,
+        "line": 533,
         "level": 3,
         "title": "1. Batch Register Using Mixin Classes (Recommended)"
       }
@@ -45,7 +45,7 @@
     "1. Categorized Exception Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 429,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
@@ -83,7 +83,7 @@
     "1. Create Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 152,
+        "line": 162,
         "level": 3,
         "title": "1. Create Dockerfile"
       }
@@ -107,17 +107,9 @@
     "1. Ensure Cross-Platform Compatibility": [
       {
         "document": "standards/README.md",
-        "line": 25,
+        "line": 26,
         "level": 3,
         "title": "1. Ensure Cross-Platform Compatibility"
-      }
-    ],
-    "1. Exception Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 578,
-        "level": 3,
-        "title": "1. Exception Handling"
       }
     ],
     "1. Implement Connection Retry": [
@@ -131,7 +123,7 @@
     "1. Maintain Platform Feature Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 587,
+        "line": 585,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       }
@@ -147,9 +139,17 @@
     "1. Must Return Task Object": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 274,
+        "line": 276,
         "level": 3,
         "title": "1. Must Return Task Object"
+      }
+    ],
+    "1. Overview": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "1. Overview"
       }
     ],
     "1. Proper Use of Log Levels": [
@@ -203,7 +203,7 @@
     "1. Standardize Response Format": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 339,
+        "line": 337,
         "level": 3,
         "title": "1. Standardize Response Format"
       }
@@ -227,7 +227,7 @@
     "1. Unit Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 477,
+        "line": 475,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -328,70 +328,6 @@
         "title": "1.4 Recommended Extension Naming Conventions"
       }
     ],
-    "11. MessageBuilder": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 472,
-        "level": 2,
-        "title": "11. MessageBuilder"
-      }
-    ],
-    "11.1 Import": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 476,
-        "level": 3,
-        "title": "11.1 Import"
-      }
-    ],
-    "11.2 Chaining Calls to Build": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 484,
-        "level": 3,
-        "title": "11.2 Chaining Calls to Build"
-      }
-    ],
-    "11.3 Quick Build for Single Segment": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 501,
-        "level": 3,
-        "title": "11.3 Quick Build for Single Segment"
-      }
-    ],
-    "11.4 Use with Event.reply_ob12": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 512,
-        "level": 3,
-        "title": "11.4 Use with Event.reply_ob12"
-      }
-    ],
-    "11.5 Supported Message Segment Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 527,
-        "level": 3,
-        "title": "11.5 Supported Message Segment Methods"
-      }
-    ],
-    "11.6 Utility Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 542,
-        "level": 3,
-        "title": "11.6 Utility Methods"
-      }
-    ],
-    "12. Related Documents": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 561,
-        "level": 2,
-        "title": "12. Related Documents"
-      }
-    ],
     "1xxxx Action Request Errors (Request Error)": [
       {
         "document": "standards/api-response.md",
@@ -403,7 +339,7 @@
     "2. Account Selection Mechanism": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 409,
+        "line": 407,
         "level": 3,
         "title": "2. Account Selection Mechanism"
       }
@@ -435,7 +371,7 @@
     "2. Chaining Modifier Methods Return self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 291,
+        "line": 296,
         "level": 3,
         "title": "2. Chaining Modifier Methods Return self"
       }
@@ -467,7 +403,7 @@
     "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 208,
+        "line": 218,
         "level": 3,
         "title": "2. Create GitHub Actions Workflow"
       }
@@ -491,7 +427,7 @@
     "2. Error Code Standards": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 365,
+        "line": 363,
         "level": 3,
         "title": "2. Error Code Standards"
       }
@@ -531,7 +467,7 @@
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 501,
+        "line": 499,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -539,13 +475,7 @@
     "2. Logging": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 456,
-        "level": 3,
-        "title": "2. Logging"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 596,
+        "line": 454,
         "level": 3,
         "title": "2. Logging"
       }
@@ -585,9 +515,17 @@
     "2. Register Single Method Using Decorator": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 561,
+        "line": 559,
         "level": 3,
         "title": "2. Register Single Method Using Decorator"
+      }
+    ],
+    "2. Request Event Field Requirements": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 40,
+        "level": 2,
+        "title": "2. Request Event Field Requirements"
       }
     ],
     "2. Sending Meta Events": [
@@ -625,7 +563,7 @@
     "2. Standardize API Interfaces": [
       {
         "document": "standards/README.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "2. Standardize API Interfaces"
       }
@@ -662,6 +600,14 @@
         "title": "2. Timestamp Normalization"
       }
     ],
+    "2. Update Version Information": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 606,
+        "level": 3,
+        "title": "2. Update Version Information"
+      }
+    ],
     "2.1 Media Message Parameter Specifications": [
       {
         "document": "standards/send-method-spec.md",
@@ -684,6 +630,14 @@
         "line": 12,
         "level": 3,
         "title": "2.1 Required Fields"
+      }
+    ],
+    "2.1 Standard Fields": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 42,
+        "level": 3,
+        "title": "2.1 Standard Fields"
       }
     ],
     "2.1.1 String Parameters (URL or File Path)": [
@@ -734,6 +688,14 @@
         "title": "2.2 Message Event Fields"
       }
     ],
+    "2.2 `request_id` Field": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 53,
+        "level": 3,
+        "title": "2.2 `request_id` Field"
+      }
+    ],
     "2.3 Notice Event Fields": [
       {
         "document": "standards/event-conversion.md",
@@ -748,6 +710,14 @@
         "line": 160,
         "level": 3,
         "title": "2.3 Reply Message Parameter Specifications"
+      }
+    ],
+    "2.3 Request Event Example": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 64,
+        "level": 3,
+        "title": "2.3 Request Event Example"
       }
     ],
     "2.4 Request Event Fields": [
@@ -777,7 +747,7 @@
     "3. Cleanup on Adapter Shutdown": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 571,
+        "line": 569,
         "level": 3,
         "title": "3. Cleanup on Adapter Shutdown"
       }
@@ -798,14 +768,6 @@
         "title": "3. Complete Field Specification"
       }
     ],
-    "3. Conditional Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 612,
-        "level": 3,
-        "title": "3. Conditional Handling"
-      }
-    ],
     "3. Create Adapter Main Class": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -817,7 +779,7 @@
     "3. Event Format Examples": [
       {
         "document": "standards/event-conversion.md",
-        "line": 51,
+        "line": 58,
         "level": 2,
         "title": "3. Event Format Examples"
       }
@@ -857,7 +819,7 @@
     "3. Improve Code Quality": [
       {
         "document": "standards/README.md",
-        "line": 39,
+        "line": 40,
         "level": 3,
         "title": "3. Improve Code Quality"
       }
@@ -894,6 +856,14 @@
         "title": "3. Platform-Specific Method Naming"
       }
     ],
+    "3. Request DSL": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 86,
+        "level": 2,
+        "title": "3. Request DSL"
+      }
+    ],
     "3. Resource Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -921,7 +891,7 @@
     "3. Support Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 308,
+        "line": 310,
         "level": 3,
         "title": "3. Support Platform-Specific Methods"
       }
@@ -929,9 +899,17 @@
     "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 277,
+        "line": 287,
         "level": 3,
         "title": "3. Trigger Build"
+      }
+    ],
+    "3.1 Chained Calls": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 88,
+        "level": 3,
+        "title": "3.1 Chained Calls"
       }
     ],
     "3.1 Common Fields": [
@@ -953,7 +931,7 @@
     "3.1 Message Event (message)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 53,
+        "line": 60,
         "level": 3,
         "title": "3.1 Message Event (message)"
       }
@@ -966,10 +944,18 @@
         "title": "3.2 Common Platform Mapping Examples"
       }
     ],
+    "3.2 Method List": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 108,
+        "level": 3,
+        "title": "3.2 Method List"
+      }
+    ],
     "3.2 Notice Event (notice)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 86,
+        "line": 93,
         "level": 3,
         "title": "3.2 Notice Event (notice)"
       }
@@ -985,9 +971,17 @@
     "3.3 Request Event (request)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 107,
+        "line": 114,
         "level": 3,
         "title": "3.3 Request Event (request)"
+      }
+    ],
+    "3.3 Return Value Format": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 116,
+        "level": 3,
+        "title": "3.3 Return Value Format"
       }
     ],
     "3xxxx Action Execution Errors (Execution Error)": [
@@ -1030,20 +1024,20 @@
         "title": "4. Custom Type Extensions"
       }
     ],
+    "4. Event Convenience Methods": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 153,
+        "level": 2,
+        "title": "4. Event Convenience Methods"
+      }
+    ],
     "4. Extended Field Description": [
       {
         "document": "platform-guide/maintain-notes.md",
         "line": 65,
         "level": 3,
         "title": "4. Extended Field Description"
-      }
-    ],
-    "4. Implement Required Methods": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 115,
-        "level": 3,
-        "title": "4. Implement Required Methods"
       }
     ],
     "4. Implementation Requirements": [
@@ -1054,10 +1048,18 @@
         "title": "4. Implementation Requirements"
       }
     ],
+    "4. Manage Published Modules": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 106,
+        "level": 3,
+        "title": "4. Manage Published Modules"
+      }
+    ],
     "4. Message Segment Standards": [
       {
         "document": "standards/event-conversion.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "4. Message Segment Standards"
       }
@@ -1081,9 +1083,17 @@
     "4. Set Image as Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 292,
+        "line": 302,
         "level": 3,
         "title": "4. Set Image as Public"
+      }
+    ],
+    "4.1 Event Method List": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 181,
+        "level": 3,
+        "title": "4.1 Event Method List"
       }
     ],
     "4.1 Registering Custom Types": [
@@ -1097,7 +1107,7 @@
     "4.1 Standard Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 129,
+        "line": 137,
         "level": 3,
         "title": "4.1 Standard Message Segments"
       }
@@ -1105,7 +1115,7 @@
     "4.2 Platform Extension Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 154,
+        "line": 162,
         "level": 3,
         "title": "4.2 Platform Extension Message Segments"
       }
@@ -1124,6 +1134,14 @@
         "line": 157,
         "level": 3,
         "title": "4.3 Unregistering Custom Types"
+      }
+    ],
+    "5. Adapter Implementation Requirements": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 189,
+        "level": 2,
+        "title": "5. Adapter Implementation Requirements"
       }
     ],
     "5. Automatic Type Inference": [
@@ -1158,14 +1176,6 @@
         "title": "5. Extended Specifications"
       }
     ],
-    "5. Implement Send Class": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 182,
-        "level": 3,
-        "title": "5. Implement Send Class"
-      }
-    ],
     "5. Return Value Specifications": [
       {
         "document": "standards/send-method-spec.md",
@@ -1177,7 +1187,7 @@
     "5. Unknown Event Handling": [
       {
         "document": "standards/event-conversion.md",
-        "line": 171,
+        "line": 179,
         "level": 2,
         "title": "5. Unknown Event Handling"
       }
@@ -1185,9 +1195,17 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 309,
         "level": 3,
         "title": "5. User Usage"
+      }
+    ],
+    "5.1 Converter Requirements": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 191,
+        "level": 3,
+        "title": "5.1 Converter Requirements"
       }
     ],
     "5.1 Inference Priority": [
@@ -1204,6 +1222,14 @@
         "line": 110,
         "level": 3,
         "title": "5.1 `message_id` Mandatory Field"
+      }
+    ],
+    "5.2 Request Inner Class Implementation": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 234,
+        "level": 3,
+        "title": "5.2 Request Inner Class Implementation"
       }
     ],
     "5.2 Usage Examples": [
@@ -1230,6 +1256,30 @@
         "title": "5.3 Adapter Implementation Checklist"
       }
     ],
+    "5.3 Platforms Without Request Operations": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 308,
+        "level": 3,
+        "title": "5.3 Platforms Without Request Operations"
+      }
+    ],
+    "5.4 Summary: Send and Request in Parallel": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 316,
+        "level": 3,
+        "title": "5.4 Summary: Send and Request in Parallel"
+      }
+    ],
+    "5.5 Adapter `__init__` Considerations": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 332,
+        "level": 3,
+        "title": "5.5 Adapter `__init__` Considerations"
+      }
+    ],
     "6. API Usage Examples": [
       {
         "document": "standards/session-types.md",
@@ -1238,20 +1288,20 @@
         "title": "6. API Usage Examples"
       }
     ],
+    "6. Adapter Implementation Checklist": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 336,
+        "level": 2,
+        "title": "6. Adapter Implementation Checklist"
+      }
+    ],
     "6. Extension Naming Conventions": [
       {
         "document": "standards/event-conversion.md",
-        "line": 189,
+        "line": 197,
         "level": 2,
         "title": "6. Extension Naming Conventions"
-      }
-    ],
-    "6. Implement Converter": [
-      {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 236,
-        "level": 3,
-        "title": "6. Implement Converter"
       }
     ],
     "6. Notes": [
@@ -1281,7 +1331,7 @@
     "6.1 Field Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 191,
+        "line": 199,
         "level": 3,
         "title": "6.1 Field Naming"
       }
@@ -1305,7 +1355,7 @@
     "6.2 Message Segment Type Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 210,
+        "line": 218,
         "level": 3,
         "title": "6.2 Message Segment Type Naming"
       }
@@ -1337,7 +1387,7 @@
     "6.3 Raw Data Field Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 216,
+        "line": 224,
         "level": 3,
         "title": "6.3 Raw Data Field Naming"
       }
@@ -1358,42 +1408,18 @@
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
     ],
-    "6.3.3 Composite Message Segment Processing": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 316,
-        "level": 4,
-        "title": "6.3.3 Composite Message Segment Processing"
-      }
-    ],
     "6.4 Platform-Specific Field Examples": [
       {
         "document": "standards/event-conversion.md",
-        "line": 230,
+        "line": 238,
         "level": 3,
         "title": "6.4 Platform-Specific Field Examples"
-      }
-    ],
-    "6.4 Relationship between `Raw_ob12` and Standard Methods": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 334,
-        "level": 3,
-        "title": "6.4 Relationship between `Raw_ob12` and Standard Methods"
-      }
-    ],
-    "6.5 Implementation Example": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 362,
-        "level": 3,
-        "title": "6.5 Implementation Example"
       }
     ],
     "6.5 Nested Extension Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 247,
+        "line": 255,
         "level": 3,
         "title": "6.5 Nested Extension Fields"
       }
@@ -1401,7 +1427,7 @@
     "6.6 `self` Field Extension": [
       {
         "document": "standards/event-conversion.md",
-        "line": 270,
+        "line": 278,
         "level": 3,
         "title": "6.6 `self` Field Extension"
       }
@@ -1414,26 +1440,18 @@
         "title": "7. Best Practices"
       }
     ],
-    "7. Create Package Entry": [
+    "7. Error Code Extensions": [
       {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 278,
-        "level": 3,
-        "title": "7. Create Package Entry"
-      }
-    ],
-    "7. Method Discovery": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 415,
+        "document": "standards/request-action-spec.md",
+        "line": 355,
         "level": 2,
-        "title": "7. Method Discovery"
+        "title": "7. Error Code Extensions"
       }
     ],
     "7. Session Type Extensions": [
       {
         "document": "standards/event-conversion.md",
-        "line": 284,
+        "line": 292,
         "level": 2,
         "title": "7. Session Type Extensions"
       }
@@ -1473,23 +1491,23 @@
     "8. Module Developer Guide": [
       {
         "document": "standards/event-conversion.md",
-        "line": 320,
+        "line": 328,
         "level": 2,
         "title": "8. Module Developer Guide"
       }
     ],
-    "8. Registered Sending Method Extensions": [
+    "8. Related Documentation": [
       {
-        "document": "standards/send-method-spec.md",
-        "line": 438,
+        "document": "standards/request-action-spec.md",
+        "line": 366,
         "level": 2,
-        "title": "8. Registered Sending Method Extensions"
+        "title": "8. Related Documentation"
       }
     ],
     "8.1 Accessing Extension Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 322,
+        "line": 330,
         "level": 3,
         "title": "8.1 Accessing Extension Fields"
       }
@@ -1497,7 +1515,7 @@
     "8.2 Handling Extension Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 351,
+        "line": 359,
         "level": 3,
         "title": "8.2 Handling Extension Message Segments"
       }
@@ -1505,33 +1523,31 @@
     "8.3 Best Practices": [
       {
         "document": "standards/event-conversion.md",
-        "line": 372,
+        "line": 380,
         "level": 3,
         "title": "8.3 Best Practices"
       }
     ],
-    "9. Adapter Implementation Checklist": [
+    "8.4 Request Event Handling": [
       {
-        "document": "standards/send-method-spec.md",
-        "line": 453,
-        "level": 2,
-        "title": "9. Adapter Implementation Checklist"
+        "document": "standards/event-conversion.md",
+        "line": 396,
+        "level": 3,
+        "title": "8.4 Request Event Handling"
       }
     ],
     "9. Related Documentation": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 443,
+        "level": 2,
+        "title": "9. Related Documentation"
+      },
       {
         "document": "standards/session-types.md",
         "line": 273,
         "level": 2,
         "title": "9. Related Documentation"
-      }
-    ],
-    "9. Related Documents": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 390,
-        "level": 2,
-        "title": "9. Related Documents"
       }
     ],
     "@ Mention related": [
@@ -1548,14 +1564,6 @@
         "line": 169,
         "level": 3,
         "title": "@conv.branch(name) Decorator"
-      }
-    ],
-    "@timed Decorator": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 470,
-        "level": 3,
-        "title": "@timed Decorator"
       }
     ],
     "A2UI Message Segment (a2ui)": [
@@ -1597,7 +1605,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 598,
+        "line": 608,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1627,13 +1635,13 @@
     "API Response": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 337,
+        "line": 335,
         "level": 2,
         "title": "API Response"
       },
       {
         "document": "standards/README.md",
-        "line": 77,
+        "line": 79,
         "level": 3,
         "title": "API Response"
       }
@@ -1641,7 +1649,7 @@
     "API Response Standards": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 502,
+        "line": 512,
         "level": 2,
         "title": "API Response Standards"
       }
@@ -1671,7 +1679,7 @@
     "Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 547,
+        "line": 557,
         "level": 3,
         "title": "Account Configuration"
       },
@@ -1800,18 +1808,10 @@
         "title": "Adapter Development Best Practices"
       }
     ],
-    "Adapter Events": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 251,
-        "level": 3,
-        "title": "Adapter Events"
-      }
-    ],
     "Adapter Integration Example": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 305,
+        "line": 306,
         "level": 3,
         "title": "Adapter Integration Example"
       }
@@ -1824,24 +1824,18 @@
         "title": "Adapter Introduction"
       }
     ],
-    "Adapter Lifecycle Events": [
+    "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 62,
+        "line": 94,
         "level": 3,
-        "title": "Adapter Lifecycle Events"
+        "title": "Adapter Lifecycle"
       }
     ],
     "Adapter Management": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 41,
-        "level": 3,
-        "title": "Adapter Management"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 270,
         "level": 3,
         "title": "Adapter Management"
       }
@@ -1852,14 +1846,6 @@
         "line": 5,
         "level": 2,
         "title": "Adapter Manager"
-      }
-    ],
-    "Adapter Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 237,
-        "level": 2,
-        "title": "Adapter Module"
       }
     ],
     "Adapter Requirement Template": [
@@ -1881,7 +1867,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 646,
+        "line": 656,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -1908,6 +1894,14 @@
         "line": 46,
         "level": 2,
         "title": "AdapterManager"
+      }
+    ],
+    "Adapters: Registering Platform Extension Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 479,
+        "level": 3,
+        "title": "Adapters: Registering Platform Extension Methods"
       }
     ],
     "Add Message Listening": [
@@ -1983,7 +1977,7 @@
     "Applicable Scenarios": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 146,
+        "line": 156,
         "level": 3,
         "title": "Applicable Scenarios"
       }
@@ -2116,18 +2110,12 @@
         "line": 232,
         "level": 2,
         "title": "Auto Documentation"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 680,
-        "level": 3,
-        "title": "Auto Documentation"
       }
     ],
     "Auto-Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 620,
+        "line": 630,
         "level": 3,
         "title": "Auto-Discovery Mechanism"
       }
@@ -2135,7 +2123,7 @@
     "Auto-Discovery via Normal Events": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
         "title": "Auto-Discovery via Normal Events"
       }
@@ -2151,7 +2139,7 @@
     "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 312,
+        "line": 316,
         "level": 3,
         "title": "Available Properties"
       }
@@ -2159,7 +2147,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 261,
+        "line": 258,
         "level": 3,
         "title": "Backup"
       }
@@ -2175,7 +2163,7 @@
     "BaseAdapter Base Class": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 255,
+        "line": 257,
         "level": 2,
         "title": "BaseAdapter Base Class"
       }
@@ -2199,7 +2187,7 @@
     "Basic Commands": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 62,
+        "line": 68,
         "level": 3,
         "title": "Basic Commands"
       }
@@ -2311,7 +2299,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 324,
+        "line": 340,
         "level": 3,
         "title": "Basic Methods"
       },
@@ -2338,6 +2326,14 @@
         "title": "Basic Reply"
       }
     ],
+    "Basic Requirements": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 338,
+        "level": 3,
+        "title": "Basic Requirements"
+      }
+    ],
     "Basic Sending": [
       {
         "document": "api-reference/adapter-system.md",
@@ -2347,7 +2343,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 301,
+        "line": 309,
         "level": 3,
         "title": "Basic Sending"
       }
@@ -2369,7 +2365,7 @@
     "Basic Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 257,
+        "line": 259,
         "level": 3,
         "title": "Basic Structure"
       }
@@ -2378,12 +2374,6 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 61,
-        "level": 3,
-        "title": "Basic Usage"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 403,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2420,10 +2410,18 @@
         "title": "Batch Operations"
       }
     ],
+    "Batch Registration (Mixin Class)": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 499,
+        "level": 4,
+        "title": "Batch Registration (Mixin Class)"
+      }
+    ],
     "Benefits of Following Standards": [
       {
         "document": "standards/README.md",
-        "line": 46,
+        "line": 47,
         "level": 2,
         "title": "Benefits of Following Standards"
       }
@@ -2468,14 +2466,6 @@
         "title": "Best Practices"
       }
     ],
-    "Best Practices for Event Handling": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 576,
-        "level": 2,
-        "title": "Best Practices for Event Handling"
-      }
-    ],
     "Blacklist Filtering": [
       {
         "document": "getting-started/common-tasks.md",
@@ -2503,13 +2493,13 @@
     "Bot Status Management": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 215,
+        "line": 216,
         "level": 2,
         "title": "Bot Status Management"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 616,
+        "line": 626,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2525,19 +2515,19 @@
     "Bot Status Query": [
       {
         "document": "api-reference/event-system.md",
-        "line": 240,
+        "line": 239,
         "level": 3,
         "title": "Bot Status Query"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 683,
+        "line": 693,
         "level": 3,
         "title": "Bot Status Query"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 272,
+        "line": 278,
         "level": 3,
         "title": "Bot Status Query"
       }
@@ -2545,7 +2535,7 @@
     "Bot Status Values": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 379,
+        "line": 380,
         "level": 3,
         "title": "Bot Status Values"
       }
@@ -2585,7 +2575,7 @@
     "Built-in Confirmation Words": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 492,
+        "line": 498,
         "level": 3,
         "title": "Built-in Confirmation Words"
       }
@@ -2634,12 +2624,6 @@
         "line": 198,
         "level": 2,
         "title": "CORS Configuration"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 652,
-        "level": 3,
-        "title": "CORS Configuration"
       }
     ],
     "Callback Query Event": [
@@ -2661,7 +2645,7 @@
     "Can a single package register multiple modules?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 128,
+        "line": 138,
         "level": 3,
         "title": "Can a single package register multiple modules?"
       }
@@ -2685,7 +2669,7 @@
     "Chain Modifiers": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 314,
+        "line": 322,
         "level": 3,
         "title": "Chain Modifiers"
       }
@@ -2729,7 +2713,7 @@
     "Chained Modifier Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 341,
+        "line": 363,
         "level": 3,
         "title": "Chained Modifier Methods"
       }
@@ -2829,7 +2813,7 @@
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 134,
+        "line": 133,
         "level": 3,
         "title": "Check Installation"
       }
@@ -2850,18 +2834,10 @@
         "title": "Checking Platform Status"
       }
     ],
-    "Child Loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 216,
-        "level": 3,
-        "title": "Child Loggers"
-      }
-    ],
     "Choose Menu": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 405,
+        "line": 411,
         "level": 3,
         "title": "Choose Menu"
       }
@@ -2901,7 +2877,7 @@
     "Collect Form": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 424,
+        "line": 430,
         "level": 3,
         "title": "Collect Form"
       }
@@ -2925,7 +2901,7 @@
     "Command Aliases": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 78,
+        "line": 84,
         "level": 3,
         "title": "Command Aliases"
       }
@@ -2933,7 +2909,7 @@
     "Command Arguments": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 91,
+        "line": 97,
         "level": 3,
         "title": "Command Arguments"
       }
@@ -2965,7 +2941,7 @@
     "Command Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 142,
+        "line": 150,
         "level": 3,
         "title": "Command Event"
       }
@@ -2973,7 +2949,7 @@
     "Command Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 60,
+        "line": 66,
         "level": 2,
         "title": "Command Event Handling"
       }
@@ -2981,7 +2957,7 @@
     "Command Groups": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 105,
+        "line": 111,
         "level": 3,
         "title": "Command Groups"
       }
@@ -2995,7 +2971,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 323,
+        "line": 322,
         "level": 3,
         "title": "Command Information"
       },
@@ -3025,7 +3001,7 @@
     "Command Permissions": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 117,
+        "line": 123,
         "level": 3,
         "title": "Command Permissions"
       }
@@ -3033,9 +3009,17 @@
     "Command Priority": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 130,
+        "line": 136,
         "level": 3,
         "title": "Command Priority"
+      }
+    ],
+    "Command System": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 145,
+        "level": 3,
+        "title": "Command System"
       }
     ],
     "Common CSS Class Names": [
@@ -3087,7 +3071,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 157,
+        "line": 156,
         "level": 2,
         "title": "Common Issues"
       }
@@ -3095,7 +3079,7 @@
     "Common Methods of the Event Object": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 501,
+        "line": 507,
         "level": 3,
         "title": "Common Methods of the Event Object"
       }
@@ -3103,7 +3087,7 @@
     "Common Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 39,
+        "line": 47,
         "level": 3,
         "title": "Common Parameters"
       }
@@ -3111,7 +3095,7 @@
     "Common Questions": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 122,
+        "line": 132,
         "level": 2,
         "title": "Common Questions"
       }
@@ -3135,9 +3119,17 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 81,
+        "line": 89,
         "level": 2,
         "title": "Common Usage"
+      }
+    ],
+    "Complete API Reference": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 219,
+        "level": 2,
+        "title": "Complete API Reference"
       }
     ],
     "Complete Configuration Example": [
@@ -3205,7 +3197,7 @@
     "Config": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 216,
+        "line": 224,
         "level": 3,
         "title": "Config"
       }
@@ -3240,6 +3232,14 @@
         "title": "Configuration Auditing"
       }
     ],
+    "Configuration Changes": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 71,
+        "level": 3,
+        "title": "Configuration Changes"
+      }
+    ],
     "Configuration Description": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -3257,7 +3257,7 @@
     "Configuration Errors": [
       {
         "document": "user-guide/installation.md",
-        "line": 165,
+        "line": 164,
         "level": 3,
         "title": "Configuration Errors"
       }
@@ -3371,7 +3371,7 @@
     "Confirm Dialog": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 388,
+        "line": 394,
         "level": 3,
         "title": "Confirm Dialog"
       }
@@ -3379,7 +3379,7 @@
     "Connection Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 247,
+        "line": 253,
         "level": 3,
         "title": "Connection Event"
       }
@@ -3393,7 +3393,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 440,
+        "line": 450,
         "level": 2,
         "title": "Connection Management"
       }
@@ -3409,7 +3409,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 574,
+        "line": 584,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -3473,7 +3473,7 @@
     "Conversion Process": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 369,
+        "line": 379,
         "level": 3,
         "title": "Conversion Process"
       }
@@ -3489,7 +3489,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 399,
+        "line": 409,
         "level": 3,
         "title": "Converter Example"
       }
@@ -3620,18 +3620,18 @@
         "title": "Core Functions"
       }
     ],
-    "Core Initialization Events": [
+    "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 47,
+        "line": 63,
         "level": 3,
-        "title": "Core Initialization Events"
+        "title": "Core Initialization"
       }
     ],
     "Core Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 280,
+        "line": 279,
         "level": 3,
         "title": "Core Methods"
       },
@@ -3653,7 +3653,7 @@
     "Core Module Description": [
       {
         "document": "architecture.md",
-        "line": 42,
+        "line": 40,
         "level": 3,
         "title": "Core Module Description"
       }
@@ -3667,7 +3667,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 191,
+        "line": 199,
         "level": 2,
         "title": "Core Modules"
       }
@@ -3681,7 +3681,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 16,
+        "line": 17,
         "level": 3,
         "title": "Core Principles"
       }
@@ -3702,20 +3702,20 @@
         "title": "Count and Existence Check"
       }
     ],
-    "Counter": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 417,
-        "level": 4,
-        "title": "Counter"
-      }
-    ],
     "Create Table": [
       {
         "document": "advanced/sql-builder.md",
         "line": 34,
         "level": 3,
         "title": "Create Table"
+      }
+    ],
+    "Create Virtual Environment": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 37,
+        "level": 4,
+        "title": "Create Virtual Environment"
       }
     ],
     "Create Your First Bot": [
@@ -3726,20 +3726,20 @@
         "title": "Create Your First Bot"
       }
     ],
-    "Create a Virtual Environment": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 37,
-        "level": 4,
-        "title": "Create a Virtual Environment"
-      }
-    ],
     "Create project and install": [
       {
         "document": "quick-start.md",
         "line": 25,
         "level": 4,
         "title": "Create project and install"
+      }
+    ],
+    "Creating Scaffolds": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 160,
+        "level": 3,
+        "title": "Creating Scaffolds"
       }
     ],
     "Creating a Conversation": [
@@ -3756,14 +3756,6 @@
         "line": 126,
         "level": 2,
         "title": "Custom Message Segments"
-      }
-    ],
-    "Custom Metrics": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 456,
-        "level": 3,
-        "title": "Custom Metrics"
       }
     ],
     "Custom Storage Backend": [
@@ -3826,14 +3818,6 @@
         "line": 20,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
-      }
-    ],
-    "Decorator Routing (Recommended)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 483,
-        "level": 3,
-        "title": "Decorator Routing (Recommended)"
       }
     ],
     "Default Configuration": [
@@ -3921,7 +3905,7 @@
     "Development Mode Testing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 112,
+        "line": 122,
         "level": 2,
         "title": "Development Mode Testing"
       }
@@ -3969,7 +3953,7 @@
     "Distribute Applications via Docker Images": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 152,
         "level": 2,
         "title": "Distribute Applications via Docker Images"
       }
@@ -3985,7 +3969,7 @@
     "Do package names have to start with `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 124,
+        "line": 134,
         "level": 3,
         "title": "Do package names have to start with `ErisPulse-`?"
       }
@@ -4001,7 +3985,7 @@
     "Docker Images vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 354,
+        "line": 364,
         "level": 3,
         "title": "Docker Images vs PyPI Publishing"
       }
@@ -4009,7 +3993,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 244,
+        "line": 241,
         "level": 3,
         "title": "Docker Method"
       }
@@ -4125,7 +4109,7 @@
     "Documentation Maintenance": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 585,
+        "line": 583,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -4170,12 +4154,12 @@
         "title": "Dot Notation Access"
       }
     ],
-    "Dot-notation Events": [
+    "Dot-structured Events": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 34,
+        "line": 43,
         "level": 3,
-        "title": "Dot-notation Events"
+        "title": "Dot-structured Events"
       }
     ],
     "Double Mode Mechanism": [
@@ -4258,12 +4242,20 @@
         "title": "ErisPulse Glossary"
       }
     ],
-    "ErisPulse Platform Features Documentation": [
+    "ErisPulse PlatformFeatures Documentation": [
       {
         "document": "platform-guide/README.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse Platform Features Documentation"
+        "title": "ErisPulse PlatformFeatures Documentation"
+      }
+    ],
+    "ErisPulse Request Operation Specification": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Request Operation Specification"
       }
     ],
     "ErisPulse Sending Method Specifications": [
@@ -4329,13 +4321,13 @@
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 429,
+        "line": 427,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 572,
+        "line": 582,
         "level": 2,
         "title": "Error Handling"
       },
@@ -4405,7 +4397,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 68,
+        "line": 69,
         "level": 3,
         "title": "Event Conversion"
       }
@@ -4413,7 +4405,7 @@
     "Event Converter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 367,
+        "line": 377,
         "level": 2,
         "title": "Event Converter"
       }
@@ -4429,17 +4421,9 @@
     "Event Data Access": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 505,
         "level": 2,
         "title": "Event Data Access"
-      }
-    ],
-    "Event Data Format": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 18,
-        "level": 2,
-        "title": "Event Data Format"
       }
     ],
     "Event Distribution Mechanism": [
@@ -4521,7 +4505,7 @@
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 32,
+        "line": 10,
         "level": 2,
         "title": "Event Handling Mechanism"
       }
@@ -4529,18 +4513,12 @@
     "Event Handling Process": [
       {
         "document": "architecture.md",
-        "line": 93,
+        "line": 90,
         "level": 2,
         "title": "Event Handling Process"
       }
     ],
     "Event Listening": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 367,
-        "level": 3,
-        "title": "Event Listening"
-      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 153,
@@ -4584,20 +4562,20 @@
         "title": "Event Processing Enhancement"
       }
     ],
+    "Event Reception and Processing": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 106,
+        "level": 3,
+        "title": "Event Reception and Processing"
+      }
+    ],
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 327,
+        "line": 335,
         "level": 3,
         "title": "Event Reply Methods"
-      }
-    ],
-    "Event Submission": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 353,
-        "level": 3,
-        "title": "Event Submission"
       }
     ],
     "Event System": [
@@ -4627,7 +4605,7 @@
     "Event Types": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "Event Types"
       }
@@ -4635,7 +4613,7 @@
     "Event Wrapper Class": [
       {
         "document": "api-reference/event-system.md",
-        "line": 276,
+        "line": 275,
         "level": 2,
         "title": "Event Wrapper Class"
       }
@@ -4739,7 +4717,7 @@
     "Failure Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 530,
+        "line": 540,
         "level": 3,
         "title": "Failure Response"
       }
@@ -4771,7 +4749,7 @@
     "For Adapter Developers": [
       {
         "document": "standards/README.md",
-        "line": 48,
+        "line": 49,
         "level": 3,
         "title": "For Adapter Developers"
       }
@@ -4779,7 +4757,7 @@
     "For End Users": [
       {
         "document": "standards/README.md",
-        "line": 60,
+        "line": 61,
         "level": 3,
         "title": "For End Users"
       }
@@ -4787,7 +4765,7 @@
     "For Module Developers": [
       {
         "document": "standards/README.md",
-        "line": 54,
+        "line": 55,
         "level": 3,
         "title": "For Module Developers"
       }
@@ -4824,6 +4802,14 @@
         "title": "Framework Configuration"
       }
     ],
+    "Framework Helper Methods": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 333,
+        "level": 3,
+        "title": "Framework Helper Methods"
+      }
+    ],
     "Frequently Asked Questions": [
       {
         "document": "ai-support/README.md",
@@ -4835,7 +4821,7 @@
     "Friend Add": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 184,
+        "line": 190,
         "level": 3,
         "title": "Friend Add"
       }
@@ -4867,7 +4853,7 @@
     "Friend Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 218,
+        "line": 224,
         "level": 3,
         "title": "Friend Request"
       }
@@ -4894,14 +4880,6 @@
         "line": 64,
         "level": 2,
         "title": "Function Related Terms"
-      }
-    ],
-    "Gauge": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 428,
-        "level": 4,
-        "title": "Gauge"
       }
     ],
     "Get Method Details": [
@@ -4931,7 +4909,7 @@
     "Getting Adapter Instances": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 237,
+        "line": 239,
         "level": 3,
         "title": "Getting Adapter Instances"
       }
@@ -4940,12 +4918,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 7,
-        "level": 3,
-        "title": "Getting Adapters"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 239,
         "level": 3,
         "title": "Getting Adapters"
       }
@@ -4962,14 +4934,6 @@
         "line": 135,
         "level": 2,
         "title": "Getting Help"
-      }
-    ],
-    "Getting Modules": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 296,
-        "level": 3,
-        "title": "Getting Modules"
       }
     ],
     "Getting Started": [
@@ -5031,7 +4995,7 @@
     "Group Invite Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 234,
+        "line": 240,
         "level": 3,
         "title": "Group Invite Request"
       }
@@ -5039,7 +5003,7 @@
     "Group Member Decrease": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 206,
+        "line": 212,
         "level": 3,
         "title": "Group Member Decrease"
       }
@@ -5047,7 +5011,7 @@
     "Group Member Increase": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 196,
+        "line": 202,
         "level": 3,
         "title": "Group Member Increase"
       }
@@ -5082,6 +5046,14 @@
         "line": 22,
         "level": 3,
         "title": "HTTP Decorators"
+      }
+    ],
+    "HTTP Routing": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 160,
+        "level": 3,
+        "title": "HTTP Routing"
       }
     ],
     "Handling Channel Messages": [
@@ -5149,7 +5121,7 @@
     "Heartbeat Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 263,
+        "line": 269,
         "level": 3,
         "title": "Heartbeat Event"
       }
@@ -5162,12 +5134,12 @@
         "title": "Heartbeat Mechanism"
       }
     ],
-    "Histogram": [
+    "Hook Points Overview": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 440,
-        "level": 4,
-        "title": "Histogram"
+        "document": "advanced/lifecycle.md",
+        "line": 59,
+        "level": 2,
+        "title": "Hook Points Overview"
       }
     ],
     "Hot Reload": [
@@ -5209,7 +5181,7 @@
     "How long does the review take?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 138,
+        "line": 148,
         "level": 3,
         "title": "How long does the review take?"
       }
@@ -5297,7 +5269,7 @@
     "Inheritance Relationship": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 303,
+        "line": 307,
         "level": 3,
         "title": "Inheritance Relationship"
       }
@@ -5319,13 +5291,13 @@
       },
       {
         "document": "architecture.md",
-        "line": 56,
+        "line": 53,
         "level": 2,
         "title": "Initialization Process"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 280,
+        "line": 283,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -5333,7 +5305,7 @@
     "Initialization Stage Breakdown": [
       {
         "document": "architecture.md",
-        "line": 81,
+        "line": 78,
         "level": 3,
         "title": "Initialization Stage Breakdown"
       }
@@ -5349,7 +5321,7 @@
     "Initializing Projects": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 142,
+        "line": 150,
         "level": 3,
         "title": "Initializing Projects"
       }
@@ -5403,7 +5375,7 @@
     "Install from Local": [
       {
         "document": "user-guide/installation.md",
-        "line": 118,
+        "line": 117,
         "level": 3,
         "title": "Install from Local"
       }
@@ -5411,7 +5383,7 @@
     "Install from Remote Repository": [
       {
         "document": "user-guide/installation.md",
-        "line": 108,
+        "line": 107,
         "level": 3,
         "title": "Install from Remote Repository"
       }
@@ -5457,7 +5429,7 @@
     "Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 159,
+        "line": 158,
         "level": 3,
         "title": "Installation Failed"
       }
@@ -5481,7 +5453,7 @@
     "Installing Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 83,
+        "line": 91,
         "level": 3,
         "title": "Installing Modules"
       }
@@ -5505,7 +5477,7 @@
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 359,
+        "line": 358,
         "level": 3,
         "title": "Interaction Methods"
       },
@@ -5519,7 +5491,7 @@
     "Interactive Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 293,
+        "line": 299,
         "level": 2,
         "title": "Interactive Handling"
       }
@@ -5549,13 +5521,13 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 68,
+        "line": 76,
         "level": 2,
         "title": "Interactive Installation"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 125,
+        "line": 124,
         "level": 3,
         "title": "Interactive Installation"
       }
@@ -5579,7 +5551,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 114,
+        "line": 111,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -5627,7 +5599,7 @@
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 344,
+        "line": 352,
         "level": 2,
         "title": "Lazy Loading System"
       }
@@ -5648,24 +5620,16 @@
         "title": "Lifecycle"
       }
     ],
-    "Lifecycle Event Listening": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 81,
-        "level": 3,
-        "title": "Lifecycle Event Listening"
-      }
-    ],
     "Lifecycle Events": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 387,
+        "line": 388,
         "level": 3,
         "title": "Lifecycle Events"
       },
       {
         "document": "architecture.md",
-        "line": 122,
+        "line": 119,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -5686,14 +5650,6 @@
         "title": "Lifecycle Management"
       }
     ],
-    "Lifecycle Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 351,
-        "level": 2,
-        "title": "Lifecycle Module"
-      }
-    ],
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5705,7 +5661,7 @@
     "Listening to @ mentions": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 50,
+        "line": 56,
         "level": 3,
         "title": "Listening to @ mentions"
       }
@@ -5713,7 +5669,7 @@
     "Listening to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 706,
+        "line": 716,
         "level": 3,
         "title": "Listening to Bot Lifecycle"
       }
@@ -5721,7 +5677,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 153,
+        "line": 150,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -5737,7 +5693,7 @@
     "Listening to all messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 19,
+        "line": 25,
         "level": 3,
         "title": "Listening to all messages"
       }
@@ -5745,7 +5701,7 @@
     "Listening to group messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 40,
+        "line": 46,
         "level": 3,
         "title": "Listening to group messages"
       }
@@ -5753,7 +5709,7 @@
     "Listening to private messages": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 31,
+        "line": 37,
         "level": 3,
         "title": "Listening to private messages"
       }
@@ -5761,7 +5717,7 @@
     "Listing Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 96,
+        "line": 104,
         "level": 3,
         "title": "Listing Modules"
       }
@@ -5814,18 +5770,10 @@
         "title": "Log Information"
       }
     ],
-    "Log Output": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 227,
-        "level": 3,
-        "title": "Log Output"
-      }
-    ],
     "Logger": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 231,
+        "line": 239,
         "level": 3,
         "title": "Logger"
       }
@@ -5907,7 +5855,7 @@
     "Manual Deployment (pip)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 156,
+        "line": 153,
         "level": 2,
         "title": "Manual Deployment (pip)"
       }
@@ -5995,7 +5943,7 @@
     "Message Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 129,
+        "line": 137,
         "level": 3,
         "title": "Message Event"
       }
@@ -6089,7 +6037,7 @@
     "Message Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 296,
+        "line": 295,
         "level": 3,
         "title": "Message Methods"
       }
@@ -6160,6 +6108,14 @@
         "line": 215,
         "level": 3,
         "title": "Message Segment Types"
+      }
+    ],
+    "Message Sending": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 130,
+        "level": 3,
+        "title": "Message Sending"
       }
     ],
     "Message Sending Failed": [
@@ -6235,7 +6191,7 @@
     "Meta Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 178,
+        "line": 186,
         "level": 3,
         "title": "Meta Event"
       }
@@ -6243,7 +6199,7 @@
     "Meta Event Format": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 241,
+        "line": 242,
         "level": 3,
         "title": "Meta Event Format"
       }
@@ -6251,7 +6207,7 @@
     "Meta Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 245,
+        "line": 251,
         "level": 2,
         "title": "Meta Event Handling"
       }
@@ -6259,7 +6215,7 @@
     "Meta Event Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 215,
+        "line": 214,
         "level": 2,
         "title": "Meta Event Module"
       }
@@ -6267,13 +6223,13 @@
     "Meta Event Types": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 219,
+        "line": 220,
         "level": 3,
         "title": "Meta Event Types"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 638,
+        "line": 648,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -6281,7 +6237,7 @@
     "Meta Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 217,
+        "line": 216,
         "level": 3,
         "title": "Meta Events"
       }
@@ -6350,22 +6306,6 @@
         "title": "Method Signature"
       }
     ],
-    "Metric Types": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 415,
-        "level": 3,
-        "title": "Metric Types"
-      }
-    ],
-    "Metrics Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 401,
-        "level": 2,
-        "title": "Metrics Module"
-      }
-    ],
     "Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -6389,7 +6329,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 224,
+        "line": 226,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -6495,7 +6435,7 @@
     "Module Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 106,
+        "line": 105,
         "level": 2,
         "title": "Module Installation"
       }
@@ -6503,12 +6443,18 @@
     "Module Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 171,
+        "line": 170,
         "level": 3,
         "title": "Module Installation Failed"
       }
     ],
     "Module Lifecycle": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 85,
+        "level": 3,
+        "title": "Module Lifecycle"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
@@ -6516,36 +6462,12 @@
         "title": "Module Lifecycle"
       }
     ],
-    "Module Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 54,
-        "level": 3,
-        "title": "Module Lifecycle Events"
-      }
-    ],
     "Module Loading Strategy": [
       {
         "document": "architecture.md",
-        "line": 176,
+        "line": 173,
         "level": 2,
         "title": "Module Loading Strategy"
-      }
-    ],
-    "Module Management": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 309,
-        "level": 3,
-        "title": "Module Management"
-      }
-    ],
-    "Module Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 294,
-        "level": 2,
-        "title": "Module Module"
       }
     ],
     "Module Requirement Template": [
@@ -6599,7 +6521,7 @@
     "Multi-Account Support": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 387,
+        "line": 385,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -6623,7 +6545,7 @@
     "Multi-account Support": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 545,
+        "line": 555,
         "level": 2,
         "title": "Multi-account Support"
       }
@@ -6639,7 +6561,7 @@
     "Multi-instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 234,
+        "line": 231,
         "level": 2,
         "title": "Multi-instance Deployment"
       }
@@ -6655,9 +6577,17 @@
     "Multi-round Conversation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 465,
+        "line": 471,
         "level": 3,
         "title": "Multi-round Conversation"
+      }
+    ],
+    "Naming Conflict Detection": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 557,
+        "level": 4,
+        "title": "Naming Conflict Detection"
       }
     ],
     "Naming Conventions": [
@@ -6676,12 +6606,6 @@
         "title": "Next Steps"
       },
       {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 285,
-        "level": 2,
-        "title": "Next Steps"
-      },
-      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 143,
         "level": 2,
@@ -6689,19 +6613,13 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 364,
+        "line": 372,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "getting-started/common-tasks.md",
         "line": 444,
-        "level": 2,
-        "title": "Next Steps"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 632,
         "level": 2,
         "title": "Next Steps"
       },
@@ -6725,7 +6643,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 177,
+        "line": 176,
         "level": 2,
         "title": "Next Steps"
       }
@@ -6739,7 +6657,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 160,
+        "line": 274,
         "level": 2,
         "title": "Notes"
       }
@@ -6747,7 +6665,7 @@
     "Notice Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 154,
+        "line": 162,
         "level": 3,
         "title": "Notice Event"
       }
@@ -6777,7 +6695,7 @@
     "Notice Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 163,
+        "line": 162,
         "level": 3,
         "title": "Notice Events"
       }
@@ -6793,7 +6711,7 @@
     "Notice Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 161,
+        "line": 160,
         "level": 2,
         "title": "Notice Module"
       }
@@ -6817,7 +6735,7 @@
     "Notification Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "Notification Event Handling"
       }
@@ -6993,7 +6911,7 @@
     "Parallel Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 143,
+        "line": 149,
         "level": 3,
         "title": "Parallel Event Handling"
       }
@@ -7009,7 +6927,7 @@
     "Parameter Reference": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 37,
+        "line": 45,
         "level": 2,
         "title": "Parameter Reference"
       }
@@ -7065,7 +6983,7 @@
     "Platform Event Method Extension": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 531,
+        "line": 529,
         "level": 2,
         "title": "Platform Event Method Extension"
       }
@@ -7089,7 +7007,7 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 421,
+        "line": 420,
         "level": 3,
         "title": "Platform Extension Methods"
       },
@@ -7107,7 +7025,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 547,
+        "line": 553,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -7131,7 +7049,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 457,
+        "line": 456,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -7198,18 +7116,26 @@
         "title": "Prerequisites"
       }
     ],
-    "Proactively Sending Meta Events": [
+    "Priority": [
       {
-        "document": "developer-guide/adapters/getting-started.md",
-        "line": 145,
-        "level": 4,
-        "title": "Proactively Sending Meta Events"
+        "document": "advanced/lifecycle.md",
+        "line": 29,
+        "level": 3,
+        "title": "Priority"
+      }
+    ],
+    "Priority System": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 561,
+        "level": 2,
+        "title": "Priority System"
       }
     ],
     "Production Configuration": [
       {
         "document": "user-guide/deployment.md",
-        "line": 160,
+        "line": 157,
         "level": 3,
         "title": "Production Configuration"
       }
@@ -7263,7 +7189,7 @@
     "Property Access": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 247,
+        "line": 249,
         "level": 4,
         "title": "Property Access"
       }
@@ -7279,7 +7205,7 @@
     "Publish to Docker Hub Simultaneously": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 331,
+        "line": 341,
         "level": 3,
         "title": "Publish to Docker Hub Simultaneously"
       }
@@ -7415,7 +7341,7 @@
     "Query Registered Platform Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 442,
+        "line": 441,
         "level": 4,
         "title": "Query Registered Platform Methods"
       }
@@ -7431,7 +7357,7 @@
     "Querying Bot Status": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 345,
+        "line": 346,
         "level": 3,
         "title": "Querying Bot Status"
       }
@@ -7520,12 +7446,6 @@
         "line": 182,
         "level": 2,
         "title": "Rate Limiting"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 639,
-        "level": 3,
-        "title": "Rate Limiting"
       }
     ],
     "Raw Data": [
@@ -7606,6 +7526,22 @@
         "title": "Registering Commands"
       }
     ],
+    "Registering Handlers": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 12,
+        "level": 3,
+        "title": "Registering Handlers"
+      }
+    ],
+    "Registering Individual Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 483,
+        "level": 4,
+        "title": "Registering Individual Methods"
+      }
+    ],
     "Registering Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -7620,6 +7556,14 @@
         "line": 28,
         "level": 2,
         "title": "Registration API"
+      }
+    ],
+    "Registration and Unregistration": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 221,
+        "level": 3,
+        "title": "Registration and Unregistration"
       }
     ],
     "Related Documentation": [
@@ -7637,7 +7581,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 169,
+        "line": 284,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7667,13 +7611,13 @@
       },
       {
         "document": "api-reference/adapter-system.md",
-        "line": 408,
+        "line": 409,
         "level": 2,
         "title": "Related Documentation"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 701,
+        "document": "api-reference/event-system.md",
+        "line": 577,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7691,7 +7635,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 724,
+        "line": 734,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7721,7 +7665,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 93,
+        "line": 101,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7742,6 +7686,12 @@
       {
         "document": "advanced/sql-builder.md",
         "line": 376,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 615,
         "level": 2,
         "title": "Related Documents"
       }
@@ -7765,7 +7715,7 @@
     "Reply Features": [
       {
         "document": "api-reference/event-system.md",
-        "line": 335,
+        "line": 334,
         "level": 3,
         "title": "Reply Features"
       }
@@ -7800,18 +7750,34 @@
         "title": "Replying with Events"
       }
     ],
+    "Request Action": [
+      {
+        "document": "standards/README.md",
+        "line": 95,
+        "level": 3,
+        "title": "Request Action"
+      }
+    ],
     "Request Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 166,
+        "line": 174,
         "level": 3,
         "title": "Request Event"
+      }
+    ],
+    "Request Event Conversion": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 341,
+        "level": 3,
+        "title": "Request Event Conversion"
       }
     ],
     "Request Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 216,
+        "line": 222,
         "level": 2,
         "title": "Request Event Handling"
       }
@@ -7827,7 +7793,7 @@
     "Request Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 195,
+        "line": 194,
         "level": 3,
         "title": "Request Events"
       }
@@ -7851,9 +7817,17 @@
     "Request Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 193,
+        "line": 192,
         "level": 2,
         "title": "Request Module"
+      }
+    ],
+    "Request Operations": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 347,
+        "level": 3,
+        "title": "Request Operations"
       }
     ],
     "Request Type Judgment": [
@@ -7875,7 +7849,7 @@
     "Required Fields": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 379,
+        "line": 389,
         "level": 3,
         "title": "Required Fields"
       }
@@ -7918,6 +7892,14 @@
         "line": 280,
         "level": 3,
         "title": "Return Value Processing Examples"
+      }
+    ],
+    "Return Value Specifications": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 520,
+        "level": 4,
+        "title": "Return Value Specifications"
       }
     ],
     "Return Value Structure": [
@@ -7964,18 +7946,10 @@
         "title": "Reuse Query Conditions"
       }
     ],
-    "Reverse Conversion": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 462,
-        "level": 3,
-        "title": "Reverse Conversion"
-      }
-    ],
     "Reverse Conversion and Message Construction": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 521,
+        "line": 519,
         "level": 2,
         "title": "Reverse Conversion and Message Construction"
       }
@@ -7983,7 +7957,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 124,
+        "line": 121,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -8002,20 +7976,6 @@
         "line": 148,
         "level": 2,
         "title": "Route Grouping"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 602,
-        "level": 3,
-        "title": "Route Grouping"
-      }
-    ],
-    "Route Information": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 695,
-        "level": 3,
-        "title": "Route Information"
       }
     ],
     "Route List": [
@@ -8032,18 +7992,12 @@
         "line": 165,
         "level": 2,
         "title": "Route Middleware"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 621,
-        "level": 3,
-        "title": "Route Middleware"
       }
     ],
     "Router": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 258,
+        "line": 266,
         "level": 3,
         "title": "Router"
       },
@@ -8062,14 +8016,6 @@
         "title": "Router Manager"
       }
     ],
-    "Router Module": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 481,
-        "level": 2,
-        "title": "Router Module"
-      }
-    ],
     "Run Project": [
       {
         "document": "quick-start.md",
@@ -8081,7 +8027,7 @@
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 140,
         "level": 3,
         "title": "Run Tests"
       }
@@ -8089,7 +8035,7 @@
     "Running Projects": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 132,
+        "line": 140,
         "level": 3,
         "title": "Running Projects"
       }
@@ -8188,18 +8134,12 @@
         "line": 217,
         "level": 2,
         "title": "Security Headers"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 669,
-        "level": 3,
-        "title": "Security Headers"
       }
     ],
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 225,
+        "line": 222,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -8207,7 +8147,7 @@
     "Self Field Extension": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 229,
+        "line": 230,
         "level": 3,
         "title": "Self Field Extension"
       }
@@ -8231,7 +8171,7 @@
     "Send Message Sending DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 301,
+        "line": 305,
         "level": 2,
         "title": "Send Message Sending DSL"
       }
@@ -8239,7 +8179,7 @@
     "Send Method Naming": [
       {
         "document": "standards/README.md",
-        "line": 86,
+        "line": 88,
         "level": 3,
         "title": "Send Method Naming"
       }
@@ -8247,7 +8187,7 @@
     "Send Nested Class": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 197,
+        "line": 198,
         "level": 3,
         "title": "Send Nested Class"
       }
@@ -8287,7 +8227,7 @@
     "SendDSL Message Sending": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 297,
+        "line": 305,
         "level": 2,
         "title": "SendDSL Message Sending"
       }
@@ -8348,18 +8288,12 @@
         "line": 37,
         "level": 2,
         "title": "Sending Methods"
-      },
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 455,
-        "level": 3,
-        "title": "Sending Methods"
       }
     ],
     "Sending Replies using the `reply` Method": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 295,
+        "line": 301,
         "level": 3,
         "title": "Sending Replies using the `reply` Method"
       }
@@ -8383,7 +8317,7 @@
     "Sending with Specific Account": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 559,
+        "line": 569,
         "level": 3,
         "title": "Sending with Specific Account"
       }
@@ -8394,14 +8328,6 @@
         "line": 47,
         "level": 2,
         "title": "Server Configuration"
-      }
-    ],
-    "Server Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 72,
-        "level": 3,
-        "title": "Server Lifecycle Events"
       }
     ],
     "Session Type System": [
@@ -8581,7 +8507,7 @@
     "Standard Compliance Checklist": [
       {
         "document": "standards/README.md",
-        "line": 66,
+        "line": 67,
         "level": 2,
         "title": "Standard Compliance Checklist"
       }
@@ -8592,6 +8518,14 @@
         "line": 5,
         "level": 2,
         "title": "Standard Document List"
+      }
+    ],
+    "Standard Event Definition": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 196,
+        "level": 2,
+        "title": "Standard Event Definition"
       }
     ],
     "Standard Event Format": [
@@ -8610,20 +8544,6 @@
         "title": "Standard Formats"
       }
     ],
-    "Standard Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 5,
-        "level": 2,
-        "title": "Standard Lifecycle Events"
-      },
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 45,
-        "level": 2,
-        "title": "Standard Lifecycle Events"
-      }
-    ],
     "Standard Message Segment Types": [
       {
         "document": "platform-guide/telegram.md",
@@ -8635,7 +8555,7 @@
     "Standard Overview": [
       {
         "document": "standards/README.md",
-        "line": 12,
+        "line": 13,
         "level": 2,
         "title": "Standard Overview"
       }
@@ -8667,7 +8587,7 @@
     "Start Learning": [
       {
         "document": "getting-started/README.md",
-        "line": 137,
+        "line": 138,
         "level": 2,
         "title": "Start Learning"
       }
@@ -8747,7 +8667,7 @@
     "Storage": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 193,
+        "line": 201,
         "level": 3,
         "title": "Storage"
       },
@@ -8810,18 +8730,10 @@
         "title": "Style Guide"
       }
     ],
-    "Submitting Lifecycle Events": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 102,
-        "level": 3,
-        "title": "Submitting Lifecycle Events"
-      }
-    ],
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 504,
+        "line": 514,
         "level": 3,
         "title": "Success Response"
       }
@@ -8845,7 +8757,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 210,
+        "line": 207,
         "level": 3,
         "title": "Supervisor"
       }
@@ -9053,7 +8965,7 @@
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 475,
+        "line": 473,
         "level": 2,
         "title": "Testing"
       },
@@ -9088,30 +9000,6 @@
         "title": "The LazyModule Class"
       }
     ],
-    "Timer": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 386,
-        "level": 3,
-        "title": "Timer"
-      }
-    ],
-    "Timer Functionality": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 116,
-        "level": 3,
-        "title": "Timer Functionality"
-      }
-    ],
-    "Traditional Registration": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 533,
-        "level": 3,
-        "title": "Traditional Registration"
-      }
-    ],
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
@@ -9134,6 +9022,14 @@
         "line": 143,
         "level": 3,
         "title": "Transaction Usage"
+      }
+    ],
+    "Triggering": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 229,
+        "level": 3,
+        "title": "Triggering"
       }
     ],
     "Two Injection Modes": [
@@ -9195,7 +9091,7 @@
     "Uninstalling Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "Uninstalling Modules"
       }
@@ -9212,6 +9108,14 @@
         "line": 143,
         "level": 2,
         "title": "Unique Event Types"
+      }
+    ],
+    "Unregister Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 545,
+        "level": 4,
+        "title": "Unregister Methods"
       }
     ],
     "Unregistering Views": [
@@ -9241,7 +9145,7 @@
     "Update Published Modules": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 104,
+        "line": 114,
         "level": 2,
         "title": "Update Published Modules"
       }
@@ -9257,7 +9161,7 @@
     "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 242,
+        "line": 239,
         "level": 2,
         "title": "Updates and Maintenance"
       }
@@ -9273,18 +9177,20 @@
     "Upgrading Modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 119,
+        "line": 127,
         "level": 3,
         "title": "Upgrading Modules"
       }
     ],
-    "Usage Examples": [
+    "Usage Example in Modules": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 79,
+        "line": 247,
         "level": 2,
-        "title": "Usage Examples"
-      },
+        "title": "Usage Example in Modules"
+      }
+    ],
+    "Usage Examples": [
       {
         "document": "api-reference/README.md",
         "line": 49,
@@ -9359,7 +9265,7 @@
     "Users: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 425,
+        "line": 424,
         "level": 4,
         "title": "Users: Using Platform Extension Methods"
       }
@@ -9394,14 +9300,6 @@
         "line": 128,
         "level": 3,
         "title": "Using Lifecycle Events"
-      }
-    ],
-    "Using Lifecycle in Modules": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 137,
-        "level": 2,
-        "title": "Using Lifecycle in Modules"
       }
     ],
     "Using Method": [
@@ -9444,6 +9342,14 @@
         "title": "Using with Send"
       }
     ],
+    "Utilities": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 237,
+        "level": 3,
+        "title": "Utilities"
+      }
+    ],
     "Utility Methods": [
       {
         "document": "advanced/message-builder.md",
@@ -9459,7 +9365,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 406,
+        "line": 405,
         "level": 3,
         "title": "Utility Methods"
       },
@@ -9473,7 +9379,7 @@
     "Verify Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 132,
+        "line": 131,
         "level": 2,
         "title": "Verify Installation"
       }
@@ -9519,7 +9425,7 @@
     "Wait for Any Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 444,
+        "line": 450,
         "level": 3,
         "title": "Wait for Any Event"
       }
@@ -9543,7 +9449,7 @@
     "Waiting for Reply with Callback": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 367,
+        "line": 373,
         "level": 3,
         "title": "Waiting for Reply with Callback"
       }
@@ -9551,7 +9457,7 @@
     "Waiting for Reply with Validation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 340,
+        "line": 346,
         "level": 3,
         "title": "Waiting for Reply with Validation"
       }
@@ -9559,7 +9465,7 @@
     "Waiting for User Reply": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 323,
+        "line": 329,
         "level": 3,
         "title": "Waiting for User Reply"
       }
@@ -9567,15 +9473,23 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 478,
+        "line": 488,
         "level": 3,
         "title": "WebHook Connection"
+      }
+    ],
+    "WebSocket": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 175,
+        "level": 3,
+        "title": "WebSocket"
       }
     ],
     "WebSocket Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 442,
+        "line": 452,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -9602,14 +9516,6 @@
         "title": "WebSocket Registration"
       }
     ],
-    "WebSocket Routing": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 556,
-        "level": 3,
-        "title": "WebSocket Routing"
-      }
-    ],
     "What is an Adapter": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -9629,17 +9535,17 @@
     "Why Do We Need Standards?": [
       {
         "document": "standards/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "Why Do We Need Standards?"
       }
     ],
-    "Wildcard Event Handlers": [
+    "Wildcards": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 41,
+        "line": 49,
         "level": 3,
-        "title": "Wildcard Event Handlers"
+        "title": "Wildcards"
       }
     ],
     "Writing Configuration": [
@@ -9722,6 +9628,14 @@
         "title": "__init__.py"
       }
     ],
+    "`hasattr` / `dir` Support": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 472,
+        "level": 4,
+        "title": "`hasattr` / `dir` Support"
+      }
+    ],
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9733,7 +9647,7 @@
     "`self` Field Extended Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 672,
+        "line": 682,
         "level": 3,
         "title": "`self` Field Extended Information"
       }
@@ -9789,7 +9703,7 @@
     "connect — Connection Online": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 243,
+        "line": 244,
         "level": 4,
         "title": "connect — Connection Online"
       }
@@ -9829,7 +9743,7 @@
     "disconnect — Disconnection": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 283,
+        "line": 284,
         "level": 4,
         "title": "disconnect — Disconnection"
       }
@@ -9845,7 +9759,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 239,
+        "line": 241,
         "level": 4,
         "title": "get() Method"
       }
@@ -9869,7 +9783,7 @@
     "heartbeat — Heartbeat": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 265,
+        "line": 266,
         "level": 4,
         "title": "heartbeat — Heartbeat"
       }
@@ -9877,7 +9791,7 @@
     "install Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 46,
+        "line": 54,
         "level": 3,
         "title": "install Parameters"
       }
@@ -9901,7 +9815,7 @@
     "list Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 54,
+        "line": 62,
         "level": 3,
         "title": "list Parameters"
       }
@@ -9933,7 +9847,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 254,
+        "line": 251,
         "level": 3,
         "title": "pip Method"
       }
@@ -9957,7 +9871,7 @@
     "run Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 61,
+        "line": 69,
         "level": 3,
         "title": "run Parameters"
       }
@@ -9989,7 +9903,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 178,
+        "line": 175,
         "level": 3,
         "title": "systemd (Linux)"
       }

@@ -47,10 +47,10 @@ class _TestModule(BaseModule):
 
 @pytest.fixture
 def clean_lifecycle():
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
     yield
-    lifecycle._handlers.clear()
+    lifecycle._hooks.clear()
     lifecycle._timers.clear()
 
 
