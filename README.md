@@ -207,7 +207,7 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 pip install ErisPulse
 ```
 
-<img src=".github/assets/docs/install_pip.gif" width="480" alt="安装演示" />
+<img src=".github/assets/docs/install_pip.gif" alt="安装演示" />
 
 > 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
 
