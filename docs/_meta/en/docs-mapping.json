@@ -176,7 +176,7 @@
       "count": 24,
       "documents": [
         {
-          "title": "ErisPulse Platform Features Documentation",
+          "title": "ErisPulse PlatformFeatures Documentation",
           "path": "platform-guide/README.md",
           "level": 1
         },
@@ -331,7 +331,7 @@
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
-      "count": 10,
+      "count": 12,
       "documents": [
         {
           "title": "Technical Standards",
@@ -356,6 +356,11 @@
         {
           "title": "ErisPulse Sending Method Specifications",
           "path": "standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Request Operation Specification",
+          "path": "standards/request-action-spec.md",
           "level": 1
         }
       ],

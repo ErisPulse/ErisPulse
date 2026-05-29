@@ -16,13 +16,19 @@ ErisPulse 支持以下事件类型：
 
 ## 消息事件处理
 
+> **提示**: 建议在事件处理器中使用 `Event` 类型注解，以获得 IDE 自动补全和类型检查支持。
+
+```python
+from ErisPulse.Core.Event import Event  # 导入事件类型用于注解
+```
+
 ### 监听所有消息
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_message()
-async def message_handler(event):
+async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
     sdk.logger.info(f"收到 {user_id} 的消息: {text}")
@@ -32,7 +38,7 @@ async def message_handler(event):
 
 ```python
 @message.on_private_message()
-async def private_handler(event):
+async def private_handler(event: Event):
     user_id = event.get_user_id()
     await event.reply(f"你好，{user_id}！这是私聊消息。")
 ```
@@ -41,7 +47,7 @@ async def private_handler(event):
 
 ```python
 @message.on_group_message()
-async def group_handler(event):
+async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     sdk.logger.info(f"群 {group_id} 中 {user_id} 发送了消息")
@@ -51,7 +57,7 @@ async def group_handler(event):
 
 ```python
 @message.on_at_message()
-async def at_handler(event):
+async def at_handler(event: Event):
     # 获取被@的用户列表
     mentions = event.get_mentions()
     await event.reply(f"你@了这些用户: {mentions}")
@@ -130,7 +136,7 @@ async def admin_handler(event):
 ### 命令优先级
 
 ```python
-# 优先级数值越小，执行越早
+# 优先级数值越大，执行越早
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高优先级处理器")
@@ -147,15 +153,15 @@ ErisPulse 事件系统采用**同优先级并行、不同优先级串行**的调
 ```
 事件到达
     ↓
-priority=0 组: [处理器A || 处理器B] 并行 → 合并结果
+priority=10 组: [处理器C || 处理器D] 并行 → 合并结果
     ↓ (如未中断)
-priority=1 组: [处理器C || 处理器D] 并行 → 合并结果
+priority=0 组: [处理器A || 处理器B] 并行 → 合并结果
     ↓
 ...
 ```
 
 - **同优先级并行**：优先级相同的多个处理器会同时执行，提高吞吐量
-- **跨级串行**：不同优先级的组按顺序执行，确保高优先级处理器先运行
+- **跨级串行**：不同优先级的组按顺序执行（数值越大越先执行），确保高优先级处理器先运行
 - **Copy-On-Write**：处理器无修改时不创建副本，确保零开销
 - **冲突处理**：同优先级多处理器修改同一字段时，使用最后修改值并记录警告日志
 - **中断机制**：任意处理器调用 `event.mark_processed()` 后，跳过后续低优先级组
@@ -175,7 +181,7 @@ async def handler_b(event):
 # 不同优先级串行执行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 在 priority=0 组全部完成后执行
+    # 优先级最高，最先执行
     pass
 ```
 
@@ -612,20 +618,17 @@ async def message_handler(event):
 ### 3. 条件处理
 
 ```python
-def should_handle(event):
-    """判断是否应该处理此事件"""
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件处理 - 在处理器内部判断"""
     # 只处理特定用户的消息
     if event.get_user_id() in ["bot1", "bot2"]:
-        return False
+        return
     
     # 只处理包含特定关键词的消息
     if "关键词" not in event.get_text():
-        return False
+        return
     
-    return True
-
-@message.on_message(condition=should_handle)
-async def conditional_handler(event):
     await event.reply("条件满足，处理消息")
 ```
 

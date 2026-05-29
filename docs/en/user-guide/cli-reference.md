@@ -33,6 +33,14 @@ The ErisPulse command-line tool provides project management and package manageme
 | `init` | `[--project-name/-n <name>]` | Interactive project initialization | `epsdk init -n my_bot` |
 | | `[--quick/-q]` | Quick mode, skip interaction | `epsdk init -q -n bot` |
 | | `[--force/-f]` | Force override existing configuration | `epsdk init -f` |
+| `create` | `[module|adapter]` | Create scaffold project | `epsdk create` |
+| | `[--name/-n <name>]` | Project name (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | Project description | `epsdk create adapter -d "xx adapter"` |
+| | `[--author/-a <name>]` | Author name | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | Author email | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | Project homepage URL | |
+| | `[--output/-o <dir>]` | Output directory (default current directory) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | Force overwrite existing directory | `epsdk create -f` |
 
 ## Parameter Reference
 
@@ -147,3 +155,22 @@ epsdk init
 
 # Quick initialization
 epsdk init -q -n my_bot
+```
+
+### Creating Scaffolds
+
+```bash
+# Interactive creation (guided selection and information filling)
+epsdk create
+
+# Directly create Module project
+epsdk create module -n MyModule
+
+# Directly create Adapter project
+epsdk create adapter -n MyAdapter
+
+# Full parameters
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+
+# Force overwrite existing directory
+epsdk create module -n MyModule -f

@@ -60,7 +60,7 @@ name = "ErisPulse-MyAdapter"
 version = "1.0.0"
 description = "MyAdapter平台適配器"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
@@ -84,7 +84,8 @@ from ErisPulse.Core import BaseAdapter
 from ErisPulse.Core import router, logger, config as config_manager, adapter
 
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
+    def __init__(self):
+        super().__init__()  # ← 必須！建立 Send / Request 工廠實例
         self.sdk = sdk
         self.logger = logger.get_child("MyAdapter")
         self.config_manager = config_manager
@@ -111,6 +112,8 @@ class MyAdapter(BaseAdapter):
             return default_config
         return config
 ```
+
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
 
 ### 4. 實作必要方法
 
@@ -177,9 +180,16 @@ class MyAdapter(BaseAdapter):
             })
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理与-meta-事件)。
 
 ### 5. 實作 Send 類別
+
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
+
+框架提供兩個關鍵輔助方法：
+
+- `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
+- `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
 ```python
 import asyncio
@@ -187,104 +197,4 @@ import asyncio
 class MyAdapter(BaseAdapter):
     # ... 其他程式碼 ...
     
-    class Send(BaseAdapter.Send):
-        
-        def Text(self, text: str):
-            """發送文字訊息"""
-            return asyncio.create_task(
-                self._adapter.call_api(
-                    endpoint="/send",
-                    content=text,
-                    recvId=self._target_id,
-                    recvType=self._target_type
-                )
-            )
-        
-        def Image(self, file):
-            """發送圖片訊息"""
-            # 實作見下方說明
-            pass
-        
-        def Raw_ob12(self, message, **kwargs):
-            """
-            發送 OneBot12 格式訊息（必須實作）
-
-            完整實作規範和範例請參閱：
-            ../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台
-            """
-            if isinstance(message, dict):
-                message = [message]
-            return asyncio.create_task(self._do_send(message))
-```
-
-**媒體類發送方法 實作要點：**
-
-- `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
-- 當傳入 URL 時，需先下載檔案再上傳到平台
-- 平台通常需要先呼叫上傳介面取得檔案識別碼，再呼叫發送介面
-
-**`__getattr__` 魔術方法：**
-
-- 實作方法名稱大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
-- 未定義的方法應返回提示資訊而非報錯
-
-**`Raw_ob12` 方法：**
-
-- 將 OneBot12 標準訊息格式轉換為平台格式發送
-- 處理訊息段陣列，根據 `type` 欄位分發到對應的發送方法
-
-### 6. 實作轉換器
-
-```python
-# MyAdapter/Converter.py
-import time
-import uuid
-
-class MyPlatformConverter:
-    def convert(self, raw_event):
-        """將平台原生事件轉換為 OneBot12 標準格式"""
-        if not isinstance(raw_event, dict):
-            return None
-        
-        onebot_event = {
-            "id": str(raw_event.get("event_id", uuid.uuid4())),
-            "time": int(time.time()),
-            "type": self._convert_event_type(raw_event.get("type")),
-            "detail_type": self._convert_detail_type(raw_event),
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": str(raw_event.get("bot_id", ""))
-            },
-            "myplatform_raw": raw_event,
-            "myplatform_raw_type": raw_event.get("type", "")
-        }
-        
-        return onebot_event
-    
-    def _convert_event_type(self, event_type):
-        """轉換事件類型"""
-        type_map = {
-            "message": "message",
-            "notice": "notice"
-        }
-        return type_map.get(event_type, "unknown")
-    
-    def _convert_detail_type(self, raw_event):
-        """轉換詳細類型"""
-        return "private"  # 簡化範例
-```
-
-### 7. 建立套件入口
-
-```python
-# MyAdapter/__init__.py
-from .Core import MyAdapter
-```
-
-## 下一步
-
-- [適配器核心概念](core-concepts.md) - 了解適配器架構
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
-- [轉換器實作](converter.md) - 了解事件轉換
-- [適配器最佳實踐](best-practices.md) - 開發高品質適配器
+    class Send(BaseAdapter

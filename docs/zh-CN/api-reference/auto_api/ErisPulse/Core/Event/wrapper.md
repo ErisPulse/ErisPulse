@@ -14,6 +14,7 @@ ErisPulse 事件包装类
 > 2. 提供便捷方法简化事件处理
 > 3. 支持点式访问 event.platform
 > 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
+> 5. 建议在处理器参数中使用类型注解以获得 IDE 自动补全: async def handler(event: Event)
 
 ---
 
@@ -432,6 +433,75 @@ ErisPulse 事件包装类
 获取请求附言
 
 :return: 请求附言
+
+---
+
+
+##### `get_request_id()`
+
+获取请求ID
+
+用于标识可操作的请求，配合 approve()/reject() 使用。
+
+:return: 请求ID，不存在时返回空字符串
+
+---
+
+
+##### `async async approve(comment: str = None)`
+
+同意当前请求事件
+
+通过适配器的 Request DSL 执行同意操作。
+仅对请求类型事件（type == "request"）有效。
+
+:param comment: 附带备注信息（可选，部分平台支持）
+:return: 标准响应格式
+
+**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+
+**示例**:
+```python
+>>> @request.on_friend_request()
+... async def handle_friend_request(event):
+...     await event.approve()
+...     # 带备注
+...     await event.approve(comment="欢迎添加好友")
+```
+
+---
+
+
+##### `async async reject(comment: str = None)`
+
+拒绝当前请求事件
+
+通过适配器的 Request DSL 执行拒绝操作。
+仅对请求类型事件（type == "request"）有效。
+
+:param comment: 附带备注信息（可选，部分平台支持）
+:return: 标准响应格式
+
+**异常**: `ValueError` - 当事件不是请求类型或缺少必要字段时
+
+**示例**:
+```python
+>>> @request.on_group_request()
+... async def handle_group_request(event):
+...     await event.reject()
+```
+
+---
+
+
+##### `async async _handle_request_action(action: str, comment: str = None)`
+
+执行请求操作的内部方法
+
+:param action: 操作类型 ("accept" / "reject")
+:param comment: 附带备注
+:return: 标准响应格式
+**异常**: `ValueError` - 当缺少必要字段时
 
 ---
 

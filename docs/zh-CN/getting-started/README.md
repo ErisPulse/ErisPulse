@@ -132,7 +132,7 @@ asyncio.run(sdk.run(keep_running=True))
 - **Storage**：基于 SQLite 的键值存储
 - **Config**：TOML 格式的配置管理
 - **Logger**：模块化日志系统
-- **Router**：HTTP 和 WebSocket 路由管理
+- **Router**：基于 FastAPI + Uvicorn 的 HTTP 和 WebSocket 路由管理
 
 ## 开始学习
 

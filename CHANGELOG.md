@@ -63,6 +63,81 @@
 
 ---
 
+## [2.4.6-dev.1] - 2026/05/26
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `SendDSL` 框架级 At/AtAll/Reply 修饰器实现：
+    - `At(user_id)` / `AtAll()` / `Reply(message_id)` 已由 `SendDSL` 基类内置实现，适配器无需重复编写
+    - 新增 `_apply_modifiers(message)` 辅助方法，自动将修饰器状态合并为 OneBot12 消息段列表
+    - 新增 `send_context` 属性，显式返回 `{target_type, target_id, account_id}` 字典，替代隐式访问 `_target_type` / `_target_id` / `_account_id` 实例变量
+    - 修饰器合并顺序：`mention_all` → `mention` → `reply` → 用户消息段
+    - 现有适配器覆盖的 `At`/`AtAll`/`Reply` 方法不受影响（子类优先）
+  - `lifecycle` 生命周期管理器全面增强：
+    - 新增 `emit(event, data)` 异步触发和 `emit_sync(event, data)` 同步触发 API
+    - 新增 `register(event, handler, priority)` 函数调用模式注册
+    - 新增 `off(event, handler)` 取消注册、`clear()` 清除所有、`list_hooks()` 查询钩子
+    - 支持优先级排序（数值越小越先执行）
+    - 处理器返回非 None 值时可传递给后续处理器（数据链）
+    - 内部存储从 `_handlers` 重构为 `_hooks`，存储 `(priority, handler)` 元组
+  - `RequestDSL` 框架级请求操作 DSL 基类实现：
+    - 新增 `RequestDSL` 基类，采用与 `SendDSL` 一致的工厂实例模式：`adapter.Request("req_id").accept()`
+    - 新增 `__call__` 工厂方法，`adapter.Request(request_id)` 返回新的 `RequestDSL` 实例
+    - 新增 `Using(account_id)` 方法，指定执行操作的 Bot 账号
+    - 新增 `accept(**kwargs)` / `reject(**kwargs)` 公开方法，支持平台扩展参数（如 comment 备注）
+    - 新增 `_do_accept` / `_do_reject` 内部方法，适配器子类重写实现平台逻辑
+    - 基类默认返回 `retcode=10002`（不支持的操作），并记录 warning 级别日志
+    - 新增 `request_context` 属性，返回 `{request_id, account_id}` 字典
+  - `BaseAdapter.Request` 内部类 + 工厂实例：
+    - `BaseAdapter` 新增 `Request` 内部类（继承 `RequestDSL`），与 `Send` 内部类对称
+    - `BaseAdapter.__init__` 新增 `self.Request = self.__class__.Request(self)` 工厂初始化
+  - `Event` 请求操作便捷方法：
+    - 新增 `get_request_id()` 方法，获取请求事件标识
+    - 新增 `approve(comment=None)` 异步方法，同意当前请求事件
+    - 新增 `reject(comment=None)` 异步方法，拒绝当前请求事件
+    - 新增 `_handle_request_action()` 内部方法，校验事件类型、平台适配器、request_id 后委托给 Request DSL
+    - 缺少 `request_id` 时抛出 `ValueError`，引导适配器开发者正确设置字段
+  - `Core.Bases.__init__` / `Core.__init__` 导出 `RequestDSL` 类
+  - 新增 `docs/zh-CN/standards/request-action-spec.md` 请求操作标准文档
+
+### 变更
+- @wsu2059q
+  - `SendDSL` 基类增强：
+    - `__init__` 新增修饰器状态变量（`_at_user_ids`、`_reply_message_id`、`_at_all`），`To()`/`Using()` 创建新实例时自动重置
+    - `BaseAdapter.Send.Raw_ob12` 文档字符串更新为推荐使用 `_apply_modifiers(message)` 和 `**self.send_context` 的新模式
+  - `config` 配置变更监听从 `on_change` 回调改为统一生命周期钩子 `config.set`：
+    - 移除 `on_change()` 回调注册 API
+    - 移除 `AuditEntry` 数据类及相关导出
+    - 改用 `lifecycle.emit_sync("config.set", {...})` 触发，可通过 `@lifecycle.on("config.set")` 监听
+  - `sdk.py` 清理生命周期时使用 `_hooks` 替代旧版 `_handlers`
+  - `request.py` 修正误导性文档字符串（「通过返回值控制」→「event.approve()/reject()」）
+  - `docs` 更新中文适配器开发文档（getting-started / send-method-spec / event-conversion），展示 Request DSL 用法
+
+### 移除
+- @wsu2059q
+  - `SendDSL` 移除 `_unimplemented_modifier()` 方法（`At`/`AtAll`/`Reply` 已有实际实现，不再需要 no-op 垫片）
+  - `config` 移除配置审计系统：
+    - 移除 `AuditEntry` 数据类（`config.py`、`Core/__init__.py`）
+    - 移除 `enable_audit()`、`disable_audit()`、`get_audit_log()`、`clear_audit_log()` 方法
+    - 移除 `_detect_caller()`、`_resolve_caller()` 调用方感知机制
+    - 移除 `on_change()` 变更回调注册
+    - 移除 `CLI init` 模板中 `[ErisPulse.config.audit]` 配置段
+    - 移除 `test_unit_config.py` 中相关审计/回调测试用例
+
+### 优化
+- @wsu2059q
+  - `adapter` 简化示例适配器和 CLI 脚手架模板：
+    - 移除 `examples/example-adapter/MyAdapter/Core.py` 中 ~40 行 At/AtAll/Reply 样板代码
+    - 更新 `CLI/commands/create.py` 的 `_ADAPTER_CORE` 模板，使用 `_apply_modifiers()` 和 `send_context`
+  - 更新示例适配器 `examples/example-adapter/MyAdapter/Core.py`：添加 `super().__init__()`、`Request` 内部类
+  - `docs` 更新中文适配器开发文档（getting-started / core-concepts / send-dsl / best-practices），展示新辅助方法用法
+  - `docs` 核心模块文档：移除配置审计相关内容，更新生命周期文档为完整钩子参考
+  - `docs` 事件系统文档：修正优先级方向说明
+  - `docs` 架构文档：移除配置审计描述
+
+---
+
 ## [2.4.6-dev.0] - 2026/05/24
 > 开发版本
 

@@ -143,18 +143,17 @@ async def at_handler(event):
 ### 条件监听
 
 ```python
-# 使用条件函数
-def keyword_condition(event):
-    text = event.get_text()
-    return "关键词" in text
-
-@message.on_message(condition=keyword_condition)
-async def keyword_handler(event):
+# 使用优先级控制执行顺序
+@message.on_message(priority=10)  # 数值越大优先级越高
+async def high_priority_handler(event):
     pass
 
-# 使用优先级
-@message.on_message(priority=10)  # 数字越小优先级越高
-async def high_priority_handler(event):
+# 在处理器内部实现条件过滤
+@message.on_message()
+async def filtered_handler(event):
+    if "关键词" not in event.get_text():
+        return
+    # 处理包含关键词的消息
     pass
 ```
 
@@ -561,7 +560,7 @@ unregister_platform_event_methods("email")
 
 ## 优先级系统
 
-事件处理器支持优先级，数值越小优先级越高：
+事件处理器支持优先级，数值越大优先级越高：
 
 ```python
 # 高优先级处理器先执行
@@ -570,7 +569,7 @@ async def high_priority_handler(event):
     pass
 
 # 低优先级处理器后执行
-@message.on_message(priority=1)
+@message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
 ```

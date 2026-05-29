@@ -8,6 +8,7 @@ ErisPulse 事件包装类
 2. 提供便捷方法简化事件处理
 3. 支持点式访问 event.platform
 4. 支持适配器通过 register_event_mixin / register_event_method 注册平台专有方法
+5. 建议在处理器参数中使用类型注解以获得 IDE 自动补全: async def handler(event: Event)
 {!--< /tips >!--}
 """
 
@@ -546,6 +547,103 @@ class Event(dict):
         """
         return self.get("comment", "")
 
+    def get_request_id(self) -> str:
+        """
+        获取请求ID
+
+        用于标识可操作的请求，配合 approve()/reject() 使用。
+
+        :return: 请求ID，不存在时返回空字符串
+        """
+        return self.get("request_id", "")
+
+    async def approve(self, comment: str = None) -> Any:
+        """
+        同意当前请求事件
+
+        通过适配器的 Request DSL 执行同意操作。
+        仅对请求类型事件（type == "request"）有效。
+
+        :param comment: 附带备注信息（可选，部分平台支持）
+        :return: 标准响应格式
+
+        :raises ValueError: 当事件不是请求类型或缺少必要字段时
+
+        :example:
+        >>> @request.on_friend_request()
+        ... async def handle_friend_request(event):
+        ...     await event.approve()
+        ...     # 带备注
+        ...     await event.approve(comment="欢迎添加好友")
+        """
+        return await self._handle_request_action("accept", comment)
+
+    async def reject(self, comment: str = None) -> Any:
+        """
+        拒绝当前请求事件
+
+        通过适配器的 Request DSL 执行拒绝操作。
+        仅对请求类型事件（type == "request"）有效。
+
+        :param comment: 附带备注信息（可选，部分平台支持）
+        :return: 标准响应格式
+
+        :raises ValueError: 当事件不是请求类型或缺少必要字段时
+
+        :example:
+        >>> @request.on_group_request()
+        ... async def handle_group_request(event):
+        ...     await event.reject()
+        """
+        return await self._handle_request_action("reject", comment)
+
+    async def _handle_request_action(self, action: str, comment: str = None) -> Any:
+        """
+        执行请求操作的内部方法
+
+        :param action: 操作类型 ("accept" / "reject")
+        :param comment: 附带备注
+        :return: 标准响应格式
+        :raises ValueError: 当缺少必要字段时
+        """
+        if not self.is_request():
+            raise ValueError(
+                f"当前事件不是请求类型 (type={self.get_type()})，无法执行 {action} 操作"
+            )
+
+        platform = self.get_platform()
+        if not platform:
+            raise ValueError("事件缺少 'platform' 字段")
+
+        adapter_instance = getattr(adapter, platform, None)
+        if not adapter_instance:
+            available = (
+                list(adapter._adapters.keys()) if hasattr(adapter, "_adapters") else []
+            )
+            raise ValueError(
+                f"找不到平台 '{platform}' 的适配器 (可用平台: {available})"
+            )
+
+        request_id = self.get_request_id()
+        if not request_id:
+            raise ValueError(
+                f"请求事件缺少 'request_id' 字段，无法执行 {action} 操作。"
+                f"请确保适配器在转换请求事件时正确设置了 request_id 字段。"
+            )
+
+        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+        handler = adapter_instance.Request(request_id)
+
+        if bot_id:
+            handler = handler.Using(bot_id)
+
+        method = getattr(handler, action)
+        kwargs = {}
+        if comment:
+            kwargs["comment"] = comment
+        return await method(**kwargs)
+
     # ==================== 请求类型判断 ====================
 
     def is_request(self) -> bool:
@@ -692,7 +790,28 @@ class Event(dict):
         if not send_method or not callable(send_method):
             raise ValueError(f"适配器不支持方法: {method}")
 
-        return await send_method(content)
+        # 钩子: 消息发送前
+        from ..lifecycle import lifecycle
+        await lifecycle.emit("message.sending", {
+            "platform": self.get("platform", "unknown"),
+            "method": method,
+            "detail_type": detail_type,
+            "target_id": target_id,
+            "bot_id": bot_id,
+        })
+
+        result = await send_method(content)
+
+        # 钩子: 消息发送后
+        await lifecycle.emit("message.sent", {
+            "platform": self.get("platform", "unknown"),
+            "method": method,
+            "detail_type": detail_type,
+            "target_id": target_id,
+            "bot_id": bot_id,
+        })
+
+        return result
 
     # ==================== OB12 消息回复 ====================
 
