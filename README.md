@@ -213,11 +213,12 @@ pip install ErisPulse
 
 #### 运行效果
 
-同一端代码，多个平台响应：
+##### 仪表盘：
 
-<!-- 取消注释以展示 Dashboard 演示
 <img src=".github/assets/docs/dashboard-demo.gif" width="600" alt="Dashboard 演示" />
--->
+
+
+##### 同一端代码，多个平台响应：
 
 <table>
 <tr>
@@ -327,19 +328,6 @@ epsdk run main.py --reload
 | 在多个平台部署<br>相同功能的机器人 | 接入 AI 聊天模块<br>实现娱乐和交互 | 消息通知、任务管理<br>数据收集 | 跨平台消息<br>同步和转发 |
 
 </div>
-
----
-
-### 文档资源
-
-| 简体中文 | English | 繁體中文 |
-|:---:|:---:|:---:|
-| [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
-
-| 平台 | 主站点 | 备用站点 |
-|------|--------|---------|
-| 文档 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
-| 模块市场 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
 
 ---
 
