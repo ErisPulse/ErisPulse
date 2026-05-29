@@ -153,7 +153,7 @@ class DocsTranslator:
             return "README.md"
         return str(file_path.relative_to(self.source_dir))
     
-    ROOT_README_SOURCE = "README.zh-CN.md"
+    ROOT_README_SOURCE = "README.md"
 
     def _is_root_readme(self, file_path: Path) -> bool:
         """
@@ -302,10 +302,7 @@ class DocsTranslator:
         :return: 已有翻译内容，不存在则返回 None
         """
         if self._is_root_readme(file_path):
-            if target_lang == "en":
-                ref_file = Path("README.md")
-            else:
-                ref_file = Path(f"README.{target_lang}.md")
+            ref_file = Path(f"README.{target_lang}.md")
         else:
             rel_path = file_path.relative_to(self.source_dir)
             ref_file = Path("docs") / target_lang / rel_path
@@ -534,10 +531,7 @@ class DocsTranslator:
             
             # 确定目标路径
             if self._is_root_readme(file_path):
-                if target_lang == "en":
-                    target_file = Path("README.md")
-                else:
-                    target_file = Path(f"README.{target_lang}.md")
+                target_file = Path(f"README.{target_lang}.md")
             else:
                 target_dir = Path("docs") / target_lang / Path(rel_path).parent
                 target_dir.mkdir(parents=True, exist_ok=True)
