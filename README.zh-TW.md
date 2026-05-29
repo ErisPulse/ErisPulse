@@ -7,7 +7,7 @@
 </td>
 <td valign="middle">
 
-[English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
+[English](README.en.md) | [简体中文](README.md) | **繁體中文**
 
 # ErisPulse
 
@@ -17,17 +17,18 @@
 
 > 支援 Vibe Coding 工作流，讓 AI 直接生成可用模組 — [查看](docs/zh-TW/ai-support/README.md)
 
-[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
-[![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
-[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse)
-[![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/ErisPulse/)
+[![Python](https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=brightgreen)](https://github.com/ErisPulse/ErisPulse)
+[![Downloads](https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue)](https://pypi.org/project/ErisPulse/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge)](https://github.com/astral-sh/ruff)
+[![Socket](https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white)](https://socket.dev/pypi/package/erispulse)
 
-[![文檔](https://img.shields.io/badge/文檔-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
-[![模組市場](https://img.shields.io/badge/模組市場-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
-[![討論](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+[![文檔](https://img.shields.io/badge/文檔-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
+[![模組市場](https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white)](https://www.erisdev.com/#market)
+[![討論](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
 
 </td>
 </tr>
@@ -46,7 +47,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### 事件驅動架構
+### ⚡ 事件驅動架構
 
 基於 OneBot12 標準的清晰事件模型，讓訊息處理邏輯更加直觀和高效
 
@@ -54,9 +55,9 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### 跨平台相容
+### 🌐 跨平台相容
 
-模組編寫一次即可在所有平台使用，無需為不同平台重複開發
+模組模組編寫一次即可在所有平台使用，無需為不同平台重複開發
 
 </td>
 </tr>
@@ -64,7 +65,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### 模組化設計
+### 🧩 模組化設計
 
 靈活的模組系統，易於擴展和整合，支援熱插拔模組管理
 
@@ -72,7 +73,7 @@
 <td width="50%" align="center" valign="top">
 <br/>
 
-### 熱重載支援
+### 🔄 熱重載支援
 
 開發時無需重啟即可重新載入代碼，大幅提升開發迭代效率
 
@@ -85,21 +86,21 @@
 ### 支援的適配器
 
 <div align="center">
-<img src=".github/assets/adapter-showcase.png" width="520" alt="支援的適配器" />
+<!-- <img src=".github/assets/adapter-showcase.png" width="520" alt="適配器展示" /> -->
 
 歡迎您貢獻適配器！
 
 | 適配器 | 說明 |
 |--------|------|
-| [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時通訊平台 |
-| [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通訊協議 |
-| [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用機器人協議 |
-| [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準協議 |
-| [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方機器人平台 |
-| [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端調試，無需接入真實平台 |
-| [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即時通訊平台 |
-| [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協議收發適配器 |
-| [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時通訊平台 |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通訊協議 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用機器人協議 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準協議 |
+| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方機器人平台 |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端調試，無需接入真實平台 |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即時通訊平台 |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協議收發適配器 |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
 | [雲湖用戶](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖用戶協議的接入適配器 |
 | [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
@@ -204,17 +205,49 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ```bash
 pip install ErisPulse
-
-# 國內鏡像
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
-
-# 使用 uv 安裝
-uv pip install ErisPulse
 ```
 
-![安裝演示](.github/assets/docs/install_pip.gif)
+<img src=".github/assets/docs/install_pip.gif" alt="安裝演示" />
 
 > 如果您的 Python 版本低於 3.10，可以使用一鍵安裝腳本自動配置環境。詳見 [安裝腳本說明](scripts/install/)。
+
+#### 運行效果
+
+
+##### 儀表盤：
+> 有個gif，但是太大了沒放到這裡~ 抱歉~
+> [GIF演示](.github/assets/docs/dashboard-demo.gif)
+
+<img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
+
+
+##### 同一端代碼，多個平台響應：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**雲湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="雲湖 演示" />
+
+</td>
+</tr>
+</table>
 
 #### 初始化項目
 
@@ -295,44 +328,4 @@ epsdk run main.py --reload
 
 | 多平台機器人 | 聊天助手 | 自動化工具 | 消息轉發 |
 |:---:|:---:|:---:|:---:|
-| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現娛樂和交互 | 消息通知、任務管理<br>數據收集 | 跨平台消息<br>同步和轉發 |
-
-</div>
-
----
-
-### 文檔與資源
-
-| 简体中文 | English | 繁體中文 |
-|:---:|:---:|:---:|
-| [文檔入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
-
-| 平台 | 主站點 | 備用站點 |
-|------|--------|---------|
-| 文檔 | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
-| 模組市場 | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
-
----
-
-### 貢獻指南
-
-ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
-
-1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
-2. **功能請求** — 透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
-3. **代碼貢獻** — 提交 PR 前請閱讀 [代碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
-4. **文檔改進** — 幫助完善文檔和示例代碼
-
-[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
-
----
-
-<div align="center">
-
-### 致謝
-
-<img src=".github/assets/thanks.png" width="200" alt="感謝" />
-
-本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/) · 感謝所有為開源社區做出貢獻的開發者和作者
-
-</div>
+| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現
