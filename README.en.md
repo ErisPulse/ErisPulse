@@ -7,7 +7,7 @@
 </td>
 <td valign="middle">
 
-[English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md)
+**English** | [简体中文](README.md) | [繁體中文](README.zh-TW.md)
 
 # ErisPulse
 
@@ -17,17 +17,18 @@ Based on the OneBot12 standard interface, write once and deploy on multiple plat
 
 > Supports Vibe Coding workflow that enables AI to directly generate usable modules — [Learn more](docs/en/ai-support/README.md)
 
-[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://pypi.org/project/ErisPulse/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
-[![License](https://img.shields.io/github/license/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
-[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=flat-square)](https://github.com/ErisPulse/ErisPulse)
-[![Downloads](https://img.shields.io/pypi/dm/ErisPulse?style=flat-square)](https://pypi.org/project/ErisPulse/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/ErisPulse/)
+[![Python](https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://pypi.org/project/ErisPulse/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/erispulse/erispulse)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=brightgreen)](https://github.com/ErisPulse/ErisPulse)
+[![Downloads](https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue)](https://pypi.org/project/ErisPulse/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge)](https://github.com/astral-sh/ruff)
+[![Socket](https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white)](https://socket.dev/pypi/package/erispulse)
 
-[![Documentation](https://img.shields.io/badge/Documentation-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com)
-[![Module Market](https://img.shields.io/badge/Module%20Market-erisdev.com-0a0a0a?style=flat-square)](https://www.erisdev.com/#market)
-[![Discussions](https://img.shields.io/badge/GitHub-Discussions-0a0a0a?style=flat-square&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
+[![文档](https://img.shields.io/badge/文档-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
+[![模块市场](https://img.shields.io/badge/模块市场-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white)](https://www.erisdev.com/#market)
+[![讨论](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/ErisPulse/ErisPulse/discussions)
 
 </td>
 </tr>
@@ -46,7 +47,7 @@ Based on the OneBot12 standard interface, write once and deploy on multiple plat
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Event-Driven Architecture
+### ⚡ Event-Driven Architecture
 
 A clear event model based on the OneBot12 standard makes message processing logic more intuitive and efficient
 
@@ -54,7 +55,7 @@ A clear event model based on the OneBot12 standard makes message processing logi
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Cross-Platform Compatibility
+### 🌐 Cross-Platform Compatibility
 
 Plugin modules written once can be used on all platforms, eliminating the need for repeated development for different platforms
 
@@ -64,7 +65,7 @@ Plugin modules written once can be used on all platforms, eliminating the need f
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Modular Design
+### 🧩 Modular Design
 
 Flexible plugin system that is easy to extend and integrate, supporting hot-swappable module management
 
@@ -72,7 +73,7 @@ Flexible plugin system that is easy to extend and integrate, supporting hot-swap
 <td width="50%" align="center" valign="top">
 <br/>
 
-### Hot-Reload Support
+### 🔄 Hot-Reload Support
 
 Reload code without restarting during development, significantly improving development iteration efficiency
 
@@ -85,21 +86,21 @@ Reload code without restarting during development, significantly improving devel
 ### Supported Adapters
 
 <div align="center">
-<img src=".github/assets/adapter-showcase.png" width="520" alt="Supported Adapters" />
+<!-- <img src=".github/assets/adapter-showcase.png" width="520" alt="Supported Adapters" /> -->
 
 Contributions of adapters are welcome!
 
 | Adapter | Description |
 |---------|-------------|
-| [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Kaihei La) instant messaging platform |
-| [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
-| [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 general robot protocol |
-| [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
-| [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ official robot platform |
-| [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to a real platform |
-| [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
-| [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol send/receive adapter |
-| [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-level instant messaging platform (robot access) |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Kaihei La) instant messaging platform |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 general robot protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
+| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ official robot platform |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no need to connect to a real platform |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol send/receive adapter |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-level instant messaging platform (robot access) |
 | [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Access adapter based on Yunhu user protocol |
 | [Ideaura](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 
@@ -216,6 +217,42 @@ uv pip install ErisPulse
 
 > If your Python version is below 3.10, you can use the one-click installation script to automatically configure the environment. See [Installation Script Instructions](scripts/install/) for details.
 
+#### Running Effects
+
+##### Dashboard:
+> There is a GIF here, but it's too large to include~ Sorry~
+> [GIF Demo](.github/assets/docs/dashboard-demo.gif)
+
+<img src=".github/assets/docs/dashboard.png" alt="Dashboard Demo" />
+
+##### Code for one platform, responses on multiple platforms:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook Demo" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ Demo" />
+
+</td>
+<td align="center" width="33%">
+
+**Yunhu**
+
+<img src=".github/assets/demo-yunhu.png" alt="Yunhu Demo" />
+
+</td>
+</tr>
+</table>
+
 #### Initialize Project
 
 ```bash
@@ -324,6 +361,12 @@ The health of the ErisPulse project depends on your contribution! We welcome var
 4. **Documentation Improvements** — Help improve documentation and example code
 
 [Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
 ---
 
