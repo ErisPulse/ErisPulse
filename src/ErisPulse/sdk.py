@@ -17,6 +17,7 @@ import asyncio
 import importlib
 import sys
 from typing import TYPE_CHECKING
+from .Core.constants import UNINIT_SETTLE_DELAY_SECS, LIFECYCLE_TIMER_CORE_INIT, LIFECYCLE_TIMER_CORE_UNINIT
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
@@ -246,7 +247,7 @@ class SDK:
             :raises ImportError: 当加载失败时抛出
             """
             self.logger.info("SDK 正在初始化...")
-            self.lifecycle.start_timer("core.init")
+            self.lifecycle.start_timer(LIFECYCLE_TIMER_CORE_INIT)
 
             try:
                 # 1. 并行加载适配器和模块
@@ -321,7 +322,7 @@ class SDK:
                     self.logger.warning(f"路由服务器启动失败: {e}")
 
                 # 获取加载耗时
-                load_duration = self.lifecycle.stop_timer("core.init")
+                load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
 
                 # 总结
                 self.logger.print_section_header("初始化完成")
@@ -373,7 +374,7 @@ class SDK:
                 return True
 
             except Exception as e:
-                load_duration = self.lifecycle.stop_timer("core.init")
+                load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
                 await self.lifecycle.submit_event(
                     "core.init.complete",
                     msg="模块初始化失败",
@@ -424,7 +425,7 @@ class SDK:
 
             :return: bool 反初始化是否成功
             """
-            self.lifecycle.start_timer("core.uninit")
+            self.lifecycle.start_timer(LIFECYCLE_TIMER_CORE_UNINIT)
 
             try:
                 adapter_manager = self.adapter
@@ -495,7 +496,7 @@ class SDK:
                 module_manager.clear()
 
                 # 获取清理耗时
-                uninit_duration = self.lifecycle.stop_timer("core.uninit")
+                uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
 
                 # 7. 清理单例残留状态
                 self.lifecycle._timers.clear()
@@ -537,7 +538,7 @@ class SDK:
                 )
 
                 # 等待一小段时间，确保事件处理完成
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(UNINIT_SETTLE_DELAY_SECS)
 
                 # 9. 清理生命周期事件处理器（在所有事件完成之后）
                 self.lifecycle._hooks.clear()
@@ -546,7 +547,7 @@ class SDK:
                 return True
 
             except Exception as e:
-                uninit_duration = self.lifecycle.stop_timer("core.uninit")
+                uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 await self.lifecycle.submit_event(
                     "core.uninit.complete",
                     msg="SDK反初始化失败",
@@ -558,7 +559,7 @@ class SDK:
                 )
 
                 # 等待一小段时间，确保事件处理完成
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(UNINIT_SETTLE_DELAY_SECS)
 
                 # 清理生命周期事件处理器（即使在失败时也要清理）
                 self.lifecycle._hooks.clear()
@@ -622,7 +623,7 @@ class SDK:
             _logger.info("配置文件已加载")
             return True
         except Exception as e:
-            load_duration = _lifecycle.stop_timer("core.init")
+            load_duration = _lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
             await _lifecycle.submit_event(
                 "core.init.complete",
                 msg="模块初始化失败",

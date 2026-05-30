@@ -13,6 +13,13 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 from collections.abc import Awaitable
+from ..constants import (
+    RETCODE_NOT_IMPLEMENTED,
+    STATUS_FAILED,
+    DEFAULT_SEND_METHOD,
+    DEFAULT_SEND_TARGET_TYPE,
+    DETAIL_TYPE_PRIVATE,
+)
 
 
 class SendDSL:
@@ -209,8 +216,8 @@ class SendDSL:
 
         async def _not_impl():
             return {
-                "status": "failed",
-                "retcode": 10002,
+                "status": STATUS_FAILED,
+                "retcode": RETCODE_NOT_IMPLEMENTED,
                 "data": None,
                 "message_id": "",
                 "message": f"平台 {self._adapter.__class__.__name__} 未实现 Raw_ob12 方法",
@@ -254,10 +261,10 @@ class SendDSL:
             if target_id is not None:
                 # 默认推断为 user（对应 private）
                 # 这里我们假设如果只提供 ID，通常是发送给用户
-                target_type = "user"
+                target_type = DEFAULT_SEND_TARGET_TYPE
 
         # 自动转换 private → user
-        if target_type == "private":
+        if target_type == DETAIL_TYPE_PRIVATE:
             target_type = "user"
 
         return self.__class__(self._adapter, target_type, target_id, self._account_id)
@@ -623,7 +630,7 @@ class BaseAdapter(ABC):
         """
 
         async def _send_wrapper():
-            method_name = kwargs.pop("method", "Text")
+            method_name = kwargs.pop("method", DEFAULT_SEND_METHOD)
             method = getattr(self.Send.To(target_type, target_id), method_name, None)
             if not method:
                 raise AttributeError(
