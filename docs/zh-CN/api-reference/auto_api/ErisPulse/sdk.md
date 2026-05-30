@@ -17,6 +17,24 @@ ErisPulse SDK 主类
 
 ---
 
+## 函数列表
+
+
+### `_resolve_core(attr: str)`
+
+> **内部方法** 
+动态解析核心模块单例引用
+
+每次访问时通过 import 系统获取最新单例，确保软重启后 SDK 始终
+指向当前有效的模块级单例对象。
+
+:param attr: 核心属性名
+:return: 对应的单例对象
+**异常**: `AttributeError` - 当属性名不在核心映射中时
+
+---
+
+
 ## 类列表
 
 
@@ -25,6 +43,11 @@ ErisPulse SDK 主类
 ErisPulse SDK 主类
 
 整合所有核心模块和加载器，提供统一的初始化和管理接口
+
+设计说明:
+核心模块属性（adapter, module, router, logger, lifecycle 等）
+通过动态解析获取，不缓存在实例上。这确保软重启后 SDK 始终
+指向最新的模块级单例，无需手动刷新引用。
 
 > **提示**
 > SDK 提供以下核心属性：
@@ -64,6 +87,13 @@ ErisPulse SDK 主类
 初始化协调器
 
 :param sdk_instance: SDK 实例
+
+---
+
+
+####### `__getattr__(name: str)`
+
+将未找到的属性委托给 SDK 实例（如 logger、adapter 等）
 
 ---
 
@@ -111,6 +141,13 @@ ErisPulse SDK 主类
 ---
 
 
+####### `__getattr__(name: str)`
+
+将未找到的属性委托给 SDK 实例（如 logger、adapter 等）
+
+---
+
+
 ####### `async async uninit()`
 
 执行反初始化
@@ -138,7 +175,22 @@ ErisPulse SDK 主类
 
 初始化 SDK 实例
 
-挂载所有核心模块到 SDK 实例
+不缓存任何核心模块引用。核心属性通过 __getattr__ 动态解析，
+确保软重启后始终指向最新的模块级单例。
+
+---
+
+
+##### `__getattr__(name: str)`
+
+动态解析核心模块属性
+
+当属性不在实例 __dict__ 中时调用。对核心属性名使用动态 import 解析，
+确保软重启后始终获取最新单例。对未知属性提供友好的错误提示。
+
+:param name: 属性名
+:return: 属性值
+**异常**: `AttributeError` - 当属性不存在时
 
 ---
 

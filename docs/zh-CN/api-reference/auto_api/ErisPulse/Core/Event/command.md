@@ -57,7 +57,18 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = 60.0, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
+##### `unregister_by_owner(owner: str)`
+
+> **内部方法** 
+按归属者精确移除命令
+
+:param owner: 归属者（模块名）
+:return: 移除的命令数量
+
+---
+
+
+##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
 
 等待用户回复
 
