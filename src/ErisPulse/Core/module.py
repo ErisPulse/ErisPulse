@@ -12,6 +12,7 @@ from .config import config
 from .Bases import BaseModule
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
+from ..runtime.context import current_owner
 
 
 class ModuleManager(ManagerBase):
@@ -26,6 +27,20 @@ class ModuleManager(ManagerBase):
     3. 通过get方法获取模块实例
     {!--< /tips >!--}
     """
+
+    @staticmethod
+    def _is_subclass(cls: type, base_cls: type) -> bool:
+        try:
+            if issubclass(cls, base_cls):
+                return True
+        except TypeError:
+            pass
+        if base_cls.__name__ == cls.__name__:
+            return False
+        for parent in cls.__mro__:
+            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
+                return True
+        return False
 
     def __init__(self):
         # 模块存储
@@ -74,7 +89,7 @@ class ModuleManager(ManagerBase):
             logger.error(error_msg)
             raise TypeError(error_msg)
 
-        if not issubclass(module_class, BaseModule):
+        if not self._is_subclass(module_class, BaseModule):
             warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 虽然没有继承自BaseModule，但我们仍会继续尝试加载这个模块"
             logger.warning(warn_msg)
             # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
@@ -126,39 +141,37 @@ class ModuleManager(ManagerBase):
             return True
 
         try:
-            # 创建模块实例
             module_class = self._module_classes[module_name]
 
-            # 检查模块类 __init__ 方法的参数
             init_signature = inspect.signature(module_class.__init__)
             params = [p for p in init_signature.parameters.values() if p.name != "self"]
 
-            # 获取 sdk
             if (sdk_to_use := self._sdk) is None:
                 from .. import sdk
 
                 sdk_to_use = sdk
 
-            # 根据参数情况创建实例
-            if params:
-                instance = module_class(sdk_to_use)
-            else:
-                instance = module_class()
+            token = current_owner.set(module_name)
+            try:
+                if params:
+                    instance = module_class(sdk_to_use)
+                else:
+                    instance = module_class()
 
-            # 设置模块信息
-            if module_name in self._module_info:
-                setattr(instance, "moduleInfo", self._module_info[module_name])
+                if module_name in self._module_info:
+                    setattr(instance, "moduleInfo", self._module_info[module_name])
 
-            # 调用模块的on_load加载方法
-            if hasattr(instance, "on_load"):
-                try:
-                    if inspect.iscoroutinefunction(instance.on_load):
-                        await instance.on_load({"module_name": module_name})
-                    else:
-                        instance.on_load({"module_name": module_name})
-                except Exception as e:
-                    logger.error(f"模块 {module_name} on_load 方法执行失败: {e}")
-                    return False
+                if hasattr(instance, "on_load"):
+                    try:
+                        if inspect.iscoroutinefunction(instance.on_load):
+                            await instance.on_load({"module_name": module_name})
+                        else:
+                            instance.on_load({"module_name": module_name})
+                    except Exception as e:
+                        logger.error(f"模块 {module_name} on_load 方法执行失败: {e}")
+                        return False
+            finally:
+                current_owner.reset(token)
 
             # 缓存模块实例
             self._modules[module_name] = instance
@@ -244,7 +257,6 @@ class ModuleManager(ManagerBase):
             return True
 
         try:
-            # 调用模块的on_unload卸载方法
             instance = self._modules.get(module_name)
             if instance and hasattr(instance, "on_unload"):
                 try:
@@ -255,7 +267,6 @@ class ModuleManager(ManagerBase):
                 except Exception as e:
                     logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
 
-            # 清理模块注册的路由
             from .router import router
 
             result = router.unregister_all_by_namespace(module_name)
@@ -264,7 +275,23 @@ class ModuleManager(ManagerBase):
                     f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
                 )
 
-            # 清理缓存
+            from .Event import command, message, notice, request, meta
+
+            total_cleaned = 0
+            total_cleaned += command.unregister_by_owner(module_name)
+            for event_handler in [message, notice, request, meta]:
+                total_cleaned += event_handler.handler.unregister_by_owner(module_name)
+            if total_cleaned > 0:
+                logger.debug(f"已清理模块 {module_name} 的 {total_cleaned} 个事件处理器/命令")
+
+            if self._sdk is not None:
+                sdk_dict = getattr(self._sdk, '__dict__', {})
+                if module_name in sdk_dict:
+                    try:
+                        del sdk_dict[module_name]
+                    except Exception:
+                        pass
+
             del self._modules[module_name]
             self._loaded_modules.discard(module_name)
 
@@ -434,26 +461,46 @@ class ModuleManager(ManagerBase):
         config.setConfig(f"ErisPulse.modules.status.{module_name}", False)
         logger.info(f"模块 {module_name} 已禁用")
 
-        if module_name in self._modules:
-            instance = self._modules.get(module_name)
-            if instance and hasattr(instance, "on_unload"):
-                try:
-                    if inspect.iscoroutinefunction(instance.on_unload):
-                        import asyncio
+        if module_name not in self._loaded_modules:
+            return True
 
-                        try:
-                            loop = asyncio.get_running_loop()
-                            loop.create_task(
-                                instance.on_unload({"module_name": module_name})
-                            )
-                        except RuntimeError:
-                            asyncio.run(
-                                instance.on_unload({"module_name": module_name})
-                            )
-                    else:
-                        instance.on_unload({"module_name": module_name})
-                except Exception as e:
-                    logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
+        instance = self._modules.get(module_name)
+        if instance and hasattr(instance, "on_unload"):
+            try:
+                if inspect.iscoroutinefunction(instance.on_unload):
+                    import asyncio
+
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(
+                            instance.on_unload({"module_name": module_name})
+                        )
+                    except RuntimeError:
+                        asyncio.run(
+                            instance.on_unload({"module_name": module_name})
+                        )
+                else:
+                    instance.on_unload({"module_name": module_name})
+            except Exception as e:
+                logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
+
+        from .router import router
+        router.unregister_all_by_namespace(module_name)
+
+        from .Event import command, message, notice, request, meta
+        command.unregister_by_owner(module_name)
+        for event_handler in [message, notice, request, meta]:
+            event_handler.handler.unregister_by_owner(module_name)
+
+        if self._sdk is not None:
+            sdk_dict = getattr(self._sdk, '__dict__', {})
+            if module_name in sdk_dict:
+                try:
+                    del sdk_dict[module_name]
+                except Exception:
+                    pass
+
+        if module_name in self._modules:
             del self._modules[module_name]
         self._loaded_modules.discard(module_name)
         return True
@@ -561,7 +608,7 @@ class ModuleManager(ManagerBase):
             modules_summary[name] = {
                 "status": "loaded" if name in self._loaded_modules else "registered",
                 "enabled": self.is_enabled(name),
-                "is_base_module": issubclass(module_class, BaseModule),
+                "is_base_module": self._is_subclass(module_class, BaseModule),
             }
         return {"modules": modules_summary}
 

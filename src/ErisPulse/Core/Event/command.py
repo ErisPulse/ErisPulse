@@ -14,6 +14,7 @@ ErisPulse 命令处理模块
 from .base import BaseEventHandler
 from .. import adapter, logger
 from ...runtime import get_event_config
+from ...runtime.context import current_owner
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from typing import Any
 from collections.abc import Callable, Awaitable
@@ -107,6 +108,7 @@ class CommandHandler:
                     "permission": permission,
                     "hidden": hidden,
                     "main_name": main_name,
+                    "owner": current_owner.get(),
                 }
 
                 # 注册别名映射（name列表中的额外名称）
@@ -172,6 +174,39 @@ class CommandHandler:
             del self.commands[cmd_name]
 
         return result
+
+    def unregister_by_owner(self, owner: str) -> int:
+        """
+        {!--< internal-use >!--}
+        按归属者精确移除命令
+
+        :param owner: 归属者（模块名）
+        :return: 移除的命令数量
+        """
+        to_remove = [name for name, info in self.commands.items() if info.get("owner") == owner]
+        for cmd_name in to_remove:
+            cmd_info = self.commands[cmd_name]
+            main_name = cmd_info.get("main_name", cmd_name)
+
+            self.aliases = {
+                a: n for a, n in self.aliases.items()
+                if not (n == main_name and a != main_name)
+            }
+
+            for group_cmds in self.groups.values():
+                if cmd_name in group_cmds:
+                    group_cmds.remove(cmd_name)
+
+            self.permissions.pop(cmd_name, None)
+            del self.commands[cmd_name]
+
+        # 清理空命令组
+        self.groups = {k: v for k, v in self.groups.items() if v}
+
+        if to_remove:
+            from ..logger import logger as _logger
+            _logger.debug(f"[Command] 已清理 {owner} 的 {len(to_remove)} 个命令: {to_remove}")
+        return len(to_remove)
 
     async def wait_reply(
         self,

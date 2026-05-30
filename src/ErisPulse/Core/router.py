@@ -13,6 +13,7 @@ ErisPulse 路由系统
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
 from typing import Any, TypeAlias
 from collections.abc import Callable, Awaitable
@@ -20,7 +21,6 @@ from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
 import asyncio
-import functools
 import inspect
 import socket
 import ipaddress
@@ -291,6 +291,174 @@ class RouterManager:
             """
             return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
+        @self.app.get("/", include_in_schema=False)
+        async def root_page(request: Request) -> HTMLResponse:
+            dashboard_available = False
+            try:
+                import ErisPulse as _pkg
+                _sdk = _pkg.sdk
+                dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
+            except Exception:
+                pass
+
+            dashboard_html = ""
+            if dashboard_available:
+                dashboard_html = (
+                    '<p class="hint">也许你想访问 <a href="/Dashboard">/Dashboard</a> ？</p>'
+                )
+
+            html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ErisPulse</title>
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+  }}
+  .mascot {{
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 40px rgba(120, 80, 255, 0.4);
+    margin-bottom: 2rem;
+    background: #1a1a2e;
+  }}
+  h1 {{
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, #a78bfa, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }}
+  p.info {{ color: #9ca3af; margin-bottom: 1.5rem; font-size: 1rem; }}
+  .hint {{
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    color: #c4b5fd;
+  }}
+  .hint a {{
+    color: #818cf8;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px dashed #818cf8;
+    transition: color 0.2s;
+  }}
+  .hint a:hover {{ color: #a78bfa; border-bottom-color: #a78bfa; }}
+  .endpoints {{
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }}
+  .endpoints a {{ color: #6b7280; text-decoration: none; }}
+  .endpoints a:hover {{ color: #9ca3af; }}
+</style>
+</head>
+<body>
+  <img class="mascot"
+       src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/mascot-hero.png"
+       alt="ErisPulse Mascot"
+       onerror="this.style.display='none'" />
+  <h1>ErisPulse</h1>
+  <p class="info">你似乎访问了根路径，这里没有内容哦~</p>
+  {dashboard_html}
+  <div class="endpoints">
+    <a href="/health">Health</a> &middot;
+    <a href="/ping">Ping</a>
+  </div>
+</body>
+</html>"""
+            return HTMLResponse(content=html)
+
+    def _restore_routes_from_records(self) -> None:
+        """
+        将内部记录中已有的路由重新注册到当前 FastAPI 实例
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        restored_http = 0
+        for module_name, paths in self._http_routes.items():
+            for full_path, method_map in paths.items():
+                methods = list(method_map.keys())
+                if not methods:
+                    continue
+                handler = method_map[methods[0]]
+                route = APIRoute(
+                    path=full_path,
+                    endpoint=handler,
+                    methods=methods,
+                    name=f"{module_name}_{full_path.replace('/', '_')}",
+                )
+                self.app.router.routes.append(route)
+                restored_http += 1
+
+        restored_ws = 0
+        for module_name, paths in self._websocket_routes.items():
+            for full_path, (handler, auth_handler) in paths.items():
+                # 直接在 FastAPI 上注册，跳过重复检查（记录已存在）
+                auto_accept = False
+
+                async def _ws_endpoint(websocket: WebSocket, *, _handler=handler, _auth=auth_handler, _path=full_path, _mod=module_name, _accept=auto_accept):
+                    if _accept:
+                        await websocket.accept()
+                    try:
+                        if _auth and not await _auth(websocket):
+                            await websocket.close(code=1008)
+                            return
+                        await lifecycle.emit("server.websocket.connect", {
+                            "path": _path,
+                            "module_name": _mod,
+                            "client_ip": websocket.client.host if websocket.client else None,
+                        })
+                        await _handler(websocket)
+                    except WebSocketDisconnect:
+                        await lifecycle.emit("server.websocket.disconnect", {
+                            "path": _path,
+                            "module_name": _mod,
+                            "reason": "client_disconnect",
+                        })
+                    except (asyncio.CancelledError, Exception) as e:
+                        is_cancel = isinstance(e, asyncio.CancelledError)
+                        await lifecycle.emit("server.websocket.disconnect", {
+                            "path": _path,
+                            "module_name": _mod,
+                            "reason": "cancelled" if is_cancel else "error",
+                            "error": "" if is_cancel else str(e),
+                        })
+                        if is_cancel:
+                            raise
+                        else:
+                            logger.error(f"WebSocket错误: {e}")
+                            try:
+                                await websocket.close(code=1011)
+                            except Exception:
+                                pass
+
+                self.app.add_api_websocket_route(
+                    path=full_path,
+                    endpoint=_ws_endpoint,
+                    name=f"{module_name}_{full_path.replace('/', '_')}",
+                )
+                restored_ws += 1
+
+        if restored_http or restored_ws:
+            logger.debug(
+                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}"
+            )
+
     # 路由中间件
 
     def _ensure_middleware_installed(self):
@@ -304,72 +472,77 @@ class RouterManager:
             return
         self._middleware_installed = True
 
-        @self.app.middleware("http")
-        async def route_middleware_pipeline(request: Request, call_next):
-            path = request.url.path
+        # 如果 app 已启动过（middleware_stack 已构建），无法再添加中间件
+        # 此时跳过，已有的中间件仍会生效
+        try:
+            @self.app.middleware("http")
+            async def route_middleware_pipeline(request: Request, call_next):
+                path = request.url.path
 
-            # 钩子: HTTP请求接收
-            await lifecycle.emit("server.request", {
-                "method": request.method,
-                "path": path,
-                "client_ip": request.client.host if request.client else None,
-            })
+                # 钩子: HTTP请求接收
+                await lifecycle.emit("server.request", {
+                    "method": request.method,
+                    "path": path,
+                    "client_ip": request.client.host if request.client else None,
+                })
 
-            for mw in self._global_middlewares:
-                if mw._before:
-                    result = (
-                        await mw._before(request)
-                        if inspect.iscoroutinefunction(mw._before)
-                        else mw._before(request)
-                    )
-                    if isinstance(result, Response):
-                        return result
+                for mw in self._global_middlewares:
+                    if mw._before:
+                        result = (
+                            await mw._before(request)
+                            if inspect.iscoroutinefunction(mw._before)
+                            else mw._before(request)
+                        )
+                        if isinstance(result, Response):
+                            return result
 
-            for pattern, mws in self._route_middlewares.items():
-                if self._match_path(pattern, path):
-                    for mw in mws:
-                        if mw._before:
-                            result = (
-                                await mw._before(request)
-                                if inspect.iscoroutinefunction(mw._before)
-                                else mw._before(request)
-                            )
-                            if isinstance(result, Response):
-                                return result
+                for pattern, mws in self._route_middlewares.items():
+                    if self._match_path(pattern, path):
+                        for mw in mws:
+                            if mw._before:
+                                result = (
+                                    await mw._before(request)
+                                    if inspect.iscoroutinefunction(mw._before)
+                                    else mw._before(request)
+                                )
+                                if isinstance(result, Response):
+                                    return result
 
-            response = await call_next(request)
+                response = await call_next(request)
 
-            # 钩子: HTTP响应发送
-            await lifecycle.emit("server.response", {
-                "method": request.method,
-                "path": path,
-                "status_code": response.status_code,
-                "client_ip": request.client.host if request.client else None,
-            })
+                # 钩子: HTTP响应发送
+                await lifecycle.emit("server.response", {
+                    "method": request.method,
+                    "path": path,
+                    "status_code": response.status_code,
+                    "client_ip": request.client.host if request.client else None,
+                })
 
-            for pattern, mws in reversed(list(self._route_middlewares.items())):
-                if self._match_path(pattern, path):
-                    for mw in reversed(mws):
-                        if mw._after:
-                            resp = (
-                                await mw._after(request, response)
-                                if inspect.iscoroutinefunction(mw._after)
-                                else mw._after(request, response)
-                            )
-                            if resp is not None:
-                                response = resp
+                for pattern, mws in reversed(list(self._route_middlewares.items())):
+                    if self._match_path(pattern, path):
+                        for mw in reversed(mws):
+                            if mw._after:
+                                resp = (
+                                    await mw._after(request, response)
+                                    if inspect.iscoroutinefunction(mw._after)
+                                    else mw._after(request, response)
+                                )
+                                if resp is not None:
+                                    response = resp
 
-            for mw in reversed(self._global_middlewares):
-                if mw._after:
-                    resp = (
-                        await mw._after(request, response)
-                        if inspect.iscoroutinefunction(mw._after)
-                        else mw._after(request, response)
-                    )
-                    if resp is not None:
-                        response = resp
+                for mw in reversed(self._global_middlewares):
+                    if mw._after:
+                        resp = (
+                            await mw._after(request, response)
+                            if inspect.iscoroutinefunction(mw._after)
+                            else mw._after(request, response)
+                        )
+                        if resp is not None:
+                            response = resp
 
-            return response
+                return response
+        except RuntimeError:
+            logger.debug("FastAPI 应用已启动，跳过中间件安装（已有中间件继续生效）")
 
     def middleware(self, *paths: str):
         """
