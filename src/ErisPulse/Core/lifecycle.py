@@ -165,7 +165,6 @@ class LifecycleManager:
         :example:
         >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
         """
-        _get_logger().debug(f"触发生命周期事件: {event}")
 
         # 通配符处理器
         if "*" in self._hooks:
@@ -198,7 +197,6 @@ class LifecycleManager:
         :example:
         >>> result = lifecycle.emit_sync("config.set", {"key": "test"})
         """
-        _get_logger().debug(f"触发生命周期事件: {event}")
 
         if "*" in self._hooks:
             data = self._execute_handlers_sync("*", event, data)
