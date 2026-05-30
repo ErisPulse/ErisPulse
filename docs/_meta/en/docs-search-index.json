@@ -403,7 +403,7 @@
     "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 218,
+        "line": 190,
         "level": 3,
         "title": "2. Create GitHub Actions Workflow"
       }
@@ -899,7 +899,7 @@
     "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 287,
+        "line": 259,
         "level": 3,
         "title": "3. Trigger Build"
       }
@@ -1083,7 +1083,7 @@
     "4. Set Image as Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 302,
+        "line": 274,
         "level": 3,
         "title": "4. Set Image as Public"
       }
@@ -1195,7 +1195,7 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 309,
+        "line": 281,
         "level": 3,
         "title": "5. User Usage"
       }
@@ -3985,7 +3985,7 @@
     "Docker Images vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 364,
+        "line": 338,
         "level": 3,
         "title": "Docker Images vs PyPI Publishing"
       }
@@ -7205,7 +7205,7 @@
     "Publish to Docker Hub Simultaneously": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 341,
+        "line": 315,
         "level": 3,
         "title": "Publish to Docker Hub Simultaneously"
       }

@@ -481,7 +481,7 @@
     "2. 建立 GitHub Actions 工作流": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 219,
+        "line": 191,
         "level": 3,
         "title": "2. 建立 GitHub Actions 工作流"
       }
@@ -943,7 +943,7 @@
     "3. 觸發建構": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 288,
+        "line": 260,
         "level": 3,
         "title": "3. 觸發建構"
       }
@@ -1159,7 +1159,7 @@
     "4. 設定鏡像為公開": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 303,
+        "line": 275,
         "level": 3,
         "title": "4. 設定鏡像為公開"
       }
@@ -1247,7 +1247,7 @@
     "5. 用戶使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 310,
+        "line": 282,
         "level": 3,
         "title": "5. 用戶使用"
       }
@@ -1985,7 +1985,7 @@
     "Docker 鏡像 vs PyPI 發布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 365,
+        "line": 339,
         "level": 3,
         "title": "Docker 鏡像 vs PyPI 發布"
       }
@@ -4509,7 +4509,7 @@
     "同時發布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 342,
+        "line": 316,
         "level": 3,
         "title": "同時發布到 Docker Hub"
       }
