@@ -200,6 +200,27 @@ WebSocket 路由装饰器
 ---
 
 
+##### `_setup_error_pages()`
+
+设置错误页面和静态资源
+
+> **内部方法** 
+注册 web_status/ 包目录的静态文件服务（/status-assets），
+并为 GET 请求添加 ErisPulse 主题化错误页面。
+POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
+
+---
+
+
+##### `_restore_routes_from_records()`
+
+将内部记录中已有的路由重新注册到当前 FastAPI 实例
+
+> **内部方法**
+
+---
+
+
 ##### `_ensure_middleware_installed()`
 
 确保 FastAPI 级中间件已安装
@@ -521,7 +542,7 @@ WebSocket 路由注册内部实现
 ---
 
 
-##### `setup_cors(allow_origins: list[str] = None, allow_methods: list[str] = None, allow_headers: list[str] = None, allow_credentials: bool = False, max_age: int = 600, expose_headers: list[str] = None)`
+##### `setup_cors(allow_origins: list[str] = None, allow_methods: list[str] = None, allow_headers: list[str] = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] = None)`
 
 配置 CORS
 
@@ -608,7 +629,7 @@ WebSocket 路由注册内部实现
 ---
 
 
-##### `async async start(host: str = '0.0.0.0', port: int = 8000, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`
+##### `async async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`
 
 启动路由服务器
 
