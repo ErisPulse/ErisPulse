@@ -6,39 +6,52 @@ ErisPulse 框架配置管理模块
 
 import copy
 from typing import Dict, Any, Union, Optional
+from ..Core.constants import (
+    DEFAULT_SERVER_HOST,
+    DEFAULT_SERVER_PORT,
+    DEFAULT_LOG_LEVEL,
+    DEFAULT_LOG_MEMORY_LIMIT,
+    DEFAULT_COMMAND_PREFIX,
+    DEFAULT_COMMAND_CASE_SENSITIVE,
+    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_MUST_AT_BOT,
+    DEFAULT_MESSAGE_IGNORE_SELF,
+    DEFAULT_LAZY_LOADING_ENABLED,
+    DEFAULT_USE_GLOBAL_DB,
+    CONFIG_ROOT_KEY,
+)
 
 # 默认配置
 DEFAULT_ERISPULSE_CONFIG = {
-    "server": {  # 服务器配置
-        "host": "0.0.0.0",  # 监听地址
-        "port": 8000,  # 监听端口
-        "ssl_certfile": None,  # SSL 证书文件路径
-        "ssl_keyfile": None,  # SSL 密钥文件路径
+    "server": {
+        "host": DEFAULT_SERVER_HOST,
+        "port": DEFAULT_SERVER_PORT,
+        "ssl_certfile": None,
+        "ssl_keyfile": None,
     },
-    "logger": {  # 日志配置
-        "level": "INFO",  # 日志级别
-        "log_files": [],  # 日志文件列表
-        "memory_limit": 1000,  # 日志内存限制（条）
+    "logger": {
+        "level": DEFAULT_LOG_LEVEL,
+        "log_files": [],
+        "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
     },
-    "storage": {  # 存储配置
-        "use_global_db": False,  # 是否使用全局数据库
+    "storage": {
+        "use_global_db": DEFAULT_USE_GLOBAL_DB,
     },
-    "modules": {},  # 模块配置（可以控制模块启用等）
-    "adapters": {},  # 适配器配置（可以控制适配器启用等）
-    "event": {  # 事件系统配置
-        "message": {  # 消息事件配置
-            "ignore_self": True,  # 是否忽略自身消息
-            #    (会影响命令系统 - 因为命令系统是消息事件子处理器)
+    "modules": {},
+    "adapters": {},
+    "event": {
+        "message": {
+            "ignore_self": DEFAULT_MESSAGE_IGNORE_SELF,
         },
-        "command": {  # 命令系统配置
-            "prefix": "/",  # 命令前缀
-            "case_sensitive": True,  # 是否区分大小写
-            "allow_space_prefix": False,  # 是否允许前缀存在空格
-            "must_at_bot": False,  # 是否必须@机器人触发
+        "command": {
+            "prefix": DEFAULT_COMMAND_PREFIX,
+            "case_sensitive": DEFAULT_COMMAND_CASE_SENSITIVE,
+            "allow_space_prefix": DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+            "must_at_bot": DEFAULT_COMMAND_MUST_AT_BOT,
         },
     },
-    "framework": {  # 框架配置
-        "enable_lazy_loading": True  # 是否启用延迟加载
+    "framework": {
+        "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED
     },
 }
 
@@ -104,12 +117,12 @@ def get_erispulse_config() -> Dict[str, Any]:
     config_service = _get_config_service()
 
     # 获取现有配置
-    current_config = config_service.getConfig("ErisPulse")
+    current_config = config_service.getConfig(CONFIG_ROOT_KEY)
 
     # 如果完全没有配置，设置默认配置
     if current_config is None:
         default_copy = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
-        config_service.setConfig("ErisPulse", default_copy)
+        config_service.setConfig(CONFIG_ROOT_KEY, default_copy)
         return default_copy
 
     # 保存原始配置的快照用于比较
@@ -120,7 +133,7 @@ def get_erispulse_config() -> Dict[str, Any]:
 
     # 如果配置有变化，更新到存储
     if original_snapshot != complete_config:
-        config_service.setConfig("ErisPulse", complete_config)
+        config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
 
     return complete_config
 
@@ -155,7 +168,7 @@ def update_erispulse_config(new_config: Dict[str, Any]) -> bool:
     # 确保合并后的配置结构完整
     complete_config = _ensure_erispulse_config_structure(merged)
 
-    return config_service.setConfig("ErisPulse", complete_config)
+    return config_service.setConfig(CONFIG_ROOT_KEY, complete_config)
 
 
 def get_server_config() -> Dict[str, Any]:

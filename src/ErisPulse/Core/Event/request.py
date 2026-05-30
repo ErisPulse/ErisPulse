@@ -13,6 +13,7 @@ ErisPulse 请求处理模块
 from .base import BaseEventHandler
 from typing import Any
 from collections.abc import Callable
+from ..constants import EVENT_TYPE_REQUEST, DETAIL_TYPE_FRIEND, DETAIL_TYPE_GROUP
 
 
 class RequestHandler:
@@ -23,7 +24,7 @@ class RequestHandler:
     """
 
     def __init__(self):
-        self.handler = BaseEventHandler("request", "request")
+        self.handler = BaseEventHandler(EVENT_TYPE_REQUEST, "request")
 
     def on_request(self, priority: int = 0):
         """
@@ -66,7 +67,7 @@ class RequestHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "friend"
+            return event.get("detail_type") == DETAIL_TYPE_FRIEND
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -92,7 +93,7 @@ class RequestHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "group"
+            return event.get("detail_type") == DETAIL_TYPE_GROUP
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
