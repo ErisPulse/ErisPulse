@@ -15,6 +15,14 @@ from .base import BaseEventHandler
 from .. import adapter, logger
 from ...runtime import get_event_config
 from ...runtime.context import current_owner
+from ..constants import (
+    DEFAULT_WAIT_TIMEOUT_SECS,
+    UNKNOWN_PLATFORM,
+    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_MUST_AT_BOT,
+    DETAIL_TYPE_PRIVATE,
+    DETAIL_TYPE_USER,
+)
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from typing import Any
 from collections.abc import Callable, Awaitable
@@ -40,8 +48,8 @@ class CommandHandler:
         command_config = event_config.get("command", {})
         self.prefix = command_config.get("prefix", "/")
         self.case_sensitive = command_config.get("case_sensitive", True)
-        self.allow_space_prefix = command_config.get("allow_space_prefix", False)
-        self.must_at_bot = command_config.get("must_at_bot", False)
+        self.allow_space_prefix = command_config.get("allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX)
+        self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
 
         # 等待回复相关
         self._waiting_replies = {}  # 存储等待回复的用户信息
@@ -212,7 +220,7 @@ class CommandHandler:
         self,
         event: dict[str, Any],
         prompt: str = None,
-        timeout: float = 60.0,
+        timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
         validator: Callable[[dict[str, Any]], bool] = None,
     ) -> dict[str, Any] | None:
@@ -335,7 +343,7 @@ class CommandHandler:
             if self.must_at_bot:
                 detail_type = infer_receive_type(event)
                 # 一对一场景（private或user）不需要检查@
-                if detail_type not in ("private", "user"):
+                if detail_type not in (DETAIL_TYPE_PRIVATE, DETAIL_TYPE_USER):
                     message_segments = event.get("message", [])
                     self_id = event.get("self", {}).get("user_id")
 
@@ -457,7 +465,7 @@ class CommandHandler:
             await lifecycle.emit("command.matched", {
                 "command": actual_cmd_name,
                 "args": args,
-                "platform": event.get("platform", "unknown"),
+                "platform": event.get("platform", UNKNOWN_PLATFORM),
                 "user_id": event.get("user_id", ""),
             })
 
@@ -472,7 +480,7 @@ class CommandHandler:
                 await lifecycle.emit("command.executed", {
                     "command": actual_cmd_name,
                     "args": args,
-                    "platform": event.get("platform", "unknown"),
+                    "platform": event.get("platform", UNKNOWN_PLATFORM),
                     "user_id": event.get("user_id", ""),
                     "success": True,
                 })
@@ -485,7 +493,7 @@ class CommandHandler:
                 await lifecycle.emit("command.executed", {
                     "command": actual_cmd_name,
                     "args": args,
-                    "platform": event.get("platform", "unknown"),
+                    "platform": event.get("platform", UNKNOWN_PLATFORM),
                     "user_id": event.get("user_id", ""),
                     "success": False,
                     "error": str(e),

@@ -12,6 +12,7 @@ ErisPulse 事件处理基础模块
 from .. import adapter, logger
 from ...runtime import get_event_config
 from ...runtime.context import current_owner
+from ..constants import DEFAULT_HANDLER_PRIORITY, UNKNOWN_PLATFORM, EVENT_TYPE_MESSAGE
 from typing import Any
 from collections.abc import Callable
 import asyncio
@@ -72,7 +73,7 @@ class BaseEventHandler:
         self._linked_to_adapter_bus: bool = False
 
     def register(
-        self, handler: Callable, priority: int = 0, condition: Callable = None
+        self, handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None
     ):
         """
         注册事件处理器
@@ -129,7 +130,7 @@ class BaseEventHandler:
             logger.debug(f"[Event] 已清理 {owner} 的 {removed} 个 {self.event_type} 处理器")
         return removed
 
-    def __call__(self, priority: int = 0, condition: Callable = None):
+    def __call__(self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None):
         """
         装饰器方式注册事件处理器
 
@@ -160,12 +161,12 @@ class BaseEventHandler:
         # 钩子: 事件预处理
         await lifecycle.emit("event.pre_process", {
             "event_type": self.event_type,
-            "platform": event.get("platform", "unknown"),
+            "platform": event.get("platform", UNKNOWN_PLATFORM),
             "detail_type": event.get("detail_type", "unknown"),
         })
 
         # 忽略自己发送的消息
-        if self.event_type == "message":
+        if self.event_type == EVENT_TYPE_MESSAGE:
             if event.get("self", {}).get("user_id") == event.get("user_id"):
                 event_config = get_event_config()
                 ignore_self = event_config.get("message", {}).get("ignore_self", True)

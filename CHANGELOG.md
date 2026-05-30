@@ -63,6 +63,28 @@
 
 ---
 
+## [2.4.6-dev.2] - 2026/05/31
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `Core/constants.py` 集中管理框架内部硬编码常量（100+），每个常量附带使用位置和修改影响说明
+  - `runtime/context.py` 运行时上下文追踪（`current_owner` ContextVar），支持按模块自动标记资源归属
+  - `Event/base.py` `Event/command.py` 新增 `owner` 字段和 `unregister_by_owner()` 方法
+  - `router.py` 主题化错误页面（4xx/5xx/unknown）和根路由 `/` 页面，Apple 式优雅设计
+  - `web_status/` 移入 `src/ErisPulse/` 作为可分发包，`pyproject.toml` 已配置
+
+### 变更
+- @wsu2059q
+  - `adapter.py` `shutdown()` 仅全量关闭时清空全局事件处理器
+  - `module.py` `load()` 使用 `current_owner` 包裹实例创建；`_unload_single_module()` 和 `disable()` 新增按 owner 的事件处理器/命令/SDK属性清理
+  - `adapter.py` / `module.py` `_is_base_*_subclass` 内联为 `_is_subclass` 静态方法
+  - `sdk.py` 核心模块属性改为动态解析（`__getattr__`），软重启后自动获取最新单例
+  - `lifecycle.py` 移除 `emit`/`emit_sync` 中的冗余调试日志
+  - `runtime/exceptions.py` 异常处理增加 `AttributeError` 捕获
+
+---
+
 ## [2.4.6-dev.1] - 2026/05/26
 > 开发版本
 

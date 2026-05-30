@@ -19,6 +19,7 @@ from typing import Any, TypeAlias
 from contextlib import contextmanager
 
 from .Bases.storage import BaseStorage, BaseQueryBuilder
+from .constants import SQLITE_JOURNAL_MODE, SQLITE_SYNCHRONOUS_MODE, DEFAULT_KV_TABLE_NAME
 
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
@@ -445,8 +446,8 @@ class StorageManager(BaseStorage):
             conn = sqlite3.connect(self.db_path)
 
             # 启用WAL模式提高并发性能
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute(SQLITE_JOURNAL_MODE)
+            conn.execute(SQLITE_SYNCHRONOUS_MODE)
 
             cursor = conn.cursor()
             cursor.execute("""

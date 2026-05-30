@@ -12,6 +12,7 @@ ErisPulse 元事件处理模块
 from .base import BaseEventHandler
 from typing import Any
 from collections.abc import Callable
+from ..constants import EVENT_TYPE_META, DETAIL_TYPE_CONNECT, DETAIL_TYPE_DISCONNECT, DETAIL_TYPE_HEARTBEAT
 
 
 class MetaHandler:
@@ -22,7 +23,7 @@ class MetaHandler:
     """
 
     def __init__(self):
-        self.handler = BaseEventHandler("meta", "meta")
+        self.handler = BaseEventHandler(EVENT_TYPE_META, "meta")
 
     def on_meta(self, priority: int = 0):
         """
@@ -65,7 +66,7 @@ class MetaHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "connect"
+            return event.get("detail_type") == DETAIL_TYPE_CONNECT
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -91,7 +92,7 @@ class MetaHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "disconnect"
+            return event.get("detail_type") == DETAIL_TYPE_DISCONNECT
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -117,7 +118,7 @@ class MetaHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "heartbeat"
+            return event.get("detail_type") == DETAIL_TYPE_HEARTBEAT
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)

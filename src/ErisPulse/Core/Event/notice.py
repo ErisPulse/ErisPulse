@@ -12,6 +12,13 @@ ErisPulse 通知处理模块
 from .base import BaseEventHandler
 from typing import Any
 from collections.abc import Callable
+from ..constants import (
+    EVENT_TYPE_NOTICE,
+    DETAIL_TYPE_FRIEND_INCREASE,
+    DETAIL_TYPE_FRIEND_DECREASE,
+    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
+    DETAIL_TYPE_GROUP_MEMBER_DECREASE,
+)
 
 
 class NoticeHandler:
@@ -22,7 +29,7 @@ class NoticeHandler:
     """
 
     def __init__(self):
-        self.handler = BaseEventHandler("notice", "notice")
+        self.handler = BaseEventHandler(EVENT_TYPE_NOTICE, "notice")
 
     def on_notice(self, priority: int = 0):
         """
@@ -65,7 +72,7 @@ class NoticeHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "friend_increase"
+            return event.get("detail_type") == DETAIL_TYPE_FRIEND_INCREASE
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -91,7 +98,7 @@ class NoticeHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "friend_decrease"
+            return event.get("detail_type") == DETAIL_TYPE_FRIEND_DECREASE
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -117,7 +124,7 @@ class NoticeHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "group_member_increase"
+            return event.get("detail_type") == DETAIL_TYPE_GROUP_MEMBER_INCREASE
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -143,7 +150,7 @@ class NoticeHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "group_member_decrease"
+            return event.get("detail_type") == DETAIL_TYPE_GROUP_MEMBER_DECREASE
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)

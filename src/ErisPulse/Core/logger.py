@@ -16,6 +16,7 @@ import datetime
 from rich.logging import RichHandler
 from rich.console import Console
 from rich.text import Text
+from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOGGER_NAME, LOG_TIME_FORMAT
 
 
 class Logger:
@@ -32,10 +33,10 @@ class Logger:
     """
 
     def __init__(self):
-        self._max_logs = 1000
+        self._max_logs = DEFAULT_LOG_MEMORY_LIMIT
         self._logs = {}
         self._module_levels = {}
-        self._logger = logging.getLogger("ErisPulse")
+        self._logger = logging.getLogger(LOGGER_NAME)
         self._logger.setLevel(logging.DEBUG)
         self._file_handlers: list[logging.FileHandler] = []
         self._console = Console()
@@ -46,7 +47,7 @@ class Logger:
                 show_level=True,
                 show_path=False,
                 markup=False,
-                log_time_format="[%H:%M:%S]",
+                log_time_format=LOG_TIME_FORMAT,
             )
             self._logger.addHandler(console_handler)
         self._setup_config()
