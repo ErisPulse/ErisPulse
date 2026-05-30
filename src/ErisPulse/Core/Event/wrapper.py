@@ -23,52 +23,23 @@ from .session_type import (
     convert_to_send_type,
     infer_receive_type,
 )
-
-
-CONFIRM_YES_WORDS = frozenset(
-    {
-        "是",
-        "yes",
-        "y",
-        "确认",
-        "确定",
-        "好",
-        "好的",
-        "ok",
-        "okay",
-        "true",
-        "对",
-        "嗯",
-        "行",
-        "同意",
-        "没问题",
-        "可以",
-        "当然",
-        "嗯嗯",
-        "是的",
-    }
-)
-
-CONFIRM_NO_WORDS = frozenset(
-    {
-        "否",
-        "no",
-        "n",
-        "取消",
-        "不",
-        "不要",
-        "不行",
-        "cancel",
-        "false",
-        "错",
-        "不对",
-        "别",
-        "拒绝",
-        "不可以",
-        "算了",
-        "不需要",
-        "不是",
-    }
+from ..constants import (
+    CONFIRM_YES_WORDS,
+    CONFIRM_NO_WORDS,
+    DEFAULT_WAIT_TIMEOUT_SECS,
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_SEND_METHOD,
+    CONVERSATION_KEY_PREFIX,
+    EVENT_TYPE_MESSAGE,
+    EVENT_TYPE_NOTICE,
+    EVENT_TYPE_REQUEST,
+    DETAIL_TYPE_PRIVATE,
+    DETAIL_TYPE_GROUP,
+    DETAIL_TYPE_FRIEND,
+    DETAIL_TYPE_FRIEND_INCREASE,
+    DETAIL_TYPE_FRIEND_DECREASE,
+    DETAIL_TYPE_GROUP_MEMBER_INCREASE,
+    DETAIL_TYPE_GROUP_MEMBER_DECREASE,
 )
 
 
@@ -451,7 +422,7 @@ class Event(dict):
 
         :return: 是否为消息事件
         """
-        return self.get_type() == "message"
+        return self.get_type() == EVENT_TYPE_MESSAGE
 
     def is_private_message(self) -> bool:
         """
@@ -459,7 +430,7 @@ class Event(dict):
 
         :return: 是否为私聊消息
         """
-        return self.is_message() and self.get_detail_type() == "private"
+        return self.is_message() and self.get_detail_type() == DETAIL_TYPE_PRIVATE
 
     def is_group_message(self) -> bool:
         """
@@ -467,7 +438,7 @@ class Event(dict):
 
         :return: 是否为群聊消息
         """
-        return self.is_message() and self.get_detail_type() == "group"
+        return self.is_message() and self.get_detail_type() == DETAIL_TYPE_GROUP
 
     def is_at_message(self) -> bool:
         """
@@ -503,7 +474,7 @@ class Event(dict):
 
         :return: 是否为通知事件
         """
-        return self.get_type() == "notice"
+        return self.get_type() == EVENT_TYPE_NOTICE
 
     def is_group_member_increase(self) -> bool:
         """
@@ -511,7 +482,7 @@ class Event(dict):
 
         :return: 是否为群成员增加事件
         """
-        return self.is_notice() and self.get_detail_type() == "group_member_increase"
+        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_INCREASE
 
     def is_group_member_decrease(self) -> bool:
         """
@@ -519,7 +490,7 @@ class Event(dict):
 
         :return: 是否为群成员减少事件
         """
-        return self.is_notice() and self.get_detail_type() == "group_member_decrease"
+        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_GROUP_MEMBER_DECREASE
 
     def is_friend_add(self) -> bool:
         """
@@ -527,7 +498,7 @@ class Event(dict):
 
         :return: 是否为好友添加事件
         """
-        return self.is_notice() and self.get_detail_type() == "friend_increase"
+        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_INCREASE
 
     def is_friend_delete(self) -> bool:
         """
@@ -535,7 +506,7 @@ class Event(dict):
 
         :return: 是否为好友删除事件
         """
-        return self.is_notice() and self.get_detail_type() == "friend_decrease"
+        return self.is_notice() and self.get_detail_type() == DETAIL_TYPE_FRIEND_DECREASE
 
     # ==================== 请求事件专用方法 ====================
 
@@ -652,7 +623,7 @@ class Event(dict):
 
         :return: 是否为请求事件
         """
-        return self.get_type() == "request"
+        return self.get_type() == EVENT_TYPE_REQUEST
 
     def is_friend_request(self) -> bool:
         """
@@ -660,7 +631,7 @@ class Event(dict):
 
         :return: 是否为好友请求
         """
-        return self.is_request() and self.get_detail_type() == "friend"
+        return self.is_request() and self.get_detail_type() == DETAIL_TYPE_FRIEND
 
     def is_group_request(self) -> bool:
         """
@@ -668,7 +639,7 @@ class Event(dict):
 
         :return: 是否为群组请求
         """
-        return self.is_request() and self.get_detail_type() == "group"
+        return self.is_request() and self.get_detail_type() == DETAIL_TYPE_GROUP
 
     # ==================== 回复功能 ====================
 
@@ -711,7 +682,7 @@ class Event(dict):
     async def reply(
         self,
         content: str,
-        method: str = "Text",
+        method: str = DEFAULT_SEND_METHOD,
         at_users: list[str] = None,
         reply_to: str = None,
         at_all: bool = False,
@@ -783,7 +754,7 @@ class Event(dict):
             if user_id is None:
                 user_id = self.get_user_id()
             send_chain = send_chain.At(user_id)
-            method = "Text"
+            method = DEFAULT_SEND_METHOD
 
         # 调用指定方法
         send_method = getattr(send_chain, method, None)
@@ -864,7 +835,7 @@ class Event(dict):
     async def wait_reply(
         self,
         prompt: str = None,
-        timeout: float = 60.0,
+        timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
         validator: Callable[[dict[str, Any]], bool] = None,
     ) -> Optional["Event"]:
@@ -896,7 +867,7 @@ class Event(dict):
     async def confirm(
         self,
         prompt: str = None,
-        timeout: float = 60.0,
+        timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         yes_words: set[str] | frozenset[str] = None,
         no_words: set[str] | frozenset[str] = None,
     ) -> Optional[bool]:
@@ -943,7 +914,7 @@ class Event(dict):
         self,
         prompt: str,
         options: list[str],
-        timeout: float = 60.0,
+        timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     ) -> Optional[int]:
         """
         等待用户从选项中选择
@@ -1034,7 +1005,7 @@ class Event(dict):
             prompt = field.get("prompt", f"请输入 {key}")
             validator = field.get("validator")
             retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
-            max_retries = field.get("max_retries", 3)
+            max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
 
             reply = await self.wait_reply(prompt=prompt, timeout=timeout_per_field)
 
@@ -1061,7 +1032,7 @@ class Event(dict):
         self,
         event_type: str = "message",
         condition: Callable[["Event"], bool] = None,
-        timeout: float = 60.0,
+        timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
     ) -> Optional["Event"]:
         """
         等待满足条件的任意事件
@@ -1119,7 +1090,7 @@ class Event(dict):
             except (ValueError, KeyError):
                 pass
 
-    def conversation(self, timeout: float = 60.0) -> "Conversation":
+    def conversation(self, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS) -> "Conversation":
         """
         创建多轮对话上下文
 
@@ -1299,7 +1270,7 @@ class Conversation:
     {!--< /tips >!--}
     """
 
-    def __init__(self, event: "Event", timeout: float = 60.0):
+    def __init__(self, event: "Event", timeout: float = DEFAULT_WAIT_TIMEOUT_SECS):
         """
         初始化对话上下文
 
@@ -1554,7 +1525,7 @@ class Conversation:
 
             user_id = self._event.get_user_id()
             platform = self._event.get_platform()
-            key = f"conversation:{platform}:{user_id}"
+            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
             storage.set(
                 key,
                 {
@@ -1590,7 +1561,7 @@ class Conversation:
             evt = event or self._event
             user_id = evt.get_user_id()
             platform = evt.get_platform()
-            key = f"conversation:{platform}:{user_id}"
+            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
             data = storage.get(key)
             if data and isinstance(data, dict):
                 self.context = data.get("context", {})
@@ -1615,7 +1586,7 @@ class Conversation:
 
             user_id = self._event.get_user_id()
             platform = self._event.get_platform()
-            key = f"conversation:{platform}:{user_id}"
+            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
             storage.delete(key)
         except Exception:
             pass

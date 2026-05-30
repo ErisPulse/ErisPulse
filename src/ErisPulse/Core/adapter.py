@@ -17,6 +17,13 @@ from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
+from .constants import (
+    ADAPTER_RETRY_BACKOFF_INTERVALS,
+    ADAPTER_RETRY_FIXED_DELAY_SECS,
+    CONFIG_KEY_ADAPTER_STATUS,
+    CONFIG_KEY_ADAPTER_STATUS_OF,
+    DEFAULT_ADAPTER_ENABLED,
+)
 
 
 class AdapterManager(ManagerBase):
@@ -215,8 +222,8 @@ class AdapterManager(ManagerBase):
                 return
 
             retry_count = 0
-            fixed_delay = 3 * 60 * 60
-            backoff_intervals = [60, 10 * 60, 30 * 60, 60 * 60]
+            fixed_delay = ADAPTER_RETRY_FIXED_DELAY_SECS
+            backoff_intervals = ADAPTER_RETRY_BACKOFF_INTERVALS
 
             # 提交适配器状态变化事件（starting）
             await lifecycle.submit_event(
@@ -475,12 +482,11 @@ class AdapterManager(ManagerBase):
         :param enabled: [bool] 是否启用适配器
         :return: [bool] 操作是否成功
         """
-        existing = config.getConfig(f"ErisPulse.adapters.status.{platform}")
+        existing = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
         if existing is not None:
             return True
 
-        # 平台不存在，进行注册
-        config.setConfig(f"ErisPulse.adapters.status.{platform}", enabled)
+        config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), enabled)
         status = "启用" if enabled else "禁用"
         logger.debug(f"平台适配器 {platform} 已注册并{status}")
         return True
@@ -511,7 +517,7 @@ class AdapterManager(ManagerBase):
         """
         from .config import parse_bool_config
 
-        status = config.getConfig(f"ErisPulse.adapters.status.{platform}")
+        status = config.getConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform))
 
         # 适配器未在配置中，返回 False
         if status is None:
@@ -531,7 +537,7 @@ class AdapterManager(ManagerBase):
             logger.error(f"平台 {platform} 不存在")
             return False
 
-        config.setConfig(f"ErisPulse.adapters.status.{platform}", True)
+        config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), True)
         logger.info(f"平台 {platform} 已启用")
         return True
 
@@ -547,7 +553,7 @@ class AdapterManager(ManagerBase):
             logger.error(f"平台 {platform} 不存在")
             return False
 
-        config.setConfig(f"ErisPulse.adapters.status.{platform}", False)
+        config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), False)
         logger.info(f"平台 {platform} 已禁用")
         return True
 
@@ -586,7 +592,7 @@ class AdapterManager(ManagerBase):
 
         :return: {平台名: 是否启用} 字典
         """
-        return config.getConfig("ErisPulse.adapters.status", {})
+        return config.getConfig(CONFIG_KEY_ADAPTER_STATUS, {})
 
     # 兼容性方法 - 保持向后兼容
     def list_adapters(self) -> dict[str, bool]:

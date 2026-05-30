@@ -13,6 +13,7 @@ ErisPulse 消息处理模块
 from .base import BaseEventHandler
 from typing import Any
 from collections.abc import Callable
+from ..constants import EVENT_TYPE_MESSAGE, DETAIL_TYPE_PRIVATE, DETAIL_TYPE_GROUP
 
 
 class MessageHandler:
@@ -23,7 +24,7 @@ class MessageHandler:
     """
 
     def __init__(self):
-        self.handler = BaseEventHandler("message", "message")
+        self.handler = BaseEventHandler(EVENT_TYPE_MESSAGE, "message")
 
     def on_message(self, priority: int = 0):
         """
@@ -66,7 +67,7 @@ class MessageHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "private"
+            return event.get("detail_type") == DETAIL_TYPE_PRIVATE
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)
@@ -92,7 +93,7 @@ class MessageHandler:
         """
 
         def condition(event: dict[str, Any]) -> bool:
-            return event.get("detail_type") == "group"
+            return event.get("detail_type") == DETAIL_TYPE_GROUP
 
         def decorator(func: Callable):
             self.handler.register(func, priority, condition)

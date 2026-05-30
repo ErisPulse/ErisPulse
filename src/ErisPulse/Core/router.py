@@ -13,15 +13,39 @@ ErisPulse 路由系统
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.routing import APIRoute
+from starlette.staticfiles import StaticFiles
 from typing import Any, TypeAlias
 from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
+from .constants import (
+    DEFAULT_SERVER_HOST,
+    DEFAULT_SERVER_PORT,
+    SERVER_SHUTDOWN_TIMEOUT_SECS,
+    DEFAULT_RATE_LIMIT_WINDOW_SECS,
+    DEFAULT_RATE_LIMIT_MAX_REQUESTS,
+    DEFAULT_HTTP_METHODS,
+    DEFAULT_WS_AUTO_ACCEPT,
+    DEFAULT_CORS_ORIGINS,
+    DEFAULT_CORS_METHODS,
+    DEFAULT_CORS_HEADERS,
+    DEFAULT_CORS_MAX_AGE_SECS,
+    DEFAULT_SECURITY_HEADERS,
+    WS_CLOSE_POLICY_VIOLATION,
+    WS_CLOSE_INTERNAL_ERROR,
+    WILDCARD_IPV4,
+    WILDCARD_IPV6,
+    FALLBACK_IPV4,
+    FALLBACK_IPV6_HOST,
+    CONFIG_KEY_ROUTER_CORS,
+    CONFIG_KEY_ROUTER_SECURITY,
+)
 import asyncio
 import inspect
+import os
 import socket
 import ipaddress
 import sys
@@ -244,6 +268,7 @@ class RouterManager:
         self._rate_limit_store: dict[str, list[float]] = {}
         self._middleware_installed = False
         self._setup_core_routes()
+        self._setup_error_pages()
 
     def _normalize_path(self, prefix: str, path: str) -> str:
         """
@@ -303,9 +328,14 @@ class RouterManager:
 
             dashboard_html = ""
             if dashboard_available:
-                dashboard_html = (
-                    '<p class="hint">也许你想访问 <a href="/Dashboard">/Dashboard</a> ？</p>'
-                )
+                dashboard_html = """
+      <a class="card dash-link" href="/Dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>"""
 
             html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -314,73 +344,200 @@ class RouterManager:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ErisPulse</title>
 <style>
-  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  * {{ margin:0;padding:0;box-sizing:border-box }}
+  html {{ -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale }}
+  :root {{
+    --bg:#0E1520;--bg-card:#151C28;--tx:#E2E8F0;--tx2:#A0B0C0;--tx3:#5A6C7D;
+    --bd:rgba(40,53,69,.6);--accent:#7DBFE0;--accent2:rgba(125,191,224,.08)
+  }}
+  @media (prefers-color-scheme:light) {{
+    :root {{
+      --bg:#F4F7FB;--bg-card:#FFFFFF;--tx:#2C3E50;--tx2:#5A6C7D;--tx3:#A0B0C0;
+      --bd:#DDE3EC;--accent:#7EB8D8;--accent2:rgba(126,184,216,.05)
+    }}
+  }}
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-    color: #e0e0e0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg);color:var(--tx);
+    min-height:100vh;min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    padding:2rem;position:relative;overflow:hidden
   }}
-  .mascot {{
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 0 40px rgba(120, 80, 255, 0.4);
-    margin-bottom: 2rem;
-    background: #1a1a2e;
+  body::before {{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 75% 55% at 50% 38%,var(--accent2) 0%,transparent 70%);
+    pointer-events:none
   }}
-  h1 {{
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(90deg, #a78bfa, #60a5fa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .hero {{ display:flex;flex-direction:column;align-items:center;position:relative;z-index:1 }}
+  .mascot-wrap {{ position:relative;margin-bottom:2rem;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both }}
+  @keyframes pop {{ from{{opacity:0;transform:scale(.85)}} to{{opacity:1;transform:scale(1)}} }}
+  .mascot {{ width:280px;height:280px;object-fit:contain;border-radius:36px }}
+  .content {{ text-align:center;animation:fadeUp .6s .1s cubic-bezier(.23,1,.32,1) both }}
+  @keyframes fadeUp {{ from{{opacity:0;transform:translateY(12px)}} to{{opacity:1;transform:translateY(0)}} }}
+  h1 {{ font-size:2rem;font-weight:600;letter-spacing:-.015em;color:var(--tx);margin-bottom:.15rem }}
+  .ver {{ font-size:.68rem;font-weight:500;color:var(--tx3);letter-spacing:.06em;margin-bottom:1.2rem }}
+  p.sub {{ font-size:.9rem;font-weight:400;color:var(--tx2);margin-bottom:1.8rem }}
+  .card {{
+    display:inline-flex;align-items:center;gap:.55rem;
+    padding:.55rem 1.2rem;
+    background:var(--bg-card);border:1px solid var(--bd);border-radius:50px;
+    text-decoration:none;color:var(--accent);font-size:.8rem;font-weight:500;
+    transition:all .25s cubic-bezier(.25,.1,.25,1)
   }}
-  p.info {{ color: #9ca3af; margin-bottom: 1.5rem; font-size: 1rem; }}
-  .hint {{
-    font-size: 1.1rem;
-    margin-top: 1rem;
-    color: #c4b5fd;
-  }}
-  .hint a {{
-    color: #818cf8;
-    text-decoration: none;
-    font-weight: 600;
-    border-bottom: 1px dashed #818cf8;
-    transition: color 0.2s;
-  }}
-  .hint a:hover {{ color: #a78bfa; border-bottom-color: #a78bfa; }}
+  .card:hover {{ border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(125,191,224,.12) }}
+  .card:active {{ transform:scale(.97) }}
   .endpoints {{
-    margin-top: 2rem;
-    font-size: 0.85rem;
-    color: #6b7280;
+    margin-top:2.2rem;font-size:.66rem;font-weight:400;color:var(--tx3);letter-spacing:.04em;
+    display:flex;gap:.5rem;justify-content:center
   }}
-  .endpoints a {{ color: #6b7280; text-decoration: none; }}
-  .endpoints a:hover {{ color: #9ca3af; }}
+  .endpoints a {{ color:var(--tx3);text-decoration:none;transition:color .2s }}
+  .endpoints a:hover {{ color:var(--tx2) }}
+  .links {{ margin-top:.4rem;display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap }}
+  .links a {{ font-size:.66rem;font-weight:400;color:var(--tx3);text-decoration:none;transition:color .2s }}
+  .links a:hover {{ color:var(--accent) }}
+  .deco {{ position:absolute;border-radius:50%;pointer-events:none;z-index:0 }}
+  .deco-1 {{ width:100px;height:100px;background:rgba(126,184,216,.06);top:10%;right:12% }}
+  .deco-2 {{ width:70px;height:70px;background:rgba(126,184,216,.05);bottom:15%;left:10% }}
 </style>
 </head>
 <body>
-  <img class="mascot"
-       src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/mascot-hero.png"
-       alt="ErisPulse Mascot"
-       onerror="this.style.display='none'" />
-  <h1>ErisPulse</h1>
-  <p class="info">你似乎访问了根路径，这里没有内容哦~</p>
-  {dashboard_html}
-  <div class="endpoints">
-    <a href="/health">Health</a> &middot;
-    <a href="/ping">Ping</a>
+  <div class="deco deco-1"></div><div class="deco deco-2"></div>
+  <div class="hero">
+    <div class="mascot-wrap">
+      <img class="mascot" src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/mascot-hero.png" alt="ErisPulse" onerror="this.style.display='none'" />
+    </div>
+    <div class="content">
+      <h1>ErisPulse</h1>
+      <p class="ver">v{ERISPULSE_VERSION}</p>
+      <p class="sub">你似乎访问了根路径，这里没有内容哦~</p>
+      {dashboard_html}
+      <div class="endpoints"><a href="/health">Health</a> &middot; <a href="/ping">Ping</a></div>
+      <div class="links">
+        <a href="https://github.com/ErisPulse/ErisPulse" target="_blank">GitHub</a>
+        <a href="https://www.erisdev.com" target="_blank">文档</a>
+        <a href="https://pypi.org/project/ErisPulse/" target="_blank">PyPI</a>
+        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank">社区</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>"""
             return HTMLResponse(content=html)
+
+    def _setup_error_pages(self) -> None:
+        """
+        设置错误页面和静态资源
+
+        {!--< internal-use >!--}
+        注册 web_status/ 包目录的静态文件服务（/status-assets），
+        并为 GET 请求添加 ErisPulse 主题化错误页面。
+        POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
+        {!--< /internal-use >!--}
+        """
+        from ..web_status import PACKAGE_DIR as _ws_dir
+
+        if os.path.isdir(_ws_dir):
+            self.app.mount("/status-assets", StaticFiles(directory=_ws_dir), name="status-assets")
+
+        page_css = """
+  * { margin:0;padding:0;box-sizing:border-box }
+  html { -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale }
+  :root {
+    --bg:#0E1520;--bg-card:#151C28;--tx:#E2E8F0;--tx2:#A0B0C0;--tx3:#5A6C7D;
+    --bd:rgba(40,53,69,.6);--accent:#7DBFE0;--accent2:rgba(125,191,224,.08)
+  }
+  @media (prefers-color-scheme:light) {
+    :root {
+      --bg:#F4F7FB;--bg-card:#FFFFFF;--tx:#2C3E50;--tx2:#5A6C7D;--tx3:#A0B0C0;
+      --bd:#DDE3EC;--accent:#7EB8D8;--accent2:rgba(126,184,216,.05)
+    }
+  }
+  body {
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg);color:var(--tx);
+    min-height:100vh;min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;position:relative;overflow:hidden
+  }
+  body::before {
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 75% 55% at 50% 38%,var(--accent2) 0%,transparent 70%);
+    pointer-events:none
+  }
+  .page-card { max-width:480px;width:100%;position:relative;z-index:1;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both }
+  @keyframes pop { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
+  .page-img { width:240px;height:240px;object-fit:contain;border-radius:24px;margin-bottom:2rem;filter:drop-shadow(0 4px 20px rgba(125,191,224,.08)) }
+  .page-code { font-size:4rem;font-weight:600;letter-spacing:6px;color:var(--accent2);margin-bottom:-1.2rem;user-select:none }
+  .page-title { font-size:1.25rem;font-weight:600;color:var(--tx);line-height:1.5;letter-spacing:-.01em;margin-bottom:.5rem }
+  .page-desc { font-size:.85rem;font-weight:400;color:var(--tx2);line-height:1.6;margin-bottom:2.2rem }
+  .page-link {
+    display:inline-block;padding:.55rem 1.6rem;
+    background:var(--bg-card);border:1px solid var(--bd);border-radius:50px;
+    color:var(--accent);text-decoration:none;font-size:.82rem;font-weight:500;
+    transition:all .25s cubic-bezier(.25,.1,.25,1)
+  }
+  .page-link:hover { border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(125,191,224,.12) }
+  .page-link:active { transform:scale(.97) }
+"""
+
+        def _html(code: int, img: str, title: str, desc: str = "") -> str:
+            desc_html = f'<p class="page-desc">{desc}</p>' if desc else ""
+            return f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{code} — ErisPulse</title>
+<style>{page_css}</style>
+</head>
+<body>
+  <div class="page-card">
+    <div class="page-code">{code}</div>
+    <img class="page-img" src="/status-assets/{img}" alt="" onerror="this.style.display='none'" />
+    <h1 class="page-title">{title}</h1>
+    {desc_html}
+    <a class="page-link" href="/">返回首页</a>
+  </div>
+</body>
+</html>"""
+
+        @self.app.exception_handler(404)
+        async def _h404(request: Request, exc):
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(404, "4xx.png", "你是怎么找到这里的？", "这个页面似乎不存在，或者从未存在过。"), status_code=404)
+            return JSONResponse(status_code=404, content={"status": "error", "code": 404, "message": "Not Found"})
+
+        @self.app.exception_handler(403)
+        async def _h403(request: Request, exc):
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(403, "4xx.png", "嗯？这里不对外开放哦~", "你可能没有访问这个资源的权限。"), status_code=403)
+            return JSONResponse(status_code=403, content={"status": "error", "code": 403, "message": "Forbidden"})
+
+        @self.app.exception_handler(500)
+        async def _h500(request: Request, exc):
+            logger.error(f"未处理的异常: {exc}")
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(500, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "我们已经记录了这个问题，请稍后再试。"), status_code=500)
+            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
+
+        @self.app.exception_handler(502)
+        async def _h502(request: Request, exc):
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(502, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "上游服务似乎不太对劲。"), status_code=502)
+            return JSONResponse(status_code=502, content={"status": "error", "code": 502, "message": "Bad Gateway"})
+
+        @self.app.exception_handler(503)
+        async def _h503(request: Request, exc):
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(503, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "服务暂时不可用，请稍后再来。"), status_code=503)
+            return JSONResponse(status_code=503, content={"status": "error", "code": 503, "message": "Service Unavailable"})
+
+        @self.app.exception_handler(Exception)
+        async def _h_generic(request: Request, exc: Exception):
+            logger.error(f"未处理的异常: {exc}")
+            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+                return HTMLResponse(content=_html(500, "unknow.png", "诶？发生了什么……", "有些事情我们也没预料到，正在排查中。"), status_code=500)
+            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
 
     def _restore_routes_from_records(self) -> None:
         """
@@ -416,7 +573,7 @@ class RouterManager:
                         await websocket.accept()
                     try:
                         if _auth and not await _auth(websocket):
-                            await websocket.close(code=1008)
+                            await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
                             return
                         await lifecycle.emit("server.websocket.connect", {
                             "path": _path,
@@ -443,7 +600,7 @@ class RouterManager:
                         else:
                             logger.error(f"WebSocket错误: {e}")
                             try:
-                                await websocket.close(code=1011)
+                                await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
                             except Exception:
                                 pass
 
@@ -637,7 +794,7 @@ class RouterManager:
         """
 
         def decorator(func):
-            resolved_methods = methods or ["POST"]
+            resolved_methods = methods or DEFAULT_HTTP_METHODS
             route_kwargs = {}
             for k in ("summary", "description", "tags", "response_model", "deprecated"):
                 if k in kwargs and kwargs[k] is not None:
@@ -914,7 +1071,7 @@ class RouterManager:
 
             try:
                 if auth_handler and not await auth_handler(websocket):
-                    await websocket.close(code=1008)
+                    await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
                     return
 
                 # 钩子: WebSocket连接建立
@@ -948,7 +1105,7 @@ class RouterManager:
                 else:
                     logger.error(f"WebSocket错误: {e}")
                     try:
-                        await websocket.close(code=1011)
+                        await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
                     except Exception:
                         pass
                 if is_cancel:
@@ -1175,7 +1332,7 @@ class RouterManager:
         {!--< /internal-use >!--}
         """
         if isinstance(limit, dict):
-            return int(limit.get("requests", 10)), int(limit.get("window", 60))
+            return int(limit.get("requests", DEFAULT_RATE_LIMIT_MAX_REQUESTS)), int(limit.get("window", DEFAULT_RATE_LIMIT_WINDOW_SECS))
 
         parts = limit.split("/")
         count = int(parts[0])
@@ -1202,7 +1359,7 @@ class RouterManager:
         allow_methods: list[str] = None,
         allow_headers: list[str] = None,
         allow_credentials: bool = False,
-        max_age: int = 600,
+        max_age: int = DEFAULT_CORS_MAX_AGE_SECS,
         expose_headers: list[str] = None,
     ):
         """
@@ -1225,9 +1382,9 @@ class RouterManager:
 
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=allow_origins or ["*"],
-            allow_methods=allow_methods or ["*"],
-            allow_headers=allow_headers or ["*"],
+            allow_origins=allow_origins or DEFAULT_CORS_ORIGINS,
+            allow_methods=allow_methods or DEFAULT_CORS_METHODS,
+            allow_headers=allow_headers or DEFAULT_CORS_HEADERS,
             allow_credentials=allow_credentials,
             max_age=max_age,
             expose_headers=expose_headers or [],
@@ -1245,11 +1402,7 @@ class RouterManager:
         ...     "Strict-Transport-Security": "max-age=31536000",
         ... })
         """
-        defaults = {
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "X-XSS-Protection": "1; mode=block",
-        }
+        defaults = DEFAULT_SECURITY_HEADERS
         final = {**defaults, **(headers or {})}
 
         @self.app.middleware("http")
@@ -1294,17 +1447,17 @@ class RouterManager:
         try:
             from .config import config
 
-            cors = config.getConfig("ErisPulse.router.cors")
+            cors = config.getConfig(CONFIG_KEY_ROUTER_CORS)
             if cors and cors.get("enabled"):
                 self.setup_cors(
                     allow_origins=cors.get("allow_origins", ["*"]),
                     allow_methods=cors.get("allow_methods", ["*"]),
                     allow_headers=cors.get("allow_headers", ["*"]),
                     allow_credentials=cors.get("allow_credentials", False),
-                    max_age=cors.get("max_age", 600),
+                    max_age=cors.get("max_age", DEFAULT_CORS_MAX_AGE_SECS),
                 )
 
-            security = config.getConfig("ErisPulse.router.security")
+            security = config.getConfig(CONFIG_KEY_ROUTER_SECURITY)
             if security and security.get("enabled"):
                 self.setup_security_headers(security.get("headers"))
         except Exception as e:
@@ -1356,8 +1509,8 @@ class RouterManager:
 
     async def start(
         self,
-        host: str = "0.0.0.0",
-        port: int = 8000,
+        host: str = DEFAULT_SERVER_HOST,
+        port: int = DEFAULT_SERVER_PORT,
         ssl_certfile: str | None = None,
         ssl_keyfile: str | None = None,
     ) -> None:
@@ -1432,7 +1585,7 @@ class RouterManager:
         if self._server_task:
             logger.debug("正在停止路由服务器...")
             try:
-                await asyncio.wait_for(self._server_task, timeout=5.0)
+                await asyncio.wait_for(self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS)
                 logger.debug("路由服务器已正常停止")
             except asyncio.CancelledError:
                 logger.info("路由服务器已被取消")
@@ -1477,16 +1630,16 @@ class RouterManager:
         port = (
             host.rsplit(":", 1)[-1]
             if ":" in host and not host.startswith("[")
-            else "8000"
+            else str(DEFAULT_SERVER_PORT)
         )
 
         # 特定地址直接返回
-        if not any(x in host for x in ["0.0.0.0", "[::]"]):
+        if not any(x in host for x in [WILDCARD_IPV4, WILDCARD_IPV6]):
             return url
 
         # 无本地IP或通配符地址
         if not self._local_ips:
-            fallback = "127.0.0.1" if "0.0.0.0" in host else "localhost"
+            fallback = FALLBACK_IPV4 if WILDCARD_IPV4 in host else FALLBACK_IPV6_HOST
             return f"{url}\n  └─ 可访问: http://{fallback}:{port}{path}"
 
         # 树状显示

@@ -13,6 +13,7 @@ ErisPulse 生命周期管理模块
 
 import asyncio
 import inspect
+from .constants import DEFAULT_EVENT_SOURCE
 import time
 from typing import Any
 from collections.abc import Callable
@@ -218,7 +219,7 @@ class LifecycleManager:
         self,
         event_type: str,
         *,
-        source: str = "ErisPulse",
+        source: str = DEFAULT_EVENT_SOURCE,
         msg: str = "",
         data: dict | None = None,
         timestamp: float | None = None,
