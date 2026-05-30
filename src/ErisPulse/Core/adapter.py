@@ -33,6 +33,20 @@ class AdapterManager(ManagerBase):
     {!--< /tips >!--}
     """
 
+    @staticmethod
+    def _is_subclass(cls: type, base_cls: type) -> bool:
+        try:
+            if issubclass(cls, base_cls):
+                return True
+        except TypeError:
+            pass
+        if base_cls.__name__ == cls.__name__:
+            return False
+        for parent in cls.__mro__:
+            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
+                return True
+        return False
+
     def __init__(self):
         # 适配器存储
         self._adapters: dict[str, BaseAdapter] = {}  # 平台名到实例的映射
@@ -90,7 +104,7 @@ class AdapterManager(ManagerBase):
         :example:
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
-        if not issubclass(adapter_class, BaseAdapter):
+        if not self._is_subclass(adapter_class, BaseAdapter):
             raise TypeError(
                 "适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误"
             )
@@ -393,10 +407,12 @@ class AdapterManager(ManagerBase):
                         },
                     )
 
-            # 清理事件处理器
-            self._onebot_handlers.clear()
-            self._raw_handlers.clear()
-            self._onebot_middlewares.clear()
+            # 仅在关闭全部适配器时清理事件处理器，避免部分关闭影响其他适配器
+            all_platforms = set(self._adapters.keys())
+            if set(platforms) >= all_platforms:
+                self._onebot_handlers.clear()
+                self._raw_handlers.clear()
+                self._onebot_middlewares.clear()
 
             # 提交适配器关闭完成事件
             await lifecycle.submit_event(

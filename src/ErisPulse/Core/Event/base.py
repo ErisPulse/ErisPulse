@@ -11,6 +11,7 @@ ErisPulse 事件处理基础模块
 
 from .. import adapter, logger
 from ...runtime import get_event_config
+from ...runtime.context import current_owner
 from typing import Any
 from collections.abc import Callable
 import asyncio
@@ -85,18 +86,17 @@ class BaseEventHandler:
             "priority": priority,
             "condition": condition,
             "module": self.module_name,
+            "owner": current_owner.get(),
         }
         self.handlers.append(handler_info)
         self._handler_map[id(handler)] = handler_info
-        # 按优先级排序（数值越大越先执行）
         self.handlers.sort(key=lambda x: x["priority"], reverse=True)
 
-        # 注册到适配器
         if self.event_type and not self._linked_to_adapter_bus:
             adapter.on(self.event_type)(self._process_event)
             self._linked_to_adapter_bus = True
         logger.debug(
-            f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}"
+            f"[Event] 已注册事件处理器: {self.event_type}, Called by: {self.module_name}, Owner: {current_owner.get() or 'N/A'}"
         )
 
     def unregister(self, handler: Callable) -> bool:
@@ -112,6 +112,22 @@ class BaseEventHandler:
             del self._handler_map[handler_id]
             return True
         return False
+
+    def unregister_by_owner(self, owner: str) -> int:
+        """
+        {!--< internal-use >!--}
+        按归属者精确移除事件处理器
+
+        :param owner: 归属者（模块名）
+        :return: 移除的处理器数量
+        """
+        before = len(self.handlers)
+        self.handlers = [h for h in self.handlers if h.get("owner") != owner]
+        self._handler_map = {id(h["func"]): h for h in self.handlers}
+        removed = before - len(self.handlers)
+        if removed > 0:
+            logger.debug(f"[Event] 已清理 {owner} 的 {removed} 个 {self.event_type} 处理器")
+        return removed
 
     def __call__(self, priority: int = 0, condition: Callable = None):
         """

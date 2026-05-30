@@ -68,7 +68,7 @@ def global_exception_handler(
         from ..Core import logger
 
         err_logger = logger.error
-    except ImportError:
+    except (ImportError, AttributeError):
         err_logger = sys.stderr.write
 
     formatted_error = ExceptionHandler.format_exception(
@@ -90,7 +90,7 @@ def async_exception_handler(
         from ..Core import logger
 
         err_logger = logger.error
-    except ImportError:
+    except (ImportError, AttributeError):
         err_logger = sys.stderr.write
 
     exception = context.get("exception")

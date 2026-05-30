@@ -18,21 +18,6 @@ import importlib
 import sys
 from typing import TYPE_CHECKING
 
-# 导入核心模块
-from .Core import Event, lifecycle, logger
-from .Core import storage, env, config
-from .Core import adapter, BaseAdapter, SendDSL, BaseStorage, BaseQueryBuilder
-from .Core import module, router
-from .Core.lifecycle import LifecycleManager
-from .Core.adapter import AdapterManager
-from .Core.storage import StorageManager
-from .Core.Bases.storage import BaseStorage as _BaseStorage
-from .Core.Bases.storage import BaseQueryBuilder as _BaseQueryBuilder
-from .Core.logger import Logger
-from .Core.module import ModuleManager
-from .Core.router import RouterManager
-from .Core.config import ConfigManager
-
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 
@@ -43,12 +28,78 @@ from .loaders.module import ModuleLoader
 if TYPE_CHECKING:
     from types import ModuleType
 
+    from .Core import Event as _EventModule
+    from .Core import (
+        LifecycleManager,
+        AdapterManager,
+        ModuleManager,
+        StorageManager,
+        Logger,
+        ConfigManager,
+        RouterManager,
+    )
+    from .Core import (
+        BaseAdapter as _BaseAdapter,
+        SendDSL as _SendDSL,
+        BaseStorage as _BaseStorage,
+        BaseQueryBuilder as _BaseQueryBuilder,
+    )
+
+
+def _resolve_core(attr: str):
+    """
+    {!--< internal-use >!--}
+    动态解析核心模块单例引用
+
+    每次访问时通过 import 系统获取最新单例，确保软重启后 SDK 始终
+    指向当前有效的模块级单例对象。
+
+    :param attr: 核心属性名
+    :return: 对应的单例对象
+    :raises AttributeError: 当属性名不在核心映射中时
+    """
+    _CORE_MAP = {
+        "Event": ("ErisPulse.Core", "Event"),
+        "lifecycle": ("ErisPulse.Core", "lifecycle"),
+        "logger": ("ErisPulse.Core", "logger"),
+        "storage": ("ErisPulse.Core", "storage"),
+        "env": ("ErisPulse.Core", "env"),
+        "config": ("ErisPulse.Core", "config"),
+        "adapter": ("ErisPulse.Core", "adapter"),
+        "module": ("ErisPulse.Core", "module"),
+        "router": ("ErisPulse.Core", "router"),
+        "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
+        "SendDSL": ("ErisPulse.Core", "SendDSL"),
+        "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
+        "BaseQueryBuilder": ("ErisPulse.Core.Bases.storage", "BaseQueryBuilder"),
+    }
+
+    if attr not in _CORE_MAP:
+        raise AttributeError(attr)
+
+    module_path, name = _CORE_MAP[attr]
+    mod = importlib.import_module(module_path)
+    return getattr(mod, name)
+
+
+# 核心属性名称集合
+_CORE_ATTR_NAMES = {
+    "Event", "lifecycle", "logger", "storage", "env", "config",
+    "adapter", "module", "router",
+    "BaseAdapter", "SendDSL", "BaseStorage", "BaseQueryBuilder",
+}
+
 
 class SDK:
     """
     ErisPulse SDK 主类
 
     整合所有核心模块和加载器，提供统一的初始化和管理接口
+
+    设计说明:
+    核心模块属性（adapter, module, router, logger, lifecycle 等）
+    通过动态解析获取，不缓存在实例上。这确保软重启后 SDK 始终
+    指向最新的模块级单例，无需手动刷新引用。
 
     {!--< tips >!--}
     SDK 提供以下核心属性：
@@ -66,100 +117,80 @@ class SDK:
     {!--< /tips >!--}
     """
 
-    # ==================== 核心模块属性 ====================
-
-    Event: ModuleType
-    """事件系统"""
-
+    # ---- 类级别类型注解（仅供 IDE / 类型检查器使用）----
+    # 注意：这些注解 *没有赋值*，不会创建实例属性，
+    # 因此运行时仍然会触发 __getattr__ 进行动态解析。
+    Event: _EventModule
     lifecycle: LifecycleManager
-    """生命周期管理器"""
-
     logger: Logger
-    """日志管理器"""
-
     storage: StorageManager
-    """存储管理器"""
-
     env: StorageManager
-    """存储管理器别名"""
-
     config: ConfigManager
-    """配置管理器"""
-
     adapter: AdapterManager
-    """适配器管理器"""
-
-    BaseAdapter: type[BaseAdapter]
-    """适配器基类"""
-
-    SendDSL: type[SendDSL]
-    """DSL 发送接口基类"""
-
-    BaseStorage: type[_BaseStorage]
-    """存储后端抽象基类"""
-
-    BaseQueryBuilder: type[_BaseQueryBuilder]
-    """查询构建器抽象基类"""
-
     module: ModuleManager
-    """模块管理器"""
-
     router: RouterManager
-    """路由管理器"""
+    BaseAdapter: type[_BaseAdapter]
+    SendDSL: type[_SendDSL]
+    BaseStorage: type[_BaseStorage]
+    BaseQueryBuilder: type[_BaseQueryBuilder]
 
     def __init__(self):
         """
         初始化 SDK 实例
 
-        挂载所有核心模块到 SDK 实例
+        不缓存任何核心模块引用。核心属性通过 __getattr__ 动态解析，
+        确保软重启后始终指向最新的模块级单例。
         """
-        self.Event = Event
-        self.lifecycle = lifecycle
-        self.logger = logger
-
-        self.storage = storage
-        self.env = env
-        self.config = config
-
-        self.adapter = adapter
-        adapter.set_sdk_ref(self)
-
-        self.BaseAdapter = BaseAdapter
-        self.SendDSL = SendDSL
-
-        self.BaseStorage = BaseStorage
-        self.BaseQueryBuilder = BaseQueryBuilder
-
-        self.module = module
-        module.set_sdk_ref(self)
-
-        self.router = router
-
         self._initializer: SDK.Initializer | None = None
         self._initialized: bool = False
 
-    def __getattribute__(self, name: str):
-        try:
-            return object.__getattribute__(self, name)
-        except AttributeError:
-            from .Core.logger import logger as _logger
+    def __getattr__(self, name: str):
+        """
+        动态解析核心模块属性
 
-            # 区分不同场景，提供更准确的错误提示
-            if not name.startswith("_"):
-                if name in self.module._module_classes:
-                    _logger.error(
+        当属性不在实例 __dict__ 中时调用。对核心属性名使用动态 import 解析，
+        确保软重启后始终获取最新单例。对未知属性提供友好的错误提示。
+
+        :param name: 属性名
+        :return: 属性值
+        :raises AttributeError: 当属性不存在时
+        """
+        # 核心属性：动态解析
+        if name in _CORE_ATTR_NAMES:
+            try:
+                return _resolve_core(name)
+            except (ImportError, AttributeError):
+                raise AttributeError(f"ErisPulse SDK: 核心模块 '{name}' 无法解析")
+
+        # 非核心属性：提供友好的错误提示
+        try:
+            from .Core.logger import logger as _logger
+            err_logger = _logger.error
+        except Exception:
+            err_logger = lambda msg: None
+
+        if not name.startswith("_"):
+            try:
+                mod_mgr = _resolve_core("module")
+                adap_mgr = _resolve_core("adapter")
+                if name in mod_mgr._module_classes:
+                    err_logger(
                         f"[SDK] 模块 '{name}' 已注册但未加载或未启用，请检查模块配置"
                     )
-                elif name in self.adapter._adapters:
-                    _logger.error(
+                elif name in adap_mgr._adapters:
+                    err_logger(
                         f"[SDK] 适配器 '{name}' 已注册但未启用，请检查适配器配置"
                     )
                 else:
-                    _logger.error(
+                    err_logger(
                         f"[SDK] 未找到属性或模块/适配器 '{name}'，请检查名称是否正确"
                     )
+            except Exception:
+                err_logger(
+                    f"[SDK] 未找到属性或模块/适配器 '{name}'，请检查名称是否正确"
+                )
 
-            raise AttributeError(f"ErisPulse SDK has no attribute '{name}'")
+        raise AttributeError(f"ErisPulse SDK has no attribute '{name}'")
 
     def __repr__(self) -> str:
         """
@@ -194,6 +225,10 @@ class SDK:
             self._adapter_loader = AdapterLoader()
             self._module_loader = ModuleLoader()
 
+        def __getattr__(self, name: str):
+            """将未找到的属性委托给 SDK 实例（如 logger、adapter 等）"""
+            return getattr(self._sdk, name)
+
         async def init(self) -> bool:
             """
             初始化所有模块和适配器
@@ -210,16 +245,16 @@ class SDK:
 
             :raises ImportError: 当加载失败时抛出
             """
-            logger.info("SDK 正在初始化...")
-            lifecycle.start_timer("core.init")
+            self.logger.info("SDK 正在初始化...")
+            self.lifecycle.start_timer("core.init")
 
             try:
                 # 1. 并行加载适配器和模块
-                adapter_manager = self._sdk.adapter
-                module_manager = self._sdk.module
+                adapter_manager = self.adapter
+                module_manager = self.module
 
                 # 模块发现阶段
-                logger.print_section_header("入口发现阶段")
+                self.logger.print_section_header("入口发现阶段")
 
                 (adapter_result, module_result) = await asyncio.gather(
                     self._adapter_loader.load(adapter_manager),
@@ -229,11 +264,11 @@ class SDK:
 
                 # 检查是否有异常，使用空结果继续而非终止
                 if isinstance(adapter_result, Exception):
-                    logger.error(f"适配器加载失败: {adapter_result}")
+                    self.logger.error(f"适配器加载失败: {adapter_result}")
                     adapter_result = ({}, [], [])
 
                 if isinstance(module_result, Exception):
-                    logger.error(f"模块加载失败: {module_result}")
+                    self.logger.error(f"模块加载失败: {module_result}")
                     module_result = ({}, [], [])
 
                 # 解包结果
@@ -241,55 +276,55 @@ class SDK:
                 module_objs, enabled_modules, disabled_modules = module_result  # type: ignore
 
                 # 2. 注册适配器
-                logger.print_section_header("适配器注册阶段")
+                self.logger.print_section_header("适配器注册阶段")
                 if not await self._adapter_loader.register_to_manager(
                     enabled_adapters, adapter_objs, adapter_manager
                 ):
-                    logger.warning("部分适配器注册失败，已跳过")
+                    self.logger.warning("部分适配器注册失败，已跳过")
 
                 # 3. 启动适配器
                 if enabled_adapters:
-                    logger.print_section_header("适配器启动阶段")
+                    self.logger.print_section_header("适配器启动阶段")
                     await adapter_manager.startup()
 
                 # 4. 注册模块
-                logger.print_section_header("模块注册阶段")
+                self.logger.print_section_header("模块注册阶段")
                 if not await self._module_loader.register_to_manager(
                     enabled_modules, module_objs, module_manager
                 ):
-                    logger.warning("部分模块注册失败，已跳过")
+                    self.logger.warning("部分模块注册失败，已跳过")
 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
-                logger.print_section_header("模块初始化阶段")
+                self.logger.print_section_header("模块初始化阶段")
                 if enabled_modules:
                     success = await self._module_loader.initialize_modules(
                         enabled_modules, module_objs, module_manager, self._sdk
                     )
                     if not success:
-                        logger.warning("部分模块初始化失败，已跳过")
+                        self.logger.warning("部分模块初始化失败，已跳过")
                 else:
                     success = True
 
                 # 6. 启动路由服务器
-                logger.print_section_header("路由服务器启动")
+                self.logger.print_section_header("路由服务器启动")
                 from ErisPulse.runtime import get_server_config
 
                 _server_config = get_server_config()
                 try:
-                    await router.start(
+                    await self.router.start(
                         host=_server_config["host"],
                         port=_server_config["port"],
                         ssl_certfile=_server_config.get("ssl_certfile"),
                         ssl_keyfile=_server_config.get("ssl_keyfile"),
                     )
                 except Exception as e:
-                    logger.warning(f"路由服务器启动失败: {e}")
+                    self.logger.warning(f"路由服务器启动失败: {e}")
 
                 # 获取加载耗时
-                load_duration = lifecycle.stop_timer("core.init")
+                load_duration = self.lifecycle.stop_timer("core.init")
 
                 # 总结
-                logger.print_section_header("初始化完成")
+                self.logger.print_section_header("初始化完成")
 
                 # 显示耗时
                 duration_str = (
@@ -297,29 +332,29 @@ class SDK:
                     if load_duration >= 1
                     else f"{load_duration * 1000:.0f}ms"
                 )
-                logger.print_info(f"耗时: {duration_str}", level=1)
+                self.logger.print_info(f"耗时: {duration_str}", level=1)
 
                 if enabled_adapters:
-                    logger.print_info(f"适配器: {len(enabled_adapters)} 个", level=1)
-                    for i, adapter in enumerate(enabled_adapters):
+                    self.logger.print_info(f"适配器: {len(enabled_adapters)} 个", level=1)
+                    for i, adapter_name in enumerate(enabled_adapters):
                         is_last = i == len(enabled_adapters) - 1
-                        logger.print_tree_item(adapter, level=1, is_last=is_last)
+                        self.logger.print_tree_item(adapter_name, level=1, is_last=is_last)
                 else:
-                    logger.print_info("适配器: 无", level=1)
+                    self.logger.print_info("适配器: 无", level=1)
 
                 if enabled_modules:
-                    logger.print_info(f"模块: {len(enabled_modules)} 个", level=1)
-                    for i, module in enumerate(enabled_modules):
+                    self.logger.print_info(f"模块: {len(enabled_modules)} 个", level=1)
+                    for i, module_name in enumerate(enabled_modules):
                         is_last = i == len(enabled_modules) - 1
-                        logger.print_tree_item(module, level=1, is_last=is_last)
+                        self.logger.print_tree_item(module_name, level=1, is_last=is_last)
                 else:
-                    logger.print_info("模块: 无", level=1)
+                    self.logger.print_info("模块: 无", level=1)
 
-                logger.print_section_footer()
+                self.logger.print_section_footer()
 
-                logger.info(f"SDK初始化成功 (耗时: {duration_str})")
+                self.logger.info(f"SDK初始化成功 (耗时: {duration_str})")
 
-                await lifecycle.submit_event(
+                await self.lifecycle.submit_event(
                     "core.init.complete",
                     msg="模块初始化完成" if success else "模块初始化部分失败",
                     data={
@@ -338,13 +373,13 @@ class SDK:
                 return True
 
             except Exception as e:
-                load_duration = lifecycle.stop_timer("core.init")
-                await lifecycle.submit_event(
+                load_duration = self.lifecycle.stop_timer("core.init")
+                await self.lifecycle.submit_event(
                     "core.init.complete",
                     msg="模块初始化失败",
                     data={"duration": load_duration, "success": False, "error": str(e)},
                 )
-                logger.critical(f"SDK初始化严重错误: {e}")
+                self.logger.critical(f"SDK初始化严重错误: {e}")
                 return False  # 核心初始化级别的异常仍然返回 False
 
     class Uninitializer:
@@ -368,6 +403,10 @@ class SDK:
             """
             self._sdk = sdk_instance
 
+        def __getattr__(self, name: str):
+            """将未找到的属性委托给 SDK 实例（如 logger、adapter 等）"""
+            return getattr(self._sdk, name)
+
         async def uninit(self) -> bool:
             """
             执行反初始化
@@ -385,12 +424,12 @@ class SDK:
 
             :return: bool 反初始化是否成功
             """
-            lifecycle.start_timer("core.uninit")
+            self.lifecycle.start_timer("core.uninit")
 
             try:
-                adapter_manager = self._sdk.adapter
-                module_manager = self._sdk.module
-                router_manager = self._sdk.router
+                adapter_manager = self.adapter
+                module_manager = self.module
+                router_manager = self.router
 
                 # 1. 关闭所有适配器
                 registered_adapters = adapter_manager.list_registered()
@@ -438,7 +477,7 @@ class SDK:
                                     else:
                                         instance.on_unload({"module_name": lm_name})
                                 except Exception as e:
-                                    logger.warning(
+                                    self.logger.warning(
                                         f"清理懒加载模块 {lm_name} 的 on_unload 失败: {e}"
                                     )
                         # 清除 LazyModule 内部引用，打破循环引用链
@@ -449,20 +488,20 @@ class SDK:
                         module_properties_to_clear.add(attr_name)
 
                 # 5. 清理所有事件处理器
-                Event._clear_all_handlers()
+                self.Event._clear_all_handlers()
 
                 # 6. 清理管理器
                 adapter_manager.clear()
                 module_manager.clear()
 
                 # 获取清理耗时
-                uninit_duration = lifecycle.stop_timer("core.uninit")
+                uninit_duration = self.lifecycle.stop_timer("core.uninit")
 
                 # 7. 清理单例残留状态
-                lifecycle._timers.clear()
-                logger._logs.clear()
-                logger._module_levels.clear()
-                config.force_save()
+                self.lifecycle._timers.clear()
+                self.logger._logs.clear()
+                self.logger._module_levels.clear()
+                self.config.force_save()
 
                 # 8. 清理 SDK 对象上的模块属性
                 module_properties_cleared = 0
@@ -472,7 +511,7 @@ class SDK:
                             del instance_dict[module_name]
                             module_properties_cleared += 1
                     except Exception as e:
-                        logger.warning(f"清理模块属性 {module_name} 失败: {e}")
+                        self.logger.warning(f"清理模块属性 {module_name} 失败: {e}")
 
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
@@ -484,7 +523,7 @@ class SDK:
                 )
 
                 # 提交生命周期事件
-                await lifecycle.submit_event(
+                await self.lifecycle.submit_event(
                     "core.uninit.complete",
                     msg="SDK反初始化完成",
                     data={
@@ -501,14 +540,14 @@ class SDK:
                 await asyncio.sleep(0.1)
 
                 # 9. 清理生命周期事件处理器（在所有事件完成之后）
-                lifecycle._hooks.clear()
+                self.lifecycle._hooks.clear()
 
-                logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
+                self.logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
                 return True
 
             except Exception as e:
-                uninit_duration = lifecycle.stop_timer("core.uninit")
-                await lifecycle.submit_event(
+                uninit_duration = self.lifecycle.stop_timer("core.uninit")
+                await self.lifecycle.submit_event(
                     "core.uninit.complete",
                     msg="SDK反初始化失败",
                     data={
@@ -522,13 +561,13 @@ class SDK:
                 await asyncio.sleep(0.1)
 
                 # 清理生命周期事件处理器（即使在失败时也要清理）
-                lifecycle._hooks.clear()
+                self.lifecycle._hooks.clear()
 
                 if "attached to a different loop" in str(e):
                     # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
                     # 在这种情况下，我们直接返回True即可
                     return True
-                logger.error(f"SDK反初始化严重错误: {e}")
+                self.logger.error(f"SDK反初始化严重错误: {e}")
                 return False
 
     # ==================== SDK 逻辑方法 ====================
@@ -567,21 +606,24 @@ class SDK:
 
         setup_exception_handling()
 
-        await lifecycle.submit_event(
+        _lifecycle = self.lifecycle
+        _logger = self.logger
+
+        await _lifecycle.submit_event(
             "core.init.start",
             msg="开始初始化",
         )
 
-        logger.info("准备初始化环境...")
+        _logger.info("准备初始化环境...")
         try:
             from .runtime import get_erispulse_config
 
             get_erispulse_config()
-            logger.info("配置文件已加载")
+            _logger.info("配置文件已加载")
             return True
         except Exception as e:
-            load_duration = lifecycle.stop_timer("core.init")
-            await lifecycle.submit_event(
+            load_duration = _lifecycle.stop_timer("core.init")
+            await _lifecycle.submit_event(
                 "core.init.complete",
                 msg="模块初始化失败",
                 data={
@@ -589,7 +631,7 @@ class SDK:
                     "success": False,
                 },
             )
-            logger.error(f"环境准备失败: {e}")
+            _logger.error(f"环境准备失败: {e}")
             return False
 
     def init_sync(self) -> bool:
@@ -661,13 +703,13 @@ class SDK:
                     await module_instance._initialize()
                     return True
             elif module_instance is not None:
-                logger.warning(f"模块 {module_name} 已经加载")
+                self.logger.warning(f"模块 {module_name} 已经加载")
                 return False
             else:
-                logger.error(f"模块 {module_name} 不存在")
+                self.logger.error(f"模块 {module_name} 不存在")
                 return False
         except Exception as e:
-            logger.error(f"加载模块 {module_name} 失败: {e}")
+            self.logger.error(f"加载模块 {module_name} 失败: {e}")
             return False
 
     async def run(self, keep_running: bool = True) -> None:
@@ -683,16 +725,16 @@ class SDK:
             isInit = await self.init()
 
             if not isInit:
-                logger.error("ErisPulse 初始化失败，请检查日志")
+                self.logger.error("ErisPulse 初始化失败，请检查日志")
                 return
 
             if keep_running:
                 shutdown_event = asyncio.Event()
                 await shutdown_event.wait()
         except asyncio.CancelledError:
-            logger.info("收到关闭信号，正在清理...")
+            self.logger.info("收到关闭信号，正在清理...")
         except Exception as e:
-            logger.error(e)
+            self.logger.error(e)
         finally:
             if keep_running:
                 try:
@@ -722,7 +764,7 @@ class SDK:
         try:
             # 获取所有已加载包的顶层 Python 模块名（必须在 uninit 之前，因为 uninit 会清除管理器注册信息）
             top_level_modules = self._collect_top_level_modules()
-            logger.debug(f"[Reload] 收集到外部包顶层模块: {top_level_modules}")
+            self.logger.debug(f"[Reload] 收集到外部包顶层模块: {top_level_modules}")
 
             # 反初始化
             await self.uninit()
@@ -738,14 +780,18 @@ class SDK:
 
             # 重新初始化
             if not await self.init():
-                logger.error("[Reload] 初始化失败，请检查日志")
+                self.logger.error("[Reload] 初始化失败，请检查日志")
                 return False
 
-            logger.info("[Reload] 重新加载完成")
-            logger.info("[Reload] ErisPulse已重新加载 [Reload]")
+            # SDK 核心属性通过 __getattr__ 动态解析，无需手动刷新引用。
+            # init() 触发的新 import 会创建新单例，
+            # 后续 self.logger / self.adapter 等访问自动获取最新单例。
+
+            self.logger.info("[Reload] 重新加载完成")
+            self.logger.info("[Reload] ErisPulse已重新加载 [Reload]")
             return True
         except Exception as e:
-            logger.error(f"[Reload] 重启失败: {e}")
+            self.logger.error(f"[Reload] 重启失败: {e}")
             return False
 
     def _collect_top_level_modules(self) -> set[str]:
@@ -768,7 +814,7 @@ class SDK:
                 if fallback:
                     top_level_set.update(fallback)
                 else:
-                    logger.warning(
+                    self.logger.warning(
                         f"[Reload] 模块 '{module_name}' 无法推导顶层模块名，其缓存可能无法被清除"
                     )
 
@@ -781,11 +827,11 @@ class SDK:
                 if fallback:
                     top_level_set.update(fallback)
                 else:
-                    logger.warning(
+                    self.logger.warning(
                         f"[Reload] 适配器 '{adapter_name}' 无法推导顶层模块名，其缓存可能无法被清除"
                     )
 
-        logger.debug(f"[Reload] 收集到 top_level 模块: {top_level_set}")
+        self.logger.debug(f"[Reload] 收集到 top_level 模块: {top_level_set}")
         return top_level_set
 
     @staticmethod
@@ -829,7 +875,7 @@ class SDK:
         importlib.invalidate_caches()
 
         if modules_to_remove:
-            logger.debug(
+            self.logger.debug(
                 f"[Reload] 已清理 {len(modules_to_remove)} 个外部包 sys.modules 缓存: {modules_to_remove}"
             )
 
@@ -858,7 +904,7 @@ class SDK:
         importlib.invalidate_caches()
 
         if framework_modules:
-            logger.debug(f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存")
+            self.logger.debug(f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存")
 
     def _invalidate_metadata_cache(self) -> None:
         """
@@ -886,7 +932,7 @@ class SDK:
         importlib.invalidate_caches()
 
         if metadata_modules:
-            logger.debug(
+            self.logger.debug(
                 f"[Reload] 已清理 {len(metadata_modules)} 个 importlib.metadata 缓存"
             )
 
@@ -917,7 +963,7 @@ class SDK:
         :example:
         >>> await sdk.restart()
         """
-        logger.info("[Reload] 开始重新加载SDK...")
+        self.logger.info("[Reload] 开始重新加载SDK...")
 
         # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
         asyncio.ensure_future(self._do_restart())
