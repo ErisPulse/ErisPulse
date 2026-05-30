@@ -6351,7 +6351,7 @@ The entire publishing process only requires three steps: Configure Project → P
 
 ### 1. Configure pyproject.toml
 
-Ensure your project directory contains `pyproject.toml` and `README.md`, and configure entry-points based on the type:
+Ensure your project directory contains `pyproject.toml`, `README.md`, and configure entry-points based on the type:
 
 #### Module
 
@@ -6478,56 +6478,28 @@ If your application is not suitable for publishing to PyPI (e.g., contains priva
 Build based on the official ErisPulse image:
 
 ```dockerfile
-FROM python:3.13-slim AS production
+FROM erispulse/erispulse:latest
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+LABEL org.opencontainers.image.title="ErisPulse-MyModule" \
+      org.opencontainers.image.description="Module functionality description" \
+      org.opencontainers.image.url="https://github.com/yourname/ErisPulse-MyModule" \
+      org.opencontainers.image.source="https://github.com/yourname/ErisPulse-MyModule"
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    ERISPULSE_DASHBOARD_TOKEN=""
+COPY pyproject.toml README.md ./
+COPY MyModule/ ./MyModule/
 
-WORKDIR /app
-
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
-
-COPY . .
-
-VOLUME ["/app/config"]
-EXPOSE 8000
-
-CMD ["epsdk", "run", "main.py"]
+RUN uv pip install --system -e .
 ```
 
-If the module is not published to PyPI, you can directly copy the module source code into the image:
+If the module requires additional system dependencies (e.g., SSH client), add this after `RUN uv pip install`:
 
 ```dockerfile
-FROM python:3.13-slim AS production
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1
-
-WORKDIR /app
-
-RUN uv pip install --system ErisPulse ErisPulse-Dashboard
-
-COPY my_modules/ /app/my_modules/
-COPY main.py .
-COPY config/ /app/config/
-
-RUN uv pip install --system -e /app/my_modules/MyModule
-
-VOLUME ["/app/config"]
-EXPOSE 8000
-
-CMD ["epsdk", "run", "main.py"]
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
 ```
+
+> `erispulse/erispulse:latest` already includes ErisPulse, ErisPulse-Dashboard, Python runtime, and uv, no need to reinstall.
 
 ### 2. Create GitHub Actions Workflow
 
@@ -6630,8 +6602,10 @@ docker pull ghcr.io/<your-username>/my-bot:latest
 docker run -d \
   --name my-bot \
   -p 8000:8000 \
-  -v ./config:/app/config \
+  -v $(pwd)/config:/app/config \
+  -e TZ=Asia/Shanghai \
   -e ERISPULSE_DASHBOARD_TOKEN=your-token \
+  --restart unless-stopped \
   ghcr.io/<your-username>/my-bot:latest
 ```
 
@@ -6654,7 +6628,7 @@ services:
 
 ### Publish to Docker Hub Simultaneously
 
-Extend the workflow by adding Docker Hub login step and increasing Docker Hub address in `images`:
+Extend the workflow by adding a Docker Hub login step and increasing Docker Hub address in `images`:
 
 ```yaml
       - name: Login to Docker Hub

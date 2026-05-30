@@ -6875,59 +6875,31 @@ pip install -e /path/to/MyModule
 
 ### 1. 创建 Dockerfile
 
-基于 ErisPulse 官方镜像构建：
+基于 ErisPulse 官方镜像构建，只需添加你的模块即可：
 
 ```dockerfile
-FROM python:3.13-slim AS production
+FROM erispulse/erispulse:latest
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+LABEL org.opencontainers.image.title="ErisPulse-MyModule" \
+      org.opencontainers.image.description="模块描述" \
+      org.opencontainers.image.url="https://github.com/yourname/ErisPulse-MyModule" \
+      org.opencontainers.image.source="https://github.com/yourname/ErisPulse-MyModule"
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    ERISPULSE_DASHBOARD_TOKEN=""
+COPY pyproject.toml README.md ./
+COPY MyModule/ ./MyModule/
 
-WORKDIR /app
-
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
-
-COPY . .
-
-VOLUME ["/app/config"]
-EXPOSE 8000
-
-CMD ["epsdk", "run", "main.py"]
+RUN uv pip install --system -e .
 ```
 
-如果模块未发布到 PyPI，可以直接把模块源码复制进镜像：
+如果模块需要额外的系统依赖（如 SSH 客户端等），在 `RUN uv pip install` 之后添加：
 
 ```dockerfile
-FROM python:3.13-slim AS production
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1
-
-WORKDIR /app
-
-RUN uv pip install --system ErisPulse ErisPulse-Dashboard
-
-COPY my_modules/ /app/my_modules/
-COPY main.py .
-COPY config/ /app/config/
-
-RUN uv pip install --system -e /app/my_modules/MyModule
-
-VOLUME ["/app/config"]
-EXPOSE 8000
-
-CMD ["epsdk", "run", "main.py"]
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
 ```
+
+> `erispulse/erispulse:latest` 已包含 ErisPulse、ErisPulse-Dashboard、Python 运行时和 uv，无需重复安装。
 
 ### 2. 创建 GitHub Actions 工作流
 
@@ -7022,16 +6994,16 @@ GHCR 镜像默认为 **private**，需要在 GitHub 设置为 Public 后其他�
 
 ### 5. 用户使用
 
-构建完成后，其他用户可以直接运行：
+构建完成后，用户可以用 `docker run` 一行启动：
 
 ```bash
-docker pull ghcr.io/<your-username>/my-bot:latest
-
 docker run -d \
   --name my-bot \
   -p 8000:8000 \
-  -v ./config:/app/config \
+  -v $(pwd)/config:/app/config \
+  -e TZ=Asia/Shanghai \
   -e ERISPULSE_DASHBOARD_TOKEN=your-token \
+  --restart unless-stopped \
   ghcr.io/<your-username>/my-bot:latest
 ```
 
@@ -7054,7 +7026,7 @@ services:
 
 ### 同时发布到 Docker Hub
 
-扩展工作流，添加 Docker Hub 登录步骤，并在 `images` 中增加 Docker Hub 地址：
+扩展工作流，在登录步骤前添加 Docker Hub 登录，并在 `images` 中增加 Docker Hub 地址：
 
 ```yaml
       - name: 登录 Docker Hub
