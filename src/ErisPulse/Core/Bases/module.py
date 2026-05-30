@@ -7,6 +7,7 @@ ErisPulse 模块基础模块
 from abc import ABC, abstractmethod
 from typing import Any
 from ...loaders.strategy import ModuleLoadStrategy
+from ..constants import DEFAULT_LAZY_LOADING_ENABLED, DEFAULT_MODULE_PRIORITY
 
 
 class BaseModule(ABC):
@@ -51,8 +52,8 @@ class BaseModule(ABC):
         {!--< /tips >!--}
         """
         return ModuleLoadStrategy(
-            lazy_load=True,  # 默认懒加载
-            priority=0,  # 默认优先级
+            lazy_load=DEFAULT_LAZY_LOADING_ENABLED,
+            priority=DEFAULT_MODULE_PRIORITY,
         )
 
     # @staticmethod

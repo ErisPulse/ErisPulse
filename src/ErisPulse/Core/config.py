@@ -16,13 +16,14 @@ import time
 import toml
 import threading
 from typing import Any, TypeAlias
+from .constants import DEFAULT_CONFIG_FILE_PATH, CONFIG_CACHE_TIMEOUT_SECS, CONFIG_WRITE_DELAY_SECS
 
 ConfigValue: TypeAlias = Any
 ConfigKey: TypeAlias = str
 
 
 class ConfigManager:
-    def __init__(self, config_file: str = "config/config.toml"):
+    def __init__(self, config_file: str = DEFAULT_CONFIG_FILE_PATH):
         """
         初始化配置管理器
 
@@ -34,8 +35,8 @@ class ConfigManager:
         self._cache: dict[str, Any] = {}  # 内存缓存
         self._dirty_keys: dict[str, Any] = {}  # 待写入的配置项
         self._cache_timestamp = 0  # 缓存时间戳
-        self._cache_timeout = 60  # 缓存超时时间（秒）
-        self._write_delay = 5  # 写入延迟时间（秒）
+        self._cache_timeout = CONFIG_CACHE_TIMEOUT_SECS
+        self._write_delay = CONFIG_WRITE_DELAY_SECS
         self._write_timer: threading.Timer | None = None  # 写入定时器
         self._lock = threading.RLock()  # 线程安全锁
         self._file_lock = threading.RLock()  # 文件操作锁

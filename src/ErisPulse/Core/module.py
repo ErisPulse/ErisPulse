@@ -13,6 +13,11 @@ from .Bases import BaseModule
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
 from ..runtime.context import current_owner
+from .constants import (
+    CONFIG_KEY_MODULES_STATUS,
+    CONFIG_KEY_MODULE_STATUS_OF,
+    DEFAULT_MODULE_ENABLED,
+)
 
 
 class ModuleManager(ManagerBase):
@@ -400,12 +405,12 @@ class ModuleManager(ManagerBase):
         :param enabled: 是否启用模块 (默认: False)
         :return: 操作是否成功
         """
-        existing = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        existing = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
         if existing is not None:
             return True
 
         # 模块不存在，进行注册
-        config.setConfig(f"ErisPulse.modules.status.{module_name}", enabled)
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), enabled)
         status = "启用" if enabled else "禁用"
         logger.info(f"模块 {module_name} 已注册并{status}")
         return True
@@ -427,7 +432,7 @@ class ModuleManager(ManagerBase):
         """
         from .config import parse_bool_config
 
-        status = config.getConfig(f"ErisPulse.modules.status.{module_name}")
+        status = config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name))
 
         # 模块未在配置中，返回 False
         if status is None:
@@ -447,7 +452,7 @@ class ModuleManager(ManagerBase):
             logger.error(f"模块 {module_name} 不存在")
             return False
 
-        config.setConfig(f"ErisPulse.modules.status.{module_name}", True)
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True)
         logger.info(f"模块 {module_name} 已启用")
         return True
 
@@ -458,7 +463,7 @@ class ModuleManager(ManagerBase):
         :param module_name: [str] 模块名称
         :return: [bool] 操作是否成功
         """
-        config.setConfig(f"ErisPulse.modules.status.{module_name}", False)
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False)
         logger.info(f"模块 {module_name} 已禁用")
 
         if module_name not in self._loaded_modules:
@@ -568,7 +573,7 @@ class ModuleManager(ManagerBase):
 
         :return: [dict[str, bool]] {模块名: 是否启用} 字典
         """
-        return config.getConfig("ErisPulse.modules.status", {})
+        return config.getConfig(CONFIG_KEY_MODULES_STATUS, {})
 
     def get_info(self, module_name: str) -> dict | None:
         """
