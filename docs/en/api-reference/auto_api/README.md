@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 56
+- **模块总数**: 59
 - **类总数**: 47（包括 5 个嵌套类）
-- **函数总数**: 38
-- **方法总数**: 511
+- **函数总数**: 39
+- **方法总数**: 518
 
 ---
 
@@ -151,12 +151,12 @@
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
 
-📦 1 个类 | 🔧 6 个方法 | ⚙️ 1 个函数
+📦 1 个类 | 🔧 7 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
 
-📦 1 个类 | 🔧 14 个方法
+📦 1 个类 | 🔧 15 个方法
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
@@ -209,6 +209,11 @@
 📦 1 个类 | 🔧 11 个方法 | ⚙️ 1 个函数
 
 
+### [ErisPulse.Core.constants](ErisPulse/Core/constants.md)
+
+📄 模块文档
+
+
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
 📦 2 个类 | 🔧 13 个方法 | ⚙️ 1 个函数
@@ -226,7 +231,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 3 个类 | 🔧 45 个方法
+📦 3 个类 | 🔧 47 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
@@ -294,6 +299,11 @@
 📄 模块文档
 
 
+### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)
+
+📄 模块文档
+
+
 ### [ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)
 
 📦 1 个类 | 🔧 2 个方法 | ⚙️ 3 个函数
@@ -306,5 +316,10 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-📦 1 个类 | 🔧 16 个方法
+📦 1 个类 | 🔧 17 个方法 | ⚙️ 1 个函数
+
+
+### [ErisPulse.web_status.__init__](ErisPulse/web_status/__init__.md)
+
+📄 模块文档
 

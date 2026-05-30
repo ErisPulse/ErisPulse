@@ -55,7 +55,7 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `register(handler: Callable, priority: int = 0, condition: Callable = None)`
+##### `register(handler: Callable, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None)`
 
 注册事件处理器
 
@@ -76,7 +76,18 @@ ErisPulse 事件处理基础模块
 ---
 
 
-##### `__call__(priority: int = 0, condition: Callable = None)`
+##### `unregister_by_owner(owner: str)`
+
+> **内部方法** 
+按归属者精确移除事件处理器
+
+:param owner: 归属者（模块名）
+:return: 移除的处理器数量
+
+---
+
+
+##### `__call__(priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable = None)`
 
 装饰器方式注册事件处理器
 
