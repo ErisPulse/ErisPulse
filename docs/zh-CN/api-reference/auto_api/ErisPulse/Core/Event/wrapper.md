@@ -544,7 +544,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async reply(content: str, method: str = 'Text', at_users: list[str] = None, reply_to: str = None, at_all: bool = False)`
+##### `async async reply(content: str, method: str = DEFAULT_SEND_METHOD, at_users: list[str] = None, reply_to: str = None, at_all: bool = False)`
 
 通用回复方法
 
@@ -624,7 +624,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait_reply(prompt: str = None, timeout: float = 60.0, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
+##### `async async wait_reply(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
 
 等待用户回复
 
@@ -637,7 +637,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async confirm(prompt: str = None, timeout: float = 60.0, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None)`
+##### `async async confirm(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None)`
 
 等待用户确认 (是/否)
 
@@ -664,7 +664,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async choose(prompt: str, options: list[str], timeout: float = 60.0)`
+##### `async async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 等待用户从选项中选择
 
@@ -716,7 +716,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = 60.0)`
+##### `async async wait_for(event_type: str = 'message', condition: Callable[['Event'], bool] = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 等待满足条件的任意事件
 
@@ -745,7 +745,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `conversation(timeout: float = 60.0)`
+##### `conversation(timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 创建多轮对话上下文
 
@@ -904,7 +904,7 @@ ErisPulse 事件包装类
 #### 方法列表
 
 
-##### `__init__(event: 'Event', timeout: float = 60.0)`
+##### `__init__(event: 'Event', timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
 
 初始化对话上下文
 

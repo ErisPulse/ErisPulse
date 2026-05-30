@@ -46,7 +46,7 @@ ConfigManager 类提供相关功能。
 #### 方法列表
 
 
-##### `__init__(config_file: str = 'config/config.toml')`
+##### `__init__(config_file: str = DEFAULT_CONFIG_FILE_PATH)`
 
 初始化配置管理器
 
