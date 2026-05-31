@@ -85,6 +85,31 @@
 
 ---
 
+## [2.4.6-dev.3] - 2026/05/31
+> 开发版本
+
+### 变更
+- @wsu2059q
+  - `adapter.py` `emit()` 事件处理器分发从顺序 `await` 改为 `asyncio.create_task()` fire-and-forget 模式：
+    - 新增 `_dispatch_handler_task()` 方法，将每个 OB12 handler 和 raw handler 包装为独立 `asyncio.Task`
+    - 处理器执行不再阻塞 `emit()` 返回，防止单个慢处理器（如 `wait_reply`）阻塞整个事件分发链路
+    - 自动捕获处理器异常并记录日志，`CancelledError` 静默处理
+    - Task 创建失败时回退到 `asyncio.ensure_future()`
+
+### 新增
+- @wsu2059q
+  - `Core/constants.py` 新增 `HANDLER_SLOW_THRESHOLD_SECS = 1.0` 常量（处理器执行耗时告警阈值）
+  - `adapter.py` `_dispatch_handler_task()` 内置处理器执行耗时监控，超过阈值记录 WARNING
+  - `Event/base.py` `_invoke_handler()` 新增处理器执行耗时监控，超过阈值记录 WARNING
+  - `lifecycle.py` `_execute_handlers_async()` 慢处理器告警从硬编码 50ms 改为使用 `HANDLER_SLOW_THRESHOLD_SECS` 常量
+  - `Event/command.py` `wait_reply()` 超时时记录 DEBUG 级别日志（包含 wait_key 和 timeout）
+
+### 修复
+- @wsu2059q
+  - 修复 `adapter.emit()` 中 `_update_bot_status()` 调用括号错误导致离线状态无法正确设置的问题
+
+---
+
 ## [2.4.6-dev.1] - 2026/05/26
 > 开发版本
 

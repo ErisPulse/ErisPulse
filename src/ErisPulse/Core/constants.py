@@ -308,6 +308,11 @@ DEFAULT_WAIT_TIMEOUT_SECS = 60.0
 # 修改影响: 验证器拒绝回复后的重试次数。
 DEFAULT_MAX_RETRIES = 3
 
+# 事件处理器执行耗时警告阈值（秒）。
+# 使用位置: Core/adapter.py -> emit() 中的 handler 执行监控。
+# 修改影响: 当单个处理器执行超过此时间时记录 WARNING 日志。
+HANDLER_SLOW_THRESHOLD_SECS = 1.0
+
 # 平台标识的回退值。
 # 当事件数据缺少 platform 字段时使用。
 # 修改影响: 日志和事件处理中的平台标识显示。

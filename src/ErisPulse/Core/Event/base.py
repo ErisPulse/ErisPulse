@@ -12,11 +12,12 @@ ErisPulse 事件处理基础模块
 from .. import adapter, logger
 from ...runtime import get_event_config
 from ...runtime.context import current_owner
-from ..constants import DEFAULT_HANDLER_PRIORITY, UNKNOWN_PLATFORM, EVENT_TYPE_MESSAGE
+from ..constants import DEFAULT_HANDLER_PRIORITY, UNKNOWN_PLATFORM, EVENT_TYPE_MESSAGE, HANDLER_SLOW_THRESHOLD_SECS
 from typing import Any
 from collections.abc import Callable
 import asyncio
 import inspect
+import time as _time
 from itertools import groupby
 from .wrapper import Event
 from ..lifecycle import lifecycle
@@ -34,11 +35,16 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     :param event: 事件对象
     """
     handler = handler_info["func"]
+    _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
     try:
+        _t = _time.monotonic()
         if inspect.iscoroutinefunction(handler):
             await handler(event)
         else:
             handler(event)
+        _elapsed = _time.monotonic() - _t
+        if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+            logger.warning(f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s")
     except Exception as e:
         logger.error(f"事件处理器执行错误: {e}")
 
