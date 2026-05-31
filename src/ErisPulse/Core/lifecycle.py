@@ -13,7 +13,7 @@ ErisPulse 生命周期管理模块
 
 import asyncio
 import inspect
-from .constants import DEFAULT_EVENT_SOURCE
+from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
 import time
 from typing import Any
 from collections.abc import Callable
@@ -307,12 +307,18 @@ class LifecycleManager:
         :param data: Any 事件数据
         :return: Any 处理后的数据
         """
-        for _, handler in self._hooks[hook_name]:
+        import time as _time
+        for priority, handler in self._hooks[hook_name]:
             try:
+                _t = _time.monotonic()
+                _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
                 if inspect.iscoroutinefunction(handler):
                     result = await handler(data)
                 else:
                     result = handler(data)
+                _elapsed = _time.monotonic() - _t
+                if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                    _get_logger().warning(f"[Lifecycle] Slow handler {_hname} for event '{event}' took {_elapsed:.4f}s")
                 if result is not None:
                     data = result
             except Exception as e:
