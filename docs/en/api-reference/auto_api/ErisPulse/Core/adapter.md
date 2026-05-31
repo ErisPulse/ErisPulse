@@ -276,6 +276,9 @@ OneBot12协议事件监听装饰器
 
 提交OneBot12协议事件到指定平台
 
+每个事件处理器（handler）都在独立的 asyncio.Task 中执行，
+单个处理器阻塞不会影响框架的事件分发和其他处理器运行。
+
 :param data: 符合OneBot12标准的事件数据
 
 **示例**:
@@ -291,6 +294,23 @@ OneBot12协议事件监听装饰器
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
+
+---
+
+
+##### `_dispatch_handler_task(func: Callable, data: Any)`
+
+> **内部方法** 
+将事件处理器包装为独立 asyncio.Task 并调度执行
+
+处理器在独立 Task 中运行，不会阻塞 adapter.emit() 的后续流程。
+自动捕获处理器异常并记录日志，同时监控处理器执行耗时。
+
+:param func: 事件处理器函数
+:param data: 事件数据
+:param event_type: 事件类型（用于日志）
+:param platform: 平台名称（用于日志）
+:return: asyncio.Task
 
 ---
 
