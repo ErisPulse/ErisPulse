@@ -23,6 +23,7 @@ from .constants import (
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
+    HANDLER_SLOW_THRESHOLD_SECS,
 )
 
 
@@ -685,6 +686,9 @@ class AdapterManager(ManagerBase):
         """
         提交OneBot12协议事件到指定平台
 
+        每个事件处理器（handler）都在独立的 asyncio.Task 中执行，
+        单个处理器阻塞不会影响框架的事件分发和其他处理器运行。
+
         :param data: 符合OneBot12标准的事件数据
 
         :example:
@@ -766,7 +770,7 @@ class AdapterManager(ManagerBase):
                         },
                     )
 
-        # 先执行OneBot12中间件
+        # 先执行OneBot12中间件（中间件可以修改数据，必须顺序执行）
         processed_data = data
         for middleware in self._onebot_middlewares:
             result = await middleware(processed_data)
@@ -777,7 +781,7 @@ class AdapterManager(ManagerBase):
                     f"中间件 {middleware.__qualname__} 返回 None，已忽略并保留原数据"
                 )
 
-        # 分发到OneBot12事件处理器
+        # 分发到OneBot12事件处理器（每个 handler 在独立 Task 中执行，不阻塞框架）
         handlers_to_call = []
 
         # 处理特定事件类型的处理器
@@ -787,12 +791,14 @@ class AdapterManager(ManagerBase):
         # 处理通配符处理器
         handlers_to_call.extend(self._onebot_handlers.get("*", []))
 
-        # 调用符合条件的标准事件处理器
+        # 将符合条件的处理器分发到独立 Task
         for handler_wrapper in handlers_to_call:
             handler_platform = handler_wrapper.get("platform")
-            # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
             if handler_platform is None or handler_platform == platform:
-                await handler_wrapper["func"](processed_data)
+                self._dispatch_handler_task(
+                    handler_wrapper["func"], processed_data,
+                    event_type=event_type, platform=platform,
+                )
 
         # 只有当存在原生事件数据时才分发原生事件
         if raw_event_type and (platform_raw := data.get(f"{platform}_raw")) is not None:
@@ -805,12 +811,14 @@ class AdapterManager(ManagerBase):
             # 处理原生事件的通配符处理器
             raw_handlers_to_call.extend(self._raw_handlers.get("*", []))
 
-            # 调用符合条件的原生事件处理器
+            # 将符合条件的原生事件处理器分发到独立 Task
             for handler_wrapper in raw_handlers_to_call:
                 handler_platform = handler_wrapper.get("platform")
-                # 如果处理器没有指定平台，或者指定的平台与当前事件平台匹配
                 if handler_platform is None or handler_platform == platform:
-                    await handler_wrapper["func"](platform_raw)
+                    self._dispatch_handler_task(
+                        handler_wrapper["func"], platform_raw,
+                        event_type=raw_event_type, platform=platform,
+                    )
 
         # 钩子: 事件分发完成
         await lifecycle.emit("adapter.event.dispatched", {
@@ -819,6 +827,56 @@ class AdapterManager(ManagerBase):
             "raw_event_type": raw_event_type,
             "onebot_handlers_count": len(handlers_to_call),
         })
+
+    def _dispatch_handler_task(
+        self,
+        func: Callable,
+        data: Any,
+        *,
+        event_type: str = "unknown",
+        platform: str = "unknown",
+    ) -> asyncio.Task:
+        """
+        {!--< internal-use >!--}
+        将事件处理器包装为独立 asyncio.Task 并调度执行
+
+        处理器在独立 Task 中运行，不会阻塞 adapter.emit() 的后续流程。
+        自动捕获处理器异常并记录日志，同时监控处理器执行耗时。
+
+        :param func: 事件处理器函数
+        :param data: 事件数据
+        :param event_type: 事件类型（用于日志）
+        :param platform: 平台名称（用于日志）
+        :return: asyncio.Task
+        """
+        import time as _time
+
+        _func_name = getattr(func, "__qualname__", getattr(func, "__name__", str(func)))
+
+        async def _safe_run():
+            t0 = _time.monotonic()
+            try:
+                await func(data)
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                logger.error(
+                    f"事件处理器执行错误 [{_func_name}] "
+                    f"type={event_type} platform={platform}: {e}"
+                )
+            finally:
+                elapsed = _time.monotonic() - t0
+                if elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                    logger.warning(
+                        f"事件处理器执行缓慢 [{_func_name}] "
+                        f"耗时 {elapsed:.2f}s > {HANDLER_SLOW_THRESHOLD_SECS}s "
+                        f"type={event_type} platform={platform}"
+                    )
+
+        try:
+            return asyncio.create_task(_safe_run())
+        except RuntimeError:
+            return asyncio.ensure_future(_safe_run())
 
     # ==================== Bot状态管理 ====================
 
