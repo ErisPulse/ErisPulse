@@ -286,6 +286,7 @@ class CommandHandler:
             # 清理超时的等待
             if wait_key in self._waiting_replies:
                 del self._waiting_replies[wait_key]
+            logger.debug(f"wait_reply 超时: key={wait_key}, timeout={timeout}s")
             return None
         except Exception as e:
             # 清理异常情况
