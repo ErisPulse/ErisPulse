@@ -116,28 +116,50 @@ class RunCommand(Command):
         else:
             self._run_internal(reload_mode)
 
+    _RESTART_EXIT_CODE = 42
+
     def _run_internal(self, reload_mode: bool):
         """
         直接运行 SDK（不指定脚本时）
+
+        以子进程方式运行 SDK，支持硬重启：当 SDK 进程以特定退出码退出时，
+        自动重新启动新进程，确保资源完全释放。
         """
 
-        async def _run():
-            from ... import sdk
+        if reload_mode:
+            async def _run():
+                from ... import sdk
 
-            if reload_mode:
                 loop = asyncio.get_running_loop()
                 self._setup_watchdog(".", loop)
+                await sdk.run(keep_running=True)
 
-            await sdk.run(keep_running=True)
+            try:
+                asyncio.run(_run())
+            except KeyboardInterrupt:
+                pass
+            finally:
+                if hasattr(self, "_observer"):
+                    self._observer.stop()
+                    self._observer.join()
+            return
+
+        cmd = [sys.executable, "-c",
+               "import asyncio; from ErisPulse import sdk; "
+               "asyncio.run(sdk.run(keep_running=True))"]
 
         try:
-            asyncio.run(_run())
+            while True:
+                process = subprocess.Popen(cmd)
+                process.wait()
+
+                if process.returncode == self._RESTART_EXIT_CODE:
+                    console.print("[info]收到硬重启请求，正在重新启动...[/]")
+                    time.sleep(0.5)
+                    continue
+                break
         except KeyboardInterrupt:
             pass
-        finally:
-            if reload_mode and hasattr(self, "_observer"):
-                self._observer.stop()
-                self._observer.join()
 
     def _run_script(self, script_path: str, reload_mode: bool):
         script_path_abs = os.path.abspath(script_path)
