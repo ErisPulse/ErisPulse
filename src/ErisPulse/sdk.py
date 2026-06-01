@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import os
 import sys
 from typing import TYPE_CHECKING
 from .Core.constants import UNINIT_SETTLE_DELAY_SECS, LIFECYCLE_TIMER_CORE_INIT, LIFECYCLE_TIMER_CORE_UNINIT
@@ -969,6 +970,39 @@ class SDK:
         # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
         asyncio.ensure_future(self._do_restart())
 
+        return True
+
+    RESTART_EXIT_CODE = 42
+
+    async def hard_restart(self) -> bool:
+        """
+        硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
+
+        与 restart()（热重启）的区别：
+        - restart(): 在同一进程内反初始化再重新初始化
+        - hard_restart(): 反初始化后退出进程，由父进程重新启动全新进程
+
+        确保资源完全释放
+
+        需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
+
+        :return: bool 硬重启任务是否成功调度
+
+        :example:
+        >>> await sdk.hard_restart()
+        """
+
+        async def _do_hard_restart():
+            await asyncio.sleep(0.5)
+            try:
+                self.logger.info("[HardRestart] 开始硬重启，执行反初始化...")
+                await self.uninit()
+                self.logger.info("[HardRestart] 反初始化完成，正在退出进程...")
+            except Exception as e:
+                self.logger.error(f"[HardRestart] 反初始化异常: {e}")
+            os._exit(self.RESTART_EXIT_CODE)
+
+        asyncio.ensure_future(_do_hard_restart())
         return True
 
     async def uninit(self) -> bool:
