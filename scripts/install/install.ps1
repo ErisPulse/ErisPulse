@@ -1346,6 +1346,14 @@ function Install-UvAndPython {
 function Main {
     Select-Language
     
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Warning (t 'admin_warn')
+        $continueAsAdmin = Read-Host "[$(t 'continue_')]"
+        if ($continueAsAdmin -notmatch '^[yY]$') { exit 1 }
+    }
+    
     Write-Header (t 'install_title')
     
     Test-Docker
@@ -1437,14 +1445,6 @@ function Main {
             Write-CompletionFooter
         }
     }
-}
-
-$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-$principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Warning (t 'admin_warn')
-    $continueAsAdmin = Read-Host "[$(t 'continue_')]"
-    if ($continueAsAdmin -notmatch '^[yY]$') { exit 1 }
 }
 
 Main
