@@ -65,6 +65,7 @@ class TestEventBusIntegration:
 
         event = _make_msg("hello")
         await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert len(received) == 1
         assert received[0]["type"] == "message"
@@ -94,6 +95,7 @@ class TestEventBusIntegration:
 
         event = _make_msg("test")
         await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert middleware_log == ["mw1", "mw2"]
         assert len(handler_data) == 1
@@ -120,6 +122,7 @@ class TestEventBusIntegration:
             order.append("handler")
 
         await adapter.emit(_make_msg("test"))
+        await asyncio.sleep(0)
         assert order == ["mw1", "mw2", "handler"]
 
     @pytest.mark.asyncio
@@ -140,7 +143,7 @@ class TestEventBusIntegration:
             results.append("h3")
 
         await adapter.emit(_make_msg("test"))
-
+        await asyncio.sleep(0.01)
         assert len(results) == 3
         assert "h1" in results
         assert "h2" in results
@@ -166,6 +169,7 @@ class TestEventBusIntegration:
         }
 
         await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert len(raw_received) == 1
         assert raw_received[0]["action"] == "friend_add"
@@ -182,6 +186,7 @@ class TestEventBusIntegration:
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             event = _make_msg("/hello")
             await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert len(received) == 1
 
@@ -197,6 +202,7 @@ class TestEventBusIntegration:
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             event = _make_msg("/echo hello world")
             await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert len(received) == 1
         cmd_info = received[0].get("command", {})
@@ -214,7 +220,9 @@ class TestEventBusIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hi"))
+            await asyncio.sleep(0)
             await adapter.emit(_make_msg("/hello"))
+            await asyncio.sleep(0)
 
         assert len(received) == 2
 
@@ -234,7 +242,9 @@ class TestEventBusIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("hi", detail_type="private"))
+            await asyncio.sleep(0)
             await adapter.emit(_make_msg("hi", detail_type="group", group_id="g1"))
+            await asyncio.sleep(0)
 
         assert len(all_msgs) >= 2
         assert len(private_msgs) == 1
@@ -258,6 +268,7 @@ class TestEventBusIntegration:
             "user_id": "new_user",
         }
         await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert len(received) == 1
         assert received[0]["detail_type"] == "friend_add"
@@ -294,6 +305,7 @@ class TestEventBusIntegration:
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             event = _make_msg("test")
             await adapter.emit(event)
+        await asyncio.sleep(0)
 
         assert order[0] == "first"
         assert order[1] == "second"
