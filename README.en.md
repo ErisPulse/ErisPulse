@@ -112,6 +112,20 @@ See [Adapter Details Introduction](docs/en/platform-guide/README.md)
 
 ### Quick Start
 
+#### One-Click Installation Script (Recommended)
+
+The installation script automatically detects your environment (Docker, Python, uv), guides you to choose the most suitable installation method, and supports multiple languages (中文/English/日本語/Русский/繁體中文).
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
 #### Using Docker (Recommended)
 
 ```bash
@@ -215,7 +229,7 @@ uv pip install ErisPulse
 
 ![Installation Demo](.github/assets/docs/install_pip.gif)
 
-> If your Python version is below 3.10, you can use the one-click installation script to automatically configure the environment. See [Installation Script Instructions](scripts/install/) for details.
+> You can also use the one-click installation script mentioned above to automatically detect the environment and guide configuration.
 
 #### Running Effects
 
