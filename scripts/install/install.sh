@@ -1155,6 +1155,13 @@ install_uv_bootstrap() {
 main() {
     select_language
     print_header "$(t 'install_title')"
+
+    if [ "$(id -u)" -eq 0 ]; then
+        print_warning "$(t 'admin_warn')"
+        read -p "$(t 'continue_'): " continue_as_root
+        [[ ! "$continue_as_root" =~ ^[yY]$ ]] && exit 1
+    fi
+
     check_docker
     local python_ok=true
     check_python || python_ok=false
@@ -1225,12 +1232,5 @@ main() {
             ;;
     esac
 }
-
-if [ "$(id -u)" -eq 0 ]; then
-    select_language
-    print_warning "$(t 'admin_warn')"
-    read -p "$(t 'continue_'): " continue_as_root
-    [[ ! "$continue_as_root" =~ ^[yY]$ ]] && exit 1
-fi
 
 main
