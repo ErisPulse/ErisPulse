@@ -3220,6 +3220,14 @@
         "title": "一般執行模式"
       }
     ],
+    "一鍵安裝腳本（推薦）": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "一鍵安裝腳本（推薦）"
+      }
+    ],
     "上下文與持久化": [
       {
         "document": "advanced/conversation.md",
@@ -3269,7 +3277,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 155,
         "level": 2,
         "title": "下一步"
       },
@@ -3635,7 +3643,7 @@
     "互動式初始化（推薦）": [
       {
         "document": "quick-start.md",
-        "line": 37,
+        "line": 63,
         "level": 3,
         "title": "互動式初始化（推薦）"
       }
@@ -3643,7 +3651,7 @@
     "互動式安裝": [
       {
         "document": "quick-start.md",
-        "line": 83,
+        "line": 109,
         "level": 3,
         "title": "互動式安裝"
       },
@@ -3780,6 +3788,14 @@
         "title": "伺服器配置"
       }
     ],
+    "使用 Docker": [
+      {
+        "document": "quick-start.md",
+        "line": 26,
+        "level": 3,
+        "title": "使用 Docker"
+      }
+    ],
     "使用 Send DSL 指定機器人": [
       {
         "document": "platform-guide/yunhu.md",
@@ -3791,7 +3807,7 @@
     "使用 pip 安裝": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 51,
         "level": 3,
         "title": "使用 pip 安裝"
       }
@@ -3802,14 +3818,6 @@
         "line": 301,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
-      }
-    ],
-    "使用 uv 安裝（推薦）": [
-      {
-        "document": "quick-start.md",
-        "line": 15,
-        "level": 3,
-        "title": "使用 uv 安裝（推薦）"
       }
     ],
     "使用事件系統": [
@@ -4237,7 +4245,7 @@
     "初始化專案": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 61,
         "level": 2,
         "title": "初始化專案"
       },
@@ -4719,7 +4727,7 @@
     "執行專案": [
       {
         "document": "quick-start.md",
-        "line": 91,
+        "line": 117,
         "level": 2,
         "title": "執行專案"
       },
@@ -5214,12 +5222,6 @@
     ],
     "安裝 uv": [
       {
-        "document": "quick-start.md",
-        "line": 19,
-        "level": 4,
-        "title": "安裝 uv"
-      },
-      {
         "document": "user-guide/installation.md",
         "line": 27,
         "level": 4,
@@ -5253,7 +5255,7 @@
     "安裝模組": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 95,
         "level": 2,
         "title": "安裝模組"
       },
@@ -5399,7 +5401,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 101,
+        "line": 127,
         "level": 2,
         "title": "專案結構"
       }
@@ -5776,14 +5778,6 @@
         "title": "延遲載入機制"
       }
     ],
-    "建立專案並安裝": [
-      {
-        "document": "quick-start.md",
-        "line": 25,
-        "level": 4,
-        "title": "建立專案並安裝"
-      }
-    ],
     "建立第一個機器人": [
       {
         "document": "getting-started/first-bot.md",
@@ -5899,7 +5893,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 50,
+        "line": 76,
         "level": 3,
         "title": "快速初始化"
       },
@@ -5995,7 +5989,7 @@
     "手動建立專案": [
       {
         "document": "quick-start.md",
-        "line": 60,
+        "line": 86,
         "level": 3,
         "title": "手動建立專案"
       }
@@ -7255,7 +7249,7 @@
     "檢視可用模組": [
       {
         "document": "quick-start.md",
-        "line": 77,
+        "line": 103,
         "level": 3,
         "title": "檢視可用模組"
       }
@@ -8521,7 +8515,7 @@
     "設定檔": [
       {
         "document": "quick-start.md",
-        "line": 113,
+        "line": 139,
         "level": 2,
         "title": "設定檔"
       }
@@ -8929,7 +8923,7 @@
     "透過 CLI 安裝": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 97,
         "level": 3,
         "title": "透過 CLI 安裝"
       }
