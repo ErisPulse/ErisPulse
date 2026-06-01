@@ -93,6 +93,9 @@ class ModuleLoader(BaseLoader):
 
             logger.print_section_separator()
 
+        except SystemExit as e:
+            logger.error(f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
+                         f"请不要使用 sys.exit() 或 raise SystemExit")
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
 
@@ -191,6 +194,9 @@ class ModuleLoader(BaseLoader):
             objs[meta_name] = module_obj
             enabled_list.append(meta_name)
 
+        except SystemExit as e:
+            logger.error(f"加载模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                         f"请不要使用 sys.exit() 或 raise SystemExit")
         except Exception as e:
             logger.error(f"从 entry-point 加载模块 {meta_name} 失败，已跳过: {e}")
 
@@ -355,6 +361,10 @@ class ModuleLoader(BaseLoader):
                         manager_instance.register(name, module_class, obj.moduleInfo)
                         return True
                     return False
+                except SystemExit as e:
+                    logger.error(f"注册模块 {name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                                 f"请不要使用 sys.exit() 或 raise SystemExit")
+                    return False
                 except Exception as e:
                     logger.error(f"注册模块 {name} 失败: {e}")
                     return False
@@ -368,7 +378,7 @@ class ModuleLoader(BaseLoader):
         failed_modules = []
         for i, result in enumerate(register_results):
             module_name = modules[i]
-            if isinstance(result, Exception) or result is False:
+            if isinstance(result, BaseException) or result is False:
                 logger.warning(f"模块 {module_name} 注册失败，已跳过")
                 failed_modules.append(module_name)
 
@@ -527,6 +537,9 @@ class ModuleLoader(BaseLoader):
                         logger.debug(f"挂载立即加载模块到 sdk: {meta_name}")
                     else:
                         logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
+            except SystemExit as e:
+                logger.warning(f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                               f"请不要使用 sys.exit() 或 raise SystemExit")
             except Exception as e:
                 logger.warning(f"初始化模块 {meta_name} 失败，已跳过: {e}")
 
@@ -655,6 +668,17 @@ class LazyModule:
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 初始化完成"
             )
 
+        except SystemExit as e:
+            module_name = object.__getattribute__(self, "_module_name")
+            await lifecycle.submit_event(
+                "module.init",
+                msg=f"模块 {module_name} 尝试退出进程 (SystemExit)",
+                data={"module_name": module_name, "success": False},
+            )
+            logger.error(f"懒加载模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                         f"请不要使用 sys.exit() 或 raise SystemExit")
+            object.__setattr__(self, "_initialized", False)
+            object.__setattr__(self, "_init_failed", True)
         except Exception as e:
             await lifecycle.submit_event(
                 "module.init",
@@ -730,6 +754,9 @@ class LazyModule:
             new_loop = asyncio.new_event_loop()
             try:
                 new_loop.run_until_complete(self._initialize())
+            except SystemExit as e:
+                init_error[0] = e
+                object.__setattr__(self, "_init_failed", True)
             except Exception as e:
                 init_error[0] = e
                 object.__setattr__(self, "_init_failed", True)
@@ -784,6 +811,13 @@ class LazyModule:
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化完成"
             )
 
+        except SystemExit as e:
+            logger.error(
+                f"懒加载模块 {object.__getattribute__(self, '_module_name')} 尝试退出进程 "
+                f"(SystemExit({e.code}))，已跳过。请不要使用 sys.exit() 或 raise SystemExit"
+            )
+            object.__setattr__(self, "_initialized", False)
+            object.__setattr__(self, "_init_failed", True)
         except Exception as e:
             logger.error(
                 f"懒加载模块 {object.__getattribute__(self, '_module_name')} 同步初始化失败: {e}"
