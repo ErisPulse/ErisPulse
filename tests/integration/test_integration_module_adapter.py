@@ -106,6 +106,7 @@ class TestModuleAdapterIntegration:
         mod = collab_module_mgr._modules["collab_mod"]
 
         await adapter.emit(_make_msg("hello"))
+        await asyncio.sleep(0)
 
         msg_events = [e for t, e in mod.received_events if t == "message"]
         assert len(msg_events) == 1
@@ -119,6 +120,7 @@ class TestModuleAdapterIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/mod_cmd test_arg"))
+            await asyncio.sleep(0)
 
         cmd_events = [e for t, e in mod.received_events if t == "command"]
         assert len(cmd_events) == 1
@@ -146,6 +148,7 @@ class TestModuleAdapterIntegration:
         mod2 = collab_module_mgr._modules["mod2"]
 
         await adapter.emit(_make_msg("broadcast"))
+        await asyncio.sleep(0.01)
 
         assert len([e for t, e in mod1.received_events if t == "message"]) == 1
         assert len([e for t, e in mod2.received_events if t == "message"]) == 1
