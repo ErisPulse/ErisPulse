@@ -401,6 +401,28 @@ SDK 重新启动
 ---
 
 
+##### `async async hard_restart()`
+
+硬重启：反初始化后退出进程，由父进程（run.py）重新启动新实例
+
+与 restart()（热重启）的区别：
+- restart(): 在同一进程内反初始化再重新初始化
+- hard_restart(): 反初始化后退出进程，由父进程重新启动全新进程
+
+确保资源完全释放
+
+需要通过 epsdk run 启动才生效，否则进程退出后不会自动重启。
+
+:return: bool 硬重启任务是否成功调度
+
+**示例**:
+```python
+>>> await sdk.hard_restart()
+```
+
+---
+
+
 ##### `async async uninit()`
 
 SDK 反初始化
