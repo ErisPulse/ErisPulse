@@ -403,7 +403,7 @@ irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -Execut
 
 macOS / Linux:
 ```bash
-curl -fsSL https://get.erisdev.com/install.sh | bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
 The script will guide you through:
