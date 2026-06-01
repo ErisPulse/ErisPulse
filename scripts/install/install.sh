@@ -678,8 +678,12 @@ select_language() {
     [ "$sys_lang" = "ja" ] && default=4
     [ "$sys_lang" = "ru" ] && default=5
 
-    read -p "[$default] " lang_choice
-    lang_choice=${lang_choice:-$default}
+    if [ -t 0 ]; then
+        read -p "[$default] " lang_choice
+        lang_choice=${lang_choice:-$default}
+    else
+        lang_choice=$default
+    fi
 
     case "$lang_choice" in
         1) LANG_CODE="zh" ;;
@@ -1158,8 +1162,10 @@ main() {
 
     if [ "$(id -u)" -eq 0 ]; then
         print_warning "$(t 'admin_warn')"
-        read -p "$(t 'continue_'): " continue_as_root
-        [[ ! "$continue_as_root" =~ ^[yY]$ ]] && exit 1
+        if [ -t 0 ]; then
+            read -p "$(t 'continue_'): " continue_as_root
+            [[ ! "$continue_as_root" =~ ^[yY]$ ]] && exit 1
+        fi
     fi
 
     check_docker

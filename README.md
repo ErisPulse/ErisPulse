@@ -112,6 +112,20 @@
 
 ### 快速开始
 
+#### 一键安装脚本（推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），引导选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
 #### 使用 Docker (推荐)
 
 ```bash
@@ -209,7 +223,7 @@ pip install ErisPulse
 
 <img src=".github/assets/docs/install_pip.gif" alt="安装演示" />
 
-> 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+> 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
 
 #### 运行效果
 
