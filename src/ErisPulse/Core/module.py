@@ -203,6 +203,18 @@ class ModuleManager(ManagerBase):
             logger.info(f"模块 {module_name} 加载成功")
             return True
 
+        except SystemExit as e:
+            await lifecycle.submit_event(
+                "module.load",
+                data={
+                    "module_name": module_name,
+                    "success": False,
+                },
+                msg=f"模块 {module_name} 尝试退出进程 (SystemExit)",
+            )
+            logger.error(f"模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过该模块。"
+                         f"请不要在模块中使用 sys.exit() 或 raise SystemExit，请改用 raise RuntimeError 或返回错误")
+            return False
         except Exception as e:
             await lifecycle.submit_event(
                 "module.load",
