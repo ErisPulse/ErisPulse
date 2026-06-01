@@ -3416,6 +3416,14 @@
         "title": "一步获取发送信息"
       }
     ],
+    "一键安装脚本（推荐）": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "一键安装脚本（推荐）"
+      }
+    ],
     "上下文与持久化": [
       {
         "document": "advanced/conversation.md",
@@ -3469,7 +3477,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 155,
         "level": 2,
         "title": "下一步"
       },
@@ -3917,7 +3925,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 37,
+        "line": 63,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -3933,7 +3941,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 83,
+        "line": 109,
         "level": 3,
         "title": "交互式安装"
       },
@@ -4066,6 +4074,14 @@
         "title": "传统注册方式"
       }
     ],
+    "使用 Docker": [
+      {
+        "document": "quick-start.md",
+        "line": 26,
+        "level": 3,
+        "title": "使用 Docker"
+      }
+    ],
     "使用 Send DSL 指定账户": [
       {
         "document": "platform-guide/ideaura.md",
@@ -4077,7 +4093,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 51,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -4088,14 +4104,6 @@
         "line": 301,
         "level": 3,
         "title": "使用 reply 方法发送回复"
-      }
-    ],
-    "使用 uv 安装（推荐）": [
-      {
-        "document": "quick-start.md",
-        "line": 15,
-        "level": 3,
-        "title": "使用 uv 安装（推荐）"
       }
     ],
     "使用Send DSL指定Bot": [
@@ -4466,14 +4474,6 @@
         "title": "创建表"
       }
     ],
-    "创建项目并安装": [
-      {
-        "document": "quick-start.md",
-        "line": 25,
-        "level": 4,
-        "title": "创建项目并安装"
-      }
-    ],
     "初始化流程": [
       {
         "document": "architecture.md",
@@ -4507,7 +4507,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 61,
         "level": 2,
         "title": "初始化项目"
       },
@@ -5808,12 +5808,6 @@
     ],
     "安装 uv": [
       {
-        "document": "quick-start.md",
-        "line": 19,
-        "level": 4,
-        "title": "安装 uv"
-      },
-      {
         "document": "user-guide/installation.md",
         "line": 27,
         "level": 4,
@@ -5855,7 +5849,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 95,
         "level": 2,
         "title": "安装模块"
       },
@@ -6483,7 +6477,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 50,
+        "line": 76,
         "level": 3,
         "title": "快速初始化"
       },
@@ -6627,7 +6621,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 60,
+        "line": 86,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -7391,7 +7385,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 77,
+        "line": 103,
         "level": 3,
         "title": "查看可用模块"
       },
@@ -9683,7 +9677,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 91,
+        "line": 117,
         "level": 2,
         "title": "运行项目"
       },
@@ -10077,7 +10071,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 97,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -10203,7 +10197,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 113,
+        "line": 139,
         "level": 2,
         "title": "配置文件"
       }
@@ -10609,7 +10603,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 101,
+        "line": 127,
         "level": 2,
         "title": "项目结构"
       }

@@ -3285,7 +3285,7 @@
     "Configuration File": [
       {
         "document": "quick-start.md",
-        "line": 113,
+        "line": 139,
         "level": 2,
         "title": "Configuration File"
       }
@@ -3724,14 +3724,6 @@
         "line": 1,
         "level": 1,
         "title": "Create Your First Bot"
-      }
-    ],
-    "Create project and install": [
-      {
-        "document": "quick-start.md",
-        "line": 25,
-        "level": 4,
-        "title": "Create project and install"
       }
     ],
     "Creating Scaffolds": [
@@ -5313,7 +5305,7 @@
     "Initialize Project": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 61,
         "level": 2,
         "title": "Initialize Project"
       }
@@ -5359,7 +5351,7 @@
     "Install Modules": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 95,
         "level": 2,
         "title": "Install Modules"
       }
@@ -5391,26 +5383,12 @@
     "Install using pip": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 51,
         "level": 3,
         "title": "Install using pip"
       }
     ],
-    "Install using uv (Recommended)": [
-      {
-        "document": "quick-start.md",
-        "line": 15,
-        "level": 3,
-        "title": "Install using uv (Recommended)"
-      }
-    ],
     "Install uv": [
-      {
-        "document": "quick-start.md",
-        "line": 19,
-        "level": 4,
-        "title": "Install uv"
-      },
       {
         "document": "user-guide/installation.md",
         "line": 27,
@@ -5421,7 +5399,7 @@
     "Install via CLI": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 97,
         "level": 3,
         "title": "Install via CLI"
       }
@@ -5507,7 +5485,7 @@
     "Interactive Initialization (Recommended)": [
       {
         "document": "quick-start.md",
-        "line": 37,
+        "line": 63,
         "level": 3,
         "title": "Interactive Initialization (Recommended)"
       }
@@ -5515,7 +5493,7 @@
     "Interactive Installation": [
       {
         "document": "quick-start.md",
-        "line": 83,
+        "line": 109,
         "level": 3,
         "title": "Interactive Installation"
       },
@@ -5863,7 +5841,7 @@
     "Manual Project Creation": [
       {
         "document": "quick-start.md",
-        "line": 60,
+        "line": 86,
         "level": 3,
         "title": "Manual Project Creation"
       }
@@ -6631,7 +6609,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 155,
         "level": 2,
         "title": "Next Steps"
       },
@@ -6746,6 +6724,14 @@
         "line": 100,
         "level": 3,
         "title": "One-Step Send Information Retrieval"
+      }
+    ],
+    "One-click Installation Script (Recommended)": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "One-click Installation Script (Recommended)"
       }
     ],
     "OneBot11": [
@@ -7173,7 +7159,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 101,
+        "line": 127,
         "level": 2,
         "title": "Project Structure"
       }
@@ -7381,7 +7367,7 @@
     "Quick Initialization": [
       {
         "document": "quick-start.md",
-        "line": 50,
+        "line": 76,
         "level": 3,
         "title": "Quick Initialization"
       },
@@ -8019,7 +8005,7 @@
     "Run Project": [
       {
         "document": "quick-start.md",
-        "line": 91,
+        "line": 117,
         "level": 2,
         "title": "Run Project"
       }
@@ -9286,6 +9272,14 @@
         "title": "Using Configuration"
       }
     ],
+    "Using Docker": [
+      {
+        "document": "quick-start.md",
+        "line": 26,
+        "level": 3,
+        "title": "Using Docker"
+      }
+    ],
     "Using Lazy Loaded Modules": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9395,7 +9389,7 @@
     "View Available Modules": [
       {
         "document": "quick-start.md",
-        "line": 77,
+        "line": 103,
         "level": 3,
         "title": "View Available Modules"
       },
