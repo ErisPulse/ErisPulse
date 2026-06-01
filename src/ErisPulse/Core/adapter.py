@@ -135,24 +135,32 @@ class AdapterManager(ManagerBase):
         if existing_instance is not None:
             self._adapters[platform] = existing_instance
         else:
-            # 创建适配器实例
-            # 检查适配器类 __init__ 方法的参数
-            init_signature = inspect.signature(adapter_class.__init__)
-            params = [p for p in init_signature.parameters.values() if p.name != "self"]
+            try:
+                # 创建适配器实例
+                # 检查适配器类 __init__ 方法的参数
+                init_signature = inspect.signature(adapter_class.__init__)
+                params = [p for p in init_signature.parameters.values() if p.name != "self"]
 
-            sdk_to_use = self._sdk
-            if sdk_to_use is None:
-                from .. import sdk
+                sdk_to_use = self._sdk
+                if sdk_to_use is None:
+                    from .. import sdk
 
-                sdk_to_use = sdk
+                    sdk_to_use = sdk
+            
+                # 根据参数情况创建实例
+                if params:
+                    instance = adapter_class(sdk_to_use)
+                else:
+                    instance = adapter_class()
 
-            # 根据参数情况创建实例
-            if params:
-                instance = adapter_class(sdk_to_use)
-            else:
-                instance = adapter_class()
-
-            self._adapters[platform] = instance
+                self._adapters[platform] = instance
+            except SystemExit as e:
+                logger.error(f"适配器 {platform} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                             f"请不要在适配器中使用 sys.exit() 或 raise SystemExit")
+                return False
+            except Exception as e:
+                logger.error(f"创建适配器实例 {platform} 失败: {e}")
+                return False
 
         return True
 
