@@ -59,6 +59,7 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hello"))
+            await asyncio.sleep(0)
 
         assert len(received) == 1
 
@@ -73,6 +74,7 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/echo hello world 123"))
+            await asyncio.sleep(0)
 
         assert len(received) == 1
         assert received[0].get("command", {}).get("name") == "echo"
@@ -88,8 +90,11 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/hi"))
+            await asyncio.sleep(0)
             await adapter.emit(_make_msg("/hey"))
+            await asyncio.sleep(0)
             await adapter.emit(_make_msg("/greet"))
+            await asyncio.sleep(0)
 
         assert len(received) == 3
 
@@ -120,6 +125,7 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/secure"))
+            await asyncio.sleep(0)
 
         assert len(received) == 1
 
@@ -137,6 +143,7 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("/locked"))
+            await asyncio.sleep(0)
 
         assert len(received) == 0
 
@@ -210,6 +217,7 @@ class TestCommandFlowIntegration:
 
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_make_msg("just a normal message"))
+            await asyncio.sleep(0)
 
         assert len(received) == 0
 

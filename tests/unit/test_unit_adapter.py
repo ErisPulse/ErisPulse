@@ -412,6 +412,7 @@ class TestAdapterManager:
         }
         
         await manager.emit(event_data)
+        await asyncio.sleep(0)
         
         # 验证处理器被调用
         assert len(handler_called) == 1
@@ -438,6 +439,7 @@ class TestAdapterManager:
         }
         
         await manager.emit(event_data)
+        await asyncio.sleep(0)
         
         # 验证原生处理器被调用
         assert len(handler_called) == 1
@@ -469,6 +471,7 @@ class TestAdapterManager:
         }
         
         await manager.emit(event_data)
+        await asyncio.sleep(0)
         
         # 验证中间件和处理器都被调用
         assert len(middleware_data) == 1
@@ -860,6 +863,7 @@ class TestBotStatusTracking:
 
         with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
             await manager.emit(event)
+            await asyncio.sleep(0)
 
         # 验证 Bot 已注册
         bot_info = manager.get_bot_info("telegram", "123456")
@@ -885,6 +889,7 @@ class TestBotStatusTracking:
 
         with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock) as mock_submit:
             await manager.emit(event)
+            await asyncio.sleep(0)
             # 验证 adapter.bot.online 事件被提交
             mock_submit.assert_called_once()
             call_args = mock_submit.call_args
@@ -903,12 +908,14 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
             })
+            await asyncio.sleep(0)
             # 第二次 connect（应该更新元信息而不是报错）
             await manager.emit({
                 "id": "2", "time": 2, "type": "meta",
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1Updated"}
             })
+            await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
         assert bot_info["status"] == "online"
@@ -928,6 +935,7 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1"}
             })
+            await asyncio.sleep(0)
 
         old_active = manager.get_bot_info("tg", "bot1")["last_active"]
         time.sleep(0.05)
@@ -938,6 +946,7 @@ class TestBotStatusTracking:
             "detail_type": "heartbeat", "platform": "tg",
             "self": {"platform": "tg", "user_id": "bot1"}
         })
+        await asyncio.sleep(0)
 
         new_active = manager.get_bot_info("tg", "bot1")["last_active"]
         assert new_active > old_active
@@ -951,6 +960,7 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
             })
+            await asyncio.sleep(0)
 
         # 心跳中更新头像
         await manager.emit({
@@ -958,6 +968,7 @@ class TestBotStatusTracking:
             "detail_type": "heartbeat", "platform": "tg",
             "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.avatar.jpg"}
         })
+        await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
         assert bot_info["info"]["user_name"] == "Bot1"
@@ -971,6 +982,7 @@ class TestBotStatusTracking:
             "detail_type": "heartbeat", "platform": "tg",
             "self": {"platform": "tg", "user_id": "unknown_bot"}
         })
+        await asyncio.sleep(0)
         # 不崩溃即可
         assert manager.get_bot_info("tg", "unknown_bot") is None
 
@@ -986,6 +998,7 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1"}
             })
+            await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is True
 
@@ -996,6 +1009,7 @@ class TestBotStatusTracking:
                 "detail_type": "disconnect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1"}
             })
+            await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is False
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -1010,6 +1024,7 @@ class TestBotStatusTracking:
                 "detail_type": "disconnect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "unknown_bot"}
             })
+            await asyncio.sleep(0)
         # 应该被注册但状态为 offline
         bot_info = manager.get_bot_info("tg", "unknown_bot")
         assert bot_info is not None
@@ -1026,6 +1041,7 @@ class TestBotStatusTracking:
             "self": {"platform": "tg", "user_id": "bot1", "user_name": "AutoBot"},
             "message": [{"type": "text", "data": {"text": "hi"}}]
         })
+        await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
         assert bot_info is not None
@@ -1041,6 +1057,7 @@ class TestBotStatusTracking:
             "self": {"platform": "tg", "user_id": "bot1"},
             "user_id": "user1"
         })
+        await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is True
 
@@ -1051,6 +1068,7 @@ class TestBotStatusTracking:
             "id": "1", "time": 1, "type": "message",
             "platform": "tg", "message": []
         })
+        await asyncio.sleep(0)
         # 不崩溃即可
         assert len(manager._bots) == 0
 
@@ -1062,6 +1080,7 @@ class TestBotStatusTracking:
             "platform": "tg",
             "self": {"platform": "tg"}
         })
+        await asyncio.sleep(0)
         # 不崩溃即可
         assert len(manager._bots) == 0
 
@@ -1082,6 +1101,7 @@ class TestBotStatusTracking:
                     "account_id": "acc_001"
                 }
             })
+            await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
         assert bot_info["info"]["user_name"] == "MyBot"
@@ -1098,6 +1118,7 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "tg",
                 "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
             })
+            await asyncio.sleep(0)
 
             # 第二次：添加 avatar
             await manager.emit({
@@ -1106,6 +1127,7 @@ class TestBotStatusTracking:
                 "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.jpg"},
                 "message": []
             })
+            await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
         assert bot_info["info"]["user_name"] == "Bot1"
@@ -1216,12 +1238,14 @@ class TestBotStatusTracking:
                 "detail_type": "connect", "platform": "telegram",
                 "self": {"platform": "telegram", "user_id": "tg_bot1", "user_name": "TGBot"}
             })
+            await asyncio.sleep(0)
             # Discord Bot 上线
             await manager.emit({
                 "id": "2", "time": 2, "type": "meta",
                 "detail_type": "connect", "platform": "discord",
                 "self": {"platform": "discord", "user_id": "dc_bot1", "user_name": "DCBot"}
             })
+            await asyncio.sleep(0)
 
         # 验证两个平台的 Bot 都已注册
         assert manager.is_bot_online("telegram", "tg_bot1") is True
@@ -1238,6 +1262,7 @@ class TestBotStatusTracking:
                 "detail_type": "disconnect", "platform": "telegram",
                 "self": {"platform": "telegram", "user_id": "tg_bot1"}
             })
+            await asyncio.sleep(0)
 
         assert manager.is_bot_online("telegram", "tg_bot1") is False
         assert manager.is_bot_online("discord", "dc_bot1") is True
