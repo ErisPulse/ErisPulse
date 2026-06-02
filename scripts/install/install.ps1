@@ -1072,7 +1072,6 @@ function Install-DockerMode {
     Write-Host ""
     
     $image = ""
-    $tag = "latest"
     $channel = "stable"
     $port = 8000
     $dashboardToken = ""
@@ -1101,8 +1100,8 @@ function Install-DockerMode {
         $channelChoice = Read-Host "[$(t 'select_default')]"
         $channelChoice = if ($channelChoice) { $channelChoice } else { "1" }
         switch ($channelChoice) {
-            "1" { $channel = "stable"; $tag = "latest"; break }
-            "2" { $channel = "dev"; $tag = "dev"; break }
+            "1" { $channel = "stable"; break }
+            "2" { $channel = "dev"; break }
             default { Write-Warning (t 'select_1_2'); continue }
         }
         break
@@ -1128,7 +1127,7 @@ function Install-DockerMode {
     Write-Host "===========================================" -ForegroundColor Cyan
     Write-Host "  $(t 'install_config')" -ForegroundColor Cyan
     Write-Host "===========================================" -ForegroundColor Cyan
-    Write-Host "  $(t 'image_label'): $image`:$tag"
+    Write-Host "  $(t 'image_label'): $image`:latest"
     Write-Host "  $(t 'channel_label'): $channel"
     Write-Host "  $(t 'port_label'): $port"
     Write-Host "  Dashboard: $(if ($dashboardToken) { t 'enabled' } else { t 'not_enabled' })"
@@ -1145,7 +1144,7 @@ function Install-DockerMode {
 # ErisPulse Docker Compose
 services:
   erispulse:
-    image: ${image}:${tag}
+    image: ${image}:latest
     container_name: erispulse
     ports:
       - "`${ERISPULSE_PORT:-${port}}:8000"
