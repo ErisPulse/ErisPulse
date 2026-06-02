@@ -14,7 +14,7 @@ ErisPulse 命令处理模块
 from .base import BaseEventHandler
 from .. import adapter, logger
 from ...runtime import get_event_config
-from ...runtime.context import current_owner
+from ...runtime.context import current_owner, handler_waits
 from ..constants import (
     DEFAULT_WAIT_TIMEOUT_SECS,
     UNKNOWN_PLATFORM,
@@ -272,7 +272,21 @@ class CommandHandler:
 
         try:
             # 等待回复或超时
-            result = await asyncio.wait_for(future, timeout=timeout)
+            import time as _time
+            _wait_t0 = _time.monotonic()
+            try:
+                result = await asyncio.wait_for(future, timeout=timeout)
+            finally:
+                _wait_elapsed = _time.monotonic() - _wait_t0
+                # 如果当前在 handler / Task 内，记录本次等待供 slow-log 扣除；
+                # 不在则跳过（handler_waits 为 None，说明是独立调用）。
+                _acc = handler_waits.get()
+                if _acc is not None:
+                    _acc.append({
+                        "owner": current_owner.get(),
+                        "duration": _wait_elapsed,
+                        "wait_key": wait_key,
+                    })
 
             # 如果提供了回调函数，则执行
             if callback:
@@ -471,10 +485,20 @@ class CommandHandler:
             })
 
             try:
-                if inspect.iscoroutinefunction(handler):
-                    await handler(event)
-                else:
-                    handler(event)
+                # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
+                # wait_reply / 日志等能正确归因到具体业务模块。
+                cmd_owner = cmd_info.get("owner")
+                _owner_token = (
+                    current_owner.set(cmd_owner) if cmd_owner else None
+                )
+                try:
+                    if inspect.iscoroutinefunction(handler):
+                        await handler(event)
+                    else:
+                        handler(event)
+                finally:
+                    if _owner_token is not None:
+                        current_owner.reset(_owner_token)
 
                 # 钩子: 命令执行完成
                 from ..lifecycle import lifecycle
