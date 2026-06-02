@@ -126,6 +126,25 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
+<table>
+<tr>
+<td align="center" width="50%">
+
+**Docker 安装演示**
+
+<video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
+
+</td>
+<td align="center" width="50%">
+
+**pip 安装演示**
+
+<video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
+
 #### 使用 Docker (推荐)
 
 ```bash
@@ -220,8 +239,6 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```bash
 pip install ErisPulse
 ```
-
-<img src=".github/assets/docs/install_pip.gif" alt="安装演示" />
 
 > 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
 
