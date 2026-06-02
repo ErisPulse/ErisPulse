@@ -24,10 +24,28 @@ ErisPulse 运行时上下文
 """
 
 from contextvars import ContextVar
+from typing import Any
 
 #: 当前资源归属者（模块名或适配器平台名）。
 #: 在模块/适配器加载期间由框架设置，事件处理器注册时读取。
 #: 值为 None 表示当前不在任何模块/适配器的加载上下文中。
 current_owner: ContextVar[str | None] = ContextVar("current_owner", default=None)
 
-__all__ = ["current_owner"]
+#: 当前 handler / Task 执行期间累计的 wait_reply 调用记录。
+#:
+#: 生命周期
+#:   由 ``Core/adapter.py:_dispatch_handler_task`` 在 Task 入口初始化为空 list，
+#:   由 ``Core/Event/base.py:_invoke_handler`` 在每个 handler 入口切换为局部 list（结束后回填外层），
+#:   由 ``Core/Event/command.py:wait_reply`` 在每次等待用户回复时追加一条记录。
+#:
+#: 记录格式
+#:   ``{"owner": str|None, "duration": float, "wait_key": str}``
+#:
+#: 用途
+#:   slow-log 判定时读取此列表，将其中累计的 ``duration`` 从总耗时中扣除，
+#:   避免"等待用户回复"被误报为慢处理器。
+handler_waits: ContextVar[list[dict[str, Any]] | None] = ContextVar(
+    "handler_waits", default=None
+)
+
+__all__ = ["current_owner", "handler_waits"]
