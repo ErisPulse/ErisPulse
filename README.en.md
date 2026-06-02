@@ -126,6 +126,25 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
+<table>
+<tr>
+<td align="center" width="50%">
+
+**Docker Installation Demo**
+
+<video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
+
+</td>
+<td align="center" width="50%">
+
+**pip Installation Demo**
+
+<video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
+
 #### Using Docker (Recommended)
 
 ```bash
@@ -219,25 +238,19 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 
 ```bash
 pip install ErisPulse
-
-# Domestic mirror
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ErisPulse
-
-# Installation using uv
-uv pip install ErisPulse
 ```
-
-![Installation Demo](.github/assets/docs/install_pip.gif)
 
 > You can also use the one-click installation script mentioned above to automatically detect the environment and guide configuration.
 
 #### Running Effects
+
 
 ##### Dashboard:
 > There is a GIF here, but it's too large to include~ Sorry~
 > [GIF Demo](.github/assets/docs/dashboard-demo.gif)
 
 <img src=".github/assets/docs/dashboard.png" alt="Dashboard Demo" />
+
 
 ##### Code for one platform, responses on multiple platforms:
 
@@ -349,19 +362,6 @@ For more detailed information, please refer to:
 | Deploy robots with the same functionality<br>on multiple platforms | Integrate AI chat modules<br>for entertainment and interaction | Message notifications, task management,<br>data collection | Cross-platform message<br>synchronization and forwarding |
 
 </div>
-
----
-
-### Documentation Resources
-
-| 简体中文 | English | 繁體中文 |
-|:---:|:---:|:---:|
-| [文档入口](docs/zh-CN/README.md) | [Documentation](docs/en/README.md) | [文檔入口](docs/zh-TW/README.md) |
-
-| Platform | Main Site | Backup Sites |
-|----------|-----------|--------------|
-| Documentation | [erisdev.com](https://www.erisdev.com/#docs) | [Cloudflare](https://erispulse.pages.dev/#docs) · [GitHub](https://erispulse.github.io/#docs) · [Netlify](https://erispulse.netlify.app/#docs) |
-| Module Market | [erisdev.com](https://www.erisdev.com/#market) | [Cloudflare](https://erispulse.pages.dev/#market) · [GitHub](https://erispulse.github.io/#market) · [Netlify](https://erispulse.netlify.app/#market) |
 
 ---
 
