@@ -63,6 +63,20 @@
 
 ---
 
+## [2.4.6-dev.5] - 2026/06/02
+> 开发版本
+
+### 变更
+- @wsu2059q
+  - 安装脚本下载方式从 Cloudflare Pages 改为 Worker 分发
+  - slow-handler 日志优化：`wait_reply` 等待期间不再误触发 WARNING，改为 DEBUG 级别日志
+  - slow-handler 日志现在显示具体业务模块（`owner=...`），而非笼统的 `CommandHandler._handle_message`
+  - `runtime/context.py` 新增 `handler_waits` ContextVar（原 `_handler_wait_info` 重命名），去除私有前缀，公开化为跨模块契约
+  - `Event/base.py:_invoke_handler` 去掉多余嵌套 try/finally，`_elapsed` 改在单一 finally 块计算
+  - `Event/command.py:wait_reply` 去掉防御性创建 ContextVar list 的逻辑，未在 handler 内时直接跳过记录
+
+---
+
 ## [2.4.6-dev.4] - 2026/06/01
 > 开发版本
 
