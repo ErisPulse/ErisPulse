@@ -11,7 +11,7 @@ ErisPulse 事件处理基础模块
 
 from .. import adapter, logger
 from ...runtime import get_event_config
-from ...runtime.context import current_owner
+from ...runtime.context import current_owner, handler_waits
 from ..constants import DEFAULT_HANDLER_PRIORITY, UNKNOWN_PLATFORM, EVENT_TYPE_MESSAGE, HANDLER_SLOW_THRESHOLD_SECS
 from typing import Any
 from collections.abc import Callable
@@ -36,17 +36,56 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     """
     handler = handler_info["func"]
     _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
+    _owner = handler_info.get("owner") or current_owner.get()
+
+    # 切换到本 handler 的局部 wait 记录器。
+    # 结束后把局部记录回填给外层 Task 级记录器（若有），便于统一判定 slow-log。
+    _outer_waits = handler_waits.get()
+    _local_waits: list[dict] = []
+    _wait_token = handler_waits.set(_local_waits)
+
+    _t = _time.monotonic()
     try:
-        _t = _time.monotonic()
         if inspect.iscoroutinefunction(handler):
             await handler(event)
         else:
             handler(event)
-        _elapsed = _time.monotonic() - _t
-        if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-            logger.warning(f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s")
     except Exception as e:
         logger.error(f"事件处理器执行错误: {e}")
+        return
+    finally:
+        _elapsed = _time.monotonic() - _t
+        handler_waits.reset(_wait_token)
+        if isinstance(_outer_waits, list):
+            _outer_waits.extend(_local_waits)
+
+    _wait_total = sum(w.get("duration", 0.0) for w in _local_waits)
+    _pure = max(0.0, _elapsed - _wait_total)
+
+    # 归属信息（同时附加到日志，便于排查具体业务模块）
+    _owner_tag = f" owner={_owner}" if _owner else " owner=<unknown>"
+
+    if _local_waits:
+        # 该 handler 调用过 wait_reply —— 在白名单内：
+        # 真正的 CPU/IO 慢才需要 WARNING；纯等待用户回复一律降级到 DEBUG。
+        _wait_keys = ",".join(w.get("wait_key", "") for w in _local_waits)
+        if _pure > HANDLER_SLOW_THRESHOLD_SECS:
+            logger.warning(
+                f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s "
+                f"(wait_reply={_wait_total:.4f}s, pure={_pure:.4f}s, "
+                f"waits=[{_wait_keys}]){_owner_tag}"
+            )
+        else:
+            logger.debug(
+                f"[EventHandler] {_hname} took {_elapsed:.4f}s "
+                f"(wait_reply={_wait_total:.4f}s, pure={_pure:.4f}s) "
+                f"interactive-wait, suppressed slow-warning{_owner_tag}"
+            )
+    else:
+        if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+            logger.warning(
+                f"[EventHandler] Slow handler {_hname} took {_elapsed:.4f}s{_owner_tag}"
+            )
 
 
 class BaseEventHandler:
