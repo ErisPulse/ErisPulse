@@ -701,7 +701,7 @@ function Select-Language {
         $script:Lang = "en"
     }
     
-    $L = $langData[$script:Lang]
+    $script:L = $langData[$script:Lang]
 }
 
 # ==================== Output helpers ====================
