@@ -246,10 +246,21 @@ pip install ErisPulse
 
 
 ##### 仪表盘：
-> 有一个gif，但是太大了没放到这里~ 抱歉~
-> [GIF演示](.github/assets/docs/dashboard-demo.gif)
+
+<table>
+<tr>
+<td width="50%">
 
 <img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
+
+</td>
+<td width="50%">
+
+<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 
 ##### 同一端代码，多个平台响应：
