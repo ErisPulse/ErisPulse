@@ -968,7 +968,7 @@ install_docker_mode() {
         channel_choice=${channel_choice:-1}
         case "$channel_choice" in
             1) channel="stable"; tag="latest"; break ;;
-            2) channel="dev"; tag="dev"; break ;;
+            2) channel="dev"; break ;;
             *) print_warning "$(t 'select_1_2')" ;;
         esac
     done
@@ -988,7 +988,7 @@ install_docker_mode() {
     echo -e "${CYAN}===========================================${NC}"
     echo -e "${CYAN}  $(t 'install_config')${NC}"
     echo -e "${CYAN}===========================================${NC}"
-    echo "  $(t 'image_label'): ${image}:${tag}"
+    echo "  $(t 'image_label'): ${image}:latest"
     echo "  $(t 'channel_label'): ${channel}"
     echo "  $(t 'port_label'): ${port}"
     echo "  Dashboard: $([ -n "$dashboard_token" ] && t 'enabled' || t 'not_enabled')"
@@ -1007,7 +1007,7 @@ install_docker_mode() {
 # ErisPulse Docker Compose
 services:
   erispulse:
-    image: ${image}:${tag}
+    image: ${image}:latest
     container_name: erispulse
     ports:
       - "\${ERISPULSE_PORT:-${port}}:8000"
