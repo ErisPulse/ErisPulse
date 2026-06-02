@@ -231,4 +231,176 @@ docker pull erispulse/erispulse:dev
 透過 [1Panel](https://1panel.cn) 應用商店一鍵安裝 ErisPulse，詳見 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
 ```bash
-bash <
+bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
+```
+
+#### 使用 pip 安裝
+
+```bash
+pip install ErisPulse
+```
+
+> 也可以使用上方的一鍵安裝腳本，自動檢測環境並引導配置。
+
+#### 運行效果
+
+
+##### 儀表盤：
+
+<table>
+<tr>
+<td width="50%">
+
+<img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
+
+</td>
+<td width="50%">
+
+<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
+
+
+##### 同一端代碼，多個平台響應：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Kook**
+
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**QQ**
+
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+
+</td>
+<td align="center" width="33%">
+
+**雲湖**
+
+<img src=".github/assets/demo-yunhu.png" alt="雲湖 演示" />
+
+</td>
+</tr>
+</table>
+
+#### 初始化項目
+
+```bash
+# 交互式初始化
+epsdk init
+
+# 快速初始化（指定項目名稱）
+epsdk init -q -n my_bot
+```
+
+#### 創建第一個機器人
+
+創建 `main.py` 文件：
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**命令處理器**
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello", help="發送問候訊息")
+async def hello_handler(event):
+    user_name = event.get_user_nickname() or "朋友"
+    await event.reply(f"你好，{user_name}！")
+
+@command("ping", help="測試機器人是否在線")
+async def ping_handler(event):
+    await event.reply("Pong！機器人運行正常。")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sdk.run(keep_running=True))
+```
+
+</td>
+<td width="50%" valign="top">
+
+**效果說明**
+
+發送 `/hello`
+
+機器人回覆：`你好，{用戶名}！`
+
+---
+
+發送 `/ping`
+
+機器人回覆：`Pong！機器人運行正常。`
+
+---
+
+**運行方式**
+
+```bash
+epsdk run main.py
+# 或開發模式
+epsdk run main.py --reload
+```
+
+</td>
+</tr>
+</table>
+
+更多詳細說明請參閱：
+- [快速開始指南](docs/zh-TW/quick-start.md)
+- [入門指南](docs/zh-TW/getting-started/)
+
+---
+
+### 應用場景
+
+<div align="center">
+
+| 多平台機器人 | 聊天助手 | 自動化工具 | 訊息轉發 |
+|:---:|:---:|:---:|:---:|
+| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現娛樂和交互 | 訊息通知、任務管理<br>數據收集 | 跨平台訊息<br>同步和轉發 |
+
+</div>
+
+---
+
+### 貢獻指南
+
+ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
+
+1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
+2. **功能請求** — 通過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+3. **代碼貢獻** — 提交 PR 前請閱讀 [代碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
+4. **文檔改進** — 幫助完善文檔和示例代碼
+
+[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
+
+---
+
+<div align="center">
+
+### 致謝
+
+<img src=".github/assets/thanks.png" width="200" alt="感謝" />
+
+本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/) · 感謝所有為開源社區做出貢獻的開發者和作者
+
+</div>

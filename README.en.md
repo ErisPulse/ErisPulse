@@ -246,10 +246,21 @@ pip install ErisPulse
 
 
 ##### Dashboard:
-> There is a GIF here, but it's too large to include~ Sorry~
-> [GIF Demo](.github/assets/docs/dashboard-demo.gif)
+
+<table>
+<tr>
+<td width="50%">
 
 <img src=".github/assets/docs/dashboard.png" alt="Dashboard Demo" />
+
+</td>
+<td width="50%">
+
+<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 
 ##### Code for one platform, responses on multiple platforms:
