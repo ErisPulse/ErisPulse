@@ -126,6 +126,25 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
+<table>
+<tr>
+<td align="center" width="50%">
+
+**Docker 安裝演示**
+
+<video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
+
+</td>
+<td align="center" width="50%">
+
+**pip 安裝演示**
+
+<video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
+
 #### 使用 Docker (推薦)
 
 ```bash
@@ -209,4 +228,7 @@ docker pull erispulse/erispulse:dev
 
 #### 1Panel 應用商店
 
-透過 [1Panel](https://1panel.cn) 應用商店一鍵
+透過 [1Panel](https://1panel.cn) 應用商店一鍵安裝 ErisPulse，詳見 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
+
+```bash
+bash <
