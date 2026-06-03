@@ -7,6 +7,9 @@ ErisPulse 核心模块
 from .lifecycle import lifecycle, LifecycleManager
 from .adapter import adapter, AdapterManager
 from .Bases import BaseAdapter, BaseModule, SendDSL, RequestDSL, BaseStorage, BaseQueryBuilder
+from .Bases import HttpRequest, WebSocketConnection, WebSocketDisconnect
+from .Bases import BaseHttpClient, BaseHttpResponse
+from .client import HttpClient, HttpResponse
 from .storage import storage, StorageManager
 from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
@@ -17,6 +20,9 @@ from . import Event
 from .Event.message_builder import MessageBuilder
 
 env = storage  # 存储管理器别名
+
+# 全局 HTTP 客户端单例
+client = HttpClient()
 
 __all__ = [
     "Event",  # 事件模块包
@@ -39,6 +45,14 @@ __all__ = [
     "router",  # 路由模块单例
     "RouterManager",  # 路由管理器类
     "RouteGroup",  # 路由组类
+    "HttpRequest",  # HTTP请求抽象类型
+    "WebSocketConnection",  # WebSocket连接抽象类型
+    "WebSocketDisconnect",  # WebSocket断开异常抽象类型
+    "HttpClient",  # HTTP客户端类 (基于aiohttp)
+    "HttpResponse",  # HTTP响应类
+    "client",  # HTTP客户端单例
+    "BaseHttpClient",  # HTTP客户端抽象基类
+    "BaseHttpResponse",  # HTTP响应抽象基类
     "logger",  # 日志模块单例
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
