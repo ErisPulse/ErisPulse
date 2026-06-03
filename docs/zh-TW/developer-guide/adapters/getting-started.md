@@ -65,7 +65,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "aiohttp>=3.8.0"
+    "ErisPulse>=2.4.0"  # ErisPulse 已內建 aiohttp，通常無需單獨依賴
 ]
 
 [project.urls]
@@ -180,14 +180,13 @@ class MyAdapter(BaseAdapter):
             })
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理与-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
 
 ### 5. 實作 Send 類別
 
 `At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
-
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
 - `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
@@ -197,4 +196,224 @@ import asyncio
 class MyAdapter(BaseAdapter):
     # ... 其他程式碼 ...
     
-    class Send(BaseAdapter
+    class Send(BaseAdapter.Send):
+        
+        def Raw_ob12(self, message, **kwargs):
+            """
+            發送 OneBot12 格式訊息（必須實作）
+
+            使用 _apply_modifiers 自動合併修飾器狀態，
+            使用 send_context 取得發送上下文。
+            """
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs
+                )
+            return asyncio.create_task(_do_send())
+        
+        def Text(self, text: str):
+            """發送文字訊息"""
+            return self.Raw_ob12([
+                {"type": "text", "data": {"text": text}}
+            ])
+        
+        def Image(self, file):
+            """發送圖片訊息"""
+            return self.Raw_ob12([
+                {"type": "image", "data": {"file": file}}
+            ])
+```
+
+**媒體類發送方法（Image/Video/File）實作要點：**
+
+- `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
+- 當傳入 URL 時，需先下載檔案再上傳到平台
+- 平台通常需要先呼叫上傳介面取得檔案標識，再呼叫發送介面
+
+**`__getattr__` 魔術方法：**
+
+- 實作方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
+- 未定義的方法應返回提示資訊而非報錯
+
+**`Raw_ob12` 方法：**
+
+- 將 OneBot12 標準訊息格式轉換為平台格式發送
+- 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
+- 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
+
+### 6. 實作轉換器
+
+```python
+# MyAdapter/Converter.py
+import time
+import uuid
+
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """將平台原生事件轉換為 OneBot12 標準格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        onebot_event = {
+            "id": str(raw_event.get("event_id", uuid.uuid4())),
+            "time": int(time.time()),
+            "type": self._convert_event_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+    
+    def _convert_event_type(self, event_type):
+        """轉換事件類型"""
+        type_map = {
+            "message": "message",
+            "notice": "notice"
+        }
+        return type_map.get(event_type, "unknown")
+    
+    def _convert_detail_type(self, raw_event):
+        """轉換詳細類型"""
+        return "private"  # 簡化示例
+```
+
+### 7. 實作 Request 類別（請求操作）
+
+如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類別：
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    # ... Send 和其他程式碼 ...
+
+    class Request(RequestDSL):
+        """請求操作實作（好友請求、群邀請等）"""
+
+        def accept(self, **kwargs):
+            """同意請求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+
+        def reject(self, **kwargs):
+            """拒絕請求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=False,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+```
+
+模組開發者使用方式：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # 透過 Event 便捷方法
+    await event.approve()
+    # 或透過適配器直接操作
+    await adapter.myplatform.Request("req_id").accept()
+```
+
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+
+### 8. 建立套件入口
+
+```python
+# MyAdapter/__init__.py
+from .Core import MyAdapter
+```
+
+## `__init__` 注意事項
+
+適配器開發中有三個層面可能涉及 `__init__` 重寫。以下是每個層面的正確做法。
+
+### 1. BaseAdapter 層（必須呼叫 `super().__init__()`）
+
+`BaseAdapter.__init__()` 負責**建立 `Send` 和 `Request` 工廠實例**。如果適配器有自己的 `__init__`，必須呼叫父類別初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self, sdk):
+        super().__init__()  # ← 必須！否則 Send / Request 不會被初始化
+        self.sdk = sdk
+        # ... 其他初始化
+```
+
+**忘記呼叫的後果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都會報 `AttributeError`。
+
+### 2. Send 內部類別（大多數情況不需要重寫）
+
+`SendDSL.__init__` 負責鏈式呼叫的狀態傳遞（目標類型、目標ID、帳號等）。**大多數情況下，你只需要重寫方法**（`Raw_ob12`、`Text` 等），不需要重寫 `__init__`。
+
+如果確實需要（比如初始化平台特有的狀態），**必須透傳所有參數**：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        # 參數：adapter, target_type, target_id, account_id
+        def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須透傳
+            self._my_state = None  # 平台特有初始化
+```
+
+**為什麼必須透傳？** 鏈式呼叫的每一步都透過 `self.__class__(...)` 建立新實例：
+
+```python
+adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
+adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
+```
+
+如果 `__init__` 簽名不匹配或沒調 `super()`，鏈式呼叫就會中斷。
+
+### 3. Request 內部類別（大多數情況不需要重寫）
+
+與 Send 同理。參數為 `adapter`, `request_id`, `account_id`：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Request(RequestDSL):
+        # 參數：adapter, request_id, account_id
+        def __init__(self, adapter, request_id=None, account_id=None):
+            super().__init__(adapter, request_id, account_id)  # ← 必須透傳
+            self._my_state = None  # 平台特有初始化
+```
+
+### 總結
+
+| 層面 | 什麼時候重寫 |

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1122,
+  "total_keywords": 1142,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. 使用 Event 包装类": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 98,
+        "line": 114,
         "level": 3,
         "title": "1. 使用 Event 包装类"
       }
@@ -53,7 +53,7 @@
     "1. 使用 Mixin 类批量注册（推荐）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 533,
+        "line": 540,
         "level": 3,
         "title": "1. 使用 Mixin 类批量注册（推荐）"
       }
@@ -61,7 +61,7 @@
     "1. 使用事务": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 190,
+        "line": 208,
         "level": 3,
         "title": "1. 使用事务"
       }
@@ -77,7 +77,7 @@
     "1. 使用缓存": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 257,
+        "line": 275,
         "level": 3,
         "title": "1. 使用缓存"
       }
@@ -91,7 +91,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 154,
+        "line": 170,
         "level": 3,
         "title": "1. 分类异常处理"
       }
@@ -123,13 +123,13 @@
     "1. 单元测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 475,
+        "line": 482,
         "level": 3,
         "title": "1. 单元测试"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 331,
+        "line": 349,
         "level": 3,
         "title": "1. 单元测试"
       }
@@ -137,7 +137,7 @@
     "1. 合理使用日志级别": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 223,
+        "line": 241,
         "level": 3,
         "title": "1. 合理使用日志级别"
       }
@@ -185,7 +185,7 @@
     "1. 敏感数据保护": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 294,
+        "line": 312,
         "level": 3,
         "title": "1. 敏感数据保护"
       }
@@ -241,7 +241,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 380,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -257,7 +257,7 @@
     "1. 维护平台特性文档": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 585,
+        "line": 592,
         "level": 3,
         "title": "1. 维护平台特性文档"
       }
@@ -425,7 +425,7 @@
     "2. Event 对象": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
         "title": "2. Event 对象"
       }
@@ -457,7 +457,7 @@
     "2. 使用装饰器注册单个方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 559,
+        "line": 566,
         "level": 3,
         "title": "2. 使用装饰器注册单个方法"
       }
@@ -505,7 +505,7 @@
     "2. 合理使用懒加载": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 114,
+        "line": 130,
         "level": 3,
         "title": "2. 合理使用懒加载"
       }
@@ -529,7 +529,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 206,
+        "line": 224,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -545,7 +545,7 @@
     "2. 文档完善": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 394,
         "level": 3,
         "title": "2. 文档完善"
       }
@@ -553,7 +553,7 @@
     "2. 日志记录": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 454,
+        "line": 461,
         "level": 3,
         "title": "2. 日志记录"
       },
@@ -575,7 +575,7 @@
     "2. 更新版本信息": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 606,
+        "line": 613,
         "level": 3,
         "title": "2. 更新版本信息"
       }
@@ -607,7 +607,7 @@
     "2. 正确的异步操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 73,
+        "line": 89,
         "level": 3,
         "title": "2. 正确的异步操作"
       }
@@ -615,7 +615,7 @@
     "2. 结构化日志": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 245,
+        "line": 263,
         "level": 3,
         "title": "2. 结构化日志"
       }
@@ -647,7 +647,7 @@
     "2. 超时处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 175,
+        "line": 191,
         "level": 3,
         "title": "2. 超时处理"
       }
@@ -655,7 +655,7 @@
     "2. 输入验证": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 329,
         "level": 3,
         "title": "2. 输入验证"
       }
@@ -671,7 +671,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 278,
+        "line": 296,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -695,13 +695,13 @@
     "2. 集成测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 499,
+        "line": 506,
         "level": 3,
         "title": "2. 集成测试"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 346,
+        "line": 364,
         "level": 3,
         "title": "2. 集成测试"
       }
@@ -861,7 +861,7 @@
     "3. 事件处理器注册": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 136,
+        "line": 152,
         "level": 3,
         "title": "3. 事件处理器注册"
       }
@@ -997,7 +997,7 @@
     "3. 资源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 84,
+        "line": 100,
         "level": 3,
         "title": "3. 资源管理"
       }
@@ -1005,7 +1005,7 @@
     "3. 适配器": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 81,
+        "line": 82,
         "level": 3,
         "title": "3. 适配器"
       }
@@ -1013,7 +1013,7 @@
     "3. 适配器关闭时清理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 569,
+        "line": 576,
         "level": 3,
         "title": "3. 适配器关闭时清理"
       }
@@ -1165,7 +1165,7 @@
     "4. 模块": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 96,
+        "line": 97,
         "level": 3,
         "title": "4. 模块"
       }
@@ -1953,7 +1953,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 693,
+        "line": 700,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -1973,7 +1973,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 626,
+        "line": 633,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2005,15 +2005,23 @@
     "CORS 配置": [
       {
         "document": "advanced/router.md",
-        "line": 198,
+        "line": 245,
         "level": 2,
         "title": "CORS 配置"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 542,
+        "line": 565,
         "level": 3,
         "title": "CORS 配置"
+      }
+    ],
+    "Client（HTTP 客户端）": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 305,
+        "level": 3,
+        "title": "Client（HTTP 客户端）"
       }
     ],
     "Command 命令模块": [
@@ -2035,7 +2043,7 @@
     "Config（配置）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 225,
+        "line": 226,
         "level": 3,
         "title": "Config（配置）"
       }
@@ -2243,7 +2251,7 @@
     "Event 回复方法": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 336,
+        "line": 364,
         "level": 3,
         "title": "Event 回复方法"
       }
@@ -2256,10 +2264,34 @@
         "title": "Event 对象常用方法"
       }
     ],
+    "GET": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 59,
+        "level": 3,
+        "title": "GET"
+      }
+    ],
+    "HTTP Client 模块": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 614,
+        "level": 2,
+        "title": "HTTP Client 模块"
+      }
+    ],
+    "HTTP 客户端": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "HTTP 客户端"
+      }
+    ],
     "HTTP 装饰器": [
       {
         "document": "advanced/router.md",
-        "line": 22,
+        "line": 35,
         "level": 3,
         "title": "HTTP 装饰器"
       }
@@ -2270,6 +2302,14 @@
         "line": 160,
         "level": 3,
         "title": "HTTP 路由"
+      }
+    ],
+    "HttpResponse": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 34,
+        "level": 2,
+        "title": "HttpResponse"
       }
     ],
     "ID 字段查询": [
@@ -2315,7 +2355,7 @@
     "Logger（日志）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 240,
+        "line": 241,
         "level": 3,
         "title": "Logger（日志）"
       }
@@ -2355,7 +2395,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 648,
+        "line": 655,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -2508,6 +2548,22 @@
         "title": "OneBot12消息支持"
       }
     ],
+    "POST": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 71,
+        "level": 3,
+        "title": "POST"
+      }
+    ],
+    "PUT / DELETE / PATCH": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 96,
+        "level": 3,
+        "title": "PUT / DELETE / PATCH"
+      }
+    ],
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -2615,7 +2671,7 @@
     "Router（路由）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 267,
+        "line": 268,
         "level": 3,
         "title": "Router（路由）"
       }
@@ -2717,7 +2773,7 @@
     "SendDSL 消息发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 306,
+        "line": 334,
         "level": 2,
         "title": "SendDSL 消息发送"
       }
@@ -2741,7 +2797,7 @@
     "Storage（存储）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "Storage（存储）"
       }
@@ -2829,15 +2885,23 @@
     "WebSocket 注册": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 130,
         "level": 3,
         "title": "WebSocket 注册"
+      }
+    ],
+    "WebSocket 生命周期钩子": [
+      {
+        "document": "advanced/router.md",
+        "line": 171,
+        "level": 2,
+        "title": "WebSocket 生命周期钩子"
       }
     ],
     "WebSocket 装饰器": [
       {
         "document": "advanced/router.md",
-        "line": 54,
+        "line": 65,
         "level": 3,
         "title": "WebSocket 装饰器"
       }
@@ -2845,7 +2909,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 446,
+        "line": 469,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3051,7 +3115,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 682,
+        "line": 689,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3392,6 +3456,14 @@
         "title": "上下文与持久化"
       }
     ],
+    "上下文管理": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 186,
+        "level": 2,
+        "title": "上下文管理"
+      }
+    ],
     "下一步": [
       {
         "document": "ai-support/README.md",
@@ -3413,13 +3485,13 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 373,
+        "line": 401,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 444,
+        "line": 442,
         "level": 2,
         "title": "下一步"
       },
@@ -3579,7 +3651,7 @@
     "事件处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 96,
+        "line": 112,
         "level": 2,
         "title": "事件处理"
       },
@@ -3601,7 +3673,7 @@
     "事件处理关键步骤": [
       {
         "document": "architecture.md",
-        "line": 111,
+        "line": 113,
         "level": 3,
         "title": "事件处理关键步骤"
       }
@@ -3663,7 +3735,7 @@
     "事件处理流程": [
       {
         "document": "architecture.md",
-        "line": 90,
+        "line": 92,
         "level": 2,
         "title": "事件处理流程"
       }
@@ -3745,7 +3817,7 @@
     "事件类型": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 136,
+        "line": 137,
         "level": 2,
         "title": "事件类型"
       }
@@ -4023,13 +4095,13 @@
     "传统注册方式": [
       {
         "document": "advanced/router.md",
-        "line": 78,
+        "line": 104,
         "level": 2,
         "title": "传统注册方式"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 423,
+        "line": 446,
         "level": 3,
         "title": "传统注册方式"
       }
@@ -4213,7 +4285,7 @@
     "健康检查": [
       {
         "document": "advanced/router.md",
-        "line": 291,
+        "line": 340,
         "level": 3,
         "title": "健康检查"
       },
@@ -4233,7 +4305,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 187,
+        "line": 188,
         "level": 3,
         "title": "元事件"
       }
@@ -4437,7 +4509,7 @@
     "初始化流程": [
       {
         "document": "architecture.md",
-        "line": 53,
+        "line": 55,
         "level": 2,
         "title": "初始化流程"
       }
@@ -4459,7 +4531,7 @@
     "初始化阶段详解": [
       {
         "document": "architecture.md",
-        "line": 78,
+        "line": 80,
         "level": 3,
         "title": "初始化阶段详解"
       }
@@ -4497,7 +4569,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 24,
+        "line": 25,
         "level": 2,
         "title": "前置知识"
       }
@@ -4642,6 +4714,12 @@
         "title": "参数说明"
       },
       {
+        "document": "advanced/http-client.md",
+        "line": 118,
+        "level": 2,
+        "title": "参数说明"
+      },
+      {
         "document": "user-guide/cli-reference.md",
         "line": 45,
         "level": 2,
@@ -4691,7 +4769,7 @@
     "反向转换与消息构建": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 519,
+        "line": 526,
         "level": 2,
         "title": "反向转换与消息构建"
       }
@@ -4951,7 +5029,7 @@
     "命令事件": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 151,
+        "line": 152,
         "level": 3,
         "title": "命令事件"
       }
@@ -5088,6 +5166,14 @@
         "title": "命名规范"
       }
     ],
+    "响应对象": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 640,
+        "level": 3,
+        "title": "响应对象"
+      }
+    ],
     "回复": [
       {
         "document": "terminology.md",
@@ -5159,7 +5245,7 @@
     "图片识别示例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 411,
+        "line": 410,
         "level": 3,
         "title": "图片识别示例"
       }
@@ -5316,6 +5402,14 @@
         "title": "基本结构"
       }
     ],
+    "基本请求": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 616,
+        "level": 3,
+        "title": "基本请求"
+      }
+    ],
     "基本调用方式": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -5343,7 +5437,7 @@
     "基础发送": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 310,
+        "line": 338,
         "level": 3,
         "title": "基础发送"
       }
@@ -5689,7 +5783,7 @@
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 188,
+        "line": 206,
         "level": 2,
         "title": "存储系统"
       },
@@ -5719,13 +5813,13 @@
     "安全头": [
       {
         "document": "advanced/router.md",
-        "line": 217,
+        "line": 264,
         "level": 2,
         "title": "安全头"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 559,
+        "line": 582,
         "level": 3,
         "title": "安全头"
       }
@@ -5741,7 +5835,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 292,
+        "line": 310,
         "level": 2,
         "title": "安全性"
       }
@@ -6109,7 +6203,7 @@
     "平台事件方法扩展": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 529,
+        "line": 536,
         "level": 2,
         "title": "平台事件方法扩展"
       }
@@ -6480,6 +6574,12 @@
         "title": "快速开始"
       },
       {
+        "document": "advanced/http-client.md",
+        "line": 16,
+        "level": 2,
+        "title": "快速开始"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
         "level": 2,
@@ -6503,7 +6603,7 @@
     "性能优化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 255,
+        "line": 273,
         "level": 2,
         "title": "性能优化"
       }
@@ -6543,7 +6643,7 @@
     "懒加载系统": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 353,
+        "line": 381,
         "level": 2,
         "title": "懒加载系统"
       }
@@ -6682,6 +6782,20 @@
         "line": 1,
         "level": 1,
         "title": "技术标准"
+      }
+    ],
+    "抽象类型": [
+      {
+        "document": "advanced/router.md",
+        "line": 21,
+        "level": 2,
+        "title": "抽象类型"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "抽象类型"
       }
     ],
     "指定发送账号": [
@@ -7011,7 +7125,7 @@
     "文档维护": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 583,
+        "line": 590,
         "level": 2,
         "title": "文档维护"
       }
@@ -7127,7 +7241,7 @@
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 221,
+        "line": 239,
         "level": 2,
         "title": "日志记录"
       },
@@ -7212,6 +7326,12 @@
     ],
     "最佳实践": [
       {
+        "document": "advanced/http-client.md",
+        "line": 215,
+        "level": 2,
+        "title": "最佳实践"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 94,
         "level": 2,
@@ -7219,7 +7339,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 320,
+        "line": 369,
         "level": 2,
         "title": "最佳实践"
       },
@@ -7603,13 +7723,13 @@
     "核心模块说明": [
       {
         "document": "architecture.md",
-        "line": 40,
+        "line": 41,
         "level": 3,
         "title": "核心模块说明"
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 200,
+        "line": 201,
         "level": 2,
         "title": "核心模块说明"
       }
@@ -7680,6 +7800,12 @@
     ],
     "概述": [
       {
+        "document": "advanced/http-client.md",
+        "line": 5,
+        "level": 2,
+        "title": "概述"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 5,
         "level": 2,
@@ -7717,7 +7843,7 @@
     "模块加载策略": [
       {
         "document": "architecture.md",
-        "line": 173,
+        "line": 175,
         "level": 2,
         "title": "模块加载策略"
       }
@@ -7985,13 +8111,13 @@
     "测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 473,
+        "line": 480,
         "level": 2,
         "title": "测试"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 347,
         "level": 2,
         "title": "测试"
       }
@@ -8029,7 +8155,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 138,
+        "line": 139,
         "level": 3,
         "title": "消息事件"
       }
@@ -8506,14 +8632,26 @@
     ],
     "生命周期事件": [
       {
+        "document": "advanced/http-client.md",
+        "line": 174,
+        "level": 2,
+        "title": "生命周期事件"
+      },
+      {
         "document": "api-reference/adapter-system.md",
         "line": 388,
         "level": 3,
         "title": "生命周期事件"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 706,
+        "level": 3,
+        "title": "生命周期事件"
+      },
+      {
         "document": "architecture.md",
-        "line": 119,
+        "line": 121,
         "level": 2,
         "title": "生命周期事件"
       }
@@ -8529,7 +8667,7 @@
     "生命周期集成": [
       {
         "document": "advanced/router.md",
-        "line": 306,
+        "line": 355,
         "level": 2,
         "title": "生命周期集成"
       }
@@ -8575,7 +8713,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 716,
+        "line": 723,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -8615,7 +8753,7 @@
     "监听生命周期事件": [
       {
         "document": "architecture.md",
-        "line": 150,
+        "line": 152,
         "level": 3,
         "title": "监听生命周期事件"
       }
@@ -8660,6 +8798,12 @@
         "title": "相关文档"
       },
       {
+        "document": "advanced/http-client.md",
+        "line": 223,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 128,
         "level": 2,
@@ -8679,7 +8823,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 329,
+        "line": 379,
         "level": 2,
         "title": "相关文档"
       },
@@ -8709,7 +8853,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 591,
+        "line": 716,
         "level": 2,
         "title": "相关文档"
       },
@@ -8727,7 +8871,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 615,
+        "line": 622,
         "level": 2,
         "title": "相关文档"
       },
@@ -8739,7 +8883,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 734,
+        "line": 741,
         "level": 2,
         "title": "相关文档"
       },
@@ -8751,7 +8895,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 389,
+        "line": 407,
         "level": 2,
         "title": "相关文档"
       },
@@ -9007,7 +9151,7 @@
     "系统路由": [
       {
         "document": "advanced/router.md",
-        "line": 287,
+        "line": 336,
         "level": 2,
         "title": "系统路由"
       }
@@ -9095,7 +9239,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 630,
+        "line": 637,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -9111,13 +9255,13 @@
     "自动文档": [
       {
         "document": "advanced/router.md",
-        "line": 232,
+        "line": 279,
         "level": 2,
         "title": "自动文档"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 570,
+        "line": 593,
         "level": 3,
         "title": "自动文档"
       }
@@ -9128,6 +9272,14 @@
         "line": 342,
         "level": 2,
         "title": "自定义存储后端"
+      }
+    ],
+    "自定义客户端": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 673,
+        "level": 3,
+        "title": "自定义客户端"
       }
     ],
     "自定义消息段": [
@@ -9144,6 +9296,14 @@
         "line": 122,
         "level": 2,
         "title": "自定义类型注册"
+      }
+    ],
+    "自定义默认头": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 149,
+        "level": 2,
+        "title": "自定义默认头"
       }
     ],
     "花枫咖啡馆（Ideaura）平台特性文档": [
@@ -9265,13 +9425,13 @@
     "装饰器路由（推荐）": [
       {
         "document": "advanced/router.md",
-        "line": 20,
+        "line": 33,
         "level": 2,
         "title": "装饰器路由（推荐）"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 396,
         "level": 3,
         "title": "装饰器路由（推荐）"
       }
@@ -9311,7 +9471,7 @@
     "认证机制": [
       {
         "document": "advanced/router.md",
-        "line": 258,
+        "line": 305,
         "level": 2,
         "title": "认证机制"
       }
@@ -9339,7 +9499,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 175,
+        "line": 176,
         "level": 3,
         "title": "请求事件"
       }
@@ -9384,6 +9544,20 @@
         "title": "请求信息"
       }
     ],
+    "请求参数": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 120,
+        "level": 3,
+        "title": "请求参数"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 661,
+        "level": 3,
+        "title": "请求参数"
+      }
+    ],
     "请求操作": [
       {
         "document": "standards/README.md",
@@ -9398,12 +9572,34 @@
         "title": "请求操作"
       }
     ],
+    "请求方法": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 57,
+        "level": 2,
+        "title": "请求方法"
+      }
+    ],
     "请求类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 153,
         "level": 4,
         "title": "请求类型判断"
+      }
+    ],
+    "请求统计": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 161,
+        "level": 2,
+        "title": "请求统计"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 693,
+        "level": 3,
+        "title": "请求统计"
       }
     ],
     "读取配置": [
@@ -9480,6 +9676,14 @@
         "title": "贴纸消息段 (yunhu_user_sticker)"
       }
     ],
+    "超时与重试": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 132,
+        "level": 2,
+        "title": "超时与重试"
+      }
+    ],
     "超级文件分享事件示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -9491,7 +9695,7 @@
     "路径处理": [
       {
         "document": "advanced/router.md",
-        "line": 248,
+        "line": 295,
         "level": 2,
         "title": "路径处理"
       }
@@ -9507,13 +9711,13 @@
     "路由中间件": [
       {
         "document": "advanced/router.md",
-        "line": 165,
+        "line": 212,
         "level": 2,
         "title": "路由中间件"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 511,
+        "line": 534,
         "level": 3,
         "title": "路由中间件"
       }
@@ -9521,7 +9725,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 585,
+        "line": 608,
         "level": 3,
         "title": "路由信息"
       }
@@ -9529,13 +9733,13 @@
     "路由分组": [
       {
         "document": "advanced/router.md",
-        "line": 148,
+        "line": 195,
         "level": 2,
         "title": "路由分组"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 492,
+        "line": 515,
         "level": 3,
         "title": "路由分组"
       }
@@ -9543,7 +9747,7 @@
     "路由列表": [
       {
         "document": "advanced/router.md",
-        "line": 299,
+        "line": 348,
         "level": 3,
         "title": "路由列表"
       }
@@ -9721,7 +9925,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "适用对象"
       },
@@ -9746,6 +9950,14 @@
         "title": "适配器"
       }
     ],
+    "适配器中使用": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 195,
+        "level": 2,
+        "title": "适配器中使用"
+      }
+    ],
     "适配器事件": [
       {
         "document": "api-reference/core-modules.md",
@@ -9757,7 +9969,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 656,
+        "line": 663,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -9914,6 +10126,14 @@
         "title": "选择菜单 (choose)"
       }
     ],
+    "通用 request": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 106,
+        "level": 3,
+        "title": "通用 request"
+      }
+    ],
     "通用参数": [
       {
         "document": "user-guide/cli-reference.md",
@@ -9947,7 +10167,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 163,
+        "line": 164,
         "level": 3,
         "title": "通知事件"
       }
@@ -10041,13 +10261,13 @@
     "速率限制": [
       {
         "document": "advanced/router.md",
-        "line": 182,
+        "line": 229,
         "level": 2,
         "title": "速率限制"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 529,
+        "line": 552,
         "level": 3,
         "title": "速率限制"
       }
@@ -10079,7 +10299,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 360,
+        "line": 378,
         "level": 2,
         "title": "部署"
       }
@@ -10287,7 +10507,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 323,
+        "line": 351,
         "level": 3,
         "title": "链式修饰"
       }
@@ -10433,7 +10653,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 152,
+        "line": 168,
         "level": 2,
         "title": "错误处理"
       },

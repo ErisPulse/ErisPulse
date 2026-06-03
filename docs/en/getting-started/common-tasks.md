@@ -381,6 +381,8 @@ async def search_handler(event):
 ### Image Download and Storage
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def image_handler(event):
     """Handle image messages"""
@@ -391,26 +393,25 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Download image
-                import aiohttp
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        if response.status == 200:
-                            image_data = await response.read()
-                            
-                            # Store to file
-                            filename = f"images/{event.get_time()}.jpg"
-                            with open(filename, "wb") as f:
-                                f.write(image_data)
-                            
-                            sdk.logger.info(f"Image saved: {filename}")
-                            await event.reply("Image saved")
+                # Recommend using SDK built-in client to download image
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # Store to file
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"Image saved: {filename}")
+                    await event.reply("Image saved")
 ```
 
 ### Image Identification Example
 
 ```python
+from ErisPulse.Core import client
+
 @command("identify", help="Identify image")
 async def identify_handler(event):
     """Identify image in message"""
@@ -429,16 +430,13 @@ async def identify_handler(event):
     await event.reply("No image found")
 
 async def _identify_image(url):
-    """Call image identification API (example)"""
-    import aiohttp
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/identify",
-            json={"url": url}
-        ) as response:
-            data = await response.json()
-            return data.get("description", "Identification failed")
+    """Call image identification API (example) - Use SDK built-in client"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "Identification failed")
 ```
 
 ## Next Steps
