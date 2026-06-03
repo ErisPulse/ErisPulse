@@ -17,7 +17,8 @@ graph TB
     SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Client["HttpClient<br/>HTTP Client"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -48,7 +49,8 @@ graph TB
 | **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
 | **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Router** | HTTP/WebSocket route management, encapsulating the underlying backend via an abstraction layer (currently FastAPI + Uvicorn), supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **HttpClient** | Unified HTTP client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, and other features |
 
 ## Initialization Process
 
@@ -85,7 +87,7 @@ flowchart TD
 6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
 7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
 8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the router server using Uvicorn (FastAPI)
+9. **Start Router Server** - Start the FastAPI route server using Uvicorn
 
 ## Event Handling Process
 

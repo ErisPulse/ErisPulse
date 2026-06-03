@@ -267,7 +267,7 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 18,
+      "count": 20,
       "documents": [
         {
           "title": "進階主題",
@@ -307,6 +307,11 @@
         {
           "title": "Dashboard 視窗註冊",
           "path": "advanced/dashboard-view.md",
+          "level": 1
+        },
+        {
+          "title": "HTTP 客戶端",
+          "path": "advanced/http-client.md",
           "level": 1
         },
         {

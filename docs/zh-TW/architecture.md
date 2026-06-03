@@ -17,7 +17,8 @@ graph TB
     SDK --> Config["Config<br/>設定管理"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客戶端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -48,7 +49,8 @@ graph TB
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
 | **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **HttpClient** | 統一 HTTP 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌等功能 |
 
 ## 初始化流程
 
@@ -185,4 +187,4 @@ flowchart TD
     G --> D2["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [延遲載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
+> 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。

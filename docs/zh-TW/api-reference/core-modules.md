@@ -15,7 +15,7 @@ sdk.storage.set("key", "value")
 # 取得值
 value = sdk.storage.get("key", default_value)
 
-# 取得所有鍵
+# 获取所有键
 keys = sdk.storage.keys()
 
 # 刪除值
@@ -25,7 +25,7 @@ sdk.storage.delete("key")
 ### 事務操作
 
 ```python
-# 使用事務確保資料一致性
+# 使用事务确保数据一致性
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
@@ -35,17 +35,17 @@ with sdk.storage.transaction():
 ### 批次操作
 
 ```python
-# 批次設定
+# 批量设置
 sdk.storage.set_multi({
     "key1": "value1",
     "key2": "value2",
     "key3": "value3"
 })
 
-# 批次取得
+# 批量获取
 values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
-# 批次刪除
+# 批量刪除
 sdk.storage.delete_multi(["key1", "key2", "key3"])
 ```
 
@@ -53,7 +53,7 @@ sdk.storage.delete_multi(["key1", "key2", "key3"])
 
 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
-> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
+> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 获取完整文档。
 
 ```python
 from ErisPulse import sdk
@@ -68,7 +68,7 @@ sdk.storage.CreateTable("users", {
 # 插入資料
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入
+# 批量插入
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35}
@@ -105,7 +105,7 @@ sdk.storage.AlterTable("users").RenameTo("members").Execute()
 if sdk.storage.HasTable("users"):
     sdk.storage.DropTable("users")
 
-# 事務中的鏈式操作
+# 事务中的鏈式操作
 with sdk.storage.transaction():
     sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
     sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
@@ -134,10 +134,10 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```python
 from ErisPulse import sdk
 
-# 取得配置
+# 获取配置
 config = sdk.config.getConfig("MyModule", {})
 
-# 取得巢狀配置
+# 获取巢狀配置
 value = sdk.config.getConfig("MyModule.subkey.value", "default")
 ```
 
@@ -186,7 +186,7 @@ sdk.logger.critical("致命錯誤")
 ### 子日誌記錄器
 
 ```python
-# 取得子日誌記錄器
+# 获取子日誌記錄器
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模組日誌")
 
@@ -211,7 +211,7 @@ sdk.logger.save_logs("log.txt")
 ```python
 from ErisPulse import sdk
 
-# 取得適配器實例
+# 获取适配器實例
 adapter = sdk.adapter.get("platform_name")
 
 # 透過屬性存取
@@ -240,7 +240,7 @@ async def handle_raw_event(data):
 ### 適配器管理
 
 ```python
-# 取得所有平台
+# 获取所有平台
 platforms = sdk.adapter.platforms
 
 # 檢查適配器是否存在
@@ -268,7 +268,7 @@ running = sdk.adapter.list_running()
 ```python
 from ErisPulse import sdk
 
-# 取得模組實例
+# 获取模組實例
 module = sdk.module.get("ModuleName")
 
 # 透過屬性存取
@@ -304,10 +304,10 @@ loaded = sdk.module.list_loaded()
 # 列出已註冊的模組
 registered = sdk.module.list_registered()
 
-# 取得模組資訊
+# 获取模組資訊
 info = sdk.module.get_info("ModuleName")
 
-# 取得模組狀態摘要
+# 获取模組狀態摘要
 summary = sdk.module.get_status_summary()
 # {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
 
@@ -361,7 +361,7 @@ sdk.lifecycle.start_timer("my_operation")
 
 # ... 執行操作 ...
 
-# 取得持續時間
+# 获取持续时间
 duration = sdk.lifecycle.get_duration("my_operation")
 
 # 停止計時
@@ -369,6 +369,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
 ## Router 模組
+
+### 抽象類型
+
+Router 支援兩種類型註解風格：
+
+```python
+# ErisPulse 抽象類型（推薦，可移植性強）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI 原生類型（相容已有代碼）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> 路由系統根據參數註解自動注入對應類型的物件，詳見 [路由管理器](../advanced/router.md)。
 
 ### 裝飾器路由（推薦）
 
@@ -467,128 +490,3 @@ async def auth_handler(websocket: WebSocket) -> bool:
     return token == "secret"
 
 sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# 取消路由
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**參數說明：**
-
-| 參數 | 說明 | 預設值 |
-|------|------|--------|
-| `module_name` | 模組名稱（必須） | - |
-| `path` | WebSocket 路徑 | - |
-| `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
-| `auto_accept` | 是否自動 `accept()` | `True` |
-
-> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
-
-### 路由分組
-
-```python
-# 建立路由組
-group = sdk.router.group("MyModule", prefix="/v1")
-
-# 在組內註冊路由
-@group.get("/users")
-async def list_users(request: Request):
-    return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# 帶版本號的分組
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
-```
-
-### 路由中介軟體
-
-```python
-# 全域中介軟體（glob 匹配）
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
-
-# 特定路徑中介軟體
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
-
-### 速率限制
-
-```python
-# 對路由設定速率限制（滑動視窗）
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS 配置
-
-```python
-# 程式碼方式
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# 設定檔方式（config.toml）
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### 安全標頭
-
-```python
-# 自動新增安全回應標頭
-sdk.router.setup_security_headers()
-
-# 設定檔方式（config.toml）
-# [router.security]
-# enabled = true
-```
-
-### 自動文件
-
-```python
-# Router 預設啟用 OpenAPI 文件
-# 停用文件
-sdk.router.disable_docs()
-
-# 自訂文件資訊
-sdk.router.set_docs_info(
-    title="My API",
-    description="API 文件",
-    version="1.0.0"
-)
-```
-
-### 路由資訊
-
-```python
-app = sdk.router.get_app()
-```
-
-## 相關文件
-
-- [事件系統 API](event-system.md) - Event 模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API
