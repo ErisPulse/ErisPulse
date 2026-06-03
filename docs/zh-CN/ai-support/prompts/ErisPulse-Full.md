@@ -392,33 +392,59 @@ flowchart TD
 
 ## 安装 ErisPulse
 
+### 一键安装脚本（推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+脚本会引导您完成：
+
+- **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
+
+### 使用 Docker
+
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板。
+
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub 不可用？</summary>
+
+使用 GitHub Container Registry 镜像，修改 `docker-compose.yml` 中的 image：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
+
 ### 使用 pip 安装
 
-确保你的 Python 版本 >= 3.10，然后使用 pip 安装 ErisPulse：
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
 
 ```bash
 pip install ErisPulse
 ```
 
-### 使用 uv 安装（推荐）
-
-`uv` 是一个更快的 Python 工具链，推荐使用。如果你不确定什么是"工具链"，可以理解为更高效的安装和管理 Python 包的工具。
-
-#### 安装 uv
-
-```bash
-pip install uv
-```
-
-#### 创建项目并安装
-
-```bash
-uv python install 3.12              # 安装 Python 3.12
-uv venv                             # 创建虚拟环境
-.venv\Scripts\activate               # 激活环境 (Windows)
-# source .venv/bin/activate          # Linux/Mac
-uv pip install ErisPulse --upgrade  # 安装框架
-```
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
 
 ## 初始化项目
 
@@ -520,6 +546,7 @@ level = "INFO"
 - [创建第一个机器人](getting-started/first-bot.md) - 创建一个简单的机器人
 - [用户使用指南](user-guide/) - 深入了解配置和模块管理
 - [开发者指南](developer-guide/) - 开发自定义模块和适配器
+
 
 
 
@@ -7437,99 +7464,6 @@ duration = sdk.lifecycle.get_duration("my_operation")
 
 # 停止计时
 total_time = sdk.lifecycle.stop_timer("my_operation")
-```
-
-## Metrics 模块
-
-### 基本使用
-
-```python
-from ErisPulse import sdk
-
-# 注册内置指标（HTTP 请求数、模块加载耗时等）
-sdk.metrics.register_builtin_metrics()
-
-# 获取所有指标快照
-snapshot = sdk.metrics.get_all_metrics()
-
-# 重置所有指标
-sdk.metrics.reset()
-```
-
-### 指标类型
-
-#### Counter — 计数器
-
-```python
-# 通过 MetricsManager 创建计数器
-counter = sdk.metrics.counter("http_requests_total", description="HTTP 请求总数")
-counter.inc()            # +1
-counter.inc(5)           # +5
-print(counter.get())     # 获取当前值
-print(counter.name)      # 指标名称
-
-# 带标签的计数
-counter.inc(tags={"method": "GET"})
-counter.get(tags={"method": "GET"})  # 获取特定标签值
-```
-
-#### Gauge — 仪表盘
-
-```python
-# 通过 MetricsManager 创建仪表盘
-gauge = sdk.metrics.gauge("active_connections", description="活跃连接数")
-gauge.inc()              # +1
-gauge.dec()              # -1
-gauge.set(42)            # 设为 42
-print(gauge.get())       # 获取当前值
-print(gauge.name)        # 指标名称
-```
-
-#### Histogram — 直方图
-
-```python
-# 通过 MetricsManager 创建直方图
-hist = sdk.metrics.histogram("request_duration_seconds", description="请求耗时")
-hist.observe(0.15)
-hist.observe(0.32)
-hist.observe(1.2)
-
-# 获取统计摘要
-summary = hist.get_summary()
-# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
-
-print(hist.name)         # 指标名称
-```
-
-### 自定义指标
-
-```python
-from ErisPulse import sdk
-
-# 通过 MetricsManager 创建自定义指标
-counter = sdk.metrics.counter("my_module.errors", description="模块错误计数")
-gauge = sdk.metrics.gauge("my_module.queue_size", description="队列大小")
-hist = sdk.metrics.histogram("my_module.process_time", description="处理耗时")
-
-# 直接使用返回的指标对象
-counter.inc()
-gauge.set(10)
-hist.observe(0.5)
-```
-
-### @timed 装饰器
-
-```python
-# 通过 MetricsManager 的 timed 方法
-@sdk.metrics.timed("my_module.handler_duration")
-async def handle_request():
-    # 函数执行时间将自动记录到 Histogram 指标
-    await do_something()
-
-# 带标签的计时
-@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
-async def handle_api_request():
-    await do_something()
 ```
 
 ## Router 模块

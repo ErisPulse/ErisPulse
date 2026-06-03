@@ -17,6 +17,7 @@ from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
 from .Bases.manager import ManagerBase
+from ..runtime.context import handler_waits
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
@@ -861,7 +862,13 @@ class AdapterManager(ManagerBase):
 
         _func_name = getattr(func, "__qualname__", getattr(func, "__name__", str(func)))
 
+        # 在 Task 顶层准备 wait_reply 累计器（list 对象，可跨 ContextVar 共享）。
+        # 注意：ContextVar 的 set()/reset() 必须在同一个 Task Context 内完成，
+        # 所以下面把 .set() 移入 _safe_run，避免跨 Task token 错误。
+        _task_waits: list[dict] = []
+
         async def _safe_run():
+            _wait_token = handler_waits.set(_task_waits)
             t0 = _time.monotonic()
             try:
                 await func(data)
@@ -874,12 +881,42 @@ class AdapterManager(ManagerBase):
                 )
             finally:
                 elapsed = _time.monotonic() - t0
-                if elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-                    logger.warning(
-                        f"事件处理器执行缓慢 [{_func_name}] "
-                        f"耗时 {elapsed:.2f}s > {HANDLER_SLOW_THRESHOLD_SECS}s "
-                        f"type={event_type} platform={platform}"
-                    )
+                handler_waits.reset(_wait_token)
+
+                _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
+                _pure = max(0.0, elapsed - _wait_total)
+                # 收集所有者（去重），归因到具体业务模块
+                _owners = sorted({
+                    w.get("owner") for w in _task_waits if w.get("owner")
+                })
+                _owner_tag = (
+                    f" owners=[{','.join(_owners)}]" if _owners else ""
+                )
+
+                if _task_waits:
+                    # 调用过 wait_reply：纯等待属于交互白名单
+                    if _pure > HANDLER_SLOW_THRESHOLD_SECS:
+                        logger.warning(
+                            f"事件处理器执行缓慢 [{_func_name}] "
+                            f"耗时 {elapsed:.2f}s "
+                            f"(wait_reply={_wait_total:.2f}s, pure={_pure:.2f}s)"
+                            f" > {HANDLER_SLOW_THRESHOLD_SECS}s "
+                            f"type={event_type} platform={platform}{_owner_tag}"
+                        )
+                    else:
+                        logger.debug(
+                            f"事件处理器 [{_func_name}] 耗时 {elapsed:.2f}s "
+                            f"(wait_reply={_wait_total:.2f}s, pure={_pure:.2f}s) "
+                            f"interactive-wait, suppressed slow-warning "
+                            f"type={event_type} platform={platform}{_owner_tag}"
+                        )
+                else:
+                    if elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                        logger.warning(
+                            f"事件处理器执行缓慢 [{_func_name}] "
+                            f"耗时 {elapsed:.2f}s > {HANDLER_SLOW_THRESHOLD_SECS}s "
+                            f"type={event_type} platform={platform}{_owner_tag}"
+                        )
 
         try:
             return asyncio.create_task(_safe_run())

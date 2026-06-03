@@ -57,7 +57,7 @@
 
 ### 🌐 跨平台相容
 
-模組模組編寫一次即可在所有平台使用，無需為不同平台重複開發
+模組編寫一次即可在所有平台使用，無需為不同平台重複開發
 
 </td>
 </tr>
@@ -83,34 +83,40 @@
 
 ---
 
-### 支援的適配器
-
-<div align="center">
-<!-- <img src=".github/assets/adapter-showcase.png" width="520" alt="適配器展示" /> -->
-
-歡迎您貢獻適配器！
-
-| 適配器 | 說明 |
-|--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時通訊平台 |
-| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通訊協議 |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用機器人協議 |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準協議 |
-| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方機器人平台 |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端調試，無需接入真實平台 |
-| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即時通訊平台 |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協議收發適配器 |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
-| [雲湖用戶](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖用戶協議的接入適配器 |
-| [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-
-查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
-
-</div>
-
----
-
 ### 快速開始
+
+#### 一鍵安裝腳本（推薦）
+
+安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+<table>
+<tr>
+<td align="center" width="50%">
+
+**Docker 安裝演示**
+
+<video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
+
+</td>
+<td align="center" width="50%">
+
+**pip 安裝演示**
+
+<video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 #### 使用 Docker (推薦)
 
@@ -207,18 +213,27 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 pip install ErisPulse
 ```
 
-<img src=".github/assets/docs/install_pip.gif" alt="安裝演示" />
-
-> 如果您的 Python 版本低於 3.10，可以使用一鍵安裝腳本自動配置環境。詳見 [安裝腳本說明](scripts/install/)。
+> 也可以使用上方的一鍵安裝腳本，自動檢測環境並引導配置。
 
 #### 運行效果
 
 
 ##### 儀表盤：
-> 有個gif，但是太大了沒放到這裡~ 抱歉~
-> [GIF演示](.github/assets/docs/dashboard-demo.gif)
+
+<table>
+<tr>
+<td width="50%">
 
 <img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
+
+</td>
+<td width="50%">
+
+<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 
 ##### 同一端代碼，多個平台響應：
@@ -252,7 +267,7 @@ pip install ErisPulse
 #### 初始化項目
 
 ```bash
-# 互動式初始化
+# 交互式初始化
 epsdk init
 
 # 快速初始化（指定項目名稱）
@@ -322,10 +337,63 @@ epsdk run main.py --reload
 
 ---
 
+### 支援的適配器
+
+歡迎您貢獻適配器！
+
+| 適配器 | 說明 |
+|--------|------|
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時通訊平台 |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通訊協議 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用機器人協議 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準協議 |
+| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方機器人平台 |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端調試，無需接入真實平台 |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即時通訊平台 |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協議收發適配器 |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
+| [雲湖用戶](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖用戶協議的接入適配器 |
+| [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
+
+查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
+
+---
+
 ### 應用場景
 
 <div align="center">
 
-| 多平台機器人 | 聊天助手 | 自動化工具 | 消息轉發 |
+| 多平台機器人 | 聊天助手 | 自動化工具 | 訊息轉發 |
 |:---:|:---:|:---:|:---:|
-| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現
+| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現娛樂和交互 | 訊息通知、任務管理<br>數據收集 | 跨平台訊息<br>同步和轉發 |
+
+</div>
+
+---
+
+### 貢獻指南
+
+ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
+
+1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
+2. **功能請求** — 透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+3. **代碼貢獻** — 提交 PR 前請閱讀 [代碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
+4. **文檔改進** — 幫助完善文檔和示例代碼
+
+[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
+
+---
+
+<div align="center">
+
+### 致謝
+
+<img src=".github/assets/thanks.png" width="200" alt="感謝" />
+
+本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化�

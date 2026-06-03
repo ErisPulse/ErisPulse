@@ -34,8 +34,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 初始化资源
-    self.session = aiohttp.ClientSession()
+    # 使用 SDK 内置 HTTP 客户端（自动管理连接池，无需手动创建 session）
+    # 通过 sdk.client 即可发送请求
 ```
 
 ### on_unload 方法
@@ -44,8 +44,8 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # 清理资源
-    await self.session.close()
+    # 清理自定义资源
+    # sdk.client 由框架管理，无需手动关闭
     
     # 取消事件处理器（框架会自动处理）
     self.logger.info("模块已卸载")

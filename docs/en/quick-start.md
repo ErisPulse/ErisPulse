@@ -4,33 +4,59 @@
 
 ## Install ErisPulse
 
+### One-click Installation Script (Recommended)
+
+The installation script will automatically detect your environment (Docker, Python, uv) and guide you to choose the most suitable installation method.
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+The script will guide you through:
+
+- **Docker installation** (Recommended when Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Traditional installation**: Automatically create virtual environment, select ErisPulse version, optionally install Dashboard management panel module
+
+### Using Docker
+
+Docker images come pre-built with the ErisPulse framework and Dashboard management panel.
+
+```bash
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# Set Dashboard token and start
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub Not Available?</summary>
+
+Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+After starting, access `http://<host>:8000/Dashboard` and log in with the set token.
+
 ### Install using pip
 
-Ensure your Python version is >= 3.10, then use pip to install ErisPulse:
+Ensure your Python version is >= 3.10, then use pip to install:
 
 ```bash
 pip install ErisPulse
 ```
 
-### Install using uv (Recommended)
-
-`uv` is a faster Python toolchain and is recommended. If you are unsure what "toolchain" means, think of it as a more efficient tool for installing and managing Python packages.
-
-#### Install uv
-
-```bash
-pip install uv
-```
-
-#### Create project and install
-
-```bash
-uv python install 3.12              # Install Python 3.12
-uv venv                             # Create virtual environment
-.venv\Scripts\activate               # Activate environment (Windows)
-# source .venv/bin/activate          # Linux/Mac
-uv pip install ErisPulse --upgrade  # Install framework
-```
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which is faster.
 
 ## Initialize Project
 
