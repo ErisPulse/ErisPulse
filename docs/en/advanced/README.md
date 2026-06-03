@@ -7,6 +7,7 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 - [Lazy Loading System](lazy-loading.md) - How the lazy loading module system works and its configuration
 - [Lifecycle Management](lifecycle.md) - Usage of the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
+- [HTTP Client](http-client.md) - Unified HTTP request client
 - [MessageBuilder Detailed Guide](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
 - [SQL Query Builder](sql-builder.md) - Universal SQL chain query builder and storage backend abstraction
 - [Session Type System](session-types.md) - Session type definitions, mappings, and custom type registration

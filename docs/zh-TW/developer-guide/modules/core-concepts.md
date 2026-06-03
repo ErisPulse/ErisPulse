@@ -34,8 +34,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 初始化資源
-    self.session = aiohttp.ClientSession()
+    # 使用 SDK 內建 HTTP 客戶端（自動管理連接池，無需手動建立 session）
+    # 通過 sdk.client 即可發送請求
 ```
 
 ### on_unload 方法
@@ -44,8 +44,8 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # 清理資源
-    await self.session.close()
+    # 清理自訂資源
+    # sdk.client 由框架管理，無需手動關閉
     
     # 取消事件處理器（框架會自動處理）
     self.logger.info("模組已卸載")
@@ -58,7 +58,7 @@ async def on_unload(self, event):
 ```python
 from ErisPulse import sdk
 
-# 透過 sdk 物件存取所有核心模組
+# 通過 sdk 物件存取所有核心模組
 sdk.logger.info("日誌")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -165,7 +165,7 @@ async def info_handler(event):
 # 註冊訊息處理器
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"收到群組訊息: {event.get_text()}")
+    sdk.logger.info(f"收到群訊息: {event.get_text()}")
 ```
 
 ### 事件處理器生命週期

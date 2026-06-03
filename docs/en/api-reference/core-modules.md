@@ -370,6 +370,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 
 ## Router Module
 
+### Abstract Types
+
+Router supports two type annotation styles:
+
+```python
+# ErisPulse abstract types (recommended, portable)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI native types (compatibility with existing code)
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> The routing system automatically injects objects of the corresponding type based on parameter annotations. See [Router Manager](../advanced/router.md) for details.
+
 ### Decorator Routing (Recommended)
 
 ```python
@@ -588,7 +611,111 @@ sdk.router.set_docs_info(
 app = sdk.router.get_app()
 ```
 
+## HTTP Client Module
+
+### Basic Requests
+
+```python
+from ErisPulse.Core import client
+
+# GET request
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST request
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# Generic request method
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### Response Object
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP status code (e.g. 200, 404)
+resp.reason        # str | None - Reason phrase (e.g. "OK")
+resp.headers       # Response headers (case-insensitive)
+resp.content_type  # str | None - Content-Type
+resp.url           # Final URL (may change due to redirects)
+resp.raw           # Underlying native response object (currently aiohttp.ClientResponse)
+
+# Read response body
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # Parse JSON
+text = await resp.text("gbk")  # Specify encoding
+```
+
+### Request Parameters
+
+| Parameter | Type | Description |
+|------|------|------|
+| `url` | `str` | Request URL |
+| `params` | `dict[str, str]` | Query parameters (optional) |
+| `headers` | `dict[str, str]` | Extra request headers (optional) |
+| `data` | `Any` | Request body (form or raw data) (optional) |
+| `json` | `Any` | JSON request body (optional) |
+| `timeout` | `float` | Request timeout in seconds (optional, overrides default) |
+| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default) |
+
+### Custom Client
+
+```python
+from ErisPulse.Core import HttpClient
+
+# Create a custom client (non-global singleton)
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# Context manager for automatic session closing
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### Request Statistics
+
+```python
+from ErisPulse.Core import client
+
+# View stats
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# Reset stats
+client.reset_stats()
+```
+
+### Lifecycle Events
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event Module API
 - [Adapter System API](adapter-system.md) - Adapter Management API
+- [HTTP Client](../advanced/http-client.md) - HTTP Client full documentation
+- [Router Manager](../advanced/router.md) - Router Manager full documentation
