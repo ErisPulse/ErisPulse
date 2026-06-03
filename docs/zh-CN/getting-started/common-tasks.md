@@ -381,6 +381,8 @@ async def search_handler(event):
 ### 图片下载和存储
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def image_handler(event):
     """处理图片消息"""
@@ -391,26 +393,25 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # 下载图片
-                import aiohttp
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        if response.status == 200:
-                            image_data = await response.read()
-                            
-                            # 存储到文件
-                            filename = f"images/{event.get_time()}.jpg"
-                            with open(filename, "wb") as f:
-                                f.write(image_data)
-                            
-                            sdk.logger.info(f"图片已保存: {filename}")
-                            await event.reply("图片已保存")
+                # 推荐使用 SDK 内置客户端下载图片
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # 存储到文件
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"图片已保存: {filename}")
+                    await event.reply("图片已保存")
 ```
 
 ### 图片识别示例
 
 ```python
+from ErisPulse.Core import client
+
 @command("identify", help="识别图片")
 async def identify_handler(event):
     """识别消息中的图片"""
@@ -429,16 +430,13 @@ async def identify_handler(event):
     await event.reply("未找到图片")
 
 async def _identify_image(url):
-    """调用图片识别 API（示例）"""
-    import aiohttp
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/identify",
-            json={"url": url}
-        ) as response:
-            data = await response.json()
-            return data.get("description", "识别失败")
+    """调用图片识别 API（示例）- 使用 SDK 内置客户端"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "识别失败")
 ```
 
 ## 下一步

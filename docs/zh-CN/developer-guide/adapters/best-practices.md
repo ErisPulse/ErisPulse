@@ -431,10 +431,17 @@ async def _get_account_for_message(self, event):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推荐使用 SDK 内置客户端发送 API 请求
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
-        # 网络错误
+        # 网络错误（使用 client 时内置重试机制会先处理）
         self.logger.error(f"网络错误: {e}")
         return self._error_response("网络请求失败", 33000)
     except asyncio.TimeoutError:
