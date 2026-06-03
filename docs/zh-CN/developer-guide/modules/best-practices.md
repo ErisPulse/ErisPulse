@@ -53,7 +53,23 @@ def _load_config(self):
 ### 1. 使用异步库
 
 ```python
-# 使用 aiohttp（异步）
+# 推荐使用 SDK 内置 HTTP 客户端（异步，自动日志和统计）
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# 也可通过 sdk.client 使用（效果相同）
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# 不要使用 aiohttp 直接导入（不便于框架统一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -62,7 +78,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 而不是 requests（同步，会阻塞）
+# 不要使用 requests（同步，会阻塞事件循环）
 import requests
 
 class MyModule(BaseModule):
@@ -85,12 +101,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # 初始化资源
-    self.session = aiohttp.ClientSession()
+    # SDK 客户端已自动管理连接池，无需手动创建 session
+    pass
     
 async def on_unload(self, event):
-    # 清理资源
-    await self.session.close()
+    # 如需自定义客户端，记得清理资源
+    pass
 ```
 
 ## 事件处理
@@ -162,7 +178,7 @@ async def handle_event(self, event):
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
     except aiohttp.ClientError as e:
-        # 网络错误
+        # 网络错误（使用 sdk.client 时此异常极少出现，因内置重试机制）
         self.logger.error(f"网络错误: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
@@ -175,11 +191,13 @@ async def handle_event(self, event):
 ### 2. 超时处理
 
 ```python
+# 推荐使用 SDK 内置客户端（自带超时和重试）
+from ErisPulse.Core import client
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
     except asyncio.TimeoutError:
         self.logger.warning(f"请求超时: {url}")
         raise

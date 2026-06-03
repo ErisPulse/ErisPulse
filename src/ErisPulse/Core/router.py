@@ -21,6 +21,8 @@ from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
+from .Bases.router import HttpRequest, WebSocketConnection
+from .Bases.router import WebSocketDisconnect as _EPWebSocketDisconnect
 from .constants import (
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
@@ -44,6 +46,7 @@ from .constants import (
     CONFIG_KEY_ROUTER_SECURITY,
 )
 import asyncio
+import functools
 import inspect
 import os
 import socket
@@ -64,6 +67,9 @@ except importlib.metadata.PackageNotFoundError:
 HTTPHandler: TypeAlias = Callable
 WebSocketHandler: TypeAlias = Callable[[WebSocket], Awaitable[Any]]
 RoutePath: TypeAlias = str
+
+# 用于自动注入的请求参数名集合
+_REQUEST_LIKE_NAMES = frozenset({"request", "req"})
 
 
 class FuncMiddleware:
@@ -284,6 +290,186 @@ class RouterManager:
         # 去除首尾斜杠并合并
         parts = [part.strip("/") for part in [prefix, path] if part.strip("/")]
         return "/" + "/".join(parts)
+
+    # 自动注入
+
+    def _make_http_endpoint(self, handler: Callable) -> Callable:
+        """
+        根据处理器签名创建 FastAPI 兼容的 HTTP 端点
+
+        自动检测第一个参数的类型注解：
+        - fastapi.Request → 直接透传（向后兼容）
+        - HttpRequest / 无注解且名称类似 request → 注入 HttpRequest 包装
+        - 其他类型 / 非请求参数名 → 不注入
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sig = inspect.signature(handler)
+        params = list(sig.parameters.values())
+
+        if not params:
+            return handler
+
+        first_param = params[0]
+
+        # 跳过 *args / **kwargs
+        if first_param.kind in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        ):
+            return handler
+
+        first_ann = first_param.annotation
+
+        # 用户显式使用 FastAPI Request → 直接透传
+        if first_ann is Request:
+            return handler
+
+        # 判断是否需要注入
+        should_wrap = False
+        if first_ann is HttpRequest:
+            should_wrap = True
+        elif first_param.name in _REQUEST_LIKE_NAMES:
+            # 无注解或其它注解但名称类似 request → 注入
+            should_wrap = True
+
+        if not should_wrap:
+            return handler
+
+        # 构建新签名：第一个参数注解替换为 FastAPI Request
+        first_name = first_param.name
+        new_params = [
+            first_param.replace(annotation=Request),
+            *params[1:],
+        ]
+
+        @functools.wraps(handler)
+        async def wrapper(**kwargs):
+            raw_request = kwargs.pop(first_name, None)
+            http_request = HttpRequest(raw_request)
+            result = handler(http_request, **kwargs)
+            if inspect.isawaitable(result):
+                result = await result
+            return result
+
+        wrapper.__signature__ = sig.replace(
+            parameters=new_params,
+            return_annotation=sig.return_annotation,
+        )
+        return wrapper
+
+    def _make_ws_handler(self, handler: Callable) -> Callable:
+        """
+        根据处理器签名创建 WebSocket 处理器包装
+
+        - fastapi.WebSocket 注解 → 提取 .raw 透传
+        - WebSocketConnection / 无注解 → 直接传递 WebSocketConnection
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sig = inspect.signature(handler)
+        params = list(sig.parameters.values())
+
+        extract_raw = False
+        has_first = False
+        if params and params[0].kind not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        ):
+            has_first = True
+            first_ann = params[0].annotation
+            if first_ann is not inspect.Parameter.empty and first_ann is WebSocket:
+                extract_raw = True
+
+        if not has_first:
+            # 无参数处理器
+            async def _wrapper(ws_conn, *, _h=handler):
+                result = _h()
+                if inspect.isawaitable(result):
+                    await result
+            return _wrapper
+
+        if extract_raw:
+            async def _wrapper(ws_conn, *, _h=handler):
+                result = _h(ws_conn.raw)
+                if inspect.isawaitable(result):
+                    await result
+            return _wrapper
+
+        async def _wrapper(ws_conn, *, _h=handler):
+            result = _h(ws_conn)
+            if inspect.isawaitable(result):
+                await result
+        return _wrapper
+
+    def _make_ws_auth_handler(self, auth_handler: Callable) -> Callable:
+        """
+        根据签名创建 WebSocket 认证处理器包装
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sig = inspect.signature(auth_handler)
+        params = list(sig.parameters.values())
+
+        extract_raw = False
+        has_first = False
+        if params and params[0].kind not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        ):
+            has_first = True
+            first_ann = params[0].annotation
+            if first_ann is not inspect.Parameter.empty and first_ann is WebSocket:
+                extract_raw = True
+
+        if not has_first:
+            async def _wrapper(ws_conn, *, _h=auth_handler):
+                result = _h()
+                if inspect.isawaitable(result):
+                    return await result
+                return result
+            return _wrapper
+
+        if extract_raw:
+            async def _wrapper(ws_conn, *, _h=auth_handler):
+                result = _h(ws_conn.raw)
+                if inspect.isawaitable(result):
+                    return await result
+                return result
+            return _wrapper
+
+        async def _wrapper(ws_conn, *, _h=auth_handler):
+            result = _h(ws_conn)
+            if inspect.isawaitable(result):
+                return await result
+            return result
+        return _wrapper
+
+    @staticmethod
+    async def _run_ws_hooks(
+        ws_conn: WebSocketConnection, hook_type: str, **kwargs
+    ) -> None:
+        """
+        执行 WebSocket 生命周期钩子
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        hooks = (
+            ws_conn._on_disconnect_handlers
+            if hook_type == "disconnect"
+            else ws_conn._on_error_handlers
+        )
+        for hook in hooks:
+            try:
+                result = hook(ws_conn, **kwargs)
+                if inspect.isawaitable(result):
+                    await result
+            except Exception as e:
+                logger.debug(f"WebSocket lifecycle hook error: {e}")
 
     def _setup_core_routes(self) -> None:
         """
@@ -553,9 +739,10 @@ class RouterManager:
                 if not methods:
                     continue
                 handler = method_map[methods[0]]
+                endpoint = self._make_http_endpoint(handler)
                 route = APIRoute(
                     path=full_path,
-                    endpoint=handler,
+                    endpoint=endpoint,
                     methods=methods,
                     name=f"{module_name}_{full_path.replace('/', '_')}",
                 )
@@ -566,43 +753,64 @@ class RouterManager:
         for module_name, paths in self._websocket_routes.items():
             for full_path, (handler, auth_handler) in paths.items():
                 # 直接在 FastAPI 上注册，跳过重复检查（记录已存在）
+                wrapped_handler = self._make_ws_handler(handler)
+                wrapped_auth = (
+                    self._make_ws_auth_handler(auth_handler) if auth_handler else None
+                )
                 auto_accept = False
 
-                async def _ws_endpoint(websocket: WebSocket, *, _handler=handler, _auth=auth_handler, _path=full_path, _mod=module_name, _accept=auto_accept):
+                async def _ws_endpoint(
+                    websocket: WebSocket,
+                    *,
+                    _wh=wrapped_handler,
+                    _wa=wrapped_auth,
+                    _path=full_path,
+                    _mod=module_name,
+                    _accept=auto_accept,
+                ):
+                    ws_conn = WebSocketConnection(websocket)
                     if _accept:
                         await websocket.accept()
                     try:
-                        if _auth and not await _auth(websocket):
-                            await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
-                            return
+                        if _wa:
+                            if not await _wa(ws_conn):
+                                await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
+                                return
                         await lifecycle.emit("server.websocket.connect", {
                             "path": _path,
                             "module_name": _mod,
                             "client_ip": websocket.client.host if websocket.client else None,
                         })
-                        await _handler(websocket)
-                    except WebSocketDisconnect:
+                        await _wh(ws_conn)
+                    except (WebSocketDisconnect, _EPWebSocketDisconnect):
+                        await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
                         await lifecycle.emit("server.websocket.disconnect", {
                             "path": _path,
                             "module_name": _mod,
                             "reason": "client_disconnect",
                         })
-                    except (asyncio.CancelledError, Exception) as e:
-                        is_cancel = isinstance(e, asyncio.CancelledError)
+                    except asyncio.CancelledError:
+                        await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
                         await lifecycle.emit("server.websocket.disconnect", {
                             "path": _path,
                             "module_name": _mod,
-                            "reason": "cancelled" if is_cancel else "error",
-                            "error": "" if is_cancel else str(e),
+                            "reason": "cancelled",
                         })
-                        if is_cancel:
-                            raise
-                        else:
-                            logger.error(f"WebSocket错误: {e}")
-                            try:
-                                await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
-                            except Exception:
-                                pass
+                        raise
+                    except Exception as e:
+                        await self._run_ws_hooks(ws_conn, "error", error=str(e))
+                        await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
+                        await lifecycle.emit("server.websocket.disconnect", {
+                            "path": _path,
+                            "module_name": _mod,
+                            "reason": "error",
+                            "error": str(e),
+                        })
+                        logger.error(f"WebSocket错误: {e}")
+                        try:
+                            await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
+                        except Exception:
+                            pass
 
                 self.app.add_api_websocket_route(
                     path=full_path,
@@ -802,7 +1010,7 @@ class RouterManager:
 
             route = APIRoute(
                 path=full_path,
-                endpoint=func,
+                endpoint=self._make_http_endpoint(func),
                 methods=resolved_methods,
                 name=f"{module_name}_{full_path.replace('/', '_')}",
                 **route_kwargs,
@@ -985,7 +1193,7 @@ class RouterManager:
         # 创建路由
         route = APIRoute(
             path=full_path,
-            endpoint=handler,
+            endpoint=self._make_http_endpoint(handler),
             methods=methods,
             name=f"{module_name}_{path.replace('/', '_')}_{methods[0].lower()}",
             **route_kwargs,
@@ -1058,6 +1266,11 @@ class RouterManager:
         if full_path in self._websocket_routes[module_name]:
             raise ValueError(f"WebSocket路径 {full_path} 已注册")
 
+        wrapped_handler = self._make_ws_handler(handler)
+        wrapped_auth = (
+            self._make_ws_auth_handler(auth_handler) if auth_handler else None
+        )
+
         async def websocket_endpoint(websocket: WebSocket) -> None:
             """
             WebSocket端点包装器
@@ -1065,14 +1278,16 @@ class RouterManager:
             {!--< internal-use >!--}
             {!--< /internal-use >!--}
             """
-            # 根据 auto_accept 参数决定是否自动 accept
             if auto_accept:
                 await websocket.accept()
 
+            ws_conn = WebSocketConnection(websocket)
+
             try:
-                if auth_handler and not await auth_handler(websocket):
-                    await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
-                    return
+                if wrapped_auth:
+                    if not await wrapped_auth(ws_conn):
+                        await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
+                        return
 
                 # 钩子: WebSocket连接建立
                 await lifecycle.emit("server.websocket.connect", {
@@ -1081,9 +1296,10 @@ class RouterManager:
                     "client_ip": websocket.client.host if websocket.client else None,
                 })
 
-                await handler(websocket)
+                await wrapped_handler(ws_conn)
 
-            except WebSocketDisconnect:
+            except (WebSocketDisconnect, _EPWebSocketDisconnect):
+                await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
                 # 钩子: WebSocket客户端断开
                 await lifecycle.emit("server.websocket.disconnect", {
                     "path": full_path,
@@ -1091,25 +1307,30 @@ class RouterManager:
                     "reason": "client_disconnect",
                 })
                 logger.debug(f"客户端断开: {full_path}")
-            except (asyncio.CancelledError, Exception) as e:
-                is_cancel = isinstance(e, asyncio.CancelledError)
+            except asyncio.CancelledError:
+                await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
+                await lifecycle.emit("server.websocket.disconnect", {
+                    "path": full_path,
+                    "module_name": module_name,
+                    "reason": "cancelled",
+                })
+                logger.debug(f"WebSocket连接被取消: {full_path}")
+                raise
+            except Exception as e:
+                await self._run_ws_hooks(ws_conn, "error", error=str(e))
+                await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
                 # 钩子: WebSocket异常断开
                 await lifecycle.emit("server.websocket.disconnect", {
                     "path": full_path,
                     "module_name": module_name,
-                    "reason": "cancelled" if is_cancel else "error",
-                    "error": "" if is_cancel else str(e),
+                    "reason": "error",
+                    "error": str(e),
                 })
-                if is_cancel:
-                    logger.debug(f"WebSocket连接被取消: {full_path}")
-                else:
-                    logger.error(f"WebSocket错误: {e}")
-                    try:
-                        await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
-                    except Exception:
-                        pass
-                if is_cancel:
-                    raise
+                logger.error(f"WebSocket错误: {e}")
+                try:
+                    await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
+                except Exception:
+                    pass
 
         self.app.add_api_websocket_route(
             path=full_path,
@@ -1666,4 +1887,7 @@ __all__ = [
     "HTTPHandler",
     "WebSocketHandler",
     "RoutePath",
+    "HttpRequest",
+    "WebSocketConnection",
+    "WebSocketDisconnect",
 ]
