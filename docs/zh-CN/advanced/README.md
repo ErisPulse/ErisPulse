@@ -7,6 +7,7 @@
 - [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理和配置
 - [生命周期管理](lifecycle.md) - 生命周期事件系统的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
+- [HTTP 客户端](http-client.md) - 统一 HTTP 请求客户端
 - [MessageBuilder 详解](message-builder.md) - OneBot12 消息段构建器的双模式用法
 - [SQL 查询构建器](sql-builder.md) - 通用 SQL 链式查询构建器及存储后端抽象
 - [会话类型系统](session-types.md) - 会话类型定义、映射与自定义类型注册

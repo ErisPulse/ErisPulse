@@ -45,6 +45,7 @@ if TYPE_CHECKING:
         SendDSL as _SendDSL,
         BaseStorage as _BaseStorage,
         BaseQueryBuilder as _BaseQueryBuilder,
+        HttpClient as _HttpClient,
     )
 
 
@@ -70,6 +71,7 @@ def _resolve_core(attr: str):
         "adapter": ("ErisPulse.Core", "adapter"),
         "module": ("ErisPulse.Core", "module"),
         "router": ("ErisPulse.Core", "router"),
+        "client": ("ErisPulse.Core", "client"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
         "BaseStorage": ("ErisPulse.Core.Bases.storage", "BaseStorage"),
@@ -87,7 +89,7 @@ def _resolve_core(attr: str):
 # 核心属性名称集合
 _CORE_ATTR_NAMES = {
     "Event", "lifecycle", "logger", "storage", "env", "config",
-    "adapter", "module", "router",
+    "adapter", "module", "router", "client",
     "BaseAdapter", "SendDSL", "BaseStorage", "BaseQueryBuilder",
 }
 
@@ -116,6 +118,7 @@ class SDK:
     - SendDSL: DSL 发送接口基类
     - module: 模块管理器
     - router: 路由管理器
+    - client: HTTP 客户端
     {!--< /tips >!--}
     """
 
@@ -131,6 +134,7 @@ class SDK:
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
+    client: _HttpClient
     BaseAdapter: type[_BaseAdapter]
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
