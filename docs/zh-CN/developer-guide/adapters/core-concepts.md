@@ -610,7 +610,14 @@ class MyAdapter(BaseAdapter):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推荐使用 SDK 内置客户端
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
         self.logger.error(f"网络错误: {e}")

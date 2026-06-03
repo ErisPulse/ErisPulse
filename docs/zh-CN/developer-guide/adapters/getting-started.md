@@ -65,7 +65,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "aiohttp>=3.8.0"
+    "ErisPulse>=2.4.0"  # ErisPulse 已内置 aiohttp，通常无需单独依赖
 ]
 
 [project.urls]

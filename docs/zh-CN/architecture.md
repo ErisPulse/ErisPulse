@@ -17,7 +17,8 @@ graph TB
     SDK --> Config["Config<br/>配置管理"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客户端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -48,7 +49,8 @@ graph TB
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
+| **HttpClient** | 统一 HTTP 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志等功能 |
 
 ## 初始化流程
 

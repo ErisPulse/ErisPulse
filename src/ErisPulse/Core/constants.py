@@ -446,3 +446,30 @@ DEFAULT_MODULE_PRIORITY = 0
 # 配置默认值，可被 ErisPulse.framework.enable_lazy_loading 覆盖。
 # True 时模块在首次被访问时才加载，False 时框架启动时立即加载。
 DEFAULT_LAZY_LOADING_ENABLED = True
+
+# ==============================================================================
+# HTTP 客户端默认值
+#
+# 控制内置 HTTP 客户端的超时、重试和连接行为。
+# 使用位置: Core/Bases/client.py -> HttpClient.__init__()
+# ==============================================================================
+
+# HTTP 客户端请求总超时（秒）。
+# 修改影响: 超过此时间的请求将被中止。
+DEFAULT_HTTP_CLIENT_TIMEOUT_SECS = 30.0
+
+# HTTP 客户端连接超时（秒）。
+# 修改影响: 建立 TCP 连接的最大等待时间。
+DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS = 10.0
+
+# HTTP 客户端默认最大重试次数。
+# 修改影响: 请求失败后的自动重试次数。0 = 不重试。
+DEFAULT_HTTP_CLIENT_MAX_RETRIES = 0
+
+# HTTP 客户端重试间隔（秒）。
+# 修改影响: 每次重试之间的等待时间。
+DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS = 1.0
+
+# HTTP 客户端默认 User-Agent。
+# 修改影响: 所有出站 HTTP 请求的默认 User-Agent 头。
+DEFAULT_HTTP_CLIENT_USER_AGENT = ""
