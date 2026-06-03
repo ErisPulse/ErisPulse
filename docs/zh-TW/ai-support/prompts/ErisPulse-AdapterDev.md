@@ -4690,17 +4690,17 @@ await sdk.lifecycle.submit_event(
 ### 事件監聽
 
 ```python
-# 監聽特定事件
+# 監聯特定事件
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"模組初始化: {event_data}")
 
-# 監聽父級事件
+# 監聯父級事件
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"模組事件: {event_data}")
 
-# 監聽所有事件
+# 監聯所有事件
 @sdk.lifecycle.on("*")
 async def handle_any_event(event_data):
     print(f"系統事件: {event_data}")
@@ -4719,99 +4719,6 @@ duration = sdk.lifecycle.get_duration("my_operation")
 
 # 停止計時
 total_time = sdk.lifecycle.stop_timer("my_operation")
-```
-
-## Metrics 模組
-
-### 基本使用
-
-```python
-from ErisPulse import sdk
-
-# 註冊內建指標（HTTP 請求數、模組載入耗時等）
-sdk.metrics.register_builtin_metrics()
-
-# 取得所有指標快照
-snapshot = sdk.metrics.get_all_metrics()
-
-# 重置所有指標
-sdk.metrics.reset()
-```
-
-### 指標類型
-
-#### Counter — 計數器
-
-```python
-# 透過 MetricsManager 建立計數器
-counter = sdk.metrics.counter("http_requests_total", description="HTTP 請求總數")
-counter.inc()            # +1
-counter.inc(5)           # +5
-print(counter.get())     # 取得目前值
-print(counter.name)      # 指標名稱
-
-# 帶標籤的計數
-counter.inc(tags={"method": "GET"})
-counter.get(tags={"method": "GET"})  # 取得特定標籤值
-```
-
-#### Gauge — 儀表盤
-
-```python
-# 透過 MetricsManager 建立儀表盤
-gauge = sdk.metrics.gauge("active_connections", description="活躍連接數")
-gauge.inc()              # +1
-gauge.dec()              # -1
-gauge.set(42)            # 設為 42
-print(gauge.get())       # 取得目前值
-print(gauge.name)        # 指標名稱
-```
-
-#### Histogram — 直方圖
-
-```python
-# 透過 MetricsManager 建立直方圖
-hist = sdk.metrics.histogram("request_duration_seconds", description="請求耗時")
-hist.observe(0.15)
-hist.observe(0.32)
-hist.observe(1.2)
-
-# 取得統計摘要
-summary = hist.get_summary()
-# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
-
-print(hist.name)         # 指標名稱
-```
-
-### 自訂指標
-
-```python
-from ErisPulse import sdk
-
-# 透過 MetricsManager 建立自訂指標
-counter = sdk.metrics.counter("my_module.errors", description="模組錯誤計數")
-gauge = sdk.metrics.gauge("my_module.queue_size", description="佇列大小")
-hist = sdk.metrics.histogram("my_module.process_time", description="處理耗時")
-
-# 直接使用返回的指標物件
-counter.inc()
-gauge.set(10)
-hist.observe(0.5)
-```
-
-### @timed 裝飾器
-
-```python
-# 透過 MetricsManager 的 timed 方法
-@sdk.metrics.timed("my_module.handler_duration")
-async def handle_request():
-    # 函式執行時間將自動記錄到 Histogram 指標
-    await do_something()
-
-# 帶標籤的計時
-@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
-async def handle_api_request():
-    await do_something()
 ```
 
 ## Router 模組
@@ -4900,14 +4807,14 @@ async def websocket_handler(websocket: WebSocket):
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
-# 基本註冊（自動接受連接）
+# 基本註冊（自動接受連線）
 sdk.router.register_websocket(
     module_name="my_module",
     path="/ws",
     handler=websocket_handler,
 )
 
-# 帶認證的註冊（推薦：使用 auth_handler 控制連接）
+# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
 async def auth_handler(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token")
     return token == "secret"
@@ -4930,7 +4837,7 @@ sdk.router.unregister_websocket("MyModule", "/ws")
 | `module_name` | 模組名稱（必須） | - |
 | `path` | WebSocket 路徑 | - |
 | `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連接 | `None` |
+| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
 | `auto_accept` | 是否自動 `accept()` | `True` |
 
 > **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
@@ -5029,6 +4936,15 @@ sdk.router.set_docs_info(
 ```
 
 ### 路由資訊
+
+```python
+app = sdk.router.get_app()
+```
+
+## 相關文件
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
 
 
 

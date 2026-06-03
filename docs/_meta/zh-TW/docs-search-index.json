@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1087,
+  "total_keywords": 1080,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1644,14 +1644,6 @@
         "title": "@conv.branch(name) 裝飾器"
       }
     ],
-    "@timed 裝飾器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 449,
-        "level": 3,
-        "title": "@timed 裝飾器"
-      }
-    ],
     "AI 輔助開發": [
       {
         "document": "README.md",
@@ -1881,7 +1873,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 635,
+        "line": 542,
         "level": 3,
         "title": "CORS 配置"
       }
@@ -1932,14 +1924,6 @@
         "line": 45,
         "level": 2,
         "title": "Core.py - 基礎模組"
-      }
-    ],
-    "Counter — 計數器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 390,
-        "level": 4,
-        "title": "Counter — 計數器"
       }
     ],
     "Dashboard 管理面板": [
@@ -2118,14 +2102,6 @@
         "title": "Event 回復方法"
       }
     ],
-    "Gauge — 儀表盤": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 405,
-        "level": 4,
-        "title": "Gauge — 儀表盤"
-      }
-    ],
     "HTTP 裝飾器": [
       {
         "document": "advanced/router.md",
@@ -2140,14 +2116,6 @@
         "line": 160,
         "level": 3,
         "title": "HTTP 路由"
-      }
-    ],
-    "Histogram — 直方圖": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 417,
-        "level": 4,
-        "title": "Histogram — 直方圖"
       }
     ],
     "ID 欄位查詢": [
@@ -2244,14 +2212,6 @@
         "line": 214,
         "level": 2,
         "title": "Meta 元事件模組"
-      }
-    ],
-    "Metrics 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 371,
-        "level": 2,
-        "title": "Metrics 模組"
       }
     ],
     "Module 模組": [
@@ -2481,7 +2441,7 @@
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 464,
+        "line": 371,
         "level": 2,
         "title": "Router 模組"
       }
@@ -2711,7 +2671,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 539,
+        "line": 446,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3985,7 +3945,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 516,
+        "line": 423,
         "level": 3,
         "title": "傳統註冊方式"
       }
@@ -4762,12 +4722,6 @@
         "title": "基本使用"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 373,
-        "level": 3,
-        "title": "基本使用"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 58,
         "level": 3,
@@ -5193,7 +5147,7 @@
     "安全標頭": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 652,
+        "line": 559,
         "level": 3,
         "title": "安全標頭"
       }
@@ -6094,14 +6048,6 @@
         "line": 98,
         "level": 3,
         "title": "指定發送帳號"
-      }
-    ],
-    "指標類型": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 388,
-        "level": 3,
-        "title": "指標類型"
       }
     ],
     "按鈕參數說明": [
@@ -7792,6 +7738,12 @@
         "title": "相關文件"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 591,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "developer-guide/README.md",
         "line": 120,
         "level": 2,
@@ -8157,7 +8109,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 663,
+        "line": 570,
         "level": 3,
         "title": "自動文件"
       }
@@ -8184,14 +8136,6 @@
         "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
-      }
-    ],
-    "自訂指標": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 433,
-        "level": 3,
-        "title": "自訂指標"
       }
     ],
     "自訂類型註冊": [
@@ -8275,7 +8219,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 466,
+        "line": 373,
         "level": 3,
         "title": "裝飾器路由（推薦）"
       }
@@ -8797,7 +8741,7 @@
     "路由中介軟體": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 604,
+        "line": 511,
         "level": 3,
         "title": "路由中介軟體"
       }
@@ -8819,7 +8763,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 585,
+        "line": 492,
         "level": 3,
         "title": "路由分組"
       }
@@ -8843,7 +8787,7 @@
     "路由資訊": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 678,
+        "line": 585,
         "level": 3,
         "title": "路由資訊"
       }
@@ -9043,7 +8987,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 622,
+        "line": 529,
         "level": 3,
         "title": "速率限制"
       }

@@ -6866,36 +6866,6 @@ def _load_config(self):
     return config
 ```
 
-### Configuration Auditing
-
-Config module has built-in caller-aware and auditing functionality to track read/write sources of configurations:
-
-```python
-# Enable auditing (disabled by default)
-sdk.config.enable_audit(True)
-
-# Listen for configuration changes
-@sdk.config.on_change("MyModule")
-def on_config_change(key, old_value, new_value, caller):
-    print(f"Configuration changed: {key}")
-    print(f"  Old value: {old_value} -> New value: {new_value}")
-    print(f"  Caller: {caller.file}:{caller.lineno} ({caller.function})")
-
-# Get audit logs
-log = sdk.config.get_audit_log(limit=10)
-for entry in log:
-    print(f"[{entry.timestamp}] {entry.operation} {entry.key} by {entry.caller.function}")
-
-# Disable auditing
-sdk.config.enable_audit(False)
-```
-
-Audit logs contain:
-- `operation`: Operation type (`get` / `set`)
-- `key`: Configuration key path
-- `caller`: Caller information (file name, line number, function name, module name)
-- `timestamp`: Operation timestamp
-
 ## Logger Module
 
 ### Basic Logging
@@ -6905,6 +6875,421 @@ from ErisPulse import sdk
 
 # Different log levels
 sdk.logger.debug("Debug info")
+sdk.logger.info("Runtime info")
+sdk.logger.warning("Warning info")
+sdk.logger.error("Error info")
+sdk.logger.critical("Fatal error")
+```
+
+### Child Loggers
+
+```python
+# Get child logger
+child_logger = sdk.logger.get_child("MyModule")
+child_logger.info("Submodule log")
+
+# Sub-modules can also have sub-module logs, allowing for more precise control of log output
+child_logger.get_child("utils")
+```
+
+### Log Output
+
+```python
+# Set output file
+sdk.logger.set_output_file("app.log")
+
+# Save logs to file
+sdk.logger.save_logs("log.txt")
+```
+
+## Adapter Module
+
+### Getting Adapters
+
+```python
+from ErisPulse import sdk
+
+# Get adapter instance
+adapter = sdk.adapter.get("platform_name")
+
+# Access via property
+adapter = sdk.adapter.platform_name
+```
+
+### Adapter Events
+
+```python
+# Listen for standard events
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+# Listen for platform-specific events
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+
+# Listen for platform native events
+@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
+async def handle_raw_event(data):
+    pass
+```
+
+### Adapter Management
+
+```python
+# Get all platforms
+platforms = sdk.adapter.platforms
+
+# Check if adapter exists
+exists = sdk.adapter.exists("platform_name")
+
+# Enable/disable adapter
+sdk.adapter.enable("platform_name")
+sdk.adapter.disable("platform_name")
+
+# Start/shutdown adapter
+await sdk.adapter.startup(["platform1", "platform2"])
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# Check if adapter is running
+is_running = sdk.adapter.is_running("platform_name")
+
+# List all running adapters
+running = sdk.adapter.list_running()
+```
+
+## Module Module
+
+### Getting Modules
+
+```python
+from ErisPulse import sdk
+
+# Get module instance
+module = sdk.module.get("ModuleName")
+
+# Access via property
+module = sdk.module.ModuleName
+module = sdk.ModuleName
+```
+
+### Module Management
+
+```python
+# Check if module exists
+exists = sdk.module.exists("ModuleName")
+
+# Check if module is loaded
+is_loaded = sdk.module.is_loaded("ModuleName")
+
+# Check if module is enabled
+is_enabled = sdk.module.is_enabled("ModuleName")
+
+# Enable/disable module
+sdk.module.enable("ModuleName")
+sdk.module.disable("ModuleName")
+
+# Load module
+await sdk.module.load("ModuleName")
+
+# Unload module
+await sdk.module.unload("ModuleName")
+
+# List loaded modules
+loaded = sdk.module.list_loaded()
+
+# List registered modules
+registered = sdk.module.list_registered()
+
+# Get module info
+info = sdk.module.get_info("ModuleName")
+
+# Get module status summary
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# Check if module is running (equivalent to is_loaded)
+is_running = sdk.module.is_running("ModuleName")
+
+# List all running modules
+running = sdk.module.list_running()
+```
+
+## Lifecycle Module
+
+### Event Submission
+
+```python
+from ErisPulse import sdk
+
+# Submit custom event
+await sdk.lifecycle.submit_event(
+    "custom.event",
+    data={"key": "value"},
+    source="MyModule",
+    msg="Custom event description"
+)
+```
+
+### Event Listening
+
+```python
+# Listen for specific event
+@sdk.lifecycle.on("module.init")
+async def handle_module_init(event_data):
+    print(f"Module initialized: {event_data}")
+
+# Listen for parent event
+@sdk.lifecycle.on("module")
+async def handle_any_module_event(event_data):
+    print(f"Module event: {event_data}")
+
+# Listen for all events
+@sdk.lifecycle.on("*")
+async def handle_any_event(event_data):
+    print(f"System event: {event_data}")
+```
+
+### Timers
+
+```python
+# Start timer
+sdk.lifecycle.start_timer("my_operation")
+
+# ... perform operation ...
+
+# Get duration
+duration = sdk.lifecycle.get_duration("my_operation")
+
+# Stop timer
+total_time = sdk.lifecycle.stop_timer("my_operation")
+```
+
+## Router Module
+
+### Decorator Routing (Recommended)
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+# HTTP route decorator
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# Shortcut method decorators
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocket decorator
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Authenticated WebSocket decorator
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### Traditional Registration
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+async def handler(request: Request):
+    data = await request.json()
+    return {"status": "ok", "data": data}
+
+sdk.router.register_http_route(
+    module_name="MyModule",
+    path="/api",
+    handler=handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Data interface",
+    tags=["API"],
+)
+
+sdk.router.unregister_http_route("MyModule", "/api")
+```
+
+### WebSocket Routes
+
+```python
+from ErisPulse import sdk
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# Basic registration (auto-accepts connection)
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# Authenticated registration (Recommended: use auth_handler to control connections)
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# Unregister route
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**Parameter Description:**
+
+| Parameter | Description | Default |
+|------|------|--------|
+| `module_name` | Module name (required) | - |
+| `path` | WebSocket path | - |
+| `handler` | Handler function | - |
+| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
+| `auto_accept` | Whether to automatically `accept()` | `True` |
+
+> **Recommended**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
+
+### Route Grouping
+
+```python
+# Create route group
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# Register routes within the group
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# Versioned group
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### Route Middleware
+
+```python
+# Global middleware (glob matching)
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# Specific path middleware
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### Rate Limiting
+
+```python
+# Set rate limit for route (sliding window)
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS Configuration
+
+```python
+# Code method
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# Configuration file method (config.toml)
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### Security Headers
+
+```python
+# Automatically add security response headers
+sdk.router.setup_security_headers()
+
+# Configuration file method (config.toml)
+# [router.security]
+# enabled = true
+```
+
+### Auto Documentation
+
+```python
+# Router has OpenAPI documentation enabled by default
+# Disable docs
+sdk.router.disable_docs()
+
+# Customize documentation info
+sdk.router.set_docs_info(
+    title="My API",
+    description="API documentation",
+    version="1.0.0"
+)
+```
+
+### Route Information
+
+```python
+app = sdk.router.get_app()
+```
+
+## Related Documentation
+
+- [Event System API](event-system.md) - Event Module API
+- [Adapter System API](adapter-system.md) - Adapter Management API
 
 
 

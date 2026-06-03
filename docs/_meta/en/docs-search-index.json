@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1081,
+  "total_keywords": 1095,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1808,6 +1808,14 @@
         "title": "Adapter Development Best Practices"
       }
     ],
+    "Adapter Events": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 221,
+        "level": 3,
+        "title": "Adapter Events"
+      }
+    ],
     "Adapter Integration Example": [
       {
         "document": "api-reference/adapter-system.md",
@@ -1838,6 +1846,12 @@
         "line": 41,
         "level": 3,
         "title": "Adapter Management"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 240,
+        "level": 3,
+        "title": "Adapter Management"
       }
     ],
     "Adapter Manager": [
@@ -1846,6 +1860,14 @@
         "line": 5,
         "level": 2,
         "title": "Adapter Manager"
+      }
+    ],
+    "Adapter Module": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 207,
+        "level": 2,
+        "title": "Adapter Module"
       }
     ],
     "Adapter Requirement Template": [
@@ -2110,6 +2132,12 @@
         "line": 232,
         "level": 2,
         "title": "Auto Documentation"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 570,
+        "level": 3,
+        "title": "Auto Documentation"
       }
     ],
     "Auto-Discovery Mechanism": [
@@ -2283,7 +2311,7 @@
     "Basic Logging": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 203,
+        "line": 173,
         "level": 3,
         "title": "Basic Logging"
       }
@@ -2624,6 +2652,12 @@
         "line": 198,
         "level": 2,
         "title": "CORS Configuration"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 542,
+        "level": 3,
+        "title": "CORS Configuration"
       }
     ],
     "Callback Query Event": [
@@ -2832,6 +2866,14 @@
         "line": 125,
         "level": 4,
         "title": "Checking Platform Status"
+      }
+    ],
+    "Child Loggers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 186,
+        "level": 3,
+        "title": "Child Loggers"
       }
     ],
     "Choose Menu": [
@@ -3222,14 +3264,6 @@
         "line": 81,
         "level": 3,
         "title": "Configuration"
-      }
-    ],
-    "Configuration Auditing": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 171,
-        "level": 3,
-        "title": "Configuration Auditing"
       }
     ],
     "Configuration Changes": [
@@ -3810,6 +3844,14 @@
         "line": 20,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
+      }
+    ],
+    "Decorator Routing (Recommended)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "Decorator Routing (Recommended)"
       }
     ],
     "Default Configuration": [
@@ -4512,6 +4554,12 @@
     ],
     "Event Listening": [
       {
+        "document": "api-reference/core-modules.md",
+        "line": 337,
+        "level": 3,
+        "title": "Event Listening"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 153,
         "level": 3,
@@ -4568,6 +4616,14 @@
         "line": 335,
         "level": 3,
         "title": "Event Reply Methods"
+      }
+    ],
+    "Event Submission": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 323,
+        "level": 3,
+        "title": "Event Submission"
       }
     ],
     "Event System": [
@@ -4912,6 +4968,12 @@
         "line": 7,
         "level": 3,
         "title": "Getting Adapters"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 209,
+        "level": 3,
+        "title": "Getting Adapters"
       }
     ],
     "Getting Help": [
@@ -4926,6 +4988,14 @@
         "line": 135,
         "level": 2,
         "title": "Getting Help"
+      }
+    ],
+    "Getting Modules": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 266,
+        "level": 3,
+        "title": "Getting Modules"
       }
     ],
     "Getting Started": [
@@ -5628,6 +5698,14 @@
         "title": "Lifecycle Management"
       }
     ],
+    "Lifecycle Module": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 321,
+        "level": 2,
+        "title": "Lifecycle Module"
+      }
+    ],
     "List Supported Send Methods": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -5748,6 +5826,14 @@
         "title": "Log Information"
       }
     ],
+    "Log Output": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 197,
+        "level": 3,
+        "title": "Log Output"
+      }
+    ],
     "Logger": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -5759,7 +5845,7 @@
     "Logger Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 171,
         "level": 2,
         "title": "Logger Module"
       }
@@ -6446,6 +6532,22 @@
         "line": 173,
         "level": 2,
         "title": "Module Loading Strategy"
+      }
+    ],
+    "Module Management": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 279,
+        "level": 3,
+        "title": "Module Management"
+      }
+    ],
+    "Module Module": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 264,
+        "level": 2,
+        "title": "Module Module"
       }
     ],
     "Module Requirement Template": [
@@ -7432,6 +7534,12 @@
         "line": 182,
         "level": 2,
         "title": "Rate Limiting"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 529,
+        "level": 3,
+        "title": "Rate Limiting"
       }
     ],
     "Raw Data": [
@@ -7598,6 +7706,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 409,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 591,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7962,6 +8076,20 @@
         "line": 148,
         "level": 2,
         "title": "Route Grouping"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 492,
+        "level": 3,
+        "title": "Route Grouping"
+      }
+    ],
+    "Route Information": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 585,
+        "level": 3,
+        "title": "Route Information"
       }
     ],
     "Route List": [
@@ -7977,6 +8105,12 @@
         "document": "advanced/router.md",
         "line": 165,
         "level": 2,
+        "title": "Route Middleware"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 511,
+        "level": 3,
         "title": "Route Middleware"
       }
     ],
@@ -8000,6 +8134,14 @@
         "line": 1,
         "level": 1,
         "title": "Router Manager"
+      }
+    ],
+    "Router Module": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 371,
+        "level": 2,
+        "title": "Router Module"
       }
     ],
     "Run Project": [
@@ -8119,6 +8261,12 @@
         "document": "advanced/router.md",
         "line": 217,
         "level": 2,
+        "title": "Security Headers"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 559,
+        "level": 3,
         "title": "Security Headers"
       }
     ],
@@ -8986,6 +9134,22 @@
         "title": "The LazyModule Class"
       }
     ],
+    "Timers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 356,
+        "level": 3,
+        "title": "Timers"
+      }
+    ],
+    "Traditional Registration": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 423,
+        "level": 3,
+        "title": "Traditional Registration"
+      }
+    ],
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
@@ -9508,6 +9672,14 @@
         "line": 106,
         "level": 3,
         "title": "WebSocket Registration"
+      }
+    ],
+    "WebSocket Routes": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 446,
+        "level": 3,
+        "title": "WebSocket Routes"
       }
     ],
     "What is an Adapter": [
