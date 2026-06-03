@@ -59,7 +59,8 @@ graph TB
     SDK --> Config["Config<br/>Configuration Management"]
     SDK --> AdapterMgr["Adapter<br/>Adapter Management"]
     SDK --> ModuleMgr["Module<br/>Module Management"]
-    SDK --> Router["Router<br/>Router Management<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>Router Management"]
+    SDK --> Client["HttpClient<br/>HTTP Client"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -90,7 +91,8 @@ graph TB
 | **Storage** | SQLite-based key-value storage system, supporting general SQL chained queries |
 | **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
-| **Router** | FastAPI-based HTTP/WebSocket route management, supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **Router** | HTTP/WebSocket route management, encapsulating the underlying backend via an abstraction layer (currently FastAPI + Uvicorn), supporting decorator routes, middleware, grouping, rate limiting, CORS |
+| **HttpClient** | Unified HTTP client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, and other features |
 
 ## Initialization Process
 
@@ -127,7 +129,7 @@ flowchart TD
 6. **Dependency Validation** - Check if the `depends` dependencies declared by modules are registered, skip modules with missing dependencies
 7. **Topological Sorting** - Use Kahn algorithm to sort module loading order based on dependencies, same level in descending order of `priority`
 8. **Module Initialization** - Create module instances in sorted order, call the `on_load` lifecycle method
-9. **Start Router Server** - Start the router server using Uvicorn (FastAPI)
+9. **Start Router Server** - Start the FastAPI route server using Uvicorn
 
 ## Event Handling Process
 
@@ -821,6 +823,7 @@ sdk.logger     # Logging system
 sdk.adapter    # Adapter system
 sdk.module     # Module system
 sdk.router     # Routing system
+sdk.client     # HTTP Client
 sdk.lifecycle  # Lifecycle system
 ```
 
@@ -872,7 +875,7 @@ class MyModule(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
-    
+
     @staticmethod
     def get_load_strategy():
         from ErisPulse.loaders import ModuleLoadStrategy
@@ -887,9 +890,9 @@ class MyModule(BaseModule):
         @command("mycmd", help="My command")
         async def my_command(event):
             await event.reply("Command executed successfully")
-        
+
         self.logger.info("Module loaded")
-    
+
     async def on_unload(self, event):
         """Called when module unloads"""
         self.logger.info("Module unloaded")
@@ -959,9 +962,9 @@ async def connect_handler(event):
     sdk.logger.info(f"{platform} connected successfully")
 ```
 
-## Core Modules
+## Core Module Explanations
 
-### Storage
+### Storage (存储)
 
 A SQLite-based key-value storage system for persistent data.
 
@@ -984,7 +987,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config
+### Config (配置)
 
 TOML format configuration file management.
 
@@ -999,7 +1002,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger
+### Logger (日志)
 
 A modular logging system.
 
@@ -1026,44 +1029,67 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router
+### Router (路由)
 
-HTTP and WebSocket route management, built on top of FastAPI.
+HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
 
-> Route handlers are based on FastAPI and must use type annotations correctly; otherwise, parameter validation errors may occur.
+> Route handlers support two types of annotations: FastAPI native types (fastapi.Request / fastapi.WebSocket) and ErisPulse abstract types (HttpRequest / WebSocketConnection). It is recommended to use abstract types for better portability.
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# Register HTTP route
-async def handler(request: Request):
+# Method 1: Use ErisPulse abstract types (Recommended)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# Register WebSocket route
-async def ws_handler(websocket: WebSocket):
-    # Note: No need for await websocket.accept(), automatically called internally
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# Method 2: Use FastAPI native types (Compatible with existing code)
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
-
-**Common Issues:** If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure:
-- HTTP handler parameters use `request: Request` annotation
-- WebSocket handler parameters use `websocket: WebSocket` annotation
+> **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
+> 
+> **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
 
 For more routing features, please refer to [Router Manager](../advanced/router.md).
+
+### Client (HTTP 客户端)
+
+Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
+
+```python
+from ErisPulse.Core import client
+
+# GET request
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST request
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# Response attributes
+resp.status        # Status code (e.g., 200)
+resp.headers       # Response headers
+body = await resp.text()   # Text response body
+data = await resp.json()   # JSON parsing
+```
+> The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
+>
+> You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
 
 ## SendDSL Message Sending
 
@@ -2094,6 +2120,8 @@ async def search_handler(event):
 ### Image Download and Storage
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def image_handler(event):
     """Handle image messages"""
@@ -2104,26 +2132,25 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # Download image
-                import aiohttp
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        if response.status == 200:
-                            image_data = await response.read()
-                            
-                            # Store to file
-                            filename = f"images/{event.get_time()}.jpg"
-                            with open(filename, "wb") as f:
-                                f.write(image_data)
-                            
-                            sdk.logger.info(f"Image saved: {filename}")
-                            await event.reply("Image saved")
+                # Recommend using SDK built-in client to download image
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # Store to file
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"Image saved: {filename}")
+                    await event.reply("Image saved")
 ```
 
 ### Image Identification Example
 
 ```python
+from ErisPulse.Core import client
+
 @command("identify", help="Identify image")
 async def identify_handler(event):
     """Identify image in message"""
@@ -2142,16 +2169,13 @@ async def identify_handler(event):
     await event.reply("No image found")
 
 async def _identify_image(url):
-    """Call image identification API (example)"""
-    import aiohttp
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/identify",
-            json={"url": url}
-        ) as response:
-            data = await response.json()
-            return data.get("description", "Identification failed")
+    """Call image identification API (example) - Use SDK built-in client"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "Identification failed")
 ```
 
 ## Next Steps
@@ -2357,8 +2381,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("Hello!")
     
-    # Initialize resources
-    self.session = aiohttp.ClientSession()
+    # Use the SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Send requests via sdk.client
 ```
 
 ### on_unload Method
@@ -2367,8 +2391,8 @@ Called when the module is unloaded, used to clean up resources:
 
 ```python
 async def on_unload(self, event):
-    # Clean up resources
-    await self.session.close()
+    # Clean up custom resources
+    # sdk.client is managed by the framework, no need to manually close
     
     # Unregister event handlers (handled automatically by framework)
     self.logger.info("Module unloaded")
@@ -2910,7 +2934,23 @@ def _load_config(self):
 ### 1. Use Asynchronous Libraries
 
 ```python
-# Use aiohttp (asynchronous)
+# Recommended: Use SDK built-in HTTP client (asynchronous, with automatic logging and statistics)
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# Can also be used via sdk.client (same effect)
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# Do not import aiohttp directly (inconvenient for unified framework management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2919,7 +2959,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Instead of requests (synchronous, will block)
+# Do not use requests (synchronous, will block)
 import requests
 
 class MyModule(BaseModule):
@@ -2942,12 +2982,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # Initialize resources
-    self.session = aiohttp.ClientSession()
+    # The SDK client automatically manages the connection pool, no need to manually create a session
+    pass
     
 async def on_unload(self, event):
-    # Clean up resources
-    await self.session.close()
+    # If using a custom client, remember to clean up resources
+    pass
 ```
 
 ## Event Handling
@@ -3019,7 +3059,7 @@ async def handle_event(self, event):
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Invalid argument: {e}")
     except aiohttp.ClientError as e:
-        # Network error
+        # Network error (this exception is rare when using sdk.client due to the built-in retry mechanism)
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
@@ -3032,11 +3072,13 @@ async def handle_event(self, event):
 ### 2. Timeout Handling
 
 ```python
+# Recommended: Use the SDK built-in client (comes with timeout and retry)
+from ErisPulse.Core import client
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
     except asyncio.TimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
@@ -4169,6 +4211,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 
 ## Router Module
 
+### Abstract Types
+
+Router supports two type annotation styles:
+
+```python
+# ErisPulse abstract types (recommended, portable)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI native types (compatibility with existing code)
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> The routing system automatically injects objects of the corresponding type based on parameter annotations. See [Router Manager](../advanced/router.md) for details.
+
 ### Decorator Routing (Recommended)
 
 ```python
@@ -4387,10 +4452,114 @@ sdk.router.set_docs_info(
 app = sdk.router.get_app()
 ```
 
+## HTTP Client Module
+
+### Basic Requests
+
+```python
+from ErisPulse.Core import client
+
+# GET request
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST request
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# Generic request method
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### Response Object
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP status code (e.g. 200, 404)
+resp.reason        # str | None - Reason phrase (e.g. "OK")
+resp.headers       # Response headers (case-insensitive)
+resp.content_type  # str | None - Content-Type
+resp.url           # Final URL (may change due to redirects)
+resp.raw           # Underlying native response object (currently aiohttp.ClientResponse)
+
+# Read response body
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # Parse JSON
+text = await resp.text("gbk")  # Specify encoding
+```
+
+### Request Parameters
+
+| Parameter | Type | Description |
+|------|------|------|
+| `url` | `str` | Request URL |
+| `params` | `dict[str, str]` | Query parameters (optional) |
+| `headers` | `dict[str, str]` | Extra request headers (optional) |
+| `data` | `Any` | Request body (form or raw data) (optional) |
+| `json` | `Any` | JSON request body (optional) |
+| `timeout` | `float` | Request timeout in seconds (optional, overrides default) |
+| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default) |
+
+### Custom Client
+
+```python
+from ErisPulse.Core import HttpClient
+
+# Create a custom client (non-global singleton)
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# Context manager for automatic session closing
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### Request Statistics
+
+```python
+from ErisPulse.Core import client
+
+# View stats
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# Reset stats
+client.reset_stats()
+```
+
+### Lifecycle Events
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event Module API
 - [Adapter System API](adapter-system.md) - Adapter Management API
+- [HTTP Client](../advanced/http-client.md) - HTTP Client full documentation
+- [Router Manager](../advanced/router.md) - Router Manager full documentation
 
 
 
@@ -5499,22 +5668,35 @@ complex_msg = (
 
 # Router Manager
 
-The ErisPulse Router Manager provides unified HTTP and WebSocket route management, supporting multi-adapter route registration and lifecycle management. It is built on FastAPI + Uvicorn and provides complete web service capabilities.
+The ErisPulse Router Manager provides unified HTTP and WebSocket route management, supporting multi-adapter route registration and lifecycle management. It is encapsulated through an abstraction layer at the bottom layer (currently FastAPI + Uvicorn).
 
 ## Overview
 
 Key features of the Router Manager:
 
 - **Decorator Routes**: Supports `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` decorators for quick registration
+- **Auto Injection**: Route handlers do not need to import FastAPI types; the framework automatically injects abstract objects
 - **Route Grouping**: Supports `RouteGroup` with prefixes and version numbers
 - **Route Middleware**: Supports request interception with glob pattern matching
 - **Rate Limiting**: Built-in sliding window rate limiting
 - **CORS Support**: One-click enable Cross-Origin Resource Sharing
 - **Security Headers**: Automatically adds security response headers
 - **Auto Documentation**: Interactive documentation based on OpenAPI
-- **WebSocket Support**: Complete WebSocket connection management and custom authentication
+- **WebSocket Support**: Complete WebSocket connection management, custom authentication, and lifecycle hooks
 - **Lifecycle Integration**: Deeply integrated with the ErisPulse lifecycle system
 - **SSL/TLS Support**: Supports HTTPS and WSS secure connections
+
+## Abstract Types
+
+ErisPulse provides server-side abstract types so that modules do not need to directly depend on FastAPI:
+
+| Abstract Type | FastAPI Equivalent | Description |
+|---------------|--------------------|-------------|
+| `HttpRequest` | `fastapi.Request` | HTTP request encapsulation, fully interface compatible |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additionally provides lifecycle hooks |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
+
+> The underlying FastAPI native object can be accessed via the `.raw` property. Code directly using FastAPI types is also fully compatible.
 
 ## Decorator Routes (Recommended)
 
@@ -5522,22 +5704,20 @@ Key features of the Router Manager:
 
 ```python
 from ErisPulse.Core import router
-from fastapi import Request
-
-# General HTTP routes
-@router.http("my_module", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"message": "Hello"}
-
-# Shortcut methods
 @router.get("my_module", "/info")
-async def get_info(request: Request):
-    return {"info": "data"}
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+
+# Can also explicitly annotate abstract types
+from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
-async def post_data(request: Request):
+async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
+
+# Continuing to use FastAPI types is also fully compatible
+from fastapi import Request
 
 @router.put("my_module", "/data/{item_id}")
 async def update_data(request: Request):
@@ -5548,38 +5728,51 @@ async def delete_data(request: Request):
     return {"deleted": True}
 ```
 
-> **Note**: `module_name` must be explicitly passed as the first parameter, and the route path will automatically have the module name prefix added.
+> **Auto Injection Rules**: When the first parameter of the handler is named `request` or `req` and has no FastAPI type annotation, the framework automatically injects `HttpRequest`. Handlers with no parameters or non-request parameter names are unaffected.
 
 ### WebSocket Decorators
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
 # Basic WebSocket
 @router.ws("my_module", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
-# WebSocket with authentication (Recommended: use auth_handler to control connection)
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+# WebSocket with lifecycle hooks
+@router.ws("my_module", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_disconnect(ws, reason="unknown"):
+        print(f"User disconnected: {reason}")
+
+    @ws.on_error
+    async def on_error(ws, error=""):
+        print(f"Connection error: {error}")
+
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# WebSocket with authentication
+async def ws_auth(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 @router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
+async def secure_ws_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 ```
+
+> **Note**: WebSocket handlers and authentication handlers also support auto injection. If the parameter annotation is `fastapi.WebSocket`, the native object is passed in; otherwise, `WebSocketConnection` is passed in.
 
 ## Traditional Registration Method
 
 ```python
-from fastapi import Request
-
-async def hello_handler(request: Request):
+async def hello_handler(request):
     return {"message": "Hello World"}
 
 # Basic registration
@@ -5605,12 +5798,11 @@ router.register_http_route(
 ### WebSocket Registration
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection
 
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws: WebSocketConnection):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
 # Basic registration
 router.register_websocket(
@@ -5620,8 +5812,8 @@ router.register_websocket(
 )
 
 # Registration with authentication (Recommended)
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 router.register_websocket(
@@ -5644,6 +5836,30 @@ router.register_websocket(
 
 > **Recommendation**: Use `auth_handler` for connection confirmation rather than disabling `auto_accept`. Only set `auto_accept=False` when you need complete control over the connection flow.
 
+## WebSocket Lifecycle Hooks
+
+`WebSocketConnection` provides callback registration for disconnection and errors, requiring no manual try/catch:
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+@router.ws("my_module", "/ws")
+async def my_ws(ws: WebSocketConnection):
+    # Register via decorator
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"Disconnect reason: {reason}")
+
+    # Can also be called directly
+    async def on_err(ws, error=""):
+        print(f"Error: {error}")
+    ws.on_error(on_err)
+
+    # Normal business logic
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+```
+
 ## Route Grouping
 
 ```python
@@ -5651,11 +5867,11 @@ router.register_websocket(
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request):
     return {"users": []}
 
 @group.post("/users")
-async def create_user(request: Request):
+async def create_user(request):
     return {"created": True}
 
 # Actual path: /my_module/v1/users
@@ -5667,14 +5883,14 @@ Middleware supports glob pattern matching for paths:
 
 ```python
 @router.middleware("/my_module/*")
-async def auth_middleware(request: Request, call_next):
+async def auth_middleware(request, call_next):
     token = request.headers.get("Authorization")
     if not token:
         return {"error": "Unauthorized"}
     return await call_next(request)
 
 @router.middleware("/my_module/admin/*")
-async def admin_middleware(request: Request, call_next):
+async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
@@ -5684,11 +5900,11 @@ Use sliding window algorithm to rate limit routes:
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
+async def limited_endpoint(request):
     return {"ok": True}
 
 @router.post("my_module", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
+async def submit_data(request):
     return {"submitted": True}
 ```
 
@@ -5759,16 +5975,18 @@ router.register_http_route("my_module", "/api", handler)
 Recommended to use `auth_handler` to control connection access:
 
 ```python
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+from ErisPulse.Core import WebSocketConnection
+
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 # Decorator method
 @router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(websocket: WebSocket):
+async def secure_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 
 # Traditional registration method
 router.register_websocket(
@@ -5818,15 +6036,17 @@ async def on_server_stop(event):
 
 ## Best Practices
 
-1. **Prioritize Decorators**: `@router.get()` etc. are more concise than `register_http_route()`
-2. **Explicitly Pass module_name**: The first parameter to decorators must be the module name and cannot be omitted
-3. **Use Route Groups**: Use `create_group()` to organize multiple routes for the same module
-4. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
-5. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
-6. **Error Handling**: Implement appropriate error handling and response formats
+1. **Prioritize Abstract Types**: Use `HttpRequest` / `WebSocketConnection` instead of `fastapi.Request` / `fastapi.WebSocket` to avoid hard dependencies
+2. **Leverage Auto Injection**: Name the first parameter of the handler `request` or `req` to get `HttpRequest` without any type annotations
+3. **Explicitly Pass module_name**: The first parameter to decorators must be the module name and cannot be omitted
+4. **Use Route Groups**: Use `group()` to organize multiple routes for the same module
+5. **Security Considerations**: Implement authentication mechanisms and security headers for sensitive operations
+6. **Reasonable Rate Limiting**: Set rate limits for high-frequency APIs
+7. **Use Lifecycle Hooks**: Handle WebSocket exceptions via `@ws.on_disconnect` / `@ws.on_error` to avoid manual try/catch
 
 ## Related Documentation
 
+- [HTTP Client](http-client.md) - Use the built-in HTTP client to send requests
 - [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module route registration
 - [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for route usage
 

@@ -1,21 +1,34 @@
 # 路由管理器
 
-ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。它基於 FastAPI + Uvicorn 構建，提供了完整的 Web 服務功能。
+ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（當前為 FastAPI + Uvicorn）
 
 ## 概述
 
 路由管理器的主要功能：
 
 - **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊
+- **自動注入**：路由處理器無需匯入 FastAPI 類型，框架自動注入抽象物件
 - **路由分組**：支援帶前綴和版本號的 `RouteGroup`
 - **路由中間件**：支援 glob 模式匹配的請求攔截
 - **速率限制**：內建滑動窗口限流
 - **CORS 支援**：一鍵開啟跨域資源共享
 - **安全頭**：自動添加安全回應頭
 - **自動文件**：基於 OpenAPI 的互動式文件
-- **WebSocket 支援**：完整的 WebSocket 連線管理和自訂認證
+- **WebSocket 支援**：完整的 WebSocket 連線管理、自訂認證和生命週期掛鉤
 - **生命週期整合**：與 ErisPulse 生命週期系統深度整合
 - **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連線
+
+## 抽象類型
+
+ErisPulse 提供了伺服器端抽象類型，使模組無需直接依賴 FastAPI：
+
+| 抽象類型 | FastAPI 對應 | 說明 |
+|---------|-------------|------|
+| `HttpRequest` | `fastapi.Request` | HTTP 請求封裝，介面完全相容 |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連線封裝，額外提供生命週期掛鉤 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開例外 |
+
+> 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。
 
 ## 裝飾器路由（推薦）
 
@@ -23,22 +36,20 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 
 ```python
 from ErisPulse.Core import router
-from fastapi import Request
-
-# 通用 HTTP 路由
-@router.http("my_module", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"message": "Hello"}
-
-# 快捷方法
 @router.get("my_module", "/info")
-async def get_info(request: Request):
-    return {"info": "data"}
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+
+# 也可顯式標註抽象類型
+from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
-async def post_data(request: Request):
+async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
+
+# 繼續使用 FastAPI 類型也完全相容
+from fastapi import Request
 
 @router.put("my_module", "/data/{item_id}")
 async def update_data(request: Request):
@@ -49,38 +60,51 @@ async def delete_data(request: Request):
     return {"deleted": True}
 ```
 
-> **注意**：`module_name` 必須作為第一個參數顯式傳入，路由路徑會自動添加模組名前綴。
+> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。
 
 ### WebSocket 裝飾器
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
 # 基本 WebSocket
 @router.ws("my_module", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
-# 帶認證的 WebSocket（推薦：使用 auth_handler 控制連接）
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+# 帶生命週期掛鉤的 WebSocket
+@router.ws("my_module", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_disconnect(ws, reason="unknown"):
+        print(f"使用者斷開: {reason}")
+
+    @ws.on_error
+    async def on_error(ws, error=""):
+        print(f"連線錯誤: {error}")
+
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# 帶認證的 WebSocket
+async def ws_auth(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 @router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
+async def secure_ws_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 ```
+
+> **注意**：WebSocket 處理器和認證處理器也支援自動注入。如果參數註解為 `fastapi.WebSocket`，則傳入原生物件；否則傳入 `WebSocketConnection`。
 
 ## 傳統註冊方式
 
 ```python
-from fastapi import Request
-
-async def hello_handler(request: Request):
+async def hello_handler(request):
     return {"message": "Hello World"}
 
 # 基本註冊
@@ -106,12 +130,11 @@ router.register_http_route(
 ### WebSocket 註冊
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection
 
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws: WebSocketConnection):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
 # 基本註冊
 router.register_websocket(
@@ -121,8 +144,8 @@ router.register_websocket(
 )
 
 # 帶認證的註冊（推薦）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 router.register_websocket(
@@ -145,6 +168,30 @@ router.register_websocket(
 
 > **推薦**：使用 `auth_handler` 進行連接確認，而非關閉 `auto_accept`。僅在你需要完全控制連接流程時才設置 `auto_accept=False`。
 
+## WebSocket 生命週期掛鉤
+
+`WebSocketConnection` 提供了斷開連接和錯誤的回呼註冊，無需手動 try/catch：
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+@router.ws("my_module", "/ws")
+async def my_ws(ws: WebSocketConnection):
+    # 裝飾器方式註冊
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"斷開原因: {reason}")
+
+    # 也可直接呼叫
+    async def on_err(ws, error=""):
+        print(f"錯誤: {error}")
+    ws.on_error(on_err)
+
+    # 正常業務邏輯
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+```
+
 ## 路由分組
 
 ```python
@@ -152,11 +199,11 @@ router.register_websocket(
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request):
     return {"users": []}
 
 @group.post("/users")
-async def create_user(request: Request):
+async def create_user(request):
     return {"created": True}
 
 # 實際路徑: /my_module/v1/users
@@ -168,14 +215,14 @@ async def create_user(request: Request):
 
 ```python
 @router.middleware("/my_module/*")
-async def auth_middleware(request: Request, call_next):
+async def auth_middleware(request, call_next):
     token = request.headers.get("Authorization")
     if not token:
         return {"error": "Unauthorized"}
     return await call_next(request)
 
 @router.middleware("/my_module/admin/*")
-async def admin_middleware(request: Request, call_next):
+async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
@@ -185,11 +232,11 @@ async def admin_middleware(request: Request, call_next):
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
+async def limited_endpoint(request):
     return {"ok": True}
 
 @router.post("my_module", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
+async def submit_data(request):
     return {"submitted": True}
 ```
 
@@ -260,16 +307,18 @@ router.register_http_route("my_module", "/api", handler)
 推薦使用 `auth_handler` 控制連接訪問：
 
 ```python
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+from ErisPulse.Core import WebSocketConnection
+
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 # 裝飾器方式
 @router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(websocket: WebSocket):
+async def secure_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 
 # 傳統註冊方式
 router.register_websocket(
@@ -319,14 +368,16 @@ async def on_server_stop(event):
 
 ## 最佳實踐
 
-1. **優先使用裝飾器**：`@router.get()` 等裝飾器比 `register_http_route()` 更簡潔
-2. **顯式傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
-3. **使用路由分組**：對同一模組的多個路由使用 `create_group()` 組織
-4. **安全性考量**：為敏感操作實作認證機制和安全頭
-5. **合理限流**：對高頻介面設置速率限制
-6. **錯誤處理**：實作適當的錯誤處理和回應格式
+1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴
+2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`
+3. **顯式傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
+4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織
+5. **安全性考量**：為敏感操作實作認證機制和安全頭
+6. **合理限流**：對高頻介面設置速率限制
+7. **使用生命週期掛鉤**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 例外，避免手動 try/catch
 
 ## 相關文件
 
+- [HTTP 客戶端](http-client.md) - 使用內建 HTTP 客戶端發送請求
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組路由註冊
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議

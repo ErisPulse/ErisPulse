@@ -58,6 +58,7 @@ sdk.logger     # Logging system
 sdk.adapter    # Adapter system
 sdk.module     # Module system
 sdk.router     # Routing system
+sdk.client     # HTTP Client
 sdk.lifecycle  # Lifecycle system
 ```
 
@@ -109,7 +110,7 @@ class MyModule(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
-    
+
     @staticmethod
     def get_load_strategy():
         from ErisPulse.loaders import ModuleLoadStrategy
@@ -124,9 +125,9 @@ class MyModule(BaseModule):
         @command("mycmd", help="My command")
         async def my_command(event):
             await event.reply("Command executed successfully")
-        
+
         self.logger.info("Module loaded")
-    
+
     async def on_unload(self, event):
         """Called when module unloads"""
         self.logger.info("Module unloaded")
@@ -196,9 +197,9 @@ async def connect_handler(event):
     sdk.logger.info(f"{platform} connected successfully")
 ```
 
-## Core Modules
+## Core Module Explanations
 
-### Storage
+### Storage (存储)
 
 A SQLite-based key-value storage system for persistent data.
 
@@ -221,7 +222,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config
+### Config (配置)
 
 TOML format configuration file management.
 
@@ -236,7 +237,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger
+### Logger (日志)
 
 A modular logging system.
 
@@ -263,44 +264,67 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router
+### Router (路由)
 
-HTTP and WebSocket route management, built on top of FastAPI.
+HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
 
-> Route handlers are based on FastAPI and must use type annotations correctly; otherwise, parameter validation errors may occur.
+> Route handlers support two types of annotations: FastAPI native types (fastapi.Request / fastapi.WebSocket) and ErisPulse abstract types (HttpRequest / WebSocketConnection). It is recommended to use abstract types for better portability.
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# Register HTTP route
-async def handler(request: Request):
+# Method 1: Use ErisPulse abstract types (Recommended)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# Register WebSocket route
-async def ws_handler(websocket: WebSocket):
-    # Note: No need for await websocket.accept(), automatically called internally
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# Method 2: Use FastAPI native types (Compatible with existing code)
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
-
-**Common Issues:** If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure:
-- HTTP handler parameters use `request: Request` annotation
-- WebSocket handler parameters use `websocket: WebSocket` annotation
+> **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
+> 
+> **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
 
 For more routing features, please refer to [Router Manager](../advanced/router.md).
+
+### Client (HTTP 客户端)
+
+Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
+
+```python
+from ErisPulse.Core import client
+
+# GET request
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST request
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# Response attributes
+resp.status        # Status code (e.g., 200)
+resp.headers       # Response headers
+body = await resp.text()   # Text response body
+data = await resp.json()   # JSON parsing
+```
+> The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
+>
+> You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
 
 ## SendDSL Message Sending
 

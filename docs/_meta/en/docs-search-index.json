@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1095,
+  "total_keywords": 1091,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -8,14 +8,6 @@
         "line": 64,
         "level": 4,
         "title": "0 Success (OK)"
-      }
-    ],
-    "1. Account Configuration Validation": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 387,
-        "level": 3,
-        "title": "1. Account Configuration Validation"
       }
     ],
     "1. Adapter System": [
@@ -26,6 +18,14 @@
         "title": "1. Adapter System"
       }
     ],
+    "1. BaseAdapter Level (Must call `super().__init__()`)": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 366,
+        "level": 3,
+        "title": "1. BaseAdapter Level (Must call `super().__init__()`)"
+      }
+    ],
     "1. Basic Information Section": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -34,24 +34,10 @@
         "title": "1. Basic Information Section"
       }
     ],
-    "1. Batch Register Using Mixin Classes (Recommended)": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 533,
-        "level": 3,
-        "title": "1. Batch Register Using Mixin Classes (Recommended)"
-      }
-    ],
     "1. Categorized Exception Handling": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 429,
-        "level": 3,
-        "title": "1. Categorized Exception Handling"
-      },
-      {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 154,
+        "line": 170,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -112,36 +98,12 @@
         "title": "1. Ensure Cross-Platform Compatibility"
       }
     ],
-    "1. Implement Connection Retry": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 131,
-        "level": 3,
-        "title": "1. Implement Connection Retry"
-      }
-    ],
-    "1. Maintain Platform Feature Documentation": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 585,
-        "level": 3,
-        "title": "1. Maintain Platform Feature Documentation"
-      }
-    ],
     "1. Module Development (Recommended)": [
       {
         "document": "README.md",
         "line": 96,
         "level": 3,
         "title": "1. Module Development (Recommended)"
-      }
-    ],
-    "1. Must Return Task Object": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 276,
-        "level": 3,
-        "title": "1. Must Return Task Object"
       }
     ],
     "1. Overview": [
@@ -155,7 +117,7 @@
     "1. Proper Use of Log Levels": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 223,
+        "line": 241,
         "level": 3,
         "title": "1. Proper Use of Log Levels"
       }
@@ -171,7 +133,7 @@
     "1. Sensitive Data Protection": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 294,
+        "line": 312,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -200,36 +162,12 @@
         "title": "1. Standard Method Naming"
       }
     ],
-    "1. Standardize Response Format": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 337,
-        "level": 3,
-        "title": "1. Standardize Response Format"
-      }
-    ],
-    "1. Strictly Follow OneBot12 Standard": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 220,
-        "level": 3,
-        "title": "1. Strictly Follow OneBot12 Standard"
-      }
-    ],
     "1. Unit Testing": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 331,
+        "line": 349,
         "level": 3,
         "title": "1. Unit Testing"
-      }
-    ],
-    "1. Unit Tests": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 475,
-        "level": 3,
-        "title": "1. Unit Tests"
       }
     ],
     "1. Use Asynchronous Libraries": [
@@ -243,7 +181,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 257,
+        "line": 275,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -251,7 +189,7 @@
     "1. Use Event Wrapper Class": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 98,
+        "line": 114,
         "level": 3,
         "title": "1. Use Event Wrapper Class"
       }
@@ -259,7 +197,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 190,
+        "line": 208,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -267,7 +205,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 380,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -336,18 +274,10 @@
         "title": "1xxxx Action Request Errors (Request Error)"
       }
     ],
-    "2. Account Selection Mechanism": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 407,
-        "level": 3,
-        "title": "2. Account Selection Mechanism"
-      }
-    ],
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 278,
+        "line": 296,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -363,39 +293,23 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 206,
+        "line": 224,
         "level": 3,
         "title": "2. Batch Operations"
-      }
-    ],
-    "2. Chaining Modifier Methods Return self": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 296,
-        "level": 3,
-        "title": "2. Chaining Modifier Methods Return self"
       }
     ],
     "2. Complete Documentation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 394,
         "level": 3,
         "title": "2. Complete Documentation"
-      }
-    ],
-    "2. Connection State Management": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 160,
-        "level": 3,
-        "title": "2. Connection State Management"
       }
     ],
     "2. Correct Asynchronous Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 73,
+        "line": 89,
         "level": 3,
         "title": "2. Correct Asynchronous Operations"
       }
@@ -424,18 +338,10 @@
         "title": "2. Embedded Development"
       }
     ],
-    "2. Error Code Standards": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 363,
-        "level": 3,
-        "title": "2. Error Code Standards"
-      }
-    ],
     "2. Event Object": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
         "title": "2. Event Object"
       }
@@ -451,7 +357,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 329,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -459,25 +365,9 @@
     "2. Integration Testing": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 346,
+        "line": 364,
         "level": 3,
         "title": "2. Integration Testing"
-      }
-    ],
-    "2. Integration Tests": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 499,
-        "level": 3,
-        "title": "2. Integration Tests"
-      }
-    ],
-    "2. Logging": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 454,
-        "level": 3,
-        "title": "2. Logging"
       }
     ],
     "2. Module Naming Conventions": [
@@ -499,7 +389,7 @@
     "2. Proper Use of Lazy Loading": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 114,
+        "line": 130,
         "level": 3,
         "title": "2. Proper Use of Lazy Loading"
       }
@@ -512,20 +402,20 @@
         "title": "2. Publish to PyPI"
       }
     ],
-    "2. Register Single Method Using Decorator": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 559,
-        "level": 3,
-        "title": "2. Register Single Method Using Decorator"
-      }
-    ],
     "2. Request Event Field Requirements": [
       {
         "document": "standards/request-action-spec.md",
         "line": 40,
         "level": 2,
         "title": "2. Request Event Field Requirements"
+      }
+    ],
+    "2. Send Inner Class (Usually no need to override)": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 380,
+        "level": 3,
+        "title": "2. Send Inner Class (Usually no need to override)"
       }
     ],
     "2. Sending Meta Events": [
@@ -571,7 +461,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 245,
+        "line": 263,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -587,25 +477,9 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 175,
+        "line": 191,
         "level": 3,
         "title": "2. Timeout Handling"
-      }
-    ],
-    "2. Timestamp Normalization": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 242,
-        "level": 3,
-        "title": "2. Timestamp Normalization"
-      }
-    ],
-    "2. Update Version Information": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 606,
-        "level": 3,
-        "title": "2. Update Version Information"
       }
     ],
     "2.1 Media Message Parameter Specifications": [
@@ -739,17 +613,9 @@
     "3. Adapters": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 81,
+        "line": 82,
         "level": 3,
         "title": "3. Adapters"
-      }
-    ],
-    "3. Cleanup on Adapter Shutdown": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 569,
-        "level": 3,
-        "title": "3. Cleanup on Adapter Shutdown"
       }
     ],
     "3. Clear Configuration Management": [
@@ -787,17 +653,9 @@
     "3. Event Handler Registration": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 136,
+        "line": 152,
         "level": 3,
         "title": "3. Event Handler Registration"
-      }
-    ],
-    "3. Event ID Generation": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 258,
-        "level": 3,
-        "title": "3. Event ID Generation"
       }
     ],
     "3. Heartbeat Events": [
@@ -806,14 +664,6 @@
         "line": 59,
         "level": 3,
         "title": "3. Heartbeat Events"
-      }
-    ],
-    "3. Heartbeat Keep-Alive and Meta Heartbeat": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
-        "level": 3,
-        "title": "3. Heartbeat Keep-Alive and Meta Heartbeat"
       }
     ],
     "3. Improve Code Quality": [
@@ -864,10 +714,18 @@
         "title": "3. Request DSL"
       }
     ],
+    "3. Request Inner Class (Usually no need to override)": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 404,
+        "level": 3,
+        "title": "3. Request Inner Class (Usually no need to override)"
+      }
+    ],
     "3. Resource Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 84,
+        "line": 100,
         "level": 3,
         "title": "3. Resource Management"
       }
@@ -886,14 +744,6 @@
         "line": 90,
         "level": 3,
         "title": "3. Submit to Module Store"
-      }
-    ],
-    "3. Support Platform-Specific Methods": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 310,
-        "level": 3,
-        "title": "3. Support Platform-Specific Methods"
       }
     ],
     "3. Trigger Build": [
@@ -1040,6 +890,14 @@
         "title": "4. Extended Field Description"
       }
     ],
+    "4. Implement Required Methods": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 118,
+        "level": 3,
+        "title": "4. Implement Required Methods"
+      }
+    ],
     "4. Implementation Requirements": [
       {
         "document": "standards/api-response.md",
@@ -1067,7 +925,7 @@
     "4. Modules": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 96,
+        "line": 97,
         "level": 3,
         "title": "4. Modules"
       }
@@ -1174,6 +1032,14 @@
         "line": 106,
         "level": 2,
         "title": "5. Extended Specifications"
+      }
+    ],
+    "5. Implement Send Class": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 185,
+        "level": 3,
+        "title": "5. Implement Send Class"
       }
     ],
     "5. Return Value Specifications": [
@@ -1302,6 +1168,14 @@
         "line": 197,
         "level": 2,
         "title": "6. Extension Naming Conventions"
+      }
+    ],
+    "6. Implement Converter": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 248,
+        "level": 3,
+        "title": "6. Implement Converter"
       }
     ],
     "6. Notes": [
@@ -1448,6 +1322,14 @@
         "title": "7. Error Code Extensions"
       }
     ],
+    "7. Implement Request Class (Request Actions)": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 290,
+        "level": 3,
+        "title": "7. Implement Request Class (Request Actions)"
+      }
+    ],
     "7. Session Type Extensions": [
       {
         "document": "standards/event-conversion.md",
@@ -1486,6 +1368,14 @@
         "line": 256,
         "level": 2,
         "title": "8. Common Questions"
+      }
+    ],
+    "8. Create Package Entry": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 355,
+        "level": 3,
+        "title": "8. Create Package Entry"
       }
     ],
     "8. Module Developer Guide": [
@@ -1602,14 +1492,6 @@
         "title": "API Calls"
       }
     ],
-    "API Error Handling": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 608,
-        "level": 3,
-        "title": "API Error Handling"
-      }
-    ],
     "API Overview": [
       {
         "document": "api-reference/README.md",
@@ -1634,24 +1516,10 @@
     ],
     "API Response": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 335,
-        "level": 2,
-        "title": "API Response"
-      },
-      {
         "document": "standards/README.md",
         "line": 79,
         "level": 3,
         "title": "API Response"
-      }
-    ],
-    "API Response Standards": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 512,
-        "level": 2,
-        "title": "API Response Standards"
       }
     ],
     "API Standard": [
@@ -1660,6 +1528,20 @@
         "line": 321,
         "level": 3,
         "title": "API Standard"
+      }
+    ],
+    "Abstract Types": [
+      {
+        "document": "advanced/router.md",
+        "line": 21,
+        "level": 2,
+        "title": "Abstract Types"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "Abstract Types"
       }
     ],
     "Accessing Core Modules": [
@@ -1677,12 +1559,6 @@
       }
     ],
     "Account Configuration": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 557,
-        "level": 3,
-        "title": "Account Configuration"
-      },
       {
         "document": "platform-guide/onebot11.md",
         "line": 163,
@@ -1734,6 +1610,14 @@
         "line": 157,
         "level": 2,
         "title": "Active State Management"
+      }
+    ],
+    "Actively Send Meta Events": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 148,
+        "level": 4,
+        "title": "Actively Send Meta Events"
       }
     ],
     "Adapter": [
@@ -1884,14 +1768,6 @@
         "line": 75,
         "level": 2,
         "title": "Adapter Send Method Query"
-      }
-    ],
-    "Adapter Sending Meta Events": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 656,
-        "level": 3,
-        "title": "Adapter Sending Meta Events"
       }
     ],
     "Adapter Standardization Conversion Specification": [
@@ -2113,7 +1989,7 @@
     "Authentication Mechanism": [
       {
         "document": "advanced/router.md",
-        "line": 258,
+        "line": 305,
         "level": 2,
         "title": "Authentication Mechanism"
       }
@@ -2129,23 +2005,15 @@
     "Auto Documentation": [
       {
         "document": "advanced/router.md",
-        "line": 232,
+        "line": 279,
         "level": 2,
         "title": "Auto Documentation"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 570,
+        "line": 593,
         "level": 3,
         "title": "Auto Documentation"
-      }
-    ],
-    "Auto-Discovery Mechanism": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 630,
-        "level": 3,
-        "title": "Auto-Discovery Mechanism"
       }
     ],
     "Auto-Discovery via Normal Events": [
@@ -2354,6 +2222,14 @@
         "title": "Basic Reply"
       }
     ],
+    "Basic Requests": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 616,
+        "level": 3,
+        "title": "Basic Requests"
+      }
+    ],
     "Basic Requirements": [
       {
         "document": "standards/request-action-spec.md",
@@ -2371,7 +2247,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 309,
+        "line": 333,
         "level": 3,
         "title": "Basic Sending"
       }
@@ -2464,6 +2340,12 @@
     ],
     "Best Practices": [
       {
+        "document": "advanced/http-client.md",
+        "line": 215,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 94,
         "level": 2,
@@ -2471,7 +2353,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 320,
+        "line": 369,
         "level": 2,
         "title": "Best Practices"
       },
@@ -2524,12 +2406,6 @@
         "line": 216,
         "level": 2,
         "title": "Bot Status Management"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 626,
-        "level": 2,
-        "title": "Bot Status Management"
       }
     ],
     "Bot Status Management and Meta Events": [
@@ -2544,12 +2420,6 @@
       {
         "document": "api-reference/event-system.md",
         "line": 239,
-        "level": 3,
-        "title": "Bot Status Query"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 693,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -2649,13 +2519,13 @@
     "CORS Configuration": [
       {
         "document": "advanced/router.md",
-        "line": 198,
+        "line": 245,
         "level": 2,
         "title": "CORS Configuration"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 542,
+        "line": 565,
         "level": 3,
         "title": "CORS Configuration"
       }
@@ -2703,7 +2573,7 @@
     "Chain Modifiers": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 322,
+        "line": 346,
         "level": 3,
         "title": "Chain Modifiers"
       }
@@ -2900,6 +2770,14 @@
         "title": "Choosing a Development Type"
       }
     ],
+    "Client (HTTP 客户端)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 302,
+        "level": 3,
+        "title": "Client (HTTP 客户端)"
+      }
+    ],
     "Code Example Standards": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -2983,7 +2861,7 @@
     "Command Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 150,
+        "line": 151,
         "level": 3,
         "title": "Command Event"
       }
@@ -3236,12 +3114,12 @@
         "title": "Conditional Listening"
       }
     ],
-    "Config": [
+    "Config (配置)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 224,
+        "line": 225,
         "level": 3,
-        "title": "Config"
+        "title": "Config (配置)"
       }
     ],
     "Config Module": [
@@ -3418,34 +3296,12 @@
         "title": "Connection Event"
       }
     ],
-    "Connection Management": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 129,
-        "level": 2,
-        "title": "Connection Management"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 450,
-        "level": 2,
-        "title": "Connection Management"
-      }
-    ],
     "Connection Process": [
       {
         "document": "platform-guide/kook.md",
         "line": 305,
         "level": 3,
         "title": "Connection Process"
-      }
-    ],
-    "Connection Retry": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 584,
-        "level": 3,
-        "title": "Connection Retry"
       }
     ],
     "Considerations": [
@@ -3470,6 +3326,14 @@
         "line": 88,
         "level": 2,
         "title": "Content Writing Standards"
+      }
+    ],
+    "Context Management": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 186,
+        "level": 2,
+        "title": "Context Management"
       }
     ],
     "Context and Persistence": [
@@ -3687,9 +3551,17 @@
     "Core Module Description": [
       {
         "document": "architecture.md",
-        "line": 40,
+        "line": 41,
         "level": 3,
         "title": "Core Module Description"
+      }
+    ],
+    "Core Module Explanations": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 200,
+        "level": 2,
+        "title": "Core Module Explanations"
       }
     ],
     "Core Modules": [
@@ -3697,12 +3569,6 @@
         "document": "api-reference/README.md",
         "line": 14,
         "level": 3,
-        "title": "Core Modules"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 199,
-        "level": 2,
         "title": "Core Modules"
       }
     ],
@@ -3776,6 +3642,22 @@
         "title": "Creating a Conversation"
       }
     ],
+    "Custom Client": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 673,
+        "level": 3,
+        "title": "Custom Client"
+      }
+    ],
+    "Custom Default Headers": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 149,
+        "level": 2,
+        "title": "Custom Default Headers"
+      }
+    ],
     "Custom Message Segments": [
       {
         "document": "advanced/message-builder.md",
@@ -3841,7 +3723,7 @@
     "Decorator Routes (Recommended)": [
       {
         "document": "advanced/router.md",
-        "line": 20,
+        "line": 33,
         "level": 2,
         "title": "Decorator Routes (Recommended)"
       }
@@ -3849,7 +3731,7 @@
     "Decorator Routing (Recommended)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 396,
         "level": 3,
         "title": "Decorator Routing (Recommended)"
       }
@@ -3879,7 +3761,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 360,
+        "line": 378,
         "level": 2,
         "title": "Deployment"
       }
@@ -4140,14 +4022,6 @@
         "title": "Documentation List"
       }
     ],
-    "Documentation Maintenance": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 583,
-        "level": 2,
-        "title": "Documentation Maintenance"
-      }
-    ],
     "Documentation Maintenance Guidelines": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -4354,20 +4228,8 @@
     ],
     "Error Handling": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 427,
-        "level": 2,
-        "title": "Error Handling"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 582,
-        "level": 2,
-        "title": "Error Handling"
-      },
-      {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 152,
+        "line": 168,
         "level": 2,
         "title": "Error Handling"
       },
@@ -4423,12 +4285,6 @@
       }
     ],
     "Event Conversion": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 218,
-        "level": 2,
-        "title": "Event Conversion"
-      },
       {
         "document": "standards/README.md",
         "line": 69,
@@ -4511,7 +4367,7 @@
     "Event Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 96,
+        "line": 112,
         "level": 2,
         "title": "Event Handling"
       },
@@ -4547,7 +4403,7 @@
     "Event Handling Process": [
       {
         "document": "architecture.md",
-        "line": 90,
+        "line": 92,
         "level": 2,
         "title": "Event Handling Process"
       }
@@ -4613,7 +4469,7 @@
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 335,
+        "line": 359,
         "level": 3,
         "title": "Event Reply Methods"
       }
@@ -4653,7 +4509,7 @@
     "Event Types": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "Event Types"
       }
@@ -4760,14 +4616,6 @@
         "line": 149,
         "level": 2,
         "title": "Extension: Adding More Features"
-      }
-    ],
-    "Failure Response": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 540,
-        "level": 3,
-        "title": "Failure Response"
       }
     ],
     "Failure Response Example": [
@@ -4928,6 +4776,22 @@
         "line": 64,
         "level": 2,
         "title": "Function Related Terms"
+      }
+    ],
+    "GET": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 59,
+        "level": 3,
+        "title": "GET"
+      }
+    ],
+    "Generic request": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 106,
+        "level": 3,
+        "title": "Generic request"
       }
     ],
     "Get Method Details": [
@@ -5102,10 +4966,26 @@
         "title": "Guided Registration"
       }
     ],
+    "HTTP Client": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 1,
+        "level": 1,
+        "title": "HTTP Client"
+      }
+    ],
+    "HTTP Client Module": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 614,
+        "level": 2,
+        "title": "HTTP Client Module"
+      }
+    ],
     "HTTP Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 22,
+        "line": 35,
         "level": 3,
         "title": "HTTP Decorators"
       }
@@ -5169,7 +5049,7 @@
     "Health Check": [
       {
         "document": "advanced/router.md",
-        "line": 291,
+        "line": 340,
         "level": 3,
         "title": "Health Check"
       },
@@ -5264,6 +5144,14 @@
         "title": "How to support multiple platforms?"
       }
     ],
+    "HttpResponse": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 34,
+        "level": 2,
+        "title": "HttpResponse"
+      }
+    ],
     "ID Field Query": [
       {
         "document": "advanced/session-types.md",
@@ -5291,7 +5179,7 @@
     "Image Identification Example": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 411,
+        "line": 410,
         "level": 3,
         "title": "Image Identification Example"
       }
@@ -5353,7 +5241,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 53,
+        "line": 55,
         "level": 2,
         "title": "Initialization Process"
       },
@@ -5367,7 +5255,7 @@
     "Initialization Stage Breakdown": [
       {
         "document": "architecture.md",
-        "line": 78,
+        "line": 80,
         "level": 3,
         "title": "Initialization Stage Breakdown"
       }
@@ -5599,7 +5487,7 @@
     "Key Steps in Event Handling": [
       {
         "document": "architecture.md",
-        "line": 111,
+        "line": 113,
         "level": 3,
         "title": "Key Steps in Event Handling"
       }
@@ -5647,7 +5535,7 @@
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 352,
+        "line": 376,
         "level": 2,
         "title": "Lazy Loading System"
       }
@@ -5670,14 +5558,26 @@
     ],
     "Lifecycle Events": [
       {
+        "document": "advanced/http-client.md",
+        "line": 174,
+        "level": 2,
+        "title": "Lifecycle Events"
+      },
+      {
         "document": "api-reference/adapter-system.md",
         "line": 388,
         "level": 3,
         "title": "Lifecycle Events"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 706,
+        "level": 3,
+        "title": "Lifecycle Events"
+      },
+      {
         "document": "architecture.md",
-        "line": 119,
+        "line": 121,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -5685,7 +5585,7 @@
     "Lifecycle Integration": [
       {
         "document": "advanced/router.md",
-        "line": 306,
+        "line": 355,
         "level": 2,
         "title": "Lifecycle Integration"
       }
@@ -5722,18 +5622,10 @@
         "title": "Listening to @ mentions"
       }
     ],
-    "Listening to Bot Lifecycle": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 716,
-        "level": 3,
-        "title": "Listening to Bot Lifecycle"
-      }
-    ],
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 150,
+        "line": 152,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -5834,12 +5726,12 @@
         "title": "Log Output"
       }
     ],
-    "Logger": [
+    "Logger (日志)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 239,
+        "line": 240,
         "level": 3,
-        "title": "Logger"
+        "title": "Logger (日志)"
       }
     ],
     "Logger Module": [
@@ -5853,7 +5745,7 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 221,
+        "line": 239,
         "level": 2,
         "title": "Logging"
       },
@@ -6007,7 +5899,7 @@
     "Message Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 137,
+        "line": 138,
         "level": 3,
         "title": "Message Event"
       }
@@ -6255,7 +6147,7 @@
     "Meta Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "Meta Event"
       }
@@ -6288,12 +6180,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 220,
-        "level": 3,
-        "title": "Meta Event Types"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 648,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -6393,7 +6279,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 226,
+        "line": 224,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -6529,7 +6415,7 @@
     "Module Loading Strategy": [
       {
         "document": "architecture.md",
-        "line": 173,
+        "line": 175,
         "level": 2,
         "title": "Module Loading Strategy"
       }
@@ -6598,14 +6484,6 @@
         "title": "Multi-Account Sending Syntax"
       }
     ],
-    "Multi-Account Support": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 385,
-        "level": 2,
-        "title": "Multi-Account Support"
-      }
-    ],
     "Multi-account Configuration": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6620,14 +6498,6 @@
         "line": 222,
         "level": 3,
         "title": "Multi-account Sending Syntax"
-      }
-    ],
-    "Multi-account Support": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 555,
-        "level": 2,
-        "title": "Multi-account Support"
       }
     ],
     "Multi-element Message": [
@@ -6686,6 +6556,12 @@
         "title": "Next Steps"
       },
       {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 426,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 143,
         "level": 2,
@@ -6693,13 +6569,13 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 372,
+        "line": 396,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 444,
+        "line": 442,
         "level": 2,
         "title": "Next Steps"
       },
@@ -6745,7 +6621,7 @@
     "Notice Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 162,
+        "line": 163,
         "level": 3,
         "title": "Notice Event"
       }
@@ -6976,6 +6852,12 @@
     ],
     "Overview": [
       {
+        "document": "advanced/http-client.md",
+        "line": 5,
+        "level": 2,
+        "title": "Overview"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 5,
         "level": 2,
@@ -6986,6 +6868,22 @@
         "line": 5,
         "level": 2,
         "title": "Overview"
+      }
+    ],
+    "POST": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 71,
+        "level": 3,
+        "title": "POST"
+      }
+    ],
+    "PUT / DELETE / PATCH": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 96,
+        "level": 3,
+        "title": "PUT / DELETE / PATCH"
       }
     ],
     "Package Management Commands": [
@@ -7028,6 +6926,14 @@
         "title": "Parameterized Queries"
       }
     ],
+    "Parameters": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 118,
+        "level": 2,
+        "title": "Parameters"
+      }
+    ],
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7039,7 +6945,7 @@
     "Path Handling": [
       {
         "document": "advanced/router.md",
-        "line": 248,
+        "line": 295,
         "level": 2,
         "title": "Path Handling"
       }
@@ -7047,7 +6953,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 255,
+        "line": 273,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -7066,14 +6972,6 @@
         "line": 98,
         "level": 3,
         "title": "Platform"
-      }
-    ],
-    "Platform Event Method Extension": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 529,
-        "level": 2,
-        "title": "Platform Event Method Extension"
       }
     ],
     "Platform Extension Fields": [
@@ -7193,7 +7091,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 24,
+        "line": 25,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -7510,6 +7408,12 @@
         "title": "Quick Start"
       },
       {
+        "document": "advanced/http-client.md",
+        "line": 16,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
         "level": 2,
@@ -7531,13 +7435,13 @@
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
-        "line": 182,
+        "line": 229,
         "level": 2,
         "title": "Rate Limiting"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 529,
+        "line": 552,
         "level": 3,
         "title": "Rate Limiting"
       }
@@ -7668,6 +7572,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/http-client.md",
+        "line": 223,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 128,
         "level": 2,
@@ -7687,7 +7597,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 329,
+        "line": 379,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7711,7 +7621,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 591,
+        "line": 716,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7734,12 +7644,6 @@
         "title": "Related Documentation"
       },
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 734,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 259,
         "level": 2,
@@ -7747,7 +7651,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 389,
+        "line": 407,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7786,12 +7690,6 @@
       {
         "document": "advanced/sql-builder.md",
         "line": 376,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 615,
         "level": 2,
         "title": "Related Documents"
       }
@@ -7861,7 +7759,7 @@
     "Request Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "Request Event"
       }
@@ -7914,6 +7812,14 @@
         "title": "Request Information"
       }
     ],
+    "Request Methods": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 57,
+        "level": 2,
+        "title": "Request Methods"
+      }
+    ],
     "Request Module": [
       {
         "document": "api-reference/event-system.md",
@@ -7928,6 +7834,34 @@
         "line": 347,
         "level": 3,
         "title": "Request Operations"
+      }
+    ],
+    "Request Parameters": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 120,
+        "level": 3,
+        "title": "Request Parameters"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 661,
+        "level": 3,
+        "title": "Request Parameters"
+      }
+    ],
+    "Request Statistics": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 161,
+        "level": 2,
+        "title": "Request Statistics"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 693,
+        "level": 3,
+        "title": "Request Statistics"
       }
     ],
     "Request Type Judgment": [
@@ -7976,6 +7910,14 @@
         "line": 236,
         "level": 2,
         "title": "Reset Builder"
+      }
+    ],
+    "Response Object": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 640,
+        "level": 3,
+        "title": "Response Object"
       }
     ],
     "Return Value Explanation": [
@@ -8046,14 +7988,6 @@
         "title": "Reuse Query Conditions"
       }
     ],
-    "Reverse Conversion and Message Construction": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 519,
-        "level": 2,
-        "title": "Reverse Conversion and Message Construction"
-      }
-    ],
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
@@ -8073,13 +8007,13 @@
     "Route Grouping": [
       {
         "document": "advanced/router.md",
-        "line": 148,
+        "line": 195,
         "level": 2,
         "title": "Route Grouping"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 492,
+        "line": 515,
         "level": 3,
         "title": "Route Grouping"
       }
@@ -8087,7 +8021,7 @@
     "Route Information": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 585,
+        "line": 608,
         "level": 3,
         "title": "Route Information"
       }
@@ -8095,7 +8029,7 @@
     "Route List": [
       {
         "document": "advanced/router.md",
-        "line": 299,
+        "line": 348,
         "level": 3,
         "title": "Route List"
       }
@@ -8103,29 +8037,31 @@
     "Route Middleware": [
       {
         "document": "advanced/router.md",
-        "line": 165,
+        "line": 212,
         "level": 2,
         "title": "Route Middleware"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 511,
+        "line": 534,
         "level": 3,
         "title": "Route Middleware"
       }
     ],
     "Router": [
       {
-        "document": "getting-started/basic-concepts.md",
-        "line": 266,
-        "level": 3,
-        "title": "Router"
-      },
-      {
         "document": "terminology.md",
         "line": 91,
         "level": 3,
         "title": "Router"
+      }
+    ],
+    "Router (路由)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 267,
+        "level": 3,
+        "title": "Router (路由)"
       }
     ],
     "Router Manager": [
@@ -8251,7 +8187,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 292,
+        "line": 310,
         "level": 2,
         "title": "Security"
       }
@@ -8259,13 +8195,13 @@
     "Security Headers": [
       {
         "document": "advanced/router.md",
-        "line": 217,
+        "line": 264,
         "level": 2,
         "title": "Security Headers"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 559,
+        "line": 582,
         "level": 3,
         "title": "Security Headers"
       }
@@ -8350,18 +8286,10 @@
         "title": "SendDSL Deep Dive"
       }
     ],
-    "SendDSL Implementation": [
-      {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 272,
-        "level": 2,
-        "title": "SendDSL Implementation"
-      }
-    ],
     "SendDSL Message Sending": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 305,
+        "line": 329,
         "level": 2,
         "title": "SendDSL Message Sending"
       }
@@ -8446,14 +8374,6 @@
         "line": 68,
         "level": 3,
         "title": "Sending to Different Targets"
-      }
-    ],
-    "Sending with Specific Account": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 569,
-        "level": 3,
-        "title": "Sending with Specific Account"
       }
     ],
     "Server Configuration": [
@@ -8800,16 +8720,18 @@
     ],
     "Storage": [
       {
-        "document": "getting-started/basic-concepts.md",
-        "line": 201,
-        "level": 3,
-        "title": "Storage"
-      },
-      {
         "document": "terminology.md",
         "line": 76,
         "level": 3,
         "title": "Storage"
+      }
+    ],
+    "Storage (存储)": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 202,
+        "level": 3,
+        "title": "Storage (存储)"
       }
     ],
     "Storage Backend Abstraction": [
@@ -8839,7 +8761,7 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 188,
+        "line": 206,
         "level": 2,
         "title": "Storage System"
       },
@@ -8864,20 +8786,20 @@
         "title": "Style Guide"
       }
     ],
-    "Success Response": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 514,
-        "level": 3,
-        "title": "Success Response"
-      }
-    ],
     "Success Response Example": [
       {
         "document": "standards/api-response.md",
         "line": 33,
         "level": 4,
         "title": "Success Response Example"
+      }
+    ],
+    "Summary": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 417,
+        "level": 3,
+        "title": "Summary"
       }
     ],
     "Super File Sharing Event Example": [
@@ -9009,7 +8931,7 @@
     "System Routes": [
       {
         "document": "advanced/router.md",
-        "line": 287,
+        "line": 336,
         "level": 2,
         "title": "System Routes"
       }
@@ -9047,7 +8969,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 16,
+        "line": 17,
         "level": 2,
         "title": "Target Audience"
       },
@@ -9098,14 +9020,8 @@
     ],
     "Testing": [
       {
-        "document": "developer-guide/adapters/best-practices.md",
-        "line": 473,
-        "level": 2,
-        "title": "Testing"
-      },
-      {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 347,
         "level": 2,
         "title": "Testing"
       }
@@ -9134,6 +9050,14 @@
         "title": "The LazyModule Class"
       }
     ],
+    "Timeout and Retry": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 132,
+        "level": 2,
+        "title": "Timeout and Retry"
+      }
+    ],
     "Timers": [
       {
         "document": "api-reference/core-modules.md",
@@ -9145,7 +9069,7 @@
     "Traditional Registration": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 423,
+        "line": 446,
         "level": 3,
         "title": "Traditional Registration"
       }
@@ -9153,7 +9077,7 @@
     "Traditional Registration Method": [
       {
         "document": "advanced/router.md",
-        "line": 78,
+        "line": 104,
         "level": 2,
         "title": "Traditional Registration Method"
       }
@@ -9476,6 +9400,14 @@
         "title": "Using Send DSL to Specify Accounts"
       }
     ],
+    "Using in Adapters": [
+      {
+        "document": "advanced/http-client.md",
+        "line": 195,
+        "level": 2,
+        "title": "Using in Adapters"
+      }
+    ],
     "Using in Transactions": [
       {
         "document": "advanced/sql-builder.md",
@@ -9628,14 +9560,6 @@
         "title": "Waiting for User Reply"
       }
     ],
-    "WebHook Connection": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 488,
-        "level": 3,
-        "title": "WebHook Connection"
-      }
-    ],
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
@@ -9646,12 +9570,6 @@
     ],
     "WebSocket Connection": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 452,
-        "level": 3,
-        "title": "WebSocket Connection"
-      },
-      {
         "document": "platform-guide/kook.md",
         "line": 303,
         "level": 2,
@@ -9661,15 +9579,23 @@
     "WebSocket Decorators": [
       {
         "document": "advanced/router.md",
-        "line": 54,
+        "line": 65,
         "level": 3,
         "title": "WebSocket Decorators"
+      }
+    ],
+    "WebSocket Lifecycle Hooks": [
+      {
+        "document": "advanced/router.md",
+        "line": 171,
+        "level": 2,
+        "title": "WebSocket Lifecycle Hooks"
       }
     ],
     "WebSocket Registration": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 130,
         "level": 3,
         "title": "WebSocket Registration"
       }
@@ -9677,7 +9603,7 @@
     "WebSocket Routes": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 446,
+        "line": 469,
         "level": 3,
         "title": "WebSocket Routes"
       }
@@ -9794,6 +9720,14 @@
         "title": "__init__.py"
       }
     ],
+    "`__init__` Considerations": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 362,
+        "level": 2,
+        "title": "`__init__` Considerations"
+      }
+    ],
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
@@ -9808,14 +9742,6 @@
         "line": 282,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
-      }
-    ],
-    "`self` Field Extended Information": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 682,
-        "level": 3,
-        "title": "`self` Field Extended Information"
       }
     ],
     "call_api Method": [

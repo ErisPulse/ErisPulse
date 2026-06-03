@@ -58,6 +58,7 @@ sdk.logger     # 日誌系統
 sdk.adapter    # 適配器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
+sdk.client     # HTTP 客戶端
 sdk.lifecycle  # 生命周期系統
 ```
 
@@ -266,42 +267,69 @@ sdk.logger.mymodule.database.info("數據庫消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI 構建。
+HTTP 和 WebSocket 路由管理，支援 FastAPI 原生類型和 ErisPulse 抽象類型。
 
-> 路由處理器基於 FastAPI，必須正確使用類型註解，否則可能導致參數驗證錯誤。
+> 路由處理器支援兩種類型註解：FastAPI 原生類型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象類型（`HttpRequest` / `WebSocketConnection`）。推薦使用抽象類型以獲得更好的可移植性。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# 註冊 HTTP 路由
-async def handler(request: Request):
+# 方式一：使用 ErisPulse 抽象類型（推薦）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# 註冊 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：無需 await websocket.accept()，內部已自動調用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# 方式二：使用 FastAPI 原生類型（兼容已有代碼）
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
 
-**常見問題：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保：
-- HTTP 處理器參數使用 `request: Request` 註解
-- WebSocket 處理器參數使用 `websocket: WebSocket` 註解
+{!--< tips >!--}
+> **自動注入**：路由系統會根據參數註解自動注入對應類型的對象，無需手動創建。
+> 
+> **常見問題**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保 HTTP 處理器參數使用 `request` 註解，WebSocket 處理器參數使用 `websocket` 或 `ws` 註解。
 
 更多路由功能請參考 [路由管理器](../advanced/router.md)。
+
+### Client（HTTP 客戶端）
+
+統一的 HTTP 客戶端，用於發送 HTTP 請求。模組和適配器應優先使用全局客戶端而非直接導入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 請求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# 響應屬性
+resp.status        # 狀態碼 (如 200)
+resp.headers       # 響應頭
+body = await resp.text()   # 文本響應體
+data = await resp.json()   # JSON 解析
+```
+
+{!--< tips >!--}
+> 全局客戶端具有自動重試、超時控制、請求統計和生命周期事件集成等功能。詳見 [HTTP 客戶端](../advanced/http-client.md)。
+>
+> 也可通過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
 
 ## SendDSL 消息發送
 

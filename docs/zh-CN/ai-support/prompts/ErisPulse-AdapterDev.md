@@ -60,7 +60,8 @@ graph TB
     SDK --> Config["Config<br/>配置管理"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客户端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -91,7 +92,8 @@ graph TB
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
+| **HttpClient** | 统一 HTTP 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志等功能 |
 
 ## 初始化流程
 
@@ -590,6 +592,7 @@ sdk.logger     # 日志系统
 sdk.adapter    # 适配器系统
 sdk.module     # 模块系统
 sdk.router     # 路由系统
+sdk.client     # HTTP 客户端
 sdk.lifecycle  # 生命周期系统
 ```
 
@@ -798,42 +801,69 @@ sdk.logger.mymodule.database.info("数据库消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
+HTTP 和 WebSocket 路由管理，支持 FastAPI 原生类型和 ErisPulse 抽象类型。
 
-> 路由处理器基于 FastAPI，必须正确使用类型注解，否则可能导致参数验证错误。
+> 路由处理器支持两种类型注解：FastAPI 原生类型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象类型（`HttpRequest` / `WebSocketConnection`）。推荐使用抽象类型以获得更好的可移植性。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# 注册 HTTP 路由
-async def handler(request: Request):
+# 方式一：使用 ErisPulse 抽象类型（推荐）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# 注册 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：无需 await websocket.accept()，内部已自动调用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# 方式二：使用 FastAPI 原生类型（兼容已有代码）
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
 
-**常见问题：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保：
-- HTTP 处理器参数使用 `request: Request` 注解
-- WebSocket 处理器参数使用 `websocket: WebSocket` 注解
+{!--< tips >!--}
+> **自动注入**：路由系统会根据参数注解自动注入对应类型的对象，无需手动创建。
+> 
+> **常见问题**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保 HTTP 处理器参数使用 `request` 注解，WebSocket 处理器参数使用 `websocket` 或 `ws` 注解。
 
 更多路由功能请参考 [路由管理器](../advanced/router.md)。
+
+### Client（HTTP 客户端）
+
+统一的 HTTP 客户端，用于发送 HTTP 请求。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+# GET 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 请求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# 响应属性
+resp.status        # 状态码 (如 200)
+resp.headers       # 响应头
+body = await resp.text()   # 文本响应体
+data = await resp.json()   # JSON 解析
+```
+
+{!--< tips >!--}
+> 全局客户端具有自动重试、超时控制、请求统计和生命周期事件集成等功能。详见 [HTTP 客户端](../advanced/http-client.md)。
+>
+> 也可通过 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
 
 ## SendDSL 消息发送
 
@@ -1627,7 +1657,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "aiohttp>=3.8.0"
+    "ErisPulse>=2.4.0"  # ErisPulse 已内置 aiohttp，通常无需单独依赖
 ]
 
 [project.urls]
@@ -2608,7 +2638,14 @@ class MyAdapter(BaseAdapter):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推荐使用 SDK 内置客户端
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
         self.logger.error(f"网络错误: {e}")
@@ -3441,10 +3478,17 @@ async def _get_account_for_message(self, event):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推荐使用 SDK 内置客户端发送 API 请求
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
-        # 网络错误
+        # 网络错误（使用 client 时内置重试机制会先处理）
         self.logger.error(f"网络错误: {e}")
         return self._error_response("网络请求失败", 33000)
     except asyncio.TimeoutError:
@@ -5213,6 +5257,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 
 ## Router 模块
 
+### 抽象类型
+
+Router 支持两种类型注解风格：
+
+```python
+# ErisPulse 抽象类型（推荐，可移植性强）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI 原生类型（兼容已有代码）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> 路由系统根据参数注解自动注入对应类型的对象，详见 [路由管理器](../advanced/router.md)。
+
 ### 装饰器路由（推荐）
 
 ```python
@@ -5431,10 +5498,114 @@ sdk.router.set_docs_info(
 app = sdk.router.get_app()
 ```
 
+## HTTP Client 模块
+
+### 基本请求
+
+```python
+from ErisPulse.Core import client
+
+# GET 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 请求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 响应对象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 状态码 (如 200, 404)
+resp.reason        # str | None - 状态描述 (如 "OK")
+resp.headers       # 响应头 (大小写不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最终 URL (可能因重定向变化)
+resp.raw           # 底层原生响应对象 (当前为 aiohttp.ClientResponse)
+
+# 读取响应体
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定编码
+```
+
+### 请求参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `url` | `str` | 请求 URL |
+| `params` | `dict[str, str]` | 查询参数 (可选) |
+| `headers` | `dict[str, str]` | 额外请求头 (可选) |
+| `data` | `Any` | 请求体 (表单或原始数据) (可选) |
+| `json` | `Any` | JSON 请求体 (可选) |
+| `timeout` | `float` | 本次请求超时 (秒) (可选, 覆盖默认值) |
+| `max_retries` | `int` | 本次最大重试次数 (可选, 覆盖默认值) |
+
+### 自定义客户端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 创建自定义客户端（非全局单例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自动关闭会话
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 请求统计
+
+```python
+from ErisPulse.Core import client
+
+# 查看统计
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置统计
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [路由管理器](../advanced/router.md) - 路由管理器完整文档
 
 
 
