@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1087,
+  "total_keywords": 1080,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1644,14 +1644,6 @@
         "title": "@conv.branch(name) 裝飾器"
       }
     ],
-    "@timed 裝飾器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 449,
-        "level": 3,
-        "title": "@timed 裝飾器"
-      }
-    ],
     "AI 輔助開發": [
       {
         "document": "README.md",
@@ -1881,7 +1873,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 635,
+        "line": 542,
         "level": 3,
         "title": "CORS 配置"
       }
@@ -1932,14 +1924,6 @@
         "line": 45,
         "level": 2,
         "title": "Core.py - 基礎模組"
-      }
-    ],
-    "Counter — 計數器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 390,
-        "level": 4,
-        "title": "Counter — 計數器"
       }
     ],
     "Dashboard 管理面板": [
@@ -2118,14 +2102,6 @@
         "title": "Event 回復方法"
       }
     ],
-    "Gauge — 儀表盤": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 405,
-        "level": 4,
-        "title": "Gauge — 儀表盤"
-      }
-    ],
     "HTTP 裝飾器": [
       {
         "document": "advanced/router.md",
@@ -2140,14 +2116,6 @@
         "line": 160,
         "level": 3,
         "title": "HTTP 路由"
-      }
-    ],
-    "Histogram — 直方圖": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 417,
-        "level": 4,
-        "title": "Histogram — 直方圖"
       }
     ],
     "ID 欄位查詢": [
@@ -2244,14 +2212,6 @@
         "line": 214,
         "level": 2,
         "title": "Meta 元事件模組"
-      }
-    ],
-    "Metrics 模組": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 371,
-        "level": 2,
-        "title": "Metrics 模組"
       }
     ],
     "Module 模組": [
@@ -2481,7 +2441,7 @@
     "Router 模組": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 464,
+        "line": 371,
         "level": 2,
         "title": "Router 模組"
       }
@@ -2711,7 +2671,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 539,
+        "line": 446,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3220,6 +3180,14 @@
         "title": "一般執行模式"
       }
     ],
+    "一鍵安裝腳本（推薦）": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "一鍵安裝腳本（推薦）"
+      }
+    ],
     "上下文與持久化": [
       {
         "document": "advanced/conversation.md",
@@ -3269,7 +3237,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 155,
         "level": 2,
         "title": "下一步"
       },
@@ -3635,7 +3603,7 @@
     "互動式初始化（推薦）": [
       {
         "document": "quick-start.md",
-        "line": 37,
+        "line": 63,
         "level": 3,
         "title": "互動式初始化（推薦）"
       }
@@ -3643,7 +3611,7 @@
     "互動式安裝": [
       {
         "document": "quick-start.md",
-        "line": 83,
+        "line": 109,
         "level": 3,
         "title": "互動式安裝"
       },
@@ -3780,6 +3748,14 @@
         "title": "伺服器配置"
       }
     ],
+    "使用 Docker": [
+      {
+        "document": "quick-start.md",
+        "line": 26,
+        "level": 3,
+        "title": "使用 Docker"
+      }
+    ],
     "使用 Send DSL 指定機器人": [
       {
         "document": "platform-guide/yunhu.md",
@@ -3791,7 +3767,7 @@
     "使用 pip 安裝": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 51,
         "level": 3,
         "title": "使用 pip 安裝"
       }
@@ -3802,14 +3778,6 @@
         "line": 301,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
-      }
-    ],
-    "使用 uv 安裝（推薦）": [
-      {
-        "document": "quick-start.md",
-        "line": 15,
-        "level": 3,
-        "title": "使用 uv 安裝（推薦）"
       }
     ],
     "使用事件系統": [
@@ -3977,7 +3945,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 516,
+        "line": 423,
         "level": 3,
         "title": "傳統註冊方式"
       }
@@ -4237,7 +4205,7 @@
     "初始化專案": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 61,
         "level": 2,
         "title": "初始化專案"
       },
@@ -4719,7 +4687,7 @@
     "執行專案": [
       {
         "document": "quick-start.md",
-        "line": 91,
+        "line": 117,
         "level": 2,
         "title": "執行專案"
       },
@@ -4750,12 +4718,6 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 61,
-        "level": 3,
-        "title": "基本使用"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 373,
         "level": 3,
         "title": "基本使用"
       },
@@ -5185,7 +5147,7 @@
     "安全標頭": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 652,
+        "line": 559,
         "level": 3,
         "title": "安全標頭"
       }
@@ -5213,12 +5175,6 @@
       }
     ],
     "安裝 uv": [
-      {
-        "document": "quick-start.md",
-        "line": 19,
-        "level": 4,
-        "title": "安裝 uv"
-      },
       {
         "document": "user-guide/installation.md",
         "line": 27,
@@ -5253,7 +5209,7 @@
     "安裝模組": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 95,
         "level": 2,
         "title": "安裝模組"
       },
@@ -5399,7 +5355,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 101,
+        "line": 127,
         "level": 2,
         "title": "專案結構"
       }
@@ -5776,14 +5732,6 @@
         "title": "延遲載入機制"
       }
     ],
-    "建立專案並安裝": [
-      {
-        "document": "quick-start.md",
-        "line": 25,
-        "level": 4,
-        "title": "建立專案並安裝"
-      }
-    ],
     "建立第一個機器人": [
       {
         "document": "getting-started/first-bot.md",
@@ -5899,7 +5847,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 50,
+        "line": 76,
         "level": 3,
         "title": "快速初始化"
       },
@@ -5995,7 +5943,7 @@
     "手動建立專案": [
       {
         "document": "quick-start.md",
-        "line": 60,
+        "line": 86,
         "level": 3,
         "title": "手動建立專案"
       }
@@ -6100,14 +6048,6 @@
         "line": 98,
         "level": 3,
         "title": "指定發送帳號"
-      }
-    ],
-    "指標類型": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 388,
-        "level": 3,
-        "title": "指標類型"
       }
     ],
     "按鈕參數說明": [
@@ -7255,7 +7195,7 @@
     "檢視可用模組": [
       {
         "document": "quick-start.md",
-        "line": 77,
+        "line": 103,
         "level": 3,
         "title": "檢視可用模組"
       }
@@ -7798,6 +7738,12 @@
         "title": "相關文件"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 591,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "developer-guide/README.md",
         "line": 120,
         "level": 2,
@@ -8163,7 +8109,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 663,
+        "line": 570,
         "level": 3,
         "title": "自動文件"
       }
@@ -8190,14 +8136,6 @@
         "line": 304,
         "level": 2,
         "title": "自訂儲存後端"
-      }
-    ],
-    "自訂指標": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 433,
-        "level": 3,
-        "title": "自訂指標"
       }
     ],
     "自訂類型註冊": [
@@ -8281,7 +8219,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 466,
+        "line": 373,
         "level": 3,
         "title": "裝飾器路由（推薦）"
       }
@@ -8521,7 +8459,7 @@
     "設定檔": [
       {
         "document": "quick-start.md",
-        "line": 113,
+        "line": 139,
         "level": 2,
         "title": "設定檔"
       }
@@ -8803,7 +8741,7 @@
     "路由中介軟體": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 604,
+        "line": 511,
         "level": 3,
         "title": "路由中介軟體"
       }
@@ -8825,7 +8763,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 585,
+        "line": 492,
         "level": 3,
         "title": "路由分組"
       }
@@ -8849,7 +8787,7 @@
     "路由資訊": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 678,
+        "line": 585,
         "level": 3,
         "title": "路由資訊"
       }
@@ -8929,7 +8867,7 @@
     "透過 CLI 安裝": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 97,
         "level": 3,
         "title": "透過 CLI 安裝"
       }
@@ -9049,7 +8987,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 622,
+        "line": 529,
         "level": 3,
         "title": "速率限制"
       }

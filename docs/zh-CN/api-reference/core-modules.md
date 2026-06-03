@@ -368,100 +368,30 @@ duration = sdk.lifecycle.get_duration("my_operation")
 total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
-## Metrics 模块
-
-### 基本使用
-
-```python
-from ErisPulse import sdk
-
-# 注册内置指标（HTTP 请求数、模块加载耗时等）
-sdk.metrics.register_builtin_metrics()
-
-# 获取所有指标快照
-snapshot = sdk.metrics.get_all_metrics()
-
-# 重置所有指标
-sdk.metrics.reset()
-```
-
-### 指标类型
-
-#### Counter — 计数器
-
-```python
-# 通过 MetricsManager 创建计数器
-counter = sdk.metrics.counter("http_requests_total", description="HTTP 请求总数")
-counter.inc()            # +1
-counter.inc(5)           # +5
-print(counter.get())     # 获取当前值
-print(counter.name)      # 指标名称
-
-# 带标签的计数
-counter.inc(tags={"method": "GET"})
-counter.get(tags={"method": "GET"})  # 获取特定标签值
-```
-
-#### Gauge — 仪表盘
-
-```python
-# 通过 MetricsManager 创建仪表盘
-gauge = sdk.metrics.gauge("active_connections", description="活跃连接数")
-gauge.inc()              # +1
-gauge.dec()              # -1
-gauge.set(42)            # 设为 42
-print(gauge.get())       # 获取当前值
-print(gauge.name)        # 指标名称
-```
-
-#### Histogram — 直方图
-
-```python
-# 通过 MetricsManager 创建直方图
-hist = sdk.metrics.histogram("request_duration_seconds", description="请求耗时")
-hist.observe(0.15)
-hist.observe(0.32)
-hist.observe(1.2)
-
-# 获取统计摘要
-summary = hist.get_summary()
-# {"count": 3, "sum": 1.67, "min": 0.15, "max": 1.2, "mean": 0.557, ...}
-
-print(hist.name)         # 指标名称
-```
-
-### 自定义指标
-
-```python
-from ErisPulse import sdk
-
-# 通过 MetricsManager 创建自定义指标
-counter = sdk.metrics.counter("my_module.errors", description="模块错误计数")
-gauge = sdk.metrics.gauge("my_module.queue_size", description="队列大小")
-hist = sdk.metrics.histogram("my_module.process_time", description="处理耗时")
-
-# 直接使用返回的指标对象
-counter.inc()
-gauge.set(10)
-hist.observe(0.5)
-```
-
-### @timed 装饰器
-
-```python
-# 通过 MetricsManager 的 timed 方法
-@sdk.metrics.timed("my_module.handler_duration")
-async def handle_request():
-    # 函数执行时间将自动记录到 Histogram 指标
-    await do_something()
-
-# 带标签的计时
-@sdk.metrics.timed("my_module.handler_duration", tags={"handler": "api"})
-async def handle_api_request():
-    await do_something()
-```
-
 ## Router 模块
+
+### 抽象类型
+
+Router 支持两种类型注解风格：
+
+```python
+# ErisPulse 抽象类型（推荐，可移植性强）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI 原生类型（兼容已有代码）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> 路由系统根据参数注解自动注入对应类型的对象，详见 [路由管理器](../advanced/router.md)。
 
 ### 装饰器路由（推荐）
 
@@ -681,7 +611,111 @@ sdk.router.set_docs_info(
 app = sdk.router.get_app()
 ```
 
+## HTTP Client 模块
+
+### 基本请求
+
+```python
+from ErisPulse.Core import client
+
+# GET 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 请求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 响应对象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 状态码 (如 200, 404)
+resp.reason        # str | None - 状态描述 (如 "OK")
+resp.headers       # 响应头 (大小写不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最终 URL (可能因重定向变化)
+resp.raw           # 底层原生响应对象 (当前为 aiohttp.ClientResponse)
+
+# 读取响应体
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定编码
+```
+
+### 请求参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `url` | `str` | 请求 URL |
+| `params` | `dict[str, str]` | 查询参数 (可选) |
+| `headers` | `dict[str, str]` | 额外请求头 (可选) |
+| `data` | `Any` | 请求体 (表单或原始数据) (可选) |
+| `json` | `Any` | JSON 请求体 (可选) |
+| `timeout` | `float` | 本次请求超时 (秒) (可选, 覆盖默认值) |
+| `max_retries` | `int` | 本次最大重试次数 (可选, 覆盖默认值) |
+
+### 自定义客户端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 创建自定义客户端（非全局单例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自动关闭会话
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 请求统计
+
+```python
+from ErisPulse.Core import client
+
+# 查看统计
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置统计
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [路由管理器](../advanced/router.md) - 路由管理器完整文档

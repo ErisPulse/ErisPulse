@@ -2,16 +2,23 @@
 
 ## 适用场景
 
-当您的系统满足以下条件时，推荐使用一键安装脚本：
-- 有网络连接环境
-- Python 版本低于 3.10 或未安装 Python
-- 希望自动配置符合要求的开发环境
+当您希望快速部署 ErisPulse 时，推荐使用一键安装脚本。脚本会自动检测您的环境并引导选择最适合的安装方式。
 
-脚本会自动完成以下操作：
-1. 检测并安装符合要求的 Python 环境
-2. 安装 [uv](https://github.com/astral-sh/uv)（快速 Python 工具链）
-3. 创建独立的虚拟环境
-4. 安装 ErisPulse 框架
+脚本支持两种安装模式：
+
+### Docker 安装（推荐）
+- 自动检测 Docker 和 docker compose
+- 支持选择 Docker Hub 或 GitHub Container Registry 镜像源
+- 支持选择稳定版或预发布版通道
+- 可选配置 Dashboard 管理面板
+- 自动生成 `docker-compose.yml` 和 `.env` 配置文件
+
+### 传统安装（pip/uv + 虚拟环境）
+- 自动检测 Python 版本（>= 3.10）
+- 自动使用 uv（如果已安装）或 pip
+- 创建独立的虚拟环境
+- 支持选择 ErisPulse 版本
+- 可选安装 Dashboard 管理面板模块
 
 ## 快速开始
 
@@ -28,7 +35,7 @@ irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -Execut
 打开终端，执行以下命令：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/install/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
 ## 使用说明
@@ -36,34 +43,51 @@ curl -fsSL https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/scripts/in
 ### 安装流程
 
 1. 运行安装脚本
-2. 脚本检测系统环境和 Python 版本
-3. 询问是否安装 uv（推荐）
-4. 选择要安装的 ErisPulse 版本
-5. 确认安装选项
-6. 自动创建虚拟环境并安装
-7. 安装完成后自动激活虚拟环境
+2. 脚本自动检测环境（Docker、Python、uv）
+3. 选择安装方式：
+   - **Docker 安装（推荐）**：如果检测到 Docker
+   - **传统安装**：使用 Python 虚拟环境
+4. 根据引导完成配置
+5. 安装完成后即可使用
 
-### 安装后的操作
+### Docker 安装模式
 
-安装完成后，脚本会自动激活虚拟环境。您可以：
+Docker 模式会自动生成以下文件：
 
-```bash
-# 查看帮助
-epsdk -h
-
-# 初始化项目
-epsdk init
-
-# 查看可用模块
-epsdk list-remote
-
-# 安装模块
-epsdk install <模块名>
+**docker-compose.yml**
+```yaml
+services:
+  erispulse:
+    image: erispulse/erispulse:latest
+    container_name: erispulse
+    ports:
+      - "${ERISPULSE_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+    env_file:
+      - .env
+    restart: unless-stopped
 ```
 
-### 虚拟环境管理
+**.env**
+```env
+ERISPULSE_DASHBOARD_TOKEN=your-token
+ERISPULSE_CHANNEL=stable
+ERISPULSE_UPDATE_ON_START=false
+TZ=Asia/Shanghai
+```
 
-**激活虚拟环境：**
+Docker 管理命令：
+```bash
+docker compose logs -f          # 查看日志
+docker compose down             # 停止服务
+docker compose restart          # 重启服务
+docker compose pull && docker compose up -d  # 更新镜像
+```
+
+### 传统安装模式
+
+安装完成后，激活虚拟环境：
 
 Windows (PowerShell):
 ```powershell
@@ -75,13 +99,10 @@ macOS/Linux:
 source .venv/bin/activate
 ```
 
-**退出虚拟环境：**
-
-所有平台：
+退出虚拟环境：
 ```bash
 deactivate
 ```
-
 
 ## 技术支持
 
@@ -95,5 +116,6 @@ deactivate
 
 - [ErisPulse 主页](https://github.com/ErisPulse/ErisPulse)
 - [PyPI 页面](https://pypi.org/project/ErisPulse/)
+- [Docker Hub](https://hub.docker.com/r/erispulse/erispulse)
 - [官方文档](https://www.erisdev.com)
 - [uv 工具链](https://github.com/astral-sh/uv)

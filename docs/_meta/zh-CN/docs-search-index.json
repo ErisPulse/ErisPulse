@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1129,
+  "total_keywords": 1122,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1760,14 +1760,6 @@
         "title": "@conv.branch(name) 装饰器"
       }
     ],
-    "@timed 装饰器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 449,
-        "level": 3,
-        "title": "@timed 装饰器"
-      }
-    ],
     "@消息相关": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -2019,7 +2011,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 635,
+        "line": 542,
         "level": 3,
         "title": "CORS 配置"
       }
@@ -2070,14 +2062,6 @@
         "line": 45,
         "level": 2,
         "title": "Core.py - 基础模块"
-      }
-    ],
-    "Counter — 计数器": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 390,
-        "level": 4,
-        "title": "Counter — 计数器"
       }
     ],
     "Dashboard 管理面板": [
@@ -2272,14 +2256,6 @@
         "title": "Event 对象常用方法"
       }
     ],
-    "Gauge — 仪表盘": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 405,
-        "level": 4,
-        "title": "Gauge — 仪表盘"
-      }
-    ],
     "HTTP 装饰器": [
       {
         "document": "advanced/router.md",
@@ -2294,14 +2270,6 @@
         "line": 160,
         "level": 3,
         "title": "HTTP 路由"
-      }
-    ],
-    "Histogram — 直方图": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 417,
-        "level": 4,
-        "title": "Histogram — 直方图"
       }
     ],
     "ID 字段查询": [
@@ -2398,14 +2366,6 @@
         "line": 214,
         "level": 2,
         "title": "Meta 元事件模块"
-      }
-    ],
-    "Metrics 模块": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 371,
-        "level": 2,
-        "title": "Metrics 模块"
       }
     ],
     "Module 模块": [
@@ -2647,7 +2607,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 464,
+        "line": 371,
         "level": 2,
         "title": "Router 模块"
       }
@@ -2885,7 +2845,7 @@
     "WebSocket 路由": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 539,
+        "line": 446,
         "level": 3,
         "title": "WebSocket 路由"
       }
@@ -3416,6 +3376,14 @@
         "title": "一步获取发送信息"
       }
     ],
+    "一键安装脚本（推荐）": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "一键安装脚本（推荐）"
+      }
+    ],
     "上下文与持久化": [
       {
         "document": "advanced/conversation.md",
@@ -3469,7 +3437,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 129,
+        "line": 155,
         "level": 2,
         "title": "下一步"
       },
@@ -3917,7 +3885,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 37,
+        "line": 63,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -3933,7 +3901,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 83,
+        "line": 109,
         "level": 3,
         "title": "交互式安装"
       },
@@ -4061,9 +4029,17 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 516,
+        "line": 423,
         "level": 3,
         "title": "传统注册方式"
+      }
+    ],
+    "使用 Docker": [
+      {
+        "document": "quick-start.md",
+        "line": 26,
+        "level": 3,
+        "title": "使用 Docker"
       }
     ],
     "使用 Send DSL 指定账户": [
@@ -4077,7 +4053,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 7,
+        "line": 51,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -4088,14 +4064,6 @@
         "line": 301,
         "level": 3,
         "title": "使用 reply 方法发送回复"
-      }
-    ],
-    "使用 uv 安装（推荐）": [
-      {
-        "document": "quick-start.md",
-        "line": 15,
-        "level": 3,
-        "title": "使用 uv 安装（推荐）"
       }
     ],
     "使用Send DSL指定Bot": [
@@ -4466,14 +4434,6 @@
         "title": "创建表"
       }
     ],
-    "创建项目并安装": [
-      {
-        "document": "quick-start.md",
-        "line": 25,
-        "level": 4,
-        "title": "创建项目并安装"
-      }
-    ],
     "初始化流程": [
       {
         "document": "architecture.md",
@@ -4507,7 +4467,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 35,
+        "line": 61,
         "level": 2,
         "title": "初始化项目"
       },
@@ -5212,12 +5172,6 @@
         "title": "基本使用"
       },
       {
-        "document": "api-reference/core-modules.md",
-        "line": 373,
-        "level": 3,
-        "title": "基本使用"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 58,
         "level": 3,
@@ -5771,7 +5725,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 652,
+        "line": 559,
         "level": 3,
         "title": "安全头"
       }
@@ -5807,12 +5761,6 @@
       }
     ],
     "安装 uv": [
-      {
-        "document": "quick-start.md",
-        "line": 19,
-        "level": 4,
-        "title": "安装 uv"
-      },
       {
         "document": "user-guide/installation.md",
         "line": 27,
@@ -5855,7 +5803,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 95,
         "level": 2,
         "title": "安装模块"
       },
@@ -6483,7 +6431,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 50,
+        "line": 76,
         "level": 3,
         "title": "快速初始化"
       },
@@ -6627,7 +6575,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 60,
+        "line": 86,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -6750,14 +6698,6 @@
         "line": 569,
         "level": 3,
         "title": "指定账户发送"
-      }
-    ],
-    "指标类型": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 388,
-        "level": 3,
-        "title": "指标类型"
       }
     ],
     "按钮参数说明": [
@@ -7391,7 +7331,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 77,
+        "line": 103,
         "level": 3,
         "title": "查看可用模块"
       },
@@ -8769,7 +8709,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 684,
+        "line": 591,
         "level": 2,
         "title": "相关文档"
       },
@@ -9177,7 +9117,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 663,
+        "line": 570,
         "level": 3,
         "title": "自动文档"
       }
@@ -9188,14 +9128,6 @@
         "line": 342,
         "level": 2,
         "title": "自定义存储后端"
-      }
-    ],
-    "自定义指标": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 433,
-        "level": 3,
-        "title": "自定义指标"
       }
     ],
     "自定义消息段": [
@@ -9339,7 +9271,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 466,
+        "line": 373,
         "level": 3,
         "title": "装饰器路由（推荐）"
       }
@@ -9581,7 +9513,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 604,
+        "line": 511,
         "level": 3,
         "title": "路由中间件"
       }
@@ -9589,7 +9521,7 @@
     "路由信息": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 678,
+        "line": 585,
         "level": 3,
         "title": "路由信息"
       }
@@ -9603,7 +9535,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 585,
+        "line": 492,
         "level": 3,
         "title": "路由分组"
       }
@@ -9683,7 +9615,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 91,
+        "line": 117,
         "level": 2,
         "title": "运行项目"
       },
@@ -10077,7 +10009,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 97,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -10115,7 +10047,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 622,
+        "line": 529,
         "level": 3,
         "title": "速率限制"
       }
@@ -10203,7 +10135,7 @@
     "配置文件": [
       {
         "document": "quick-start.md",
-        "line": 113,
+        "line": 139,
         "level": 2,
         "title": "配置文件"
       }
@@ -10609,7 +10541,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 101,
+        "line": 127,
         "level": 2,
         "title": "项目结构"
       }

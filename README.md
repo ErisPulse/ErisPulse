@@ -83,34 +83,40 @@
 
 ---
 
-### 支持的适配器
-
-<div align="center">
-<!-- <img src=".github/assets/adapter-showcase.png" width="520" alt="适配器展示" /> -->
-
-欢迎您贡献适配器！
-
-| 适配器 | 说明 |
-|--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（开黑啦）即时通讯平台 |
-| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通讯协议 |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用机器人协议 |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 标准协议 |
-| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方机器人平台 |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
-| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即时通讯平台 |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
-| [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
-| [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-
-查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
-
-</div>
-
----
-
 ### 快速开始
+
+#### 一键安装脚本（推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），引导选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+<table>
+<tr>
+<td align="center" width="50%">
+
+**Docker 安装演示**
+
+<video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
+
+</td>
+<td align="center" width="50%">
+
+**pip 安装演示**
+
+<video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 #### 使用 Docker (推荐)
 
@@ -207,18 +213,27 @@ bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 pip install ErisPulse
 ```
 
-<img src=".github/assets/docs/install_pip.gif" alt="安装演示" />
-
-> 如果您的 Python 版本低于 3.10，可以使用一键安装脚本自动配置环境。详见 [安装脚本说明](scripts/install/)。
+> 也可以使用上方的一键安装脚本，自动检测环境并引导配置。
 
 #### 运行效果
 
 
 ##### 仪表盘：
-> 有一个gif，但是太大了没放到这里~ 抱歉~
-> [GIF演示](.github/assets/docs/dashboard-demo.gif)
+
+<table>
+<tr>
+<td width="50%">
 
 <img src=".github/assets/docs/dashboard.png" alt="Dashboard 演示" />
+
+</td>
+<td width="50%">
+
+<video src="https://github.com/user-attachments/assets/157191c4-9a84-433c-b311-0c57e3a21151" controls width="100%"></video>
+
+</td>
+</tr>
+</table>
 
 
 ##### 同一端代码，多个平台响应：
@@ -319,6 +334,28 @@ epsdk run main.py --reload
 更多详细说明请参阅：
 - [快速开始指南](docs/zh-CN/quick-start.md)
 - [入门指南](docs/zh-CN/getting-started/)
+
+---
+
+### 支持的适配器
+
+欢迎您贡献适配器！
+
+| 适配器 | 说明 |
+|--------|------|
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（开黑啦）即时通讯平台 |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通讯协议 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用机器人协议 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 标准协议 |
+| <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方机器人平台 |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即时通讯平台 |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
+| [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
+| [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
+
+查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
 ---
 
