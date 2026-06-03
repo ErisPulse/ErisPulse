@@ -63,17 +63,58 @@
 
 ---
 
-## [2.4.6-dev.5] - 2026/06/02
+## [2.4.6-dev.5] - 2026/06/03
 > 开发版本
+
+### 新增
+- @wsu2059q
+  - `Core/client.py` 新增基于 aiohttp 的 HTTP 客户端模块：
+    - `HttpClient` 类：提供 `get`/`post`/`put`/`delete`/`patch`/`request` 异步方法
+    - `HttpResponse` 类：封装响应对象，支持 `read()`/`text()`/`json()`，自动缓存响应体
+    - 支持自定义 timeout、connect_timeout、max_retries、retry_delay、headers、user_agent
+    - 自动记录请求日志和统计信息（`stats` 属性 / `reset_stats()` 方法）
+    - 每次请求触发 `client.request` 生命周期事件，可用于监控
+    - 支持上下文管理器（`async with HttpClient() as client:`）
+  - `Core/__init__.py` 新增全局 HTTP 客户端单例 `client = HttpClient()`
+  - `sdk.py` 注册 `client` 为核心属性，支持 `sdk.client` 动态访问
+  - `Core/Bases/client.py` 新增抽象基类 `BaseHttpClient` 和 `BaseHttpResponse`，定义统一接口契约
+  - `Core/Bases/server.py` 重命名为 `Core/Bases/router.py`，更准确反映路由抽象类型的定位
+  - 新增 52 个 HTTP 客户端单元测试（`tests/unit/test_unit_client.py`）：
+    - HttpResponse 属性、缓存、编码、上下文管理器
+    - HttpClient 初始化默认值、快捷方法委托、统计、会话管理
+    - request 核心逻辑：成功/失败/重试/耗尽重试/超时覆盖/参数传递/生命周期事件
+  - 新增 48 个路由系统 + HTTP 客户端集成测试（`tests/integration/test_integration_router_client.py`）：
+    - 核心端点（/health、/ping、/docs、/openapi.json）
+    - HttpRequest 抽象类型自动注入（GET/POST/query_params/headers/url/raw/cookies）
+    - FastAPI 原生类型透传、无注解自动注入、非 request 参数名行为
+    - 装饰器路由（@http/@get/@post/@put/@delete）及路径参数
+    - 路由组（RouteGroup）
+    - HTTP 方法组合与 405 响应
+    - 路由注册/注销/冲突检测/路径标准化/模块隔离
+    - WebSocket 抽象类型注入、FastAPI 注解透传、JSON/bytes 收发、属性代理
+    - WebSocket 认证（通过/失败）、装饰器 WS 路由
+    - WebSocket 生命周期钩子（on_disconnect/on_error）
 
 ### 变更
 - @wsu2059q
+  - 路由抽象类型文件重命名：`Core/Bases/server.py` → `Core/Bases/router.py`
+  - HTTP 客户端从抽象基类分离为独立实现模块：`Core/Bases/client.py`（抽象基类）→ `Core/client.py`（aiohttp 实现）
+  - `Core/__init__.py` 从 `Core.client` 导入具体实现，从 `Core.Bases` 导入抽象基类，统一导出
+  - `Core/router.py` 导入路径从 `.Bases.server` 更新为 `.Bases.router`
+  - 所有文档示例统一使用 `from ErisPulse.Core import client` 作为推荐的 HTTP 客户端使用方式
   - 安装脚本下载方式从 Cloudflare Pages 改为 Worker 分发
   - slow-handler 日志优化：`wait_reply` 等待期间不再误触发 WARNING，改为 DEBUG 级别日志
   - slow-handler 日志现在显示具体业务模块（`owner=...`），而非笼统的 `CommandHandler._handle_message`
   - `runtime/context.py` 新增 `handler_waits` ContextVar（原 `_handler_wait_info` 重命名），去除私有前缀，公开化为跨模块契约
   - `Event/base.py:_invoke_handler` 去掉多余嵌套 try/finally，`_elapsed` 改在单一 finally 块计算
   - `Event/command.py:wait_reply` 去掉防御性创建 ContextVar list 的逻辑，未在 handler 内时直接跳过记录
+
+### 文档
+- @wsu2059q
+  - 更新 `docs/zh-CN/getting-started/basic-concepts.md`：新增 Client（HTTP 客户端）章节，Router 章节展示抽象类型和 FastAPI 原生类型两种风格
+  - 更新 `docs/zh-CN/api-reference/core-modules.md`：新增 HTTP Client 模块完整文档、抽象类型章节
+  - 更新 `docs/zh-CN/advanced/http-client.md`：所有示例改为 `from ErisPulse.Core import client` 风格
+  - 更新 `docs/zh-CN/advanced/router.md`：所有导入路径从 `ErisPulse.Core.Bases.server` 改为 `ErisPulse.Core`
 
 ---
 
