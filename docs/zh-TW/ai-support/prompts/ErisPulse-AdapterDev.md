@@ -60,7 +60,8 @@ graph TB
     SDK --> Config["Config<br/>設定管理"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客戶端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -91,7 +92,8 @@ graph TB
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
 | **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **HttpClient** | 統一 HTTP 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌等功能 |
 
 ## 初始化流程
 
@@ -228,7 +230,7 @@ flowchart TD
     G --> D2["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [延遲載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
+> 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
 
 
 
@@ -592,6 +594,7 @@ sdk.logger     # 日誌系統
 sdk.adapter    # 適配器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
+sdk.client     # HTTP 客戶端
 sdk.lifecycle  # 生命周期系統
 ```
 
@@ -800,42 +803,69 @@ sdk.logger.mymodule.database.info("數據庫消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI 構建。
+HTTP 和 WebSocket 路由管理，支援 FastAPI 原生類型和 ErisPulse 抽象類型。
 
-> 路由處理器基於 FastAPI，必須正確使用類型註解，否則可能導致參數驗證錯誤。
+> 路由處理器支援兩種類型註解：FastAPI 原生類型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象類型（`HttpRequest` / `WebSocketConnection`）。推薦使用抽象類型以獲得更好的可移植性。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# 註冊 HTTP 路由
-async def handler(request: Request):
+# 方式一：使用 ErisPulse 抽象類型（推薦）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# 註冊 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：無需 await websocket.accept()，內部已自動調用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# 方式二：使用 FastAPI 原生類型（兼容已有代碼）
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
 
-**常見問題：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保：
-- HTTP 處理器參數使用 `request: Request` 註解
-- WebSocket 處理器參數使用 `websocket: WebSocket` 註解
+{!--< tips >!--}
+> **自動注入**：路由系統會根據參數註解自動注入對應類型的對象，無需手動創建。
+> 
+> **常見問題**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保 HTTP 處理器參數使用 `request` 註解，WebSocket 處理器參數使用 `websocket` 或 `ws` 註解。
 
 更多路由功能請參考 [路由管理器](../advanced/router.md)。
+
+### Client（HTTP 客戶端）
+
+統一的 HTTP 客戶端，用於發送 HTTP 請求。模組和適配器應優先使用全局客戶端而非直接導入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 請求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# 響應屬性
+resp.status        # 狀態碼 (如 200)
+resp.headers       # 響應頭
+body = await resp.text()   # 文本響應體
+data = await resp.json()   # JSON 解析
+```
+
+{!--< tips >!--}
+> 全局客戶端具有自動重試、超時控制、請求統計和生命周期事件集成等功能。詳見 [HTTP 客戶端](../advanced/http-client.md)。
+>
+> 也可通過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
 
 ## SendDSL 消息發送
 
@@ -1371,7 +1401,7 @@ license = { file = "LICENSE" }
 authors = [ { name = "yourname", email = "your@mail.com" } ]
 
 dependencies = [
-    "aiohttp>=3.8.0"
+    "ErisPulse>=2.4.0"  # ErisPulse 已內建 aiohttp，通常無需單獨依賴
 ]
 
 [project.urls]
@@ -1486,14 +1516,13 @@ class MyAdapter(BaseAdapter):
             })
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理与-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
 
 ### 5. 實作 Send 類別
 
 `At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
 框架提供兩個關鍵輔助方法：
-
 - `self._apply_modifiers(message)` — 自動合併 At/AtAll/Reply 修飾器到訊息段
 - `self.send_context` — 取得發送上下文字典（`target_type`、`target_id`、`account_id`）
 
@@ -1503,7 +1532,227 @@ import asyncio
 class MyAdapter(BaseAdapter):
     # ... 其他程式碼 ...
     
-    class Send(BaseAdapter
+    class Send(BaseAdapter.Send):
+        
+        def Raw_ob12(self, message, **kwargs):
+            """
+            發送 OneBot12 格式訊息（必須實作）
+
+            使用 _apply_modifiers 自動合併修飾器狀態，
+            使用 send_context 取得發送上下文。
+            """
+            async def _do_send():
+                segments = self._apply_modifiers(message)
+                return await self._adapter.call_api(
+                    endpoint="/send_message",
+                    message=segments,
+                    **self.send_context,
+                    **kwargs
+                )
+            return asyncio.create_task(_do_send())
+        
+        def Text(self, text: str):
+            """發送文字訊息"""
+            return self.Raw_ob12([
+                {"type": "text", "data": {"text": text}}
+            ])
+        
+        def Image(self, file):
+            """發送圖片訊息"""
+            return self.Raw_ob12([
+                {"type": "image", "data": {"file": file}}
+            ])
+```
+
+**媒體類發送方法（Image/Video/File）實作要點：**
+
+- `file` 參數應同時支援 `bytes` 二進位資料和 `str` URL 兩種類型
+- 當傳入 URL 時，需先下載檔案再上傳到平台
+- 平台通常需要先呼叫上傳介面取得檔案標識，再呼叫發送介面
+
+**`__getattr__` 魔術方法：**
+
+- 實作方法名大小寫不敏感（`Text`、`text`、`TEXT` 都能呼叫）
+- 未定義的方法應返回提示資訊而非報錯
+
+**`Raw_ob12` 方法：**
+
+- 將 OneBot12 標準訊息格式轉換為平台格式發送
+- 使用 `self._apply_modifiers(message)` 自動處理 At/AtAll/Reply 修飾器
+- 使用 `**self.send_context` 傳遞發送目標資訊和帳號資訊
+
+### 6. 實作轉換器
+
+```python
+# MyAdapter/Converter.py
+import time
+import uuid
+
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """將平台原生事件轉換為 OneBot12 標準格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        onebot_event = {
+            "id": str(raw_event.get("event_id", uuid.uuid4())),
+            "time": int(time.time()),
+            "type": self._convert_event_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+    
+    def _convert_event_type(self, event_type):
+        """轉換事件類型"""
+        type_map = {
+            "message": "message",
+            "notice": "notice"
+        }
+        return type_map.get(event_type, "unknown")
+    
+    def _convert_detail_type(self, raw_event):
+        """轉換詳細類型"""
+        return "private"  # 簡化示例
+```
+
+### 7. 實作 Request 類別（請求操作）
+
+如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類別：
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    # ... Send 和其他程式碼 ...
+
+    class Request(RequestDSL):
+        """請求操作實作（好友請求、群邀請等）"""
+
+        def accept(self, **kwargs):
+            """同意請求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=True,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+
+        def reject(self, **kwargs):
+            """拒絕請求"""
+            async def _do():
+                result = await self._adapter.call_api(
+                    endpoint="/set_request",
+                    request_id=self._request_id,
+                    approve=False,
+                    **kwargs,
+                )
+                return {
+                    "status": "ok" if result.get("code") == 0 else "failed",
+                    "retcode": result.get("code", 0),
+                    "data": None,
+                    "message_id": "",
+                    "message": result.get("message", ""),
+                }
+            return self._create_task(_do())
+```
+
+模組開發者使用方式：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # 透過 Event 便捷方法
+    await event.approve()
+    # 或透過適配器直接操作
+    await adapter.myplatform.Request("req_id").accept()
+```
+
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+
+### 8. 建立套件入口
+
+```python
+# MyAdapter/__init__.py
+from .Core import MyAdapter
+```
+
+## `__init__` 注意事項
+
+適配器開發中有三個層面可能涉及 `__init__` 重寫。以下是每個層面的正確做法。
+
+### 1. BaseAdapter 層（必須呼叫 `super().__init__()`）
+
+`BaseAdapter.__init__()` 負責**建立 `Send` 和 `Request` 工廠實例**。如果適配器有自己的 `__init__`，必須呼叫父類別初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self, sdk):
+        super().__init__()  # ← 必須！否則 Send / Request 不會被初始化
+        self.sdk = sdk
+        # ... 其他初始化
+```
+
+**忘記呼叫的後果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都會報 `AttributeError`。
+
+### 2. Send 內部類別（大多數情況不需要重寫）
+
+`SendDSL.__init__` 負責鏈式呼叫的狀態傳遞（目標類型、目標ID、帳號等）。**大多數情況下，你只需要重寫方法**（`Raw_ob12`、`Text` 等），不需要重寫 `__init__`。
+
+如果確實需要（比如初始化平台特有的狀態），**必須透傳所有參數**：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        # 參數：adapter, target_type, target_id, account_id
+        def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+            super().__init__(adapter, target_type, target_id, account_id)  # ← 必須透傳
+            self._my_state = None  # 平台特有初始化
+```
+
+**為什麼必須透傳？** 鏈式呼叫的每一步都透過 `self.__class__(...)` 建立新實例：
+
+```python
+adapter.Send.To("user", "123")               # → Send(adapter, "user", "123", None)
+adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123", "bot1")
+```
+
+如果 `__init__` 簽名不匹配或沒調 `super()`，鏈式呼叫就會中斷。
+
+### 3. Request 內部類別（大多數情況不需要重寫）
+
+與 Send 同理。參數為 `adapter`, `request_id`, `account_id`：
+
+```python
+class MyAdapter(BaseAdapter):
+    class Request(RequestDSL):
+        # 參數：adapter, request_id, account_id
+        def __init__(self, adapter, request_id=None, account_id=None):
+            super().__init__(adapter, request_id, account_id)  # ← 必須透傳
+            self._my_state = None  # 平台特有初始化
+```
+
+### 總結
+
+| 層面 | 什麼時候重寫 |
 
 
 
@@ -1728,8 +1977,8 @@ async def filter_middleware(data):
     """事件過濾中介軟體"""
     # 過濾不需要的事件
     if data.get("type") == "notice":
-        return None  # 傳回 None 會阻止事件繼續分發
-    return data
+        return None  # 傳回 None 時中介軟體鏈會忽略該返回值，保留原資料繼續傳遞
+    return data  # 必須傳回資料以繼續傳遞
 ```
 
 #### 中介軟體執行順序
@@ -1907,346 +2156,6 @@ OneBot12 標準事件
     "time": 1234567890,           # 10位 Unix 時間戳
     "type": "message/notice/request/meta",
     "detail_type": "事件詳細類型",
-    "platform": "平台名稱",
-    "self": {
-        "platform": "平台名稱",
-        "user_id": "機器人ID"
-    },
-    "{platform}_raw": {...},       # 原始資料（必須）
-    "{platform}_raw_type": "..."    # 原始類型（必須）
-}
-```
-
-### 轉換器示例
-
-```python
-class MyPlatformConverter:
-    def convert(self, raw_event):
-        """將平台原生事件轉換為 OneBot12 標準格式"""
-        if not isinstance(raw_event, dict):
-            return None
-        
-        # 生成事件 ID
-        event_id = raw_event.get("event_id") or str(uuid.uuid4())
-        
-        # 轉換時間戳
-        timestamp = raw_event.get("timestamp")
-        if timestamp and timestamp > 10**12:
-            timestamp = int(timestamp / 1000)
-        else:
-            timestamp = int(timestamp) if timestamp else int(time.time())
-        
-        # 轉換事件類型
-        event_type = self._convert_type(raw_event.get("type"))
-        detail_type = self._convert_detail_type(raw_event)
-        
-        # 建構標準事件
-        onebot_event = {
-            "id": str(event_id),
-            "time": timestamp,
-            "type": event_type,
-            "detail_type": detail_type,
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": str(raw_event.get("bot_id", ""))
-            },
-            "myplatform_raw": raw_event,
-            "myplatform_raw_type": raw_event.get("type", "")
-        }
-        
-        return onebot_event
-```
-
-## 連接管理
-
-### WebSocket 連接
-
-```python
-from fastapi import WebSocket
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        """註冊 WebSocket 路由"""
-        router.register_websocket(
-            module_name="myplatform",
-            path="/ws",
-            handler=self._ws_handler,
-            auth_handler=self._auth_handler
-        )
-    
-    async def _ws_handler(self, websocket: WebSocket):
-        """WebSocket 連接處理器"""
-        self.connection = websocket
-        
-        try:
-            while True:
-                data = await websocket.receive_text()
-                onebot_event = self.convert(data)
-                if onebot_event:
-                    await self.adapter.emit(onebot_event)
-        except WebSocketDisconnect:
-            self.logger.info("連接已中斷")
-        finally:
-            self.connection = None
-    
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
-        """WebSocket 驗證"""
-        token = websocket.query_params.get("token")
-        return token == "valid_token"
-```
-
-### WebHook 連接
-
-```python
-from fastapi import Request
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        """註冊 WebHook 路由"""
-        router.register_http_route(
-            module_name="myplatform",
-            path="/webhook",
-            handler=self._webhook_handler,
-            methods=["POST"]
-        )
-    
-    async def _webhook_handler(self, request: Request):
-        """WebHook 請求處理器"""
-        data = await request.json()
-        onebot_event = self.convert(data)
-        if onebot_event:
-            await self.adapter.emit(onebot_event)
-        return {"status": "ok"}
-```
-
-## API 響應標準
-
-### 成功響應
-
-```python
-async def call_api(self, endpoint: str, **params):
-    try:
-        raw_response = await self._platform_api_call(endpoint, **params)
-        
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
-    except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
-```
-
-### 失敗響應
-
-```python
-async def call_api(self, endpoint: str, **params):
-    # ...
-    return {
-        "status": "failed",
-        "retcode": 10003,  # 錯誤碼
-        "data": None,
-        "message_id": "",
-        "message": "缺少必要參數",
-        "myplatform_raw": None
-    }
-```
-
-## 多帳號支援
-
-### 帳號設定
-
-```toml
-[MyAdapter.accounts.account1]
-token = "token1"
-enabled = true
-
-[MyAdapter.accounts.account2]
-token = "token2"
-enabled = true
-```
-
-### 指定帳號發送
-
-```python
-# 使用 Using 方法指定帳號
-my_adapter = adapter.get("myplatform")
-
-# 透過帳號名稱
-await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# 透過帳號 ID
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
-```
-
-## 錯誤處理
-
-### 連接重試
-
-```python
-import asyncio
-
-class MyAdapter(BaseAdapter):
-    async def start(self):
-        retry_count = 0
-        max_retries = 5
-        
-        while retry_count < max_retries:
-            try:
-                await self._connect_to_platform()
-                break
-            except Exception as e:
-                retry_count += 1
-                if retry_count < max_retries:
-                    wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(f"連接失敗，{wait_time}秒後重試")
-                    await asyncio.sleep(wait_time)
-                else:
-                    raise
-```
-
-### API 錯誤處理
-
-```python
-async def call_api(self, endpoint: str, **params):
-    try:
-        response = await self._platform_api_call(endpoint, **params)
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"網路錯誤: {e}")
-        return self._error_response("網路請求失敗", 33000)
-    except asyncio.TimeoutError:
-        self.logger.error(f"請求超時: {endpoint}")
-        return self._error_response("請求超時", 32000)
-    except Exception as e:
-        self.logger.error(f"未知錯誤: {e}")
-        return self._error_response(str(e), 34000)
-```
-
-## Bot 狀態管理
-
-AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的在線狀態、活躍時間和元資訊。
-
-### 自動發現機制
-
-當介接器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 欄位：
-
-- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/中斷標示離線/heartbeat 更新活躍時間）
-- **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
-
-```python
-# 所有包含 self 欄位的事件都會觸發自動發現
-await self.adapter.emit({
-    "type": "message",
-    "platform": "myplatform",
-    "self": {"platform": "myplatform", "user_id": "bot123"},
-    # ...
-})
-# Bot "bot123" 已自動註冊（如果首次出現）並更新活躍時間
-```
-
-### Meta 事件類型
-
-| `detail_type` | 說明 | 框架行為 |
-|---|---|---|
-| `connect` | Bot 連接 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
-| `disconnect` | Bot 中斷 | 標示 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
-| `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
-
-### 介接器發送 Meta 事件
-
-```python
-class MyAdapter(BaseAdapter):
-    async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的機器人",
-            }
-        })
-
-    async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
-```
-
-### `self` 欄位擴展資訊
-
-`self` 欄位除必要的 `platform` 和 `user_id` 外，還支援以下可選欄位：
-
-| 欄位 | 說明 |
-|---|---|
-| `user_name` | Bot 使用者名稱 |
-| `nickname` | Bot 暱稱 |
-| `avatar` | Bot 頭像 URL |
-| `account_id` | 多帳號識別 |
-
-### Bot 狀態查詢
-
-```python
-from ErisPulse import sdk
-
-# 取得單個 Bot 資訊
-info = sdk.adapter.get_bot_info("myplatform", "bot123")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-platform_bots = sdk.adapter.list_bots("myplatform")
-
-# 檢查 Bot 是否在線
-is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
-
-# 取得完整狀態摘要（適合 WebUI 展示）
-summary = sdk.adapter.get_status_summary()
-# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
-```
-
-### 監聽 Bot 生命週期
-
-```python
-from ErisPulse import sdk
-
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 上線: {platform}/{bot_id}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    platform = data.get("platform")
-    bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
-```
-
-## 相關文檔
-
-- [介接器開發入門](getting-started.md) - 建立第一個介接器
-- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
-- [介接器最佳實踐](best-practices.md) - 開發高品質介接器
 
 
 
@@ -2954,10 +2863,17 @@ async def _get_account_for_message(self, event):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推薦使用 SDK 內建客戶端傳送 API 請求
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
-        # 網路錯誤
+        # 網路錯誤（使用 client 時內建重試機制會先處理）
         self.logger.error(f"網路錯誤: {e}")
         return self._error_response("網路請求失敗", 33000)
     except asyncio.TimeoutError:
@@ -4368,7 +4284,7 @@ sdk.storage.set("key", "value")
 # 取得值
 value = sdk.storage.get("key", default_value)
 
-# 取得所有鍵
+# 获取所有键
 keys = sdk.storage.keys()
 
 # 刪除值
@@ -4378,7 +4294,7 @@ sdk.storage.delete("key")
 ### 事務操作
 
 ```python
-# 使用事務確保資料一致性
+# 使用事务确保数据一致性
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
@@ -4388,17 +4304,17 @@ with sdk.storage.transaction():
 ### 批次操作
 
 ```python
-# 批次設定
+# 批量设置
 sdk.storage.set_multi({
     "key1": "value1",
     "key2": "value2",
     "key3": "value3"
 })
 
-# 批次取得
+# 批量获取
 values = sdk.storage.get_multi(["key1", "key2", "key3"])
 
-# 批次刪除
+# 批量刪除
 sdk.storage.delete_multi(["key1", "key2", "key3"])
 ```
 
@@ -4406,7 +4322,7 @@ sdk.storage.delete_multi(["key1", "key2", "key3"])
 
 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
-> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
+> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 获取完整文档。
 
 ```python
 from ErisPulse import sdk
@@ -4421,7 +4337,7 @@ sdk.storage.CreateTable("users", {
 # 插入資料
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入
+# 批量插入
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35}
@@ -4458,7 +4374,7 @@ sdk.storage.AlterTable("users").RenameTo("members").Execute()
 if sdk.storage.HasTable("users"):
     sdk.storage.DropTable("users")
 
-# 事務中的鏈式操作
+# 事务中的鏈式操作
 with sdk.storage.transaction():
     sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
     sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
@@ -4487,10 +4403,10 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```python
 from ErisPulse import sdk
 
-# 取得配置
+# 获取配置
 config = sdk.config.getConfig("MyModule", {})
 
-# 取得巢狀配置
+# 获取巢狀配置
 value = sdk.config.getConfig("MyModule.subkey.value", "default")
 ```
 
@@ -4539,7 +4455,7 @@ sdk.logger.critical("致命錯誤")
 ### 子日誌記錄器
 
 ```python
-# 取得子日誌記錄器
+# 获取子日誌記錄器
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模組日誌")
 
@@ -4564,7 +4480,7 @@ sdk.logger.save_logs("log.txt")
 ```python
 from ErisPulse import sdk
 
-# 取得適配器實例
+# 获取适配器實例
 adapter = sdk.adapter.get("platform_name")
 
 # 透過屬性存取
@@ -4593,7 +4509,7 @@ async def handle_raw_event(data):
 ### 適配器管理
 
 ```python
-# 取得所有平台
+# 获取所有平台
 platforms = sdk.adapter.platforms
 
 # 檢查適配器是否存在
@@ -4621,7 +4537,7 @@ running = sdk.adapter.list_running()
 ```python
 from ErisPulse import sdk
 
-# 取得模組實例
+# 获取模組實例
 module = sdk.module.get("ModuleName")
 
 # 透過屬性存取
@@ -4657,10 +4573,10 @@ loaded = sdk.module.list_loaded()
 # 列出已註冊的模組
 registered = sdk.module.list_registered()
 
-# 取得模組資訊
+# 获取模組資訊
 info = sdk.module.get_info("ModuleName")
 
-# 取得模組狀態摘要
+# 获取模組狀態摘要
 summary = sdk.module.get_status_summary()
 # {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
 
@@ -4714,7 +4630,7 @@ sdk.lifecycle.start_timer("my_operation")
 
 # ... 執行操作 ...
 
-# 取得持續時間
+# 获取持续时间
 duration = sdk.lifecycle.get_duration("my_operation")
 
 # 停止計時
@@ -4722,6 +4638,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 ```
 
 ## Router 模組
+
+### 抽象類型
+
+Router 支援兩種類型註解風格：
+
+```python
+# ErisPulse 抽象類型（推薦，可移植性強）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI 原生類型（相容已有代碼）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> 路由系統根據參數註解自動注入對應類型的物件，詳見 [路由管理器](../advanced/router.md)。
 
 ### 裝飾器路由（推薦）
 
@@ -4820,131 +4759,6 @@ async def auth_handler(websocket: WebSocket) -> bool:
     return token == "secret"
 
 sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# 取消路由
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**參數說明：**
-
-| 參數 | 說明 | 預設值 |
-|------|------|--------|
-| `module_name` | 模組名稱（必須） | - |
-| `path` | WebSocket 路徑 | - |
-| `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
-| `auto_accept` | 是否自動 `accept()` | `True` |
-
-> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
-
-### 路由分組
-
-```python
-# 建立路由組
-group = sdk.router.group("MyModule", prefix="/v1")
-
-# 在組內註冊路由
-@group.get("/users")
-async def list_users(request: Request):
-    return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# 帶版本號的分組
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
-```
-
-### 路由中介軟體
-
-```python
-# 全域中介軟體（glob 匹配）
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
-
-# 特定路徑中介軟體
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
-
-### 速率限制
-
-```python
-# 對路由設定速率限制（滑動視窗）
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS 配置
-
-```python
-# 程式碼方式
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# 設定檔方式（config.toml）
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### 安全標頭
-
-```python
-# 自動新增安全回應標頭
-sdk.router.setup_security_headers()
-
-# 設定檔方式（config.toml）
-# [router.security]
-# enabled = true
-```
-
-### 自動文件
-
-```python
-# Router 預設啟用 OpenAPI 文件
-# 停用文件
-sdk.router.disable_docs()
-
-# 自訂文件資訊
-sdk.router.set_docs_info(
-    title="My API",
-    description="API 文件",
-    version="1.0.0"
-)
-```
-
-### 路由資訊
-
-```python
-app = sdk.router.get_app()
-```
-
-## 相關文件
-
-- [事件系統 API](event-system.md) - Event 模組 API
-- [適配器系統 API](adapter-system.md) - Adapter 管理 API
 
 
 

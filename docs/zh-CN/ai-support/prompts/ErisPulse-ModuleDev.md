@@ -59,7 +59,8 @@ graph TB
     SDK --> Config["Config<br/>配置管理"]
     SDK --> AdapterMgr["Adapter<br/>适配器管理"]
     SDK --> ModuleMgr["Module<br/>模块管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客户端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -90,7 +91,8 @@ graph TB
 | **Storage** | 基于 SQLite 的键值存储系统，支持通用 SQL 链式查询 |
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
-| **Router** | 基于 FastAPI 的 HTTP/WebSocket 路由管理，支持装饰器路由、中间件、分组、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
+| **HttpClient** | 统一 HTTP 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志等功能 |
 
 ## 初始化流程
 
@@ -796,6 +798,7 @@ sdk.logger     # 日志系统
 sdk.adapter    # 适配器系统
 sdk.module     # 模块系统
 sdk.router     # 路由系统
+sdk.client     # HTTP 客户端
 sdk.lifecycle  # 生命周期系统
 ```
 
@@ -1004,42 +1007,69 @@ sdk.logger.mymodule.database.info("数据库消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基于 FastAPI 构建。
+HTTP 和 WebSocket 路由管理，支持 FastAPI 原生类型和 ErisPulse 抽象类型。
 
-> 路由处理器基于 FastAPI，必须正确使用类型注解，否则可能导致参数验证错误。
+> 路由处理器支持两种类型注解：FastAPI 原生类型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象类型（`HttpRequest` / `WebSocketConnection`）。推荐使用抽象类型以获得更好的可移植性。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse import sdk
 
-# 注册 HTTP 路由
-async def handler(request: Request):
+# 方式一：使用 ErisPulse 抽象类型（推荐）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
 
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
 
-# 注册 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：无需 await websocket.accept()，内部已自动调用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
+# 方式二：使用 FastAPI 原生类型（兼容已有代码）
+from fastapi import Request, WebSocket
 
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
 ```
 
-**常见问题：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保：
-- HTTP 处理器参数使用 `request: Request` 注解
-- WebSocket 处理器参数使用 `websocket: WebSocket` 注解
+{!--< tips >!--}
+> **自动注入**：路由系统会根据参数注解自动注入对应类型的对象，无需手动创建。
+> 
+> **常见问题**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保 HTTP 处理器参数使用 `request` 注解，WebSocket 处理器参数使用 `websocket` 或 `ws` 注解。
 
 更多路由功能请参考 [路由管理器](../advanced/router.md)。
+
+### Client（HTTP 客户端）
+
+统一的 HTTP 客户端，用于发送 HTTP 请求。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+# GET 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 请求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# 响应属性
+resp.status        # 状态码 (如 200)
+resp.headers       # 响应头
+body = await resp.text()   # 文本响应体
+data = await resp.json()   # JSON 解析
+```
+
+{!--< tips >!--}
+> 全局客户端具有自动重试、超时控制、请求统计和生命周期事件集成等功能。详见 [HTTP 客户端](../advanced/http-client.md)。
+>
+> 也可通过 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
 
 ## SendDSL 消息发送
 
@@ -2144,6 +2174,8 @@ async def search_handler(event):
 ### 图片下载和存储
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def image_handler(event):
     """处理图片消息"""
@@ -2154,26 +2186,25 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # 下载图片
-                import aiohttp
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        if response.status == 200:
-                            image_data = await response.read()
-                            
-                            # 存储到文件
-                            filename = f"images/{event.get_time()}.jpg"
-                            with open(filename, "wb") as f:
-                                f.write(image_data)
-                            
-                            sdk.logger.info(f"图片已保存: {filename}")
-                            await event.reply("图片已保存")
+                # 推荐使用 SDK 内置客户端下载图片
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # 存储到文件
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"图片已保存: {filename}")
+                    await event.reply("图片已保存")
 ```
 
 ### 图片识别示例
 
 ```python
+from ErisPulse.Core import client
+
 @command("identify", help="识别图片")
 async def identify_handler(event):
     """识别消息中的图片"""
@@ -2192,16 +2223,13 @@ async def identify_handler(event):
     await event.reply("未找到图片")
 
 async def _identify_image(url):
-    """调用图片识别 API（示例）"""
-    import aiohttp
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/identify",
-            json={"url": url}
-        ) as response:
-            data = await response.json()
-            return data.get("description", "识别失败")
+    """调用图片识别 API（示例）- 使用 SDK 内置客户端"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "识别失败")
 ```
 
 ## 下一步
@@ -2407,8 +2435,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 初始化资源
-    self.session = aiohttp.ClientSession()
+    # 使用 SDK 内置 HTTP 客户端（自动管理连接池，无需手动创建 session）
+    # 通过 sdk.client 即可发送请求
 ```
 
 ### on_unload 方法
@@ -2417,8 +2445,8 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # 清理资源
-    await self.session.close()
+    # 清理自定义资源
+    # sdk.client 由框架管理，无需手动关闭
     
     # 取消事件处理器（框架会自动处理）
     self.logger.info("模块已卸载")
@@ -2960,7 +2988,23 @@ def _load_config(self):
 ### 1. 使用异步库
 
 ```python
-# 使用 aiohttp（异步）
+# 推荐使用 SDK 内置 HTTP 客户端（异步，自动日志和统计）
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# 也可通过 sdk.client 使用（效果相同）
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# 不要使用 aiohttp 直接导入（不便于框架统一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2969,7 +3013,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 而不是 requests（同步，会阻塞）
+# 不要使用 requests（同步，会阻塞事件循环）
 import requests
 
 class MyModule(BaseModule):
@@ -2992,12 +3036,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # 初始化资源
-    self.session = aiohttp.ClientSession()
+    # SDK 客户端已自动管理连接池，无需手动创建 session
+    pass
     
 async def on_unload(self, event):
-    # 清理资源
-    await self.session.close()
+    # 如需自定义客户端，记得清理资源
+    pass
 ```
 
 ## 事件处理
@@ -3069,7 +3113,7 @@ async def handle_event(self, event):
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
     except aiohttp.ClientError as e:
-        # 网络错误
+        # 网络错误（使用 sdk.client 时此异常极少出现，因内置重试机制）
         self.logger.error(f"网络错误: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
@@ -3082,11 +3126,13 @@ async def handle_event(self, event):
 ### 2. 超时处理
 
 ```python
+# 推荐使用 SDK 内置客户端（自带超时和重试）
+from ErisPulse.Core import client
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
     except asyncio.TimeoutError:
         self.logger.warning(f"请求超时: {url}")
         raise
@@ -4220,6 +4266,29 @@ total_time = sdk.lifecycle.stop_timer("my_operation")
 
 ## Router 模块
 
+### 抽象类型
+
+Router 支持两种类型注解风格：
+
+```python
+# ErisPulse 抽象类型（推荐，可移植性强）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPI 原生类型（兼容已有代码）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> 路由系统根据参数注解自动注入对应类型的对象，详见 [路由管理器](../advanced/router.md)。
+
 ### 装饰器路由（推荐）
 
 ```python
@@ -4438,10 +4507,114 @@ sdk.router.set_docs_info(
 app = sdk.router.get_app()
 ```
 
+## HTTP Client 模块
+
+### 基本请求
+
+```python
+from ErisPulse.Core import client
+
+# GET 请求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 请求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 响应对象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 状态码 (如 200, 404)
+resp.reason        # str | None - 状态描述 (如 "OK")
+resp.headers       # 响应头 (大小写不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最终 URL (可能因重定向变化)
+resp.raw           # 底层原生响应对象 (当前为 aiohttp.ClientResponse)
+
+# 读取响应体
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定编码
+```
+
+### 请求参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `url` | `str` | 请求 URL |
+| `params` | `dict[str, str]` | 查询参数 (可选) |
+| `headers` | `dict[str, str]` | 额外请求头 (可选) |
+| `data` | `Any` | 请求体 (表单或原始数据) (可选) |
+| `json` | `Any` | JSON 请求体 (可选) |
+| `timeout` | `float` | 本次请求超时 (秒) (可选, 覆盖默认值) |
+| `max_retries` | `int` | 本次最大重试次数 (可选, 覆盖默认值) |
+
+### 自定义客户端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 创建自定义客户端（非全局单例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自动关闭会话
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 请求统计
+
+```python
+from ErisPulse.Core import client
+
+# 查看统计
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置统计
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [路由管理器](../advanced/router.md) - 路由管理器完整文档
 
 
 
@@ -5552,22 +5725,35 @@ complex_msg = (
 
 # 路由管理器
 
-ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。它基于 FastAPI + Uvicorn 构建，提供了完整的 Web 服务功能。
+ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支持多适配器路由注册和生命周期管理。底层通过抽象层封装（当前为 FastAPI + Uvicorn）
 
 ## 概述
 
 路由管理器的主要功能：
 
 - **装饰器路由**：支持 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 装饰器快捷注册
+- **自动注入**：路由处理器无需导入 FastAPI 类型，框架自动注入抽象对象
 - **路由分组**：支持带前缀和版本号的 `RouteGroup`
 - **路由中间件**：支持 glob 模式匹配的请求拦截
 - **速率限制**：内置滑动窗口限流
 - **CORS 支持**：一键开启跨域资源共享
 - **安全头**：自动添加安全响应头
 - **自动文档**：基于 OpenAPI 的交互式文档
-- **WebSocket 支持**：完整的 WebSocket 连接管理和自定义认证
+- **WebSocket 支持**：完整的 WebSocket 连接管理、自定义认证和生命周期钩子
 - **生命周期集成**：与 ErisPulse 生命周期系统深度集成
 - **SSL/TLS 支持**：支持 HTTPS 和 WSS 安全连接
+
+## 抽象类型
+
+ErisPulse 提供了服务端抽象类型，使模块无需直接依赖 FastAPI：
+
+| 抽象类型 | FastAPI 对应 | 说明 |
+|---------|-------------|------|
+| `HttpRequest` | `fastapi.Request` | HTTP 请求封装，接口完全兼容 |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 连接封装，额外提供生命周期钩子 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 断开异常 |
+
+> 通过 `.raw` 属性可访问底层 FastAPI 原生对象。直接使用 FastAPI 类型的代码也完全兼容。
 
 ## 装饰器路由（推荐）
 
@@ -5575,22 +5761,20 @@ ErisPulse 路由管理器提供统一的 HTTP 和 WebSocket 路由管理，支�
 
 ```python
 from ErisPulse.Core import router
-from fastapi import Request
-
-# 通用 HTTP 路由
-@router.http("my_module", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"message": "Hello"}
-
-# 快捷方法
 @router.get("my_module", "/info")
-async def get_info(request: Request):
-    return {"info": "data"}
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+
+# 也可显式标注抽象类型
+from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
-async def post_data(request: Request):
+async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
+
+# 继续使用 FastAPI 类型也完全兼容
+from fastapi import Request
 
 @router.put("my_module", "/data/{item_id}")
 async def update_data(request: Request):
@@ -5601,38 +5785,51 @@ async def delete_data(request: Request):
     return {"deleted": True}
 ```
 
-> **注意**：`module_name` 必须作为第一个参数显式传入，路由路径会自动添加模块名前缀。
+> **自动注入规则**：当处理器第一个参数名为 `request` 或 `req` 且无 FastAPI 类型注解时，框架自动注入 `HttpRequest`。无参数或非请求参数名的处理器不受影响。
 
 ### WebSocket 装饰器
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
 # 基本 WebSocket
 @router.ws("my_module", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
-# 带认证的 WebSocket（推荐：使用 auth_handler 控制连接）
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+# 带生命周期钩子的 WebSocket
+@router.ws("my_module", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_disconnect(ws, reason="unknown"):
+        print(f"用户断开: {reason}")
+
+    @ws.on_error
+    async def on_error(ws, error=""):
+        print(f"连接错误: {error}")
+
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# 带认证的 WebSocket
+async def ws_auth(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 @router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
+async def secure_ws_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 ```
+
+> **注意**：WebSocket 处理器和认证处理器也支持自动注入。如果参数注解为 `fastapi.WebSocket`，则传入原生对象；否则传入 `WebSocketConnection`。
 
 ## 传统注册方式
 
 ```python
-from fastapi import Request
-
-async def hello_handler(request: Request):
+async def hello_handler(request):
     return {"message": "Hello World"}
 
 # 基本注册
@@ -5658,12 +5855,11 @@ router.register_http_route(
 ### WebSocket 注册
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection
 
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws: WebSocketConnection):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
 # 基本注册
 router.register_websocket(
@@ -5673,8 +5869,8 @@ router.register_websocket(
 )
 
 # 带认证的注册（推荐）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 router.register_websocket(
@@ -5697,6 +5893,30 @@ router.register_websocket(
 
 > **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
 
+## WebSocket 生命周期钩子
+
+`WebSocketConnection` 提供了断开连接和错误的回调注册，无需手动 try/catch：
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+@router.ws("my_module", "/ws")
+async def my_ws(ws: WebSocketConnection):
+    # 装饰器方式注册
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"断开原因: {reason}")
+
+    # 也可直接调用
+    async def on_err(ws, error=""):
+        print(f"错误: {error}")
+    ws.on_error(on_err)
+
+    # 正常业务逻辑
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+```
+
 ## 路由分组
 
 ```python
@@ -5704,11 +5924,11 @@ router.register_websocket(
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request):
     return {"users": []}
 
 @group.post("/users")
-async def create_user(request: Request):
+async def create_user(request):
     return {"created": True}
 
 # 实际路径: /my_module/v1/users
@@ -5720,14 +5940,14 @@ async def create_user(request: Request):
 
 ```python
 @router.middleware("/my_module/*")
-async def auth_middleware(request: Request, call_next):
+async def auth_middleware(request, call_next):
     token = request.headers.get("Authorization")
     if not token:
         return {"error": "Unauthorized"}
     return await call_next(request)
 
 @router.middleware("/my_module/admin/*")
-async def admin_middleware(request: Request, call_next):
+async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
@@ -5737,11 +5957,11 @@ async def admin_middleware(request: Request, call_next):
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
+async def limited_endpoint(request):
     return {"ok": True}
 
 @router.post("my_module", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
+async def submit_data(request):
     return {"submitted": True}
 ```
 
@@ -5812,16 +6032,18 @@ router.register_http_route("my_module", "/api", handler)
 推荐使用 `auth_handler` 控制连接访问：
 
 ```python
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+from ErisPulse.Core import WebSocketConnection
+
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 # 装饰器方式
 @router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(websocket: WebSocket):
+async def secure_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 
 # 传统注册方式
 router.register_websocket(
@@ -5871,17 +6093,20 @@ async def on_server_stop(event):
 
 ## 最佳实践
 
-1. **优先使用装饰器**：`@router.get()` 等装饰器比 `register_http_route()` 更简洁
-2. **显式传入 module_name**：装饰器第一个参数必须为模块名，不可省略
-3. **使用路由分组**：对同一模块的多个路由使用 `create_group()` 组织
-4. **安全性考虑**：为敏感操作实现认证机制和安全头
-5. **合理限流**：对高频接口设置速率限制
-6. **错误处理**：实现适当的错误处理和响应格式
+1. **优先使用抽象类型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依赖
+2. **利用自动注入**：处理器第一个参数命名为 `request` 或 `req`，无需任何类型注解即可获得 `HttpRequest`
+3. **显式传入 module_name**：装饰器第一个参数必须为模块名，不可省略
+4. **使用路由分组**：对同一模块的多个路由使用 `group()` 组织
+5. **安全性考虑**：为敏感操作实现认证机制和安全头
+6. **合理限流**：对高频接口设置速率限制
+7. **使用生命周期钩子**：通过 `@ws.on_disconnect` / `@ws.on_error` 处理 WebSocket 异常，避免手动 try/catch
 
 ## 相关文档
 
+- [HTTP 客户端](http-client.md) - 使用内置 HTTP 客户端发送请求
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 了解模块路由注册
 - [最佳实践](../developer-guide/modules/best-practices.md) - 路由使用建议
+
 
 
 
