@@ -191,6 +191,50 @@ WebSocket 路由装饰器
 ---
 
 
+##### `_make_http_endpoint(handler: Callable)`
+
+根据处理器签名创建 FastAPI 兼容的 HTTP 端点
+
+自动检测第一个参数的类型注解：
+- fastapi.Request → 直接透传（向后兼容）
+- HttpRequest / 无注解且名称类似 request → 注入 HttpRequest 包装
+- 其他类型 / 非请求参数名 → 不注入
+
+> **内部方法**
+
+---
+
+
+##### `_make_ws_handler(handler: Callable)`
+
+根据处理器签名创建 WebSocket 处理器包装
+
+- fastapi.WebSocket 注解 → 提取 .raw 透传
+- WebSocketConnection / 无注解 → 直接传递 WebSocketConnection
+
+> **内部方法**
+
+---
+
+
+##### `_make_ws_auth_handler(auth_handler: Callable)`
+
+根据签名创建 WebSocket 认证处理器包装
+
+> **内部方法**
+
+---
+
+
+##### `async async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str)`
+
+执行 WebSocket 生命周期钩子
+
+> **内部方法**
+
+---
+
+
 ##### `_setup_core_routes()`
 
 设置系统核心路由

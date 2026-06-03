@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 59
-- **类总数**: 47（包括 5 个嵌套类）
+- **模块总数**: 62
+- **类总数**: 54（包括 5 个嵌套类）
 - **函数总数**: 39
-- **方法总数**: 520
+- **方法总数**: 616
 
 ---
 
@@ -129,6 +129,11 @@
 📦 3 个类 | 🔧 25 个方法
 
 
+### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)
+
+📦 2 个类 | 🔧 18 个方法
+
+
 ### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)
 
 📦 1 个类 | 🔧 11 个方法
@@ -137,6 +142,11 @@
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
 
 📦 1 个类 | 🔧 3 个方法
+
+
+### [ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)
+
+📦 3 个类 | 🔧 52 个方法
 
 
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
@@ -204,6 +214,11 @@
 📦 1 个类 | 🔧 34 个方法
 
 
+### [ErisPulse.Core.client](ErisPulse/Core/client.md)
+
+📦 2 个类 | 🔧 22 个方法
+
+
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
 
 📦 1 个类 | 🔧 11 个方法 | ⚙️ 1 个函数
@@ -231,7 +246,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 3 个类 | 🔧 47 个方法
+📦 3 个类 | 🔧 51 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)

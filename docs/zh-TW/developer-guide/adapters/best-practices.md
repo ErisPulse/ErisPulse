@@ -431,10 +431,17 @@ async def _get_account_for_message(self, event):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        response = await self._platform_api_call(endpoint, **params)
+        # 推薦使用 SDK 內建客戶端傳送 API 請求
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
         return self._standardize_response(response)
     except aiohttp.ClientError as e:
-        # 網路錯誤
+        # 網路錯誤（使用 client 時內建重試機制會先處理）
         self.logger.error(f"網路錯誤: {e}")
         return self._error_response("網路請求失敗", 33000)
     except asyncio.TimeoutError:

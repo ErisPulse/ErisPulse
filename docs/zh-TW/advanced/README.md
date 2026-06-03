@@ -7,6 +7,7 @@
 - [懶載入系統](lazy-loading.md) - 懶載入模組系統的運作原理與設定
 - [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
+- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端
 - [MessageBuilder 詳解](message-builder.md) - OneBot12 訊息段構建器的雙模式用法
 - [SQL 查詢構建器](sql-builder.md) - 通用 SQL 鏈式查詢構建器及儲存後端抽象
 - [會話類型系統](session-types.md) - 會話類型定義、映射與自定義類型註冊
