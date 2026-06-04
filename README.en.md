@@ -7,7 +7,7 @@
 </td>
 <td valign="middle">
 
-**English** | [简体中文](README.md) | [繁體中文](README.zh-TW.md)
+**English** | [简体中文](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 # ErisPulse
 
