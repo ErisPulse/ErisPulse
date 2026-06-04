@@ -339,7 +339,410 @@ asyncio.run(sdk.run(keep_running=True))
 
 ### 基础概念
 
+# Основные концепции
 
+В этом руководстве представлены основные концепции ErisPulse, которые помогут вам понять дизайн-философию и базовую архитектуру фреймворка.
+
+## Архитектура, управляемая событиями
+
+ErisPulse использует архитектуру, управляемую событиями (event-driven), где все взаимодействия осуществляются через обработку событий.
+
+### Поток событий
+
+```
+Пользователь отправляет сообщение
+      │
+      ▼
+Платформа получает сообщение
+      │
+      ▼
+Адаптер получает нативные события платформы
+      │
+      ▼
+Преобразование в стандартное событие OneBot12
+      │
+      ▼
+Отправка в систему событий
+      │
+      ▼
+Распределение зарегистрированным обработчикам
+      │
+      ▼
+Модуль обрабатывает событие
+      │
+      ▼
+Отправка ответа через адаптер
+      │
+      ▼
+Отображение пользователю платформой
+```
+
+### Стандарт OneBot12
+
+ErisPulse использует OneBot12 в качестве стандарта основных событий. OneBot12 — это универсальный стандарт интерфейса чат-ботов, определяющий единый формат событий.
+
+Все адаптеры преобразуют событийные данные, специфичные для платформы, в формат OneBot12, обеспечивая согласованность кода.
+
+## Основные компоненты
+
+### 1. Объект SDK
+
+SDK — это единая точка входа для всех функций, предоставляющая доступ к основным компонентам.
+
+```python
+from ErisPulse import sdk
+
+# Доступ к основным модулям
+sdk.storage    # Система хранения
+sdk.config     # Система конфигурации
+sdk.logger     # Система логирования
+sdk.adapter    # Система адаптеров
+sdk.module     # Система модулей
+sdk.router     # Система маршрутизации
+sdk.client     # HTTP-клиент
+sdk.lifecycle  # Система жизненного цикла
+```
+
+### 2. Объект Event
+
+Объект Event инкапсулирует данные события, предоставляя удобные методы доступа.
+
+```python
+@command("info")
+async def info_handler(event):
+    # Получение информации о событии
+    event_id = event.get_id()
+    user_id = event.get_user_id()
+    platform = event.get_platform()
+    text = event.get_text()
+    
+    # Отправка ответа
+    await event.reply(f"Пользователь: {user_id}, Платформа: {platform}")
+```
+
+### 3. Адаптер
+
+Адаптер служит мостом между ErisPulse и внешними платформами.
+
+**Обязанности:**
+- Получать нативные события платформы
+- Преобразовывать в стандартный формат OneBot12
+- Отправлять события стандартного формата в платформу
+
+**Примеры адаптеров:**
+- Адаптер Yunhu: взаимодействие с платформой Yunhu
+- Адаптер Telegram: взаимодействие с Telegram Bot API
+- Адаптер OneBot11: взаимодействие с приложениями, совместимыми с OneBot11
+- Почтовый адаптер: обработка входящей и исходящей почты
+
+### 4. Модуль
+
+Модуль — это базовая единица расширения функционала, способная:
+
+- Регистрировать обработчики событий
+- Реализовывать бизнес-логику
+- Вызывать адаптеры для отправки сообщений
+- Использовать сервисы, предоставляемые основными модулями
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
+    async def on_load(self, event):
+        """Вызывается при загрузке модуля"""
+        # Регистрация обработчика событий
+        @command("mycmd", help="Моя команда")
+        async def my_command(event):
+            await event.reply("Команда выполнена успешно")
+
+        self.logger.info("Модуль загружен")
+
+    async def on_unload(self, event):
+        """Вызывается при выгрузке модуля"""
+        self.logger.info("Модуль выгружен")
+```
+
+## Типы событий
+
+### Событие сообщения
+
+Обработка любых сообщений, отправляемых пользователями (включая личные и групповые чаты).
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def message_handler(event):
+    text = event.get_text()
+    await event.reply(f"Получено сообщение: {text}")
+```
+
+### Событие команды
+
+Обработка сообщений, начинающихся с префикса команды (например, `/hello`).
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("hello", help="Отправка приветствия")
+async def hello_handler(event):
+    await event.reply("Привет!")
+```
+
+### Событие уведомления
+
+Обработка системных уведомлений (например, добавление в друзья, изменения участников группы).
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    await event.reply("Добро пожаловать в друзья!")
+```
+
+### Событие запроса
+
+Обработка запросов пользователей (например, запросы на добавление в друзья, приглашения в группы).
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request_handler(event):
+    await event.reply("Ваш запрос на добавление в друзья получен")
+```
+
+### Метасобытие
+
+Обработка системных событий уровня (например, подключение, пульсация/heartbeat).
+
+```python
+from ErisPulse.Core.Event import meta
+
+@meta.on_connect()
+async def connect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.info(f"{platform} подключено успешно")
+```
+
+## Описание основных модулей
+
+### Storage (Хранилище)
+
+Базирующаяся на SQLite система хранения ключ-значение для персистентных данных.
+
+```python
+# Установка значения
+sdk.storage.set("key", "value")
+
+# Получение значения
+value = sdk.storage.get("key", "default_value")
+
+# Пакетные операции
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2"
+})
+
+# Транзакция
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### Config (Конфигурация)
+
+Управление файлами конфигурации в формате TOML.
+
+```python
+# Получение конфигурации
+config = sdk.config.getConfig("MyModule", {})
+
+# Установка конфигурации
+sdk.config.setConfig("MyModule", {"key": "value"})
+
+# Чтение вложенной конфигурации
+value = sdk.config.getConfig("MyModule.subkey", "default")
+```
+
+### Logger (Логирование)
+
+Модульная система логирования.
+
+```python
+# Запись в лог
+sdk.logger.info("Это информационное сообщение")
+sdk.logger.warning("Это предупреждение")
+sdk.logger.error("Это ошибка")
+
+# Получение дочернего логгера
+child_logger = sdk.logger.get_child("submodule")
+child_logger.info("Лог подмодуля")
+```
+
+**Синтаксический сахар для доступа к атрибутам**
+
+Помимо метода `get_child()`, вы также можете создавать дочерние логгеры через **доступ к атрибутам**, это более лаконичный способ:
+
+```python
+# Создание дочернего логгера через атрибут
+sdk.logger.mymodule.info("Сообщение модуля")
+
+# Поддержка вложенного доступа
+sdk.logger.mymodule.database.info("Сообщение базы данных")
+```
+
+### Router (Маршрутизация)
+
+Управление маршрутизацией HTTP и WebSocket, поддерживающая нативные типы FastAPI и абстрактные типы ErisPulse.
+
+> Роутеры поддерживают два типа аннотаций: нативные типы FastAPI (`fastapi.Request` / `fastapi.WebSocket`) и абстрактные типы ErisPulse (`HttpRequest` / `WebSocketConnection`). Рекомендуется использовать абстрактные типы для лучшей переносимости.
+
+```python
+from ErisPulse import sdk
+
+# Способ 1: Использование абстрактных типов ErisPulse (рекомендуется)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Эхо: {data}")
+
+# Способ 2: Использование нативных типов FastAPI (совместимо со старым кодом)
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
+```
+
+{!--< tips >!--}
+> **Автоматическая инъекция**: Система маршрутизации автоматически внедряет объекты соответствующих типов на основе аннотаций параметров, без необходимости ручного создания.
+> 
+> **Частые проблемы**: Если вы видите ошибку `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, значит, отсутствуют аннотации типов. Убедитесь, что параметры обработчиков HTTP используют аннотацию `request`, а обработчики WebSocket — `websocket` или `ws`.
+
+Дополнительные функции маршрутизации см. в разделе [Руководство по маршрутизатору](../advanced/router.md).
+
+### Client (HTTP-клиент)
+
+Единый HTTP-клиент для отправки HTTP-запросов. Модулям и адаптерам следует предпочитать глобальный клиент вместо прямого импорта `aiohttp`.
+
+```python
+from ErisPulse.Core import client
+
+# GET запрос
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST запрос
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# Свойства ответа
+resp.status        # Код статуса (например, 200)
+resp.headers       # Заголовки ответа
+body = await resp.text()   # Текстовое тело ответа
+data = await resp.json()   # Разбор JSON
+```
+
+{!--< tips >!--}
+> Глобальный клиент поддерживает автоматическую переаттестацию, управление таймаутами, статистику запросов и интеграцию с событиями жизненного цикла. Подробнее см. в разделе [HTTP-клиент](../advanced/http-client.md).
+>
+> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, эффект будет одинаковым.
+
+## Отправка сообщений через SendDSL
+
+Адаптеры предоставляют интерфейс для отправки сообщений с поддержкой цепных вызовов (чейнинг).
+
+### Базовая отправка
+
+```python
+# Получение экземпляра адаптера
+yunhu = sdk.adapter.get("yunhu")
+
+# Отправка сообщения
+await yunhu.Send.To("user", "U1001").Text("Hello")
+
+# Указание аккаунта отправителя
+await yunhu.Send.Using("bot1").To("group", "G1001").Text("Сообщение группы")
+```
+
+### Цепные модификаторы
+
+```python
+# @пользователя
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@сообщение")
+
+# Ответ на сообщение
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("ответ")
+
+# @всем
+await yunhu.Send.To("group", "G1001").AtAll().Text("уведомление")
+```
+
+### Методы ответа Event
+
+Объект Event предоставляет удобные методы для ответов:
+
+```python
+@command("test")
+async def test_handler(event):
+    # Простая текстовая реакция
+    await event.reply("Содержимое ответа")
+    
+    # Отправка изображения
+    await event.reply("http://example.com/image.jpg", method="Image")
+    
+    # Отправка голосового
+    await event.reply("http://example.com/voice.mp3", method="Voice")
+```
+
+## Система ленивой загрузки
+
+ErisPulse поддерживает ленивую загрузку модулей; модули инициализируются только при первом обращении к ним, что ускоряет запуск системы.
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,   # Включить ленивую загрузку (по умолчанию)
+            priority=0       # Приоритет загрузки
+        )
+```
+
+**Сценарии с немедленной загрузкой:**
+- Модули, прослушивающие события жизненного цикла
+- Модули периодических задач (таймеров)
+- Модули, требующие инициализации при запуске приложения
+
+## Далее
+
+- [Введение в обработку событий](event-handling.md) — научитесь обрабатывать различные типы событий
+- [Примеры распространенных задач](common-tasks.md) — освоите реализацию типичных функций
 
 
 
@@ -8884,7 +9287,345 @@ its:
 
 ### OneBot12 适配
 
+# Документация по особенностям платформы OneBot12
 
+OneBot12Adapter — это адаптер, основанный на протоколе OneBot V12, выполняющий роль базового протокольного адаптера для фреймворка ErisPulse.
+
+---
+
+## Информация о документации
+
+- Версия соответствующего модуля: 1.0.0
+- Разработчик: ErisPulse
+- Версия протокола: OneBot V12
+
+## Основная информация
+
+- Описание платформы: OneBot V12 — это универсальный стандарт интерфейса для приложений чат-ботов, служащий базовым протоколом для фреймворка ErisPulse.
+- Название адаптера: OneBot12Adapter
+- Поддерживаемая версия протокола/API: OneBot V12
+- Поддержка нескольких учетных записей: Полная архитектура с поддержкой нескольких учетных записей, позволяет одновременно настраивать и запускать несколько учетных записей OneBot12
+
+## Типы поддерживаемых сообщений для отправки
+
+Все методы отправки реализованы через цепочечный синтаксис (fluent interface), например:
+
+```python
+from ErisPulse.Core import adapter
+onebot12 = adapter.get("onebot12")
+
+# Отправка с использованием учетной записи по умолчанию
+await onebot12.Send.To("group", group_id).Text("Hello World!")
+
+# Отправка с использованием указанной учетной записи
+await onebot12.Send.To("group", group_id).Account("main").Text("Сообщение от главного аккаунта")
+```
+
+### Типы базовых сообщений
+
+- `.Text(text: str)`: отправка сообщения только с текстом
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`: отправка сообщения с изображением (поддерживаются URL, Base64 или байты)
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: отправка аудиосообщения
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: отправка видеосообщения
+
+### Типы интерактивных сообщений
+
+- `.Mention(user_id: Union[str, int], user_name: str = None)`: отправка упоминания (@)
+- `.Reply(message_id: Union[str, int], content: str = None)`: отправка сообщения-ответа
+- `.Sticker(file_id: str)`: отправка стикера / эмодзи-пакета
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: отправка геолокации
+
+### Управляющие функции
+
+- `.Recall(message_id: Union[str, int])`: отзыв (отмена) сообщения
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`: редактирование сообщения
+- `.Raw(message_segments: List[Dict])`: отправка нативных сегментов сообщений OneBot12
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`: пакетная отправка сообщений
+
+## Стандартные события OneBot12
+
+Адаптер OneBot12 полностью соответствует стандарту OneBot12, формат событий не требует преобразования и напрямую передается в фреймворк.
+
+### События сообщений (Message Events)
+
+```python
+# Личное сообщение
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+
+# Групповое сообщение
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "group_id": "group-id",
+    "message": [{"type": "text", "data": {"text": "Hello group"}}],
+    "alt_message": "Hello group",
+    "time": 1234567890
+}
+```
+
+### События уведомлений (Notice Events)
+
+```python
+# Приглашение участника в группу
+{
+    "id": "event-id",
+    "type": "notice",
+    "detail_type": "group_member_increase",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "approve",
+    "time": 1234567890
+}
+
+# Выход участника из группы
+{
+    "id": "event-id",
+    "type": "notice", 
+    "detail_type": "group_member_decrease",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "leave",
+    "time": 1234567890
+}
+```
+
+### События запросов (Request Events)
+
+```python
+# Запрос в друзья
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "friend",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "comment": "сообщение заявки",
+    "flag": "request-flag",
+    "time": 1234567890
+}
+
+# Запрос на вступление в группу
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "comment": "сообщение заявки",
+    "flag": "request-flag",
+    "sub_type": "invite",
+    "time": 1234567890
+}
+```
+
+### Метасобытия (Meta Events)
+
+```python
+# Событие жизненного цикла
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "lifecycle",
+    "self": {"user_id": "bot-id"},
+    "sub_type": "enable",
+    "time": 1234567890
+}
+
+# Событие сердцебиения
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "heartbeat",
+    "self": {"user_id": "bot-id"},
+    "interval": 5000,
+    "status": {"online": true},
+    "time": 1234567890
+}
+```
+
+## Параметры конфигурации
+
+### Конфигурация учетных записей
+
+Каждая учетная запись имеет независимую конфигурацию следующих параметров:
+
+- `mode`: режим работы этой учетной записи ("server" или "client")
+- `server_path`: путь WebSocket в режиме Server
+- `server_token`: токен аутентификации в режиме Server (необязательно)
+- `client_url`: адрес WebSocket для подключения в режиме Client
+- `client_token`: токен аутентификации в режиме Client (необязательно)
+- `enabled`: следует ли включить эту учетную запись
+- `platform`: идентификатор платформы, по умолчанию "onebot12"
+- `implementation`: идентификатор реализации, например "go-cqhttp" (необязательно)
+
+### Пример конфигурации
+
+```toml
+[OneBotv12_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot12-main"
+server_token = "main_token"
+enabled = true
+platform = "onebot12"
+implementation = "go-cqhttp"
+
+[OneBotv12_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+platform = "onebot12"
+implementation = "shinonome"
+
+[OneBotv12_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### Конфигурация по умолчанию
+
+Если не настроены никакие учетные записи, адаптер автоматически создаст:
+
+```toml
+[OneBotv12_Adapter.accounts.default]
+mode = "server"
+server_path = "/onebot12"
+enabled = true
+platform = "onebot12"
+```
+
+## Возвращаемое значение методов отправки
+
+Все методы отправки возвращают объект Task, который можно напрямую ожидать (await), чтобы получить результат отправки. Возвращаемый результат соответствует стандарту OneBot12:
+
+```python
+{
+    "status": "ok",           // Статус выполнения
+    "retcode": 0,             // Код возврата
+    "data": {...},            // Данные ответа
+    "self": {"user_id": "account-id"},  // Информация об учетной записи
+    "message_id": "123456",   // ID сообщения
+    "message": ""             // Информация об ошибке
+}
+```
+
+### Синтаксис отправки для нескольких учетных записей
+
+```python
+# Способ выбора учетной записи
+await onebot12.Send.Using("main").To("group", 123456).Text("Сообщение от главного аккаунта")
+await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# Способ вызова API
+await onebot12.call_api("send_message", account_id="main", 
+    detail_type="group", group_id=123456, 
+    content=[{"type": "text", "data": {"text": "Hello"}}])
+```
+
+## Механизм асинхронной обработки
+
+Адаптер OneBot12 использует асинхронный неблокирующий дизайн:
+
+1. Отправка сообщений не блокирует цикл обработки событий
+2. Несколько операций отправки могут выполняться одновременно
+3. Ответы API могут обрабатываться своевременно
+4. Соединения WebSocket поддерживаются в активном состоянии
+5. Обработка нескольких учетных записей одновременно, каждая учетная запись работает независимо
+
+## Обработка ошибок
+
+Адаптер предоставляет надежную систему обработки ошибок:
+
+1. Автоматическое переподключение при нарушении сетевого соединения (поддержка независимого переподключения для каждой учетной записи, с интервалом 30 секунд)
+2. Обработка тайм-аутов вызовов API (фиксированный тайм-аут 30 секунд)
+3. Автоматическая повторная попытка при неудаче отправки сообщения (максимум 3 попытки)
+
+## Улучшение обработки событий
+
+В режиме нескольких учетных записей все события автоматически получают информацию об учетной записи:
+
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "platform": "onebot12",
+    // ... другие поля события
+}
+```
+
+## Интерфейсы управления
+
+```python
+# Получение информации о всех учетных записях
+accounts = onebot12.accounts
+
+# Проверка статуса соединения учетной записи
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot12.connections.items()
+}
+
+# Динамическое включение/выключение учетной записи (требуется перезапуск адаптера)
+onebot12.accounts["test"].enabled = False
+```
+
+## Стандартные возможности OneBot12
+
+### Стандарт сегментов сообщений
+
+OneBot12 использует стандартизированный формат сегментов сообщений:
+
+```python
+# Текстовый сегмент сообщения
+{"type": "text", "data": {"text": "Hello"}}
+
+# Сегмент изображения
+{"type": "image", "data": {"file_id": "image-id"}}
+
+# Сегмент упоминания
+{"type": "mention", "data": {"user_id": "user-id", "user_name": "Username"}}
+
+# Сегмент ответа
+{"type": "reply", "data": {"message_id": "msg-id"}}
+```
+
+### Стандарт API
+
+Соответствует спецификации стандартного API OneBot12:
+
+- `send_message`: отправка сообщения
+- `delete_message`: отзыв сообщения
+- `edit_message`: редактирование сообщения
+- `get_message`: получение сообщения
+- `get_self_info`: получение информации о себе
+- `get_user_info`: получение информации о пользователе
+- `get_group_info`: получение информации о группе
+
+## Лучшие практики
+
+1. **Управление конфигурацией**: рекомендуется использовать конфигурацию с несколькими учетными записями для раздельного управления ботами разного назначения
+2. **Обработка ошибок**: всегда проверяйте статус возврата при вызове API
+3. **Отправка сообщений**: используйте подходящие типы сообщений, избегайте отправки неподдерживаемых сообщений
+4. **Мониторинг соединений**: регулярно проверяйте статус соединения, обеспечивая доступность сервиса
+5. **Оптимизация производительности**: используйте метод Batch при пакетной отправке для снижения сетевых затрат
 
 
 
@@ -11727,5 +12468,98 @@ from ErisPulse.Core import adapter
 
 ### 文档字符串规范
 
+# Руководство по стилю комментариев ErisPulse
 
+При создании EP-ядрных (core) методов обязательно должны быть добавлены комментарии к методам. Формат комментариев следующий:
+
+## Документация модуля
+
+В начале каждого файла модуля должна содержаться документация модуля:
+```python
+"""
+[Название модуля]
+[Описание функционала модуля]
+
+{!--< tips >!--}
+Важные инструкции по использованию или примечания
+{!--< /tips >!--}
+"""
+```
+
+## Комментарии к методам
+
+### Базовый формат
+```python
+def func(param1: type1, param2: type2) -> return_type:
+    """
+    [Описание функционала]
+    
+    :param param1: [Тип 1] [Описание параметра 1]
+    :param param2: [Тип 2] [Описание параметра 2]
+    :return: [Тип возвращаемого значения] [Описание возврата]
+    """
+    pass
+```
+
+### Полный формат (для сложных методов)
+```python
+def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
+    """
+    [Подробное описание функционала]
+    [Может содержать несколько строк описания]
+    
+    :param param1: [Тип 1] [Описание параметра 1]
+    :param param2: [Тип 2] [Описание параметра 2 (необязательно)] (по умолчанию: None)
+    
+    :return: 
+        type1: [Описание возвращаемого параметра 1]
+        type2: [Описание возвращаемого параметра 2]
+    
+    :raises ErrorType: [Описание ошибки]
+    """
+    pass
+```
+
+## Специальные теги (для генерации API документации)
+
+Когда в комментариях к методам содержится следующее, будет создан соответствующий эффект при сборке API документации:
+
+| Формат тега | Действие | Пример |
+|---------|------|------|
+| `{!--< internal-use >!--}` | Помечен как внутренний, документация не генерируется | `{!--< internal-use >!--}` |
+| `{!--< ignore >!--}` | Игнорировать этот метод, документация не генерируется | `{!--< ignore >!--}` |
+| `{!--< deprecated >!--}` | Помечен как устаревший метод | `{!--< deprecated >!--} используйте new_func() вместо этого` |
+| `{!--< experimental >!--}` | Помечен как экспериментальная функция | `{!--< experimental >!--} Может быть нестабильным` |
+| `{!--< tips >!--}...{!--< /tips >!--}` | Многострочное содержимое подсказок | `{!--< tips >!--}\nВажное содержимое подсказок\n{!--< /tips >!--}` |
+| `{!--< tips >!--}` | Однострочное содержимое подсказок | `{!--< tips >!--} Внимание: этому методу требуется инициализация` |
+
+## Лучшие практики
+
+1. **Аннотации типов**: Использовать синтаксис аннотаций типов Python
+   ```python
+   def func(param: int) -> str:
+   ```
+
+2. **Описание параметров**: Для необязательных параметров указывать значения по умолчанию
+   ```python
+   :param timeout: [int] Время ожидания (сек) (по умолчанию: 30)
+   ```
+
+3. **Возвращаемые значения**: Для множественных возвращаемых значений использовать `Tuple` или четко указывать типы
+   ```python
+   :return: 
+       str: Информация о состоянии
+       int: Код состояния
+   ```
+
+4. **Описание исключений**: Использовать `:raises` для обозначения возможных исключений
+   ```python
+   :raises ValueError: Выбрасывается при некорректном параметре
+   ```
+
+5. **Внутренние методы**: Для непубличных API следует добавить тег `{!--< internal-use >!--}`
+
+6. **Устаревшие методы**: Помечать устаревшие методы и предоставлять альтернативы
+   ```python
+   {!--< deprecated >!--} используйте new_method() вместо этого | 2025-07-09
 
