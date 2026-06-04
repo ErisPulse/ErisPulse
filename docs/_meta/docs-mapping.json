@@ -1,10 +1,18 @@
 {
   "version": "1.0",
-  "total_languages": 3,
+  "total_languages": 5,
   "languages": {
     "en": {
       "docs_count": 122,
       "mapping_path": "_meta/en/docs-mapping.json"
+    },
+    "ja": {
+      "docs_count": 104,
+      "mapping_path": "_meta/ja/docs-mapping.json"
+    },
+    "ru": {
+      "docs_count": 96,
+      "mapping_path": "_meta/ru/docs-mapping.json"
     },
     "zh-CN": {
       "docs_count": 122,
