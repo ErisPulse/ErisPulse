@@ -1,10 +1,10 @@
 {
   "version": "1.1",
-  "total_categories": 8,
+  "total_categories": 10,
   "categories": {
     "Быстрый старт": {
       "description": "Краткое руководство по ErisPulse",
-      "count": 6,
+      "count": 8,
       "documents": [
         {
           "title": "Документация ErisPulse",
@@ -17,6 +17,11 @@
           "level": 1
         },
         {
+          "title": "Трекер ошибок",
+          "path": "bug-tracker.md",
+          "level": 1
+        },
+        {
           "title": "Термины ErisPulse",
           "path": "terminology.md",
           "level": 1
@@ -26,7 +31,7 @@
     },
     "Начало работы": {
       "description": "Основные концепции и учебные материалы ErisPulse",
-      "count": 6,
+      "count": 10,
       "documents": [
         {
           "title": "Создание первого бота",
@@ -39,6 +44,16 @@
           "level": 1
         },
         {
+          "title": "Основные концепции",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Примеры распространенных задач",
+          "path": "getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
           "title": "Введение в обработку событий",
           "path": "getting-started/event-handling.md",
           "level": 1
@@ -48,7 +63,7 @@
     },
     "Руководство пользователя": {
       "description": "Настройка и справочник команд ErisPulse",
-      "count": 8,
+      "count": 10,
       "documents": [
         {
           "title": "Руководство пользователя",
@@ -58,6 +73,11 @@
         {
           "title": "Установка и настройка",
           "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "Описание конфигурационного файла",
+          "path": "user-guide/configuration.md",
           "level": 1
         },
         {
@@ -75,7 +95,7 @@
     },
     "Руководство разработчика": {
       "description": "Руководство по разработке модулей и адаптеров",
-      "count": 20,
+      "count": 22,
       "documents": [
         {
           "title": "Руководство для разработчиков",
@@ -92,6 +112,11 @@
         "modules": {
           "name": "Разработка модулей",
           "documents": [
+            {
+              "title": "Основы разработки модулей",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
             {
               "title": "Основные концепции модулей",
               "path": "developer-guide/modules/core-concepts.md",
@@ -143,7 +168,7 @@
     },
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
-      "count": 22,
+      "count": 24,
       "documents": [
         {
           "title": "Документация по функциональности ErisPulse PlatformFeatures",
@@ -153,6 +178,11 @@
         {
           "title": "Характеристики платформы OneBot11",
           "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по особенностям платформы OneBot12",
+          "path": "platform-guide/onebot12.md",
           "level": 1
         },
         {
@@ -205,8 +235,13 @@
     },
     "Справочник API": {
       "description": "Документация по основному API и интерфейсам",
-      "count": 6,
+      "count": 8,
       "documents": [
+        {
+          "title": "API Справочник",
+          "path": "api-reference/README.md",
+          "level": 1
+        },
         {
           "title": "API адаптерной системы",
           "path": "api-reference/adapter-system.md",
@@ -227,7 +262,7 @@
     },
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
-      "count": 16,
+      "count": 20,
       "documents": [
         {
           "title": "Продвинутые темы",
@@ -245,8 +280,18 @@
           "level": 1
         },
         {
+          "title": "Менеджер маршрутизации (Router Manager)",
+          "path": "advanced/router.md",
+          "level": 1
+        },
+        {
           "title": "Подробное описание MessageBuilder",
           "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "Система типов сессий",
+          "path": "advanced/session-types.md",
           "level": 1
         },
         {
@@ -267,6 +312,18 @@
         {
           "title": "SQL Query Builder",
           "path": "advanced/sql-builder.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Разработка с ИИ": {
+      "description": "Использование ИИ для разработки ErisPulse",
+      "count": 2,
+      "documents": [
+        {
+          "title": "AI-ассистированная разработка",
+          "path": "ai-support/README.md",
           "level": 1
         }
       ],
@@ -304,6 +361,23 @@
         {
           "title": "ErisPulse Спецификация операций запросов",
           "path": "standards/request-action-spec.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство по стилю": {
+      "description": "Руководство по стилю кода и документации",
+      "count": 4,
+      "documents": [
+        {
+          "title": "Руководство по стилю",
+          "path": "styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Руководство по стилю комментариев ErisPulse",
+          "path": "styleguide/docstring.md",
           "level": 1
         }
       ],
