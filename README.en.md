@@ -331,9 +331,92 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-For more detailed information, please refer to:
-- [Quick Start Guide](docs/en/quick-start.md)
-- [Getting Started Guide](docs/en/getting-started/)
+#### Multi-turn Conversation Example
+
+ErisPulse comes with a powerful multi-turn conversation engine, making it easy to implement guided operations and information collection scenarios:
+
+```python
+from ErisPulse.Core.Event import command, request
+
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("Welcome to register!")
+    
+    # Multi-step user info collection with auto-validation
+    data = await conv.collect([
+        {"key": "name", "prompt": "Please enter your name"},
+        {"key": "age", "prompt": "Please enter your age",
+         "validator": lambda e: e.get_text().strip().isdigit(),
+         "retry_prompt": "Age must be a number, please re-enter"},
+    ])
+    
+    if data and await conv.confirm(f"Confirm registration? Name: {data['name']}, Age: {data['age']}"):
+        # Actively push notification via SendDSL
+        await sdk.adapter.get(event.get_platform()).Send.To(
+            "user", event.get_user_id()
+        ).Text(f"Registration successful! Welcome {data['name']}")
+        # Or await event.reply("Registration successful!")
+
+# Automatically handle friend requests
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    
+    # Accept the request
+    result = await event.approve()
+    if result.get("status") == "ok":
+        await event.reply(f"Automatically approved friend request, welcome {user_name}")
+```
+
+<details>
+<summary>See more Conversation API (Branching / Choices / Persistence)</summary>
+
+```python
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+    
+    # Choice-based Q&A
+    answer = await conv.choose("Who created Python?", [
+        "Guido van Rossum",
+        "James Gosling", 
+        "Dennis Ritchie",
+    ])
+    
+    if answer == 0:
+        await conv.say("Correct!")
+    elif answer is None:
+        await conv.say("Timed out, see you next time!")
+    else:
+        await conv.say("Wrong answer, the correct answer is Guido van Rossum")
+
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    # Branching to build complex interaction flows
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== Main Menu ===\n1. Profile\n2. Settings\n3. Exit")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "1":
+            await conv.goto("profile")
+    
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("Name: Alice\n0. Back")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+    
+    await conv.start()
+```
+
+See [Conversation Multi-turn Dialogue](docs/en/advanced/conversation.md)
+
+</details>
 
 ---
 
@@ -343,7 +426,7 @@ Contributions of adapters are welcome!
 
 | Adapter | Description |
 |---------|-------------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook (Kaihei La) instant messaging platform |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook instant messaging platform |
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix decentralized communication protocol |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 general robot protocol |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
@@ -360,42 +443,3 @@ See [Adapter Details Introduction](docs/en/platform-guide/README.md)
 ---
 
 ### Use Cases
-
-<div align="center">
-
-| Multi-Platform Bots | Chat Assistants | Automation Tools | Message Forwarding |
-|:---:|:---:|:---:|:---:|
-| Deploy robots with the same functionality<br>on multiple platforms | Integrate AI chat modules<br>for entertainment and interaction | Message notifications, task management,<br>data collection | Cross-platform message<br>synchronization and forwarding |
-
-</div>
-
----
-
-### Contribution Guide
-
-The health of the ErisPulse project depends on your contribution! We welcome various forms of contribution:
-
-1. **Report Issues** — Submit bug reports in [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Feature Requests** — Share new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Code Contributions** — Before submitting a PR, please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md)
-4. **Documentation Improvements** — Help improve documentation and example code
-
-[Join Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-
----
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
-
----
-
-<div align="center">
-
-### Acknowledgments
-
-<img src=".github/assets/thanks.png" width="200" alt="Thanks" />
-
-Some code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame) · The core adapter standardization layer is based on [OneBot12 Specification](https://12.onebot.dev/) · Thank you to all developers and authors who contribute to the open source community
-
-</div>
