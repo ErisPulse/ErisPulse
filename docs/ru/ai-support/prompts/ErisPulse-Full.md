@@ -718,7 +718,410 @@ async def hello_handler(event):
 
 ### 基础概念
 
+# Основные концепции
 
+В этом руководстве представлены основные концепции ErisPulse, которые помогут вам понять дизайн-философию и базовую архитектуру фреймворка.
+
+## Архитектура, управляемая событиями
+
+ErisPulse использует архитектуру, управляемую событиями (event-driven), где все взаимодействия осуществляются через обработку событий.
+
+### Поток событий
+
+```
+Пользователь отправляет сообщение
+      │
+      ▼
+Платформа получает сообщение
+      │
+      ▼
+Адаптер получает нативные события платформы
+      │
+      ▼
+Преобразование в стандартное событие OneBot12
+      │
+      ▼
+Отправка в систему событий
+      │
+      ▼
+Распределение зарегистрированным обработчикам
+      │
+      ▼
+Модуль обрабатывает событие
+      │
+      ▼
+Отправка ответа через адаптер
+      │
+      ▼
+Отображение пользователю платформой
+```
+
+### Стандарт OneBot12
+
+ErisPulse использует OneBot12 в качестве стандарта основных событий. OneBot12 — это универсальный стандарт интерфейса чат-ботов, определяющий единый формат событий.
+
+Все адаптеры преобразуют событийные данные, специфичные для платформы, в формат OneBot12, обеспечивая согласованность кода.
+
+## Основные компоненты
+
+### 1. Объект SDK
+
+SDK — это единая точка входа для всех функций, предоставляющая доступ к основным компонентам.
+
+```python
+from ErisPulse import sdk
+
+# Доступ к основным модулям
+sdk.storage    # Система хранения
+sdk.config     # Система конфигурации
+sdk.logger     # Система логирования
+sdk.adapter    # Система адаптеров
+sdk.module     # Система модулей
+sdk.router     # Система маршрутизации
+sdk.client     # HTTP-клиент
+sdk.lifecycle  # Система жизненного цикла
+```
+
+### 2. Объект Event
+
+Объект Event инкапсулирует данные события, предоставляя удобные методы доступа.
+
+```python
+@command("info")
+async def info_handler(event):
+    # Получение информации о событии
+    event_id = event.get_id()
+    user_id = event.get_user_id()
+    platform = event.get_platform()
+    text = event.get_text()
+    
+    # Отправка ответа
+    await event.reply(f"Пользователь: {user_id}, Платформа: {platform}")
+```
+
+### 3. Адаптер
+
+Адаптер служит мостом между ErisPulse и внешними платформами.
+
+**Обязанности:**
+- Получать нативные события платформы
+- Преобразовывать в стандартный формат OneBot12
+- Отправлять события стандартного формата в платформу
+
+**Примеры адаптеров:**
+- Адаптер Yunhu: взаимодействие с платформой Yunhu
+- Адаптер Telegram: взаимодействие с Telegram Bot API
+- Адаптер OneBot11: взаимодействие с приложениями, совместимыми с OneBot11
+- Почтовый адаптер: обработка входящей и исходящей почты
+
+### 4. Модуль
+
+Модуль — это базовая единица расширения функционала, способная:
+
+- Регистрировать обработчики событий
+- Реализовывать бизнес-логику
+- Вызывать адаптеры для отправки сообщений
+- Использовать сервисы, предоставляемые основными модулями
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
+    async def on_load(self, event):
+        """Вызывается при загрузке модуля"""
+        # Регистрация обработчика событий
+        @command("mycmd", help="Моя команда")
+        async def my_command(event):
+            await event.reply("Команда выполнена успешно")
+
+        self.logger.info("Модуль загружен")
+
+    async def on_unload(self, event):
+        """Вызывается при выгрузке модуля"""
+        self.logger.info("Модуль выгружен")
+```
+
+## Типы событий
+
+### Событие сообщения
+
+Обработка любых сообщений, отправляемых пользователями (включая личные и групповые чаты).
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def message_handler(event):
+    text = event.get_text()
+    await event.reply(f"Получено сообщение: {text}")
+```
+
+### Событие команды
+
+Обработка сообщений, начинающихся с префикса команды (например, `/hello`).
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("hello", help="Отправка приветствия")
+async def hello_handler(event):
+    await event.reply("Привет!")
+```
+
+### Событие уведомления
+
+Обработка системных уведомлений (например, добавление в друзья, изменения участников группы).
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    await event.reply("Добро пожаловать в друзья!")
+```
+
+### Событие запроса
+
+Обработка запросов пользователей (например, запросы на добавление в друзья, приглашения в группы).
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request_handler(event):
+    await event.reply("Ваш запрос на добавление в друзья получен")
+```
+
+### Метасобытие
+
+Обработка системных событий уровня (например, подключение, пульсация/heartbeat).
+
+```python
+from ErisPulse.Core.Event import meta
+
+@meta.on_connect()
+async def connect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.info(f"{platform} подключено успешно")
+```
+
+## Описание основных модулей
+
+### Storage (Хранилище)
+
+Базирующаяся на SQLite система хранения ключ-значение для персистентных данных.
+
+```python
+# Установка значения
+sdk.storage.set("key", "value")
+
+# Получение значения
+value = sdk.storage.get("key", "default_value")
+
+# Пакетные операции
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2"
+})
+
+# Транзакция
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### Config (Конфигурация)
+
+Управление файлами конфигурации в формате TOML.
+
+```python
+# Получение конфигурации
+config = sdk.config.getConfig("MyModule", {})
+
+# Установка конфигурации
+sdk.config.setConfig("MyModule", {"key": "value"})
+
+# Чтение вложенной конфигурации
+value = sdk.config.getConfig("MyModule.subkey", "default")
+```
+
+### Logger (Логирование)
+
+Модульная система логирования.
+
+```python
+# Запись в лог
+sdk.logger.info("Это информационное сообщение")
+sdk.logger.warning("Это предупреждение")
+sdk.logger.error("Это ошибка")
+
+# Получение дочернего логгера
+child_logger = sdk.logger.get_child("submodule")
+child_logger.info("Лог подмодуля")
+```
+
+**Синтаксический сахар для доступа к атрибутам**
+
+Помимо метода `get_child()`, вы также можете создавать дочерние логгеры через **доступ к атрибутам**, это более лаконичный способ:
+
+```python
+# Создание дочернего логгера через атрибут
+sdk.logger.mymodule.info("Сообщение модуля")
+
+# Поддержка вложенного доступа
+sdk.logger.mymodule.database.info("Сообщение базы данных")
+```
+
+### Router (Маршрутизация)
+
+Управление маршрутизацией HTTP и WebSocket, поддерживающая нативные типы FastAPI и абстрактные типы ErisPulse.
+
+> Роутеры поддерживают два типа аннотаций: нативные типы FastAPI (`fastapi.Request` / `fastapi.WebSocket`) и абстрактные типы ErisPulse (`HttpRequest` / `WebSocketConnection`). Рекомендуется использовать абстрактные типы для лучшей переносимости.
+
+```python
+from ErisPulse import sdk
+
+# Способ 1: Использование абстрактных типов ErisPulse (рекомендуется)
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Эхо: {data}")
+
+# Способ 2: Использование нативных типов FastAPI (совместимо со старым кодом)
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
+```
+
+{!--< tips >!--}
+> **Автоматическая инъекция**: Система маршрутизации автоматически внедряет объекты соответствующих типов на основе аннотаций параметров, без необходимости ручного создания.
+> 
+> **Частые проблемы**: Если вы видите ошибку `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, значит, отсутствуют аннотации типов. Убедитесь, что параметры обработчиков HTTP используют аннотацию `request`, а обработчики WebSocket — `websocket` или `ws`.
+
+Дополнительные функции маршрутизации см. в разделе [Руководство по маршрутизатору](../advanced/router.md).
+
+### Client (HTTP-клиент)
+
+Единый HTTP-клиент для отправки HTTP-запросов. Модулям и адаптерам следует предпочитать глобальный клиент вместо прямого импорта `aiohttp`.
+
+```python
+from ErisPulse.Core import client
+
+# GET запрос
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST запрос
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# Свойства ответа
+resp.status        # Код статуса (например, 200)
+resp.headers       # Заголовки ответа
+body = await resp.text()   # Текстовое тело ответа
+data = await resp.json()   # Разбор JSON
+```
+
+{!--< tips >!--}
+> Глобальный клиент поддерживает автоматическую переаттестацию, управление таймаутами, статистику запросов и интеграцию с событиями жизненного цикла. Подробнее см. в разделе [HTTP-клиент](../advanced/http-client.md).
+>
+> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, эффект будет одинаковым.
+
+## Отправка сообщений через SendDSL
+
+Адаптеры предоставляют интерфейс для отправки сообщений с поддержкой цепных вызовов (чейнинг).
+
+### Базовая отправка
+
+```python
+# Получение экземпляра адаптера
+yunhu = sdk.adapter.get("yunhu")
+
+# Отправка сообщения
+await yunhu.Send.To("user", "U1001").Text("Hello")
+
+# Указание аккаунта отправителя
+await yunhu.Send.Using("bot1").To("group", "G1001").Text("Сообщение группы")
+```
+
+### Цепные модификаторы
+
+```python
+# @пользователя
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@сообщение")
+
+# Ответ на сообщение
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("ответ")
+
+# @всем
+await yunhu.Send.To("group", "G1001").AtAll().Text("уведомление")
+```
+
+### Методы ответа Event
+
+Объект Event предоставляет удобные методы для ответов:
+
+```python
+@command("test")
+async def test_handler(event):
+    # Простая текстовая реакция
+    await event.reply("Содержимое ответа")
+    
+    # Отправка изображения
+    await event.reply("http://example.com/image.jpg", method="Image")
+    
+    # Отправка голосового
+    await event.reply("http://example.com/voice.mp3", method="Voice")
+```
+
+## Система ленивой загрузки
+
+ErisPulse поддерживает ленивую загрузку модулей; модули инициализируются только при первом обращении к ним, что ускоряет запуск системы.
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,   # Включить ленивую загрузку (по умолчанию)
+            priority=0       # Приоритет загрузки
+        )
+```
+
+**Сценарии с немедленной загрузкой:**
+- Модули, прослушивающие события жизненного цикла
+- Модули периодических задач (таймеров)
+- Модули, требующие инициализации при запуске приложения
+
+## Далее
+
+- [Введение в обработку событий](event-handling.md) — научитесь обрабатывать различные типы событий
+- [Примеры распространенных задач](common-tasks.md) — освоите реализацию типичных функций
 
 
 
@@ -1368,7 +1771,454 @@ async def conditional_handler(event):
 
 ### 常见任务示例
 
+# Примеры распространенных задач
 
+Этот гайд предоставляет примеры реализации распространенных функций, чтобы помочь вам быстро достичь типичных задач.
+
+## Содержание
+
+1. Персистентность данных
+2. Плановые задачи
+3. Фильтрация сообщений
+4. Адаптация для нескольких платформ
+5. Управление правами доступа
+6. Статистика сообщений
+7. Функция поиска
+8. Обработка изображений
+
+## Персистентность данных
+
+### Простой счетчик
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("count", help="Просмотреть количество вызовов команды")
+async def count_handler(event):
+    # Получить счетчик
+    count = sdk.storage.get("command_count", 0)
+    
+    # Увеличить счетчик
+    count += 1
+    sdk.storage.set("command_count", count)
+    
+    await event.reply(f"Это {count}-й вызов этой команды")
+```
+
+### Хранение данных пользователя
+
+```python
+@command("profile", help="Просмотреть профиль")
+async def profile_handler(event):
+    user_id = event.get_user_id()
+    
+    # Получить данные пользователя
+    user_data = sdk.storage.get(f"user:{user_id}", {
+        "nickname": "",
+        "join_date": None,
+        "message_count": 0
+    })
+    
+    profile_text = f"""
+Никнейм: {user_data['nickname']}
+Дата присоединения: {user_data['join_date']}
+Количество сообщений: {user_data['message_count']}
+    """
+    
+    await event.reply(profile_text.strip())
+
+@command("setnick", help="Установить никнейм")
+async def setnick_handler(event):
+    user_id = event.get_user_id()
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("Пожалуйста, введите никнейм")
+        return
+    
+    # Обновить данные пользователя
+    user_data = sdk.storage.get(f"user:{user_id}", {})
+    user_data["nickname"] = " ".join(args)
+    sdk.storage.set(f"user:{user_id}", user_data)
+    
+    await event.reply(f"Никнейм установлен на: {' '.join(args)}")
+```
+
+## Плановые задачи
+
+### Простой таймер
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+import asyncio
+
+class TimerModule:
+    def __init__(self):
+        self.sdk = sdk
+        self._tasks = []
+    
+    async def on_load(self, event):
+        """Запуск запланированных задач при загрузке модуля"""
+        self._start_timers()
+        
+        @command("timer", help="Управление таймером")
+        async def timer_handler(event):
+            await event.reply("Таймер работает...")
+    
+    def _start_timers(self):
+        """Запуск запланированных задач"""
+        # Выполнять каждые 60 секунд
+        task = asyncio.create_task(self._every_minute())
+        self._tasks.append(task)
+        
+        # Выполнять в полночь
+        task = asyncio.create_task(self._daily_task())
+        self._tasks.append(task)
+    
+    async def _every_minute(self):
+        """Задача, выполняемая каждую минуту"""
+        self.sdk.logger.info("Задача выполняется каждую минуту")
+        # Ваша логика...
+    
+    async def _daily_task(self):
+        """Задача, выполняемая в полночь"""
+        import time
+        
+        while True:
+            # Вычисление времени до полуночи
+            now = time.time()
+            midnight = now + (86400 - now % 86400)
+            
+            await asyncio.sleep(midnight - now)
+            
+            # Выполнение задачи
+            self.sdk.logger.info("Ежедневная задача выполняется")
+            # Ваша логика...
+```
+
+### Использование событий жизненного цикла
+
+```python
+@sdk.lifecycle.on("core.init.complete")
+async def init_complete_handler(event_data):
+    """Запуск запланированных задач после завершения инициализации SDK"""
+    import asyncio
+    
+    async def daily_reminder():
+        """Ежедневное напоминание"""
+        await asyncio.sleep(86400)  # 24 часа
+        self.sdk.logger.info("Выполнение ежедневной задачи")
+    
+    # Запуск фоновых задач
+    asyncio.create_task(daily_reminder())
+```
+
+## Фильтрация сообщений
+
+### Фильтрация по ключевым словам
+
+```python
+from ErisPulse.Core.Event import message
+
+blocked_words = ["мусор", "реклама", "фишинг"]
+
+@message.on_message()
+async def filter_handler(event):
+    text = event.get_text()
+    
+    # Проверка на наличие чувствительных слов
+    for word in blocked_words:
+        if word in text:
+            sdk.logger.warning(f"Заблокировано чувствительное сообщение: {word}")
+            return  # Не обрабатывать это сообщение
+    
+    # Обработка сообщения в обычном режиме
+    await event.reply(f"Получено: {text}")
+```
+
+### Фильтрация по черному списку
+
+```python
+# Загрузка черного списка из конфигурации или хранилища
+blacklist = sdk.storage.get("user_blacklist", [])
+
+@message.on_message()
+async def blacklist_handler(event):
+    user_id = event.get_user_id()
+    
+    if user_id in blacklist:
+        sdk.logger.info(f"Пользователь в черном списке: {user_id}")
+        return  # Не обрабатывать
+    
+    # Обработка в обычном режиме
+    await event.reply(f"Привет, {user_id}")
+```
+
+## Адаптация для нескольких платформ
+
+### Ответы, специфичные для платформы
+
+```python
+@command("help", help="Показать справку")
+async def help_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("Справка по платформе YUNHU...")
+    elif platform == "telegram":
+        await event.reply("Справка по платформе Telegram...")
+    elif platform == "onebot11":
+        await event.reply("Справка OneBot11...")
+    else:
+        await event.reply("Общая справочная информация")
+```
+
+### Определение возможностей платформы
+
+```python
+@command("rich", help="Отправить форматированное сообщение")
+async def rich_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        # YUNHU поддерживает HTML
+        yunhu = sdk.adapter.get("yunhu")
+        await yunhu.Send.To("user", event.get_user_id()).Html(
+            "<b>Жирный текст</b><i>Курсивный текст</i>"
+        )
+    elif platform == "telegram":
+        # Telegram поддерживает Markdown
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.To("user", event.get_user_id()).Markdown(
+            "**Жирный текст** *Курсивный текст*"
+        )
+    else:
+        # Для других платформ используется обычный текст
+        await event.reply("Жирный текст Курсивный текст")
+```
+
+## Управление правами доступа
+
+### Проверка администратора
+
+```python
+# Настройка списка администраторов
+ADMINS = ["user123", "user456"]
+
+def is_admin(user_id):
+    """Проверка, является ли пользователь администратором"""
+    return user_id in ADMINS
+
+@command("admin", help="Команда администратора")
+async def admin_handler(event):
+    user_id = event.get_user_id()
+    
+    if not is_admin(user_id):
+        await event.reply("Недостаточно прав, эта команда доступна только администраторам")
+        return
+    
+    await event.reply("Команда администратора выполнена успешно")
+
+@command("addadmin", help="Добавить администратора")
+async def addadmin_handler(event):
+    if not is_admin(event.get_user_id()):
+        return
+    
+    args = event.get_command_args()
+    if not args:
+        await event.reply("Введите ID администратора, которого нужно добавить")
+        return
+    
+    new_admin = args[0]
+    ADMINS.append(new_admin)
+    await event.reply(f"Администратор добавлен: {new_admin}")
+```
+
+### Права групп
+
+```python
+@command("groupinfo", help="Просмотреть информацию о группе")
+async def groupinfo_handler(event):
+    if not event.is_group_message():
+        await event.reply("Эта команда доступна только в групповых чатах")
+        return
+    
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    
+    await event.reply(f"ID группы: {group_id}, ваш ID: {user_id}")
+```
+
+## Статистика сообщений
+
+### Подсчет сообщений
+
+```python
+@message.on_message()
+async def count_handler(event):
+    # Получить статистику
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    # Обновить статистику
+    stats["total"] += 1
+    
+    user_id = event.get_user_id()
+    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
+    
+    # Сохранить
+    sdk.storage.set("message_stats", stats)
+
+@command("stats", help="Просмотреть статистику сообщений")
+async def stats_handler(event):
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    top_users = sorted(
+        stats["by_user"].items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+    
+    top_text = "\n".join(
+        f"{uid}: {count} сообщений" for uid, count in top_users
+    )
+    
+    await event.reply(f"Общее количество сообщений: {stats['total']}\n\nАктивные пользователи:\n{top_text}")
+```
+
+## Функция поиска
+
+### Простой поиск
+
+```python
+from ErisPulse.Core.Event import command, message
+
+# Хранение истории сообщений
+message_history = []
+
+@message.on_message()
+async def store_handler(event):
+    """Сохранить сообщения для поиска"""
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    message_history.append({
+        "user_id": user_id,
+        "text": text,
+        "time": event.get_time()
+    })
+    
+    # Ограничить количество записей истории
+    if len(message_history) > 1000:
+        message_history.pop(0)
+
+@command("search", help="Поиск сообщений")
+async def search_handler(event):
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("Пожалуйста, введите ключевое слово для поиска")
+        return
+    
+    keyword = " ".join(args)
+    results = []
+    
+    # Поиск в истории сообщений
+    for msg in message_history:
+        if keyword in msg["text"]:
+            results.append(msg)
+    
+    if not results:
+        await event.reply("Совпадающие сообщения не найдены")
+        return
+    
+    # Отображение результатов
+    result_text = f"Найдено {len(results)} сообщений, соответствующих запросу:\n\n"
+    for i, msg in enumerate(results[:10], 1):  # Отображать не более 10
+        result_text += f"{i}. {msg['text']}\n"
+    
+    await event.reply(result_text)
+```
+
+## Обработка изображений
+
+### Скачивание и хранение изображений
+
+```python
+from ErisPulse.Core import client
+
+@message.on_message()
+async def image_handler(event):
+    """Обработка сообщений с изображениями"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            if file_url:
+                # Рекомендуется использовать встроенный клиент SDK для загрузки изображений
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # Сохранить в файл
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"Изображение сохранено: {filename}")
+                    await event.reply("Изображение сохранено")
+```
+
+### Пример распознавания изображений
+
+```python
+from ErisPulse.Core import client
+
+@command("identify", help="Распознать изображение")
+async def identify_handler(event):
+    """Распознать изображение в сообщении"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            # Вызов API распознавания изображений
+            result = await _identify_image(file_url)
+            
+            await event.reply(f"Результат распознавания: {result}")
+            return
+    
+    await event.reply("Изображение не найдено")
+
+async def _identify_image(url):
+    """Вызов API распознавания изображений (пример) - использование встроенного клиента SDK"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "Распознавание не удалось")
+```
+
+## Далее
+
+- [Руководство для пользователей](../user-guide/) - Узнайте о конфигурации и управлении модулями
+- [Руководство для разработчиков](../developer-guide/) - Изучите разработку модулей и адаптеров
+- [Расширенные темы](../advanced/) - Глубокое понимание возможностей фреймворка
+
+请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
 
 
 
@@ -1745,7 +2595,159 @@ epsdk create module -n MyModule -f
 
 ### 配置文件说明
 
+# Описание конфигурационного файла
+> Этот документ представляет конфигурационный файл фреймворка. Если для стороннего модуля требуется настройка, пожалуйста, обратитесь к документации модуля.
 
+ErisPulse использует файл конфигурации в формате TOML `config/config.toml` для управления настройками проекта.
+
+## Расположение файла конфигурации
+
+Файл конфигурации находится в папке `config/` в корневой директории проекта:
+
+```
+project/
+├── config/
+│   └── config.toml
+├── main.py
+```
+
+## Полный пример конфигурации
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+ssl_certfile = ""
+ssl_keyfile = ""
+
+[ErisPulse.logger]
+level = "INFO"
+log_files = []
+memory_limit = 1000
+
+[ErisPulse.framework]
+enable_lazy_loading = true
+
+[ErisPulse.storage]
+use_global_db = false
+
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = false
+allow_space_prefix = false
+must_at_bot = false
+
+[ErisPulse.event.message]
+ignore_self = true
+```
+
+## Конфигурация сервера
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+ssl_certfile = "/path/to/cert.pem"
+ssl_keyfile = "/path/to/key.pem"
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| host | string | 0.0.0.0 | Адрес прослушивания (0.0.0.0 означает все интерфейсы) |
+| port | integer | 8000 | Порт прослушивания |
+| ssl_certfile | string | (пусто) | Путь к файлу SSL-сертификата |
+| ssl_keyfile | string | (пусто) | Путь к файлу закрытого ключа SSL |
+
+## Конфигурация логов
+
+```toml
+[ErisPulse.logger]
+level = "INFO"
+log_files = ["app.log", "debug.log"]
+memory_limit = 1000
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| level | string | INFO | Уровень логирования: DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| log_files | array | (пусто) | Список файлов для вывода логов |
+| memory_limit | integer | 1000 | Количество записей логов, сохраняемых в памяти |
+
+## Конфигурация фреймворка
+
+```toml
+[ErisPulse.framework]
+enable_lazy_loading = true
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| enable_lazy_loading | boolean | true | Включить ленивую загрузку модулей |
+
+## Конфигурация хранилища
+
+```toml
+[ErisPulse.storage]
+use_global_db = false
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| use_global_db | boolean | false | Использовать глобальную базу данных (внутри пакета) вместо базы данных проекта |
+
+## Конфигурация событий
+
+### Конфигурация команд
+
+```toml
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = false
+allow_space_prefix = false
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| prefix | string | / | Префикс команды |
+| case_sensitive | boolean | false | Чувствительность к регистру |
+| allow_space_prefix | boolean | false | Разрешить использование пробела в качестве префикса |
+| must_at_bot | boolean | false | Требуется упоминание бота (@) для срабатывания команды (в личных сообщениях не ограничено) |
+
+### Конфигурация сообщений
+
+```toml
+[ErisPulse.event.message]
+ignore_self = true
+```
+
+| Параметр конфигурации | Тип | Значение по умолчанию | Описание |
+|---------|------|---------|------|
+| ignore_self | boolean | true | Игнорировать сообщения от самого бота |
+
+## Конфигурация модулей
+
+Каждый модуль может определять свою собственную конфигурацию в файле конфигурации:
+
+```toml
+[MyModule]
+api_url = "https://api.example.com"
+timeout = 30
+enabled = true
+```
+
+Чтение конфигурации внутри модуля:
+
+```python
+from ErisPulse import sdk
+
+config = sdk.config.getConfig("MyModule", {})
+api_url = config.get("api_url", "https://default.api.com")
+```
+
+## Далее
+
+*   [Справка по командам CLI](cli-reference.md) - Узнайте обо всех командах командной строки
+*   [Руководство разработчика](../developer-guide/) - Научитесь разрабатывать пользовательские модули
 
 
 
@@ -2161,7 +3163,153 @@ python -m twine upload dist/*
 
 ### 模块开发入门
 
+# Основы разработки модулей
 
+Это руководство проведет вас через процесс создания модуля ErisPulse с нуля.
+
+## Структура проекта
+
+Стандартная структура модуля:
+
+```
+MyModule/
+├── pyproject.toml
+├── README.md
+├── LICENSE
+└── MyModule/
+    ├── __init__.py
+    └── Core.py
+```
+
+## Конфигурация pyproject.toml
+
+```toml
+[project]
+name = "ErisPulse-MyModule"
+version = "1.0.0"
+description = "Описание функций модуля"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+dependencies = []
+
+[project.urls]
+"homepage" = "https://github.com/yourname/MyModule"
+
+[project.entry-points."erispulse.module"]
+"MyModule" = "MyModule:Main"
+```
+
+## __init__.py
+
+```python
+from .Core import Main
+```
+
+## Core.py - Основной модуль
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import command
+
+class Main(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+        self.storage = sdk.storage
+        self.config = self._load_config()
+    
+    @staticmethod
+    def get_load_strategy():
+        """Возвращает стратегию загрузки модуля"""
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0,
+            depends=[]  # Необязательно: список зависимых модулей
+        )
+    
+    async def on_load(self, event):
+        """Вызывается при загрузке модуля"""
+        @command("hello", help="Отправляет приветствие")
+        async def hello_command(event):
+            name = event.get_user_nickname() or "друг"
+            await event.reply(f"Привет, {name}!")
+        
+        self.logger.info("Модуль загружен")
+    
+    async def on_unload(self, event):
+        """Вызывается при выгрузке модуля"""
+        self.logger.info("Модуль выгружен")
+    
+    def _load_config(self):
+        """Загружает конфигурацию модуля"""
+        config = self.sdk.config.getConfig("MyModule")
+        if not config:
+            default_config = {
+                "api_url": "https://api.example.com",
+                "timeout": 30
+            }
+            self.sdk.config.setConfig("MyModule", default_config)
+            return default_config
+        return config
+```
+
+## Тестирование модуля
+
+### Локальное тестирование
+
+```bash
+# Установить модуль в текущую директорию проекта
+epsdk install ./MyModule
+
+# Запустить проект
+epsdk run main.py --reload
+```
+
+### Тестовая команда
+
+Отправьте команду для тестирования:
+
+```
+/hello
+```
+
+## Основные понятия
+
+### Базовый класс BaseModule
+
+Все модули должны наследовать `BaseModule`, предоставляя следующие методы:
+
+| Метод | Описание | Обязательно |
+|------|------|------|
+| `__init__(self)` | Конструктор | Нет |
+| `get_load_strategy()` | Возвращает стратегию загрузки | Нет |
+| `on_load(self, event)` | Вызывается при загрузке модуля | Да |
+| `on_unload(self, event)` | Вызывается при выгрузке модуля | Да |
+
+### Объект SDK
+
+Доступ к основным функциям через объект `sdk`:
+
+```python
+from ErisPulse import sdk
+
+sdk.storage    # Система хранения
+sdk.config     # Система конфигурации
+sdk.logger     # Система логирования
+sdk.adapter    # Система адаптеров
+sdk.router     # Система маршрутизации
+sdk.lifecycle  # Система жизненного цикла
+```
+
+## Дальнейшие действия
+
+- [Основные концепции модуля](core-concepts.md) - Глубокое погружение в архитектуру модуля
+- [Подробное описание оберток событий](event-wrapper.md) - Изучение объектов Event
+- [Лучшие практики разработки модулей](best-practices.md) - Разработка качественных модулей
 
 
 
@@ -9259,7 +10407,389 @@ class Main(BaseModule):
 
 ### 路由系统
 
+# Менеджер маршрутизации (Router Manager)
 
+Менеджер маршрутизации ErisPulse предоставляет централизованное управление HTTP и WebSocket маршрутизацией, поддерживает регистрацию маршрутов через несколько адаптеров и управление жизненным циклом. В основе лежит абстрактный слой (в данный момент реализован на базе FastAPI + Uvicorn).
+
+## Обзор
+
+Основные функции менеджера маршрутизации:
+
+- **Декораторные маршруты**: Поддержка быстрой регистрации через декораторы `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws`
+- **Автоматическая инъекция**: Обработчики маршрутов не требуют импорта типов FastAPI, фреймворк автоматически инъектирует абстрактные объекты
+- **Группировка маршрутов**: Поддержка `RouteGroup` с префиксом и номером версии
+- **Middleware маршрутов**: Поддержка перехвата запросов с использованием глобальных шаблонов (glob patterns)
+- **Ограничение скорости**: Встроенный алгоритм скользящего окна (sliding window rate limiting)
+- **Поддержка CORS**: Включение资源共享 между источниками (Cross-Origin Resource Sharing) в один клик
+- **Заголовки безопасности**: Автоматическое добавление безопасных заголовков ответа
+- **Автоматическая документация**: Интерактивная документация на основе OpenAPI
+- **Поддержка WebSocket**: Полное управление подключениями WebSocket, пользовательская аутентификация и хуки жизненного цикла
+- **Интеграция жизненного цикла**: Глубокая интеграция с системой жизненного цикла ErisPulse
+- **Поддержка SSL/TLS**: Поддержка защищенных подключений HTTPS и WSS
+
+## Абстрактные типы
+
+ErisPulse предоставляет абстрактные типы для серверной части, что позволяет модулям не зависеть напрямую от FastAPI:
+
+| Абстрактный тип | Аналог FastAPI | Описание |
+|---------|-------------|------|
+| `HttpRequest` | `fastapi.Request` | Обертка HTTP-запроса, интерфейс полностью совместим |
+| `WebSocketConnection` | `fastapi.WebSocket` | Обертка WebSocket-соединения, дополнительно предоставляет хуки жизненного цикла |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | Исключение при отключении WebSocket |
+
+> Доступ к базовому нативному объекту FastAPI осуществляется через свойство `.raw`. Код, использующий типы FastAPI напрямую, также полностью совместим.
+
+## Декораторные маршруты (Рекомендуется)
+
+### HTTP декораторы
+
+```python
+from ErisPulse.Core import router
+@router.get("my_module", "/info")
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+
+# Можно явно указать абстрактный тип
+from ErisPulse.Core import HttpRequest
+
+@router.post("my_module", "/data")
+async def post_data(request: HttpRequest):
+    data = await request.json()
+    return {"received": data}
+
+# Использование типов FastAPI также полностью совместимо
+from fastapi import Request
+
+@router.put("my_module", "/data/{item_id}")
+async def update_data(request: Request):
+    return {"updated": True}
+
+@router.delete("my_module", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+```
+
+> **Правило автоматической инъекции**: Когда первый параметр обработчика называется `request` или `req` и отсутствует аннотация типа FastAPI, фреймворк автоматически инъектирует `HttpRequest`. Обработчики без параметров или с параметрами, не являющимися запросами, не затрагиваются.
+
+### WebSocket декораторы
+
+```python
+from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
+
+# Базовый WebSocket
+@router.ws("my_module", "/ws")
+async def websocket_handler(ws):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# WebSocket с хуками жизненного цикла
+@router.ws("my_module", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_disconnect(ws, reason="unknown"):
+        print(f"Пользователь отключен: {reason}")
+
+    @ws.on_error
+    async def on_error(ws, error=""):
+        print(f"Ошибка подключения: {error}")
+
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# WebSocket с аутентификацией
+async def ws_auth(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
+    return token == "secret"
+
+@router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(ws):
+    while True:
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
+```
+
+> **Примечание**: WebSocket-обработчики и обработчики аутентификации также поддерживают автоматическую инъекцию. Если аннотация параметра — `fastapi.WebSocket`, передается нативный объект; в противном случае передается `WebSocketConnection`.
+
+## Классический способ регистрации
+
+```python
+async def hello_handler(request):
+    return {"message": "Hello World"}
+
+# Базовая регистрация
+router.register_http_route(
+    module_name="my_module",
+    path="/hello",
+    handler=hello_handler,
+    methods=["GET"],
+)
+
+# Регистрация с ограничением скорости и информацией о документации
+router.register_http_route(
+    module_name="my_module",
+    path="/api/data",
+    handler=data_handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="Интерфейс данных",
+    tags=["API"],
+)
+```
+
+### Регистрация WebSocket
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+async def websocket_handler(ws: WebSocketConnection):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# Базовая регистрация
+router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# Регистрация с аутентификацией (рекомендуется)
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
+    return token == "secret"
+
+router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+```
+
+**Описание параметров:**
+
+| Параметр | Описание | Значение по умолчанию |
+|------|------|--------|
+| `module_name` | Имя модуля (обязательно) | - |
+| `path` | Путь WebSocket | - |
+| `handler` | Функция-обработчик | - |
+| `auth_handler` | Функция аутентификации, возвращает `False`, чтобы автоматически закрыть соединение | `None` |
+| `auto_accept` | Автоматически ли вызывать `accept()` | `True` |
+
+> **Рекомендация**: Используйте `auth_handler` для подтверждения подключения, вместо отключения `auto_accept`. Устанавливайте `auto_accept=False` только тогда, когда вам нужно полностью контролировать процесс подключения.
+
+## Хуки жизненного цикла WebSocket
+
+`WebSocketConnection` предоставляет регистрацию обратных вызовов для отключения и ошибок, без необходимости вручную использовать try/catch:
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+@router.ws("my_module", "/ws")
+async def my_ws(ws: WebSocketConnection):
+    # Регистрация через декоратор
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"Причина отключения: {reason}")
+
+    # Можно вызвать напрямую
+    async def on_err(ws, error=""):
+        print(f"Ошибка: {error}")
+    ws.on_error(on_err)
+
+    # Бизнес-логика
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+```
+
+## Группировка маршрутов
+
+```python
+# Создание группы маршрутов с префиксом
+group = router.group("my_module", prefix="/v1")
+
+@group.get("/users")
+async def list_users(request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request):
+    return {"created": True}
+
+# Фактический путь: /my_module/v1/users
+```
+
+## Middleware маршрутов
+
+Middleware поддерживает сопоставление путей с использованием глобальных шаблонов (glob patterns):
+
+```python
+@router.middleware("/my_module/*")
+async def auth_middleware(request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    return await call_next(request)
+
+@router.middleware("/my_module/admin/*")
+async def admin_middleware(request, call_next):
+    return await call_next(request)
+```
+
+## Ограничение скорости (Rate Limiting)
+
+Использование алгоритма скользящего окна (sliding window) для ограничения маршрутов:
+
+```python
+@router.get("my_module", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request):
+    return {"ok": True}
+
+@router.post("my_module", "/submit", rate_limit="5/minute")
+async def submit_data(request):
+    return {"submitted": True}
+```
+
+Формат ограничения скорости: `{количество}/{интервал времени}`, например, `10/minute`, `100/hour`.
+
+## Конфигурация CORS
+
+```python
+router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+Также можно настроить через `config.toml`:
+
+```toml
+[router.cors]
+allow_origins = ["https://example.com"]
+allow_methods = ["GET", "POST"]
+allow_headers = ["*"]
+```
+
+## Заголовки безопасности
+
+```python
+router.setup_security_headers()
+```
+
+Автоматическое добавление безопасных заголовков, таких как `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`.
+
+Также можно настроить через `config.toml`:
+
+```toml
+[router.security]
+enabled = true
+```
+
+## Автоматическая документация
+
+Router по умолчанию включает интерактивную документацию OpenAPI:
+
+```python
+# Отключить документацию
+router.disable_docs()
+
+# Настроить информацию о документации
+router.set_docs_info(
+    title="My API",
+    description="API документация",
+    version="1.0.0"
+)
+```
+
+## Обработка путей
+
+Путь к маршруту автоматически добавляет имя модуля в качестве префикса, чтобы избежать конфликтов:
+
+```python
+# Регистрация пути "/api" в модуль "my_module"
+# Фактический путь для доступа: "/my_module/api"
+router.register_http_route("my_module", "/api", handler)
+```
+
+## Механизм аутентификации
+
+Рекомендуется использовать `auth_handler` для контроля доступа к подключению:
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
+    return token == "secret"
+
+# Декораторный способ
+@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
+async def secure_handler(ws):
+    while True:
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
+
+# Классический способ регистрации
+router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+```
+
+Функция `auth_handler` выполняется после установления соединения. Возврат `False` автоматически закрывает соединение (код статуса 1008).
+
+> Устанавливайте `auto_accept=False` только тогда, когда вам нужно полностью контролировать процесс соединения (например, собственный протокол рукопожатия).
+
+## Системные маршруты
+
+Менеджер маршрутизации автоматически предоставляет два системных маршрута:
+
+### Проверка работоспособности
+
+```python
+GET /health
+# Возвращает:
+{"status": "ok", "service": "ErisPulse Router"}
+```
+
+### Список маршрутов
+
+```python
+GET /routes
+# Возвращает информацию обо всех зарегистрированных маршрутах
+```
+
+## Интеграция жизненного цикла
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("server.start")
+async def on_server_start(event):
+    print(f"Сервер запущен: {event['data']['base_url']}")
+
+@lifecycle.on("server.stop")
+async def on_server_stop(event):
+    print("Сервер остановлен...")
+```
+
+## Рекомендации по использованию
+
+1. **Приоритет абстрактным типам**: Используйте `HttpRequest` / `WebSocketConnection` вместо `fastapi.Request` / `fastapi.WebSocket`, чтобы избежать жестких зависимостей
+2. **Используйте автоматическую инъекцию**: Если имя первого параметра обработчика — `request` или `req`, `HttpRequest` будет передан без необходимости в аннотациях типов
+3. **Явно передавайте module_name**: Первый параметр декоратора должен быть именем модуля, его нельзя опускать
+4. **Используйте группировку маршрутов**: Используйте `group()` для организации нескольких маршрутов одного модуля
+5. **Безопасность**: Реализуйте механизмы аутентификации и заголовки безопасности для чувствительных операций
+6. **Рациональное ограничение скорости**: Установите лимиты для часто используемых интерфейсов
+7. **Используйте хуки жизненного цикла**: Обрабатывайте исключения WebSocket через `@ws.on_disconnect` / `@ws.on_error`, избегая ручного try/catch
+
+## Связанные документы
+
+- [HTTP Клиент](http-client.md) - Отправка запросов с использованием встроенного HTTP-клиента
+- [Руководство по разработке модулей](../developer-guide/modules/getting-started.md) - Узнайте о регистрации маршрутов модулей
+- [Рекомендации по использованию](../developer-guide/modules/best-practices.md) - Советы по использованию маршрутов
 
 
 
@@ -9450,7 +10980,185 @@ complex_msg = (
 
 ### 会话类型系统
 
+# Система типов сессий
 
+Система типов сессий ErisPulse отвечает за определение и управление типами сессий сообщений (личный чат, групповой чат, каналы и т.д.), а также предоставляет автоматическое преобразование между типами получения и типами отправки.
+
+## Определение типов
+
+### Типы получения (ReceiveType)
+
+Типы получения берутся из поля `detail_type` событий OneBot12 и описывают сцену сессии события:
+
+| Тип | Описание | Поле ID |
+|------|----------|---------|
+| `private` | Сообщение личного чата | `user_id` |
+| `group` | Сообщение группового чата | `group_id` |
+| `channel` | Сообщение канала | `channel_id` |
+| `guild` | Сообщение сервера | `guild_id` |
+| `thread` | Сообщение темы / подканала | `thread_id` |
+| `user` | Сообщение пользователя (расширенное) | `user_id` |
+
+### Типы отправки (SendType)
+
+Типы отправки используются для указания цели отправки в `Send.To(type, id)`:
+
+| Тип | Описание |
+|------|----------|
+| `user` | Отправить пользователю |
+| `group` | Отправить в группу |
+| `channel` | Отправить в канал |
+| `guild` | Отправить на сервер |
+| `thread` | Отправить в тему |
+
+## Картирование типов
+
+Существует стандартное отношение отображения между типами получения и типами отправки:
+
+```
+Получение (Receive)          Отправка (Send)
+─────────────          ──────────
+private        ──→     user
+group          ──→     group
+channel        ──→     channel
+guild          ──→     guild
+thread         ──→     thread
+user           ──→     user
+```
+
+Ключевое различие: **используйте "private" при получении и "user" при отправке**. Это стандартный дизайн OneBot12 — событие описывает "сценарий личного чата", а отправка описывает "цель пользователя".
+
+## Автоматическое определение
+
+Когда у события нет четкого поля `detail_type`, система автоматически определит тип сессии на основе полей ID, присутствующих в событии:
+
+**Приоритет**: `group_id` > `channel_id` > `guild_id` > `thread_id` > `user_id`
+
+```python
+from ErisPulse.Core.Event.session_type import infer_receive_type
+
+# Есть group_id → определяется как group
+event1 = {"group_id": "123", "user_id": "456"}
+print(infer_receive_type(event1))  # "group"
+
+# Есть только user_id → определяется как private
+event2 = {"user_id": "456"}
+print(infer_receive_type(event2))  # "private"
+```
+
+## Основные API
+
+### Преобразование типов
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    convert_to_send_type,
+    convert_to_receive_type,
+)
+
+# Тип получения → Тип отправки
+convert_to_send_type("private")  # → "user"
+convert_to_send_type("group")    # → "group"
+
+# Тип отправки → Тип получения
+convert_to_receive_type("user")   # → "private"
+convert_to_receive_type("group")  # → "group"
+```
+
+### Запрос полей ID
+
+```python
+from ErisPulse.Core.Event.session_type import get_id_field, get_receive_type
+
+# Получить имя поля ID по типу
+get_id_field("group")    # → "group_id"
+get_id_field("private")  # → "user_id"
+
+# Получить тип по полю ID
+get_receive_type("group_id")  # → "group"
+get_receive_type("user_id")   # → "private"
+```
+
+### Получение информации об отправке за один шаг
+
+```python
+from ErisPulse.Core.Event.session_type import get_send_type_and_target_id
+
+event = {"detail_type": "private", "user_id": "123"}
+send_type, target_id = get_send_type_and_target_id(event)
+# send_type = "user", target_id = "123"
+
+# Использовать прямо в Send.To()
+await adapter.Send.To(send_type, target_id).Text("Hello")
+```
+
+### Получение целевого ID
+
+```python
+from ErisPulse.Core.Event.session_type import get_target_id
+
+event = {"detail_type": "group", "group_id": "456"}
+get_target_id(event)  # → "456"
+```
+
+## Регистрация пользовательских типов
+
+Адаптер может регистрировать пользовательские сопоставления для типов сессий, специфичных для платформы:
+
+```python
+from ErisPulse.Core.Event.session_type import register_custom_type, unregister_custom_type
+
+# Регистрация пользовательского типа
+register_custom_type(
+    receive_type="thread_reply",     # Имя типа получения
+    send_type="thread",              # Соответствующий тип отправки
+    id_field="thread_reply_id",      # Соответствующее поле ID
+    platform="discord"               # Имя платформы (необязательно)
+)
+
+# Использование пользовательского типа
+convert_to_send_type("thread_reply", platform="discord")  # → "thread"
+get_id_field("thread_reply", platform="discord")          # → "thread_reply_id"
+
+# Отмена регистрации пользовательского типа
+unregister_custom_type("thread_reply", platform="discord")
+```
+
+> **При указании `platform`** зарегистрированные типы получения будут иметь префикс платформы (например, `discord_thread_reply`), чтобы избежать конфликтов типов между разными платформами.
+
+## Утилиты
+
+```python
+from ErisPulse.Core.Event.session_type import (
+    is_standard_type,
+    is_valid_send_type,
+    get_standard_types,
+    get_send_types,
+    clear_custom_types,
+)
+
+# Проверка, является ли это стандартным типом
+is_standard_type("private")  # True
+is_standard_type("custom_type")  # False
+
+# Проверка, является ли тип отправки допустимым
+is_valid_send_type("user")  # True
+is_valid_send_type("invalid")  # False
+
+# Получение всех стандартных типов
+get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user"}
+get_send_types()      # {"user", "group", "channel", "guild", "thread"}
+
+# Очистка пользовательских типов
+clear_custom_types()                # очистить все
+clear_custom_types(platform="discord")  # очистить только для указанной платформы
+```
+
+## Связанные документы
+
+- [Стандарты преобразования событий](../standards/event-conversion.md) - спецификации преобразования событий
+- [Стандарты типов сессий](../standards/session-types.md) - официальное определение типов сессий
+- [Реализация преобразователей событий](../developer-guide/adapters/getting-started.md) - руководство по разработке адаптеров
 
 
 
@@ -11827,7 +13535,345 @@ its:
 
 ### OneBot12 适配
 
+# Документация по особенностям платформы OneBot12
 
+OneBot12Adapter — это адаптер, основанный на протоколе OneBot V12, выполняющий роль базового протокольного адаптера для фреймворка ErisPulse.
+
+---
+
+## Информация о документации
+
+- Версия соответствующего модуля: 1.0.0
+- Разработчик: ErisPulse
+- Версия протокола: OneBot V12
+
+## Основная информация
+
+- Описание платформы: OneBot V12 — это универсальный стандарт интерфейса для приложений чат-ботов, служащий базовым протоколом для фреймворка ErisPulse.
+- Название адаптера: OneBot12Adapter
+- Поддерживаемая версия протокола/API: OneBot V12
+- Поддержка нескольких учетных записей: Полная архитектура с поддержкой нескольких учетных записей, позволяет одновременно настраивать и запускать несколько учетных записей OneBot12
+
+## Типы поддерживаемых сообщений для отправки
+
+Все методы отправки реализованы через цепочечный синтаксис (fluent interface), например:
+
+```python
+from ErisPulse.Core import adapter
+onebot12 = adapter.get("onebot12")
+
+# Отправка с использованием учетной записи по умолчанию
+await onebot12.Send.To("group", group_id).Text("Hello World!")
+
+# Отправка с использованием указанной учетной записи
+await onebot12.Send.To("group", group_id).Account("main").Text("Сообщение от главного аккаунта")
+```
+
+### Типы базовых сообщений
+
+- `.Text(text: str)`: отправка сообщения только с текстом
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`: отправка сообщения с изображением (поддерживаются URL, Base64 или байты)
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: отправка аудиосообщения
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: отправка видеосообщения
+
+### Типы интерактивных сообщений
+
+- `.Mention(user_id: Union[str, int], user_name: str = None)`: отправка упоминания (@)
+- `.Reply(message_id: Union[str, int], content: str = None)`: отправка сообщения-ответа
+- `.Sticker(file_id: str)`: отправка стикера / эмодзи-пакета
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: отправка геолокации
+
+### Управляющие функции
+
+- `.Recall(message_id: Union[str, int])`: отзыв (отмена) сообщения
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`: редактирование сообщения
+- `.Raw(message_segments: List[Dict])`: отправка нативных сегментов сообщений OneBot12
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`: пакетная отправка сообщений
+
+## Стандартные события OneBot12
+
+Адаптер OneBot12 полностью соответствует стандарту OneBot12, формат событий не требует преобразования и напрямую передается в фреймворк.
+
+### События сообщений (Message Events)
+
+```python
+# Личное сообщение
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+
+# Групповое сообщение
+{
+    "id": "event-id",
+    "type": "message",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "group_id": "group-id",
+    "message": [{"type": "text", "data": {"text": "Hello group"}}],
+    "alt_message": "Hello group",
+    "time": 1234567890
+}
+```
+
+### События уведомлений (Notice Events)
+
+```python
+# Приглашение участника в группу
+{
+    "id": "event-id",
+    "type": "notice",
+    "detail_type": "group_member_increase",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "approve",
+    "time": 1234567890
+}
+
+# Выход участника из группы
+{
+    "id": "event-id",
+    "type": "notice", 
+    "detail_type": "group_member_decrease",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "operator_id": "operator-id",
+    "sub_type": "leave",
+    "time": 1234567890
+}
+```
+
+### События запросов (Request Events)
+
+```python
+# Запрос в друзья
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "friend",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "comment": "сообщение заявки",
+    "flag": "request-flag",
+    "time": 1234567890
+}
+
+# Запрос на вступление в группу
+{
+    "id": "event-id",
+    "type": "request",
+    "detail_type": "group",
+    "self": {"user_id": "bot-id"},
+    "group_id": "group-id",
+    "user_id": "user-id",
+    "comment": "сообщение заявки",
+    "flag": "request-flag",
+    "sub_type": "invite",
+    "time": 1234567890
+}
+```
+
+### Метасобытия (Meta Events)
+
+```python
+# Событие жизненного цикла
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "lifecycle",
+    "self": {"user_id": "bot-id"},
+    "sub_type": "enable",
+    "time": 1234567890
+}
+
+# Событие сердцебиения
+{
+    "id": "event-id",
+    "type": "meta_event",
+    "detail_type": "heartbeat",
+    "self": {"user_id": "bot-id"},
+    "interval": 5000,
+    "status": {"online": true},
+    "time": 1234567890
+}
+```
+
+## Параметры конфигурации
+
+### Конфигурация учетных записей
+
+Каждая учетная запись имеет независимую конфигурацию следующих параметров:
+
+- `mode`: режим работы этой учетной записи ("server" или "client")
+- `server_path`: путь WebSocket в режиме Server
+- `server_token`: токен аутентификации в режиме Server (необязательно)
+- `client_url`: адрес WebSocket для подключения в режиме Client
+- `client_token`: токен аутентификации в режиме Client (необязательно)
+- `enabled`: следует ли включить эту учетную запись
+- `platform`: идентификатор платформы, по умолчанию "onebot12"
+- `implementation`: идентификатор реализации, например "go-cqhttp" (необязательно)
+
+### Пример конфигурации
+
+```toml
+[OneBotv12_Adapter.accounts.main]
+mode = "server"
+server_path = "/onebot12-main"
+server_token = "main_token"
+enabled = true
+platform = "onebot12"
+implementation = "go-cqhttp"
+
+[OneBotv12_Adapter.accounts.backup]
+mode = "client"
+client_url = "ws://127.0.0.1:3002"
+client_token = "backup_token"
+enabled = true
+platform = "onebot12"
+implementation = "shinonome"
+
+[OneBotv12_Adapter.accounts.test]
+mode = "client"
+client_url = "ws://127.0.0.1:3003"
+enabled = false
+```
+
+### Конфигурация по умолчанию
+
+Если не настроены никакие учетные записи, адаптер автоматически создаст:
+
+```toml
+[OneBotv12_Adapter.accounts.default]
+mode = "server"
+server_path = "/onebot12"
+enabled = true
+platform = "onebot12"
+```
+
+## Возвращаемое значение методов отправки
+
+Все методы отправки возвращают объект Task, который можно напрямую ожидать (await), чтобы получить результат отправки. Возвращаемый результат соответствует стандарту OneBot12:
+
+```python
+{
+    "status": "ok",           // Статус выполнения
+    "retcode": 0,             // Код возврата
+    "data": {...},            // Данные ответа
+    "self": {"user_id": "account-id"},  // Информация об учетной записи
+    "message_id": "123456",   // ID сообщения
+    "message": ""             // Информация об ошибке
+}
+```
+
+### Синтаксис отправки для нескольких учетных записей
+
+```python
+# Способ выбора учетной записи
+await onebot12.Send.Using("main").To("group", 123456).Text("Сообщение от главного аккаунта")
+await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
+
+# Способ вызова API
+await onebot12.call_api("send_message", account_id="main", 
+    detail_type="group", group_id=123456, 
+    content=[{"type": "text", "data": {"text": "Hello"}}])
+```
+
+## Механизм асинхронной обработки
+
+Адаптер OneBot12 использует асинхронный неблокирующий дизайн:
+
+1. Отправка сообщений не блокирует цикл обработки событий
+2. Несколько операций отправки могут выполняться одновременно
+3. Ответы API могут обрабатываться своевременно
+4. Соединения WebSocket поддерживаются в активном состоянии
+5. Обработка нескольких учетных записей одновременно, каждая учетная запись работает независимо
+
+## Обработка ошибок
+
+Адаптер предоставляет надежную систему обработки ошибок:
+
+1. Автоматическое переподключение при нарушении сетевого соединения (поддержка независимого переподключения для каждой учетной записи, с интервалом 30 секунд)
+2. Обработка тайм-аутов вызовов API (фиксированный тайм-аут 30 секунд)
+3. Автоматическая повторная попытка при неудаче отправки сообщения (максимум 3 попытки)
+
+## Улучшение обработки событий
+
+В режиме нескольких учетных записей все события автоматически получают информацию об учетной записи:
+
+```python
+{
+    "type": "message",
+    "detail_type": "private",
+    "platform": "onebot12",
+    // ... другие поля события
+}
+```
+
+## Интерфейсы управления
+
+```python
+# Получение информации о всех учетных записях
+accounts = onebot12.accounts
+
+# Проверка статуса соединения учетной записи
+connection_status = {
+    account_id: connection is not None and not connection.closed
+    for account_id, connection in onebot12.connections.items()
+}
+
+# Динамическое включение/выключение учетной записи (требуется перезапуск адаптера)
+onebot12.accounts["test"].enabled = False
+```
+
+## Стандартные возможности OneBot12
+
+### Стандарт сегментов сообщений
+
+OneBot12 использует стандартизированный формат сегментов сообщений:
+
+```python
+# Текстовый сегмент сообщения
+{"type": "text", "data": {"text": "Hello"}}
+
+# Сегмент изображения
+{"type": "image", "data": {"file_id": "image-id"}}
+
+# Сегмент упоминания
+{"type": "mention", "data": {"user_id": "user-id", "user_name": "Username"}}
+
+# Сегмент ответа
+{"type": "reply", "data": {"message_id": "msg-id"}}
+```
+
+### Стандарт API
+
+Соответствует спецификации стандартного API OneBot12:
+
+- `send_message`: отправка сообщения
+- `delete_message`: отзыв сообщения
+- `edit_message`: редактирование сообщения
+- `get_message`: получение сообщения
+- `get_self_info`: получение информации о себе
+- `get_user_info`: получение информации о пользователе
+- `get_group_info`: получение информации о группе
+
+## Лучшие практики
+
+1. **Управление конфигурацией**: рекомендуется использовать конфигурацию с несколькими учетными записями для раздельного управления ботами разного назначения
+2. **Обработка ошибок**: всегда проверяйте статус возврата при вызове API
+3. **Отправка сообщений**: используйте подходящие типы сообщений, избегайте отправки неподдерживаемых сообщений
+4. **Мониторинг соединений**: регулярно проверяйте статус соединения, обеспечивая доступность сервиса
+5. **Оптимизация производительности**: используйте метод Batch при пакетной отправке для снижения сетевых затрат
 
 
 
@@ -14670,7 +16716,100 @@ from ErisPulse.Core import adapter
 
 ### 文档字符串规范
 
+# Руководство по стилю комментариев ErisPulse
 
+При создании EP-ядрных (core) методов обязательно должны быть добавлены комментарии к методам. Формат комментариев следующий:
+
+## Документация модуля
+
+В начале каждого файла модуля должна содержаться документация модуля:
+```python
+"""
+[Название модуля]
+[Описание функционала модуля]
+
+{!--< tips >!--}
+Важные инструкции по использованию или примечания
+{!--< /tips >!--}
+"""
+```
+
+## Комментарии к методам
+
+### Базовый формат
+```python
+def func(param1: type1, param2: type2) -> return_type:
+    """
+    [Описание функционала]
+    
+    :param param1: [Тип 1] [Описание параметра 1]
+    :param param2: [Тип 2] [Описание параметра 2]
+    :return: [Тип возвращаемого значения] [Описание возврата]
+    """
+    pass
+```
+
+### Полный формат (для сложных методов)
+```python
+def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
+    """
+    [Подробное описание функционала]
+    [Может содержать несколько строк описания]
+    
+    :param param1: [Тип 1] [Описание параметра 1]
+    :param param2: [Тип 2] [Описание параметра 2 (необязательно)] (по умолчанию: None)
+    
+    :return: 
+        type1: [Описание возвращаемого параметра 1]
+        type2: [Описание возвращаемого параметра 2]
+    
+    :raises ErrorType: [Описание ошибки]
+    """
+    pass
+```
+
+## Специальные теги (для генерации API документации)
+
+Когда в комментариях к методам содержится следующее, будет создан соответствующий эффект при сборке API документации:
+
+| Формат тега | Действие | Пример |
+|---------|------|------|
+| `{!--< internal-use >!--}` | Помечен как внутренний, документация не генерируется | `{!--< internal-use >!--}` |
+| `{!--< ignore >!--}` | Игнорировать этот метод, документация не генерируется | `{!--< ignore >!--}` |
+| `{!--< deprecated >!--}` | Помечен как устаревший метод | `{!--< deprecated >!--} используйте new_func() вместо этого` |
+| `{!--< experimental >!--}` | Помечен как экспериментальная функция | `{!--< experimental >!--} Может быть нестабильным` |
+| `{!--< tips >!--}...{!--< /tips >!--}` | Многострочное содержимое подсказок | `{!--< tips >!--}\nВажное содержимое подсказок\n{!--< /tips >!--}` |
+| `{!--< tips >!--}` | Однострочное содержимое подсказок | `{!--< tips >!--} Внимание: этому методу требуется инициализация` |
+
+## Лучшие практики
+
+1. **Аннотации типов**: Использовать синтаксис аннотаций типов Python
+   ```python
+   def func(param: int) -> str:
+   ```
+
+2. **Описание параметров**: Для необязательных параметров указывать значения по умолчанию
+   ```python
+   :param timeout: [int] Время ожидания (сек) (по умолчанию: 30)
+   ```
+
+3. **Возвращаемые значения**: Для множественных возвращаемых значений использовать `Tuple` или четко указывать типы
+   ```python
+   :return: 
+       str: Информация о состоянии
+       int: Код состояния
+   ```
+
+4. **Описание исключений**: Использовать `:raises` для обозначения возможных исключений
+   ```python
+   :raises ValueError: Выбрасывается при некорректном параметре
+   ```
+
+5. **Внутренние методы**: Для непубличных API следует добавить тег `{!--< internal-use >!--}`
+
+6. **Устаревшие методы**: Помечать устаревшие методы и предоставлять альтернативы
+   ```python
+   {!--< deprecated >!--} используйте new_method() вместо этого | 2025-07-09
 
 
 
@@ -14681,5 +16820,258 @@ from ErisPulse.Core import adapter
 
 ### 历史 Bug 记录
 
+# Трекер ошибок
 
+В этом документе описаны известные ошибки (bugs) и информация о том, как они были исправлены в SDK ErisPulse.
+
+---
+
+## Исправленные ошибки
+
+### [BUG-001] Ошибка типа пути конфигурации адаптера для команды Init
+
+**Проблема**: При использовании команды `ep init` для интерактивной инициализации выбор конфигурационного адаптера приводит к ошибке типа:
+
+```
+Интерактивная инициализация не удалась: unsupported operand type(s) for /: 'str' and 'str'
+```
+
+**Причина**: В версии 2.3.7 при изменении пути к файлу конфигурации тип параметра метода стал不一致ным. `_configure_adapters_interactive_sync` принимает параметры типа `str`, но внутри использует оператор `/` объекта `Path` для конкатенации путей.
+
+**Затронутые версии**: 2.3.7 - 2.3.9-dev.1
+
+**Исправленная версия**: 2.3.9-dev.1
+
+**Исправление**: Изменить тип параметра метода `_configure_adapters_interactive_sync` с `str` на `Path` и передавать объект `Path` напрямую при вызове.
+
+**Дата исправления**: 2026/03/23
+
+---
+
+### [BUG-002] События команд перестают работать после перезапуска
+
+**Проблема**: После вызова `sdk.restart()` команды, зарегистрированные через `@command`, не могут быть вызваны; отправка команды не вызывает ответа бота.
+
+**Причина**: После очистки `adapter.shutdown()` шины событий, статус `_linked_to_adapter_bus` в `BaseEventHandler` не сбрасывается в `False`, из-за чего метод `_process_event` считает, что он уже подключен к шине адаптера, и пропускает операцию подключения.
+
+**Затронутые версии**: 2.2.x - 2.4.0-dev.2
+
+**Исправленная версия**: 2.4.0-dev.3
+
+**Исправление**: Введен отслеживание статуса `_linked_to_adapter_bus`. После отключения шины в `_clear_handlers()`, при следующем `register()` происходит автоматическое повторное подключение, что обеспечивает работу в сценариях shutdown/restart.
+
+**Дата исправления**: 2026/04/09
+
+---
+
+### [BUG-003] Неочищенные обработчики событий жизненного цикла
+
+**Проблема**: После `sdk.restart()` старые обработчики событий жизненного цикла остаются активными и срабатывают повторно, что приводит к многократной обработке одного и того же события.
+
+**Причина**: Словарь `lifecycle._handlers` никогда не очищается при `uninit()`, поэтому после перезапуска старые и новые обработчики существуют одновременно.
+
+**Затронутые версии**: 2.3.0 - 2.4.0-dev.2
+
+**Исправленная версия**: 2.4.0-dev.3
+
+**Исправление**: В конце очистки в `Uninitializer` (после передачи всех событий) выполняется очистка `lifecycle._handlers`.
+
+**Дата исправления**: 2026/04/09
+
+---
+
+### [BUG-004] Дублирование присваивания набора слов подтверждения в Event.confirm()
+
+**Проблема**: В методе `Event.confirm()` код присваивания трем переменным `_yes`, `_no`, `_all` полностью дублирован дважды (всего 6 строк), что приводит к бесполезным повторным вычислениям.
+
+**Причина**: Ошибка копирования и вставки.
+
+**Затронутые версии**: 2.4.0-dev.4
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Удалены дублирующие строки кода присваивания в `wrapper.py` на позициях 739-741.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-005] Переопределение определения метода `at` в MessageBuilder (мертвый код)
+
+**Проблема**: В классе `MessageBuilder` метод `at` определен трижды: как экземплярный метод, как статический метод и затем перезаписывается присваиванием `_DualMethod`. Первые два определения являются мертвым кодом, который никогда не выполняется.
+
+**Причина**: При рефакторинге в `_DualMethod` забыл удалить старые ручные определения.
+
+**Затронутые версии**: 2.4.0-dev.0
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Удалены два мертвых определения метода `at` в `message_builder.py` на позициях 159-181, оставлено только присваивание `_DualMethod`.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-006] Несоответствие `detail_type` в `Event.is_friend_add()` / `Event.is_friend_delete()` со стандартом OB12
+
+**Проблема**: `Event.is_friend_add()` проверяет `detail_type == "friend_add"`, а `Event.is_friend_delete()` проверяет `detail_type == "friend_delete"`, однако стандарт OneBot12 определяет значения `detail_type` как `"friend_increase"` и `"friend_decrease"`. Это несовпадает со значениями, используемыми декораторами `on_friend_add`/`on_friend_remove` в `notice.py`, что приводит к тому, что методы срабатывания возвращают `False` при использовании декораторов.
+
+**Причина**: В `wrapper.py` использовались некорректные имена, тогда как `notice.py` использует стандартные имена OB12.
+
+**Затронутые версии**: с момента релиза rq
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Изменить значение сопоставления для `is_friend_add()` с `"friend_add"` на `"friend_increase"` и для `is_friend_delete()` с `"friend_delete"` на `"friend_decrease"`.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-007] `adapter.clear()` не очищает `_started_instances`, что приводит к неверному состоянию после перезапуска
+
+**Проблема**: Метод `AdapterManager.clear()` очищает `_adapters`, `_adapter_info`, обработчики и `_bots`, но пропускает множество `_started_instances`. Если `clear()` вызывается во время работы адаптера, `_started_instances` сохранит висячие ссылки, что приведет к ошибкам при проверке состояния после перезапуска.
+
+**Причина**: В версии 2.4.0-dev.1 при введении `_started_instances` не было выполнено синхронная очистка в `clear()`.
+
+**Затронутые версии**: 2.4.0-dev.1 - 2.4.2-dev.0
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Добавлено `self._started_instances.clear()` в метод `clear()`.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-008] Использование устаревшего `asyncio.get_event_loop()` в `command.wait_reply()`
+
+**Проблема**: Метод `CommandHandler.wait_reply()` использует `asyncio.get_event_loop()` для создания будущего и получения метки времени, что в Python 3.10+ устарело. В асинхронном контексте следует использовать `asyncio.get_running_loop()`. Это противоречит методу `wait_for()` в `wrapper.py` в том же файле, который использует `get_running_loop()`.
+
+**Причина**: При разработке использовался старый API, а добавленный позже `wait_for()` использовал правильный API, но старый код не был исправлен.
+
+**Затронутые версии**: 2.3.0-dev.0
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Заменить два вызова `asyncio.get_event_loop()` на `asyncio.get_running_loop()` в `command.py`.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-009] Молчаливое пропусков полей без `key` в `Event.collect()`
+
+**Проблема**: При переборе списка полей в методе `Event.collect()`, если в словаре поля отсутствует `key`, поле пропускается молча, без вывода логов или предупреждений. Если разработатель допустит опечатку (например, `"Key"` вместо `"key"`), всё поле будет безмолвно проигнорировано, что затрудняет отладку поведения на нижнем уровне.
+
+**Причина**: Отсутствует проверка ввода и обратная связь об ошибках.
+
+**Затронутые версии**: 2.4.0-dev.4
+
+**Исправленная версия**: 2.4.2-dev.1
+
+**Исправление**: Перед пропуском добавить `logger.warning()` для записи информации о поле, у которого отсутствует `key`.
+
+**Дата исправления**: 2026/04/13
+
+---
+
+### [BUG-010] Неполная инициализация при синхронном доступе к BaseModule в LazyModule
+
+**Проблема**: Когда пользователь обращается к свойствам лениво загруженного BaseModule в синхронном контексте, модуль инициализируется асинхронно с помощью `loop.create_task()` без ожидания, что может привести к тому, что к моменту обращения к свойству инициализация еще не завершена, что вызывает состояние гонки (race condition).
+
+**Причина**: `_ensure_initialized()` сразу возвращает управление после вызова `loop.create_task(self._initialize())`, не ожидая завершения.
+
+**Затронутые версии**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Исправленная версия**: 2.4.2-dev.2
+
+**Исправление**: В синхронном контексте для инициализации BaseModule изменено использование `asyncio.run(self._initialize())`, чтобы гарантировать завершение перед возвратом. Свойства прозрачного прокси (transparent proxy) сохранены, пользователю нет необходимости учитывать разницу синхронного/асинхронного кода.
+
+**Дата исправления**: 2026/04/21
+
+---
+
+### [BUG-011] Потеря данных при многопоточной записи в системе конфигурации
+
+**Проблема**: В многопоточной среде, когда несколько потоков одновременно вызывают `config.setConfig()`, операция чтения-модификации-записи `_flush_config()` не является атомарной, что может привести к потере части записей.
+
+**Причина**: Хотя `_flush_config()` использует `RLock`, между чтением и записью в файл отсутствует защита файловой блокировкой, а Таймер `_schedule_write` может сработать несколько раз, приводя к перезаписи.
+
+**Затронутые версии**: 2.3.0 - 2.4.2-dev.1
+
+**Исправленная версия**: 2.4.2-dev.2
+
+**Исправление**:
+1. Добавлен механизм файловой блокировки (`_file_lock`) для обеспечения атомарности операций с файлом.
+2. Использование временного файла для записи с последующим атомарным переименованием (`os.replace`/`os.rename`).
+3. Улучшена логика отмены и переназначения Таймера `_schedule_write`.
+
+**Дата исправления**: 2026/04/21
+
+---
+
+### [BUG-012] Неточное сообщение об ошибке при доступе к свойствам SDK
+
+**Проблема**: При доступе к несуществующему свойству сообщение об ошибке "вы, возможно, использовали неправильный объект регистрации SDK" может ввести пользователя в заблуждение, хотя на самом деле модуль может быть не включен или допущена опечатка в названии.
+
+**Причина**: Сообщение об ошибке в `__getattribute__` не различает различные сценарии и дает размытую подсказку.
+
+**Затронутые версии**: 2.0.0 - 2.4.2-dev.1
+
+**Исправленная версия**: 2.4.2-dev.2
+
+**Исправление**: Различение сценариев на основе имени свойства:
+1. Зарегистрирован, но не включен: предупреждение о том, что модуль/адаптер не включен.
+2. Полностью отсутствует: предупреждение о проверке правописания названия.
+Также оригинальный `AttributeError` повторно выбрасывается для удобства перехвата на верхнем уровне.
+
+**Дата исправления**: 2026/04/21
+
+---
+
+### [BUG-013] Слишком сложная логика очистки Uninitializer для неинициализированных LazyModule
+
+**Проблема**: `Uninitializer` создает временный экземпляр для вызова `on_unload` у LazyModule, который никогда не был посещен, что делает код сложным и подверженным ошибкам.
+
+**Причина**: Попытка вызвать методы жизненного цикла для всех LazyModule, но неинициализированные модули не должны и не могут быть инициализированы.
+
+**Затронутые версии**: 2.4.0-dev.0 - 2.4.2-dev.1
+
+**Исправленная версия**: 2.4.2-dev.2
+
+**Исправление**: Упрощена логика очистки, обрабатываются только инициализированные LazyModule:
+1. Пропускаются неинициализированные LazyModule, временные экземпляры не создаются.
+2. Для инициализированных модулей вызывается `on_unload`.
+3. Удалена сложная логика создания временных экземпляров.
+
+**Дата исправления**: 2026/04/21
+
+---
+
+### [BUG-014] Невозможно остановить программу по CTRL+C в Windows
+
+**Проблема**: При прямом запуске `python main.py` на Windows нажатие CTRL+C не останавливает программу. Программа запускается нормально, выводит информацию о сервере маршрутизации, но CTRL+C полностью не реагирует; процесс можно убить только через диспетчер задач. Запуск через `epsdk run` останавливается нормально — но `epsdk run` работает через модель подпроцессов.
+
+**Причина**: Внутренняя функция `serve()` ASGI-сервера Hypercorn регистрирует свой обработчик SIGINT через `signal.signal(SIGINT, handler)`, перезаписывая стандартный механизм обработки `KeyboardInterrupt` в Python. При запуске Hypercorn как фоновой задачи через `asyncio.create_task()` внутренний процесс выключения Hypercorn не может сработать нормально (так как он ожидает режим `worker_serve`), в результате сигнал CTRL+C поглощается Hypercorn, но не вызывает никаких действий по очистке.
+
+**Затронутые версии**: [2.3.6 - 2.4.2]
+
+**Исправленная версия**: 2.4.3-dev.0
+
+**Исправление**:
+1. Замена ASGI-сервера с Hypercorn на Uvicorn (изменение зависимости в `pyproject.toml`).
+2. Использование `uvicorn.Server._serve()` для прямого запуска сервера, **обход** контекстного менеджера обработки сигналов `capture_signals()`.
+3. Реализация плавной остановки через `server.should_exit = True`, таймаут приводит к отмене фоновой задачи.
+4. Синхронное удаление модели запуска через подпроцессы и модуля очистки `runtime/cleanup.py` (механизм очистки подпроцессов больше не нужен).
+
+**Дата исправления**: 2026/04/28
+
+---
+
+### [BUG-015] Ошибка логики сортировки в стратегии загрузки модулей
+
+**Проблема**: `ModuleLoadStrategy` предоставляет поле `priority` для декларирования приоритета инициализации модулей, но реализация стратегии загрузки содержит ошибку, из-за чего модули инициализируются не в порядке ожидаемого приоритета, а по умолчанию в порядке `entry_points()`. При наличии зависимостей загрузки между модулями невозможно гарантировать правильный порядок инициализации с помощью `priority`.
+
+**Причина**: В реализации стратегии загрузки ошибка в логике сортировки, `initialize_modules()` не использует `priority` для
 

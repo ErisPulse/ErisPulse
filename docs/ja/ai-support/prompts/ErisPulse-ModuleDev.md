@@ -385,7 +385,147 @@ flowchart TD
 
 ### 入门指南总览
 
+# 入門ガイド
 
+ErisPulse の入門ガイドへようこそ。ErisPulse を初めて使用される方は、ここからゼロからスタートし、フレームワークのコア概念と基本的な使い方を段階的に理解していきます。
+
+## 学習のステップ
+
+本ガイドは以下の順序で構成されています。順番に読み進めることを推奨します。
+
+1. **最初のボットを作成する** - プロジェクトの完全な初期化プロセスを理解する
+2. **基礎概念** - ErisPulse のコアアーキテクチャを理解する
+3. **イベント処理入門** - 各種イベントの処理方法を学ぶ
+4. **一般的なタスクの例** - 一般的な機能の実装をマスターする
+
+## 開発方式の選択
+
+ErisPulse は 2 つの開発方式をサポートしており、ニーズに合わせて選択できます。
+
+### インライン開発（クイックプロトタイプに適したもの）
+
+プロジェクト内に直接 ErisPulse を使用し、独立したモジュールの作成は不要です。
+
+```python
+# main.py
+import asyncio
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("hello")
+async def hello(event):
+    await event.reply("こんにちは！")
+
+# SDK を実行し、維持状態を維持する | 非同期環境で実行する必要があります
+asyncio.run(sdk.run(keep_running=True))
+```
+
+**メリット：**
+- 準備が容易で、追加設定は不要
+- プロジェクト内専用機能に適している
+- デバッグやテストが容易
+
+**デメリット：**
+- コードの再利用や配布が不便
+- 依存関係の独立した管理が難しい
+
+### モジュール開発（プロダクション推奨）
+
+独立したモジュールパッケージを作成し、パッケージマネージャーを使用してインストールして利用します。
+
+**メリット：**
+- 配布や共有が容易
+- 独自の依存関係管理
+- 明確なバージョン管理
+
+**デメリット：**
+- 追加のプロジェクト構造が必要
+- 初期設定が比較的複雑
+
+## ErisPulse のコア概念
+
+### アーキテクチャ概要
+
+```
+┌─────────────────────────────────────────────────────┐
+│                ErisPulse フレームワーク                │
+├─────────────────────────────────────────────────────┤
+│                                             │
+│  ┌──────────────┐      ┌──────────────┐    │
+│  │  アダプタシステム  │◄────►│  イベントシステム    │    │
+│  │             │      │              │    │
+│  │  Yunhu      │      │  Message     │    │
+│  │  Telegram   │      │  Command     │    │
+│  │  OneBot11   │      │  Notice      │    │
+│  │  Email      │      │  Request     │    │
+│  └──────────────┘      │  Meta        │    │
+│         │              └──────────────┘    │
+│         ▼                   │              │
+│  ┌──────────────┐           ▼              │
+│  │  モジュールシステム    │◄──────────────┐       │
+│  │             │               │       │
+│  │  モジュール A     │               │       │
+│  │  モジュール B     │               │       │
+│  │  ...        │               │       │
+│  └──────────────┘               │       │
+│                               │       │
+│  ┌──────────────┐              │       │
+│  │  コアモジュール    │◄─────────────┘       │
+│  │  Storage    │                      │
+│  │  Config     │                      │
+│  │  Logger     │                      │
+│  │  Router     │                      │
+│  └──────────────┘                      │
+└─────────────────────────────────────────────┘
+         │                    │
+         ▼                    ▼
+    ┌────────┐          ┌────────┐
+    │  プラットフォーム   │          │  ユーザー   │
+    │  API    │          │  コード   │
+    └────────┘          └────────┘
+```
+
+### コアコンポーネントの説明
+
+#### 1. アダプタシステム
+
+アダプタは特定のプラットフォームとの通信を担当し、プラットフォーム固有のイベントを統一された OneBot12 標準形式に変換します。
+
+**例：**
+- Yunhu アダプタ：Yunhu プラットフォームとの通信
+- Telegram アダプタ：Telegram Bot API との通信
+- OneBot11 アダプタ：OneBot11 互換アプリとの通信
+
+#### 2. イベントシステム
+
+イベントシステムは、各種イベントを処理を担当します。これには以下が含まれます：
+- **メッセージイベント**：ユーザーが送信したメッセージ
+- **コマンドイベント**：ユーザーが入力したコマンド（例: `/hello`）
+- **通知イベント**：システム通知（例: フレンド追加、グループメンバーの変更）
+- **リクエストイベント**：ユーザーのリクエスト（例: フレンド申請、グループ招待）
+- **メタイベント**：システムレベルのイベント（例: 接続、heartbeat）
+
+#### 3. モジュールシステム
+
+モジュールは機能拡張の主な手段であり、以下の目的で使用されます：
+- イベントハンドラの登録
+- ビジネスロジックの実装
+- コマンドインターフェースの提供
+- アダプタを使用したメッセージ送信
+
+#### 4. コアモジュール
+
+基本的な機能を提供するモジュール：
+- **Storage**：SQLite ベースのキー・値ストア
+- **Config**：TOML 形式の設定管理
+- **Logger**：モジュール型ログシステム
+- **Router**：FastAPI + Uvicorn をベースとした HTTP および WebSocket ルーティング管理
+
+## 学習を始めよう
+
+準備はできましたか？最初のボットの作成を始めましょう。
+
+- [最初のボットを作成する](first-bot.md)
 
 
 
@@ -598,13 +738,1053 @@ async def hello_handler(event):
 
 ### 基础概念
 
+# 基本概念
 
+本ガイドでは ErisPulse のコアコンセプトを紹介し、フレームワークの設計思想と基本アーキテクチャを理解するのに役立ちます。
+
+## イベント駆動アーキテクチャ
+
+ErisPulse はイベント駆動アーキテクチャを採用しており、すべての対話はイベントを通じて伝達および処理されます。
+
+### イベントフロー
+
+```
+ユーザーがメッセージを送信
+      │
+      ▼
+プラットフォームが受信
+      │
+      ▼
+アダプターがプラットフォームのネイティブイベントを受信
+      │
+      ▼
+OneBot12 標準イベントに変換
+      │
+      ▼
+イベントシステムに提出
+      │
+      ▼
+登録されたプロセッサに配信
+      │
+      ▼
+モジュールがイベントを処理
+      │
+      ▼
+アダプター経由で応答を送信
+      │
+      ▼
+ユーザーに表示
+```
+
+### OneBot12 標準
+
+ErisPulse は OneBot12 をコアイベント標準として使用しています。OneBot12 は汎用のチャットボットアプリケーションインターフェース標準であり、統一されたイベント形式を定義しています。
+
+すべてのアダプターはプラットフォーム固有のイベントを OneBot12 形式に変換し、コードの一貫性を確保します。
+
+## コアコンポーネント
+
+### 1. SDK オブジェクト
+
+SDK はすべての機能の統一されたエントリーポイントであり、コアコンポーネントへのアクセスを提供します。
+
+```python
+from ErisPulse import sdk
+
+# コアモジュールにアクセス
+sdk.storage    # ストレージシステム
+sdk.config     # 設定システム
+sdk.logger     # ログシステム
+sdk.adapter    # アダプターシステム
+sdk.module     # モジュールシステム
+sdk.router     # ルーター（ルーティング）システム
+sdk.client     # HTTP クライアント
+sdk.lifecycle  # ライフサイクルシステム
+```
+
+### 2. Event オブジェクト
+
+Event オブジェクトはイベントデータをカプセル化し、便利なアクセスメソッドを提供します。
+
+```python
+@command("info")
+async def info_handler(event):
+    # イベント情報を取得
+    event_id = event.get_id()
+    user_id = event.get_user_id()
+    platform = event.get_platform()
+    text = event.get_text()
+    
+    # 返信を送信
+    await event.reply(f"ユーザー: {user_id}, プラットフォーム: {platform}")
+```
+
+### 3. アダプター
+
+アダプターは ErisPulse と外部プラットフォーム間のブリッジです。
+
+**役割：**
+- プラットフォームのネイティブイベントを受信
+- OneBot12 標準形式に変換
+- 標準形式のイベントをプラットフォームに送信
+
+**代表的なアダプター：**
+- Yunhu アダプター：クラウド湖（Yunhu）プラットフォームとの通信
+- Telegram アダプター：Telegram Bot API との通信
+- OneBot11 アダプター：OneBot11 互換のアプリケーションとの通信
+- Email アダプター：メールの送受信処理
+
+### 4. モジュール
+
+モジュールは機能拡張の基本単位であり、以下のことができます：
+- イベントハンドラーの登録
+- ビジネスロジックの実装
+- アダプターを呼び出してメッセージを送信
+- コアモジュールが提供するサービスの使用
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    def __init__(self):
+        self.sdk = sdk
+        self.logger = sdk.logger.get_child("MyModule")
+
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,
+            priority=0
+        )
+
+    async def on_load(self, event):
+        """モジュールが読み込まれたときに呼び出されます"""
+        # イベントハンドラーを登録
+        @command("mycmd", help="私のコマンド")
+        async def my_command(event):
+            await event.reply("コマンド実行成功")
+
+        self.logger.info("モジュールが読み込まれました")
+
+    async def on_unload(self, event):
+        """モジュールがアンロードされるときに呼び出されます"""
+        self.logger.info("モジュールがアンロードされました")
+```
+
+## イベントタイプ
+
+### メッセージイベント
+
+ユーザーが送信するすべてのメッセージ（プライベートチャットおよびグループチャットを含む）を処理します。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def message_handler(event):
+    text = event.get_text()
+    await event.reply(f"メッセージを受信しました: {text}")
+```
+
+### コマンドイベント
+
+コマンドプレフィックス（例: `/hello`）で始まるメッセージを処理します。
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("hello", help="挨拶を送信")
+async def hello_handler(event):
+    await event.reply("こんにちは！")
+```
+
+### 通知イベント
+
+システム通知（例: フレンド追加、グループメンバーの変化）を処理します。
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    await event.reply("フレンド追加を歓迎します！")
+```
+
+### リクエストイベント
+
+ユーザーのリクエスト（例: フレンドリクエスト、グループ招待）を処理します。
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request_handler(event):
+    await event.reply("あなたのフレンドリクエストを受け取りました")
+```
+
+### メタイベント
+
+システムレベルのイベント（例: 接続、ハートビート）を処理します。
+
+```python
+from ErisPulse.Core.Event import meta
+
+@meta.on_connect()
+async def connect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.info(f"{platform} に接続しました")
+```
+
+## コアモジュールの説明
+
+### Storage（ストレージ）
+
+SQLite ベースのキーバリューストレージシステムであり、データの永続化に使用されます。
+
+```python
+# 値の設定
+sdk.storage.set("key", "value")
+
+# 値の取得
+value = sdk.storage.get("key", "default_value")
+
+# バッチ操作
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2"
+})
+
+# トランザクション
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### Config（設定）
+
+TOML 形式の設定ファイル管理。
+
+```python
+# 設定を取得
+config = sdk.config.getConfig("MyModule", {})
+
+# 設定を設定
+sdk.config.setConfig("MyModule", {"key": "value"})
+
+# ネストされた設定を読み取る
+value = sdk.config.getConfig("MyModule.subkey", "default")
+```
+
+### Logger（ログ）
+
+モジュール化されたログシステム。
+
+```python
+# ログの記録
+sdk.logger.info("これは情報です")
+sdk.logger.warning("これは警告です")
+sdk.logger.error("これはエラーです")
+
+# 子ロガーを取得
+child_logger = sdk.logger.get_child("submodule")
+child_logger.info("サブモジュールログ")
+```
+
+**プロパティアクセスのシンタックスシュガー**
+
+`get_child()` メソッドを使用する以外に、**プロパティアクセス**を使用して子ロガーを作成することもできます。これはより簡潔な**シンタックスシュガー**（構文糖衣）の記法です。
+
+```python
+# プロパティアクセスで子ロガーを作成
+sdk.logger.mymodule.info("モジュールメッセージ")
+
+# ネストされたアクセスもサポートされています
+sdk.logger.mymodule.database.info("データベースメッセージ")
+```
+
+### Router（ルーター）
+
+HTTP および WebSocket のルーティング管理をサポートし、FastAPI のネイティブ型と ErisPulse 抽象型をサポートしています。
+
+> ルーターハンドラーは 2 つの型アノテーションをサポートしています：FastAPI のネイティブ型（`fastapi.Request` / `fastapi.WebSocket`）と ErisPulse 抽象型（`HttpRequest` / `WebSocketConnection`）。より良い移植性を得るために抽象型を使用することをお勧めします。
+
+```python
+from ErisPulse import sdk
+
+# 方法1：ErisPulse 抽象型を使用する（推奨）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+@sdk.router.ws("MyModule", "/ws")
+async def ws_handler(ws: WebSocketConnection):
+    data = await ws.receive_text()
+    await ws.send_text(f"Echo: {data}")
+
+# 方法2：FastAPI のネイティブ型を使用する（既存のコードとの互換性）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler2(request: Request):
+    return {"status": "ok"}
+```
+
+{!--< tips >!--}
+> **自動インジェクション**：ルーターシステムはパラメータアノテーションに基づいて、対応する型のオブジェクトを自動的に注入します。手動で作成する必要はありません。
+> 
+> **よくある問題**：`{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` エラーが表示される場合は、型アノテーションが不足していることを示しています。HTTP ハンドラーのパラメータには `request`、WebSocket ハンドラーのパラメータには `websocket` または `ws` のアノテーションを使用していることを確認してください。
+
+より詳しいルーター機能については [ルーター管理者](../advanced/router.md) を参照してください。
+
+### Client（HTTP クライアント）
+
+HTTP リクエストを送信するための統一された HTTP クライアントです。モジュールとアダプターは、直接 `aiohttp` をインポートする代わりに、グローバルクライアントを優先して使用する必要があります。
+
+```python
+from ErisPulse.Core import client
+
+# GET リクエスト
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST リクエスト
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice"},
+)
+
+# レスポンスのプロパティ
+resp.status        # ステータスコード（例: 200）
+resp.headers       # レスポンスヘッダー
+body = await resp.text()   # テキストレスポンスボディ
+data = await resp.json()   # JSON パース
+```
+
+{!--< tips >!--}
+> グローバルクライアントには、自動再試行、タイムアウト制御、リクエスト統計、およびライフサイクルイベントの統合などの機能があります。詳細は [HTTP クライアント](../advanced/http-client.md) を参照してください。
+>
+> また、`from ErisPulse import sdk` を使用して `sdk.client` にアクセスすることもでき、効果は同じです。
+
+## SendDSL メッセージ送信
+
+アダプターはチェーンコール方式のメッセージ送信インターフェースを提供します。
+
+### 基本的な送信
+
+```python
+# アダプターインスタンスを取得
+yunhu = sdk.adapter.get("yunhu")
+
+# メッセージを送信
+await yunhu.Send.To("user", "U1001").Text("Hello")
+
+# 送信アカウントを指定
+await yunhu.Send.Using("bot1").To("group", "G1001").Text("グループメッセージ")
+```
+
+### チェーン修飾子
+
+```python
+# ユーザーにメンション
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@メッセージ")
+
+# 返信メッセージ
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("返信")
+
+# 全体にメンション
+await yunhu.Send.To("group", "G1001").AtAll().Text("告知")
+```
+
+### Event 返信メソッド
+
+Event オブジェクトは便利な返信メソッドを提供します。
+
+```python
+@command("test")
+async def test_handler(event):
+    # シンプルなテキスト返信
+    await event.reply("返信内容")
+    
+    # 画像を送信
+    await event.reply("http://example.com/image.jpg", method="Image")
+    
+    # 音声を送信
+    await event.reply("http://example.com/voice.mp3", method="Voice")
+```
+
+## レイジーロードシステム
+
+ErisPulse はモジュールのレイジーロード（Lazy Load）をサポートしており、モジュールは初めてアクセスされたときにのみ初期化され、起動速度が向上します。
+
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        from ErisPulse.loaders import ModuleLoadStrategy
+        return ModuleLoadStrategy(
+            lazy_load=True,   # レイジーロードを有効にする（デフォルト）
+            priority=0       # ロード優先度
+        )
+```
+
+**即時ロードが必要なシナリオ：**
+- ライフサイクルイベントを監視するモジュール
+- 定期タスクモジュール
+- アプリケーションの起動時に初期化が必要なモジュール
+
+## 次のステップ
+
+- [イベント処理の入門](event-handling.md) - 各種イベントの処理方法を学ぶ
+- [一般的なタスクの例](common-tasks.md) - 一般的な機能の実装をマスターする
 
 
 
 ### 事件处理入门
 
+# イベント処理入門
 
+このガイドでは、ErisPulse における各種イベントの処理方法を紹介します。
+
+## イベントタイプ概要
+
+ErisPulse は以下のイベントタイプをサポートしています：
+
+| イベントタイプ | 説明 | 適用シーン |
+|---------|------|---------|
+| メッセージイベント | ユーザーから送信された任意のメッセージ | チャットボット、コンテンツフィルタ |
+| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能のエントリーポイント |
+| 通知イベント | システム通知（フレンド追加、メンバーチェンジなど） | ウェルカムメッセージ、ステータス通知 |
+| リクエストイベント | ユーザーリクエスト（フレンドリクエスト、グループ招待） | リクエストの自動処理 |
+| メタイベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
+
+## メッセージイベント処理
+
+> **ヒント**: イベントハンドラーでは `Event` 型アノテーションを使用することを推奨します。IDE の自動補完と型チェックのサポートを得られます。
+
+```python
+from ErisPulse.Core.Event import Event  # 注釈に使用するためのイベントタイプのインポート
+```
+
+### すべてのメッセージを監視する
+
+```python
+from ErisPulse.Core.Event import message, Event
+
+@message.on_message()
+async def message_handler(event: Event):
+    text = event.get_text()
+    user_id = event.get_user_id()
+    sdk.logger.info(f"{user_id} からメッセージを受信: {text}")
+```
+
+### プライベートメッセージを監視する
+
+```python
+@message.on_private_message()
+async def private_handler(event: Event):
+    user_id = event.get_user_id()
+    await event.reply(f"こんにちは、{user_id}！プライベートメッセージです。")
+```
+
+### グループメッセージを監視する
+
+```python
+@message.on_group_message()
+async def group_handler(event: Event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    sdk.logger.info(f"グループ {group_id} で {user_id} がメッセージを送信しました")
+```
+
+### @メッセージを監視する
+
+```python
+@message.on_at_message()
+async def at_handler(event: Event):
+    # メンションされたユーザーリストを取得
+    mentions = event.get_mentions()
+    await event.reply(f"あなたはこれらのユーザーをメンションしました: {mentions}")
+```
+
+## コマンドイベント処理
+
+### 基本的なコマンド
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("help", help="ヘルプ情報を表示")
+async def help_handler(event):
+    help_text = """
+利用可能なコマンド：
+/help - ヘルプを表示
+/ping - 接続をテスト
+/info - 情報を表示
+    """
+    await event.reply(help_text)
+```
+
+### コマンドエイリアス
+
+```python
+@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
+async def help_handler(event):
+    await event.reply("ヘルプ情報...")
+```
+
+ユーザーは以下のいずれかの方法で呼び出せます：
+- `/help`
+- `/h`
+- `/帮助`
+
+### コマンド引数
+
+```python
+@command("echo", help="メッセージをエコーバック")
+async def echo_handler(event):
+    # コマンド引数を取得
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("エコーバックするメッセージを入力してください")
+    else:
+        await event.reply(f"あなたが言いました: {' '.join(args)}")
+```
+
+### コマンドグループ
+
+```python
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
+async def reload_handler(event):
+    await event.reply("モジュールを再読み込みしました")
+
+@command("admin.stop", group="admin", help="ボットを停止")
+async def stop_handler(event):
+    await event.reply("ボットを停止しました")
+```
+
+### コマンド権限
+
+```python
+def is_admin(event):
+    """ユーザーが管理者であるかチェック"""
+    admin_list = ["user123", "user456"]
+    return event.get_user_id() in admin_list
+
+@command("admin", permission=is_admin, help="管理者コマンド")
+async def admin_handler(event):
+    await event.reply("これは管理者コマンドです")
+```
+
+### コマンド優先度
+
+```python
+# 優先度の数値が大きいほど、実行が早くなります
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    await event.reply("高優先度ハンドラー")
+
+@message.on_message(priority=1)
+async def low_priority_handler(event):
+    await event.reply("低優先度ハンドラー")
+```
+
+### 並列イベント処理
+
+ErisPulse のイベントシステムは**同じ優先度は並列、異なる優先度は直列**のスケジューリングモデルを採用しています：
+
+```
+イベント到着
+    ↓
+priority=10 グループ: [ハンドラーC || ハンドラーD] 並列 → 結果をマージ
+    ↓ (中断なしの場合)
+priority=0 グループ: [ハンドラーA || ハンドラーB] 並列 → 結果をマージ
+    ↓
+...
+```
+
+- **同じ優先度で並列**: 優先度が同じ複数のハンドラーは同時に実行され、スループットが向上します
+- **異なる優先度で直列**: 優先度の異なるグループは順番に実行されます（数値が大きいものが先）、高優先度ハンドラーが先に実行されることを保証します
+- **Copy-On-Write**: ハンドラーが変更を行わない場合はコピーを作成しません（オーバーヘッドなし）
+- **競合処理**: 同じ優先度で複数のハンドラーが同じフィールドを変更する場合、最後に変更された値が採用され、警告ログが記録されます
+- **割り込み機構**: 任意のハンドラーが `event.mark_processed()` を呼び出した後、後続の低優先度グループはスキップされます
+
+```python
+# 例：同じ優先度のハンドラーが並列実行される様子
+@message.on_message(priority=0)
+async def handler_a(event):
+    # タスクAの処理
+    event['result_a'] = process_a()
+
+@message.on_message(priority=0)
+async def handler_b(event):
+    # handler_a と並列で実行
+    event['result_b'] = process_b()
+
+# 異なる優先度で直列実行
+@message.on_message(priority=10)
+async def handler_c(event):
+    # 最も優先度が高く、最も先に実行されます
+    pass
+```
+
+## 通知イベント処理
+
+### フレンド追加
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_friend_add()
+async def friend_add_handler(event):
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname() or "新しいフレンド"
+    await event.reply(f"フレンド追加ありがとうございます、{nickname}！")
+```
+
+### グループメンバー追加
+
+```python
+@notice.on_group_increase()
+async def member_increase_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    await event.reply(f"{user_id} を歓迎します。グループ {group_id} に参加しました")
+```
+
+### グループメンバー減少
+
+```python
+@notice.on_group_decrease()
+async def member_decrease_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    await event.reply(f"{user_id} さんがグループ {group_id} を退出しました")
+```
+
+## リクエストイベント処理
+
+### フレンドリクエスト
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def friend_request_handler(event):
+    user_id = event.get_user_id()
+    comment = event.get_comment()
+    
+    sdk.logger.info(f"フレンドリクエストを受信: {user_id}, コメント: {comment}")
+    
+    # アダプター API を使用してリクエストを処理できます
+    # 具体的な実装については各アダプターのドキュメントを参照してください
+```
+
+### グループ招待リクエスト
+
+```python
+@request.on_group_request()
+async def group_request_handler(event):
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    
+    await event.reply(f"グループ {group_id} の招待を受け取りました。送信者: {user_id}")
+```
+
+## メタイベント処理
+
+### 接続イベント
+
+```python
+from ErisPulse.Core.Event import meta
+
+@meta.on_connect()
+async def connect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.info(f"{platform} プラットフォームに接続されました")
+
+@meta.on_disconnect()
+async def disconnect_handler(event):
+    platform = event.get_platform()
+    sdk.logger.warning(f"{platform} プラットフォームが切断されました")
+```
+
+### ハートビートイベント
+
+```python
+@meta.on_heartbeat()
+async def heartbeat_handler(event):
+    platform = event.get_platform()
+    sdk.logger.debug(f"{platform} ハートビート検出")
+```
+
+### Bot ステータス確認
+
+アダプターがメタイベントを送信した後、フレームワークは自動的に Bot のステータスを追跡します。いつでも確認できます：
+
+```python
+from ErisPulse import sdk
+
+# 特定の Bot がオンラインか確認
+if sdk.adapter.is_bot_online("telegram", "123456"):
+    await adapter.Send.To("user", "123456").Text("Bot はオンラインです")
+
+# 現在オンラインのすべての Bot を一覧表示
+bots = sdk.adapter.list_bots()
+for platform, bot_list in bots.items():
+    for bot_id, info in bot_list.items():
+        print(f"{platform}/{bot_id}: {info['status']}")
+
+# 完全なステータスサマリーを取得
+summary = sdk.adapter.get_status_summary()
+```
+
+## インタラクティブ処理
+
+### `reply` メソッドを使用して返信を送信する
+
+`event.reply()` メソッドは `@`、返信などの機能を備えたメッセージを送信するのに役立ち、様々な修飾パラメータをサポートします：
+
+```python
+# シンプルな返信
+await event.reply("こんにちは")
+
+# 異なるタイプのメッセージを送信
+await event.reply("http://example.com/image.jpg", method="Image")  # 画像
+await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
+
+# 単一ユーザーをメンション
+await event.reply("こんにちは", at_users=["user123"])
+
+# 複数ユーザーをメンション
+await event.reply("みなさんこんにちは", at_users=["user1", "user2", "user3"])
+
+# メッセージへの返信
+await event.reply("返信内容", reply_to="msg_id")
+
+# 全体をメンション
+await event.reply("お知らせ", at_all=True)
+
+# 組み合わせ: ユーザーをメンション + メッセージへの返信
+await event.reply("内容", at_users=["user1"], reply_to="msg_id")
+```
+
+### ユーザーの返信を待機する
+
+```python
+@command("ask", help="ユーザーに質問する")
+async def ask_handler(event):
+    await event.reply("名前を入力してください:")
+    
+    # ユーザーの返信を待機。タイムアウト時間は 30 秒
+    reply = await event.wait_reply(timeout=30)
+    
+    if reply:
+        name = reply.get_text()
+        await event.reply(f"こんにちは、{name}！")
+    else:
+        await event.reply("タイムアウトしました。もう一度入力してください。")
+```
+
+### バリデーション付きで返信を待機する
+
+```python
+@command("age", help="年齢を尋ねる")
+async def age_handler(event):
+    def validate_age(event_data):
+        """年齢が有効か検証"""
+        try:
+            age = int(event_data.get_text())
+            return 0 <= age <= 150
+        except ValueError:
+            return False
+    
+    await event.reply("年齢を入力してください (0-150):")
+    
+    reply = await event.wait_reply(
+        timeout=60,
+        validator=validate_age
+    )
+    
+    if reply:
+        age = int(reply.get_text())
+        await event.reply(f"あなたの年齢は {age} 歳です")
+    else:
+        await event.reply("入力が無効かタイムアウトしました")
+```
+
+### コールバック付きで返信を待機する
+
+```python
+@command("confirm", help="操作を確認する")
+async def confirm_handler(event):
+    async def handle_confirmation(reply_event):
+        text = reply_event.get_text().lower()
+        
+        if text in ["はい", "yes", "y"]:
+            await event.reply("操作が確認されました！")
+        else:
+            await event.reply("操作がキャンセルされました。")
+    
+    await event.reply("この操作を実行しますか？(はい/いいえ)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
+
+### 確認対話 (confirm)
+
+ユーザーに承認または却下を待ち、組み込みの中国語・英語の確認語を自動的に認識します：
+
+```python
+@command("confirm", help="操作を確認する")
+async def confirm_handler(event):
+    if await event.confirm("この操作を実行しますか？"):
+        await event.reply("確認済み。実行中...")
+    else:
+        await event.reply("キャンセルされました")
+
+# カスタム確認語
+if await event.confirm("続けますか？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 選択メニュー (choose)
+
+ユーザーはオプションの番号またはテキストで返信できます：
+
+```python
+@command("choose", help="選択")
+async def choose_handler(event):
+    choice = await event.choose(
+        "色を選択してください：",
+        ["赤", "緑", "青"]
+    )
+    
+    if choice is not None:
+        colors = ["赤", "緑", "青"]
+        await event.reply(f"あなたは選択しました: {colors[choice]}")
+    else:
+        await event.reply("タイムアウトにより選択されませんでした")
+```
+
+### フォームの収集 (collect)
+
+ステップバイステップでユーザー入力を収集します：
+
+```python
+@command("register", help="登録")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "名前を入力してください："},
+        {"key": "age", "prompt": "年齢を入力してください：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "メールアドレスを入力してください："}
+    ])
+    
+    if data:
+        await event.reply(f"登録成功！\n名前：{data['name']}\n年齢：{data['age']}\nメール：{data['email']}")
+    else:
+        await event.reply("タイムアウトまたは入力が無効です")
+```
+
+### 任意のイベントを待機 (wait_for)
+
+条件を満たす任意のイベントを待ちます。同じユーザーに限定されません：
+
+```python
+@command("wait_member", help="新規メンバーを待つ")
+async def wait_member_handler(event):
+    await event.reply("グループメンバーの加入を待機中...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"新規メンバーを歓迎します：{evt.get_user_id()}")
+    else:
+        await event.reply("タイムアウトしました")
+```
+
+### 多回の対話 (conversation)
+
+対話可能な多回の対話コンテキストを作成します：
+
+```python
+@command("survey", help="アンケート調査")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("アンケート調査にご参加ありがとうございます！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("対話がタイムアウトしました。さようなら！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("さようなら！")
+            break
+        
+        await conv.say(f"あなたは言いました：{text}。続けて入力するか、'退出'と入力して終了してください")
+```
+
+### 組み込みの確認語
+
+ErisPulse には中国語と英語の確認語のセットが組み込まれています：
+
+- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、よし、良い、ok、true、対、うん、行、同意、問題ありません...
+- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、いいえ、しない、ダメ、cancel、false、間違い、拒否、できません...
+
+## イベントデータへのアクセス
+
+### Event オブジェクトの一般的なメソッド
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基本情報
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 送信者情報
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # メッセージ内容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # グループ情報
+    group_id = event.get_group_id()
+    
+    # Bot 情報
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始データ
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # プラットフォーム情報
+    platform = event.get_platform()
+    
+    # メッセージタイプの判定
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # コマンド情報
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### プラットフォーム拡張メソッド
+
+組み込みメソッドに加え、各プラットフォームアダプターはプラットフォーム固有のメソッドを登録します。それらを利用して、プラットフォーム固有のデータにアクセスできます。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # プラットフォームに応じて固有メソッドを呼び出し
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 固有のメソッド
+    elif platform == "email":
+        subject = event.get_subject()           # メール固有のメソッド
+```
+
+特定のプラットフォームにどのメソッドが登録されているかわからない場合は、プラットフォームに登録されているメソッドを確認できます：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各プラットフォームに登録されている固有のメソッドについては、対応する[プラットフォームガイド](../platform-guide/)を参照してください。
+
+## イベント処理のベストプラクティス
+
+### 1. 例外処理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # ビジネスロジック
+        result = await do_some_work()
+        await event.reply(f"結果: {result}")
+    except ValueError as e:
+        # 予期されるビジネスエラー
+        await event.reply(f"パラメータエラー: {e}")
+    except Exception as e:
+        # 予期しないエラー
+        sdk.logger.error(f"処理失敗: {e}")
+        await event.reply("処理に失敗しました。後でもう一度お試しください")
+```
+
+### 2. ロギング
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"メッセージ処理: {user_id} - {text}")
+    
+    # モジュール独自のロガーを使用
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"詳細デバッグ情報")
+```
+
+### 3. 条件処理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """条件処理 - ハンドラー内部で判断"""
+    # 特定のユーザーのメッセージのみ処理
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 特定のキーワードを含むメッセージのみ処理
+    if "キーワード" not in event.get_text():
+        return
+    
+    await event.reply("条件を満たしました。メッセージを処理します")
+```
+
+## 次のステップ
+
+- [よくあるタスクの例](common-tasks.md) - よく使われる機能の実装を学ぶ
+- [Event ラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトを詳しく知る
+- [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解する
 
 
 
@@ -2525,7 +3705,182 @@ services:
 
 ### CLI 命令参考
 
+# CLI コマンドリファレンス
 
+ErisPulse コマンドラインツールは、プロジェクト管理およびパッケージ管理機能を提供します。
+
+## パッケージ管理コマンド
+
+| コマンド | 引数 | 説明 | 例 |
+|-------|------|------|------|
+| `install` | `[パッケージ名]... [--upgrade/-U] [--pre]` | モジュール/アダプターをインストールします | `epsdk install Yunhu` |
+| `uninstall` | `<パッケージ名>...` | モジュール/アダプターをアンインストールします | `epsdk uninstall old-module` |
+| `upgrade` | `[パッケージ名]... [--force/-f] [--pre]` | 指定されたモジュール、またはすべてをアップグレードします | `epsdk upgrade --force` |
+| `self-update` | `[バージョン] [--pre] [--force/-f]` | SDK自体を更新します | `epsdk self-update` |
+
+## 情報照会コマンド
+
+| コマンド | 引数 | 説明 | 例 |
+|-------|------|------|------|
+| `list` | `[--type/-t <type>]` | インストール済みのモジュール/アダプターを一覧表示します | `epsdk list -t modules` |
+| | `[--outdated/-o]` | アップグレード可能なパッケージのみを表示します | `epsdk list -o` |
+| `list-remote` | `[--type/-t <type>]` | リモートで利用可能なパッケージを一覧表示します | `epsdk list-remote` |
+| | `[--refresh/-r]` | 強制的にパッケージリストを更新します | `epsdk list-remote -r` |
+
+## 実行制御コマンド
+
+| コマンド | 引数 | 説明 | 例 |
+|-------|------|------|------|
+| `run` | `<スクリプト> [--reload]` | 指定されたスクリプトを実行します | `epsdk run main.py --reload` |
+
+## プロジェクト管理コマンド
+
+| コマンド | 引数 | 説明 | 例 |
+|-------|------|------|------|
+| `init` | `[--project-name/-n <name>]` | 対話形式でプロジェクトを初期化します | `epsdk init -n my_bot` |
+| | `[--quick/-q]` | クイックモードで対話をスキップします | `epsdk init -q -n bot` |
+| | `[--force/-f]` | 既存の設定を強制上書きします | `epsdk init -f` |
+| `create` | `[モジュール\|アダプター]` | スキャフォールドプロジェクトを作成します | `epsdk create` |
+| | `[--name/-n <name>]` | プロジェクト名 (PascalCase) | `epsdk create module -n MyModule` |
+| | `[--description/-d <desc>]` | プロジェクトの説明 | `epsdk create adapter -d "xxアダプター"` |
+| | `[--author/-a <name>]` | 著作者名 | `epsdk create -a yourname` |
+| | `[--email/-e <mail>]` | 著作者のメールアドレス | `epsdk create -e you@mail.com` |
+| | `[--homepage <url>]` | プロジェクトのホームページ URL | |
+| | `[--output/-o <dir>]` | 出力ディレクトリ (デフォルトは現在のディレクトリ) | `epsdk create -o ./projects` |
+| | `[--force/-f]` | 既存のディレクトリを強制上書きします | `epsdk create -f` |
+
+## パラメータの説明
+
+### 一般的なパラメータ
+
+| パラメータ | 短いパラメータ | 説明 |
+|------|---------|------|
+| `--help` | `-h` | ヘルプ情報を表示します |
+| `--verbose` | `-v` | 詳細な出力を表示します |
+
+### install のパラメータ
+
+| パラメータ | 説明 |
+|------|------|
+| `[パッケージ名]` | インストールするパッケージ名。複数指定可能 |
+| `--upgrade` | `-U` | インストール時に最新バージョンへアップグレードします |
+| `--pre` | プレリリース版（プレリリースバージョン）のインストールを許可します |
+
+### list のパラメータ
+
+| パラメータ | 説明 |
+|------|------|
+| `--type` | `-t` | 指定するタイプ: `modules`, `adapters`, `all` |
+| `--outdated` | `-o` | アップグレード可能なパッケージのみを表示します |
+
+### run のパラメータ
+
+| パラメータ | 説明 |
+|------|------|
+| `--reload` | ホットリロードモードを有効にし、ファイルの変更を監視します |
+| `--no-reload` | ホットリロードモードを無効にします |
+
+## 対話式インストール
+
+`epsdk install` にパッケージ名を指定せず実行すると、対話式インストールが開始されます：
+
+```bash
+epsdk install
+```
+
+  対話インターフェースは以下のものを提供します：
+1. アダプタの選択
+2. モジュールの選択
+3. カスタムインストール
+
+## よく使われる用法
+
+### モジュールのインストール
+
+```bash
+# 単一のモジュールをインストール
+epsdk install Weather
+
+# 複数のモジュールをインストール
+epsdk install Yunhu Weather
+
+# モジュールをアップグレード
+epsdk install Weather -U
+```
+
+### モジュールの一覧表示
+
+```bash
+# 全てのモジュールを一覧表示
+epsdk list
+
+# アダプタのみを表示
+epsdk list -t adapters
+
+# アップグレード可能なモジュールのみを表示
+epsdk list -o
+```
+
+### モジュールのアンインストール
+
+```bash
+# 単一のモジュールをアンインストール
+epsdk uninstall Weather
+
+# 複数のモジュールをアンインストール
+epsdk uninstall Yunhu Weather
+```
+
+### モジュールのアップグレード
+
+```bash
+# 全てのモジュールをアップグレード
+epsdk upgrade
+
+# 指定されたモジュールをアップグレード
+epsdk upgrade Weather
+
+# 強制アップグレード
+epsdk upgrade -f
+```
+
+### プロジェクトの実行
+
+```bash
+# 通常の実行
+epsdk run main.py
+
+# ホットリロードモード
+epsdk run main.py --reload
+```
+
+### プロジェクトの初期化
+
+```bash
+# 対話形式での初期化
+epsdk init
+
+# クイック初期化
+epsdk init -q -n my_bot
+```
+
+### スキャフォールドの作成
+
+```bash
+# 対話式の作成（タイプ選択や情報入力をガイドされます）
+epsdk create
+
+# Module プロジェクトを直接作成
+epsdk create module -n MyModule
+
+# Adapter プロジェクトを直接作成
+epsdk create adapter -n MyAdapter
+
+# 完全なパラメータ
+epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "mail@example.com"
+
+# 既存のディレクトリを強制上書き
+epsdk create module -n MyModule -f
 
 
 
@@ -2536,7 +3891,671 @@ API 参考
 
 ### 核心模块 API
 
+# コアモジュール API
 
+このドキュメントでは、ErisPulseのコアモジュールAPIについて詳しく説明します。
+
+## Storage モジュール
+
+### 基本的な操作
+
+```python
+from ErisPulse import sdk
+
+# 値の設定
+sdk.storage.set("key", "value")
+
+# 値の取得
+value = sdk.storage.get("key", default_value)
+
+# すべてのキーを取得
+keys = sdk.storage.keys()
+
+# 値を削除
+sdk.storage.delete("key")
+```
+
+### トランザクション操作
+
+```python
+# トランザクションを使用してデータの一貫性を確保
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+    # いずれかの操作が失敗した場合、すべての変更はロールバックされます
+```
+
+### バッチ操作
+
+```python
+# 一括設定
+sdk.storage.set_multi({
+    "key1": "value1",
+    "key2": "value2",
+    "key3": "value3"
+})
+
+# 一括取得
+values = sdk.storage.get_multi(["key1", "key2", "key3"])
+
+# 一括削除
+sdk.storage.delete_multi(["key1", "key2", "key3"])
+```
+
+### SQL チェーン呼び出しクエリ
+
+Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの CRUD 操作をサポートしています。
+
+> 完全なドキュメントについては、[SQL クエリビルダー](../advanced/sql-builder.md)を参照してください。
+
+```python
+from ErisPulse import sdk
+
+# カスタムテーブルの作成
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0"
+})
+
+# データの挿入
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 一括挿入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+]).Execute()
+
+# データのクエリ
+rows = (sdk.storage.Table("users")
+    .Select("name", "age")
+    .Where("age > ?", 18)
+    .OrderBy("name")
+    .Limit(10)
+    .Execute())
+
+# データの更新
+sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
+
+# データの削除
+sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
+
+# カウント
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性のチェック
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+
+# 1件のレコードを取得
+row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
+
+# テーブル構造の変更
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# テーブルが存在するか確認
+if sdk.storage.HasTable("users"):
+    sdk.storage.DropTable("users")
+
+# トランザクション内でのチェーン操作
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
+    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
+
+# クエリ条件の再利用
+base = sdk.storage.Table("users").Where("age > ?", 20)
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+count = base.copy().Count()
+```
+
+### ストレージバックエンド抽象
+
+`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、将来の他のストレージメディア（Redis、MySQL など）の拡張をサポートしています。
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+# BaseStorage は統一されたインターフェースを定義します：get/set/delete/Table/CreateTable/DropTable など
+# BaseQueryBuilder はチェーンクエリインターフェースを定義します：Select/Insert/Update/Delete/Where/OrderBy/Limit など
+```
+
+## Config モジュール
+
+### 設定の読み込み
+
+```python
+from ErisPulse import sdk
+
+# 設定を取得
+config = sdk.config.getConfig("MyModule", {})
+
+# ネストされた設定を取得
+value = sdk.config.getConfig("MyModule.subkey.value", "default")
+```
+
+### 設定の書き込み
+
+```python
+# 設定を設定
+sdk.config.setConfig("MyModule", {"key": "value"})
+
+# ネストされた設定を設定
+sdk.config.setConfig("MyModule.subkey.value", "new_value")
+```
+
+### 設定の例
+
+```python
+def _load_config(self):
+    config = sdk.config.getConfig("MyModule")
+    if not config:
+        # デフォルト設定を作成
+        default_config = {
+            "api_url": "https://api.example.com",
+            "timeout": 30,
+            "cache_ttl": 3600
+        }
+        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第3引数がTrueの場合、設定は即座に保存されます。ユーザーが設定ファイルを直接変更できるように便利です。
+        return default_config
+    return config
+```
+
+## Logger モジュール
+
+### 基本的なログ
+
+```python
+from ErisPulse import sdk
+
+# 異なるログレベル
+sdk.logger.debug("デバッグ情報")
+sdk.logger.info("実行情報")
+sdk.logger.warning("警告情報")
+sdk.logger.error("エラー情報")
+sdk.logger.critical("致命的なエラー")
+```
+
+### 子ログ記録子
+
+```python
+# 子ロガーを取得
+child_logger = sdk.logger.get_child("MyModule")
+child_logger.info("サブモジュールログ")
+
+# サブモジュールはさらにサブモジュールを持つことができ、これによりログ出力をより精確に制御できます
+child_logger.get_child("utils")
+```
+
+### ログ出力
+
+```python
+# 出力ファイルを設定
+sdk.logger.set_output_file("app.log")
+
+# ファイルにログを保存
+sdk.logger.save_logs("log.txt")
+```
+
+## Adapter モジュール
+
+### アダプターの取得
+
+```python
+from ErisPulse import sdk
+
+# アダプターインスタンスを取得
+adapter = sdk.adapter.get("platform_name")
+
+# プロパティを介してアクセス
+adapter = sdk.adapter.platform_name
+```
+
+### アダプターエベント
+
+```python
+# 標準イベントを監視
+@sdk.adapter.on("message")
+async def handle_message(event):
+    pass
+
+# 特定プラットフォームのイベントを監視
+@sdk.adapter.on("message", platform="yunhu")
+async def handle_yunhu_message(event):
+    pass
+
+# プラットフォームネイティブイベントを監視
+@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
+async def handle_raw_event(data):
+    pass
+```
+
+### アダプター管理
+
+```python
+# すべてのプラットフォームを取得
+platforms = sdk.adapter.platforms
+
+# アダプターが存在するか確認
+exists = sdk.adapter.exists("platform_name")
+
+# アダプターを有効化/無効化
+sdk.adapter.enable("platform_name")
+sdk.adapter.disable("platform_name")
+
+# アダプターを起動/シャットダウン
+await sdk.adapter.startup(["platform1", "platform2"])
+await sdk.adapter.shutdown(["platform1", "platform2"])
+
+# アダプターが実行中か確認
+is_running = sdk.adapter.is_running("platform_name")
+
+# 実行中のすべてのアダプターを一覧表示
+running = sdk.adapter.list_running()
+```
+
+## Module モジュール
+
+### モジュールの取得
+
+```python
+from ErisPulse import sdk
+
+# モジュールインスタンスを取得
+module = sdk.module.get("ModuleName")
+
+# プロパティを介してアクセス
+module = sdk.module.ModuleName
+module = sdk.ModuleName
+```
+
+### モジュール管理
+
+```python
+# モジュールが存在するか確認
+exists = sdk.module.exists("ModuleName")
+
+# モジュールがロード済みか確認
+is_loaded = sdk.module.is_loaded("ModuleName")
+
+# モジュールが有効か確認
+is_enabled = sdk.module.is_enabled("ModuleName")
+
+# モジュールを有効化/無効化
+sdk.module.enable("ModuleName")
+sdk.module.disable("ModuleName")
+
+# モジュールをロード
+await sdk.module.load("ModuleName")
+
+# モジュールをアンロード
+await sdk.module.unload("ModuleName")
+
+# ロード済みのモジュールを一覧表示
+loaded = sdk.module.list_loaded()
+
+# 登録済みのモジュールを一覧表示
+registered = sdk.module.list_registered()
+
+# モジュール情報を取得
+info = sdk.module.get_info("ModuleName")
+
+# モジュールステータスのサマリーを取得
+summary = sdk.module.get_status_summary()
+# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
+
+# モジュールが実行中か確認（is_loaded と同等）
+is_running = sdk.module.is_running("ModuleName")
+
+# 実行中のすべてのモジュールを一覧表示
+running = sdk.module.list_running()
+```
+
+## Lifecycle モジュール
+
+### イベントの送信
+
+```python
+from ErisPulse import sdk
+
+# カスタムイベントを送信
+await sdk.lifecycle.submit_event(
+    "custom.event",
+    data={"key": "value"},
+    source="MyModule",
+    msg="カスタムイベントの説明"
+)
+```
+
+### イベント監視
+
+```python
+# 特定のイベントを監視
+@sdk.lifecycle.on("module.init")
+async def handle_module_init(event_data):
+    print(f"モジュール初期化: {event_data}")
+
+# 親レベルのイベントを監視
+@sdk.lifecycle.on("module")
+async def handle_any_module_event(event_data):
+    print(f"モジュールイベント: {event_data}")
+
+# すべてのイベントを監視
+@sdk.lifecycle.on("*")
+async def handle_any_event(event_data):
+    print(f"システムイベント: {event_data}")
+```
+
+### タイマー
+
+```python
+# タイマーを開始
+sdk.lifecycle.start_timer("my_operation")
+
+# ... 操作を実行 ...
+
+# 持続時間を取得
+duration = sdk.lifecycle.get_duration("my_operation")
+
+# タイマーを停止
+total_time = sdk.lifecycle.stop_timer("my_operation")
+```
+
+## Router モジュール
+
+### 抽象型
+
+Router は2つの型アノテーションスタイルをサポートしています：
+
+```python
+# ErisPulse抽象型（推奨、移植性が高い）
+from ErisPulse.Core import HttpRequest, WebSocketConnection
+
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
+    return {"status": "ok"}
+
+# FastAPIネイティブ型（既存のコードとの互換性）
+from fastapi import Request, WebSocket
+
+@sdk.router.get("MyModule", "/api2")
+async def handler(request: Request):
+    return {"status": "ok"}
+```
+
+> ルーターはパラメータアノテーションに基づいて対応するタイプのオブジェクトを自動的に注入します。詳細については、[ルーター管理](../advanced/router.md)を参照してください。
+
+### デコレーターローター（推奨）
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+# HTTPルーターデコレーター
+@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
+async def api_handler(request: Request):
+    return {"status": "ok"}
+
+# 短縮メソッドデコレーター
+@sdk.router.get("MyModule", "/info")
+async def get_info(request: Request):
+    return {"module": "MyModule"}
+
+@sdk.router.post("MyModule", "/data")
+async def post_data(request: Request):
+    data = await request.json()
+    return {"received": data}
+
+@sdk.router.put("MyModule", "/data/{item_id}")
+async def put_data(request: Request):
+    return {"updated": True}
+
+@sdk.router.delete("MyModule", "/data/{item_id}")
+async def delete_data(request: Request):
+    return {"deleted": True}
+
+# WebSocketデコレーター
+from fastapi import WebSocket
+
+@sdk.router.ws("MyModule", "/ws")
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 認証付きWebSocketデコレーター
+async def ws_auth(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
+async def secure_ws_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+```
+
+### 従来の登録方式
+
+```python
+from ErisPulse import sdk
+from fastapi import Request
+
+async def handler(request: Request):
+    data = await request.json()
+    return {"status": "ok", "data": data}
+
+sdk.router.register_http_route(
+    module_name="MyModule",
+    path="/api",
+    handler=handler,
+    methods=["POST"],
+    rate_limit="10/minute",
+    summary="データインターフェース",
+    tags=["API"],
+)
+
+sdk.router.unregister_http_route("MyModule", "/api")
+```
+
+### WebSocketルーター
+
+```python
+from ErisPulse import sdk
+from fastapi import WebSocket
+
+async def websocket_handler(websocket: WebSocket):
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Echo: {data}")
+
+# 基本的な登録（接続を自動的に受け入れる）
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/ws",
+    handler=websocket_handler,
+)
+
+# 認証付きの登録（推奨：auth_handlerを使用して接続を制御）
+async def auth_handler(websocket: WebSocket) -> bool:
+    token = websocket.query_params.get("token")
+    return token == "secret"
+
+sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# ルーターを解除
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**パラメータの説明：**
+
+| パラメータ | 説明 | デフォルト値 |
+|------|------|--------|
+| `module_name` | モジュール名（必須） | - |
+| `path` | WebSocketパス | - |
+| `handler` | ハンドラー関数 | - |
+| `auth_handler` | 認証関数。`False`を返すと接続が自動的に閉じられます | `None` |
+| `auto_accept` | `accept()` を自動的に呼び出すかどうか | `True` |
+
+> **推奨**: `auth_handler` を使用して接続確認を行い、`auto_accept` を無効化（閉じる）の代わりにしてください。接続フローを完全に制御する必要がある場合にのみ、`auto_accept=False` を設定してください。
+
+### ルーターグループ
+
+```python
+# ルーターグループを作成
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# グループ内でルーターを登録
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# バージョン付きのグループ
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### ルーターミドルウェア
+
+```python
+# グローバルミドルウェア（globマッチング）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定のパスミドルウェア
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### レート制限
+
+```python
+# ルーターにレート制限を設定（スライディングウィンドウ）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS設定
+
+```python
+# コードによる設定
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 設定ファイルによる設定（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### セキュリティヘッダー
+
+```python
+# セキュリティヘッダーを自動的に追加
+sdk.router.setup_security_headers()
+
+# 設定ファイルによる設定（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動ドキュメント
+
+```python
+# RouterはデフォルトでOpenAPIドキュメントを有効にします
+# ドキュメントを無効化
+sdk.router.disable_docs()
+
+# カスタムドキュメント情報を設定
+sdk.router.set_docs_info(
+    title="My API",
+    description="API ドキュメント",
+    version="1.0.0"
+)
+```
+
+### ルーター情報
+
+```python
+app = sdk.router.get_app()
+```
+
+## HTTP Client モジュール
+
+### 基本的なリクエスト
+
+```python
+from ErisPulse.Core import client
+
+# GETリクエスト
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POSTリクエスト
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 一般的なrequestメソッド
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### レスポンスオブジェクト
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTPステータスコード (例: 200, 404)
+resp.reason        # str | None - ステータスの説明 (例: "OK")
+resp.headers       # レスポンスヘッダー (大文字・小文字を区別しない)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最終的な URL (リダイレクトにより変更される場合があります)
+resp.raw           # 基底のネイティブレスポンスオブジェクト (現在は aiohttp.ClientResponse)
+
+# レスポンスボディの読み込み
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # JSONの解析
+text = await resp.text("gbk")  # エンコーディングを指定
+```
+
+### リクエストパラメータ
+
+| パラメータ | 型 | 説明 |
+|------|------|------|
+| `url` | `str
 
 
 

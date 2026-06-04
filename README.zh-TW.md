@@ -87,7 +87,7 @@
 
 #### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
+安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Рус語/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -335,6 +335,93 @@ epsdk run main.py --reload
 - [快速開始指南](docs/zh-TW/quick-start.md)
 - [入門指南](docs/zh-TW/getting-started/)
 
+#### 多輪對話示例
+
+ErisPulse 內建了強大的多輪對話引擎，輕鬆實現引導式操作、資訊收集等交互場景：
+
+```python
+from ErisPulse.Core.Event import command, request
+
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎註冊！")
+    
+    # 多步驟收集用戶資訊，自動驗證
+    data = await conv.collect([
+        {"key": "name", "prompt": "請輸入姓名"},
+        {"key": "age", "prompt": "請輸入年齡",
+         "validator": lambda e: e.get_text().strip().isdigit(),
+         "retry_prompt": "年齡必須是數字，請重新輸入"},
+    ])
+    
+    if data and await conv.confirm(f"確認註冊？姓名: {data['name']}, 年齡: {data['age']}"):
+        # 通過 SendDSL 主動推送通知
+        await sdk.adapter.get(event.get_platform()).Send.To(
+            "user", event.get_user_id()
+        ).Text(f"註冊成功！歡迎 {data['name']}")
+        # 或 await event.reply("註冊成功！")
+
+# 自動處理好友請求
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    
+    # 同意請求
+    result = await event.approve()
+    if result.get("status") == "ok":
+        await event.reply(f"已自動通過好友請求，歡迎 {user_name}")
+```
+
+<details>
+<summary>查看更多 Conversation API（分支跳轉 / 選擇 / 持久化）</summary>
+
+```python
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+    
+    # 選項式問答
+    answer = await conv.choose("Python 的創造者是誰？", [
+        "Guido van Rossum",
+        "James Gosling", 
+        "Dennis Ritchie",
+    ])
+    
+    if answer == 0:
+        await conv.say("正確！")
+    elif answer is None:
+        await conv.say("超時了，下次再來吧！")
+    else:
+        await conv.say("錯誤了，正確答案是 Guido van Rossum")
+
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    # 分支跳轉，構建複雜交互流程
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "1":
+            await conv.goto("profile")
+    
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+    
+    await conv.start()
+```
+
+詳見 [Conversation 多輪對話](docs/zh-TW/advanced/conversation.md)
+
+</details>
+
 ---
 
 ### 支援的適配器
@@ -365,7 +452,7 @@ epsdk run main.py --reload
 
 | 多平台機器人 | 聊天助手 | 自動化工具 | 訊息轉發 |
 |:---:|:---:|:---:|:---:|
-| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現娛樂和交互 | 訊息通知、任務管理<br>數據收集 | 跨平台訊息<br>同步和轉發 |
+| 在多個平台部署<br>相同功能的機器人 | 接入 AI 聊天模組<br>實現娛樂和交互 | 訊息通知、任務管理<br>資訊收集 | 跨平台訊息<br>同步和轉發 |
 
 </div>
 
@@ -396,4 +483,6 @@ ErisPulse 項目的健全性還需要您的一份力！我們歡迎各種形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化�
+本項目部分代碼基於 [sdkFrame](https://github.com/runoneall/sdkFrame) · 核心適配器標準化層基於 [OneBot12 規範](https://12.onebot.dev/) · 感謝所有為開源社區做出貢獻的開發者和作者
+
+</div>

@@ -7,11 +7,11 @@
       "mapping_path": "_meta/en/docs-mapping.json"
     },
     "ja": {
-      "docs_count": 104,
+      "docs_count": 122,
       "mapping_path": "_meta/ja/docs-mapping.json"
     },
     "ru": {
-      "docs_count": 96,
+      "docs_count": 120,
       "mapping_path": "_meta/ru/docs-mapping.json"
     },
     "zh-CN": {

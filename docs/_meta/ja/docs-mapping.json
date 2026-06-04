@@ -36,7 +36,7 @@
     },
     "入門ガイド": {
       "description": "ErisPulse の基本概念とチュートリアル",
-      "count": 4,
+      "count": 10,
       "documents": [
         {
           "title": "最初のボットを作成する",
@@ -44,8 +44,23 @@
           "level": 1
         },
         {
+          "title": "入門ガイド",
+          "path": "getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "基本概念",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
           "title": "よくあるタスクの例",
           "path": "getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "イベント処理入門",
+          "path": "getting-started/event-handling.md",
           "level": 1
         }
       ],
@@ -53,11 +68,26 @@
     },
     "ユーザーガイド": {
       "description": "ErisPulse の設定とコマンドリファレンス",
-      "count": 4,
+      "count": 10,
       "documents": [
         {
           "title": "ユーザー使用ガイド",
           "path": "user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "インストールと設定",
+          "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "設定ファイルの説明",
+          "path": "user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "CLI コマンドリファレンス",
+          "path": "user-guide/cli-reference.md",
           "level": 1
         },
         {
@@ -143,7 +173,7 @@
     },
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
-      "count": 20,
+      "count": 24,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -153,6 +183,11 @@
         {
           "title": "OneBot11プラットフォーム特性ドキュメント",
           "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12プラットフォームの特徴",
+          "path": "platform-guide/onebot12.md",
           "level": 1
         },
         {
@@ -191,6 +226,11 @@
           "level": 1
         },
         {
+          "title": "QQBotプラットフォーム特性",
+          "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
           "title": "Yunhu ユーザープラットフォーム機能ドキュメント",
           "path": "platform-guide/yunhu_user.md",
           "level": 1
@@ -200,7 +240,7 @@
     },
     "API リファレンス": {
       "description": "コア API とインターフェースドキュメント",
-      "count": 6,
+      "count": 8,
       "documents": [
         {
           "title": "API リファレンス",
@@ -210,6 +250,11 @@
         {
           "title": "アダプターシステム API",
           "path": "api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "コアモジュール API",
+          "path": "api-reference/core-modules.md",
           "level": 1
         },
         {
