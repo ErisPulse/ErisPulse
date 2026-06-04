@@ -1,6 +1,6 @@
 {
   "source_lang": "zh-CN",
-  "target_langs": ["en", "zh-TW"],
+  "target_langs": ["en", "zh-TW", "ja", "ru"],
   "ai_provider": "openai",
   "api_key_env": "OPENAI_API_KEY",
   "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",

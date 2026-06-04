@@ -48,13 +48,17 @@ class DocsTranslator:
     LANG_CONFIG = {
         "zh-CN": {"name": "简体中文", "direction": "source"},
         "zh-TW": {"name": "繁体中文", "direction": "target"},
-        "en": {"name": "English", "direction": "target"}
+        "en": {"name": "English", "direction": "target"},
+        "ja": {"name": "日本語", "direction": "target"},
+        "ru": {"name": "Русский", "direction": "target"}
     }
     
     LANG_SWITCHER_ITEMS = [
         {"lang": "en", "label": "English", "file": "README.en.md"},
         {"lang": "zh-CN", "label": "简体中文", "file": "README.md"},
         {"lang": "zh-TW", "label": "繁體中文", "file": "README.zh-TW.md"},
+        {"lang": "ja", "label": "日本語", "file": "README.ja.md"},
+        {"lang": "ru", "label": "Русский", "file": "README.ru.md"},
     ]
 
     # 需要忽略的目录

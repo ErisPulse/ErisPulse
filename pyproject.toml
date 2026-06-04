@@ -24,11 +24,21 @@ keywords = [
     "sdk",
     "framework",
     "robot",
+    "chatbot",
+    "bot-framework",
     "onebot",
+    "onebot12",
     "telegram",
+    "qq",
+    "multi-platform",
     "extensible",
     "modular",
-    "asyncio"
+    "asyncio",
+    "instant-messaging",
+    "kook",
+    "yunhu",
+    "matrix",
+    "email",
 ]
 
 classifiers = [
