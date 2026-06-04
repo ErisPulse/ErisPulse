@@ -335,6 +335,93 @@ epsdk run main.py --reload
 - [快速开始指南](docs/zh-CN/quick-start.md)
 - [入门指南](docs/zh-CN/getting-started/)
 
+#### 多轮对话示例
+
+ErisPulse 内置了强大的多轮对话引擎，轻松实现引导式操作、信息收集等交互场景：
+
+```python
+from ErisPulse.Core.Event import command, request
+
+@command("register")
+async def register_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("欢迎注册！")
+    
+    # 多步骤收集用户信息，自动验证
+    data = await conv.collect([
+        {"key": "name", "prompt": "请输入姓名"},
+        {"key": "age", "prompt": "请输入年龄",
+         "validator": lambda e: e.get_text().strip().isdigit(),
+         "retry_prompt": "年龄必须是数字，请重新输入"},
+    ])
+    
+    if data and await conv.confirm(f"确认注册？姓名: {data['name']}, 年龄: {data['age']}"):
+        # 通过 SendDSL 主动推送通知
+        await sdk.adapter.get(event.get_platform()).Send.To(
+            "user", event.get_user_id()
+        ).Text(f"注册成功！欢迎 {data['name']}")
+        # 或 await event.reply("注册成功！")
+
+# 自动处理好友请求
+@request.on_friend_request()
+async def handle_friend_request(event):
+    user_name = event.get_user_nickname() or event.get_user_id()
+    
+    # 同意请求
+    result = await event.approve()
+    if result.get("status") == "ok":
+        await event.reply(f"已自动通过好友请求，欢迎 {user_name}")
+```
+
+<details>
+<summary>查看更多 Conversation API（分支跳转 / 选择 / 持久化）</summary>
+
+```python
+@command("quiz")
+async def quiz_handler(event):
+    conv = event.conversation(timeout=30)
+    
+    # 选项式问答
+    answer = await conv.choose("Python 的创造者是谁？", [
+        "Guido van Rossum",
+        "James Gosling", 
+        "Dennis Ritchie",
+    ])
+    
+    if answer == 0:
+        await conv.say("正确！")
+    elif answer is None:
+        await conv.say("超时了，下次再来吧！")
+    else:
+        await conv.say("错误了，正确答案是 Guido van Rossum")
+
+@command("menu")
+async def menu_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    # 分支跳转，构建复杂交互流程
+    @conv.branch("main")
+    async def main_menu():
+        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "1":
+            await conv.goto("profile")
+    
+    @conv.branch("profile")
+    async def profile():
+        await conv.say("姓名: Alice\n0. 返回")
+        resp = await conv.wait()
+        if resp and resp.get_text().strip() == "0":
+            await conv.goto("main")
+    
+    await conv.start()
+```
+
+详见 [Conversation 多轮对话](docs/zh-CN/advanced/conversation.md)
+
+</details>
+
 ---
 
 ### 支持的适配器
