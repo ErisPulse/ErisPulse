@@ -74,42 +74,42 @@ Directly provide HTML, JS, and CSS strings, and Dashboard will inject the conten
 ```python
 sdk.Dashboard.register_view(
     id="Weather",
-    title="天气", title_en="Weather",
+    title="Weather", title_en="Weather",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
     html_content='''
-        <h1 class="page-title">天气查询</h1>
+        <h1 class="page-title">Weather Query</h1>
+        <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
         <div class="grid-2">
             <div class="card">
-                <div class="card-header">当前天气</div>
+                <div class="card-header">Current Weather</div>
                 <div class="card-body">
-                    <div id="weather-info">加载中...</div>
+                    <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                 </div>
             </div>
             <div class="card">
-                <div class="card-header">操作</div>
+                <div class="card-header">Operations</div>
                 <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                    <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                 </div>
             </div>
         </div>
     ''',
     js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
+        async function loadWeatherView() { await refreshWeather(); }
         async function refreshWeather() {
             var el = document.getElementById('weather-info');
             if (!el) return;
+            el.textContent = 'Loading...';
             try {
-                var token = localStorage.getItem('__ep_tk__');
                 var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                 });
                 var data = await resp.json();
-                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                               '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
             } catch (e) {
-                el.textContent = '加载失败: ' + e.message;
+                el.textContent = 'Failed to load: ' + e.message;
             }
         }
     ''',
@@ -125,7 +125,7 @@ The module provides its own HTML page URL (which needs to register its own route
 ```python
 sdk.Dashboard.register_view(
     id="MyVisualizer",
-    title="数据可视化", title_en="Data Visualizer",
+    title="Data Visualizer", title_en="Data Visualizer",
     iframe_url="/MyVisualizer/view",
     group="group_tools",
 )
@@ -141,11 +141,11 @@ Modules can specify the sidebar group where their view should be placed. Dashboa
 
 | Group ID | Chinese Name | Position |
 |----------|--------------|----------|
-| `group_overview` | 概览 | Group 1 |
-| `group_events` | 事件 | Group 2 |
-| `group_extensions` | 扩展 | Group 3 (Default) |
-| `group_system` | 系统 | Group 4 |
-| `group_tools` | 工具 | Group 5 |
+| `group_overview` | Overview | Group 1 |
+| `group_events` | Events | Group 2 |
+| `group_extensions` | Extensions | Group 3 (Default) |
+| `group_system` | System | Group 4 |
+| `group_tools` | Tools | Group 5 |
 
 Specifying a built-in group name will append the module view to the end of that group:
 
@@ -157,7 +157,7 @@ Custom group names (not starting with `group_`) can also be used, and Dashboard 
 
 ```python
 group="my_group",
-group_title="我的分组",
+group_title="My Group",
 group_title_en="My Group",
 ```
 
@@ -250,18 +250,18 @@ class Main(BaseModule):
     async def on_load(self, event):
         self._register_routes()
         self._register_dashboard_view()
-        self.logger.info("天气模块已加载")
+        self.logger.info("Weather module loaded")
 
     async def on_unload(self, event):
         self._unregister_routes()
         if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
             self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("天气模块已卸载")
+        self.logger.info("Weather module unloaded")
 
     def _load_config(self):
         config = self.sdk.config.getConfig("Weather")
         if not config:
-            default = {"city": "北京", "api_key": ""}
+            default = {"city": "Beijing", "api_key": ""}
             self.sdk.config.setConfig("Weather", default)
             return default
         return config
@@ -281,7 +281,7 @@ class Main(BaseModule):
     async def _api_current(self, request):
         from fastapi.responses import JSONResponse
         return JSONResponse({
-            "city": self.config.get("city", "北京"),
+            "city": self.config.get("city", "Beijing"),
             "temp": 25,
             "humidity": 60,
         })
@@ -291,22 +291,22 @@ class Main(BaseModule):
             dashboard = self.sdk.Dashboard
             dashboard.register_view(
                 id="Weather",
-                title="天气", title_en="Weather",
+                title="Weather", title_en="Weather",
                 icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
                 html_content='''
-                    <h1 class="page-title">天气查询</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
+                    <h1 class="page-title">Weather Query</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
                     <div class="grid-2">
                         <div class="card">
-                            <div class="card-header">当前天气</div>
+                            <div class="card-header">Current Weather</div>
                             <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                             </div>
                         </div>
                         <div class="card">
-                            <div class="card-header">操作</div>
+                            <div class="card-header">Operations</div>
                             <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                                <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                             </div>
                         </div>
                     </div>
@@ -316,17 +316,17 @@ class Main(BaseModule):
                     async function refreshWeather() {
                         var el = document.getElementById('weather-info');
                         if (!el) return;
-                        el.textContent = '加载中...';
+                        el.textContent = 'Loading...';
                         try {
                             var resp = await fetch('/Weather/api/current', {
                                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                             });
                             var data = await resp.json();
-                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
-                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                            el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                                           '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
                         } catch (e) {
-                            el.textContent = '加载失败: ' + e.message;
+                            el.textContent = 'Failed to load: ' + e.message;
                         }
                     }
                 ''',
@@ -334,7 +334,7 @@ class Main(BaseModule):
                 group="group_tools",
             )
         except Exception as e:
-            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
+            self.logger.warning(f"Failed to register Dashboard view: {e}")
 ```
 
 ---

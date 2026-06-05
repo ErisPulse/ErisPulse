@@ -525,3 +525,79 @@ async def handle_message(event):
         # Ответ на сообщение с использованием того же аккаунта
         yunhu_user = adapter.get("yunhu_user")
         await
+```
+
+## API 调用
+
+Адаптер предоставляет метод `call_api`, поддерживающий прямой вызов платформенных API:
+
+```python
+# 发送消息
+result = await yunhu_user.call_api("/send", 
+    target_type="group", 
+    target_id="group_id",
+    account_id="default",
+    message={"text": "Hello", "msg_type": 1}
+)
+
+# 编辑消息
+result = await yunhu_user.call_api("/edit",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id",
+    text="新内容",
+    content_type="text"
+)
+
+# 撤回消息
+result = await yunhu_user.call_api("/recall",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id"
+)
+
+# 批量撤回消息
+result = await yunhu_user.call_api("/recall_batch",
+    target_type="group",
+    target_id="group_id",
+    msg_id_list=["msg_id_1", "msg_id_2"]
+)
+
+# 获取消息列表
+result = await yunhu_user.call_api("/list",
+    chat_id="group_id",
+    chat_type=2,
+    msg_count=10,
+    msg_id=""
+)
+
+# 获取消息编辑记录
+result = await yunhu_user.call_api("/list_edit_record",
+    msg_id="msg_id",
+    size=10,
+    page=1
+)
+
+# 按钮事件报告
+result = await yunhu_user.call_api("/button_report",
+    chat_id="group_id",
+    chat_type=2,
+    msg_id="msg_id",
+    user_id="user_id",
+    button_value="button_value"
+)
+```
+
+**Поддерживаемые API-конечные точки:**
+
+| Конечная точка | Описание |
+|------|------|
+| `/send` | Отправка сообщения |
+| `/edit` | Редактирование сообщения |
+| `/recall` | Отзыв сообщения |
+| `/recall_batch` | Массовый отзыв сообщения |
+| `/list` | Получение списка сообщений |
+| `/list_by_seq` | Получение сообщения по последовательности |
+| `/list_by_mid_seq` | Получение сообщения по ID и последовательности |
+| `/list_edit_record` | Получение записей редактирования сообщений |
+| `/button_report` | Отчет о событиях кнопок |

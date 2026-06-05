@@ -490,3 +490,232 @@ async def auth_handler(websocket: WebSocket) -> bool:
     return token == "secret"
 
 sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# 取消路由
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**參數說明：**
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函數 | - |
+| `auth_handler` | 認證函數，返回 `False` 會自動關閉連線 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
+
+> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設置 `auto_accept=False`。
+
+### 路由分組
+
+```python
+# 建立路由組
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在組內註冊路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 帶版本號的分組
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中間件
+
+```python
+# 全局中間件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路徑中間件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 對路由設置速率限制（滑動窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代碼方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全頭
+
+```python
+# 自動添加安全響應頭
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動文檔
+
+```python
+# Router 預設啟用 OpenAPI 文檔
+# 禁用文檔
+sdk.router.disable_docs()
+
+# 自定義文檔信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文檔",
+    version="1.0.0"
+)
+```
+
+### 路由信息
+
+```python
+app = sdk.router.get_app()
+```
+
+## HTTP Client 模組
+
+### 基本請求
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 請求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 響應對象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 狀態碼 (如 200, 404)
+resp.reason        # str | None - 狀態描述 (如 "OK")
+resp.headers       # 響應頭 (大小寫不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最終 URL (可能因重定向變化)
+resp.raw           # 底層原生響應對象 (當前為 aiohttp.ClientResponse)
+
+# 讀取響應體
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定編碼
+```
+
+### 請求參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | 請求 URL |
+| `params` | `dict[str, str]` | 查詢參數 (可選) |
+| `headers` | `dict[str, str]` | 額外請求頭 (可選) |
+| `data` | `Any` | 請求體 (表單或原始數據) (可選) |
+| `json` | `Any` | JSON 請求體 (可選) |
+| `timeout` | `float` | 本次請求超時 (秒) (可選, 覆蓋默認值) |
+| `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋默認值) |
+
+### 自定義客戶端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 創建自定義客戶端（非全局單例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自動關閉會話
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 請求統計
+
+```python
+from ErisPulse.Core import client
+
+# 查看統計
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置統計
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+## 相關文檔
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
+- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
