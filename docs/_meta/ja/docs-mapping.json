@@ -4,7 +4,7 @@
   "categories": {
     "クイックスタート": {
       "description": "ErisPulse クイックスタートガイド",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "ErisPulse ドキュメント",
@@ -36,7 +36,7 @@
     },
     "入門ガイド": {
       "description": "ErisPulse の基本概念とチュートリアル",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "最初のボットを作成する",
@@ -68,7 +68,7 @@
     },
     "ユーザーガイド": {
       "description": "ErisPulse の設定とコマンドリファレンス",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "ユーザー使用ガイド",
@@ -100,7 +100,7 @@
     },
     "開発者ガイド": {
       "description": "モジュールとアダプターの開発ガイド",
-      "count": 22,
+      "count": 11,
       "documents": [
         {
           "title": "開発者ガイド",
@@ -173,7 +173,7 @@
     },
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
-      "count": 24,
+      "count": 12,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -231,7 +231,7 @@
           "level": 1
         },
         {
-          "title": "Yunhu ユーザープラットフォーム機能ドキュメント",
+          "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
           "path": "platform-guide/yunhu_user.md",
           "level": 1
         }
@@ -240,7 +240,7 @@
     },
     "API リファレンス": {
       "description": "コア API とインターフェースドキュメント",
-      "count": 8,
+      "count": 4,
       "documents": [
         {
           "title": "API リファレンス",
@@ -267,7 +267,7 @@
     },
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
-      "count": 20,
+      "count": 10,
       "documents": [
         {
           "title": "高度なトピック",
@@ -324,7 +324,7 @@
     },
     "AI 支援開発": {
       "description": "AI を活用した ErisPulse 開発",
-      "count": 2,
+      "count": 1,
       "documents": [
         {
           "title": "AI アシスト開発",
@@ -336,7 +336,7 @@
     },
     "技術標準": {
       "description": "フレームワークの技術仕様と標準",
-      "count": 12,
+      "count": 6,
       "documents": [
         {
           "title": "技術標準",
@@ -373,7 +373,7 @@
     },
     "スタイルガイド": {
       "description": "コードとドキュメントのスタイルガイドライン",
-      "count": 4,
+      "count": 2,
       "documents": [
         {
           "title": "スタイルガイド",
