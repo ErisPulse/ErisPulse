@@ -964,7 +964,7 @@ async def connect_handler(event):
 
 ## Core Module Explanations
 
-### Storage (存储)
+### Storage（存储）
 
 A SQLite-based key-value storage system for persistent data.
 
@@ -987,7 +987,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config (配置)
+### Config（配置）
 
 TOML format configuration file management.
 
@@ -1002,7 +1002,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger (日志)
+### Logger（日志）
 
 A modular logging system.
 
@@ -1029,7 +1029,7 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router (路由)
+### Router（路由）
 
 HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
 
@@ -1058,13 +1058,14 @@ from fastapi import Request, WebSocket
 async def handler2(request: Request):
     return {"status": "ok"}
 ```
+
 > **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
 > 
 > **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
 
 For more routing features, please refer to [Router Manager](../advanced/router.md).
 
-### Client (HTTP 客户端)
+### Client（HTTP 客户端）
 
 Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
 
@@ -1087,6 +1088,7 @@ resp.headers       # Response headers
 body = await resp.text()   # Text response body
 data = await resp.json()   # JSON parsing
 ```
+
 > The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
 >
 > You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
@@ -1731,7 +1733,81 @@ async def handle_message(event):
     platform = event.get_platform()
 
     # Call specific methods based on platform
-    if platform ==
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram specific method
+    elif platform == "email":
+        subject = event.get_subject()           # Email specific method
+```
+
+If you are unsure whether a platform has registered a method, you can query which methods a platform has registered:
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> Refer to the corresponding [Platform Documentation](../platform-guide/) for platform-specific methods registered by each platform.
+
+## Event Handling Best Practices
+
+### 1. Exception Handling
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # Business logic
+        result = await do_some_work()
+        await event.reply(f"Result: {result}")
+    except ValueError as e:
+        # Expected business error
+        await event.reply(f"Parameter error: {e}")
+    except Exception as e:
+        # Unexpected error
+        sdk.logger.error(f"Processing failed: {e}")
+        await event.reply("Processing failed, please try again later")
+```
+
+### 2. Logging
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"Processing message: {user_id} - {text}")
+    
+    # Use module's own logger
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"Detailed debug info")
+```
+
+### 3. Conditional Handling
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """Conditional handling - Judged within the handler"""
+    # Only process messages from specific users
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # Only process messages containing specific keywords
+    if "Keywords" not in event.get_text():
+        return
+    
+    await event.reply("Condition met, processing message")
+```
+
+## Next Steps
+
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into the Event object
+- [User Guide](../user-guide/) - Learn about configuration and module management
 
 
 
@@ -5229,13 +5305,13 @@ resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 Wait for user confirmation (yes/no), returns `True` / `False` / `None` (timeout):
 
 ```python
-result = await conv.confirm("Are you sure you want to delete all data?")
+result = await conv.confirm("确定要删除所有数据吗？")
 if result is True:
-    await conv.say("Deleted")
+    await conv.say("已删除")
 elif result is False:
-    await conv.say("Cancelled")
+    await conv.say("已取消")
 else:
-    await conv.say("Timeout, no reply")
+    await conv.say("超时未回复")
 ```
 
 Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
@@ -5247,13 +5323,13 @@ Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/fa
 Wait for user to select from options, returns option index (0-based) or `None`:
 
 ```python
-choice = await conv.choose("Please choose a color:", ["Red", "Green", "Blue"])
+choice = await conv.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
 if choice is not None:
-    colors = ["Red", "Green", "Blue"]
-    await conv.say(f"You chose {colors[choice]}")
+    colors = ["红色", "绿色", "蓝色"]
+    await conv.say(f"你选择了 {colors[choice]}")
 ```
 
-Users can select by entering numbers (`1`/`2`/`3`) or option text (`Red`).
+Users can select by entering numbers (`1`/`2`/`3`) or option text (`红色`).
 
 ### collect(fields, **kwargs)
 
@@ -5261,17 +5337,17 @@ Multi-step information collection, returns a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
-    {"key": "name", "prompt": "Please enter name"},
-    {"key": "age", "prompt": "Please enter age",
+    {"key": "name", "prompt": "请输入姓名"},
+    {"key": "age", "prompt": "请输入年龄",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "Age must be a number, please re-enter"},
-    {"key": "city", "prompt": "Please enter city"},
+     "retry_prompt": "年龄必须是数字，请重新输入"},
+    {"key": "city", "prompt": "请输入城市"},
 ])
 
 if data:
-    await conv.say(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nCity: {data['city']}")
+    await conv.say(f"注册成功！\n姓名: {data['name']}\n年龄: {data['age']}\n城市: {data['city']}")
 else:
-    await conv.say("Registration process interrupted")
+    await conv.say("注册过程中断")
 ```
 
 Field configuration:
@@ -5279,9 +5355,9 @@ Field configuration:
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
 | `key` | Field key name (required) | - |
-| `prompt` | Prompt message | `"Please enter {key}"` |
+| `prompt` | Prompt message | `"请输入 {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
-| `retry_prompt` | Retry prompt on validation failure | `"Input invalid, please re-enter"` |
+| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
 | `max_retries` | Maximum retry times | 3 |
 | `condition` | Condition function, receives collected data dict, returns bool | None |
 
@@ -5289,9 +5365,9 @@ Field configuration:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter car brand",
-     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
+    {"key": "has_car", "prompt": "你有车吗？（是/否）"},
+    {"key": "car_brand", "prompt": "请输入车型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
 ])
 ```
 
@@ -5309,7 +5385,7 @@ Whether the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("Conversation is still in progress")
+    await conv.say("对话还在进行中")
 ```
 
 ## Active State Management
@@ -5335,7 +5411,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
+        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -5345,19 +5421,19 @@ async def menu_handler(event):
         elif text == "2":
             await conv.goto("settings")
         elif text == "3":
-            await conv.say("Goodbye!")
+            await conv.say("再见！")
             conv.stop()
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        await conv.say("=== 个人信息 ===\n姓名: Alice\n0. 返回")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
+        await conv.say("=== 设置 ===\n1. 通知开关\n0. 返回")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -5388,8 +5464,8 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "Unknown")
-    await conv.say(f"Hello, {name}!")
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
 ```
 
 ### save() / resume() / clear_saved()
@@ -5404,9 +5480,9 @@ conv_id = conv.save()
 # ... later in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("Welcome back! Continuing the previous conversation")
+    await conv2.say("欢迎回来！继续之前的对话")
 else:
-    await conv2.say("No previous conversation found")
+    await conv2.say("没有找到之前的对话")
 
 # Clear saved conversation
 conv.clear_saved()
@@ -5421,28 +5497,28 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("Welcome to register!")
+    await conv.say("欢迎注册！")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "Please enter username (3-20 characters)",
+        {"key": "username", "prompt": "请输入用户名（3-20个字符）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "Please enter email address",
+        {"key": "email", "prompt": "请输入邮箱地址",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "Email format is incorrect, please re-enter"},
+         "retry_prompt": "邮箱格式不正确，请重新输入"},
     ])
 
     if not data:
-        await event.reply("Registration cancelled")
+        await event.reply("注册已取消")
         return
 
     confirmed = await conv.confirm(
-        f"Confirm registration information?\nUsername: {data['username']}\nEmail: {data['email']}"
+        f"确认注册信息？\n用户名: {data['username']}\n邮箱: {data['email']}"
     )
 
     if confirmed:
-        await conv.say("✅ Registration successful!")
+        await conv.say("✅ 注册成功！")
     else:
-        await conv.say("❌ Registration cancelled")
+        await conv.say("❌ 已取消注册")
 ```
 
 ### Looping Conversation
@@ -5451,31 +5527,31 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Enter conversation mode, type 'exit' to end")
+    await conv.say("进入对话模式，输入「退出」结束")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timeout, conversation ended")
+            await conv.say("超时，对话结束")
             break
 
         text = resp.get_text().strip()
 
-        if text == "exit":
-            await conv.say("Goodbye!")
+        if text == "退出":
+            await conv.say("再见！")
             conv.stop()
-        elif text == "help":
-            await conv.say("Available commands: exit, help, status")
-        elif text == "status":
-            await conv.say("Conversation active")
+        elif text == "帮助":
+            await conv.say("可用命令：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("对话活跃中")
         else:
-            await conv.say(f"You said: {text}")
+            await conv.say(f"你说的是：{text}")
 ```
 
 ## Related Documentation
 
-- [Event Wrapper](../../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Introduction to Event Handling](../../getting-started/event-handling.md) - Event handling basics
+- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Introduction to Event Handling](../getting-started/event-handling.md) - Event handling basics
 
 
 
@@ -6742,42 +6818,42 @@ Directly provide HTML, JS, and CSS strings, and Dashboard will inject the conten
 ```python
 sdk.Dashboard.register_view(
     id="Weather",
-    title="天气", title_en="Weather",
+    title="Weather", title_en="Weather",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
     html_content='''
-        <h1 class="page-title">天气查询</h1>
+        <h1 class="page-title">Weather Query</h1>
+        <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
         <div class="grid-2">
             <div class="card">
-                <div class="card-header">当前天气</div>
+                <div class="card-header">Current Weather</div>
                 <div class="card-body">
-                    <div id="weather-info">加载中...</div>
+                    <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                 </div>
             </div>
             <div class="card">
-                <div class="card-header">操作</div>
+                <div class="card-header">Operations</div>
                 <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                    <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                 </div>
             </div>
         </div>
     ''',
     js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
+        async function loadWeatherView() { await refreshWeather(); }
         async function refreshWeather() {
             var el = document.getElementById('weather-info');
             if (!el) return;
+            el.textContent = 'Loading...';
             try {
-                var token = localStorage.getItem('__ep_tk__');
                 var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                 });
                 var data = await resp.json();
-                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                               '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
             } catch (e) {
-                el.textContent = '加载失败: ' + e.message;
+                el.textContent = 'Failed to load: ' + e.message;
             }
         }
     ''',
@@ -6793,7 +6869,7 @@ The module provides its own HTML page URL (which needs to register its own route
 ```python
 sdk.Dashboard.register_view(
     id="MyVisualizer",
-    title="数据可视化", title_en="Data Visualizer",
+    title="Data Visualizer", title_en="Data Visualizer",
     iframe_url="/MyVisualizer/view",
     group="group_tools",
 )
@@ -6809,11 +6885,11 @@ Modules can specify the sidebar group where their view should be placed. Dashboa
 
 | Group ID | Chinese Name | Position |
 |----------|--------------|----------|
-| `group_overview` | 概览 | Group 1 |
-| `group_events` | 事件 | Group 2 |
-| `group_extensions` | 扩展 | Group 3 (Default) |
-| `group_system` | 系统 | Group 4 |
-| `group_tools` | 工具 | Group 5 |
+| `group_overview` | Overview | Group 1 |
+| `group_events` | Events | Group 2 |
+| `group_extensions` | Extensions | Group 3 (Default) |
+| `group_system` | System | Group 4 |
+| `group_tools` | Tools | Group 5 |
 
 Specifying a built-in group name will append the module view to the end of that group:
 
@@ -6825,7 +6901,7 @@ Custom group names (not starting with `group_`) can also be used, and Dashboard 
 
 ```python
 group="my_group",
-group_title="我的分组",
+group_title="My Group",
 group_title_en="My Group",
 ```
 
@@ -6918,18 +6994,18 @@ class Main(BaseModule):
     async def on_load(self, event):
         self._register_routes()
         self._register_dashboard_view()
-        self.logger.info("天气模块已加载")
+        self.logger.info("Weather module loaded")
 
     async def on_unload(self, event):
         self._unregister_routes()
         if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
             self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("天气模块已卸载")
+        self.logger.info("Weather module unloaded")
 
     def _load_config(self):
         config = self.sdk.config.getConfig("Weather")
         if not config:
-            default = {"city": "北京", "api_key": ""}
+            default = {"city": "Beijing", "api_key": ""}
             self.sdk.config.setConfig("Weather", default)
             return default
         return config
@@ -6949,7 +7025,7 @@ class Main(BaseModule):
     async def _api_current(self, request):
         from fastapi.responses import JSONResponse
         return JSONResponse({
-            "city": self.config.get("city", "北京"),
+            "city": self.config.get("city", "Beijing"),
             "temp": 25,
             "humidity": 60,
         })
@@ -6959,22 +7035,22 @@ class Main(BaseModule):
             dashboard = self.sdk.Dashboard
             dashboard.register_view(
                 id="Weather",
-                title="天气", title_en="Weather",
+                title="Weather", title_en="Weather",
                 icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
                 html_content='''
-                    <h1 class="page-title">天气查询</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
+                    <h1 class="page-title">Weather Query</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
                     <div class="grid-2">
                         <div class="card">
-                            <div class="card-header">当前天气</div>
+                            <div class="card-header">Current Weather</div>
                             <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                             </div>
                         </div>
                         <div class="card">
-                            <div class="card-header">操作</div>
+                            <div class="card-header">Operations</div>
                             <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                                <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                             </div>
                         </div>
                     </div>
@@ -6984,17 +7060,17 @@ class Main(BaseModule):
                     async function refreshWeather() {
                         var el = document.getElementById('weather-info');
                         if (!el) return;
-                        el.textContent = '加载中...';
+                        el.textContent = 'Loading...';
                         try {
                             var resp = await fetch('/Weather/api/current', {
                                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                             });
                             var data = await resp.json();
-                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
-                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                            el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                                           '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
                         } catch (e) {
-                            el.textContent = '加载失败: ' + e.message;
+                            el.textContent = 'Failed to load: ' + e.message;
                         }
                     }
                 ''',
@@ -7002,7 +7078,7 @@ class Main(BaseModule):
                 group="group_tools",
             )
         except Exception as e:
-            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
+            self.logger.warning(f"Failed to register Dashboard view: {e}")
 ```
 
 ---

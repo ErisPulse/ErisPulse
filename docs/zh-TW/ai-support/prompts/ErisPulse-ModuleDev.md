@@ -1530,6 +1530,264 @@ async def confirm_handler(event):
         text = reply_event.get_text().lower()
         
         if text in ["是", "yes", "y"]:
+            await event.reply("操作已確認！")
+        else:
+            await event.reply("操作已取消。")
+    
+    await event.reply("確認執行此操作嗎？(是/否)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
+
+### 確認對話 (confirm)
+
+等待使用者確認或否定，自動識別內置中英文確認詞：
+
+```python
+@command("confirm", help="確認操作")
+async def confirm_handler(event):
+    if await event.confirm("確定要執行此操作嗎？"):
+        await event.reply("已確認，執行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定義確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 選擇選單 (choose)
+
+使用者可回覆選項編號或選項文本：
+
+```python
+@command("choose", help="選擇")
+async def choose_handler(event):
+    choice = await event.choose(
+        "請選擇顏色：",
+        ["紅色", "綠色", "藍色"]
+    )
+    
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+    else:
+        await event.reply("逾時未選擇")
+```
+
+### 收集表單 (collect)
+
+多步驟收集使用者輸入：
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "請輸入郵箱："}
+    ])
+    
+    if data:
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+    else:
+        await event.reply("註冊逾時或輸入無效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待滿足條件的任意事件，不限於同一使用者：
+
+```python
+@command("wait_member", help="等待新成員")
+async def wait_member_handler(event):
+    await event.reply("等待群組成員加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
+    else:
+        await event.reply("等待逾時")
+```
+
+### 多輪對話 (conversation)
+
+建立可互動的多輪對話上下文：
+
+```python
+@command("survey", help="問卷調查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎參與問卷調查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("對話逾時，再見！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再見！")
+            break
+        
+        await conv.say(f"你說了：{text}，繼續輸入或回覆'退出'結束")
+```
+
+### 內置確認詞
+
+ErisPulse 內置了中英文確認詞集合：
+
+- **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
+- **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
+
+## 事件數據訪問
+
+### Event 物件常用方法
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基礎資訊
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 發送者資訊
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 訊息內容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # 群組資訊
+    group_id = event.get_group_id()
+    
+    # 機器人資訊
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始資料
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # 平台資訊
+    platform = event.get_platform()
+    
+    # 訊息類型判斷
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # 命令資訊
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### 平台擴展方法
+
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台呼叫專有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 專有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 郵件專有方法
+```
+
+如果不确定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台註冊的專有方法請參閱對應的 [平台文件](../platform-guide/)。
+
+## 事件處理最佳實踐
+
+### 1. 異常處理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # 業務邏輯
+        result = await do_some_work()
+        await event.reply(f"結果: {result}")
+    except ValueError as e:
+        # 預期的業務錯誤
+        await event.reply(f"參數錯誤: {e}")
+    except Exception as e:
+        # 未預期的錯誤
+        sdk.logger.error(f"處理失敗: {e}")
+        await event.reply("處理失敗，請稍後重試")
+```
+
+### 2. 日誌記錄
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"處理訊息: {user_id} - {text}")
+    
+    # 使用模組自己的日誌
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"詳細除錯資訊")
+```
+
+### 3. 條件處理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """條件處理 - 在處理器內部判斷"""
+    # 只處理特定使用者的訊息
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 只處理包含特定關鍵詞的訊息
+    if "關鍵詞" not in event.get_text():
+        return
+    
+    await event.reply("條件滿足，處理訊息")
+```
+
+## 下一步
+
+- [常見任務範例](common-tasks.md) - 學習常用功能的實作
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 
 
@@ -1537,16 +1795,16 @@ async def confirm_handler(event):
 
 # 常見任務範例
 
-本指南提供常見功能的實作範例，幫助您快速實作常用功能。
+本指南提供常見功能的實作範例，幫助你快速實作常用功能。
 
 ## 內容列表
 
 1. 資料持久化
 2. 定時任務
-3. 訊息過濾
+3. 消息過濾
 4. 多平台適配
 5. 權限控制
-6. 訊息統計
+6. 消息統計
 7. 搜尋功能
 8. 圖片處理
 
@@ -1644,7 +1902,7 @@ class TimerModule:
     async def _every_minute(self):
         """每分鐘執行的任務"""
         self.sdk.logger.info("每分鐘任務執行")
-        # 您的邏輯...
+        # 你的邏輯...
     
     async def _daily_task(self):
         """每天凌晨執行的任務"""
@@ -1659,7 +1917,7 @@ class TimerModule:
             
             # 執行任務
             self.sdk.logger.info("每日任務執行")
-            # 您的邏輯...
+            # 你的邏輯...
 ```
 
 ### 使用生命週期事件
@@ -1667,7 +1925,320 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """SDK 初始化完成後啟動定時
+    """SDK 初始化完成後啟動定時任務"""
+    import asyncio
+    
+    async def daily_reminder():
+        """每日提醒"""
+        await asyncio.sleep(86400)  # 24小時
+        self.sdk.logger.info("執行每日任務")
+    
+    # 启动后台任务
+    asyncio.create_task(daily_reminder())
+```
+
+## 消息過濾
+
+### 關鍵詞過濾
+
+```python
+from ErisPulse.Core.Event import message
+
+blocked_words = ["垃圾", "廣告", "釣魚"]
+
+@message.on_message()
+async def filter_handler(event):
+    text = event.get_text()
+    
+    # 檢查是否包含敏感詞
+    for word in blocked_words:
+        if word in text:
+            sdk.logger.warning(f"攔截敏感訊息: {word}")
+            return  # 不處理此訊息
+    
+    # 正常處理訊息
+    await event.reply(f"收到: {text}")
+```
+
+### 黑名單過濾
+
+```python
+# 從配置或儲存載入黑名單
+blacklist = sdk.storage.get("user_blacklist", [])
+
+@message.on_message()
+async def blacklist_handler(event):
+    user_id = event.get_user_id()
+    
+    if user_id in blacklist:
+        sdk.logger.info(f"黑名單使用者: {user_id}")
+        return  # 不處理
+    
+    # 正常處理
+    await event.reply(f"你好，{user_id}")
+```
+
+## 多平台適配
+
+### 平台特定回應
+
+```python
+@command("help", help="顯示幫助")
+async def help_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("雲湖平台幫助...")
+    elif platform == "telegram":
+        await event.reply("Telegram platform help...")
+    elif platform == "onebot11":
+        await event.reply("OneBot11 help...")
+    else:
+        await event.reply("通用幫助資訊")
+```
+
+### 平台特性檢測
+
+```python
+@command("rich", help="發送富文本訊息")
+async def rich_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        # 雲湖支援 HTML
+        yunhu = sdk.adapter.get("yunhu")
+        await yunhu.Send.To("user", event.get_user_id()).Html(
+            "<b>加粗文本</b><i>斜體文本</i>"
+        )
+    elif platform == "telegram":
+        # Telegram 支援 Markdown
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.To("user", event.get_user_id()).Markdown(
+            "**加粗文本** *斜體文本*"
+        )
+    else:
+        # 其他平台使用純文字
+        await event.reply("加粗文本 斜體文本")
+```
+
+## 權限控制
+
+### 管理員檢查
+
+```python
+# 配置管理員列表
+ADMINS = ["user123", "user456"]
+
+def is_admin(user_id):
+    """檢查是否為管理員"""
+    return user_id in ADMINS
+
+@command("admin", help="管理員命令")
+async def admin_handler(event):
+    user_id = event.get_user_id()
+    
+    if not is_admin(user_id):
+        await event.reply("權限不足，此命令僅管理員可用")
+        return
+    
+    await event.reply("管理員命令執行成功")
+
+@command("addadmin", help="新增管理員")
+async def addadmin_handler(event):
+    if not is_admin(event.get_user_id()):
+        return
+    
+    args = event.get_command_args()
+    if not args:
+        await event.reply("請輸入要新增的管理員 ID")
+        return
+    
+    new_admin = args[0]
+    ADMINS.append(new_admin)
+    await event.reply(f"已新增管理員: {new_admin}")
+```
+
+### 群組權限
+
+```python
+@command("groupinfo", help="查看群組資訊")
+async def groupinfo_handler(event):
+    if not event.is_group_message():
+        await event.reply("此命令僅限群聊使用")
+        return
+    
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    
+    await event.reply(f"群組 ID: {group_id}, 你的 ID: {user_id}")
+```
+
+## 消息統計
+
+### 消息計數
+
+```python
+@message.on_message()
+async def count_handler(event):
+    # 取得統計
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    # 更新統計
+    stats["total"] += 1
+    
+    user_id = event.get_user_id()
+    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
+    
+    # 保存
+    sdk.storage.set("message_stats", stats)
+
+@command("stats", help="查看消息統計")
+async def stats_handler(event):
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    top_users = sorted(
+        stats["by_user"].items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+    
+    top_text = "\n".join(
+        f"{uid}: {count} 條訊息" for uid, count in top_users
+    )
+    
+    await event.reply(f"總訊息數: {stats['total']}\n\n活躍用戶:\n{top_text}")
+```
+
+## 搜尋功能
+
+### 簡單搜尋
+
+```python
+from ErisPulse.Core.Event import command, message
+
+# 儲存訊息歷史
+message_history = []
+
+@message.on_message()
+async def store_handler(event):
+    """儲存訊息用於搜尋"""
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    message_history.append({
+        "user_id": user_id,
+        "text": text,
+        "time": event.get_time()
+    })
+    
+    # 限制歷史記錄數量
+    if len(message_history) > 1000:
+        message_history.pop(0)
+
+@command("search", help="搜尋訊息")
+async def search_handler(event):
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("請輸入搜尋關鍵字")
+        return
+    
+    keyword = " ".join(args)
+    results = []
+    
+    # 搜尋歷史記錄
+    for msg in message_history:
+        if keyword in msg["text"]:
+            results.append(msg)
+    
+    if not results:
+        await event.reply("未找到匹配的訊息")
+        return
+    
+    # 顯示結果
+    result_text = f"找到 {len(results)} 條匹配訊息:\n\n"
+    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
+        result_text += f"{i}. {msg['text']}\n"
+    
+    await event.reply(result_text)
+```
+
+## 圖片處理
+
+### 圖片下載和儲存
+
+```python
+from ErisPulse.Core import client
+
+@message.on_message()
+async def image_handler(event):
+    """處理圖片訊息"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            if file_url:
+                # 推薦使用 SDK 內建客戶端下載圖片
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # 儲存到檔案
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"圖片已儲存: {filename}")
+                    await event.reply("圖片已儲存")
+```
+
+### 圖片識別示例
+
+```python
+from ErisPulse.Core import client
+
+@command("identify", help="識別圖片")
+async def identify_handler(event):
+    """識別訊息中的圖片"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            # 呼叫圖片識別 API
+            result = await _identify_image(file_url)
+            
+            await event.reply(f"識別結果: {result}")
+            return
+    
+    await event.reply("未找到圖片")
+
+async def _identify_image(url):
+    """呼叫圖片識別 API（示例）- 使用 SDK 內建客戶端"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "識別失敗")
+```
+
+## 下一步
+
+- [使用者使用指南](../user-guide/) - 了解配置和模組管理
+- [開發者指南](../developer-guide/) - 學習開發模組和適配器
+- [進階主題](../advanced/) - 深入了解框架特性
 
 
 
@@ -3817,6 +4388,235 @@ async def auth_handler(websocket: WebSocket) -> bool:
     return token == "secret"
 
 sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# 取消路由
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**參數說明：**
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函數 | - |
+| `auth_handler` | 認證函數，返回 `False` 會自動關閉連線 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
+
+> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設置 `auto_accept=False`。
+
+### 路由分組
+
+```python
+# 建立路由組
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在組內註冊路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 帶版本號的分組
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中間件
+
+```python
+# 全局中間件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路徑中間件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 對路由設置速率限制（滑動窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代碼方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全頭
+
+```python
+# 自動添加安全響應頭
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動文檔
+
+```python
+# Router 預設啟用 OpenAPI 文檔
+# 禁用文檔
+sdk.router.disable_docs()
+
+# 自定義文檔信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文檔",
+    version="1.0.0"
+)
+```
+
+### 路由信息
+
+```python
+app = sdk.router.get_app()
+```
+
+## HTTP Client 模組
+
+### 基本請求
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 請求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 響應對象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 狀態碼 (如 200, 404)
+resp.reason        # str | None - 狀態描述 (如 "OK")
+resp.headers       # 響應頭 (大小寫不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最終 URL (可能因重定向變化)
+resp.raw           # 底層原生響應對象 (當前為 aiohttp.ClientResponse)
+
+# 讀取響應體
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定編碼
+```
+
+### 請求參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | 請求 URL |
+| `params` | `dict[str, str]` | 查詢參數 (可選) |
+| `headers` | `dict[str, str]` | 額外請求頭 (可選) |
+| `data` | `Any` | 請求體 (表單或原始數據) (可選) |
+| `json` | `Any` | JSON 請求體 (可選) |
+| `timeout` | `float` | 本次請求超時 (秒) (可選, 覆蓋默認值) |
+| `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋默認值) |
+
+### 自定義客戶端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 創建自定義客戶端（非全局單例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自動關閉會話
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 請求統計
+
+```python
+from ErisPulse.Core import client
+
+# 查看統計
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置統計
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+## 相關文檔
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
+- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
 
 
 
