@@ -199,7 +199,7 @@ async def connect_handler(event):
 
 ## Core Module Explanations
 
-### Storage (存储)
+### Storage（存储）
 
 A SQLite-based key-value storage system for persistent data.
 
@@ -222,7 +222,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config (配置)
+### Config（配置）
 
 TOML format configuration file management.
 
@@ -237,7 +237,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger (日志)
+### Logger（日志）
 
 A modular logging system.
 
@@ -264,7 +264,7 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router (路由)
+### Router（路由）
 
 HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
 
@@ -293,13 +293,14 @@ from fastapi import Request, WebSocket
 async def handler2(request: Request):
     return {"status": "ok"}
 ```
+
 > **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
 > 
 > **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
 
 For more routing features, please refer to [Router Manager](../advanced/router.md).
 
-### Client (HTTP 客户端)
+### Client（HTTP 客户端）
 
 Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
 
@@ -322,6 +323,7 @@ resp.headers       # Response headers
 body = await resp.text()   # Text response body
 data = await resp.json()   # JSON parsing
 ```
+
 > The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
 >
 > You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.

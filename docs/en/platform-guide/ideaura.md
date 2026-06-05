@@ -1,6 +1,6 @@
-# Ideaura Platform Features Documentation
+# Ideaura Cafe Platform Features Documentation
 
-IdeauraAdapter is an adapter built based on the Allons platform API, integrating all platform function modules and providing unified event handling and message operation interfaces.
+IdeauraAdapter is an adapter built based on the Ideaura Cafe (Allons) platform API, integrating all platform function modules and providing unified event handling and message operation interfaces.
 
 ---
 
@@ -366,4 +366,70 @@ ideaura = adapter.get("ideaura")
 await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
 
 # Send message using user_id (automatically matches corresponding account)
-await ideaura.Send.Using("456").To("group", "chatroom").Text
+await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
+
+# Use the first enabled account when not specified
+await ideaura.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+### Account Identification in Events
+
+Received events automatically contain corresponding account information:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "ideaura":
+        account_id = event["self"]["user_id"]
+        print(f"Message from account: {account_id}")
+```
+
+---
+
+## Extended Fields Description
+
+- All special fields are prefixed with `ideaura_` to avoid conflicts with standard fields
+- Raw data is preserved in the `ideaura_raw` field for easy access to the platform's complete raw data
+- `self.user_id` represents the user ID of the currently logged-in account
+- `ideaura_source_type`: Message source type (`chatroom`/`topic`/`private`)
+- `ideaura_sender_name`: Sender nickname
+- `ideaura_sender_avatar`: Sender avatar URL
+- `ideaura_sender_is_bot`: Whether the sender is a bot
+- `ideaura_is_self`: Whether the message was sent by the current account itself (self-messages are filtered out)
+- `ideaura_topic_name`: Topic name
+- `ideaura_message_type`: Message type (`normal`/`edited`/`forwarded`/`quoted`)
+- `ideaura_message_subtype`: Message sub-type (`text`/`image`/`video`/`file`/`markdown`/`html`)
+
+### File Handling Features
+
+- File size limit: 10MB (both download and local reading have limits)
+- Automatic file type detection: Detects actual type through file header magic bytes
+- Intelligent filename parsing: Automatically corrects meaningless extensions like `.bin`/`.dat`/`.tmp`
+- Supports bytes, URL, and local path as file input methods
+- URL files are automatically downloaded and uploaded to the server
+
+### Supported File Types
+
+Automatically detected through magic bytes:
+
+| Type | Extensions |
+|------|------------|
+| Image | png, jpg, gif, webp |
+| Video | mp4, avi, flv |
+| Audio | mp3, wav, ogg |
+| Document | pdf, docx |
+
+---
+
+## Notes
+
+1. Server address `api-cofe.allons-y.uk` is a built-in platform address and does not change with adapter name
+2. The adapter uses WebSocket long connections to receive events, supports auto-reconnect (fixed 5-second delay)
+3. Messages sent by the adapter itself (`isSelf: true`) are automatically filtered and will not generate events
+4. `@everyone` (`AtAll()`) requires administrator privileges
+5. File upload size limit is 10MB
+6. Audio files are sent as `file` sub-type (the platform does not distinguish independent audio types)
+7. Emoticons (`Face()`) are sent as plain text emoji
+8. Please call `shutdown()` on program exit to ensure resource release

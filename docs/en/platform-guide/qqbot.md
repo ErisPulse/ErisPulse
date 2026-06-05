@@ -156,4 +156,206 @@ Requires `platform=="qqbot"` detection before using platform-specific features
   "user_id": "MEMBER_OPENID",
   "group_id": "GROUP_OPENID",
   "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID
+  "qqbot_member_openid": "MEMBER_OPENID"
+}
+
+# Private message
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "USER_OPENID",
+  "qqbot_openid": "USER_OPENID",
+  "qqbot_event_id": "Message Event ID",
+  "qqbot_reply_token": "Reply token"
+}
+
+# Interaction event
+{
+  "type": "notice",
+  "detail_type": "qqbot_interaction",
+  "qqbot_interaction_id": "Interaction ID",
+  "qqbot_interaction_type": "Interaction type",
+  "qqbot_interaction_data": {
+    "...": "Interaction data"
+  }
+}
+
+# Message audit
+{
+  "type": "notice",
+  "detail_type": "qqbot_audit_pass",
+  "qqbot_audit_id": "Audit ID",
+  "qqbot_message_id": "Message ID"
+}
+
+# Message delete
+{
+  "type": "notice",
+  "detail_type": "qqbot_message_delete",
+  "message_id": "ID of the deleted message",
+  "operator_id": "Operator ID"
+}
+
+# Emoji reaction
+{
+  "type": "notice",
+  "detail_type": "qqbot_reaction_add",
+  "qqbot_raw": {
+    "...": "Raw data"
+  }
+}
+```
+
+### Channel Message Segments
+
+Channel messages support the `mentions` field, converted to `mention` message segments:
+
+```json
+{
+  "type": "mention",
+  "data": {
+    "user_id": "Mentioned User ID",
+    "user_name": "Mentioned User Nickname"
+  }
+}
+```
+
+### Attachment Message Segments
+
+QQBot attachments are automatically converted to corresponding message segments based on `content_type`:
+
+| content_type prefix | Conversion type | Description |
+|---|---|---|
+| `image` | `image` | Image message |
+| `video` | `video` | Video message |
+| `audio` | `voice` | Voice message |
+| Other | `file` | File message |
+
+Attachment message segment structure:
+```json
+{
+  "type": "image",
+  "data": {
+    "url": "Attachment URL",
+    "qqbot_attachment": {
+      "content_type": "image/png",
+      "url": "Original attachment URL"
+    }
+  }
+}
+```
+
+## WebSocket Connection
+
+### Connection Flow
+
+1. Use appId + clientSecret to obtain access_token
+2. Connect to WebSocket gateway
+3. Receive OP_HELLO (op=10) message, get heartbeat interval
+4. Send OP_IDENTIFY (op=2) for identification
+5. Receive READY event, get session_id and bot_id
+6. Start heartbeat loop (OP_HEARTBEAT, op=1)
+7. Receive event dispatch (OP_DISPATCH, op=0)
+
+### Disconnect Reconnection
+
+- Automatic reconnection is supported, maximum reconnection attempts are 50
+- Reconnection wait time uses exponential backoff algorithm: `min(5 * 2^min(count, 6), 300)` seconds
+- Session resumption (OP_RESUME, op=6) is supported, using session_id + seq
+- Automatically triggers reconnection upon receiving OP_RECONNECT (op=7) or OP_INVALID_SESSION (op=9)
+
+### Token Refresh
+
+- access_token validity period is usually 7200 seconds
+- Adapter automatically refreshes token every 7080 seconds (7200-120)
+- Refresh interface: `POST https://bots.qq.com/app/getAppAccessToken`
+
+## Event Subscription (Intents)
+
+intents values are combined via bit operations:
+
+```python
+intents = [1, 30, 25]
+value = 0
+for intent in intents:
+    value |= (1 << intent)
+```
+
+Common intent bits:
+| intent value | Description |
+|--------------|-------------|
+| 1 | Channel-related events (GUILD_CREATE, etc.) |
+| 25 | Channel message events (AT_MESSAGE_CREATE, etc.) |
+| 30 | Group @ message events (GROUP_AT_MESSAGE_CREATE, etc.) |
+
+## Usage Examples
+
+### Handling Group Messages
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+qqbot = sdk.adapter.get("qqbot")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "qqbot":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    group_id = event.get("group_id")
+
+    if text == "hello":
+        await qqbot.Send.To("group", group_id).Reply(
+            event.get("message_id")
+        ).Text("Hello!")
+```
+
+### Handling Interaction Events
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_interaction(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    if event.get("detail_type") == "qqbot_interaction":
+        interaction_id = event.get("qqbot_interaction_id", "")
+        interaction_data = event.get("qqbot_interaction_data", {})
+        # Handle interaction...
+```
+
+### Sending Media Messages
+
+```python
+# Sending image (URL)
+await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+
+# Sending image (binary)
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await qqbot.Send.To("user", user_openid).Image(image_bytes)
+```
+
+### Listening to Message Audit Results
+
+```python
+@notice.on_notice()
+async def handle_audit(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "qqbot_audit_pass":
+        msg_id = event.get("qqbot_message_id")
+        print(f"Message audit passed: {msg_id}")
+
+    elif detail_type == "qqbot_audit_reject":
+        reason = event.get("qqbot_audit_reject_reason", "")
+        print(f"Message audit rejected: {reason}")
