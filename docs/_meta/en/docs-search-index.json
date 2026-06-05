@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1091,
+  "total_keywords": 1163,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -8,6 +8,14 @@
         "line": 64,
         "level": 4,
         "title": "0 Success (OK)"
+      }
+    ],
+    "1. Account Configuration Validation": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 380,
+        "level": 3,
+        "title": "1. Account Configuration Validation"
       }
     ],
     "1. Adapter System": [
@@ -35,6 +43,12 @@
       }
     ],
     "1. Categorized Exception Handling": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 422,
+        "level": 3,
+        "title": "1. Categorized Exception Handling"
+      },
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 170,
@@ -98,12 +112,44 @@
         "title": "1. Ensure Cross-Platform Compatibility"
       }
     ],
+    "1. Exception Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 584,
+        "level": 3,
+        "title": "1. Exception Handling"
+      }
+    ],
+    "1. Implement Connection Retry": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 124,
+        "level": 3,
+        "title": "1. Implement Connection Retry"
+      }
+    ],
+    "1. Maintain Platform Feature Documentation": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 585,
+        "level": 3,
+        "title": "1. Maintain Platform Feature Documentation"
+      }
+    ],
     "1. Module Development (Recommended)": [
       {
         "document": "README.md",
         "line": 96,
         "level": 3,
         "title": "1. Module Development (Recommended)"
+      }
+    ],
+    "1. Must Return Task Object": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 269,
+        "level": 3,
+        "title": "1. Must Return Task Object"
       }
     ],
     "1. Overview": [
@@ -162,12 +208,36 @@
         "title": "1. Standard Method Naming"
       }
     ],
+    "1. Standardized Response Format": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 330,
+        "level": 3,
+        "title": "1. Standardized Response Format"
+      }
+    ],
+    "1. Strictly Follow OneBot12 Standard": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 213,
+        "level": 3,
+        "title": "1. Strictly Follow OneBot12 Standard"
+      }
+    ],
     "1. Unit Testing": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 349,
         "level": 3,
         "title": "1. Unit Testing"
+      }
+    ],
+    "1. Unit Tests": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 475,
+        "level": 3,
+        "title": "1. Unit Tests"
       }
     ],
     "1. Use Asynchronous Libraries": [
@@ -192,6 +262,14 @@
         "line": 114,
         "level": 3,
         "title": "1. Use Event Wrapper Class"
+      }
+    ],
+    "1. Use Mixin Class for Batch Registration (Recommended)": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 533,
+        "level": 3,
+        "title": "1. Use Mixin Class for Batch Registration (Recommended)"
       }
     ],
     "1. Use Transactions": [
@@ -266,12 +344,92 @@
         "title": "1.4 Recommended Extension Naming Conventions"
       }
     ],
+    "10. Adapter Implementation Checklist": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 461,
+        "level": 2,
+        "title": "10. Adapter Implementation Checklist"
+      }
+    ],
+    "11. MessageBuilder": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 480,
+        "level": 2,
+        "title": "11. MessageBuilder"
+      }
+    ],
+    "11.1 Import": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 484,
+        "level": 3,
+        "title": "11.1 Import"
+      }
+    ],
+    "11.2 Chainable Segment Building": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 492,
+        "level": 3,
+        "title": "11.2 Chainable Segment Building"
+      }
+    ],
+    "11.3 Quick Single Segment Construction": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 509,
+        "level": 3,
+        "title": "11.3 Quick Single Segment Construction"
+      }
+    ],
+    "11.4 Usage with Event.reply_ob12": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 520,
+        "level": 3,
+        "title": "11.4 Usage with Event.reply_ob12"
+      }
+    ],
+    "11.5 Supported Message Segment Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 535,
+        "level": 3,
+        "title": "11.5 Supported Message Segment Methods"
+      }
+    ],
+    "11.6 Utility Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 550,
+        "level": 3,
+        "title": "11.6 Utility Methods"
+      }
+    ],
+    "12. Related Documentation": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 569,
+        "level": 2,
+        "title": "12. Related Documentation"
+      }
+    ],
     "1xxxx Action Request Errors (Request Error)": [
       {
         "document": "standards/api-response.md",
         "line": 67,
         "level": 4,
         "title": "1xxxx Action Request Errors (Request Error)"
+      }
+    ],
+    "2. Account Selection Mechanism": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 400,
+        "level": 3,
+        "title": "2. Account Selection Mechanism"
       }
     ],
     "2. Avoid Blocking Operations": [
@@ -298,12 +456,28 @@
         "title": "2. Batch Operations"
       }
     ],
+    "2. Chainable Modifier Methods Return self": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 289,
+        "level": 3,
+        "title": "2. Chainable Modifier Methods Return self"
+      }
+    ],
     "2. Complete Documentation": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 394,
         "level": 3,
         "title": "2. Complete Documentation"
+      }
+    ],
+    "2. Connection State Management": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 153,
+        "level": 3,
+        "title": "2. Connection State Management"
       }
     ],
     "2. Correct Asynchronous Operations": [
@@ -338,6 +512,14 @@
         "title": "2. Embedded Development"
       }
     ],
+    "2. Error Code Specification": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 356,
+        "level": 3,
+        "title": "2. Error Code Specification"
+      }
+    ],
     "2. Event Object": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -368,6 +550,28 @@
         "line": 364,
         "level": 3,
         "title": "2. Integration Testing"
+      }
+    ],
+    "2. Integration Tests": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 499,
+        "level": 3,
+        "title": "2. Integration Tests"
+      }
+    ],
+    "2. Logging": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 454,
+        "level": 3,
+        "title": "2. Logging"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 602,
+        "level": 3,
+        "title": "2. Logging"
       }
     ],
     "2. Module Naming Conventions": [
@@ -458,6 +662,14 @@
         "title": "2. Standardize API Interfaces"
       }
     ],
+    "2. Standardize Timestamps": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 235,
+        "level": 3,
+        "title": "2. Standardize Timestamps"
+      }
+    ],
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -480,6 +692,22 @@
         "line": 191,
         "level": 3,
         "title": "2. Timeout Handling"
+      }
+    ],
+    "2. Update Version Information": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 606,
+        "level": 3,
+        "title": "2. Update Version Information"
+      }
+    ],
+    "2. Use Decorator to Register Single Method": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 559,
+        "level": 3,
+        "title": "2. Use Decorator to Register Single Method"
       }
     ],
     "2.1 Media Message Parameter Specifications": [
@@ -618,6 +846,14 @@
         "title": "3. Adapters"
       }
     ],
+    "3. Clean Up on Adapter Shutdown": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 569,
+        "level": 3,
+        "title": "3. Clean Up on Adapter Shutdown"
+      }
+    ],
     "3. Clear Configuration Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -632,6 +868,14 @@
         "line": 29,
         "level": 2,
         "title": "3. Complete Field Specification"
+      }
+    ],
+    "3. Conditional Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 618,
+        "level": 3,
+        "title": "3. Conditional Handling"
       }
     ],
     "3. Create Adapter Main Class": [
@@ -658,12 +902,28 @@
         "title": "3. Event Handler Registration"
       }
     ],
+    "3. Event ID Generation": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 251,
+        "level": 3,
+        "title": "3. Event ID Generation"
+      }
+    ],
     "3. Heartbeat Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 59,
         "level": 3,
         "title": "3. Heartbeat Events"
+      }
+    ],
+    "3. Heartbeat Keep-alive and Meta Heartbeat": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 178,
+        "level": 3,
+        "title": "3. Heartbeat Keep-alive and Meta Heartbeat"
       }
     ],
     "3. Improve Code Quality": [
@@ -744,6 +1004,14 @@
         "line": 90,
         "level": 3,
         "title": "3. Submit to Module Store"
+      }
+    ],
+    "3. Support Platform-specific Methods": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 303,
+        "level": 3,
+        "title": "3. Support Platform-specific Methods"
       }
     ],
     "3. Trigger Build": [
@@ -1282,12 +1550,36 @@
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
     ],
+    "6.3.3 Composite Message Segment Handling": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 316,
+        "level": 4,
+        "title": "6.3.3 Composite Message Segment Handling"
+      }
+    ],
     "6.4 Platform-Specific Field Examples": [
       {
         "document": "standards/event-conversion.md",
         "line": 238,
         "level": 3,
         "title": "6.4 Platform-Specific Field Examples"
+      }
+    ],
+    "6.4 Relationship Between `Raw_ob12` and Standard Methods": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 334,
+        "level": 3,
+        "title": "6.4 Relationship Between `Raw_ob12` and Standard Methods"
+      }
+    ],
+    "6.5 Implementation Example": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 362,
+        "level": 3,
+        "title": "6.5 Implementation Example"
       }
     ],
     "6.5 Nested Extension Fields": [
@@ -1328,6 +1620,14 @@
         "line": 290,
         "level": 3,
         "title": "7. Implement Request Class (Request Actions)"
+      }
+    ],
+    "7. Method Discovery": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 415,
+        "level": 2,
+        "title": "7. Method Discovery"
       }
     ],
     "7. Session Type Extensions": [
@@ -1386,6 +1686,14 @@
         "title": "8. Module Developer Guide"
       }
     ],
+    "8. Registered Sending Method Extensions": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 438,
+        "level": 2,
+        "title": "8. Registered Sending Method Extensions"
+      }
+    ],
     "8. Related Documentation": [
       {
         "document": "standards/request-action-spec.md",
@@ -1424,6 +1732,14 @@
         "line": 396,
         "level": 3,
         "title": "8.4 Request Event Handling"
+      }
+    ],
+    "9. Adapter Development Notes": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 453,
+        "level": 2,
+        "title": "9. Adapter Development Notes"
       }
     ],
     "9. Related Documentation": [
@@ -1492,6 +1808,14 @@
         "title": "API Calls"
       }
     ],
+    "API Error Handling": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 608,
+        "level": 3,
+        "title": "API Error Handling"
+      }
+    ],
     "API Overview": [
       {
         "document": "api-reference/README.md",
@@ -1516,10 +1840,24 @@
     ],
     "API Response": [
       {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 328,
+        "level": 2,
+        "title": "API Response"
+      },
+      {
         "document": "standards/README.md",
         "line": 79,
         "level": 3,
         "title": "API Response"
+      }
+    ],
+    "API Response Standard": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 512,
+        "level": 2,
+        "title": "API Response Standard"
       }
     ],
     "API Standard": [
@@ -1560,6 +1898,12 @@
     ],
     "Account Configuration": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 557,
+        "level": 3,
+        "title": "Account Configuration"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 163,
         "level": 3,
@@ -1573,6 +1917,12 @@
       }
     ],
     "Account Identification in Events": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 375,
+        "level": 3,
+        "title": "Account Identification in Events"
+      },
       {
         "document": "platform-guide/yunhu_user.md",
         "line": 508,
@@ -1768,6 +2118,14 @@
         "line": 75,
         "level": 2,
         "title": "Adapter Send Method Query"
+      }
+    ],
+    "Adapter Sending Meta Events": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 663,
+        "level": 3,
+        "title": "Adapter Sending Meta Events"
       }
     ],
     "Adapter Standardization Conversion Specification": [
@@ -1986,6 +2344,14 @@
         "title": "AtAll Method"
       }
     ],
+    "Attachment Message Segments": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 223,
+        "level": 3,
+        "title": "Attachment Message Segments"
+      }
+    ],
     "Authentication Mechanism": [
       {
         "document": "advanced/router.md",
@@ -2022,6 +2388,14 @@
         "line": 302,
         "level": 3,
         "title": "Auto-Discovery via Normal Events"
+      }
+    ],
+    "Automatic Discovery Mechanism": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 637,
+        "level": 3,
+        "title": "Automatic Discovery Mechanism"
       }
     ],
     "Automatic Inference": [
@@ -2247,7 +2621,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 333,
+        "line": 335,
         "level": 3,
         "title": "Basic Sending"
       }
@@ -2406,6 +2780,12 @@
         "line": 216,
         "level": 2,
         "title": "Bot Status Management"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 633,
+        "level": 2,
+        "title": "Bot Status Management"
       }
     ],
     "Bot Status Management and Meta Events": [
@@ -2420,6 +2800,12 @@
       {
         "document": "api-reference/event-system.md",
         "line": 239,
+        "level": 3,
+        "title": "Bot Status Query"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 700,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -2573,7 +2959,7 @@
     "Chain Modifiers": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 346,
+        "line": 348,
         "level": 3,
         "title": "Chain Modifiers"
       }
@@ -2714,6 +3100,14 @@
         "title": "Chaining Modifier Methods (Can be used in combination)"
       }
     ],
+    "Channel Message Segments": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 209,
+        "level": 3,
+        "title": "Channel Message Segments"
+      }
+    ],
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
@@ -2770,12 +3164,12 @@
         "title": "Choosing a Development Type"
       }
     ],
-    "Client (HTTP 客户端)": [
+    "Client（HTTP 客户端）": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 302,
+        "line": 303,
         "level": 3,
-        "title": "Client (HTTP 客户端)"
+        "title": "Client（HTTP 客户端）"
       }
     ],
     "Code Example Standards": [
@@ -3114,14 +3508,6 @@
         "title": "Conditional Listening"
       }
     ],
-    "Config (配置)": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 225,
-        "level": 3,
-        "title": "Config (配置)"
-      }
-    ],
     "Config Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -3280,6 +3666,14 @@
         "title": "Configuring Lazy Loading"
       }
     ],
+    "Config（配置）": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 225,
+        "level": 3,
+        "title": "Config（配置）"
+      }
+    ],
     "Confirm Dialog": [
       {
         "document": "getting-started/event-handling.md",
@@ -3296,12 +3690,42 @@
         "title": "Connection Event"
       }
     ],
+    "Connection Flow": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 250,
+        "level": 3,
+        "title": "Connection Flow"
+      }
+    ],
+    "Connection Management": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 122,
+        "level": 2,
+        "title": "Connection Management"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 450,
+        "level": 2,
+        "title": "Connection Management"
+      }
+    ],
     "Connection Process": [
       {
         "document": "platform-guide/kook.md",
         "line": 305,
         "level": 3,
         "title": "Connection Process"
+      }
+    ],
+    "Connection Retry": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 584,
+        "level": 3,
+        "title": "Connection Retry"
       }
     ],
     "Considerations": [
@@ -3850,6 +4274,14 @@
         "title": "Directory Structure"
       }
     ],
+    "Disconnect Reconnection": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 260,
+        "level": 3,
+        "title": "Disconnect Reconnection"
+      }
+    ],
     "Disconnection and Reconnection": [
       {
         "document": "platform-guide/kook.md",
@@ -4020,6 +4452,14 @@
         "line": 5,
         "level": 2,
         "title": "Documentation List"
+      }
+    ],
+    "Documentation Maintenance": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 583,
+        "level": 2,
+        "title": "Documentation Maintenance"
       }
     ],
     "Documentation Maintenance Guidelines": [
@@ -4228,6 +4668,18 @@
     ],
     "Error Handling": [
       {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 420,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 582,
+        "level": 2,
+        "title": "Error Handling"
+      },
+      {
         "document": "developer-guide/modules/best-practices.md",
         "line": 168,
         "level": 2,
@@ -4285,6 +4737,12 @@
       }
     ],
     "Event Conversion": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 211,
+        "level": 2,
+        "title": "Event Conversion"
+      },
       {
         "document": "standards/README.md",
         "line": 69,
@@ -4378,6 +4836,14 @@
         "title": "Event Handling"
       }
     ],
+    "Event Handling Best Practices": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 582,
+        "level": 2,
+        "title": "Event Handling Best Practices"
+      }
+    ],
     "Event Handling Example": [
       {
         "document": "platform-guide/ideaura.md",
@@ -4469,7 +4935,7 @@
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 359,
+        "line": 361,
         "level": 3,
         "title": "Event Reply Methods"
       }
@@ -4480,6 +4946,14 @@
         "line": 323,
         "level": 3,
         "title": "Event Submission"
+      }
+    ],
+    "Event Subscription (Intents)": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 273,
+        "level": 2,
+        "title": "Event Subscription (Intents)"
       }
     ],
     "Event System": [
@@ -4602,6 +5076,22 @@
         "title": "Extended Fields"
       }
     ],
+    "Extended Fields Description": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 391,
+        "level": 2,
+        "title": "Extended Fields Description"
+      }
+    ],
+    "Extended `self` Field Information": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 689,
+        "level": 3,
+        "title": "Extended `self` Field Information"
+      }
+    ],
     "Extension Field Descriptions": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4618,6 +5108,14 @@
         "title": "Extension: Adding More Features"
       }
     ],
+    "Failure Response": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 540,
+        "level": 3,
+        "title": "Failure Response"
+      }
+    ],
     "Failure Response Example": [
       {
         "document": "standards/api-response.md",
@@ -4632,6 +5130,14 @@
         "line": 76,
         "level": 3,
         "title": "Feature Overview"
+      }
+    ],
+    "File Handling Features": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 405,
+        "level": 3,
+        "title": "File Handling Features"
       }
     ],
     "Fixed Bugs": [
@@ -5012,6 +5518,20 @@
         "line": 321,
         "level": 3,
         "title": "Handling Group Messages"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 293,
+        "level": 3,
+        "title": "Handling Group Messages"
+      }
+    ],
+    "Handling Interaction Events": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 317,
+        "level": 3,
+        "title": "Handling Interaction Events"
       }
     ],
     "Handling Message Editing": [
@@ -5028,6 +5548,14 @@
         "line": 380,
         "level": 3,
         "title": "Handling Notification Events (Reaction responses, etc.)"
+      }
+    ],
+    "Handling Private Message Edit and Delete Notifications": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 459,
+        "level": 3,
+        "title": "Handling Private Message Edit and Delete Notifications"
       }
     ],
     "Handling Private Messages": [
@@ -5160,12 +5688,12 @@
         "title": "ID Field Query"
       }
     ],
-    "Ideaura Platform Features Documentation": [
+    "Ideaura Cafe Platform Features Documentation": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 1,
         "level": 1,
-        "title": "Ideaura Platform Features Documentation"
+        "title": "Ideaura Cafe Platform Features Documentation"
       }
     ],
     "Image Download and Storage": [
@@ -5535,7 +6063,7 @@
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 376,
+        "line": 378,
         "level": 2,
         "title": "Lazy Loading System"
       }
@@ -5614,6 +6142,14 @@
         "title": "List Supported Send Methods"
       }
     ],
+    "Listen to Bot Lifecycle": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 723,
+        "level": 3,
+        "title": "Listen to Bot Lifecycle"
+      }
+    ],
     "Listening to @ mentions": [
       {
         "document": "getting-started/event-handling.md",
@@ -5636,6 +6172,14 @@
         "line": 396,
         "level": 3,
         "title": "Listening to Member Changes"
+      }
+    ],
+    "Listening to Message Audit Results": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 345,
+        "level": 3,
+        "title": "Listening to Message Audit Results"
       }
     ],
     "Listening to all messages": [
@@ -5726,20 +6270,20 @@
         "title": "Log Output"
       }
     ],
-    "Logger (日志)": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 240,
-        "level": 3,
-        "title": "Logger (日志)"
-      }
-    ],
     "Logger Module": [
       {
         "document": "api-reference/core-modules.md",
         "line": 171,
         "level": 2,
         "title": "Logger Module"
+      }
+    ],
+    "Logger（日志）": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 240,
+        "level": 3,
+        "title": "Logger（日志）"
       }
     ],
     "Logging": [
@@ -5894,6 +6438,14 @@
         "line": 213,
         "level": 3,
         "title": "Message Edit Notification Example"
+      }
+    ],
+    "Message Editing and Recall": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 445,
+        "level": 3,
+        "title": "Message Editing and Recall"
       }
     ],
     "Message Event": [
@@ -6180,6 +6732,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 220,
+        "level": 3,
+        "title": "Meta Event Types"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 655,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -6484,6 +7042,14 @@
         "title": "Multi-Account Sending Syntax"
       }
     ],
+    "Multi-Account Support": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 555,
+        "level": 2,
+        "title": "Multi-Account Support"
+      }
+    ],
     "Multi-account Configuration": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6498,6 +7064,14 @@
         "line": 222,
         "level": 3,
         "title": "Multi-account Sending Syntax"
+      }
+    ],
+    "Multi-account Support": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 378,
+        "level": 2,
+        "title": "Multi-account Support"
       }
     ],
     "Multi-element Message": [
@@ -6569,13 +7143,19 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 396,
+        "line": 398,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "getting-started/common-tasks.md",
         "line": 442,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 635,
         "level": 2,
         "title": "Next Steps"
       },
@@ -6614,6 +7194,12 @@
       {
         "document": "advanced/lifecycle.md",
         "line": 274,
+        "level": 2,
+        "title": "Notes"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 426,
         "level": 2,
         "title": "Notes"
       }
@@ -6972,6 +7558,14 @@
         "line": 98,
         "level": 3,
         "title": "Platform"
+      }
+    ],
+    "Platform Event Method Extension": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 529,
+        "level": 2,
+        "title": "Platform Event Method Extension"
       }
     ],
     "Platform Extension Fields": [
@@ -7638,8 +8232,20 @@
         "title": "Related Documentation"
       },
       {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 615,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "developer-guide/adapters/converter.md",
         "line": 234,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 741,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -7988,6 +8594,22 @@
         "title": "Reuse Query Conditions"
       }
     ],
+    "Reverse Conversion": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 470,
+        "level": 3,
+        "title": "Reverse Conversion"
+      }
+    ],
+    "Reverse Conversion and Message Building": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 519,
+        "level": 2,
+        "title": "Reverse Conversion and Message Building"
+      }
+    ],
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
@@ -8056,14 +8678,6 @@
         "title": "Router"
       }
     ],
-    "Router (路由)": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 267,
-        "level": 3,
-        "title": "Router (路由)"
-      }
-    ],
     "Router Manager": [
       {
         "document": "advanced/router.md",
@@ -8078,6 +8692,14 @@
         "line": 371,
         "level": 2,
         "title": "Router Module"
+      }
+    ],
+    "Router（路由）": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 267,
+        "level": 3,
+        "title": "Router（路由）"
       }
     ],
     "Run Project": [
@@ -8286,10 +8908,18 @@
         "title": "SendDSL Deep Dive"
       }
     ],
+    "SendDSL Implementation": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 265,
+        "level": 2,
+        "title": "SendDSL Implementation"
+      }
+    ],
     "SendDSL Message Sending": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 329,
+        "line": 331,
         "level": 2,
         "title": "SendDSL Message Sending"
       }
@@ -8310,10 +8940,30 @@
         "title": "Sending Examples"
       }
     ],
+    "Sending KMarkdown and Card Messages": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 426,
+        "level": 3,
+        "title": "Sending KMarkdown and Card Messages"
+      }
+    ],
     "Sending Media Messages": [
+      {
+        "document": "platform-guide/kook.md",
+        "line": 405,
+        "level": 3,
+        "title": "Sending Media Messages"
+      },
       {
         "document": "platform-guide/matrix.md",
         "line": 362,
+        "level": 3,
+        "title": "Sending Media Messages"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 333,
         "level": 3,
         "title": "Sending Media Messages"
       }
@@ -8349,6 +8999,12 @@
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 37,
         "level": 2,
+        "title": "Sending Methods"
+      },
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 463,
+        "level": 3,
         "title": "Sending Methods"
       }
     ],
@@ -8550,6 +9206,14 @@
         "title": "Specific Event Types"
       }
     ],
+    "Specify Account for Sending": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 569,
+        "level": 3,
+        "title": "Specify Account for Sending"
+      }
+    ],
     "Specify Sending Account": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8726,14 +9390,6 @@
         "title": "Storage"
       }
     ],
-    "Storage (存储)": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 202,
-        "level": 3,
-        "title": "Storage (存储)"
-      }
-    ],
     "Storage Backend Abstraction": [
       {
         "document": "api-reference/core-modules.md",
@@ -8772,6 +9428,14 @@
         "title": "Storage System"
       }
     ],
+    "Storage（存储）": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 202,
+        "level": 3,
+        "title": "Storage（存储）"
+      }
+    ],
     "Style Guide": [
       {
         "document": "README.md",
@@ -8784,6 +9448,14 @@
         "line": 1,
         "level": 1,
         "title": "Style Guide"
+      }
+    ],
+    "Success Response": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 514,
+        "level": 3,
+        "title": "Success Response"
       }
     ],
     "Success Response Example": [
@@ -8816,6 +9488,14 @@
         "line": 207,
         "level": 3,
         "title": "Supervisor"
+      }
+    ],
+    "Supported File Types": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 413,
+        "level": 3,
+        "title": "Supported File Types"
       }
     ],
     "Supported Message Sending Types": [
@@ -9020,6 +9700,12 @@
     ],
     "Testing": [
       {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 473,
+        "level": 2,
+        "title": "Testing"
+      },
+      {
         "document": "developer-guide/modules/best-practices.md",
         "line": 347,
         "level": 2,
@@ -9064,6 +9750,14 @@
         "line": 356,
         "level": 3,
         "title": "Timers"
+      }
+    ],
+    "Token Refresh": [
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 267,
+        "level": 3,
+        "title": "Token Refresh"
       }
     ],
     "Traditional Registration": [
@@ -9280,6 +9974,12 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 319,
+        "level": 2,
+        "title": "Usage Examples"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 291,
         "level": 2,
         "title": "Usage Examples"
       },
@@ -9560,6 +10260,14 @@
         "title": "Waiting for User Reply"
       }
     ],
+    "WebHook Connection": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 488,
+        "level": 3,
+        "title": "WebHook Connection"
+      }
+    ],
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
@@ -9570,8 +10278,20 @@
     ],
     "WebSocket Connection": [
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 452,
+        "level": 3,
+        "title": "WebSocket Connection"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 303,
+        "level": 2,
+        "title": "WebSocket Connection"
+      },
+      {
+        "document": "platform-guide/qqbot.md",
+        "line": 248,
         "level": 2,
         "title": "WebSocket Connection"
       }

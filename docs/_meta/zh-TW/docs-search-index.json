@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1070,
+  "total_keywords": 1167,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -244,6 +244,14 @@
         "line": 380,
         "level": 3,
         "title": "1. 版本管理"
+      }
+    ],
+    "1. 異常處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 584,
+        "level": 3,
+        "title": "1. 異常處理"
       }
     ],
     "1. 確保跨平台相容": [
@@ -552,6 +560,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 461,
+        "level": 3,
+        "title": "2. 日誌記錄"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 602,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -938,6 +952,14 @@
         "line": 310,
         "level": 3,
         "title": "3. 支援平台特有方法"
+      }
+    ],
+    "3. 條件處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 618,
+        "level": 3,
+        "title": "3. 條件處理"
       }
     ],
     "3. 模組系統": [
@@ -1692,6 +1714,14 @@
         "title": "@conv.branch(name) 裝飾器"
       }
     ],
+    "A2UI 消息段 (a2ui)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 427,
+        "level": 4,
+        "title": "A2UI 消息段 (a2ui)"
+      }
+    ],
     "AI 輔助開發": [
       {
         "document": "README.md",
@@ -1742,6 +1772,14 @@
         "title": "API 回應"
       }
     ],
+    "API 回應標準": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 512,
+        "level": 2,
+        "title": "API 回應標準"
+      }
+    ],
     "API 概覽": [
       {
         "document": "api-reference/README.md",
@@ -1756,6 +1794,22 @@
         "line": 321,
         "level": 3,
         "title": "API 標準"
+      }
+    ],
+    "API 調用": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 558,
+        "level": 2,
+        "title": "API 調用"
+      }
+    ],
+    "API 錯誤處理": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 608,
+        "level": 3,
+        "title": "API 錯誤處理"
       }
     ],
     "Account 方法": [
@@ -1846,6 +1900,12 @@
         "title": "Bot 狀態查詢"
       },
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 700,
+        "level": 3,
+        "title": "Bot 狀態查詢"
+      },
+      {
         "document": "getting-started/event-handling.md",
         "line": 278,
         "level": 3,
@@ -1856,6 +1916,12 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 215,
+        "level": 2,
+        "title": "Bot 狀態管理"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 633,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -1889,6 +1955,12 @@
         "document": "advanced/router.md",
         "line": 245,
         "level": 2,
+        "title": "CORS 配置"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 565,
+        "level": 3,
         "title": "CORS 配置"
       }
     ],
@@ -2100,6 +2172,14 @@
         "title": "Event Mixin 擴展方法"
       }
     ],
+    "Event Mixin 方法": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 270,
+        "level": 3,
+        "title": "Event Mixin 方法"
+      }
+    ],
     "Event 包裝類": [
       {
         "document": "api-reference/event-system.md",
@@ -2124,12 +2204,28 @@
         "title": "Event 回復方法"
       }
     ],
+    "Event 物件常用方法": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 507,
+        "level": 3,
+        "title": "Event 物件常用方法"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
         "line": 59,
         "level": 3,
         "title": "GET"
+      }
+    ],
+    "HTTP Client 模組": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 614,
+        "level": 2,
+        "title": "HTTP Client 模組"
       }
     ],
     "HTTP 客戶端": [
@@ -2244,6 +2340,14 @@
         "title": "MessageBuilder 詳解"
       }
     ],
+    "Meta 事件類型": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 655,
+        "level": 3,
+        "title": "Meta 事件類型"
+      }
+    ],
     "Meta 元事件模組": [
       {
         "document": "api-reference/event-system.md",
@@ -2308,6 +2412,14 @@
         "title": "OneBot12 平台特性文件"
       }
     ],
+    "OneBot12 支援的 detail_type": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 179,
+        "level": 3,
+        "title": "OneBot12 支援的 detail_type"
+      }
+    ],
     "OneBot12 標準": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -2352,15 +2464,13 @@
         "title": "OneBot12 訊息支援"
       }
     ],
-    "OneBot12消息支持": [
+    "OneBot12消息支援": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 82,
         "level": 3,
-        "title": "OneBot12消息支持"
-      }
-    ],
-    "OneBot12消息支援": [
+        "title": "OneBot12消息支援"
+      },
       {
         "document": "platform-guide/kook.md",
         "line": 90,
@@ -2378,6 +2488,14 @@
         "line": 109,
         "level": 3,
         "title": "OneBot12消息支援"
+      }
+    ],
+    "OneBot12訊息支援": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 97,
+        "level": 3,
+        "title": "OneBot12訊息支援"
       }
     ],
     "POST": [
@@ -2642,6 +2760,14 @@
         "title": "Supervisor"
       }
     ],
+    "Sync API 連接": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 296,
+        "level": 2,
+        "title": "Sync API 連接"
+      }
+    ],
     "TOML": [
       {
         "document": "terminology.md",
@@ -2690,6 +2816,14 @@
         "title": "Using 方法"
       }
     ],
+    "WebHook 連接": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 488,
+        "level": 3,
+        "title": "WebHook 連接"
+      }
+    ],
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
@@ -2728,6 +2862,14 @@
         "line": 469,
         "level": 3,
         "title": "WebSocket 路由"
+      }
+    ],
+    "WebSocket 連接": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 452,
+        "level": 3,
+        "title": "WebSocket 連接"
       }
     ],
     "WebSocket連接": [
@@ -2896,6 +3038,14 @@
         "line": 282,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
+      }
+    ],
+    "`self` 字段擴展資訊": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 689,
+        "level": 3,
+        "title": "`self` 字段擴展資訊"
       }
     ],
     "call_api 方法": [
@@ -3278,6 +3428,18 @@
         "title": "下一步"
       },
       {
+        "document": "getting-started/common-tasks.md",
+        "line": 442,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 635,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
         "document": "getting-started/first-bot.md",
         "line": 197,
         "level": 2,
@@ -3364,6 +3526,20 @@
         "title": "事件"
       }
     ],
+    "事件中的帳戶標識": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 377,
+        "level": 3,
+        "title": "事件中的帳戶標識"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 508,
+        "level": 3,
+        "title": "事件中的帳戶標識"
+      }
+    ],
     "事件中的機器人識別": [
       {
         "document": "platform-guide/yunhu.md",
@@ -3410,6 +3586,14 @@
         "line": 323,
         "level": 3,
         "title": "事件提交"
+      }
+    ],
+    "事件數據訪問": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 505,
+        "level": 2,
+        "title": "事件數據訪問"
       }
     ],
     "事件流程": [
@@ -3524,6 +3708,14 @@
         "title": "事件處理增強"
       }
     ],
+    "事件處理最佳實踐": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 582,
+        "level": 2,
+        "title": "事件處理最佳實踐"
+      }
+    ],
     "事件處理機制": [
       {
         "document": "advanced/lifecycle.md",
@@ -3538,6 +3730,20 @@
         "line": 92,
         "level": 2,
         "title": "事件處理流程"
+      }
+    ],
+    "事件處理示例": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 284,
+        "level": 3,
+        "title": "事件處理示例"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 284,
+        "level": 3,
+        "title": "事件處理示例"
       }
     ],
     "事件處理關鍵步驟": [
@@ -3740,6 +3946,14 @@
         "title": "介接器核心概念"
       }
     ],
+    "介接器發送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 663,
+        "level": 3,
+        "title": "介接器發送 Meta 事件"
+      }
+    ],
     "介面卡基類": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3796,6 +4010,14 @@
         "title": "使用 Docker"
       }
     ],
+    "使用 Send DSL 指定帳戶": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 359,
+        "level": 3,
+        "title": "使用 Send DSL 指定帳戶"
+      }
+    ],
     "使用 Send DSL 指定機器人": [
       {
         "document": "platform-guide/yunhu.md",
@@ -3818,6 +4040,14 @@
         "line": 301,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
+      }
+    ],
+    "使用Send DSL指定帳戶": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 486,
+        "level": 3,
+        "title": "使用Send DSL指定帳戶"
       }
     ],
     "使用事件系統": [
@@ -3861,6 +4091,12 @@
       }
     ],
     "使用示例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 319,
+        "level": 2,
+        "title": "使用示例"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 296,
@@ -4168,6 +4404,14 @@
         "line": 171,
         "level": 3,
         "title": "內建預設值"
+      }
+    ],
+    "內置確認詞": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 498,
+        "level": 3,
+        "title": "內置確認詞"
       }
     ],
     "內聯查詢事件": [
@@ -4536,6 +4780,14 @@
         "title": "同步初始化"
       }
     ],
+    "同步流程": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 298,
+        "level": 3,
+        "title": "同步流程"
+      }
+    ],
     "命令事件": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -4698,6 +4950,30 @@
         "title": "國內映像加速"
       }
     ],
+    "圖片下載和儲存": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 381,
+        "level": 3,
+        "title": "圖片下載和儲存"
+      }
+    ],
+    "圖片處理": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 379,
+        "level": 2,
+        "title": "圖片處理"
+      }
+    ],
+    "圖片識別示例": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 410,
+        "level": 3,
+        "title": "圖片識別示例"
+      }
+    ],
     "在適配器中使用": [
       {
         "document": "advanced/http-client.md",
@@ -4856,6 +5132,14 @@
         "title": "基本調用方式"
       }
     ],
+    "基本請求": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 616,
+        "level": 3,
+        "title": "基本請求"
+      }
+    ],
     "基本資料": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5002,6 +5286,28 @@
         "title": "多帳戶傳送語法"
       }
     ],
+    "多帳戶支援": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 555,
+        "level": 2,
+        "title": "多帳戶支援"
+      }
+    ],
+    "多帳戶配置": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 324,
+        "level": 2,
+        "title": "多帳戶配置"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 442,
+        "level": 2,
+        "title": "多帳戶配置"
+      }
+    ],
     "多帳號傳送語法": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5018,12 +5324,36 @@
         "title": "多帳號支援"
       }
     ],
+    "多平台適配": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 186,
+        "level": 2,
+        "title": "多平台適配"
+      }
+    ],
     "多機器人設定": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 361,
         "level": 2,
         "title": "多機器人設定"
+      }
+    ],
+    "多輪對話 (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 471,
+        "level": 3,
+        "title": "多輪對話 (conversation)"
+      }
+    ],
+    "失敗回應": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 540,
+        "level": 3,
+        "title": "失敗回應"
       }
     ],
     "失敗回應範例": [
@@ -5050,6 +5380,22 @@
         "title": "套件管理命令"
       }
     ],
+    "好友上線事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 197,
+        "level": 3,
+        "title": "好友上線事件"
+      }
+    ],
+    "好友下線事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 211,
+        "level": 3,
+        "title": "好友下線事件"
+      }
+    ],
     "好友新增": [
       {
         "document": "getting-started/event-handling.md",
@@ -5058,12 +5404,28 @@
         "title": "好友新增"
       }
     ],
+    "好友被拒事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 250,
+        "level": 3,
+        "title": "好友被拒事件"
+      }
+    ],
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
         "line": 224,
         "level": 3,
         "title": "好友請求"
+      }
+    ],
+    "好友請求事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 236,
+        "level": 3,
+        "title": "好友請求事件"
       }
     ],
     "如何修改指令前綴？": [
@@ -5157,6 +5519,12 @@
         "document": "advanced/router.md",
         "line": 264,
         "level": 2,
+        "title": "安全頭"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 582,
+        "level": 3,
         "title": "安全頭"
       }
     ],
@@ -5462,6 +5830,14 @@
         "title": "已修復的 Bug"
       }
     ],
+    "帳戶設定": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 557,
+        "level": 3,
+        "title": "帳戶設定"
+      }
+    ],
     "帳戶配置": [
       {
         "document": "platform-guide/onebot12.md",
@@ -5628,6 +6004,12 @@
         "line": 420,
         "level": 3,
         "title": "平台擴展方法"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 553,
+        "level": 3,
+        "title": "平台擴展方法"
       }
     ],
     "平台擴展欄位": [
@@ -5662,12 +6044,28 @@
         "title": "平台特定功能"
       }
     ],
+    "平台特定回應": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 188,
+        "level": 3,
+        "title": "平台特定回應"
+      }
+    ],
     "平台特性指南": [
       {
         "document": "README.md",
         "line": 54,
         "level": 3,
         "title": "平台特性指南"
+      }
+    ],
+    "平台特性檢測": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 205,
+        "level": 3,
+        "title": "平台特性檢測"
       }
     ],
     "平台特有方法": [
@@ -5806,6 +6204,14 @@
         "title": "心跳事件"
       }
     ],
+    "心跳機制": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 308,
+        "level": 3,
+        "title": "心跳機制"
+      }
+    ],
     "必填欄位映射": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -5908,12 +6314,28 @@
         "title": "懶載入系統"
       }
     ],
+    "成功回應": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 514,
+        "level": 3,
+        "title": "成功回應"
+      }
+    ],
     "成功回應範例": [
       {
         "document": "standards/api-response.md",
         "line": 33,
         "level": 4,
         "title": "成功回應範例"
+      }
+    ],
+    "房間邀請": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 314,
+        "level": 3,
+        "title": "房間邀請"
       }
     ],
     "手動建立專案": [
@@ -5930,6 +6352,14 @@
         "line": 153,
         "level": 2,
         "title": "手動部署（pip）"
+      }
+    ],
+    "扩展字段說明": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 393,
+        "level": 2,
+        "title": "扩展字段說明"
       }
     ],
     "批次操作": [
@@ -6024,6 +6454,14 @@
         "title": "指令配置"
       }
     ],
+    "指定帳戶發送": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 569,
+        "level": 3,
+        "title": "指定帳戶發送"
+      }
+    ],
     "指定發送帳號": [
       {
         "document": "api-reference/adapter-system.md",
@@ -6044,6 +6482,14 @@
         "line": 59,
         "level": 3,
         "title": "按鈕參數說明"
+      }
+    ],
+    "按鈕消息段 (yunhu_user_button)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 414,
+        "level": 4,
+        "title": "按鈕消息段 (yunhu_user_button)"
       }
     ],
     "排序、分頁": [
@@ -6068,6 +6514,14 @@
         "line": 76,
         "level": 3,
         "title": "插入資料"
+      }
+    ],
+    "搜尋功能": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 325,
+        "level": 2,
+        "title": "搜尋功能"
       }
     ],
     "擴充欄位說明": [
@@ -6100,10 +6554,24 @@
         "title": "擴展字段"
       }
     ],
+    "擴展字段說明": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 352,
+        "level": 2,
+        "title": "擴展字段說明"
+      }
+    ],
     "擴展欄位": [
       {
         "document": "platform-guide/kook.md",
         "line": 170,
+        "level": 3,
+        "title": "擴展欄位"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 158,
         "level": 3,
         "title": "擴展欄位"
       }
@@ -6122,12 +6590,28 @@
         "title": "擴展欄位說明"
       }
     ],
+    "支援的原始事件類型": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 168,
+        "level": 3,
+        "title": "支援的原始事件類型"
+      }
+    ],
     "支援的提交類型": [
       {
         "document": "developer-guide/publishing.md",
         "line": 27,
         "level": 3,
         "title": "支援的提交類型"
+      }
+    ],
+    "支援的文件類型": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 415,
+        "level": 3,
+        "title": "支援的文件類型"
       }
     ],
     "支援的消息傳送類型": [
@@ -6142,6 +6626,12 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 20,
+        "level": 2,
+        "title": "支援的消息發送類型"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 44,
         "level": 2,
         "title": "支援的消息發送類型"
       },
@@ -6188,6 +6678,14 @@
         "line": 20,
         "level": 2,
         "title": "支援的訊息傳送類型"
+      }
+    ],
+    "收集表單 (collect)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 430,
+        "level": 3,
+        "title": "收集表單 (collect)"
       }
     ],
     "效能優化": [
@@ -6250,6 +6748,14 @@
         "line": 590,
         "level": 2,
         "title": "文件維護"
+      }
+    ],
+    "文件處理特性": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 407,
+        "level": 3,
+        "title": "文件處理特性"
       }
     ],
     "文件資訊": [
@@ -6338,6 +6844,14 @@
         "line": 7,
         "level": 2,
         "title": "文檔資訊"
+      }
+    ],
+    "文章消息段 (yunhu_user_post)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 376,
+        "level": 4,
+        "title": "文章消息段 (yunhu_user_post)"
       }
     ],
     "新增中介軟體": [
@@ -6440,6 +6954,14 @@
         "line": 86,
         "level": 3,
         "title": "日誌"
+      }
+    ],
+    "日誌信息": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 530,
+        "level": 3,
+        "title": "日誌信息"
       }
     ],
     "日誌記錄": [
@@ -6720,6 +7242,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 162,
+        "level": 3,
+        "title": "核心差異點"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 147,
         "level": 3,
         "title": "核心差異點"
       },
@@ -7146,6 +7674,14 @@
         "title": "模組需求模板"
       }
     ],
+    "機器人公告看板事件示例": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 258,
+        "level": 3,
+        "title": "機器人公告看板事件示例"
+      }
+    ],
     "機器人資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -7186,6 +7722,14 @@
         "title": "檢視可用模組"
       }
     ],
+    "權限控制": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 229,
+        "level": 2,
+        "title": "權限控制"
+      }
+    ],
     "注意事項": [
       {
         "document": "advanced/dashboard-view.md",
@@ -7202,6 +7746,12 @@
       {
         "document": "advanced/lifecycle.md",
         "line": 274,
+        "level": 2,
+        "title": "注意事項"
+      },
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 428,
         "level": 2,
         "title": "注意事項"
       }
@@ -7222,6 +7772,30 @@
         "title": "消息事件"
       }
     ],
+    "消息事件示例": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 187,
+        "level": 3,
+        "title": "消息事件示例"
+      }
+    ],
+    "消息已讀事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 184,
+        "level": 3,
+        "title": "消息已讀事件"
+      }
+    ],
+    "消息撤回事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 153,
+        "level": 3,
+        "title": "消息撤回事件"
+      }
+    ],
     "消息段類型": [
       {
         "document": "advanced/message-builder.md",
@@ -7234,6 +7808,54 @@
         "line": 255,
         "level": 3,
         "title": "消息段類型"
+      }
+    ],
+    "消息統計": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 281,
+        "level": 2,
+        "title": "消息統計"
+      }
+    ],
+    "消息編輯事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 138,
+        "level": 3,
+        "title": "消息編輯事件"
+      }
+    ],
+    "消息編輯通知示例": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 213,
+        "level": 3,
+        "title": "消息編輯通知示例"
+      }
+    ],
+    "消息計數": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 283,
+        "level": 3,
+        "title": "消息計數"
+      }
+    ],
+    "消息轉發事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 169,
+        "level": 3,
+        "title": "消息轉發事件"
+      }
+    ],
+    "消息過濾": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 145,
+        "level": 2,
+        "title": "消息過濾"
       }
     ],
     "測試": [
@@ -7326,6 +7948,12 @@
         "title": "特有事件類型"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 143,
+        "level": 2,
+        "title": "特有事件類型"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 132,
         "level": 2,
@@ -7364,6 +7992,14 @@
         "title": "特有參數說明"
       }
     ],
+    "特有消息段類型": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 361,
+        "level": 3,
+        "title": "特有消息段類型"
+      }
+    ],
     "特殊字段示例": [
       {
         "document": "platform-guide/qqbot.md",
@@ -7378,6 +8014,14 @@
         "line": 53,
         "level": 2,
         "title": "特殊標籤（用於 API 文件生成）"
+      }
+    ],
+    "特殊欄位示例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 164,
+        "level": 3,
+        "title": "特殊欄位示例"
       }
     ],
     "特殊欄位範例": [
@@ -7430,6 +8074,14 @@
         "line": 57,
         "level": 3,
         "title": "環境變數"
+      }
+    ],
+    "生命周期事件": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 706,
+        "level": 3,
+        "title": "生命周期事件"
       }
     ],
     "生命週期": [
@@ -7492,6 +8144,14 @@
         "title": "用戶使用指南"
       }
     ],
+    "用戶狀態變更事件": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 223,
+        "level": 3,
+        "title": "用戶狀態變更事件"
+      }
+    ],
     "用戶：使用平台擴展方法": [
       {
         "document": "api-reference/event-system.md",
@@ -7548,6 +8208,14 @@
         "title": "發送媒體消息"
       }
     ],
+    "發送媒體訊息": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 362,
+        "level": 3,
+        "title": "發送媒體訊息"
+      }
+    ],
     "發送方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7574,6 +8242,12 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 98,
+        "level": 2,
+        "title": "發送方法返回值"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 119,
         "level": 2,
         "title": "發送方法返回值"
       },
@@ -7606,12 +8280,28 @@
         "title": "發送類型 (SendType)"
       }
     ],
+    "監聽 Bot 生命週期": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 723,
+        "level": 3,
+        "title": "監聽 Bot 生命週期"
+      }
+    ],
     "監聽@訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
         "title": "監聽@訊息"
+      }
+    ],
+    "監聽成員變更": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 396,
+        "level": 3,
+        "title": "監聽成員變更"
       }
     ],
     "監聽所有訊息": [
@@ -7732,6 +8422,12 @@
         "title": "相關文件"
       },
       {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 741,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 259,
         "level": 2,
@@ -7788,6 +8484,12 @@
         "title": "相關文檔"
       },
       {
+        "document": "api-reference/core-modules.md",
+        "line": 716,
+        "level": 2,
+        "title": "相關文檔"
+      },
+      {
         "document": "developer-guide/adapters/converter.md",
         "line": 234,
         "level": 2,
@@ -7800,6 +8502,14 @@
         "line": 127,
         "level": 2,
         "title": "相關連結"
+      }
+    ],
+    "確認對話 (confirm)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 394,
+        "level": 3,
+        "title": "確認對話 (confirm)"
       }
     ],
     "程式碼範例規範": [
@@ -7866,6 +8576,14 @@
         "title": "第四步：執行機器人"
       }
     ],
+    "等待任意事件 (wait_for)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 450,
+        "level": 3,
+        "title": "等待任意事件 (wait_for)"
+      }
+    ],
     "等待使用者回覆": [
       {
         "document": "getting-started/event-handling.md",
@@ -7916,6 +8634,12 @@
         "line": 448,
         "level": 3,
         "title": "管理介面"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 540,
+        "level": 3,
+        "title": "管理介面"
       }
     ],
     "管理功能": [
@@ -7924,6 +8648,14 @@
         "line": 49,
         "level": 3,
         "title": "管理功能"
+      }
+    ],
+    "管理員檢查": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 231,
+        "level": 3,
+        "title": "管理員檢查"
       }
     ],
     "範例": [
@@ -7940,6 +8672,14 @@
         "line": 77,
         "level": 3,
         "title": "簡單定時器"
+      }
+    ],
+    "簡單搜尋": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 327,
+        "level": 3,
+        "title": "簡單搜尋"
       }
     ],
     "簡單計數器": [
@@ -8030,6 +8770,14 @@
         "title": "群組成員減少"
       }
     ],
+    "群組權限": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 266,
+        "level": 3,
+        "title": "群組權限"
+      }
+    ],
     "群組邀請請求": [
       {
         "document": "getting-started/event-handling.md",
@@ -8060,6 +8808,30 @@
         "line": 279,
         "level": 2,
         "title": "自動文件"
+      }
+    ],
+    "自動文檔": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 593,
+        "level": 3,
+        "title": "自動文檔"
+      }
+    ],
+    "自動發現機制": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 637,
+        "level": 3,
+        "title": "自動發現機制"
+      }
+    ],
+    "自定義客戶端": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 673,
+        "level": 3,
+        "title": "自定義客戶端"
       }
     ],
     "自定義消息段": [
@@ -8134,12 +8906,44 @@
         "title": "處理群消息"
       }
     ],
+    "處理群組訊息": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 321,
+        "level": 3,
+        "title": "處理群組訊息"
+      }
+    ],
+    "處理表情回應": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 345,
+        "level": 3,
+        "title": "處理表情回應"
+      }
+    ],
+    "處理訊息編輯": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 383,
+        "level": 3,
+        "title": "處理訊息編輯"
+      }
+    ],
     "虛擬環境": [
       {
         "document": "terminology.md",
         "line": 44,
         "level": 3,
         "title": "虛擬環境"
+      }
+    ],
+    "表單消息段 (yunhu_user_form)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 363,
+        "level": 4,
+        "title": "表單消息段 (yunhu_user_form)"
       }
     ],
     "表情包/貼紙訊息段 (yunhu_expression)": [
@@ -8324,6 +9128,14 @@
         "line": 89,
         "level": 2,
         "title": "訊息段轉換"
+      }
+    ],
+    "訊息段類型": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 215,
+        "level": 3,
+        "title": "訊息段類型"
       }
     ],
     "訊息發送": [
@@ -8568,6 +9380,12 @@
         "line": 120,
         "level": 3,
         "title": "請求參數"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 661,
+        "level": 3,
+        "title": "請求參數"
       }
     ],
     "請求操作": [
@@ -8597,6 +9415,12 @@
         "document": "advanced/http-client.md",
         "line": 161,
         "level": 2,
+        "title": "請求統計"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 693,
+        "level": 3,
         "title": "請求統計"
       }
     ],
@@ -8640,6 +9464,14 @@
         "title": "貢獻流程"
       }
     ],
+    "貼紙消息段 (yunhu_user_sticker)": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 397,
+        "level": 4,
+        "title": "貼紙消息段 (yunhu_user_sticker)"
+      }
+    ],
     "資料持久化": [
       {
         "document": "getting-started/common-tasks.md",
@@ -8670,6 +9502,14 @@
         "title": "質量檢查清單"
       }
     ],
+    "超級文件分享事件示例": [
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 234,
+        "level": 3,
+        "title": "超級文件分享事件示例"
+      }
+    ],
     "路徑處理": [
       {
         "document": "advanced/router.md",
@@ -8692,6 +9532,20 @@
         "line": 212,
         "level": 2,
         "title": "路由中間件"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 534,
+        "level": 3,
+        "title": "路由中間件"
+      }
+    ],
+    "路由信息": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 608,
+        "level": 3,
+        "title": "路由信息"
       }
     ],
     "路由分組": [
@@ -8699,6 +9553,12 @@
         "document": "advanced/router.md",
         "line": 195,
         "level": 2,
+        "title": "路由分組"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 515,
+        "level": 3,
         "title": "路由分組"
       }
     ],
@@ -8734,6 +9594,14 @@
         "title": "載入策略"
       }
     ],
+    "轉換器示例": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 409,
+        "level": 3,
+        "title": "轉換器示例"
+      }
+    ],
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8748,6 +9616,14 @@
         "line": 173,
         "level": 4,
         "title": "轉發功能"
+      }
+    ],
+    "轉發消息段 (ideaura_forwarded)": [
+      {
+        "document": "platform-guide/ideaura.md",
+        "line": 265,
+        "level": 3,
+        "title": "轉發消息段 (ideaura_forwarded)"
       }
     ],
     "返回值": [
@@ -8910,6 +9786,12 @@
         "line": 229,
         "level": 2,
         "title": "速率限制"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 552,
+        "level": 3,
+        "title": "速率限制"
       }
     ],
     "連式修飾方法（可組合使用）": [
@@ -8948,6 +9830,22 @@
         "line": 254,
         "level": 3,
         "title": "連接流程"
+      }
+    ],
+    "連接管理": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 450,
+        "level": 2,
+        "title": "連接管理"
+      }
+    ],
+    "連接重試": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 584,
+        "level": 3,
+        "title": "連接重試"
       }
     ],
     "連線事件": [
@@ -9156,6 +10054,14 @@
         "title": "遵循規範的好處"
       }
     ],
+    "選擇選單 (choose)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 411,
+        "level": 3,
+        "title": "選擇選單 (choose)"
+      }
+    ],
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -9244,6 +10150,12 @@
     ],
     "配置說明": [
       {
+        "document": "platform-guide/ideaura.md",
+        "line": 326,
+        "level": 3,
+        "title": "配置說明"
+      },
+      {
         "document": "platform-guide/kook.md",
         "line": 21,
         "level": 2,
@@ -9259,6 +10171,12 @@
         "document": "platform-guide/qqbot.md",
         "line": 21,
         "level": 2,
+        "title": "配置說明"
+      },
+      {
+        "document": "platform-guide/yunhu_user.md",
+        "line": 444,
+        "level": 3,
         "title": "配置說明"
       }
     ],
@@ -9302,6 +10220,12 @@
         "title": "錯誤碼說明"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 134,
+        "level": 3,
+        "title": "錯誤碼說明"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 122,
         "level": 3,
@@ -9312,6 +10236,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 427,
+        "level": 2,
+        "title": "錯誤處理"
+      },
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 582,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -9376,6 +10306,12 @@
         "title": "鏈式修飾方法（可組合使用）"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 64,
+        "level": 3,
+        "title": "鏈式修飾方法（可組合使用）"
+      },
+      {
         "document": "platform-guide/onebot11.md",
         "line": 51,
         "level": 3,
@@ -9392,6 +10328,14 @@
         "line": 74,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
+      }
+    ],
+    "鏈式呼叫示例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 72,
+        "level": 3,
+        "title": "鏈式呼叫示例"
       }
     ],
     "鏈式呼叫範例": [
@@ -9538,6 +10482,14 @@
         "title": "開發類型選擇"
       }
     ],
+    "關鍵詞過濾": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 147,
+        "level": 3,
+        "title": "關鍵詞過濾"
+      }
+    ],
     "關閉介接器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9654,6 +10606,14 @@
         "title": "非同步處理機制"
       }
     ],
+    "響應對象": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 640,
+        "level": 3,
+        "title": "響應對象"
+      }
+    ],
     "預設設定": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9730,6 +10690,14 @@
         "line": 131,
         "level": 2,
         "title": "驗證安裝"
+      }
+    ],
+    "黑名單過濾": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 168,
+        "level": 3,
+        "title": "黑名單過濾"
       }
     ],
     "點式存取": [

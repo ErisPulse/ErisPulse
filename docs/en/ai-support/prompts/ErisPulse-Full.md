@@ -1137,7 +1137,7 @@ async def connect_handler(event):
 
 ## Core Module Explanations
 
-### Storage (存储)
+### Storage（存储）
 
 A SQLite-based key-value storage system for persistent data.
 
@@ -1160,7 +1160,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### Config (配置)
+### Config（配置）
 
 TOML format configuration file management.
 
@@ -1175,7 +1175,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger (日志)
+### Logger（日志）
 
 A modular logging system.
 
@@ -1202,7 +1202,7 @@ sdk.logger.mymodule.info("Module message")
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router (路由)
+### Router（路由）
 
 HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
 
@@ -1231,13 +1231,14 @@ from fastapi import Request, WebSocket
 async def handler2(request: Request):
     return {"status": "ok"}
 ```
+
 > **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
 > 
 > **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
 
 For more routing features, please refer to [Router Manager](../advanced/router.md).
 
-### Client (HTTP 客户端)
+### Client（HTTP 客户端）
 
 Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
 
@@ -1260,6 +1261,7 @@ resp.headers       # Response headers
 body = await resp.text()   # Text response body
 data = await resp.json()   # JSON parsing
 ```
+
 > The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
 >
 > You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
@@ -1904,7 +1906,81 @@ async def handle_message(event):
     platform = event.get_platform()
 
     # Call specific methods based on platform
-    if platform ==
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram specific method
+    elif platform == "email":
+        subject = event.get_subject()           # Email specific method
+```
+
+If you are unsure whether a platform has registered a method, you can query which methods a platform has registered:
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> Refer to the corresponding [Platform Documentation](../platform-guide/) for platform-specific methods registered by each platform.
+
+## Event Handling Best Practices
+
+### 1. Exception Handling
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # Business logic
+        result = await do_some_work()
+        await event.reply(f"Result: {result}")
+    except ValueError as e:
+        # Expected business error
+        await event.reply(f"Parameter error: {e}")
+    except Exception as e:
+        # Unexpected error
+        sdk.logger.error(f"Processing failed: {e}")
+        await event.reply("Processing failed, please try again later")
+```
+
+### 2. Logging
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"Processing message: {user_id} - {text}")
+    
+    # Use module's own logger
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"Detailed debug info")
+```
+
+### 3. Conditional Handling
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """Conditional handling - Judged within the handler"""
+    # Only process messages from specific users
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # Only process messages containing specific keywords
+    if "Keywords" not in event.get_text():
+        return
+    
+    await event.reply("Condition met, processing message")
+```
+
+## Next Steps
+
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into the Event object
+- [User Guide](../user-guide/) - Learn about configuration and module management
 
 
 
@@ -4861,9 +4937,9 @@ Forward Conversion (Receive Direction)               Reverse Conversion (Send Di
          │                                              │
          ↓                                              ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │  Adapter (MyAdapter) │   │                  │
-│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (Event Converter)│──→│ │              │ │   │ (Reverse Conversion Entry)│
+│                  │   │  Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │   │ ┌──────────────┐ │   │ (Reverse Conversion Entry)│
+│  (Event Converter)│──→│ │              │ │   │                  │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -5281,7 +5357,313 @@ class MyPlatformConverter:
             "type": event_type,
             "detail_type": detail_type,
             "platform": "myplatform",
-            "self
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## Connection Management
+
+### WebSocket Connection
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """Register WebSocket route"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket connection handler"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("Connection disconnected")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket authentication"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook Connection
+
+```python
+from fastapi import Request
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """Register WebHook route"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request: Request):
+        """WebHook request handler"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+## API Response Standard
+
+### Success Response
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok",
+            "retcode": 0,
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### Failure Response
+
+```python
+async def call_api(self, endpoint: str, **params):
+    # ...
+    return {
+        "status": "failed",
+        "retcode": 10003,  # Error code
+        "data": None,
+        "message_id": "",
+        "message": "Missing required parameters",
+        "myplatform_raw": None
+    }
+```
+
+## Multi-Account Support
+
+### Account Configuration
+
+```toml
+[MyAdapter.accounts.account1]
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+token = "token2"
+enabled = true
+```
+
+### Specify Account for Sending
+
+```python
+# Use Using method to specify account
+my_adapter = adapter.get("myplatform")
+
+# By account name
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# By account ID
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+```
+
+## Error Handling
+
+### Connection Retry
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"Connection failed, retrying in {wait_time} seconds")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API Error Handling
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # Recommended to use SDK built-in client
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
+    except asyncio.TimeoutError:
+        self.logger.error(f"Request timeout: {endpoint}")
+        return self._error_response("Request timeout", 32000)
+    except Exception as e:
+        self.logger.error(f"Unknown error: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+## Bot Status Management
+
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
+
+### Automatic Discovery Mechanism
+
+When an adapter emits an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
+
+- **meta events**: Perform corresponding operations based on `detail_type` (register on connect / mark offline on disconnect / update active time on heartbeat)
+- **regular events** (message/notice/request): Automatically discover Bots and update active time
+
+```python
+# All events containing self field trigger automatic discovery
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" is automatically registered (if first appearance) and active time updated
+```
+
+### Meta Event Types
+
+| `detail_type` | Description | Framework Behavior |
+|---|---|---|
+| `connect` | Bot connects | Register Bot and trigger `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnects | Mark Bot as offline and trigger `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
+
+### Adapter Sending Meta Events
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的机器人",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### Extended `self` Field Information
+
+The `self` field, in addition to the required `platform` and `user_id`, supports the following optional fields:
+
+| Field | Description |
+|---|---|
+| `user_name` | Bot username |
+| `nickname` | Bot nickname |
+| `avatar` | Bot avatar URL |
+| `account_id` | Multi-account identifier |
+
+### Bot Status Query
+
+```python
+from ErisPulse import sdk
+
+# Get single Bot info
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# List all Bots
+all_bots = sdk.adapter.list_bots()
+
+# List Bots for specific platform
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Check if Bot is online
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Get complete status summary (suitable for WebUI display)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### Listen to Bot Lifecycle
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot online: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot offline: {platform}/{bot_id}")
+```
+
+## Related Documentation
+
+- [Adapter Development Getting Started](getting-started.md) - Create your first adapter
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn message sending
+- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
 
 
 
@@ -5675,6 +6057,506 @@ all_bots = sdk.adapter.list_bots()
 
 # List Bots for a specific platform
 platform_bots =
+```
+
+## Connection Management
+
+### 1. Implement Connection Retry
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                self.logger.info("Connection successful")
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    # Exponential backoff strategy
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(
+                        f"Connection failed, retrying in {wait_time} seconds ({retry_count}/{max_retries}): {e}"
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    self.logger.error("Connection failed, reached maximum retry count")
+                    raise
+```
+
+### 2. Connection State Management
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        super().__init__()
+        self.connection = None
+        self._connected = False
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        self.connection = websocket
+        self._connected = True
+        self.logger.info("Connection established")
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                await self._process_event(data)
+        except WebSocketDisconnect:
+            self.logger.info("Connection disconnected")
+        finally:
+            self.connection = None
+            self._connected = False
+```
+
+### 3. Heartbeat Keep-alive and Meta Heartbeat
+
+Adapter's heartbeat should simultaneously fulfill two tasks: sending heartbeat keep-alive to the platform and sending meta heartbeat events to the framework.
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        self.connection = await self._connect_to_platform()
+        self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+
+    async def _heartbeat_loop(self):
+        while self.connection:
+            try:
+                # 1. Send heartbeat keep-alive to the platform
+                await self.connection.send_json({"type": "ping"})
+
+                # 2. Send meta heartbeat event to the framework (update Bot active time)
+                await self.adapter.emit({
+                    "type": "meta",
+                    "detail_type": "heartbeat",
+                    "platform": "myplatform",
+                    "self": {
+                        "platform": "myplatform",
+                        "user_id": self._bot_id,
+                    }
+                })
+
+                await asyncio.sleep(30)
+            except Exception as e:
+                self.logger.error(f"Heartbeat failed: {e}")
+                break
+```
+
+## Event Conversion
+
+### 1. Strictly Follow OneBot12 Standard
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """Convert event"""
+        onebot_event = {
+            "id": str(raw_event.get("event_id", uuid.uuid4())),
+            "time": int(time.time()),
+            "type": self._convert_type(raw_event.get("type")),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,  # Preserve raw data (required)
+            "myplatform_raw_type": raw_event.get("type", "")  # Raw type (required)
+        }
+        return onebot_event
+```
+
+### 2. Standardize Timestamps
+
+```python
+def _convert_timestamp(self, timestamp):
+    """Convert to 10-digit second-level timestamp"""
+    if not timestamp:
+        return int(time.time())
+    
+    # If timestamp is in milliseconds
+    if timestamp > 10**12:
+        return int(timestamp / 1000)
+    
+    # If timestamp is in seconds
+    return int(timestamp)
+```
+
+### 3. Event ID Generation
+
+```python
+import uuid
+
+def _generate_event_id(self, raw_event):
+    """Generate event ID"""
+    event_id = raw_event.get("event_id")
+    if event_id:
+        return str(event_id)
+    # If platform doesn't provide ID, generate UUID
+    return str(uuid.uuid4())
+```
+
+## SendDSL Implementation
+
+`At`/`AtAll`/`Reply` decorators are already built into the framework's SendDSL base class, adapters only need to implement `Raw_ob12` and specific send methods. Use `self._apply_modifiers(message)` and `self.send_context` to simplify development.
+
+### 1. Must Return Task Object
+
+```python
+class Send(BaseAdapter.Send):
+    def Raw_ob12(self, message, **kwargs):
+        """Recommended implementation: use framework helper methods"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
+            )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
+```
+
+### 2. Chainable Modifier Methods Return self
+
+```python
+class Send(BaseAdapter.Send):
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self # Return self
+```
+
+### 3. Support Platform-specific Methods
+
+```python
+class Send(BaseAdapter.Send):
+    def Sticker(self, sticker_id: str):
+        """Send sticker"""
+        return asyncio.create_task(
+            self._adapter.call_api(
+                endpoint="/send_sticker",
+                message=[{"type": "sticker", "data": {"id": sticker_id}}],
+                **self.send_context
+            )
+        )
+    
+    def Card(self, card_data: dict):
+        """Send card message"""
+        return asyncio.create_task(
+            self._adapter.call_api(
+                endpoint="/send_card",
+                message=[{"type": "card", "data": card_data}],
+                **self.send_context
+            )
+        )
+```
+
+## API Response
+
+### 1. Standardized Response Format
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok" if raw_response.get("success") else "failed",
+            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### 2. Error Code Specification
+
+Follow OneBot12 standard error codes:
+
+```python
+# 1xxxx - Action request errors
+10001: Bad Request
+10002: Unsupported Action
+10003: Bad Param
+
+# 2xxxx - Action handler errors
+20001: Bad Handler
+20002: Internal Handler Error
+
+# 3xxxx - Action execution errors
+31000: Database Error
+32000: Filesystem Error
+33000: Network Error
+34000: Platform Error
+35000: Logic Error
+```
+
+## Multi-account Support
+
+### 1. Account Configuration Validation
+
+```python
+def _get_config(self):
+    """Validate configuration"""
+    config = self.config_manager.getConfig("MyAdapter", {})
+    accounts = config.get("accounts", {})
+    
+    if not accounts:
+        # Create default account
+        default_account = {
+            "token": "",
+            "enabled": False
+        }
+        config["accounts"] = {"default": default_account}
+        self.config_manager.setConfig("MyAdapter", config)
+    
+    return config
+```
+
+### 2. Account Selection Mechanism
+
+```python
+async def _get_account_for_message(self, event):
+    """Select sending account based on event"""
+    bot_id = event.get("self", {}).get("user_id")
+    
+    # Find matching account
+    for account_name, account_config in self.accounts.items():
+        if account_config.get("bot_id") == bot_id:
+            return account_name
+    
+    # If not found, use the first enabled account
+    for account_name, account_config in self.accounts.items():
+        if account_config.get("enabled", True):
+            return account_name
+    
+    return None
+```
+
+## Error Handling
+
+### 1. Categorized Exception Handling
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # Recommended to use SDK built-in client to send API requests
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        # Network error (built-in retry mechanism handles network errors first)
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
+    except asyncio.TimeoutError:
+        # Timeout error
+        self.logger.error(f"Request timeout: {endpoint}")
+        return self._error_response("Request timeout", 32000)
+    except json.JSONDecodeError:
+        # JSON parsing error
+        self.logger.error("JSON parsing failed")
+        return self._error_response("Response format error", 10006)
+    except Exception as e:
+        # Unknown error
+        self.logger.error(f"Unknown error: {e}", exc_info=True)
+        return self._error_response(str(e), 34000)
+```
+
+### 2. Logging
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        super().__init__()
+        self.logger = logger.get_child("MyAdapter")
+    
+    async def start(self):
+        self.logger.info("Adapter starting...")
+        # ...
+        self.logger.info("Adapter started")
+    
+    async def shutdown(self):
+        self.logger.info("Adapter shutting down...")
+        # ...
+        self.logger.info("Adapter shutdown complete")
+```
+
+## Testing
+
+### 1. Unit Tests
+
+```python
+import pytest
+from ErisPulse.Core.Bases import BaseAdapter
+
+class TestMyAdapter:
+    def test_converter(self):
+        """Test converter"""
+        converter = MyPlatformConverter()
+        raw_event = {"type": "message", "content": "Hello"}
+        result = converter.convert(raw_event)
+        assert result is not None
+        assert result["platform"] == "myplatform"
+        assert "myplatform_raw" in result
+    
+    def test_api_response(self):
+        """Test API response format"""
+        adapter = MyAdapter()
+        response = adapter.call_api("/test", param="value")
+        assert "status" in response
+        assert "retcode" in response
+```
+
+### 2. Integration Tests
+
+```python
+@pytest.mark.asyncio
+async def test_adapter_start():
+    """Test adapter start"""
+    adapter = MyAdapter()
+    await adapter.start()
+    assert adapter._connected is True
+
+@pytest.mark.asyncio
+async def test_send_message():
+    """Test send message"""
+    adapter = MyAdapter()
+    await adapter.start()
+    
+    result = await adapter.Send.To("user", "123").Text("Hello")
+    assert result is not None
+```
+
+## Reverse Conversion and Message Building
+
+`Raw_ob12` is the method that adapters **must implement**, serving as the unified entry point for reverse conversion (OneBot12 → platform). Standard methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12`, and modifier states (`At`/`Reply`/`AtAll`) must be merged into message segments within `Raw_ob12`.
+
+`MessageBuilder` is a message segment builder tool used in conjunction with `Raw_ob12`, supporting chain calls and rapid construction.
+
+> For complete implementation specifications, code examples, and usage methods, please refer to:
+> - [Send Method Specification §6 Reverse Conversion Specification](../../standards/send-method-spec.md#6-反向转换规范onebot12--平台)
+> - [Send Method Specification §11 MessageBuilder](../../standards/send-method-spec.md#11-消息构建器-messagebuilder)
+
+## Platform Event Method Extension
+
+Adapters can register platform-specific methods for Event wrapper classes, allowing module developers to more easily access platform-specific data.
+
+### 1. Use Mixin Class for Batch Registration (Recommended)
+
+When a platform has multiple specific methods, it is recommended to use a Mixin class:
+
+```python
+# Register at adapter's start() or module level
+from ErisPulse.Core.Event import register_event_mixin
+
+class MyPlatformEventMixin:
+    def get_chat_name(self):
+        """Get chat name"""
+        return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+    def is_official_message(self):
+        """Check if message is official"""
+        raw = self.get("myplatform_raw", {})
+        return raw.get("sender", {}).get("is_official", False)
+
+    def get_message_type(self):
+        """Get platform message type"""
+        return self.get("myplatform_raw", {}).get("msg_type", "text")
+
+# Batch register
+register_event_mixin("myplatform", MyPlatformEventMixin)
+```
+
+### 2. Use Decorator to Register Single Method
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("myplatform")
+def get_chat_name(self):
+    return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+```
+
+### 3. Clean Up on Adapter Shutdown
+
+```python
+from ErisPulse.Core.Event import unregister_platform_event_methods
+
+class MyAdapter(BaseAdapter):
+    async def shutdown(self):
+        # Clean up platform event method registration
+        unregister_platform_event_methods("myplatform")
+        # ... other cleanup
+```
+
+> For more detailed registration and unregistration instructions, please refer to [Event System API - Register Platform Extension Methods](../../api-reference/event-system.md#适配器注册平台扩展方法).
+
+## Documentation Maintenance
+
+### 1. Maintain Platform Feature Documentation
+
+Create a `{platform}.md` documentation file in `docs/zh-CN/platform-guide/` (other language versions will be automatically generated):
+
+```markdown
+# Platform Name Adapter Documentation
+
+## Basic Information
+- Corresponding Module Version: 1.0.0
+- Maintainer: Your Name
+
+## Supported Message Sending Types
+...
+
+## Specific Event Types
+...
+
+## Configuration Options
+...
+```
+
+### 2. Update Version Information
+
+When releasing a new version, update the version information in the documentation:
+
+```toml
+[project]
+version = "2.0.0"  # Update version number
+```
+
+## Related Documentation
+
+- [Getting Started with Adapter Development](getting-started.md) - Create your first adapter
+- [Core Concepts of Adapters](core-concepts.md) - Understand adapter architecture
+- [Detailed Explanation of SendDSL](send-dsl.md) - Learn message sending
 
 
 
@@ -9220,6 +10102,267 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
         else:
             # Unknown segment -> Log warning and skip
             logger.warning(f"
+```
+
+#### 6.3.3 Composite Message Segment Handling
+
+A message may contain multiple message segments, and the adapter needs to correctly handle composite messages:
+
+```python
+# Module sends a message containing text + image + @user
+await send.Raw_ob12([
+    {"type": "mention", "data": {"user_id": "123"}},
+    {"type": "text", "data": {"text": "你好"}},
+    {"type": "image", "data": {"file": "https://example.com/img.jpg"}}
+])
+```
+
+**Handling Strategy:**
+- **Prefer merging:** If the platform supports sending multiple message types in a single message, merge them
+- **Fallback to splitting:** If the platform does not support merging, send as multiple separate messages
+- **Maintain order:** The order of message segments should match the order in the list
+
+### 6.4 Relationship Between `Raw_ob12` and Standard Methods
+
+The adapter's standard sending methods (`Text`, `Image`, etc.) should delegate to `Raw_ob12` rather than implementing independently:
+
+```python
+class Send(SendDSL):
+    def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
+        """Core implementation: OneBot12 message segments → Platform API"""
+        return asyncio.create_task(self._send_ob12(message_segments))
+    
+    def Text(self, text: str) -> asyncio.Task:
+        """Standard method, delegates to Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
+    
+    def Image(self, image: Union[str, bytes]) -> asyncio.Task:
+        """Standard method, delegates to Raw_ob12"""
+        return self.Raw_ob12([
+            {"type": "image", "data": {"file": image}}
+        ])
+```
+
+**Benefits:**
+- Conversion logic is centralized in `Raw_ob12`, reducing code duplication
+- Standard methods and `Raw_ob12` behave identically
+- Modules receive consistent results whether using `Text()` or `Raw_ob12()`
+
+### 6.5 Implementation Example
+
+```python
+class YunhuSend(SendDSL):
+    """Yunhu platform Send implementation"""
+    
+    def Raw_ob12(self, message_segments: list) -> asyncio.Task:
+        """OneBot12 message segments → Yunhu API call"""
+        return asyncio.create_task(self._do_send(message_segments))
+    
+    async def _do_send(self, segments: list) -> dict:
+        """Actual sending logic"""
+        # 1. Parse modifier state
+        at_users = self._at_users or []
+        reply_to = self._reply_to
+        at_all = self._at_all
+        
+        # 2. Convert message segments
+        yunhu_elements = []
+        for seg in segments:
+            seg_type = seg["type"]
+            seg_data = seg["data"]
+            
+            if seg_type == "text":
+                yunhu_elements.append({"type": "text", "content": seg_data["text"]})
+            elif seg_type == "image":
+                yunhu_elements.append({"type": "image", "url": seg_data["file"]})
+            elif seg_type == "mention":
+                at_users.append(seg_data["user_id"])
+            elif seg_type == "reply":
+                reply_to = seg_data["message_id"]
+            elif seg_type == "yunhu_form":
+                # Platform extension message segment
+                yunhu_elements.append({"type": "form", "form_id": seg_data["form_id"]})
+            else:
+                logger.warning(f"Yunhu does not support message segment: {seg_type}")
+        
+        # 3. Call Yunhu API
+        response = await self._call_yunhu_api(yunhu_elements, at_users, reply_to, at_all)
+        
+        # 4. Return standard response format
+        return {
+            "status": "ok" if response["code"] == 0 else "failed",
+            "retcode": response["code"],
+            "data": {"message_id": response.get("msg_id", ""), "time": int(time.time())},
+            "message_id": response.get("msg_id", ""),
+            "message": "",
+            "yunhu_raw": response
+        }
+```
+
+---
+
+## 7. Method Discovery
+
+Module developers can query the adapter's supported sending methods via API:
+
+```python
+from ErisPulse import adapter
+
+# List all sending methods
+methods = adapter.list_sends("myplatform")
+# ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
+
+# View method details
+info = adapter.send_info("myplatform", "Form")
+# {
+#     "name": "Form",
+#     "parameters": [{"name": "form_id", "type": "str", ...}],
+#     "return_type": "Awaitable[Any]",
+#     "docstring": "Send Yunhu form"
+# }
+```
+
+---
+
+## 8. Registered Sending Method Extensions
+
+| Platform | Method Name | Description |
+|------|--------|------|
+| onebot12 | `Mention` | @ user (OneBot12 style) |
+| onebot12 | `Sticker` | Send sticker |
+| onebot12 | `Location` | Send location |
+| onebot12 | `Recall` | Recall message |
+| onebot12 | `Edit` | Edit message |
+| onebot12 | `Batch` | Batch send |
+
+> **Note:** Sending methods are not prefixed with the platform name, and methods with the same name across different platforms can have different implementations.
+
+---
+
+## 9. Adapter Development Notes
+
+For details on correctly overriding `BaseAdapter`, `Send`, and `Request` `__init__`, see [Adapter Development Basics - `__init__` Notes](../../developer-guide/adapters/getting-started.md#init-注意事项).
+
+---
+
+---
+
+## 10. Adapter Implementation Checklist
+
+### Sending Methods
+- [ ] Standard methods (`Text`, `Image`, etc.) are implemented
+- [ ] Return values are all `asyncio.Task`
+- [ ] Modifier methods (`At`, `Reply`, `AtAll`) return `self`
+- [ ] Platform extension methods use PascalCase, no platform prefix
+- [ ] All methods have complete type hints and docstrings
+
+### Reverse Conversion
+- [ ] `Raw_ob12` **is implemented** (must, cannot be skipped)
+- [ ] `Raw_ob12` handles all standard message segments (`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`)
+- [ ] `Raw_ob12` handles platform extension message segments (`{platform}_xxx` type)
+- [ ] Standard sending methods (`Text`, `Image`, etc.) internally delegate to `Raw_ob12`, not implement conversion logic independently
+- [ ] Unsupported message segments are skipped and logged as warnings, no exceptions thrown
+- [ ] Composite message segments are handled correctly (merged or split in sequence)
+
+---
+
+## 11. MessageBuilder
+
+`MessageBuilder` is a message segment builder tool provided by ErisPulse, used in conjunction with `Raw_ob12` to simplify the construction of OneBot12 message segments.
+
+### 11.1 Import
+
+```python
+from ErisPulse.Core import MessageBuilder
+# or
+from ErisPulse.Core.Event import MessageBuilder
+```
+
+### 11.2 Chainable Segment Building
+
+```python
+# Build a message containing text, image, and @user
+segments = (
+    MessageBuilder()
+    .mention("123456")
+    .text("你好，看看这张图")
+    .image("https://example.com/img.jpg")
+    .reply("msg_789")
+    .build()
+)
+
+# Send
+await adapter.Send.To("group", "456").Raw_ob12(segments)
+```
+
+### 11.3 Quick Single Segment Construction
+
+```python
+# Quickly build a single message segment (returns list[dict], can be directly passed to Raw_ob12)
+await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
+await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.at_all())
+```
+
+### 11.4 Usage with Event.reply_ob12
+
+```python
+from ErisPulse.Core import MessageBuilder
+
+@message()
+async def handle(event: Event):
+    await event.reply_ob12(
+        MessageBuilder()
+        .mention(event.get_user_id())
+        .text("收到你的消息")
+        .build()
+    )
+```
+
+### 11.5 Supported Message Segment Methods
+
+| Method | Description | data fields |
+|------|------|----------|
+| `text(text)` | Text | `text` |
+| `image(file)` | Image | `file` |
+| `audio(file)` | Audio | `file` |
+| `video(file)` | Video | `file` |
+| `file(file, filename=None)` | File | `file`, `filename` (optional) |
+| `mention(user_id, user_name=None)` | @ user | `user_id`, `user_name` (optional) |
+| `at(user_id, user_name=None)` | @ user (`mention` alias) | Same as `mention` |
+| `reply(message_id)` | Reply | `message_id` |
+| `at_all()` | @ all members | `{}` |
+| `custom(type, data)` | Custom/platform extension | Custom |
+
+### 11.6 Utility Methods
+
+```python
+builder = MessageBuilder().text("basic content")
+
+# Copy (deep copy)
+msg1 = builder.copy().image("img1").build()
+msg2 = builder.copy().image("img2").build()
+
+# Clear
+builder.clear().text("new content").build()
+
+# Check if empty
+if builder:
+    print(f"Contains {len(builder)} message segments")
+```
+
+---
+
+## 12. Related Documentation
+
+- [Event Conversion Standard](event-conversion.md) - Complete event conversion specification, extension naming, and message segment standards
+- [API Response Standard](api-response.md) - Adapter API response format standard
+- [Session Type Standard](session-types.md) - Session type definitions and mapping relationships
+- [Request Operation Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
 
 
 
@@ -10488,13 +11631,13 @@ resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 Wait for user confirmation (yes/no), returns `True` / `False` / `None` (timeout):
 
 ```python
-result = await conv.confirm("Are you sure you want to delete all data?")
+result = await conv.confirm("确定要删除所有数据吗？")
 if result is True:
-    await conv.say("Deleted")
+    await conv.say("已删除")
 elif result is False:
-    await conv.say("Cancelled")
+    await conv.say("已取消")
 else:
-    await conv.say("Timeout, no reply")
+    await conv.say("超时未回复")
 ```
 
 Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
@@ -10506,13 +11649,13 @@ Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/fa
 Wait for user to select from options, returns option index (0-based) or `None`:
 
 ```python
-choice = await conv.choose("Please choose a color:", ["Red", "Green", "Blue"])
+choice = await conv.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
 if choice is not None:
-    colors = ["Red", "Green", "Blue"]
-    await conv.say(f"You chose {colors[choice]}")
+    colors = ["红色", "绿色", "蓝色"]
+    await conv.say(f"你选择了 {colors[choice]}")
 ```
 
-Users can select by entering numbers (`1`/`2`/`3`) or option text (`Red`).
+Users can select by entering numbers (`1`/`2`/`3`) or option text (`红色`).
 
 ### collect(fields, **kwargs)
 
@@ -10520,17 +11663,17 @@ Multi-step information collection, returns a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
-    {"key": "name", "prompt": "Please enter name"},
-    {"key": "age", "prompt": "Please enter age",
+    {"key": "name", "prompt": "请输入姓名"},
+    {"key": "age", "prompt": "请输入年龄",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "Age must be a number, please re-enter"},
-    {"key": "city", "prompt": "Please enter city"},
+     "retry_prompt": "年龄必须是数字，请重新输入"},
+    {"key": "city", "prompt": "请输入城市"},
 ])
 
 if data:
-    await conv.say(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nCity: {data['city']}")
+    await conv.say(f"注册成功！\n姓名: {data['name']}\n年龄: {data['age']}\n城市: {data['city']}")
 else:
-    await conv.say("Registration process interrupted")
+    await conv.say("注册过程中断")
 ```
 
 Field configuration:
@@ -10538,9 +11681,9 @@ Field configuration:
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
 | `key` | Field key name (required) | - |
-| `prompt` | Prompt message | `"Please enter {key}"` |
+| `prompt` | Prompt message | `"请输入 {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
-| `retry_prompt` | Retry prompt on validation failure | `"Input invalid, please re-enter"` |
+| `retry_prompt` | Retry prompt on validation failure | `"输入无效，请重新输入"` |
 | `max_retries` | Maximum retry times | 3 |
 | `condition` | Condition function, receives collected data dict, returns bool | None |
 
@@ -10548,9 +11691,9 @@ Field configuration:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter car brand",
-     "condition": lambda d: d.get("has_car", "").lower() in ("yes", "是", "y")},
+    {"key": "has_car", "prompt": "你有车吗？（是/否）"},
+    {"key": "car_brand", "prompt": "请输入车型",
+     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
 ])
 ```
 
@@ -10568,7 +11711,7 @@ Whether the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("Conversation is still in progress")
+    await conv.say("对话还在进行中")
 ```
 
 ## Active State Management
@@ -10594,7 +11737,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
+        await conv.say("=== 主菜单 ===\n1. 个人信息\n2. 设置\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -10604,19 +11747,19 @@ async def menu_handler(event):
         elif text == "2":
             await conv.goto("settings")
         elif text == "3":
-            await conv.say("Goodbye!")
+            await conv.say("再见！")
             conv.stop()
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
+        await conv.say("=== 个人信息 ===\n姓名: Alice\n0. 返回")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
+        await conv.say("=== 设置 ===\n1. 通知开关\n0. 返回")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -10647,8 +11790,8 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "Unknown")
-    await conv.say(f"Hello, {name}!")
+    name = conv.context.get("username", "未知")
+    await conv.say(f"你好，{name}！")
 ```
 
 ### save() / resume() / clear_saved()
@@ -10663,9 +11806,9 @@ conv_id = conv.save()
 # ... later in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("Welcome back! Continuing the previous conversation")
+    await conv2.say("欢迎回来！继续之前的对话")
 else:
-    await conv2.say("No previous conversation found")
+    await conv2.say("没有找到之前的对话")
 
 # Clear saved conversation
 conv.clear_saved()
@@ -10680,28 +11823,28 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("Welcome to register!")
+    await conv.say("欢迎注册！")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "Please enter username (3-20 characters)",
+        {"key": "username", "prompt": "请输入用户名（3-20个字符）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "Please enter email address",
+        {"key": "email", "prompt": "请输入邮箱地址",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "Email format is incorrect, please re-enter"},
+         "retry_prompt": "邮箱格式不正确，请重新输入"},
     ])
 
     if not data:
-        await event.reply("Registration cancelled")
+        await event.reply("注册已取消")
         return
 
     confirmed = await conv.confirm(
-        f"Confirm registration information?\nUsername: {data['username']}\nEmail: {data['email']}"
+        f"确认注册信息？\n用户名: {data['username']}\n邮箱: {data['email']}"
     )
 
     if confirmed:
-        await conv.say("✅ Registration successful!")
+        await conv.say("✅ 注册成功！")
     else:
-        await conv.say("❌ Registration cancelled")
+        await conv.say("❌ 已取消注册")
 ```
 
 ### Looping Conversation
@@ -10710,31 +11853,31 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Enter conversation mode, type 'exit' to end")
+    await conv.say("进入对话模式，输入「退出」结束")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timeout, conversation ended")
+            await conv.say("超时，对话结束")
             break
 
         text = resp.get_text().strip()
 
-        if text == "exit":
-            await conv.say("Goodbye!")
+        if text == "退出":
+            await conv.say("再见！")
             conv.stop()
-        elif text == "help":
-            await conv.say("Available commands: exit, help, status")
-        elif text == "status":
-            await conv.say("Conversation active")
+        elif text == "帮助":
+            await conv.say("可用命令：退出、帮助、状态")
+        elif text == "状态":
+            await conv.say("对话活跃中")
         else:
-            await conv.say(f"You said: {text}")
+            await conv.say(f"你说的是：{text}")
 ```
 
 ## Related Documentation
 
-- [Event Wrapper](../../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Introduction to Event Handling](../../getting-started/event-handling.md) - Event handling basics
+- [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
+- [Introduction to Event Handling](../getting-started/event-handling.md) - Event handling basics
 
 
 
@@ -10816,42 +11959,42 @@ Directly provide HTML, JS, and CSS strings, and Dashboard will inject the conten
 ```python
 sdk.Dashboard.register_view(
     id="Weather",
-    title="天气", title_en="Weather",
+    title="Weather", title_en="Weather",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
     html_content='''
-        <h1 class="page-title">天气查询</h1>
+        <h1 class="page-title">Weather Query</h1>
+        <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
         <div class="grid-2">
             <div class="card">
-                <div class="card-header">当前天气</div>
+                <div class="card-header">Current Weather</div>
                 <div class="card-body">
-                    <div id="weather-info">加载中...</div>
+                    <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                 </div>
             </div>
             <div class="card">
-                <div class="card-header">操作</div>
+                <div class="card-header">Operations</div>
                 <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                    <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                 </div>
             </div>
         </div>
     ''',
     js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
+        async function loadWeatherView() { await refreshWeather(); }
         async function refreshWeather() {
             var el = document.getElementById('weather-info');
             if (!el) return;
+            el.textContent = 'Loading...';
             try {
-                var token = localStorage.getItem('__ep_tk__');
                 var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                 });
                 var data = await resp.json();
-                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                               '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                               '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
             } catch (e) {
-                el.textContent = '加载失败: ' + e.message;
+                el.textContent = 'Failed to load: ' + e.message;
             }
         }
     ''',
@@ -10867,7 +12010,7 @@ The module provides its own HTML page URL (which needs to register its own route
 ```python
 sdk.Dashboard.register_view(
     id="MyVisualizer",
-    title="数据可视化", title_en="Data Visualizer",
+    title="Data Visualizer", title_en="Data Visualizer",
     iframe_url="/MyVisualizer/view",
     group="group_tools",
 )
@@ -10883,11 +12026,11 @@ Modules can specify the sidebar group where their view should be placed. Dashboa
 
 | Group ID | Chinese Name | Position |
 |----------|--------------|----------|
-| `group_overview` | 概览 | Group 1 |
-| `group_events` | 事件 | Group 2 |
-| `group_extensions` | 扩展 | Group 3 (Default) |
-| `group_system` | 系统 | Group 4 |
-| `group_tools` | 工具 | Group 5 |
+| `group_overview` | Overview | Group 1 |
+| `group_events` | Events | Group 2 |
+| `group_extensions` | Extensions | Group 3 (Default) |
+| `group_system` | System | Group 4 |
+| `group_tools` | Tools | Group 5 |
 
 Specifying a built-in group name will append the module view to the end of that group:
 
@@ -10899,7 +12042,7 @@ Custom group names (not starting with `group_`) can also be used, and Dashboard 
 
 ```python
 group="my_group",
-group_title="我的分组",
+group_title="My Group",
 group_title_en="My Group",
 ```
 
@@ -10992,18 +12135,18 @@ class Main(BaseModule):
     async def on_load(self, event):
         self._register_routes()
         self._register_dashboard_view()
-        self.logger.info("天气模块已加载")
+        self.logger.info("Weather module loaded")
 
     async def on_unload(self, event):
         self._unregister_routes()
         if hasattr(self.sdk, 'Dashboard') and self.sdk.Dashboard:
             self.sdk.Dashboard.unregister_view("Weather")
-        self.logger.info("天气模块已卸载")
+        self.logger.info("Weather module unloaded")
 
     def _load_config(self):
         config = self.sdk.config.getConfig("Weather")
         if not config:
-            default = {"city": "北京", "api_key": ""}
+            default = {"city": "Beijing", "api_key": ""}
             self.sdk.config.setConfig("Weather", default)
             return default
         return config
@@ -11023,7 +12166,7 @@ class Main(BaseModule):
     async def _api_current(self, request):
         from fastapi.responses import JSONResponse
         return JSONResponse({
-            "city": self.config.get("city", "北京"),
+            "city": self.config.get("city", "Beijing"),
             "temp": 25,
             "humidity": 60,
         })
@@ -11033,22 +12176,22 @@ class Main(BaseModule):
             dashboard = self.sdk.Dashboard
             dashboard.register_view(
                 id="Weather",
-                title="天气", title_en="Weather",
+                title="Weather", title_en="Weather",
                 icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
                 html_content='''
-                    <h1 class="page-title">天气查询</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看当前天气信息</p>
+                    <h1 class="page-title">Weather Query</h1>
+                    <p style="color:var(--tx-s);margin-bottom:16px">View current weather information</p>
                     <div class="grid-2">
                         <div class="card">
-                            <div class="card-header">当前天气</div>
+                            <div class="card-header">Current Weather</div>
                             <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">点击刷新加载</div>
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                             </div>
                         </div>
                         <div class="card">
-                            <div class="card-header">操作</div>
+                            <div class="card-header">Operations</div>
                             <div class="card-body">
-                                <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
+                                <button class="btn btn-primary" onclick="refreshWeather()">Refresh</button>
                             </div>
                         </div>
                     </div>
@@ -11058,17 +12201,17 @@ class Main(BaseModule):
                     async function refreshWeather() {
                         var el = document.getElementById('weather-info');
                         if (!el) return;
-                        el.textContent = '加载中...';
+                        el.textContent = 'Loading...';
                         try {
                             var resp = await fetch('/Weather/api/current', {
                                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('__ep_tk__') }
                             });
                             var data = await resp.json();
-                            el.innerHTML = '<p>城市: ' + (data.city || '--') + '</p>' +
-                                           '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                                           '<p>湿度: ' + (data.humidity || '--') + '%</p>';
+                            el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
+                                           '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
                         } catch (e) {
-                            el.textContent = '加载失败: ' + e.message;
+                            el.textContent = 'Failed to load: ' + e.message;
                         }
                     }
                 ''',
@@ -11076,7 +12219,7 @@ class Main(BaseModule):
                 group="group_tools",
             )
         except Exception as e:
-            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
+            self.logger.warning(f"Failed to register Dashboard view: {e}")
 ```
 
 ---
@@ -13122,7 +14265,91 @@ async def handle_notice(event):
 
     sub_type = event.get("sub_type")
 
-    if sub_type == "
+    if sub_type == "added_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 对消息 {msg_id} 添加了表情回应")
+
+    elif sub_type == "deleted_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 移除了消息 {msg_id} 的表情回应")
+```
+
+### Sending Media Messages
+
+```python
+# Send image (URL)
+await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
+
+# Send image (binary)
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await kook.Send.To("group", channel_id).Image(image_bytes)
+
+# Send video
+await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
+
+# Send file
+await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
+
+# Send voice
+await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
+```
+
+### Sending KMarkdown and Card Messages
+
+```python
+# KMarkdown
+await kook.Send.To("group", channel_id).Markdown("**粗体** *斜体* [链接](https://example.com)")
+
+# Card message
+card = {
+    "type": "card",
+    "theme": "primary",
+    "size": "lg",
+    "modules": [
+        {"type": "header", "text": {"type": "plain-text", "content": "标题"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "内容"}}
+    ]
+}
+await kook.Send.To("group", channel_id).Card(card)
+```
+
+### Message Editing and Recall
+
+```python
+# Send message
+result = await kook.Send.To("group", channel_id).Markdown("**原始内容**")
+msg_id = result["data"]["msg_id"]
+
+# Edit message (only supports KMarkdown and CardMessage)
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+
+# Recall message
+await kook.Send.To("group", channel_id).Recall(msg_id)
+```
+
+### Handling Private Message Edit and Delete Notifications
+
+```python
+@notice.on_notice()
+async def handle_private_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "updated_private_message":
+        msg_id = event.get("message_id")
+        content = event.get("content")
+        print(f"私信消息已更新: {msg_id}, 新内容: {content}")
+
+    elif sub_type == "deleted_private_message":
+        msg_id = event.get("message_id")
+        print(f"私信消息已删除: {msg_id}")
 
 
 
@@ -13705,7 +14932,209 @@ Requires `platform=="qqbot"` detection before using platform-specific features
   "user_id": "MEMBER_OPENID",
   "group_id": "GROUP_OPENID",
   "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID
+  "qqbot_member_openid": "MEMBER_OPENID"
+}
+
+# Private message
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "USER_OPENID",
+  "qqbot_openid": "USER_OPENID",
+  "qqbot_event_id": "Message Event ID",
+  "qqbot_reply_token": "Reply token"
+}
+
+# Interaction event
+{
+  "type": "notice",
+  "detail_type": "qqbot_interaction",
+  "qqbot_interaction_id": "Interaction ID",
+  "qqbot_interaction_type": "Interaction type",
+  "qqbot_interaction_data": {
+    "...": "Interaction data"
+  }
+}
+
+# Message audit
+{
+  "type": "notice",
+  "detail_type": "qqbot_audit_pass",
+  "qqbot_audit_id": "Audit ID",
+  "qqbot_message_id": "Message ID"
+}
+
+# Message delete
+{
+  "type": "notice",
+  "detail_type": "qqbot_message_delete",
+  "message_id": "ID of the deleted message",
+  "operator_id": "Operator ID"
+}
+
+# Emoji reaction
+{
+  "type": "notice",
+  "detail_type": "qqbot_reaction_add",
+  "qqbot_raw": {
+    "...": "Raw data"
+  }
+}
+```
+
+### Channel Message Segments
+
+Channel messages support the `mentions` field, converted to `mention` message segments:
+
+```json
+{
+  "type": "mention",
+  "data": {
+    "user_id": "Mentioned User ID",
+    "user_name": "Mentioned User Nickname"
+  }
+}
+```
+
+### Attachment Message Segments
+
+QQBot attachments are automatically converted to corresponding message segments based on `content_type`:
+
+| content_type prefix | Conversion type | Description |
+|---|---|---|
+| `image` | `image` | Image message |
+| `video` | `video` | Video message |
+| `audio` | `voice` | Voice message |
+| Other | `file` | File message |
+
+Attachment message segment structure:
+```json
+{
+  "type": "image",
+  "data": {
+    "url": "Attachment URL",
+    "qqbot_attachment": {
+      "content_type": "image/png",
+      "url": "Original attachment URL"
+    }
+  }
+}
+```
+
+## WebSocket Connection
+
+### Connection Flow
+
+1. Use appId + clientSecret to obtain access_token
+2. Connect to WebSocket gateway
+3. Receive OP_HELLO (op=10) message, get heartbeat interval
+4. Send OP_IDENTIFY (op=2) for identification
+5. Receive READY event, get session_id and bot_id
+6. Start heartbeat loop (OP_HEARTBEAT, op=1)
+7. Receive event dispatch (OP_DISPATCH, op=0)
+
+### Disconnect Reconnection
+
+- Automatic reconnection is supported, maximum reconnection attempts are 50
+- Reconnection wait time uses exponential backoff algorithm: `min(5 * 2^min(count, 6), 300)` seconds
+- Session resumption (OP_RESUME, op=6) is supported, using session_id + seq
+- Automatically triggers reconnection upon receiving OP_RECONNECT (op=7) or OP_INVALID_SESSION (op=9)
+
+### Token Refresh
+
+- access_token validity period is usually 7200 seconds
+- Adapter automatically refreshes token every 7080 seconds (7200-120)
+- Refresh interface: `POST https://bots.qq.com/app/getAppAccessToken`
+
+## Event Subscription (Intents)
+
+intents values are combined via bit operations:
+
+```python
+intents = [1, 30, 25]
+value = 0
+for intent in intents:
+    value |= (1 << intent)
+```
+
+Common intent bits:
+| intent value | Description |
+|--------------|-------------|
+| 1 | Channel-related events (GUILD_CREATE, etc.) |
+| 25 | Channel message events (AT_MESSAGE_CREATE, etc.) |
+| 30 | Group @ message events (GROUP_AT_MESSAGE_CREATE, etc.) |
+
+## Usage Examples
+
+### Handling Group Messages
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+qqbot = sdk.adapter.get("qqbot")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "qqbot":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    group_id = event.get("group_id")
+
+    if text == "hello":
+        await qqbot.Send.To("group", group_id).Reply(
+            event.get("message_id")
+        ).Text("Hello!")
+```
+
+### Handling Interaction Events
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_interaction(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    if event.get("detail_type") == "qqbot_interaction":
+        interaction_id = event.get("qqbot_interaction_id", "")
+        interaction_data = event.get("qqbot_interaction_data", {})
+        # Handle interaction...
+```
+
+### Sending Media Messages
+
+```python
+# Sending image (URL)
+await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+
+# Sending image (binary)
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await qqbot.Send.To("user", user_openid).Image(image_bytes)
+```
+
+### Listening to Message Audit Results
+
+```python
+@notice.on_notice()
+async def handle_audit(event):
+    if event.get("platform") != "qqbot":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "qqbot_audit_pass":
+        msg_id = event.get("qqbot_message_id")
+        print(f"Message audit passed: {msg_id}")
+
+    elif detail_type == "qqbot_audit_reject":
+        reason = event.get("qqbot_audit_reject_reason", "")
+        print(f"Message audit rejected: {reason}")
 
 
 
