@@ -15,12 +15,12 @@ from ErisPulse.Core.Event.message_builder import MessageBuilder
 
 segments = (
     MessageBuilder()
-    .text("你好！")
+    .text("Привет!")
     .image("https://example.com/photo.jpg")
     .build()
 )
 # [
-#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "text", "data": {"text": "Привет!"}},
 #     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
 # ]
 ```
@@ -31,8 +31,8 @@ segments = (
 
 ```python
 # Возвращает list[dict] напрямую, без .build()
-segments = MessageBuilder.text("你好！")
-# [{"type": "text", "data": {"text": "你好！"}}]
+segments = MessageBuilder.text("Привет!")
+# [{"type": "text", "data": {"text": "Привет!"}}]
 ```
 
 ## Типы сегментов сообщений
@@ -61,8 +61,8 @@ from ErisPulse.Core.Event.message_builder import MessageBuilder
 # Построение + отправка (цепочкой)
 segments = (
     MessageBuilder()
-    .mention("user123", "张三")
-    .text(" 请查看这张图片")
+    .mention("user123", "Чжан Сань")
+    .text(" Пожалуйста, посмотрите на эту картинку")
     .image("https://example.com/photo.jpg")
     .build()
 )
@@ -78,9 +78,9 @@ from ErisPulse.Core.Event import command
 async def report_handler(event):
     await event.reply_ob12(
         MessageBuilder()
-        .text("📊 日报汇总\n")
-        .text("今日完成任务: 5\n")
-        .text("进行中任务: 3")
+        .text("📊 Сводка ежедневного отчета\n")
+        .text("Выполненные задачи сегодня: 5\n")
+        .text("Задачи в процессе: 3")
         .build()
     )
 ```
@@ -92,11 +92,11 @@ async def report_handler(event):
 Копирует текущий билдер, используется для создания множества вариантов сообщений на основе одного базового содержимого:
 
 ```python
-base = MessageBuilder().text("基础内容").mention("admin")
+base = MessageBuilder().text("Базовое содержание").mention("admin")
 
 # Создание различных сообщений на основе одного префикса
-msg1 = base.copy().text(" 变体A").build()
-msg2 = base.copy().text(" 变体B").image("img.jpg").build()
+msg1 = base.copy().text(" Вариант A").build()
+msg2 = base.copy().text(" Вариант B").image("img.jpg").build()
 ```
 
 ### clear()
@@ -108,7 +108,7 @@ builder = MessageBuilder()
 
 for user_id in ["user1", "user2", "user3"]:
     builder.clear()
-    msg = builder.mention(user_id).text(" 你好！").build()
+    msg = builder.mention(user_id).text(" Привет!").build()
     await adapter.Send.To("user", user_id).Raw_ob12(msg)
 ```
 
@@ -131,13 +131,13 @@ print(bool(builder))   # True
 # Добавление специфичных для платформы сегментов сообщений
 segments = (
     MessageBuilder()
-    .text("请填写表单：")
+    .text("Пожалуйста, заполните форму：")
     .custom("yunhu_form", {"form_id": "12345"})
     .build()
 )
 ```
 
-> Пользовательские сегменты сообщений действительны только в адаптерах соответствующих платформ, другие адапторы проигнорируют непонятные сегменты.
+> Пользовательские сегменты сообщений действительны только в адаптерах соответствующих платформ, другие адаптеры проигнорируют непонятные сегменты.
 
 ## Полный пример
 
@@ -148,9 +148,9 @@ segments = (
     MessageBuilder()
     .reply(event.get_id())                    # Ответ на исходное сообщение
     .mention(event.get_user_id())             # Упоминание отправителя
-    .text(" 这是你的查询结果：\n")             # Текст
+    .text(" Это результат вашего запроса：\n")             # Текст
     .image("https://example.com/chart.png")   # Изображение
-    .text("\n详细数据见附件：")
+    .text("\nПодробные данные см. в приложении：")
     .file("https://example.com/data.csv", filename="data.csv")
     .build()
 )
@@ -161,14 +161,14 @@ await event.reply_ob12(segments)
 
 ```python
 # Быстрое создание сообщения из одного сегмента
-simple_msg = MessageBuilder.text("简单文本")
+simple_msg = MessageBuilder.text("Простой текст")
 
 # Построение сложного сообщения цепочкой
 complex_msg = (
     MessageBuilder()
     .at_all()
-    .text(" 📢 公告：")
-    .text("今天下午3点开会")
+    .text(" 📢 Объявление：")
+    .text("Сегодня в 15:00 состоится собрание")
     .build()
 )
 ```

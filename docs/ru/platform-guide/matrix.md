@@ -122,12 +122,12 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ```python
 {
-    "status": "ok",           # Статус выполнения: "ok" или "failed"
-    "retcode": 0,             # Код возврата
-    "data": {...},            # Данные ответа
-    "message_id": "$event_id", # ID события Matrix
-    "message": "",            # Информация об ошибке
-    "matrix_raw": {...}       # Исходные данные ответа
+    "status": "ok",           // Статус выполнения: "ok" или "failed"
+    "retcode": 0,             // Код возврата
+    "data": {...},            // Данные ответа
+    "message_id": "$event_id", // ID события Matrix
+    "message": "",            // Информация об ошибке
+    "matrix_raw": {...}       // Исходные данные ответа
 }
 ```
 

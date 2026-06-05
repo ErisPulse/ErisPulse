@@ -41,7 +41,7 @@
 
 **核心對稱性**：
 - **正向轉換**（Converter）：平台原生事件 → OneBot12 標準事件，原始資料保留在 `{platform}_raw`
-- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，傳回標準響應格式
+- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，返回標準響應格式
 
 ## AdapterManager 介接器管理器
 
@@ -396,3 +396,350 @@ OneBot12 標準事件
     "time": 1234567890,           # 10位 Unix 時間戳
     "type": "message/notice/request/meta",
     "detail_type": "事件詳細類型",
+    "platform": "平台名稱",
+    "self": {
+        "platform": "平台名稱",
+        "user_id": "機器人ID"
+    },
+    "{platform}_raw": {...},       # 原始資料（必須）
+    "{platform}_raw_type": "..."    # 原始類型（必須）
+}
+```
+
+### 轉換器示例
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """將平台原生事件轉換為 OneBot12 標準格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        # 生成事件 ID
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        
+        # 轉換時間戳
+        timestamp = raw_event.get("timestamp")
+        if timestamp and timestamp > 10**12:
+            timestamp = int(timestamp / 1000)
+        else:
+            timestamp = int(timestamp) if timestamp else int(time.time())
+        
+        # 轉換事件類型
+        event_type = self._convert_type(raw_event.get("type"))
+        detail_type = self._convert_detail_type(raw_event)
+        
+        # 构建標準事件
+        onebot_event = {
+            "id": str(event_id),
+            "time": timestamp,
+            "type": event_type,
+            "detail_type": detail_type,
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## 連接管理
+
+### WebSocket 連接
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebSocket 路由"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket 連接處理器"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("連接已斷開")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket 認證"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook 連接
+
+```python
+from fastapi import Request
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebHook 路由"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request: Request):
+        """WebHook 請求處理器"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+## API 回應標準
+
+### 成功回應
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok",
+            "retcode": 0,
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### 失敗回應
+
+```python
+async def call_api(self, endpoint: str, **params):
+    # ...
+    return {
+        "status": "failed",
+        "retcode": 10003,  # 錯誤碼
+        "data": None,
+        "message_id": "",
+        "message": "缺少必要參數",
+        "myplatform_raw": None
+    }
+```
+
+## 多帳戶支援
+
+### 帳戶設定
+
+```toml
+[MyAdapter.accounts.account1]
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+token = "token2"
+enabled = true
+```
+
+### 指定帳戶發送
+
+```python
+# 使用 Using 方法指定帳戶
+my_adapter = adapter.get("myplatform")
+
+# 透過帳戶名
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# 透過帳戶 ID
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+```
+
+## 錯誤處理
+
+### 連接重試
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"連接失敗，{wait_time}秒後重試")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API 錯誤處理
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # 推薦使用 SDK 內建客戶端
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        self.logger.error(f"網路錯誤: {e}")
+        return self._error_response("網路請求失敗", 33000)
+    except asyncio.TimeoutError:
+        self.logger.error(f"請求超時: {endpoint}")
+        return self._error_response("請求超時", 32000)
+    except Exception as e:
+        self.logger.error(f"未知錯誤: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+## Bot 狀態管理
+
+AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的線上狀態、活躍時間和元資訊。
+
+### 自動發現機制
+
+當介接器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 字段：
+
+- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
+- **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
+
+```python
+# 所有包含 self 字段的事件都會觸發自動發現
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" 已自動註冊（如果首次出現）並更新活躍時間
+```
+
+### Meta 事件類型
+
+| `detail_type` | 說明 | 框架行為 |
+|---|---|---|
+| `connect` | Bot 連接 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
+| `disconnect` | Bot 斷開 | 標記 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
+| `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
+
+### 介接器發送 Meta 事件
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的機器人",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### `self` 字段擴展資訊
+
+`self` 字段除必需的 `platform` 和 `user_id` 外，還支援以下可選字段：
+
+| 字段 | 說明 |
+|---|---|
+| `user_name` | Bot 用戶名 |
+| `nickname` | Bot 昵稱 |
+| `avatar` | Bot 頭像 URL |
+| `account_id` | 多帳戶標識 |
+
+### Bot 狀態查詢
+
+```python
+from ErisPulse import sdk
+
+# 取得單個 Bot 信息
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# 檢查 Bot 是否線上
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 取得完整狀態摘要（適合 WebUI 展示）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### 監聽 Bot 生命週期
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 上線: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
+```
+
+## 相關文件
+
+- [介接器開發入門](getting-started.md) - 建立第一個介接器
+- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [介接器最佳實踐](best-practices.md) - 開發高品質介接器
