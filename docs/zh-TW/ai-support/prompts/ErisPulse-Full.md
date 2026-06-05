@@ -1703,6 +1703,264 @@ async def confirm_handler(event):
         text = reply_event.get_text().lower()
         
         if text in ["是", "yes", "y"]:
+            await event.reply("操作已確認！")
+        else:
+            await event.reply("操作已取消。")
+    
+    await event.reply("確認執行此操作嗎？(是/否)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
+
+### 確認對話 (confirm)
+
+等待使用者確認或否定，自動識別內置中英文確認詞：
+
+```python
+@command("confirm", help="確認操作")
+async def confirm_handler(event):
+    if await event.confirm("確定要執行此操作嗎？"):
+        await event.reply("已確認，執行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定義確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 選擇選單 (choose)
+
+使用者可回覆選項編號或選項文本：
+
+```python
+@command("choose", help="選擇")
+async def choose_handler(event):
+    choice = await event.choose(
+        "請選擇顏色：",
+        ["紅色", "綠色", "藍色"]
+    )
+    
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+    else:
+        await event.reply("逾時未選擇")
+```
+
+### 收集表單 (collect)
+
+多步驟收集使用者輸入：
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "請輸入郵箱："}
+    ])
+    
+    if data:
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+    else:
+        await event.reply("註冊逾時或輸入無效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待滿足條件的任意事件，不限於同一使用者：
+
+```python
+@command("wait_member", help="等待新成員")
+async def wait_member_handler(event):
+    await event.reply("等待群組成員加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
+    else:
+        await event.reply("等待逾時")
+```
+
+### 多輪對話 (conversation)
+
+建立可互動的多輪對話上下文：
+
+```python
+@command("survey", help="問卷調查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎參與問卷調查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("對話逾時，再見！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再見！")
+            break
+        
+        await conv.say(f"你說了：{text}，繼續輸入或回覆'退出'結束")
+```
+
+### 內置確認詞
+
+ErisPulse 內置了中英文確認詞集合：
+
+- **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
+- **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
+
+## 事件數據訪問
+
+### Event 物件常用方法
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基礎資訊
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 發送者資訊
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 訊息內容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # 群組資訊
+    group_id = event.get_group_id()
+    
+    # 機器人資訊
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始資料
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # 平台資訊
+    platform = event.get_platform()
+    
+    # 訊息類型判斷
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # 命令資訊
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### 平台擴展方法
+
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台呼叫專有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 專有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 郵件專有方法
+```
+
+如果不确定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台註冊的專有方法請參閱對應的 [平台文件](../platform-guide/)。
+
+## 事件處理最佳實踐
+
+### 1. 異常處理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # 業務邏輯
+        result = await do_some_work()
+        await event.reply(f"結果: {result}")
+    except ValueError as e:
+        # 預期的業務錯誤
+        await event.reply(f"參數錯誤: {e}")
+    except Exception as e:
+        # 未預期的錯誤
+        sdk.logger.error(f"處理失敗: {e}")
+        await event.reply("處理失敗，請稍後重試")
+```
+
+### 2. 日誌記錄
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"處理訊息: {user_id} - {text}")
+    
+    # 使用模組自己的日誌
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"詳細除錯資訊")
+```
+
+### 3. 條件處理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """條件處理 - 在處理器內部判斷"""
+    # 只處理特定使用者的訊息
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 只處理包含特定關鍵詞的訊息
+    if "關鍵詞" not in event.get_text():
+        return
+    
+    await event.reply("條件滿足，處理訊息")
+```
+
+## 下一步
+
+- [常見任務範例](common-tasks.md) - 學習常用功能的實作
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 
 
@@ -1710,16 +1968,16 @@ async def confirm_handler(event):
 
 # 常見任務範例
 
-本指南提供常見功能的實作範例，幫助您快速實作常用功能。
+本指南提供常見功能的實作範例，幫助你快速實作常用功能。
 
 ## 內容列表
 
 1. 資料持久化
 2. 定時任務
-3. 訊息過濾
+3. 消息過濾
 4. 多平台適配
 5. 權限控制
-6. 訊息統計
+6. 消息統計
 7. 搜尋功能
 8. 圖片處理
 
@@ -1817,7 +2075,7 @@ class TimerModule:
     async def _every_minute(self):
         """每分鐘執行的任務"""
         self.sdk.logger.info("每分鐘任務執行")
-        # 您的邏輯...
+        # 你的邏輯...
     
     async def _daily_task(self):
         """每天凌晨執行的任務"""
@@ -1832,7 +2090,7 @@ class TimerModule:
             
             # 執行任務
             self.sdk.logger.info("每日任務執行")
-            # 您的邏輯...
+            # 你的邏輯...
 ```
 
 ### 使用生命週期事件
@@ -1840,7 +2098,320 @@ class TimerModule:
 ```python
 @sdk.lifecycle.on("core.init.complete")
 async def init_complete_handler(event_data):
-    """SDK 初始化完成後啟動定時
+    """SDK 初始化完成後啟動定時任務"""
+    import asyncio
+    
+    async def daily_reminder():
+        """每日提醒"""
+        await asyncio.sleep(86400)  # 24小時
+        self.sdk.logger.info("執行每日任務")
+    
+    # 启动后台任务
+    asyncio.create_task(daily_reminder())
+```
+
+## 消息過濾
+
+### 關鍵詞過濾
+
+```python
+from ErisPulse.Core.Event import message
+
+blocked_words = ["垃圾", "廣告", "釣魚"]
+
+@message.on_message()
+async def filter_handler(event):
+    text = event.get_text()
+    
+    # 檢查是否包含敏感詞
+    for word in blocked_words:
+        if word in text:
+            sdk.logger.warning(f"攔截敏感訊息: {word}")
+            return  # 不處理此訊息
+    
+    # 正常處理訊息
+    await event.reply(f"收到: {text}")
+```
+
+### 黑名單過濾
+
+```python
+# 從配置或儲存載入黑名單
+blacklist = sdk.storage.get("user_blacklist", [])
+
+@message.on_message()
+async def blacklist_handler(event):
+    user_id = event.get_user_id()
+    
+    if user_id in blacklist:
+        sdk.logger.info(f"黑名單使用者: {user_id}")
+        return  # 不處理
+    
+    # 正常處理
+    await event.reply(f"你好，{user_id}")
+```
+
+## 多平台適配
+
+### 平台特定回應
+
+```python
+@command("help", help="顯示幫助")
+async def help_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        await event.reply("雲湖平台幫助...")
+    elif platform == "telegram":
+        await event.reply("Telegram platform help...")
+    elif platform == "onebot11":
+        await event.reply("OneBot11 help...")
+    else:
+        await event.reply("通用幫助資訊")
+```
+
+### 平台特性檢測
+
+```python
+@command("rich", help="發送富文本訊息")
+async def rich_handler(event):
+    platform = event.get_platform()
+    
+    if platform == "yunhu":
+        # 雲湖支援 HTML
+        yunhu = sdk.adapter.get("yunhu")
+        await yunhu.Send.To("user", event.get_user_id()).Html(
+            "<b>加粗文本</b><i>斜體文本</i>"
+        )
+    elif platform == "telegram":
+        # Telegram 支援 Markdown
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.To("user", event.get_user_id()).Markdown(
+            "**加粗文本** *斜體文本*"
+        )
+    else:
+        # 其他平台使用純文字
+        await event.reply("加粗文本 斜體文本")
+```
+
+## 權限控制
+
+### 管理員檢查
+
+```python
+# 配置管理員列表
+ADMINS = ["user123", "user456"]
+
+def is_admin(user_id):
+    """檢查是否為管理員"""
+    return user_id in ADMINS
+
+@command("admin", help="管理員命令")
+async def admin_handler(event):
+    user_id = event.get_user_id()
+    
+    if not is_admin(user_id):
+        await event.reply("權限不足，此命令僅管理員可用")
+        return
+    
+    await event.reply("管理員命令執行成功")
+
+@command("addadmin", help="新增管理員")
+async def addadmin_handler(event):
+    if not is_admin(event.get_user_id()):
+        return
+    
+    args = event.get_command_args()
+    if not args:
+        await event.reply("請輸入要新增的管理員 ID")
+        return
+    
+    new_admin = args[0]
+    ADMINS.append(new_admin)
+    await event.reply(f"已新增管理員: {new_admin}")
+```
+
+### 群組權限
+
+```python
+@command("groupinfo", help="查看群組資訊")
+async def groupinfo_handler(event):
+    if not event.is_group_message():
+        await event.reply("此命令僅限群聊使用")
+        return
+    
+    group_id = event.get_group_id()
+    user_id = event.get_user_id()
+    
+    await event.reply(f"群組 ID: {group_id}, 你的 ID: {user_id}")
+```
+
+## 消息統計
+
+### 消息計數
+
+```python
+@message.on_message()
+async def count_handler(event):
+    # 取得統計
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    # 更新統計
+    stats["total"] += 1
+    
+    user_id = event.get_user_id()
+    stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
+    
+    # 保存
+    sdk.storage.set("message_stats", stats)
+
+@command("stats", help="查看消息統計")
+async def stats_handler(event):
+    stats = sdk.storage.get("message_stats", {
+        "total": 0,
+        "by_user": {},
+        "by_day": {}
+    })
+    
+    top_users = sorted(
+        stats["by_user"].items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+    
+    top_text = "\n".join(
+        f"{uid}: {count} 條訊息" for uid, count in top_users
+    )
+    
+    await event.reply(f"總訊息數: {stats['total']}\n\n活躍用戶:\n{top_text}")
+```
+
+## 搜尋功能
+
+### 簡單搜尋
+
+```python
+from ErisPulse.Core.Event import command, message
+
+# 儲存訊息歷史
+message_history = []
+
+@message.on_message()
+async def store_handler(event):
+    """儲存訊息用於搜尋"""
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    message_history.append({
+        "user_id": user_id,
+        "text": text,
+        "time": event.get_time()
+    })
+    
+    # 限制歷史記錄數量
+    if len(message_history) > 1000:
+        message_history.pop(0)
+
+@command("search", help="搜尋訊息")
+async def search_handler(event):
+    args = event.get_command_args()
+    
+    if not args:
+        await event.reply("請輸入搜尋關鍵字")
+        return
+    
+    keyword = " ".join(args)
+    results = []
+    
+    # 搜尋歷史記錄
+    for msg in message_history:
+        if keyword in msg["text"]:
+            results.append(msg)
+    
+    if not results:
+        await event.reply("未找到匹配的訊息")
+        return
+    
+    # 顯示結果
+    result_text = f"找到 {len(results)} 條匹配訊息:\n\n"
+    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
+        result_text += f"{i}. {msg['text']}\n"
+    
+    await event.reply(result_text)
+```
+
+## 圖片處理
+
+### 圖片下載和儲存
+
+```python
+from ErisPulse.Core import client
+
+@message.on_message()
+async def image_handler(event):
+    """處理圖片訊息"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            if file_url:
+                # 推薦使用 SDK 內建客戶端下載圖片
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # 儲存到檔案
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"圖片已儲存: {filename}")
+                    await event.reply("圖片已儲存")
+```
+
+### 圖片識別示例
+
+```python
+from ErisPulse.Core import client
+
+@command("identify", help="識別圖片")
+async def identify_handler(event):
+    """識別訊息中的圖片"""
+    message_segments = event.get_message()
+    
+    for segment in message_segments:
+        if segment.get("type") == "image":
+            file_url = segment.get("data", {}).get("file")
+            
+            # 呼叫圖片識別 API
+            result = await _identify_image(file_url)
+            
+            await event.reply(f"識別結果: {result}")
+            return
+    
+    await event.reply("未找到圖片")
+
+async def _identify_image(url):
+    """呼叫圖片識別 API（示例）- 使用 SDK 內建客戶端"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "識別失敗")
+```
+
+## 下一步
+
+- [使用者使用指南](../user-guide/) - 了解配置和模組管理
+- [開發者指南](../developer-guide/) - 學習開發模組和適配器
+- [進階主題](../advanced/) - 深入了解框架特性
 
 
 
@@ -4359,7 +4930,7 @@ class MyAdapter(BaseAdapter):
 
 **核心對稱性**：
 - **正向轉換**（Converter）：平台原生事件 → OneBot12 標準事件，原始資料保留在 `{platform}_raw`
-- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，傳回標準響應格式
+- **反向轉換**（Raw_ob12）：OneBot12 訊息段 → 平台 API 呼叫，返回標準響應格式
 
 ## AdapterManager 介接器管理器
 
@@ -4714,6 +5285,353 @@ OneBot12 標準事件
     "time": 1234567890,           # 10位 Unix 時間戳
     "type": "message/notice/request/meta",
     "detail_type": "事件詳細類型",
+    "platform": "平台名稱",
+    "self": {
+        "platform": "平台名稱",
+        "user_id": "機器人ID"
+    },
+    "{platform}_raw": {...},       # 原始資料（必須）
+    "{platform}_raw_type": "..."    # 原始類型（必須）
+}
+```
+
+### 轉換器示例
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """將平台原生事件轉換為 OneBot12 標準格式"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        # 生成事件 ID
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        
+        # 轉換時間戳
+        timestamp = raw_event.get("timestamp")
+        if timestamp and timestamp > 10**12:
+            timestamp = int(timestamp / 1000)
+        else:
+            timestamp = int(timestamp) if timestamp else int(time.time())
+        
+        # 轉換事件類型
+        event_type = self._convert_type(raw_event.get("type"))
+        detail_type = self._convert_detail_type(raw_event)
+        
+        # 构建標準事件
+        onebot_event = {
+            "id": str(event_id),
+            "time": timestamp,
+            "type": event_type,
+            "detail_type": detail_type,
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## 連接管理
+
+### WebSocket 連接
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebSocket 路由"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket 連接處理器"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("連接已斷開")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket 認證"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook 連接
+
+```python
+from fastapi import Request
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """註冊 WebHook 路由"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request: Request):
+        """WebHook 請求處理器"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+## API 回應標準
+
+### 成功回應
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok",
+            "retcode": 0,
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### 失敗回應
+
+```python
+async def call_api(self, endpoint: str, **params):
+    # ...
+    return {
+        "status": "failed",
+        "retcode": 10003,  # 錯誤碼
+        "data": None,
+        "message_id": "",
+        "message": "缺少必要參數",
+        "myplatform_raw": None
+    }
+```
+
+## 多帳戶支援
+
+### 帳戶設定
+
+```toml
+[MyAdapter.accounts.account1]
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+token = "token2"
+enabled = true
+```
+
+### 指定帳戶發送
+
+```python
+# 使用 Using 方法指定帳戶
+my_adapter = adapter.get("myplatform")
+
+# 透過帳戶名
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# 透過帳戶 ID
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+```
+
+## 錯誤處理
+
+### 連接重試
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"連接失敗，{wait_time}秒後重試")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API 錯誤處理
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # 推薦使用 SDK 內建客戶端
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        self.logger.error(f"網路錯誤: {e}")
+        return self._error_response("網路請求失敗", 33000)
+    except asyncio.TimeoutError:
+        self.logger.error(f"請求超時: {endpoint}")
+        return self._error_response("請求超時", 32000)
+    except Exception as e:
+        self.logger.error(f"未知錯誤: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+## Bot 狀態管理
+
+AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bot 的線上狀態、活躍時間和元資訊。
+
+### 自動發現機制
+
+當介接器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 字段：
+
+- **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
+- **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
+
+```python
+# 所有包含 self 字段的事件都會觸發自動發現
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" 已自動註冊（如果首次出現）並更新活躍時間
+```
+
+### Meta 事件類型
+
+| `detail_type` | 說明 | 框架行為 |
+|---|---|---|
+| `connect` | Bot 連接 | 註冊 Bot 並觸發 `adapter.bot.online` 生命週期事件 |
+| `disconnect` | Bot 斷開 | 標記 Bot 離線並觸發 `adapter.bot.offline` 生命週期事件 |
+| `heartbeat` | Bot 心跳 | 更新 Bot 活躍時間和元資訊 |
+
+### 介接器發送 Meta 事件
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的機器人",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### `self` 字段擴展資訊
+
+`self` 字段除必需的 `platform` 和 `user_id` 外，還支援以下可選字段：
+
+| 字段 | 說明 |
+|---|---|
+| `user_name` | Bot 用戶名 |
+| `nickname` | Bot 昵稱 |
+| `avatar` | Bot 頭像 URL |
+| `account_id` | 多帳戶標識 |
+
+### Bot 狀態查詢
+
+```python
+from ErisPulse import sdk
+
+# 取得單個 Bot 信息
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# 列出所有 Bot
+all_bots = sdk.adapter.list_bots()
+
+# 列出指定平台的 Bot
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# 檢查 Bot 是否線上
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 取得完整狀態摘要（適合 WebUI 展示）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### 監聽 Bot 生命週期
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 上線: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot 下線: {platform}/{bot_id}")
+```
+
+## 相關文件
+
+- [介接器開發入門](getting-started.md) - 建立第一個介接器
+- [SendDSL 詳解](send-dsl.md) - 學習訊息發送
+- [介接器最佳實踐](best-practices.md) - 開發高品質介接器
 
 
 
@@ -6714,6 +7632,235 @@ async def auth_handler(websocket: WebSocket) -> bool:
     return token == "secret"
 
 sdk.router.register_websocket(
+    module_name="my_module",
+    path="/secure_ws",
+    handler=websocket_handler,
+    auth_handler=auth_handler,
+)
+
+# 取消路由
+sdk.router.unregister_websocket("MyModule", "/ws")
+```
+
+**參數說明：**
+
+| 參數 | 說明 | 預設值 |
+|------|------|--------|
+| `module_name` | 模組名稱（必須） | - |
+| `path` | WebSocket 路徑 | - |
+| `handler` | 處理函數 | - |
+| `auth_handler` | 認證函數，返回 `False` 會自動關閉連線 | `None` |
+| `auto_accept` | 是否自動 `accept()` | `True` |
+
+> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設置 `auto_accept=False`。
+
+### 路由分組
+
+```python
+# 建立路由組
+group = sdk.router.group("MyModule", prefix="/v1")
+
+# 在組內註冊路由
+@group.get("/users")
+async def list_users(request: Request):
+    return {"users": []}
+
+@group.post("/users")
+async def create_user(request: Request):
+    return {"created": True}
+
+# 帶版本號的分組
+v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
+```
+
+### 路由中間件
+
+```python
+# 全局中間件（glob 匹配）
+@sdk.router.middleware("/MyModule/*")
+async def auth_middleware(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    if not token:
+        return {"error": "Unauthorized"}
+    response = await call_next(request)
+    return response
+
+# 特定路徑中間件
+@sdk.router.middleware("/MyModule/admin/*")
+async def admin_middleware(request: Request, call_next):
+    return await call_next(request)
+```
+
+### 速率限制
+
+```python
+# 對路由設置速率限制（滑動窗口）
+@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
+async def limited_endpoint(request: Request):
+    return {"ok": True}
+
+@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
+async def submit_data(request: Request):
+    return {"submitted": True}
+```
+
+### CORS 配置
+
+```python
+# 代碼方式
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+# 配置文件方式（config.toml）
+# [router.cors]
+# allow_origins = ["https://example.com"]
+# allow_methods = ["GET", "POST"]
+# allow_headers = ["*"]
+```
+
+### 安全頭
+
+```python
+# 自動添加安全響應頭
+sdk.router.setup_security_headers()
+
+# 配置文件方式（config.toml）
+# [router.security]
+# enabled = true
+```
+
+### 自動文檔
+
+```python
+# Router 預設啟用 OpenAPI 文檔
+# 禁用文檔
+sdk.router.disable_docs()
+
+# 自定義文檔信息
+sdk.router.set_docs_info(
+    title="My API",
+    description="API 文檔",
+    version="1.0.0"
+)
+```
+
+### 路由信息
+
+```python
+app = sdk.router.get_app()
+```
+
+## HTTP Client 模組
+
+### 基本請求
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# POST 請求
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# PUT / DELETE / PATCH
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+
+# 通用 request 方法
+resp = await client.request("OPTIONS", "https://api.example.com/resource")
+```
+
+### 響應對象
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+
+resp.status        # int - HTTP 狀態碼 (如 200, 404)
+resp.reason        # str | None - 狀態描述 (如 "OK")
+resp.headers       # 響應頭 (大小寫不敏感)
+resp.content_type  # str | None - Content-Type
+resp.url           # 最終 URL (可能因重定向變化)
+resp.raw           # 底層原生響應對象 (當前為 aiohttp.ClientResponse)
+
+# 讀取響應體
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定編碼
+```
+
+### 請求參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | 請求 URL |
+| `params` | `dict[str, str]` | 查詢參數 (可選) |
+| `headers` | `dict[str, str]` | 額外請求頭 (可選) |
+| `data` | `Any` | 請求體 (表單或原始數據) (可選) |
+| `json` | `Any` | JSON 請求體 (可選) |
+| `timeout` | `float` | 本次請求超時 (秒) (可選, 覆蓋默認值) |
+| `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋默認值) |
+
+### 自定義客戶端
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 創建自定義客戶端（非全局單例）
+client = HttpClient(
+    timeout=60,
+    connect_timeout=5,
+    max_retries=3,
+    retry_delay=2,
+    headers={"Authorization": "Bearer token"},
+    user_agent="MyBot/1.0",
+)
+
+# 上下文管理器，自動關閉會話
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+```
+
+### 請求統計
+
+```python
+from ErisPulse.Core import client
+
+# 查看統計
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置統計
+client.reset_stats()
+```
+
+### 生命周期事件
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+## 相關文檔
+
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
+- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
 
 
 
@@ -13040,7 +14187,385 @@ auto_accept_invites = true                  # 是否自動接受房間邀請（�
 **配置項說明：**
 - `homeserver`：Matrix伺服器位址（必填），預設為 `https://matrix.org`
 - `access_token`：存取令牌，可從Matrix用戶端獲取。如果已有 token，直接填寫即可
-- `user_id`：
+- `user_id`：Matrix用戶ID（如 `@bot:matrix.org`），與 `password` 配合使用進行登入
+- `password`：Matrix用戶密碼，用於自動登入獲取 access_token
+- `auto_accept_invites`：是否自動接受房間邀請，預設為 `true`
+
+**認證方式：**
+- 方式一（推薦）：直接提供 `access_token`
+- 方式二：提供 `user_id` 和 `password`，適配器會自動呼叫登入介面獲取 token
+
+## 支援的消息發送類型
+
+所有發送方法均透過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+matrix = adapter.get("matrix")
+
+await matrix.Send.To("group", room_id).Text("Hello World!")
+```
+
+支援的發送類型包括：
+- `.Text(text: str)`：發送純文字消息。
+- `.Image(file: bytes | str)`：發送圖片消息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Voice(file: bytes | str)`：發送語音消息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Video(file: bytes | str)`：發送影片消息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.File(file: bytes | str, filename: str = "")`：發送檔案消息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Notice(text: str)`：發送通知消息（Matrix的 m.notice 類型）。
+- `.Html(html: str, fallback: str = "")`：發送HTML格式消息，支援富文本內容。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式消息。
+
+### 鏈式修飾方法（可組合使用）
+
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
+
+- `.Reply(message_id: str)`：回覆指定訊息（透過 Matrix `m.in_reply_to` 關係）。
+- `.At(user_id: str)`：@指定用戶（透過 Matrix `m.mentions` 欄位實現）。
+- `.AtAll()`：@房間內所有人（透過 Matrix `@room` 提及實現）。
+
+### 鏈式呼叫示例
+
+```python
+# 基礎發送
+await matrix.Send.To("user", dm_room_id).Text("Hello")
+
+# 回覆訊息
+await matrix.Send.To("group", room_id).Reply("$event_id").Text("回覆訊息")
+
+# @用戶
+await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("你好")
+
+# @所有人
+await matrix.Send.To("group", room_id).AtAll().Text("公告通知")
+
+# 組合使用：回覆 + @
+await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("複合訊息")
+
+# 發送HTML訊息
+await matrix.Send.To("group", room_id).Html("<h1>標題</h1><p>內容</p>", fallback="標題\n內容")
+
+# 發送通知訊息
+await matrix.Send.To("group", room_id).Notice("系統通知")
+```
+
+### OneBot12訊息支援
+
+適配器支援發送 OneBot12 格式訊息，便於跨平台訊息相容：
+
+```python
+# 發送 OneBot12 格式訊息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
+
+# 配合鏈式修飾
+ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
+await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
+
+# 複雜訊息
+ob12_msg = [
+    {"type": "text", "data": {"text": "看這張圖片："}},
+    {"type": "image", "data": {"file": "https://example.com/image.png"}},
+    {"type": "text", "data": {"text": "不錯吧？"}}
+]
+await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
+```
+
+## 發送方法返回值
+
+所有發送方法均返回一個 Task 物件，可直接 await 獲取發送結果。返回結果遵循 ErisPulse 適配器標準化返回規範：
+
+```python
+{
+    "status": "ok",           // 執行狀態: "ok" 或 "failed"
+    "retcode": 0,             // 返回碼
+    "data": {...},            // 回應資料
+    "message_id": "$event_id", // Matrix事件ID
+    "message": "",            // 錯誤資訊
+    "matrix_raw": {...}       // 原始回應資料
+}
+```
+
+### 錯誤碼說明
+
+| retcode | 說明 |
+|---------|------|
+| 0 | 成功 |
+| 32000 | 請求超時或媒體上傳失敗 |
+| 33000 | API呼叫異常 |
+| 34000 | API回傳了意外格式或業務錯誤 |
+
+## 特有事件類型
+
+需要 `platform=="matrix"` 檢測再使用本平台特性
+
+### 核心差異點
+
+1. **去中心化架構**：Matrix 是一個去中心化的通訊協議，用戶ID格式為 `@user:server.domain`，房間ID格式為 `!room_id:server.domain`
+2. **房間概念**：Matrix 不區分群聊和私聊，所有會話都是"房間"。適配器透過 DM（Direct Message）帳戶資料自動識別私聊房間
+3. **Long Polling 同步**：使用 `/sync` API 進行長輪詢獲取新事件，而非 WebSocket
+4. **MXC URI**：媒體檔案透過 `mxc://server.domain/media_id` 格式引用
+5. **HTML 富文字**：支援透過 `formatted_body` 發送 HTML 格式訊息
+6. **表情回應**：支援訊息層級的表情回應（Reaction），區別於傳統的回覆訊息
+7. **訊息編輯**：支援透過 `m.replace` 關係編輯已發送的訊息
+8. **訊息撤回**：支援透過 `m.room.redaction` 撤回/刪除訊息
+
+### 擴展欄位
+
+- 所有特有欄位均以 `matrix_` 前綴標示
+- 保留原始資料在 `matrix_raw` 欄位
+- `matrix_raw_type` 標示原始Matrix事件類型（如 `m.room.message`、`m.room.member`）
+
+### 特殊欄位示例
+
+```python
+# 群組訊息
+{
+  "type": "message",
+  "detail_type": "group",
+  "user_id": "@user:matrix.org",
+  "group_id": "!room_id:matrix.org",
+  "matrix_room_id": "!room_id:matrix.org"
+}
+
+# 私聊訊息
+{
+  "type": "message",
+  "detail_type": "private",
+  "user_id": "@user:matrix.org",
+  "matrix_room_id": "!dm_room_id:matrix.org"
+}
+
+# 表情回應
+{
+  "type": "notice",
+  "detail_type": "matrix_reaction",
+  "matrix_reaction_event_id": "$reacted_msg_id",
+  "matrix_reaction_key": "👍"
+}
+
+# 訊息撤回
+{
+  "type": "notice",
+  "detail_type": "matrix_redaction",
+  "matrix_redacted_event_id": "$deleted_msg_id"
+}
+
+# 訊息編輯
+{
+  "type": "message",
+  "detail_type": "group",
+  "matrix_edit": true,
+  "matrix_original_event_id": "$original_event_id"
+}
+
+# 線程訊息
+{
+  "type": "message",
+  "detail_type": "group",
+  "thread_id": "$thread_root_id"
+}
+```
+
+### 訊息段類型
+
+Matrix訊息根據 `msgtype` 自動轉換為對應的訊息段：
+
+| msgtype | 轉換類型 | 說明 |
+|---|---|---|
+| m.text | `text` | 文字訊息 |
+| m.notice | `text` | 通知訊息 |
+| m.emote | `text` | 動作訊息 |
+| m.image | `image` | 圖片訊息 |
+| m.audio | `voice` | 音頻訊息 |
+| m.video | `video` | 影片訊息 |
+| m.file | `file` | 檔案訊息 |
+| m.location | `location` | 位置訊息 |
+
+訊息段結構示例：
+
+```json
+// 文字訊息（帶HTML）
+{
+  "type": "text",
+  "data": {
+    "text": "純文字內容",
+    "html": "<b>HTML內容</b>"
+  }
+}
+
+// 圖片訊息
+{
+  "type": "image",
+  "data": {
+    "url": "mxc://matrix.org/abc123",
+    "filename": "photo.png",
+    "matrix_mxc": "mxc://matrix.org/abc123",
+    "info": {
+      "mimetype": "image/png",
+      "w": 800,
+      "h": 600,
+      "size": 123456
+    }
+  }
+}
+
+// 位置訊息
+{
+  "type": "location",
+  "data": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "matrix_geo_uri": "geo:39.9,116.4",
+    "text": "北京市"
+  }
+}
+```
+
+### Event Mixin 方法
+
+MatrixAdapter 註冊了以下事件混入方法，可在事件處理中直接呼叫：
+
+| 方法 | 回傳類型 | 說明 |
+|------|----------|------|
+| `get_room_id()` | `str` | 獲取房間ID |
+| `get_matrix_event_type()` | `str` | 獲取原始Matrix事件類型 |
+| `get_matrix_sender()` | `str` | 獲取原始發送者ID |
+| `get_reaction_key()` | `str` | 獲取回應表情 |
+| `is_edited()` | `bool` | 判斷訊息是否為編輯訊息 |
+| `is_notice()` | `bool` | 判斷訊息是否為 m.notice 類型 |
+
+```python
+@message.on_message()
+async def handle_message(event):
+    if event.get("platform") != "matrix":
+        return
+
+    room_id = event.get_room_id()
+    event_type = event.get_matrix_event_type()
+    sender = event.get_matrix_sender()
+    is_edited = event.is_edited()
+    is_notice = event.is_notice()
+```
+
+## Sync API 連接
+
+### 同步流程
+
+1. 使用 access_token 或 user_id + password 進行認證
+2. 呼叫 `/_matrix/client/v3/account/whoami` 獲取 bot_user_id
+3. 發出 connect 元事件
+4. 執行初始同步（`/_matrix/client/v3/sync?timeout=0`）獲取 `next_batch` token
+5. 發現 DM 房間（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
+6. 開始 Long Polling 同步循環（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
+7. 處理每次同步回傳的新事件並轉換發出
+
+### 心跳機制
+
+- 適配器每 30 秒發出一次 `heartbeat` 元事件
+- 連接成功時發出 `connect` 元事件
+- 關閉時發出 `disconnect` 元事件
+
+### 房間邀請
+
+- 收到房間邀請（`invite` 狀態的房間）時，如果 `auto_accept_invites` 配置為 `true`（預設），適配器會自動加入房間
+- 加入房間呼叫 `/_matrix/client/v3/join/{room_id}` 介面
+
+## 使用示例
+
+### 處理群組訊息
+
+```python
+from ErisPulse.Core.Event import message
+from ErisPulse import sdk
+
+matrix = sdk.adapter.get("matrix")
+
+@message.on_message()
+async def handle_group_msg(event):
+    if event.get("platform") != "matrix":
+        return
+    if event.get("detail_type") != "group":
+        return
+
+    text = event.get_text()
+    room_id = event.get("group_id")
+
+    if text == "hello":
+        await matrix.Send.To("group", room_id).Reply(
+            event.get("message_id")
+        ).Text("Hello!")
+```
+
+### 處理表情回應
+
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_reaction(event):
+    if event.get("platform") != "matrix":
+        return
+
+    if event.get("detail_type") == "matrix_reaction":
+        reaction_key = event.get("matrix_reaction_key")
+        reacted_event_id = event.get("matrix_reaction_event_id")
+        room_id = event.get_room_id()
+        # 處理表情回應...
+```
+
+### 發送媒體訊息
+
+```python
+# 發送圖片（URL）
+await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
+
+# 發送圖片（MXC URI）
+await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
+
+# 發送圖片（二進位元數據）
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await matrix.Send.To("group", room_id).Image(image_bytes)
+
+# 發送圖片（本地檔案路徑）
+await matrix.Send.To("group", room_id).Image("/path/to/image.png")
+
+# 發送檔案（帶檔案名）
+await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="文件.pdf")
+```
+
+### 處理訊息編輯
+
+```python
+@message.on_message()
+async def handle_edited_message(event):
+    if event.get("platform") != "matrix":
+        return
+
+    if event.is_edited():
+        original_id = event.get("matrix_original_event_id")
+        # 處理編輯訊息...
+```
+
+### 監聽成員變更
+
+```python
+@notice.on_notice()
+async def handle_member_change(event):
+    if event.get("platform") != "matrix":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "group_member_increase":
+        user_id = event.get("user_id")
+        nickname = event.get("user_nickname")
+        print(f"用戶 {nickname} ({user_id}) 加入了房間")
+
+    elif detail_type == "group_member_decrease":
+        user_id = event.get("user_id")
+        operator_id = event.get("operator_id")
+        print(f"用戶 {user_id} 被移除，操作者: {operator_id}")
 
 
 
@@ -13571,7 +15096,483 @@ Raw_ob12 支援自動將混合消息段分組處理：
     - 超級文件分享：`yunhu_user_file_send`
     - 機器人公告看板：`yunhu_user_bot_board`
     - 消息編輯通知：`message_edit`
-    - �
+    - 消息刪除通知：`message_delete`（撤回）
+2. 特有消息段類型：
+    - 表單消息段：`yunhu_user_form`
+    - 文章消息段：`yunhu_user_post`
+    - 貼紙消息段：`yunhu_user_sticker`
+    - 按鈕消息段：`yunhu_user_button`
+    - A2UI 消息段：`a2ui`
+3. 擴展字段：
+    - 所有特有字段均以 `yunhu_user_` 前綴標識
+    - 保留原始數據在 `yunhu_user_raw` 字段
+    - 原始事件類型記錄在 `yunhu_user_raw_type` 字段
+    - 私聊中 `self.user_id` 表示當前登錄用戶ID
+
+### 支援的原始事件類型
+
+| 原始事件類型 | OneBot12 類型 | 說明 |
+|-------------|--------------|------|
+| `push_message` | `message` | 推送消息（私聊、群聊、Bot 會話） |
+| `edit_message` | `notice` (`message_edit`) | 消息編輯事件 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | 超級文件分享事件 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | 機器人公告看板事件 |
+
+> 其他事件類型（如 `heartbeat_ack`、`draft_input`、`stream_message` 等）會被忽略。
+
+### OneBot12 支援的 detail_type
+
+| OneBot12 detail_type | 雲湖 chat_type | 說明 |
+|---------------------|---------------|------|
+| `private` | 1 | 私聊消息 |
+| `group` | 2 | 群聊消息 |
+| `bot` | 3 | 機器人會話 |
+
+### 消息事件示例
+
+```python
+{
+    "id": "event_id",
+    "time": 1234567890,
+    "type": "message",
+    "detail_type": "group",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "message": [
+        {"type": "text", "data": {"text": "消息內容"}}
+    ],
+    "alt_message": "消息內容",
+    "user_id": "sender_user_id",
+    "user_nickname": "發送者暱稱",
+    "group_id": "group_id",
+    "message_id": "msg_id",
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "push_message"
+}
+```
+
+### 消息編輯通知示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "message_edit",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "message_id": "msg_id",
+    "user_id": "sender_user_id",
+    "user_nickname": "發送者暱稱",
+    "edit_time": 1234567890,
+    "group_id": "group_id",
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "edit_message"
+}
+```
+
+### 超級文件分享事件示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "yunhu_user_file_send",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "user_id": "send_user_id",
+    "user_nickname": "",
+    "yunhu_user_file_send": {
+        "send_user_id": "發送者ID",
+        "user_id": "接收用戶ID",
+        "send_type": "發送類型",
+        "data": "文件數據"
+    },
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "file_send_message"
+}
+```
+
+### 機器人公告看板事件示例
+
+```python
+{
+    "type": "notice",
+    "detail_type": "yunhu_user_bot_board",
+    "platform": "yunhu_user",
+    "self": {
+        "platform": "yunhu_user",
+        "user_id": "your_user_id"
+    },
+    "bot_id": "bot_id",
+    "bot_name": "機器人名稱",
+    "yunhu_user_bot_board": {
+        "bot_id": "bot_id",
+        "chat_id": "chat_id",
+        "chat_type": 1,
+        "content": "公告內容",
+        "content_type": 1,
+        "last_update_time": 1234567890
+    },
+    "yunhu_user_raw": {...},
+    "yunhu_user_raw_type": "bot_board_message"
+}
+```
+
+### 事件處理示例
+
+```python
+from ErisPulse.Core.Event import message, notice
+
+@message.on_message()
+async def handle_yunhu_user_message(event):
+    """處理雲湖用戶消息"""
+    if event.get("platform") != "yunhu_user":
+        return
+    
+    user_id = event.get("user_id", "")
+    user_nickname = event.get("user_nickname", "")
+    alt_message = event.get("alt_message", "")
+    
+    print(f"用戶 {user_nickname}({user_id}): {alt_message}")
+    
+    # 檢查消息段中的特有類型
+    for segment in event.get("message", []):
+        seg_type = segment.get("type", "")
+        
+        if seg_type == "yunhu_user_form":
+            form_data = segment["data"]["form"]
+            print(f"收到表單消息: {form_data}")
+        
+        elif seg_type == "yunhu_user_post":
+            post_data = segment["data"]
+            print(f"收到文章消息: {post_data.get('post_title', '')}")
+        
+        elif seg_type == "yunhu_user_sticker":
+            sticker_url = segment["data"]["file_id"]
+            print(f"收到貼紙消息: {sticker_url}")
+        
+        elif seg_type == "yunhu_user_button":
+            buttons = segment["data"]["buttons"]
+            print(f"消息包含按鈕: {buttons}")
+        
+        elif seg_type == "a2ui":
+            a2ui_data = segment["data"]["a2ui"]
+            print(f"收到A2UI消息: {a2ui_data}")
+    
+    # 使用 event.reply() 自動回覆
+    await event.reply(f"Echo: {alt_message}")
+
+@notice.on_notice()
+async def handle_yunhu_user_notice(event):
+    """處理雲湖用戶通知事件"""
+    if event.get("platform") != "yunhu_user":
+        return
+    
+    detail_type = event.get("detail_type", "")
+    
+    if detail_type == "message_edit":
+        message_id = event.get("message_id", "")
+        user_nickname = event.get("user_nickname", "")
+        edit_time = event.get("edit_time", 0)
+        print(f"用戶 {user_nickname} 編輯了消息 {message_id}")
+    
+    elif detail_type == "yunhu_user_file_send":
+        file_data = event.get("yunhu_user_file_send", {})
+        print(f"收到超級文件分享: {file_data}")
+    
+    elif detail_type == "yunhu_user_bot_board":
+        board_data = event.get("yunhu_user_bot_board", {})
+        bot_name = event.get("bot_name", "")
+        print(f"機器人 {bot_name} 發布了公告: {board_data.get('content', '')}")
+```
+
+## 擴展字段說明
+
+- 所有特有字段均以 `yunhu_user_` 前綴標識，避免與標準字段衝突
+- 保留原始數據在 `yunhu_user_raw` 字段，便於訪問雲湖平台的完整原始數據
+- 原始事件類型記錄在 `yunhu_user_raw_type` 字段（如 `push_message`、`edit_message` 等）
+- `self.user_id` 表示當前登錄用戶ID（從登錄響應中獲取）
+- 超級文件分享透過 `yunhu_user_file_send` 字段提供文件分享數據
+- 機器人公告看板透過 `yunhu_user_bot_board` 字段提供公告數據
+
+### 特有消息段類型
+
+#### 表單消息段 (yunhu_user_form)
+
+當 content_type 為 5 時，消息段類型為 `yunhu_user_form`：
+
+```json
+{
+    "type": "yunhu_user_form",
+    "data": {
+        "form": "表單數據"
+    }
+}
+```
+
+#### 文章消息段 (yunhu_user_post)
+
+當 content_type 為 6 時，消息段類型為 `yunhu_user_post`：
+
+```json
+{
+    "type": "yunhu_user_post",
+    "data": {
+        "post_id": "文章ID",
+        "post_title": "文章標題",
+        "post_content": "文章內容"
+    }
+}
+```
+
+| 字段 | 類型 | 說明 |
+|------|------|------|
+| `post_id` | string | 文章唯一標識 |
+| `post_title` | string | 文章標題 |
+| `post_content` | string | 文章內容 |
+
+#### 貼紙消息段 (yunhu_user_sticker)
+
+當 content_type 為 7 時，消息段類型為 `yunhu_user_sticker`：
+
+```json
+{
+    "type": "yunhu_user_sticker",
+    "data": {
+        "file_id": "貼紙圖片URL"
+    }
+}
+```
+
+| 字段 | 類型 | 說明 |
+|------|------|------|
+| `file_id` | string | 貼紙圖片URL |
+
+#### 按鈕消息段 (yunhu_user_button)
+
+消息中包含按鈕時，會附加 `yunhu_user_button` 消息段：
+
+```json
+{
+    "type": "yunhu_user_button",
+    "data": {
+        "buttons": [[{"text": "按鈕文字", "actionType": 3, "value": "值"}]]
+    }
+}
+```
+
+#### A2UI 消息段 (a2ui)
+
+當 content_type 為 14 時，消息段類型為 `a2ui`：
+
+```json
+{
+    "type": "a2ui",
+    "data": {
+        "a2ui": "A2UI JSON數據"
+    }
+}
+```
+
+---
+
+## 多帳戶配置
+
+### 配置說明
+
+YunhuUserAdapter 支援同時配置和運行多個用戶帳戶。
+
+```toml
+# config.toml
+[YunhuUserAdapter]
+ws_reconnect_interval = 30  # WebSocket重連間隔（秒）
+ws_timeout = 70             # WebSocket超時時間（秒）
+
+[YunhuUserAdapter.accounts.default]
+email = "user1@example.com"  # 用戶郵箱（必填）
+password = "password1"       # 用戶密碼（必填）
+platform = "windows"         # 登錄平台（可選，默認windows）
+device_id = ""               # 設備ID（可選，不填自動生成）
+enabled = true               # 是否啟用（可選，默認為true）
+
+[YunhuUserAdapter.accounts.account2]
+email = "user2@example.com"
+password = "password2"
+platform = "android"
+device_id = "fixed_device_id_2"
+enabled = true
+```
+
+**配置項說明：**
+- `email`：用戶郵箱（必填），用於登錄雲湖平台
+- `password`：用戶密碼（必填）
+- `platform`：登錄平台標識（可選，默認為 `windows`），可選值：`windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：設備ID（可選，不填自動生成），建議填寫固定值以保持會話一致性
+- `enabled`：是否啟用該帳戶（可選，默認為 `true`）
+
+**適配器級別配置：**
+- `ws_reconnect_interval`：WebSocket 重連間隔（秒，默認 30）
+- `ws_timeout`：WebSocket 超時時間（秒，默認 70）
+
+**重要提示：**
+1. 適配器使用郵箱登錄方式獲取 token，登錄後透過 WebSocket 接收事件
+2. WebSocket 連接斷開後會自動重連，最多重試 3 次
+3. 建議為每個帳戶設置固定的 `device_id`，以保持會話一致性
+4. 未修改的模板帳戶（默認郵箱和密碼）會被自動跳過
+
+### 使用Send DSL指定帳戶
+
+可以透過 `Using()` 方法指定使用哪個帳戶發送消息。該方法支援兩種參數：
+- **帳戶名**：配置中的帳戶名稱（如 `default`、`account2`）
+- **user_id**：登錄後獲取的用戶 ID
+
+```python
+from ErisPulse.Core import adapter
+yunhu_user = adapter.get("yunhu_user")
+
+# 使用帳戶名發送消息
+await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
+
+# 使用 user_id 發送消息（自動匹配對應帳戶）
+await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
+
+# 不指定時使用第一個啟用的帳戶
+await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+> **提示：** 使用 `user_id` 時，系統會自動查找配置中匹配的帳戶。這在處理事件回覆時特別有用，可以直接使用 `event["self"]["user_id"]` 來回覆同一帳戶。
+
+### 事件中的帳戶標識
+
+接收到的事件會自動包含對應的用戶ID資訊：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu_user":
+        # 獲取當前登錄用戶ID
+        my_user_id = event["self"]["user_id"]
+        print(f"消息來自帳戶: {my_user_id}")
+        
+        # 使用相同帳戶回覆消息
+        yunhu_user = adapter.get("yunhu_user")
+        await yunhu_user.Send.Using(my_user_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("回覆消息")
+```
+
+### 日誌信息
+
+適配器會在日誌中自動包含帳戶資訊，便於調試和追蹤：
+
+```
+[INFO] 帳戶 default (user1@example.com) 登錄成功，用戶ID: 12345678
+[INFO] 帳戶 default WebSocket 監聽任務已啟動
+[INFO] 帳戶 account2 (user2@example.com) 登錄成功，用戶ID: 87654321
+```
+
+### 管理介面
+
+```python
+# 獲取所有帳戶資訊
+accounts = yunhu_user.accounts
+# 返回格式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
+
+# 檢查帳戶是否啟用
+for account_name, account_config in yunhu_user._account_configs.items():
+    print(f"{account_name}: enabled={account_config.enabled}")
+
+# 透過帳戶名獲取 HTTP 客戶端
+http_client = yunhu_user._get_http_client("default")
+
+# 透過 user_id 查找帳戶
+account_name = yunhu_user._get_account_by_user_id("12345678")
+```
+
+## API 調用
+
+適配器提供 `call_api` 方法，支援直接調用平台 API：
+
+```python
+# 發送消息
+result = await yunhu_user.call_api("/send", 
+    target_type="group", 
+    target_id="group_id",
+    account_id="default",
+    message={"text": "Hello", "msg_type": 1}
+)
+
+# 編輯消息
+result = await yunhu_user.call_api("/edit",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id",
+    text="新內容",
+    content_type="text"
+)
+
+# 撤回消息
+result = await yunhu_user.call_api("/recall",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id"
+)
+
+# 批量撤回消息
+result = await yunhu_user.call_api("/recall_batch",
+    target_type="group",
+    target_id="group_id",
+    msg_id_list=["msg_id_1", "msg_id_2"]
+)
+
+# 獲取消息列表
+result = await yunhu_user.call_api("/list",
+    chat_id="group_id",
+    chat_type=2,
+    msg_count=10,
+    msg_id=""
+)
+
+# 獲取消息編輯記錄
+result = await yunhu_user.call_api("/list_edit_record",
+    msg_id="msg_id",
+    size=10,
+    page=1
+)
+
+# 按鈕事件報告
+result = await yunhu_user.call_api("/button_report",
+    chat_id="group_id",
+    chat_type=2,
+    msg_id="msg_id",
+    user_id="user_id",
+    button_value="button_value"
+)
+```
+
+**支援的 API 端點：**
+
+| 端點 | 說明 |
+|------|------|
+| `/send` | 發送消息 |
+| `/edit` | 編輯消息 |
+| `/recall` | 撤回消息 |
+| `/recall_batch` | 批量撤回消息 |
+| `/list` | 獲取消息列表 |
+| `/list_by_seq` | 通過序列獲取消息 |
+| `/list_by_mid_seq` | 通過消息ID和序列獲取消息 |
+| `/list_edit_record` | 獲取消息編輯記錄 |
+| `/button_report` | 按鈕事件報告 |
 
 
 

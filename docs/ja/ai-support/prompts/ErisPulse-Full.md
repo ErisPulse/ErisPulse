@@ -4899,14 +4899,14 @@ class MyAdapter(BaseAdapter):
 
 # アダプターのコア概念
 
-ErisPulseアダプターのコア概念を理解することは、アダプター開発の基礎となります。
+ErisPulse アダプターのコア概念を理解することは、アダプター開発の基礎となります。
 
-## アダプターアーキテクチャ
+## アダプターのアーキテクチャ
 
 ### コンポーネントの関係
 
 ```
-順方向変換（受信方向）                           逆方向変換（送信方向）
+正方向変換（受信方向）                           逆方向変換（送信方向）
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
@@ -4943,12 +4943,12 @@ ErisPulseアダプターのコア概念を理解することは、アダプタ�
 ```
 
 **コアの対称性**：
-- **順方向変換**（Converter）：プラットフォームネイティブイベント → OneBot12 標準イベント、元のデータは `{platform}_raw` に保持されます
+- **正方向変換**（Converter）：プラットフォームネイティブイベント → OneBot12 標準イベント、元のデータは `{platform}_raw` に保持されます
 - **逆方向変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API 呼び出し、標準のレスポンス形式を返します
 
 ## AdapterManager アダプター管理マネージャー
 
-`AdapterManager` は、ErisPulseアダプターシステムのコアコンポーネントであり、すべてのプラットフォームアダプターの登録、起動、終了、およびイベントのディスパッチを管理します。
+`AdapterManager` は、ErisPulse アダプターシステムのコアコンポーネントであり、すべてのプラットフォームアダプターの登録、起動、終了、およびイベントのディスパッチを管理します。
 
 ### コア機能
 
@@ -5070,7 +5070,584 @@ async def handle_message(data):
 async def handle_platform_message(data):
     print(f"myplatform メッセージを受信: {data}")
 
-#
+# すべてのイベントをリッスン
+@sdk.adapter.on("*")
+async def handle_any_event(data):
+    print(f"イベントを受信: {data.get('type')}")
+```
+
+#### プラットフォームネイティブイベント
+
+```python
+# 特定のプラットフォームのネイティブイベントをリッスン
+@sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
+async def handle_raw_event(data):
+    print(f"ネイティブイベントを受信: {data}")
+
+# すべてのプラットフォームのネイティブイベントをリッスン（ワイルドカード）
+@sdk.adapter.on("*", raw=True)
+async def handle_all_raw_events(data):
+    print(f"ネイティブイベントを受信: {data}")
+```
+
+#### イベントディスパッチメカニズム
+
+`adapter.emit(event_data)` を呼び出すと：
+
+1. **ミドルウェア処理**：すべての OneBot12 ミドルウェアを実行します
+2. **標準イベントディスパッチ**：一致する OneBot12 イベントハンドラにディスパッチします
+3. **ネイティブイベントディスパッチ**：元のデータが存在する場合、ネイティブイベントハンドラにディスパッチします
+
+**一致ルール：**
+
+- 精密一致：`@sdk.adapter.on("message")` は `message` イベントのみに一致します
+- ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントに一致します
+- プラットフォームフィルタ：`platform="myplatform"` は指定されたプラットフォームのイベントのみにディスパッチします
+
+### ミドルウェア
+
+#### ミドルウェアの追加
+
+```python
+@sdk.adapter.middleware
+async def logging_middleware(data):
+    """ログ記録ミドルウェア"""
+    print(f"イベントを処理: {data.get('type')}")
+    return data  # 必須でデータを返す
+
+@sdk.adapter.middleware
+async def filter_middleware(data):
+    """イベントフィルタミドルウェア"""
+    # 不要なイベントをフィルタリング
+    if data.get("type") == "notice":
+        return None  # None を返す場合、ミドルウェアチェーンはその返り値を無視し、元のデータを保持して次の処理に渡します
+    return data  # 必須でデータを返して次の処理に渡します
+```
+
+#### ミドルウェアの実行順序
+
+ミドルウェアは登録順に実行され、後から登録されたミドルウェアが先に実行されます。
+
+> **注意**：ミドルウェアが `None` を返した場合（例：`return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータを保持し、次の処理に渡します。また、warning レベルのログを出力します。これにより、1つのミドルウェアのミスがイベントチェーン全体を中断することはありません。
+
+```python
+# 登録順
+sdk.adapter.middleware(middleware1)  # 最後に実行
+sdk.adapter.middleware(middleware2)  # 中間に実行
+sdk.adapter.middleware(middleware3)  # 最初に実行
+
+# 実行順序：middleware3 -> middleware2 -> middleware1
+```
+
+### アダプターインスタンスの取得
+
+#### get() メソッド
+
+```python
+adapter = sdk.adapter.get("myplatform")
+if adapter:
+    await adapter.Send.To("user", "123").Text("Hello")
+```
+
+#### プロパティアクセス
+
+```python
+# プロパティ名を用いたアクセス（大文字小文字を区別しない）
+adapter = sdk.adapter.myplatform
+await adapter.Send.To("user", "123").Text("Hello")
+```
+
+## BaseAdapter 基底クラス
+
+### 基本構造
+
+```python
+from ErisPulse.Core import BaseAdapter
+
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        super().__init__()
+        # アダプターの初期化
+        pass
+    
+    async def start(self):
+        """アダプターの起動（必須実装）"""
+        pass
+    
+    async def shutdown(self):
+        """アダプターの終了（必須実装）"""
+        pass
+    
+    async def call_api(self, endpoint: str, **params):
+        """プラットフォーム API の呼び出し（必須実装）"""
+        pass
+```
+
+### 初期化プロセス
+
+```python
+class MyAdapter(BaseAdapter):
+    def __init__(self):
+        super().__init__()
+        # SDK の参照を取得
+        self.sdk = sdk
+        
+        # コアモジュールの取得
+        self.logger = logger.get_child("MyAdapter")
+        self.config_manager = config_manager
+        self.adapter = adapter
+        
+        # 設定のロード
+        self.config = self._get_config()
+        
+        # コンバーターの設定
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
+
+## Send 消息送信 DSL
+
+### 継承関係
+
+```python
+class MyAdapter(BaseAdapter):
+    class Send(BaseAdapter.Send):
+        """Send 嵌套类，继承自 BaseAdapter.Send"""
+        pass
+```
+
+### 利用可能な属性
+
+`Send` クラスは呼び出し時に自動的に以下の属性を設定します：
+
+| 属性 | 説明 | 設定方法 |
+|-----|------|---------|
+| `_target_id` | 目標ID | `To(id)` または `To(type, id)` |
+| `_target_type` | 目標タイプ | `To(type, id)` |
+| `_target_to` | 簡略化された目標ID | `To(id)` |
+| `_account_id` | 送信アカウントID | `Using(account_id)` |
+| `_adapter` | アダプターインスタンス | 自動設定 |
+| `_at_user_ids` | @ユーザーIDリスト | `At(user_id)` |
+| `_reply_message_id` | 回答するメッセージID | `Reply(message_id)` |
+| `_at_all` | 全員に@するか | `AtAll()` |
+
+> **推奨**：`self.send_context` 属性を使って `target_type`、`target_id`、`account_id` を一度に取得する方が、直接インスタンス変数にアクセスするよりも明確です。
+
+### フレームワーク補助メソッド
+
+| メソッド/属性 | 説明 |
+|-----------|------|
+| `self._apply_modifiers(message)` | At/AtAll/Reply 修飾子の状態をメッセージセグメントリストにマージします |
+| `self.send_context` | `{target_type, target_id, account_id}` ディクショナリを返します |
+
+### 基本メソッド
+
+```python
+class Send(BaseAdapter.Send):
+    def Raw_ob12(self, message, **kwargs):
+        """推奨される実装方法"""
+        async def _do_send():
+            segments = self._apply_modifiers(message)
+            return await self._adapter.call_api(
+                endpoint="/send_message",
+                message=segments,
+                **self.send_context,
+                **kwargs
+            )
+        return asyncio.create_task(_do_send())
+
+    def Text(self, text: str):
+        """テキストメッセージを送信"""
+        return self.Raw_ob12([
+            {"type": "text", "data": {"text": text}}
+        ])
+```
+
+### チェーン修飾メソッド
+
+```python
+class Send(BaseAdapter.Send):
+
+    def __init__(self, adapter, target_type=None, target_id=None, account_id=None):
+        super().__init__(adapter, target_type, target_id, account_id)
+        self.buttons = []
+
+    def Button(self, content: list) -> 'Send':
+        self.buttons.append(content)
+        return self
+```
+
+## イベントコンバーター
+
+### 変換フロー
+
+```
+プラットフォームの元のイベント
+    ↓
+Converter.convert()
+    ↓
+OneBot12 標準イベント
+```
+
+### 必須フィールド
+
+変換後のイベントは以下のフィールドを含む必要があります：
+
+```python
+{
+    "id": "イベントの唯一識別子",
+    "time": 1234567890,           # 10桁 Unix タイムスタンプ
+    "type": "message/notice/request/meta",
+    "detail_type": "イベントの詳細タイプ",
+    "platform": "プラットフォーム名",
+    "self": {
+        "platform": "プラットフォーム名",
+        "user_id": "ロボットID"
+    },
+    "{platform}_raw": {...},       # 元のデータ（必須）
+    "{platform}_raw_type": "..."    # 元のタイプ（必須）
+}
+```
+
+### コンバーターの例
+
+```python
+class MyPlatformConverter:
+    def convert(self, raw_event):
+        """プラットフォームの元のイベントを OneBot12 標準形式に変換"""
+        if not isinstance(raw_event, dict):
+            return None
+        
+        # イベントIDの生成
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        
+        # タイムスタンプの変換
+        timestamp = raw_event.get("timestamp")
+        if timestamp and timestamp > 10**12:
+            timestamp = int(timestamp / 1000)
+        else:
+            timestamp = int(timestamp) if timestamp else int(time.time())
+        
+        # イベントタイプの変換
+        event_type = self._convert_type(raw_event.get("type"))
+        detail_type = self._convert_detail_type(raw_event)
+        
+        # 標準イベントの構築
+        onebot_event = {
+            "id": str(event_id),
+            "time": timestamp,
+            "type": event_type,
+            "detail_type": detail_type,
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## 接続管理
+
+### WebSocket 接続
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """WebSocket ルートの登録"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket 接続ハンドラ"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("接続が切断されました")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket 認証"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook 接続
+
+```python
+from fastapi import Request
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """WebHook ルートの登録"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request: Request):
+        """WebHook リクエストハンドラ"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+## API 応答標準
+
+### 成功応答
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok",
+            "retcode": 0,
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### 失敗応答
+
+```python
+async def call_api(self, endpoint: str, **params):
+    # ...
+    return {
+        "status": "failed",
+        "retcode": 10003,  # エラーコード
+        "data": None,
+        "message_id": "",
+        "message": "必要なパラメータが不足しています",
+        "myplatform_raw": None
+    }
+```
+
+## 多アカウントサポート
+
+### アカウント設定
+
+```toml
+[MyAdapter.accounts.account1]
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+token = "token2"
+enabled = true
+```
+
+### アカウント指定による送信
+
+```python
+# Using メソッドでアカウントを指定
+my_adapter = adapter.get("myplatform")
+
+# アカウント名で
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# アカウントIDで
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+```
+
+## エラーハンドリング
+
+### 接続リトライ
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"接続失敗、{wait_time}秒後に再試行します")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API エラーハンドリング
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # SDK 内部クライアントの推奨
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        self.logger.error(f"ネットワークエラー: {e}")
+        return self._error_response("ネットワークリクエストに失敗しました", 33000)
+    except asyncio.TimeoutError:
+        self.logger.error(f"リクエストタイムアウト: {endpoint}")
+        return self._error_response("リクエストがタイムアウトしました", 32000)
+    except Exception as e:
+        self.logger.error(f"不明なエラー: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+## Bot 状態管理
+
+AdapterManager には、すべての登録済み Bot のオンライン状態、アクティブ時間、メタ情報を自動的に維持する Bot 状態追跡システムが内蔵されています。
+
+### 自動発見メカニズム
+
+アダプターが `adapter.emit()` を呼び出すと、フレームワークはイベント内の `self` フィールドを自動的にチェックします：
+
+- **meta イベント**：`detail_type` に応じて対応する操作（connect で Bot を登録/disconnect でオフラインをマーク/heartbeat でアクティブ時間を更新）
+- **通常イベント**（message/notice/request）：Bot を自動的に発見し、アクティブ時間を更新
+
+```python
+# self フィールドを含むすべてのイベントが自動発見をトリガーします
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" が自動的に登録されます（初めて出現する場合）し、アクティブ時間を更新します
+```
+
+### Meta イベントタイプ
+
+| `detail_type` | 説明 | フレームワークの動作 |
+|---|---|---|
+| `connect` | Bot が接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントを発行します |
+| `disconnect` | Bot が切断 | Bot をオフラインにマークし、`adapter.bot.offline` ライフサイクルイベントを発行します |
+| `heartbeat` | Bot のハートビート | Bot のアクティブ時間とメタ情報を更新します |
+
+### アダプターによる Meta イベント送信
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "私のロボット",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### `self` フィールドの拡張情報
+
+`self` フィールドには、必須の `platform` と `user_id` の他に、以下のオプションフィールドをサポートします：
+
+| フィールド | 説明 |
+|---|---|
+| `user_name` | Bot のユーザー名 |
+| `nickname` | Bot のニックネーム |
+| `avatar` | Bot のアバター URL |
+| `account_id` | 多アカウント識別子 |
+
+### Bot 状態の照会
+
+```python
+from ErisPulse import sdk
+
+# 単一の Bot 情報を取得
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# すべての Bot を取得
+all_bots = sdk.adapter.list_bots()
+
+# 指定プラットフォームの Bot を取得
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Bot がオンラインかを確認
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# 完全なステータスサマリーを取得（WebUI に表示するのに適しています）
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### Bot ライフサイクルの監視
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot がオンラインになりました: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot がオフラインになりました: {platform}/{bot_id}")
+```
+
+## 関連文書
+
+- [アダプター開発入門](getting-started.md) - 最初のアダプターを作成する
+- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
+- [アダプター開発ベストプラクティス](best-practices.md) - 高品質なアダプターを開発する
+
+翻訳は以上です。
 
 
 
@@ -5820,6 +6397,155 @@ class MyAdapter(BaseAdapter):
     
     async def shutdown(self):
         self.logger.info("アダ
+```
+
+## テスト
+
+### 1. 単体テスト
+
+```python
+import pytest
+from ErisPulse.Core.Bases import BaseAdapter
+
+class TestMyAdapter:
+    def test_converter(self):
+        """テスト変換器"""
+        converter = MyPlatformConverter()
+        raw_event = {"type": "message", "content": "Hello"}
+        result = converter.convert(raw_event)
+        assert result is not None
+        assert result["platform"] == "myplatform"
+        assert "myplatform_raw" in result
+    
+    def test_api_response(self):
+        """テスト API 応答形式"""
+        adapter = MyAdapter()
+        response = adapter.call_api("/test", param="value")
+        assert "status" in response
+        assert "retcode" in response
+```
+
+### 2. 統合テスト
+
+```python
+@pytest.mark.asyncio
+async def test_adapter_start():
+    """テストアダプター起動"""
+    adapter = MyAdapter()
+    await adapter.start()
+    assert adapter._connected is True
+
+@pytest.mark.asyncio
+async def test_send_message():
+    """テスト送信メッセージ"""
+    adapter = MyAdapter()
+    await adapter.start()
+    
+    result = await adapter.Send.To("user", "123").Text("Hello")
+    assert result is not None
+```
+
+## 逆変換とメッセージ構築
+
+`Raw_ob12` はアダプターが**実装しなければならない**メソッドで、OneBot12 → プラットフォームへの逆変換の統一エントリーポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントにマージする必要があります。
+
+`MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
+
+> 完全な実装規範、コード例、使用方法は以下を参照してください：
+> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規範onebot12--プラットフォーム)
+> - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
+
+## プラットフォームイベントメソッド拡張
+
+アダプターは Event クラスにプラットフォーム固有メソッドを登録し、モジュール開発者がプラットフォーム特有のデータに簡単にアクセスできるようにすることができます。
+
+### 1. Mixin クラスを使用した一括登録（推奨）
+
+プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します：
+
+```python
+# アダプターの start() またはモジュールレベルで登録
+from ErisPulse.Core.Event import register_event_mixin
+
+class MyPlatformEventMixin:
+    def get_chat_name(self):
+        """チャット名を取得"""
+        return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+    def is_official_message(self):
+        """公式メッセージかどうかを判断"""
+        raw = self.get("myplatform_raw", {})
+        return raw.get("sender", {}).get("is_official", False)
+
+    def get_message_type(self):
+        """プラットフォームのメッセージタイプを取得"""
+        return self.get("myplatform_raw", {}).get("msg_type", "text")
+
+# 一括登録
+register_event_mixin("myplatform", MyPlatformEventMixin)
+```
+
+### 2. デコレータを使用した単一メソッド登録
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("myplatform")
+def get_chat_name(self):
+    return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+```
+
+### 3. アダプター終了時のクリーンアップ
+
+```python
+from ErisPulse.Core.Event import unregister_platform_event_methods
+
+class MyAdapter(BaseAdapter):
+    async def shutdown(self):
+        # プラットフォームイベントメソッドの登録をクリーンアップ
+        unregister_platform_event_methods("myplatform")
+        # ... その他のクリーンアップ
+```
+
+> 詳細な登録とアンロードの説明は [イベントシステム API - プラットフォーム拡張メソッド登録](../../api-reference/event-system.md#アダプター登録プラットフォーム拡張メソッド) を参照してください。
+
+## ドキュメントの維持
+
+### 1. プラットフォーム特性ドキュメントの維持
+
+`docs/zh-CN/platform-guide/` に `{platform}.md` ドキュメントを作成してください（他の言語バージョンは自動生成されます）：
+
+```markdown
+# プラットフォーム名アダプタードキュメント
+
+## 基本情報
+- 対応モジュールバージョン: 1.0.0
+- 維持者: Your Name
+
+## 支援するメッセージ送信タイプ
+...
+
+## 特有イベントタイプ
+...
+
+## 設定オプション
+...
+```
+
+### 2. バージョン情報の更新
+
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新してください：
+
+```toml
+[project]
+version = "2.0.0"  # バージョン番号を更新
+```
+
+## 関連ドキュメント
+
+- [アダプター開発入門](getting-started.md) - 最初のアダプターを作成する
+- [アダプターの基本概念](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
 
 
 
@@ -14180,7 +14906,7 @@ async def handle_audit(event):
 
 ### 云湖用户端适配
 
-# Yunhu ユーザープラットフォーム機能ドキュメント
+# Yunhu ユーザープラットフォーム特性ドキュメント
 
 YunhuUserAdapter は、Yunhu ユーザーアカウントプロトコルに基づいて構築されたアダプターです。ユーザーのメールアカウントでログインし、WebSocket を使用してイベントを受信し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
 
@@ -14193,12 +14919,12 @@ YunhuUserAdapter は、Yunhu ユーザーアカウントプロトコルに基づ
 
 ## 基本情報
 
-- プラットフォーム概要：Yunhu はエンタープライズ級のインスタントメッセージングプラットフォームです。このアダプターは、**ボットアカウント**ではなく**ユーザーアカウント**を通じて対話します。
+- プラットフォーム概要：Yunhu（Yunhu）はエンタープライズ級のインスタントメッセージングプラットフォームです。このアダプターは、**ユーザーアカウント**（ボットアカウントではなく）を通じて対話します。
 - アダプター名：YunhuUserAdapter
 - マルチアカウントサポート：アカウント名による識別と複数のユーザーアカウントの設定をサポートしています。
 - メソッドチェーンサポート：`.Reply()` などのメソッドチェーンによる修飾をサポートしています。
 - OneBot12 互換：OneBot12 フォーマットのメッセージ送信をサポートしています。
-- 通信方式：メールログインでトークンを取得し、WebSocket を使用してイベントを受信し、HTTP + Protobuf プロトコルでメッセージを送信します。
+- 通信方式：メールログインで token を取得し、WebSocket を使用してイベントを受信し、HTTP + Protobuf プロトコルでメッセージを送信します。
 - セッションタイプ：プライベートチャット (user)、グループチャット (group)、ボットセッション (bot) をサポートしています。
 
 ## サポートするメッセージ送信タイプ
@@ -14223,7 +14949,7 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 - `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：表情/ステッカーメッセージを送信します。ステッカーID、ステッカーURL、または画像のバイナリデータをサポートします。
 - `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：A2UIメッセージ（メッセージタイプ14）を送信します。A2UI JSONデータは text フィールドに挿入されて送信されます。
 - `.Edit(msg_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
-- `.Recall(msg_id: str)`：メッセージを取り消します。
+- `.Recall(msg_id: str)`：メッセージを取り消します（撤回）。
 - `.Raw_ob12(message: Union[List, Dict])`：OneBot12 フォーマットのメッセージを送信します。
 
 ### メディアファイルの処理
@@ -14332,15 +15058,15 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 
 1. 固有のイベントタイプ：
     - スーパーファイル共有：`yunhu_user_file_send`
-    - ボット公告掲示板：`yunhu_user_bot_board`
+    - 机器人公告看板：`yunhu_user_bot_board`
     - メッセージ編集通知：`message_edit`
     - メッセージ削除通知：`message_delete`（取り消し）
 2. 固有のメッセージセグメントタイプ：
-    - フォームメッセージセグメント：`yunhu_user_form`
-    - 記事メッセージセグメント：`yunhu_user_post`
-    - ステッカーメッセージセグメント：`yunhu_user_sticker`
-    - ボタンメッセージセグメント：`yunhu_user_button`
-    - A2UI メッセージセグメント：`a2ui`
+    - 表单消息段：`yunhu_user_form`
+    - 文章消息段：`yunhu_user_post`
+    - 贴纸消息段：`yunhu_user_sticker`
+    - 按钮消息段：`yunhu_user_button`
+    - A2UI 消息段：`a2ui`
 3. 拡張フィールド：
     - すべての固有フィールドは `yunhu_user_` プレフィックスで識別されます
     - 生データは `yunhu_user_raw` フィールドに保持されます
@@ -14354,7 +15080,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 | `push_message` | `message` | メッセージのプッシュ（プライベートチャット、グループチャット、Botセッション） |
 | `edit_message` | `notice` (`message_edit`) | メッセージ編集イベント |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | スーパーファイル共有イベント |
-| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | ボット公告掲示板イベント |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | 机器人公告看板イベント |
 
 > その他のイベントタイプ（`heartbeat_ack`、`draft_input`、`stream_message` など）は無視されます。
 
@@ -14366,7 +15092,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 | `group` | 2 | グループチャットメッセージ |
 | `bot` | 3 | ボットセッション |
 
-### メッセージイベントの例
+### 消息事件の例
 
 ```python
 {
@@ -14392,7 +15118,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 }
 ```
 
-### メッセージ編集通知の例
+### 消息编辑通知の例
 
 ```python
 {
@@ -14413,7 +15139,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 }
 ```
 
-### スーパーファイル共有イベントの例
+### 超级文件分享事件の例
 
 ```python
 {
@@ -14437,7 +15163,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
 }
 ```
 
-### ボット公告掲示板イベントの例
+### 机器人公告看板事件の例
 
 ```python
 {
@@ -14449,7 +15175,7 @@ Raw_ob12 は混合メッセージセグメントの自動グループ化処理�
         "user_id": "your_user_id"
     },
     "bot_id": "bot_id",
-    "bot_name": "ボット名",
+    "bot_name": "机器人名称",
     "yunhu_user_bot_board": {
         "bot_id": "bot_id",
         "chat_id": "chat_id",
@@ -14528,21 +15254,21 @@ async def handle_yunhu_user_notice(event):
     elif detail_type == "yunhu_user_bot_board":
         board_data = event.get("yunhu_user_bot_board", {})
         bot_name = event.get("bot_name", "")
-        print(f"ボット {bot_name} が公告を公開しました: {board_data.get('content', '')}")
+        print(f"机器人 {bot_name} が公告を公開しました: {board_data.get('content', '')}")
 ```
 
 ## 拡張フィールドの説明
 
 - すべての固有フィールドは `yunhu_user_` プレフィックスで識別され、標準フィールドとの競合を避けます
 - 生データは `yunhu_user_raw` フィールドに保持され、Yunhu プラットフォームの完全な生データへのアクセスが容易になります
-- 生のイベントタイプは `yunhu_user_raw_type` フィールドに記録されます（例：`push_message`、`edit_message` など）
+- 原始イベントタイプは `yunhu_user_raw_type` フィールドに記録されます（例：`push_message`、`edit_message` など）
 - `self.user_id` は現在ログインしているユーザーIDを表します（ログインレスポンスから取得）
-- スーパーファイル共有は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供します
-- ボット公告掲示板は `yunhu_user_bot_board` フィールドを通じて公告データを提供します
+- 超级文件分享は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供します
+- 机器人公告看板は `yunhu_user_bot_board` フィールドを通じて公告データを提供します
 
 ### 固有のメッセージセグメントタイプ
 
-#### フォームメッセージセグメント (yunhu_user_form)
+#### 表单消息段 (yunhu_user_form)
 
 content_type が 5 の場合、メッセージセグメントタイプは `yunhu_user_form` になります：
 
@@ -14555,7 +15281,7 @@ content_type が 5 の場合、メッセージセグメントタイプは `yunhu
 }
 ```
 
-#### 記事メッセージセグメント (yunhu_user_post)
+#### 文章消息段 (yunhu_user_post)
 
 content_type が 6 の場合、メッセージセグメントタイプは `yunhu_user_post` になります：
 
@@ -14563,8 +15289,8 @@ content_type が 6 の場合、メッセージセグメントタイプは `yunhu
 {
     "type": "yunhu_user_post",
     "data": {
-        "post_id": "記事ID",
-        "post_title": "記事タイトル",
+        "post_id": "文章ID",
+        "post_title": "文章タイトル",
         "post_content": "記事内容"
     }
 }
@@ -14576,7 +15302,7 @@ content_type が 6 の場合、メッセージセグメントタイプは `yunhu
 | `post_title` | string | 記事のタイトル |
 | `post_content` | string | 記事の内容 |
 
-#### ステッカーメッセージセグメント (yunhu_user_sticker)
+#### 贴纸消息段 (yunhu_user_sticker)
 
 content_type が 7 の場合、メッセージセグメントタイプは `yunhu_user_sticker` になります：
 
@@ -14584,16 +15310,16 @@ content_type が 7 の場合、メッセージセグメントタイプは `yunhu
 {
     "type": "yunhu_user_sticker",
     "data": {
-        "file_id": "ステッカー画像URL"
+        "file_id": "贴纸图片URL"
     }
 }
 ```
 
 | フィールド | タイプ | 説明 |
 |------|------|------|
-| `file_id` | string | ステッカー画像のURL |
+| `file_id` | string | 贴纸画像のURL |
 
-#### ボタンメッセージセグメント (yunhu_user_button)
+#### 按钮消息段 (yunhu_user_button)
 
 メッセージにボタンが含まれている場合、`yunhu_user_button` メッセージセグメントが追加されます：
 
@@ -14606,7 +15332,7 @@ content_type が 7 の場合、メッセージセグメントタイプは `yunhu
 }
 ```
 
-#### A2UI メッセージセグメント (a2ui)
+#### A2UI 消息段 (a2ui)
 
 content_type が 14 の場合、メッセージセグメントタイプは `a2ui` になります：
 
@@ -14640,7 +15366,177 @@ platform = "windows"         # ログインプラットフォーム（任意、�
 device_id = ""               # デバイスID（任意、未入力の場合は自動生成）
 enabled = true               # 有効にするかどうか（任意、デフォルトは true）
 
-[YunhuUserAdapter.accounts.account2
+[YunhuUserAdapter.accounts.account2]
+email = "user2@example.com"
+password = "password2"
+platform = "android"
+device_id = "fixed_device_id_2"
+enabled = true
+```
+
+**設定項目説明：**
+- `email`：ユーザーメール（必填）、Yunhu プラットフォームにログインするために使用されます
+- `password`：ユーザーパスワード（必須）
+- `platform`：ログインプラットフォーム識別子（任意、デフォルトは `windows`）。選択可能な値：`windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：デバイスID（任意、未入力の場合は自動生成）。一貫したセッションを維持するために固定値を設定することを推奨します
+- `enabled`：そのアカウントを有効にするかどうか（任意、デフォルトは `true`）
+
+**アダプターレベル設定：**
+- `ws_reconnect_interval`：WebSocket 再接続間隔（秒、デフォルト 30）
+- `ws_timeout`：WebSocket タイムアウト時間（秒、デフォルト 70）
+
+**重要なヒント：**
+1. アダプターはメールログイン方式で token を取得し、ログイン後に WebSocket を使用してイベントを受信します
+2. WebSocket 接続が切断されると自動的に再接続され、最大 3 回再試行されます
+3. 各アカウントに固定の `device_id` を設定することを推奨します。これによりセッションの一貫性が維持されます
+4. 未変更のテンプレートアカウント（デフォルトのメールアドレスとパスワード）は自動的にスキップされます
+
+### Send DSL を使用したアカウント指定
+
+`Using()` メソッドを使用して、どのアカウントでメッセージを送信するかを指定できます。このメソッドは2つのパラメータをサポートしています：
+- **アカウント名**：設定内のアカウント名（例：`default`、`account2`）
+- **user_id**：ログイン後に取得されるユーザー ID
+
+```python
+from ErisPulse.Core import adapter
+yunhu_user = adapter.get("yunhu_user")
+
+# アカウント名を使用してメッセージを送信
+await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
+
+# user_id を使用してメッセージを送信（対応するアカウントを自動的に照合）
+await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
+
+# 指定しない場合は最初に有効なアカウントが使用されます
+await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+> **ヒント：** `user_id` を使用すると、システムは設定内で一致するアカウントを自動的に検索します。これはイベントへの返信を処理する場合に特に便利で、`event["self"]["user_id"]` を直接使用して同じアカウントで返信できます。
+
+### イベント内のアカウント識別
+
+受信したイベントは自動的に対応するユーザーID情報を含みます：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu_user":
+        # 現在ログインしているユーザーIDを取得
+        my_user_id = event["self"]["user_id"]
+        print(f"メッセージはアカウントから届きました: {my_user_id}")
+        
+        # 同じアカウントでメッセージに返信
+        yunhu_user = adapter.get("yunhu_user")
+        await yunhu_user.Send.Using(my_user_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("回复消息")
+```
+
+### ログ情報
+
+アダプターはログに自動的にアカウント情報を含めます。デバッグと追跡に役立ちます：
+
+```
+[INFO] 账户 default (user1@example.com) 登录成功，用户ID: 12345678
+[INFO] 账户 default WebSocket 监听任务已启动
+[INFO] 账户 account2 (user2@example.com) 登录成功，用户ID: 87654321
+```
+
+### 管理インターフェース
+
+```python
+# すべてのアカウント情報を取得
+accounts = yunhu_user.accounts
+# 戻り値の形式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
+
+# アカウントが有効になっているかチェック
+for account_name, account_config in yunhu_user._account_configs.items():
+    print(f"{account_name}: enabled={account_config.enabled}")
+
+# アカウント名から HTTP クライアントを取得
+http_client = yunhu_user._get_http_client("default")
+
+# user_id でアカウントを検索
+account_name = yunhu_user._get_account_by_user_id("12345678")
+```
+
+## API 呼び出し
+
+アダプターは `call_api` メソッドを提供し、プラットフォーム API への直接呼び出しをサポートします：
+
+```python
+# 发送消息
+result = await yunhu_user.call_api("/send", 
+    target_type="group", 
+    target_id="group_id",
+    account_id="default",
+    message={"text": "Hello", "msg_type": 1}
+)
+
+# 编辑消息
+result = await yunhu_user.call_api("/edit",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id",
+    text="新内容",
+    content_type="text"
+)
+
+# 撤回消息
+result = await yunhu_user.call_api("/recall",
+    target_type="group",
+    target_id="group_id",
+    msg_id="msg_id"
+)
+
+# 批量撤回消息
+result = await yunhu_user.call_api("/recall_batch",
+    target_type="group",
+    target_id="group_id",
+    msg_id_list=["msg_id_1", "msg_id_2"]
+)
+
+# 获取消息列表
+result = await yunhu_user.call_api("/list",
+    chat_id="group_id",
+    chat_type=2,
+    msg_count=10,
+    msg_id=""
+)
+
+# 获取消息编辑记录
+result = await yunhu_user.call_api("/list_edit_record",
+    msg_id="msg_id",
+    size=10,
+    page=1
+)
+
+# 按钮事件报告
+result = await yunhu_user.call_api("/button_report",
+    chat_id="group_id",
+    chat_type=2,
+    msg_id="msg_id",
+    user_id="user_id",
+    button_value="button_value"
+)
+```
+
+**サポートされる API エンドポイント：**
+
+| 端点 | 説明 |
+|------|------|
+| `/send` | 发送消息 |
+| `/edit` | 编辑消息 |
+| `/recall` | 撤回消息 |
+| `/recall_batch` | 批量撤回消息 |
+| `/list` | 获取消息列表 |
+| `/list_by_seq` | 通过序列获取消息 |
+| `/list_by_mid_seq` | 通过消息ID和序列获取消息 |
+| `/list_edit_record` | 获取消息编辑记录 |
+| `/button_report` | 按钮事件报告 |
 
 
 
