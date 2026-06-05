@@ -16,9 +16,9 @@ Forward Conversion (Receive Direction)               Reverse Conversion (Send Di
          │                                              │
          ↓                                              ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │  Adapter (MyAdapter) │   │                  │
-│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (Event Converter)│──→│ │              │ │   │ (Reverse Conversion Entry)│
+│                  │   │  Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │   │ ┌──────────────┐ │   │ (Reverse Conversion Entry)│
+│  (Event Converter)│──→│ │              │ │   │                  │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -436,4 +436,310 @@ class MyPlatformConverter:
             "type": event_type,
             "detail_type": detail_type,
             "platform": "myplatform",
-            "self
+            "self": {
+                "platform": "myplatform",
+                "user_id": str(raw_event.get("bot_id", ""))
+            },
+            "myplatform_raw": raw_event,
+            "myplatform_raw_type": raw_event.get("type", "")
+        }
+        
+        return onebot_event
+```
+
+## Connection Management
+
+### WebSocket Connection
+
+```python
+from fastapi import WebSocket
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """Register WebSocket route"""
+        router.register_websocket(
+            module_name="myplatform",
+            path="/ws",
+            handler=self._ws_handler,
+            auth_handler=self._auth_handler
+        )
+    
+    async def _ws_handler(self, websocket: WebSocket):
+        """WebSocket connection handler"""
+        self.connection = websocket
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                onebot_event = self.convert(data)
+                if onebot_event:
+                    await self.adapter.emit(onebot_event)
+        except WebSocketDisconnect:
+            self.logger.info("Connection disconnected")
+        finally:
+            self.connection = None
+    
+    async def _auth_handler(self, websocket: WebSocket) -> bool:
+        """WebSocket authentication"""
+        token = websocket.query_params.get("token")
+        return token == "valid_token"
+```
+
+### WebHook Connection
+
+```python
+from fastapi import Request
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        """Register WebHook route"""
+        router.register_http_route(
+            module_name="myplatform",
+            path="/webhook",
+            handler=self._webhook_handler,
+            methods=["POST"]
+        )
+    
+    async def _webhook_handler(self, request: Request):
+        """WebHook request handler"""
+        data = await request.json()
+        onebot_event = self.convert(data)
+        if onebot_event:
+            await self.adapter.emit(onebot_event)
+        return {"status": "ok"}
+```
+
+## API Response Standard
+
+### Success Response
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        raw_response = await self._platform_api_call(endpoint, **params)
+        
+        return {
+            "status": "ok",
+            "retcode": 0,
+            "data": raw_response.get("data"),
+            "message_id": raw_response.get("data", {}).get("message_id", ""),
+            "message": "",
+            "myplatform_raw": raw_response
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "retcode": 34000,
+            "data": None,
+            "message_id": "",
+            "message": str(e),
+            "myplatform_raw": None
+        }
+```
+
+### Failure Response
+
+```python
+async def call_api(self, endpoint: str, **params):
+    # ...
+    return {
+        "status": "failed",
+        "retcode": 10003,  # Error code
+        "data": None,
+        "message_id": "",
+        "message": "Missing required parameters",
+        "myplatform_raw": None
+    }
+```
+
+## Multi-Account Support
+
+### Account Configuration
+
+```toml
+[MyAdapter.accounts.account1]
+token = "token1"
+enabled = true
+
+[MyAdapter.accounts.account2]
+token = "token2"
+enabled = true
+```
+
+### Specify Account for Sending
+
+```python
+# Use Using method to specify account
+my_adapter = adapter.get("myplatform")
+
+# By account name
+await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
+
+# By account ID
+await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
+```
+
+## Error Handling
+
+### Connection Retry
+
+```python
+import asyncio
+
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        retry_count = 0
+        max_retries = 5
+        
+        while retry_count < max_retries:
+            try:
+                await self._connect_to_platform()
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    wait_time = min(60 * (2 ** retry_count), 600)
+                    self.logger.warning(f"Connection failed, retrying in {wait_time} seconds")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+```
+
+### API Error Handling
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        # Recommended to use SDK built-in client
+        from ErisPulse.Core import client
+        resp = await client.post(
+            f"https://api.platform.com/{endpoint}",
+            json=params,
+            max_retries=2,
+        )
+        response = await resp.json()
+        return self._standardize_response(response)
+    except aiohttp.ClientError as e:
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
+    except asyncio.TimeoutError:
+        self.logger.error(f"Request timeout: {endpoint}")
+        return self._error_response("Request timeout", 32000)
+    except Exception as e:
+        self.logger.error(f"Unknown error: {e}")
+        return self._error_response(str(e), 34000)
+```
+
+## Bot Status Management
+
+AdapterManager includes a built-in Bot status tracking system that automatically maintains the online status, active time, and metadata of all registered Bots.
+
+### Automatic Discovery Mechanism
+
+When an adapter emits an event via `adapter.emit()`, the framework automatically checks the `self` field in the event:
+
+- **meta events**: Perform corresponding operations based on `detail_type` (register on connect / mark offline on disconnect / update active time on heartbeat)
+- **regular events** (message/notice/request): Automatically discover Bots and update active time
+
+```python
+# All events containing self field trigger automatic discovery
+await self.adapter.emit({
+    "type": "message",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": "bot123"},
+    # ...
+})
+# Bot "bot123" is automatically registered (if first appearance) and active time updated
+```
+
+### Meta Event Types
+
+| `detail_type` | Description | Framework Behavior |
+|---|---|---|
+| `connect` | Bot connects | Register Bot and trigger `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnects | Mark Bot as offline and trigger `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
+
+### Adapter Sending Meta Events
+
+```python
+class MyAdapter(BaseAdapter):
+    async def _on_bot_connect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "connect",
+            "platform": "myplatform",
+            "self": {
+                "platform": "myplatform",
+                "user_id": bot_id,
+                "user_name": "MyBot",
+                "nickname": "我的机器人",
+            }
+        })
+
+    async def _on_bot_disconnect(self, bot_id: str):
+        await self.adapter.emit({
+            "type": "meta",
+            "detail_type": "disconnect",
+            "platform": "myplatform",
+            "self": {"platform": "myplatform", "user_id": bot_id}
+        })
+```
+
+### Extended `self` Field Information
+
+The `self` field, in addition to the required `platform` and `user_id`, supports the following optional fields:
+
+| Field | Description |
+|---|---|
+| `user_name` | Bot username |
+| `nickname` | Bot nickname |
+| `avatar` | Bot avatar URL |
+| `account_id` | Multi-account identifier |
+
+### Bot Status Query
+
+```python
+from ErisPulse import sdk
+
+# Get single Bot info
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# List all Bots
+all_bots = sdk.adapter.list_bots()
+
+# List Bots for specific platform
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Check if Bot is online
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Get complete status summary (suitable for WebUI display)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### Listen to Bot Lifecycle
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot online: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Bot offline: {platform}/{bot_id}")
+```
+
+## Related Documentation
+
+- [Adapter Development Getting Started](getting-started.md) - Create your first adapter
+- [SendDSL Detailed Explanation](send-dsl.md) - Learn message sending
+- [Adapter Best Practices](best-practices.md) - Develop high-quality adapters

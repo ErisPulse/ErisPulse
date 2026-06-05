@@ -473,3 +473,152 @@ class MyAdapter(BaseAdapter):
     
     async def shutdown(self):
         self.logger.info("アダ
+```
+
+## テスト
+
+### 1. 単体テスト
+
+```python
+import pytest
+from ErisPulse.Core.Bases import BaseAdapter
+
+class TestMyAdapter:
+    def test_converter(self):
+        """テスト変換器"""
+        converter = MyPlatformConverter()
+        raw_event = {"type": "message", "content": "Hello"}
+        result = converter.convert(raw_event)
+        assert result is not None
+        assert result["platform"] == "myplatform"
+        assert "myplatform_raw" in result
+    
+    def test_api_response(self):
+        """テスト API 応答形式"""
+        adapter = MyAdapter()
+        response = adapter.call_api("/test", param="value")
+        assert "status" in response
+        assert "retcode" in response
+```
+
+### 2. 統合テスト
+
+```python
+@pytest.mark.asyncio
+async def test_adapter_start():
+    """テストアダプター起動"""
+    adapter = MyAdapter()
+    await adapter.start()
+    assert adapter._connected is True
+
+@pytest.mark.asyncio
+async def test_send_message():
+    """テスト送信メッセージ"""
+    adapter = MyAdapter()
+    await adapter.start()
+    
+    result = await adapter.Send.To("user", "123").Text("Hello")
+    assert result is not None
+```
+
+## 逆変換とメッセージ構築
+
+`Raw_ob12` はアダプターが**実装しなければならない**メソッドで、OneBot12 → プラットフォームへの逆変換の統一エントリーポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲し、修飾子状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントにマージする必要があります。
+
+`MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
+
+> 完全な実装規範、コード例、使用方法は以下を参照してください：
+> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規範onebot12--プラットフォーム)
+> - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
+
+## プラットフォームイベントメソッド拡張
+
+アダプターは Event クラスにプラットフォーム固有メソッドを登録し、モジュール開発者がプラットフォーム特有のデータに簡単にアクセスできるようにすることができます。
+
+### 1. Mixin クラスを使用した一括登録（推奨）
+
+プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します：
+
+```python
+# アダプターの start() またはモジュールレベルで登録
+from ErisPulse.Core.Event import register_event_mixin
+
+class MyPlatformEventMixin:
+    def get_chat_name(self):
+        """チャット名を取得"""
+        return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+
+    def is_official_message(self):
+        """公式メッセージかどうかを判断"""
+        raw = self.get("myplatform_raw", {})
+        return raw.get("sender", {}).get("is_official", False)
+
+    def get_message_type(self):
+        """プラットフォームのメッセージタイプを取得"""
+        return self.get("myplatform_raw", {}).get("msg_type", "text")
+
+# 一括登録
+register_event_mixin("myplatform", MyPlatformEventMixin)
+```
+
+### 2. デコレータを使用した単一メソッド登録
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("myplatform")
+def get_chat_name(self):
+    return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
+```
+
+### 3. アダプター終了時のクリーンアップ
+
+```python
+from ErisPulse.Core.Event import unregister_platform_event_methods
+
+class MyAdapter(BaseAdapter):
+    async def shutdown(self):
+        # プラットフォームイベントメソッドの登録をクリーンアップ
+        unregister_platform_event_methods("myplatform")
+        # ... その他のクリーンアップ
+```
+
+> 詳細な登録とアンロードの説明は [イベントシステム API - プラットフォーム拡張メソッド登録](../../api-reference/event-system.md#アダプター登録プラットフォーム拡張メソッド) を参照してください。
+
+## ドキュメントの維持
+
+### 1. プラットフォーム特性ドキュメントの維持
+
+`docs/zh-CN/platform-guide/` に `{platform}.md` ドキュメントを作成してください（他の言語バージョンは自動生成されます）：
+
+```markdown
+# プラットフォーム名アダプタードキュメント
+
+## 基本情報
+- 対応モジュールバージョン: 1.0.0
+- 維持者: Your Name
+
+## 支援するメッセージ送信タイプ
+...
+
+## 特有イベントタイプ
+...
+
+## 設定オプション
+...
+```
+
+### 2. バージョン情報の更新
+
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新してください：
+
+```toml
+[project]
+version = "2.0.0"  # バージョン番号を更新
+```
+
+## 関連ドキュメント
+
+- [アダプター開発入門](getting-started.md) - 最初のアダプターを作成する
+- [アダプターの基本概念](core-concepts.md) - アダプターのアーキテクチャを理解する
+- [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ

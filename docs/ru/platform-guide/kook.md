@@ -306,12 +306,12 @@ file_url = result["data"]["url"]
 
 ### Процесс подключения
 
-1.  Вызвать `POST /gateway/index` с токеном бота, чтобы получить адрес WebSocket Gateway
-2.  Подключиться к WebSocket Gateway
-3.  Получить сигнал HELLO (s=1) и проверить состояние соединения
-4.  Начать цикл проверки связи (PING, s=2, каждые 30 секунд)
-5.  Принять событие сообщения (s=0), использовать порядковый номер sn для обеспечения порядка
-6.  Получить ответ PONG (s=3) на проверку связи
+1. Вызвать `POST /gateway/index` с токеном бота, чтобы получить адрес WebSocket Gateway
+2. Подключиться к WebSocket Gateway
+3. Получить сигнал HELLO (s=1) и проверить состояние соединения
+4. Начать цикл проверки связи (PING, s=2, каждые 30 секунд)
+5. Принять событие сообщения (s=0), использовать порядковый номер sn для обеспечения порядка
+6. Получить ответ PONG (s=3) на проверку связи
 
 ### Типы сигналов
 
@@ -415,3 +415,77 @@ await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await kook.Send.To("group", channel_id).Image(image_bytes)
+```
+
+### Отправка KMarkdown и карточных сообщений
+
+```python
+# KMarkdown
+await kook.Send.To("group", channel_id).Markdown("**粗体** *斜体* [链接](https://example.com)")
+
+# Карточное сообщение
+card = {
+    "type": "card",
+    "theme": "primary",
+    "size": "lg",
+    "modules": [
+        {"type": "header", "text": {"type": "plain-text", "content": "标题"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "内容"}}
+    ]
+}
+await kook.Send.To("group", channel_id).Card(card)
+```
+
+### Редактирование и отмена отправки сообщений
+
+```python
+# Отправка сообщения
+result = await kook.Send.To("group", channel_id).Markdown("**原始内容**")
+msg_id = result["data"]["msg_id"]
+
+# Редактирование сообщения (только KMarkdown и CardMessage)
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+
+# Отмена отправки сообщения
+await kook.Send.To("group", channel_id).Recall(msg_id)
+```
+
+### Обработка уведомлений о редактировании и удалении личных сообщений
+
+```python
+@notice.on_notice()
+async def handle_private_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "updated_private_message":
+        msg_id = event.get("message_id")
+        content = event.get("content")
+        print(f"私信消息已更新: {msg_id}, 新内容: {content}")
+
+    elif sub_type == "deleted_private_message":
+        msg_id = event.get("message_id")
+        print(f"私信消息已删除: {msg_id}")
+```
+
+### Дополнительные примеры
+
+```python
+# Отправка видео
+await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
+
+# Отправка файла
+await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
+
+# Отправка голосового сообщения
+await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
+
+# Загрузка файла и отправка
+result = await kook.Send.Upload("C:/path/to/file.jpg")
+file_url = result["data"]["url"]
+await kook.Send.To("group", channel_id).Image(file_url)
+
+# Комбинированное использование с цепочечными методами
+await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Markdown("复合消息")

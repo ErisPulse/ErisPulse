@@ -562,4 +562,78 @@ async def handle_message(event):
     platform = event.get_platform()
 
     # Call specific methods based on platform
-    if platform ==
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram specific method
+    elif platform == "email":
+        subject = event.get_subject()           # Email specific method
+```
+
+If you are unsure whether a platform has registered a method, you can query which methods a platform has registered:
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> Refer to the corresponding [Platform Documentation](../platform-guide/) for platform-specific methods registered by each platform.
+
+## Event Handling Best Practices
+
+### 1. Exception Handling
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # Business logic
+        result = await do_some_work()
+        await event.reply(f"Result: {result}")
+    except ValueError as e:
+        # Expected business error
+        await event.reply(f"Parameter error: {e}")
+    except Exception as e:
+        # Unexpected error
+        sdk.logger.error(f"Processing failed: {e}")
+        await event.reply("Processing failed, please try again later")
+```
+
+### 2. Logging
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"Processing message: {user_id} - {text}")
+    
+    # Use module's own logger
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"Detailed debug info")
+```
+
+### 3. Conditional Handling
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """Conditional handling - Judged within the handler"""
+    # Only process messages from specific users
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # Only process messages containing specific keywords
+    if "Keywords" not in event.get_text():
+        return
+    
+    await event.reply("Condition met, processing message")
+```
+
+## Next Steps
+
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into the Event object
+- [User Guide](../user-guide/) - Learn about configuration and module management

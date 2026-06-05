@@ -149,7 +149,7 @@ def Text(self, text: str):
 def Image(self, file: bytes):
     pass
 
-# �️ Неправильно
+# ❌ Неправильно
 def text(self, text: str):
     pass
 
@@ -166,7 +166,7 @@ def send_image(self, file: bytes):
 def Sticker(self, sticker_id: str):
     pass
 
-# �️ Не рекомендуется
+# ❌ Не рекомендуется
 def TelegramSticker(self, sticker_id: str):
     pass
 ```
@@ -177,7 +177,7 @@ def TelegramSticker(self, sticker_id: str):
 # ✅ Рекомендуется
 await adapter.Send.Raw_ob12([{"type": "sticker", ...}])
 
-# �️ Не рекомендуется
+# ❌ Не рекомендуется
 def TelegramSticker(self, ...):
     pass
 ```
