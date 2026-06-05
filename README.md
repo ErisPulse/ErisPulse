@@ -220,6 +220,10 @@ pip install ErisPulse
 
 ##### 仪表盘：
 
+[![在线演示](https://img.shields.io/badge/在线演示-Dashboard-FF6B9D?style=for-the-badge&logo=github&logoColor=white)](https://dashdemo.erisdev.com/)
+
+> 💡 在线体验演示仪表盘：[DashDemo](https://dashdemo.erisdev.com/)
+
 <table>
 <tr>
 <td width="50%">
