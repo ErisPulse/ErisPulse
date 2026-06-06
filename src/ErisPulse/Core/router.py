@@ -22,7 +22,7 @@ from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
 from .Bases.router import HttpRequest, WebSocketConnection
-from .Bases.router import WebSocketDisconnect as _EPWebSocketDisconnect
+from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .constants import (
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
@@ -389,19 +389,23 @@ class RouterManager:
                 result = _h()
                 if inspect.isawaitable(result):
                     await result
+
             return _wrapper
 
         if extract_raw:
+
             async def _wrapper(ws_conn, *, _h=handler):
                 result = _h(ws_conn.raw)
                 if inspect.isawaitable(result):
                     await result
+
             return _wrapper
 
         async def _wrapper(ws_conn, *, _h=handler):
             result = _h(ws_conn)
             if inspect.isawaitable(result):
                 await result
+
         return _wrapper
 
     def _make_ws_auth_handler(self, auth_handler: Callable) -> Callable:
@@ -426,19 +430,23 @@ class RouterManager:
                 extract_raw = True
 
         if not has_first:
+
             async def _wrapper(ws_conn, *, _h=auth_handler):
                 result = _h()
                 if inspect.isawaitable(result):
                     return await result
                 return result
+
             return _wrapper
 
         if extract_raw:
+
             async def _wrapper(ws_conn, *, _h=auth_handler):
                 result = _h(ws_conn.raw)
                 if inspect.isawaitable(result):
                     return await result
                 return result
+
             return _wrapper
 
         async def _wrapper(ws_conn, *, _h=auth_handler):
@@ -446,6 +454,7 @@ class RouterManager:
             if inspect.isawaitable(result):
                 return await result
             return result
+
         return _wrapper
 
     @staticmethod
@@ -507,6 +516,7 @@ class RouterManager:
             dashboard_available = False
             try:
                 import ErisPulse as _pkg
+
                 _sdk = _pkg.sdk
                 dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
             except Exception:
@@ -623,7 +633,9 @@ class RouterManager:
         from ..web_status import PACKAGE_DIR as _ws_dir
 
         if os.path.isdir(_ws_dir):
-            self.app.mount("/status-assets", StaticFiles(directory=_ws_dir), name="status-assets")
+            self.app.mount(
+                "/status-assets", StaticFiles(directory=_ws_dir), name="status-assets"
+            )
 
         page_css = """
   * { margin:0;padding:0;box-sizing:border-box }
@@ -689,41 +701,131 @@ class RouterManager:
 
         @self.app.exception_handler(404)
         async def _h404(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(404, "4xx.png", "你是怎么找到这里的？", "这个页面似乎不存在，或者从未存在过。"), status_code=404)
-            return JSONResponse(status_code=404, content={"status": "error", "code": 404, "message": "Not Found"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        404,
+                        "4xx.png",
+                        "你是怎么找到这里的？",
+                        "这个页面似乎不存在，或者从未存在过。",
+                    ),
+                    status_code=404,
+                )
+            return JSONResponse(
+                status_code=404,
+                content={"status": "error", "code": 404, "message": "Not Found"},
+            )
 
         @self.app.exception_handler(403)
         async def _h403(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(403, "4xx.png", "嗯？这里不对外开放哦~", "你可能没有访问这个资源的权限。"), status_code=403)
-            return JSONResponse(status_code=403, content={"status": "error", "code": 403, "message": "Forbidden"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        403,
+                        "4xx.png",
+                        "嗯？这里不对外开放哦~",
+                        "你可能没有访问这个资源的权限。",
+                    ),
+                    status_code=403,
+                )
+            return JSONResponse(
+                status_code=403,
+                content={"status": "error", "code": 403, "message": "Forbidden"},
+            )
 
         @self.app.exception_handler(500)
         async def _h500(request: Request, exc):
             logger.error(f"未处理的异常: {exc}")
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(500, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "我们已经记录了这个问题，请稍后再试。"), status_code=500)
-            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        500,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "我们已经记录了这个问题，请稍后再试。",
+                    ),
+                    status_code=500,
+                )
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "status": "error",
+                    "code": 500,
+                    "message": "Internal Server Error",
+                },
+            )
 
         @self.app.exception_handler(502)
         async def _h502(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(502, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "上游服务似乎不太对劲。"), status_code=502)
-            return JSONResponse(status_code=502, content={"status": "error", "code": 502, "message": "Bad Gateway"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        502,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "上游服务似乎不太对劲。",
+                    ),
+                    status_code=502,
+                )
+            return JSONResponse(
+                status_code=502,
+                content={"status": "error", "code": 502, "message": "Bad Gateway"},
+            )
 
         @self.app.exception_handler(503)
         async def _h503(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(503, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "服务暂时不可用，请稍后再来。"), status_code=503)
-            return JSONResponse(status_code=503, content={"status": "error", "code": 503, "message": "Service Unavailable"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        503,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "服务暂时不可用，请稍后再来。",
+                    ),
+                    status_code=503,
+                )
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "error",
+                    "code": 503,
+                    "message": "Service Unavailable",
+                },
+            )
 
         @self.app.exception_handler(Exception)
         async def _h_generic(request: Request, exc: Exception):
             logger.error(f"未处理的异常: {exc}")
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(500, "unknow.png", "诶？发生了什么……", "有些事情我们也没预料到，正在排查中。"), status_code=500)
-            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        500,
+                        "unknow.png",
+                        "诶？发生了什么……",
+                        "有些事情我们也没预料到，正在排查中。",
+                    ),
+                    status_code=500,
+                )
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "status": "error",
+                    "code": 500,
+                    "message": "Internal Server Error",
+                },
+            )
 
     def _restore_routes_from_records(self) -> None:
         """
@@ -776,36 +878,54 @@ class RouterManager:
                             if not await _wa(ws_conn):
                                 await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
                                 return
-                        await lifecycle.emit("server.websocket.connect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "client_ip": websocket.client.host if websocket.client else None,
-                        })
+                        await lifecycle.emit(
+                            "server.websocket.connect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "client_ip": websocket.client.host
+                                if websocket.client
+                                else None,
+                            },
+                        )
                         await _wh(ws_conn)
                     except (WebSocketDisconnect, _EPWebSocketDisconnect):
-                        await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "client_disconnect",
-                        })
+                        await self._run_ws_hooks(
+                            ws_conn, "disconnect", reason="client_disconnect"
+                        )
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "client_disconnect",
+                            },
+                        )
                     except asyncio.CancelledError:
-                        await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "cancelled",
-                        })
+                        await self._run_ws_hooks(
+                            ws_conn, "disconnect", reason="cancelled"
+                        )
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "cancelled",
+                            },
+                        )
                         raise
                     except Exception as e:
                         await self._run_ws_hooks(ws_conn, "error", error=str(e))
                         await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "error",
-                            "error": str(e),
-                        })
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "error",
+                                "error": str(e),
+                            },
+                        )
                         logger.error(f"WebSocket错误: {e}")
                         try:
                             await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
@@ -820,9 +940,7 @@ class RouterManager:
                 restored_ws += 1
 
         if restored_http or restored_ws:
-            logger.debug(
-                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}"
-            )
+            logger.debug(f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}")
 
     # 路由中间件
 
@@ -840,16 +958,20 @@ class RouterManager:
         # 如果 app 已启动过（middleware_stack 已构建），无法再添加中间件
         # 此时跳过，已有的中间件仍会生效
         try:
+
             @self.app.middleware("http")
             async def route_middleware_pipeline(request: Request, call_next):
                 path = request.url.path
 
                 # 钩子: HTTP请求接收
-                await lifecycle.emit("server.request", {
-                    "method": request.method,
-                    "path": path,
-                    "client_ip": request.client.host if request.client else None,
-                })
+                await lifecycle.emit(
+                    "server.request",
+                    {
+                        "method": request.method,
+                        "path": path,
+                        "client_ip": request.client.host if request.client else None,
+                    },
+                )
 
                 for mw in self._global_middlewares:
                     if mw._before:
@@ -876,12 +998,15 @@ class RouterManager:
                 response = await call_next(request)
 
                 # 钩子: HTTP响应发送
-                await lifecycle.emit("server.response", {
-                    "method": request.method,
-                    "path": path,
-                    "status_code": response.status_code,
-                    "client_ip": request.client.host if request.client else None,
-                })
+                await lifecycle.emit(
+                    "server.response",
+                    {
+                        "method": request.method,
+                        "path": path,
+                        "status_code": response.status_code,
+                        "client_ip": request.client.host if request.client else None,
+                    },
+                )
 
                 for pattern, mws in reversed(list(self._route_middlewares.items())):
                     if self._match_path(pattern, path):
@@ -1290,42 +1415,58 @@ class RouterManager:
                         return
 
                 # 钩子: WebSocket连接建立
-                await lifecycle.emit("server.websocket.connect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "client_ip": websocket.client.host if websocket.client else None,
-                })
+                await lifecycle.emit(
+                    "server.websocket.connect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "client_ip": websocket.client.host
+                        if websocket.client
+                        else None,
+                    },
+                )
 
                 await wrapped_handler(ws_conn)
 
             except (WebSocketDisconnect, _EPWebSocketDisconnect):
-                await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
+                await self._run_ws_hooks(
+                    ws_conn, "disconnect", reason="client_disconnect"
+                )
                 # 钩子: WebSocket客户端断开
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "client_disconnect",
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "client_disconnect",
+                    },
+                )
                 logger.debug(f"客户端断开: {full_path}")
             except asyncio.CancelledError:
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "cancelled",
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "cancelled",
+                    },
+                )
                 logger.debug(f"WebSocket连接被取消: {full_path}")
                 raise
             except Exception as e:
                 await self._run_ws_hooks(ws_conn, "error", error=str(e))
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
                 # 钩子: WebSocket异常断开
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "error",
-                    "error": str(e),
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "error",
+                        "error": str(e),
+                    },
+                )
                 logger.error(f"WebSocket错误: {e}")
                 try:
                     await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
@@ -1553,7 +1694,9 @@ class RouterManager:
         {!--< /internal-use >!--}
         """
         if isinstance(limit, dict):
-            return int(limit.get("requests", DEFAULT_RATE_LIMIT_MAX_REQUESTS)), int(limit.get("window", DEFAULT_RATE_LIMIT_WINDOW_SECS))
+            return int(limit.get("requests", DEFAULT_RATE_LIMIT_MAX_REQUESTS)), int(
+                limit.get("window", DEFAULT_RATE_LIMIT_WINDOW_SECS)
+            )
 
         parts = limit.split("/")
         count = int(parts[0])
@@ -1806,7 +1949,9 @@ class RouterManager:
         if self._server_task:
             logger.debug("正在停止路由服务器...")
             try:
-                await asyncio.wait_for(self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS)
+                await asyncio.wait_for(
+                    self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS
+                )
                 logger.debug("路由服务器已正常停止")
             except asyncio.CancelledError:
                 logger.info("路由服务器已被取消")

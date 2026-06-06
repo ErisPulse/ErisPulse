@@ -391,6 +391,8 @@ async def handler(request: Request):
     return {"status": "ok"}
 ```
 
+> `HttpRequest` 和 `WebSocketConnection` 均为 ErisPulse 抽象类型，不依赖 FastAPI。
+> 其中 `WebSocketConnection` 继承自 `WebSocketConnectionBase`，与客户端 WebSocket（`ClientWebSocket`）共享相同的 send/receive/iter 接口基类。
 > 路由系统根据参数注解自动注入对应类型的对象，详见 [路由管理器](../advanced/router.md)。
 
 ### 装饰器路由（推荐）
@@ -712,6 +714,56 @@ from ErisPulse.Core import lifecycle
 async def on_request(event_data):
     print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
 ```
+
+### WebSocket 客户端
+
+通过 `ws_connect()` 建立 WebSocket 连接，返回 `ClientWebSocket` 对象。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类，send/receive/iter 接口完全一致。
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+# 建立 WS 连接
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+# 高级方法 (推荐)
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+
+# 低级方法 (区分消息类型)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        await ws.send_text(f"Echo: {msg.data}")
+    elif msg.type == WSMessage.CLOSE:
+        break
+```
+
+### 异常体系
+
+通过 `sdk.client` 发起的请求会自动将底层 aiohttp 异常转换为 ErisPulse 异常。直接使用 aiohttp 的旧代码不受影响。
+
+```python
+from ErisPulse.Core.Bases.errors import (
+    ClientError,           # 所有 HTTP/WS 客户端异常基类
+    ClientConnectionError, # 连接失败
+    ClientTimeoutError,    # 超时
+    HTTPStatusError,       # HTTP 4xx/5xx
+    WebSocketDisconnect,   # WS 断开 (客户端和服务端通用)
+    WebSocketError,        # WS 异常基类
+)
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientConnectionError:
+    print("无法连接")
+except ClientTimeoutError:
+    print("超时")
+except ClientError as e:
+    print(f"请求失败: {e}")
+```
+
+> 完整文档请参考 [HTTP 客户端](../advanced/http-client.md)。
 
 ## 相关文档
 

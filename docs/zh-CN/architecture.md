@@ -50,7 +50,7 @@ graph TB
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
-| **HttpClient** | 统一 HTTP 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志等功能 |
+| **HttpClient** | 统一 HTTP/WS 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
 
 ## 初始化流程
 

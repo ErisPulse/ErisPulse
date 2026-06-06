@@ -1,13 +1,15 @@
 """
 ErisPulse HTTP 客户端抽象基类
 
-定义 HTTP 客户端和响应的抽象接口，使模块和适配器无需直接依赖 aiohttp。
+定义 HTTP 客户端、响应和客户端 WebSocket 连接的抽象接口，
+使模块和适配器无需直接依赖 aiohttp。
 具体实现由 Core.client 模块提供（基于 aiohttp）。
 
 {!--< tips >!--}
 1. 支持 get / post / put / delete / patch / request 等常用方法
-2. 自动记录请求日志和统计信息
-3. 推荐所有模块和适配器使用此客户端发送 HTTP 请求
+2. 支持 ws_connect 建立 WebSocket 连接
+3. 自动记录请求日志和统计信息
+4. 推荐所有模块和适配器使用此客户端发送 HTTP 请求和建立 WS 连接
 {!--< /tips >!--}
 """
 
@@ -15,6 +17,9 @@ from __future__ import annotations
 
 from typing import Any
 from collections.abc import Callable
+
+from .websocket import WebSocketConnectionBase, WSMessage
+from .errors import WebSocketDisconnect
 
 
 class BaseHttpResponse:
@@ -114,21 +119,96 @@ class BaseHttpResponse:
         raise NotImplementedError
 
 
+class BaseClientWebSocket(WebSocketConnectionBase):
+    """
+    客户端 WebSocket 连接抽象基类
+
+    扩展 WebSocketConnectionBase，增加客户端特有的消息类型处理和连接状态。
+
+    {!--< tips >!--}
+    1. 通过 sdk.client.ws_connect() 获取实例
+    2. 使用 receive() / iter_messages() 处理原始消息类型
+    3. 使用 receive_text() / iter_text() 等高级方法自动过滤消息类型
+    {!--< /tips >!--}
+
+    :example:
+    >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
+    >>> async for msg in ws.iter_messages():
+    ...     if msg.type == WSMessage.TEXT:
+    ...         await ws.send_text(f"Echo: {msg.data}")
+    """
+
+    __slots__ = ("_closed",)
+
+    def __init__(self, ws):
+        """
+        :param ws: object 底层框架 WebSocket 对象
+        """
+        super().__init__(ws)
+        self._closed = False
+
+    @property
+    def closed(self) -> bool:
+        """
+        连接是否已关闭
+
+        :return: bool 是否已关闭
+        """
+        raise NotImplementedError
+
+    async def receive(self) -> WSMessage:
+        """
+        接收原始消息
+
+        :return: WSMessage 消息对象 (包含 type 和 data 属性)
+        """
+        raise NotImplementedError
+
+    async def iter_messages(self):
+        """
+        迭代原始消息直到断开
+
+        自动在收到 CLOSE 或 ERROR 消息时停止迭代。
+
+        :return: async generator 逐条返回 WSMessage
+
+        :example:
+        >>> async for msg in ws.iter_messages():
+        ...     if msg.type == WSMessage.TEXT:
+        ...         print(msg.data)
+        ...     elif msg.type == WSMessage.CLOSE:
+        ...         break
+        """
+        try:
+            while True:
+                msg = await self.receive()
+                if msg.type in (WSMessage.CLOSE, WSMessage.ERROR):
+                    break
+                yield msg
+        except WebSocketDisconnect:
+            pass
+
+
 class BaseHttpClient:
     """
     HTTP 客户端抽象基类
 
-    定义统一的异步 HTTP 请求接口，具体实现由 Core.client.HttpClient 提供。
+    定义统一的异步 HTTP 请求和 WebSocket 连接接口，
+    具体实现由 Core.client.HttpClient 提供。
 
     {!--< tips >!--}
     1. 通过 sdk.client 获取全局单例，也可自行实例化
     2. 使用 get/post/put/delete/patch 快捷方法或通用 request 方法
-    3. 推荐所有模块和适配器使用此客户端发送 HTTP 请求
+    3. 使用 ws_connect 建立 WebSocket 连接
+    4. 推荐所有模块和适配器使用此客户端发送 HTTP 请求
     {!--< /tips >!--}
 
     :example:
     >>> resp = await sdk.client.get("https://httpbin.org/get")
     >>> data = await resp.json()
+    >>>
+    >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
+    >>> await ws.send_text("Hello")
     """
 
     async def request(
@@ -157,6 +237,30 @@ class BaseHttpClient:
         :param max_retries: int | None 本次最大重试次数 (可选, 覆盖默认值)
         :param kwargs: 传递给底层请求的额外参数
         :return: BaseHttpResponse 响应对象
+        """
+        raise NotImplementedError
+
+    async def ws_connect(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        heartbeat: float | None = None,
+        **kwargs,
+    ) -> BaseClientWebSocket:
+        """
+        建立 WebSocket 连接
+
+        :param url: str WebSocket 服务器 URL
+        :param headers: dict[str, str] | None 额外请求头 (可选)
+        :param heartbeat: float | None 心跳间隔秒数 (可选)
+        :param kwargs: 传递给底层 WS 连接的额外参数
+        :return: BaseClientWebSocket WebSocket 连接对象
+
+        :example:
+        >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
+        >>> async for text in ws.iter_text():
+        ...     await ws.send_text(f"Echo: {text}")
         """
         raise NotImplementedError
 

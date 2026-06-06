@@ -11,6 +11,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
 
 from ErisPulse.Core.client import HttpClient, HttpResponse
+from ErisPulse.Core.Bases.errors import ClientError, ClientConnectionError
 
 
 # ==================== HttpResponse 测试 ====================
@@ -19,8 +20,15 @@ from ErisPulse.Core.client import HttpClient, HttpResponse
 class TestHttpResponse:
     """HttpResponse 属性与方法测试"""
 
-    def _make_raw_response(self, status=200, reason="OK", content_type="application/json",
-                           charset="utf-8", headers=None, url="http://example.com/api"):
+    def _make_raw_response(
+        self,
+        status=200,
+        reason="OK",
+        content_type="application/json",
+        charset="utf-8",
+        headers=None,
+        url="http://example.com/api",
+    ):
         raw = MagicMock()
         raw.status = status
         raw.reason = reason
@@ -104,7 +112,8 @@ class TestHttpResponse:
     @pytest.mark.asyncio
     async def test_text_default_encoding(self):
         raw = self._make_raw_response()
-        raw.text = AsyncMock(return_value="hello world")
+        raw.read = AsyncMock(return_value=b"hello world")
+        raw.get_encoding = MagicMock(return_value=None)
         resp = HttpResponse(raw)
         text = await resp.text()
         assert text == "hello world"
@@ -120,7 +129,7 @@ class TestHttpResponse:
     @pytest.mark.asyncio
     async def test_json(self):
         raw = self._make_raw_response()
-        raw.json = AsyncMock(return_value={"foo": "bar"})
+        raw.read = AsyncMock(return_value=b'{"foo": "bar"}')
         resp = HttpResponse(raw)
         data = await resp.json()
         assert data == {"foo": "bar"}
@@ -128,10 +137,10 @@ class TestHttpResponse:
     @pytest.mark.asyncio
     async def test_json_with_kwargs(self):
         raw = self._make_raw_response()
-        raw.json = AsyncMock(return_value={})
+        raw.read = AsyncMock(return_value=b'{"foo": "bar"}')
         resp = HttpResponse(raw)
-        await resp.json(some_kwarg=True)
-        raw.json.assert_called_once_with(some_kwarg=True)
+        await resp.json(object_hook=lambda d: {k.upper(): v for k, v in d.items()})
+        assert raw.read.call_count == 1
 
     @pytest.mark.asyncio
     async def test_async_context_manager(self):
@@ -150,6 +159,7 @@ class TestHttpClientInit:
 
     def test_default_timeout(self):
         from ErisPulse.Core.constants import DEFAULT_HTTP_CLIENT_TIMEOUT_SECS
+
         c = HttpClient()
         assert c._timeout == DEFAULT_HTTP_CLIENT_TIMEOUT_SECS
 
@@ -159,6 +169,7 @@ class TestHttpClientInit:
 
     def test_default_connect_timeout(self):
         from ErisPulse.Core.constants import DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS
+
         c = HttpClient()
         assert c._connect_timeout == DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS
 
@@ -168,6 +179,7 @@ class TestHttpClientInit:
 
     def test_default_max_retries(self):
         from ErisPulse.Core.constants import DEFAULT_HTTP_CLIENT_MAX_RETRIES
+
         c = HttpClient()
         assert c._max_retries == DEFAULT_HTTP_CLIENT_MAX_RETRIES
 
@@ -177,6 +189,7 @@ class TestHttpClientInit:
 
     def test_default_retry_delay(self):
         from ErisPulse.Core.constants import DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS
+
         c = HttpClient()
         assert c._retry_delay == DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS
 
@@ -186,6 +199,7 @@ class TestHttpClientInit:
 
     def test_default_user_agent(self):
         from ErisPulse.Core.constants import DEFAULT_HTTP_CLIENT_USER_AGENT
+
         c = HttpClient()
         if DEFAULT_HTTP_CLIENT_USER_AGENT:
             assert "User-Agent" in c._default_headers
@@ -228,35 +242,52 @@ class TestHttpClientShortcutMethods:
     async def test_get_delegates(self, client):
         await client.get("http://example.com", params={"a": "1"})
         client.request.assert_called_once_with(
-            "GET", "http://example.com", params={"a": "1"}, headers=None,
+            "GET",
+            "http://example.com",
+            params={"a": "1"},
+            headers=None,
         )
 
     @pytest.mark.asyncio
     async def test_post_delegates(self, client):
         await client.post("http://example.com", json={"k": "v"})
         client.request.assert_called_once_with(
-            "POST", "http://example.com", data=None, json={"k": "v"}, headers=None,
+            "POST",
+            "http://example.com",
+            data=None,
+            json={"k": "v"},
+            headers=None,
         )
 
     @pytest.mark.asyncio
     async def test_put_delegates(self, client):
         await client.put("http://example.com", data=b"raw")
         client.request.assert_called_once_with(
-            "PUT", "http://example.com", data=b"raw", json=None, headers=None,
+            "PUT",
+            "http://example.com",
+            data=b"raw",
+            json=None,
+            headers=None,
         )
 
     @pytest.mark.asyncio
     async def test_delete_delegates(self, client):
         await client.delete("http://example.com")
         client.request.assert_called_once_with(
-            "DELETE", "http://example.com", headers=None,
+            "DELETE",
+            "http://example.com",
+            headers=None,
         )
 
     @pytest.mark.asyncio
     async def test_patch_delegates(self, client):
         await client.patch("http://example.com", json={"patch": True})
         client.request.assert_called_once_with(
-            "PATCH", "http://example.com", data=None, json={"patch": True}, headers=None,
+            "PATCH",
+            "http://example.com",
+            data=None,
+            json={"patch": True},
+            headers=None,
         )
 
 
@@ -344,7 +375,7 @@ class TestHttpClientClose:
 
 
 class TestHttpClientSession:
-    """HttpClient _get_session 测试"""
+    """HttpClient _get_http_session 测试"""
 
     @pytest.mark.asyncio
     async def test_get_session_creates_new(self):
@@ -357,7 +388,7 @@ class TestHttpClientSession:
         mock_aiohttp.ClientTimeout = MagicMock(return_value=MagicMock())
 
         with patch.dict("sys.modules", {"aiohttp": mock_aiohttp}):
-            session = await c._get_session()
+            session = await c._get_http_session()
 
         assert session is mock_session
         mock_aiohttp.ClientSession.assert_called_once()
@@ -369,7 +400,7 @@ class TestHttpClientSession:
         mock_session.closed = False
         c._session = mock_session
 
-        session = await c._get_session()
+        session = await c._get_http_session()
         assert session is mock_session
 
     @pytest.mark.asyncio
@@ -386,7 +417,7 @@ class TestHttpClientSession:
         mock_aiohttp.ClientTimeout = MagicMock(return_value=MagicMock())
 
         with patch.dict("sys.modules", {"aiohttp": mock_aiohttp}):
-            session = await c._get_session()
+            session = await c._get_http_session()
 
         assert session is new_session
 
@@ -426,7 +457,7 @@ class TestHttpClientRequest:
         mock_session.request = MagicMock(side_effect=ConnectionError("refused"))
         c._session = mock_session
 
-        with pytest.raises(ConnectionError, match="refused"):
+        with pytest.raises(ClientError, match="refused"):
             await c.request("GET", "http://example.com")
 
         assert c.stats["total_errors"] == 1
@@ -468,10 +499,10 @@ class TestHttpClientRequest:
         mock_session.request = MagicMock(side_effect=ConnectionError("persistent"))
         c._session = mock_session
 
-        with pytest.raises(ConnectionError, match="persistent"):
+        with pytest.raises(ClientError, match="persistent"):
             await c.request("GET", "http://example.com")
 
-        assert c.stats["total_errors"] == 2  # 1 + 1 retry
+        assert c.stats["total_errors"] == 2
 
     @pytest.mark.asyncio
     async def test_request_per_request_timeout_override(self):
@@ -544,7 +575,8 @@ class TestHttpClientRequest:
         c._session = mock_session
 
         await c.request(
-            "POST", "http://example.com/api",
+            "POST",
+            "http://example.com/api",
             params={"q": "test"},
             headers={"Authorization": "Bearer token"},
             data={"form": "data"},
@@ -580,7 +612,7 @@ class TestHttpClientRequest:
             await c.request("GET", "http://example.com/api")
 
         assert len(emitted_events) == 1
-        assert emitted_events[0][0] == "client.request"
+        assert emitted_events[0][0] == "client.request.success"
         assert emitted_events[0][1]["method"] == "GET"
         assert emitted_events[0][1]["url"] == "http://example.com/api"
         assert emitted_events[0][1]["status"] == 200

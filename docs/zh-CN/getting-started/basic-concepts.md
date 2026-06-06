@@ -304,7 +304,9 @@ async def handler2(request: Request):
 
 ### Client（HTTP 客户端）
 
-统一的 HTTP 客户端，用于发送 HTTP 请求。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+统一的 HTTP/WS 客户端，用于发送 HTTP 请求和建立 WebSocket 连接。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+
+> 直接使用 `aiohttp` 的旧代码完全不受影响，两种方式可以共存，但建议迁移到ErisPulse的实现以便ErisPulse生命周期钩子在生态模块中传播~
 
 ```python
 from ErisPulse.Core import client
@@ -324,6 +326,23 @@ resp.status        # 状态码 (如 200)
 resp.headers       # 响应头
 body = await resp.text()   # 文本响应体
 data = await resp.json()   # JSON 解析
+
+# WebSocket 客户端
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+```python
+# 异常处理 - 使用 ErisPulse 异常体系 (仅通过 sdk.client 请求时)
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientTimeoutError:
+    print("请求超时")
+except ClientError as e:
+    print(f"请求失败: {e}")
 ```
 
 {!--< tips >!--}

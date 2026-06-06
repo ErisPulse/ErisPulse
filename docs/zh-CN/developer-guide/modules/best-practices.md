@@ -178,7 +178,8 @@ async def handle_event(self, event):
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
     except aiohttp.ClientError as e:
-        # 网络错误（使用 sdk.client 时此异常极少出现，因内置重试机制）
+        # 网络错误（推荐使用 sdk.client + ClientError 替代）
+        # 旧代码直接用 aiohttp 仍可正常工作，但新代码推荐使用 ErisPulse 异常体系
         self.logger.error(f"网络错误: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
@@ -193,12 +194,13 @@ async def handle_event(self, event):
 ```python
 # 推荐使用 SDK 内置客户端（自带超时和重试）
 from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
 async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.warning(f"请求超时: {url}")
         raise
 ```
