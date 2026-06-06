@@ -223,6 +223,99 @@ class MyConverter:
         return base
 ```
 
+## 富媒体消息转换示例
+
+实际平台的消息通常包含图片、@提及、回复等富媒体内容。以下是 `_convert_message_segments` 处理多种消息类型的示例：
+
+```python
+def _convert_message_segments(self, raw_content: list) -> list:
+    """将平台原生消息段列表转换为 OneBot12 标准消息段"""
+    segments = []
+
+    for item in raw_content:
+        item_type = item.get("type", "")
+
+        if item_type == "text":
+            segments.append({
+                "type": "text",
+                "data": {"text": item.get("content", "")}
+            })
+
+        elif item_type == "image":
+            file_url = item.get("url") or item.get("file_id", "")
+            segments.append({
+                "type": "image",
+                "data": {"file": file_url}
+            })
+
+        elif item_type == "at":
+            segments.append({
+                "type": "mention",
+                "data": {"user_id": item.get("target_id", "")}
+            })
+
+        elif item_type == "reply":
+            segments.append({
+                "type": "reply",
+                "data": {"message_id": item.get("reply_to_id", "")}
+            })
+
+        elif item_type == "at_all":
+            segments.append({"type": "mention_all", "data": {}})
+
+        else:
+            segments.append({
+                "type": "text",
+                "data": {"text": f"[不支持的消息类型: {item_type}]"}
+            })
+
+    return segments
+```
+
+## 常见陷阱
+
+### 1. 缺少 `{platform}_raw` 字段
+
+这是最常见的错误。缺少原始数据字段会导致模块无法访问平台特有的信息。
+
+```python
+base_event["myplatform_raw"] = raw_event        # 必须！
+base_event["myplatform_raw_type"] = event_type   # 必须！
+```
+
+### 2. 时间戳格式错误
+
+OneBot12 标准要求 `time` 字段为 Unix 秒级时间戳（整数）。如果你的平台返回毫秒时间戳或 ISO 格式字符串，需要转换：
+
+```python
+import time
+
+# 毫秒 → 秒
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO 字符串 → 秒
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. 缺少 `self` 字段
+
+`self` 字段包含机器人自身信息，`user_id` 为机器人的账号 ID。多 Bot 场景下此字段至关重要：
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # 机器人自身的 ID
+}
+```
+
+### 4. detail_type 使用了非标准值
+
+`detail_type` 必须使用 OneBot12 标准定义的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
+
+### 5. 往返一致性
+
+确保 Converter 生成的消息段类型与 Send 端支持的方法对应。例如，如果 Converter 将平台的图片消息转换为 `{"type": "image", ...}`，那么 Send 端的 `Image()` 方法必须能处理图片发送。
+
 ## 最佳实践
 
 1. **总是保留原始数据**：`{platform}_raw` 字段不能省略
