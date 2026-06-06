@@ -52,7 +52,10 @@ class AdapterManager(ManagerBase):
         if base_cls.__name__ == cls.__name__:
             return False
         for parent in cls.__mro__:
-            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
+            if (
+                parent.__name__ == base_cls.__name__
+                and parent.__module__ == base_cls.__module__
+            ):
                 return True
         return False
 
@@ -140,24 +143,29 @@ class AdapterManager(ManagerBase):
                 # 创建适配器实例
                 # 检查适配器类 __init__ 方法的参数
                 init_signature = inspect.signature(adapter_class.__init__)
-                params = [p for p in init_signature.parameters.values() if p.name != "self"]
+                params = [
+                    p for p in init_signature.parameters.values() if p.name != "self"
+                ]
 
                 sdk_to_use = self._sdk
                 if sdk_to_use is None:
                     from .. import sdk
 
                     sdk_to_use = sdk
-            
+
                 # 根据参数情况创建实例
                 if params:
                     instance = adapter_class(sdk_to_use)
                 else:
                     instance = adapter_class()
 
+                instance._platform = platform
                 self._adapters[platform] = instance
             except SystemExit as e:
-                logger.error(f"适配器 {platform} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                             f"请不要在适配器中使用 sys.exit() 或 raise SystemExit")
+                logger.error(
+                    f"适配器 {platform} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                    f"请不要在适配器中使用 sys.exit() 或 raise SystemExit"
+                )
                 return False
             except Exception as e:
                 logger.error(f"创建适配器实例 {platform} 失败: {e}")
@@ -718,11 +726,14 @@ class AdapterManager(ManagerBase):
         raw_event_type = data.get(f"{platform}_raw_type")
 
         # 钩子: 事件接收（最早期，所有事件都经过此处）
-        await lifecycle.emit("adapter.event.receive", {
-            "platform": platform,
-            "event_type": event_type,
-            "raw_event_type": raw_event_type,
-        })
+        await lifecycle.emit(
+            "adapter.event.receive",
+            {
+                "platform": platform,
+                "event_type": event_type,
+                "raw_event_type": raw_event_type,
+            },
+        )
 
         # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
         # 同时也处理普通事件中的 self 字段（自动发现Bot）
@@ -805,8 +816,10 @@ class AdapterManager(ManagerBase):
             handler_platform = handler_wrapper.get("platform")
             if handler_platform is None or handler_platform == platform:
                 self._dispatch_handler_task(
-                    handler_wrapper["func"], processed_data,
-                    event_type=event_type, platform=platform,
+                    handler_wrapper["func"],
+                    processed_data,
+                    event_type=event_type,
+                    platform=platform,
                 )
 
         # 只有当存在原生事件数据时才分发原生事件
@@ -825,17 +838,22 @@ class AdapterManager(ManagerBase):
                 handler_platform = handler_wrapper.get("platform")
                 if handler_platform is None or handler_platform == platform:
                     self._dispatch_handler_task(
-                        handler_wrapper["func"], platform_raw,
-                        event_type=raw_event_type, platform=platform,
+                        handler_wrapper["func"],
+                        platform_raw,
+                        event_type=raw_event_type,
+                        platform=platform,
                     )
 
         # 钩子: 事件分发完成
-        await lifecycle.emit("adapter.event.dispatched", {
-            "platform": platform,
-            "event_type": event_type,
-            "raw_event_type": raw_event_type,
-            "onebot_handlers_count": len(handlers_to_call),
-        })
+        await lifecycle.emit(
+            "adapter.event.dispatched",
+            {
+                "platform": platform,
+                "event_type": event_type,
+                "raw_event_type": raw_event_type,
+                "onebot_handlers_count": len(handlers_to_call),
+            },
+        )
 
     def _dispatch_handler_task(
         self,
@@ -886,12 +904,10 @@ class AdapterManager(ManagerBase):
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
                 _pure = max(0.0, elapsed - _wait_total)
                 # 收集所有者（去重），归因到具体业务模块
-                _owners = sorted({
-                    w.get("owner") for w in _task_waits if w.get("owner")
-                })
-                _owner_tag = (
-                    f" owners=[{','.join(_owners)}]" if _owners else ""
+                _owners = sorted(
+                    {w.get("owner") for w in _task_waits if w.get("owner")}
                 )
+                _owner_tag = f" owners=[{','.join(_owners)}]" if _owners else ""
 
                 if _task_waits:
                     # 调用过 wait_reply：纯等待属于交互白名单
