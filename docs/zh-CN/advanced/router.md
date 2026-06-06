@@ -28,6 +28,8 @@ ErisPulse 提供了服务端抽象类型，使模块无需直接依赖 FastAPI�
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 连接封装，额外提供生命周期钩子 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 断开异常 |
 
+> `WebSocketConnection` 继承自 `WebSocketConnectionBase`，与客户端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 接口。客户端和服务端 WebSocket 可以使用相同的业务逻辑代码。
+>
 > 通过 `.raw` 属性可访问底层 FastAPI 原生对象。直接使用 FastAPI 类型的代码也完全兼容。
 
 ## 装饰器路由（推荐）
