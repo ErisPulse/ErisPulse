@@ -212,6 +212,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 物件，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
+#### 互動方法示例
+
+**confirm() - 確認對話：**
+
+```python
+@command("delete", help="刪除資料")
+async def delete_handler(event):
+    if await event.confirm("確定要刪除所有資料嗎？"):
+        sdk.storage.delete("all_data")
+        await event.reply("資料已刪除")
+    else:
+        await event.reply("已取消")
+```
+
+**choose() - 選擇選單：**
+
+```python
+@command("color", help="選擇顏色")
+async def color_handler(event):
+    choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+```
+
+**collect() - 表單收集：**
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"註冊成功！{data['name']}，{data['age']}歲")
+```
+
+**非 Text 方法的 reply：**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("看這張圖：").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> 完整的 Conversation 多輪對話用法請參考 [Conversation 多輪對話](../../advanced/conversation.md)。
+
 ### 指令資訊
 
 #### 指令基礎
@@ -228,7 +280,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 平台擴充方法
 
-介面卡會為各自平台註冊專有方法，以下為常見範例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
+介面卡會為各自平台註冊專有方法，以下為常見示例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
 
 - `get_platform_event_methods(platform)` - 查詢指定平台已註冊的擴充方法列表
 - 平台擴充方法僅在對應平台的 Event 實例上可用

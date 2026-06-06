@@ -100,6 +100,7 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+
 ```
 
 ## 模組安裝
@@ -148,8 +149,8 @@ epsdk run main.py
 
 ```
 [INFO] 正在初始化 ErisPulse...
-[INFO] 適配器已載入: Yunhu
-[INFO] 模組已載入: MyModule
+[INFO] 适配器已加载: Yunhu
+[INFO] 模块已加载: MyModule
 [INFO] ErisPulse 初始化完成
 ```
 
@@ -157,21 +158,33 @@ epsdk run main.py
 
 ### 安裝失敗
 
-1. 檢查 Python 版本是否 >= 3.10
-2. 嘗試使用 `uv` 取代 `pip`
-3. 檢查網路連線是否正常
+1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
+2. 尝试使用 `uv pip install ErisPulse` 替代 `pip install`
+3. 如果提示权限错误，尝试 `pip install --user ErisPulse` 或使用虚拟环境
+4. 如果在企业代理环境下遇到 SSL 证书错误，尝试 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 确保网络连接正常，pip 源可访问
 
-### 設定錯誤
+### 配置错误
 
-1. 檢查 `config.toml` 語法是否正確
-2. 確認所有必要的設定項都已填寫
-3. 查看日誌以獲取詳細錯誤資訊
+1. 检查 `config.toml` 语法是否正确（TOML 格式对缩进和引号敏感）
+2. 确认所有必需的配置项都已填写
+3. 查看终端日志获取详细错误信息
+4. 使用 `epsdk init` 重新生成配置文件
 
-### 模組安裝失敗
+### 模块安装失败
 
-1. 確認模組名稱是否正確
-2. 檢查網路連線
-3. 使用 `epsdk list-remote` 查看可用模組
+1. 确认模块名称拼写正确（大小写敏感）
+2. 检查网络连接
+3. 使用 `epsdk list-remote` 查看可用模块列表
+4. 确认模块与你当前 SDK 版本兼容
+
+### Windows PowerShell 执行策略
+
+如果 PowerShell 提示"无法加载文件...因为在此系统上禁止运行脚本"：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ## 下一個步驟
 

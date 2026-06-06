@@ -67,17 +67,34 @@ running = sdk.adapter.list_running()
 ### ミドルウェアの登録
 
 ```python
-# ミドルウェアを追加
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # イベントを処理
     sdk.logger.info(f"ミドルウェア処理: {event}")
     return event
 ```
 
-### ミドルウェアの実行順序
+### ミドルウェアの実行モデル
 
-ミドルウェアは登録順に実行され、イベントがハンドラにルーティングされる前に実行されます。
+- **実行順序**：ミドルウェアは登録順に実行されます（先に登録されたものが先に実行されます）
+- **データの伝達**：各ミドルウェアは前のミドルウェアから返された `event` データを受け取ります。もし、あるミドルウェアが `None` を返した場合、その返り値は無視され、元のデータがそのまま次のミドルウェアに渡されます（同時に `warning` レベルのログが表示されます）
+- **データの変更**：ミドルウェアはイベントデータを変更して返すことができます
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "スパム広告" in text:
+            return None   # None を返してもイベントの伝播を阻止しません。この返り値は無視されます
+    return event
+```
+
+> **注意**：ミドルウェアは現在、イベントの伝播を阻止する機能を持っていません。特定のイベントをフィルタリングする必要がある場合は、イベントハンドラ内で条件分岐を使って実現してください。
 
 ## Send メッセージ送信
 
@@ -109,11 +126,11 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```python
 # プラットフォームがサポートするすべての送信メソッドを一覧表示
 methods = sdk.adapter.list_sends("onebot11")
-# 返回: ["Text", "Image", "Voice", "Markdown", ...]
+# 戻り値: ["Text", "Image", "Voice", "Markdown", ...]
 
 # 特定のメソッドの詳細を取得
 info = sdk.adapter.send_info("onebot11", "Text")
-# 返回:
+# 戻り値:
 # {
 #     "name": "Text",
 #     "parameters": [
@@ -130,7 +147,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 # @ユーザー
 await adapter.Send.To("group", "456").At("789").Text("こんにちは")
 
-# @全体メンバー
+# @全メンバー
 await adapter.Send.To("group", "456").AtAll().Text("皆さんこんにちは")
 
 # メッセージへの返信
@@ -143,8 +160,8 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("@への返
 ## API 呼び出し
 
 ### call_api メソッド
-> 注意：各プラットフォームの API 呼び出し方法は異なる場合があります。各プラットフォーム固有のアダプタドキュメントを参照してください。
-> call_api メソッドを直接使用することは推奨されません。メッセージ送信には Send クラスを使用することを推奨します。
+
+> **注意**：`call_api` はプラットフォームのネイティブ API を直接呼び出す低レベルメソッドです。各プラットフォームのパラメータや戻り値は異なる場合があります。対応するプラットフォームのアダプタドキュメントを参照してください。**メッセージ送信には Send DSL を使用することを推奨します**。Send DSL がサポートしていない場面（プラットフォーム固有のデータの取得、プラットフォーム管理インターフェースの呼び出しなど）でのみ `call_api` を使用してください。
 
 ```python
 # プラットフォーム API を呼び出す
@@ -232,7 +249,7 @@ ErisPulse は OneBot12 標準の `self` フィールドに以下の拡張フィ�
 
 | フィールド | タイプ | 説明 |
 |------|------|------|
-| `self.platform` | string | プラットフォーム名（OB12 標準） |
+| `self.platform` | string | 平台名称（OB12 標準） |
 | `self.user_id` | string | Bot ユーザー ID（OB12 標準） |
 | `self.user_name` | string | Bot の表示名（ErisPulse 拡張） |
 | `self.avatar` | string | Bot のアバター URL（ErisPulse 拡張） |

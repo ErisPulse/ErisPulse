@@ -193,12 +193,13 @@ async def handle_event(self, event):
 ```python
 # SDK 内蔵クライアントの使用を推奨（タイムアウトおよびリトライ機能付き）
 from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
 async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.warning(f"リクエストがタイムアウトしました: {url}")
         raise
 ```
@@ -267,7 +268,7 @@ self.logger.critical("データベース接続に失敗しました。ボット�
 self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 非構造化ログを使用する
-self.logger.info(f"リクエストを処理しました。ユーザー {user_id} からのものです。所要時間 {duration} ミリ秒")
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id}からのものです。所要時間 {duration} ミリ秒")
 ```
 
 ## パフォーマンス最適化

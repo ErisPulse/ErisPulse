@@ -402,6 +402,8 @@ while conv.is_active:
     await conv.say(f"You said: {reply.get_text()}")
 ```
 
+> Complete parameter descriptions and more examples for interaction methods can be found in [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+
 ### Utility Methods
 
 ```python
