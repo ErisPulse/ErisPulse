@@ -158,21 +158,33 @@ epsdk run main.py
 
 ### 安装失败
 
-1. 检查 Python 版本是否 >= 3.10
-2. 尝试使用 `uv` 替代 `pip`
-3. 检查网络连接是否正常
+1. 检查 Python 版本是否 >= 3.10（推荐 3.10 - 3.13）
+2. 尝试使用 `uv pip install ErisPulse` 替代 `pip install`
+3. 如果提示权限错误，尝试 `pip install --user ErisPulse` 或使用虚拟环境
+4. 如果在企业代理环境下遇到 SSL 证书错误，尝试 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 确保网络连接正常，pip 源可访问
 
 ### 配置错误
 
-1. 检查 `config.toml` 语法是否正确
+1. 检查 `config.toml` 语法是否正确（TOML 格式对缩进和引号敏感）
 2. 确认所有必需的配置项都已填写
-3. 查看日志获取详细错误信息
+3. 查看终端日志获取详细错误信息
+4. 使用 `epsdk init` 重新生成配置文件
 
 ### 模块安装失败
 
-1. 确认模块名称是否正确
+1. 确认模块名称拼写正确（大小写敏感）
 2. 检查网络连接
-3. 使用 `epsdk list-remote` 查看可用模块
+3. 使用 `epsdk list-remote` 查看可用模块列表
+4. 确认模块与你当前 SDK 版本兼容
+
+### Windows PowerShell 执行策略
+
+如果 PowerShell 提示"无法加载文件...因为在此系统上禁止运行脚本"：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ## 下一步
 

@@ -284,7 +284,8 @@ from ErisPulse import sdk
 
 # 检查某个 Bot 是否在线
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    await adapter.Send.To("user", "123456").Text("Bot 在线")
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot 在线")
 
 # 列出当前所有在线 Bot
 bots = sdk.adapter.list_bots()
