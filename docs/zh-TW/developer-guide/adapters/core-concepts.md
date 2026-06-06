@@ -259,16 +259,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### 基本結構
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """介接器設定（宣告後框架自動管理）"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 初始化介接器
-        pass
+    ConfigClass = MyConfig  # 宣告設定類
+    
+    # 無需覆寫 __init__，框架自動處理：
+    # - self.sdk, self.logger
+    # - self.config（類型安全的設定實例）
+    # - self.Send, self.Request
     
     async def start(self):
         """啟動介接器（必須實作）"""
+        cfg = self.config  # 自動載入的類型安全設定
         pass
     
     async def shutdown(self):
@@ -280,24 +298,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### 初始化過程
+### 設定管理
+
+框架提供了宣告式設定管理，透過 dataclass 定義設定結構，框架自動處理載入、校驗和範本生成。
+
+#### 單帳戶設定
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "代理位址",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # 類型安全，自動載入
+        if not cfg.token:
+            raise ValueError("未設定 Token")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### 多帳戶設定
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "機器人ID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "機器人Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata 約定
+
+欄位 metadata 同時服務於 TOML 註釋生成和 WebUI 表單渲染：
+
+```python
+metadata = {
+    "description": str,       # 欄位描述（TOML註釋 + WebUI label）
+    "required": bool,         # 是否必填（校驗 + WebUI 必填標記）
+    "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
+    "webui": {
+        "widget": str,        # 控件類型: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # 分組: "basic" | "advanced" | "connection" 等
+        "order": int,         # 排序權重（越小越靠前）
+        "options": list,      # select 控件的可選項 [{label, value}]
+        "placeholder": str,   # 輸入框佔位符
+    }
+}
+```
+
+#### 帳戶解析
+
+多帳戶介接器可使用 `_resolve_account()` 自動解析目標帳戶：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: 帳戶名, account: 設定實例
+```
+
+解析策略：帳戶名匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用帳戶。
+
+#### 設定熱更新
+
+子類可覆寫 `on_config_update()` 回應設定變更：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 取得 SDK 引用
-        self.sdk = sdk
-        
-        # 取得核心模組
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # 載入設定
-        self.config = self._get_config()
-        
-        # 設定轉換器
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token 已更新，將重新連接")
+```
+
+### 初始化過程
+
+框架在 `BaseAdapter.__init__(self, sdk=None)` 中自動完成以下工作：
+
+1. **SDK 引用**：設定 `self.sdk`、`self.logger`
+2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
+3. **設定載入**：如果宣告了 `ConfigClass`，自動載入到 `self.config`
+4. **帳戶載入**：如果宣告了 `AccountConfigClass`，自動載入到 `self.accounts`
+
+大多數介接器無需覆寫 `__init__`。如需自訂初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 傳入 sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -429,7 +552,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 构建標準事件
+        # 建構標準事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -511,6 +634,8 @@ class MyAdapter(BaseAdapter):
 
 ## API 回應標準
 
+框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應，無需手動建構回應字典。
+
 ### 成功回應
 
 ```python
@@ -518,50 +643,68 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### 失敗回應
+### 手動建構回應（舊版方式仍然相容）
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # 錯誤碼
-        "data": None,
-        "message_id": "",
-        "message": "缺少必要參數",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## 多帳戶支援
 
-### 帳戶設定
+### 宣告式設定（推薦）
+
+使用 `AccountConfigClass` 宣告設定類後，框架自動管理多帳戶載入、校驗和範本生成：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"啟動帳戶 {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # 使用 account.token, account.bot_id 等欄位
+```
+
+### 帳戶設定檔
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
@@ -612,6 +755,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # 推薦使用 SDK 內建客戶端
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -619,16 +763,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"網路錯誤: {e}")
-        return self._error_response("網路請求失敗", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"請求超時: {endpoint}")
         return self._error_response("請求超時", 32000)
+    except ClientError as e:
+        self.logger.error(f"網路錯誤: {e}")
+        return self._error_response("網路請求失敗", 33000)
     except Exception as e:
         self.logger.error(f"未知錯誤: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊介接器程式碼不受影響，仍然可以擷取 `aiohttp.ClientError`。兩種方式可以共存。推薦新程式碼使用 `sdk.client` + ErisPulse 異常體系。
 
 ## Bot 狀態管理
 
@@ -636,13 +782,13 @@ AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bo
 
 ### 自動發現機制
 
-當介接器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 字段：
+當介接器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 欄位：
 
 - **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
 - **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
 
 ```python
-# 所有包含 self 字段的事件都會觸發自動發現
+# 所有包含 self 欄位的事件都會觸發自動發現
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -662,47 +808,46 @@ await self.adapter.emit({
 
 ### 介接器發送 Meta 事件
 
+使用 `emit_meta()` 一行即可發送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的機器人",
-            }
-        })
+        # 一行發送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的機器人")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
 ```
 
-### `self` 字段擴展資訊
+也支援手動建構（舊版方式仍然相容）：
 
-`self` 字段除必需的 `platform` 和 `user_id` 外，還支援以下可選字段：
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
+```
 
-| 字段 | 說明 |
+### `self` 欄位擴展資訊
+
+`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下可選欄位：
+
+| 欄位 | 說明 |
 |---|---|
 | `user_name` | Bot 用戶名 |
 | `nickname` | Bot 昵稱 |
 | `avatar` | Bot 頭像 URL |
-| `account_id` | 多帳戶標識 |
+| `account_id` | 多帳戶識別 |
 
 ### Bot 狀態查詢
 
 ```python
 from ErisPulse import sdk
 
-# 取得單個 Bot 信息
+# 取得單個 Bot 資訊
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 

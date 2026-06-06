@@ -263,16 +263,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### Основная структура
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """Конфигурация адаптера (декларативная, управляется фреймворком автоматически)"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Токен бота",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Инициализация адаптера
-        pass
+    ConfigClass = MyConfig  # Указание класса конфигурации
+    
+    # Не требуется переопределять __init__, фреймворк автоматически обрабатывает:
+    # - self.sdk, self.logger
+    # - self.config (тибобезопасный экземпляр конфигурации)
+    # - self.Send, self.Request
     
     async def start(self):
         """Запуск адаптера (необходимо реализовать)"""
+        cfg = self.config  # Автоматически загруженная типобезопасная конфигурация
         pass
     
     async def shutdown(self):
@@ -284,24 +302,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Процесс инициализации
+### Управление конфигурацией
+
+Фреймворк предоставляет декларативное управление конфигурацией: конфигурация определяется через dataclass, а фреймворк автоматически обрабатывает загрузку, валидацию и генерацию шаблонов.
+
+#### Конфигурация одного аккаунта
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Токен бота",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "Адрес прокси",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # Типобезопасно, загружается автоматически
+        if not cfg.token:
+            raise ValueError("Токен не настроен")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### Конфигурация нескольких аккаунтов
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "Идентификатор бота",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "Токен бота",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### Соглашения о metadata
+
+Metadata-поля используются одновременно для генерации комментариев TOML и рендеринга форм WebUI:
+
+```python
+metadata = {
+    "description": str,       # Описание поля (комментарий TOML + label WebUI)
+    "required": bool,         # Обязательное поле (валидация + пометка WebUI)
+    "secret": bool,           # Чувствительное поле (показывается как *** в WebUI, маскируется в логах)
+    "webui": {
+        "widget": str,        # Тип элемента управления: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # Группа: "basic" | "advanced" | "connection" и т.д.
+        "order": int,         # Вес сортировки (чем меньше, тем раньше)
+        "options": list,      # Варианты для select: [{label, value}]
+        "placeholder": str,   # Заполнитель для ввода
+    }
+}
+```
+
+#### Разрешение аккаунта
+
+Адаптеры с несколькими аккаунтами могут использовать `_resolve_account()` для автоматического разрешения целевого аккаунта:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: имя аккаунта, account: экземпляр конфигурации
+```
+
+Стратегия разрешения: точное совпадение имени аккаунта → совпадение поля `bot_id` → совпадение других строковых полей → первый включенный аккаунт.
+
+#### Горячее обновление конфигурации
+
+Подклассы могут переопределить `on_config_update()` для отклика на изменения конфигурации:
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Получение ссылки на SDK
-        self.sdk = sdk
-        
-        # Получение основных модулей
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # Загрузка конфигурации
-        self.config = self._get_config()
-        
-        # Настройка преобразователя
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Токен обновлен, будет выполнено переподключение")
+```
+
+### Процесс инициализации
+
+Фреймворк автоматически выполняет следующие действия в `BaseAdapter.__init__(self, sdk=None)`:
+
+1. **Ссылка на SDK**: Установка `self.sdk`, `self.logger`
+2. **Фабрика Send/Request**: Создание `self.Send` и `self.Request`
+3. **Загрузка конфигурации**: Если указан `ConfigClass`, автоматически загружается в `self.config`
+4. **Загрузка аккаунтов**: Если указан `AccountConfigClass`, автоматически загружается в `self.accounts`
+
+Большинству адаптеров не требуется переопределять `__init__`. Для кастомной инициализации:
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # Передача sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -515,6 +638,8 @@ class MyAdapter(BaseAdapter):
 
 ## Стандарт ответа API
 
+Фреймворк предоставляет методы `make_response()` и `make_error()` для построения стандартизированных ответов, без необходимости ручного создания словарей ответов.
+
 ### Успешный ответ
 
 ```python
@@ -522,64 +647,82 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### Неудачный ответ
+### Ручное построение ответа (старый способ по-прежнему совместим)
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # Код ошибки
-        "data": None,
-        "message_id": "",
-        "message": "Не хватает обязательных параметров",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## Поддержка нескольких учетных записей
 
-### Конфигурация учетных записей
+### Декларативная конфигурация (рекомендуется)
+
+После объявления класса конфигурации с помощью `AccountConfigClass` фреймворк автоматически управляет загрузкой, валидацией и генерацией шаблонов для нескольких аккаунтов:
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "ID бота", "required": True})
+    token: str = field(default="", metadata={"description": "Токен", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"Запуск аккаунта {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # Использование account.token, account.bot_id и других полей
+```
+
+### Файл конфигурации аккаунта
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
 
-### Отправка от указанной учетной записи
+### Отправка от указанного аккаунта
 
 ```python
-# Использование метода Using для указания учетной записи
+# Использование метода Using для указания аккаунта
 my_adapter = adapter.get("myplatform")
 
-# Через имя учетной записи
+# Через имя аккаунта
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Через ID учетной записи
+# Через ID аккаунта
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
@@ -616,6 +759,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # Рекомендуется использовать встроенный клиент SDK
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -623,16 +767,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"Ошибка сети: {e}")
-        return self._error_response("Ошибка сетевого запроса", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"Тайм-аут запроса: {endpoint}")
         return self._error_response("Тайм-аут запроса", 32000)
+    except ClientError as e:
+        self.logger.error(f"Ошибка сети: {e}")
+        return self._error_response("Сбой сетевого запроса", 33000)
     except Exception as e:
         self.logger.error(f"Неизвестная ошибка: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **Обратная совместимость**: Старый код адаптеров, использующий напрямую `aiohttp.ClientSession`, не затронут и по-прежнему может перехватывать `aiohttp.ClientError`. Оба способа могут сосуществовать. Для нового кода рекомендуется использовать `sdk.client` + иерархию исключений ErisPulse.
 
 ## Управление состоянием бота
 
@@ -666,28 +812,27 @@ await self.adapter.emit({
 
 ### Отправка meta-событий адаптером
 
+Использование `emit_meta()` позволяет отправить meta-событие одной строкой:
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "Мой робот",
-            }
-        })
+        # Отправка события connect одной строкой
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой робот")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+Поддерживается также ручное построение (старый способ по-прежнему совместим):
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### Расширенная информация поля `self`
@@ -699,4 +844,51 @@ class MyAdapter(BaseAdapter):
 | `user_name` | Имя пользователя бота |
 | `nickname` | Никнейм бота |
 | `avatar` | URL аватара бота |
-| `account
+| `account_id` | Идентификатор для нескольких аккаунтов |
+
+### Запрос состояния бота
+
+```python
+from ErisPulse import sdk
+
+# Получение информации о конкретном боте
+info = sdk.adapter.get_bot_info("myplatform", "bot123")
+# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
+
+# Перечисление всех ботов
+all_bots = sdk.adapter.list_bots()
+
+# Перечисление ботов для конкретной платформы
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Проверка, находится ли бот в сети
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Получение полного сводного состояния (подходит для отображения в WebUI)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
+
+### Слушивание жизненного цикла бота
+
+```python
+from ErisPulse import sdk
+
+@sdk.lifecycle.on("adapter.bot.online")
+async def on_bot_online(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Бот онлайн: {platform}/{bot_id}")
+
+@sdk.lifecycle.on("adapter.bot.offline")
+async def on_bot_offline(data):
+    platform = data.get("platform")
+    bot_id = data.get("bot_id")
+    sdk.logger.info(f"Бот оффлайн: {platform}/{bot_id}")
+```
+
+## Связанные документы
+
+- [Руководство по разработке адаптера](getting-started.md) - Создание первого адаптера
+- [Подробное описание SendDSL](send-dsl.md) - Изучение отправки сообщений
+- [Рекомендации по разработке адаптера](best-practices.md) - Создание качественных адаптеров

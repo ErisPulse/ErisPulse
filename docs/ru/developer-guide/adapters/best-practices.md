@@ -16,24 +16,15 @@
 
 ### 2. Отправка Meta-события
 
+Фреймворк предоставляет метод `emit_meta()`, с помощью которого можно отправить meta-событие одной строкой:
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Бот онлайн: отправить событие connect
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Бот онлайн: отправить событие connect одной строкой
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
         try:
             while True:
@@ -44,16 +35,8 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Бот оффлайн: отправить событие disconnect
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Бот оффлайн
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. Событие сердцебиения
@@ -64,15 +47,8 @@ class MyAdapter(BaseAdapter):
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Отправка meta heartbeat во фреймворк одной строкой
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
@@ -161,8 +137,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -199,15 +174,7 @@ class MyAdapter(BaseAdapter):
                 await self.connection.send_json({"type": "ping"})
 
                 # 2. Отправка события meta heartbeat во фреймворк (обновление времени активности бота)
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
@@ -336,29 +303,30 @@ class Send(BaseAdapter.Send):
 
 ### 1. Стандартизированный формат ответа
 
+Фреймворк предоставляет методы `make_response()` и `make_error()` для конструирования стандартных ответов:
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+Метод `make_response()` автоматически создает словарь ответа, содержащий ключ `{platform}_raw`. `make_error()` по умолчанию использует `retcode=34000` (Platform Error).
 
 ### 2. Спецификация кодов ошибок
 
@@ -384,54 +352,71 @@ async def call_api(self, endpoint: str, **params):
 
 ## Поддержка нескольких аккаунтов
 
-### 1. Проверка конфигурации аккаунта
+### 1. Декларативная конфигурация (Рекомендуется)
+
+После определения класса конфигурации `AccountConfigClass` фреймворк автоматически управляет загрузкой, валидацией и генерацией шаблонов для нескольких аккаунтов:
 
 ```python
-def _get_config(self):
-    """Проверка конфигурации"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # Создание аккаунта по умолчанию
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"Запуск аккаунта {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: имя аккаунта, account: экземпляр MyBotConfig
+```
+
+Конфигурационный файл автоматически генерируется как:
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. Механизм выбора аккаунта
 
+Во фреймворке встроен метод `_resolve_account()`, поддерживающий различные стратегии сопоставления:
+
 ```python
-async def _get_account_for_message(self, event):
-    """Выбор аккаунта для отправки на основе события"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # Поиск соответствующего аккаунта
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # Если не найден, используется первый включенный аккаунт
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# Поиск по имени аккаунта
+name, account = self._resolve_account("account1")
+
+# Поиск по полю bot_id (если поле bot_id указано в конфигурации)
+name, account = self._resolve_account("bot_123")
+
+# Получение первого включенного аккаунта (передача None)
+name, account = self._resolve_account(None)
 ```
 
 ## Обработка ошибок
 
 ### 1. Обработка исключений по категориям
 
+Используйте `make_error()` для конструирования стандартных ответов об ошибках. При запросах через `sdk.client` перехватывайте исключения ErisPulse:
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # Рекомендуется использовать встроенный клиент SDK для отправки запросов API
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -439,32 +424,30 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # Ошибка сети (встроенный механизм повторных попыток клиента обработает это)
-        self.logger.error(f"Сетевая ошибка: {e}")
-        return self._error_response("Не удалось выполнить сетевой запрос", 33000)
-    except asyncio.TimeoutError:
-        # Ошибка тайм-аута
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
         self.logger.error(f"Тайм-аут запроса: {endpoint}")
-        return self._error_response("Тайм-аут запроса", 32000)
+        return self.make_error(retcode=32000, message="Тайм-аут запроса")
+    except ClientError as e:
+        self.logger.error(f"Сетевая ошибка: {e}")
+        return self.make_error(retcode=33000, message="Ошибка сетевого запроса")
     except json.JSONDecodeError:
-        # Ошибка парсинга JSON
-        self.logger.error("Не удалось разобрать JSON")
-        return self._error_response("Неверный формат ответа", 10006)
+        self.logger.error("Ошибка парсинга JSON")
+        return self.make_error(retcode=10006, message="Неверный формат ответа")
     except Exception as e:
-        # Неизвестная ошибка
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        return self.make_error(message=str(e))
 ```
+
+> **Обратная совместимость**: старый код адаптеров, использующий `aiohttp` напрямую, не затронут, все еще может перехватывать `aiohttp.ClientError`. Преобразование исключений работает только при использовании `sdk.client` для отправки запросов.
 
 ### 2. Логирование
 
+Фреймворк автоматически создает дочерний logger для адаптера (`sdk.logger.get_child("MyAdapter")`), инициализировать его вручную не нужно:
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # После объявления класса конфигурации self.logger доступен автоматически
     
     async def start(self):
         self.logger.info("Запуск адаптера...")

@@ -1,6 +1,6 @@
 # Лучшие практики разработки модулей
 
-В этом документе приведены рекомендации по лучшим практикам разработки модулей ErisPulse.
+В этом документе представлены рекомендации по лучшим практикам разработки модулей ErisPulse.
 
 ## Дизайн модулей
 
@@ -9,7 +9,7 @@
 Каждый модуль должен отвечать только за одну основную функцию:
 
 ```python
-# Хорошая конструкция: каждый модуль отвечает за одну функцию
+# Хорошая конструкция: каждый модуль отвечает только за одну функцию
 class WeatherModule(BaseModule):
     """Модуль погоды"""
     pass
@@ -198,7 +198,7 @@ async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.warning(f"Тайм-аут запроса: {url}")
         raise
 ```

@@ -73,50 +73,15 @@ HTML、JS、CSS の文字列を直接提供すると、Dashboard はコンテン
 
 ```python
 sdk.Dashboard.register_view(
-    id="Weather",
-    title="天气", title_en="Weather",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-    html_content='''
-        <h1 class="page-title">天气查询</h1>
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-header">当前天气</div>
-                <div class="card-body">
-                    <div id="weather-info">加载中...</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">操作</div>
-                <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
-                </div>
-            </div>
-        </div>
-    ''',
-    js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
-        async function refreshWeather() {
-            var el = document.getElementById('weather-info');
-            if (!el) return;
-            try {
-                var token = localStorage.getItem('__ep_tk__');
-                var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                var data = await resp.json();
-                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
-            } catch (e) {
-                el.textContent = '加载失败: ' + e.message;
-            }
-        }
-    ''',
-    loader="loadWeatherView",
+    id="HelloPage",
+    title="你好页面", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">这是一个示例页面</div></div>',
     group="group_tools",
 )
 ```
+
+> 完全な天気モジュールの例（API ルート、JS 交互など）は、下記の [完全なモジュールの例](#完全なモジュールの例) を参照してください。
 
 ### モード2：iframe 埋め込み
 
@@ -279,12 +244,11 @@ class Main(BaseModule):
             pass
 
     async def _api_current(self, request):
-        from fastapi.responses import JSONResponse
-        return JSONResponse({
+        return {
             "city": self.config.get("city", "北京"),
             "temp": 25,
             "humidity": 60,
-        })
+        }
 
     def _register_dashboard_view(self):
         try:
@@ -334,7 +298,7 @@ class Main(BaseModule):
                 group="group_tools",
             )
         except Exception as e:
-            self.logger.warning(f"登録 Dashboard View 失敗: {e}")
+            self.logger.warning(f"注册 Dashboard 视窗失败: {e}")
 ```
 
 ---

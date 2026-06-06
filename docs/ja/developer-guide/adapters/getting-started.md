@@ -10,13 +10,13 @@
 
 1. **正方向変換**：プラットフォーム イベントを受け取り、OneBot12 標準形式に変換（Converter）
 2. **逆方向変換**：OneBot12 メッセージ セグメントをプラットフォーム API コールに変換（`Raw_ob12`）
-3. プラットフォームとの接続管理（WebSocket/WebHook）
+3. 管理とプラットフォームの接続（WebSocket/WebHook）
 4. 統一された SendDSL メッセージ送信インターフェースを提供
 
 ### アダプターのアーキテクチャ
 
 ```
-正方向変換（受信）                        逆方向変換（送信）
+正方向変換（受信）                        反向変換（送信）
 ─────────────                        ─────────────
 プラットフォーム イベント                    モジュールが構築するメッセージ
     ↓                                    ↓
@@ -77,41 +77,49 @@ dependencies = [
 
 ### 3. アダプターのメインクラスの作成
 
+フレームワークは `ConfigClass` / `AccountConfigClass` の宣言的構成管理を提供しており、アダプターは単に構成クラスを宣言するだけで、自動的に構成の読み込み、検証、および構成テンプレートの生成が行われます。
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter 配置"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API アドレス",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "プラットフォーム トークン",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← 必須！Send / Request ファクトリインスタンスを作成
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter 初期化完了")
-    
+    ConfigClass = MyAdapterConfig  # 構成クラスを宣言し、フレームワークが自動管理
+
+    # __init__ をオーバーライドする必要はありません！フレームワークが自動処理：
+    # - self.sdk / self.logger が自動設定される
+    # - self.config が自動的に構成をロードされる
+    # - self.Send / self.Request が自動的に初期化される
+
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
+
+> ⚠️ **`__init__` について**：新しいバージョンでは `BaseAdapter.__init__(self, sdk=None)` は SDK リファレンス、ログ初期化、構成のロードを自動的に処理します。ほとんどのアダプターでは **`__init__` をオーバーライドする必要はありません**。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
 
 > ⚠️ **`super().__init__()` について**：`BaseAdapter.__init__()` は `Send` と `Request` のファクトリインスタンスの作成を担当します。これを忘れると、すべてのメッセージ送信とリクエスト操作で `AttributeError` が発生します。詳細は [__init__ の注意点](#init-注意事项) を参照してください。
 
@@ -147,7 +155,7 @@ class MyAdapter(BaseAdapter):
 
 #### メタイベントの主動送信
 
-アダプターはフレームワークが Bot のオンライン状態を追跡できるように、メタイベントを主動的に送信する必要があります：
+アダプターはフレームワークが Bot のオンライン状態を追跡できるように、メタイベントを主動的に送信する必要があります。`emit_meta()` を 1 行で実現できます：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -155,12 +163,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot オンライン
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -172,19 +175,14 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot オフライン
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > Bot の状態管理とメタイベントの詳細については、[アダプターのベストプラクティス - Bot 状態管理](best-practices.md#bot-状态管理与-meta-事件) を参照してください。
 
 ### 5. Send クラスの実装
 
-`At`/`AtAll`/`Reply` デコレータ（修飾子）はフレームワークの SendDSL ベースクラスに実装されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
+`At`/`AtAll`/`Reply` デコレータはフレームワークの SendDSL ベースクラスに実装されているため、アダプターは `Raw_ob12` と具体的な送信メソッドを実装するだけで済みます。
 
 フレームワークは2つの重要な補助メソッドを提供します：
 - `self._apply_modifiers(message)` — メッセージセグメントに `At`/`AtAll`/`Reply` デコレータを自動的にマージ
@@ -365,14 +363,14 @@ from .Core import MyAdapter
 
 ### 1. BaseAdapter レイヤー（`super().__init__()` の呼び出しが必須）
 
-`BaseAdapter.__init__()` は**`Send` と `Request` のファクトリインスタンスの作成**を担当します。アダプターに独自の `__init__` がある場合、必ず親クラスの初期化を呼び出す必要があります：
+`BaseAdapter.__init__(self, sdk=None)` は**`Send` と `Request` のファクトリインスタンスの作成**を担当します。アダプターに独自の `__init__` がある場合、必ず親クラスの初期化を呼び出す必要があります：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← 必須！さもないと Send / Request は初期化されません
-        self.sdk = sdk
-        # ... 他の初期化
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # ← 必須！さもないと Send / Request は初期化されません
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
 ```
 
 **呼び出しを忘れた場合の結果**：`adapter.Send.To(...)` と `adapter.Request(...)` の両方が `AttributeError` を返します。
@@ -418,7 +416,7 @@ class MyAdapter(BaseAdapter):
 
 | レイヤー | いつオーバーライドするか | 必須なこと |
 |------|------------|-----------|
-| **BaseAdapter** | アダプターの状態を初期化する必要がある場合 | `super().__init__()` （引数なし） |
+| **BaseAdapter** | アダプターの状態を初期化する必要がある場合 | `super().__init__(sdk)` （引数あり） |
 | **Send 内部クラス** | 送信関連の状態を初期化する必要がある場合 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部クラス** | リクエスト関連の状態を初期化する必要がある場合 | `super().__init__(adapter, request_id, account_id)` |
 | 3つのレイヤー | ほとんどの場合 | **メソッドだけをオーバーライドし、`__init__` には触れない** |

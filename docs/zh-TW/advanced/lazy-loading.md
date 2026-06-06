@@ -95,8 +95,7 @@ result = sdk.my_module.some_sync_method()
 
 ### 建議使用延遲載入的情境 (lazy_load=True)
 
-- 被動呼叫的工具類別
-- 被動類模組
+- 被動呼叫的工具類（如資料查詢模組、格式轉換器等，僅只在其他模組呼叫時才需要）
 
 ### 建議停用延遲載入的情境 (lazy_load=False)
 
@@ -105,19 +104,7 @@ result = sdk.my_module.some_sync_method()
 - 定時任務模組
 - 需要在應用程式啟動時就初始化的模組
 
-### 載入優先級
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # 立即載入
-            priority=100      # 高優先級，數值越大優先級越高
-        )
-```
+> `priority` 參數控制立即載入模組間的初始化順序，數值越大越先初始化。同優先級的模組按註冊順序載入。
 
 ## 注意事項
 

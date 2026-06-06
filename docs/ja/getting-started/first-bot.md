@@ -7,10 +7,10 @@
 CLI ツールを使用してプロジェクトを初期化します：
 
 ```bash
-# 対話形式での初期化
+# 交互式初始化
 epsdk init
 
-# またはクイック初期化
+# または快速初始化
 epsdk init -q -n my_first_bot
 ```
 
@@ -42,28 +42,28 @@ from ErisPulse.Core.Event import command
 
 @command("hello", help="发送问候消息")
 async def hello_handler(event):
-    """hello コマンドを処理します"""
+    """处理 hello 命令"""
     user_name = event.get_user_nickname() or "朋友"
-    await event.reply(f"こんにちは、{user_name}！私は ErisPulse ボットです。")
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 机器人。")
 
 @command("ping", help="测试机器人是否在线")
 async def ping_handler(event):
-    """ping コマンドを処理します"""
-    await event.reply("Pong！ボットは正常に動作しています。")
+    """处理 ping 命令"""
+    await event.reply("Pong！机器人运行正常。")
 
 async def main():
-    """メインのエントリーポイント関数"""
-    print("ErisPulse を初期化しています...")
-    # SDK を実行し、実行し続けます
+    """主入口函数"""
+    print("正在初始化 ErisPulse...")
+    # 运行 SDK 并且维持运行
     await sdk.run(keep_running=True)
 
-    # または
+    # 或者
     # await sdk.run(keep_running=False)
     # ...Do Something
-    # 想いのまま何でもできます
-    # `sdk.run(keep_running=False)` と等価です
+    # 可以做你想做的任何事
+    # 使用 await sdk.init() 等价于 `sdk.run(keep_running=False)`
 
-    print("ErisPulse 初期化完了！")
+    print("ErisPulse 初始化完成！")
 
 if __name__ == "__main__":
     import asyncio
@@ -73,10 +73,10 @@ if __name__ == "__main__":
 ## ステップ4：ボットを実行する
 
 ```bash
-# 通常実行
+# 普通运行
 epsdk run main.py
 
-# 開発モード（ホットリロードをサポート）
+# 开发模式（支持热重载）
 epsdk run main.py --reload
 ```
 
@@ -108,10 +108,13 @@ async def hello_handler(event):
 ```
 
 `event` パラメータは Event オブジェクトであり、以下を含みます：
-- メッセージ内容
-- 送信者情報
-- プラットフォーム情報
-- など...
+- メッセージ内容：`event.get_text()`
+- 送信者情報：`event.get_user_id()`、`event.get_user_nickname()`
+- プラットフォーム情報：`event.get_platform()`
+- グループ情報：`event.get_group_id()`
+- 原始データ：`event.get_raw()`
+
+> 完整な Event オブジェクトメソッドについては [Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) を参照してください。
 
 ### 返信を送信する
 
@@ -121,53 +124,22 @@ await event.reply("回复内容")
 
 `event.reply()` は送信者にメッセージを送るための便利なメソッドです。
 
-## 拡張機能の追加
+## 拡張機能：追加機能の追加
 
-### メッセージリスナーの追加
+ErisPulse は豊富なイベント処理とデータ処理機能を提供します：
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """すべてのメッセージを監聴します"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("こんにちは！")
-```
-
-### 通知リスナーの追加
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """フレンド追加イベントを監視します"""
-    user_id = event.get_user_id()
-    await event.reply(f"フレンドとして追加していただきありがとうございます！あなたのIDは {user_id} です")
-```
-
-### ストレージシステムを使用する
-
-```python
-# カウンターを取得
-count = sdk.storage.get("hello_count", 0)
-
-# カウンターを増やす
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"{count} 回目の hello コマンドの実行です。")
-```
+- **メッセージリスナー**：`@message.on_message()` を使用して各種メッセージを監視 → [イベント処理入門](event-handling.md)
+- **通知リスナー**：`@notice.on_friend_add()` などの使用でシステム通知を監視 → [イベント処理入門](event-handling.md)
+- **データストレージ**：`sdk.storage.get/set` を使用してデータを永続化 → [一般的なタスクの例](common-tasks.md)
 
 ## よくある質問
 
 ### コマンドに応答がありませんか？
 
-1. アダプタが正しく設定されているか確認します
-2. ログ出力を確認し、エラーがないかチェックします
-3. コマンドのプレフィックスが正しいか確認します（デフォルトは `/`）
+1. アダプタが正しく設定されているか確認します（`config/config.toml` 内でアダプタの `status` が `true` であることを確認してください）
+2. 端末のログ出力を確認し、エラーメッセージがないかチェックします（特に `ERROR` レベルのログ）
+3. コマンドのプレフィックスが正しいか確認します（デフォルトは `/`）、設定ファイルの `[ErisPulse.event.command]` セクションを確認できます
+4. コマンド名のスペルミスがないか確認し、大文字と小文字の区別設定に注意してください
 
 ### コマンドのプレフィックスを変更する方法？
 
@@ -181,7 +153,7 @@ case_sensitive = false
 
 ### マルチプラットフォームをサポートする方法？
 
-コードは、すべての読み込まれたプラットフォームアダプタを自動的に適合させます。ロジックが互換性を持つように確認するだけです：
+ErisPulse は OneBot12 標準を使用し、異なるプラットフォームのイベント形式を統一しました。`@command` と `@message` で登録されたハンドラーは、すべてのプラットフォームのイベントを受け取ります。`event.get_platform()` を使用してソースプラットフォームを区別できます：
 
 ```python
 @command("hello")
@@ -189,14 +161,17 @@ async def hello_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("こんにちは！Yunhuよりおかえりなさい")
+        await event.reply("你好！来自云湖")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
 ```
+
+> マルチプラットフォームアダプティングのテクニックについては、[一般的なタスクの例](common-tasks.md#多平台适配) を参照してください。
 
 ## 次のステップ
 
-- [基本概念](basic-concepts.md) - ErisPulse のコア概念を詳しく理解する
 - [基本概念](basic-concepts.md) - ErisPulse のコア概念を詳しく理解する
 - [イベント処理入門](event-handling.md) - 各種イベントの処理を学ぶ
 - [一般的なタスクの例](common-tasks.md) - より実用的な機能をマスターする

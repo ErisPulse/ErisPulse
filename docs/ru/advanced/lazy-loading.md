@@ -105,19 +105,7 @@ result = sdk.my_module.some_sync_method()
 - Модули периодических задач
 - Модули, которые необходимо инициализировать при запуске приложения
 
-### Приоритет загрузки
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # Немедленная загрузка
-            priority=100      # Высокий приоритет: чем выше число, тем выше приоритет
-        )
-```
+> `priority` параметр управляет порядком инициализации модулей с немедленной загрузкой. Чем больше значение, тем выше приоритет. Модули с одинаковым приоритетом загружаются в порядке регистрации.
 
 ## Важные замечания
 

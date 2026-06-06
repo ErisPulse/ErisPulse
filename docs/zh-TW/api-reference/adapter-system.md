@@ -65,20 +65,39 @@ running = sdk.adapter.list_running()
 
 ## 中介軟體
 
+中介軟體在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
+
 ### 註冊中介軟體
 
 ```python
-# 新增中介軟體
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # 處理事件
     sdk.logger.info(f"中介軟體處理: {event}")
     return event
 ```
 
-### 中介軟體執行順序
+### 中介軟體執行模型
 
-中介軟體依照註冊順序執行，在事件分發到處理器之前執行。
+- **執行順序**：中介軟體按註冊順序執行（先註冊先執行）
+- **資料傳遞**：每個中介軟體接收上一個中介軟體返回的 `event` 資料；如果某個中介軟體返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
+- **修改資料**：中介軟體可以修改事件資料並返回修改後的字典
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "垃圾廣告" in text:
+            return None   # 返回 None 不會阻止事件傳播，僅忽略此返回值
+    return event
+```
+
+> **注意**：中介軟體目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理器中透過條件判斷實現。
 
 ## Send 訊息發送
 
@@ -98,7 +117,7 @@ await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 ### 指定發送帳號
 
 ```python
-# 使用帳戶名稱
+# 使用帳戶名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 # 使用帳戶 ID
@@ -144,8 +163,8 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 ## API 呼叫
 
 ### call_api 方法
-> 注意，各個平台的 API 呼叫方式可能不同，請參考對於平台介面卡文件
-> 並不建議直接使用 call_api 方法，建議使用 Send 類別進行訊息發送
+
+> **注意**：`call_api` 是直接呼叫平台原生 API 的底層方法，各平台的參數和回傳值可能不同，請參考對應平台介面卡文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
 
 ```python
 # 呼叫平台 API
@@ -177,6 +196,7 @@ from ErisPulse.Core import BaseAdapter
 
 class MyAdapter(BaseAdapter):
     def __init__(self):
+        super().__init__()
         self.sdk = sdk
         # 初始化介面卡
         pass

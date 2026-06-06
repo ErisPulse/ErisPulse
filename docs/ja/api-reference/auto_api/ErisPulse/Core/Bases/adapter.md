@@ -368,6 +368,10 @@ ErisPulse 适配器基础模块
 > 3. 可以自定义Request类实现平台特定的请求操作逻辑
 > 4. 通过on装饰器注册事件处理器
 > 5. 支持OneBot12协议的事件处理
+> 6. 通过 ConfigClass / AccountConfigClass 声明配置类，框架自动管理配置
+> 7. 通过 self.config / self.accounts 访问类型安全的配置对象
+> 8. 通过 self.emit_meta() 发送 meta 事件
+> 9. 通过 self.make_response() / self.make_error() 构造标准化响应
 
 
 #### 嵌套类
@@ -486,6 +490,155 @@ ErisPulse 适配器基础模块
 关闭适配器的抽象方法
 
 **异常**: `NotImplementedError` - 必须由子类实现
+
+---
+
+
+##### `config()`
+
+类型安全的配置对象
+
+:return: AdapterConfig 实例
+**异常**: `AttributeError` - 未声明 ConfigClass 时抛出
+
+---
+
+
+##### `accounts()`
+
+类型安全的账户配置字典 {name: config_instance}
+
+:return: 账户配置字典
+**异常**: `AttributeError` - 未声明 AccountConfigClass 时抛出
+
+---
+
+
+##### `enabled_accounts()`
+
+仅返回 enabled=True 的账户
+
+:return: 启用的账户配置字典
+
+---
+
+
+##### `platform()`
+
+获取平台名称
+
+:return: 平台名称字符串
+
+---
+
+
+##### `_get_config_key()`
+
+配置键名（默认用类名，可被子类覆写）
+
+:return: 配置键名字符串
+
+---
+
+
+##### `_get_logger()`
+
+获取 logger，兼容 sdk 未注入的场景
+
+---
+
+
+##### `_load_config()`
+
+从 TOML 加载全局配置
+
+1. 读取 {ConfigKey} 键
+2. 如果不存在，用 dataclass 默认值生成模板并写入
+3. 用 dict_to_dataclass() 转为类型安全的实例
+
+:return: AdapterConfig 实例
+
+---
+
+
+##### `_load_accounts()`
+
+从 TOML 加载多账户配置
+
+1. 读取 {ConfigKey}.accounts 键
+2. 如果不存在，创建包含一个 default 账户的模板
+3. 对每个账户做 validate_config() 校验
+4. 跳过校验失败的账户并记录错误
+
+:return: 账户配置字典 {name: config_instance}
+
+---
+
+
+##### `_resolve_account(account_id: str | None = None)`
+
+解析目标账户
+
+- account_id 为 None → 返回第一个启用的账户
+- account_id 匹配账户名 → 返回该账户
+- account_id 匹配 bot_id 等字段 → 返回该账户
+- 未找到 → 抛出 ValueError
+
+匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
+
+:param account_id: 账户标识（账户名、bot_id 等）
+:return: (账户名, 账户配置实例) 元组
+**异常**: `ValueError` - 未找到可用账户时抛出
+
+---
+
+
+##### `async async emit_meta(detail_type: str, bot_id: str)`
+
+发送 meta 事件的便捷方法
+
+:param detail_type: "connect" | "disconnect" | "heartbeat"
+:param bot_id: Bot 用户 ID
+:param extra_info: 扩展字段（user_name, nickname, avatar 等）
+
+---
+
+
+##### `make_response()`
+
+构造标准化响应
+
+:param status: 状态码（"ok" | "failed"）
+:param retcode: 返回码
+:param data: 响应数据
+:param message_id: 消息 ID
+:param message: 响应消息
+:param raw: 原始平台响应
+:return: 标准响应字典
+
+---
+
+
+##### `make_error(retcode: int = 34000, message: str = '', raw = None)`
+
+构造错误响应
+
+:param retcode: 错误码
+:param message: 错误消息
+:param raw: 原始平台响应
+:return: 标准错误响应字典
+
+---
+
+
+##### `on_config_update(old_config, new_config)`
+
+配置变更回调（可选实现）
+
+子类可覆写此方法以响应配置热更新。
+
+:param old_config: 变更前的配置实例
+:param new_config: 变更后的配置实例
 
 ---
 

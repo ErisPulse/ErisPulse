@@ -28,6 +28,8 @@ ErisPulse 提供了伺服器端抽象類型，使模組無需直接依賴 FastAP
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連線封裝，額外提供生命週期掛鉤 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開例外 |
 
+> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與用戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。用戶端和伺服器端 WebSocket 可以使用相同的業務邏輯程式碼。
+>
 > 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。
 
 ## 裝飾器路由（推薦）
@@ -78,7 +80,7 @@ async def websocket_handler(ws):
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
-        print(f"使用者斷開: {reason}")
+        print(f"用戶斷開: {reason}")
 
     @ws.on_error
     async def on_error(ws, error=""):
@@ -302,37 +304,6 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## 認證機制
-
-推薦使用 `auth_handler` 控制連接訪問：
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# 裝飾器方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# 傳統註冊方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` 在連接建立後執行，返回 `False` 會自動關閉連接（狀態碼 1008）。
-
-> 僅在你需要完全控制連接流程（如自訂握手協定）時才設置 `auto_accept=False`。
-
 ## 系統路由
 
 路由管理器自動提供兩個系統路由：
@@ -374,7 +345,7 @@ async def on_server_stop(event):
 4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織
 5. **安全性考量**：為敏感操作實作認證機制和安全頭
 6. **合理限流**：對高頻介面設置速率限制
-7. **使用生命週期掛鉤**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 例外，避免手動 try/catch
+7. **使用生命週期掛鉤**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
 
 ## 相關文件
 

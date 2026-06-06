@@ -110,7 +110,7 @@ class TimerModule:
         # あなたのロジック...
     
     async def _daily_task(self):
-        """毎日午前0時に実行するタスク"""
+        """毎日午前0時に実行するタスク（注：UTC時間に基づいて計算されます。ローカル時間が必要な場合は調整してください）"""
         import time
         
         while True:
@@ -136,7 +136,7 @@ async def init_complete_handler(event_data):
     async def daily_reminder():
         """毎日のリマインダー"""
         await asyncio.sleep(86400)  # 24時間
-        self.sdk.logger.info("毎日のタスクを実行")
+        sdk.logger.info("毎日のタスクを実行")
     
     # バックグラウンドタスクを開始
     asyncio.create_task(daily_reminder())
@@ -282,6 +282,8 @@ async def groupinfo_handler(event):
 
 ### メッセージのカウント
 
+> **注意**：以下の例では `sdk.storage.get/set` を使用して簡単なカウントを行っています。高並行環境では、原子性を保証するために `sdk.storage.transaction()` を使用することをお勧めします。
+
 ```python
 @message.on_message()
 async def count_handler(event):
@@ -325,6 +327,8 @@ async def stats_handler(event):
 ## 検索機能
 
 ### シンプルな検索
+
+> **注意**：以下の例では、メッセージ履歴をメモリ内のリストに保存しています。**アプリケーションの再起動後はデータが失われます**。本番環境では、`sdk.storage` または SQLite テーブルを使用して永続化することをお勧めします。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -409,6 +413,8 @@ async def image_handler(event):
 
 ### 画像認識の例
 
+> **注意**：以下の例では、占いAPIのアドレスを使用しています。実際の使用時には、自分の画像認識サービスに置き換えてください。
+
 ```python
 from ErisPulse.Core import client
 
@@ -430,7 +436,7 @@ async def identify_handler(event):
     await event.reply("画像が見つかりません")
 
 async def _identify_image(url):
-    """画像認識APIを呼び出す（例） - SDKに内蔵されているクライアントを使用"""
+    """画像認識APIを呼び出す（例）- SDKに内蔵されているクライアントを使用"""
     resp = await client.post(
         "https://api.example.com/identify",
         json={"url": url}

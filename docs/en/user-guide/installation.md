@@ -4,7 +4,7 @@ This guide introduces how to install ErisPulse and configure your project.
 
 ## System Requirements
 
-- Python 3.10 or higher version
+- Python 3.10 or higher version (recommended 3.10 - 3.13)
 - pip or uv (recommended)
 - sufficient disk space (at least 100MB)
 
@@ -100,6 +100,7 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+
 ```
 
 ## Module Installation
@@ -147,31 +148,43 @@ epsdk run main.py
 If you see similar output, the installation is successful:
 
 ```
-[INFO] 正在初始化 ErisPulse...
-[INFO] 适配器已加载: Yunhu
-[INFO] 模块已加载: MyModule
-[INFO] ErisPulse 初始化完成
+[INFO] Initializing ErisPulse...
+[INFO] Adapter loaded: Yunhu
+[INFO] Module loaded: MyModule
+[INFO] ErisPulse initialization complete
 ```
 
 ## Common Issues
 
 ### Installation Failed
 
-1. Check if Python version is >= 3.10
-2. Try using `uv` instead of `pip`
-3. Check if network connection is normal
+1. Check if Python version is >= 3.10 (recommended 3.10 - 3.13)
+2. Try using `uv pip install ErisPulse` instead of `pip install`
+3. If you encounter permission errors, try `pip install --user ErisPulse` or use a virtual environment
+4. If you encounter SSL certificate errors in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure network connection is normal and pip sources are accessible
 
 ### Configuration Errors
 
-1. Check if `config.toml` syntax is correct
+1. Check if `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
 2. Confirm all required configuration items are filled in
-3. Check logs for detailed error messages
+3. Check terminal logs for detailed error information
+4. Use `epsdk init` to regenerate the configuration file
 
 ### Module Installation Failed
 
-1. Confirm if module name is correct
+1. Confirm if the module name spelling is correct (case sensitive)
 2. Check network connection
-3. Use `epsdk list-remote` to view available modules
+3. Use `epsdk list-remote` to view the list of available modules
+4. Confirm if the module is compatible with your current SDK version
+
+### Windows PowerShell Execution Policy
+
+If PowerShell prompts "Cannot load file... because running scripts is disabled on this system":
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ## Next Steps
 
