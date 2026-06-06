@@ -352,17 +352,17 @@ EVENT_TYPE_META = "meta"
 #            Core/Bases/adapter.py  -> Send.To() 私聊/群聊判断
 # ==============================================================================
 
-DETAIL_TYPE_PRIVATE = "private"               # 私聊消息
-DETAIL_TYPE_USER = "user"                     # 用户类型（用于 command.py 中与 "private" 同义检查）
-DETAIL_TYPE_GROUP = "group"                   # 群聊消息 / 群请求
-DETAIL_TYPE_FRIEND = "friend"                 # 好友请求
-DETAIL_TYPE_FRIEND_INCREASE = "friend_increase"      # 好友添加通知
-DETAIL_TYPE_FRIEND_DECREASE = "friend_decrease"      # 好友删除通知
+DETAIL_TYPE_PRIVATE = "private"  # 私聊消息
+DETAIL_TYPE_USER = "user"  # 用户类型（用于 command.py 中与 "private" 同义检查）
+DETAIL_TYPE_GROUP = "group"  # 群聊消息 / 群请求
+DETAIL_TYPE_FRIEND = "friend"  # 好友请求
+DETAIL_TYPE_FRIEND_INCREASE = "friend_increase"  # 好友添加通知
+DETAIL_TYPE_FRIEND_DECREASE = "friend_decrease"  # 好友删除通知
 DETAIL_TYPE_GROUP_MEMBER_INCREASE = "group_member_increase"  # 群成员增加通知
 DETAIL_TYPE_GROUP_MEMBER_DECREASE = "group_member_decrease"  # 群成员减少通知
-DETAIL_TYPE_CONNECT = "connect"               # 适配器连接上线（元事件）
-DETAIL_TYPE_DISCONNECT = "disconnect"         # 适配器断开连接（元事件）
-DETAIL_TYPE_HEARTBEAT = "heartbeat"           # 适配器心跳（元事件）
+DETAIL_TYPE_CONNECT = "connect"  # 适配器连接上线（元事件）
+DETAIL_TYPE_DISCONNECT = "disconnect"  # 适配器断开连接（元事件）
+DETAIL_TYPE_HEARTBEAT = "heartbeat"  # 适配器心跳（元事件）
 
 # ==============================================================================
 # OneBot12 协议常量
@@ -409,16 +409,50 @@ CONVERSATION_KEY_PREFIX = "conversation"
 # 修改影响: 用户用自然语言回复时的匹配结果。支持中英文。
 # ==============================================================================
 
-CONFIRM_YES_WORDS = frozenset({
-    "是", "yes", "y", "确认", "确定", "好", "好的",
-    "ok", "okay", "true", "对", "嗯", "行", "同意",
-    "没问题", "可以", "当然", "嗯嗯", "是的",
-})
-CONFIRM_NO_WORDS = frozenset({
-    "否", "no", "n", "取消", "不", "不要", "不行",
-    "cancel", "false", "错", "不对", "别", "拒绝",
-    "不可以", "算了", "不需要", "不是",
-})
+CONFIRM_YES_WORDS = frozenset(
+    {
+        "是",
+        "yes",
+        "y",
+        "确认",
+        "确定",
+        "好",
+        "好的",
+        "ok",
+        "okay",
+        "true",
+        "对",
+        "嗯",
+        "行",
+        "同意",
+        "没问题",
+        "可以",
+        "当然",
+        "嗯嗯",
+        "是的",
+    }
+)
+CONFIRM_NO_WORDS = frozenset(
+    {
+        "否",
+        "no",
+        "n",
+        "取消",
+        "不",
+        "不要",
+        "不行",
+        "cancel",
+        "false",
+        "错",
+        "不对",
+        "别",
+        "拒绝",
+        "不可以",
+        "算了",
+        "不需要",
+        "不是",
+    }
+)
 
 # ==============================================================================
 # 框架管理默认值
@@ -473,3 +507,18 @@ DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS = 1.0
 # HTTP 客户端默认 User-Agent。
 # 修改影响: 所有出站 HTTP 请求的默认 User-Agent 头。
 DEFAULT_HTTP_CLIENT_USER_AGENT = ""
+
+# ==============================================================================
+# WebSocket 客户端默认值
+#
+# 控制内置 WebSocket 客户端的心跳和连接行为。
+# 使用位置: Core/client.py -> HttpClient.ws_connect()
+# ==============================================================================
+
+# WebSocket 客户端默认心跳间隔（秒）。
+# 修改影响: 发送心跳 ping 的频率。None 表示不发送心跳。
+DEFAULT_WS_CLIENT_HEARTBEAT_SECS = None
+
+# WebSocket 客户端默认连接超时（秒）。
+# 修改影响: 建立 WS 连接的最大等待时间。
+DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS = 10.0
