@@ -43,7 +43,7 @@ Forward Conversion (Receive Direction)               Reverse Conversion (Send Di
 - **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, raw data preserved in `{platform}_raw`
 - **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, return standard response format
 
-## AdapterManager
+## AdapterManager 适配器管理器
 
 `AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
 
@@ -259,16 +259,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### Basic Structure
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """Adapter configuration (framework automatically manages after declaration)"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Initialize adapter
-        pass
+    ConfigClass = MyConfig  # Declare configuration class
+    
+    # No need to override __init__, framework handles automatically:
+    # - self.sdk, self.logger
+    # - self.config (type-safe configuration instance)
+    # - self.Send, self.Request
     
     async def start(self):
         """Start adapter (must implement)"""
+        cfg = self.config  # Auto-loaded type-safe configuration
         pass
     
     async def shutdown(self):
@@ -280,24 +298,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Initialization Process
+### Configuration Management
+
+The framework provides declarative configuration management, defining configuration structures via dataclass, with automatic handling of loading, validation, and template generation.
+
+#### Single Account Configuration
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "Proxy address",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # Type-safe, auto-loaded
+        if not cfg.token:
+            raise ValueError("Token not configured")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### Multi-Account Configuration
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "Bot ID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata Conventions
+
+Field metadata serves both TOML comment generation and WebUI form rendering:
+
+```python
+metadata = {
+    "description": str,       # Field description (TOML comment + WebUI label)
+    "required": bool,         # Whether required (validation + WebUI required flag)
+    "secret": bool,           # Whether sensitive (WebUI shows as ***, masked in logs)
+    "webui": {
+        "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # Group: "basic" | "advanced" | "connection" etc.
+        "order": int,         # Sort weight (lower is earlier)
+        "options": list,      # Select control options [{label, value}]
+        "placeholder": str,   # Input placeholder
+    }
+}
+```
+
+#### Account Resolution
+
+Multi-account adapters can use `_resolve_account()` to automatically resolve target accounts:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: account name, account: configuration instance
+```
+
+Resolution strategy: Account name match → `bot_id` field match → Other str field match → First enabled account.
+
+#### Hot Configuration Update
+
+Subclasses can override `on_config_update()` to respond to configuration changes:
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Get SDK reference
-        self.sdk = sdk
-        
-        # Get core modules
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # Load configuration
-        self.config = self._get_config()
-        
-        # Setup converter
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token updated, will reconnect")
+```
+
+### Initialization Process
+
+The framework automatically completes the following work in `BaseAdapter.__init__(self, sdk=None)`:
+
+1. **SDK Reference**: Sets `self.sdk`, `self.logger`
+2. **Send/Request Factories**: Creates `self.Send` and `self.Request`
+3. **Configuration Loading**: If `ConfigClass` is declared, automatically loads to `self.config`
+4. **Account Loading**: If `AccountConfigClass` is declared, automatically loads to `self.accounts`
+
+Most adapters don't need to override `__init__`. For custom initialization:
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # Pass sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -511,6 +634,8 @@ class MyAdapter(BaseAdapter):
 
 ## API Response Standard
 
+The framework provides `make_response()` and `make_error()` methods to construct standardized responses, eliminating the need to manually build response dictionaries.
+
 ### Success Response
 
 ```python
@@ -518,50 +643,68 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### Failure Response
+### Manual Response Construction (Old method still compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # Error code
-        "data": None,
-        "message_id": "",
-        "message": "Missing required parameters",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## Multi-Account Support
 
-### Account Configuration
+### Declarative Configuration (Recommended)
+
+After using `AccountConfigClass` to declare the configuration class, the framework automatically manages multi-account loading, validation, and template generation:
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"Starting account {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # Use account.token, account.bot_id, etc.
+```
+
+### Account Configuration File
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
@@ -612,6 +755,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # Recommended to use SDK built-in client
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -619,16 +763,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"Network error: {e}")
-        return self._error_response("Network request failed", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"Request timeout: {endpoint}")
         return self._error_response("Request timeout", 32000)
+    except ClientError as e:
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
     except Exception as e:
         self.logger.error(f"Unknown error: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **Backward Compatibility**: Old adapter code directly using `aiohttp.ClientSession` is unaffected and can still catch `aiohttp.ClientError`. Both ways can coexist. New code is recommended to use `sdk.client` + ErisPulse exception hierarchy.
 
 ## Bot Status Management
 
@@ -662,28 +808,27 @@ await self.adapter.emit({
 
 ### Adapter Sending Meta Events
 
+You can send meta events with a single line using `emit_meta()`:
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-            }
-        })
+        # Send connect event in one line
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="MyBot")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+Manual construction is also supported (old method still compatible):
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### Extended `self` Field Information

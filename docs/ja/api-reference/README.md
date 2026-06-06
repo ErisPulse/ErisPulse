@@ -4,131 +4,50 @@
 
 ## ドキュメント一覧
 
-- [コアモジュール API](core-modules.md) - ストレージ、設定、ログなどのコアモジュール API
-- [イベントシステム API](event-system.md) - Event モジュール API リファレンス
-- [アダプターシステム API](adapter-system.md) - Adapter マネージャー API リファレンス
-- [ErisPulse 自動生成 API](auto_api/README.md) - 自動生成 API リファレンス
+| ドキュメント | 説明 |
+|------|------|
+| [コアモジュール API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client の API クイックリファレンス |
+| [イベントシステム API](event-system.md) | Command、Message、Notice、Request、Meta イベントモジュールの API リファレンス |
+| [アダプターシステム API](adapter-system.md) | Adapter マネージャー、SendDSL、ミドルウェア、Bot ステータス管理の API リファレンス |
+| [自動生成 API](auto_api/README.md) | ソースコード docstring から自動生成された完全な API ドキュメント |
 
-## API の概要
+> 手動作成された API ドキュメントは主に使用例とクイックリファレンスに重点を置いています。自動生成された API ドキュメントには完全なクラス/メソッドの署名が含まれており、両者は互いに補完し合います。
+
+## モジュール概要
 
 ### コアモジュール
 
-ErisPulse SDK は以下のコアモジュールを提供します：
-
-| モジュール | パス | 説明 |
+| モジュール | アクセスパス | 説明 |
 |------|------|------|
-| `sdk.storage` | `sdk.storage` | ストレージシステム |
-| `sdk.config` | `sdk.config` | 設定管理 |
-| `sdk.logger` | `sdk.logger` | ログシステム |
-| `sdk.adapter` | `sdk.adapter` | アダプター管理 |
-| `sdk.module` | `sdk.module` | モジュール管理 |
-| `sdk.lifecycle` | `sdk.lifecycle` | ライフサイクル管理 |
-| `sdk.router` | `sdk.router` | ルーティング管理 |
+| `sdk.storage` | `sdk.storage` | SQLite ベースのキーバリューストレージ + SQL チェーンクエリ |
+| `sdk.config` | `sdk.config` | TOML 形式の設定管理 |
+| `sdk.logger` | `sdk.logger` | モジュールログシステム、サブロガーをサポート |
+| `sdk.adapter` | `sdk.adapter` | マルチプラットフォームアダプター管理 |
+| `sdk.module` | `sdk.module` | モジュール登録、ロード、アンロード管理 |
+| `sdk.lifecycle` | `sdk.lifecycle` | ライフサイクルイベント管理 |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket ルーティング管理 |
+| `sdk.client` | `sdk.client` | 統一 HTTP/WS クライアント |
 
 ### イベントシステム
 
-Event モジュールは以下のサブモジュールを提供します：
-
-| モジュール | パス | 説明 |
+| モジュール | インポートパス | 説明 |
 |------|------|------|
-| `command` | `ErisPulse.Core.Event.command` | コマンド処理 |
-| `message` | `ErisPulse.Core.Event.message` | メッセージイベント |
-| `notice` | `ErisPulse.Core.Event.notice` | 通知イベント |
-| `request` | `ErisPulse.Core.Event.request` | リクエストイベント |
-| `meta` | `ErisPulse.Core.Event.meta` | メタイベント |
+| `command` | `ErisPulse.Core.Event.command` | コマンド処理（プレフィックス解析、エイリアス） |
+| `message` | `ErisPulse.Core.Event.message` | メッセージイベント（プライベートチャット、グループチャット、@メッセージ） |
+| `notice` | `ErisPulse.Core.Event.notice` | 通知イベント（フレンド、グループメンバー変化） |
+| `request` | `ErisPulse.Core.Event.request` | リクエストイベント（フレンドリクエスト、グループ招待） |
+| `meta` | `ErisPulse.Core.Event.meta` | メタイベント（接続、切断、ハートビート） |
 
 ### 基底クラス
 
-ErisPulse は以下の基底クラスを提供します：
-
-| 基底クラス | パス | 説明 |
+| 基底クラス | インポートパス | 説明 |
 |------|------|------|
-| `BaseModule` | `ErisPulse.Core.Bases.BaseModule` | モジュール基底クラス |
-| `BaseAdapter` | `ErisPulse.Core.Bases.BaseAdapter` | アダプター基底クラス |
-
-## 使用例
-
-### コアモジュールへのアクセス
-
-```python
-from ErisPulse import sdk
-
-# ストレージシステム
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key")
-
-# 設定管理
-config = sdk.config.getConfig("MyModule")
-
-# ログシステム
-sdk.logger.info("ログ情報")
-
-# アダプター管理
-adapter = sdk.adapter.get("platform")
-await adapter.Send.To("user", "123").Text("Hello")
-
-# モジュール管理
-module = sdk.module.get("ModuleName")
-
-# ライフサイクル管理
-await sdk.lifecycle.submit_event("custom.event", msg="カスタムイベント")
-
-# ルーティング管理
-sdk.router.register_http_route("MyModule", "/api", handler, ["GET"])
-```
-
-### イベントシステムの使用
-
-```python
-from ErisPulse.Core.Event import command, message, notice, request, meta
-
-# コマンド処理
-@command("hello", help="挨拶コマンド")
-async def hello_handler(event):
-    await event.reply("こんにちは！")
-
-# メッセージ処理
-@message.on_group_message()
-async def group_handler(event):
-    sdk.logger.info(f"グループメッセージを受信: {event.get_text()}")
-
-# 通知処理
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("友だち追加ありがとうございます！")
-
-# リクエスト処理
-@request.on_friend_request()
-async def friend_request_handler(event):
-    pass
-
-# メタイベント処理
-@meta.on_connect()
-async def connect_handler(event):
-    sdk.logger.info("プラットフォーム接続成功")
-```
-
-### 基底クラスの継承
-
-```python
-from ErisPulse.Core.Bases import BaseModule
-
-class MyModule(BaseModule):
-    def __init__(self):
-        super().__init__()
-        self.sdk = sdk
-    
-    async def on_load(self, event):
-        """モジュールのロード"""
-        pass
-    
-    async def on_unload(self, event):
-        """モジュールのアンロード"""
-        pass
-```
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | モジュール基底クラス（on_load/on_unload） |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | アダプター基底クラス（start/shutdown/call_api） |
 
 ## 関連ドキュメント
 
 - [コアコンセプト](../getting-started/basic-concepts.md) - フレームワークのコアコンセプトを理解する
 - [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
 - [アダプター開発ガイド](../developer-guide/adapters/) - プラットフォームアダプターの開発
+- [高度なトピック](../advanced/) - ルーティング、HTTP クライアント、SQL ビルダーなどの詳細なドキュメント

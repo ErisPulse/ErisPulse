@@ -44,7 +44,7 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     """處理 hello 指令"""
     user_name = event.get_user_nickname() or "朋友"
-    await event.reply(f"你好，{user_name}！我是 ErisPulse 機器人。")
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 機人。")
 
 @command("ping", help="測試機器人是否在線")
 async def ping_handler(event):
@@ -108,10 +108,13 @@ async def hello_handler(event):
 ```
 
 `event` 參數是一個 Event 物件，包含：
-- 訊息內容
-- 發送者資訊
-- 平台資訊
-- 等等...
+- 訊息內容：`event.get_text()`
+- 發送者資訊：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台資訊：`event.get_platform()`
+- 群組資訊：`event.get_group_id()`
+- 原始資料：`event.get_raw()`
+
+> 完整的 Event 物件方法請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)。
 
 ### 傳送回覆
 
@@ -123,51 +126,20 @@ await event.reply("回覆內容")
 
 ## 擴充：新增更多功能
 
-### 新增訊息監聽
+ErisPulse 提供了豐富的事件處理和資料處理能力：
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """監聽所有訊息"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### 新增通知監聽
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """監聽好友新增事件"""
-    user_id = event.get_user_id()
-    await event.reply(f"歡迎新增我為好友！你的 ID 是 {user_id}")
-```
-
-### 使用儲存系統
-
-```python
-# 取得計數器
-count = sdk.storage.get("hello_count", 0)
-
-# 增加計數
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"這是第 {count} 次呼叫 hello 指令")
-```
+- **訊息監聽**：使用 `@message.on_message()` 監聽各類訊息 → [事件處理入門](event-handling.md)
+- **通知監聽**：使用 `@notice.on_friend_add()` 等監聽系統通知 → [事件處理入門](event-handling.md)
+- **資料儲存**：使用 `sdk.storage.get/set` 持久化資料 → [常見任務範例](common-tasks.md)
 
 ## 常見問題
 
 ### 指令沒有回應？
 
-1. 檢查適配器是否正確設定
-2. 查看日誌輸出，確認是否有錯誤
-3. 確認指令前綴是否正確（預設是 `/`）
+1. 檢查適配器是否正確設定，確認 `config/config.toml` 中適配器的 `status` 為 `true`
+2. 查看終端日誌輸出，確認是否有錯誤訊息（特別是 `ERROR` 級別日誌）
+3. 確認指令前綴是否正確（預設是 `/`），可在設定檔中查看 `[ErisPulse.event.command]` 部分
+4. 確認指令名稱拼寫正確，注意大小寫敏感性設定
 
 ### 如何修改指令前綴？
 
@@ -181,7 +153,7 @@ case_sensitive = false
 
 ### 如何支援多平台？
 
-程式碼會自動適配所有已載入的平台適配器。只需確保你的邏輯相容即可：
+ErisPulse 使用 OneBot12 標準統一了不同平台的事件格式，`@command` 和 `@message` 註冊的處理器會自動接收所有平台的事件。透過 `event.get_platform()` 可以區分來源平台：
 
 ```python
 @command("hello")
@@ -192,11 +164,14 @@ async def hello_handler(event):
         await event.reply("你好！來自雲湖")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
 ```
+
+> 更多多平台適配技巧請參考 [常見任務範例](common-tasks.md#多平台適配)。
 
 ## 下一步
 
-- [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能

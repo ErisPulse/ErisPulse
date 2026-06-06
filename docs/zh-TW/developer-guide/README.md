@@ -36,33 +36,12 @@
 
 根據您的需求選擇合適的開發類型：
 
-### 模組開發
+| 開發類型 | 適用場景 | 入門指南 |
+|---------|---------|---------|
+| **模組開發** | 擴充機器人功能、實作業務邏輯、提供指令與訊息處理 | [模組開發入門](modules/getting-started.md) |
+| **適配器開發** | 連接新的訊息平台、實作跨平台通訊、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |
 
-**適用場景：**
-- 擴充機器人功能
-- 實作特定業務邏輯
-- 提供指令與訊息處理
-
-**範例：**
-- 天氣查詢機器人
-- 音樂播放器
-- 資料收集工具
-
-**入門指南：** [模組開發入門](modules/getting-started.md)
-
-### 適配器開發
-
-**適用場景：**
-- 連接新的訊息平台
-- 實作跨平台通訊
-- 提供平台特定功能
-
-**範例：**
-- Discord 適配器
-- Slack 適配器
-- 自訂平台適配器
-
-**入門指南：** [適配器開發入門](adapters/getting-started.md)
+> 如果您想擴充機器人的功能（如新增指令、處理訊息），選擇**模組開發**。如果您需要讓機器人連接到一個新的平台，選擇**適配器開發**。
 
 ## 開發工具
 
@@ -70,12 +49,12 @@
 
 ErisPulse 提供了範例專案作為參考：
 
-- `examples/example-module/` - 模組範例
-- `examples/example-adapter/` - 適配器範例
+- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整專案結構
+- [適配器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整專案結構
 
 ### 開發模式
 
-使用熱重載模式進行開發：
+使用熱重載模式進行開發，程式碼修改後自動重新載入：
 
 ```bash
 epsdk run main.py --reload
@@ -83,7 +62,7 @@ epsdk run main.py --reload
 
 ### 除錯技巧
 
-啟用 DEBUG 層級日誌：
+在 `config/config.toml` 中啟用 DEBUG 級別日誌：
 
 ```toml
 [ErisPulse.logger]
@@ -101,21 +80,7 @@ logger.debug("除錯資訊")
 
 ## 發布您的模組
 
-完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括：
-
-- PyPI 發布步驟
-- ErisPulse 模組商店提交流程
-- 適配器的發布
-
-### 快速參考
-
-```bash
-# 建構並發布到 PyPI
-python -m build
-python -m twine upload dist/*
-```
-
-然後前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交到模組商店。
+完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括 PyPI 發布步驟、ErisPulse 模組商店提交流程等。
 
 ## 相關文件
 

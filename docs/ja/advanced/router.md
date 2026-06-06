@@ -28,6 +28,8 @@ ErisPulseはサーバー側の抽象型を提供しており、モジュール�
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket接続のカプセル化、ライフサイクルフックを追加で提供 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket切断例外 |
 
+> `WebSocketConnection` は `WebSocketConnectionBase` から継承されており、クライアントWebSocket（`ClientWebSocket`）と同じ `send/receive/iter/close` インターフェースを共有します。クライアントとサーバーのWebSocketは、同じビジネスロジックコードを使用できます。
+>
 > `.raw` 属性を使用して、基盤となるFastAPIネイティブオブジェクトにアクセスできます。FastAPIの型を直接使用するコードも完全に互換性があります。
 
 ## デコレータールーティング（推奨）
@@ -78,7 +80,7 @@ async def websocket_handler(ws):
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
     async def on_disconnect(ws, reason="unknown"):
-        print(f"切断しました: {reason}")
+        print(f"ユーザー切断: {reason}")
 
     @ws.on_error
     async def on_error(ws, error=""):
@@ -302,37 +304,6 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## 認証メカニズム
-
-接続アクセスの制御には `auth_handler` を使用することを推奨します：
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# デコレーター方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# 従来の登録方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` は接続確立後に実行され、`False` を返すと自動的に接続を閉じます（ステータスコード 1008）。
-
-> 接続フローを完全に制御する必要がある場合（カスタムハンドシェイクプロトコルなど）にのみ、`auto_accept=False` を設定してください。
-
 ## システムルート
 
 ルーティングマネージャーは2つのシステムルートを自動的に提供します：
@@ -345,7 +316,7 @@ GET /health
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### ルートリスト
+### 路由リスト
 
 ```python
 GET /routes
