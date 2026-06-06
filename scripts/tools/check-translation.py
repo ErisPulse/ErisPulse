@@ -257,9 +257,51 @@ class TranslationChecker:
                         tc = tgt_rm.read_text(encoding="utf-8")
                         sl, tl = len(sc), len(tc)
                         if sl > 200 and tl < sl * self.WARN_RATIO:
-                            severity = (
-                                "error" if tl < sl * self.MIN_RATIO else "warning"
+                            severity = "error" if tl < sl * self.MIN_RATIO else "warning"
+                            rm_issues.append(
+                                {
+                                    "severity": severity,
+                                    "type": "truncated",
+                                    "message": f"README截断 ({tl}/{sl}, {tl / sl:.0%})",
+                                }
                             )
+                            self.summary["errors" if severity == "error" else "warnings"] += 1
+                        tgt_fences = len(re.findall(r"^```", tc, re.MULTILINE))
+                        if tgt_fences % 2 != 0:
+                            rm_issues.append(
+                                {
+                                    "severity": "error",
+                                    "type": "unclosed_code",
+                                    "message": f"README代码块未关闭 ({tgt_fences}个```)",
+                                }
+                            )
+                            self.summary["errors"] += 1
+                        for gi in detect_garbled(tc, lang):
+                            rm_issues.append(
+                                {"severity": "error", "type": "garbled", "message": gi}
+                            )
+                            self.summary["errors"] += 1
+                    except Exception:
+                        pass
+                if rm_issues:
+                    lang_results[f"README.{lang}.md"] = rm_issues
+                    for issue in rm_issues:
+                        tag = "[ERROR]" if issue["severity"] == "error" else "[WARN]"
+                        Logger.log(
+                            f"  {tag} [{issue['type']}] README.{lang}.md: {issue['message']}"
+                        )
+                    if fix:
+                        for issue in rm_issues:
+                            if issue["severity"] == "error":
+                                cache_candidates = [
+                                    self.cache_dir / f"README.{lang}.md.cache",
+                                    self.cache_dir / "README.md.cache" if lang == "en" else None,
+                                ]
+                                for cand in cache_candidates:
+                                    if cand and cand.exists():
+                                        cand.unlink()
+                                        fixed += 1
+                                        Logger.log(f"    -> 已删除缓存")
                             rm_issues.append(
                                 {
                                     "severity": severity,
