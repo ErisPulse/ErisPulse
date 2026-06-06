@@ -28,6 +28,8 @@ ErisPulse предоставляет абстрактные типы для се
 | `WebSocketConnection` | `fastapi.WebSocket` | Обертка WebSocket-соединения, дополнительно предоставляет хуки жизненного цикла |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | Исключение при отключении WebSocket |
 
+> `WebSocketConnection` наследуется от `WebSocketConnectionBase` и совместно использует те же интерфейсы send/receive/iter/close с клиентским WebSocket (`ClientWebSocket`). Клиентские и серверные WebSocket могут использовать один и тот же бизнес-логика код.
+>
 > Доступ к базовому нативному объекту FastAPI осуществляется через свойство `.raw`. Код, использующий типы FastAPI напрямую, также полностью совместим.
 
 ## Декораторные маршруты (Рекомендуется)

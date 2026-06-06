@@ -9,9 +9,9 @@
 適配器是 ErisPulse 與各個訊息平台之間的橋樑，負責：
 
 1. **正向轉換**：接收平台事件並轉換為 OneBot12 標準格式（Converter）
-2. **反向轉換**：將 OneBot12 訊息段轉換為平台 API 呼叫（`Raw_ob12`）
+2. **反向轉換**：將 OneBot12 消息段轉換為平台 API 調用（`Raw_ob12`）
 3. 管理與平台的連線（WebSocket/WebHook）
-4. 提供統一的 SendDSL 訊息發送介面
+4. 提供統一的 SendDSL 消息發送介面
 
 ### 適配器架構
 
@@ -22,7 +22,7 @@
     ↓                                    ↓
 Converter.convert()               Send.Raw_ob12()
     ↓                                    ↓
-OneBot12 標準事件                   平台原生 API 呼叫
+OneBot12 標準事件                   平台原生 API 調用
     ↓                                    ↓
 事件系統                             標準回應格式
     ↓
@@ -75,45 +75,53 @@ dependencies = [
 "MyAdapter" = "MyAdapter:MyAdapter"
 ```
 
-### 3. 建立適配器主類別
+### 3. 建立適配器主類
+
+框架提供了 `ConfigClass` / `AccountConfigClass` 聲明式配置管理，適配器只需聲明配置類即可自動加載、校驗和生成配置模板。
 
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter 配置"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API 地址",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "平台 Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← 必須！建立 Send / Request 工廠實例
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter 初始化完成")
+    ConfigClass = MyAdapterConfig  # 聲明配置類，框架自動管理
+    
+    # 不需要覆寫 __init__！框架自動處理：
+    # - self.sdk / self.logger 自動設定
+    # - self.config 自動加載配置
+    # - self.Send / self.Request 自動初始化
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
 
-> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [__init__ 注意事項](#init-注意事項)。
+> ⚠️ **關於 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 會自動處理 SDK 引用、日誌初始化和配置加載。大多數適配器**不再需要覆寫 `__init__`**。詳見 [`__init__ 注意事項`](#init-注意事項)。
+
+> ⚠️ **關於 `super().__init__()`**：`BaseAdapter.__init__()` 負責建立 `Send` 和 `Request` 工廠實例。如果忘記呼叫，所有訊息發送和請求操作都會報 `AttributeError`。詳見 [`__init__ 注意事項`](#init-注意事項)。
 
 ### 4. 實作必要方法
 
@@ -147,7 +155,7 @@ class MyAdapter(BaseAdapter):
 
 #### 主動發送 Meta 事件
 
-適配器應主動發送 meta 事件，讓框架追蹤 Bot 的線上狀態：
+適配器應主動發送 meta 事件，讓框架追蹤 Bot 的線上狀態。使用 `emit_meta()` 一行即可完成：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -155,12 +163,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot 上線
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -172,17 +175,12 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot 下線
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
-> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [適配器最佳實踐 - Bot 狀態管理](best-practices.md#bot-狀態管理與-meta-事件)。
+> 詳細的 Bot 狀態管理和 Meta 事件說明請參閱 [`適配器最佳實踐 - Bot 狀態管理`](best-practices.md#bot-狀態管理與-meta-事件)。
 
-### 5. 實作 Send 類別
+### 5. 實作 Send 類
 
 `At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建實作，適配器只需實作 `Raw_ob12` 和具體的發送方法即可。
 
@@ -287,9 +285,9 @@ class MyPlatformConverter:
         return "private"  # 簡化示例
 ```
 
-### 7. 實作 Request 類別（請求操作）
+### 7. 實作 Request 類（請求操作）
 
-如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類別：
+如果你的平台支援好友請求、群邀請等需要 Bot 做出決策的請求，可以實作 `Request` 內部類：
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -350,7 +348,7 @@ async def handle_friend_request(event):
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> 如果平台不支援請求操作，可以不實作 `Request` 內部類別。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [請求操作規範](../../standards/request-action-spec.md)。
+> 如果平台不支援請求操作，可以不實作 `Request` 內部類。基類預設返回 `retcode=10002`（不支援的操作）。詳見 [`請求操作規範`](../../standards/request-action-spec.md)。
 
 ### 8. 建立套件入口
 
@@ -363,21 +361,38 @@ from .Core import MyAdapter
 
 適配器開發中有三個層面可能涉及 `__init__` 重寫。以下是每個層面的正確做法。
 
-### 1. BaseAdapter 層（必須呼叫 `super().__init__()`）
+### 1. BaseAdapter 層（大多數情況不需要重寫）
 
-`BaseAdapter.__init__()` 負責**建立 `Send` 和 `Request` 工廠實例**。如果適配器有自己的 `__init__`，必須呼叫父類別初始化：
+`BaseAdapter.__init__(self, sdk=None)` 負責建立 `Send` / `Request` 工廠實例，並自動完成以下工作：
+
+- 接受 `sdk` 參數並設定 `self.sdk`、`self.logger`
+- 如果聲明了 `ConfigClass`，自動加載全域配置到 `self.config`
+- 如果聲明了 `AccountConfigClass`，自動加載多帳戶配置到 `self.accounts`
+
+**大多數情況下不需要覆寫 `__init__`**，只需聲明 `ConfigClass` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← 必須！否則 Send / Request 不會被初始化
-        self.sdk = sdk
-        # ... 其他初始化
+    ConfigClass = MyAdapterConfig  # 聲明後框架自動管理配置
+    
+    async def start(self):
+        cfg = self.config  # 類型安全，自動加載
+        ...
 ```
 
-**忘記呼叫的後果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都會報 `AttributeError`。
+如果確實需要自定義初始化，呼叫 `super().__init__(sdk)` 即可：
 
-### 2. Send 內部類別（大多數情況不需要重寫）
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 傳入 sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
+
+### 2. Send 內部類（大多數情況不需要重寫）
 
 `SendDSL.__init__` 負責鏈式呼叫的狀態傳遞（目標類型、目標ID、帳號等）。**大多數情況下，你只需要重寫方法**（`Raw_ob12`、`Text` 等），不需要重寫 `__init__`。
 
@@ -401,7 +416,7 @@ adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123",
 
 如果 `__init__` 簽名不匹配或沒調 `super()`，鏈式呼叫就會中斷。
 
-### 3. Request 內部類別（大多數情況不需要重寫）
+### 3. Request 內部類（大多數情況不需要重寫）
 
 與 Send 同理。參數為 `adapter`, `request_id`, `account_id`：
 
@@ -416,4 +431,16 @@ class MyAdapter(BaseAdapter):
 
 ### 總結
 
-| 層面 | 什麼時候重寫 |
+| 層面 | 什麼時候重寫 | 必須做的事 |
+|------|------------|-----------|
+| **BaseAdapter** | 需要自定義初始化邏輯時 | `super().__init__(sdk)` （傳入 sdk 參數） |
+| **Send 內部類** | 需要初始化發送相關狀態時 | `super().__init__(adapter, target_type, target_id, account_id)` |
+| **Request 內部類** | 需要初始化請求相關狀態時 | `super().__init__(adapter, request_id, account_id)` |
+| 三個層面 | 大多數情況 | **聲明 ConfigClass 即可，不碰 `__init__`** |
+
+## 下一步
+
+- [`適配器核心概念`](core-concepts.md) - 了解適配器架構
+- [`SendDSL 詳解`](send-dsl.md) - 學習訊息發送
+- [`轉換器實現`](converter.md) - 了解事件轉換
+- [`適配器最佳實踐`](best-practices.md) - 開發高品質適配器

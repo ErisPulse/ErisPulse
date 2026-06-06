@@ -77,43 +77,51 @@ dependencies = [
 
 ### 3. Создание главного класса адаптера
 
+框架提供了 `ConfigClass` / `AccountConfigClass` декларативное управление конфигурацией, адаптеру нужно просто объявить класс конфигурации, и фреймворк автоматически загрузит, проверит и сгенерирует шаблон конфигурации.
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter 配置"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API 地址",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "平台 Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← Обязательно! Создание экземпляров фабрик Send / Request
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter инициализирован")
+    ConfigClass = MyAdapterConfig  # 声明配置类，框架自动管理
+    
+    # 不需要覆写 __init__！框架自动处理：
+    # - self.sdk / self.logger 自动设置
+    # - self.config 自动加载配置
+    # - self.Send / self.Request 自动初始化
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
 
-> ⚠️ **О `super().__init__()`**: `BaseAdapter.__init__()` отвечает за создание экземпляров `Send` и `Request`. Если забыть вызвать этот метод, все операции по отправке сообщений и запросы приведут к ошибке `AttributeError`. Подробнее см. [Рекомендации по __init__](#init-рекомендации).
+> ⚠️ **关于 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 会自动处理 SDK 引用、日志初始化 и конфигурации. Большинство адаптеров **не нужно переопределять `__init__`**. См. [Примечания по `__init__`](#init-примечания).
+
+> ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` отвечает за создание экземпляров `Send` и `Request`. Если забыть вызвать этот метод, все операции по отправке сообщений и запросы приведут к ошибке `AttributeError`. См. [Примечания по `__init__`](#init-примечания).
 
 ### 4. Реализация обязательных методов
 
@@ -147,7 +155,7 @@ class MyAdapter(BaseAdapter):
 
 #### Активная отправка Meta-событий
 
-Адаптер должен активно отправлять meta-события, чтобы фреймворк мог отслеживать онлайн-статус бота:
+Адаптер должен активно отправлять meta-события, чтобы фреймворк мог отслеживать онлайн-статус бота. Используя `emit_meta()` можно сделать это одной строкой:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -155,12 +163,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Бот онлайн
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -171,20 +174,15 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Бот офлайн
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            # Бот оффлайн
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > Более подробную информацию о управлении состоянием бота и Meta-событиях см. в [Рекомендациях по разработке адаптеров - Управление состоянием бота](best-practices.md#bot-управление-состоянием-и-meta-событиями).
 
 ### 5. Реализация класса Send
 
-Декораторы `At`/`AtAll`/`Reply` уже встроенно реализованы в базовом классе SendDSL фреймворка, адаптеру нужно реализовать только `Raw_ob12` и конкретные методы отправки.
+Декораторы `At`/`AtAll`/`Reply` уже встроены в базовый класс SendDSL фреймворка, адаптеру нужно реализовать только `Raw_ob12` и конкретные методы отправки.
 
 Фреймворк предоставляет два важных вспомогательных метода:
 - `self._apply_modifiers(message)` — автоматическое объединение декораторов At/AtAll/Reply в сообщение
@@ -350,7 +348,7 @@ async def handle_friend_request(event):
     await adapter.myplatform.Request("req_id").accept()
 ```
 
-> Если платформа не поддерживает операции запроса, класс `Request` можно не реализовывать. Базовый класс по умолчанию возвращает `retcode=10002` (неподдерживаемая операция). Подробнее см. [Спецификация операций запроса](../../standards/request-action-spec.md).
+> Если платформа не поддерживает операции запроса, класс `Request` можно не реализовывать. Базовый класс по умолчанию возвращает `retcode=10002` (неподдерживаемая операция). См. [Спецификация операций запроса](../../standards/request-action-spec.md).
 
 ### 8. Создание точки входа пакета
 
@@ -381,7 +379,7 @@ class MyAdapter(BaseAdapter):
 
 `SendDSL.__init__` отвечает за передачу состояния для цепного вызова (тип цели, ID цели, учетная запись и т.д.). **В большинстве случаев вам нужно переопределять только методы** (`Raw_ob12`, `Text` и т.д.), не нужно переопределять `__init__`.
 
-Если действительно необходимо (например, для инициализации специфического для платформы состояния), **необходимо передать все параметры**:
+Если действительно необходимо (например, для инициализации специфичного для платформы состояния), **необходимо передать все параметры**:
 
 ```python
 class MyAdapter(BaseAdapter):

@@ -102,100 +102,76 @@ Modules are the basic unit of functional extension and can:
 - Call adapters to send messages
 - Use services provided by core modules
 
+#### Module Discovery Mechanism
+
+ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module classes to `ModuleManager`, and then initializes them in topological order based on dependencies.
+
+#### Minimal Viable Module
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """Called when module loads"""
-        # Register event handler
-        @command("mycmd", help="My command")
-        async def my_command(event):
-            await event.reply("Command executed successfully")
-
         self.logger.info("Module loaded")
 
     async def on_unload(self, event):
-        """Called when module unloads"""
         self.logger.info("Module unloaded")
 ```
 
+#### Module Lifecycle
+
+- **Registration**: The SDK discovers module classes and registers them with the manager
+- **Loading**: Creates a module instance and calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
+- **Unloading**: Calls `on_unload(event)` to clean up resources
+
+#### Load Strategy
+
+Declare the module's loading behavior through `get_load_strategy()`:
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # Whether to enable lazy loading (default True)
+            priority=0        # Load priority, higher values initialize earlier
+        )
+```
+
+- **`lazy_load=True` (default)**: The module is initialized only when first accessed via `sdk.MyModule`, reducing startup time
+- **`lazy_load=False`**: The module is initialized immediately during SDK startup, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
+- **`priority`**: Modules with the same priority are loaded in registration order; higher values initialize earlier
+
+> For detailed information on the lazy loading mechanism, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
+
 ## Event Types
 
-### Message Event
+ErisPulse supports 5 types of events:
 
-Handles any message sent by a user (including private chats and group chats).
+| Event Type | Decorator | Description |
+|---------|--------|------|
+| Message Event | `@message.on_message()` | Any message sent by a user (private chat, group chat) |
+| Command Event | `@command("name")` | Messages starting with a command prefix (e.g., `/hello`) |
+| Notice Event | `@notice.on_friend_add()` etc. | System notifications (e.g., friend addition, group member changes) |
+| Request Event | `@request.on_friend_request()` etc. | User requests (e.g., friend requests, group invitations) |
+| Meta Event | `@meta.on_connect()` etc. | System-level events (e.g., connection, heartbeat) |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"Message received: {text}")
-```
-
-### Command Event
-
-Handles messages starting with a command prefix (e.g., `/hello`).
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="Send greeting")
-async def hello_handler(event):
-    await event.reply("Hello there!")
-```
-
-### Notice Event
-
-Handles system notifications (e.g., friend addition, group member changes).
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("Welcome to add me as a friend!")
-```
-
-### Request Event
-
-Handles user requests (e.g., friend requests, group invitations).
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("I have received your friend request")
-```
-
-### Meta Event
-
-Handles system-level events (e.g., connection, heartbeat).
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} connected successfully")
-```
+> For detailed usage and code examples of each event type, please refer to [Event Handling Intro](event-handling.md).
 
 ## Core Module Explanations
 
@@ -266,67 +242,35 @@ sdk.logger.mymodule.database.info("Database message")
 
 ### Router（路由）
 
-HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
-
-> Route handlers support two types of annotations: FastAPI native types (fastapi.Request / fastapi.WebSocket) and ErisPulse abstract types (HttpRequest / WebSocketConnection). It is recommended to use abstract types for better portability.
+HTTP and WebSocket route management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
 
 ```python
-from ErisPulse import sdk
-
-# Method 1: Use ErisPulse abstract types (Recommended)
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Echo: {data}")
-
-# Method 2: Use FastAPI native types (Compatible with existing code)
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-> **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
-> 
-> **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
-
-For more routing features, please refer to [Router Manager](../advanced/router.md).
+> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Client（HTTP 客户端）
 
-Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
+A unified HTTP/WS client, providing automatic retries, timeout control, request statistics, and lifecycle event integration. Modules and adapters should prioritize using the global client (`sdk.client`) rather than directly importing `aiohttp`.
 
 ```python
 from ErisPulse.Core import client
 
-# GET request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST request
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
-
-# Response attributes
-resp.status        # Status code (e.g., 200)
-resp.headers       # Response headers
-body = await resp.text()   # Text response body
-data = await resp.json()   # JSON parsing
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-> The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
->
-> You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
+> For the complete HTTP client API, please refer to [HTTP Client](../advanced/http-client.md).
 
 ## SendDSL Message Sending
 
@@ -377,23 +321,26 @@ async def test_handler(event):
 
 ## Lazy Loading System
 
-ErisPulse supports module lazy loading. Modules are initialized only when first accessed, improving startup speed.
+ErisPulse enables module lazy loading by default. Modules are initialized only when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0       # Load priority
+            priority=0        # Load priority, higher values initialize earlier
         )
 ```
 
-**Scenarios requiring immediate loading:**
-- Modules listening to lifecycle events
-- Scheduled task modules
-- Modules that need to be initialized at application startup
+**Scenarios requiring immediate loading (`lazy_load=False`):**
+- Modules listening to lifecycle events (e.g., `core.init.complete`)
+- Modules that execute scheduled tasks or run background services
+- Modules that need to complete initialization before other modules load
+
+> For detailed information on the lazy loading mechanism and best practices, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Next Steps
 

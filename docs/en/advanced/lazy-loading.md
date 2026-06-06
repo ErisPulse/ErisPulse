@@ -105,19 +105,7 @@ result = sdk.my_module.some_sync_method()
 - Scheduled task modules
 - Modules that need to be initialized when the application starts
 
-### Loading Priority
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # Load immediately
-            priority=100      # High priority, higher value means higher priority
-        )
-```
+> The `priority` parameter controls the initialization order of modules that are loaded immediately; the higher the value, the earlier they are initialized. Modules with the same priority are loaded in registration order.
 
 ## Notes
 

@@ -96,7 +96,7 @@ use_global_db = false
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | プロジェクトのデータベースではなく、パッケージ内のグローバルデータベースを使用するかどうか |
+| use_global_db | boolean | false | プロジェクトのデータベースではなく、パッケージ内のグローバルデータベースを使用するかどうか。`true` の場合、すべてのプロジェクトで ErisPulse パッケージ内の SQLite データベースが共有されます。`false`（デフォルト）の場合、各プロジェクトは `config/` ディレクトリで独立したデータベースを使用します |
 
 ## イベント設定
 
@@ -143,9 +143,18 @@ enabled = true
 ```python
 from ErisPulse import sdk
 
+# 读取配置
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# 运行时写入配置（延迟保存）
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# 立即保存到文件
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` はデフォルトで遅延書き込み（約 5 秒ごとにファイルへのバッチ保存）を採用します。`immediate=True` を設定すると、即座に永続化できます。設定の変更は `config.set` 生命周期イベントをトリガーします。
 
 ## 次のステップ
 

@@ -96,7 +96,7 @@ use_global_db = false
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全域資料庫（套件內）而非專案資料庫 |
+| use_global_db | boolean | false | 是否使用全域資料庫（套件內）而非專案資料庫。`true` 時所有項目共用 ErisPulse 套件內的 SQLite 資料庫；`false`（預設）時每個項目使用 `config/` 目錄下獨立的資料庫 |
 
 ## 事件配置
 
@@ -138,16 +138,25 @@ timeout = 30
 enabled = true
 ```
 
-在模組中讀取配置：
+在模組中讀取和寫入配置：
 
 ```python
 from ErisPulse import sdk
 
+# 讀取配置
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# 執行階段寫入配置（延遲保存）
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# 立即保存到檔案
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` 預設採用延遲寫入（約每 5 秒批次保存到檔案），設置 `immediate=True` 可立即持久化。配置變更會觸發 `config.set` 生命週期事件。
 
 ## 下一步
 
-- [CLI 命令參考](cli-reference.md) - 了解所有命令行命令
+- [CLI 命令參考](cli-reference.md) - 了解所有命令列命令
 - [開發者指南](../developer-guide/) - 學習開發自定義模組

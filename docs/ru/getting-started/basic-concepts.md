@@ -40,7 +40,7 @@ ErisPulse использует архитектуру, управляемую с
 
 ErisPulse использует OneBot12 в качестве стандарта основных событий. OneBot12 — это универсальный стандарт интерфейса чат-ботов, определяющий единый формат событий.
 
-Все адаптеры преобразуют событийные данные, специфичные для платформы, в формат OneBot12, обеспечивая согласованность кода.
+Все адаптеры преобразуют события, специфичные для платформы, в формат OneBot12, обеспечивая согласованность кода.
 
 ## Основные компоненты
 
@@ -103,106 +103,82 @@ async def info_handler(event):
 - Вызывать адаптеры для отправки сообщений
 - Использовать сервисы, предоставляемые основными модулями
 
+#### Механизм обнаружения модулей
+
+ErisPulse использует `importlib.metadata.entry_points` для обнаружения установленных модулей. Модули объявляются в `pyproject.toml`:
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+При инициализации SDK производится сканирование всех точек входа группы `erispulse.module`, классы модулей регистрируются в `ModuleManager`, а затем инициализируются в соответствии с зависимостями.
+
+#### Минимально рабочий модуль
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """Вызывается при загрузке модуля"""
-        # Регистрация обработчика событий
-        @command("mycmd", help="Моя команда")
-        async def my_command(event):
-            await event.reply("Команда выполнена успешно")
-
         self.logger.info("Модуль загружен")
 
     async def on_unload(self, event):
-        """Вызывается при выгрузке модуля"""
         self.logger.info("Модуль выгружен")
 ```
 
+#### Жизненный цикл модуля
+
+- **Регистрация**: SDK обнаруживает класс модуля и регистрирует его в менеджере
+- **Загрузка**: Создается экземпляр модуля, вызывается `on_load(event)` (`event = {"module_name": "MyModule"}`)
+- **Выгрузка**: Вызывается `on_unload(event)`, производится очистка ресурсов
+
+#### Стратегия загрузки
+
+Загрузка модуля описывается через `get_load_strategy()`:
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # Включить ленивую загрузку (по умолчанию)
+            priority=0        # Приоритет загрузки
+        )
+```
+
+- **`lazy_load=True` (по умолчанию)**: Модуль инициализируется при первом обращении к `sdk.MyModule`, что ускоряет запуск
+- **`lazy_load=False`**: Модуль инициализируется при запуске SDK, подходит для модулей, обрабатывающих события жизненного цикла или выполняющих периодические задачи
+- **`priority`**: Модули с одинаковым приоритетом загружаются в порядке регистрации; чем выше значение, тем раньше инициализация
+
+> Подробное описание механизма ленивой загрузки см. в разделе [Система ленивой загрузки](../advanced/lazy-loading.md).
+
 ## Типы событий
 
-### Событие сообщения
+ErisPulse поддерживает 5 типов событий:
 
-Обработка любых сообщений, отправляемых пользователями (включая личные и групповые чаты).
+| Тип события | Декоратор | Описание |
+|-------------|-----------|----------|
+| Сообщение | `@message.on_message()` | Все сообщения, отправленные пользователями (личные и групповые чаты) |
+| Команда | `@command("name")` | Сообщения, начинающиеся с префикса команды (например, `/hello`) |
+| Уведомление | `@notice.on_friend_add()` и др. | Системные уведомления (добавление в друзья, изменения участников группы) |
+| Запрос | `@request.on_friend_request()` и др. | Запросы пользователей (запросы на добавление в друзья, приглашения в группы) |
+| Мета-событие | `@meta.on_connect()` и др. | Системные события (подключение, отключение, heartbeat) |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"Получено сообщение: {text}")
-```
-
-### Событие команды
-
-Обработка сообщений, начинающихся с префикса команды (например, `/hello`).
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="Отправка приветствия")
-async def hello_handler(event):
-    await event.reply("Привет!")
-```
-
-### Событие уведомления
-
-Обработка системных уведомлений (например, добавление в друзья, изменения участников группы).
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("Добро пожаловать в друзья!")
-```
-
-### Событие запроса
-
-Обработка запросов пользователей (например, запросы на добавление в друзья, приглашения в группы).
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("Ваш запрос на добавление в друзья получен")
-```
-
-### Метасобытие
-
-Обработка системных событий уровня (например, подключение, пульсация/heartbeat).
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} подключено успешно")
-```
+> Подробное описание и примеры использования каждого типа событий см. в разделе [Введение в обработку событий](event-handling.md).
 
 ## Описание основных модулей
 
 ### Storage (Хранилище)
 
-Базирующаяся на SQLite система хранения ключ-значение для персистентных данных.
+Система хранения ключ-значение на базе SQLite для персистентных данных.
 
 ```python
 # Установка значения
@@ -267,71 +243,37 @@ sdk.logger.mymodule.database.info("Сообщение базы данных")
 
 ### Router (Маршрутизация)
 
-Управление маршрутизацией HTTP и WebSocket, поддерживающая нативные типы FastAPI и абстрактные типы ErisPulse.
-
-> Роутеры поддерживают два типа аннотаций: нативные типы FastAPI (`fastapi.Request` / `fastapi.WebSocket`) и абстрактные типы ErisPulse (`HttpRequest` / `WebSocketConnection`). Рекомендуется использовать абстрактные типы для лучшей переносимости.
+Управление маршрутизацией HTTP и WebSocket, основано на FastAPI + Uvicorn. Поддерживает декораторы, промежуточные обработчики, группировку, ограничение скорости, CORS.
 
 ```python
-from ErisPulse import sdk
-
-# Способ 1: Использование абстрактных типов ErisPulse (рекомендуется)
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Эхо: {data}")
-
-# Способ 2: Использование нативных типов FastAPI (совместимо со старым кодом)
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-{!--< tips >!--}
-> **Автоматическая инъекция**: Система маршрутизации автоматически внедряет объекты соответствующих типов на основе аннотаций параметров, без необходимости ручного создания.
-> 
-> **Частые проблемы**: Если вы видите ошибку `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, значит, отсутствуют аннотации типов. Убедитесь, что параметры обработчиков HTTP используют аннотацию `request`, а обработчики WebSocket — `websocket` или `ws`.
-
-Дополнительные функции маршрутизации см. в разделе [Руководство по маршрутизатору](../advanced/router.md).
+> Полный API маршрутизатора (WebSocket, промежуточные обработчики, ограничение скорости, CORS и т.д.) см. в разделе [Маршрутизатор](../advanced/router.md).
 
 ### Client (HTTP-клиент)
 
-Единый HTTP-клиент для отправки HTTP-запросов. Модулям и адаптерам следует предпочитать глобальный клиент вместо прямого импорта `aiohttp`.
+Единый HTTP/WS-клиент, обеспечивающий автоматические повторы, контроль таймаутов, статистику запросов и интеграцию с событиями жизненного цикла. Модули и адаптеры должны использовать глобальный клиент (`sdk.client`) вместо прямого импорта `aiohttp`.
 
 ```python
 from ErisPulse.Core import client
 
-# GET запрос
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST запрос
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
-
-# Свойства ответа
-resp.status        # Код статуса (например, 200)
-resp.headers       # Заголовки ответа
-body = await resp.text()   # Текстовое тело ответа
-data = await resp.json()   # Разбор JSON
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Эхо: {text}")
 ```
 
-{!--< tips >!--}
-> Глобальный клиент поддерживает автоматическую переаттестацию, управление таймаутами, статистику запросов и интеграцию с событиями жизненного цикла. Подробнее см. в разделе [HTTP-клиент](../advanced/http-client.md).
->
-> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, эффект будет одинаковым.
+> Полный API HTTP-клиента см. в разделе [HTTP-клиент](../advanced/http-client.md).
 
-## Отправка сообщений через SendDSL
+## SendDSL для отправки сообщений
 
 Адаптеры предоставляют интерфейс для отправки сообщений с поддержкой цепных вызовов (чейнинг).
 
@@ -380,25 +322,28 @@ async def test_handler(event):
 
 ## Система ленивой загрузки
 
-ErisPulse поддерживает ленивую загрузку модулей; модули инициализируются только при первом обращении к ним, что ускоряет запуск системы.
+ErisPulse по умолчанию использует ленивую загрузку модулей; модули инициализируются только при первом обращении к ним, что ускоряет запуск системы.
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # Включить ленивую загрузку (по умолчанию)
-            priority=0       # Приоритет загрузки
+            priority=0        # Приоритет загрузки, чем выше значение, тем раньше инициализация
         )
 ```
 
-**Сценарии с немедленной загрузкой:**
+**Сценарии с немедленной загрузкой (установка `lazy_load=False`):**
 - Модули, прослушивающие события жизненного цикла
 - Модули периодических задач (таймеров)
 - Модули, требующие инициализации при запуске приложения
 
+> Подробное описание механизма ленивой загрузки и рекомендации по использованию см. в разделе [Система ленивой загрузки](../advanced/lazy-loading.md).
+
 ## Далее
 
 - [Введение в обработку событий](event-handling.md) — научитесь обрабатывать различные типы событий
-- [Примеры распространенных задач](common-tasks.md) — освоите реализацию типичных функций
+- [Примеры распространенных задач](common-tasks.md) — освойте реализацию типичных функций

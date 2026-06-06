@@ -98,7 +98,7 @@ graph TB
 | **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模块化日志系统，支持子日志器 |
 | **Router** | HTTP/WebSocket 路由管理，通过抽象层封装底层后端（当前为 FastAPI + Uvicorn），支持装饰器路由、中间件、分组、限流、CORS |
-| **HttpClient** | 统一 HTTP 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志等功能 |
+| **HttpClient** | 统一 HTTP/WS 客户端，通过抽象层封装底层请求库（当前为 aiohttp），提供请求统计、重试、日志、WebSocket 客户端、ErisPulse 异常体系等功能。客户端和服务端 WebSocket 共享 `WebSocketConnectionBase` 基类 |
 
 ## 初始化流程
 
@@ -567,139 +567,41 @@ level = "INFO"
 
 本指南按以下顺序组织，建议依次阅读：
 
-1. **创建第一个机器人** - 了解完整的项目初始化流程
-2. **基础概念** - 理解 ErisPulse 的核心架构
-3. **事件处理入门** - 学习如何处理各类事件
-4. **常见任务示例** - 掌握常用功能的实现
+| 步骤 | 主题 | 说明 |
+|------|------|------|
+| 1 | [创建第一个机器人](first-bot.md) | 从项目初始化到运行第一个命令 |
+| 2 | [基础概念](basic-concepts.md) | 理解 ErisPulse 的核心架构和模块设计 |
+| 3 | [事件处理入门](event-handling.md) | 学习如何处理消息、命令、通知等各类事件 |
+| 4 | [常见任务示例](common-tasks.md) | 掌握数据持久化、定时任务、权限控制等常用功能 |
 
 ## 开发方式选择
 
-ErisPulse 支持两种开发方式，你可以根据需求选择：
+ErisPulse 支持两种开发方式：
 
-### 嵌入式开发（适合快速原型）
+| 方式 | 适用场景 | 说明 |
+|------|---------|------|
+| **嵌入式开发** | 快速原型、项目内部功能 | 直接在 `main.py` 中编写处理器，无需创建独立模块 |
+| **模块开发**（推荐） | 生产环境、功能分发 | 创建独立的 Python 包，通过 `epsdk install` 安装使用 |
 
-直接在项目中使用 ErisPulse，无需创建独立模块。
+> 两种方式的详细对比和示例请参考 [创建第一个机器人](first-bot.md) 和 [模块开发入门](../developer-guide/modules/getting-started.md)。
 
-```python
-# main.py
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
+## 架构概览
 
-@command("hello")
-async def hello(event):
-    await event.reply("你好！")
+ErisPulse 采用事件驱动架构，核心由以下系统组成：
 
-# 运行 SDK 并且维持运行 | 需要在异步环境中运行
-asyncio.run(sdk.run(keep_running=True))
-```
+- **适配器系统** — 与各平台通信，将平台事件转换为统一的 OneBot12 标准格式
+- **事件系统** — 处理消息、命令、通知、请求、元事件五大类事件
+- **模块系统** — 通过独立模块扩展功能，支持依赖管理和懒加载
+- **核心模块** — 提供 Storage（存储）、Config（配置）、Logger（日志）、Router（路由）等基础能力
 
-**优点：**
-- 快速上手，无需额外配置
-- 适合项目内部专用功能
-- 便于调试和测试
-
-**缺点：**
-- 不便于代码复用和分发
-- 难以独立管理依赖
-
-### 模块开发（推荐用于生产）
-
-创建独立的模块包，通过包管理器安装使用。
-
-**优点：**
-- 便于分发和共享
-- 独立的依赖管理
-- 清晰的版本控制
-
-**缺点：**
-- 需要额外的项目结构
-- 初期配置相对复杂
-
-## ErisPulse 核心概念
-
-### 架构概览
-
-```
-┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
-├─────────────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────────┐      ┌──────────────┐    │
-│  │  适配器系统  │◄────►│  事件系统    │    │
-│  │             │      │              │    │
-│  │  Yunhu      │      │  Message     │    │
-│  │  Telegram   │      │  Command     │    │
-│  │  OneBot11   │      │  Notice      │    │
-│  │  Email      │      │  Request     │    │
-│  └──────────────┘      │  Meta        │    │
-│         │              └──────────────┘    │
-│         ▼                   │              │
-│  ┌──────────────┐           ▼              │
-│  │  模块系统    │◄──────────────┐       │
-│  │             │               │       │
-│  │  模块 A     │               │       │
-│  │  模块 B     │               │       │
-│  │  ...        │               │       │
-│  └──────────────┘               │       │
-│                               │       │
-│  ┌──────────────┐              │       │
-│  │  核心模块    │◄─────────────┘       │
-│  │  Storage    │                      │
-│  │  Config     │                      │
-│  │  Logger     │                      │
-│  │  Router     │                      │
-│  └──────────────┘                      │
-└─────────────────────────────────────────────┘
-         │                    │
-         ▼                    ▼
-    ┌────────┐          ┌────────┐
-    │  平台   │          │  用户   │
-    │  API    │          │  代码   │
-    └────────┘          └────────┘
-```
-
-### 核心组件说明
-
-#### 1. 适配器系统
-
-适配器负责与特定平台通信，将平台特定的事件转换为统一的 OneBot12 标准格式。
-
-**示例：**
-- Yunhu 适配器：与云湖平台通信
-- Telegram 适配器：与 Telegram Bot API 通信
-- OneBot11 适配器：与 OneBot11 兼容的应用通信
-
-#### 2. 事件系统
-
-事件系统负责处理各类事件，包括：
-- **消息事件**：用户发送的消息
-- **命令事件**：用户输入的命令（如 `/hello`）
-- **通知事件**：系统通知（如好友添加、群成员变化）
-- **请求事件**：用户请求（如好友请求、群邀请）
-- **元事件**：系统级事件（如连接、心跳）
-
-#### 3. 模块系统
-
-模块是功能扩展的主要方式，用于：
-- 注册事件处理器
-- 实现业务逻辑
-- 提供命令接口
-- 调用适配器发送消息
-
-#### 4. 核心模块
-
-提供基础功能的模块：
-- **Storage**：基于 SQLite 的键值存储
-- **Config**：TOML 格式的配置管理
-- **Logger**：模块化日志系统
-- **Router**：基于 FastAPI + Uvicorn 的 HTTP 和 WebSocket 路由管理
+> 详细的架构图和初始化流程请参考 [架构概览](../architecture.md)。
 
 ## 开始学习
 
-准备就绪了吗？让我们开始创建你的第一个机器人。
+准备好开始了吗？
 
-- [创建第一个机器人](first-bot.md)
+- [创建第一个机器人](first-bot.md) — 5 分钟上手
+
 
 
 
@@ -815,10 +717,13 @@ async def hello_handler(event):
 ```
 
 `event` 参数是一个 Event 对象，包含：
-- 消息内容
-- 发送者信息
-- 平台信息
-- 等等...
+- 消息内容：`event.get_text()`
+- 发送者信息：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台信息：`event.get_platform()`
+- 群组信息：`event.get_group_id()`
+- 原始数据：`event.get_raw()`
+
+> 完整的 Event 对象方法请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)。
 
 ### 发送回复
 
@@ -830,51 +735,20 @@ await event.reply("回复内容")
 
 ## 扩展：添加更多功能
 
-### 添加消息监听
+ErisPulse 提供了丰富的事件处理和数据处理能力：
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """监听所有消息"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### 添加通知监听
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """监听好友添加事件"""
-    user_id = event.get_user_id()
-    await event.reply(f"欢迎添加我为好友！你的 ID 是 {user_id}")
-```
-
-### 使用存储系统
-
-```python
-# 获取计数器
-count = sdk.storage.get("hello_count", 0)
-
-# 增加计数
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"这是第 {count} 次调用 hello 命令")
-```
+- **消息监听**：使用 `@message.on_message()` 监听各类消息 → [事件处理入门](event-handling.md)
+- **通知监听**：使用 `@notice.on_friend_add()` 等监听系统通知 → [事件处理入门](event-handling.md)
+- **数据存储**：使用 `sdk.storage.get/set` 持久化数据 → [常见任务示例](common-tasks.md)
 
 ## 常见问题
 
 ### 命令没有响应？
 
-1. 检查适配器是否正确配置
-2. 查看日志输出，确认是否有错误
-3. 确认命令前缀是否正确（默认是 `/`）
+1. 检查适配器是否正确配置，确认 `config/config.toml` 中适配器的 `status` 为 `true`
+2. 查看终端日志输出，确认是否有错误信息（特别是 `ERROR` 级别日志）
+3. 确认命令前缀是否正确（默认是 `/`），可在配置文件中查看 `[ErisPulse.event.command]` 部分
+4. 确认命令名称拼写正确，注意大小写敏感性设置
 
 ### 如何修改命令前缀？
 
@@ -888,7 +762,7 @@ case_sensitive = false
 
 ### 如何支持多平台？
 
-代码会自动适配所有已加载的平台适配器。只需确保你的逻辑兼容即可：
+ErisPulse 使用 OneBot12 标准统一了不同平台的事件格式，`@command` 和 `@message` 注册的处理器会自动接收所有平台的事件。通过 `event.get_platform()` 可以区分来源平台：
 
 ```python
 @command("hello")
@@ -899,11 +773,14 @@ async def hello_handler(event):
         await event.reply("你好！来自云湖")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
 ```
+
+> 更多多平台适配技巧请参考 [常见任务示例](common-tasks.md#多平台适配)。
 
 ## 下一步
 
-- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能
@@ -1017,100 +894,76 @@ async def info_handler(event):
 - 调用适配器发送消息
 - 使用核心模块提供的服务
 
+#### 模块发现机制
+
+ErisPulse 通过 Python 的 `importlib.metadata.entry_points` 发现已安装的模块。模块在 `pyproject.toml` 中声明入口点：
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+SDK 初始化时会扫描所有 `erispulse.module` 组的入口点，将模块类注册到 `ModuleManager`，然后按依赖关系拓扑排序后依次初始化。
+
+#### 最小可用模块
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """模块加载时调用"""
-        # 注册事件处理器
-        @command("mycmd", help="我的命令")
-        async def my_command(event):
-            await event.reply("命令执行成功")
-
         self.logger.info("模块已加载")
 
     async def on_unload(self, event):
-        """模块卸载时调用"""
         self.logger.info("模块已卸载")
 ```
 
+#### 模块生命周期
+
+- **注册**：SDK 发现模块类并注册到管理器
+- **加载**：创建模块实例，调用 `on_load(event)`（`event = {"module_name": "MyModule"}`）
+- **卸载**：调用 `on_unload(event)`，清理资源
+
+#### 加载策略
+
+通过 `get_load_strategy()` 声明模块的加载行为：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # 是否懒加载（默认 True）
+            priority=0        # 加载优先级，数值越大越先初始化
+        )
+```
+
+- **`lazy_load=True`（默认）**：模块在首次被 `sdk.MyModule` 访问时才初始化，减少启动时间
+- **`lazy_load=False`**：SDK 启动时立即初始化，适合需要监听生命周期事件或执行定时任务的模块
+- **`priority`**：同优先级的模块按注册顺序加载；数值越大越先初始化
+
+> 详细的懒加载机制说明请参考 [懒加载系统](../advanced/lazy-loading.md)。
+
 ## 事件类型
 
-### 消息事件
+ErisPulse 支持 5 类事件：
 
-处理用户发送的任何消息（包括私聊和群聊）。
+| 事件类型 | 装饰器 | 说明 |
+|---------|--------|------|
+| 消息事件 | `@message.on_message()` | 用户发送的任何消息（私聊、群聊） |
+| 命令事件 | `@command("name")` | 以命令前缀开头的消息（如 `/hello`） |
+| 通知事件 | `@notice.on_friend_add()` 等 | 系统通知（好友添加、群成员变化等） |
+| 请求事件 | `@request.on_friend_request()` 等 | 用户请求（好友请求、群邀请） |
+| 元事件 | `@meta.on_connect()` 等 | 系统级事件（连接、断开、心跳） |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"收到消息: {text}")
-```
-
-### 命令事件
-
-处理以命令前缀开头的消息（如 `/hello`）。
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="发送问候")
-async def hello_handler(event):
-    await event.reply("你好！")
-```
-
-### 通知事件
-
-处理系统通知（如好友添加、群成员变化）。
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("欢迎添加我为好友！")
-```
-
-### 请求事件
-
-处理用户请求（如好友请求、群邀请）。
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("已收到你的好友请求")
-```
-
-### 元事件
-
-处理系统级事件（如连接、心跳）。
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} 连接成功")
-```
+> 各事件类型的详细用法和代码示例请参考 [事件处理入门](event-handling.md)。
 
 ## 核心模块说明
 
@@ -1181,69 +1034,35 @@ sdk.logger.mymodule.database.info("数据库消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，支持 FastAPI 原生类型和 ErisPulse 抽象类型。
-
-> 路由处理器支持两种类型注解：FastAPI 原生类型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象类型（`HttpRequest` / `WebSocketConnection`）。推荐使用抽象类型以获得更好的可移植性。
+HTTP 和 WebSocket 路由管理，基于 FastAPI + Uvicorn。支持装饰器路由、中间件、分组、限流、CORS。
 
 ```python
-from ErisPulse import sdk
-
-# 方式一：使用 ErisPulse 抽象类型（推荐）
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Echo: {data}")
-
-# 方式二：使用 FastAPI 原生类型（兼容已有代码）
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-{!--< tips >!--}
-> **自动注入**：路由系统会根据参数注解自动注入对应类型的对象，无需手动创建。
-> 
-> **常见问题**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保 HTTP 处理器参数使用 `request` 注解，WebSocket 处理器参数使用 `websocket` 或 `ws` 注解。
-
-更多路由功能请参考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API（WebSocket、中间件、速率限制、CORS 等）请参考 [路由管理器](../advanced/router.md)。
 
 ### Client（HTTP 客户端）
 
-统一的 HTTP 客户端，用于发送 HTTP 请求。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+统一的 HTTP/WS 客户端，提供自动重试、超时控制、请求统计和生命周期事件集成。模块和适配器应优先使用全局客户端（`sdk.client`）而非直接导入 `aiohttp`。
 
 ```python
 from ErisPulse.Core import client
 
-# GET 请求
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST 请求
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
-
-# 响应属性
-resp.status        # 状态码 (如 200)
-resp.headers       # 响应头
-body = await resp.text()   # 文本响应体
-data = await resp.json()   # JSON 解析
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-{!--< tips >!--}
-> 全局客户端具有自动重试、超时控制、请求统计和生命周期事件集成等功能。详见 [HTTP 客户端](../advanced/http-client.md)。
->
-> 也可通过 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+> 完整的 HTTP 客户端 API 请参考 [HTTP 客户端](../advanced/http-client.md)。
 
 ## SendDSL 消息发送
 
@@ -1294,23 +1113,26 @@ async def test_handler(event):
 
 ## 懒加载系统
 
-ErisPulse 支持模块懒加载，模块只在首次被访问时才初始化，提高启动速度。
+ErisPulse 默认启用模块懒加载，模块只在首次被访问（如 `sdk.MyModule`）时才初始化，显著提高启动速度。
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # 启用懒加载（默认）
-            priority=0       # 加载优先级
+            priority=0        # 加载优先级，数值越大越先初始化
         )
 ```
 
-**需要立即加载的场景：**
-- 监听生命周期事件的模块
-- 定时任务模块
-- 需要在应用启动时就初始化的模块
+**需要禁用懒加载的场景（`lazy_load=False`）：**
+- 监听生命周期事件的模块（如 `core.init.complete`）
+- 启动定时任务或后台服务的模块
+- 需要在其他模块加载前完成初始化的模块
+
+> 详细的懒加载机制和注意事项请参考 [懒加载系统](../advanced/lazy-loading.md)。
 
 ## 下一步
 
@@ -1607,7 +1429,8 @@ from ErisPulse import sdk
 
 # 检查某个 Bot 是否在线
 if sdk.adapter.is_bot_online("telegram", "123456"):
-    await adapter.Send.To("user", "123456").Text("Bot 在线")
+    telegram = sdk.adapter.get("telegram")
+    await telegram.Send.To("user", "123456").Text("Bot 在线")
 
 # 列出当前所有在线 Bot
 bots = sdk.adapter.list_bots()
@@ -2077,7 +1900,7 @@ class TimerModule:
         # 你的逻辑...
     
     async def _daily_task(self):
-        """每天凌晨执行的任务"""
+        """每天凌晨执行的任务（注：基于 UTC 时间计算，如需本地时间请自行调整）"""
         import time
         
         while True:
@@ -2103,7 +1926,7 @@ async def init_complete_handler(event_data):
     async def daily_reminder():
         """每日提醒"""
         await asyncio.sleep(86400)  # 24小时
-        self.sdk.logger.info("执行每日任务")
+        sdk.logger.info("执行每日任务")
     
     # 启动后台任务
     asyncio.create_task(daily_reminder())
@@ -2249,6 +2072,8 @@ async def groupinfo_handler(event):
 
 ### 消息计数
 
+> **注意**：以下示例使用 `sdk.storage.get/set` 进行简单计数。在高并发场景下，建议使用 `sdk.storage.transaction()` 保证原子性。
+
 ```python
 @message.on_message()
 async def count_handler(event):
@@ -2292,6 +2117,8 @@ async def stats_handler(event):
 ## 搜索功能
 
 ### 简单搜索
+
+> **注意**：以下示例使用内存列表存储消息历史，**程序重启后数据会丢失**。生产环境建议使用 `sdk.storage` 或 SQLite 表进行持久化存储。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -2375,6 +2202,8 @@ async def image_handler(event):
 ```
 
 ### 图片识别示例
+
+> **注意**：以下示例使用占位 API 地址，实际使用时请替换为你自己的图片识别服务。
 
 ```python
 from ErisPulse.Core import client
@@ -2581,21 +2410,33 @@ epsdk run main.py
 
 ### 安装失败
 
-1. 检查 Python 版本是否 >= 3.10
-2. 尝试使用 `uv` 替代 `pip`
-3. 检查网络连接是否正常
+1. 检查 Python 版本是否 >= 3.10（推荐 3.10 - 3.13）
+2. 尝试使用 `uv pip install ErisPulse` 替代 `pip install`
+3. 如果提示权限错误，尝试 `pip install --user ErisPulse` 或使用虚拟环境
+4. 如果在企业代理环境下遇到 SSL 证书错误，尝试 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 确保网络连接正常，pip 源可访问
 
 ### 配置错误
 
-1. 检查 `config.toml` 语法是否正确
+1. 检查 `config.toml` 语法是否正确（TOML 格式对缩进和引号敏感）
 2. 确认所有必需的配置项都已填写
-3. 查看日志获取详细错误信息
+3. 查看终端日志获取详细错误信息
+4. 使用 `epsdk init` 重新生成配置文件
 
 ### 模块安装失败
 
-1. 确认模块名称是否正确
+1. 确认模块名称拼写正确（大小写敏感）
 2. 检查网络连接
-3. 使用 `epsdk list-remote` 查看可用模块
+3. 使用 `epsdk list-remote` 查看可用模块列表
+4. 确认模块与你当前 SDK 版本兼容
+
+### Windows PowerShell 执行策略
+
+如果 PowerShell 提示"无法加载文件...因为在此系统上禁止运行脚本"：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ## 下一步
 
@@ -2886,7 +2727,7 @@ use_global_db = false
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库 |
+| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库。`true` 时所有项目共享 ErisPulse 包内的 SQLite 数据库；`false`（默认）时每个项目使用 `config/` 目录下独立的数据库 |
 
 ## 事件配置
 
@@ -2928,14 +2769,23 @@ timeout = 30
 enabled = true
 ```
 
-在模块中读取配置：
+在模块中读取和写入配置：
 
 ```python
 from ErisPulse import sdk
 
+# 读取配置
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# 运行时写入配置（延迟保存）
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# 立即保存到文件
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` 默认采用延迟写入（约每 5 秒批量保存到文件），设置 `immediate=True` 可立即持久化。配置变更会触发 `config.set` 生命周期事件。
 
 ## 下一步
 
@@ -3262,33 +3112,12 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 根据你的需求选择合适的开发类型：
 
-### 模块开发
+| 开发类型 | 适用场景 | 入门指南 |
+|---------|---------|---------|
+| **模块开发** | 扩展机器人功能、实现业务逻辑、提供命令和消息处理 | [模块开发入门](modules/getting-started.md) |
+| **适配器开发** | 连接新的消息平台、实现跨平台通信、提供平台特定功能 | [适配器开发入门](adapters/getting-started.md) |
 
-**适用场景：**
-- 扩展机器人功能
-- 实现特定业务逻辑
-- 提供命令和消息处理
-
-**示例：**
-- 天气查询机器人
-- 音乐播放器
-- 数据收集工具
-
-**入门指南：** [模块开发入门](modules/getting-started.md)
-
-### 适配器开发
-
-**适用场景：**
-- 连接新的消息平台
-- 实现跨平台通信
-- 提供平台特定功能
-
-**示例：**
-- Discord 适配器
-- Slack 适配器
-- 自定义平台适配器
-
-**入门指南：** [适配器开发入门](adapters/getting-started.md)
+> 如果你想扩展机器人的功能（如添加命令、处理消息），选择**模块开发**。如果你需要让机器人连接到一个新的平台，选择**适配器开发**。
 
 ## 开发工具
 
@@ -3296,12 +3125,12 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 ErisPulse 提供了示例项目作为参考：
 
-- `examples/example-module/` - 模块示例
-- `examples/example-adapter/` - 适配器示例
+- [模块示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模块的完整项目结构
+- [适配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 适配器的完整项目结构
 
 ### 开发模式
 
-使用热重载模式进行开发：
+使用热重载模式进行开发，代码修改后自动重载：
 
 ```bash
 epsdk run main.py --reload
@@ -3309,39 +3138,16 @@ epsdk run main.py --reload
 
 ### 调试技巧
 
-启用 DEBUG 级别日志：
+在 `config/config.toml` 中启用 DEBUG 级别日志：
 
 ```toml
 [ErisPulse.logger]
 level = "DEBUG"
 ```
 
-使用模块自己的日志记录器：
-
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("调试信息")
-```
-
 ## 发布你的模块
 
-完整的发布流程请参考 [发布与模块商店指南](publishing.md)，包括：
-
-- PyPI 发布步骤
-- ErisPulse 模块商店提交流程
-- 适配器的发布
-
-### 快速参考
-
-```bash
-# 构建并发布到 PyPI
-python -m build
-python -m twine upload dist/*
-```
-
-然后前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交到模块商店。
+完整的发布流程请参考 [发布与模块商店指南](publishing.md)，包括 PyPI 发布步骤、ErisPulse 模块商店提交流程等。
 
 ## 相关文档
 
@@ -3960,6 +3766,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 对象，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 属性表示对话是否活跃
 
+#### 交互方法示例
+
+**confirm() - 确认对话：**
+
+```python
+@command("delete", help="删除数据")
+async def delete_handler(event):
+    if await event.confirm("确定要删除所有数据吗？"):
+        sdk.storage.delete("all_data")
+        await event.reply("数据已删除")
+    else:
+        await event.reply("已取消")
+```
+
+**choose() - 选择菜单：**
+
+```python
+@command("color", help="选择颜色")
+async def color_handler(event):
+    choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+    if choice is not None:
+        colors = ["红色", "绿色", "蓝色"]
+        await event.reply(f"你选择了：{colors[choice]}")
+```
+
+**collect() - 表单收集：**
+
+```python
+@command("register", help="注册")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "请输入姓名："},
+        {"key": "age", "prompt": "请输入年龄：",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"注册成功！{data['name']}，{data['age']}岁")
+```
+
+**非 Text 方法的 reply：**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("看这张图：").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> 完整的 Conversation 多轮对话用法请参考 [Conversation 多轮对话](../../advanced/conversation.md)。
+
 ### 命令信息
 
 #### 命令基础
@@ -4225,7 +4083,8 @@ async def handle_event(self, event):
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
     except aiohttp.ClientError as e:
-        # 网络错误（使用 sdk.client 时此异常极少出现，因内置重试机制）
+        # 网络错误（推荐使用 sdk.client + ClientError 替代）
+        # 旧代码直接用 aiohttp 仍可正常工作，但新代码推荐使用 ErisPulse 异常体系
         self.logger.error(f"网络错误: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
@@ -4240,12 +4099,13 @@ async def handle_event(self, event):
 ```python
 # 推荐使用 SDK 内置客户端（自带超时和重试）
 from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
 async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.warning(f"请求超时: {url}")
         raise
 ```
@@ -4546,41 +4406,49 @@ dependencies = [
 
 ### 3. 创建适配器主类
 
+框架提供了 `ConfigClass` / `AccountConfigClass` 声明式配置管理，适配器只需声明配置类即可自动加载、校验和生成配置模板。
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter 配置"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API 地址",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "平台 Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← 必须！创建 Send / Request 工厂实例
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter 初始化完成")
+    ConfigClass = MyAdapterConfig  # 声明配置类，框架自动管理
+    
+    # 不需要覆写 __init__！框架自动处理：
+    # - self.sdk / self.logger 自动设置
+    # - self.config 自动加载配置
+    # - self.Send / self.Request 自动初始化
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
+
+> ⚠️ **关于 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 会自动处理 SDK 引用、日志初始化和配置加载。大多数适配器**不再需要覆写 `__init__`**。详见 [__init__ 注意事项](#init-注意事项)。
 
 > ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` 负责创建 `Send` 和 `Request` 工厂实例。如果忘记调用，所有消息发送和请求操作都会报 `AttributeError`。详见 [__init__ 注意事项](#init-注意事项)。
 
@@ -4616,7 +4484,7 @@ class MyAdapter(BaseAdapter):
 
 #### 主动发送 Meta 事件
 
-适配器应主动发送 meta 事件，让框架追踪 Bot 的在线状态：
+适配器应主动发送 meta 事件，让框架追踪 Bot 的在线状态。使用 `emit_meta()` 一行即可完成：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -4624,12 +4492,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot 上线
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -4641,12 +4504,7 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot 下线
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > 详细的 Bot 状态管理和 Meta 事件说明请参阅 [适配器最佳实践 - Bot 状态管理](best-practices.md#bot-状态管理与-meta-事件)。
@@ -4832,19 +4690,36 @@ from .Core import MyAdapter
 
 适配器开发中有三个层面可能涉及 `__init__` 重写。以下是每个层面的正确做法。
 
-### 1. BaseAdapter 层（必须调用 `super().__init__()`）
+### 1. BaseAdapter 层（大多数情况不需要重写）
 
-`BaseAdapter.__init__()` 负责**创建 `Send` 和 `Request` 工厂实例**。如果适配器有自己的 `__init__`，必须调用父类初始化：
+`BaseAdapter.__init__(self, sdk=None)` 负责创建 `Send` / `Request` 工厂实例，并自动完成以下工作：
+
+- 接受 `sdk` 参数并设置 `self.sdk`、`self.logger`
+- 如果声明了 `ConfigClass`，自动加载全局配置到 `self.config`
+- 如果声明了 `AccountConfigClass`，自动加载多账户配置到 `self.accounts`
+
+**大多数情况下不需要覆写 `__init__`**，只需声明 `ConfigClass` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← 必须！否则 Send / Request 不会被初始化
-        self.sdk = sdk
-        # ... 其他初始化
+    ConfigClass = MyAdapterConfig  # 声明后框架自动管理配置
+    
+    async def start(self):
+        cfg = self.config  # 类型安全，自动加载
+        ...
 ```
 
-**忘记调用的后果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都会报 `AttributeError`。
+如果确实需要自定义初始化，调用 `super().__init__(sdk)` 即可：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 传入 sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
 
 ### 2. Send 内部类（大多数情况不需要重写）
 
@@ -4887,10 +4762,10 @@ class MyAdapter(BaseAdapter):
 
 | 层面 | 什么时候重写 | 必须做的事 |
 |------|------------|-----------|
-| **BaseAdapter** | 需要初始化适配器状态时 | `super().__init__()` （无参数） |
+| **BaseAdapter** | 需要自定义初始化逻辑时 | `super().__init__(sdk)` （传入 sdk 参数） |
 | **Send 内部类** | 需要初始化发送相关状态时 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部类** | 需要初始化请求相关状态时 | `super().__init__(adapter, request_id, account_id)` |
-| 三个层面 | 大多数情况 | **只重写方法，不碰 `__init__`** |
+| 三个层面 | 大多数情况 | **声明 ConfigClass 即可，不碰 `__init__`** |
 
 ## 下一步
 
@@ -5164,16 +5039,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### 基本结构
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """适配器配置（声明后框架自动管理）"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 初始化适配器
-        pass
+    ConfigClass = MyConfig  # 声明配置类
+    
+    # 无需覆写 __init__，框架自动处理：
+    # - self.sdk, self.logger
+    # - self.config（类型安全的配置实例）
+    # - self.Send, self.Request
     
     async def start(self):
         """启动适配器（必须实现）"""
+        cfg = self.config  # 自动加载的类型安全配置
         pass
     
     async def shutdown(self):
@@ -5185,24 +5078,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### 初始化过程
+### 配置管理
+
+框架提供了声明式配置管理，通过 dataclass 定义配置结构，框架自动处理加载、校验和模板生成。
+
+#### 单账户配置
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "代理地址",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # 类型安全，自动加载
+        if not cfg.token:
+            raise ValueError("未配置 Token")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### 多账户配置
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "机器人ID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "机器人Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata 约定
+
+字段 metadata 同时服务于 TOML 注释生成和 WebUI 表单渲染：
+
+```python
+metadata = {
+    "description": str,       # 字段描述（TOML注释 + WebUI label）
+    "required": bool,         # 是否必填（校验 + WebUI 必填标记）
+    "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "webui": {
+        "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # 分组: "basic" | "advanced" | "connection" 等
+        "order": int,         # 排序权重（越小越靠前）
+        "options": list,      # select 控件的可选项 [{label, value}]
+        "placeholder": str,   # 输入框占位符
+    }
+}
+```
+
+#### 账户解析
+
+多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: 账户名, account: 配置实例
+```
+
+解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
+
+#### 配置热更新
+
+子类可覆写 `on_config_update()` 响应配置变更：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 获取 SDK 引用
-        self.sdk = sdk
-        
-        # 获取核心模块
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # 加载配置
-        self.config = self._get_config()
-        
-        # 设置转换器
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token 已更新，将重新连接")
+```
+
+### 初始化过程
+
+框架在 `BaseAdapter.__init__(self, sdk=None)` 中自动完成以下工作：
+
+1. **SDK 引用**：设置 `self.sdk`、`self.logger`
+2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
+3. **配置加载**：如果声明了 `ConfigClass`，自动加载到 `self.config`
+4. **账户加载**：如果声明了 `AccountConfigClass`，自动加载到 `self.accounts`
+
+大多数适配器无需覆写 `__init__`。如需自定义初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 传入 sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -5416,6 +5414,8 @@ class MyAdapter(BaseAdapter):
 
 ## API 响应标准
 
+框架提供 `make_response()` 和 `make_error()` 方法构造标准化响应，无需手动构建响应字典。
+
 ### 成功响应
 
 ```python
@@ -5423,50 +5423,68 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### 失败响应
+### 手动构造响应（旧版方式仍然兼容）
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # 错误码
-        "data": None,
-        "message_id": "",
-        "message": "缺少必要参数",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## 多账户支持
 
-### 账户配置
+### 声明式配置（推荐）
+
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # 使用 account.token, account.bot_id 等字段
+```
+
+### 账户配置文件
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
@@ -5517,6 +5535,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # 推荐使用 SDK 内置客户端
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -5524,16 +5543,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"网络错误: {e}")
-        return self._error_response("网络请求失败", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"请求超时: {endpoint}")
         return self._error_response("请求超时", 32000)
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self._error_response("网络请求失败", 33000)
     except Exception as e:
         self.logger.error(f"未知错误: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **向后兼容**：直接使用 `aiohttp.ClientSession` 的旧适配器代码不受影响，仍然可以捕获 `aiohttp.ClientError`。两种方式可以共存。推荐新代码使用 `sdk.client` + ErisPulse 异常体系。
 
 ## Bot 状态管理
 
@@ -5567,28 +5588,27 @@ await self.adapter.emit({
 
 ### 适配器发送 Meta 事件
 
+使用 `emit_meta()` 一行即可发送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-            }
-        })
+        # 一行发送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+也支持手动构造（旧版方式仍然兼容）：
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### `self` 字段扩展信息
@@ -5859,7 +5879,22 @@ def Text(self, text: str):
 
 ### 标准化响应
 
-`call_api` 应返回标准化响应：
+`call_api` 应返回标准化响应。推荐使用 `make_response()` / `make_error()` 方法：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+也支持手动构造（旧版方式仍然兼容）：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5940,24 +5975,15 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 ### 2. 发送 Meta 事件
 
+框架提供 `emit_meta()` 方法，一行即可发送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot 上线：发送 connect 事件
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Bot 上线：一行发送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
         try:
             while True:
@@ -5968,16 +5994,8 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot 下线：发送 disconnect 事件
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Bot 下线
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. 心跳事件
@@ -5988,15 +6006,8 @@ class MyAdapter(BaseAdapter):
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # 向框架发送 meta heartbeat（一行完成）
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
@@ -6085,8 +6096,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -6122,16 +6132,8 @@ class MyAdapter(BaseAdapter):
                 # 1. 向平台发送心跳保活
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. 向框架发送 meta heartbeat 事件（更新 Bot 活跃时间）
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                # 2. 向框架发送 meta heartbeat（使用 emit_meta 一行完成）
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
@@ -6260,29 +6262,30 @@ class Send(BaseAdapter.Send):
 
 ### 1. 标准化响应格式
 
+框架提供 `make_response()` 和 `make_error()` 方法构造标准化响应：
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+`make_response()` 会自动生成包含 `{platform}_raw` 键的响应字典。`make_error()` 默认使用 `retcode=34000`（Platform Error）。
 
 ### 2. 错误码规范
 
@@ -6308,54 +6311,71 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多账户支持
 
-### 1. 账户配置验证
+### 1. 声明式配置（推荐）
+
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
 
 ```python
-def _get_config(self):
-    """验证配置"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # 创建默认账户
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: 账户名, account: MyBotConfig 实例
+```
+
+配置文件自动生成为：
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. 账户选择机制
 
+框架内置 `_resolve_account()` 方法，支持多种匹配策略：
+
 ```python
-async def _get_account_for_message(self, event):
-    """根据事件选择发送账户"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # 查找匹配的账户
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # 如果没有找到，使用第一个启用的账户
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# 按账户名匹配
+name, account = self._resolve_account("account1")
+
+# 按 bot_id 字段匹配（如果配置中有 bot_id 字段）
+name, account = self._resolve_account("bot_123")
+
+# 获取第一个启用的账户（传入 None）
+name, account = self._resolve_account(None)
 ```
 
 ## 错误处理
 
 ### 1. 分类异常处理
 
+使用 `make_error()` 构造标准化错误响应。通过 `sdk.client` 请求时捕获 ErisPulse 异常：
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # 推荐使用 SDK 内置客户端发送 API 请求
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -6363,32 +6383,30 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # 网络错误（使用 client 时内置重试机制会先处理）
-        self.logger.error(f"网络错误: {e}")
-        return self._error_response("网络请求失败", 33000)
-    except asyncio.TimeoutError:
-        # 超时错误
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
         self.logger.error(f"请求超时: {endpoint}")
-        return self._error_response("请求超时", 32000)
+        return self.make_error(retcode=32000, message="请求超时")
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self.make_error(retcode=33000, message="网络请求失败")
     except json.JSONDecodeError:
-        # JSON 解析错误
         self.logger.error("JSON 解析失败")
-        return self._error_response("响应格式错误", 10006)
+        return self.make_error(retcode=10006, message="响应格式错误")
     except Exception as e:
-        # 未知错误
         self.logger.error(f"未知错误: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        return self.make_error(message=str(e))
 ```
+
+> **向后兼容**：直接使用 `aiohttp` 的旧适配器代码不受影响，仍可捕获 `aiohttp.ClientError`。异常转换仅在通过 `sdk.client` 发起请求时生效。
 
 ### 2. 日志记录
 
+框架自动为适配器创建子 logger（`sdk.logger.get_child("MyAdapter")`），无需手动初始化：
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # 声明配置类后 self.logger 自动可用
     
     async def start(self):
         self.logger.info("适配器启动中...")
@@ -6778,6 +6796,99 @@ class MyConverter:
         return base
 ```
 
+## 富媒体消息转换示例
+
+实际平台的消息通常包含图片、@提及、回复等富媒体内容。以下是 `_convert_message_segments` 处理多种消息类型的示例：
+
+```python
+def _convert_message_segments(self, raw_content: list) -> list:
+    """将平台原生消息段列表转换为 OneBot12 标准消息段"""
+    segments = []
+
+    for item in raw_content:
+        item_type = item.get("type", "")
+
+        if item_type == "text":
+            segments.append({
+                "type": "text",
+                "data": {"text": item.get("content", "")}
+            })
+
+        elif item_type == "image":
+            file_url = item.get("url") or item.get("file_id", "")
+            segments.append({
+                "type": "image",
+                "data": {"file": file_url}
+            })
+
+        elif item_type == "at":
+            segments.append({
+                "type": "mention",
+                "data": {"user_id": item.get("target_id", "")}
+            })
+
+        elif item_type == "reply":
+            segments.append({
+                "type": "reply",
+                "data": {"message_id": item.get("reply_to_id", "")}
+            })
+
+        elif item_type == "at_all":
+            segments.append({"type": "mention_all", "data": {}})
+
+        else:
+            segments.append({
+                "type": "text",
+                "data": {"text": f"[不支持的消息类型: {item_type}]"}
+            })
+
+    return segments
+```
+
+## 常见陷阱
+
+### 1. 缺少 `{platform}_raw` 字段
+
+这是最常见的错误。缺少原始数据字段会导致模块无法访问平台特有的信息。
+
+```python
+base_event["myplatform_raw"] = raw_event        # 必须！
+base_event["myplatform_raw_type"] = event_type   # 必须！
+```
+
+### 2. 时间戳格式错误
+
+OneBot12 标准要求 `time` 字段为 Unix 秒级时间戳（整数）。如果你的平台返回毫秒时间戳或 ISO 格式字符串，需要转换：
+
+```python
+import time
+
+# 毫秒 → 秒
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO 字符串 → 秒
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. 缺少 `self` 字段
+
+`self` 字段包含机器人自身信息，`user_id` 为机器人的账号 ID。多 Bot 场景下此字段至关重要：
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # 机器人自身的 ID
+}
+```
+
+### 4. detail_type 使用了非标准值
+
+`detail_type` 必须使用 OneBot12 标准定义的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
+
+### 5. 往返一致性
+
+确保 Converter 生成的消息段类型与 Send 端支持的方法对应。例如，如果 Converter 将平台的图片消息转换为 `{"type": "image", ...}`，那么 Send 端的 `Image()` 方法必须能处理图片发送。
+
 ## 最佳实践
 
 1. **总是保留原始数据**：`{platform}_raw` 字段不能省略
@@ -7158,182 +7269,102 @@ API 参考
 
 # 核心模块 API
 
-本文档详细介绍了 ErisPulse 的核心模块 API。
+本文档提供 ErisPulse 核心模块的 API 快速参考，包含方法签名和简要说明。详细用法和示例请点击各模块的"完整文档"链接。
 
 ## Storage 模块
+
+基于 SQLite 的键值存储系统，支持通用 SQL 链式查询。
 
 ### 基本操作
 
 ```python
 from ErisPulse import sdk
 
-# 设置值
 sdk.storage.set("key", "value")
-
-# 获取值
 value = sdk.storage.get("key", default_value)
-
-# 获取所有键
 keys = sdk.storage.keys()
-
-# 删除值
 sdk.storage.delete("key")
-```
-
-### 事务操作
-
-```python
-# 使用事务确保数据一致性
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # 如果任何操作失败，所有更改都会回滚
 ```
 
 ### 批量操作
 
 ```python
-# 批量设置
-sdk.storage.set_multi({
-    "key1": "value1",
-    "key2": "value2",
-    "key3": "value3"
-})
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
 
-# 批量获取
-values = sdk.storage.get_multi(["key1", "key2", "key3"])
+### 事务操作
 
-# 批量删除
-sdk.storage.delete_multi(["key1", "key2", "key3"])
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### 属性访问
+
+```python
+sdk.storage.my_key          # 等价于 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等价于 sdk.storage.set("my_key", "val")
 ```
 
 ### SQL 链式查询
 
 Storage 模块提供链式调用风格的通用 SQL 查询构建器，支持自定义表的 CRUD 操作。
 
-> 详见 [SQL 查询构建器](../advanced/sql-builder.md) 获取完整文档。
-
 ```python
-from ErisPulse import sdk
-
-# 创建自定义表
 sdk.storage.CreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
-    "age": "INTEGER DEFAULT 0"
 })
 
-# 插入数据
-sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
-
-# 批量插入
-sdk.storage.Table("users").InsertMulti([
-    {"name": "Bob", "age": 25},
-    {"name": "Charlie", "age": 35}
-]).Execute()
-
-# 查询数据
-rows = (sdk.storage.Table("users")
-    .Select("name", "age")
-    .Where("age > ?", 18)
-    .OrderBy("name")
-    .Limit(10)
-    .Execute())
-
-# 更新数据
-sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
-
-# 删除数据
-sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
-
-# 计数
-count = sdk.storage.Table("users").Where("age > ?", 18).Count()
-
-# 存在性检查
-exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
-
-# 获取单条记录
-row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
-
-# 修改表结构
-sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
-sdk.storage.AlterTable("users").RenameTo("members").Execute()
-
-# 检查表是否存在
-if sdk.storage.HasTable("users"):
-    sdk.storage.DropTable("users")
-
-# 事务中的链式操作
-with sdk.storage.transaction():
-    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
-    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
-
-# 复用查询条件
-base = sdk.storage.Table("users").Where("age > ?", 20)
-rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
-count = base.copy().Count()
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
+
+> 完整的链式查询 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事务等）请参考 [SQL 查询构建器](../advanced/sql-builder.md)。
 
 ### 存储后端抽象
 
-`StorageManager` 继承自 `BaseStorage` 抽象基类，支持未来拓展其他存储介质（Redis、MySQL 等）。
+`StorageManager` 继承自 `BaseStorage` 抽象基类，支持扩展其他存储介质（Redis、MySQL 等）。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
-
-# BaseStorage 定义了统一接口：get/set/delete/Table/CreateTable/DropTable 等
-# BaseQueryBuilder 定义了链式查询接口：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模块
 
-### 读取配置
+TOML 格式的配置文件管理，支持点号分隔的键路径。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
+| `force_save()` | 强制将内存中的配置写入文件 |
+| `reload()` | 从文件重新加载配置 |
+
+### 示例
 
 ```python
-from ErisPulse import sdk
-
-# 获取配置
 config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
 
-# 获取嵌套配置
-value = sdk.config.getConfig("MyModule.subkey.value", "default")
-```
-
-### 写入配置
-
-```python
-# 设置配置
 sdk.config.setConfig("MyModule", {"key": "value"})
-
-# 设置嵌套配置
-sdk.config.setConfig("MyModule.subkey.value", "new_value")
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-### 配置示例
-
-```python
-def _load_config(self):
-    config = sdk.config.getConfig("MyModule")
-    if not config:
-        # 创建默认配置
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第三个参数为True时，立即保存配置，是方便用户可以直接修改配置文件的
-        return default_config
-    return config
-```
+> `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
 
 ## Logger 模块
 
-### 基本日志
+模块化日志系统，基于 Rich 输出，支持子日志器和模块级别控制。
+
+### 基本用法
 
 ```python
-from ErisPulse import sdk
-
-# 不同日志级别
 sdk.logger.debug("调试信息")
 sdk.logger.info("运行信息")
 sdk.logger.warning("警告信息")
@@ -7341,542 +7372,187 @@ sdk.logger.error("错误信息")
 sdk.logger.critical("致命错误")
 ```
 
-### 子日志记录器
+### 子日志器
 
 ```python
-# 获取子日志记录器
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模块日志")
 
-# 子模块还可以有子模块的日志，这样可以更精确地控制日志输出
-child_logger.get_child("utils")
+child_logger.get_child("utils")  # 支持嵌套
 ```
 
-### 日志输出
+### 日志级别控制
 
 ```python
-# 设置输出文件
-sdk.logger.set_output_file("app.log")
+sdk.logger.set_level("DEBUG")                          # 全局级别
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模块级别
+```
 
-# 保存日志到文件
+### 输出控制
+
+```python
+sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
 ```
 
 ## Adapter 模块
 
-### 获取适配器
+适配器管理器，管理多平台适配器的注册、启动和关闭。
 
-```python
-from ErisPulse import sdk
+### API 概览
 
-# 获取适配器实例
-adapter = sdk.adapter.get("platform_name")
-
-# 通过属性访问
-adapter = sdk.adapter.platform_name
-```
+| 方法 | 说明 |
+|------|------|
+| `get(platform)` | 获取适配器实例 |
+| `exists(platform)` | 检查适配器是否已注册 |
+| `enable(platform)` / `disable(platform)` | 启用/禁用适配器 |
+| `is_enabled(platform)` | 检查是否启用 |
+| `startup(platforms)` / `shutdown(platforms)` | 启动/关闭适配器 |
+| `is_running(platform)` | 检查适配器是否正在运行 |
+| `list_running()` | 列出所有正在运行的适配器 |
+| `platforms` | 获取所有平台名称列表 |
 
 ### 适配器事件
 
 ```python
-# 监听标准事件
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# 监听特定平台的事件
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
-
-# 监听平台原生事件
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
 ```
 
-### 适配器管理
+### Bot 状态查询
 
 ```python
-# 获取所有平台
-platforms = sdk.adapter.platforms
-
-# 检查适配器是否存在
-exists = sdk.adapter.exists("platform_name")
-
-# 启用/禁用适配器
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# 启动/关闭适配器
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# 检查适配器是否正在运行
-is_running = sdk.adapter.is_running("platform_name")
-
-# 列出所有正在运行的适配器
-running = sdk.adapter.list_running()
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
 ```
+
+> 完整的适配器管理 API 请参考 [适配器系统 API](adapter-system.md)。
 
 ## Module 模块
 
-### 获取模块
+模块管理器，管理插件的注册、加载和卸载。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `get(name)` | 获取模块实例 |
+| `exists(name)` | 检查是否已注册 |
+| `is_loaded(name)` | 检查是否已加载 |
+| `is_enabled(name)` | 检查是否启用 |
+| `enable(name)` / `disable(name)` | 启用/禁用模块 |
+| `load(name)` / `unload(name)` | 加载/卸载模块 |
+| `list_registered()` | 列出已注册模块 |
+| `list_loaded()` | 列出已加载模块 |
+| `get_info(name)` | 获取模块信息 |
+| `get_status_summary()` | 获取模块状态摘要 |
+
+### 属性访问
 
 ```python
-from ErisPulse import sdk
-
-# 获取模块实例
 module = sdk.module.get("ModuleName")
-
-# 通过属性访问
 module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### 模块管理
-
-```python
-# 检查模块是否存在
-exists = sdk.module.exists("ModuleName")
-
-# 检查模块是否已加载
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# 检查模块是否启用
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# 启用/禁用模块
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# 加载模块
-await sdk.module.load("ModuleName")
-
-# 卸载模块
-await sdk.module.unload("ModuleName")
-
-# 列出已加载的模块
-loaded = sdk.module.list_loaded()
-
-# 列出已注册的模块
-registered = sdk.module.list_registered()
-
-# 获取模块信息
-info = sdk.module.get_info("ModuleName")
-
-# 获取模块状态摘要
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# 检查模块是否正在运行（等价于 is_loaded）
-is_running = sdk.module.is_running("ModuleName")
-
-# 列出所有正在运行的模块
-running = sdk.module.list_running()
+module = sdk.ModuleName  # 等价快捷方式
 ```
 
 ## Lifecycle 模块
 
-### 事件提交
+事件驱动的生命周期管理器，提供事件提交和监听功能。
+
+### API 概览
+
+| 方法 | 说明 |
+|------|------|
+| `on(event, priority=0)` | 装饰器注册事件处理器，支持点号匹配和通配符 `*` |
+| `register(event, handler, priority=0)` | 函数式注册处理器 |
+| `unregister(event, handler=None)` | 移除处理器 |
+| `emit(event, data)` | 异步触发事件 |
+| `emit_sync(event, data)` | 同步触发事件 |
+| `submit_event(event_type, msg, data, source)` | 提交标准格式事件（兼容旧版） |
+| `start_timer(id)` / `stop_timer(id)` | 性能计时器 |
+
+### 示例
 
 ```python
-from ErisPulse import sdk
-
-# 提交自定义事件
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="自定义事件描述"
-)
-```
-
-### 事件监听
-
-```python
-# 监听特定事件
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"模块初始化: {event_data}")
 
-# 监听父级事件
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"模块事件: {event_data}")
 
-# 监听所有事件
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"系统事件: {event_data}")
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-### 计时器
-
-```python
-# 开始计时
-sdk.lifecycle.start_timer("my_operation")
-
-# ... 执行操作 ...
-
-# 获取持续时间
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# 停止计时
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
+> 完整的标准事件列表和详细用法请参考 [生命周期管理](../advanced/lifecycle.md)。
 
 ## Router 模块
 
-### 抽象类型
+HTTP/WebSocket 路由管理器，基于 FastAPI + Uvicorn，支持装饰器路由、中间件、分组、限流、CORS。
 
-Router 支持两种类型注解风格：
+> 完整的路由 API 文档（装饰器路由、WebSocket、中间件、速率限制、CORS、安全头等）请参考 [路由管理器](../advanced/router.md)。
+
+### 快速参考
 
 ```python
-# ErisPulse 抽象类型（推荐，可移植性强）
-from ErisPulse.Core import HttpRequest, WebSocketConnection
-
+# HTTP 路由
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
-    data = await request.json()
     return {"status": "ok"}
 
-# FastAPI 原生类型（兼容已有代码）
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler(request: Request):
-    return {"status": "ok"}
-```
-
-> 路由系统根据参数注解自动注入对应类型的对象，详见 [路由管理器](../advanced/router.md)。
-
-### 装饰器路由（推荐）
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP 路由装饰器
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"status": "ok"}
-
-# 快捷方法装饰器
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket 装饰器
-from fastapi import WebSocket
-
+# WebSocket 路由
 @sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
 
-# 带认证的 WebSocket 装饰器
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### 传统注册方式
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="数据接口",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket 路由
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# 基本注册（自动接受连接）
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# 带认证的注册（推荐：使用 auth_handler 控制连接）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# 取消路由
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**参数说明：**
-
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `module_name` | 模块名称（必须） | - |
-| `path` | WebSocket 路径 | - |
-| `handler` | 处理函数 | - |
-| `auth_handler` | 认证函数，返回 `False` 会自动关闭连接 | `None` |
-| `auto_accept` | 是否自动 `accept()` | `True` |
-
-> **推荐**：使用 `auth_handler` 进行连接确认，而非关闭 `auto_accept`。仅在你需要完全控制连接流程时才设置 `auto_accept=False`。
-
-### 路由分组
-
-```python
-# 创建路由组
+# 路由分组
 group = sdk.router.group("MyModule", prefix="/v1")
-
-# 在组内注册路由
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request: HttpRequest):
     return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# 带版本号的分组
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
-```
-
-### 路由中间件
-
-```python
-# 全局中间件（glob 匹配）
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
-
-# 特定路径中间件
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
-
-### 速率限制
-
-```python
-# 对路由设置速率限制（滑动窗口）
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS 配置
-
-```python
-# 代码方式
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# 配置文件方式（config.toml）
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### 安全头
-
-```python
-# 自动添加安全响应头
-sdk.router.setup_security_headers()
-
-# 配置文件方式（config.toml）
-# [router.security]
-# enabled = true
-```
-
-### 自动文档
-
-```python
-# Router 默认启用 OpenAPI 文档
-# 禁用文档
-sdk.router.disable_docs()
-
-# 自定义文档信息
-sdk.router.set_docs_info(
-    title="My API",
-    description="API 文档",
-    version="1.0.0"
-)
-```
-
-### 路由信息
-
-```python
-app = sdk.router.get_app()
 ```
 
 ## HTTP Client 模块
 
-### 基本请求
+统一 HTTP/WS 客户端，基于 aiohttp，提供请求统计、重试、日志、ErisPulse 异常体系。
+
+> 完整的 HTTP 客户端文档（请求方法、响应对象、WebSocket 客户端、异常体系等）请参考 [HTTP 客户端](../advanced/http-client.md)。
+
+### 快速参考
 
 ```python
 from ErisPulse.Core import client
 
-# GET 请求
+# HTTP 请求
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST 请求
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice", "age": 30},
-)
-
-# PUT / DELETE / PATCH
-resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
-resp = await client.delete("https://api.example.com/users/1")
-resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
-
-# 通用 request 方法
-resp = await client.request("OPTIONS", "https://api.example.com/resource")
-```
-
-### 响应对象
-
-```python
-from ErisPulse.Core import client
-
-resp = await client.get("https://api.example.com/users")
-
-resp.status        # int - HTTP 状态码 (如 200, 404)
-resp.reason        # str | None - 状态描述 (如 "OK")
-resp.headers       # 响应头 (大小写不敏感)
-resp.content_type  # str | None - Content-Type
-resp.url           # 最终 URL (可能因重定向变化)
-resp.raw           # 底层原生响应对象 (当前为 aiohttp.ClientResponse)
-
-# 读取响应体
-body = await resp.read()       # bytes
-text = await resp.text()       # str
-data = await resp.json()       # 解析 JSON
-text = await resp.text("gbk")  # 指定编码
-```
-
-### 请求参数
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `url` | `str` | 请求 URL |
-| `params` | `dict[str, str]` | 查询参数 (可选) |
-| `headers` | `dict[str, str]` | 额外请求头 (可选) |
-| `data` | `Any` | 请求体 (表单或原始数据) (可选) |
-| `json` | `Any` | JSON 请求体 (可选) |
-| `timeout` | `float` | 本次请求超时 (秒) (可选, 覆盖默认值) |
-| `max_retries` | `int` | 本次最大重试次数 (可选, 覆盖默认值) |
-
-### 自定义客户端
-
-```python
-from ErisPulse.Core import HttpClient
-
-# 创建自定义客户端（非全局单例）
-client = HttpClient(
-    timeout=60,
-    connect_timeout=5,
-    max_retries=3,
-    retry_delay=2,
-    headers={"Authorization": "Bearer token"},
-    user_agent="MyBot/1.0",
-)
-
-# 上下文管理器，自动关闭会话
-async with HttpClient(timeout=30) as client:
-    resp = await client.get("https://httpbin.org/get")
-```
-
-### 请求统计
-
-```python
-from ErisPulse.Core import client
-
-# 查看统计
-stats = client.stats
-# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
-
-# 重置统计
-client.reset_stats()
-```
-
-### 生命周期事件
-
-```python
-from ErisPulse.Core import lifecycle
-
-@lifecycle.on("client.request")
-async def on_request(event_data):
-    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API
 - [适配器系统 API](adapter-system.md) - Adapter 管理 API
-- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [SQL 查询构建器](../advanced/sql-builder.md) - SQL 链式查询完整文档
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
+- [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
+- [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
+
 
 
 
@@ -8122,39 +7798,7 @@ async def heartbeat_handler(event):
 
 ### Bot 状态查询
 
-当适配器发送 meta 事件后，框架会自动追踪 Bot 状态。你可以通过适配器管理器查询：
-
-```python
-from ErisPulse import sdk
-
-# 获取单个 Bot 信息
-info = sdk.adapter.get_bot_info("telegram", "123456")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-tg_bots = sdk.adapter.list_bots("telegram")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("telegram", "123456")
-
-# 获取完整状态摘要
-summary = sdk.adapter.get_status_summary()
-```
-
-也可以通过生命周期事件监听 Bot 上下线：
-
-```python
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    sdk.logger.info(f"Bot 上线: {data['platform']}/{data['bot_id']}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    sdk.logger.info(f"Bot 下线: {data['platform']}/{data['bot_id']}")
-```
+当适配器发送 meta 事件后，框架会自动追踪 Bot 状态。查询 API 和生命周期事件监听请参考 [适配器系统 API - Bot 状态管理](adapter-system.md#bot-状态管理)。
 
 ## Event 包装类
 
@@ -8242,49 +7886,29 @@ reply = await event.wait_reply(timeout=30)
 ### 交互方法
 
 ```python
-# confirm — 确认对话
+# confirm — 确认对话（返回 True/False/None）
 if await event.confirm("确定要执行此操作吗？"):
     await event.reply("已确认")
-else:
-    await event.reply("已取消")
 
-# 自定义确认词
-if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
-    pass
-
-# choose — 选择菜单
+# choose — 选择菜单（返回选项索引或 None）
 choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
-if choice is not None:
-    await event.reply(f"你选择了：{['红色', '绿色', '蓝色'][choice]}")
 
-# collect — 表单收集
+# collect — 表单收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "请输入姓名："},
     {"key": "age", "prompt": "请输入年龄：",
      "validator": lambda e: e.get_text().isdigit()},
 ])
-if data:
-    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
 
-# wait_for — 等待任意事件
-evt = await event.wait_for(
-    event_type="notice",
-    condition=lambda e: e.get_detail_type() == "group_member_increase",
-    timeout=120
-)
-if evt:
-    await event.reply(f"新成员: {evt.get_user_id()}")
+# wait_for — 等待满足条件的任意事件
+evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — 多轮对话
+# conversation — 多轮对话上下文
 conv = event.conversation(timeout=60)
-await conv.say("欢迎！输入'退出'结束。")
-while conv.is_active:
-    reply = await conv.wait()
-    if reply is None or reply.get_text() == "退出":
-        conv.stop()
-        break
-    await conv.say(f"你说: {reply.get_text()}")
+await conv.say("欢迎！")
 ```
+
+> 完整的交互方法参数说明和更多示例请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多轮对话](../advanced/conversation.md)。
 
 ### 工具方法
 
@@ -8535,20 +8159,39 @@ running = sdk.adapter.list_running()
 
 ## 中间件
 
+中间件在事件分发到处理器之前执行，可以对事件数据进行修改、过滤或记录。
+
 ### 注册中间件
 
 ```python
-# 添加中间件
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # 处理事件
     sdk.logger.info(f"中间件处理: {event}")
     return event
 ```
 
-### 中间件执行顺序
+### 中间件执行模型
 
-中间件按照注册顺序执行，在事件分发到处理器之前执行。
+- **执行顺序**：中间件按注册顺序执行（先注册先执行）
+- **数据传递**：每个中间件接收上一个中间件返回的 `event` 数据；如果某个中间件返回 `None`，则忽略该返回值并保留原数据继续传递（同时输出 `warning` 级别日志）
+- **修改数据**：中间件可以修改事件数据并返回修改后的字典
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "垃圾广告" in text:
+            return None   # 返回 None 不会阻止事件传播，仅忽略此返回值
+    return event
+```
+
+> **注意**：中间件目前不支持阻断事件传播。如需过滤特定事件，请在事件处理器中通过条件判断实现。
 
 ## Send 消息发送
 
@@ -8614,8 +8257,8 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回复@的
 ## API 调用
 
 ### call_api 方法
-> 注意，各个平台的 API 调用方式可能不同，请参考对于平台适配器文档
-> 并不推荐直接使用 call_api 方法，建议使用 Send 类进行消息发送
+
+> **注意**：`call_api` 是直接调用平台原生 API 的底层方法，各平台的参数和返回值可能不同，请参考对应平台适配器文档。**推荐使用 Send DSL 发送消息**，仅在 Send DSL 不支持的场景（如获取平台特有的数据、调用平台管理接口等）中使用 `call_api`。
 
 ```python
 # 调用平台 API
@@ -10469,8 +10112,7 @@ result = sdk.my_module.some_sync_method()
 
 ### 推荐使用懒加载的场景（lazy_load=True）
 
-- 被动调用的工具类
-- 被动类模块
+- 被动调用的工具类（如数据查询模块，格式转换器等，仅只在其他模块调用时才需要）
 
 ### 推荐禁用懒加载的场景（lazy_load=False）
 
@@ -10479,19 +10121,7 @@ result = sdk.my_module.some_sync_method()
 - 定时任务模块
 - 需要在应用启动时就初始化的模块
 
-### 加载优先级
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # 立即加载
-            priority=100      # 高优先级，数值越大优先级越高
-        )
-```
+> `priority` 参数控制立即加载模块间的初始化顺序，数值越大越先初始化。同优先级的模块按注册顺序加载。
 
 ## 注意事项
 
@@ -10831,6 +10461,8 @@ ErisPulse 提供了服务端抽象类型，使模块无需直接依赖 FastAPI�
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 连接封装，额外提供生命周期钩子 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 断开异常 |
 
+> `WebSocketConnection` 继承自 `WebSocketConnectionBase`，与客户端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 接口。客户端和服务端 WebSocket 可以使用相同的业务逻辑代码。
+>
 > 通过 `.raw` 属性可访问底层 FastAPI 原生对象。直接使用 FastAPI 类型的代码也完全兼容。
 
 ## 装饰器路由（推荐）
@@ -11105,37 +10737,6 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## 认证机制
-
-推荐使用 `auth_handler` 控制连接访问：
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# 装饰器方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# 传统注册方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` 在连接建立后执行，返回 `False` 会自动关闭连接（状态码 1008）。
-
-> 仅在你需要完全控制连接流程（如自定义握手协议）时才设置 `auto_accept=False`。
-
 ## 系统路由
 
 路由管理器自动提供两个系统路由：
@@ -11194,9 +10795,18 @@ async def on_server_stop(event):
 
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 标准消息段构建工具，用于构建结构化的消息内容，配合 `Send.Raw_ob12()` 使用。
 
+## 导入方式
+
+`MessageBuilder` 支持以下两种导入方式（效果相同，推荐使用第一种）：
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # 推荐，通过包导出
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # 直接导入模块
+```
+
 ## 双模式机制
 
-MessageBuilder 提供两种使用模式，通过 Python 描述符机制实现类级别和实例级别的不同行为：
+MessageBuilder 提供两种使用模式，通过 Python 描述符机制（`__get__`）实现类级别和实例级别的不同行为：当通过类调用方法时，`__get__` 返回静态方法的执行结果；当通过实例调用时，返回 `self` 以支持链式调用。
 
 ### 链式调用模式（实例）
 
@@ -11962,50 +11572,15 @@ sdk.Dashboard.register_view(
 
 ```python
 sdk.Dashboard.register_view(
-    id="Weather",
-    title="天气", title_en="Weather",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-    html_content='''
-        <h1 class="page-title">天气查询</h1>
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-header">当前天气</div>
-                <div class="card-body">
-                    <div id="weather-info">加载中...</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">操作</div>
-                <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
-                </div>
-            </div>
-        </div>
-    ''',
-    js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
-        async function refreshWeather() {
-            var el = document.getElementById('weather-info');
-            if (!el) return;
-            try {
-                var token = localStorage.getItem('__ep_tk__');
-                var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                var data = await resp.json();
-                el.innerHTML = '<p>温度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>湿度: ' + (data.humidity || '--') + '%</p>';
-            } catch (e) {
-                el.textContent = '加载失败: ' + e.message;
-            }
-        }
-    ''',
-    loader="loadWeatherView",
+    id="HelloPage",
+    title="你好页面", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">这是一个示例页面</div></div>',
     group="group_tools",
 )
 ```
+
+> 完整的天气模块示例（包含 API 路由、JS 交互等）请见下方 [完整模块示例](#完整模块示例)。
 
 ### 模式二：iframe 嵌入
 
@@ -12168,12 +11743,11 @@ class Main(BaseModule):
             pass
 
     async def _api_current(self, request):
-        from fastapi.responses import JSONResponse
-        return JSONResponse({
+        return {
             "city": self.config.get("city", "北京"),
             "temp": 25,
             "humidity": 60,
-        })
+        }
 
     def _register_dashboard_view(self):
         try:

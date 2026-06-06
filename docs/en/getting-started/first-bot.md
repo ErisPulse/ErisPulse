@@ -24,7 +24,7 @@ Follow the prompts to complete the configuration. It is recommended to select:
 
 The project structure after initialization:
 
-```text
+```
 my_first_bot/
 ├── config/
 │   └── config.toml
@@ -56,6 +56,7 @@ async def main():
     print("Initializing ErisPulse...")
     # Run SDK and keep it running
     await sdk.run(keep_running=True)
+
     # Or
     # await sdk.run(keep_running=False)
     # ...Do Something
@@ -66,32 +67,6 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> In addition to using `sdk.run()` directly, you can also control the execution flow more granularly, such as:
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse initialization failed, please check logs")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # Keep the program running; if you have other operations to execute, you can also not keep the event loop running, but you need to handle it yourself
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -109,7 +84,7 @@ epsdk run main.py --reload
 
 Send the command in your chat platform:
 
-```text
+```
 /hello
 ```
 
@@ -133,10 +108,13 @@ async def hello_handler(event):
 ```
 
 The `event` parameter is an Event object, containing:
-- Message content
-- Sender information
-- Platform information
-- etc...
+- Message content: `event.get_text()`
+- Sender information: `event.get_user_id()`, `event.get_user_nickname()`
+- Platform information: `event.get_platform()`
+- Group information: `event.get_group_id()`
+- Raw data: `event.get_raw()`
+
+> For a complete list of Event object methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md).
 
 ### Sending a Reply
 
@@ -148,51 +126,20 @@ await event.reply("Reply content")
 
 ## Extension: Adding More Features
 
-### Add Message Listening
+ErisPulse provides rich event handling and data processing capabilities:
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """Listen to all messages"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### Add Notification Listening
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """Listen to friend addition events"""
-    user_id = event.get_user_id()
-    await event.reply(f"Welcome to add me as a friend! Your ID is {user_id}")
-```
-
-### Use Storage System
-
-```python
-# Get counter
-count = sdk.storage.get("hello_count", 0)
-
-# Increment counter
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"This is the {count}th time calling hello command")
-```
+- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Introduction](event-handling.md)
+- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Introduction](event-handling.md)
+- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Task Examples](common-tasks.md)
 
 ## Common Issues
 
 ### Bot does not respond?
 
-1. Check if the adapter is configured correctly
-2. View log output to confirm if there are errors
-3. Confirm if the command prefix is correct (default is `/`)
+1. Check if the adapter is configured correctly and confirm that the `status` in `config/config.toml` for the adapter is `true`
+2. View terminal log output to confirm if there are error messages (especially `ERROR` level logs)
+3. Confirm if the command prefix is correct (default is `/`), you can check the `[ErisPulse.event.command]` section in the configuration file
+4. Confirm if the command name is spelled correctly, pay attention to the case sensitivity setting
 
 ### How to change the command prefix?
 
@@ -206,7 +153,7 @@ case_sensitive = false
 
 ### How to support multiple platforms?
 
-The code will automatically adapt to all loaded platform adapters. Just ensure your logic is compatible:
+ErisPulse uses the OneBot12 standard to unify event formats across different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform via `event.get_platform()`:
 
 ```python
 @command("hello")
@@ -217,7 +164,11 @@ async def hello_handler(event):
         await event.reply("Hello! From Yunhu")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("Hello!")
 ```
+
+> For more multi-platform adaptation tips, please refer to [Common Task Examples](common-tasks.md#multi-platform-adaptation).
 
 ## Next Steps
 

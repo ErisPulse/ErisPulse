@@ -75,7 +75,7 @@ graph TB
     Event --> Conversation["Conversation<br/>Branch + Persistence"]
 
     AdapterMgr --> BaseAdapter["BaseAdapter"]
-    BaseAdapter --> P1["云湖"]
+    BaseAdapter --> P1["Yunhu"]
     BaseAdapter --> P2["Telegram"]
     BaseAdapter --> P3["OneBot11/12"]
     BaseAdapter --> PN["..."]
@@ -98,7 +98,7 @@ graph TB
 | **Config** | TOML format configuration file management |
 | **Logger** | Modular logging system, supporting sub-loggers |
 | **Router** | HTTP/WebSocket route management, encapsulating the underlying backend via an abstraction layer (currently FastAPI + Uvicorn), supporting decorator routes, middleware, grouping, rate limiting, CORS |
-| **HttpClient** | Unified HTTP client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, and other features |
+| **HttpClient** | Unified HTTP/WS client, encapsulating the underlying request library via an abstraction layer (currently aiohttp), providing request statistics, retry, logging, WebSocket client, and ErisPulse exception hierarchy features. The client and server WebSocket share the `WebSocketConnectionBase` base class |
 
 ## Initialization Process
 
@@ -566,140 +566,40 @@ Welcome to the ErisPulse Getting Started Guide. If you are using ErisPulse for t
 
 This guide is organized in the following order, and is recommended to be read sequentially:
 
-1. **Create Your First Bot** - Understand the complete project initialization workflow
-2. **Core Concepts** - Understand the core architecture of ErisPulse
-3. **Introduction to Event Handling** - Learn how to handle various types of events
-4. **Common Task Examples** - Master the implementation of common features
+| Step | Topic | Description |
+|------|-------|-------------|
+| 1 | [Create Your First Bot](first-bot.md) | From project initialization to running your first command |
+| 2 | [Basic Concepts](basic-concepts.md) | Understanding ErisPulse's core architecture and module design |
+| 3 | [Introduction to Event Handling](event-handling.md) | Learn how to handle various event types, such as messages, commands, and notices |
+| 4 | [Common Task Examples](common-tasks.md) | Master common features such as data persistence, scheduled tasks, and permission control |
 
 ## Choosing a Development Approach
 
-ErisPulse supports two development approaches; you can choose based on your needs:
+ErisPulse supports two development approaches:
 
-### Embedded Development (Suitable for Fast Prototyping)
+| Approach | Suitable Scenarios | Description |
+|----------|-------------------|-------------|
+| **Embedded Development** | Fast prototyping, internal project features | Write handlers directly in `main.py` without creating separate modules |
+| **Module Development** (Recommended) | Production environment, feature distribution | Create independent Python packages and install and use them via `epsdk install` |
 
-Use ErisPulse directly within a project without creating separate modules.
+> For a detailed comparison and examples of both approaches, please refer to [Create Your First Bot](first-bot.md) and [Getting Started with Module Development](../developer-guide/modules/getting-started.md).
 
-```python
-# main.py
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
+## Architecture Overview
 
-@command("hello")
-async def hello(event):
-    await event.reply("Hello!")
+ErisPulse adopts an event-driven architecture and consists of the following core systems:
 
-# Run the SDK and keep it running | Needs to run in an async environment
-asyncio.run(sdk.run(keep_running=True))
-```
+- **Adapter System** — Communicating with various platforms, converting platform events into a unified OneBot12 standard format
+- **Event System** — Handling five major types of events: messages, commands, notices, requests, and meta events
+- **Module System** — Extending functionality through independent modules, supporting dependency management and lazy loading
+- **Core Modules** — Providing basic capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)
 
-**Pros:**
-- Quick to get started, no extra configuration needed
-- Suitable for internal project-specific features
-- Convenient for debugging and testing
-
-**Cons:**
-- Not convenient for code reuse and distribution
-- Difficult to manage dependencies independently
-
-### Modular Development (Recommended for Production)
-
-Create independent module packages and install and use them via package managers.
-
-**Pros:**
-- Easy to distribute and share
-- Independent dependency management
-- Clear version control
-
-**Cons:**
-- Requires additional project structure
-- Initial configuration is relatively complex
-
-## ErisPulse Core Concepts
-
-### Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────┐
-│                ErisPulse Framework                 │
-├─────────────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────────┐      ┌──────────────┐    │
-│  │  Adapter Sys │◄────►│  Event Sys   │    │
-│  │             │      │              │    │
-│  │  Yunhu      │      │  Message     │    │
-│  │  Telegram   │      │  Command     │    │
-│  │  OneBot11   │      │  Notice      │    │
-│  │  Email      │      │  Request     │    │
-│  └──────────────┘      │  Meta        │    │
-│         │              └──────────────┘    │
-│         ▼                   │              │
-│  ┌──────────────┐           ▼              │
-│  │  Module Sys  │◄──────────────┐       │
-│  │             │               │       │
-│  │  Module A   │               │       │
-│  │  Module B   │               │       │
-│  │  ...        │               │       │
-│  └──────────────┘               │       │
-│                               │       │
-│  ┌──────────────┐              │       │
-│  │  Core Modules│◄─────────────┘       │
-│  │  Storage    │                      │
-│  │  Config     │                      │
-│  │  Logger     │                      │
-│  │  Router     │                      │
-│  └──────────────┘                      │
-└─────────────────────────────────────────────┘
-             │                    │
-             ▼                    ▼
-        ┌────────┐          ┌────────┐
-        │  Plat  │          │  User  │
-        │  API   │          │  Code  │
-        └────────┘          └────────┘
-```
-
-### Core Components Explanation
-
-#### 1. Adapter System
-
-The adapter is responsible for communicating with specific platforms, converting platform-specific events into a unified OneBot12 standard format.
-
-**Examples:**
-- Yunhu Adapter: Communicating with the Yunhu platform
-- Telegram Adapter: Communicating with the Telegram Bot API
-- OneBot11 Adapter: Communicating with OneBot11-compatible applications
-
-#### 2. Event System
-
-The event system is responsible for handling various types of events, including:
-- **Message Event**: Messages sent by the user
-- **Command Event**: Commands entered by the user (e.g., `/hello`)
-- **Notice Event**: System notifications (e.g., friend added, group member changes)
-- **Request Event**: User requests (e.g., friend requests, group invitations)
-- **Meta Event**: System-level events (e.g., connection, heartbeat)
-
-#### 3. Module System
-
-Modules are the primary way to extend functionality and are used to:
-- Register event handlers
-- Implement business logic
-- Provide command interfaces
-- Call adapters to send messages
-
-#### 4. Core Modules
-
-Modules providing basic functions:
-- **Storage**: SQLite-based key-value storage
-- **Config**: Configuration management in TOML format
-- **Logger**: Modular logging system
-- **Router**: FastAPI + Uvicorn-based HTTP and WebSocket routing management
-- **Metrics**: Metrics monitoring system (Counter / Gauge / Histogram)
+> For detailed architecture diagrams and initialization flows, please refer to [Architecture Overview](../architecture.md).
 
 ## Start Learning
 
-Are you ready? Let's start creating your first bot.
+Are you ready to get started?
 
-- [Create Your First Bot](first-bot.md)
+- [Create Your First Bot](first-bot.md) — Get up and running in 5 minutes
 
 
 
@@ -731,7 +631,7 @@ Follow the prompts to complete the configuration. It is recommended to select:
 
 The project structure after initialization:
 
-```text
+```
 my_first_bot/
 ├── config/
 │   └── config.toml
@@ -763,6 +663,7 @@ async def main():
     print("Initializing ErisPulse...")
     # Run SDK and keep it running
     await sdk.run(keep_running=True)
+
     # Or
     # await sdk.run(keep_running=False)
     # ...Do Something
@@ -773,32 +674,6 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
-```
-
-> In addition to using `sdk.run()` directly, you can also control the execution flow more granularly, such as:
-```python
-import asyncio
-from ErisPulse import sdk
-
-async def main():
-    try:
-        isInit = await sdk.init()
-        
-        if not isInit:
-            sdk.logger.error("ErisPulse initialization failed, please check logs")
-            return
-        
-        await sdk.adapter.startup()
-        
-        # Keep the program running; if you have other operations to execute, you can also not keep the event loop running, but you need to handle it yourself
-        await asyncio.Event().wait()
-    except Exception as e:
-        sdk.logger.error(e)
-    finally:
-        await sdk.uninit()
-
-if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -816,7 +691,7 @@ epsdk run main.py --reload
 
 Send the command in your chat platform:
 
-```text
+```
 /hello
 ```
 
@@ -840,10 +715,13 @@ async def hello_handler(event):
 ```
 
 The `event` parameter is an Event object, containing:
-- Message content
-- Sender information
-- Platform information
-- etc...
+- Message content: `event.get_text()`
+- Sender information: `event.get_user_id()`, `event.get_user_nickname()`
+- Platform information: `event.get_platform()`
+- Group information: `event.get_group_id()`
+- Raw data: `event.get_raw()`
+
+> For a complete list of Event object methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md).
 
 ### Sending a Reply
 
@@ -855,51 +733,20 @@ await event.reply("Reply content")
 
 ## Extension: Adding More Features
 
-### Add Message Listening
+ErisPulse provides rich event handling and data processing capabilities:
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """Listen to all messages"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### Add Notification Listening
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """Listen to friend addition events"""
-    user_id = event.get_user_id()
-    await event.reply(f"Welcome to add me as a friend! Your ID is {user_id}")
-```
-
-### Use Storage System
-
-```python
-# Get counter
-count = sdk.storage.get("hello_count", 0)
-
-# Increment counter
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"This is the {count}th time calling hello command")
-```
+- **Message Listening**: Use `@message.on_message()` to listen for various messages → [Event Handling Introduction](event-handling.md)
+- **Notification Listening**: Use `@notice.on_friend_add()` to listen for system notifications → [Event Handling Introduction](event-handling.md)
+- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Task Examples](common-tasks.md)
 
 ## Common Issues
 
 ### Bot does not respond?
 
-1. Check if the adapter is configured correctly
-2. View log output to confirm if there are errors
-3. Confirm if the command prefix is correct (default is `/`)
+1. Check if the adapter is configured correctly and confirm that the `status` in `config/config.toml` for the adapter is `true`
+2. View terminal log output to confirm if there are error messages (especially `ERROR` level logs)
+3. Confirm if the command prefix is correct (default is `/`), you can check the `[ErisPulse.event.command]` section in the configuration file
+4. Confirm if the command name is spelled correctly, pay attention to the case sensitivity setting
 
 ### How to change the command prefix?
 
@@ -913,7 +760,7 @@ case_sensitive = false
 
 ### How to support multiple platforms?
 
-The code will automatically adapt to all loaded platform adapters. Just ensure your logic is compatible:
+ErisPulse uses the OneBot12 standard to unify event formats across different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform via `event.get_platform()`:
 
 ```python
 @command("hello")
@@ -924,7 +771,11 @@ async def hello_handler(event):
         await event.reply("Hello! From Yunhu")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("Hello!")
 ```
+
+> For more multi-platform adaptation tips, please refer to [Common Task Examples](common-tasks.md#multi-platform-adaptation).
 
 ## Next Steps
 
@@ -1040,100 +891,76 @@ Modules are the basic unit of functional extension and can:
 - Call adapters to send messages
 - Use services provided by core modules
 
+#### Module Discovery Mechanism
+
+ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module classes to `ModuleManager`, and then initializes them in topological order based on dependencies.
+
+#### Minimal Viable Module
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """Called when module loads"""
-        # Register event handler
-        @command("mycmd", help="My command")
-        async def my_command(event):
-            await event.reply("Command executed successfully")
-
         self.logger.info("Module loaded")
 
     async def on_unload(self, event):
-        """Called when module unloads"""
         self.logger.info("Module unloaded")
 ```
 
+#### Module Lifecycle
+
+- **Registration**: The SDK discovers module classes and registers them with the manager
+- **Loading**: Creates a module instance and calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
+- **Unloading**: Calls `on_unload(event)` to clean up resources
+
+#### Load Strategy
+
+Declare the module's loading behavior through `get_load_strategy()`:
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # Whether to enable lazy loading (default True)
+            priority=0        # Load priority, higher values initialize earlier
+        )
+```
+
+- **`lazy_load=True` (default)**: The module is initialized only when first accessed via `sdk.MyModule`, reducing startup time
+- **`lazy_load=False`**: The module is initialized immediately during SDK startup, suitable for modules that need to listen to lifecycle events or execute scheduled tasks
+- **`priority`**: Modules with the same priority are loaded in registration order; higher values initialize earlier
+
+> For detailed information on the lazy loading mechanism, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
+
 ## Event Types
 
-### Message Event
+ErisPulse supports 5 types of events:
 
-Handles any message sent by a user (including private chats and group chats).
+| Event Type | Decorator | Description |
+|---------|--------|------|
+| Message Event | `@message.on_message()` | Any message sent by a user (private chat, group chat) |
+| Command Event | `@command("name")` | Messages starting with a command prefix (e.g., `/hello`) |
+| Notice Event | `@notice.on_friend_add()` etc. | System notifications (e.g., friend addition, group member changes) |
+| Request Event | `@request.on_friend_request()` etc. | User requests (e.g., friend requests, group invitations) |
+| Meta Event | `@meta.on_connect()` etc. | System-level events (e.g., connection, heartbeat) |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"Message received: {text}")
-```
-
-### Command Event
-
-Handles messages starting with a command prefix (e.g., `/hello`).
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="Send greeting")
-async def hello_handler(event):
-    await event.reply("Hello there!")
-```
-
-### Notice Event
-
-Handles system notifications (e.g., friend addition, group member changes).
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("Welcome to add me as a friend!")
-```
-
-### Request Event
-
-Handles user requests (e.g., friend requests, group invitations).
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("I have received your friend request")
-```
-
-### Meta Event
-
-Handles system-level events (e.g., connection, heartbeat).
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} connected successfully")
-```
+> For detailed usage and code examples of each event type, please refer to [Event Handling Intro](event-handling.md).
 
 ## Core Module Explanations
 
@@ -1204,67 +1031,35 @@ sdk.logger.mymodule.database.info("Database message")
 
 ### Router（路由）
 
-HTTP and WebSocket route management, supports both FastAPI native types and ErisPulse abstract types.
-
-> Route handlers support two types of annotations: FastAPI native types (fastapi.Request / fastapi.WebSocket) and ErisPulse abstract types (HttpRequest / WebSocketConnection). It is recommended to use abstract types for better portability.
+HTTP and WebSocket route management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, CORS.
 
 ```python
-from ErisPulse import sdk
-
-# Method 1: Use ErisPulse abstract types (Recommended)
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Echo: {data}")
-
-# Method 2: Use FastAPI native types (Compatible with existing code)
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-> **Auto-injection**: The routing system automatically injects objects of the corresponding type based on parameter annotations, eliminating the need for manual creation.
-> 
-> **Common Issue**: If you see the error `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}`, it indicates missing type annotations. Please ensure HTTP handler parameters use the `request` annotation and WebSocket handler parameters use the `websocket` or `ws` annotation.
-
-For more routing features, please refer to [Router Manager](../advanced/router.md).
+> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Client（HTTP 客户端）
 
-Unified HTTP client for sending HTTP requests. Modules and adapters should prioritize using the global client rather than importing `aiohttp` directly.
+A unified HTTP/WS client, providing automatic retries, timeout control, request statistics, and lifecycle event integration. Modules and adapters should prioritize using the global client (`sdk.client`) rather than directly importing `aiohttp`.
 
 ```python
 from ErisPulse.Core import client
 
-# GET request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST request
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
-
-# Response attributes
-resp.status        # Status code (e.g., 200)
-resp.headers       # Response headers
-body = await resp.text()   # Text response body
-data = await resp.json()   # JSON parsing
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-> The global client features automatic retries, timeout control, request statistics, and lifecycle event integration. See [HTTP Client](../advanced/http-client.md) for details.
->
-> You can also use `sdk.client` via `from ErisPulse import sdk`, which behaves identically.
+> For the complete HTTP client API, please refer to [HTTP Client](../advanced/http-client.md).
 
 ## SendDSL Message Sending
 
@@ -1315,23 +1110,26 @@ async def test_handler(event):
 
 ## Lazy Loading System
 
-ErisPulse supports module lazy loading. Modules are initialized only when first accessed, improving startup speed.
+ErisPulse enables module lazy loading by default. Modules are initialized only when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0       # Load priority
+            priority=0        # Load priority, higher values initialize earlier
         )
 ```
 
-**Scenarios requiring immediate loading:**
-- Modules listening to lifecycle events
-- Scheduled task modules
-- Modules that need to be initialized at application startup
+**Scenarios requiring immediate loading (`lazy_load=False`):**
+- Modules listening to lifecycle events (e.g., `core.init.complete`)
+- Modules that execute scheduled tasks or run background services
+- Modules that need to complete initialization before other modules load
+
+> For detailed information on the lazy loading mechanism and best practices, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Next Steps
 
@@ -2448,7 +2246,7 @@ This guide introduces how to install ErisPulse and configure your project.
 
 ## System Requirements
 
-- Python 3.10 or higher version
+- Python 3.10 or higher version (recommended 3.10 - 3.13)
 - pip or uv (recommended)
 - sufficient disk space (at least 100MB)
 
@@ -2544,6 +2342,7 @@ level = "INFO"
 
 [ErisPulse.framework]
 enable_lazy_loading = true
+
 ```
 
 ## Module Installation
@@ -2591,31 +2390,43 @@ epsdk run main.py
 If you see similar output, the installation is successful:
 
 ```
-[INFO] 正在初始化 ErisPulse...
-[INFO] 适配器已加载: Yunhu
-[INFO] 模块已加载: MyModule
-[INFO] ErisPulse 初始化完成
+[INFO] Initializing ErisPulse...
+[INFO] Adapter loaded: Yunhu
+[INFO] Module loaded: MyModule
+[INFO] ErisPulse initialization complete
 ```
 
 ## Common Issues
 
 ### Installation Failed
 
-1. Check if Python version is >= 3.10
-2. Try using `uv` instead of `pip`
-3. Check if network connection is normal
+1. Check if Python version is >= 3.10 (recommended 3.10 - 3.13)
+2. Try using `uv pip install ErisPulse` instead of `pip install`
+3. If you encounter permission errors, try `pip install --user ErisPulse` or use a virtual environment
+4. If you encounter SSL certificate errors in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure network connection is normal and pip sources are accessible
 
 ### Configuration Errors
 
-1. Check if `config.toml` syntax is correct
+1. Check if `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
 2. Confirm all required configuration items are filled in
-3. Check logs for detailed error messages
+3. Check terminal logs for detailed error information
+4. Use `epsdk init` to regenerate the configuration file
 
 ### Module Installation Failed
 
-1. Confirm if module name is correct
+1. Confirm if the module name spelling is correct (case sensitive)
 2. Check network connection
-3. Use `epsdk list-remote` to view available modules
+3. Use `epsdk list-remote` to view the list of available modules
+4. Confirm if the module is compatible with your current SDK version
+
+### Windows PowerShell Execution Policy
+
+If PowerShell prompts "Cannot load file... because running scripts is disabled on this system":
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ## Next Steps
 
@@ -2905,7 +2716,7 @@ use_global_db = false
 
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database |
+| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database. When `true`, all projects share the ErisPulse package's internal SQLite database; when `false` (default), each project uses a separate database in the `config/` directory |
 
 ## Event Configuration
 
@@ -2947,14 +2758,23 @@ timeout = 30
 enabled = true
 ```
 
-Reading configuration in modules:
+Reading and writing configuration in modules:
 
 ```python
 from ErisPulse import sdk
 
+# Read config
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# Runtime write config (delayed save)
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# Save to file immediately
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` defaults to delayed writing (batch saving to file every ~5 seconds). Setting `immediate=True` will persist immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Next Steps
 
@@ -3279,33 +3099,12 @@ Before starting development, ensure that you:
 
 Choose the appropriate development type based on your needs:
 
-### Module Development
+| Development Type | Use Cases | Getting Started Guide |
+|------------------|-----------|-----------------------|
+| **Module Development** | Extending bot functionality, implementing specific business logic, providing commands and message handling | [Getting Started with Modules](modules/getting-started.md) |
+| **Adapter Development** | Connecting to new messaging platforms, implementing cross-platform communication, providing platform-specific features | [Getting Started with Adapters](adapters/getting-started.md) |
 
-**Use Cases:**
-- Extending bot functionality
-- Implementing specific business logic
-- Providing commands and message handling
-
-**Examples:**
-- Weather query bot
-- Music player
-- Data collection tool
-
-**Getting Started Guide:** [Getting Started with Modules](modules/getting-started.md)
-
-### Adapter Development
-
-**Use Cases:**
-- Connecting to new messaging platforms
-- Implementing cross-platform communication
-- Providing platform-specific features
-
-**Examples:**
-- Discord adapter
-- Slack adapter
-- Custom platform adapter
-
-**Getting Started Guide:** [Getting Started with Adapters](adapters/getting-started.md)
+> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the bot to a new platform, choose **Adapter Development**.
 
 ## Development Tools
 
@@ -3313,12 +3112,12 @@ Choose the appropriate development type based on your needs:
 
 ErisPulse provides example projects for reference:
 
-- `examples/example-module/` - Module example
-- `examples/example-adapter/` - Adapter example
+- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module
+- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter
 
 ### Development Mode
 
-Use hot reload mode for development:
+Use hot reload mode for development, where code changes are automatically reloaded:
 
 ```bash
 epsdk run main.py --reload
@@ -3326,7 +3125,7 @@ epsdk run main.py --reload
 
 ### Debugging Tips
 
-Enable DEBUG level logging:
+Enable DEBUG level logging in `config/config.toml`:
 
 ```toml
 [ErisPulse.logger]
@@ -4141,7 +3940,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, will block)
+# Do not use requests (synchronous, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
@@ -4256,12 +4055,13 @@ async def handle_event(self, event):
 ```python
 # Recommended: Use the SDK built-in client (comes with timeout and retry)
 from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
 async def fetch_with_timeout(self, url, timeout=30):
     try:
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
 ```
@@ -4562,41 +4362,49 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
+The framework provides `ConfigClass` / `AccountConfigClass` declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate configuration templates.
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter configuration"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API endpoint",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Platform token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← Must! Create Send / Request factory instances
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter initialization complete")
+    ConfigClass = MyAdapterConfig  # Declare the configuration class, framework manages automatically
+    
+    # No need to override __init__! Framework handles automatically:
+    # - self.sdk / self.logger are automatically set
+    # - self.config is automatically loaded
+    # - self.Send / self.Request are automatically initialized
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
+
+> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK reference, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Considerations](#init-considerations) for details.
 
 > ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Considerations](#init-considerations) for details.
 
@@ -4632,7 +4440,7 @@ class MyAdapter(BaseAdapter):
 
 #### Actively Send Meta Events
 
-The adapter should actively send meta events to let the framework track the Bot's online status:
+The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` in one line to complete:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -4640,12 +4448,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot online
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -4657,12 +4460,7 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot offline
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > For detailed Bot status management and Meta event descriptions, please refer to [Adapter Best Practices - Bot Status Management](best-practices.md#bot-status-management-and-meta-events).
@@ -4848,23 +4646,40 @@ from .Core import MyAdapter
 
 Adapter development may involve `__init__` overrides at three levels. Here are the correct practices for each level.
 
-### 1. BaseAdapter Level (Must call `super().__init__()`)
+### 1. BaseAdapter Level (Most cases do not need to override)
 
-`BaseAdapter.__init__()` is responsible for **creating `Send` and `Request` factory instances**. If the adapter has its own `__init__`, it must call the parent class initialization:
+`BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically performs the following tasks:
+
+- Accepts the `sdk` parameter and sets `self.sdk`, `self.logger`
+- If `ConfigClass` is declared, automatically loads global configuration into `self.config`
+- If `AccountConfigClass` is declared, automatically loads multi-account configuration into `self.accounts`
+
+**Most cases do not need to override `__init__`**; simply declare `ConfigClass`:
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← Must! Otherwise Send / Request will not be initialized
-        self.sdk = sdk
-        # ... Other initializations
+    ConfigClass = MyAdapterConfig  # After declaration, framework manages configuration automatically
+    
+    async def start(self):
+        cfg = self.config  # Type-safe, automatically loaded
+        ...
 ```
 
-**Consequences of forgetting to call it**: `adapter.Send.To(...)` and `adapter.Request(...)` will both raise `AttributeError`.
+If you do need custom initialization, call `super().__init__(sdk)`:
 
-### 2. Send Inner Class (Usually no need to override)
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # Pass in sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
 
-`SendDSL.__init__` is responsible for state passing in chain calls (target type, target ID, account, etc.). **In most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), and do not need to override `__init__`.
+### 2. Send Inner Class (Most cases do not need to override)
+
+`SendDSL.__init__` is responsible for state passing in chain calls (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), and do not need to override `__init__`.
 
 If really necessary (such as initializing platform-specific states), **all parameters must be passed through**:
 
@@ -4886,7 +4701,7 @@ adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123",
 
 If the `__init__` signature does not match or `super()` is not called, the chain call will break.
 
-### 3. Request Inner Class (Usually no need to override)
+### 3. Request Inner Class (Most cases do not need to override)
 
 Same principle as Send. Parameters are `adapter`, `request_id`, `account_id`:
 
@@ -4903,7 +4718,7 @@ class MyAdapter(BaseAdapter):
 
 | Level | When to override | Must do |
 |------|------------|-----------|
-| **BaseAdapter** | When adapter state needs to be initialized | `super().__init__()` (no arguments) |
+| **BaseAdapter** | When adapter state needs to be initialized | `super().__init__(sdk)` (pass sdk parameter) |
 | **Send Inner Class** | When send-related state needs to be initialized | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request Inner Class** | When request-related state needs to be initialized | `super().__init__(adapter, request_id, account_id)` |
 | All three levels | In most cases | **Only override methods, do not touch `__init__`** |
@@ -4964,7 +4779,7 @@ Forward Conversion (Receive Direction)               Reverse Conversion (Send Di
 - **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, raw data preserved in `{platform}_raw`
 - **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, return standard response format
 
-## AdapterManager
+## AdapterManager 适配器管理器
 
 `AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
 
@@ -5180,16 +4995,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### Basic Structure
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """Adapter configuration (framework automatically manages after declaration)"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Initialize adapter
-        pass
+    ConfigClass = MyConfig  # Declare configuration class
+    
+    # No need to override __init__, framework handles automatically:
+    # - self.sdk, self.logger
+    # - self.config (type-safe configuration instance)
+    # - self.Send, self.Request
     
     async def start(self):
         """Start adapter (must implement)"""
+        cfg = self.config  # Auto-loaded type-safe configuration
         pass
     
     async def shutdown(self):
@@ -5201,24 +5034,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Initialization Process
+### Configuration Management
+
+The framework provides declarative configuration management, defining configuration structures via dataclass, with automatic handling of loading, validation, and template generation.
+
+#### Single Account Configuration
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "Proxy address",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # Type-safe, auto-loaded
+        if not cfg.token:
+            raise ValueError("Token not configured")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### Multi-Account Configuration
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "Bot ID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata Conventions
+
+Field metadata serves both TOML comment generation and WebUI form rendering:
+
+```python
+metadata = {
+    "description": str,       # Field description (TOML comment + WebUI label)
+    "required": bool,         # Whether required (validation + WebUI required flag)
+    "secret": bool,           # Whether sensitive (WebUI shows as ***, masked in logs)
+    "webui": {
+        "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # Group: "basic" | "advanced" | "connection" etc.
+        "order": int,         # Sort weight (lower is earlier)
+        "options": list,      # Select control options [{label, value}]
+        "placeholder": str,   # Input placeholder
+    }
+}
+```
+
+#### Account Resolution
+
+Multi-account adapters can use `_resolve_account()` to automatically resolve target accounts:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: account name, account: configuration instance
+```
+
+Resolution strategy: Account name match → `bot_id` field match → Other str field match → First enabled account.
+
+#### Hot Configuration Update
+
+Subclasses can override `on_config_update()` to respond to configuration changes:
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # Get SDK reference
-        self.sdk = sdk
-        
-        # Get core modules
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # Load configuration
-        self.config = self._get_config()
-        
-        # Setup converter
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token updated, will reconnect")
+```
+
+### Initialization Process
+
+The framework automatically completes the following work in `BaseAdapter.__init__(self, sdk=None)`:
+
+1. **SDK Reference**: Sets `self.sdk`, `self.logger`
+2. **Send/Request Factories**: Creates `self.Send` and `self.Request`
+3. **Configuration Loading**: If `ConfigClass` is declared, automatically loads to `self.config`
+4. **Account Loading**: If `AccountConfigClass` is declared, automatically loads to `self.accounts`
+
+Most adapters don't need to override `__init__`. For custom initialization:
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # Pass sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -5432,6 +5370,8 @@ class MyAdapter(BaseAdapter):
 
 ## API Response Standard
 
+The framework provides `make_response()` and `make_error()` methods to construct standardized responses, eliminating the need to manually build response dictionaries.
+
 ### Success Response
 
 ```python
@@ -5439,50 +5379,68 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### Failure Response
+### Manual Response Construction (Old method still compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # Error code
-        "data": None,
-        "message_id": "",
-        "message": "Missing required parameters",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## Multi-Account Support
 
-### Account Configuration
+### Declarative Configuration (Recommended)
+
+After using `AccountConfigClass` to declare the configuration class, the framework automatically manages multi-account loading, validation, and template generation:
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"Starting account {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # Use account.token, account.bot_id, etc.
+```
+
+### Account Configuration File
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
@@ -5533,6 +5491,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # Recommended to use SDK built-in client
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -5540,16 +5499,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"Network error: {e}")
-        return self._error_response("Network request failed", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"Request timeout: {endpoint}")
         return self._error_response("Request timeout", 32000)
+    except ClientError as e:
+        self.logger.error(f"Network error: {e}")
+        return self._error_response("Network request failed", 33000)
     except Exception as e:
         self.logger.error(f"Unknown error: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **Backward Compatibility**: Old adapter code directly using `aiohttp.ClientSession` is unaffected and can still catch `aiohttp.ClientError`. Both ways can coexist. New code is recommended to use `sdk.client` + ErisPulse exception hierarchy.
 
 ## Bot Status Management
 
@@ -5583,28 +5544,27 @@ await self.adapter.emit({
 
 ### Adapter Sending Meta Events
 
+You can send meta events with a single line using `emit_meta()`:
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-            }
-        })
+        # Send connect event in one line
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="MyBot")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+Manual construction is also supported (old method still compatible):
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### Extended `self` Field Information
@@ -5875,7 +5835,22 @@ def Text(self, text: str):
 
 ### Standardized Response
 
-`call_api` should return a standardized response:
+`call_api` should return a standardized response. Recommended to use `make_response()` / `make_error()` methods:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+Also supports manual construction (legacy style still compatible):
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -5956,24 +5931,15 @@ Adapters should proactively send meta events via `adapter.emit()` to allow the f
 
 ### 2. Sending Meta Events
 
+The framework provides the `emit_meta()` method, which allows you to send a meta event in a single line:
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot online: send connect event
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Bot online: send connect event in one line
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
         try:
             while True:
@@ -5984,16 +5950,8 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot offline: send disconnect event
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Bot offline
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. Heartbeat Events
@@ -6004,15 +5962,8 @@ Adapters should periodically send heartbeat events while the connection is alive
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Send meta heartbeat to framework in one line
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
@@ -6056,7 +6007,14 @@ info = sdk.adapter.get_bot_info("myplatform", "bot123")
 all_bots = sdk.adapter.list_bots()
 
 # List Bots for a specific platform
-platform_bots =
+platform_bots = sdk.adapter.list_bots("myplatform")
+
+# Check if Bot is online
+is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
+
+# Get full status summary (suitable for WebUI display)
+summary = sdk.adapter.get_status_summary()
+# {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
 
 ## Connection Management
@@ -6094,8 +6052,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -6131,16 +6088,8 @@ class MyAdapter(BaseAdapter):
                 # 1. Send heartbeat keep-alive to the platform
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. Send meta heartbeat event to the framework (update Bot active time)
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                # 2. Send meta heartbeat to framework (complete in one line using emit_meta)
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
@@ -6269,29 +6218,30 @@ class Send(BaseAdapter.Send):
 
 ### 1. Standardized Response Format
 
+The framework provides `make_response()` and `make_error()` methods to construct standardized responses:
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+`make_response()` automatically generates a response dictionary containing the `{platform}_raw` key. `make_error()` defaults to using `retcode=34000` (Platform Error).
 
 ### 2. Error Code Specification
 
@@ -6317,54 +6267,71 @@ Follow OneBot12 standard error codes:
 
 ## Multi-account Support
 
-### 1. Account Configuration Validation
+### 1. Declarative Configuration (Recommended)
+
+After declaring a configuration class using `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation:
 
 ```python
-def _get_config(self):
-    """Validate configuration"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # Create default account
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: Account name, account: MyBotConfig instance
+```
+
+The configuration file is automatically generated as:
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. Account Selection Mechanism
 
+The framework provides the built-in `_resolve_account()` method, supporting various matching strategies:
+
 ```python
-async def _get_account_for_message(self, event):
-    """Select sending account based on event"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # Find matching account
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # If not found, use the first enabled account
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# Match by account name
+name, account = self._resolve_account("account1")
+
+# Match by bot_id field (if configured with bot_id)
+name, account = self._resolve_account("bot_123")
+
+# Get first enabled account (pass None)
+name, account = self._resolve_account(None)
 ```
 
 ## Error Handling
 
 ### 1. Categorized Exception Handling
 
+Use `make_error()` to construct standardized error responses. Capture ErisPulse exceptions when requesting via `sdk.client`:
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # Recommended to use SDK built-in client to send API requests
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -6372,42 +6339,40 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # Network error (built-in retry mechanism handles network errors first)
-        self.logger.error(f"Network error: {e}")
-        return self._error_response("Network request failed", 33000)
-    except asyncio.TimeoutError:
-        # Timeout error
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
         self.logger.error(f"Request timeout: {endpoint}")
-        return self._error_response("Request timeout", 32000)
+        return self.make_error(retcode=32000, message="Request timeout")
+    except ClientError as e:
+        self.logger.error(f"Network error: {e}")
+        return self.make_error(retcode=33000, message="Network request failed")
     except json.JSONDecodeError:
-        # JSON parsing error
-        self.logger.error("JSON parsing failed")
-        return self._error_response("Response format error", 10006)
+        self.logger.error("JSON 解析失败")
+        return self.make_error(retcode=10006, message="Response format error")
     except Exception as e:
-        # Unknown error
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        return self.make_error(message=str(e))
 ```
+
+> **Backward Compatibility**: Adapter code using `aiohttp` directly is unaffected and can still catch `aiohttp.ClientError`. Exception conversion only applies when making requests via `sdk.client`.
 
 ### 2. Logging
 
+The framework automatically creates a child logger for the adapter (`sdk.logger.get_child("MyAdapter")`), eliminating the need for manual initialization:
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # After declaring the config class, self.logger is automatically available
     
     async def start(self):
-        self.logger.info("Adapter starting...")
+        self.logger.info("适配器启动中...")
         # ...
-        self.logger.info("Adapter started")
+        self.logger.info("适配器启动完成")
     
     async def shutdown(self):
-        self.logger.info("Adapter shutting down...")
+        self.logger.info("适配器关闭中...")
         # ...
-        self.logger.info("Adapter shutdown complete")
+        self.logger.info("适配器关闭完成")
 ```
 
 ## Testing
@@ -6420,7 +6385,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """Test converter"""
+        """测试转换器"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -6429,7 +6394,7 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """Test API response format"""
+        """测试 API 响应格式"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
@@ -6441,14 +6406,14 @@ class TestMyAdapter:
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """Test adapter start"""
+    """测试适配器启动"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """Test send message"""
+    """测试发送消息"""
     adapter = MyAdapter()
     await adapter.start()
     
@@ -6480,16 +6445,16 @@ from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
     def get_chat_name(self):
-        """Get chat name"""
+        """获取聊天名称"""
         return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
     def is_official_message(self):
-        """Check if message is official"""
+        """判断是否为官方消息"""
         raw = self.get("myplatform_raw", {})
         return raw.get("sender", {}).get("is_official", False)
 
     def get_message_type(self):
-        """Get platform message type"""
+        """获取平台消息类型"""
         return self.get("myplatform_raw", {}).get("msg_type", "text")
 
 # Batch register
@@ -6564,7 +6529,7 @@ version = "2.0.0"  # Update version number
 
 # Event Converter Implementation Guide
 
-Event Converter is one of the core components of an adapter, responsible for converting platform native events to the ErisPulse unified OneBot12 standard event format.
+Event Converter (Converter) is one of the core components of the adapter, responsible for converting platform native events to the ErisPulse unified OneBot12 standard event format.
 
 ## Converter Responsibilities
 
@@ -6787,11 +6752,104 @@ class MyConverter:
         return base
 ```
 
+## Rich Media Message Conversion Example
+
+Actual platform messages often contain rich media content such as images, @mentions, and replies. Below is an example of `_convert_message_segments` handling multiple message types:
+
+```python
+def _convert_message_segments(self, raw_content: list) -> list:
+    """Convert platform native message segment list to OneBot12 standard message segments"""
+    segments = []
+
+    for item in raw_content:
+        item_type = item.get("type", "")
+
+        if item_type == "text":
+            segments.append({
+                "type": "text",
+                "data": {"text": item.get("content", "")}
+            })
+
+        elif item_type == "image":
+            file_url = item.get("url") or item.get("file_id", "")
+            segments.append({
+                "type": "image",
+                "data": {"file": file_url}
+            })
+
+        elif item_type == "at":
+            segments.append({
+                "type": "mention",
+                "data": {"user_id": item.get("target_id", "")}
+            })
+
+        elif item_type == "reply":
+            segments.append({
+                "type": "reply",
+                "data": {"message_id": item.get("reply_to_id", "")}
+            })
+
+        elif item_type == "at_all":
+            segments.append({"type": "mention_all", "data": {}})
+
+        else:
+            segments.append({
+                "type": "text",
+                "data": {"text": f"[Unsupported message type: {item_type}]"}
+            })
+
+    return segments
+```
+
+## Common Pitfalls
+
+### 1. Missing `{platform}_raw` Field
+
+This is the most common error. Missing the raw data field will prevent modules from accessing platform-specific information.
+
+```python
+base_event["myplatform_raw"] = raw_event        # Must!
+base_event["myplatform_raw_type"] = event_type   # Must!
+```
+
+### 2. Timestamp Format Error
+
+The OneBot12 standard requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns a millisecond timestamp or an ISO format string, you need to convert:
+
+```python
+import time
+
+# Millisecond → Second
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO String → Second
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. Missing `self` Field
+
+The `self` field contains bot information, where `user_id` is the bot's account ID. This field is crucial in multi-bot scenarios:
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # Bot's own ID
+}
+```
+
+### 4. Using Non-standard Values for detail_type
+
+`detail_type` must use values defined in the OneBot12 standard, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
+
+### 5. Round-trip Consistency
+
+Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send end. For example, if the Converter converts a platform's image message to `{"type": "image", ...}`, the Send end's `Image()` method must be able to handle image sending.
+
 ## Best Practices
 
 1. **Always preserve original data**: The `{platform}_raw` field cannot be omitted
 2. **Use standard message segments**: Try to convert platform messages to OneBot12 standard message segments
-3. **Set detail_type appropriately**: Use standard types (`private`/`group`/channel` etc.), don't customize
+3. **Set detail_type appropriately**: Use standard types (`private`/`group`/`channel` etc.), don't customize
 4. **Handle edge cases**: Raw events might be missing certain fields, use `.get()` and provide reasonable defaults
 5. **Performance considerations**: `convert()` is called for every event, avoid executing time-consuming operations inside it
 
@@ -7166,182 +7224,102 @@ API 参考
 
 # Core Module API
 
-This document details the ErisPulse core module API.
+This document provides a quick reference to the ErisPulse core module API, including method signatures and brief descriptions. For detailed usage and examples, please click the "Complete Documentation" link for each module.
 
 ## Storage Module
+
+A SQLite-based key-value storage system supporting general-purpose SQL chain queries.
 
 ### Basic Operations
 
 ```python
 from ErisPulse import sdk
 
-# Set value
 sdk.storage.set("key", "value")
-
-# Get value
 value = sdk.storage.get("key", default_value)
-
-# Get all keys
 keys = sdk.storage.keys()
-
-# Delete value
 sdk.storage.delete("key")
-```
-
-### Transaction Operations
-
-```python
-# Use transactions to ensure data consistency
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # If any operation fails, all changes will be rolled back
 ```
 
 ### Batch Operations
 
 ```python
-# Batch set
-sdk.storage.set_multi({
-    "key1": "value1",
-    "key2": "value2",
-    "key3": "value3"
-})
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
 
-# Batch get
-values = sdk.storage.get_multi(["key1", "key2", "key3"])
+### Transaction Operations
 
-# Batch delete
-sdk.storage.delete_multi(["key1", "key2", "key3"])
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### Attribute Access
+
+```python
+sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
 ### SQL Chain Query
 
-The Storage module provides a chain-style API general-purpose SQL query builder, supporting CRUD operations for custom tables.
-
-> See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
+The Storage module provides a chain-call style general-purpose SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
-from ErisPulse import sdk
-
-# Create custom table
 sdk.storage.CreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
-    "age": "INTEGER DEFAULT 0"
 })
 
-# Insert data
-sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
-
-# Batch insert
-sdk.storage.Table("users").InsertMulti([
-    {"name": "Bob", "age": 25},
-    {"name": "Charlie", "age": 35}
-]).Execute()
-
-# Query data
-rows = (sdk.storage.Table("users")
-    .Select("name", "age")
-    .Where("age > ?", 18)
-    .OrderBy("name")
-    .Limit(10)
-    .Execute())
-
-# Update data
-sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
-
-# Delete data
-sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
-
-# Count
-count = sdk.storage.Table("users").Where("age > ?", 18).Count()
-
-# Existence check
-exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
-
-# Get single record
-row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
-
-# Modify table structure
-sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
-sdk.storage.AlterTable("users").RenameTo("members").Execute()
-
-# Check if table exists
-if sdk.storage.HasTable("users"):
-    sdk.storage.DropTable("users")
-
-# Chained operations in transaction
-with sdk.storage.transaction():
-    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
-    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
-
-# Reuse query conditions
-base = sdk.storage.Table("users").Where("age > ?", 20)
-rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
-count = base.copy().Count()
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
+
+> For complete chain-query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-The `StorageManager` inherits from the `BaseStorage` abstract base class, supporting future expansion to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting expansion to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
-
-# BaseStorage defines the unified interface: get/set/delete/Table/CreateTable/DropTable, etc.
-# BaseQueryBuilder defines the chained query interface: Select/Insert/Update/Delete/Where/OrderBy/Limit, etc.
 ```
 
 ## Config Module
 
-### Reading Configuration
+TOML format configuration file management, supporting dot-separated key paths.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `getConfig(key, default)` | Read configuration, supports dot paths like "MyModule.subkey" |
+| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves to file immediately |
+| `force_save()` | Force save configuration in memory to file |
+| `reload()` | Reload configuration from file |
+
+### Examples
 
 ```python
-from ErisPulse import sdk
-
-# Get configuration
 config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
 
-# Get nested configuration
-value = sdk.config.getConfig("MyModule.subkey.value", "default")
-```
-
-### Writing Configuration
-
-```python
-# Set configuration
 sdk.config.setConfig("MyModule", {"key": "value"})
-
-# Set nested configuration
-sdk.config.setConfig("MyModule.subkey.value", "new_value")
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-### Configuration Example
-
-```python
-def _load_config(self):
-    config = sdk.config.getConfig("MyModule")
-    if not config:
-        # Create default configuration
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        sdk.config.setConfig("MyModule", default_config, immediate=True)  # When the third parameter is True, save the configuration immediately, making it convenient for users to directly modify the configuration file
-        return default_config
-    return config
-```
+> `setConfig` uses lazy writing by default (batch save every 5 seconds). Setting `immediate=True` will persist to the config file immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-### Basic Logging
+A modular logging system based on Rich output, supporting child loggers and module-level control.
+
+### Basic Usage
 
 ```python
-from ErisPulse import sdk
-
-# Different log levels
 sdk.logger.debug("Debug info")
 sdk.logger.info("Runtime info")
 sdk.logger.warning("Warning info")
@@ -7352,539 +7330,183 @@ sdk.logger.critical("Fatal error")
 ### Child Loggers
 
 ```python
-# Get child logger
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("Submodule log")
 
-# Sub-modules can also have sub-module logs, allowing for more precise control of log output
-child_logger.get_child("utils")
+child_logger.get_child("utils")  # Supports nesting
 ```
 
-### Log Output
+### Log Level Control
 
 ```python
-# Set output file
-sdk.logger.set_output_file("app.log")
+sdk.logger.set_level("DEBUG")                          # Global level
+sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
+```
 
-# Save logs to file
+### Output Control
+
+```python
+sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
 ```
 
 ## Adapter Module
 
-### Getting Adapters
+Adapter manager managing registration, startup, and shutdown of multi-platform adapters.
 
-```python
-from ErisPulse import sdk
+### API Overview
 
-# Get adapter instance
-adapter = sdk.adapter.get("platform_name")
-
-# Access via property
-adapter = sdk.adapter.platform_name
-```
+| Method | Description |
+|------|------|
+| `get(platform)` | Get adapter instance |
+| `exists(platform)` | Check if adapter is registered |
+| `enable(platform)` / `disable(platform)` | Enable/disable adapter |
+| `is_enabled(platform)` | Check if enabled |
+| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapters |
+| `is_running(platform)` | Check if adapter is running |
+| `list_running()` | List all running adapters |
+| `platforms` | Get list of all platform names |
 
 ### Adapter Events
 
 ```python
-# Listen for standard events
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# Listen for platform-specific events
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
-
-# Listen for platform native events
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
 ```
 
-### Adapter Management
+### Bot Status Query
 
 ```python
-# Get all platforms
-platforms = sdk.adapter.platforms
-
-# Check if adapter exists
-exists = sdk.adapter.exists("platform_name")
-
-# Enable/disable adapter
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# Start/shutdown adapter
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# Check if adapter is running
-is_running = sdk.adapter.is_running("platform_name")
-
-# List all running adapters
-running = sdk.adapter.list_running()
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
 ```
+
+> For complete adapter management API, please refer to [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-### Getting Modules
+Module manager managing plugin registration, loading, and unloading.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `get(name)` | Get module instance |
+| `exists(name)` | Check if registered |
+| `is_loaded(name)` | Check if loaded |
+| `is_enabled(name)` | Check if enabled |
+| `enable(name)` / `disable(name)` | Enable/disable module |
+| `load(name)` / `unload(name)` | Load/unload module |
+| `list_registered()` | List registered modules |
+| `list_loaded()` | List loaded modules |
+| `get_info(name)` | Get module info |
+| `get_status_summary()` | Get module status summary |
+
+### Attribute Access
 
 ```python
-from ErisPulse import sdk
-
-# Get module instance
 module = sdk.module.get("ModuleName")
-
-# Access via property
 module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### Module Management
-
-```python
-# Check if module exists
-exists = sdk.module.exists("ModuleName")
-
-# Check if module is loaded
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# Check if module is enabled
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# Enable/disable module
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# Load module
-await sdk.module.load("ModuleName")
-
-# Unload module
-await sdk.module.unload("ModuleName")
-
-# List loaded modules
-loaded = sdk.module.list_loaded()
-
-# List registered modules
-registered = sdk.module.list_registered()
-
-# Get module info
-info = sdk.module.get_info("ModuleName")
-
-# Get module status summary
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# Check if module is running (equivalent to is_loaded)
-is_running = sdk.module.is_running("ModuleName")
-
-# List all running modules
-running = sdk.module.list_running()
+module = sdk.ModuleName  # Shortcut equivalent
 ```
 
 ## Lifecycle Module
 
-### Event Submission
+Event-driven lifecycle manager providing event submission and listening functions.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `on(event, priority=0)` | Decorator registration for event handlers, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Functional registration for handlers |
+| `unregister(event, handler=None)` | Remove handler |
+| `emit(event, data)` | Async trigger event |
+| `emit_sync(event, data)` | Sync trigger event |
+| `submit_event(event_type, msg, data, source)` | Submit standard format event (compatible with old version) |
+| `start_timer(id)` / `stop_timer(id)` | Performance timer |
+
+### Examples
 
 ```python
-from ErisPulse import sdk
-
-# Submit custom event
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="Custom event description"
-)
-```
-
-### Event Listening
-
-```python
-# Listen for specific event
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"Module initialized: {event_data}")
 
-# Listen for parent event
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"Module event: {event_data}")
 
-# Listen for all events
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"System event: {event_data}")
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-### Timers
-
-```python
-# Start timer
-sdk.lifecycle.start_timer("my_operation")
-
-# ... perform operation ...
-
-# Get duration
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# Stop timer
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
+> For complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-### Abstract Types
+HTTP/WebSocket route manager based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
 
-Router supports two type annotation styles:
+> For complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+
+### Quick Reference
 
 ```python
-# ErisPulse abstract types (recommended, portable)
-from ErisPulse.Core import HttpRequest, WebSocketConnection
-
+# HTTP route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
-    data = await request.json()
     return {"status": "ok"}
 
-# FastAPI native types (compatibility with existing code)
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler(request: Request):
-    return {"status": "ok"}
-```
-
-> The routing system automatically injects objects of the corresponding type based on parameter annotations. See [Router Manager](../advanced/router.md) for details.
-
-### Decorator Routing (Recommended)
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP route decorator
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"status": "ok"}
-
-# Shortcut method decorators
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket decorator
-from fastapi import WebSocket
-
+# WebSocket route
 @sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
 
-# Authenticated WebSocket decorator
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### Traditional Registration
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="Data interface",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket Routes
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# Basic registration (auto-accepts connection)
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# Authenticated registration (Recommended: use auth_handler to control connections)
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# Unregister route
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**Parameter Description:**
-
-| Parameter | Description | Default |
-|------|------|--------|
-| `module_name` | Module name (required) | - |
-| `path` | WebSocket path | - |
-| `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
-| `auto_accept` | Whether to automatically `accept()` | `True` |
-
-> **Recommended**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
-
-### Route Grouping
-
-```python
-# Create route group
+# Route grouping
 group = sdk.router.group("MyModule", prefix="/v1")
-
-# Register routes within the group
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request: HttpRequest):
     return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# Versioned group
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
-```
-
-### Route Middleware
-
-```python
-# Global middleware (glob matching)
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
-
-# Specific path middleware
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
-
-### Rate Limiting
-
-```python
-# Set rate limit for route (sliding window)
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS Configuration
-
-```python
-# Code method
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# Configuration file method (config.toml)
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### Security Headers
-
-```python
-# Automatically add security response headers
-sdk.router.setup_security_headers()
-
-# Configuration file method (config.toml)
-# [router.security]
-# enabled = true
-```
-
-### Auto Documentation
-
-```python
-# Router has OpenAPI documentation enabled by default
-# Disable docs
-sdk.router.disable_docs()
-
-# Customize documentation info
-sdk.router.set_docs_info(
-    title="My API",
-    description="API documentation",
-    version="1.0.0"
-)
-```
-
-### Route Information
-
-```python
-app = sdk.router.get_app()
 ```
 
 ## HTTP Client Module
 
-### Basic Requests
+Unified HTTP/WS client based on aiohttp, providing request statistics, retries, logging, and the ErisPulse exception system.
+
+> For complete HTTP client documentation (request methods, response object, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
+
+### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# GET request
+# HTTP request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST request
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice", "age": 30},
-)
-
-# PUT / DELETE / PATCH
-resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
-resp = await client.delete("https://api.example.com/users/1")
-resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
-
-# Generic request method
-resp = await client.request("OPTIONS", "https://api.example.com/resource")
-```
-
-### Response Object
-
-```python
-from ErisPulse.Core import client
-
-resp = await client.get("https://api.example.com/users")
-
-resp.status        # int - HTTP status code (e.g. 200, 404)
-resp.reason        # str | None - Reason phrase (e.g. "OK")
-resp.headers       # Response headers (case-insensitive)
-resp.content_type  # str | None - Content-Type
-resp.url           # Final URL (may change due to redirects)
-resp.raw           # Underlying native response object (currently aiohttp.ClientResponse)
-
-# Read response body
-body = await resp.read()       # bytes
-text = await resp.text()       # str
-data = await resp.json()       # Parse JSON
-text = await resp.text("gbk")  # Specify encoding
-```
-
-### Request Parameters
-
-| Parameter | Type | Description |
-|------|------|------|
-| `url` | `str` | Request URL |
-| `params` | `dict[str, str]` | Query parameters (optional) |
-| `headers` | `dict[str, str]` | Extra request headers (optional) |
-| `data` | `Any` | Request body (form or raw data) (optional) |
-| `json` | `Any` | JSON request body (optional) |
-| `timeout` | `float` | Request timeout in seconds (optional, overrides default) |
-| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default) |
-
-### Custom Client
-
-```python
-from ErisPulse.Core import HttpClient
-
-# Create a custom client (non-global singleton)
-client = HttpClient(
-    timeout=60,
-    connect_timeout=5,
-    max_retries=3,
-    retry_delay=2,
-    headers={"Authorization": "Bearer token"},
-    user_agent="MyBot/1.0",
-)
-
-# Context manager for automatic session closing
-async with HttpClient(timeout=30) as client:
-    resp = await client.get("https://httpbin.org/get")
-```
-
-### Request Statistics
-
-```python
-from ErisPulse.Core import client
-
-# View stats
-stats = client.stats
-# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
-
-# Reset stats
-client.reset_stats()
-```
-
-### Lifecycle Events
-
-```python
-from ErisPulse.Core import lifecycle
-
-@lifecycle.on("client.request")
-async def on_request(event_data):
-    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event Module API
 - [Adapter System API](adapter-system.md) - Adapter Management API
-- [HTTP Client](../advanced/http-client.md) - HTTP Client full documentation
-- [Router Manager](../advanced/router.md) - Router Manager full documentation
+- [SQL Query Builder](../advanced/sql-builder.md) - SQL Chain Query Complete Documentation
+- [Router Manager](../advanced/router.md) - Router Manager Complete Documentation
+- [HTTP Client](../advanced/http-client.md) - HTTP Client Complete Documentation
+- [Lifecycle Management](../advanced/lifecycle.md) - Lifecycle Complete Documentation
 
 
 
@@ -8294,6 +7916,8 @@ while conv.is_active:
     await conv.say(f"You said: {reply.get_text()}")
 ```
 
+> Complete parameter descriptions and more examples for interaction methods can be found in [Event Wrapper Class Detailed Explanation](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+
 ### Utility Methods
 
 ```python
@@ -8543,20 +8167,39 @@ running = sdk.adapter.list_running()
 
 ## Middleware
 
+Middleware executes before events are dispatched to handlers, allowing modification, filtering, or logging of event data.
+
 ### Registering Middleware
 
 ```python
-# Add middleware
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # Process event
     sdk.logger.info(f"Middleware processing: {event}")
     return event
 ```
 
-### Middleware Execution Order
+### Middleware Execution Model
 
-Middleware executes in the order of registration, running before the event is dispatched to handlers.
+- **Execution Order**: Middleware executes in registration order (first registered first executed)
+- **Data Passing**: Each middleware receives the `event` data returned by the previous middleware; if a middleware returns `None`, the return value is ignored and the original data continues to be passed (while outputting a `warning` level log)
+- **Data Modification**: Middleware can modify event data and return the modified dictionary
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "spam" in text:
+            return None   # Returning None does not block event propagation, only ignores this return value
+    return event
+```
+
+> **Note**: Middleware currently does not support blocking event propagation. If you need to filter specific events, implement conditional checks in the event handler.
 
 ## Send Message Sending
 
@@ -8622,8 +8265,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("Reply to m
 ## API Calls
 
 ### call_api Method
-> Note that the API calling methods may vary for different platforms. Please refer to the corresponding platform adapter documentation.
-> Direct use of the `call_api` method is not recommended; it is suggested to use the `Send` class for message sending.
+> **Note**: `call_api` is a low-level method for directly calling native platform APIs. Parameters and return values may vary across platforms; please refer to the corresponding platform adapter documentation. **It is recommended to use the Send DSL for message sending**; use `call_api` only in scenarios where the Send DSL does not support (such as retrieving platform-specific data, calling platform management interfaces, etc.).
 
 ```python
 # Call platform API
@@ -10480,19 +10122,7 @@ result = sdk.my_module.some_sync_method()
 - Scheduled task modules
 - Modules that need to be initialized when the application starts
 
-### Loading Priority
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # Load immediately
-            priority=100      # High priority, higher value means higher priority
-        )
-```
+> The `priority` parameter controls the initialization order of modules that are loaded immediately; the higher the value, the earlier they are initialized. Modules with the same priority are loaded in registration order.
 
 ## Notes
 
@@ -10831,6 +10461,8 @@ ErisPulse provides server-side abstract types so that modules do not need to dir
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additionally provides lifecycle hooks |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
 
+> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interfaces as the client WebSocket (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
+>
 > The underlying FastAPI native object can be accessed via the `.raw` property. Code directly using FastAPI types is also fully compatible.
 
 ## Decorator Routes (Recommended)
@@ -11105,37 +10737,6 @@ Route paths automatically have the module name added as a prefix to avoid confli
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## Authentication Mechanism
-
-Recommended to use `auth_handler` to control connection access:
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# Decorator method
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# Traditional registration method
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-The `auth_handler` is executed after the connection is established. Returning `False` will automatically close the connection (status code 1008).
-
-> Only set `auto_accept=False` when you need complete control over the connection flow (e.g., custom handshake protocol).
-
 ## System Routes
 
 The Router Manager automatically provides two system routes:
@@ -11193,9 +10794,18 @@ async def on_server_stop(event):
 
 `MessageBuilder` is the OneBot12 standard message segment construction tool provided by ErisPulse, used to build structured message content to be used with `Send.Raw_ob12()`.
 
+## Import Methods
+
+`MessageBuilder` supports the following two import methods (the effects are the same, the first is recommended):
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # Recommended, through package export
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # Direct module import
+```
+
 ## Double Mode Mechanism
 
-MessageBuilder provides two usage modes, implementing different behaviors at the class level and instance level through Python descriptor mechanism:
+MessageBuilder provides two usage modes, implementing different behaviors at the class level and instance level through Python descriptor mechanism (`__get__`): when calling methods through the class, `__get__` returns the execution result of the static method; when calling through the instance, it returns `self` to support chaining calls.
 
 ### Chaining Mode (Instance)
 
@@ -11206,12 +10816,12 @@ from ErisPulse.Core.Event.message_builder import MessageBuilder
 
 segments = (
     MessageBuilder()
-    .text("你好！")
+    .text("Hello!")
     .image("https://example.com/photo.jpg")
     .build()
 )
 # [
-#     {"type": "text", "data": {"text": "你好！"}},
+#     {"type": "text", "data": {"text": "Hello!"}},
 #     {"type": "image", "data": {"file": "https://example.com/photo.jpg"}}
 # ]
 ```
@@ -11222,8 +10832,8 @@ Called directly on the class, each method returns a message segment list directl
 
 ```python
 # Directly returns list[dict], no need for .build()
-segments = MessageBuilder.text("你好！")
-# [{"type": "text", "data": {"text": "你好！"}}]
+segments = MessageBuilder.text("Hello!")
+# [{"type": "text", "data": {"text": "Hello!"}}]
 ```
 
 ## Message Segment Types
@@ -11252,8 +10862,8 @@ from ErisPulse.Core.Event.message_builder import MessageBuilder
 # Chaining build + send
 segments = (
     MessageBuilder()
-    .mention("user123", "张三")
-    .text(" 请查看这张图片")
+    .mention("user123", "Zhang San")
+    .text(" Please check this image")
     .image("https://example.com/photo.jpg")
     .build()
 )
@@ -11269,9 +10879,9 @@ from ErisPulse.Core.Event import command
 async def report_handler(event):
     await event.reply_ob12(
         MessageBuilder()
-        .text("📊 日报汇总\n")
-        .text("今日完成任务: 5\n")
-        .text("进行中任务: 3")
+        .text("📊 Daily Report Summary\n")
+        .text("Tasks completed today: 5\n")
+        .text("Tasks in progress: 3")
         .build()
     )
 ```
@@ -11283,11 +10893,11 @@ async def report_handler(event):
 Copy the current builder, used to create multiple message variants based on the same base content:
 
 ```python
-base = MessageBuilder().text("基础内容").mention("admin")
+base = MessageBuilder().text("Base content").mention("admin")
 
 # Build different messages based on the same prefix
-msg1 = base.copy().text(" 变体A").build()
-msg2 = base.copy().text(" 变体B").image("img.jpg").build()
+msg1 = base.copy().text(" Variant A").build()
+msg2 = base.copy().text(" Variant B").image("img.jpg").build()
 ```
 
 ### clear()
@@ -11299,7 +10909,7 @@ builder = MessageBuilder()
 
 for user_id in ["user1", "user2", "user3"]:
     builder.clear()
-    msg = builder.mention(user_id).text(" 你好！").build()
+    msg = builder.mention(user_id).text(" Hello!").build()
     await adapter.Send.To("user", user_id).Raw_ob12(msg)
 ```
 
@@ -11322,7 +10932,7 @@ Use the `custom()` method to add platform-specific extended message segments:
 # Add platform-specific message segments
 segments = (
     MessageBuilder()
-    .text("请填写表单：")
+    .text("Please fill out the form:")
     .custom("yunhu_form", {"form_id": "12345"})
     .build()
 )
@@ -11339,9 +10949,9 @@ segments = (
     MessageBuilder()
     .reply(event.get_id())                    # Reply to original message
     .mention(event.get_user_id())             # @Sender
-    .text(" 这是你的查询结果：\n")             # Text
+    .text(" This is your query result:\n")             # Text
     .image("https://example.com/chart.png")   # Image
-    .text("\n详细数据见附件：")
+    .text("\nDetailed data is in the attachment:")
     .file("https://example.com/data.csv", filename="data.csv")
     .build()
 )
@@ -11352,14 +10962,14 @@ await event.reply_ob12(segments)
 
 ```python
 # Quick build single-segment message
-simple_msg = MessageBuilder.text("简单文本")
+simple_msg = MessageBuilder.text("Simple text")
 
 # Chaining build complex message
 complex_msg = (
     MessageBuilder()
     .at_all()
-    .text(" 📢 公告：")
-    .text("今天下午3点开会")
+    .text(" 📢 Announcement:")
+    .text("Meeting at 3 PM today")
     .build()
 )
 ```

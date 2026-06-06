@@ -1,39 +1,30 @@
-# アダプター開発のベストプラクティス
+# アダプター開発ベストプラクティス
 
 本ドキュメントでは、ErisPulse アダプター開発のベストプラクティスを提供します。
 
-## Botの状態管理とMetaイベント
+## Bot の状態管理と Meta イベント
 
 アダプターは、`adapter.emit()` を通じて積極的に meta イベントを送信し、フレームワークに Bot の接続状態、オンライン/オフライン、ハートビート情報を自動追跡させる必要があります。
 
-### 1. Metaイベントを送信するタイミング
+### 1. Meta イベントを送信するタイミング
 
 | イベント | `detail_type` | 発生タイミング | フレームワークの動作 |
 |------|--------------|---------|---------|
 | 接続 | `"connect"` | Bot がプラットフォームとの接続を確立した時 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガーする |
 | 切断 | `"disconnect"` | Bot がプラットフォームから切断された時 | Bot をオフラインとしてマークし、`adapter.bot.offline` ライフサイクルイベントをトリガーする |
-| ハートビート | `"heartbeat"` | 定期的に送信（30〜60秒を推奨） | Bot のアクティブ時間とメタ情報を更新する |
+| ハートビート | `"heartbeat"` | 定期的に送信（推奨 30〜60 秒） | Bot のアクティブ時間とメタ情報を更新する |
 
-### 2. Metaイベントの送信
+### 2. Meta イベントを送信する
+
+フレームワークは `emit_meta()` メソッドを提供しており、1 行で meta イベントを送信できます。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Botオンライン：connect イベントを送信
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "私のBot",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Botオンライン：1 行で connect イベントを送信
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のBot")
 
         try:
             while True:
@@ -44,41 +35,26 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Botオフライン：disconnect イベントを送信
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Botオフライン
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. ハートビートイベント
 
-アダプターは、接続が生きている間、定期的にハートビートイベントを送信し、Bot のアクティブ時間を更新する必要があります：
+アダプターは、接続が生きている間、定期的にハートビートイベントを送信し、Bot のアクティブ時間を更新する必要があります。
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # フレームワークに meta heartbeat を送信（1 行で完了）
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
 ### 4. `self` フィールドの自動検出
 
-フレームワークの `adapter.emit()` は、すべてのイベント（meta イベントだけでなく）の `self` フィールドを自動的に処理します：
+フレームワークの `adapter.emit()` は、すべてのイベント（meta イベントだけでなく）の `self` フィールドを自動的に処理します。
 
 - **通常のイベント**（message/notice/request）の `self` フィールドは、Bot を自動的に検出して登録します
 - **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` オプションフィールドをサポートします
@@ -101,9 +77,9 @@ await self.adapter.emit(onebot_event)
 # Bot "bot123" が自動登録され、アクティブ時間が更新されました
 ```
 
-### 5. Botの状態照会
+### 5. Bot の状態照会
 
-フレームワークは以下の照会メソッドを提供します：
+フレームワークは以下の照会メソッドを提供します。
 
 ```python
 from ErisPulse import sdk
@@ -161,8 +137,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -199,15 +174,7 @@ class MyAdapter(BaseAdapter):
                 await self.connection.send_json({"type": "ping"})
 
                 # 2. フレームワークに meta heartbeat イベントを送信（Bot のアクティブ時間を更新）
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
@@ -233,8 +200,8 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 元のデータを保持（必須）
-            "myplatform_raw_type": raw_event.get("type", "")  # 元のタイプ（必須）
+            "myplatform_raw": raw_event,  # 原始データを保持（必須）
+            "myplatform_raw_type": raw_event.get("type", "")  # 原始タイプ（必須）
         }
         return onebot_event
 ```
@@ -336,33 +303,34 @@ class Send(BaseAdapter.Send):
 
 ### 1. レスポンス形式の標準化
 
+フレームワークは `make_response()` と `make_error()` メソッドを使用して標準化されたレスポンスを構築します。
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+`make_response()` は、`{platform}_raw` キーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
 
 ### 2. エラーコード規約
 
-OneBot12 標準のエラーコードに従います：
+OneBot12 標準のエラーコードに従います。
 
 ```python
 # 1xxxx - アクションリクエストエラー
@@ -384,54 +352,71 @@ OneBot12 標準のエラーコードに従います：
 
 ## マルチアカウントサポート
 
-### 1. アカウント設定の検証
+### 1. 声明式設定（推奨）
+
+`AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは自動的にマルチアカウントの読み込み、検証、およびテンプレート生成を管理します。
 
 ```python
-def _get_config(self):
-    """設定を検証"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # デフォルトアカウントを作成
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: アカウント名, account: MyBotConfig インスタンス
+```
+
+設定ファイルは自動的に次のように生成されます。
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. アカウント選択メカニズム
 
+フレームワークは `_resolve_account()` メソッドを内蔵しており、複数のマッチング戦略をサポートしています。
+
 ```python
-async def _get_account_for_message(self, event):
-    """イベントに基づいて送信アカウントを選択"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # 一致するアカウントを検索
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # 見つからない場合、最初に有効なアカウントを使用
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# アカウント名で一致
+name, account = self._resolve_account("account1")
+
+# bot_id フィールドで一致（設定に bot_id フィールドがある場合）
+name, account = self._resolve_account("bot_123")
+
+# 最初に有効なアカウントを取得（None を渡す）
+name, account = self._resolve_account(None)
 ```
 
 ## エラーハンドリング
 
 ### 1. 分類別の例外処理
 
+`make_error()` を使用して標準化されたエラーレスポンスを構築します。`sdk.client` を使用してリクエストする場合、ErisPulse の例外をキャッチします。
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # API リクエストを送信するために SDK 組み込みのクライアントを使用することを推奨します
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -439,32 +424,30 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # ネットワークエラー（client 使用時、組み込みの再試行メカニズムが先に処理します）
-        self.logger.error(f"ネットワークエラー: {e}")
-        return self._error_response("ネットワークリクエスト失敗", 33000)
-    except asyncio.TimeoutError:
-        # タイムアウトエラー
-        self.logger.error(f"リクエストタイムアウト: {endpoint}")
-        return self._error_response("リクエストタイムアウト", 32000)
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
+        self.logger.error(f"请求超时: {endpoint}")
+        return self.make_error(retcode=32000, message="请求超时")
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self.make_error(retcode=33000, message="网络请求失败")
     except json.JSONDecodeError:
-        # JSON 解析エラー
-        self.logger.error("JSON 解析失敗")
-        return self._error_response("レスポンス形式エラー", 10006)
+        self.logger.error("JSON 解析失败")
+        return self.make_error(retcode=10006, message="响应格式错误")
     except Exception as e:
-        # 不明なエラー
-        self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        self.logger.error(f"未知错误: {e}", exc_info=True)
+        return self.make_error(message=str(e))
 ```
+
+> **バック互換性**：直接 `aiohttp` を使用する旧アダプターコードは影響を受けません。引き続き `aiohttp.ClientError` をキャッチできます。例外変換は、`sdk.client` 経由でリクエストを開始した場合にのみ有効になります。
 
 ### 2. ログ記録
 
+フレームワークは自動的にアダプターに子ロガー（`sdk.logger.get_child("MyAdapter")`）を作成するため、手動で初期化する必要はありません。
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # 設定クラスを宣言すると、self.logger が自動的に使用可能になります
     
     async def start(self):
         self.logger.info("アダプターを起動中...")
@@ -472,7 +455,9 @@ class MyAdapter(BaseAdapter):
         self.logger.info("アダプターの起動が完了しました")
     
     async def shutdown(self):
-        self.logger.info("アダ
+        self.logger.info("アダプターをシャットダウン中...")
+        # ...
+        self.logger.info("アダプターのシャットダウンが完了しました")
 ```
 
 ## テスト
@@ -528,7 +513,7 @@ async def test_send_message():
 `MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
 
 > 完全な実装規範、コード例、使用方法は以下を参照してください：
-> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規範onebot12--プラットフォーム)
+> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
 > - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
@@ -537,7 +522,7 @@ async def test_send_message():
 
 ### 1. Mixin クラスを使用した一括登録（推奨）
 
-プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します：
+プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します。
 
 ```python
 # アダプターの start() またはモジュールレベルで登録
@@ -589,7 +574,7 @@ class MyAdapter(BaseAdapter):
 
 ### 1. プラットフォーム特性ドキュメントの維持
 
-`docs/zh-CN/platform-guide/` に `{platform}.md` ドキュメントを作成してください（他の言語バージョンは自動生成されます）：
+`docs/zh-CN/platform-guide/` に `{platform}.md` ドキュメントを作成してください（他の言語バージョンは自動生成されます）。
 
 ```markdown
 # プラットフォーム名アダプタードキュメント
@@ -610,7 +595,7 @@ class MyAdapter(BaseAdapter):
 
 ### 2. バージョン情報の更新
 
-新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新してください：
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新してください。
 
 ```toml
 [project]

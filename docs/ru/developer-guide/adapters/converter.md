@@ -223,6 +223,99 @@ class MyConverter:
         return base
 ```
 
+## 富媒体 сообщения
+
+Реальные события платформы часто содержат богатый контент, такой как изображения, упоминания (@), ответы и т. д. Ниже приведен пример обработки `_convert_message_segments` для различных типов сообщений:
+
+```python
+def _convert_message_segments(self, raw_content: list) -> list:
+    """Преобразует список сегментов нативных сообщений платформы в стандартные сегменты OneBot12"""
+    segments = []
+
+    for item in raw_content:
+        item_type = item.get("type", "")
+
+        if item_type == "text":
+            segments.append({
+                "type": "text",
+                "data": {"text": item.get("content", "")}
+            })
+
+        elif item_type == "image":
+            file_url = item.get("url") or item.get("file_id", "")
+            segments.append({
+                "type": "image",
+                "data": {"file": file_url}
+            })
+
+        elif item_type == "at":
+            segments.append({
+                "type": "mention",
+                "data": {"user_id": item.get("target_id", "")}
+            })
+
+        elif item_type == "reply":
+            segments.append({
+                "type": "reply",
+                "data": {"message_id": item.get("reply_to_id", "")}
+            })
+
+        elif item_type == "at_all":
+            segments.append({"type": "mention_all", "data": {}})
+
+        else:
+            segments.append({
+                "type": "text",
+                "data": {"text": f"[Unsupported message type: {item_type}]"}
+            })
+
+    return segments
+```
+
+## Частые ошибки
+
+### 1. Отсутствие поля `{platform}_raw`
+
+Это наиболее распространенная ошибка. Отсутствие поля исходных данных не позволяет модулям получать доступ к специфической информации платформы.
+
+```python
+base_event["myplatform_raw"] = raw_event        # Обязательно!
+base_event["myplatform_raw_type"] = event_type   # Обязательно!
+```
+
+### 2. Неверный формат timestamp
+
+Стандарт OneBot12 требует, чтобы поле `time` было целым числом Unix timestamp в секундах. Если ваша платформа возвращает timestamp в миллисекундах или строку в ISO формате, необходимо преобразовать данные:
+
+```python
+import time
+
+# Milliseconds → Seconds
+"time": raw_event.get("timestamp", 0) // 1000
+
+# ISO String → Seconds
+"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
+```
+
+### 3. Отсутствие поля `self`
+
+Поле `self` содержит информацию о самом боте, где `user_id` — это ID аккаунта бота. В сценариях с несколькими ботами это поле критически важно:
+
+```python
+"self": {
+    "platform": self.platform,
+    "user_id": raw_event.get("bot_id", ""),   # ID самого бота
+}
+```
+
+### 4. Использование некорректных значений detail_type
+
+Поле `detail_type` должно использовать значения, определенные стандартом OneBot12, такие как `private`, `group`, `friend_increase`, `group_member_increase` и др. Не используйте названия, специфичные для платформы.
+
+### 5. Согласованность преобразований
+
+Убедитесь, что типы сегментов сообщений, созданные конвертером, соответствуют методам, поддерживаемым на стороне отправки (Send). Например, если конвертер преобразует сообщение изображения платформы в `{"type": "image", ...}`, то метод `Image()` на стороне отправки должен корректно обрабатывать отправку изображений.
+
 ## Рекомендуемые практики (Best Practices)
 
 1.  **Всегда сохраняйте исходные данные**: Поле `{platform}_raw` не может быть опущено.

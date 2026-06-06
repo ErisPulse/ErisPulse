@@ -10,7 +10,7 @@
 from ErisPulse.Core.Event import command
 
 # Базовая команда
-@command("hello", help="Показать приветствие")
+@command("hello", help="Отправить приветствие")
 async def hello_handler(event):
     await event.reply("Привет!")
 
@@ -58,7 +58,7 @@ visible_commands = command.get_visible_commands()
 
 ```python
 # Ожидание ответа пользователя
-@command("ask", help="Запрос информации у пользователя")
+@command("ask", help="Запросить информацию у пользователя")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
@@ -402,6 +402,8 @@ while conv.is_active:
         break
     await conv.say(f"Вы сказали: {reply.get_text()}")
 ```
+
+> Полный список параметров и примеров взаимодействующих методов см. в разделе [Event Wrapper详解](../developer-guide/modules/event-wrapper.md) и [Conversation 多轮对话](../advanced/conversation.md).
 
 ### Утилитные методы
 

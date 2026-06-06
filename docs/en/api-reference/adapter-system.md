@@ -65,20 +65,39 @@ running = sdk.adapter.list_running()
 
 ## Middleware
 
+Middleware executes before events are dispatched to handlers, allowing modification, filtering, or logging of event data.
+
 ### Registering Middleware
 
 ```python
-# Add middleware
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # Process event
     sdk.logger.info(f"Middleware processing: {event}")
     return event
 ```
 
-### Middleware Execution Order
+### Middleware Execution Model
 
-Middleware executes in the order of registration, running before the event is dispatched to handlers.
+- **Execution Order**: Middleware executes in registration order (first registered first executed)
+- **Data Passing**: Each middleware receives the `event` data returned by the previous middleware; if a middleware returns `None`, the return value is ignored and the original data continues to be passed (while outputting a `warning` level log)
+- **Data Modification**: Middleware can modify event data and return the modified dictionary
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "spam" in text:
+            return None   # Returning None does not block event propagation, only ignores this return value
+    return event
+```
+
+> **Note**: Middleware currently does not support blocking event propagation. If you need to filter specific events, implement conditional checks in the event handler.
 
 ## Send Message Sending
 
@@ -144,8 +163,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("Reply to m
 ## API Calls
 
 ### call_api Method
-> Note that the API calling methods may vary for different platforms. Please refer to the corresponding platform adapter documentation.
-> Direct use of the `call_api` method is not recommended; it is suggested to use the `Send` class for message sending.
+> **Note**: `call_api` is a low-level method for directly calling native platform APIs. Parameters and return values may vary across platforms; please refer to the corresponding platform adapter documentation. **It is recommended to use the Send DSL for message sending**; use `call_api` only in scenarios where the Send DSL does not support (such as retrieving platform-specific data, calling platform management interfaces, etc.).
 
 ```python
 # Call platform API

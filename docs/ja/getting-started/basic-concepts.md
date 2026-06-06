@@ -33,7 +33,7 @@ OneBot12 標準イベントに変換
 アダプター経由で応答を送信
       │
       ▼
-ユーザーに表示
+プラットフォームがユーザーに表示
 ```
 
 ### OneBot12 標準
@@ -102,106 +102,82 @@ async def info_handler(event):
 - アダプターを呼び出してメッセージを送信
 - コアモジュールが提供するサービスの使用
 
+#### モジュール発見メカニズム
+
+ErisPulse は Python の `importlib.metadata.entry_points` を使用してインストール済みのモジュールを発見します。モジュールは `pyproject.toml` でエントリーポイントを宣言します：
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+SDK の初期化時に、`erispulse.module` グループのすべてのエントリーポイントをスキャンし、モジュールクラスを `ModuleManager` に登録してから、依存関係のトポロジカル順序で初期化します。
+
+#### 最小限のモジュール
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """モジュールが読み込まれたときに呼び出されます"""
-        # イベントハンドラーを登録
-        @command("mycmd", help="私のコマンド")
-        async def my_command(event):
-            await event.reply("コマンド実行成功")
-
         self.logger.info("モジュールが読み込まれました")
 
     async def on_unload(self, event):
-        """モジュールがアンロードされるときに呼び出されます"""
         self.logger.info("モジュールがアンロードされました")
 ```
 
+#### モジュールのライフサイクル
+
+- **登録**：SDK がモジュールクラスを発見し、マネージャーに登録
+- **ロード**：モジュールインスタンスを作成し、`on_load(event)` を呼び出す（`event = {"module_name": "MyModule"}`）
+- **アンロード**：`on_unload(event)` を呼び出し、リソースをクリーンアップ
+
+#### 加速戦略
+
+`get_load_strategy()` を使ってモジュールのロード動作を宣言します：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # レイジーロードを有効にする（デフォルト True）
+            priority=0        # 加速優先度、数値が大きいほど先に初期化される
+        )
+```
+
+- **`lazy_load=True`（デフォルト）**：モジュールは `sdk.MyModule` に初めてアクセスされたときにのみ初期化され、起動時間を短縮
+- **`lazy_load=False`**：SDK の起動時に即座に初期化、ライフサイクルイベントを監視するモジュールや定時タスクモジュールに適している
+- **`priority`**：同じ優先度のモジュールは登録順にロード、数値が大きいほど先に初期化される
+
+> レイジーロードの詳細なメカニズムについては [レイジーロードシステム](../advanced/lazy-loading.md) を参照してください。
+
 ## イベントタイプ
 
-### メッセージイベント
+ErisPulse は 5 種類のイベントをサポートしています：
 
-ユーザーが送信するすべてのメッセージ（プライベートチャットおよびグループチャットを含む）を処理します。
+| イベントタイプ | デコレータ | 説明 |
+|---------|--------|------|
+| メッセージイベント | `@message.on_message()` | ユーザーが送信するすべてのメッセージ（プライベートチャットおよびグループチャットを含む） |
+| コマンドイベント | `@command("name")` | コマンドプレフィックス（例: `/hello`）で始まるメッセージ |
+| 通知イベント | `@notice.on_friend_add()` など | システム通知（フレンド追加、グループメンバーの変化など） |
+| リクエストイベント | `@request.on_friend_request()` など | ユーザーのリクエスト（フレンドリクエスト、グループ招待） |
+| メタイベント | `@meta.on_connect()` など | システムレベルのイベント（接続、切断、ハートビート） |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"メッセージを受信しました: {text}")
-```
-
-### コマンドイベント
-
-コマンドプレフィックス（例: `/hello`）で始まるメッセージを処理します。
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="挨拶を送信")
-async def hello_handler(event):
-    await event.reply("こんにちは！")
-```
-
-### 通知イベント
-
-システム通知（例: フレンド追加、グループメンバーの変化）を処理します。
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("フレンド追加を歓迎します！")
-```
-
-### リクエストイベント
-
-ユーザーのリクエスト（例: フレンドリクエスト、グループ招待）を処理します。
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("あなたのフレンドリクエストを受け取りました")
-```
-
-### メタイベント
-
-システムレベルのイベント（例: 接続、ハートビート）を処理します。
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} に接続しました")
-```
+> 各イベントタイプの詳細な使い方とコード例については [イベント処理の入門](event-handling.md) を参照してください。
 
 ## コアモジュールの説明
 
 ### Storage（ストレージ）
 
-SQLite ベースのキーバリューストレージシステムであり、データの永続化に使用されます。
+SQLite をベースにしたキーバリューストレージシステムであり、データの永続化に使用されます。
 
 ```python
 # 値の設定
@@ -233,7 +209,7 @@ config = sdk.config.getConfig("MyModule", {})
 # 設定を設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# ネストされた設定を読み取る
+# 嵌套された設定を読み取る
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
@@ -382,20 +358,23 @@ async def test_handler(event):
 ErisPulse はモジュールのレイジーロード（Lazy Load）をサポートしており、モジュールは初めてアクセスされたときにのみ初期化され、起動速度が向上します。
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # レイジーロードを有効にする（デフォルト）
-            priority=0       # ロード優先度
+            priority=0       # 加速優先度、数値が大きいほど先に初期化される
         )
 ```
 
-**即時ロードが必要なシナリオ：**
-- ライフサイクルイベントを監視するモジュール
+**即時ロードが必要なシナリオ（`lazy_load=False`）：**
+- ライフサイクルイベントを監視するモジュール（例: `core.init.complete`）
 - 定期タスクモジュール
 - アプリケーションの起動時に初期化が必要なモジュール
+
+> 详细的レイジーロードメカニズムと注意事項については [レイジーロードシステム](../advanced/lazy-loading.md) を参照してください。
 
 ## 次のステップ
 

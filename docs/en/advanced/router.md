@@ -28,6 +28,8 @@ ErisPulse provides server-side abstract types so that modules do not need to dir
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket connection encapsulation, additionally provides lifecycle hooks |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket disconnection exception |
 
+> `WebSocketConnection` inherits from `WebSocketConnectionBase` and shares the same send/receive/iter/close interfaces as the client WebSocket (`ClientWebSocket`). Client and server WebSockets can use the same business logic code.
+>
 > The underlying FastAPI native object can be accessed via the `.raw` property. Code directly using FastAPI types is also fully compatible.
 
 ## Decorator Routes (Recommended)
@@ -301,37 +303,6 @@ Route paths automatically have the module name added as a prefix to avoid confli
 # Actual access path is "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
-
-## Authentication Mechanism
-
-Recommended to use `auth_handler` to control connection access:
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# Decorator method
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# Traditional registration method
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-The `auth_handler` is executed after the connection is established. Returning `False` will automatically close the connection (status code 1008).
-
-> Only set `auto_accept=False` when you need complete control over the connection flow (e.g., custom handshake protocol).
 
 ## System Routes
 

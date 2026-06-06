@@ -2,13 +2,22 @@
 
 `MessageBuilder` は、ErisPulseが提供するOneBot12標準のメッセージセグメント構築ツールです。構造化されたメッセージ内容を構築し、`Send.Raw_ob12()` と組み合わせて使用します。
 
-## デュアルモードメカニズム
+## 導入方法
 
-MessageBuilderは2つの使用モードを提供し、Pythonのデスクリプタ機構を通じて、クラスレベルとインスタンスレベルでの異なる動作を実現します。
+`MessageBuilder` は以下の2つの導入方法をサポートしています（効果は同じで、1つ目の方法を推奨します）：
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # 推奨、パッケージ経由でのエクスポート
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # モジュール直接インポート
+```
+
+## ダブルモードメカニズム
+
+MessageBuilder は2つの使用モードを提供し、Pythonのデスクリプタ機構（`__get__`）を通じてクラスレベルとインスタンスレベルでの異なる動作を実現します：クラスからメソッドを呼び出す場合、`__get__` は静的メソッドの実行結果を返します；インスタンスからメソッドを呼び出す場合、`self` を返してチェーンコールをサポートします。
 
 ### チェーンコールモード（インスタンス）
 
-`MessageBuilder()` をインスタンス化して使用します。各メソッドは `self` を返し、チェーンコールをサポートします。最後に `.build()` を使ってメッセージセグメントのリストを取得します。
+`MessageBuilder()` をインスタンス化して使用します。各メソッドは `self` を返し、チェーンコールをサポートし、最後に `.build()` を使ってメッセージセグメントのリストを取得します：
 
 ```python
 from ErisPulse.Core.Event.message_builder import MessageBuilder
@@ -25,12 +34,12 @@ segments = (
 # ]
 ```
 
-### クイック構築モード（静的）
+### 快速構築モード（静的）
 
-クラスから直接メソッドを呼び出します。各メソッドは直接メッセージセグメントのリストを返し、単一セグメントのメッセージに適しています。
+クラスから直接メソッドを呼び出します。各メソッドは直接メッセージセグメントのリストを返し、単一セグメントのメッセージに適しています：
 
 ```python
-# list[dict] を直接返します。.build() は不要です。
+# 直接 list[dict] を返します。.build() は不要です。
 segments = MessageBuilder.text("你好！")
 # [{"type": "text", "data": {"text": "你好！"}}]
 ```

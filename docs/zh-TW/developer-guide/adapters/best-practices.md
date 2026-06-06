@@ -16,24 +16,15 @@
 
 ### 2. 發送 Meta 事件
 
+框架提供 `emit_meta()` 方法，一行即可發送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot 上線：發送 connect 事件
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的機器人",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Bot 上線：一行發送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的機器人")
 
         try:
             while True:
@@ -44,16 +35,8 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot 下線：發送 disconnect 事件
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Bot 下線
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. 心跳事件
@@ -64,15 +47,8 @@ class MyAdapter(BaseAdapter):
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # 向框架發送 meta heartbeat（一行完成）
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
@@ -118,7 +94,7 @@ all_bots = sdk.adapter.list_bots()
 # 列出指定平台的 Bot
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# 檢查 Bot 是否上線
+# 檢查 Bot 是否在線
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
 # 取得完整狀態摘要（適合 WebUI 展示）
@@ -161,8 +137,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -198,16 +173,8 @@ class MyAdapter(BaseAdapter):
                 # 1. 向平台發送心跳保活
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. 向框架發送 meta heartbeat 事件（更新 Bot 活躍時間）
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                # 2. 向框架發送 meta heartbeat（使用 emit_meta 一行完成）
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
@@ -336,29 +303,30 @@ class Send(BaseAdapter.Send):
 
 ### 1. 標準化回應格式
 
+框架提供 `make_response()` 和 `make_error()` 方法構造標準化回應：
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+`make_response()` 會自動生成包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
 
 ### 2. 錯誤碼規範
 
@@ -384,54 +352,71 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多帳號支援
 
-### 1. 帳號設定驗證
+### 1. 宣告式設定（推薦）
+
+使用 `AccountConfigClass` 宣告設定類後，框架自動管理多帳號載入、校驗和範本產生：
 
 ```python
-def _get_config(self):
-    """驗證設定"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # 建立預設帳號
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"啟動帳戶 {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: 帳戶名, account: MyBotConfig 實例
+```
+
+設定檔案自動生為：
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. 帳號選擇機制
 
+框架內建 `_resolve_account()` 方法，支援多種匹配策略：
+
 ```python
-async def _get_account_for_message(self, event):
-    """根據事件選擇傳送帳號"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # 查找匹配的帳號
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # 如果沒有找到，使用第一個啟用的帳號
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# 按帳戶名匹配
+name, account = self._resolve_account("account1")
+
+# 按 bot_id 欄位匹配（如果設定中有 bot_id 欄位）
+name, account = self._resolve_account("bot_123")
+
+# 取得第一個啟用的帳戶（傳入 None）
+name, account = self._resolve_account(None)
 ```
 
 ## 錯誤處理
 
 ### 1. 分類異常處理
 
+使用 `make_error()` 構造標準化錯誤回應。透過 `sdk.client` 請求時捕獲 ErisPulse 異常：
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # 推薦使用 SDK 內建客戶端傳送 API 請求
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -439,32 +424,30 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # 網路錯誤（使用 client 時內建重試機制會先處理）
-        self.logger.error(f"網路錯誤: {e}")
-        return self._error_response("網路請求失敗", 33000)
-    except asyncio.TimeoutError:
-        # 逾時錯誤
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
         self.logger.error(f"請求逾時: {endpoint}")
-        return self._error_response("請求逾時", 32000)
+        return self.make_error(retcode=32000, message="請求逾時")
+    except ClientError as e:
+        self.logger.error(f"網路錯誤: {e}")
+        return self.make_error(retcode=33000, message="網路請求失敗")
     except json.JSONDecodeError:
-        # JSON 解析錯誤
         self.logger.error("JSON 解析失敗")
-        return self._error_response("回應格式錯誤", 10006)
+        return self.make_error(retcode=10006, message="回應格式錯誤")
     except Exception as e:
-        # 未知錯誤
         self.logger.error(f"未知錯誤: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        return self.make_error(message=str(e))
 ```
+
+> **向後相容**：直接使用 `aiohttp` 的舊配接器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發起請求時生效。
 
 ### 2. 日誌記錄
 
+框架自動為配接器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # 宣告設定類後 self.logger 自動可用
     
     async def start(self):
         self.logger.info("配接器啟動中...")
@@ -530,7 +513,7 @@ async def test_send_message():
 `MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫和快速建構。
 
 > 完整的實作規範、程式碼範例和使用方法請參閱：
-> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規范onebot12--平台)
 > - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
 ## 平台事件方法擴充

@@ -147,6 +147,24 @@ config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 ```
 
+Запись и чтение конфигурации в модуле:
+
+```python
+from ErisPulse import sdk
+
+# Чтение конфигурации
+config = sdk.config.getConfig("MyModule", {})
+api_url = config.get("api_url", "https://default.api.com")
+
+# Запись конфигурации во время выполнения (отложенное сохранение)
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# Немедленное сохранение в файл
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
+```
+
+> `setConfig` по умолчанию использует отложенную запись (примерно каждые 5 секунд для пакетного сохранения в файл). Установка `immediate=True` позволяет немедленно сохранить изменения. Изменения конфигурации вызывают событие жизненного цикла `config.set`.
+
 ## Далее
 
 *   [Справка по командам CLI](cli-reference.md) - Узнайте обо всех командах командной строки

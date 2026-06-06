@@ -6,137 +6,37 @@ Welcome to the ErisPulse Getting Started Guide. If you are using ErisPulse for t
 
 This guide is organized in the following order, and is recommended to be read sequentially:
 
-1. **Create Your First Bot** - Understand the complete project initialization workflow
-2. **Core Concepts** - Understand the core architecture of ErisPulse
-3. **Introduction to Event Handling** - Learn how to handle various types of events
-4. **Common Task Examples** - Master the implementation of common features
+| Step | Topic | Description |
+|------|-------|-------------|
+| 1 | [Create Your First Bot](first-bot.md) | From project initialization to running your first command |
+| 2 | [Basic Concepts](basic-concepts.md) | Understanding ErisPulse's core architecture and module design |
+| 3 | [Introduction to Event Handling](event-handling.md) | Learn how to handle various event types, such as messages, commands, and notices |
+| 4 | [Common Task Examples](common-tasks.md) | Master common features such as data persistence, scheduled tasks, and permission control |
 
 ## Choosing a Development Approach
 
-ErisPulse supports two development approaches; you can choose based on your needs:
+ErisPulse supports two development approaches:
 
-### Embedded Development (Suitable for Fast Prototyping)
+| Approach | Suitable Scenarios | Description |
+|----------|-------------------|-------------|
+| **Embedded Development** | Fast prototyping, internal project features | Write handlers directly in `main.py` without creating separate modules |
+| **Module Development** (Recommended) | Production environment, feature distribution | Create independent Python packages and install and use them via `epsdk install` |
 
-Use ErisPulse directly within a project without creating separate modules.
+> For a detailed comparison and examples of both approaches, please refer to [Create Your First Bot](first-bot.md) and [Getting Started with Module Development](../developer-guide/modules/getting-started.md).
 
-```python
-# main.py
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
+## Architecture Overview
 
-@command("hello")
-async def hello(event):
-    await event.reply("Hello!")
+ErisPulse adopts an event-driven architecture and consists of the following core systems:
 
-# Run the SDK and keep it running | Needs to run in an async environment
-asyncio.run(sdk.run(keep_running=True))
-```
+- **Adapter System** — Communicating with various platforms, converting platform events into a unified OneBot12 standard format
+- **Event System** — Handling five major types of events: messages, commands, notices, requests, and meta events
+- **Module System** — Extending functionality through independent modules, supporting dependency management and lazy loading
+- **Core Modules** — Providing basic capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)
 
-**Pros:**
-- Quick to get started, no extra configuration needed
-- Suitable for internal project-specific features
-- Convenient for debugging and testing
-
-**Cons:**
-- Not convenient for code reuse and distribution
-- Difficult to manage dependencies independently
-
-### Modular Development (Recommended for Production)
-
-Create independent module packages and install and use them via package managers.
-
-**Pros:**
-- Easy to distribute and share
-- Independent dependency management
-- Clear version control
-
-**Cons:**
-- Requires additional project structure
-- Initial configuration is relatively complex
-
-## ErisPulse Core Concepts
-
-### Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────┐
-│                ErisPulse Framework                 │
-├─────────────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────────┐      ┌──────────────┐    │
-│  │  Adapter Sys │◄────►│  Event Sys   │    │
-│  │             │      │              │    │
-│  │  Yunhu      │      │  Message     │    │
-│  │  Telegram   │      │  Command     │    │
-│  │  OneBot11   │      │  Notice      │    │
-│  │  Email      │      │  Request     │    │
-│  └──────────────┘      │  Meta        │    │
-│         │              └──────────────┘    │
-│         ▼                   │              │
-│  ┌──────────────┐           ▼              │
-│  │  Module Sys  │◄──────────────┐       │
-│  │             │               │       │
-│  │  Module A   │               │       │
-│  │  Module B   │               │       │
-│  │  ...        │               │       │
-│  └──────────────┘               │       │
-│                               │       │
-│  ┌──────────────┐              │       │
-│  │  Core Modules│◄─────────────┘       │
-│  │  Storage    │                      │
-│  │  Config     │                      │
-│  │  Logger     │                      │
-│  │  Router     │                      │
-│  └──────────────┘                      │
-└─────────────────────────────────────────────┘
-             │                    │
-             ▼                    ▼
-        ┌────────┐          ┌────────┐
-        │  Plat  │          │  User  │
-        │  API   │          │  Code  │
-        └────────┘          └────────┘
-```
-
-### Core Components Explanation
-
-#### 1. Adapter System
-
-The adapter is responsible for communicating with specific platforms, converting platform-specific events into a unified OneBot12 standard format.
-
-**Examples:**
-- Yunhu Adapter: Communicating with the Yunhu platform
-- Telegram Adapter: Communicating with the Telegram Bot API
-- OneBot11 Adapter: Communicating with OneBot11-compatible applications
-
-#### 2. Event System
-
-The event system is responsible for handling various types of events, including:
-- **Message Event**: Messages sent by the user
-- **Command Event**: Commands entered by the user (e.g., `/hello`)
-- **Notice Event**: System notifications (e.g., friend added, group member changes)
-- **Request Event**: User requests (e.g., friend requests, group invitations)
-- **Meta Event**: System-level events (e.g., connection, heartbeat)
-
-#### 3. Module System
-
-Modules are the primary way to extend functionality and are used to:
-- Register event handlers
-- Implement business logic
-- Provide command interfaces
-- Call adapters to send messages
-
-#### 4. Core Modules
-
-Modules providing basic functions:
-- **Storage**: SQLite-based key-value storage
-- **Config**: Configuration management in TOML format
-- **Logger**: Modular logging system
-- **Router**: FastAPI + Uvicorn-based HTTP and WebSocket routing management
-- **Metrics**: Metrics monitoring system (Counter / Gauge / Histogram)
+> For detailed architecture diagrams and initialization flows, please refer to [Architecture Overview](../architecture.md).
 
 ## Start Learning
 
-Are you ready? Let's start creating your first bot.
+Are you ready to get started?
 
-- [Create Your First Bot](first-bot.md)
+- [Create Your First Bot](first-bot.md) — Get up and running in 5 minutes

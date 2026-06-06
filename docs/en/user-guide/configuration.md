@@ -96,7 +96,7 @@ use_global_db = false
 
 | Config Item | Type | Default | Description |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database |
+| use_global_db | boolean | false | Whether to use the global database (within package) instead of the project database. When `true`, all projects share the ErisPulse package's internal SQLite database; when `false` (default), each project uses a separate database in the `config/` directory |
 
 ## Event Configuration
 
@@ -138,14 +138,23 @@ timeout = 30
 enabled = true
 ```
 
-Reading configuration in modules:
+Reading and writing configuration in modules:
 
 ```python
 from ErisPulse import sdk
 
+# Read config
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# Runtime write config (delayed save)
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# Save to file immediately
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` defaults to delayed writing (batch saving to file every ~5 seconds). Setting `immediate=True` will persist immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Next Steps
 

@@ -204,7 +204,22 @@ def Text(self, text: str):
 
 ### 標準化されたレスポンス
 
-`call_api` は標準化されたレスポンスを返す必要があります：
+`call_api` は標準化されたレスポンスを返す必要があります。`make_response()` / `make_error()` メソッドの使用が推奨されます：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+手動構築もサポートしています（旧版方式も互換性があります）：
 
 ```python
 async def call_api(self, endpoint: str, **params):
