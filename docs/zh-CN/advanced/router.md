@@ -304,37 +304,6 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## 认证机制
-
-推荐使用 `auth_handler` 控制连接访问：
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# 装饰器方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# 传统注册方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` 在连接建立后执行，返回 `False` 会自动关闭连接（状态码 1008）。
-
-> 仅在你需要完全控制连接流程（如自定义握手协议）时才设置 `auto_accept=False`。
-
 ## 系统路由
 
 路由管理器自动提供两个系统路由：

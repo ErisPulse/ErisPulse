@@ -96,7 +96,7 @@ use_global_db = false
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库 |
+| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库。`true` 时所有项目共享 ErisPulse 包内的 SQLite 数据库；`false`（默认）时每个项目使用 `config/` 目录下独立的数据库 |
 
 ## 事件配置
 
@@ -138,14 +138,23 @@ timeout = 30
 enabled = true
 ```
 
-在模块中读取配置：
+在模块中读取和写入配置：
 
 ```python
 from ErisPulse import sdk
 
+# 读取配置
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
+
+# 运行时写入配置（延迟保存）
+sdk.config.setConfig("MyModule.timeout", 60)
+
+# 立即保存到文件
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
+
+> `setConfig` 默认采用延迟写入（约每 5 秒批量保存到文件），设置 `immediate=True` 可立即持久化。配置变更会触发 `config.set` 生命周期事件。
 
 ## 下一步
 

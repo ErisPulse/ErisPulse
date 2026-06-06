@@ -238,39 +238,7 @@ async def heartbeat_handler(event):
 
 ### Bot 状态查询
 
-当适配器发送 meta 事件后，框架会自动追踪 Bot 状态。你可以通过适配器管理器查询：
-
-```python
-from ErisPulse import sdk
-
-# 获取单个 Bot 信息
-info = sdk.adapter.get_bot_info("telegram", "123456")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-tg_bots = sdk.adapter.list_bots("telegram")
-
-# 检查 Bot 是否在线
-is_online = sdk.adapter.is_bot_online("telegram", "123456")
-
-# 获取完整状态摘要
-summary = sdk.adapter.get_status_summary()
-```
-
-也可以通过生命周期事件监听 Bot 上下线：
-
-```python
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    sdk.logger.info(f"Bot 上线: {data['platform']}/{data['bot_id']}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    sdk.logger.info(f"Bot 下线: {data['platform']}/{data['bot_id']}")
-```
+当适配器发送 meta 事件后，框架会自动追踪 Bot 状态。查询 API 和生命周期事件监听请参考 [适配器系统 API - Bot 状态管理](adapter-system.md#bot-状态管理)。
 
 ## Event 包装类
 
@@ -358,49 +326,29 @@ reply = await event.wait_reply(timeout=30)
 ### 交互方法
 
 ```python
-# confirm — 确认对话
+# confirm — 确认对话（返回 True/False/None）
 if await event.confirm("确定要执行此操作吗？"):
     await event.reply("已确认")
-else:
-    await event.reply("已取消")
 
-# 自定义确认词
-if await event.confirm("继续吗？", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
-    pass
-
-# choose — 选择菜单
+# choose — 选择菜单（返回选项索引或 None）
 choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
-if choice is not None:
-    await event.reply(f"你选择了：{['红色', '绿色', '蓝色'][choice]}")
 
-# collect — 表单收集
+# collect — 表单收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "请输入姓名："},
     {"key": "age", "prompt": "请输入年龄：",
      "validator": lambda e: e.get_text().isdigit()},
 ])
-if data:
-    await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
 
-# wait_for — 等待任意事件
-evt = await event.wait_for(
-    event_type="notice",
-    condition=lambda e: e.get_detail_type() == "group_member_increase",
-    timeout=120
-)
-if evt:
-    await event.reply(f"新成员: {evt.get_user_id()}")
+# wait_for — 等待满足条件的任意事件
+evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — 多轮对话
+# conversation — 多轮对话上下文
 conv = event.conversation(timeout=60)
-await conv.say("欢迎！输入'退出'结束。")
-while conv.is_active:
-    reply = await conv.wait()
-    if reply is None or reply.get_text() == "退出":
-        conv.stop()
-        break
-    await conv.say(f"你说: {reply.get_text()}")
+await conv.say("欢迎！")
 ```
+
+> 完整的交互方法参数说明和更多示例请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多轮对话](../advanced/conversation.md)。
 
 ### 工具方法
 
