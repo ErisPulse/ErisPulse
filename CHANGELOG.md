@@ -63,6 +63,56 @@
 
 ---
 
+## [2.4.6-dev.6] - 2026/06/06
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `Core/Bases/websocket.py` 新增 `WebSocketConnectionBase` 共享基类和 `WSMessage` 消息类型：
+    - 客户端和服务端 WebSocket 共享 send/receive/iter/close 接口
+    - `WSMessage` 统一消息抽象（TEXT / BINARY / CLOSE / ERROR）
+    - iter_text/iter_bytes/iter_json 自动在断开时停止迭代
+    - on_disconnect/on_error 生命周期回调
+  - `Core/Bases/errors.py` 新增 ErisPulse 异常体系：
+    - `ErisPulseError` → `ClientError`（`ClientConnectionError` / `ClientTimeoutError` / `HTTPStatusError`）→ `WebSocketError` → `WebSocketDisconnect`
+    - 通过 `sdk.client` 发起的请求自动将 aiohttp 异常转换为 ErisPulse 异常
+  - `Core/Bases/client.py` 新增 `BaseClientWebSocket` 抽象基类
+  - `Core/client.py` 新增 WebSocket 客户端：
+    - `ClientWebSocket`：基于 aiohttp 的 WS 客户端连接封装
+    - `HttpClient.ws_connect()`：建立 WebSocket 连接，支持 heartbeat 参数
+    - 触发 `client.ws.connect` 生命周期事件
+  - `runtime/config_schema.py` 新增 dataclass 配置 Schema 系统：
+    - `AdapterConfig` / `BotAccountConfig` 配置基类
+    - `dataclass_to_toml_with_comments()` 生成带注释的 TOML 模板
+    - `dict_to_dataclass()` / `validate_config()` / `get_config_schema()` 工具函数
+  - `Core/Bases/adapter.py` BaseAdapter 新增声明式配置管理：
+    - `ConfigClass` / `AccountConfigClass` 类属性声明配置类
+    - `self.config` / `self.accounts` / `self.enabled_accounts` 属性自动加载
+    - `emit_meta()` 便捷方法一行发送 meta 事件
+    - `make_response()` / `make_error()` 构造标准化响应
+    - `_resolve_account()` 自动解析多账户
+    - `on_config_update()` 配置热更新回调
+  - `Core/constants.py` 新增 WS 客户端默认常量
+
+### 变更
+- @wsu2059q
+  - `WebSocketConnection` 改为继承 `WebSocketConnectionBase`，通用接口移至基类
+  - `WebSocketDisconnect` 从 `Bases/router.py` 移至 `Bases/errors.py`（旧导入路径兼容）
+  - `HttpClient` / `HttpResponse` / `ClientWebSocket` 继承对应抽象基类
+  - `HttpResponse.text()` / `json()` 改为基于 `read()` 缓存实现，不再依赖 aiohttp 原生方法
+  - `BaseAdapter.__init__(self, sdk=None)` 接受 sdk 参数，自动初始化 logger / config / accounts
+  - 适配器注册时自动注入 `instance._platform`
+  - 生命周期事件 `client.request` 更名为 `client.request.success`
+  - HTTP 请求异常分类处理：`ClientConnectionError` 重建 session 重试，`TimeoutError` 独立重试
+
+### 文档
+- @wsu2059q
+  - HTTP 客户端文档 → HTTP/WS 客户端文档，新增 WebSocket 客户端和异常体系章节
+  - 适配器开发文档更新为声明式配置风格（ConfigClass / emit_meta / make_response）
+  - 示例适配器 `MyAdapter` 全面重构，展示新 API 用法
+
+---
+
 ## [2.4.6-dev.5] - 2026/06/03
 > 开发版本
 
