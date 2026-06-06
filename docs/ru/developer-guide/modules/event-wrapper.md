@@ -212,6 +212,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - Возвращает объект `Conversation`, поддерживающий `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - Атрибут `is_active` указывает, активен ли диалог
 
+#### Методы взаимодействия 示例
+
+**confirm() - подтверждение диалога:**
+
+```python
+@command("delete", help="удалить данные")
+async def delete_handler(event):
+    if await event.confirm("Вы действительно хотите удалить все данные?"):
+        sdk.storage.delete("all_data")
+        await event.reply("Данные удалены")
+    else:
+        await event.reply("Отменено")
+```
+
+**choose() - меню выбора:**
+
+```python
+@command("color", help="выбрать цвет")
+async def color_handler(event):
+    choice = await event.choose("Выберите цвет:", ["красный", "зеленый", "синий"])
+    if choice is not None:
+        colors = ["красный", "зеленый", "синий"]
+        await event.reply(f"Вы выбрали: {colors[choice]}")
+```
+
+**collect() - сбор формы:**
+
+```python
+@command("register", help="зарегистрироваться")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "Введите имя:"},
+        {"key": "age", "prompt": "Введите возраст:",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"Регистрация прошла успешно! {data['name']}, {data['age']} лет")
+```
+
+**non-Text методы reply:**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("Посмотрите на эту картинку:").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> Полное использование многошагового диалога с помощью Conversation см. в [Документации по многошаговому диалогу](../../advanced/conversation.md).
+
 ### Информация о командах
 
 #### Базовая информация о команде
@@ -283,3 +335,10 @@ methods = get_platform_event_methods("email")
 
 ```python
 hasattr(event, "get_subject")   # возвращает True только
+```
+注意：源文档可能有更新，请以源文档为准进行翻译，但术语、用词风格应与参考翻译保持一致。
+
+## Связанные документы
+
+- [Введение в модульное программирование](getting-started.md) - создание первого модуля
+- [Лучшие практики](best-practices.md) - разработка высококачественных модулей

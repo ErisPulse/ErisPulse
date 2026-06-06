@@ -36,33 +36,12 @@ Before starting development, ensure that you:
 
 Choose the appropriate development type based on your needs:
 
-### Module Development
+| Development Type | Use Cases | Getting Started Guide |
+|------------------|-----------|-----------------------|
+| **Module Development** | Extending bot functionality, implementing specific business logic, providing commands and message handling | [Getting Started with Modules](modules/getting-started.md) |
+| **Adapter Development** | Connecting to new messaging platforms, implementing cross-platform communication, providing platform-specific features | [Getting Started with Adapters](adapters/getting-started.md) |
 
-**Use Cases:**
-- Extending bot functionality
-- Implementing specific business logic
-- Providing commands and message handling
-
-**Examples:**
-- Weather query bot
-- Music player
-- Data collection tool
-
-**Getting Started Guide:** [Getting Started with Modules](modules/getting-started.md)
-
-### Adapter Development
-
-**Use Cases:**
-- Connecting to new messaging platforms
-- Implementing cross-platform communication
-- Providing platform-specific features
-
-**Examples:**
-- Discord adapter
-- Slack adapter
-- Custom platform adapter
-
-**Getting Started Guide:** [Getting Started with Adapters](adapters/getting-started.md)
+> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **Module Development**. If you need to connect the bot to a new platform, choose **Adapter Development**.
 
 ## Development Tools
 
@@ -70,12 +49,12 @@ Choose the appropriate development type based on your needs:
 
 ErisPulse provides example projects for reference:
 
-- `examples/example-module/` - Module example
-- `examples/example-adapter/` - Adapter example
+- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module
+- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter
 
 ### Development Mode
 
-Use hot reload mode for development:
+Use hot reload mode for development, where code changes are automatically reloaded:
 
 ```bash
 epsdk run main.py --reload
@@ -83,7 +62,7 @@ epsdk run main.py --reload
 
 ### Debugging Tips
 
-Enable DEBUG level logging:
+Enable DEBUG level logging in `config/config.toml`:
 
 ```toml
 [ErisPulse.logger]

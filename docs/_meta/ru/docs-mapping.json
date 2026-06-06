@@ -253,7 +253,7 @@
           "level": 1
         },
         {
-          "title": "API модулей ядра",
+          "title": "API основных модулей ядра",
           "path": "api-reference/core-modules.md",
           "level": 1
         },
@@ -310,7 +310,7 @@
           "level": 1
         },
         {
-          "title": "HTTP клиент",
+          "title": "HTTP-клиент",
           "path": "advanced/http-client.md",
           "level": 1
         },

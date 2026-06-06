@@ -45,7 +45,7 @@ ErisPulse アダプターのコア概念を理解することは、アダプタ�
 
 **コアの対称性**：
 - **正方向変換**（Converter）：プラットフォームネイティブイベント → OneBot12 標準イベント、元のデータは `{platform}_raw` に保持されます
-- **逆方向変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API 呼び出し、標準のレスポンス形式を返します
+- **逆方向変換**（Raw_ob12）：OneBot12 消息段 → プラットフォーム API 呼び出し、標準のレスポンス形式を返します
 
 ## AdapterManager アダプター管理マネージャー
 
@@ -59,7 +59,7 @@ ErisPulse アダプターのコア概念を理解することは、アダプタ�
 - **設定管理**：アダプターの有効/無効状態を管理します
 - **ミドルウェアサポート**：OneBot12 イベントミドルウェアをサポートします
 
-### 基本的な使用方法
+### 基本的な使用
 
 ```python
 from ErisPulse import sdk
@@ -263,16 +263,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### 基本構造
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """アダプター設定（宣言後フレームワーク自動管理）"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # アダプターの初期化
-        pass
+    ConfigClass = MyConfig  # 設定クラスを宣言
+    
+    # __init__ をオーバーライドする必要はありません。フレームワークが自動的に処理します：
+    # - self.sdk, self.logger
+    # - self.config（型安全な設定インスタンス）
+    # - self.Send, self.Request
     
     async def start(self):
         """アダプターの起動（必須実装）"""
+        cfg = self.config  # 型安全、自動ロード
         pass
     
     async def shutdown(self):
@@ -284,24 +302,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### 初期化プロセス
+### 設定管理
+
+フレームワークは宣言的設定管理を提供し、dataclass で設定構造を定義して、フレームワークが自動的にロード、検証、テンプレート生成を処理します。
+
+#### 単一アカウント設定
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "プロキシアドレス",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # 型安全、自動ロード
+        if not cfg.token:
+            raise ValueError("Token が設定されていません")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### 多アカウント設定
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "ロボットID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "ロボットToken",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata 約定
+
+フィールドの metadata は、TOML コメント生成と WebUI フォームレンダリングの両方に使用されます：
+
+```python
+metadata = {
+    "description": str,       # フィールドの説明（TOMLコメント + WebUI label）
+    "required": bool,         # 必須かどうか（検証 + WebUI 必須マーク）
+    "secret": bool,           # 敏感かどうか（WebUI では *** として表示、ログではマスキング）
+    "webui": {
+        "widget": str,        # コントロールタイプ: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # グループ: "basic" | "advanced" | "connection" 等
+        "order": int,         # 並び順の重み（数値が小さいほど先頭に配置）
+        "options": list,      # select コントロールのオプション [{label, value}]
+        "placeholder": str,   # 入力フィールドのプレースホルダー
+    }
+}
+```
+
+#### アカウントの解決
+
+多アカウントアダプターは `_resolve_account()` を使用して、ターゲットアカウントを自動的に解決できます：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: アカウント名, account: 設定インスタンス
+```
+
+解決戦略：アカウント名マッチング → `bot_id` フィールドマッチング → 他の str フィールドマッチング → 最初の有効アカウント。
+
+#### 設定のホット更新
+
+サブクラスは `on_config_update()` をオーバーライドして、設定変更に応答できます：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # SDK の参照を取得
-        self.sdk = sdk
-        
-        # コアモジュールの取得
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # 設定のロード
-        self.config = self._get_config()
-        
-        # コンバーターの設定
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token が更新されました。再接続します")
+```
+
+### 初期化プロセス
+
+フレームワークは `BaseAdapter.__init__(self, sdk=None)` で自動的に以下の処理を行います：
+
+1. **SDK参照**：`self.sdk`、`self.logger` を設定します
+2. **Send/Requestファクトリ**：`self.Send` と `self.Request` を作成します
+3. **設定のロード**：`ConfigClass` が宣言されている場合、`self.config` に自動的にロードします
+4. **アカウントのロード**：`AccountConfigClass` が宣言されている場合、`self.accounts` に自動的にロードします
+
+大多数のアダプターでは `__init__` をオーバーライドする必要はありません。カスタム初期化が必要な場合は：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # sdk を渡す
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -313,7 +436,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send 嵌套类，继承自 BaseAdapter.Send"""
+        """Send ネストクラス。BaseAdapter.Send を継承"""
         pass
 ```
 
@@ -323,13 +446,13 @@ class MyAdapter(BaseAdapter):
 
 | 属性 | 説明 | 設定方法 |
 |-----|------|---------|
-| `_target_id` | 目標ID | `To(id)` または `To(type, id)` |
-| `_target_type` | 目標タイプ | `To(type, id)` |
-| `_target_to` | 簡略化された目標ID | `To(id)` |
+| `_target_id` | ターゲットID | `To(id)` または `To(type, id)` |
+| `_target_type` | ターゲットタイプ | `To(type, id)` |
+| `_target_to` | 簡略化されたターゲットID | `To(id)` |
 | `_account_id` | 送信アカウントID | `Using(account_id)` |
 | `_adapter` | アダプターインスタンス | 自動設定 |
 | `_at_user_ids` | @ユーザーIDリスト | `At(user_id)` |
-| `_reply_message_id` | 回答するメッセージID | `Reply(message_id)` |
+| `_reply_message_id` | 返信するメッセージID | `Reply(message_id)` |
 | `_at_all` | 全員に@するか | `AtAll()` |
 
 > **推奨**：`self.send_context` 属性を使って `target_type`、`target_id`、`account_id` を一度に取得する方が、直接インスタンス変数にアクセスするよりも明確です。
@@ -515,6 +638,8 @@ class MyAdapter(BaseAdapter):
 
 ## API 応答標準
 
+フレームワークは `make_response()` と `make_error()` メソッドを使用して、標準化されたレスポンスを構築し、手動でレスポンス辞書を構築する必要はありません。
+
 ### 成功応答
 
 ```python
@@ -522,55 +647,73 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### 失敗応答
+### 手動構築のレスポンス（旧版方式でも互換性あり）
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # エラーコード
-        "data": None,
-        "message_id": "",
-        "message": "必要なパラメータが不足しています",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## 多アカウントサポート
 
-### アカウント設定
+### 宣言的設定（推奨）
+
+`AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"アカウント {name} を起動: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # account.token, account.bot_id などのフィールドを使用
+```
+
+### アカウント設定ファイル
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
 
-### アカウント指定による送信
+### 指定アカウントでの送信
 
 ```python
 # Using メソッドでアカウントを指定
@@ -579,7 +722,7 @@ my_adapter = adapter.get("myplatform")
 # アカウント名で
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# アカウントIDで
+# アカウント ID で
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
@@ -616,6 +759,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # SDK 内部クライアントの推奨
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -623,16 +767,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"ネットワークエラー: {e}")
-        return self._error_response("ネットワークリクエストに失敗しました", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"リクエストタイムアウト: {endpoint}")
         return self._error_response("リクエストがタイムアウトしました", 32000)
+    except ClientError as e:
+        self.logger.error(f"ネットワークエラー: {e}")
+        return self._error_response("ネットワークリクエストに失敗しました", 33000)
     except Exception as e:
         self.logger.error(f"不明なエラー: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **互換性の維持**：`aiohttp.ClientSession` を直接使用する旧版アダプターコードは影響を受けず、`aiohttp.ClientError` を捕捉することもできます。両方の方式は共存できます。新しいコードでは `sdk.client` + ErisPulse 例外体系の使用を推奨します。
 
 ## Bot 状態管理
 
@@ -666,28 +812,27 @@ await self.adapter.emit({
 
 ### アダプターによる Meta イベント送信
 
+`emit_meta()` を1行で使用して、meta イベントを送信できます：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "私のロボット",
-            }
-        })
+        # 1行で connect イベントを送信
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のロボット")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+手動構築（旧版方式でも互換性あり）もサポートされています：
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### `self` フィールドの拡張情報

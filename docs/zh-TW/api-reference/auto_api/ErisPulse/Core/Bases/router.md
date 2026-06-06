@@ -250,9 +250,9 @@ ASGI 应用实例
 ---
 
 
-### `class WebSocketConnection`
+### `class WebSocketConnection(WebSocketConnectionBase)`
 
-WebSocket 连接抽象封装
+服务端 WebSocket 连接抽象封装
 
 完全兼容 starlette.websockets.WebSocket 的接口风格。
 模块可使用此类替代 fastapi.WebSocket，无需直接依赖 FastAPI。
@@ -282,16 +282,7 @@ WebSocket 连接抽象封装
 
 ##### `__init__(websocket)`
 
-:param websocket: object 底层框架 WebSocket 对象
-
----
-
-
-##### `url()`
-
-连接 URL
-
-:return: object URL 对象
+:param websocket: object 底层框架 WebSocket 对象 (fastapi.WebSocket)
 
 ---
 
@@ -301,15 +292,6 @@ WebSocket 连接抽象封装
 基础 URL
 
 :return: object URL 对象
-
----
-
-
-##### `headers()`
-
-请求头
-
-:return: object Headers 对象
 
 ---
 
@@ -395,15 +377,6 @@ ASGI 应用实例
 ---
 
 
-##### `raw()`
-
-底层框架原生 WebSocket 对象
-
-:return: object 原生 WebSocket 实例 (当前为 fastapi.WebSocket)
-
----
-
-
 ##### `async async accept(subprotocol: str | None = None, headers: Iterable[tuple[bytes, bytes]] | None = None)`
 
 接受 WebSocket 连接
@@ -448,33 +421,6 @@ ASGI 应用实例
 
 :param mode: str 接收模式 ("text" 或 "binary") (默认: "text")
 :return: Any 解析后的 JSON 数据
-
----
-
-
-##### `async async iter_text()`
-
-迭代文本消息直到断开
-
-:return: async generator 逐条返回文本消息
-
----
-
-
-##### `async async iter_bytes()`
-
-迭代二进制消息直到断开
-
-:return: async generator 逐条返回二进制消息
-
----
-
-
-##### `async async iter_json()`
-
-迭代 JSON 消息直到断开
-
-:return: async generator 逐条返回 JSON 数据
 
 ---
 
@@ -525,68 +471,6 @@ ASGI 应用实例
 :param message: dict ASGI 消息
 
 > **内部方法**
-
----
-
-
-##### `on_disconnect(handler: Callable | None = None)`
-
-注册断开连接回调
-
-可作为装饰器或直接调用。
-
-:param handler: Callable 断开连接时的回调函数，签名: (ws, reason="") -> None
-
-**示例**:
-```python
->>> @ws.on_disconnect
-... async def handle_disconnect(ws, reason="unknown"):
-...     print(f"Disconnected: {reason}")
-```
-
----
-
-
-##### `on_error(handler: Callable | None = None)`
-
-注册错误回调
-
-:param handler: Callable 发生错误时的回调函数，签名: (ws, error="") -> None
-
-**示例**:
-```python
->>> @ws.on_error
-... async def handle_error(ws, error=""):
-...     print(f"Error: {error}")
-```
-
----
-
-
-### `class WebSocketDisconnect(Exception)`
-
-WebSocket 断开连接异常
-
-与 starlette.websockets.WebSocketDisconnect 完全兼容。
-模块可使用此类替代 fastapi.WebSocketDisconnect，无需直接依赖 FastAPI。
-
-**示例**:
-```python
->>> from ErisPulse.Core.Bases.router import WebSocketDisconnect
->>> try:
-...     msg = await ws.receive_text()
-... except WebSocketDisconnect as e:
-...     print(f"Disconnected: code={e.code}")
-```
-
-
-#### 方法列表
-
-
-##### `__init__(code: int = 1000, reason: str | None = None)`
-
-:param code: int 关闭码 (默认: 1000)
-:param reason: str | None 关闭原因 (可选)
 
 ---
 
