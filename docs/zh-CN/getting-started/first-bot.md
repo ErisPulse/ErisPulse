@@ -108,10 +108,13 @@ async def hello_handler(event):
 ```
 
 `event` 参数是一个 Event 对象，包含：
-- 消息内容
-- 发送者信息
-- 平台信息
-- 等等...
+- 消息内容：`event.get_text()`
+- 发送者信息：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台信息：`event.get_platform()`
+- 群组信息：`event.get_group_id()`
+- 原始数据：`event.get_raw()`
+
+> 完整的 Event 对象方法请参考 [Event 包装类详解](../developer-guide/modules/event-wrapper.md)。
 
 ### 发送回复
 
@@ -123,51 +126,20 @@ await event.reply("回复内容")
 
 ## 扩展：添加更多功能
 
-### 添加消息监听
+ErisPulse 提供了丰富的事件处理和数据处理能力：
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """监听所有消息"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### 添加通知监听
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """监听好友添加事件"""
-    user_id = event.get_user_id()
-    await event.reply(f"欢迎添加我为好友！你的 ID 是 {user_id}")
-```
-
-### 使用存储系统
-
-```python
-# 获取计数器
-count = sdk.storage.get("hello_count", 0)
-
-# 增加计数
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"这是第 {count} 次调用 hello 命令")
-```
+- **消息监听**：使用 `@message.on_message()` 监听各类消息 → [事件处理入门](event-handling.md)
+- **通知监听**：使用 `@notice.on_friend_add()` 等监听系统通知 → [事件处理入门](event-handling.md)
+- **数据存储**：使用 `sdk.storage.get/set` 持久化数据 → [常见任务示例](common-tasks.md)
 
 ## 常见问题
 
 ### 命令没有响应？
 
-1. 检查适配器是否正确配置
-2. 查看日志输出，确认是否有错误
-3. 确认命令前缀是否正确（默认是 `/`）
+1. 检查适配器是否正确配置，确认 `config/config.toml` 中适配器的 `status` 为 `true`
+2. 查看终端日志输出，确认是否有错误信息（特别是 `ERROR` 级别日志）
+3. 确认命令前缀是否正确（默认是 `/`），可在配置文件中查看 `[ErisPulse.event.command]` 部分
+4. 确认命令名称拼写正确，注意大小写敏感性设置
 
 ### 如何修改命令前缀？
 
@@ -181,7 +153,7 @@ case_sensitive = false
 
 ### 如何支持多平台？
 
-代码会自动适配所有已加载的平台适配器。只需确保你的逻辑兼容即可：
+ErisPulse 使用 OneBot12 标准统一了不同平台的事件格式，`@command` 和 `@message` 注册的处理器会自动接收所有平台的事件。通过 `event.get_platform()` 可以区分来源平台：
 
 ```python
 @command("hello")
@@ -192,11 +164,14 @@ async def hello_handler(event):
         await event.reply("你好！来自云湖")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
 ```
+
+> 更多多平台适配技巧请参考 [常见任务示例](common-tasks.md#多平台适配)。
 
 ## 下一步
 
-- [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能

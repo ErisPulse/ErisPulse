@@ -65,20 +65,39 @@ running = sdk.adapter.list_running()
 
 ## 中间件
 
+中间件在事件分发到处理器之前执行，可以对事件数据进行修改、过滤或记录。
+
 ### 注册中间件
 
 ```python
-# 添加中间件
 @sdk.adapter.middleware
 async def my_middleware(event):
-    # 处理事件
     sdk.logger.info(f"中间件处理: {event}")
     return event
 ```
 
-### 中间件执行顺序
+### 中间件执行模型
 
-中间件按照注册顺序执行，在事件分发到处理器之前执行。
+- **执行顺序**：中间件按注册顺序执行（先注册先执行）
+- **数据传递**：每个中间件接收上一个中间件返回的 `event` 数据；如果某个中间件返回 `None`，则忽略该返回值并保留原数据继续传递（同时输出 `warning` 级别日志）
+- **修改数据**：中间件可以修改事件数据并返回修改后的字典
+
+```python
+@sdk.adapter.middleware
+async def add_timestamp(event):
+    event["processed_at"] = time.time()
+    return event
+
+@sdk.adapter.middleware
+async def filter_spam(event):
+    if event.get("detail_type") == "private":
+        text = event.get("alt_message", "")
+        if "垃圾广告" in text:
+            return None   # 返回 None 不会阻止事件传播，仅忽略此返回值
+    return event
+```
+
+> **注意**：中间件目前不支持阻断事件传播。如需过滤特定事件，请在事件处理器中通过条件判断实现。
 
 ## Send 消息发送
 
@@ -144,8 +163,8 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回复@的
 ## API 调用
 
 ### call_api 方法
-> 注意，各个平台的 API 调用方式可能不同，请参考对于平台适配器文档
-> 并不推荐直接使用 call_api 方法，建议使用 Send 类进行消息发送
+
+> **注意**：`call_api` 是直接调用平台原生 API 的底层方法，各平台的参数和返回值可能不同，请参考对应平台适配器文档。**推荐使用 Send DSL 发送消息**，仅在 Send DSL 不支持的场景（如获取平台特有的数据、调用平台管理接口等）中使用 `call_api`。
 
 ```python
 # 调用平台 API

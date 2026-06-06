@@ -2,9 +2,18 @@
 
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 标准消息段构建工具，用于构建结构化的消息内容，配合 `Send.Raw_ob12()` 使用。
 
+## 导入方式
+
+`MessageBuilder` 支持以下两种导入方式（效果相同，推荐使用第一种）：
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # 推荐，通过包导出
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # 直接导入模块
+```
+
 ## 双模式机制
 
-MessageBuilder 提供两种使用模式，通过 Python 描述符机制实现类级别和实例级别的不同行为：
+MessageBuilder 提供两种使用模式，通过 Python 描述符机制（`__get__`）实现类级别和实例级别的不同行为：当通过类调用方法时，`__get__` 返回静态方法的执行结果；当通过实例调用时，返回 `self` 以支持链式调用。
 
 ### 链式调用模式（实例）
 

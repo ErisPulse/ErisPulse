@@ -212,6 +212,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 对象，支持 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 属性表示对话是否活跃
 
+#### 交互方法示例
+
+**confirm() - 确认对话：**
+
+```python
+@command("delete", help="删除数据")
+async def delete_handler(event):
+    if await event.confirm("确定要删除所有数据吗？"):
+        sdk.storage.delete("all_data")
+        await event.reply("数据已删除")
+    else:
+        await event.reply("已取消")
+```
+
+**choose() - 选择菜单：**
+
+```python
+@command("color", help="选择颜色")
+async def color_handler(event):
+    choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+    if choice is not None:
+        colors = ["红色", "绿色", "蓝色"]
+        await event.reply(f"你选择了：{colors[choice]}")
+```
+
+**collect() - 表单收集：**
+
+```python
+@command("register", help="注册")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "请输入姓名："},
+        {"key": "age", "prompt": "请输入年龄：",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"注册成功！{data['name']}，{data['age']}岁")
+```
+
+**非 Text 方法的 reply：**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("看这张图：").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> 完整的 Conversation 多轮对话用法请参考 [Conversation 多轮对话](../../advanced/conversation.md)。
+
 ### 命令信息
 
 #### 命令基础
