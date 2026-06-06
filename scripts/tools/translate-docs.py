@@ -577,8 +577,10 @@ class DocsTranslator:
             full_content = "".join(translated_content)
 
             lines = full_content.split("\n")
-            if lines and lines[0].strip() == "```":
-                lines = lines[1:]
+            if lines:
+                first = lines[0].strip()
+                if first == "```markdown" or first == "```md" or first == "```":
+                    lines = lines[1:]
             if lines and lines[-1].strip() == "```":
                 lines = lines[:-1]
             full_content = "\n".join(lines)
