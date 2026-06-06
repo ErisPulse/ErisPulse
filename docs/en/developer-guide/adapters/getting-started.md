@@ -77,41 +77,49 @@ dependencies = [
 
 ### 3. Create Adapter Main Class
 
+The framework provides `ConfigClass` / `AccountConfigClass` declarative configuration management. The adapter only needs to declare the configuration class to automatically load, validate, and generate configuration templates.
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter configuration"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API endpoint",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Platform token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← Must! Create Send / Request factory instances
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter initialization complete")
+    ConfigClass = MyAdapterConfig  # Declare the configuration class, framework manages automatically
+    
+    # No need to override __init__! Framework handles automatically:
+    # - self.sdk / self.logger are automatically set
+    # - self.config is automatically loaded
+    # - self.Send / self.Request are automatically initialized
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
+
+> ⚠️ **About `__init__`**: In the new version, `BaseAdapter.__init__(self, sdk=None)` automatically handles SDK reference, log initialization, and configuration loading. Most adapters **do not need to override `__init__`**. See [__init__ Considerations](#init-considerations) for details.
 
 > ⚠️ **About `super().__init__()`**: `BaseAdapter.__init__()` is responsible for creating `Send` and `Request` factory instances. If you forget to call it, all message sending and request operations will raise an `AttributeError`. See [__init__ Considerations](#init-considerations) for details.
 
@@ -147,7 +155,7 @@ class MyAdapter(BaseAdapter):
 
 #### Actively Send Meta Events
 
-The adapter should actively send meta events to let the framework track the Bot's online status:
+The adapter should actively send meta events to let the framework track the Bot's online status. Use `emit_meta()` in one line to complete:
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -155,12 +163,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot online
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -172,12 +175,7 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot offline
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > For detailed Bot status management and Meta event descriptions, please refer to [Adapter Best Practices - Bot Status Management](best-practices.md#bot-status-management-and-meta-events).
@@ -363,23 +361,40 @@ from .Core import MyAdapter
 
 Adapter development may involve `__init__` overrides at three levels. Here are the correct practices for each level.
 
-### 1. BaseAdapter Level (Must call `super().__init__()`)
+### 1. BaseAdapter Level (Most cases do not need to override)
 
-`BaseAdapter.__init__()` is responsible for **creating `Send` and `Request` factory instances**. If the adapter has its own `__init__`, it must call the parent class initialization:
+`BaseAdapter.__init__(self, sdk=None)` is responsible for creating `Send` / `Request` factory instances and automatically performs the following tasks:
+
+- Accepts the `sdk` parameter and sets `self.sdk`, `self.logger`
+- If `ConfigClass` is declared, automatically loads global configuration into `self.config`
+- If `AccountConfigClass` is declared, automatically loads multi-account configuration into `self.accounts`
+
+**Most cases do not need to override `__init__`**; simply declare `ConfigClass`:
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← Must! Otherwise Send / Request will not be initialized
-        self.sdk = sdk
-        # ... Other initializations
+    ConfigClass = MyAdapterConfig  # After declaration, framework manages configuration automatically
+    
+    async def start(self):
+        cfg = self.config  # Type-safe, automatically loaded
+        ...
 ```
 
-**Consequences of forgetting to call it**: `adapter.Send.To(...)` and `adapter.Request(...)` will both raise `AttributeError`.
+If you do need custom initialization, call `super().__init__(sdk)`:
 
-### 2. Send Inner Class (Usually no need to override)
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # Pass in sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
 
-`SendDSL.__init__` is responsible for state passing in chain calls (target type, target ID, account, etc.). **In most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), and do not need to override `__init__`.
+### 2. Send Inner Class (Most cases do not need to override)
+
+`SendDSL.__init__` is responsible for state passing in chain calls (target type, target ID, account, etc.). **Most cases, you only need to override methods** (`Raw_ob12`, `Text`, etc.), and do not need to override `__init__`.
 
 If really necessary (such as initializing platform-specific states), **all parameters must be passed through**:
 
@@ -401,7 +416,7 @@ adapter.Send.To("user", "123").Using("bot1")  # → Send(adapter, "user", "123",
 
 If the `__init__` signature does not match or `super()` is not called, the chain call will break.
 
-### 3. Request Inner Class (Usually no need to override)
+### 3. Request Inner Class (Most cases do not need to override)
 
 Same principle as Send. Parameters are `adapter`, `request_id`, `account_id`:
 
@@ -418,7 +433,7 @@ class MyAdapter(BaseAdapter):
 
 | Level | When to override | Must do |
 |------|------------|-----------|
-| **BaseAdapter** | When adapter state needs to be initialized | `super().__init__()` (no arguments) |
+| **BaseAdapter** | When adapter state needs to be initialized | `super().__init__(sdk)` (pass sdk parameter) |
 | **Send Inner Class** | When send-related state needs to be initialized | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request Inner Class** | When request-related state needs to be initialized | `super().__init__(adapter, request_id, account_id)` |
 | All three levels | In most cases | **Only override methods, do not touch `__init__`** |

@@ -110,7 +110,7 @@ class TimerModule:
         # 你的邏輯...
     
     async def _daily_task(self):
-        """每天凌晨執行的任務"""
+        """每天凌晨執行的任務（註：基於 UTC 時間計算，如需本地時間請自行調整）"""
         import time
         
         while True:
@@ -136,7 +136,7 @@ async def init_complete_handler(event_data):
     async def daily_reminder():
         """每日提醒"""
         await asyncio.sleep(86400)  # 24小時
-        self.sdk.logger.info("執行每日任務")
+        sdk.logger.info("執行每日任務")
     
     # 启动后台任务
     asyncio.create_task(daily_reminder())
@@ -282,6 +282,8 @@ async def groupinfo_handler(event):
 
 ### 消息計數
 
+> **注意**：以下示例使用 `sdk.storage.get/set` 進行簡單計數。在高併發場景下，建議使用 `sdk.storage.transaction()` 保證原子性。
+
 ```python
 @message.on_message()
 async def count_handler(event):
@@ -325,6 +327,8 @@ async def stats_handler(event):
 ## 搜尋功能
 
 ### 簡單搜尋
+
+> **注意**：以下示例使用記憶體列表儲存訊息歷史，**程式重啟後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -408,6 +412,8 @@ async def image_handler(event):
 ```
 
 ### 圖片識別示例
+
+> **注意**：以下示例使用占位 API 地址，實際使用時請替換為你自己的圖片識別服務。
 
 ```python
 from ErisPulse.Core import client

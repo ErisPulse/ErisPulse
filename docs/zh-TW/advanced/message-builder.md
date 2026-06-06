@@ -2,13 +2,22 @@
 
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準消息段構建工具，用於構建結構化的消息內容，配合 `Send.Raw_ob12()` 使用。
 
+## 導入方式
+
+`MessageBuilder` 支援以下兩種導入方式（效果相同，推薦使用第一種）：
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # 推薦，透過包導出
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # 直接導入模組
+```
+
 ## 雙模式機制
 
-MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類別級別和實例級別的不同行為：
+MessageBuilder 提供兩種使用模式，透過 Python 描述符機制（`__get__`）實現類別級別和實例級別的不同行為：當透過類呼叫方法時，`__get__` 返回靜態方法的執行結果；當透過實例呼叫時，返回 `self` 以支援鏈式呼叫。
 
-### 鏈式調用模式（實例）
+### 鏈式呼叫模式（實例）
 
-通過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支持鏈式調用，最後用 `.build()` 獲取消息段列表：
+透過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支援鏈式呼叫，最後用 `.build()` 獲取消息段列表：
 
 ```python
 from ErisPulse.Core.Event.message_builder import MessageBuilder
@@ -27,7 +36,7 @@ segments = (
 
 ### 快速構建模式（靜態）
 
-通過類別直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+透過類直接呼叫方法，每個方法直接返回消息段列表，適合單段消息：
 
 ```python
 # 直接返回 list[dict]，無需 .build()
@@ -52,7 +61,7 @@ segments = MessageBuilder.text("你好！")
 
 ## 配合 Send 使用
 
-構建的消息段列表通過 `Send.Raw_ob12()` 發送：
+構建的消息段列表透過 `Send.Raw_ob12()` 發送：
 
 ```python
 from ErisPulse import sdk
@@ -78,7 +87,7 @@ from ErisPulse.Core.Event import command
 async def report_handler(event):
     await event.reply_ob12(
         MessageBuilder()
-        .text("📊 日報匯總\n")
+        .text("📊 日報彙總\n")
         .text("今日完成任務: 5\n")
         .text("進行中任務: 3")
         .build()

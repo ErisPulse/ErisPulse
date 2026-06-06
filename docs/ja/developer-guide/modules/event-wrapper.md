@@ -98,7 +98,7 @@ async def friend_add_handler(event):
 #### ボット情報
 - `get_self_platform()` - ボットのプラットフォーム名を取得
 - `get_self_user_id()` - ボットのユーザーIDを取得
-- `get_self_account_id()` - ボットのアカウントIDを取得（マルチBotモード）
+- `get_self_account_id()` - ボットのアカウントID（マルチBotモード）
 - `get_self_info()` - ボットの完全な情報辞書を取得
 
 ### メッセージイベントメソッド
@@ -211,6 +211,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 - `conversation(timeout=60.0)` - 複数回の対話コンテキストを作成
   - `Conversation` オブジェクトを返します。`say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()` をサポート
   - `is_active` 属性は対話がアクティブかどうかを示します
+
+#### 対話メソッド例
+
+**confirm() - 確認ダイアログ：**
+
+```python
+@command("delete", help="データを削除")
+async def delete_handler(event):
+    if await event.confirm("すべてのデータを削除してもよろしいですか？"):
+        sdk.storage.delete("all_data")
+        await event.reply("データを削除しました")
+    else:
+        await event.reply("キャンセルしました")
+```
+
+**choose() - 選択メニュー：**
+
+```python
+@command("color", help="色を選択")
+async def color_handler(event):
+    choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
+    if choice is not None:
+        colors = ["赤", "緑", "青"]
+        await event.reply(f"選択した色は：{colors[choice]}")
+```
+
+**collect() - フォーム収集：**
+
+```python
+@command("register", help="登録")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "お名前を入力してください："},
+        {"key": "age", "prompt": "年齢を入力してください：",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"登録完了！{data['name']}、{data['age']}歳")
+```
+
+**非 Text 方法の reply：**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("こちらの画像をご覧ください：").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> 完全な Conversation 多輪対話の使い方は [Conversation 多輪対話](../../advanced/conversation.md) を参照してください。
 
 ### コマンド情報
 
