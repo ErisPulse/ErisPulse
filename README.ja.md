@@ -1,4 +1,3 @@
-```markdown
 <table>
 <tr>
 <td width="35%" valign="middle" align="center">
@@ -8,7 +7,7 @@
 </td>
 <td valign="middle">
 
-[English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語] | [Русский](README.ru.md)
+[English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Русский](README.ru.md)
 
 # ErisPulse
 
