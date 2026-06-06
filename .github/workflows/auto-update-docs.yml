@@ -81,6 +81,8 @@ jobs:
         id: translate-docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BIGMODEL_API_KEY: ${{ secrets.BIGMODEL_API_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
           echo "艾莉丝开始翻译文档啦~"
