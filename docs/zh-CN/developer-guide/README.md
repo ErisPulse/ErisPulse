@@ -36,33 +36,12 @@
 
 根据你的需求选择合适的开发类型：
 
-### 模块开发
+| 开发类型 | 适用场景 | 入门指南 |
+|---------|---------|---------|
+| **模块开发** | 扩展机器人功能、实现业务逻辑、提供命令和消息处理 | [模块开发入门](modules/getting-started.md) |
+| **适配器开发** | 连接新的消息平台、实现跨平台通信、提供平台特定功能 | [适配器开发入门](adapters/getting-started.md) |
 
-**适用场景：**
-- 扩展机器人功能
-- 实现特定业务逻辑
-- 提供命令和消息处理
-
-**示例：**
-- 天气查询机器人
-- 音乐播放器
-- 数据收集工具
-
-**入门指南：** [模块开发入门](modules/getting-started.md)
-
-### 适配器开发
-
-**适用场景：**
-- 连接新的消息平台
-- 实现跨平台通信
-- 提供平台特定功能
-
-**示例：**
-- Discord 适配器
-- Slack 适配器
-- 自定义平台适配器
-
-**入门指南：** [适配器开发入门](adapters/getting-started.md)
+> 如果你想扩展机器人的功能（如添加命令、处理消息），选择**模块开发**。如果你需要让机器人连接到一个新的平台，选择**适配器开发**。
 
 ## 开发工具
 
@@ -70,12 +49,12 @@
 
 ErisPulse 提供了示例项目作为参考：
 
-- `examples/example-module/` - 模块示例
-- `examples/example-adapter/` - 适配器示例
+- [模块示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模块的完整项目结构
+- [适配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 适配器的完整项目结构
 
 ### 开发模式
 
-使用热重载模式进行开发：
+使用热重载模式进行开发，代码修改后自动重载：
 
 ```bash
 epsdk run main.py --reload
@@ -83,39 +62,16 @@ epsdk run main.py --reload
 
 ### 调试技巧
 
-启用 DEBUG 级别日志：
+在 `config/config.toml` 中启用 DEBUG 级别日志：
 
 ```toml
 [ErisPulse.logger]
 level = "DEBUG"
 ```
 
-使用模块自己的日志记录器：
-
-```python
-from ErisPulse import sdk
-
-logger = sdk.logger.get_child("MyModule")
-logger.debug("调试信息")
-```
-
 ## 发布你的模块
 
-完整的发布流程请参考 [发布与模块商店指南](publishing.md)，包括：
-
-- PyPI 发布步骤
-- ErisPulse 模块商店提交流程
-- 适配器的发布
-
-### 快速参考
-
-```bash
-# 构建并发布到 PyPI
-python -m build
-python -m twine upload dist/*
-```
-
-然后前往 [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleRepo/issues/new?template=module_submission.md) 提交到模块商店。
+完整的发布流程请参考 [发布与模块商店指南](publishing.md)，包括 PyPI 发布步骤、ErisPulse 模块商店提交流程等。
 
 ## 相关文档
 
