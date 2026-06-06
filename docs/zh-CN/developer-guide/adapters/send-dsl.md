@@ -204,7 +204,22 @@ def Text(self, text: str):
 
 ### 标准化响应
 
-`call_api` 应返回标准化响应：
+`call_api` 应返回标准化响应。推荐使用 `make_response()` / `make_error()` 方法：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+也支持手动构造（旧版方式仍然兼容）：
 
 ```python
 async def call_api(self, endpoint: str, **params):

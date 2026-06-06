@@ -20,6 +20,9 @@ from __future__ import annotations
 from typing import Any, Iterator, Iterable
 from collections.abc import Callable
 
+from .websocket import WebSocketConnectionBase
+from .errors import WebSocketDisconnect
+
 
 class HttpRequest:
     """
@@ -256,9 +259,9 @@ class HttpRequest:
         return len(self._request)
 
 
-class WebSocketConnection:
+class WebSocketConnection(WebSocketConnectionBase):
     """
-    WebSocket 连接抽象封装
+    服务端 WebSocket 连接抽象封装
 
     完全兼容 starlette.websockets.WebSocket 的接口风格。
     模块可使用此类替代 fastapi.WebSocket，无需直接依赖 FastAPI。
@@ -282,26 +285,15 @@ class WebSocketConnection:
     ...         await ws.send_text(f"Echo: {msg}")
     """
 
-    __slots__ = ("_ws", "_on_disconnect_handlers", "_on_error_handlers")
+    __slots__ = ()
 
     def __init__(self, websocket):
         """
-        :param websocket: object 底层框架 WebSocket 对象
+        :param websocket: object 底层框架 WebSocket 对象 (fastapi.WebSocket)
         """
-        self._ws = websocket
-        self._on_disconnect_handlers: list[Callable] = []
-        self._on_error_handlers: list[Callable] = []
+        super().__init__(websocket)
 
-    # ---- Properties ----
-
-    @property
-    def url(self):
-        """
-        连接 URL
-
-        :return: object URL 对象
-        """
-        return self._ws.url
+    # ---- Server-specific properties ----
 
     @property
     def base_url(self):
@@ -311,15 +303,6 @@ class WebSocketConnection:
         :return: object URL 对象
         """
         return self._ws.base_url
-
-    @property
-    def headers(self):
-        """
-        请求头
-
-        :return: object Headers 对象
-        """
-        return self._ws.headers
 
     @property
     def query_params(self):
@@ -402,15 +385,6 @@ class WebSocketConnection:
         """
         return self._ws.user
 
-    @property
-    def raw(self):
-        """
-        底层框架原生 WebSocket 对象
-
-        :return: object 原生 WebSocket 实例 (当前为 fastapi.WebSocket)
-        """
-        return self._ws
-
     # ---- Connection lifecycle ----
 
     async def accept(
@@ -461,33 +435,6 @@ class WebSocketConnection:
         :return: Any 解析后的 JSON 数据
         """
         return await self._ws.receive_json(mode=mode)
-
-    async def iter_text(self):
-        """
-        迭代文本消息直到断开
-
-        :return: async generator 逐条返回文本消息
-        """
-        async for msg in self._ws.iter_text():
-            yield msg
-
-    async def iter_bytes(self):
-        """
-        迭代二进制消息直到断开
-
-        :return: async generator 逐条返回二进制消息
-        """
-        async for msg in self._ws.iter_bytes():
-            yield msg
-
-    async def iter_json(self):
-        """
-        迭代 JSON 消息直到断开
-
-        :return: async generator 逐条返回 JSON 数据
-        """
-        async for msg in self._ws.iter_json():
-            yield msg
 
     # ---- Send ----
 
@@ -550,74 +497,3 @@ class WebSocketConnection:
 
     def __len__(self) -> int:
         return len(self._ws)
-
-    # ---- Lifecycle hooks ----
-
-    def on_disconnect(self, handler: Callable | None = None):
-        """
-        注册断开连接回调
-
-        可作为装饰器或直接调用。
-
-        :param handler: Callable 断开连接时的回调函数，签名: (ws, reason="") -> None
-
-        :example:
-        >>> @ws.on_disconnect
-        ... async def handle_disconnect(ws, reason="unknown"):
-        ...     print(f"Disconnected: {reason}")
-        """
-        if handler is not None:
-            self._on_disconnect_handlers.append(handler)
-            return handler
-
-        def decorator(func: Callable):
-            self._on_disconnect_handlers.append(func)
-            return func
-
-        return decorator
-
-    def on_error(self, handler: Callable | None = None):
-        """
-        注册错误回调
-
-        :param handler: Callable 发生错误时的回调函数，签名: (ws, error="") -> None
-
-        :example:
-        >>> @ws.on_error
-        ... async def handle_error(ws, error=""):
-        ...     print(f"Error: {error}")
-        """
-        if handler is not None:
-            self._on_error_handlers.append(handler)
-            return handler
-
-        def decorator(func: Callable):
-            self._on_error_handlers.append(func)
-            return func
-
-        return decorator
-
-
-class WebSocketDisconnect(Exception):
-    """
-    WebSocket 断开连接异常
-
-    与 starlette.websockets.WebSocketDisconnect 完全兼容。
-    模块可使用此类替代 fastapi.WebSocketDisconnect，无需直接依赖 FastAPI。
-
-    :example:
-    >>> from ErisPulse.Core.Bases.router import WebSocketDisconnect
-    >>> try:
-    ...     msg = await ws.receive_text()
-    ... except WebSocketDisconnect as e:
-    ...     print(f"Disconnected: code={e.code}")
-    """
-
-    def __init__(self, code: int = 1000, reason: str | None = None):
-        """
-        :param code: int 关闭码 (默认: 1000)
-        :param reason: str | None 关闭原因 (可选)
-        """
-        self.code = code
-        self.reason = reason or ""
-        super().__init__(f"code={self.code}, reason={self.reason}")

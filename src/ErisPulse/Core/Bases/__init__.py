@@ -7,8 +7,18 @@ ErisPulse 基础模块
 from .adapter import SendDSL, RequestDSL, BaseAdapter
 from .module import BaseModule
 from .storage import BaseStorage, BaseQueryBuilder
-from .router import HttpRequest, WebSocketConnection, WebSocketDisconnect
-from .client import BaseHttpClient, BaseHttpResponse
+from .errors import (
+    ErisPulseError,
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketError,
+    WebSocketDisconnect,
+)
+from .websocket import WebSocketConnectionBase, WSMessage
+from .router import HttpRequest, WebSocketConnection
+from .client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
 
 __all__ = [
     "BaseAdapter",
@@ -19,7 +29,16 @@ __all__ = [
     "BaseQueryBuilder",
     "HttpRequest",
     "WebSocketConnection",
+    "WebSocketConnectionBase",
+    "WSMessage",
     "WebSocketDisconnect",
     "BaseHttpClient",
     "BaseHttpResponse",
+    "BaseClientWebSocket",
+    "ErisPulseError",
+    "ClientError",
+    "ClientConnectionError",
+    "ClientTimeoutError",
+    "HTTPStatusError",
+    "WebSocketError",
 ]
