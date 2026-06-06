@@ -87,7 +87,7 @@
 
 #### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Рус語/繁體中文）。
+安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -219,6 +219,10 @@ pip install ErisPulse
 
 
 ##### 儀表盤：
+
+[![線上示範](https://img.shields.io/badge/線上示範-Dashboard-FF6B9D?style=for-the-badge&logo=github&logoColor=white)](https://dashdemo.erisdev.com/)
+
+> 💡 線上體驗示範儀表盤：[DashDemo](https://dashdemo.erisdev.com/)
 
 <table>
 <tr>
