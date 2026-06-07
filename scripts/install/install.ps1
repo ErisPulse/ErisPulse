@@ -106,6 +106,7 @@ $langData = @{
         python_path = "当前Python路径"
         python_not_found = "未找到 Python，请先安装 Python 3.10 或更高版本"
         python_download = "下载地址: https://www.python.org/downloads/"
+        install_uv_for_python = "是否安装 uv 以安装 Python 继续？ [Y/n]"
         python_version_fail = "无法检测 Python 版本"
         python_detected = "检测到 Python"
         python_version_low = "Python 版本过低，建议使用 3.10 或更高版本"
@@ -234,6 +235,7 @@ $langData = @{
         python_path = "目前 Python 路徑"
         python_not_found = "未找到 Python，請先安裝 Python 3.10 或更高版本"
         python_download = "下載位址: https://www.python.org/downloads/"
+        install_uv_for_python = "是否安裝 uv 以安裝 Python 繼續？ [Y/n]"
         python_version_fail = "無法偵測 Python 版本"
         python_detected = "偵測到 Python"
         python_version_low = "Python 版本過低，建議使用 3.10 或更高版本"
@@ -362,6 +364,7 @@ $langData = @{
         python_path = "Current Python path"
         python_not_found = "Python not found. Please install Python 3.10+"
         python_download = "Download: https://www.python.org/downloads/"
+        install_uv_for_python = "Install uv to install Python and continue? [Y/n]"
         python_version_fail = "Cannot detect Python version"
         python_detected = "Detected Python"
         python_version_low = "Python version too low, 3.10+ recommended"
@@ -490,6 +493,7 @@ $langData = @{
         python_path = "現在の Python パス"
         python_not_found = "Python が見つかりません。Python 3.10+ をインストールしてください"
         python_download = "ダウンロード: https://www.python.org/downloads/"
+        install_uv_for_python = "uv をインストールして Python を導入し続行しますか？ [Y/n]"
         python_version_fail = "Python バージョンを検出できません"
         python_detected = "Python を検出"
         python_version_low = "Python バージョンが低すぎます。3.10+ を推奨"
@@ -618,6 +622,7 @@ $langData = @{
         python_path = "Текущий путь Python"
         python_not_found = "Python не найден. Установите Python 3.10+"
         python_download = "Скачать: https://www.python.org/downloads/"
+        install_uv_for_python = "Установить uv для установки Python и продолжения? [Y/n]"
         python_version_fail = "Не удалось определить версию Python"
         python_detected = "Обнаружен Python"
         python_version_low = "Версия Python слишком старая, рекомендуется 3.10+"
@@ -949,10 +954,15 @@ function Test-Python {
     $candidates = @("python", "py", "python3")
     foreach ($cmd in $candidates) {
         if (Test-Command $cmd) {
-            $testOutput = & $cmd -c "import sys; print(sys.version_info.major)" 2>$null
-            if ($testOutput -and $testOutput -match '^\d+$') {
-                $pyCmd = $cmd
-                break
+            try {
+                $testOutput = & $cmd -c "import sys; print(sys.version_info.major)" 2>$null
+                if ($testOutput -and $testOutput -match '^\d+$') {
+                    $pyCmd = $cmd
+                    break
+                }
+            } catch {
+                # Command exists but fails (e.g., Windows App Execution Alias redirecting to Store)
+                continue
             }
         }
     }
@@ -1360,6 +1370,63 @@ function Main {
     $script:UseUv = Test-Command "uv"
     if ($script:UseUv) {
         Write-Success (t 'will_use_uv')
+    }
+    
+    # If Python not found, offer to install uv to get Python
+    if (-not $pythonAvailable) {
+        Write-Host ""
+        $installUvChoice = Read-Host (t 'install_uv_for_python')
+        if ($installUvChoice -notmatch '^[nN]$') {
+            # Install uv if needed
+            if (-not $script:UseUv) {
+                Write-Info "$((t 'installing')) uv..."
+                try {
+                    irm https://astral.sh/uv/install.ps1 | iex
+                    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+                    if (Test-Command "uv") {
+                        $script:UseUv = $true
+                        Write-Success (t 'uv_install_success')
+                    } else {
+                        Write-Err (t 'uv_install_fail')
+                        exit 1
+                    }
+                } catch {
+                    Write-Err "$((t 'uv_install_fail')): $_"
+                    exit 1
+                }
+            }
+            
+            # Install Python via uv
+            Write-Info (t 'installing_python')
+            try {
+                & uv python install 3.12
+                Write-Success (t 'python_install_success')
+            } catch {
+                Write-Err "$((t 'python_install_fail')): $_"
+                exit 1
+            }
+            
+            # Create venv with uv
+            Write-Info (t 'creating_venv')
+            try {
+                & uv venv $script:VenvDir
+                Write-Success (t 'venv_created')
+            } catch {
+                Write-Err "$((t 'venv_create_fail')): $_"
+                exit 1
+            }
+            
+            # Activate venv
+            $activateScript = Join-Path $script:VenvDir "Scripts\activate.ps1"
+            if (Test-Path $activateScript) {
+                & $activateScript
+                Write-Success (t 'venv_activated')
+            }
+            
+            # Python is now available in the venv
+            $pythonAvailable = $true
+            $script:PythonCmd = "python"
+        }
     }
     
     Write-Host ""

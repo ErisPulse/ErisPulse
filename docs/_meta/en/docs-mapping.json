@@ -4,7 +4,7 @@
   "categories": {
     "Quick Start": {
       "description": "ErisPulse Quick Start Guide",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "ErisPulse Documentation",
@@ -36,7 +36,7 @@
     },
     "Getting Started": {
       "description": "ErisPulse basic concepts and tutorials",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "Create Your First Bot",
@@ -68,7 +68,7 @@
     },
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "User Guide",
@@ -100,7 +100,7 @@
     },
     "Developer Guide": {
       "description": "Module and adapter development guides",
-      "count": 22,
+      "count": 11,
       "documents": [
         {
           "title": "Developer Guide",
@@ -173,7 +173,7 @@
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
-      "count": 24,
+      "count": 12,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures Documentation",
@@ -211,7 +211,7 @@
           "level": 1
         },
         {
-          "title": "Ideaura Platform Features Documentation",
+          "title": "Ideaura Cafe Platform Features Documentation",
           "path": "platform-guide/ideaura.md",
           "level": 1
         },
@@ -240,7 +240,7 @@
     },
     "API Reference": {
       "description": "Core API and interface documentation",
-      "count": 8,
+      "count": 4,
       "documents": [
         {
           "title": "API Reference",
@@ -267,7 +267,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 18,
+      "count": 10,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -310,6 +310,11 @@
           "level": 1
         },
         {
+          "title": "HTTP Client",
+          "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
           "title": "SQL Query Builder",
           "path": "advanced/sql-builder.md",
           "level": 1
@@ -319,7 +324,7 @@
     },
     "AI-Assisted Development": {
       "description": "Using AI to assist ErisPulse development",
-      "count": 2,
+      "count": 1,
       "documents": [
         {
           "title": "AI-Assisted Development",
@@ -331,7 +336,7 @@
     },
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
-      "count": 12,
+      "count": 6,
       "documents": [
         {
           "title": "Technical Standards",
@@ -368,7 +373,7 @@
     },
     "Style Guide": {
       "description": "Code and documentation style guidelines",
-      "count": 4,
+      "count": 2,
       "documents": [
         {
           "title": "Style Guide",

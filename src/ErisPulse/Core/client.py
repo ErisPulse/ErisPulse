@@ -1,20 +1,24 @@
 """
-ErisPulse HTTP 客户端
+ErisPulse HTTP/WS 客户端
 
-基于 aiohttp 的统一 HTTP 客户端实现，提供完整的请求/响应抽象。
-模块和适配器应优先使用此客户端发送 HTTP 请求，而非自行导入 aiohttp。
+基于 aiohttp 的统一 HTTP 和 WebSocket 客户端实现，提供完整的请求/响应/WS 抽象。
+模块和适配器应优先使用此客户端发送 HTTP 请求和建立 WS 连接，而非自行导入 aiohttp。
+
+底层 aiohttp 异常会在内部捕获并转换为 ErisPulse 异常体系，
+确保业务代码不依赖任何特定 HTTP 库。
 
 {!--< tips >!--}
 1. 使用 sdk.client 获取全局客户端单例
-2. 支持 get / post / put / delete / patch / request 等常用方法
-3. 自动记录请求日志和统计信息
-4. 推荐所有模块和适配器使用此客户端发送 HTTP 请求
+2. 支持 get / post / put / delete / patch / request / ws_connect 等方法
+3. aiohttp 异常自动转换为 ErisPulse 异常 (ClientError 体系)
+4. 自动记录请求日志和统计信息
 {!--< /tips >!--}
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 from typing import Any
 
@@ -27,9 +31,32 @@ from .constants import (
     DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS,
     DEFAULT_HTTP_CLIENT_USER_AGENT,
 )
+from .Bases.client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
+from .Bases.websocket import WSMessage
+from .Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
 
 
-class HttpResponse:
+def _convert_aiohttp_exception(exc: Exception) -> ClientError:
+    import aiohttp
+
+    if isinstance(exc, asyncio.TimeoutError):
+        return ClientTimeoutError(str(exc))
+    if isinstance(exc, aiohttp.ClientConnectorError):
+        return ClientConnectionError(str(exc))
+    if isinstance(exc, aiohttp.ClientConnectionError):
+        return ClientConnectionError(str(exc))
+    if isinstance(exc, aiohttp.ClientError):
+        return ClientError(str(exc))
+    return ClientError(str(exc))
+
+
+class HttpResponse(BaseHttpResponse):
     """
     HTTP 响应封装
 
@@ -130,26 +157,23 @@ class HttpResponse:
             self._body_read = True
         return self._body
 
-    async def text(self, encoding: str | None = None) -> str:
-        """
-        读取响应体为文本
+    async def _eager_read(self):
+        if not self._body_read:
+            self._body = await self._response.read()
+            self._body_read = True
 
-        :param encoding: str | None 指定编码 (可选, 默认自动检测)
-        :return: str 文本内容
-        """
+    async def text(self, encoding: str | None = None) -> str:
         if encoding:
             body = await self.read()
             return body.decode(encoding)
-        return await self._response.text()
+        body = await self.read()
+        return body.decode(self._response.get_encoding() or "utf-8")
 
     async def json(self, **kwargs) -> Any:
-        """
-        解析响应体为 JSON
+        import json as _json
 
-        :param kwargs: 传递给 json.loads 的额外参数
-        :return: Any 解析后的数据
-        """
-        return await self._response.json(**kwargs)
+        body = await self.read()
+        return _json.loads(body, **kwargs)
 
     async def __aenter__(self):
         return self
@@ -158,29 +182,202 @@ class HttpResponse:
         self._response.release()
 
 
-class HttpClient:
+class ClientWebSocket(BaseClientWebSocket):
     """
-    HTTP 客户端 (基于 aiohttp)
+    客户端 WebSocket 连接 (基于 aiohttp)
 
-    提供统一的异步 HTTP 请求接口，自动管理连接池和会话生命周期。
-    所有请求自动记录日志和统计信息。
+    封装 aiohttp.ClientWebSocketResponse，提供统一的 WebSocket 客户端接口。
+    通过 sdk.client.ws_connect() 获取实例。
+
+    {!--< tips >!--}
+    1. 使用 iter_text/iter_bytes/iter_json 自动过滤消息类型
+    2. 使用 receive/iter_messages 处理原始消息类型 (如 CLOSE/ERROR)
+    3. 通过 .raw 属性可访问底层 aiohttp.ClientWebSocketResponse
+    {!--< /tips >!--}
+
+    :example:
+    >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
+    >>> async for text in ws.iter_text():
+    ...     await ws.send_text(f"Echo: {text}")
+    """
+
+    __slots__ = ()
+
+    def __init__(self, ws):
+        """
+        :param ws: aiohttp.ClientWebSocketResponse 底层 aiohttp WS 对象
+        """
+        super().__init__(ws)
+
+    @property
+    def closed(self) -> bool:
+        """
+        连接是否已关闭
+
+        :return: bool 是否已关闭
+        """
+        return self._ws.closed
+
+    # ---- Send ----
+
+    async def send_text(self, data: str) -> None:
+        """
+        发送文本消息
+
+        :param data: str 文本内容
+        """
+        await self._ws.send_str(data)
+
+    async def send_bytes(self, data: bytes) -> None:
+        """
+        发送二进制消息
+
+        :param data: bytes 二进制内容
+        """
+        await self._ws.send_bytes(data)
+
+    async def send_json(self, data: Any, mode: str = "text") -> None:
+        """
+        发送 JSON 消息
+
+        :param data: Any 要序列化的数据
+        :param mode: str 发送模式 ("text" 或 "binary") (默认: "text")
+        """
+        await self._ws.send_json(data)
+
+    # ---- Receive ----
+
+    def _convert_ws_msg(self, msg) -> WSMessage:
+        """
+        转换 aiohttp WSMessage 为 ErisPulse WSMessage
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        import aiohttp
+
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            return WSMessage(WSMessage.TEXT, msg.data)
+        elif msg.type == aiohttp.WSMsgType.BINARY:
+            return WSMessage(WSMessage.BINARY, msg.data)
+        elif msg.type in (
+            aiohttp.WSMsgType.CLOSE,
+            aiohttp.WSMsgType.CLOSING,
+            aiohttp.WSMsgType.CLOSED,
+        ):
+            return WSMessage(WSMessage.CLOSE, msg.data)
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            return WSMessage(WSMessage.ERROR, str(self._ws.exception()))
+        else:
+            return WSMessage("unknown", msg.data)
+
+    async def receive(self) -> WSMessage:
+        """
+        接收原始消息
+
+        :return: WSMessage 消息对象
+        """
+        msg = await self._ws.receive()
+        return self._convert_ws_msg(msg)
+
+    async def receive_text(self) -> str:
+        """
+        接收文本消息
+
+        :return: str 文本内容
+        :raises WebSocketDisconnect: 连接断开时
+        :raises WebSocketError: 收到非文本消息时
+        """
+        import aiohttp
+
+        msg = await self._ws.receive()
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            return msg.data
+        elif msg.type in (
+            aiohttp.WSMsgType.CLOSE,
+            aiohttp.WSMsgType.CLOSING,
+            aiohttp.WSMsgType.CLOSED,
+        ):
+            code = msg.data if isinstance(msg.data, int) else 1000
+            raise WebSocketDisconnect(code=code)
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            raise WebSocketError(str(self._ws.exception()))
+        else:
+            raise WebSocketError(f"Unexpected message type: {msg.type}")
+
+    async def receive_bytes(self) -> bytes:
+        """
+        接收二进制消息
+
+        :return: bytes 二进制内容
+        :raises WebSocketDisconnect: 连接断开时
+        :raises WebSocketError: 收到非二进制消息时
+        """
+        import aiohttp
+
+        msg = await self._ws.receive()
+        if msg.type == aiohttp.WSMsgType.BINARY:
+            return msg.data
+        elif msg.type in (
+            aiohttp.WSMsgType.CLOSE,
+            aiohttp.WSMsgType.CLOSING,
+            aiohttp.WSMsgType.CLOSED,
+        ):
+            code = msg.data if isinstance(msg.data, int) else 1000
+            raise WebSocketDisconnect(code=code)
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            raise WebSocketError(str(self._ws.exception()))
+        else:
+            raise WebSocketError(f"Unexpected message type: {msg.type}")
+
+    async def receive_json(self, mode: str = "text") -> Any:
+        """
+        接收 JSON 消息
+
+        :param mode: str 接收模式 ("text" 或 "binary") (默认: "text")
+        :return: Any 解析后的 JSON 数据
+        :raises WebSocketDisconnect: 连接断开时
+        """
+        if mode == "binary":
+            data = await self.receive_bytes()
+            return json.loads(data)
+        text = await self.receive_text()
+        return json.loads(text)
+
+    # ---- Close ----
+
+    async def close(self, code: int = 1000, reason: str | None = None) -> None:
+        """
+        关闭 WebSocket 连接
+
+        :param code: int 关闭码 (默认: 1000)
+        :param reason: str | None 关闭原因 (可选)
+        """
+        await self._ws.close(code=code, message=reason)
+        self._closed = True
+
+
+class HttpClient(BaseHttpClient):
+    """
+    HTTP/WS 客户端 (基于 aiohttp)
+
+    提供统一的异步 HTTP 请求和 WebSocket 连接接口。
+    自动管理连接池和会话生命周期，底层 aiohttp 异常自动转换为 ErisPulse 异常。
 
     {!--< tips >!--}
     1. 通过 sdk.client 获取全局单例，也可自行实例化
     2. 使用 get/post/put/delete/patch 快捷方法或通用 request 方法
-    3. 支持自定义 headers、timeout、retry 等参数
-    4. 所有请求自动通过 lifecycle 发送事件，可用于监控
+    3. 使用 ws_connect 建立 WebSocket 连接
+    4. 支持 ErisPulse 异常体系，业务代码不依赖 aiohttp
+    5. 所有请求自动通过 lifecycle 发送事件，可用于监控
     {!--< /tips >!--}
 
     :example:
     >>> resp = await sdk.client.get("https://httpbin.org/get")
     >>> data = await resp.json()
     >>>
-    >>> resp = await sdk.client.post(
-    ...     "https://httpbin.org/post",
-    ...     json={"key": "value"},
-    ...     headers={"Authorization": "Bearer token"},
-    ... )
+    >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
+    >>> await ws.send_text("Hello")
     """
 
     def __init__(
@@ -201,14 +398,29 @@ class HttpClient:
         :param headers: dict[str, str] 全局默认请求头 (可选)
         :param user_agent: str User-Agent 字符串 (可选)
         """
-        self._timeout = timeout if timeout is not None else DEFAULT_HTTP_CLIENT_TIMEOUT_SECS
-        self._connect_timeout = connect_timeout if connect_timeout is not None else DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS
-        self._max_retries = max_retries if max_retries is not None else DEFAULT_HTTP_CLIENT_MAX_RETRIES
-        self._retry_delay = retry_delay if retry_delay is not None else DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS
+        self._timeout = (
+            timeout if timeout is not None else DEFAULT_HTTP_CLIENT_TIMEOUT_SECS
+        )
+        self._connect_timeout = (
+            connect_timeout
+            if connect_timeout is not None
+            else DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS
+        )
+        self._max_retries = (
+            max_retries if max_retries is not None else DEFAULT_HTTP_CLIENT_MAX_RETRIES
+        )
+        self._retry_delay = (
+            retry_delay
+            if retry_delay is not None
+            else DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS
+        )
         self._default_headers = dict(headers or {})
         if user_agent or DEFAULT_HTTP_CLIENT_USER_AGENT:
-            self._default_headers.setdefault("User-Agent", user_agent or DEFAULT_HTTP_CLIENT_USER_AGENT)
+            self._default_headers.setdefault(
+                "User-Agent", user_agent or DEFAULT_HTTP_CLIENT_USER_AGENT
+            )
         self._session = None
+        self._ws_session = None
         self._stats = {
             "total_requests": 0,
             "total_errors": 0,
@@ -218,13 +430,20 @@ class HttpClient:
 
     # ---- Session 管理 ----
 
-    async def _get_session(self):
-        """
-        获取或创建 aiohttp 会话
+    async def _get_ws_session(self):
+        if self._ws_session is None or self._ws_session.closed:
+            import aiohttp
 
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
+            self._ws_session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(),
+            )
+        return self._ws_session
+
+    def _drain_sessions(self):
+        self._session = None
+        self._ws_session = None
+
+    async def _get_http_session(self):
         if self._session is None or self._session.closed:
             import aiohttp
 
@@ -239,12 +458,12 @@ class HttpClient:
         return self._session
 
     async def close(self) -> None:
-        """
-        关闭客户端会话并释放资源
-        """
         if self._session and not self._session.closed:
             await self._session.close()
             self._session = None
+        if self._ws_session and not self._ws_session.closed:
+            await self._ws_session.close()
+            self._ws_session = None
 
     # ---- 核心请求方法 ----
 
@@ -275,19 +494,22 @@ class HttpClient:
         :param kwargs: 传递给底层请求的额外参数
         :return: HttpResponse 响应对象
 
-        :raises: aiohttp 相关异常或连接错误
+        :raises ClientConnectionError: 连接失败
+        :raises ClientTimeoutError: 请求超时
+        :raises ClientError: 其他客户端错误
 
         :example:
         >>> resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test"})
         """
-        retries = max_retries if max_retries is not None else self._max_retries
         import aiohttp
 
-        last_exc = None
+        retries = max_retries if max_retries is not None else self._max_retries
+
+        last_exc: ClientError | None = None
         for attempt in range(retries + 1):
             start = time.monotonic()
             try:
-                session = await self._get_session()
+                session = await self._get_http_session()
 
                 request_timeout = None
                 if timeout is not None:
@@ -310,26 +532,50 @@ class HttpClient:
                     elapsed = time.monotonic() - start
 
                     self._stats["total_requests"] += 1
-                    await lifecycle.emit("client.request", {
-                        "method": method,
-                        "url": str(url),
-                        "status": resp.status,
-                        "elapsed": round(elapsed, 3),
-                    })
-
-                    if resp.status >= 400:
-                        logger.debug(
-                            f"[HttpClient] {method} {url} -> {resp.status} ({elapsed:.3f}s)"
-                        )
-                    else:
-                        logger.debug(
-                            f"[HttpClient] {method} {url} -> {resp.status} ({elapsed:.3f}s)"
-                        )
+                    await lifecycle.emit(
+                        "client.request.success",
+                        {
+                            "method": method,
+                            "url": str(url),
+                            "status": resp.status,
+                            "elapsed": elapsed,
+                        },
+                    )
 
                     return response
 
-            except Exception as e:
+            except ClientConnectionError as e:
                 last_exc = e
+                self._stats["total_errors"] += 1
+                elapsed = time.monotonic() - start
+                if attempt < retries:
+                    logger.debug(
+                        f"[HttpClient] {method} {url} 连接中断，重建 session 后重试 (尝试 {attempt + 1}/{retries + 1})"
+                    )
+                    self._drain_sessions()
+                    await asyncio.sleep(self._retry_delay)
+                else:
+                    logger.error(
+                        f"[HttpClient] {method} {url} 最终连接失败 ({elapsed:.3f}s)"
+                    )
+            except asyncio.TimeoutError as e:
+                last_exc = _convert_aiohttp_exception(e)
+                self._stats["total_errors"] += 1
+                elapsed = time.monotonic() - start
+                if attempt < retries:
+                    logger.debug(
+                        f"[HttpClient] {method} {url} 超时 (尝试 {attempt + 1}/{retries + 1})"
+                    )
+                    await asyncio.sleep(self._retry_delay)
+                else:
+                    logger.error(
+                        f"[HttpClient] {method} {url} 最终超时 ({elapsed:.3f}s)"
+                    )
+            except Exception as e:
+                if isinstance(e, aiohttp.ClientError):
+                    last_exc = _convert_aiohttp_exception(e)
+                else:
+                    last_exc = ClientError(str(e))
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -343,6 +589,61 @@ class HttpClient:
                     )
 
         raise last_exc
+
+    # ---- WebSocket 连接 ----
+
+    async def ws_connect(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        heartbeat: float | None = None,
+        **kwargs,
+    ) -> ClientWebSocket:
+        """
+        建立 WebSocket 连接
+
+        :param url: str WebSocket 服务器 URL
+        :param headers: dict[str, str] | None 额外请求头 (可选)
+        :param heartbeat: float | None 心跳间隔秒数 (可选)
+        :param kwargs: 传递给底层 ws_connect 的额外参数
+        :return: ClientWebSocket WebSocket 连接对象
+
+        :raises ClientConnectionError: 连接失败
+        :raises ClientError: 其他客户端错误
+
+        :example:
+        >>> ws = await sdk.client.ws_connect("wss://example.com/ws", heartbeat=30)
+        >>> async for text in ws.iter_text():
+        ...     await ws.send_text(f"Echo: {text}")
+        """
+        import aiohttp
+
+        try:
+            session = await self._get_ws_session()
+            ws = await session.ws_connect(
+                url,
+                headers=headers,
+                heartbeat=heartbeat,
+                **kwargs,
+            )
+
+            await lifecycle.emit(
+                "client.ws.connect",
+                {
+                    "url": str(url),
+                },
+            )
+
+            logger.debug(f"[HttpClient] WS 连接: {url}")
+            return ClientWebSocket(ws)
+
+        except ClientError:
+            raise
+        except Exception as e:
+            if isinstance(e, aiohttp.ClientError):
+                raise _convert_aiohttp_exception(e) from e
+            raise ClientError(str(e)) from e
 
     # ---- 快捷方法 ----
 
@@ -389,7 +690,9 @@ class HttpClient:
         :example:
         >>> resp = await client.post("https://httpbin.org/post", json={"key": "value"})
         """
-        return await self.request("POST", url, data=data, json=json, headers=headers, **kwargs)
+        return await self.request(
+            "POST", url, data=data, json=json, headers=headers, **kwargs
+        )
 
     async def put(
         self,
@@ -409,7 +712,9 @@ class HttpClient:
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :return: HttpResponse 响应对象
         """
-        return await self.request("PUT", url, data=data, json=json, headers=headers, **kwargs)
+        return await self.request(
+            "PUT", url, data=data, json=json, headers=headers, **kwargs
+        )
 
     async def delete(
         self,
@@ -445,7 +750,9 @@ class HttpClient:
         :param headers: dict[str, str] | None 额外请求头 (可选)
         :return: HttpResponse 响应对象
         """
-        return await self.request("PATCH", url, data=data, json=json, headers=headers, **kwargs)
+        return await self.request(
+            "PATCH", url, data=data, json=json, headers=headers, **kwargs
+        )
 
     # ---- 统计 ----
 

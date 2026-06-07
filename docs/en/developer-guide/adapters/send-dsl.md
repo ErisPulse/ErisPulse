@@ -204,7 +204,22 @@ def Text(self, text: str):
 
 ### Standardized Response
 
-`call_api` should return a standardized response:
+`call_api` should return a standardized response. Recommended to use `make_response()` / `make_error()` methods:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+Also supports manual construction (legacy style still compatible):
 
 ```python
 async def call_api(self, endpoint: str, **params):

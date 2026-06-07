@@ -53,7 +53,23 @@ def _load_config(self):
 ### 1. 使用非同步程式庫
 
 ```python
-# 使用 aiohttp（非同步）
+# 推薦使用 SDK 內建 HTTP 用戶端（非同步，自動日誌和統計）
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# 也可透過 sdk.client 使用（效果相同）
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -62,7 +78,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 而不是 requests（同步，會阻塞）
+# 不要使用 requests（同步，會阻塞事件迴圈）
 import requests
 
 class MyModule(BaseModule):
@@ -85,12 +101,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # 初始化資源
-    self.session = aiohttp.ClientSession()
+    # SDK 用戶端已自動管理連線集區，無需手動建立 session
+    pass
     
 async def on_unload(self, event):
-    # 清理資源
-    await self.session.close()
+    # 如需自訂用戶端，記得清理資源
+    pass
 ```
 
 ## 事件處理
@@ -162,7 +178,8 @@ async def handle_event(self, event):
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
-        # 網路錯誤
+        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
+        # 舊程式碼直接用 aiohttp 仍可正常運作，但新程式碼推薦使用 ErisPulse 異常體系
         self.logger.error(f"網路錯誤: {e}")
         await event.reply("網路請求失敗，請稍後重試")
     except Exception as e:
@@ -172,15 +189,18 @@ async def handle_event(self, event):
         raise
 ```
 
-### 2. 逾時處理
+### 2. 超時處理
 
 ```python
+# 推薦使用 SDK 內建用戶端（自帶超時和重試）
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
-    except asyncio.TimeoutError:
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
+    except ClientTimeoutError:
         self.logger.warning(f"請求逾時: {url}")
         raise
 ```
@@ -199,7 +219,7 @@ async def update_user(self, user_id, data):
 # ❌ 不使用交易可能導致資料不一致
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # 如果這裡出錯，上面的設定無法還原
+    # 如果這裡出錯，上面的設定無法回滾
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 

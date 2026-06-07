@@ -13,7 +13,7 @@ ErisPulse 路由系统
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 from starlette.staticfiles import StaticFiles
 from typing import Any, TypeAlias
@@ -21,8 +21,8 @@ from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
-from .Bases.router import HttpRequest, WebSocketConnection
-from .Bases.router import WebSocketDisconnect as _EPWebSocketDisconnect
+from .Bases.router import HttpRequest, WebSocketConnection, SseEmitter
+from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .constants import (
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
@@ -207,6 +207,15 @@ class RouteGroup:
         resolved = self._resolve_path(path)
         return self._router._ws_decorate(resolved, self._module_name, **kwargs)
 
+    def sse(self, path: str, **kwargs):
+        """
+        SSE (Server-Sent Events) 路由装饰器
+
+        :param path: str 路由路径
+        """
+        resolved = self._resolve_path(path)
+        return self._router._sse_decorate(resolved, self._module_name, **kwargs)
+
     def group(self, prefix: str, **kwargs) -> "RouteGroup":
         """
         创建嵌套分组
@@ -263,8 +272,9 @@ class RouterManager:
         # HTTP路由：{module_name: {path: {method: handler}}}
         self._http_routes: dict[str, dict[str, dict[str, Callable]]] = defaultdict(dict)
         self._websocket_routes: dict[
-            str, dict[str, tuple[Callable, Callable | None]]
+            str, dict[str, tuple[Callable, Callable | None, bool]]
         ] = defaultdict(dict)
+        self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
         self.base_url = ""
         self._server_task: asyncio.Task | None = None
         self._uvicorn_server: uvicorn.Server | None = None
@@ -389,19 +399,23 @@ class RouterManager:
                 result = _h()
                 if inspect.isawaitable(result):
                     await result
+
             return _wrapper
 
         if extract_raw:
+
             async def _wrapper(ws_conn, *, _h=handler):
                 result = _h(ws_conn.raw)
                 if inspect.isawaitable(result):
                     await result
+
             return _wrapper
 
         async def _wrapper(ws_conn, *, _h=handler):
             result = _h(ws_conn)
             if inspect.isawaitable(result):
                 await result
+
         return _wrapper
 
     def _make_ws_auth_handler(self, auth_handler: Callable) -> Callable:
@@ -426,19 +440,23 @@ class RouterManager:
                 extract_raw = True
 
         if not has_first:
+
             async def _wrapper(ws_conn, *, _h=auth_handler):
                 result = _h()
                 if inspect.isawaitable(result):
                     return await result
                 return result
+
             return _wrapper
 
         if extract_raw:
+
             async def _wrapper(ws_conn, *, _h=auth_handler):
                 result = _h(ws_conn.raw)
                 if inspect.isawaitable(result):
                     return await result
                 return result
+
             return _wrapper
 
         async def _wrapper(ws_conn, *, _h=auth_handler):
@@ -446,7 +464,111 @@ class RouterManager:
             if inspect.isawaitable(result):
                 return await result
             return result
+
         return _wrapper
+
+    def _make_sse_endpoint(self, handler: Callable) -> Callable:
+        """
+        根据处理器签名创建 SSE 端点包装器
+
+        自动检测处理器是否需要 HttpRequest 参数。
+        为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sig = inspect.signature(handler)
+        params = list(sig.parameters.values())
+
+        wants_request = False
+        if params:
+            first = params[0]
+            if first.annotation in (HttpRequest, Request):
+                wants_request = True
+            elif first.annotation is SseEmitter:
+                wants_request = False
+            elif first.name in _REQUEST_LIKE_NAMES:
+                wants_request = True
+
+        async def wrapper(request: Request):
+            queue: asyncio.Queue = asyncio.Queue()
+            is_closed = False
+
+            async def on_send(payload: str):
+                if not is_closed:
+                    await queue.put(payload)
+
+            async def on_close():
+                nonlocal is_closed
+                if not is_closed:
+                    is_closed = True
+                    await queue.put(None)
+
+            if wants_request:
+                sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
+                handler_task = asyncio.create_task(handler(HttpRequest(request), sse))
+            else:
+                sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
+                handler_task = asyncio.create_task(handler(sse))
+
+            async def generator():
+                yield ":ok\n\n"
+                while True:
+                    payload = await queue.get()
+                    if payload is None:
+                        break
+                    yield payload
+
+            try:
+                response = StreamingResponse(
+                    generator(),
+                    media_type="text/event-stream",
+                    headers={
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        "X-Accel-Buffering": "no",
+                    },
+                )
+                return response
+            except Exception:
+                handler_task.cancel()
+                raise
+
+        return wrapper
+
+    def _register_sse_endpoint(
+        self,
+        full_path: str,
+        module_name: str,
+        handler: Callable,
+        **kwargs,
+    ) -> None:
+        """
+        SSE 路由注册内部实现
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if full_path in self._sse_routes.get(module_name, {}):
+            raise ValueError(f"SSE路径 {full_path} 已在模块 {module_name} 中注册")
+
+        endpoint = self._make_sse_endpoint(handler)
+        route = APIRoute(
+            path=full_path,
+            endpoint=endpoint,
+            methods=["GET"],
+            name=f"{module_name}_{full_path.replace('/', '_')}_sse",
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k
+                in ("summary", "description", "tags", "response_model", "deprecated")
+            },
+        )
+        self.app.router.routes.append(route)
+        self._sse_routes[module_name][full_path] = handler
+
+        logger.info(f"[{module_name}] 注册SSE路由: {full_path}")
 
     @staticmethod
     async def _run_ws_hooks(
@@ -507,6 +629,7 @@ class RouterManager:
             dashboard_available = False
             try:
                 import ErisPulse as _pkg
+
                 _sdk = _pkg.sdk
                 dashboard_available = hasattr(_sdk, "Dashboard") and _sdk.Dashboard
             except Exception:
@@ -623,7 +746,9 @@ class RouterManager:
         from ..web_status import PACKAGE_DIR as _ws_dir
 
         if os.path.isdir(_ws_dir):
-            self.app.mount("/status-assets", StaticFiles(directory=_ws_dir), name="status-assets")
+            self.app.mount(
+                "/status-assets", StaticFiles(directory=_ws_dir), name="status-assets"
+            )
 
         page_css = """
   * { margin:0;padding:0;box-sizing:border-box }
@@ -689,41 +814,131 @@ class RouterManager:
 
         @self.app.exception_handler(404)
         async def _h404(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(404, "4xx.png", "你是怎么找到这里的？", "这个页面似乎不存在，或者从未存在过。"), status_code=404)
-            return JSONResponse(status_code=404, content={"status": "error", "code": 404, "message": "Not Found"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        404,
+                        "4xx.png",
+                        "你是怎么找到这里的？",
+                        "这个页面似乎不存在，或者从未存在过。",
+                    ),
+                    status_code=404,
+                )
+            return JSONResponse(
+                status_code=404,
+                content={"status": "error", "code": 404, "message": "Not Found"},
+            )
 
         @self.app.exception_handler(403)
         async def _h403(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(403, "4xx.png", "嗯？这里不对外开放哦~", "你可能没有访问这个资源的权限。"), status_code=403)
-            return JSONResponse(status_code=403, content={"status": "error", "code": 403, "message": "Forbidden"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        403,
+                        "4xx.png",
+                        "嗯？这里不对外开放哦~",
+                        "你可能没有访问这个资源的权限。",
+                    ),
+                    status_code=403,
+                )
+            return JSONResponse(
+                status_code=403,
+                content={"status": "error", "code": 403, "message": "Forbidden"},
+            )
 
         @self.app.exception_handler(500)
         async def _h500(request: Request, exc):
             logger.error(f"未处理的异常: {exc}")
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(500, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "我们已经记录了这个问题，请稍后再试。"), status_code=500)
-            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        500,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "我们已经记录了这个问题，请稍后再试。",
+                    ),
+                    status_code=500,
+                )
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "status": "error",
+                    "code": 500,
+                    "message": "Internal Server Error",
+                },
+            )
 
         @self.app.exception_handler(502)
         async def _h502(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(502, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "上游服务似乎不太对劲。"), status_code=502)
-            return JSONResponse(status_code=502, content={"status": "error", "code": 502, "message": "Bad Gateway"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        502,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "上游服务似乎不太对劲。",
+                    ),
+                    status_code=502,
+                )
+            return JSONResponse(
+                status_code=502,
+                content={"status": "error", "code": 502, "message": "Bad Gateway"},
+            )
 
         @self.app.exception_handler(503)
         async def _h503(request: Request, exc):
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(503, "5xx.png", "耶耶~搞怪成功!服务器飞走辣~！", "服务暂时不可用，请稍后再来。"), status_code=503)
-            return JSONResponse(status_code=503, content={"status": "error", "code": 503, "message": "Service Unavailable"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        503,
+                        "5xx.png",
+                        "耶耶~搞怪成功!服务器飞走辣~！",
+                        "服务暂时不可用，请稍后再来。",
+                    ),
+                    status_code=503,
+                )
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "error",
+                    "code": 503,
+                    "message": "Service Unavailable",
+                },
+            )
 
         @self.app.exception_handler(Exception)
         async def _h_generic(request: Request, exc: Exception):
             logger.error(f"未处理的异常: {exc}")
-            if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-                return HTMLResponse(content=_html(500, "unknow.png", "诶？发生了什么……", "有些事情我们也没预料到，正在排查中。"), status_code=500)
-            return JSONResponse(status_code=500, content={"status": "error", "code": 500, "message": "Internal Server Error"})
+            if request.method == "GET" and "text/html" in request.headers.get(
+                "accept", ""
+            ):
+                return HTMLResponse(
+                    content=_html(
+                        500,
+                        "unknow.png",
+                        "诶？发生了什么……",
+                        "有些事情我们也没预料到，正在排查中。",
+                    ),
+                    status_code=500,
+                )
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "status": "error",
+                    "code": 500,
+                    "message": "Internal Server Error",
+                },
+            )
 
     def _restore_routes_from_records(self) -> None:
         """
@@ -751,13 +966,12 @@ class RouterManager:
 
         restored_ws = 0
         for module_name, paths in self._websocket_routes.items():
-            for full_path, (handler, auth_handler) in paths.items():
+            for full_path, (handler, auth_handler, auto_accept) in paths.items():
                 # 直接在 FastAPI 上注册，跳过重复检查（记录已存在）
                 wrapped_handler = self._make_ws_handler(handler)
                 wrapped_auth = (
                     self._make_ws_auth_handler(auth_handler) if auth_handler else None
                 )
-                auto_accept = False
 
                 async def _ws_endpoint(
                     websocket: WebSocket,
@@ -776,36 +990,54 @@ class RouterManager:
                             if not await _wa(ws_conn):
                                 await websocket.close(code=WS_CLOSE_POLICY_VIOLATION)
                                 return
-                        await lifecycle.emit("server.websocket.connect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "client_ip": websocket.client.host if websocket.client else None,
-                        })
+                        await lifecycle.emit(
+                            "server.websocket.connect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "client_ip": websocket.client.host
+                                if websocket.client
+                                else None,
+                            },
+                        )
                         await _wh(ws_conn)
                     except (WebSocketDisconnect, _EPWebSocketDisconnect):
-                        await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "client_disconnect",
-                        })
+                        await self._run_ws_hooks(
+                            ws_conn, "disconnect", reason="client_disconnect"
+                        )
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "client_disconnect",
+                            },
+                        )
                     except asyncio.CancelledError:
-                        await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "cancelled",
-                        })
+                        await self._run_ws_hooks(
+                            ws_conn, "disconnect", reason="cancelled"
+                        )
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "cancelled",
+                            },
+                        )
                         raise
                     except Exception as e:
                         await self._run_ws_hooks(ws_conn, "error", error=str(e))
                         await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
-                        await lifecycle.emit("server.websocket.disconnect", {
-                            "path": _path,
-                            "module_name": _mod,
-                            "reason": "error",
-                            "error": str(e),
-                        })
+                        await lifecycle.emit(
+                            "server.websocket.disconnect",
+                            {
+                                "path": _path,
+                                "module_name": _mod,
+                                "reason": "error",
+                                "error": str(e),
+                            },
+                        )
                         logger.error(f"WebSocket错误: {e}")
                         try:
                             await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
@@ -819,9 +1051,15 @@ class RouterManager:
                 )
                 restored_ws += 1
 
-        if restored_http or restored_ws:
+        restored_sse = 0
+        for module_name, paths in self._sse_routes.items():
+            for full_path, handler in paths.items():
+                self._register_sse_endpoint(full_path, module_name, handler)
+                restored_sse += 1
+
+        if restored_http or restored_ws or restored_sse:
             logger.debug(
-                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}"
+                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}, SSE={restored_sse}"
             )
 
     # 路由中间件
@@ -840,16 +1078,20 @@ class RouterManager:
         # 如果 app 已启动过（middleware_stack 已构建），无法再添加中间件
         # 此时跳过，已有的中间件仍会生效
         try:
+
             @self.app.middleware("http")
             async def route_middleware_pipeline(request: Request, call_next):
                 path = request.url.path
 
                 # 钩子: HTTP请求接收
-                await lifecycle.emit("server.request", {
-                    "method": request.method,
-                    "path": path,
-                    "client_ip": request.client.host if request.client else None,
-                })
+                await lifecycle.emit(
+                    "server.request",
+                    {
+                        "method": request.method,
+                        "path": path,
+                        "client_ip": request.client.host if request.client else None,
+                    },
+                )
 
                 for mw in self._global_middlewares:
                     if mw._before:
@@ -876,12 +1118,15 @@ class RouterManager:
                 response = await call_next(request)
 
                 # 钩子: HTTP响应发送
-                await lifecycle.emit("server.response", {
-                    "method": request.method,
-                    "path": path,
-                    "status_code": response.status_code,
-                    "client_ip": request.client.host if request.client else None,
-                })
+                await lifecycle.emit(
+                    "server.response",
+                    {
+                        "method": request.method,
+                        "path": path,
+                        "status_code": response.status_code,
+                        "client_ip": request.client.host if request.client else None,
+                    },
+                )
 
                 for pattern, mws in reversed(list(self._route_middlewares.items())):
                     if self._match_path(pattern, path):
@@ -1134,6 +1379,47 @@ class RouterManager:
         full_path = self._normalize_path(module_name, path)
         return self._ws_decorate(full_path, module_name, **kwargs)
 
+    def sse(self, module_name: str, path: str, **kwargs):
+        """
+        SSE (Server-Sent Events) 路由装饰器
+
+        :param module_name: str 模块名称 (必填)
+        :param path: str SSE 端点路径
+        :param summary: str API 摘要 (可选)
+        :param description: str API 描述 (可选)
+        :param tags: list[str] API 标签 (可选)
+
+        :example:
+        >>> @sdk.router.sse("MyModule", "/events")
+        ... async def event_stream(sse):
+        ...     while True:
+        ...         await sse.send({"msg": "hello"})
+        ...         await asyncio.sleep(1)
+
+        >>> @sdk.router.sse("MyModule", "/logs")
+        ... async def log_stream(request, sse):
+        ...     token = request.query_params.get("token")
+        ...     while True:
+        ...         line = await get_next_log(token)
+        ...         await sse.send(line, event="log")
+        """
+        full_path = self._normalize_path(module_name, path)
+        return self._sse_decorate(full_path, module_name, **kwargs)
+
+    def _sse_decorate(self, full_path: str, module_name: str, **kwargs):
+        """
+        SSE 路由装饰器内部实现
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+
+        def decorator(func):
+            self._register_sse_endpoint(full_path, module_name, func, **kwargs)
+            return func
+
+        return decorator
+
     # 传统注册 API
 
     def register_http_route(
@@ -1290,42 +1576,58 @@ class RouterManager:
                         return
 
                 # 钩子: WebSocket连接建立
-                await lifecycle.emit("server.websocket.connect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "client_ip": websocket.client.host if websocket.client else None,
-                })
+                await lifecycle.emit(
+                    "server.websocket.connect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "client_ip": websocket.client.host
+                        if websocket.client
+                        else None,
+                    },
+                )
 
                 await wrapped_handler(ws_conn)
 
             except (WebSocketDisconnect, _EPWebSocketDisconnect):
-                await self._run_ws_hooks(ws_conn, "disconnect", reason="client_disconnect")
+                await self._run_ws_hooks(
+                    ws_conn, "disconnect", reason="client_disconnect"
+                )
                 # 钩子: WebSocket客户端断开
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "client_disconnect",
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "client_disconnect",
+                    },
+                )
                 logger.debug(f"客户端断开: {full_path}")
             except asyncio.CancelledError:
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "cancelled",
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "cancelled",
+                    },
+                )
                 logger.debug(f"WebSocket连接被取消: {full_path}")
                 raise
             except Exception as e:
                 await self._run_ws_hooks(ws_conn, "error", error=str(e))
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="error")
                 # 钩子: WebSocket异常断开
-                await lifecycle.emit("server.websocket.disconnect", {
-                    "path": full_path,
-                    "module_name": module_name,
-                    "reason": "error",
-                    "error": str(e),
-                })
+                await lifecycle.emit(
+                    "server.websocket.disconnect",
+                    {
+                        "path": full_path,
+                        "module_name": module_name,
+                        "reason": "error",
+                        "error": str(e),
+                    },
+                )
                 logger.error(f"WebSocket错误: {e}")
                 try:
                     await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
@@ -1337,7 +1639,11 @@ class RouterManager:
             endpoint=websocket_endpoint,
             name=f"{module_name}_{full_path.replace('/', '_')}",
         )
-        self._websocket_routes[module_name][full_path] = (handler, auth_handler)
+        self._websocket_routes[module_name][full_path] = (
+            handler,
+            auth_handler,
+            auto_accept,
+        )
 
         logger.info(
             f"[{module_name}] 注册WebSocket: {full_path}{'(需认证)' if auth_handler else ''}"
@@ -1406,14 +1712,78 @@ class RouterManager:
             logger.error(f"注销WebSocket失败: {e}")
             return False
 
+    def register_sse(
+        self,
+        module_name: str,
+        path: str,
+        handler: Callable,
+        **kwargs,
+    ) -> None:
+        """
+        注册 SSE (Server-Sent Events) 路由
+
+        SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
+        处理器接收 ``SseEmitter`` 实例（以及可选的 ``HttpRequest``），
+        通过 ``sse.send()`` 推送事件，调用 ``sse.close()`` 断开连接。
+
+        :param module_name: str 模块名称
+        :param path: str SSE 端点路径
+        :param handler: Callable 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
+
+        :raises ValueError: 当路径已注册时抛出
+
+        :example:
+        >>> async def event_stream(sse):
+        ...     for i in range(10):
+        ...         await sse.send({"count": i})
+        ...         await asyncio.sleep(1)
+        >>> router.register_sse("MyModule", "/events", event_stream)
+        """
+        full_path = self._normalize_path(module_name, path)
+        self._register_sse_endpoint(full_path, module_name, handler, **kwargs)
+
+    def unregister_sse(self, module_name: str, path: str) -> bool:
+        """
+        取消注册 SSE 路由
+
+        :param module_name: 模块名称
+        :param path: SSE 路径
+        :return: bool 是否成功取消注册
+        """
+        try:
+            full_path = self._normalize_path(module_name, path)
+
+            if (
+                sse_routes := self._sse_routes.get(module_name)
+            ) and full_path in sse_routes:
+                logger.info(f"注销SSE: {full_path}")
+                del sse_routes[full_path]
+
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (
+                        isinstance(route, APIRoute)
+                        and route.path == full_path
+                        and "GET" in route.methods
+                    )
+                ]
+                return True
+
+            logger.debug(f"\n取消注册的SSE路由不存在: {full_path}\n")
+            return False
+        except Exception as e:
+            logger.error(f"注销SSE失败: {e}")
+            return False
+
     def unregister_all_by_namespace(self, namespace: str) -> dict[str, int]:
         """
         清理指定命名空间下的所有路由
 
         :param namespace: 命名空间（适配器名或模块名）
-        :return: dict 清理统计 {"http_count": int, "websocket_count": int}
+        :return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
         """
-        result = {"http_count": 0, "websocket_count": 0}
+        result = {"http_count": 0, "websocket_count": 0, "sse_count": 0}
 
         # 清理 HTTP 路由
         if namespace in self._http_routes:
@@ -1442,10 +1812,31 @@ class RouterManager:
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
 
-        if result["http_count"] > 0 or result["websocket_count"] > 0:
+        if namespace in self._sse_routes:
+            paths = list(self._sse_routes[namespace].keys())
+            for path in paths:
+                self._sse_routes[namespace].pop(path, None)
+                result["sse_count"] += 1
+            self.app.router.routes = [
+                route
+                for route in self.app.router.routes
+                if not (
+                    isinstance(route, APIRoute)
+                    and "GET" in route.methods
+                    and route.path in paths
+                )
+            ]
+            if namespace in self._sse_routes:
+                del self._sse_routes[namespace]
+
+        if (
+            result["http_count"] > 0
+            or result["websocket_count"] > 0
+            or result["sse_count"] > 0
+        ):
             logger.info(
                 f"已清理命名空间 [{namespace}] 的路由: "
-                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}, SSE={result['sse_count']}"
             )
 
         return result
@@ -1454,14 +1845,15 @@ class RouterManager:
         """
         列出所有已注册的命名空间及其路由
 
-        :return: dict {namespace: {"http": [paths], "websocket": [paths]}}
+        :return: dict {namespace: {"http": [paths], "websocket": [paths], "sse": [paths]}}
 
         :example:
         >>> router.list_namespaces()
         {
             "onebot11": {
                 "http": ["/onebot11/webhook", "/onebot11/callback"],
-                "websocket": ["/onebot11/ws"]
+                "websocket": ["/onebot11/ws"],
+                "sse": ["/onebot11/events"]
             }
         }
         """
@@ -1469,13 +1861,220 @@ class RouterManager:
 
         for namespace, routes in self._http_routes.items():
             if namespace not in result:
-                result[namespace] = {"http": [], "websocket": []}
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
             result[namespace]["http"] = list(routes.keys())
 
         for namespace, routes in self._websocket_routes.items():
             if namespace not in result:
-                result[namespace] = {"http": [], "websocket": []}
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
             result[namespace]["websocket"] = list(routes.keys())
+
+        for namespace, routes in self._sse_routes.items():
+            if namespace not in result:
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
+            result[namespace]["sse"] = list(routes.keys())
+
+        return result
+
+    def get_module_routes(self, module_name: str) -> dict[str, list[dict]]:
+        """
+        获取指定命名空间的详细路由信息
+
+        与 list_namespaces() 不同，此方法返回每个路由的详细信息：
+        - HTTP 路由包含路径和 HTTP 方法列表
+        - WebSocket 路由包含路径和是否需要认证
+        - SSE 路由包含路径和流式标记
+
+        :param module_name: 模块/平台名称
+        :return: {"http": [...], "websocket": [...], "sse": [...]}
+           http: [{"path": str, "methods": [str]}]
+           websocket: [{"path": str, "auth": bool}]
+           sse: [{"path": str, "streaming": true}]
+
+        :example:
+        >>> router.get_module_routes("onebot11")
+        {
+            "http": [{"path": "/onebot11/webhook", "methods": ["POST"]}],
+            "websocket": [{"path": "/onebot11/ws", "auth": true}],
+            "sse": [{"path": "/onebot11/events", "streaming": true}]
+        }
+        """
+        result: dict[str, list[dict]] = {"http": [], "websocket": [], "sse": []}
+
+        for path, method_map in self._http_routes.get(module_name, {}).items():
+            result["http"].append(
+                {
+                    "path": path,
+                    "methods": sorted(method_map.keys()),
+                }
+            )
+
+        for path, (_, auth_handler, _) in self._websocket_routes.get(
+            module_name, {}
+        ).items():
+            result["websocket"].append(
+                {
+                    "path": path,
+                    "auth": auth_handler is not None,
+                }
+            )
+
+        for path in self._sse_routes.get(module_name, {}):
+            result["sse"].append({"path": path, "streaming": True})
+
+        return result
+
+    def get_module_urls(self, module_name: str) -> dict[str, Any]:
+        """
+        获取指定命名空间的完整连接 URL
+
+        在 get_module_routes() 的基础上拼接 base_url，生成可直接使用的完整 URL。
+        HTTP 路由使用 base_url 前缀，WebSocket 路由自动将 http/https 转换为 ws/wss，
+        SSE 路由使用 base_url 前缀（HTTP）。
+
+        :param module_name: 模块/平台名称
+        :return: {
+            "base_url": str,
+            "http": [{"path": str, "method": str, "url": str}],
+            "websocket": [{"path": str, "url": str}],
+            "sse": [{"path": str, "url": str}]
+        }
+
+        :example:
+        >>> # 假设 base_url = "http://localhost:8080"
+        >>> router.get_module_urls("onebot11")
+        {
+            "base_url": "http://localhost:8080",
+            "http": [
+                {"path": "/onebot11/webhook", "method": "POST",
+                 "url": "http://localhost:8080/onebot11/webhook"}
+            ],
+            "websocket": [
+                {"path": "/onebot11/ws",
+                 "url": "ws://localhost:8080/onebot11/ws"}
+            ],
+            "sse": [
+                {"path": "/onebot11/events",
+                 "url": "http://localhost:8080/onebot11/events"}
+            ]
+        }
+        """
+        base = getattr(self, "base_url", "")
+        result: dict[str, Any] = {
+            "base_url": base,
+            "http": [],
+            "websocket": [],
+            "sse": [],
+        }
+
+        for path, method_map in self._http_routes.get(module_name, {}).items():
+            url = f"{base}{path}" if base else path
+            for method in method_map:
+                result["http"].append(
+                    {
+                        "path": path,
+                        "method": method,
+                        "url": url,
+                    }
+                )
+
+        if base:
+            ws_base = base.replace("https://", "wss://").replace("http://", "ws://")
+        else:
+            ws_base = ""
+
+        for path, (_, _, _) in self._websocket_routes.get(module_name, {}).items():
+            ws_url = f"{ws_base}{path}" if ws_base else path
+            result["websocket"].append(
+                {
+                    "path": path,
+                    "url": ws_url,
+                }
+            )
+
+        for path in self._sse_routes.get(module_name, {}):
+            url = f"{base}{path}" if base else path
+            result["sse"].append(
+                {
+                    "path": path,
+                    "url": url,
+                }
+            )
+
+        return result
+
+    def get_module_urls_matching(self, prefix: str) -> dict[str, Any]:
+        """
+        获取指定前缀的所有命名空间的聚合连接 URL
+
+        适配器多账户场景下，路由可能注册为 ``yunhu_bot1``、``yunhu_bot2`` 等命名空间。
+        此方法按前缀匹配聚合所有相关命名空间的路由信息。
+
+        :param prefix: 命名空间前缀（如 "yunhu"）
+        :return: {
+            "base_url": str,
+            "http": [{"path": str, "method": str, "url": str, "namespace": str}],
+            "websocket": [{"path": str, "url": str, "namespace": str}],
+            "sse": [{"path": str, "url": str, "namespace": str}]
+        }
+
+        :example:
+        >>> # 命名空间: yunhu_bot1, yunhu_bot2, onebot11
+        >>> router.get_module_urls_matching("yunhu")
+        {
+            "base_url": "http://localhost:8080",
+            "http": [
+                {"path": "/yunhu_bot1/webhook", "method": "POST",
+                 "url": "http://localhost:8080/yunhu_bot1/webhook",
+                 "namespace": "yunhu_bot1"},
+                {"path": "/yunhu_bot2/webhook", "method": "POST",
+                 "url": "http://localhost:8080/yunhu_bot2/webhook",
+                 "namespace": "yunhu_bot2"}
+            ],
+            "websocket": [],
+            "sse": []
+        }
+        """
+        base = getattr(self, "base_url", "")
+        result: dict[str, Any] = {
+            "base_url": base,
+            "http": [],
+            "websocket": [],
+            "sse": [],
+        }
+
+        if base:
+            ws_base = base.replace("https://", "wss://").replace("http://", "ws://")
+        else:
+            ws_base = ""
+
+        matched = [
+            ns
+            for ns in set(
+                list(self._http_routes.keys())
+                + list(self._websocket_routes.keys())
+                + list(self._sse_routes.keys())
+            )
+            if ns == prefix or ns.startswith(f"{prefix}_")
+        ]
+
+        for ns in matched:
+            for path, method_map in self._http_routes.get(ns, {}).items():
+                url = f"{base}{path}" if base else path
+                for method in method_map:
+                    result["http"].append(
+                        {"path": path, "method": method, "url": url, "namespace": ns}
+                    )
+
+            for path, (_, _, _) in self._websocket_routes.get(ns, {}).items():
+                ws_url = f"{ws_base}{path}" if ws_base else path
+                result["websocket"].append(
+                    {"path": path, "url": ws_url, "namespace": ns}
+                )
+
+            for path in self._sse_routes.get(ns, {}):
+                url = f"{base}{path}" if base else path
+                result["sse"].append({"path": path, "url": url, "namespace": ns})
 
         return result
 
@@ -1553,7 +2152,9 @@ class RouterManager:
         {!--< /internal-use >!--}
         """
         if isinstance(limit, dict):
-            return int(limit.get("requests", DEFAULT_RATE_LIMIT_MAX_REQUESTS)), int(limit.get("window", DEFAULT_RATE_LIMIT_WINDOW_SECS))
+            return int(limit.get("requests", DEFAULT_RATE_LIMIT_MAX_REQUESTS)), int(
+                limit.get("window", DEFAULT_RATE_LIMIT_WINDOW_SECS)
+            )
 
         parts = limit.split("/")
         count = int(parts[0])
@@ -1806,7 +2407,9 @@ class RouterManager:
         if self._server_task:
             logger.debug("正在停止路由服务器...")
             try:
-                await asyncio.wait_for(self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS)
+                await asyncio.wait_for(
+                    self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS
+                )
                 logger.debug("路由服务器已正常停止")
             except asyncio.CancelledError:
                 logger.info("路由服务器已被取消")

@@ -110,6 +110,7 @@ activating_venv=正在激活虚拟环境...
 python_path=当前Python路径
 python_not_found=未找到 Python，请先安装 Python 3.10 或更高版本
 python_download=下载地址: https://www.python.org/downloads/
+install_uv_for_python=是否安装 uv 以安装 Python 继续？ [Y/n]
 python_version_fail=无法检测 Python 版本
 python_detected=检测到 Python
 python_version_low=Python 版本过低，建议使用 3.10 或更高版本
@@ -231,6 +232,7 @@ activating_venv=正在啟用虛擬環境...
 python_path=目前 Python 路徑
 python_not_found=未找到 Python，請先安裝 Python 3.10 或更高版本
 python_download=下載位址: https://www.python.org/downloads/
+install_uv_for_python=是否安裝 uv 以安裝 Python 繼續？ [Y/n]
 python_version_fail=無法偵測 Python 版本
 python_detected=偵測到 Python
 python_version_low=Python 版本過低，建議使用 3.10 或更高版本
@@ -354,6 +356,7 @@ activating_venv=Activating virtual environment...
 python_path=Current Python path
 python_not_found=Python not found. Please install Python 3.10+
 python_download=Download: https://www.python.org/downloads/
+install_uv_for_python=Install uv to install Python and continue? [Y/n]
 python_version_fail=Cannot detect Python version
 python_detected=Detected Python
 python_version_low=Python version too low, 3.10+ recommended
@@ -475,6 +478,7 @@ activating_venv=仮想環境を有効化中...
 python_path=現在の Python パス
 python_not_found=Python が見つかりません。Python 3.10+ をインストールしてください
 python_download=ダウンロード: https://www.python.org/downloads/
+install_uv_for_python=uv をインストールして Python を導入し続行しますか？ [Y/n]
 python_version_fail=Python バージョンを検出できません
 python_detected=Python を検出
 python_version_low=Python バージョンが低すぎます。3.10+ を推奨
@@ -598,6 +602,7 @@ activating_venv=Активация виртуального окружения..
 python_path=Текущий путь Python
 python_not_found=Python не найден. Установите Python 3.10+
 python_download=Скачать: https://www.python.org/downloads/
+install_uv_for_python=Установить uv для установки Python и продолжения? [Y/n]
 python_version_fail=Не удалось определить версию Python
 python_detected=Обнаружен Python
 python_version_low=Версия Python слишком старая, рекомендуется 3.10+
@@ -1173,6 +1178,64 @@ main() {
     check_python || python_ok=false
     USE_UV=$(command_exists uv && echo true || echo false)
     [ "$USE_UV" = true ] && print_success "$(t 'will_use_uv')"
+    
+    # If Python not found, offer to install uv to get Python
+    if [ "$python_ok" = false ]; then
+        echo ""
+        read -p "$(t 'install_uv_for_python'): " uv_install_choice
+        if [[ ! "$uv_install_choice" =~ ^[nN]$ ]]; then
+            # Install uv if needed
+            if [ "$USE_UV" != true ]; then
+                print_info "$(t 'installing') uv..."
+                local uv_install_script="/tmp/uv_install_$$"
+                if command_exists curl; then
+                    curl -LsSf https://astral.sh/uv/install.sh -o "$uv_install_script"
+                elif command_exists wget; then
+                    wget -qO- https://astral.sh/uv/install.sh -O "$uv_install_script"
+                else
+                    print_error "curl or wget required"
+                    exit 1
+                fi
+                if [ -f "$uv_install_script" ]; then
+                    sh "$uv_install_script"
+                    rm -f "$uv_install_script"
+                    export PATH="$HOME/.cargo/bin:$PATH"
+                    if command_exists uv; then
+                        USE_UV=true
+                        print_success "$(t 'uv_install_success')"
+                    else
+                        print_error "$(t 'uv_install_fail')"
+                        exit 1
+                    fi
+                else
+                    print_error "$(t 'uv_install_fail')"
+                    exit 1
+                fi
+            fi
+            
+            # Install Python via uv
+            print_info "$(t 'installing_python')"
+            if ! uv python install 3.12; then
+                print_error "$(t 'python_install_fail')"
+                exit 1
+            fi
+            print_success "$(t 'python_install_success')"
+            
+            # Create venv with uv
+            print_info "$(t 'creating_venv')"
+            if ! uv venv "$VENV_DIR"; then
+                print_error "$(t 'venv_create_fail')"
+                exit 1
+            fi
+            print_success "$(t 'venv_created')"
+            
+            [ -f "$VENV_DIR/bin/activate" ] && source "$VENV_DIR/bin/activate" && print_success "$(t 'venv_activated')"
+            
+            # Python is now available in the venv
+            python_ok=true
+            PYTHON_CMD="python"
+        fi
+    fi
 
     echo ""
     echo -e "${CYAN}$(t 'select_install')${NC}"

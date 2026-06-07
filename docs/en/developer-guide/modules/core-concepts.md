@@ -34,8 +34,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("Hello!")
     
-    # Initialize resources
-    self.session = aiohttp.ClientSession()
+    # Use the SDK built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Send requests via sdk.client
 ```
 
 ### on_unload Method
@@ -44,8 +44,8 @@ Called when the module is unloaded, used to clean up resources:
 
 ```python
 async def on_unload(self, event):
-    # Clean up resources
-    await self.session.close()
+    # Clean up custom resources
+    # sdk.client is managed by the framework, no need to manually close
     
     # Unregister event handlers (handled automatically by framework)
     self.logger.info("Module unloaded")

@@ -1,181 +1,101 @@
 # Core Module API
 
-This document details the ErisPulse core module API.
+This document provides a quick reference to the ErisPulse core module API, including method signatures and brief descriptions. For detailed usage and examples, please click the "Complete Documentation" link for each module.
 
 ## Storage Module
+
+A SQLite-based key-value storage system supporting general-purpose SQL chain queries.
 
 ### Basic Operations
 
 ```python
 from ErisPulse import sdk
 
-# Set value
 sdk.storage.set("key", "value")
-
-# Get value
 value = sdk.storage.get("key", default_value)
-
-# Get all keys
 keys = sdk.storage.keys()
-
-# Delete value
 sdk.storage.delete("key")
-```
-
-### Transaction Operations
-
-```python
-# Use transactions to ensure data consistency
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # If any operation fails, all changes will be rolled back
 ```
 
 ### Batch Operations
 
 ```python
-# Batch set
-sdk.storage.set_multi({
-    "key1": "value1",
-    "key2": "value2",
-    "key3": "value3"
-})
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
 
-# Batch get
-values = sdk.storage.get_multi(["key1", "key2", "key3"])
+### Transaction Operations
 
-# Batch delete
-sdk.storage.delete_multi(["key1", "key2", "key3"])
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### Attribute Access
+
+```python
+sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
 ### SQL Chain Query
 
-The Storage module provides a chain-style API general-purpose SQL query builder, supporting CRUD operations for custom tables.
-
-> See [SQL Query Builder](../advanced/sql-builder.md) for complete documentation.
+The Storage module provides a chain-call style general-purpose SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
-from ErisPulse import sdk
-
-# Create custom table
 sdk.storage.CreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
-    "age": "INTEGER DEFAULT 0"
 })
 
-# Insert data
-sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
-
-# Batch insert
-sdk.storage.Table("users").InsertMulti([
-    {"name": "Bob", "age": 25},
-    {"name": "Charlie", "age": 35}
-]).Execute()
-
-# Query data
-rows = (sdk.storage.Table("users")
-    .Select("name", "age")
-    .Where("age > ?", 18)
-    .OrderBy("name")
-    .Limit(10)
-    .Execute())
-
-# Update data
-sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
-
-# Delete data
-sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
-
-# Count
-count = sdk.storage.Table("users").Where("age > ?", 18).Count()
-
-# Existence check
-exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
-
-# Get single record
-row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
-
-# Modify table structure
-sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
-sdk.storage.AlterTable("users").RenameTo("members").Execute()
-
-# Check if table exists
-if sdk.storage.HasTable("users"):
-    sdk.storage.DropTable("users")
-
-# Chained operations in transaction
-with sdk.storage.transaction():
-    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
-    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
-
-# Reuse query conditions
-base = sdk.storage.Table("users").Where("age > ?", 20)
-rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
-count = base.copy().Count()
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
+
+> For complete chain-query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-The `StorageManager` inherits from the `BaseStorage` abstract base class, supporting future expansion to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting expansion to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
-
-# BaseStorage defines the unified interface: get/set/delete/Table/CreateTable/DropTable, etc.
-# BaseQueryBuilder defines the chained query interface: Select/Insert/Update/Delete/Where/OrderBy/Limit, etc.
 ```
 
 ## Config Module
 
-### Reading Configuration
+TOML format configuration file management, supporting dot-separated key paths.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `getConfig(key, default)` | Read configuration, supports dot paths like "MyModule.subkey" |
+| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves to file immediately |
+| `force_save()` | Force save configuration in memory to file |
+| `reload()` | Reload configuration from file |
+
+### Examples
 
 ```python
-from ErisPulse import sdk
-
-# Get configuration
 config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
 
-# Get nested configuration
-value = sdk.config.getConfig("MyModule.subkey.value", "default")
-```
-
-### Writing Configuration
-
-```python
-# Set configuration
 sdk.config.setConfig("MyModule", {"key": "value"})
-
-# Set nested configuration
-sdk.config.setConfig("MyModule.subkey.value", "new_value")
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-### Configuration Example
-
-```python
-def _load_config(self):
-    config = sdk.config.getConfig("MyModule")
-    if not config:
-        # Create default configuration
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        sdk.config.setConfig("MyModule", default_config, immediate=True)  # When the third parameter is True, save the configuration immediately, making it convenient for users to directly modify the configuration file
-        return default_config
-    return config
-```
+> `setConfig` uses lazy writing by default (batch save every 5 seconds). Setting `immediate=True` will persist to the config file immediately. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-### Basic Logging
+A modular logging system based on Rich output, supporting child loggers and module-level control.
+
+### Basic Usage
 
 ```python
-from ErisPulse import sdk
-
-# Different log levels
 sdk.logger.debug("Debug info")
 sdk.logger.info("Runtime info")
 sdk.logger.warning("Warning info")
@@ -186,409 +106,180 @@ sdk.logger.critical("Fatal error")
 ### Child Loggers
 
 ```python
-# Get child logger
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("Submodule log")
 
-# Sub-modules can also have sub-module logs, allowing for more precise control of log output
-child_logger.get_child("utils")
+child_logger.get_child("utils")  # Supports nesting
 ```
 
-### Log Output
+### Log Level Control
 
 ```python
-# Set output file
-sdk.logger.set_output_file("app.log")
+sdk.logger.set_level("DEBUG")                          # Global level
+sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
+```
 
-# Save logs to file
+### Output Control
+
+```python
+sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
 ```
 
 ## Adapter Module
 
-### Getting Adapters
+Adapter manager managing registration, startup, and shutdown of multi-platform adapters.
 
-```python
-from ErisPulse import sdk
+### API Overview
 
-# Get adapter instance
-adapter = sdk.adapter.get("platform_name")
-
-# Access via property
-adapter = sdk.adapter.platform_name
-```
+| Method | Description |
+|------|------|
+| `get(platform)` | Get adapter instance |
+| `exists(platform)` | Check if adapter is registered |
+| `enable(platform)` / `disable(platform)` | Enable/disable adapter |
+| `is_enabled(platform)` | Check if enabled |
+| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapters |
+| `is_running(platform)` | Check if adapter is running |
+| `list_running()` | List all running adapters |
+| `platforms` | Get list of all platform names |
 
 ### Adapter Events
 
 ```python
-# Listen for standard events
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# Listen for platform-specific events
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
-
-# Listen for platform native events
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
 ```
 
-### Adapter Management
+### Bot Status Query
 
 ```python
-# Get all platforms
-platforms = sdk.adapter.platforms
-
-# Check if adapter exists
-exists = sdk.adapter.exists("platform_name")
-
-# Enable/disable adapter
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# Start/shutdown adapter
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# Check if adapter is running
-is_running = sdk.adapter.is_running("platform_name")
-
-# List all running adapters
-running = sdk.adapter.list_running()
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
 ```
+
+> For complete adapter management API, please refer to [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-### Getting Modules
+Module manager managing plugin registration, loading, and unloading.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `get(name)` | Get module instance |
+| `exists(name)` | Check if registered |
+| `is_loaded(name)` | Check if loaded |
+| `is_enabled(name)` | Check if enabled |
+| `enable(name)` / `disable(name)` | Enable/disable module |
+| `load(name)` / `unload(name)` | Load/unload module |
+| `list_registered()` | List registered modules |
+| `list_loaded()` | List loaded modules |
+| `get_info(name)` | Get module info |
+| `get_status_summary()` | Get module status summary |
+
+### Attribute Access
 
 ```python
-from ErisPulse import sdk
-
-# Get module instance
 module = sdk.module.get("ModuleName")
-
-# Access via property
 module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### Module Management
-
-```python
-# Check if module exists
-exists = sdk.module.exists("ModuleName")
-
-# Check if module is loaded
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# Check if module is enabled
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# Enable/disable module
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# Load module
-await sdk.module.load("ModuleName")
-
-# Unload module
-await sdk.module.unload("ModuleName")
-
-# List loaded modules
-loaded = sdk.module.list_loaded()
-
-# List registered modules
-registered = sdk.module.list_registered()
-
-# Get module info
-info = sdk.module.get_info("ModuleName")
-
-# Get module status summary
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# Check if module is running (equivalent to is_loaded)
-is_running = sdk.module.is_running("ModuleName")
-
-# List all running modules
-running = sdk.module.list_running()
+module = sdk.ModuleName  # Shortcut equivalent
 ```
 
 ## Lifecycle Module
 
-### Event Submission
+Event-driven lifecycle manager providing event submission and listening functions.
+
+### API Overview
+
+| Method | Description |
+|------|------|
+| `on(event, priority=0)` | Decorator registration for event handlers, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Functional registration for handlers |
+| `unregister(event, handler=None)` | Remove handler |
+| `emit(event, data)` | Async trigger event |
+| `emit_sync(event, data)` | Sync trigger event |
+| `submit_event(event_type, msg, data, source)` | Submit standard format event (compatible with old version) |
+| `start_timer(id)` / `stop_timer(id)` | Performance timer |
+
+### Examples
 
 ```python
-from ErisPulse import sdk
-
-# Submit custom event
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="Custom event description"
-)
-```
-
-### Event Listening
-
-```python
-# Listen for specific event
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"Module initialized: {event_data}")
 
-# Listen for parent event
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"Module event: {event_data}")
 
-# Listen for all events
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"System event: {event_data}")
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-### Timers
-
-```python
-# Start timer
-sdk.lifecycle.start_timer("my_operation")
-
-# ... perform operation ...
-
-# Get duration
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# Stop timer
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
+> For complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-### Decorator Routing (Recommended)
+HTTP/WebSocket route manager based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
+
+> For complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+
+### Quick Reference
 
 ```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP route decorator
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
+# HTTP route
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# Shortcut method decorators
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket decorator
-from fastapi import WebSocket
-
+# WebSocket route
 @sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
 
-# Authenticated WebSocket decorator
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### Traditional Registration
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="Data interface",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket Routes
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# Basic registration (auto-accepts connection)
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# Authenticated registration (Recommended: use auth_handler to control connections)
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# Unregister route
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**Parameter Description:**
-
-| Parameter | Description | Default |
-|------|------|--------|
-| `module_name` | Module name (required) | - |
-| `path` | WebSocket path | - |
-| `handler` | Handler function | - |
-| `auth_handler` | Authentication function, returning `False` will automatically close the connection | `None` |
-| `auto_accept` | Whether to automatically `accept()` | `True` |
-
-> **Recommended**: Use `auth_handler` for connection confirmation instead of disabling `auto_accept`. Only set `auto_accept=False` when you need full control over the connection process.
-
-### Route Grouping
-
-```python
-# Create route group
+# Route grouping
 group = sdk.router.group("MyModule", prefix="/v1")
-
-# Register routes within the group
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request: HttpRequest):
     return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# Versioned group
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
 ```
 
-### Route Middleware
+## HTTP Client Module
+
+Unified HTTP/WS client based on aiohttp, providing request statistics, retries, logging, and the ErisPulse exception system.
+
+> For complete HTTP client documentation (request methods, response object, WebSocket client, exception system, etc.), please refer to [HTTP Client](../advanced/http-client.md).
+
+### Quick Reference
 
 ```python
-# Global middleware (glob matching)
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
+from ErisPulse.Core import client
 
-# Specific path middleware
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
-```
+# HTTP request
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
 
-### Rate Limiting
-
-```python
-# Set rate limit for route (sliding window)
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS Configuration
-
-```python
-# Code method
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# Configuration file method (config.toml)
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### Security Headers
-
-```python
-# Automatically add security response headers
-sdk.router.setup_security_headers()
-
-# Configuration file method (config.toml)
-# [router.security]
-# enabled = true
-```
-
-### Auto Documentation
-
-```python
-# Router has OpenAPI documentation enabled by default
-# Disable docs
-sdk.router.disable_docs()
-
-# Customize documentation info
-sdk.router.set_docs_info(
-    title="My API",
-    description="API documentation",
-    version="1.0.0"
-)
-```
-
-### Route Information
-
-```python
-app = sdk.router.get_app()
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
 ## Related Documentation
 
 - [Event System API](event-system.md) - Event Module API
 - [Adapter System API](adapter-system.md) - Adapter Management API
+- [SQL Query Builder](../advanced/sql-builder.md) - SQL Chain Query Complete Documentation
+- [Router Manager](../advanced/router.md) - Router Manager Complete Documentation
+- [HTTP Client](../advanced/http-client.md) - HTTP Client Complete Documentation
+- [Lifecycle Management](../advanced/lifecycle.md) - Lifecycle Complete Documentation

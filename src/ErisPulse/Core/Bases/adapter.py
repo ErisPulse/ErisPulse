@@ -172,7 +172,9 @@ class SendDSL:
             modifier_segments.append({"type": "mention", "data": {"user_id": uid}})
 
         if self._reply_message_id:
-            modifier_segments.append({"type": "reply", "data": {"message_id": self._reply_message_id}})
+            modifier_segments.append(
+                {"type": "reply", "data": {"message_id": self._reply_message_id}}
+            )
 
         return modifier_segments + segments
 
@@ -317,7 +319,12 @@ class RequestDSL:
     {!--< /tips >!--}
     """
 
-    def __init__(self, adapter: "BaseAdapter", request_id: str | None = None, account_id: str | None = None):
+    def __init__(
+        self,
+        adapter: "BaseAdapter",
+        request_id: str | None = None,
+        account_id: str | None = None,
+    ):
         """
         初始化请求操作 DSL
 
@@ -450,8 +457,18 @@ class BaseAdapter(ABC):
     3. 可以自定义Request类实现平台特定的请求操作逻辑
     4. 通过on装饰器注册事件处理器
     5. 支持OneBot12协议的事件处理
+    6. 通过 ConfigClass / AccountConfigClass 声明配置类，框架自动管理配置
+    7. 通过 self.config / self.accounts 访问类型安全的配置对象
+    8. 通过 self.emit_meta() 发送 meta 事件
+    9. 通过 self.make_response() / self.make_error() 构造标准化响应
     {!--< /tips >!--}
     """
+
+    ConfigClass: type | None = None
+    AccountConfigClass: type | None = None
+
+    _platform: str = ""
+    _sdk: Any = None
 
     class Request(RequestDSL):
         """
@@ -467,6 +484,7 @@ class BaseAdapter(ABC):
         5. 通过 ``self._account_id`` 获取 Bot 账号
         {!--< /tips >!--}
         """
+
         pass
 
     class Send(SendDSL):
@@ -567,9 +585,23 @@ class BaseAdapter(ABC):
             except RuntimeError:
                 return asyncio.ensure_future(_send_raw())
 
-    def __init__(self):
+    def __init__(self, sdk=None):
+        super().__init__()
+        self._sdk = sdk
+        if sdk:
+            self.sdk = sdk
+            self.logger = sdk.logger.get_child(self.__class__.__name__, relative=False)
+
         self.Send = self.__class__.Send(self)
         self.Request = self.__class__.Request(self)
+
+        self._config_instance = None
+        self._accounts_data = None
+
+        if self.ConfigClass is not None:
+            self._config_instance = self._load_config()
+        if self.AccountConfigClass is not None:
+            self._accounts_data = self._load_accounts()
 
     @abstractmethod
     async def call_api(self, endpoint: str, **params: Any) -> Any:
@@ -600,6 +632,283 @@ class BaseAdapter(ABC):
         :raises NotImplementedError: 必须由子类实现
         """
         raise NotImplementedError("适配器必须实现shutdown方法")
+
+    @property
+    def config(self):
+        """
+        类型安全的配置对象
+
+        :return: AdapterConfig 实例
+        :raises AttributeError: 未声明 ConfigClass 时抛出
+        """
+        if self._config_instance is None:
+            raise AttributeError(
+                "未声明 ConfigClass，请设置 MyAdapter.ConfigClass = MyConfig"
+            )
+        return self._config_instance
+
+    @config.setter
+    def config(self, value):
+        self._config_instance = value
+
+    @property
+    def accounts(self) -> dict:
+        """
+        类型安全的账户配置字典 {name: config_instance}
+
+        :return: 账户配置字典
+        :raises AttributeError: 未声明 AccountConfigClass 时抛出
+        """
+        if self._accounts_data is None:
+            raise AttributeError(
+                "未声明 AccountConfigClass，请设置 MyAdapter.AccountConfigClass = MyBotConfig"
+            )
+        return self._accounts_data
+
+    @accounts.setter
+    def accounts(self, value):
+        self._accounts_data = value
+
+    @property
+    def enabled_accounts(self) -> dict:
+        """
+        仅返回 enabled=True 的账户
+
+        :return: 启用的账户配置字典
+        """
+        return {k: v for k, v in self.accounts.items() if v.enabled}
+
+    @property
+    def platform(self) -> str:
+        """
+        获取平台名称
+
+        :return: 平台名称字符串
+        """
+        return self._platform
+
+    def _get_config_key(self) -> str:
+        """
+        配置键名（默认用类名，可被子类覆写）
+
+        :return: 配置键名字符串
+        """
+        return self.__class__.__name__
+
+    def _get_logger(self):
+        """获取 logger，兼容 sdk 未注入的场景"""
+        if hasattr(self, "logger"):
+            return self.logger
+        try:
+            from ..logger import logger
+
+            return logger
+        except ImportError:
+            import logging
+
+            return logging.getLogger(self.__class__.__name__)
+
+    def _load_config(self):
+        """
+        从 TOML 加载全局配置
+
+        1. 读取 {ConfigKey} 键
+        2. 如果不存在，用 dataclass 默认值生成模板并写入
+        3. 用 dict_to_dataclass() 转为类型安全的实例
+
+        :return: AdapterConfig 实例
+        """
+        from ...runtime.config_schema import (
+            dict_to_dataclass,
+            dataclass_to_defaults_dict,
+            dataclass_to_toml_with_comments,
+        )
+        from ..config import config as config_mgr
+
+        key = self._get_config_key()
+        data = config_mgr.getConfig(key)
+
+        if data is None:
+            data = dataclass_to_defaults_dict(self.ConfigClass)
+            toml_str = dataclass_to_toml_with_comments(self.ConfigClass)
+            config_mgr.setConfig(key, data, immediate=True)
+            self._get_logger().info(f"已生成 {key} 默认配置模板:\n{toml_str}")
+
+        return dict_to_dataclass(self.ConfigClass, data)
+
+    def _load_accounts(self) -> dict:
+        """
+        从 TOML 加载多账户配置
+
+        1. 读取 {ConfigKey}.accounts 键
+        2. 如果不存在，创建包含一个 default 账户的模板
+        3. 对每个账户做 validate_config() 校验
+        4. 跳过校验失败的账户并记录错误
+
+        :return: 账户配置字典 {name: config_instance}
+        """
+        from ...runtime.config_schema import (
+            dict_to_dataclass,
+            dataclass_to_defaults_dict,
+            validate_config,
+        )
+        from ..config import config as config_mgr
+
+        key = f"{self._get_config_key()}.accounts"
+        data = config_mgr.getConfig(key)
+
+        if data is None:
+            default_account = dataclass_to_defaults_dict(self.AccountConfigClass)
+            data = {"default": default_account}
+            config_mgr.setConfig(key, data, immediate=True)
+            self._get_logger().info(f"已生成 {key} 默认账户配置")
+
+        accounts = {}
+        for name, account_data in data.items():
+            if not isinstance(account_data, dict):
+                continue
+            instance = dict_to_dataclass(self.AccountConfigClass, account_data)
+            errors = validate_config(instance)
+            if errors:
+                self._get_logger().error(
+                    f"账户 {name} 配置校验失败: {', '.join(errors)}"
+                )
+                continue
+            accounts[name] = instance
+
+        return accounts
+
+    def _resolve_account(self, account_id: str | None = None) -> tuple:
+        """
+        解析目标账户
+
+        - account_id 为 None → 返回第一个启用的账户
+        - account_id 匹配账户名 → 返回该账户
+        - account_id 匹配 bot_id 等字段 → 返回该账户
+        - 未找到 → 抛出 ValueError
+
+        匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
+
+        :param account_id: 账户标识（账户名、bot_id 等）
+        :return: (账户名, 账户配置实例) 元组
+        :raises ValueError: 未找到可用账户时抛出
+        """
+        from dataclasses import fields as dc_fields
+
+        if self._accounts_data is None:
+            raise ValueError("未声明 AccountConfigClass，无法解析账户")
+
+        if account_id is not None:
+            if account_id in self._accounts_data:
+                return account_id, self._accounts_data[account_id]
+
+            for name, cfg in self._accounts_data.items():
+                if hasattr(cfg, "bot_id") and cfg.bot_id == account_id:
+                    return name, cfg
+
+            for name, cfg in self._accounts_data.items():
+                for f in dc_fields(cfg):
+                    if f.name in ("enabled", "name"):
+                        continue
+                    val = getattr(cfg, f.name)
+                    if isinstance(val, str) and val == account_id:
+                        return name, cfg
+
+        for name, cfg in self._accounts_data.items():
+            if cfg.enabled:
+                return name, cfg
+
+        raise ValueError(f"未找到可用账户 (account_id={account_id})")
+
+    async def emit_meta(self, detail_type: str, bot_id: str, **extra_info):
+        """
+        发送 meta 事件的便捷方法
+
+        :param detail_type: "connect" | "disconnect" | "heartbeat"
+        :param bot_id: Bot 用户 ID
+        :param extra_info: 扩展字段（user_name, nickname, avatar 等）
+        """
+        if not self._platform:
+            raise RuntimeError("平台名未注入，请确保适配器已注册后再使用 emit_meta")
+
+        from ..adapter import adapter
+
+        await adapter.emit(
+            {
+                "type": "meta",
+                "detail_type": detail_type,
+                "platform": self._platform,
+                "self": {
+                    "platform": self._platform,
+                    "user_id": str(bot_id),
+                    **extra_info,
+                },
+            }
+        )
+
+    def make_response(
+        self,
+        *,
+        status: str = "ok",
+        retcode: int = 0,
+        data=None,
+        message_id: str = "",
+        message: str = "",
+        raw=None,
+    ) -> dict:
+        """
+        构造标准化响应
+
+        :param status: 状态码（"ok" | "failed"）
+        :param retcode: 返回码
+        :param data: 响应数据
+        :param message_id: 消息 ID
+        :param message: 响应消息
+        :param raw: 原始平台响应
+        :return: 标准响应字典
+        """
+        resp = {
+            "status": status,
+            "retcode": retcode,
+            "data": data,
+            "message_id": message_id,
+            "message": message,
+        }
+        if self._platform:
+            resp[f"{self._platform}_raw"] = raw
+        return resp
+
+    def make_error(
+        self,
+        retcode: int = 34000,
+        message: str = "",
+        raw=None,
+    ) -> dict:
+        """
+        构造错误响应
+
+        :param retcode: 错误码
+        :param message: 错误消息
+        :param raw: 原始平台响应
+        :return: 标准错误响应字典
+        """
+        return self.make_response(
+            status="failed",
+            retcode=retcode,
+            message=message,
+            raw=raw,
+        )
+
+    def on_config_update(self, old_config, new_config):
+        """
+        配置变更回调（可选实现）
+
+        子类可覆写此方法以响应配置热更新。
+
+        :param old_config: 变更前的配置实例
+        :param new_config: 变更后的配置实例
+        """
+        pass
 
     async def emit(self, *args, **kwargs):
         raise NotImplementedError(

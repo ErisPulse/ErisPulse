@@ -259,16 +259,34 @@ await adapter.Send.To("user", "123").Text("Hello")
 ### 基本结构
 
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
+from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
+
+@dataclass
+class MyConfig(AdapterConfig):
+    """适配器配置（声明后框架自动管理）"""
+    token: str = field(
+        default="",
+        metadata={
+            "description": "Bot Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 1},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 初始化适配器
-        pass
+    ConfigClass = MyConfig  # 声明配置类
+    
+    # 无需覆写 __init__，框架自动处理：
+    # - self.sdk, self.logger
+    # - self.config（类型安全的配置实例）
+    # - self.Send, self.Request
     
     async def start(self):
         """启动适配器（必须实现）"""
+        cfg = self.config  # 自动加载的类型安全配置
         pass
     
     async def shutdown(self):
@@ -280,24 +298,129 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### 初始化过程
+### 配置管理
+
+框架提供了声明式配置管理，通过 dataclass 定义配置结构，框架自动处理加载、校验和模板生成。
+
+#### 单账户配置
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class TelegramConfig(AdapterConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 1},
+    })
+    proxy: str = field(default="", metadata={
+        "description": "代理地址",
+        "webui": {"widget": "text", "group": "advanced", "order": 10},
+    })
+
+class TelegramAdapter(BaseAdapter):
+    ConfigClass = TelegramConfig
+    
+    async def start(self):
+        cfg = self.config  # 类型安全，自动加载
+        if not cfg.token:
+            raise ValueError("未配置 Token")
+        await self._connect(cfg.token, proxy=cfg.proxy)
+```
+
+#### 多账户配置
+
+```python
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class YunhuBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={
+        "description": "机器人ID",
+        "required": True,
+        "webui": {"widget": "text", "group": "basic", "order": 1},
+    })
+    token: str = field(default="", metadata={
+        "description": "机器人Token",
+        "required": True,
+        "secret": True,
+        "webui": {"widget": "password", "group": "basic", "order": 2},
+    })
+
+class YunhuAdapter(BaseAdapter):
+    AccountConfigClass = YunhuBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            await self._connect(name, account)
+            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+```
+
+#### metadata 约定
+
+字段 metadata 同时服务于 TOML 注释生成和 WebUI 表单渲染：
+
+```python
+metadata = {
+    "description": str,       # 字段描述（TOML注释 + WebUI label）
+    "required": bool,         # 是否必填（校验 + WebUI 必填标记）
+    "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "webui": {
+        "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # 分组: "basic" | "advanced" | "connection" 等
+        "order": int,         # 排序权重（越小越靠前）
+        "options": list,      # select 控件的可选项 [{label, value}]
+        "placeholder": str,   # 输入框占位符
+    }
+}
+```
+
+#### 账户解析
+
+多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
+
+```python
+async def call_api(self, endpoint: str, **params):
+    account_id = params.pop("account_id", None)
+    name, account = self._resolve_account(account_id)
+    # name: 账户名, account: 配置实例
+```
+
+解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
+
+#### 配置热更新
+
+子类可覆写 `on_config_update()` 响应配置变更：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        # 获取 SDK 引用
-        self.sdk = sdk
-        
-        # 获取核心模块
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        # 加载配置
-        self.config = self._get_config()
-        
-        # 设置转换器
+    ConfigClass = MyConfig
+    
+    def on_config_update(self, old_config, new_config):
+        if old_config.token != new_config.token:
+            self.logger.info("Token 已更新，将重新连接")
+```
+
+### 初始化过程
+
+框架在 `BaseAdapter.__init__(self, sdk=None)` 中自动完成以下工作：
+
+1. **SDK 引用**：设置 `self.sdk`、`self.logger`
+2. **Send/Request 工厂**：创建 `self.Send` 和 `self.Request`
+3. **配置加载**：如果声明了 `ConfigClass`，自动加载到 `self.config`
+4. **账户加载**：如果声明了 `AccountConfigClass`，自动加载到 `self.accounts`
+
+大多数适配器无需覆写 `__init__`。如需自定义初始化：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 传入 sdk
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -452,8 +575,6 @@ class MyPlatformConverter:
 ### WebSocket 连接
 
 ```python
-from fastapi import WebSocket
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """注册 WebSocket 路由"""
@@ -464,7 +585,7 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
+    async def _ws_handler(self, websocket):
         """WebSocket 连接处理器"""
         self.connection = websocket
         
@@ -479,7 +600,7 @@ class MyAdapter(BaseAdapter):
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
+    async def _auth_handler(self, websocket) -> bool:
         """WebSocket 认证"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
@@ -488,8 +609,6 @@ class MyAdapter(BaseAdapter):
 ### WebHook 连接
 
 ```python
-from fastapi import Request
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """注册 WebHook 路由"""
@@ -500,7 +619,7 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
+    async def _webhook_handler(self, request):
         """WebHook 请求处理器"""
         data = await request.json()
         onebot_event = self.convert(data)
@@ -509,7 +628,11 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
+> **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
+
 ## API 响应标准
+
+框架提供 `make_response()` 和 `make_error()` 方法构造标准化响应，无需手动构建响应字典。
 
 ### 成功响应
 
@@ -518,50 +641,68 @@ async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok",
-            "retcode": 0,
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        return self.make_response(
+            data=raw_response.get("data"),
+            message_id=raw_response.get("data", {}).get("message_id", ""),
+            raw=raw_response,
+        )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e), raw=None)
 ```
 
-### 失败响应
+### 手动构造响应（旧版方式仍然兼容）
 
 ```python
 async def call_api(self, endpoint: str, **params):
-    # ...
     return {
-        "status": "failed",
-        "retcode": 10003,  # 错误码
-        "data": None,
-        "message_id": "",
-        "message": "缺少必要参数",
-        "myplatform_raw": None
+        "status": "ok",
+        "retcode": 0,
+        "data": {...},
+        "message_id": "msg_id",
+        "message": "",
+        "myplatform_raw": raw_response
     }
 ```
 
 ## 多账户支持
 
-### 账户配置
+### 声明式配置（推荐）
+
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True, "secret": True})
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
+    
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}: {account.bot_id}")
+            await self._connect(name, account)
+    
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # 使用 account.token, account.bot_id 等字段
+```
+
+### 账户配置文件
 
 ```toml
 [MyAdapter.accounts.account1]
+bot_id = "bot_001"
 token = "token1"
 enabled = true
 
 [MyAdapter.accounts.account2]
+bot_id = "bot_002"
 token = "token2"
 enabled = true
 ```
@@ -612,6 +753,7 @@ async def call_api(self, endpoint: str, **params):
     try:
         # 推荐使用 SDK 内置客户端
         from ErisPulse.Core import client
+        from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
             json=params,
@@ -619,16 +761,18 @@ async def call_api(self, endpoint: str, **params):
         )
         response = await resp.json()
         return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        self.logger.error(f"网络错误: {e}")
-        return self._error_response("网络请求失败", 33000)
-    except asyncio.TimeoutError:
+    except ClientTimeoutError:
         self.logger.error(f"请求超时: {endpoint}")
         return self._error_response("请求超时", 32000)
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self._error_response("网络请求失败", 33000)
     except Exception as e:
         self.logger.error(f"未知错误: {e}")
         return self._error_response(str(e), 34000)
 ```
+
+> **向后兼容**：直接使用 `aiohttp.ClientSession` 的旧适配器代码不受影响，仍然可以捕获 `aiohttp.ClientError`。两种方式可以共存。推荐新代码使用 `sdk.client` + ErisPulse 异常体系。
 
 ## Bot 状态管理
 
@@ -662,28 +806,27 @@ await self.adapter.emit({
 
 ### 适配器发送 Meta 事件
 
+使用 `emit_meta()` 一行即可发送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-            }
-        })
+        # 一行发送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
     async def _on_bot_disconnect(self, bot_id: str):
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "disconnect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("disconnect", bot_id)
+```
+
+也支持手动构造（旧版方式仍然兼容）：
+
+```python
+await self.adapter.emit({
+    "type": "meta",
+    "detail_type": "connect",
+    "platform": "myplatform",
+    "self": {"platform": "myplatform", "user_id": bot_id}
+})
 ```
 
 ### `self` 字段扩展信息

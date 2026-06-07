@@ -77,41 +77,49 @@ dependencies = [
 
 ### 3. 创建适配器主类
 
+框架提供了 `ConfigClass` / `AccountConfigClass` 声明式配置管理，适配器只需声明配置类即可自动加载、校验和生成配置模板。
+
 ```python
 # MyAdapter/Core.py
-from ErisPulse import sdk
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import router, logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+
+@dataclass
+class MyAdapterConfig(AdapterConfig):
+    """MyAdapter 配置"""
+    api_endpoint: str = field(
+        default="https://api.example.com",
+        metadata={
+            "description": "API 地址",
+            "required": False,
+            "webui": {"widget": "text", "group": "connection", "order": 1},
+        },
+    )
+    token: str = field(
+        default="",
+        metadata={
+            "description": "平台 Token",
+            "required": True,
+            "secret": True,
+            "webui": {"widget": "password", "group": "basic", "order": 2},
+        },
+    )
 
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()  # ← 必须！创建 Send / Request 工厂实例
-        self.sdk = sdk
-        self.logger = logger.get_child("MyAdapter")
-        self.config_manager = config_manager
-        self.adapter = adapter
-        
-        self.config = self._get_config()
-        self.converter = self._setup_converter()
-        self.convert = self.converter.convert
-        
-        self.logger.info("MyAdapter 初始化完成")
+    ConfigClass = MyAdapterConfig  # 声明配置类，框架自动管理
+    
+    # 不需要覆写 __init__！框架自动处理：
+    # - self.sdk / self.logger 自动设置
+    # - self.config 自动加载配置
+    # - self.Send / self.Request 自动初始化
     
     def _setup_converter(self):
         from .Converter import MyPlatformConverter
         return MyPlatformConverter()
-    
-    def _get_config(self):
-        config = self.config_manager.getConfig("MyAdapter", {})
-        if config is None:
-            default_config = {
-                "api_endpoint": "https://api.example.com",
-                "timeout": 30
-            }
-            self.config_manager.setConfig("MyAdapter", default_config)
-            return default_config
-        return config
 ```
+
+> ⚠️ **关于 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 会自动处理 SDK 引用、日志初始化和配置加载。大多数适配器**不再需要覆写 `__init__`**。详见 [__init__ 注意事项](#init-注意事项)。
 
 > ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` 负责创建 `Send` 和 `Request` 工厂实例。如果忘记调用，所有消息发送和请求操作都会报 `AttributeError`。详见 [__init__ 注意事项](#init-注意事项)。
 
@@ -147,7 +155,7 @@ class MyAdapter(BaseAdapter):
 
 #### 主动发送 Meta 事件
 
-适配器应主动发送 meta 事件，让框架追踪 Bot 的在线状态：
+适配器应主动发送 meta 事件，让框架追踪 Bot 的在线状态。使用 `emit_meta()` 一行即可完成：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -155,12 +163,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Bot 上线
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {"platform": "myplatform", "user_id": bot_id}
-        })
+        await self.emit_meta("connect", bot_id, user_name="MyBot")
 
         try:
             while True:
@@ -172,12 +175,7 @@ class MyAdapter(BaseAdapter):
             pass
         finally:
             # Bot 下线
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {"platform": "myplatform", "user_id": bot_id}
-            })
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 > 详细的 Bot 状态管理和 Meta 事件说明请参阅 [适配器最佳实践 - Bot 状态管理](best-practices.md#bot-状态管理与-meta-事件)。
@@ -363,19 +361,36 @@ from .Core import MyAdapter
 
 适配器开发中有三个层面可能涉及 `__init__` 重写。以下是每个层面的正确做法。
 
-### 1. BaseAdapter 层（必须调用 `super().__init__()`）
+### 1. BaseAdapter 层（大多数情况不需要重写）
 
-`BaseAdapter.__init__()` 负责**创建 `Send` 和 `Request` 工厂实例**。如果适配器有自己的 `__init__`，必须调用父类初始化：
+`BaseAdapter.__init__(self, sdk=None)` 负责创建 `Send` / `Request` 工厂实例，并自动完成以下工作：
+
+- 接受 `sdk` 参数并设置 `self.sdk`、`self.logger`
+- 如果声明了 `ConfigClass`，自动加载全局配置到 `self.config`
+- 如果声明了 `AccountConfigClass`，自动加载多账户配置到 `self.accounts`
+
+**大多数情况下不需要覆写 `__init__`**，只需声明 `ConfigClass` 即可：
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self, sdk):
-        super().__init__()  # ← 必须！否则 Send / Request 不会被初始化
-        self.sdk = sdk
-        # ... 其他初始化
+    ConfigClass = MyAdapterConfig  # 声明后框架自动管理配置
+    
+    async def start(self):
+        cfg = self.config  # 类型安全，自动加载
+        ...
 ```
 
-**忘记调用的后果**：`adapter.Send.To(...)` 和 `adapter.Request(...)` 都会报 `AttributeError`。
+如果确实需要自定义初始化，调用 `super().__init__(sdk)` 即可：
+
+```python
+class MyAdapter(BaseAdapter):
+    ConfigClass = MyAdapterConfig
+    
+    def __init__(self, sdk=None):
+        super().__init__(sdk)  # 传入 sdk
+        self.converter = self._setup_converter()
+        self.convert = self.converter.convert
+```
 
 ### 2. Send 内部类（大多数情况不需要重写）
 
@@ -418,10 +433,128 @@ class MyAdapter(BaseAdapter):
 
 | 层面 | 什么时候重写 | 必须做的事 |
 |------|------------|-----------|
-| **BaseAdapter** | 需要初始化适配器状态时 | `super().__init__()` （无参数） |
+| **BaseAdapter** | 需要自定义初始化逻辑时 | `super().__init__(sdk)` （传入 sdk 参数） |
 | **Send 内部类** | 需要初始化发送相关状态时 | `super().__init__(adapter, target_type, target_id, account_id)` |
 | **Request 内部类** | 需要初始化请求相关状态时 | `super().__init__(adapter, request_id, account_id)` |
-| 三个层面 | 大多数情况 | **只重写方法，不碰 `__init__`** |
+| 三个层面 | 大多数情况 | **声明 ConfigClass 即可，不碰 `__init__`** |
+
+### 9. 连接信息与路由发现
+
+适配器注册路由后，框架会记录所有路由信息。用户可以通过以下 API 查看适配器的连接地址：
+
+```python
+from ErisPulse import sdk
+
+# 获取适配器完整连接信息
+info = sdk.adapter.get_connection_info("myplatform")
+# {
+#   "platform": "myplatform",
+#   "status": "started",
+#   "connection": {
+#     "base_url": "http://localhost:8080",
+#     "http_routes": [
+#       {"path": "/myplatform/webhook", "method": "POST",
+#        "url": "http://localhost:8080/myplatform/webhook"}
+#     ],
+#     "websocket_routes": [
+#       {"path": "/myplatform/ws",
+#        "url": "ws://localhost:8080/myplatform/ws"}
+#     ]
+#   }
+# }
+
+# 列出所有命名空间（适配器/模块）的路由
+namespaces = sdk.router.list_namespaces()
+# {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
+
+# 获取命名空间的完整连接 URL
+urls = sdk.router.get_module_urls("myplatform")
+# {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
+
+# 获取命名空间的详细路由信息
+routes = sdk.router.get_module_routes("myplatform")
+# {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
+#  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
+```
+
+> **提示**：`get_connection_info()` 返回的信息适合展示给用户（如 WebUI），帮助用户配置平台侧的回调地址或 WebSocket 连接地址。路由注册时的 `module_name` 必须与适配器在 ErisPulse 中注册的 `platform` 名称完全一致，否则路由发现将无法正确关联。
+
+### 10. SSE (Server-Sent Events) 支持
+
+ErisPulse 内置了服务器无关的 SSE 支持，模块和适配器可以通过 `@sdk.router.sse()` 注册 SSE 端点。
+
+#### 基本使用
+
+```python
+import asyncio
+from ErisPulse import sdk
+
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(sse):
+    """推送 SSE 事件"""
+    count = 0
+    while not sse.closed:
+        await sse.send({"count": count}, event="update")
+        count += 1
+        await asyncio.sleep(1)
+```
+
+#### 使用请求参数
+
+处理器可以声明 `request` 参数来访问客户端请求信息：
+
+```python
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(request, sse):
+    token = request.query_params.get("token")
+    if not validate_token(token):
+        await sse.close()
+        return
+
+    while not sse.closed:
+        data = await fetch_data(token)
+        await sse.send(data)
+        await asyncio.sleep(5)
+```
+
+#### SseEmitter API
+
+| 方法 | 说明 |
+|------|------|
+| `sse.send(data, event=None, id=None, retry=None)` | 发送 SSE 事件。非 str 的 data 自动 JSON 序列化 |
+| `sse.close()` | 优雅关闭 SSE 连接（安全调用，可多次） |
+| `sse.closed` | 连接是否已关闭 |
+| `sse.request` | 底层请求对象（可用于读取 query params、headers） |
+
+#### 在 RouteGroup 中使用
+
+```python
+api = sdk.router.group("MyModule", "/api", version="1")
+
+@api.sse("/events")
+async def events(sse):
+    await sse.send({"msg": "hello"})
+```
+
+#### 路由发现
+
+SSE 路由会自动出现在路由发现 API 中：
+
+```python
+# list_namespaces 会包含 "sse" 键
+sdk.router.list_namespaces()
+# {"MyModule": {"http": [...], "websocket": [...], "sse": ["/MyModule/events"]}}
+
+# get_module_routes 会标记 streaming: true
+sdk.router.get_module_routes("MyModule")
+# {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
+
+# get_module_urls 会生成完整 URL
+sdk.router.get_module_urls("MyModule")
+# {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
+```
+
+> **服务器无关设计**：`SseEmitter` 通过回调与底层 HTTP 框架解耦。框架提供了 `register_sse()` 和 `@sse` 装饰器作为统一的注册入口，适配器无需直接依赖任何底层 HTTP 框架即可实现 SSE 端点。
 
 ## 下一步
 

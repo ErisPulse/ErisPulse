@@ -42,6 +42,22 @@ class PackageManager:
 
     CACHE_EXPIRY = 3600  # 1小时缓存
 
+    @staticmethod
+    def _sanitize_proxy_url(url: str) -> str:
+        """脱敏代理 URL 中的凭证信息"""
+        from urllib.parse import urlparse, urlunparse
+
+        try:
+            parsed = urlparse(url)
+            if parsed.password:
+                netloc = f"{parsed.username}:***@{parsed.hostname}"
+                if parsed.port:
+                    netloc += f":{parsed.port}"
+                return urlunparse(parsed._replace(netloc=netloc))
+        except Exception:
+            pass
+        return url
+
     def __init__(self):
         self._cache = {}
         self._cache_time = {}
@@ -148,35 +164,31 @@ class PackageManager:
     def _http_get(self, url: str, timeout: int = 15) -> Optional[str]:
         proxy = self._get_proxy_for_url(url)
 
-        for verify_ssl in (True, False):
-            handlers = []
-            if proxy:
-                handlers.append(
-                    urllib.request.ProxyHandler(
-                        {
-                            "http": proxy,
-                            "https": proxy,
-                        }
-                    )
+        handlers = []
+        if proxy:
+            handlers.append(
+                urllib.request.ProxyHandler(
+                    {
+                        "http": proxy,
+                        "https": proxy,
+                    }
                 )
-            if not verify_ssl:
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
-                handlers.append(urllib.request.HTTPSHandler(context=ctx))
+            )
 
-            opener = urllib.request.build_opener(*handlers)
-            try:
-                req = urllib.request.Request(
-                    url, headers={"User-Agent": "ErisPulse/CLI"}
+        opener = urllib.request.build_opener(*handlers)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "ErisPulse/CLI"})
+            resp = opener.open(req, timeout=timeout)
+            return resp.read().decode("utf-8")
+        except ssl.SSLError as e:
+            console.print(f"[error]SSL 验证失败: {e}[/]")
+            if proxy:
+                console.print(
+                    "[dim]  检测到代理，请确保代理配置正确或尝试设置 HTTPS_PROXY 环境变量[/]"
                 )
-                resp = opener.open(req, timeout=timeout)
-                return resp.read().decode("utf-8")
-            except Exception:
-                if verify_ssl and proxy:
-                    continue
-                return None
-        return None
+            return None
+        except Exception:
+            return None
 
     def _fetch_remote_packages_sync(self, url: str) -> Optional[dict]:
         text = self._http_get(url)
@@ -215,7 +227,8 @@ class PackageManager:
             console.print("[warning]无法获取远程包列表，请检查网络连接或代理设置[/]")
             proxy = self._get_system_proxy()
             if proxy:
-                console.print(f"[dim]  检测到代理: {proxy}[/]")
+                safe_proxy = {k: self._sanitize_proxy_url(v) for k, v in proxy.items()}
+                console.print(f"[dim]  检测到代理: {safe_proxy}[/]")
             else:
                 console.print(
                     "[dim]  未检测到系统代理，如需使用代理请设置 HTTPS_PROXY 环境变量[/]"
@@ -375,9 +388,10 @@ class PackageManager:
         proxies = self._get_system_proxy()
         proxy_hint = ""
         if proxies:
-            proxy_hint = (
-                f" [dim](proxy: {proxies.get('https', proxies.get('http', ''))})[/]"
+            safe_proxy = self._sanitize_proxy_url(
+                proxies.get("https", proxies.get("http", ""))
             )
+            proxy_hint = f" [dim](proxy: {safe_proxy})[/]"
 
         console.print(f"\n[bold blue]⚙ {description}[/]{proxy_hint}")
         console.print("[dim]─────────────────────────────────────────────────[/]")

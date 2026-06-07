@@ -4,131 +4,50 @@ This directory contains the API reference documentation for the ErisPulse framew
 
 ## Documentation List
 
-- [Core Modules API](core-modules.md) - Core module APIs such as storage, configuration, logging, etc.
-- [Event System API](event-system.md) - Event Module API reference
-- [Adapter System API](adapter-system.md) - Adapter Manager API reference
-- [ErisPulse Auto-generated API](auto_api/README.md) - Auto-generated API reference
+| Document | Description |
+|------|------|
+| [Core Modules API](core-modules.md) | Quick reference for Storage, Config, Logger, Adapter, Module, Lifecycle, Router, and HTTP Client APIs |
+| [Event System API](event-system.md) | API reference for Command, Message, Notice, Request, and Meta event modules |
+| [Adapter System API](adapter-system.md) | API reference for Adapter Manager, SendDSL, Middleware, and Bot State Management |
+| [Auto-generated API](auto_api/README.md) | Complete API documentation automatically generated from source code docstrings |
 
-## API Overview
+> Manually written API documentation focuses on usage examples and quick lookup; auto-generated API documentation includes complete class/method signatures. They complement each other.
+
+## Module Overview
 
 ### Core Modules
 
-The ErisPulse SDK provides the following core modules:
-
 | Module | Path | Description |
 |------|------|------|
-| `sdk.storage` | `sdk.storage` | Storage System |
-| `sdk.config` | `sdk.config` | Configuration Management |
-| `sdk.logger` | `sdk.logger` | Logging System |
-| `sdk.adapter` | `sdk.adapter` | Adapter Management |
-| `sdk.module` | `sdk.module` | Module Management |
-| `sdk.lifecycle` | `sdk.lifecycle` | Lifecycle Management |
-| `sdk.router` | `sdk.router` | Router Management |
+| `sdk.storage` | `sdk.storage` | SQLite-based Key-Value Storage + SQL Chained Query |
+| `sdk.config` | `sdk.config` | TOML format Configuration Management |
+| `sdk.logger` | `sdk.logger` | Modular Logging System with support for sub-loggers |
+| `sdk.adapter` | `sdk.adapter` | Multi-platform Adapter Management |
+| `sdk.module` | `sdk.module` | Module Registration, Loading, and Unloading Management |
+| `sdk.lifecycle` | `sdk.lifecycle` | Lifecycle Event Management |
+| `sdk.router` | `sdk.router` | HTTP/WebSocket Routing Management |
+| `sdk.client` | `sdk.client` | Unified HTTP/WS Client |
 
 ### Event System
 
-The Event module provides the following sub-modules:
-
-| Module | Path | Description |
+| Module | Import Path | Description |
 |------|------|------|
-| `command` | `ErisPulse.Core.Event.command` | Command Handling |
-| `message` | `ErisPulse.Core.Event.message` | Message Events |
-| `notice` | `ErisPulse.Core.Event.notice` | Notice Events |
-| `request` | `ErisPulse.Core.Event.request` | Request Events |
-| `meta` | `ErisPulse.Core.Event.meta` | Meta Events |
+| `command` | `ErisPulse.Core.Event.command` | Command Handling (Prefix parsing, Aliases) |
+| `message` | `ErisPulse.Core.Event.message` | Message Events (Private, Group, @ mention) |
+| `notice` | `ErisPulse.Core.Event.notice` | Notice Events (Friend, Group member changes) |
+| `request` | `ErisPulse.Core.Event.request` | Request Events (Friend request, Group invite) |
+| `meta` | `ErisPulse.Core.Event.meta` | Meta Events (Connect, Disconnect, Heartbeat) |
 
 ### Base Classes
 
-ErisPulse provides the following base classes:
-
-| Base Class | Path | Description |
+| Base Class | Import Path | Description |
 |------|------|------|
-| `BaseModule` | `ErisPulse.Core.Bases.BaseModule` | Module Base Class |
-| `BaseAdapter` | `ErisPulse.Core.Bases.BaseAdapter` | Adapter Base Class |
-
-## Usage Examples
-
-### Accessing Core Modules
-
-```python
-from ErisPulse import sdk
-
-# Storage System
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key")
-
-# Configuration Management
-config = sdk.config.getConfig("MyModule")
-
-# Logging System
-sdk.logger.info("Log info")
-
-# Adapter Management
-adapter = sdk.adapter.get("platform")
-await adapter.Send.To("user", "123").Text("Hello")
-
-# Module Management
-module = sdk.module.get("ModuleName")
-
-# Lifecycle Management
-await sdk.lifecycle.submit_event("custom.event", msg="Custom Event")
-
-# Router Management
-sdk.router.register_http_route("MyModule", "/api", handler, ["GET"])
-```
-
-### Using the Event System
-
-```python
-from ErisPulse.Core.Event import command, message, notice, request, meta
-
-# Command Handling
-@command("hello", help="Greeting command")
-async def hello_handler(event):
-    await event.reply("Hello!")
-
-# Message Handling
-@message.on_group_message()
-async def group_handler(event):
-    sdk.logger.info(f"Received group message: {event.get_text()}")
-
-# Notice Handling
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("Welcome to add me as a friend!")
-
-# Request Handling
-@request.on_friend_request()
-async def friend_request_handler(event):
-    pass
-
-# Meta Event Handling
-@meta.on_connect()
-async def connect_handler(event):
-    sdk.logger.info("Platform connected successfully")
-```
-
-### Inheriting Base Classes
-
-```python
-from ErisPulse.Core.Bases import BaseModule
-
-class MyModule(BaseModule):
-    def __init__(self):
-        super().__init__()
-        self.sdk = sdk
-    
-    async def on_load(self, event):
-        """Module loading"""
-        pass
-    
-    async def on_unload(self, event):
-        """Module unloading"""
-        pass
-```
+| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | Module Base Class (on_load/on_unload) |
+| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | Adapter Base Class (start/shutdown/call_api) |
 
 ## Related Documentation
 
 - [Core Concepts](../getting-started/basic-concepts.md) - Understand framework core concepts
 - [Module Development Guide](../developer-guide/modules/) - Develop custom modules
 - [Adapter Development Guide](../developer-guide/adapters/) - Develop platform adapters
+- [Advanced Topics](../advanced/) - Deep dive into Routing, HTTP Client, SQL Builder, etc.

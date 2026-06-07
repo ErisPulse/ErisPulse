@@ -111,14 +111,14 @@ jobs:
       - name: 生成 AI 物料文档
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         run: |
-          echo "艾莉丝开始生成 AI 物料文档~"
+          # 动态为所有语言创建输出目录
+          for lang_dir in docs/*/; do
+            lang=$(basename "$lang_dir")
+            if [ "$lang" != "_meta" ]; then
+              mkdir -p "docs/$lang/ai-support/prompts"
+            fi
+          done
           
-          # 确保输出目录存在
-          mkdir -p docs/zh-CN/ai-support/prompts
-          mkdir -p docs/zh-TW/ai-support/prompts
-          mkdir -p docs/en/ai-support/prompts
-          
-          # 运行 AI prompt 生成脚本
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
             echo "AI 物料文档生成完成"
@@ -131,38 +131,32 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "艾莉丝正在准备 AI 物料文档上传~"
-          
-          # 读取当前版本
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
           
-          # 重命名文件为带语言标识的名称
-          echo "重命名文件为带语言标识的名称..."
-          
-          # 创建临时目录存储重命名的文件
           mkdir -p temp_release_assets
           
-          # 中文简体文件
-          cp "docs/zh-CN/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/ErisPulse-ModuleDev-zh-CN.md"
-          cp "docs/zh-CN/ai-support/prompts/ErisPulse-AdapterDev.md" "temp_release_assets/ErisPulse-AdapterDev-zh-CN.md"
-          cp "docs/zh-CN/ai-support/prompts/ErisPulse-Full.md" "temp_release_assets/ErisPulse-Full-zh-CN.md"
+          # 动态扫描所有语言目录
+          PROMPT_FILES="ErisPulse-ModuleDev.md ErisPulse-AdapterDev.md ErisPulse-Full.md"
+          for lang_dir in docs/*/; do
+            lang=$(basename "$lang_dir")
+            [ "$lang" = "_meta" ] && continue
+            prompts_dir="docs/$lang/ai-support/prompts"
+            [ -d "$prompts_dir" ] || continue
+            for prompt_file in $PROMPT_FILES; do
+              if [ -f "$prompts_dir/$prompt_file" ]; then
+                base="${prompt_file%.md}"
+                cp "$prompts_dir/$prompt_file" "temp_release_assets/${base}-${lang}.md"
+              fi
+            done
+          done
           
-          # 中文繁体文件
-          cp "docs/zh-TW/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/ErisPulse-ModuleDev-zh-TW.md"
-          cp "docs/zh-TW/ai-support/prompts/ErisPulse-AdapterDev.md" "temp_release_assets/ErisPulse-AdapterDev-zh-TW.md"
-          cp "docs/zh-TW/ai-support/prompts/ErisPulse-Full.md" "temp_release_assets/ErisPulse-Full-zh-TW.md"
-          
-          # 英文文件
-          cp "docs/en/ai-support/prompts/ErisPulse-ModuleDev.md" "temp_release_assets/ErisPulse-ModuleDev-en.md"
-          cp "docs/en/ai-support/prompts/ErisPulse-AdapterDev.md" "temp_release_assets/ErisPulse-AdapterDev-en.md"
-          cp "docs/en/ai-support/prompts/ErisPulse-Full.md" "temp_release_assets/ErisPulse-Full-en.md"
-          
-          # 验证重命名后的文件
-          echo "检查重命名后的文件..."
+          echo "检查文件..."
           ls -la temp_release_assets/
           
-          # 上传所有文件
-          gh release upload "$tag_name" temp_release_assets/* --clobber
-          
-          echo "AI 物料文档上传完成"
+          if [ -n "$(ls -A temp_release_assets)" ]; then
+            gh release upload "$tag_name" temp_release_assets/* --clobber
+            echo "上传完成"
+          else
+            echo "没有找到 AI 物料文件"
+          fi

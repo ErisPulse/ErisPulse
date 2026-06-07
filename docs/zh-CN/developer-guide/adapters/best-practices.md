@@ -16,24 +16,15 @@
 
 ### 2. 发送 Meta 事件
 
+框架提供 `emit_meta()` 方法，一行即可发送 meta 事件：
+
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot 上线：发送 connect 事件
-        await self.adapter.emit({
-            "type": "meta",
-            "detail_type": "connect",
-            "platform": "myplatform",
-            "self": {
-                "platform": "myplatform",
-                "user_id": bot_id,
-                "user_name": "MyBot",
-                "nickname": "我的机器人",
-                "avatar": "https://example.com/avatar.png",
-            }
-        })
+        # Bot 上线：一行发送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
         try:
             while True:
@@ -44,16 +35,8 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot 下线：发送 disconnect 事件
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "disconnect",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # Bot 下线
+            await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. 心跳事件
@@ -64,15 +47,8 @@ class MyAdapter(BaseAdapter):
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            await self.adapter.emit({
-                "type": "meta",
-                "detail_type": "heartbeat",
-                "platform": "myplatform",
-                "self": {
-                    "platform": "myplatform",
-                    "user_id": bot_id,
-                }
-            })
+            # 向框架发送 meta heartbeat（一行完成）
+            await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
 
@@ -161,8 +137,7 @@ class MyAdapter(BaseAdapter):
 
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
+    async def start(self):
         self.connection = None
         self._connected = False
     
@@ -198,22 +173,51 @@ class MyAdapter(BaseAdapter):
                 # 1. 向平台发送心跳保活
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. 向框架发送 meta heartbeat 事件（更新 Bot 活跃时间）
-                await self.adapter.emit({
-                    "type": "meta",
-                    "detail_type": "heartbeat",
-                    "platform": "myplatform",
-                    "self": {
-                        "platform": "myplatform",
-                        "user_id": self._bot_id,
-                    }
-                })
+                # 2. 向框架发送 meta heartbeat（使用 emit_meta 一行完成）
+                await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
             except Exception as e:
                 self.logger.error(f"心跳失败: {e}")
                 break
 ```
+
+### 4. 连接信息暴露
+
+适配器注册的路由应对用户可见，便于用户配置平台侧的回调地址。推荐在 `start()` 中主动输出连接信息：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket 地址: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+用户可以通过以下 API 查看适配器的所有路由和连接地址：
+
+```python
+from ErisPulse import sdk
+
+# 适配器级别的连接信息（推荐）
+info = sdk.adapter.get_connection_info("myplatform")
+
+# 路由管理器级别的查询
+sdk.router.list_namespaces()              # 列出所有命名空间
+sdk.router.get_module_routes("myplatform")  # 详细路由信息
+sdk.router.get_module_urls("myplatform")    # 完整连接 URL
+```
+
+> **注意**：路由注册时的 `module_name` 必须与适配器在 ErisPulse 中注册的 `platform` 名称完全一致，否则 `get_connection_info()` 将无法关联路由。多账户适配器应为每个账户注册子路径（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
 
 ## 事件转换
 
@@ -336,29 +340,30 @@ class Send(BaseAdapter.Send):
 
 ### 1. 标准化响应格式
 
+框架提供 `make_response()` 和 `make_error()` 方法构造标准化响应：
+
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
         raw_response = await self._platform_api_call(endpoint, **params)
         
-        return {
-            "status": "ok" if raw_response.get("success") else "failed",
-            "retcode": 0 if raw_response.get("success") else raw_response.get("code", 10001),
-            "data": raw_response.get("data"),
-            "message_id": raw_response.get("data", {}).get("message_id", ""),
-            "message": "",
-            "myplatform_raw": raw_response
-        }
+        if raw_response.get("success"):
+            return self.make_response(
+                data=raw_response.get("data"),
+                message_id=raw_response.get("data", {}).get("message_id", ""),
+                raw=raw_response,
+            )
+        else:
+            return self.make_error(
+                retcode=raw_response.get("code", 10001),
+                message=raw_response.get("message", ""),
+                raw=raw_response,
+            )
     except Exception as e:
-        return {
-            "status": "failed",
-            "retcode": 34000,
-            "data": None,
-            "message_id": "",
-            "message": str(e),
-            "myplatform_raw": None
-        }
+        return self.make_error(message=str(e))
 ```
+
+`make_response()` 会自动生成包含 `{platform}_raw` 键的响应字典。`make_error()` 默认使用 `retcode=34000`（Platform Error）。
 
 ### 2. 错误码规范
 
@@ -384,54 +389,71 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多账户支持
 
-### 1. 账户配置验证
+### 1. 声明式配置（推荐）
+
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
 
 ```python
-def _get_config(self):
-    """验证配置"""
-    config = self.config_manager.getConfig("MyAdapter", {})
-    accounts = config.get("accounts", {})
+from dataclasses import dataclass, field
+from ErisPulse.runtime.config_schema import BotAccountConfig
+
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={
+        "description": "Bot Token",
+        "required": True,
+        "secret": True,
+    })
+
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
-    if not accounts:
-        # 创建默认账户
-        default_account = {
-            "token": "",
-            "enabled": False
-        }
-        config["accounts"] = {"default": default_account}
-        self.config_manager.setConfig("MyAdapter", config)
+    async def start(self):
+        for name, account in self.enabled_accounts.items():
+            self.logger.info(f"启动账户 {name}")
+            await self._connect(name, account.token)
     
-    return config
+    async def call_api(self, endpoint: str, **params):
+        account_id = params.pop("account_id", None)
+        name, account = self._resolve_account(account_id)
+        # name: 账户名, account: MyBotConfig 实例
+```
+
+配置文件自动生成为：
+
+```toml
+[MyAdapter.accounts.default]
+token = ""
+enabled = true
+name = ""
 ```
 
 ### 2. 账户选择机制
 
+框架内置 `_resolve_account()` 方法，支持多种匹配策略：
+
 ```python
-async def _get_account_for_message(self, event):
-    """根据事件选择发送账户"""
-    bot_id = event.get("self", {}).get("user_id")
-    
-    # 查找匹配的账户
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("bot_id") == bot_id:
-            return account_name
-    
-    # 如果没有找到，使用第一个启用的账户
-    for account_name, account_config in self.accounts.items():
-        if account_config.get("enabled", True):
-            return account_name
-    
-    return None
+# 按账户名匹配
+name, account = self._resolve_account("account1")
+
+# 按 bot_id 字段匹配（如果配置中有 bot_id 字段）
+name, account = self._resolve_account("bot_123")
+
+# 获取第一个启用的账户（传入 None）
+name, account = self._resolve_account(None)
 ```
 
 ## 错误处理
 
 ### 1. 分类异常处理
 
+使用 `make_error()` 构造标准化错误响应。通过 `sdk.client` 请求时捕获 ErisPulse 异常：
+
 ```python
+from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
+
 async def call_api(self, endpoint: str, **params):
     try:
-        # 推荐使用 SDK 内置客户端发送 API 请求
         from ErisPulse.Core import client
         resp = await client.post(
             f"https://api.platform.com/{endpoint}",
@@ -439,32 +461,30 @@ async def call_api(self, endpoint: str, **params):
             max_retries=2,
         )
         response = await resp.json()
-        return self._standardize_response(response)
-    except aiohttp.ClientError as e:
-        # 网络错误（使用 client 时内置重试机制会先处理）
-        self.logger.error(f"网络错误: {e}")
-        return self._error_response("网络请求失败", 33000)
-    except asyncio.TimeoutError:
-        # 超时错误
+        return self.make_response(data=response, raw=response)
+    except ClientTimeoutError:
         self.logger.error(f"请求超时: {endpoint}")
-        return self._error_response("请求超时", 32000)
+        return self.make_error(retcode=32000, message="请求超时")
+    except ClientError as e:
+        self.logger.error(f"网络错误: {e}")
+        return self.make_error(retcode=33000, message="网络请求失败")
     except json.JSONDecodeError:
-        # JSON 解析错误
         self.logger.error("JSON 解析失败")
-        return self._error_response("响应格式错误", 10006)
+        return self.make_error(retcode=10006, message="响应格式错误")
     except Exception as e:
-        # 未知错误
         self.logger.error(f"未知错误: {e}", exc_info=True)
-        return self._error_response(str(e), 34000)
+        return self.make_error(message=str(e))
 ```
+
+> **向后兼容**：直接使用 `aiohttp` 的旧适配器代码不受影响，仍可捕获 `aiohttp.ClientError`。异常转换仅在通过 `sdk.client` 发起请求时生效。
 
 ### 2. 日志记录
 
+框架自动为适配器创建子 logger（`sdk.logger.get_child("MyAdapter")`），无需手动初始化：
+
 ```python
 class MyAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__()
-        self.logger = logger.get_child("MyAdapter")
+    # ConfigClass = ...  # 声明配置类后 self.logger 自动可用
     
     async def start(self):
         self.logger.info("适配器启动中...")

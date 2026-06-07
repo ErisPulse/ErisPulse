@@ -63,6 +63,104 @@
 
 ---
 
+## [2.4.6-dev.6] - 2026/06/07
+> 开发版本
+
+### 新增
+- @wsu2059q
+  - `Core/Bases/websocket.py` 新增 `WebSocketConnectionBase` 共享基类和 `WSMessage` 消息类型：
+    - 客户端和服务端 WebSocket 共享 send/receive/iter/close 接口
+    - `WSMessage` 统一消息抽象（TEXT / BINARY / CLOSE / ERROR）
+    - iter_text/iter_bytes/iter_json 自动在断开时停止迭代
+    - on_disconnect/on_error 生命周期回调
+  - `Core/Bases/errors.py` 新增 ErisPulse 异常体系：
+    - `ErisPulseError` → `ClientError`（`ClientConnectionError` / `ClientTimeoutError` / `HTTPStatusError`）→ `WebSocketError` → `WebSocketDisconnect`
+    - 通过 `sdk.client` 发起的请求自动将 aiohttp 异常转换为 ErisPulse 异常
+  - `Core/Bases/client.py` 新增 `BaseClientWebSocket` 抽象基类
+  - `Core/client.py` 新增 WebSocket 客户端：
+    - `ClientWebSocket`：基于 aiohttp 的 WS 客户端连接封装
+    - `HttpClient.ws_connect()`：建立 WebSocket 连接，支持 heartbeat 参数
+    - 触发 `client.ws.connect` 生命周期事件
+  - `runtime/config_schema.py` 新增 dataclass 配置 Schema 系统：
+    - `AdapterConfig` / `BotAccountConfig` 配置基类
+    - `dataclass_to_toml_with_comments()` 生成带注释的 TOML 模板
+    - `dict_to_dataclass()` / `validate_config()` / `get_config_schema()` 工具函数
+  - `Core/Bases/adapter.py` BaseAdapter 新增声明式配置管理：
+    - `ConfigClass` / `AccountConfigClass` 类属性声明配置类
+    - `self.config` / `self.accounts` / `self.enabled_accounts` 属性自动加载
+    - `emit_meta()` 便捷方法一行发送 meta 事件
+    - `make_response()` / `make_error()` 构造标准化响应
+    - `_resolve_account()` 自动解析多账户
+    - `on_config_update()` 配置热更新回调
+  - `Core/constants.py` 新增 WS 客户端默认常量
+  - `Core/router.py` 新增路由发现与 SSE 支持：
+    - `get_module_routes(module_name)` 获取命名空间详细路由信息（HTTP 方法、WS 认证、SSE 流式标记）
+    - `get_module_urls(module_name)` 获取命名空间完整连接 URL（自动转换 ws:// / wss://）
+    - `get_module_urls_matching(prefix)` 按前缀聚合多命名空间路由（兼容多账户适配器）
+    - `list_namespaces()` 返回值新增 `"sse"` 键
+    - `register_sse()` / `@sse` 装饰器 / `RouteGroup.sse()` 注册 SSE 端点
+    - `unregister_sse()` 取消注册 SSE 路由
+    - `unregister_all_by_namespace()` 清理统计新增 `"sse_count"`
+  - `Core/Bases/router.py` 新增 `SseEmitter` 服务器无关 SSE 协议实现：
+    - `send(data, event, id, retry)` 自动格式化 SSE 协议（非 str 数据自动 JSON 序列化）
+    - `close()` / `closed` 优雅连接管理
+    - `request` 属性访问底层 HTTP 请求
+    - 通过 `on_send` / `on_close` 回调与服务器层解耦
+  - `Core/adapter.py` 新增 `get_connection_info(platform)` 适配器连接信息查询：
+    - 聚合 base_url、HTTP/WS/SSE 路由的完整 URL
+    - 精确匹配优先，无结果时自动按前缀聚合
+
+### 变更
+- @wsu2059q
+  - `WebSocketConnection` 改为继承 `WebSocketConnectionBase`，通用接口移至基类
+  - `WebSocketDisconnect` 从 `Bases/router.py` 移至 `Bases/errors.py`（旧导入路径兼容）
+  - `HttpClient` / `HttpResponse` / `ClientWebSocket` 继承对应抽象基类
+  - `HttpResponse.text()` / `json()` 改为基于 `read()` 缓存实现，不再依赖 aiohttp 原生方法
+  - `BaseAdapter.__init__(self, sdk=None)` 接受 sdk 参数，自动初始化 logger / config / accounts
+  - 适配器注册时自动注入 `instance._platform`
+  - 生命周期事件 `client.request` 更名为 `client.request.success`
+  - HTTP 请求异常分类处理：`ClientConnectionError` 重建 session 重试，`TimeoutError` 独立重试
+  - `WebSocket` 路由存储元组从 `(handler, auth_handler)` 扩展为 `(handler, auth_handler, auto_accept)`，确保服务重启后 `auto_accept` 标志不丢失
+  - `loaders/strategy.py` `ModuleLoadStrategy.__getattr__` 不存在的属性现在抛出 `AttributeError` 而非静默返回 `None`
+  - `config/config.toml` 清除所有硬编码凭证，替换为占位符值
+  - `.gitignore` 新增 `config/config.toml`、`config/config.db` 等敏感配置文件排除规则
+
+### 安全
+- @wsu2059q
+  - `Core/storage.py` 新增 SQL 标识符（表名/列名/列类型）白名单校验，防止 SQL 注入：
+    - 新增 `_validate_identifier()` 函数，仅允许 `^[a-zA-Z_][a-zA-Z0-9_]*$` 格式
+    - 新增 `_validate_column_type()` 函数，拒绝包含分号、注释符等危险字符的类型定义
+    - 所有 `Table()`、`CreateTable()`、`DropTable()`、`AlterTable()`、`Select()`、`Insert()`、`Update()`、`OrderBy()` 入口添加校验
+  - `CLI/utils/package_manager.py` 移除 SSL 证书验证静默降级逻辑，检测到代理时不再以 `ssl.CERT_NONE` 重试
+  - `CLI/utils/package_manager.py` 新增 `_sanitize_proxy_url()` 方法，脱敏代理 URL 中的用户名/密码，防止凭证泄露到控制台
+  - `loaders/module.py` 新增 SDK 属性名安全校验：
+    - 新增 `_RESERVED_SDK_ATTRS` 保留属性集合，禁止模块覆盖 `logger`、`config`、`__class__` 等关键属性
+    - 新增 `_validate_sdk_attr_name()` 函数，拒绝 `_` 前缀、不符合标识符规范、与保留属性冲突的模块名称
+    - `initialize_modules()` 在 `setattr(sdk_instance, ...)` 之前强制校验
+  - `Core/Bases/storage.py` 修复 `BaseStorage.__setattr__` 静默吞没后端写入失败的问题：移除 `except` fallback，让异常正常传播
+
+### 修复
+- @wsu2059q
+  - 修复 `BaseStorage.get_multi()` / `__getattr__()` 将存储值 `None` 与键不存在混淆的问题：引入 `_SENTINEL` 哨兵值区分
+  - 修复 `loaders/adapter.py` 异常处理捕获 `BaseException` 导致 `KeyboardInterrupt`（Ctrl+C）被静默吞没的问题
+  - 修复 `loaders/module.py` `LazyModule._init_failed` 属性未在 `__init__` 中初始化，导致 `hasattr` 检查脆弱的问题
+  - 修复 `Core/client.py` `_convert_aiohttp_exception` 中重复 `return` 死代码
+  - 修复 `CLI/commands/install.py` 适配器交互安装表格定义 5 列但 `row_builder` 只提供 4 值导致 Rich 报错或显示错乱的问题
+  - 修复 `Core/router.py` `_restore_routes_from_records` 中 `auto_accept` 硬编码为 `False`，导致服务重启后所有 WebSocket 路由 `auto_accept` 丢失、连接挂起的问题
+  - 修复 `Core/Bases/router.py` `SseEmitter.send()` 数据分割不处理 `\r\n`（Windows 换行符），可能导致部分 SSE 客户端解析异常的问题
+  - 修复 `CLI/commands/create.py` LICENSE 模板硬编码年份 `"2026"`，导致后续年份生成错误版权日期的问题
+
+### 文档
+- @wsu2059q
+  - HTTP 客户端文档 → HTTP/WS 客户端文档，新增 WebSocket 客户端和异常体系章节
+  - 适配器开发文档更新为声明式配置风格（ConfigClass / emit_meta / make_response）
+  - 示例适配器 `MyAdapter` 全面重构，展示新 API 用法
+  - 适配器开发文档新增「连接信息与路由发现」和「SSE 支持」章节
+  - `core-concepts.md` WebSocket/WebHook 示例移除 FastAPI 类型注解依赖
+  - `best-practices.md` 新增连接信息暴露和 `module_name` 一致性说明
+
+---
+
 ## [2.4.6-dev.5] - 2026/06/03
 > 开发版本
 

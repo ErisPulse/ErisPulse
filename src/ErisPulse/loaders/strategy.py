@@ -73,7 +73,7 @@ class ModuleLoadStrategy:
             raise AttributeError(f"'{type(self).__name__}' has no attribute '{name}'")
         data = object.__getattribute__(self, "_data")
         if name not in data:
-            return None
+            raise AttributeError(f"'{type(self).__name__}' has no attribute '{name}'")
         return data[name]
 
     def __setattr__(self, name: str, value: Any) -> None:

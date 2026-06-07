@@ -1,0 +1,392 @@
+{
+  "version": "1.1",
+  "total_categories": 10,
+  "categories": {
+    "クイックスタート": {
+      "description": "ErisPulse クイックスタートガイド",
+      "count": 5,
+      "documents": [
+        {
+          "title": "ErisPulse ドキュメント",
+          "path": "README.md",
+          "level": 1
+        },
+        {
+          "title": "クイックスタート",
+          "path": "quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "アーキテクチャの概要",
+          "path": "architecture.md",
+          "level": 1
+        },
+        {
+          "title": "バグトラッカー",
+          "path": "bug-tracker.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 用語集",
+          "path": "terminology.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "入門ガイド": {
+      "description": "ErisPulse の基本概念とチュートリアル",
+      "count": 5,
+      "documents": [
+        {
+          "title": "最初のボットを作成する",
+          "path": "getting-started/first-bot.md",
+          "level": 1
+        },
+        {
+          "title": "入門ガイド",
+          "path": "getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "基本概念",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "よくあるタスクの例",
+          "path": "getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "イベント処理入門",
+          "path": "getting-started/event-handling.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "ユーザーガイド": {
+      "description": "ErisPulse の設定とコマンドリファレンス",
+      "count": 5,
+      "documents": [
+        {
+          "title": "ユーザー使用ガイド",
+          "path": "user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "インストールと設定",
+          "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "設定ファイルの説明",
+          "path": "user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "CLI コマンドリファレンス",
+          "path": "user-guide/cli-reference.md",
+          "level": 1
+        },
+        {
+          "title": "デプロイメントガイド",
+          "path": "user-guide/deployment.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "開発者ガイド": {
+      "description": "モジュールとアダプターの開発ガイド",
+      "count": 11,
+      "documents": [
+        {
+          "title": "開発者ガイド",
+          "path": "developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "公開とモジュールストアガイド",
+          "path": "developer-guide/publishing.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "モジュール開発",
+          "documents": [
+            {
+              "title": "モジュール開発入門",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "モジュールのコアコンセプト",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "Event ラッパークラス詳細解説",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1
+            },
+            {
+              "title": "モジュール開発のベストプラクティス",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1
+            }
+          ]
+        },
+        "adapters": {
+          "name": "アダプター開発",
+          "documents": [
+            {
+              "title": "アダプター開発入門",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "アダプターの核心概念",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "SendDSL 詳解",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1
+            },
+            {
+              "title": "アダプター開発ベストプラクティス",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1
+            },
+            {
+              "title": "イベントコンバーター実装ガイド",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1
+            }
+          ]
+        }
+      }
+    },
+    "プラットフォームガイド": {
+      "description": "各プラットフォームの機能とアダプターの説明",
+      "count": 12,
+      "documents": [
+        {
+          "title": "ErisPulse PlatformFeatures ドキュメント",
+          "path": "platform-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot11プラットフォーム特性ドキュメント",
+          "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "OneBot12プラットフォームの特徴",
+          "path": "platform-guide/onebot12.md",
+          "level": 1
+        },
+        {
+          "title": "Telegram プラットフォーム特性ドキュメント",
+          "path": "platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "メールプラットフォーム特性ドキュメント",
+          "path": "platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "雲湖プラットフォーム特性ドキュメント",
+          "path": "platform-guide/yunhu.md",
+          "level": 1
+        },
+        {
+          "title": "ドキュメントメンテナンス手順",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "花楓カフェ（Ideaura）プラットフォーム特性ドキュメント",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "Kookプラットフォーム特性ドキュメント",
+          "path": "platform-guide/kook.md",
+          "level": 1
+        },
+        {
+          "title": "Matrixプラットフォーム特性ドキュメント",
+          "path": "platform-guide/matrix.md",
+          "level": 1
+        },
+        {
+          "title": "QQBotプラットフォーム特性",
+          "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
+          "path": "platform-guide/yunhu_user.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "API リファレンス": {
+      "description": "コア API とインターフェースドキュメント",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API リファレンス",
+          "path": "api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "アダプターシステム API",
+          "path": "api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "コアモジュール API",
+          "path": "api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "イベントシステム API",
+          "path": "api-reference/event-system.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "高度なトピック": {
+      "description": "フレームワークの高度な機能を深く理解する",
+      "count": 10,
+      "documents": [
+        {
+          "title": "高度なトピック",
+          "path": "advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "ライフサイクル管理",
+          "path": "advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "リアルタイム読み込みモジュールシステム",
+          "path": "advanced/lazy-loading.md",
+          "level": 1
+        },
+        {
+          "title": "ルーティングマネージャー",
+          "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "MessageBuilder 詳細",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "セッションタイプシステム",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Conversation 多層会話",
+          "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "Dashboard View の登録",
+          "path": "advanced/dashboard-view.md",
+          "level": 1
+        },
+        {
+          "title": "HTTP クライアント",
+          "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "SQLクエリビルダー",
+          "path": "advanced/sql-builder.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "AI 支援開発": {
+      "description": "AI を活用した ErisPulse 開発",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI アシスト開発",
+          "path": "ai-support/README.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "技術標準": {
+      "description": "フレームワークの技術仕様と標準",
+      "count": 6,
+      "documents": [
+        {
+          "title": "技術標準",
+          "path": "standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse セッション型標準",
+          "path": "standards/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse アダプター標準化戻り値仕様書",
+          "path": "standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "アダプター標準化変換仕様",
+          "path": "standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse 送信方法仕様書",
+          "path": "standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse リクエスト操作仕様書",
+          "path": "standards/request-action-spec.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "スタイルガイド": {
+      "description": "コードとドキュメントのスタイルガイドライン",
+      "count": 2,
+      "documents": [
+        {
+          "title": "スタイルガイド",
+          "path": "styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse コメントスタイルガイドライン",
+          "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    }
+  }
+}
