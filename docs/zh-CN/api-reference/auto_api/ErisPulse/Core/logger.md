@@ -19,6 +19,13 @@ ErisPulse 日志系统
 ## 类列表
 
 
+### `class _JsonFormatter(logging.Formatter)`
+
+JSON 日志格式化器
+
+> **内部方法**
+
+
 ### `class Logger`
 
 日志管理器
@@ -75,6 +82,29 @@ ErisPulse 日志系统
 ---
 
 
+##### `set_json_format(enabled: bool = True)`
+
+启用或禁用 JSON 结构化日志输出
+
+启用后，所有日志（控制台和文件）将以 JSON 格式输出，
+适合 ELK / Grafana Loki / Datadog 等日志聚合系统。
+
+:param enabled: 是否启用 JSON 格式（默认 True）
+:return: bool 设置是否成功
+
+**示例**:
+```python
+>>> # 在 config.toml 中配置
+>>> [ErisPulse.logger]
+>>> format = "json"
+>>>
+>>> # 或代码中动态切换
+>>> logger.set_json_format(True)
+```
+
+---
+
+
 ##### `save_logs(path)`
 
 保存所有在内存中记录的日志
@@ -89,8 +119,35 @@ ErisPulse 日志系统
 
 获取日志内容
 
+在 JSON 模式下返回结构化 dict 列表，在 Rich 模式下返回字符串列表。
+
 :param module_name (可选): 模块名称，None表示获取所有日志
 :return: dict 日志内容
+
+---
+
+
+##### `iter_logs(module_name: str = None)`
+
+流式迭代日志（生成器）
+
+适合处理大量日志或推送到 SSE / WebSocket。
+
+- **module_name** (`str`): 模块名称，None 表示所有模块
+**返回值** (`Iterator[dict | str`): ] 每行日志，JSON 模式下为 dict，Rich 模式下为 str
+
+**示例**:
+```python
+>>> for log in logger.iter_logs():
+...     print(log)
+```
+
+---
+
+
+##### `_save_in_memory(ModuleName, msg)`
+
+> **内部方法**
 
 ---
 
