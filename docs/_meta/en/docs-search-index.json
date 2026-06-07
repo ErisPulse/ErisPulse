@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1162,
+  "total_keywords": 1159,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -174,6 +174,14 @@
         "line": 47,
         "level": 3,
         "title": "1. SDK Object"
+      }
+    ],
+    "1. Select the Documentation Asset": [
+      {
+        "document": "ai-support/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "1. Select the Documentation Asset"
       }
     ],
     "1. Sensitive Data Protection": [
@@ -588,6 +596,14 @@
         "line": 130,
         "level": 3,
         "title": "2. Proper Use of Lazy Loading"
+      }
+    ],
+    "2. Provide Context": [
+      {
+        "document": "ai-support/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "2. Provide Context"
       }
     ],
     "2. Publish to PyPI": [
@@ -1022,6 +1038,14 @@
         "title": "3. Trigger Build"
       }
     ],
+    "3. Write a Requirement Description": [
+      {
+        "document": "ai-support/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "3. Write a Requirement Description"
+      }
+    ],
     "3.1 Chained Calls": [
       {
         "document": "standards/request-action-spec.md",
@@ -1212,6 +1236,14 @@
         "line": 311,
         "level": 3,
         "title": "4. Using Non-standard Values for detail_type"
+      }
+    ],
+    "4. Verify the Generated Results": [
+      {
+        "document": "ai-support/README.md",
+        "line": 52,
+        "level": 3,
+        "title": "4. Verify the Generated Results"
       }
     ],
     "4.1 Event Method List": [
@@ -2119,7 +2151,7 @@
     "Adapter Requirement Template": [
       {
         "document": "ai-support/README.md",
-        "line": 92,
+        "line": 82,
         "level": 3,
         "title": "Adapter Requirement Template"
       }
@@ -4018,6 +4050,14 @@
         "title": "Count and Existence Check"
       }
     ],
+    "Coverage of Each Document": [
+      {
+        "document": "ai-support/README.md",
+        "line": 15,
+        "level": 3,
+        "title": "Coverage of Each Document"
+      }
+    ],
     "Create Table": [
       {
         "document": "advanced/sql-builder.md",
@@ -4390,12 +4430,12 @@
         "title": "Document Structure Standards"
       }
     ],
-    "Documentation Content Description": [
+    "Documentation Assets": [
       {
         "document": "ai-support/README.md",
-        "line": 24,
-        "level": 3,
-        "title": "Documentation Content Description"
+        "line": 5,
+        "level": 2,
+        "title": "Documentation Assets"
       }
     ],
     "Documentation Information": [
@@ -4456,14 +4496,6 @@
         "title": "Documentation Navigation"
       }
     ],
-    "Documentation Types": [
-      {
-        "document": "ai-support/README.md",
-        "line": 9,
-        "level": 3,
-        "title": "Documentation Types"
-      }
-    ],
     "Domestic Mirror Acceleration": [
       {
         "document": "user-guide/deployment.md",
@@ -4494,14 +4526,6 @@
         "line": 14,
         "level": 2,
         "title": "Double Mode Mechanism"
-      }
-    ],
-    "Downloading from GitHub Releases": [
-      {
-        "document": "ai-support/README.md",
-        "line": 19,
-        "level": 4,
-        "title": "Downloading from GitHub Releases"
       }
     ],
     "Drop Table": [
@@ -4582,30 +4606,6 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse Session Type Standards"
-      }
-    ],
-    "ErisPulse-AdapterDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 39,
-        "level": 4,
-        "title": "ErisPulse-AdapterDev.md"
-      }
-    ],
-    "ErisPulse-Full.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 54,
-        "level": 4,
-        "title": "ErisPulse-Full.md"
-      }
-    ],
-    "ErisPulse-ModuleDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 26,
-        "level": 4,
-        "title": "ErisPulse-ModuleDev.md"
       }
     ],
     "Error Code Description": [
@@ -5191,7 +5191,7 @@
     "Frequently Asked Questions": [
       {
         "document": "ai-support/README.md",
-        "line": 116,
+        "line": 103,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
@@ -5362,12 +5362,12 @@
         "title": "Getting Started with Event Handling"
       }
     ],
-    "Getting the Documentation Assets": [
+    "Getting the Latest Version": [
       {
         "document": "ai-support/README.md",
-        "line": 17,
+        "line": 23,
         "level": 3,
-        "title": "Getting the Documentation Assets"
+        "title": "Getting the Latest Version"
       }
     ],
     "Global Configuration": [
@@ -7003,7 +7003,7 @@
     "Module Requirement Template": [
       {
         "document": "ai-support/README.md",
-        "line": 69,
+        "line": 63,
         "level": 3,
         "title": "Module Requirement Template"
       }
@@ -7137,7 +7137,7 @@
     "Next Steps": [
       {
         "document": "ai-support/README.md",
-        "line": 141,
+        "line": 125,
         "level": 2,
         "title": "Next Steps"
       },
@@ -7874,30 +7874,6 @@
         "title": "Q5: How to handle special platforms like email?"
       }
     ],
-    "Q: How can I get AI to generate higher quality code?": [
-      {
-        "document": "ai-support/README.md",
-        "line": 133,
-        "level": 3,
-        "title": "Q: How can I get AI to generate higher quality code?"
-      }
-    ],
-    "Q: What AI tools are recommended?": [
-      {
-        "document": "ai-support/README.md",
-        "line": 118,
-        "level": 3,
-        "title": "Q: What AI tools are recommended?"
-      }
-    ],
-    "Q: What should I do if the code generated by AI has issues?": [
-      {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 3,
-        "title": "Q: What should I do if the code generated by AI has issues?"
-      }
-    ],
     "QQBot Platform Features Documentation": [
       {
         "document": "platform-guide/qqbot.md",
@@ -8481,7 +8457,7 @@
     "Requirement Description Templates": [
       {
         "document": "ai-support/README.md",
-        "line": 67,
+        "line": 61,
         "level": 2,
         "title": "Requirement Description Templates"
       }
@@ -9918,6 +9894,14 @@
         "title": "Usage Examples"
       }
     ],
+    "Usage Steps": [
+      {
+        "document": "ai-support/README.md",
+        "line": 30,
+        "level": 2,
+        "title": "Usage Steps"
+      }
+    ],
     "Usage in Adapters": [
       {
         "document": "advanced/http-client.md",
@@ -10686,14 +10670,6 @@
         "line": 147,
         "level": 3,
         "title": "ws_connect Parameters"
-      }
-    ],
-    "📦 AI Documentation Assets": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "📦 AI Documentation Assets"
       }
     ]
   }

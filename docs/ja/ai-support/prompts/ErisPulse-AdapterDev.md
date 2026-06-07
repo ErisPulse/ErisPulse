@@ -22,7 +22,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -233,7 +232,6 @@ flowchart TD
 > 詳細については、[遅延ロード・システム](advanced/lazy-loading.md) および [ライフサイクル管理](advanced/lifecycle.md) をご参照ください。
 
 
-
 ### 术语表
 
 # ErisPulse 用語集
@@ -378,7 +376,6 @@ flowchart TD
 - メンテナに連絡する
 
 
-
 ====
 基础概念
 ====
@@ -428,7 +425,6 @@ ErisPulse はイベント駆動型アーキテクチャを採用しており、�
 準備はできましたか？
 
 - [最初のボットを作成する](first-bot.md) — 5 分で使い方を理解
-
 
 
 ### 基础概念
@@ -815,7 +811,6 @@ class Main(BaseModule):
 
 - [イベント処理の入門](event-handling.md) - 各種イベントの処理方法を学ぶ
 - [一般的なタスクの例](common-tasks.md) - 一般的な機能の実装をマスターする
-
 
 
 ### 事件处理入门
@@ -1461,7 +1456,6 @@ async def conditional_handler(event):
 - [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解する
 
 
-
 =====
 适配器开发
 =====
@@ -1898,7 +1892,6 @@ class MyAdapter(BaseAdapter):
 - [SendDSL の詳細](send-dsl.md) - メッセージ送信を学ぶ
 - [変換器の実装](converter.md) - イベント変換を理解する
 - [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発
-
 
 
 ### 适配器核心概念
@@ -2801,7 +2794,6 @@ async def on_bot_offline(data):
 翻訳は以上です。
 
 
-
 ### SendDSL 详解
 
 # SendDSL 詳解
@@ -3083,7 +3075,6 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 - [アダプターのコア概念](core-concepts.md) - アダプターのアーキテクチャを理解する
 - [アダプターのベストプラクティス](best-practices.md) - 高品質なアダプターの開発
 - [送信メソッド仕様](../../standards/send-method-spec.md) - 送信メソッドの完全な仕様
-
 
 
 ### 适配器开发最佳实践
@@ -3699,7 +3690,6 @@ version = "2.0.0"  # バージョン番号を更新
 - [SendDSL 詳解](send-dsl.md) - メッセージ送信を学ぶ
 
 
-
 ### 事件转换器
 
 # イベントコンバーター実装ガイド
@@ -4036,13 +4026,12 @@ Converter が生成したメッセージセグメントタイプが、Send 端�
 - [セッションタイピングシステム](../../advanced/session-types.md) - セッションタイプのマッピングルール
 
 
-
 =====
 发布与工具
 =====
 
 
-### 发布适配器到模块商店
+### 发布模块到模块商店
 
 # 公開とモジュールストアガイド
 
@@ -4393,7 +4382,6 @@ services:
 これら2つの方法は矛盾しません。PyPI からモジュールストアにモジュールを公開しつつ、GHCR からすぐに使える Docker イメージを提供することができます。
 
 
-
 ### CLI 命令参考
 
 # CLI コマンドリファレンス
@@ -4572,7 +4560,6 @@ epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "ma
 
 # 既存のディレクトリを強制上書き
 epsdk create module -n MyModule -f
-
 
 
 ======
@@ -5013,7 +5000,6 @@ def on_status_change(event):
 - [アダプタ開発ガイド](../developer-guide/adapters/) - プラットフォームアダプタの開発
 
 
-
 ### 核心模块 API
 
 # コアモジュール API
@@ -5301,7 +5287,6 @@ async for text in ws.iter_text():
 - [ルーター管理](../advanced/router.md) - ルーターマネージャーの完全なドキュメント
 - [HTTP クライアント](../advanced/http-client.md) - HTTP クライアントの完全なドキュメント
 - [ライフサイクル管理](../advanced/lifecycle.md) - ライフサイクルの完全なドキュメント
-
 
 
 ====
@@ -5600,7 +5585,6 @@ class Main(BaseModule):
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ライフサイクルイベントの使用に関する推奨事項
 
 
-
 ### 懒加载系统
 
 # リアルタイム読み込みモジュールシステム
@@ -5721,7 +5705,6 @@ result = sdk.my_module.some_sync_method()
 
 - [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールの開発を学ぶ
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - その他のベストプラクティスについて学ぶ
-
 
 
 ### Dashboard 视窗注册
@@ -6056,7 +6039,6 @@ async def on_unload(self, event):
 7. **動的更新** — モジュールで View を登録/解除した後、Dashboard フロントエンドは WebSocket を介してサイドバーをリアルタイムで更新するため、ページのリフレッシュは不要です
 
 
-
 ====
 技术标准
 ====
@@ -6346,7 +6328,6 @@ A: 一般的なものやプラットフォーム固有の型については、`{
 - [イベント変換標準](event-conversion.md) - 完全なイベント変換仕様
 - [送信メソッド仕様](send-method-spec.md) - Send クラスのメソッド命名とパラメータ仕様
 - [アダプター開発ガイド](../developer-guide/adapters/) - アダプター開発の完全ガイド
-
 
 
 ### 事件转换标准
@@ -6801,7 +6782,6 @@ await adapter.myplatform.Request("req_abc123").accept(comment="ようこそ")
 - [APIレスポンス標準](api-response.md) - アダプターAPIレスポンスフォーマット標準
 
 
-
 ### API 响应标准
 
 # ErisPulse アダプター標準化戻り値仕様書
@@ -6954,7 +6934,6 @@ OneBot12 標準では `message_id` は `data` オブジェクト内部且つ任�
 - 3xxxx エラーコードについては、下3桁は実装が独自に定義してもよい
 - 予約済みエラーセグメント（4xxxx、5xxxx）の使用は避けてください
 - エラーメッセージは簡潔で明確なものである必要があり、デバッグに役立つようにしてください
-
 
 
 ### 发送方法规范
@@ -7173,7 +7152,6 @@ def Raw_ob12(self, message):  # ✅ OneBot12 形式を送信
 | `url` / `file` | ファイルの URL またはバイナリデータ | `str` / `bytes` |
 | `user_id` | ユーザー ID | `str` / `int` |
 | `group_id` | グループ ID | `str
-
 
 
 ======
@@ -7412,7 +7390,6 @@ ErisPulse プロジェクト：
 4. Pull Request を提出してください。
 
 ご支援ありがとうございます！
-
 
 
 ### OneBot11 适配
@@ -7691,7 +7668,6 @@ connection_status = {
 
 # アカウントを動的に有効化/無効化（アダプターの再起動が必要）
 onebot.accounts["test"].enabled = False
-
 
 
 ### OneBot12 适配
@@ -8037,7 +8013,6 @@ OneBot12標準API仕様に準拠しています：
 5. **パフォーマンスの最適化**: バッチ送信時はBatchメソッドを使用して、ネットワークオーバーヘッドを減らします。
 
 
-
 ### Telegram 适配
 
 # Telegram プラットフォーム特性ドキュメント
@@ -8353,7 +8328,6 @@ async def handle_message(event):
     # メッセージセグメントデータ
     sticker = event.get_sticker_info()
     contact
-
 
 
 ### 云湖适配
@@ -8834,7 +8808,6 @@ yunhu.bots["bot1"].enabled = False
 請直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
 
 
-
 ### 邮件适配
 
 # メールプラットフォーム特性ドキュメント
@@ -8975,7 +8948,6 @@ await mail.Send.Using("from@example.com")
     }
   ]
 }
-
 
 
 ### Kook 适配
@@ -9459,7 +9431,6 @@ async def handle_private_notice(event):
         print(f"プライベートメッセージが削除されました: {msg_id}")
 
 
-
 ### Matrix 适配
 
 # Matrixプラットフォーム特性ドキュメント
@@ -9878,7 +9849,6 @@ async def handle_member_change(event):
         print(f"ユーザー {user_id} が削除されました。操作者: {operator_id}")
 
 
-
 ### QQBot 适配
 
 # QQBotプラットフォーム特性
@@ -10250,7 +10220,6 @@ async def handle_audit(event):
     elif detail_type == "qqbot_audit_reject":
         reason = event.get("qqbot_audit_reject_reason", "")
         print(f"メッセージ審査拒否: {reason}")
-
 
 
 ### 云湖用户端适配
@@ -10888,7 +10857,6 @@ result = await yunhu_user.call_api("/button_report",
 | `/button_report` | 按钮事件报告 |
 
 
-
 ### 平台文档维护说明
 
 # ドキュメントメンテナンス手順
@@ -11036,7 +11004,6 @@ from ErisPulse.Core import adapter
 ご不明な点がございましたら、関連するアダプタのメンテナナーに連絡するか、プロジェクトのIssuesでお尋ねください。
 
 
-
 ====
 代码规范
 ====
@@ -11138,4 +11105,3 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 6. **非推奨メソッド**：非推奨メソッドをマークし、代替案を提供する
    ```python
    {!--< deprecated >!--} new_method()を使用してください | 2025-07-09
-
