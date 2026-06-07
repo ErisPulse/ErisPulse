@@ -9,6 +9,13 @@ logs/
 config.db*
 .website
 
+# 敏感配置和数据文件
+config/config.toml
+config/config.db
+config/config.db-journal
+config/config.db-wal
+config/config.db-shm
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

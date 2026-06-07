@@ -272,7 +272,7 @@ class RouterManager:
         # HTTP路由：{module_name: {path: {method: handler}}}
         self._http_routes: dict[str, dict[str, dict[str, Callable]]] = defaultdict(dict)
         self._websocket_routes: dict[
-            str, dict[str, tuple[Callable, Callable | None]]
+            str, dict[str, tuple[Callable, Callable | None, bool]]
         ] = defaultdict(dict)
         self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
         self.base_url = ""
@@ -966,13 +966,12 @@ class RouterManager:
 
         restored_ws = 0
         for module_name, paths in self._websocket_routes.items():
-            for full_path, (handler, auth_handler) in paths.items():
+            for full_path, (handler, auth_handler, auto_accept) in paths.items():
                 # 直接在 FastAPI 上注册，跳过重复检查（记录已存在）
                 wrapped_handler = self._make_ws_handler(handler)
                 wrapped_auth = (
                     self._make_ws_auth_handler(auth_handler) if auth_handler else None
                 )
-                auto_accept = False
 
                 async def _ws_endpoint(
                     websocket: WebSocket,
@@ -1640,7 +1639,11 @@ class RouterManager:
             endpoint=websocket_endpoint,
             name=f"{module_name}_{full_path.replace('/', '_')}",
         )
-        self._websocket_routes[module_name][full_path] = (handler, auth_handler)
+        self._websocket_routes[module_name][full_path] = (
+            handler,
+            auth_handler,
+            auto_accept,
+        )
 
         logger.info(
             f"[{module_name}] 注册WebSocket: {full_path}{'(需认证)' if auth_handler else ''}"
@@ -1906,7 +1909,7 @@ class RouterManager:
                 }
             )
 
-        for path, (_, auth_handler) in self._websocket_routes.get(
+        for path, (_, auth_handler, _) in self._websocket_routes.get(
             module_name, {}
         ).items():
             result["websocket"].append(
@@ -1980,7 +1983,7 @@ class RouterManager:
         else:
             ws_base = ""
 
-        for path, (_, _) in self._websocket_routes.get(module_name, {}).items():
+        for path, (_, _, _) in self._websocket_routes.get(module_name, {}).items():
             ws_url = f"{ws_base}{path}" if ws_base else path
             result["websocket"].append(
                 {
@@ -2063,7 +2066,7 @@ class RouterManager:
                         {"path": path, "method": method, "url": url, "namespace": ns}
                     )
 
-            for path, (_, _) in self._websocket_routes.get(ns, {}).items():
+            for path, (_, _, _) in self._websocket_routes.get(ns, {}).items():
                 ws_url = f"{ws_base}{path}" if ws_base else path
                 result["websocket"].append(
                     {"path": path, "url": ws_url, "namespace": ns}

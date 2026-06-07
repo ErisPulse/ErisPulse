@@ -5,6 +5,7 @@ Create 命令实现
 """
 
 import sys
+import datetime
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -588,7 +589,10 @@ class CreateCommand(Command):
                 encoding="utf-8",
             )
             (project_dir / "LICENSE").write_text(
-                _LICENSE_TEMPLATE.format(year="2026", author=author), encoding="utf-8"
+                _LICENSE_TEMPLATE.format(
+                    year=str(datetime.datetime.now().year), author=author
+                ),
+                encoding="utf-8",
             )
             (project_dir / "README.md").write_text(
                 _README_MODULE.format(name=name, description=description),
@@ -669,7 +673,10 @@ class CreateCommand(Command):
                 encoding="utf-8",
             )
             (project_dir / "LICENSE").write_text(
-                _LICENSE_TEMPLATE.format(year="2026", author=author), encoding="utf-8"
+                _LICENSE_TEMPLATE.format(
+                    year=str(datetime.datetime.now().year), author=author
+                ),
+                encoding="utf-8",
             )
             (project_dir / "README.md").write_text(
                 _README_ADAPTER.format(

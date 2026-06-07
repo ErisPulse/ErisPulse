@@ -12,6 +12,7 @@ ErisPulse 存储管理模块
 """
 
 import os
+import re
 import json
 import sqlite3
 import threading
@@ -19,10 +20,93 @@ from typing import Any, TypeAlias
 from contextlib import contextmanager
 
 from .Bases.storage import BaseStorage, BaseQueryBuilder
-from .constants import SQLITE_JOURNAL_MODE, SQLITE_SYNCHRONOUS_MODE, DEFAULT_KV_TABLE_NAME
+from .constants import (
+    SQLITE_JOURNAL_MODE,
+    SQLITE_SYNCHRONOUS_MODE,
+    DEFAULT_KV_TABLE_NAME,
+)
 
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
+
+# SQL 标识符（表名/列名）合法模式
+_IDENTIFIER_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+# SQLite 合法列类型
+_VALID_COLUMN_TYPES = {
+    "TEXT",
+    "INTEGER",
+    "REAL",
+    "BLOB",
+    "NUMERIC",
+    "BOOLEAN",
+    "DATE",
+    "DATETIME",
+    "TIMESTAMP",
+    "VARCHAR",
+    "CHAR",
+    "INT",
+    "BIGINT",
+    "SMALLINT",
+    "TINYINT",
+    "FLOAT",
+    "DOUBLE",
+    "DECIMAL",
+    "CLOB",
+    "NCHAR",
+    "NVARCHAR",
+    "NCLOB",
+    "PRIMARY",
+    "KEY",
+    "AUTOINCREMENT",
+    "NOT",
+    "NULL",
+    "DEFAULT",
+    "UNIQUE",
+    "CHECK",
+    "FOREIGN",
+    "REFERENCES",
+    "CONSTRAINT",
+}
+
+
+def _validate_identifier(name: str, context: str = "标识符") -> None:
+    """
+    {!--< internal-use >!--}
+    验证 SQL 标识符（表名/列名）是否安全
+
+    :param name: 标识符名称
+    :param context: 上下文描述（用于错误消息）
+    :raises ValueError: 当标识符包含非法字符时
+    """
+    if not name or not _IDENTIFIER_RE.match(name):
+        raise ValueError(
+            f"不安全的 SQL {context}: '{name}'。"
+            f"仅允许字母、数字和下划线，且不能以数字开头"
+        )
+
+
+def _validate_column_type(col_type: str) -> None:
+    """
+    {!--< internal-use >!--}
+    验证列类型定义是否安全（防止通过类型定义注入 SQL）
+
+    :param col_type: 列类型定义
+    :raises ValueError: 当列类型包含潜在危险内容时
+    """
+    if not col_type or not col_type.strip():
+        raise ValueError("列类型不能为空")
+    stripped = col_type.strip().upper()
+    # 检查类型定义的第一个词是否为已知类型
+    first_word = stripped.split()[0] if stripped.split() else ""
+    if first_word.rstrip("(") not in _VALID_COLUMN_TYPES and not _IDENTIFIER_RE.match(
+        first_word.rstrip("(")
+    ):
+        raise ValueError(f"不安全的列类型定义: '{col_type}'")
+    # 拒绝包含分号等危险字符的类型定义
+    dangerous_chars = (";", "--", "/*", "*/", "\x00")
+    for char in dangerous_chars:
+        if char in col_type:
+            raise ValueError(f"列类型定义包含非法字符: '{col_type}'")
 
 
 class SQLiteQueryBuilder(BaseQueryBuilder):
@@ -38,6 +122,10 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     3. 通过 copy() 复用基础查询条件
     {!--< /tips >!--}
     """
+
+    def __init__(self, storage: "StorageManager", table_name: str):
+        _validate_identifier(table_name, "表名")
+        super().__init__(storage, table_name)
 
     def Execute(self) -> list[tuple] | int:
         """
@@ -77,6 +165,8 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
             raise ValueError("InsertMulti 需要非空列表类型数据")
 
         columns = list(self._data[0].keys())
+        for col in columns:
+            _validate_identifier(col, "列名")
         cols = ", ".join(columns)
         placeholders = ", ".join(["?"] * len(columns))
         sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
@@ -151,6 +241,9 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
             raise ValueError("未设置操作类型，请先调用 Select/Insert/Update/Delete")
 
     def _build_select_sql(self) -> tuple[str, list[Any]]:
+        if self._columns:
+            for col in self._columns:
+                _validate_identifier(col, "列名")
         cols = ", ".join(self._columns) if self._columns else "*"
         sql = f"SELECT {cols} FROM {self._table}"
         params: list[Any] = []
@@ -166,6 +259,8 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if not isinstance(data, dict):
             raise ValueError("Insert 需要字典类型数据")
         columns = list(data.keys())
+        for col in columns:
+            _validate_identifier(col, "列名")
         placeholders = ", ".join(["?"] * len(columns))
         cols = ", ".join(columns)
         sql = f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})"
@@ -177,6 +272,8 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if not isinstance(data, dict):
             raise ValueError("Update 需要字典类型数据")
 
+        for k in data.keys():
+            _validate_identifier(k, "列名")
         set_clause = ", ".join(f"{k} = ?" for k in data.keys())
         sql = f"UPDATE {self._table} SET {set_clause}"
         params = list(data.values())
@@ -210,6 +307,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         if self._order_by:
             order_parts = []
             for col, desc in self._order_by:
+                _validate_identifier(col, "排序列名")
                 order_parts.append(f"{col} DESC" if desc else f"{col} ASC")
             sql += f" ORDER BY {', '.join(order_parts)}"
         return sql
@@ -253,6 +351,8 @@ class AlterTableBuilder:
         :example:
         >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
         """
+        _validate_identifier(column_name, "列名")
+        _validate_column_type(column_type)
         self._operations.append(("add_column", (column_name, column_type)))
         return self
 
@@ -266,6 +366,7 @@ class AlterTableBuilder:
         :example:
         >>> storage.AlterTable("users").RenameTo("members").Execute()
         """
+        _validate_identifier(new_name, "新表名")
         self._operations.append(("rename", (new_name,)))
         return self
 
@@ -848,6 +949,7 @@ class StorageManager(BaseStorage):
         >>> rows = storage.Table("users").Select("name", "age").Where("age > ?", 18).Execute()
         >>> storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
         """
+        _validate_identifier(table_name, "表名")
         return SQLiteQueryBuilder(self, table_name)
 
     def CreateTable(self, table_name: str, columns: dict[str, str]) -> bool:
@@ -866,6 +968,18 @@ class StorageManager(BaseStorage):
         ... })
         """
         if not self._is_ready():
+            return False
+
+        # 验证表名和列名/类型
+        try:
+            _validate_identifier(table_name, "表名")
+            for col_name, col_type in columns.items():
+                _validate_identifier(col_name, "列名")
+                _validate_column_type(col_type)
+        except ValueError as e:
+            from .logger import logger
+
+            logger.error(f"创建表 {table_name} 失败: {e}")
             return False
 
         try:
@@ -894,6 +1008,14 @@ class StorageManager(BaseStorage):
         >>> storage.DropTable("users")
         """
         if not self._is_ready():
+            return False
+
+        try:
+            _validate_identifier(table_name, "表名")
+        except ValueError as e:
+            from .logger import logger
+
+            logger.error(f"删除表失败: {e}")
             return False
 
         try:
@@ -944,6 +1066,7 @@ class StorageManager(BaseStorage):
         >>> storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
         >>> storage.AlterTable("users").RenameTo("members").Execute()
         """
+        _validate_identifier(table_name, "表名")
         return AlterTableBuilder(self, table_name)
 
     def __getattr__(self, key: str) -> Any:
