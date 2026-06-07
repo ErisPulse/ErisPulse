@@ -2513,6 +2513,8 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
+> **Route Information Query**: Routes registered by adapters (HTTP, WebSocket, SSE) can be queried for complete connection addresses (including `base_url` + path) using `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Adapter Development Getting Started - Connection Information and Route Discovery](getting-started.md#9-connection-information-and-route-discovery) and [SSE Support](getting-started.md#10-sse-server-sent-events-支持) for details.
+
 ## API Response Standard
 
 The framework provides `make_response()` and `make_error()` methods to construct standardized responses, eliminating the need to manually build response dictionaries.
@@ -3239,6 +3241,43 @@ class MyAdapter(BaseAdapter):
                 self.logger.error(f"Heartbeat failed: {e}")
                 break
 ```
+
+### 4. Exposing Connection Information
+
+Adapters' registered routes should be visible to users to facilitate configuring the callback address on the platform side. It is recommended to proactively output connection information in `start()`:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket address: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+Users can view all routes and connection addresses of the adapter via the following API:
+
+```python
+from ErisPulse import sdk
+
+# Adapter level connection information (recommended)
+info = sdk.adapter.get_connection_info("myplatform")
+
+# Router manager level query
+sdk.router.list_namespaces()              # List all namespaces
+sdk.router.get_module_routes("myplatform")  # Detailed route information
+sdk.router.get_module_urls("myplatform")    # Full connection URLs
+```
+
+> **Note**: The `module_name` when registering routes must be exactly consistent with the adapter's registered `platform` name in ErisPulse; otherwise, `get_connection_info()` will not be able to associate the route. Multi-account adapters should register sub-paths for each account (e.g., `/account1/webhook`, `/account2/webhook`), rather than using different `module_name` values.
 
 ## Event Conversion
 
@@ -5272,6 +5311,852 @@ async for text in ws.iter_text():
 ====
 高级主题
 ====
+
+
+### HTTP 客户端
+
+# HTTP Client
+
+ErisPulse provides a unified HTTP/WS client. Modules and adapters should prioritize using this client for sending HTTP requests and establishing WebSocket connections, rather than importing third-party libraries like `aiohttp` / `httpx` themselves.
+
+## Overview
+
+Main features of the HTTP/WS client:
+
+- **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
+- **WebSocket Client**: Establish client WebSocket connections via `ws_connect`
+- **Auto Logging**: Automatically logs all requests and statistics
+- **Lifecycle Integration**: Triggers `client.request` lifecycle events for every request, `client.ws.connect` events for WS connections
+- **Retry Support**: Configurable automatic retry counts and intervals
+- **Timeout Control**: Independent connection and request timeouts
+- **Connection Pool Reuse**: Connection pool management based on `aiohttp.ClientSession`
+- **Exception Hierarchy**: Automatically converts `aiohttp` exceptions to ErisPulse exceptions (ClientError hierarchy)
+
+## Quick Start
+
+### HTTP Requests
+
+```python
+from ErisPulse.Core import client
+
+# GET Request
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)  # 200
+
+# POST Request
+resp = await client.post(
+    "https://httpbin.org/post",
+    json={"key": "value"},
+)
+data = await resp.json()
+```
+
+### WebSocket Connection
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+## HttpResponse
+
+All request methods return an `HttpResponse` object:
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+
+resp.status       # int - HTTP status code (e.g., 200, 404)
+resp.reason       # str | None - Status description (e.g., "OK")
+resp.headers      # Response headers (case-insensitive)
+resp.content_type # str | None - Content-Type
+resp.url          # Final URL (may change due to redirects)
+resp.raw          # Underlying native response object (currently `aiohttp.ClientResponse`)
+
+# Read response body
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # Parse JSON
+text = await resp.text("gbk")  # Specify encoding
+```
+
+## Request Methods
+
+### GET
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get(
+    "https://api.example.com/users",
+    params={"page": "1", "limit": "10"},
+    headers={"Authorization": "Bearer token"},
+)
+```
+
+### POST
+
+```python
+from ErisPulse.Core import client
+
+# JSON request body
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# Form request body
+resp = await client.post(
+    "https://api.example.com/login",
+    data={"username": "admin", "password": "123"},
+)
+
+# Raw data
+resp = await client.post(
+    "https://api.example.com/upload",
+    data=b"raw bytes",
+    headers={"Content-Type": "application/octet-stream"},
+)
+```
+
+### PUT / DELETE / PATCH
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+```
+
+### Generic request
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.request(
+    "OPTIONS",
+    "https://api.example.com/resource",
+    headers={"Origin": "https://example.com"},
+)
+```
+
+## Parameters
+
+### HTTP Request Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | `str` | Request URL |
+| `params` | `dict[str, str]` | Query parameters (optional) |
+| `headers` | `dict[str, str]` | Additional request headers (optional) |
+| `data` | `Any` | Request body (form or raw data) (optional) |
+| `json` | `Any` | JSON request body (optional) |
+| `timeout` | `float` | Timeout for this specific request (seconds) (optional, overrides default) |
+| `max_retries` | `int` | Maximum retry attempts for this specific request (optional, overrides default) |
+
+### ws_connect Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | `str` | WebSocket server URL |
+| `headers` | `dict[str, str]` | Additional request headers (optional) |
+| `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
+
+## Timeout and Retry
+
+```python
+from ErisPulse.Core import HttpClient
+
+# Create a client with custom timeouts
+client = HttpClient(
+    timeout=60,           # Total request timeout 60s
+    connect_timeout=5,    # Connection timeout 5s
+    max_retries=3,        # Auto retry 3 times on failure
+    retry_delay=2,        # Retry interval 2s
+)
+
+# Override timeout for a single request
+resp = await client.get("https://slow-api.example.com/data", timeout=120)
+```
+
+## Custom Default Headers
+
+```python
+client = HttpClient(
+    headers={
+        "Authorization": "Bearer token",
+        "X-App-Id": "my-app",
+    },
+    user_agent="MyBot/1.0",
+)
+```
+
+## Request Statistics
+
+```python
+from ErisPulse.Core import client
+
+# View statistics
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# Reset statistics
+client.reset_stats()
+```
+
+## Lifecycle Events
+
+### HTTP Request Event
+
+Triggers `client.request` event after each request is completed, useful for monitoring:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+### WebSocket Connection Event
+
+Triggers `client.ws.connect` event after each WebSocket connection is established:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.ws.connect")
+async def on_ws_connect(event_data):
+    print(f"WS Connection: {event_data['url']}")
+```
+
+## Context Management
+
+```python
+# Use as a context manager to automatically close sessions
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+    data = await resp.json()
+```
+
+## WebSocket Client
+
+Establish client WebSocket connections via `client.ws_connect()`, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with send/receive/iter interfaces completely identical.
+
+### Basic Usage
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+await ws.send_text("Hello")
+await ws.send_bytes(b"\x00\x01\x02")
+await ws.send_json({"type": "ping"})
+```
+
+### Receiving Messages
+
+#### High-level Methods (Recommended)
+
+Automatically filter message types, raises `WebSocketDisconnect` on disconnect:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Receive single message
+text = await ws.receive_text()    # str
+data = await ws.receive_bytes()   # bytes
+obj = await ws.receive_json()     # dict / list
+
+# Iterative receive (automatically stops on disconnect)
+async for text in ws.iter_text():
+    print(text)
+
+async for data in ws.iter_bytes():
+    print(data)
+
+async for obj in ws.iter_json():
+    print(obj)
+```
+
+#### Low-level Methods
+
+Use `receive()` and `iter_messages()` to handle raw message types, distinguish between TEXT / BINARY / CLOSE / ERROR:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Receive single raw message
+msg = await ws.receive()
+# msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
+# msg.data  -> str | bytes | None
+
+# Iterative raw messages (automatically stops on CLOSE/ERROR)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(f"Text: {msg.data}")
+    elif msg.type == WSMessage.BINARY:
+        print(f"Binary: {len(msg.data)} bytes")
+```
+
+### WSMessage
+
+`WSMessage` is a unified WebSocket message type, independent of the underlying library:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | `str` | Message type: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | Message data |
+
+### ClientWebSocket Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `url` | `URL` | Connection URL |
+| `headers` | `Headers` | Response headers |
+| `closed` | `bool` | Whether the connection is closed |
+| `raw` | `object` | Underlying native object (`aiohttp.ClientWebSocketResponse`) |
+
+### Lifecycle Hooks
+
+Consistent with `server WebSocketConnection`, supports `on_disconnect` and `on_error` callbacks:
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"Connection disconnected: {reason}")
+
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"Connection error: {error}")
+```
+
+### Closing Connection
+
+```python
+await ws.close(code=1000, reason="Normal closure")
+```
+
+## Exception Hierarchy
+
+ErisPulse defines a unified exception hierarchy. Requests initiated via `sdk.client` will automatically convert underlying `aiohttp` exceptions to ErisPulse exceptions.
+
+> **Backward Compatibility**: Old modules/adapters directly using `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated via `sdk.client`. Code directly using `aiohttp` will still catch native exceptions like `aiohttp.ClientError`. Both methods can coexist.
+
+### Exception Hierarchy
+
+```
+ErisPulseError
+├── ClientError                  # Base class for all HTTP/WS client request exceptions
+│   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
+│   ├── ClientTimeoutError       # Connection timeout or request timeout
+│   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
+└── WebSocketError               # WebSocket exception base class
+    └── WebSocketDisconnect      # WebSocket connection disconnected (common to client and server)
+```
+
+### Exception Handling
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
+
+# HTTP request exception handling
+try:
+    resp = await client.get("https://api.example.com/data")
+    data = await resp.json()
+except ClientConnectionError:
+    print("Unable to connect to server")
+except ClientTimeoutError:
+    print("Request timeout")
+except ClientError as e:
+    print(f"Request failed: {e}")
+
+# WebSocket exception handling
+try:
+    ws = await client.ws_connect("wss://example.com/ws")
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
+except WebSocketDisconnect as e:
+    print(f"Connection disconnected: code={e.code}, reason={e.reason}")
+except WebSocketError as e:
+    print(f"WebSocket error: {e}")
+```
+
+### Unified Catching
+
+Use `ClientError` to catch all HTTP/WS client request exceptions uniformly:
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientError as e:
+    print(f"Client error: {e}")
+```
+
+### HTTPStatusError
+
+When you need to check the status code after a request and raise an exception manually, you can use:
+
+```python
+from ErisPulse.Core.Bases.errors import HTTPStatusError
+
+resp = await client.get("https://api.example.com/data")
+if resp.status >= 400:
+    raise HTTPStatusError(resp.status, await resp.text())
+```
+
+## Usage in Adapters
+
+Adapters can use the global client or create their own client instance to send platform API requests:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.errors import ClientError
+
+class MyAdapter(BaseAdapter):
+    async def call_api(self, endpoint, **params):
+        try:
+            resp = await client.post(
+                f"https://api.platform.com/{endpoint}",
+                json=params,
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            return await resp.json()
+        except ClientError as e:
+            self.logger.error(f"API call failed: {e}")
+            raise
+```
+
+> You can also use `sdk.client` via `from ErisPulse import sdk` for the same effect.
+
+## Best Practices
+
+1. **Prioritize the global client**: Use `from ErisPulse.Core import client` to get the global singleton, facilitating unified framework management and monitoring
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession` so future changes to the underlying implementation require no code modifications. Old code directly using `aiohttp` still works fine, and both methods can coexist
+3. **Use the ErisPulse exception hierarchy**: Catch `ClientError` instead of `aiohttp.ClientError` when making requests via `sdk.client` to ensure code does not depend on a specific HTTP library. Old code directly using `aiohttp` is unaffected
+4. **Set timeouts reasonably**: Set reasonable timeout durations based on API response speeds to avoid long-term blocking
+5. **Use the retry mechanism**: Enable retries for unstable APIs to improve reliability
+6. **Monitor request statistics**: Monitor request status via `sdk.client.stats` or `client.request` lifecycle events
+7. **Use high-level WebSocket methods**: Prioritize high-level methods like `iter_text` / `iter_json`, and only use `iter_messages` when you need to distinguish message types
+
+## Related Documentation
+
+- [Router Manager](router.md) - HTTP/WebSocket server routing (Server WebSocketConnection and client share the same base class)
+- [Adapter Development Guide](../developer-guide/adapters/getting-started.md) - Using the HTTP client in adapters
+- [Lifecycle Management](lifecycle.md) - Listening to request events
+
+
+### SQL 查询构建器
+
+# SQL Query Builder
+
+The Storage module of ErisPulse provides a chain-style generic SQL query builder, supporting creation, querying, updating, and deletion operations for custom tables.
+
+## Architecture Design
+
+```
+Bases/storage.py                    Core/storage.py
+┌─────────────────────┐             ┌──────────────────────────┐
+│  BaseStorage (ABC)  │◄────────────│  StorageManager          │
+│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
+│    (ABC)            │             │                          │
+└─────────────────────┘             │  SQLiteQueryBuilder      │
+                                    │  AlterTableBuilder       │
+                                    └──────────────────────────┘
+```
+
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces, supporting future expansion to other storage media (Redis, MySQL, etc.)
+- `StorageManager` is the current concrete implementation for SQLite, fully backward compatible
+
+## Import
+
+```python
+from ErisPulse import sdk
+# or
+from ErisPulse.Core import storage
+
+# ABC base classes (for type hinting or custom implementations)
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+## Table Management
+
+### Create Table
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0",
+    "email": "TEXT"
+})
+```
+
+### Check if Table Exists
+
+```python
+if sdk.storage.HasTable("users"):
+    print("users table already exists")
+```
+
+### Drop Table
+
+```python
+sdk.storage.DropTable("users")
+```
+
+### Alter Table Structure
+
+```python
+# Add column
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+
+# Rename table
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# Chain multiple operations
+sdk.storage.AlterTable("users") \
+    .AddColumn("phone", "TEXT") \
+    .AddColumn("address", "TEXT") \
+    .Execute()
+```
+
+## Chain-style Queries
+
+### Insert Data
+
+```python
+# Single row insertion (pass dictionary)
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# Batch insertion (pass list of dictionaries)
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35},
+    {"name": "Dave", "age": 40}
+]).Execute()
+```
+
+### Query Data
+
+> **Important**: `Select()` returns `list[tuple]` (list of tuples), not dictionaries. You need to access values by index following column order.
+
+```python
+# Query all columns
+rows = sdk.storage.Table("users").Select().Execute()
+# rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
+
+# Query specific columns
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+# rows: [("Alice", 30), ("Bob", 25), ...]
+
+# Access by index
+for row in rows:
+    name = row[0]   # "Alice"
+    age = row[1]    # 30
+```
+
+#### Convert tuples to dictionaries
+
+```python
+columns = ["id", "name", "age"]
+rows = sdk.storage.Table("users").Select(*columns).Execute()
+
+# Method 1: Using zip in loop
+for row in rows:
+    record = dict(zip(columns, row))
+    print(record["name"], record["age"])
+
+# Method 2: Convert to list of dictionaries in one go
+records = [dict(zip(columns, row)) for row in rows]
+```
+
+#### Get single record
+
+```python
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ExecuteOne()
+
+# row is tuple or None
+if row is not None:
+    name = row[0]  # "Alice"
+    age = row[1]   # 30
+```
+
+### Conditional Filtering
+
+> `Where(condition, *params)` supports passing multiple parameters corresponding to multiple `?` placeholders.
+
+```python
+# Single condition (one placeholder, one parameter)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 18) \
+    .Execute()
+
+# Multiple placeholders in one Where
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ? AND age < ?", 20, 40) \
+    .Execute()
+
+# Multiple Where calls (AND connected)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 20) \
+    .Where("age < ?", 40) \
+    .Execute()
+```
+
+### Sorting, Pagination
+
+```python
+# Ascending order
+rows = sdk.storage.Table("users").Select("name", "age") \
+    .OrderBy("name") \
+    .Execute()
+
+# Descending order
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("age", desc=True) \
+    .Execute()
+
+# Pagination
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("id") \
+    .Limit(10) \
+    .Offset(20) \
+    .Execute()
+```
+
+### Update Data
+
+```python
+# Conditional update
+sdk.storage.Table("users") \
+    .Update({"age": 31}) \
+    .Where("name = ?", "Alice") \
+    .Execute()
+
+# Full update
+sdk.storage.Table("users") \
+    .Update({"status": "active"}) \
+    .Execute()
+```
+
+### Delete Data
+
+```python
+# Conditional deletion
+sdk.storage.Table("users") \
+    .Delete() \
+    .Where("name = ?", "Bob") \
+    .Execute()
+
+# Full deletion
+sdk.storage.Table("users").Delete().Execute()
+```
+
+### Count and Existence Check
+
+```python
+# Count
+count = sdk.storage.Table("users").Count()
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# Existence check
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+```
+
+## Reuse Query Conditions
+
+Use `copy()` for deep copy of the builder to reuse base conditions:
+
+```python
+base = sdk.storage.Table("users").Where("age > ?", 20)
+
+# Query based on same conditions
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+
+# Count based on same conditions
+count = base.copy().Count()
+
+# Check existence based on same conditions
+exists = base.copy().Where("name = ?", "Alice").Exists()
+```
+
+## Reset Builder
+
+```python
+builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
+builder.clear()
+
+# Rebuild query
+builder.Select("name", "age").Where("name = ?", "Alice")
+rows = builder.Execute()
+```
+
+## Using in Transactions
+
+Chain-style operations fully support transactions:
+
+```python
+# Commit transaction
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
+    sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
+
+# Rollback example
+try:
+    with sdk.storage.transaction():
+        sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
+        raise Exception("force rollback")
+except Exception:
+    pass
+# Alice's record still exists
+```
+
+## Return Value Explanation
+
+| Operation | Return Type | Description |
+|-----------|------------|-------------|
+| `Select().Execute()` | `list[tuple]` | List of tuples, arranged in column order |
+| `Select().ExecuteOne()` | `tuple \| None` | Single tuple or None |
+| `Insert().Execute()` | `int` | Affected rows count |
+| `InsertMulti().Execute()` | `int` | Inserted rows count |
+| `Update().Execute()` | `int` | Affected rows count |
+| `Delete().Execute()` | `int` | Affected rows count |
+| `Count()` | `int` | Matching rows count |
+| `Exists()` | `bool` | Whether it exists |
+
+### Return Value Processing Examples
+
+```python
+# Select returns tuples, access by index
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # First row, first column (name)
+first_age = rows[0][1]   # First row, second column (age)
+
+# Recommended: Use column names list + zip to convert to dictionary for better readability
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne returns single tuple or None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete return affected rows count
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"Deleted {affected} records")
+```
+
+## Parameterized Queries
+
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as tuples or lists):
+
+```python
+# Correct ✓ — Multiple parameters passed one by one
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# Correct ✓ — Multiple Where calls
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# Incorrect ✗ — Don't pass tuple
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# This would treat the entire tuple as the value for the first placeholder
+
+# Incorrect ✗ — Has SQL injection risk
+sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Where Parameter Passing Rules
+
+```python
+# Where(condition: str, *params: Any)
+# params are variable arguments, pass them one by one
+
+# Single parameter
+.Where("name = ?", "Alice")
+
+# Multiple parameters
+.Where("age > ? AND age < ?", 18, 60)
+
+# LIKE query
+.Where("name LIKE ?", "A%")
+
+# IN query (requires manually constructing placeholders)
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
+```
+
+## Custom Storage Backend
+
+Inherit from `BaseStorage` and `BaseQueryBuilder` to implement custom storage backends:
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+class MyQueryBuilder(BaseQueryBuilder):
+    def Execute(self):
+        # Implement specific execution logic
+        ...
+
+    def ExecuteOne(self):
+        ...
+
+    def Count(self):
+        ...
+
+    def Exists(self):
+        ...
+
+
+class MyStorage(BaseStorage):
+    def get(self, key, default=None):
+        ...
+
+    def set(self, key, value):
+        ...
+
+    # Implement other abstract methods...
+    def Table(self, table_name):
+        return MyQueryBuilder(self, table_name)
+```
+
+## Related Documents
+
+- [Core Module API](../api-reference/core-modules.md) - Complete API for Storage module
+- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder abstract interfaces
+- [Message Builder](message-builder.md) - MessageBuilder chain-style reference
 
 
 ### 生命周期管理
@@ -7524,6 +8409,381 @@ if builder:
 - [API Response Standard](api-response.md) - Adapter API response format standard
 - [Session Type Standard](session-types.md) - Session type definitions and mapping relationships
 - [Request Operation Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
+
+
+### 请求操作规范
+
+# ErisPulse Request Operation Specification
+
+This document defines the standardized specification for request event operations in the ErisPulse adapter, including field requirements for request events, usage of the Request DSL, and adapter implementation requirements.
+
+## 1. Overview
+
+Request events (`type: "request"`) are special event types defined in the OneBot12 standard, representing requests that require the Bot to make decisions (such as friend requests, group invitations, etc.).
+
+Unlike message events, request events require **bidirectional interaction**:
+1. **Receiving**: The adapter converts platform-native requests into standard request events
+2. **Responding**: The module performs operations through the `Request` DSL or `Event.approve()`/`Event.reject()`
+
+```
+Platform-native request event
+    │
+    ▼
+Converter.convert()        ← Adapter implementation (forward conversion)
+    │
+    ▼
+Standard request event (with request_id)
+    │
+    ├─→ Module handler @request.on_friend_request()
+    │       │
+    │       ├─→ event.approve()     ← Approve request
+    │       └─→ event.reject()      ← Reject request
+    │               │
+    │               ▼
+    │       adapter.Request(request_id).accept()
+    │               │
+    │               ▼
+    │       BaseAdapter.Request.accept()  ← Adapter override
+    │               │
+    │               ▼
+    │       Platform API call
+    │
+    └─→ Or direct adapter operation
+            await adapter.Request("req_id").accept()
+```
+
+## 2. Request Event Field Requirements
+
+### 2.1 Standard Fields
+
+In addition to the required OneBot12 standard fields, request events must include the following fields:
+
+| Field | Type | Required | Description |
+|------|------|----------|-------------|
+| `request_id` | string | **Strongly Recommended** | Request identifier for approve/reject operations |
+| `user_id` | string | Yes | Request initiator ID |
+| `user_nickname` | string | No | Request initiator nickname |
+| `comment` | string | No | Request message/comment |
+
+### 2.2 `request_id` Field
+
+The `request_id` is the core identifier for request operations:
+
+- **Purpose**: Identifies an actionable request for use with the `Request` DSL
+- **Generation Rules**:
+  - Prefer platform-native request identifiers (e.g., OneBot11's `flag` field, Telegram's `chat_invite_link`, etc.)
+  - If the platform has no native request ID, the adapter should generate a unique identifier (recommended format: `{platform}_{timestamp}_{user_id}`)
+- **Uniqueness**: Should remain unique within the same platform scope
+- **Missing Behavior**: When `request_id` is missing, `event.approve()` / `event.reject()` will raise `ValueError`
+
+### 2.3 Request Event Example
+
+```json
+{
+  "id": "evt_123456",
+  "time": 1752241225,
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "onebot11",
+  "self": {
+    "platform": "onebot11",
+    "user_id": "bot_123"
+  },
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "comment": "Please add me as a friend",
+  "request_id": "flag_abc123",
+  "onebot11_raw": {...},
+  "onebot11_raw_type": "request"
+}
+```
+
+## 3. Request DSL
+
+### 3.1 Chained Calls
+
+`Request` provides a chained call interface consistent with the `Send` style:
+
+```python
+# Basic usage
+await adapter.Request("req_id").accept()
+await adapter.Request("req_id").reject()
+
+# Specify bot account
+await adapter.Request("req_id").Using("bot1").accept()
+
+# Include comment (via kwargs)
+await adapter.Request("req_id").accept(comment="Welcome")
+await adapter.Request("req_id").reject(comment="Not adding at this time")
+
+# Combined usage
+await adapter.Request("req_id").Using("bot1").accept(comment="Welcome")
+```
+
+### 3.2 Method List
+
+| Method | Description | Return Value |
+|--------|-------------|--------------|
+| `Using(account_id)` | Specify the bot account for operation | `RequestDSL` (supports chaining) |
+| `accept(**kwargs)` | Approve request | `asyncio.Task` (returns standard response after awaiting) |
+| `reject(**kwargs)` | Reject request | `asyncio.Task` (returns standard response after awaiting) |
+
+### 3.3 Return Value Format
+
+Operations return standard API response format:
+
+**Success**:
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": null,
+    "message_id": "",
+    "message": ""
+}
+```
+
+**Failure**:
+```json
+{
+    "status": "failed",
+    "retcode": 34001,
+    "data": null,
+    "message_id": "",
+    "message": "Request expired or not found"
+}
+```
+
+**Not Implemented** (adapter hasn't overridden `accept`/`reject`):
+```json
+{
+    "status": "failed",
+    "retcode": 10002,
+    "data": null,
+    "message_id": "",
+    "message": "Platform MyAdapter has not implemented request operations (accept)"
+}
+```
+
+## 4. Event Convenience Methods
+
+The `Event` wrapper class provides convenience methods suitable for use in request event handlers:
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # Check request ID
+    request_id = event.get_request_id()
+    if not request_id:
+        print("Warning: Request event missing request_id")
+        return
+    
+    # Approve request
+    result = await event.approve()
+    
+    # Or reject request
+    # result = await event.reject(comment="Not adding friends at this time")
+    
+    # Check result
+    if result.get("status") == "ok":
+        print("Operation successful")
+    else:
+        print(f"Operation failed: {result.get('message')}")
+```
+
+### 4.1 Event Method List
+
+| Method | Description | Return Value |
+|--------|-------------|--------------|
+| `get_request_id()` | Get request ID | `str` |
+| `approve(comment=None)` | Approve the current request event | Standard response format |
+| `reject(comment=None)` | Reject the current request event | Standard response format |
+
+## 5. Adapter Implementation Requirements
+
+### 5.1 Converter Requirements
+
+The adapter's converter must correctly set the `request_id` field when converting request events:
+
+```python
+def convert_request_event(self, raw_event: dict) -> dict:
+    """Convert platform-native request event"""
+    return {
+        "id": self._generate_event_id(raw_event),
+        "time": int(time.time()),
+        "type": "request",
+        "detail_type": self._map_request_type(raw_event),  # "friend" or "group"
+        "platform": self._platform_name,
+        "self": {
+            "platform": self._platform_name,
+            "user_id": str(self._bot_id),
+        },
+        "user_id": str(raw_event.get("user_id", "")),
+        "user_nickname": raw_event.get("nickname", ""),
+        "comment": raw_event.get("message", ""),
+        "request_id": self._extract_request_id(raw_event),  # ← Critical field
+        f"{self._platform_name}_raw": raw_event,
+        f"{self._platform_name}_raw_type": raw_event.get("type", ""),
+    }
+
+def _extract_request_id(self, raw_event: dict) -> str:
+    """
+    Extract request ID from platform-native event
+    
+    Prefer platform-native request identifiers, generate unique ID if none available
+    """
+    # Prefer platform-native ID
+    if flag := raw_event.get("flag"):
+        return str(flag)
+    if request_key := raw_event.get("request_key"):
+        return str(request_key)
+    
+    # Fallback: Generate unique ID
+    import hashlib
+    raw = f"{self._platform_name}_{raw_event.get('user_id')}_{raw_event.get('timestamp')}"
+    return hashlib.md5(raw.encode()).hexdigest()
+```
+
+### 5.2 Request Inner Class Implementation
+
+Adapters can override `accept` and `reject` in the `Request` inner class:
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    
+    class Request(RequestDSL):
+        """MyPlatform request operation implementation"""
+        
+        def accept(self, **kwargs):
+            """
+            Approve request
+            
+            :param kwargs: Extended parameters, e.g., comment="Note"
+            :return: asyncio.Task
+            """
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=True,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"Request operation failed: {e}",
+                    }
+            
+            return self._create_task(_do())
+        
+        def reject(self, **kwargs):
+            """Reject request"""
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=False,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"Request operation failed: {e}",
+                    }
+            
+            return self._create_task(_do())
+```
+
+### 5.3 Platforms Without Request Operations
+
+If the platform itself doesn't support friend requests/group invitation operations (some platforms auto-process requests), the adapter can:
+
+1. **Not override the `Request` inner class**: Use the base class default implementation, returning `retcode=10002` when calling `accept()`/`reject()`
+2. **Skip `request_id` during conversion**: Don't generate `request_id`, let `event.approve()` raise `ValueError`
+3. **Log warnings**: Record warnings in `accept`/`reject` and return appropriate error codes
+
+### 5.4 Summary: Send and Request in Parallel
+
+The adapter has two parallel DSL inner classes, each with its own responsibilities:
+
+```
+BaseAdapter
+├── Send(SendDSL)     ← Message sending
+│   ├── Raw_ob12()    ← Must implement
+│   ├── Text()        ← Recommended implementation
+│   └── Image()       ← Implement as needed
+│
+└── Request(RequestDSL) ← Request operations
+    ├── accept()        ← Implement as needed
+    └── reject()        ← Implement as needed
+```
+
+### 5.5 Adapter `__init__` Considerations
+
+When overriding the `__init__` of the `Request` inner class, you must pass through parameters and call `super().__init__()`, see [Getting Started with Adapter Development - `__init__` Considerations](../../developer-guide/adapters/getting-started.md#init-considerations) (same applies to `Request`, parameters are `adapter, request_id, account_id`).
+
+## 6. Adapter Implementation Checklist
+
+### Basic Requirements
+- [ ] If `__init__` is overridden, `super().__init__()` has been called (ensuring Send / Request factory initialization)
+
+### Request Event Conversion
+- [ ] Request event includes `request_id` field (strongly recommended)
+- [ ] `detail_type` correctly maps to `"friend"` or `"group"`
+- [ ] Platform raw data is preserved in `{platform}_raw` field
+- [ ] `request_id` generation rules are documented
+
+### Request Operations
+- [ ] `Request` inner class is implemented (if platform supports request operations)
+- [ ] `accept()` method is implemented
+- [ ] `reject()` method is implemented
+- [ ] Operations return standard API response format
+- [ ] Unsupported operations return `retcode=10002`
+- [ ] Network errors return `retcode=33xxx` (following API response standards)
+
+## 7. Error Code Extensions
+
+Recommended error codes for request operations (following [API Response Standards](api-response.md) §3.2):
+
+| Error Code | Error Name | Description |
+|------------|------------|-------------|
+| 34001 | Request Not Found | Request doesn't exist or has expired |
+| 34002 | Request Already Handled | Request has already been processed |
+| 34003 | Request Not Supported | Platform doesn't support this type of request operation |
+| 34004 | Permission Denied | Bot has no permission to handle this request |
+
+## 8. Related Documentation
+
+- [Event Conversion Standards](event-conversion.md) - Complete event conversion specification
+- [API Response Standards](api-response.md) - Adapter API response format standards
+- [Send Method Specification](send-method-spec.md) - Send class method naming and parameter specifications
+- [Session Type Standards](session-types.md) - Session type definitions and mapping relationships
 
 
 ======
@@ -11186,6 +12446,445 @@ Refer to the following documents when writing to ensure consistency:
 4. Submit a Pull Request with a detailed description of the changes
 
 If you have any questions, please contact the relevant adapter maintainer or ask in the project Issues.
+
+
+### 花枫咖啡馆适配
+
+# Ideaura Cafe Platform Features Documentation
+
+IdeauraAdapter is an adapter built based on the Ideaura Cafe (Allons) platform API, integrating all platform function modules and providing unified event handling and message operation interfaces.
+
+---
+
+## Document Information
+
+- Corresponding Module: ErisPulse-Ideaura
+- Maintainer: ErisPulse
+
+## Basic Information
+
+- Platform Introduction: Ideaura Cafe (Allons) is an instant messaging platform
+- Adapter Name: IdeauraAdapter
+- Multi-account Support: Supports configuring multiple accounts via email/password
+- Chaining Support: Supports chaining methods such as `.At()`, `.AtAll()`, `.Reply()`
+- OneBot12 Compatibility: Supports sending OneBot12 format messages
+
+## Supported Message Sending Types
+
+All sending methods are implemented through chain syntax, for example:
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+await ideaura.Send.To("group", "chatroom").Text("Hello World!")
+```
+
+Supported sending types include:
+- `.Text(text: str)`: Send plain text messages.
+- `.Image(file, filename: str = None)`: Send image messages, supporting bytes/URL/local paths.
+- `.Video(file, filename: str = None)`: Send video messages, supporting bytes/URL/local paths.
+- `.File(file, filename: str = None)`: Send file messages, supporting bytes/URL/local paths.
+- `.Voice(file, filename: str = None)`: Send voice messages (sent as files).
+- `.Face(face_id: str)`: Send emoticons (sends emoji as plain text).
+- `.Markdown(text: str)`: Send Markdown format messages.
+- `.Html(html: str)`: Send HTML format messages.
+- `.Edit(message_id: str, text: str, content_type: str = "text")`: Edit existing messages.
+- `.Recall(message_id: str)`: Recall messages.
+
+### Chaining Methods (Can be used in combination)
+
+Chaining methods return `self`, support method chaining, and must be called before the final sending method:
+- `.At(user_id: str, name: str = None)`: @ specific user.
+- `.AtAll()`: @ everyone.
+- `.Reply(message_id: str)`: Reply to specific message.
+
+### Chaining Examples
+
+```python
+# Basic sending
+await ideaura.Send.To("user", user_id).Text("Hello")
+
+# @ user
+await ideaura.Send.To("group", "chatroom").At("456").Text("@Li Si 你好")
+
+# @ multiple users
+await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
+
+# Reply to message
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回复消息")
+
+# Reply + @
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回复并@")
+```
+
+### Sending to Different Targets
+
+```python
+# Send to chat room
+await ideaura.Send.To("group", "chatroom").Text("聊天室消息")
+
+# Send to topic
+await ideaura.Send.To("group", "topic_id").Text("话题消息")
+
+# Send private message
+await ideaura.Send.To("user", "user_id").Text("私聊消息")
+```
+
+### OneBot12 Message Support
+
+The adapter supports sending OneBot12 format messages for cross-platform message compatibility:
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format messages.
+
+```python
+# Send OneBot12 format message
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# With chaining
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## Return Values of Sending Methods
+
+All sending methods return a Task object that can be directly awaited to get the sending result. The returned result follows the ErisPulse adapter standardized return specification:
+
+```python
+{
+    "status": "ok",           // Execution status
+    "retcode": 0,             // Return code
+    "data": {...},            // Response data
+    "self": {...},            // Self information (contains user_id)
+    "message_id": "123456",   // Message ID
+    "message": "",            // Error message
+    "ideaura_raw": {...}      // Raw response data
+}
+```
+
+## Special Event Types
+
+Requires `platform=="ideaura"` detection before using platform-specific features
+
+### Core Differences
+
+1. Special event types:
+   - Message edit: ideaura_message_edit
+   - Message recall: ideaura_message_recall
+   - Message forward: ideaura_message_forward
+   - Message read: ideaura_message_read
+   - Friend rejected: ideaura_friend_rejected
+   - Friend online: ideaura_friend_online
+   - Friend offline: ideaura_friend_offline
+   - User status change: ideaura_user_status_change
+   - Forwarded message segment: ideaura_forwarded
+   - Edit marker segment: ideaura_edited
+   - Markdown message segment: ideaura_markdown
+   - HTML message segment: ideaura_html
+2. Extended fields:
+   - All special fields are prefixed with `ideaura_`
+   - Raw data is preserved in the `ideaura_raw` field
+   - `self.user_id` represents the current account's user ID
+
+### Message Edit Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_edit",
+  "platform": "ideaura",
+  "message_id": "消息ID",
+  "user_id": "编辑者ID",
+  "ideaura_new_content": "编辑后的内容",
+  "ideaura_updated_message": { ... },
+  "ideaura_source_type": "chatroom/topic/private"
+}
+```
+
+### Message Recall Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_recall",
+  "platform": "ideaura",
+  "message_id": "被撤回的消息ID",
+  "user_id": "撤回者ID",
+  "group_id": "chatroom",
+  "ideaura_source_type": "chatroom",
+  "ideaura_recall_time": "撤回时间",
+  "ideaura_is_self": false
+}
+```
+
+### Message Forward Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_forward",
+  "platform": "ideaura",
+  "message_id": "原始消息ID",
+  "user_id": "转发者ID",
+  "ideaura_forward_to": "目标话题ID",
+  "ideaura_original_message_id": "原始消息ID",
+  "ideaura_forwarded_message_id": "转发后的新消息ID"
+}
+```
+
+### Message Read Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_read",
+  "platform": "ideaura",
+  "message_id": "消息ID",
+  "ideaura_reader_id": "已读者ID",
+  "ideaura_reader_name": "已读者昵称"
+}
+```
+
+### Friend Online Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_online",
+  "platform": "ideaura",
+  "user_id": "好友ID",
+  "user_nickname": "好友昵称",
+  "ideaura_friend_avatar": "头像URL",
+  "ideaura_presence_status": "online"
+}
+```
+
+### Friend Offline Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_offline",
+  "platform": "ideaura",
+  "user_id": "好友ID",
+  "ideaura_presence_status": "offline"
+}
+```
+
+### User Status Change Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_user_status_change",
+  "platform": "ideaura",
+  "user_id": "用户ID",
+  "ideaura_status": "新状态",
+  "ideaura_previous_status": "旧状态"
+}
+```
+
+### Friend Request Event
+
+```python
+{
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "ideaura",
+  "user_id": "请求者ID",
+  "user_nickname": "请求者昵称",
+  "ideaura_request_id": "请求ID",
+  "ideaura_message": "验证消息"
+}
+```
+
+### Friend Rejected Event
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_rejected",
+  "platform": "ideaura",
+  "user_id": "拒绝者ID",
+  "user_nickname": "拒绝者昵称",
+  "ideaura_request_id": "请求ID",
+  "ideaura_requester_id": "请求发起者ID",
+  "ideaura_requester_name": "请求发起者昵称"
+}
+```
+
+### Forwarded Message Segment (ideaura_forwarded)
+
+When receiving forwarded messages, the message segment type is `ideaura_forwarded`:
+
+```json
+{
+  "type": "ideaura_forwarded",
+  "data": {
+    "forward_source_id": "1001",
+    "original_message_id": "1001"
+  }
+}
+```
+
+| Field | Type | Description |
+|------|------|------|
+| `forward_source_id` | string | Forward source message ID |
+| `original_message_id` | string | Original message ID |
+
+### Event Handling Example
+
+```python
+from ErisPulse.Core.Event import notice, message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "ideaura":
+        # Handle message events
+        for segment in event.get("message", []):
+            if segment.get("type") == "ideaura_forwarded":
+                data = segment["data"]
+                print(f"转发消息，源ID: {data['forward_source_id']}")
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "ideaura_message_edit":
+        new_content = event.get("ideaura_new_content", "")
+        print(f"消息被编辑: {new_content}")
+
+    elif detail_type == "ideaura_message_recall":
+        message_id = event.get("message_id")
+        print(f"消息被撤回: {message_id}")
+
+    elif detail_type == "ideaura_friend_online":
+        friend_name = event.get_user_nickname()
+        print(f"好友上线: {friend_name}")
+
+    elif detail_type == "ideaura_user_status_change":
+        status = event.get("ideaura_status")
+        print(f"用户状态变更: {status}")
+```
+
+---
+
+## Multi-account Configuration
+
+### Configuration
+
+IdeauraAdapter supports configuring and running multiple accounts simultaneously.
+
+```toml
+# config.toml
+[IdeauraAdapter.accounts.default]
+email = "user1@example.com"     # Login email (required)
+password = "password1"          # Login password (required)
+enabled = true                  # Enable account (optional, default true)
+
+[IdeauraAdapter.accounts.bot2]
+email = "user2@example.com"
+password = "password2"
+enabled = true
+
+# Optional: Custom server address
+[IdeauraAdapter]
+base_url = "https://api-cofe.allons-y.uk:3009"
+ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
+heartbeat_interval = 30
+```
+
+**Configuration Description:**
+- `email`: Account login email (required)
+- `password`: Account login password (required)
+- `enabled`: Whether to enable this account (optional, default true)
+
+**Global Configuration Items:**
+- `base_url`: API server address (optional, default to Ideaura Cafe official address)
+- `ws_url`: WebSocket server address (optional, default to Ideaura Cafe official address)
+- `heartbeat_interval`: Heartbeat interval in seconds (optional, default 30 seconds)
+
+### Use Send DSL to Specify Account
+
+You can specify which account to use for sending messages through the `Using()` method:
+
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+# Send message using account name
+await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
+
+# Send message using user_id (automatically matches corresponding account)
+await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
+
+# Use the first enabled account when not specified
+await ideaura.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+### Account Identification in Events
+
+Received events automatically contain corresponding account information:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "ideaura":
+        account_id = event["self"]["user_id"]
+        print(f"Message from account: {account_id}")
+```
+
+---
+
+## Extended Fields Description
+
+- All special fields are prefixed with `ideaura_` to avoid conflicts with standard fields
+- Raw data is preserved in the `ideaura_raw` field for easy access to the platform's complete raw data
+- `self.user_id` represents the user ID of the currently logged-in account
+- `ideaura_source_type`: Message source type (`chatroom`/`topic`/`private`)
+- `ideaura_sender_name`: Sender nickname
+- `ideaura_sender_avatar`: Sender avatar URL
+- `ideaura_sender_is_bot`: Whether the sender is a bot
+- `ideaura_is_self`: Whether the message was sent by the current account itself (self-messages are filtered out)
+- `ideaura_topic_name`: Topic name
+- `ideaura_message_type`: Message type (`normal`/`edited`/`forwarded`/`quoted`)
+- `ideaura_message_subtype`: Message sub-type (`text`/`image`/`video`/`file`/`markdown`/`html`)
+
+### File Handling Features
+
+- File size limit: 10MB (both download and local reading have limits)
+- Automatic file type detection: Detects actual type through file header magic bytes
+- Intelligent filename parsing: Automatically corrects meaningless extensions like `.bin`/`.dat`/`.tmp`
+- Supports bytes, URL, and local path as file input methods
+- URL files are automatically downloaded and uploaded to the server
+
+### Supported File Types
+
+Automatically detected through magic bytes:
+
+| Type | Extensions |
+|------|------------|
+| Image | png, jpg, gif, webp |
+| Video | mp4, avi, flv |
+| Audio | mp3, wav, ogg |
+| Document | pdf, docx |
+
+---
+
+## Notes
+
+1. Server address `api-cofe.allons-y.uk` is a built-in platform address and does not change with adapter name
+2. The adapter uses WebSocket long connections to receive events, supports auto-reconnect (fixed 5-second delay)
+3. Messages sent by the adapter itself (`isSelf: true`) are automatically filtered and will not generate events
+4. `@everyone` (`AtAll()`) requires administrator privileges
+5. File upload size limit is 10MB
+6. Audio files are sent as `file` sub-type (the platform does not distinguish independent audio types)
+7. Emoticons (`Face()`) are sent as plain text emoji
+8. Please call `shutdown()` on program exit to ensure resource release
 
 
 ====

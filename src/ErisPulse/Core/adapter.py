@@ -1205,6 +1205,68 @@ class AdapterManager(ManagerBase):
                 running_platforms.append(platform)
         return running_platforms
 
+    def get_connection_info(self, platform: str) -> dict[str, Any] | None:
+        """
+        获取适配器的连接信息（路由URL、状态等）
+
+        结合路由管理器的路由数据，返回指定平台适配器的完整连接信息，
+        包括 base_url、HTTP 路由、WebSocket 路由和 SSE 路由的完整 URL。
+
+        路由注册时的 ``module_name`` 必须与适配器的 ``platform`` 名称完全一致，
+        否则路由信息将无法被正确关联。
+
+        :param platform: 平台名称
+        :return: 连接信息字典，平台不存在时返回 None
+
+        :example:
+        >>> info = sdk.adapter.get_connection_info("onebot11")
+        >>> # {
+        >>> #     "platform": "onebot11",
+        >>> #     "status": "started",
+        >>> #     "connection": {
+        >>> #         "base_url": "http://localhost:8080",
+        >>> #         "http_routes": [
+        >>> #             {"path": "/onebot11/webhook", "method": "POST",
+        >>> #              "url": "http://localhost:8080/onebot11/webhook"}
+        >>> #         ],
+        >>> #         "websocket_routes": [
+        >>> #             {"path": "/onebot11/ws",
+        >>> #              "url": "ws://localhost:8080/onebot11/ws"}
+        >>> #         ],
+        >>> #         "sse_routes": [
+        >>> #             {"path": "/onebot11/events",
+        >>> #              "url": "http://localhost:8080/onebot11/events"}
+        >>> #         ]
+        >>> #     }
+        >>> # }
+        """
+        if not self.exists(platform):
+            return None
+
+        from .router import router
+
+        urls = router.get_module_urls(platform)
+        has_routes = urls.get("http") or urls.get("websocket") or urls.get("sse")
+
+        if not has_routes:
+            urls = router.get_module_urls_matching(platform)
+            has_routes = urls.get("http") or urls.get("websocket") or urls.get("sse")
+
+        base_url = urls.get("base_url", "")
+
+        status = "started" if self.is_running(platform) else "stopped"
+
+        return {
+            "platform": platform,
+            "status": status,
+            "connection": {
+                "base_url": base_url,
+                "http_routes": urls.get("http", []),
+                "websocket_routes": urls.get("websocket", []),
+                "sse_routes": urls.get("sse", []),
+            },
+        }
+
     def list_sends(self, platform: str) -> list[str]:
         """
         列出指定平台支持的发送方法

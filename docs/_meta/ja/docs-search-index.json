@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1167,
+  "total_keywords": 1176,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. Mixin クラスを使用した一括登録（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 523,
+        "line": 560,
         "level": 3,
         "title": "1. Mixin クラスを使用した一括登録（推奨）"
       }
@@ -53,7 +53,7 @@
     "1. OneBot12 標準の厳格な遵守": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 187,
+        "line": 224,
         "level": 3,
         "title": "1. OneBot12 標準の厳格な遵守"
       }
@@ -69,7 +69,7 @@
     "1. Task オブジェクトを返さなければならない": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 243,
+        "line": 280,
         "level": 3,
         "title": "1. Task オブジェクトを返さなければならない"
       }
@@ -141,7 +141,7 @@
     "1. プラットフォーム特性ドキュメントの維持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 575,
+        "line": 612,
         "level": 3,
         "title": "1. プラットフォーム特性ドキュメントの維持"
       }
@@ -173,7 +173,7 @@
     "1. レスポンス形式の標準化": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 304,
+        "line": 341,
         "level": 3,
         "title": "1. レスポンス形式の標準化"
       }
@@ -213,7 +213,7 @@
     "1. 分類別の例外処理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 411,
+        "line": 448,
         "level": 3,
         "title": "1. 分類別の例外処理"
       }
@@ -229,7 +229,7 @@
     "1. 単体テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 465,
+        "line": 502,
         "level": 3,
         "title": "1. 単体テスト"
       }
@@ -245,7 +245,7 @@
     "1. 声明式設定（推奨）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 355,
+        "line": 392,
         "level": 3,
         "title": "1. 声明式設定（推奨）"
       }
@@ -437,7 +437,7 @@
     "2. アカウント選択メカニズム": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 431,
         "level": 3,
         "title": "2. アカウント選択メカニズム"
       }
@@ -445,7 +445,7 @@
     "2. エラーコード規約": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 331,
+        "line": 368,
         "level": 3,
         "title": "2. エラーコード規約"
       }
@@ -485,7 +485,7 @@
     "2. タイムスタンプの標準化": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 209,
+        "line": 246,
         "level": 3,
         "title": "2. タイムスタンプの標準化"
       }
@@ -493,7 +493,7 @@
     "2. チェーン修飾メソッドは self を返す": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 263,
+        "line": 300,
         "level": 3,
         "title": "2. チェーン修飾メソッドは self を返す"
       }
@@ -501,7 +501,7 @@
     "2. デコレータを使用した単一メソッド登録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 549,
+        "line": 586,
         "level": 3,
         "title": "2. デコレータを使用した単一メソッド登録"
       }
@@ -525,7 +525,7 @@
     "2. バージョン情報の更新": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 633,
         "level": 3,
         "title": "2. バージョン情報の更新"
       }
@@ -581,7 +581,7 @@
     "2. ログ記録": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 444,
+        "line": 481,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -653,7 +653,7 @@
     "2. 統合テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 489,
+        "line": 526,
         "level": 3,
         "title": "2. 統合テスト"
       },
@@ -843,7 +843,7 @@
     "3. アダプター終了時のクリーンアップ": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 559,
+        "line": 596,
         "level": 3,
         "title": "3. アダプター終了時のクリーンアップ"
       }
@@ -851,7 +851,7 @@
     "3. イベント ID の生成": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 225,
+        "line": 262,
         "level": 3,
         "title": "3. イベント ID の生成"
       }
@@ -915,7 +915,7 @@
     "3. プラットフォーム固有のメソッドのサポート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 277,
+        "line": 314,
         "level": 3,
         "title": "3. プラットフォーム固有のメソッドのサポート"
       }
@@ -1174,6 +1174,14 @@
         "line": 64,
         "level": 3,
         "title": "4. 拡張フィールドの説明"
+      }
+    ],
+    "4. 接続情報の公開": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 185,
+        "level": 3,
+        "title": "4. 接続情報の公開"
       }
     ],
     "4. 生成結果の検証": [
@@ -1689,7 +1697,7 @@
     "API エラーハンドリング": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 755,
+        "line": 752,
         "level": 3,
         "title": "API エラーハンドリング"
       }
@@ -1711,7 +1719,7 @@
     "API レスポンス": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 302,
+        "line": 339,
         "level": 2,
         "title": "API レスポンス"
       }
@@ -1733,7 +1741,7 @@
     "API 応答標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 636,
         "level": 2,
         "title": "API 応答標準"
       }
@@ -1807,7 +1815,7 @@
     "AdapterManager アダプター管理マネージャー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
+        "line": 49,
         "level": 2,
         "title": "AdapterManager アダプター管理マネージャー"
       }
@@ -1839,7 +1847,7 @@
     "BaseAdapter 基底クラス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 261,
+        "line": 260,
         "level": 2,
         "title": "BaseAdapter 基底クラス"
       }
@@ -1911,7 +1919,7 @@
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 872,
+        "line": 869,
         "level": 3,
         "title": "Bot ライフサイクルの監視"
       }
@@ -1919,7 +1927,7 @@
     "Bot 状態の照会": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 849,
+        "line": 846,
         "level": 3,
         "title": "Bot 状態の照会"
       }
@@ -1927,7 +1935,7 @@
     "Bot 状態管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 783,
+        "line": 780,
         "level": 2,
         "title": "Bot 状態管理"
       }
@@ -1948,12 +1956,12 @@
         "title": "CLI経由でのインストール"
       }
     ],
-    "CORS設定": [
+    "CORS 設定": [
       {
         "document": "advanced/router.md",
-        "line": 247,
+        "line": 244,
         "level": 2,
-        "title": "CORS設定"
+        "title": "CORS 設定"
       }
     ],
     "ClientWebSocket 属性": [
@@ -2260,6 +2268,14 @@
         "title": "HTTP クライアント"
       }
     ],
+    "HTTP デコレーター": [
+      {
+        "document": "advanced/router.md",
+        "line": 37,
+        "level": 3,
+        "title": "HTTP デコレーター"
+      }
+    ],
     "HTTP リクエスト": [
       {
         "document": "advanced/http-client.md",
@@ -2290,14 +2306,6 @@
         "line": 407,
         "level": 3,
         "title": "HTTPStatusError"
-      }
-    ],
-    "HTTPデコレーター": [
-      {
-        "document": "advanced/router.md",
-        "line": 37,
-        "level": 3,
-        "title": "HTTPデコレーター"
       }
     ],
     "HTTPルーティング": [
@@ -2407,7 +2415,7 @@
     "Meta イベントタイプ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 805,
+        "line": 802,
         "level": 3,
         "title": "Meta イベントタイプ"
       }
@@ -2493,7 +2501,7 @@
     "OneBot12 標準イベント": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 159,
+        "line": 158,
         "level": 4,
         "title": "OneBot12 標準イベント"
       }
@@ -2650,6 +2658,14 @@
         "title": "Request リクエストモジュール"
       }
     ],
+    "RouteGroup での使用": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 512,
+        "level": 3,
+        "title": "RouteGroup での使用"
+      }
+    ],
     "Router モジュール": [
       {
         "document": "api-reference/core-modules.md",
@@ -2714,6 +2730,14 @@
         "title": "SQLクエリビルダー"
       }
     ],
+    "SSE (Server-Sent Events) 支持": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 465,
+        "level": 2,
+        "title": "SSE (Server-Sent Events) 支持"
+      }
+    ],
     "Send DSL を使用したアカウント指定": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -2765,7 +2789,7 @@
     "Send 消息送信 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 432,
+        "line": 431,
         "level": 2,
         "title": "Send 消息送信 DSL"
       }
@@ -2781,7 +2805,7 @@
     "SendDSL の実装": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 239,
+        "line": 276,
         "level": 2,
         "title": "SendDSL の実装"
       }
@@ -2800,6 +2824,14 @@
         "line": 1,
         "level": 1,
         "title": "SendDSL 詳解"
+      }
+    ],
+    "SseEmitter API": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 503,
+        "level": 3,
+        "title": "SseEmitter API"
       }
     ],
     "Storage モジュール": [
@@ -2901,7 +2933,7 @@
     "WebHook 接続": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 615,
+        "line": 612,
         "level": 3,
         "title": "WebHook 接続"
       }
@@ -2922,6 +2954,22 @@
         "title": "WebSocket クライアント"
       }
     ],
+    "WebSocket デコレーター": [
+      {
+        "document": "advanced/router.md",
+        "line": 64,
+        "level": 3,
+        "title": "WebSocket デコレーター"
+      }
+    ],
+    "WebSocket ライフサイクルフック": [
+      {
+        "document": "advanced/router.md",
+        "line": 170,
+        "level": 2,
+        "title": "WebSocket ライフサイクルフック"
+      }
+    ],
     "WebSocket 接続": [
       {
         "document": "advanced/http-client.md",
@@ -2931,7 +2979,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 579,
+        "line": 578,
         "level": 3,
         "title": "WebSocket 接続"
       }
@@ -2944,20 +2992,12 @@
         "title": "WebSocket 接続イベント"
       }
     ],
-    "WebSocketデコレーター": [
+    "WebSocket 登録": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 129,
         "level": 3,
-        "title": "WebSocketデコレーター"
-      }
-    ],
-    "WebSocketライフサイクルフック": [
-      {
-        "document": "advanced/router.md",
-        "line": 173,
-        "level": 2,
-        "title": "WebSocketライフサイクルフック"
+        "title": "WebSocket 登録"
       }
     ],
     "WebSocket接続": [
@@ -2972,14 +3012,6 @@
         "line": 255,
         "level": 2,
         "title": "WebSocket接続"
-      }
-    ],
-    "WebSocket登録": [
-      {
-        "document": "advanced/router.md",
-        "line": 132,
-        "level": 3,
-        "title": "WebSocket登録"
       }
     ],
     "Whereのパラメータ渡しルール": [
@@ -3182,12 +3214,12 @@
         "title": "`reply` メソッドを使用して返信を送信する"
       }
     ],
-    "`self` フィールドの拡張情報": [
+    "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 838,
+        "line": 835,
         "level": 3,
-        "title": "`self` フィールドの拡張情報"
+        "title": "`self` 字段扩展信息"
       }
     ],
     "call_api メソッド": [
@@ -3297,7 +3329,7 @@
     "get() メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 245,
+        "line": 244,
         "level": 4,
         "title": "get() メソッド"
       }
@@ -3385,7 +3417,7 @@
     "metadata 約定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 366,
+        "line": 365,
         "level": 4,
         "title": "metadata 約定"
       }
@@ -3610,14 +3642,6 @@
         "title": "よく使用される CSS クラス名"
       }
     ],
-    "アカウントの解決": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 385,
-        "level": 4,
-        "title": "アカウントの解決"
-      }
-    ],
     "アカウント管理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3638,14 +3662,6 @@
         "line": 176,
         "level": 3,
         "title": "アカウント設定"
-      }
-    ],
-    "アカウント設定ファイル": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 702,
-        "level": 3,
-        "title": "アカウント設定ファイル"
       }
     ],
     "アクティブ状態の管理": [
@@ -3718,14 +3734,6 @@
         "title": "アダプターとは何か"
       }
     ],
-    "アダプターによる Meta イベント送信": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
-        "level": 3,
-        "title": "アダプターによる Meta イベント送信"
-      }
-    ],
     "アダプターのアーキテクチャ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3740,12 +3748,12 @@
         "title": "アダプターのアーキテクチャ"
       }
     ],
-    "アダプターのコア概念": [
+    "アダプターの核心概念": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1,
         "level": 1,
-        "title": "アダプターのコア概念"
+        "title": "アダプターの核心概念"
       }
     ],
     "アダプターの概要": [
@@ -3759,7 +3767,7 @@
     "アダプターの終了": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 112,
+        "line": 111,
         "level": 4,
         "title": "アダプターの終了"
       }
@@ -3767,7 +3775,7 @@
     "アダプターの起動": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 89,
+        "line": 88,
         "level": 4,
         "title": "アダプターの起動"
       }
@@ -3775,7 +3783,7 @@
     "アダプターインスタンスの取得": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 243,
+        "line": 242,
         "level": 3,
         "title": "アダプターインスタンスの取得"
       }
@@ -3939,7 +3947,7 @@
     "イベントコンバーター": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 504,
+        "line": 503,
         "level": 2,
         "title": "イベントコンバーター"
       }
@@ -3987,7 +3995,7 @@
     "イベントディスパッチメカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 194,
+        "line": 193,
         "level": 4,
         "title": "イベントディスパッチメカニズム"
       }
@@ -4043,7 +4051,7 @@
     "イベントリスニング": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 157,
+        "line": 156,
         "level": 3,
         "title": "イベントリスニング"
       }
@@ -4159,7 +4167,7 @@
     "イベント変換": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
+        "line": 222,
         "level": 2,
         "title": "イベント変換"
       },
@@ -4343,13 +4351,13 @@
     "エラーハンドリング": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 409,
+        "line": 446,
         "level": 2,
         "title": "エラーハンドリング"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 726,
         "level": 2,
         "title": "エラーハンドリング"
       },
@@ -4727,7 +4735,7 @@
     "コア機能": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 54,
+        "line": 53,
         "level": 3,
         "title": "コア機能"
       }
@@ -4915,7 +4923,7 @@
     "コンバーターの例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 536,
+        "line": 535,
         "level": 3,
         "title": "コンバーターの例"
       }
@@ -5109,7 +5117,7 @@
     "システムルート": [
       {
         "document": "advanced/router.md",
-        "line": 307,
+        "line": 304,
         "level": 2,
         "title": "システムルート"
       }
@@ -5289,7 +5297,7 @@
     "セキュリティヘッダー": [
       {
         "document": "advanced/router.md",
-        "line": 266,
+        "line": 263,
         "level": 2,
         "title": "セキュリティヘッダー"
       }
@@ -5377,7 +5385,7 @@
     "チェーン修飾メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 490,
+        "line": 489,
         "level": 3,
         "title": "チェーン修飾メソッド"
       },
@@ -5469,7 +5477,7 @@
     "テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 463,
+        "line": 500,
         "level": 2,
         "title": "テスト"
       },
@@ -5665,7 +5673,7 @@
     "ドキュメントの維持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 573,
+        "line": 610,
         "level": 2,
         "title": "ドキュメントの維持"
       }
@@ -5863,7 +5871,7 @@
     "パス処理": [
       {
         "document": "advanced/router.md",
-        "line": 297,
+        "line": 294,
         "level": 2,
         "title": "パス処理"
       }
@@ -5967,7 +5975,7 @@
     "フレームワーク補助メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 460,
+        "line": 459,
         "level": 3,
         "title": "フレームワーク補助メソッド"
       }
@@ -6031,7 +6039,7 @@
     "プラットフォームの一覧": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 143,
+        "line": 142,
         "level": 4,
         "title": "プラットフォームの一覧"
       }
@@ -6039,7 +6047,7 @@
     "プラットフォームイベントメソッド拡張": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 519,
+        "line": 556,
         "level": 2,
         "title": "プラットフォームイベントメソッド拡張"
       }
@@ -6047,7 +6055,7 @@
     "プラットフォームネイティブイベント": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 180,
+        "line": 179,
         "level": 4,
         "title": "プラットフォームネイティブイベント"
       }
@@ -6145,7 +6153,7 @@
     "プラットフォーム状態の確認": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 129,
+        "line": 128,
         "level": 4,
         "title": "プラットフォーム状態の確認"
       }
@@ -6265,7 +6273,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 253,
+        "line": 252,
         "level": 4,
         "title": "プロパティアクセス"
       }
@@ -6273,7 +6281,7 @@
     "ヘルスチェック": [
       {
         "document": "advanced/router.md",
-        "line": 311,
+        "line": 308,
         "level": 3,
         "title": "ヘルスチェック"
       },
@@ -6315,7 +6323,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 340,
+        "line": 337,
         "level": 2,
         "title": "ベストプラクティス"
       },
@@ -6397,7 +6405,7 @@
     "マルチアカウントサポート": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 353,
+        "line": 390,
         "level": 2,
         "title": "マルチアカウントサポート"
       }
@@ -6459,7 +6467,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 208,
+        "line": 207,
         "level": 3,
         "title": "ミドルウェア"
       }
@@ -6475,7 +6483,7 @@
     "ミドルウェアの実行順序": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 228,
+        "line": 227,
         "level": 4,
         "title": "ミドルウェアの実行順序"
       }
@@ -6491,7 +6499,7 @@
     "ミドルウェアの追加": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 210,
+        "line": 209,
         "level": 4,
         "title": "ミドルウェアの追加"
       }
@@ -7361,7 +7369,7 @@
     "ライフサイクル統合": [
       {
         "document": "advanced/router.md",
-        "line": 326,
+        "line": 323,
         "level": 2,
         "title": "ライフサイクル統合"
       }
@@ -7454,6 +7462,14 @@
         "title": "リクエストタイプの判定"
       }
     ],
+    "リクエストパラメータの使用": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 485,
+        "level": 3,
+        "title": "リクエストパラメータの使用"
+      }
+    ],
     "リクエストメソッド": [
       {
         "document": "advanced/http-client.md",
@@ -7543,7 +7559,7 @@
     "ルーティングミドルウェア": [
       {
         "document": "advanced/router.md",
-        "line": 214,
+        "line": 211,
         "level": 2,
         "title": "ルーティングミドルウェア"
       }
@@ -7551,9 +7567,25 @@
     "ルートグループ化": [
       {
         "document": "advanced/router.md",
-        "line": 197,
+        "line": 194,
         "level": 2,
         "title": "ルートグループ化"
+      }
+    ],
+    "ルートリスト": [
+      {
+        "document": "advanced/router.md",
+        "line": 316,
+        "level": 3,
+        "title": "ルートリスト"
+      }
+    ],
+    "ルート発見": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 522,
+        "level": 3,
+        "title": "ルート発見"
       }
     ],
     "ループ対話": [
@@ -7583,7 +7615,7 @@
     "レート制限": [
       {
         "document": "advanced/router.md",
-        "line": 231,
+        "line": 228,
         "level": 2,
         "title": "レート制限"
       }
@@ -8067,7 +8099,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 411,
+        "line": 410,
         "level": 3,
         "title": "初期化プロセス"
       }
@@ -8091,7 +8123,7 @@
     "利用可能な属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 443,
+        "line": 442,
         "level": 3,
         "title": "利用可能な属性"
       }
@@ -8129,7 +8161,7 @@
     "単一アカウント設定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 309,
+        "line": 308,
         "level": 4,
         "title": "単一アカウント設定"
       }
@@ -8339,7 +8371,7 @@
     "基本メソッド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 467,
+        "line": 466,
         "level": 3,
         "title": "基本メソッド"
       },
@@ -8433,7 +8465,7 @@
     "基本構造": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 263,
+        "line": 262,
         "level": 3,
         "title": "基本構造"
       }
@@ -8457,7 +8489,7 @@
     "基本的な使用": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 62,
+        "line": 61,
         "level": 3,
         "title": "基本的な使用"
       }
@@ -8486,6 +8518,14 @@
         "line": 130,
         "level": 3,
         "title": "基本的な使用方法"
+      }
+    ],
+    "基本的な使用法": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 469,
+        "level": 3,
+        "title": "基本的な使用法"
       }
     ],
     "基本的な呼び出し方": [
@@ -8550,10 +8590,18 @@
         "title": "基本送信メソッド"
       }
     ],
+    "声明式設定（推奨）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 672,
+        "level": 3,
+        "title": "声明式設定（推奨）"
+      }
+    ],
     "変換フロー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 506,
+        "line": 505,
         "level": 3,
         "title": "変換フロー"
       }
@@ -8561,7 +8609,7 @@
     "多アカウントサポート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 673,
+        "line": 670,
         "level": 2,
         "title": "多アカウントサポート"
       }
@@ -8569,7 +8617,7 @@
     "多アカウント設定": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 338,
+        "line": 337,
         "level": 4,
         "title": "多アカウント設定"
       }
@@ -8674,14 +8722,6 @@
         "title": "実行制御コマンド"
       }
     ],
-    "宣言的設定（推奨）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 675,
-        "level": 3,
-        "title": "宣言的設定（推奨）"
-      }
-    ],
     "審査にはどのくらい時間がかかりますか？": [
       {
         "document": "developer-guide/publishing.md",
@@ -8763,7 +8803,7 @@
     "従来の登録方式": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 103,
         "level": 2,
         "title": "従来の登録方式"
       }
@@ -8771,7 +8811,7 @@
     "必須フィールド": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 516,
+        "line": 515,
         "level": 3,
         "title": "必須フィールド"
       }
@@ -8803,7 +8843,7 @@
     "成功応答": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 643,
+        "line": 640,
         "level": 3,
         "title": "成功応答"
       }
@@ -8859,7 +8899,7 @@
     "手動構築のレスポンス（旧版方式でも互換性あり）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 659,
+        "line": 656,
         "level": 3,
         "title": "手動構築のレスポンス（旧版方式でも互換性あり）"
       }
@@ -8943,7 +8983,7 @@
     "指定アカウントでの送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 716,
+        "line": 713,
         "level": 3,
         "title": "指定アカウントでの送信"
       }
@@ -8983,7 +9023,7 @@
     "接続リトライ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 731,
+        "line": 728,
         "level": 3,
         "title": "接続リトライ"
       }
@@ -8994,6 +9034,14 @@
         "line": 325,
         "level": 3,
         "title": "接続切断時の再接続"
+      }
+    ],
+    "接続情報とルート発見": [
+      {
+        "document": "developer-guide/adapters/getting-started.md",
+        "line": 424,
+        "level": 2,
+        "title": "接続情報とルート発見"
       }
     ],
     "接続手順": [
@@ -9013,7 +9061,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 577,
+        "line": 576,
         "level": 2,
         "title": "接続管理"
       }
@@ -9295,7 +9343,7 @@
       },
       {
         "document": "developer-guide/adapters/getting-started.md",
-        "line": 424,
+        "line": 542,
         "level": 2,
         "title": "次のステップ"
       },
@@ -9661,7 +9709,7 @@
     "継承関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 434,
+        "line": 433,
         "level": 3,
         "title": "継承関係"
       }
@@ -9669,7 +9717,7 @@
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
-        "line": 281,
+        "line": 278,
         "level": 2,
         "title": "自動ドキュメント"
       }
@@ -9685,7 +9733,7 @@
     "自動発見メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 787,
+        "line": 784,
         "level": 3,
         "title": "自動発見メカニズム"
       }
@@ -9736,14 +9784,6 @@
         "line": 81,
         "level": 3,
         "title": "設定"
-      }
-    ],
-    "設定のホット更新": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 398,
-        "level": 4,
-        "title": "設定のホット更新"
       }
     ],
     "設定の使用": [
@@ -9847,13 +9887,7 @@
     "設定管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 127,
-        "level": 3,
-        "title": "設定管理"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 305,
+        "line": 126,
         "level": 3,
         "title": "設定管理"
       },
@@ -9906,6 +9940,22 @@
         "title": "貢献の招待"
       }
     ],
+    "账户解析": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 384,
+        "level": 4,
+        "title": "账户解析"
+      }
+    ],
+    "账户配置文件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 699,
+        "level": 3,
+        "title": "账户配置文件"
+      }
+    ],
     "贴纸消息段 (yunhu_user_sticker)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -9917,7 +9967,7 @@
     "起動と終了": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 87,
+        "line": 86,
         "level": 3,
         "title": "起動と終了"
       }
@@ -9928,14 +9978,6 @@
         "line": 234,
         "level": 3,
         "title": "超级文件分享事件の例"
-      }
-    ],
-    "路由リスト": [
-      {
-        "document": "advanced/router.md",
-        "line": 319,
-        "level": 3,
-        "title": "路由リスト"
       }
     ],
     "転送機能": [
@@ -10112,10 +10154,18 @@
         "title": "送信者情報"
       }
     ],
+    "适配器发送 Meta 事件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 810,
+        "level": 3,
+        "title": "适配器发送 Meta 事件"
+      }
+    ],
     "逆変換とメッセージ構築": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 509,
+        "line": 546,
         "level": 2,
         "title": "逆変換とメッセージ構築"
       }
@@ -10238,6 +10288,22 @@
         "title": "部署"
       }
     ],
+    "配置热更新": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 397,
+        "level": 4,
+        "title": "配置热更新"
+      }
+    ],
+    "配置管理": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 304,
+        "level": 3,
+        "title": "配置管理"
+      }
+    ],
     "開発の準備": [
       {
         "document": "developer-guide/README.md",
@@ -10349,7 +10415,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 350,
+        "line": 347,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -10397,7 +10463,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 605,
+        "line": 642,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -10461,7 +10527,7 @@
     "関連文書": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 890,
+        "line": 887,
         "level": 2,
         "title": "関連文書"
       }

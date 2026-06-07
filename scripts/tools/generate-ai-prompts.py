@@ -125,7 +125,6 @@ SYSTEM_PROMPTS: dict[str, str] = {
 - 各平台特性指南（OneBot11/12、Telegram、云湖、邮件等）
 - 模块/适配器发布流程和模块商店
 - 代码规范和文档字符串规范
-- 已知问题追踪和历史 Bug 记录
 
 你擅长：
 - 编写高质量的异步 Python 代码
@@ -185,6 +184,8 @@ SECTION_ADVANCED_MODULE = Section(
     entries=[
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
+        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("路由系统", "advanced/router.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
@@ -196,6 +197,8 @@ SECTION_ADVANCED_MODULE = Section(
 SECTION_ADVANCED_ADAPTER = Section(
     title="高级主题",
     entries=[
+        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
@@ -205,6 +208,8 @@ SECTION_ADVANCED_ADAPTER = Section(
 SECTION_ADVANCED_FULL = Section(
     title="高级主题",
     entries=[
+        DocEntry("HTTP 客户端", "advanced/http-client.md"),
+        DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("路由系统", "advanced/router.md"),
@@ -229,6 +234,7 @@ SECTION_STANDARDS_ADAPTER = Section(
         DocEntry("事件转换标准", "standards/event-conversion.md"),
         DocEntry("API 响应标准", "standards/api-response.md"),
         DocEntry("发送方法规范", "standards/send-method-spec.md"),
+        DocEntry("请求操作规范", "standards/request-action-spec.md"),
     ],
 )
 
@@ -239,6 +245,7 @@ SECTION_STANDARDS_FULL = Section(
         DocEntry("事件转换标准", "standards/event-conversion.md"),
         DocEntry("API 响应标准", "standards/api-response.md"),
         DocEntry("发送方法规范", "standards/send-method-spec.md"),
+        DocEntry("请求操作规范", "standards/request-action-spec.md"),
     ],
 )
 
@@ -263,6 +270,7 @@ SECTION_PLATFORM_FULL = Section(
         DocEntry("QQBot 适配", "platform-guide/qqbot.md"),
         DocEntry("云湖用户端适配", "platform-guide/yunhu_user.md"),
         DocEntry("平台文档维护说明", "platform-guide/maintain-notes.md"),
+        DocEntry("花枫咖啡馆适配", "platform-guide/ideaura.md"),
     ],
 )
 
@@ -455,12 +463,6 @@ PROMPT_SPECS: list[PromptSpec] = [
             SECTION_ADVANCED_FULL,
             SECTION_PLATFORM_FULL,
             SECTION_STYLEGUIDE,
-            Section(
-                title="已知问题追踪",
-                entries=[
-                    DocEntry("历史 Bug 记录", "bug-tracker.md"),
-                ],
-            ),
         ],
     ),
 ]

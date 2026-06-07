@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1196,
+  "total_keywords": 1197,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -13,7 +13,7 @@
     "1. Unit-тесты": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 465,
+        "line": 502,
         "level": 3,
         "title": "1. Unit-тесты"
       }
@@ -29,7 +29,7 @@
     "1. Декларативная конфигурация (Рекомендуется)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 355,
+        "line": 392,
         "level": 3,
         "title": "1. Декларативная конфигурация (Рекомендуется)"
       }
@@ -53,7 +53,7 @@
     "1. Использование класса Mixin для пакетной регистрации (Рекомендуется)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 523,
+        "line": 560,
         "level": 3,
         "title": "1. Использование класса Mixin для пакетной регистрации (Рекомендуется)"
       }
@@ -133,7 +133,7 @@
     "1. Обработка исключений по категориям": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 411,
+        "line": 448,
         "level": 3,
         "title": "1. Обработка исключений по категориям"
       }
@@ -149,7 +149,7 @@
     "1. Обязательный возврат объекта Task": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 243,
+        "line": 280,
         "level": 3,
         "title": "1. Обязательный возврат объекта Task"
       }
@@ -189,7 +189,7 @@
     "1. Поддержка документации платформенных возможностей": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 575,
+        "line": 612,
         "level": 3,
         "title": "1. Поддержка документации платформенных возможностей"
       }
@@ -261,7 +261,7 @@
     "1. Стандартизированный формат ответа": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 304,
+        "line": 341,
         "level": 3,
         "title": "1. Стандартизированный формат ответа"
       }
@@ -277,7 +277,7 @@
     "1. Строгое соответствие стандарту OneBot12": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 187,
+        "line": 224,
         "level": 3,
         "title": "1. Строгое соответствие стандарту OneBot12"
       }
@@ -477,7 +477,7 @@
     "2. Интеграционные тесты": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 489,
+        "line": 526,
         "level": 3,
         "title": "2. Интеграционные тесты"
       }
@@ -485,7 +485,7 @@
     "2. Использование декоратора для регистрации отдельного метода": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 549,
+        "line": 586,
         "level": 3,
         "title": "2. Использование декоратора для регистрации отдельного метода"
       }
@@ -493,7 +493,7 @@
     "2. Логирование": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 444,
+        "line": 481,
         "level": 3,
         "title": "2. Логирование"
       },
@@ -507,7 +507,7 @@
     "2. Методы цепных модификаторов возвращают self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 263,
+        "line": 300,
         "level": 3,
         "title": "2. Методы цепных модификаторов возвращают self"
       }
@@ -515,7 +515,7 @@
     "2. Механизм выбора аккаунта": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 431,
         "level": 3,
         "title": "2. Механизм выбора аккаунта"
       }
@@ -531,7 +531,7 @@
     "2. Обновление информации о версии": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 633,
         "level": 3,
         "title": "2. Обновление информации о версии"
       }
@@ -643,7 +643,7 @@
     "2. Спецификация кодов ошибок": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 331,
+        "line": 368,
         "level": 3,
         "title": "2. Спецификация кодов ошибок"
       }
@@ -651,7 +651,7 @@
     "2. Стандартизация временных меток": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 209,
+        "line": 246,
         "level": 3,
         "title": "2. Стандартизация временных меток"
       }
@@ -867,7 +867,7 @@
     "3. Генерация ID событий": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 225,
+        "line": 262,
         "level": 3,
         "title": "3. Генерация ID событий"
       }
@@ -923,7 +923,7 @@
     "3. Очистка при закрытии адаптера": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 559,
+        "line": 596,
         "level": 3,
         "title": "3. Очистка при закрытии адаптера"
       }
@@ -947,7 +947,7 @@
     "3. Поддержка платформенных методов": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 277,
+        "line": 314,
         "level": 3,
         "title": "3. Поддержка платформенных методов"
       }
@@ -1230,6 +1230,14 @@
         "line": 106,
         "level": 3,
         "title": "4. Управление опубликованными модулями"
+      }
+    ],
+    "4. Экспозиция информации о соединении": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 185,
+        "level": 3,
+        "title": "4. Экспозиция информации о соединении"
       }
     ],
     "4.1 Регистрация пользовательского типа": [
@@ -1983,7 +1991,7 @@
     "Middleware маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 214,
+        "line": 211,
         "level": 2,
         "title": "Middleware маршрутов"
       }
@@ -2175,7 +2183,7 @@
     "WebSocket декораторы": [
       {
         "document": "advanced/router.md",
-        "line": 67,
+        "line": 64,
         "level": 3,
         "title": "WebSocket декораторы"
       }
@@ -2573,7 +2581,7 @@
     "Автоматическая документация": [
       {
         "document": "advanced/router.md",
-        "line": 281,
+        "line": 278,
         "level": 2,
         "title": "Автоматическая документация"
       }
@@ -3273,7 +3281,7 @@
     "Группировка маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 197,
+        "line": 194,
         "level": 2,
         "title": "Группировка маршрутов"
       }
@@ -3373,7 +3381,7 @@
     "Декларативная конфигурация (рекомендуется)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 675,
+        "line": 677,
         "level": 3,
         "title": "Декларативная конфигурация (рекомендуется)"
       }
@@ -3737,7 +3745,7 @@
     "Заголовки безопасности": [
       {
         "document": "advanced/router.md",
-        "line": 266,
+        "line": 263,
         "level": 2,
         "title": "Заголовки безопасности"
       }
@@ -3823,7 +3831,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 849,
+        "line": 851,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -4083,7 +4091,7 @@
     "Интеграция жизненного цикла": [
       {
         "document": "advanced/router.md",
-        "line": 357,
+        "line": 354,
         "level": 2,
         "title": "Интеграция жизненного цикла"
       }
@@ -4439,7 +4447,7 @@
     "Классический способ регистрации": [
       {
         "document": "advanced/router.md",
-        "line": 106,
+        "line": 103,
         "level": 2,
         "title": "Классический способ регистрации"
       }
@@ -4545,7 +4553,7 @@
     "Конвертация событий": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
+        "line": 222,
         "level": 2,
         "title": "Конвертация событий"
       },
@@ -4575,7 +4583,7 @@
     "Конфигурация CORS": [
       {
         "document": "advanced/router.md",
-        "line": 247,
+        "line": 244,
         "level": 2,
         "title": "Конфигурация CORS"
       }
@@ -4814,12 +4822,12 @@
         "title": "Менеджер адаптеров"
       }
     ],
-    "Менеджер маршрутизации (Router Manager)": [
+    "Менеджер маршрутизации": [
       {
         "document": "advanced/router.md",
         "line": 1,
         "level": 1,
-        "title": "Менеджер маршрутизации (Router Manager)"
+        "title": "Менеджер маршрутизации"
       }
     ],
     "Меню быстрого доступа": [
@@ -5135,7 +5143,7 @@
     "Механизм автоматического обнаружения": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 787,
+        "line": 789,
         "level": 3,
         "title": "Механизм автоматического обнаружения"
       }
@@ -5151,7 +5159,7 @@
     "Механизм аутентификации": [
       {
         "document": "advanced/router.md",
-        "line": 307,
+        "line": 304,
         "level": 2,
         "title": "Механизм аутентификации"
       }
@@ -5681,13 +5689,13 @@
     "Обработка ошибок": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 409,
+        "line": 446,
         "level": 2,
         "title": "Обработка ошибок"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 731,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -5719,7 +5727,7 @@
     "Обработка ошибок API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 755,
+        "line": 757,
         "level": 3,
         "title": "Обработка ошибок API"
       }
@@ -5727,7 +5735,7 @@
     "Обработка путей": [
       {
         "document": "advanced/router.md",
-        "line": 297,
+        "line": 294,
         "level": 2,
         "title": "Обработка путей"
       }
@@ -5859,7 +5867,7 @@
     "Обратное преобразование и построение сообщений": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 509,
+        "line": 546,
         "level": 2,
         "title": "Обратное преобразование и построение сообщений"
       }
@@ -5969,7 +5977,7 @@
     "Ограничение скорости (Rate Limiting)": [
       {
         "document": "advanced/router.md",
-        "line": 231,
+        "line": 228,
         "level": 2,
         "title": "Ограничение скорости (Rate Limiting)"
       }
@@ -6515,7 +6523,7 @@
     "Ответ API": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 302,
+        "line": 339,
         "level": 2,
         "title": "Ответ API"
       }
@@ -6579,7 +6587,7 @@
     "Отправка meta-событий адаптером": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
+        "line": 815,
         "level": 3,
         "title": "Отправка meta-событий адаптером"
       }
@@ -6627,7 +6635,7 @@
     "Отправка от указанного аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 716,
+        "line": 718,
         "level": 3,
         "title": "Отправка от указанного аккаунта"
       }
@@ -6907,7 +6915,7 @@
     "Повтор подключения": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 731,
+        "line": 733,
         "level": 3,
         "title": "Повтор подключения"
       }
@@ -7043,7 +7051,7 @@
     "Поддержка документации": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 573,
+        "line": 610,
         "level": 2,
         "title": "Поддержка документации"
       }
@@ -7051,7 +7059,7 @@
     "Поддержка нескольких аккаунтов": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 353,
+        "line": 390,
         "level": 2,
         "title": "Поддержка нескольких аккаунтов"
       }
@@ -7059,7 +7067,7 @@
     "Поддержка нескольких учетных записей": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 673,
+        "line": 675,
         "level": 2,
         "title": "Поддержка нескольких учетных записей"
       }
@@ -7813,7 +7821,7 @@
     "Проверка работоспособности": [
       {
         "document": "advanced/router.md",
-        "line": 342,
+        "line": 339,
         "level": 3,
         "title": "Проверка работоспособности"
       }
@@ -8119,7 +8127,7 @@
     "Расширение платформенных методов событий": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 519,
+        "line": 556,
         "level": 2,
         "title": "Расширение платформенных методов событий"
       }
@@ -8151,7 +8159,7 @@
     "Расширенная информация поля `self`": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 838,
+        "line": 840,
         "level": 3,
         "title": "Расширенная информация поля `self`"
       }
@@ -8217,7 +8225,7 @@
     "Реализация SendDSL": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 239,
+        "line": 276,
         "level": 2,
         "title": "Реализация SendDSL"
       }
@@ -8233,7 +8241,7 @@
     "Регистрация WebSocket": [
       {
         "document": "advanced/router.md",
-        "line": 132,
+        "line": 129,
         "level": 3,
         "title": "Регистрация WebSocket"
       }
@@ -8377,7 +8385,7 @@
     "Рекомендации по использованию": [
       {
         "document": "advanced/router.md",
-        "line": 371,
+        "line": 368,
         "level": 2,
         "title": "Рекомендации по использованию"
       }
@@ -8517,7 +8525,7 @@
     "Ручное построение ответа (старый способ по-прежнему совместим)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 659,
+        "line": 661,
         "level": 3,
         "title": "Ручное построение ответа (старый способ по-прежнему совместим)"
       }
@@ -8603,7 +8611,7 @@
       },
       {
         "document": "advanced/router.md",
-        "line": 381,
+        "line": 378,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -8633,7 +8641,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 605,
+        "line": 642,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -8645,7 +8653,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 890,
+        "line": 892,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -8885,7 +8893,7 @@
     "Системные маршруты": [
       {
         "document": "advanced/router.md",
-        "line": 338,
+        "line": 335,
         "level": 2,
         "title": "Системные маршруты"
       }
@@ -8973,7 +8981,7 @@
     "Слушивание жизненного цикла бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 872,
+        "line": 874,
         "level": 3,
         "title": "Слушивание жизненного цикла бота"
       }
@@ -9449,7 +9457,7 @@
     "Список маршрутов": [
       {
         "document": "advanced/router.md",
-        "line": 350,
+        "line": 347,
         "level": 3,
         "title": "Список маршрутов"
       }
@@ -9575,7 +9583,7 @@
     "Стандарт ответа API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 641,
         "level": 2,
         "title": "Стандарт ответа API"
       }
@@ -9809,7 +9817,7 @@
     "Тестирование": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 463,
+        "line": 500,
         "level": 2,
         "title": "Тестирование"
       },
@@ -9877,7 +9885,7 @@
     "Типы meta-событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 805,
+        "line": 807,
         "level": 3,
         "title": "Типы meta-событий"
       }
@@ -10221,7 +10229,7 @@
     "Управление состоянием бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 783,
+        "line": 785,
         "level": 2,
         "title": "Управление состоянием бота"
       }
@@ -10285,7 +10293,7 @@
     "Успешный ответ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 643,
+        "line": 645,
         "level": 3,
         "title": "Успешный ответ"
       }
@@ -10421,7 +10429,7 @@
     "Файл конфигурации аккаунта": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 702,
+        "line": 704,
         "level": 3,
         "title": "Файл конфигурации аккаунта"
       }
@@ -10561,7 +10569,7 @@
     "Хуки жизненного цикла WebSocket": [
       {
         "document": "advanced/router.md",
-        "line": 173,
+        "line": 170,
         "level": 2,
         "title": "Хуки жизненного цикла WebSocket"
       }

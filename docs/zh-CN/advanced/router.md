@@ -50,15 +50,12 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# 继续使用 FastAPI 类型也完全兼容
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
@@ -101,7 +98,7 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocket 处理器和认证处理器也支持自动注入。如果参数注解为 `fastapi.WebSocket`，则传入原生对象；否则传入 `WebSocketConnection`。
+> **注意**：WebSocket 处理器和认证处理器也支持自动注入。无需参数注解即可获得 `WebSocketConnection`。标注 `fastapi.WebSocket` 也可传入原生对象，但推荐使用抽象类型。
 
 ## 传统注册方式
 

@@ -182,6 +182,43 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
+### 4. Exposing Connection Information
+
+Adapters' registered routes should be visible to users to facilitate configuring the callback address on the platform side. It is recommended to proactively output connection information in `start()`:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket address: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+Users can view all routes and connection addresses of the adapter via the following API:
+
+```python
+from ErisPulse import sdk
+
+# Adapter level connection information (recommended)
+info = sdk.adapter.get_connection_info("myplatform")
+
+# Router manager level query
+sdk.router.list_namespaces()              # List all namespaces
+sdk.router.get_module_routes("myplatform")  # Detailed route information
+sdk.router.get_module_urls("myplatform")    # Full connection URLs
+```
+
+> **Note**: The `module_name` when registering routes must be exactly consistent with the adapter's registered `platform` name in ErisPulse; otherwise, `get_connection_info()` will not be able to associate the route. Multi-account adapters should register sub-paths for each account (e.g., `/account1/webhook`, `/account2/webhook`), rather than using different `module_name` values.
+
 ## Event Conversion
 
 ### 1. Strictly Follow OneBot12 Standard
