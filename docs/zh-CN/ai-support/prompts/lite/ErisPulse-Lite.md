@@ -57,8 +57,6 @@ class Main(BaseModule):
         return ModuleLoadStrategy(lazy_load=True, priority=0, depends=[])
 
     async def on_load(self, event):
-        self.session = aiohttp.ClientSession()
-
         @command("hello", help="问候")
         async def hello(event: Event):
             name = event.get_user_nickname() or "朋友"
@@ -73,8 +71,6 @@ class Main(BaseModule):
         self.logger.info("MyModule 已加载")
 
     async def on_unload(self, event):
-        if hasattr(self, 'session') and self.session:
-            await self.session.close()
         self.logger.info("MyModule 已卸载")
 
     def _load_config(self):
@@ -244,12 +240,11 @@ self.logger.error("错误")
 child = sdk.logger.get_child("Sub")
 sdk.logger.mymodule.info("属性访问语法糖")
 
-# Router（FastAPI，处理器参数必须类型注解）
-from fastapi import Request, WebSocket
-async def api_handler(request: Request):
+# Router（处理器参数自动注入 HttpRequest / WebSocketConnection）
+async def api_handler(request):
     return {"status": "ok"}
 sdk.router.register_http_route(module_name="MyModule", path="/api", handler=api_handler, methods=["GET"])
-async def ws_handler(websocket: WebSocket):
+async def ws_handler(websocket):
     data = await websocket.receive_text()
     await websocket.send_text(f"Echo: {data}")
 sdk.router.register_websocket(module_name="MyModule", path="/ws", handler=ws_handler)
@@ -263,6 +258,23 @@ result = await sdk.OtherModule.some_method()
 ```
 
 ---
+
+# Client（统一 HTTP/WS 客户端）
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)
+
+resp = await client.post("https://api.example.com/data", json={"key": "value"})
+resp = await client.put("https://api.example.com/data/1", json={"key": "value"})
+resp = await client.delete("https://api.example.com/data/1")
+
+async with client.ws_connect("wss://ws.example.com") as ws:
+    await ws.send_text("hello")
+    reply = await ws.receive_text()
+
+resp = await client.get("https://api.example.com/data", timeout=30, max_retries=3)
 
 # 六、SendDSL
 
@@ -314,24 +326,26 @@ class Main(BaseModule):
 ## HTTP API 调用
 
 ```python
-import aiohttp
+from ErisPulse.Core import client
 
 async def fetch_data(self, url):
-    async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=self.config.get("timeout", 30))) as resp:
-        return await resp.json()
+    resp = await client.get(url, timeout=self.config.get("timeout", 30))
+    return await resp.json()
 ```
 
 ## 消息段处理（图片等）
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def handle_image(event: Event):
     for segment in event.get_message():
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             if file_url:
-                async with self.session.get(file_url) as resp:
-                    image_data = await resp.read()
+                resp = await client.get(file_url)
+                image_data = await resp.read()
 ```
 
 ## 数据持久化

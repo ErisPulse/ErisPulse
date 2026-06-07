@@ -12,7 +12,6 @@
 - 各平台特性指南（OneBot11/12、Telegram、云湖、邮件等）
 - 模块/适配器发布流程和模块商店
 - 代码规范和文档字符串规范
-- 已知问题追踪和历史 Bug 记录
 
 你擅长：
 - 编写高质量的异步 Python 代码
@@ -4400,7 +4399,7 @@ dependencies = [
 
 ### 3. Создание главного класса адаптера
 
-框架提供了 `ConfigClass` / `AccountConfigClass` декларативное управление конфигурацией, адаптеру нужно просто объявить класс конфигурации, и фреймворк автоматически загрузит, проверит и сгенерирует шаблон конфигурации.
+Фреймворк предоставляет `ConfigClass` / `AccountConfigClass` декларативное управление конфигурацией, адаптеру нужно просто объявить класс конфигурации, и фреймворк автоматически загрузит, проверит и сгенерирует шаблон конфигурации.
 
 ```python
 # MyAdapter/Core.py
@@ -4442,7 +4441,7 @@ class MyAdapter(BaseAdapter):
         return MyPlatformConverter()
 ```
 
-> ⚠️ **关于 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 会自动处理 SDK 引用、日志初始化 и конфигурации. Большинство адаптеров **не нужно переопределять `__init__`**. См. [Примечания по `__init__`](#init-примечания).
+> ⚠️ **关于 `__init__`**：新版本中 `BaseAdapter.__init__(self, sdk=None)` 会 автоматически обрабатывать SDK-ссылки, инициализацию логов и загрузку конфигурации. Большинство адаптеров **не нужно переопределять `__init__`**. См. [Примечания по `__init__`](#init-примечания).
 
 > ⚠️ **关于 `super().__init__()`**：`BaseAdapter.__init__()` отвечает за создание экземпляров `Send` и `Request`. Если забыть вызвать этот метод, все операции по отправке сообщений и запросы приведут к ошибке `AttributeError`. См. [Примечания по `__init__`](#init-примечания).
 
@@ -5392,6 +5391,8 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
+> **Информация о маршрутах**: Регистрируемые маршруты адаптера (HTTP, WebSocket, SSE) можно запросить через `sdk.adapter.get_connection_info(platform)` и `sdk.router.get_module_urls(module_name)`. Это возвращает полные URL-адреса подключения (включая `base_url` + путь). Подробнее см. в разделе [Руководство по разработке адаптера — Информация о соединении и обнаружение маршрутов](getting-started.md#9-информация-о-соединении-и-обнаружение-маршрутов) и [Поддержка SSE](getting-started.md#10-sse-server-sent-events-поддержка).
+
 ## Стандарт ответа API
 
 Фреймворк предоставляет методы `make_response()` и `make_error()` для построения стандартизированных ответов, без необходимости ручного создания словарей ответов.
@@ -5946,7 +5947,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Бот онлайн: отправить событие connect одной строкой
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой робот")
 
         try:
             while True:
@@ -5991,7 +5992,7 @@ onebot_event = {
         "platform": "myplatform",
         "user_id": "bot123",
         "user_name": "MyBot",
-        "nickname": "我的机器人",
+        "nickname": "Мой робот",
     },
     # ... остальные поля
 }
@@ -6103,6 +6104,43 @@ class MyAdapter(BaseAdapter):
                 self.logger.error(f"Ошибка пульсации: {e}")
                 break
 ```
+
+### 4. Экспозиция информации о соединении
+
+Адаптер должен сделать маршруты, которые он регистрирует, видимыми для пользователя, чтобы пользователи могли легко настраивать адреса обратного вызова на платформе. Рекомендуется активно выводить информацию о соединении в `start()`:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket адрес: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+Пользователи могут просмотреть все маршруты и адреса соединения адаптера через следующие API:
+
+```python
+from ErisPulse import sdk
+
+# Информация о соединении на уровне адаптера (рекомендуется)
+info = sdk.adapter.get_connection_info("myplatform")
+
+# Запрос на уровне менеджера маршрутов
+sdk.router.list_namespaces()              # Вывод списка всех пространств имен
+sdk.router.get_module_routes("myplatform")  # Детальная информация о маршрутах
+sdk.router.get_module_urls("myplatform")    # Полный URL подключения
+```
+
+> **Примечание**: при регистрации маршрута поле `module_name` должно полностью совпадать с именем платформы, под которым адаптер зарегистрирован в ErisPulse, иначе `get_connection_info()` не сможет сопоставить маршрут. Адаптеры с несколькими учетными записями должны регистрировать дочерние пути для каждого аккаунта (например, `/account1/webhook`, `/account2/webhook`), а не использовать разные значения `module_name`.
 
 ## Конвертация событий
 
@@ -9850,9 +9888,1232 @@ async def handle(event: Event):
 | `at(user_id, user_name=None)` |
 
 
+### 请求操作规范
+
+# ErisPulse Спецификация операций запросов
+
+В этом документе определяется стандартная спецификация операций запросов событий в адаптере ErisPulse, включая требования к полям событий запросов, способ использования DSL запросов и требования к реализации адаптера.
+
+## 1. Обзор
+
+Событие запроса (`type: "request"`) — это специальный тип события, определенный в стандарте OneBot12, представляющий собой запрос, требующий решения от бота (например, запросы в друзья, приглашения в группы и т.д.).
+
+В отличие от событий сообщений, события запросов требуют **двустороннего взаимодействия**:
+1. **Прием:** Адаптер преобразует нативный платформенный запрос в стандартное событие запроса.
+2. **Ответ:** Модуль выполняет операцию через DSL `Request` или методы `Event.approve()`/`Event.reject()`.
+
+```
+Необработанное событие запроса платформы
+    │
+    ▼
+Converter.convert()        ← реализация адаптера (прямое преобразование)
+    │
+    ▼
+Стандартное событие запроса (включая request_id)
+    │
+    ├─→ Обработчик модуля @request.on_friend_request()
+    │       │
+    │       ├─→ event.approve()     ← согласовать запрос
+    │       └─→ event.reject()      ← отклонить запрос
+    │               │
+    │               ▼
+    │       adapter.Request(request_id).accept()
+    │               │
+    │               ▼
+    │       BaseAdapter.Request.accept()  ← переопределение адаптера
+    │               │
+    │               ▼
+    │       Вызов платформенного API
+    │
+    └─→ Или прямая операция через адаптер
+            await adapter.Request("req_id").accept()
+```
+
+## 2. Требования к полям событий запроса
+
+### 2.1 Стандартные поля
+
+Помимо обязательных полей стандарта OneBot12, событие запроса должно содержать следующие поля:
+
+| Поле | Тип | Обязательно | Описание |
+|------|------|------|------|
+| `request_id` | string | **Сильно рекомендуется** | Идентификатор запроса, используемый для операций согласования/отклонения |
+| `user_id` | string | Да | Идентификатор инициатора запроса |
+| `user_nickname` | string | Нет | Никнейм инициатора запроса |
+| `comment` | string | Нет | Примечание к запросу |
+
+### 2.2 Поле `request_id`
+
+`request_id` является ключевым идентификатором для операций запроса:
+
+- **Назначение:** Идентификация доступного для обработки запроса для использования в DSL `Request`.
+- **Правила генерации**:
+  - В первую очередь следует использовать нативный идентификатор запроса платформы (например, поле `flag` в OneBot11, `chat_invite_link` в Telegram и т.д.).
+  - Если платформа не предоставляет нативный ID запроса, адаптер должен сгенерировать уникальный идентификатор (рекомендуемый формат: `{platform}_{timestamp}_{user_id}`).
+- **Уникальность:** Должен быть уникальным в рамках одной платформы.
+- **Поведение при отсутствии:** Когда `request_id` отсутствует, `event.approve()` / `event.reject()` выбросят `ValueError`.
+
+### 2.3 Пример события запроса
+
+```json
+{
+  "id": "evt_123456",
+  "time": 1752241225,
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "onebot11",
+  "self": {
+    "platform": "onebot11",
+    "user_id": "bot_123"
+  },
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "comment": "Пожалуйста, добавьте в друзья",
+  "request_id": "flag_abc123",
+  "onebot11_raw": {...},
+  "onebot11_raw_type": "request"
+}
+```
+
+## 3. Request DSL
+
+### 3.1 Цепное вызов (Chain Calling)
+
+`Request` предоставляет интерфейс с цепными вызовами (chaining), аналогичный стилю `Send`:
+
+```python
+# Базовое использование
+await adapter.Request("req_id").accept()
+await adapter.Request("req_id").reject()
+
+# Указание учетной записи бота
+await adapter.Request("req_id").Using("bot1").accept()
+
+# Добавление примечания (через kwargs)
+await adapter.Request("req_id").accept(comment="Добро пожаловать")
+await adapter.Request("req_id").reject(comment="Пока не добавляю")
+
+# Комбинированное использование
+await adapter.Request("req_id").Using("bot1").accept(comment="Добро пожаловать")
+```
+
+### 3.2 Список методов
+
+| Метод | Описание | Возвращаемое значение |
+|------|------|--------|
+| `Using(account_id)` | Указание учетной записи бота для выполнения операции | `RequestDSL` (поддержка цепных вызовов) |
+| `accept(**kwargs)` | Согласовать запрос | `asyncio.Task` (возвращает стандартный ответ после await) |
+| `reject(**kwargs)` | Отклонить запрос | `asyncio.Task` (возвращает стандартный ответ после await) |
+
+### 3.3 Формат возвращаемого значения
+
+Операции возвращают стандартный формат ответа API:
+
+**Успех**:
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": null,
+    "message_id": "",
+    "message": ""
+}
+```
+
+**Ошибка**:
+```json
+{
+    "status": "failed",
+    "retcode": 34001,
+    "data": null,
+    "message_id": "",
+    "message": "Запрос истек или не существует"
+}
+```
+
+**Не реализовано** (адаптер не переопределил `accept`/`reject`):
+```json
+{
+    "status": "failed",
+    "retcode": 10002,
+    "data": null,
+    "message_id": "",
+    "message": "Платформа MyAdapter не реализует операции с запросами (accept)"
+}
+```
+
+## 4. Удобные методы Event
+
+Класс-обертка `Event` предоставляет удобные методы, подходящие для использования в обработчиках событий запроса:
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # Проверка ID запроса
+    request_id = event.get_request_id()
+    if not request_id:
+        print("Предупреждение: событие запроса отсутствует request_id")
+        return
+    
+    # Согласовать запрос
+    result = await event.approve()
+    
+    # Или отклонить запрос
+    # result = await event.reject(comment="Пока не добавляю в друзья")
+    
+    # Проверка результата
+    if result.get("status") == "ok":
+        print("Операция успешна")
+    else:
+        print(f"Операция не удалась: {result.get('message')}")
+```
+
+### 4.1 Список методов Event
+
+| Метод | Описание | Возвращаемое значение |
+|------|------|--------|
+| `get_request_id()` | Получить ID запроса | `str` |
+| `approve(comment=None)` | Согласовать текущее событие запроса | Формат стандартного ответа |
+| `reject(comment=None)` | Отклонить текущее событие запроса | Формат стандартного ответа |
+
+## 5. Требования к реализации адаптера
+
+### 5.1 Требования к конвертеру
+
+Конвертер адаптера должен корректно установить поле `request_id` при преобразовании события запроса:
+
+```python
+def convert_request_event(self, raw_event: dict) -> dict:
+    """Преобразование нативного платформенного события запроса"""
+    return {
+        "id": self._generate_event_id(raw_event),
+        "time": int(time.time()),
+        "type": "request",
+        "detail_type": self._map_request_type(raw_event),  # "friend" или "group"
+        "platform": self._platform_name,
+        "self": {
+            "platform": self._platform_name,
+            "user_id": str(self._bot_id),
+        },
+        "user_id": str(raw_event.get("user_id", "")),
+        "user_nickname": raw_event.get("nickname", ""),
+        "comment": raw_event.get("message", ""),
+        "request_id": self._extract_request_id(raw_event),  # ← Ключевое поле
+        f"{self._platform_name}_raw": raw_event,
+        f"{self._platform_name}_raw_type": raw_event.get("type", ""),
+    }
+
+def _extract_request_id(self, raw_event: dict) -> str:
+    """
+    Извлечение ID запроса из нативного события платформы
+    
+    В первую очередь используется нативный идентификатор платформы, 
+    если нет - генерация уникального ID
+    """
+    # Предпочтение использованию нативного ID платформы
+    if flag := raw_event.get("flag"):
+        return str(flag)
+    if request_key := raw_event.get("request_key"):
+        return str(request_key)
+    
+    # Резервный вариант: генерация уникального ID
+    import hashlib
+    raw = f"{self._platform_name}_{raw_event.get('user_id')}_{raw_event.get('timestamp')}"
+    return hashlib.md5(raw.encode()).hexdigest()
+```
+
+### 5.2 Реализация внутреннего класса Request
+
+Адаптеру достаточно переопределить `accept` и `reject` во внутреннем классе `Request`:
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    
+    class Request(RequestDSL):
+        """Реализация операций запросов для MyPlatform"""
+        
+        def accept(self, **kwargs):
+            """
+            Согласовать запрос
+            
+            :param kwargs: Расширенные параметры, например comment="заметка"
+            :return: asyncio.Task
+            """
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=True,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"Операция с запросом не удалась: {e}",
+                    }
+            
+            return self._create_task(_do())
+        
+        def reject(self, **kwargs):
+            """Отклонить запрос"""
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=False,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"Операция с запросом не удалась: {e}",
+                    }
+            
+            return self._create_task(_do())
+```
+
+### 5.3 Платформа не поддерживает операции запросов
+
+Если платформа сама не поддерживает операции запросов в друзья/группы (например, некоторые платформы автоматически обрабатывают запросы), адаптер может:
+
+1. **Не переопределять внутренний класс `Request`**: Использовать реализацию по умолчанию базового класса, при вызове `accept()`/`reject()` возвращать `retcode=10002`.
+2. **Пропускать `request_id` при преобразовании**: Не генерировать `request_id`, позволяя `event.approve()` выбросить `ValueError`.
+3. **Логирование**: В `accept`/`reject` записывать предупреждение и возвращать соответствующий код ошибки.
+
+### 5.4 Итог: Send и Request параллельно
+
+У адаптера есть два параллельных внутренних класса DSL, каждый выполняет свою задачу:
+
+```
+BaseAdapter
+├── Send(SendDSL)     ← Отправка сообщений
+│   ├── Raw_ob12()    ← Необходимо реализовать
+│   ├── Text()        ← Рекомендуется реализовать
+│   └── Image()       ← Реализация по мере необходимости
+│
+└── Request(RequestDSL) ← Операции запроса
+    ├── accept()        ← Реализация по мере необходимости
+    └── reject()        ← Реализация по мере необходимости
+```
+
+### 5.5 Примечания к адаптеру `__init__`
+
+При переопределении `__init__` во внутреннем классе `Request`, параметры должны быть транслированы (пропущены), а `super().__init__()` должен быть вызван. Подробнее в разделе [Начало работы с адаптером - Примечания к `__init__`](../../developer-guide/adapters/getting-started.md#init-примечания) (аналогично и для `Request`, параметры: `adapter, request_id, account_id`).
+
+## 6. Чек-лист реализации адаптера
+
+### Базовые требования
+- [ ] Если переопределен `__init__`, уже вызван `super().__init__()` (обеспечение инициализации фабрик Send / Request)
+
+### Преобразование событий запроса
+- [ ] Событие запроса содержит поле `request_id` (сильно рекомендуется)
+- [ ] `detail_type` правильно сопоставлен со значением `"friend"` или `"group"`
+- [ ] Исходные данные платформы сохранены в поле `{platform}_raw`
+- [ ] Правила генерации `request_id` документированы
+
+### Операции запроса
+- [ ] Внутренний класс `Request` реализован (если платформа поддерживает операции запросов)
+- [ ] Метод `accept()` реализован
+- [ ] Метод `reject()` реализован
+- [ ] Операции возвращают стандартный формат ответа API
+- [ ] Не поддерживаемые операции возвращают `retcode=10002`
+- [ ] Сетевые ошибки возвращают `retcode=33xxx` (соблюдение стандарта ответа API)
+
+## 7. Расширенные коды ошибок
+
+Рекомендуемые коды ошибок, связанные с операциями запросов (соблюдение [Стандарта ответа API](api-response.md) §3.2):
+
+| Код ошибки | Название ошибки | Описание |
+|-------|-------|------|
+| 34001 | Request Not Found | Запрос не существует или истек |
+| 34002 | Request Already Handled | Запрос уже обработан |
+| 34003 | Request Not Supported | Платформа не поддерживает операции запросов данного типа |
+| 34004 | Permission Denied | У бота нет прав на обработку этого запроса |
+
+## 8. Связанные документы
+
+- [Стандарт преобразования событий](event-conversion.md) - Полная спецификация преобразования событий
+- [Стандарт ответа API](api-response.md) - Стандарт формата ответа API адаптера
+- [Спецификация методов отправки](send-method-spec.md) - Стандарт именования методов и параметров класса Send
+- [Стандарт типов сессий](session-types.md) - Определение типов сессий и отношения сопоставления
+
+
 ====
 高级主题
 ====
+
+
+### HTTP 客户端
+
+# HTTP-клиент
+
+ErisPulse предоставляет унифицированный HTTP/WS-клиент. Модулям и адаптерам следует отдавать приоритет использованию этого клиента для отправки HTTP-запросов и установления WebSocket-соединений вместо самостоятельного импорта сторонних библиотек, таких как `aiohttp` / `httpx`.
+
+## Обзор
+
+Основные функции HTTP/WS-клиента:
+
+- **Единый интерфейс**: предоставляет методы `get` / `post` / `put` / `delete` / `patch` / `request`
+- **WebSocket-клиент**: установление клиентского WebSocket-соединения через `ws_connect`
+- **Автоматическое ведение логов**: все запросы автоматически логируются и собирается статистика
+- **Интеграция жизненного цикла**: каждый запрос вызывает событие жизненного цикла `client.request`, WS-соединение вызывает событие `client.ws.connect`
+- **Поддержка повторных попыток**: настраиваемое количество автоматических повторных попыток и интервалов
+- **Управление таймаутами**: отдельные таймауты для соединения и запроса
+- **Переиспользование пула соединений**: управление пулом соединений на основе `aiohttp.ClientSession`
+- **Иерархия исключений**: исключения `aiohttp` автоматически конвертируются в исключения `ErisPulse` (иерархия `ClientError`)
+
+## Быстрый старт
+
+### HTTP-запросы
+
+```python
+from ErisPulse.Core import client
+
+# GET-запрос
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)  # 200
+
+# POST-запрос
+resp = await client.post(
+    "https://httpbin.org/post",
+    json={"ключ": "значение"},
+)
+data = await resp.json()
+```
+
+### WebSocket-соединение
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+async for text in ws.iter_text():
+    await ws.send_text(f"Эхо: {text}")
+```
+
+## HttpResponse
+
+Все методы запросов возвращают объект `HttpResponse`:
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+
+resp.status       # int - HTTP-код состояния (например, 200, 404)
+resp.reason       # str | None - описание состояния (например, "OK")
+resp.headers      # заголовки ответа (регистронезависимые)
+resp.content_type # str | None - Content-Type
+resp.url          # финальный URL (может измениться из-за перенаправления)
+resp.raw          # базовый нативный объект ответа (в данный момент aiohttp.ClientResponse)
+
+# Чтение тела ответа
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # парсинг JSON
+text = await resp.text("gbk")  # указанная кодировка
+```
+
+## Методы запроса
+
+### GET
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get(
+    "https://api.example.com/users",
+    params={"page": "1", "limit": "10"},
+    headers={"Authorization": "Bearer token"},
+)
+```
+
+### POST
+
+```python
+from ErisPulse.Core import client
+
+# JSON-тело запроса
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"имя": "Alice", "возраст": 30},
+)
+
+# Тело формы
+resp = await client.post(
+    "https://api.example.com/login",
+    data={"имя пользователя": "admin", "пароль": "123"},
+)
+
+# Сырые данные
+resp = await client.post(
+    "https://api.example.com/upload",
+    data=b"raw bytes",
+    headers={"Content-Type": "application/octet-stream"},
+)
+```
+
+### PUT / DELETE / PATCH
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.put("https://api.example.com/users/1", json={"имя": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"возраст": 31})
+```
+
+### Общий метод request
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.request(
+    "OPTIONS",
+    "https://api.example.com/resource",
+    headers={"Origin": "https://example.com"},
+)
+```
+
+## Описание параметров
+
+### Параметры HTTP-запроса
+
+| Параметр | Тип | Описание |
+|------|------|------|
+| `url` | `str` | URL запроса |
+| `params` | `dict[str, str]` | Параметры запроса (необязательно) |
+| `headers` | `dict[str, str]` | Дополнительные заголовки (необязательно) |
+| `data` | `Any` | Тело запроса (форма или сырые данные) (необязательно) |
+| `json` | `Any` | JSON-тело запроса (необязательно) |
+| `timeout` | `float` | Таймаут этого запроса (секунды) (необязательно, переопределяет значение по умолчанию) |
+| `max_retries` | `int` | Максимальное количество повторных попыток для этого запроса (необязательно, переопределяет значение по умолчанию) |
+
+### Параметры ws_connect
+
+| Параметр | Тип | Описание |
+|------|------|------|
+| `url` | `str` | URL WebSocket-сервера |
+| `headers` | `dict[str, str]` | Дополнительные заголовки (необязательно) |
+| `heartbeat` | `float` | Интервал пульсации (секунды) (необязательно) |
+
+## Таймауты и повторные попытки
+
+```python
+from ErisPulse.Core import HttpClient
+
+# Создание клиента с пользовательским таймаутом
+client = HttpClient(
+    timeout=60,           # общий таймаут запроса 60s
+    connect_timeout=5,    # таймаут соединения 5s
+    max_retries=3,        # автоматические повторные попытки при неудаче 3 раза
+    retry_delay=2,        # задержка между повторными попытками 2s
+)
+
+# Переопределение таймаута для одного запроса
+resp = await client.get("https://slow-api.example.com/data", timeout=120)
+```
+
+## Пользовательские заголовки по умолчанию
+
+```python
+client = HttpClient(
+    headers={
+        "Authorization": "Bearer token",
+        "X-App-Id": "my-app",
+    },
+    user_agent="MyBot/1.0",
+)
+```
+
+## Статистика запросов
+
+```python
+from ErisPulse.Core import client
+
+# Просмотр статистики
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# Сброс статистики
+client.reset_stats()
+```
+
+## События жизненного цикла
+
+### События HTTP-запросов
+
+Событие `client.request` срабатывает после завершения каждого запроса, оно может использоваться для мониторинга:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+### События WebSocket-соединения
+
+Событие `client.ws.connect` срабатывает после установления каждого WebSocket-соединения:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.ws.connect")
+async def on_ws_connect(event_data):
+    print(f"WS соединение: {event_data['url']}")
+```
+
+## Управление контекстом
+
+```python
+# Использование в качестве контекстного менеджера для автоматического закрытия сессии
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+    data = await resp.json()
+```
+
+## WebSocket-клиент
+
+Установка клиентского WebSocket-соединения через `client.ws_connect()`, возвращает объект `ClientWebSocket`. Клиент и сервер WebSocket совместно используют один и тот же базовый класс `WebSocketConnectionBase`, интерфейсы send/receive/iter идентичны.
+
+### Базовое использование
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+await ws.send_text("Привет")
+await ws.send_bytes(b"\x00\x01\x02")
+await ws.send_json({"тип": "ping"})
+```
+
+### Получение сообщений
+
+#### Высокоуровневые методы (рекомендуются)
+
+Автоматическая фильтрация типов сообщений, при разрыве соединения выбрасывается `WebSocketDisconnect`:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Прием по одной строке
+text = await ws.receive_text()    # str
+data = await ws.receive_bytes()   # bytes
+obj = await ws.receive_json()     # dict / list
+
+# Итеративный прием (автоматически останавливается при разрыве соединения)
+async for text in ws.iter_text():
+    print(text)
+
+async for data in ws.iter_bytes():
+    print(data)
+
+async for obj in ws.iter_json():
+    print(obj)
+```
+
+#### Низкоуровневые методы
+
+Использование `receive()` и `iter_messages()` для обработки необработанных типов сообщений, позволяет различать TEXT / BINARY / CLOSE / ERROR:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Прием необработанного сообщения по одной строке
+msg = await ws.receive()
+# msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
+# msg.data  -> str | bytes | None
+
+# Итеративный прием необработанных сообщений (автоматически останавливается при CLOSE/ERROR)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(f"Текст: {msg.data}")
+    elif msg.type == WSMessage.BINARY:
+        print(f"Двоичные данные: {len(msg.data)} bytes")
+```
+
+### WSMessage
+
+`WSMessage` — это унифицированный тип WebSocket-сообщения, не зависящий от базовой библиотеки:
+
+| Свойство | Тип | Описание |
+|------|------|------|
+| `type` | `str` | Тип сообщения: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | Данные сообщения |
+
+### Свойства ClientWebSocket
+
+| Свойство | Тип | Описание |
+|------|------|------|
+| `url` | `URL` | URL соединения |
+| `headers` | `Headers` | Заголовки ответа |
+| `closed` | `bool` | Закрыто ли соединение |
+| `raw` | `object` | Базовый нативный объект (aiohttp.ClientWebSocketResponse) |
+
+### Жизненные цикл-хуки
+
+Аналогично `WebSocketConnection` на сервере, поддерживает `on_disconnect` и `on_error` колбэки:
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"Соединение разорвано: {reason}")
+
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"Ошибка соединения: {error}")
+```
+
+### Закрытие соединения
+
+```python
+await ws.close(code=1000, reason="Normal closure")
+```
+
+## Иерархия исключений
+
+ErisPulse определяет унифицированную иерархию исключений. Запросы, инициированные через `sdk.client`, автоматически конвертируют базовые исключения `aiohttp` в исключения `ErisPulse`.
+
+> **Обратная совместимость**: старые модули/адаптеры, использующие `aiohttp.ClientSession` напрямую, не затронуты. Конвертация исключений работает только при использовании `sdk.client` для запросов; код, использующий `aiohttp` напрямую, по-прежнему будет перехватывать нативные исключения, такие как `aiohttp.ClientError`. Оба способа могут сосуществовать.
+
+### Иерархия исключений
+
+```
+ErisPulseError
+├── ClientError                  # Базовый класс для всех исключений HTTP/WS-клиента
+│   ├── ClientConnectionError    # Ошибка соединения (сбой DNS, отказ в соединении, недоступность сети)
+│   ├── ClientTimeoutError       # Таймаут соединения или запроса
+│   └── HTTPStatusError          # Ошибка состояния HTTP 4xx/5xx
+└── WebSocketError               # Базовый класс для исключений WebSocket
+    └── WebSocketDisconnect      # Разрыв WebSocket-соединения (универсальный для клиента и сервера)
+```
+
+### Перехват исключений
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
+
+# Обработка исключений HTTP-запросов
+try:
+    resp = await client.get("https://api.example.com/data")
+    data = await resp.json()
+except ClientConnectionError:
+    print("Не удалось подключиться к серверу")
+except ClientTimeoutError:
+    print("Таймаут запроса")
+except ClientError as e:
+    print(f"Ошибка запроса: {e}")
+
+# Обработка исключений WebSocket
+try:
+    ws = await client.ws_connect("wss://example.com/ws")
+    async for text in ws.iter_text():
+        await ws.send_text(f"Эхо: {text}")
+except WebSocketDisconnect as e:
+    print(f"Соединение разорвано: code={e.code}, reason={e.reason}")
+except WebSocketError as e:
+    print(f"Ошибка WebSocket: {e}")
+```
+
+### Универсальный перехват
+
+Использование `ClientError` для перехвата всех исключений HTTP/WS-клиента:
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientError as e:
+    print(f"Клиентская ошибка: {e}")
+```
+
+### HTTPStatusError
+
+Когда необходимо проверить код состояния после запроса и выбросить исключение, можно использовать вручную:
+
+```python
+from ErisPulse.Core.Bases.errors import HTTPStatusError
+
+resp = await client.get("https://api.example.com/data")
+if resp.status >= 400:
+    raise HTTPStatusError(resp.status, await resp.text())
+```
+
+## Использование в адаптерах
+
+Адаптеры могут использовать глобальный клиент или создавать собственные экземпляры клиента для отправки запросов на API платформы:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.errors import ClientError
+
+class MyAdapter(BaseAdapter):
+    async def call_api(self, endpoint, **params):
+        try:
+            resp = await client.post(
+                f"https://api.platform.com/{endpoint}",
+                json=params,
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            return await resp.json()
+        except ClientError as e:
+            self.logger.error(f"Ошибка вызова API: {e}")
+            raise
+```
+
+> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, эффект будет аналогичным.
+
+## Лучшие практики
+
+1. **Приоритет использования глобального клиента**: используйте `from ErisPulse.Core import client` для получения глобального экземпляра, это упрощает унифицированное управление и мониторинг со стороны фреймворка
+2. **Избегайте прямого импорта aiohttp**: используйте `client` вместо `aiohttp.ClientSession`, чтобы в будущем не нужно было менять код при смене базовой реализации
+3. **Использование иерархии исключений ErisPulse**: при использовании `sdk.client` перехватывайте `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной HTTP-библиотеки. Старый код, использующий `aiohttp` напрямую, не затронут
+4. **Рациональная настройка таймаутов**: установите разумные таймауты в зависимости от скорости ответа API, чтобы избежать длительной блокировки
+5. **Использование механизма повторных попыток**: включите повторные попытки для нестабильных API для повышения надежности
+6. **Мониторинг статистики запросов**: отслеживайте состояние запросов через `sdk.client.stats` или событие жизненного цикла `client.request`
+7. **Использование высокоуровневых методов WebSocket**: отдавайте предпочтение методам `iter_text` / `iter_json` и используйте `iter_messages` только в случае необходимости различать типы сообщений
+
+## Связанные документы
+
+- [Маршрутизатор](router.md) - серверные маршруты HTTP/WebSocket (WebSocketConnection на стороне сервера использует тот же базовый класс, что и на стороне клиента)
+- [Руководство по разработке адаптеров](../developer-guide/adapters/getting-started.md) - использование HTTP-клиента в адаптерах
+- [Управление жизненным циклом](lifecycle.md) - прослушивание событий запроса
+
+
+### SQL 查询构建器
+
+# SQL Query Builder
+
+Модуль хранения (Storage) в ErisPulse предоставляет универсальный конструктор SQL-запросов в стиле цепочки вызовов (chain-style), поддерживающий создание пользовательских таблиц, а также операции выборки, обновления и удаления.
+
+## Архитектура
+
+```
+Bases/storage.py                    Core/storage.py
+┌─────────────────────┐             ┌──────────────────────────┐
+│  BaseStorage (ABC)  │◄────────────│  StorageManager          │
+│  BaseQueryBuilder   │             │  (конкретная реализация  │
+│    (ABC)            │             │   на базе SQLite)        │
+└─────────────────────┘             │                          │
+                                    │  SQLiteQueryBuilder      │
+                                    │  AlterTableBuilder       │
+                                    └──────────────────────────┘
+```
+
+- `BaseStorage` / `BaseQueryBuilder` — это абстрактные базовые классы, определяющие единый интерфейс, который поддерживает расширение для других носителей хранения (Redis, MySQL и т. д.)
+- `StorageManager` — текущая конкретная реализация на базе SQLite, полностью сохраняющая обратную совместимость
+
+## Импорт
+
+```python
+from ErisPulse import sdk
+# или
+from ErisPulse.Core import storage
+
+# Базовые классы ABC (для типизации или пользовательской реализации)
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+## Управление таблицами
+
+### Создание таблицы
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0",
+    "email": "TEXT"
+})
+```
+
+### Проверка существования таблицы
+
+```python
+if sdk.storage.HasTable("users"):
+    print("Таблица users существует")
+```
+
+### Удаление таблицы
+
+```python
+sdk.storage.DropTable("users")
+```
+
+### Изменение структуры таблицы
+
+```python
+# Добавление столбца
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+
+# Переименование таблицы
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# Цепочка нескольких операций
+sdk.storage.AlterTable("users") \
+    .AddColumn("phone", "TEXT") \
+    .AddColumn("address", "TEXT") \
+    .Execute()
+```
+
+## Запросы в стиле цепочки (Chain Queries)
+
+### Вставка данных
+
+```python
+# Вставка одной строки (передача словаря)
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# Массовая вставка (передача списка словарей)
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35},
+    {"name": "Dave", "age": 40}
+]).Execute()
+```
+
+### Запрос данных
+
+> **Важно**: `Select()` возвращает `list[tuple]` (список кортежей), а не словарь. Вам необходимо получать значения, обращаясь по индексу в порядке следования столбцов.
+
+```python
+# Запрос всех столбцов
+rows = sdk.storage.Table("users").Select().Execute()
+# rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
+
+# Запрос указанных столбцов
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+# rows: [("Alice", 30), ("Bob", 25), ...]
+
+# Получение значения по индексу
+for row in rows:
+    name = row[0]   # "Alice"
+    age = row[1]    # 30
+```
+
+#### Преобразование кортежей в словари
+
+```python
+columns = ["id", "name", "age"]
+rows = sdk.storage.Table("users").Select(*columns).Execute()
+
+# Способ 1: zip внутри цикла
+for row in rows:
+    record = dict(zip(columns, row))
+    print(record["name"], record["age"])
+
+# Способ 2: преобразование списка кортежей в список словарей за один раз
+records = [dict(zip(columns, row)) for row in rows]
+```
+
+#### Получение одной записи
+
+```python
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ExecuteOne()
+
+# row — это кортеж или None
+if row is not None:
+    name = row[0]  # "Alice"
+    age = row[1]   # 30
+```
+
+### Фильтрация по условиям
+
+> `Where(condition, *params)` поддерживает передачу нескольких параметров, соответствующих нескольким заполнителям `?`.
+
+```python
+# Одно условие (один заполнитель, один параметр)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 18) \
+    .Execute()
+
+# Использование нескольких заполнителей в одном Where
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ? AND age < ?", 20, 40) \
+    .Execute()
+
+# Многократный вызов Where (связано оператором AND)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 20) \
+    .Where("age < ?", 40) \
+    .Execute()
+```
+
+### Сортировка, пагинация
+
+```python
+# По возрастанию
+rows = sdk.storage.Table("users").Select("name", "age") \
+    .OrderBy("name") \
+    .Execute()
+
+# По убыванию
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("age", desc=True) \
+    .Execute()
+
+# Пагинация
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("id") \
+    .Limit(10) \
+    .Offset(20) \
+    .Execute()
+```
+
+### Обновление данных
+
+```python
+# Обновление по условию
+sdk.storage.Table("users") \
+    .Update({"age": 31}) \
+    .Where("name = ?", "Alice") \
+    .Execute()
+
+# Полное обновление
+sdk.storage.Table("users") \
+    .Update({"status": "active"}) \
+    .Execute()
+```
+
+### Удаление данных
+
+```python
+# Удаление по условию
+sdk.storage.Table("users") \
+    .Delete() \
+    .Where("name = ?", "Bob") \
+    .Execute()
+
+# Полное удаление
+sdk.storage.Table("users").Delete().Execute()
+```
+
+### Подсчет и проверка существования
+
+```python
+# Подсчет
+count = sdk.storage.Table("users").Count()
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# Проверка существования
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+```
+
+## Повторное использование условий запроса
+
+Используйте `copy()` для глубокого копирования конструктора для повторного использования базовых условий:
+
+```python
+base = sdk.storage.Table("users").Where("age > ?", 20)
+
+# Запрос на основе тех же условий
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+
+# Подсчет на основе тех же условий
+count = base.copy().Count()
+
+# Проверка существования на основе тех же условий
+exists = base.copy().Where("name = ?", "Alice").Exists()
+```
+
+## Сброс конструктора
+
+```python
+builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
+builder.clear()
+
+# Перестроение запроса
+builder.Select("name", "age").Where("name = ?", "Alice")
+rows = builder.Execute()
+```
+
+## Использование в транзакциях
+
+Операции в стиле цепочки полностью поддерживают транзакции:
+
+```python
+# Подтверждение транзакции
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
+    sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
+
+# Пример отката
+try:
+    with sdk.storage.transaction():
+        sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
+        raise Exception("force rollback")
+except Exception:
+    pass
+# Запись Alice все еще существует
+```
+
+## Описание возвращаемых значений
+
+| Операция | Тип возвращаемого значения | Описание |
+|------|---------|------|
+| `Select().Execute()` | `list[tuple]` | Список кортежей, упорядоченных по столбцам |
+| `Select().ExecuteOne()` | `tuple \| None` | Один кортеж или None |
+| `Insert().Execute()` | `int` | Количество затронутых строк |
+| `InsertMulti().Execute()` | `int` | Количество вставленных строк |
+| `Update().Execute()` | `int` | Количество затронутых строк |
+| `Delete().Execute()` | `int` | Количество затронутых строк |
+| `Count()` | `int` | Количество совпавших строк |
+| `Exists()` | `bool` | Наличие записи |
+
+### Примеры обработки возвращаемых значений
+
+```python
+# Select возвращает кортежи, берем значения по индексу
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # Имя в первой строке, первом столбце
+first_age = rows[0][1]   # Возраст в первой строке, втором столбце
+
+# Рекомендуется: преобразование в словарь с помощью списка имен столбцов + zip, код более читаем
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne возвращает один кортеж или None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete возвращают количество затронутых строк
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"Удалено записей: {affected}")
+```
+
+## Параметризованные запросы
+
+Все параметры WHERE используют заполнитель `?`, параметры передаются как последовательные аргументы метода `Where()` (**не** как кортеж или список):
+
+```python
+# Верно ✓ — передача нескольких параметров по отдельности
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# Верно ✓ — многократный вызов Where
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# Ошибочно ✗ — не передавайте кортеж
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# Это превратит весь кортеж в значение для первого заполнителя
+
+# Ошибочно ✗ — существует риск SQL-инъекции
+sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Правила передачи параметров Where
+
+```python
+# Where(condition: str, *params: Any)
+# params — переменное число аргументов, передаются по одному
+
+# Один параметр
+.Where("name = ?", "Alice")
+
+# Несколько параметров
+.Where("age > ? AND age < ?", 18, 60)
+
+# Запрос LIKE
+.Where("name LIKE ?", "A%")
+
+# Запрос IN (требуется вручную построить заполнители)
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
+```
+
+## Пользовательский бэкенд (хранилище)
+
+Наследуйте `BaseStorage` и `BaseQueryBuilder` для реализации пользовательского бэкенда:
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+class MyQueryBuilder(BaseQueryBuilder):
+    def Execute(self):
+        # Реализация конкретной логики выполнения
+        ...
+
+    def ExecuteOne(self):
+        ...
+
+    def Count(self):
+        ...
+
+    def Exists(self):
+        ...
+
+
+class MyStorage(BaseStorage):
+    def get(self, key, default=None):
+        ...
+
+    def set(self, key, value):
+        ...
+
+    # Реализация других абстрактных методов...
+    def Table(self, table_name):
+        return MyQueryBuilder(self, table_name)
+```
+
+## Связанные документы
+
+- [Ядро модулей API](../api-reference/core-modules.md) - Полный API модуля Storage
+- [API базовых классов хранилища](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Абстрактные интерфейсы BaseStorage/BaseQueryBuilder
+- [Конструктор сообщений](message-builder.md) - Ссылка на стиль цепочки вызовов MessageBuilder
 
 
 ### 懒加载系统
@@ -10271,7 +11532,7 @@ class Main(BaseModule):
 
 ### 路由系统
 
-# Менеджер маршрутизации (Router Manager)
+# Менеджер маршрутизации
 
 Менеджер маршрутизации ErisPulse предоставляет централизованное управление HTTP и WebSocket маршрутизацией, поддерживает регистрацию маршрутов через несколько адаптеров и управление жизненным циклом. В основе лежит абстрактный слой (в данный момент реализован на базе FastAPI + Uvicorn).
 
@@ -10323,15 +11584,12 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# Использование типов FastAPI также полностью совместимо
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
@@ -15565,6 +16823,447 @@ from ErisPulse.Core import adapter
 Если у вас есть вопросы, обратитесь к поддерживающему соответствующий адаптер или задайте вопрос в Issues проекта.
 
 
+### 花枫咖啡馆适配
+
+# Документ по характеристикам платформы Цветущей берёзы (Ideaura)
+
+Адаптер IdeauraAdapter построен на базе API платформы Цветущая берёза (Allons), интегрирующий все функциональные модули платформы и предоставляющий унифицированные интерфейсы для обработки событий и операций с сообщениями.
+
+---
+
+## Информация о документе
+
+- Соответствующий модуль: ErisPulse-Ideaura
+- Поддерживающий: ErisPulse
+
+## Базовая информация
+
+- Описание платформы: Цветущая берёза (Allons) — это платформа мгновенного обмена сообщениями.
+- Название адаптера: IdeauraAdapter
+- Поддержка нескольких учетных записей: Поддержка конфигурации нескольких учетных записей через email/password.
+- Поддержка цепных модификаторов: Поддержка цепных методов, таких как `.At()`, `.AtAll()`, `.Reply()`.
+- Совместимость с OneBot12: Поддержка отправки сообщений в формате OneBot12.
+
+## Поддерживаемые типы отправки сообщений
+
+Все методы отправки реализованы с использованием цепочного синтаксиса, например:
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+await ideaura.Send.To("group", "chatroom").Text("Hello World!")
+```
+
+Поддерживаемые типы отправки включают:
+- `.Text(text: str)`: Отправка сообщения только с текстом.
+- `.Image(file, filename: str = None)`: Отправка сообщения с изображением, поддерживает bytes/URL/локальный путь.
+- `.Video(file, filename: str = None)`: Отправка сообщения с видео, поддерживает bytes/URL/локальный путь.
+- `.File(file, filename: str = None)`: Отправка сообщения с файлом, поддерживает bytes/URL/локальный путь.
+- `.Voice(file, filename: str = None)`: Отправка голосового сообщения (отправляется как файл).
+- `.Face(face_id: str)`: Отправка эмодзи (в виде текста).
+- `.Markdown(text: str)`: Отправка сообщения в формате Markdown.
+- `.Html(html: str)`: Отправка сообщения в формате HTML.
+- `.Edit(message_id: str, text: str, content_type: str = "text")`: Редактирование существующего сообщения.
+- `.Recall(message_id: str)`: Отзыв сообщения.
+
+### Цепные модификаторы (можно комбинировать)
+
+Цепные модификаторы возвращают `self`, поддерживают цепной вызов и должны быть вызваны перед окончательным методом отправки:
+
+- `.At(user_id: str, name: str = None)`: @ указанного пользователя.
+- `.AtAll()`: @ всех пользователей.
+- `.Reply(message_id: str)`: Ответ на указанное сообщение.
+
+### Примеры цепного вызова
+
+```python
+# Базовая отправка
+await ideaura.Send.To("user", user_id).Text("Hello")
+
+# @ пользователя
+await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
+
+# @ нескольких пользователей
+await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
+
+# Ответ на сообщение
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回复消息")
+
+# Ответ + @
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回复并@")
+```
+
+### Отправка в разные цели
+
+```python
+# Отправка в чат-комнату
+await ideaura.Send.To("group", "chatroom").Text("聊天室消息")
+
+# Отправка в тему (topic)
+await ideaura.Send.To("group", "topic_id").Text("话题消息")
+
+# Отправка личного сообщения
+await ideaura.Send.To("user", "user_id").Text("私聊消息")
+```
+
+### Поддержка сообщений OneBot12
+
+Адаптер поддерживает отправку сообщений в формате OneBot12 для удобства межплатформенной совместимости:
+
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Отправка сообщения в формате OneBot12.
+
+```python
+# Отправка сообщения в формате OneBot12
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# В сочетании с цепными модификаторами
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## Возвращаемое значение методов отправки
+
+Все методы отправки возвращают объект Task, который можно напрямую ожидать (`await`) для получения результата отправки. Возвращаемый результат соответствует стандартизированной спецификации возврата адаптера ErisPulse:
+
+```python
+{
+    "status": "ok",           // Статус выполнения
+    "retcode": 0,             // Код возврата
+    "data": {...},            // Данные ответа
+    "self": {...},            // Информация о себе (содержит user_id)
+    "message_id": "123456",   // ID сообщения
+    "message": "",            // Информация об ошибке
+    "ideaura_raw": {...}      // Исходные данные ответа
+}
+```
+
+## Специфические типы событий
+
+Для использования характеристик этой платформы необходимо проверять `platform=="ideaura"`.
+
+### Ключевые отличия
+
+1. Специфические типы событий:
+    - Редактирование сообщения: ideaura_message_edit
+    - Отзыв сообщения: ideaura_message_recall
+    - Пересылка сообщения: ideaura_message_forward
+    - Прочитано сообщение: ideaura_message_read
+    - Друг отклонен: ideaura_friend_rejected
+    - Друг онлайн: ideaura_friend_online
+    - Друг офлайн: ideaura_friend_offline
+    - Изменение статуса пользователя: ideaura_user_status_change
+    - Сегмент пересланного сообщения: ideaura_forwarded
+    - Сегмент отредактированного сообщения: ideaura_edited
+    - Сегмент сообщения Markdown: ideaura_markdown
+    - Сегмент сообщения HTML: ideaura_html
+2. Расширенные поля:
+    - Все специфические поля идентифицируются префиксом `ideaura_`
+    - Исходные данные сохраняются в поле `ideaura_raw`
+    - `self.user_id` представляет ID пользователя текущей учетной записи
+
+### Событие редактирования сообщения
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_edit",
+  "platform": "ideaura",
+  "message_id": "ID сообщения",
+  "user_id": "ID редактора",
+  "ideaura_new_content": "Содержимое после редактирования",
+  "ideaura_updated_message": { ... },
+  "ideaura_source_type": "chatroom/topic/private"
+}
+```
+
+### Событие отзыва сообщения
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_recall",
+  "platform": "ideaura",
+  "message_id": "ID отзываемого сообщения",
+  "user_id": "ID отзывающего",
+  "group_id": "chatroom",
+  "ideaura_source_type": "chatroom",
+  "ideaura_recall_time": "Время отзыва",
+  "ideaura_is_self": false
+}
+```
+
+### Событие пересылки сообщения
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_forward",
+  "platform": "ideaura",
+  "message_id": "ID исходного сообщения",
+  "user_id": "ID пересылающего",
+  "ideaura_forward_to": "ID целевой темы",
+  "ideaura_original_message_id": "ID исходного сообщения",
+  "ideaura_forwarded_message_id": "ID нового сообщения после пересылки"
+}
+```
+
+### Событие прочтения сообщения
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_read",
+  "platform": "ideaura",
+  "message_id": "ID сообщения",
+  "ideaura_reader_id": "ID читателя",
+  "ideaura_reader_name": "Никнейм читателя"
+}
+```
+
+### Событие появления друга онлайн
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_online",
+  "platform": "ideaura",
+  "user_id": "ID друга",
+  "user_nickname": "Никнейм друга",
+  "ideaura_friend_avatar": "URL аватара",
+  "ideaura_presence_status": "online"
+}
+```
+
+### Событие отсутствия друга (офлайн)
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_offline",
+  "platform": "ideaura",
+  "user_id": "ID друга",
+  "ideaura_presence_status": "offline"
+}
+```
+
+### Событие изменения статуса пользователя
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_user_status_change",
+  "platform": "ideaura",
+  "user_id": "ID пользователя",
+  "ideaura_status": "Новый статус",
+  "ideaura_previous_status": "Старый статус"
+}
+```
+
+### Событие запроса в друзья
+
+```python
+{
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "ideaura",
+  "user_id": "ID запрашивающего",
+  "user_nickname": "Никнейм запрашивающего",
+  "ideaura_request_id": "ID запроса",
+  "ideaura_message": "Сообщение для подтверждения"
+}
+```
+
+### Событие отказа в дружбе
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_rejected",
+  "platform": "ideaura",
+  "user_id": "ID отклонившего",
+  "user_nickname": "Никнейм отклонившего",
+  "ideaura_request_id": "ID запроса",
+  "ideaura_requester_id": "ID иницииатора запроса",
+  "ideaura_requester_name": "Никнейм иницииатора запроса"
+}
+```
+
+### Сегмент пересланного сообщения (ideaura_forwarded)
+
+При получении пересланного сообщения тип сегмента — `ideaura_forwarded`:
+
+```json
+{
+  "type": "ideaura_forwarded",
+  "data": {
+    "forward_source_id": "1001",
+    "original_message_id": "1001"
+  }
+}
+```
+
+| Поле | Тип | Описание |
+|------|------|------|
+| `forward_source_id` | string | ID исходного пересланного сообщения |
+| `original_message_id` | string | ID исходного сообщения |
+
+### Пример обработки событий
+
+```python
+from ErisPulse.Core.Event import notice, message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "ideaura":
+        # Обработка события сообщения
+        for segment in event.get("message", []):
+            if segment.get("type") == "ideaura_forwarded":
+                data = segment["data"]
+                print(f"Пересланное сообщение, ID источника: {data['forward_source_id']}")
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "ideaura_message_edit":
+        new_content = event.get("ideaura_new_content", "")
+        print(f"Сообщение было отредактировано: {new_content}")
+
+    elif detail_type == "ideaura_message_recall":
+        message_id = event.get("message_id")
+        print(f"Сообщение было отозвано: {message_id}")
+
+    elif detail_type == "ideaura_friend_online":
+        friend_name = event.get_user_nickname()
+        print(f"Друг появился в сети: {friend_name}")
+
+    elif detail_type == "ideaura_user_status_change":
+        status = event.get("ideaura_status")
+        print(f"Изменение статуса пользователя: {status}")
+```
+
+---
+
+## Конфигурация нескольких учетных записей
+
+### Описание конфигурации
+
+Адаптер IdeauraAdapter поддерживает одновременную настройку и работу нескольких учетных записей.
+
+```toml
+# config.toml
+[IdeauraAdapter.accounts.default]
+email = "user1@example.com"     # E-mail для входа (обязательно)
+password = "password1"          # Пароль для входа (обязательно)
+enabled = true                  # Включить (опционально, по умолчанию true)
+
+[IdeauraAdapter.accounts.bot2]
+email = "user2@example.com"
+password = "password2"
+enabled = true
+
+# Необязательно: пользовательский адрес сервера
+[IdeauraAdapter]
+base_url = "https://api-cofe.allons-y.uk:3009"
+ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
+heartbeat_interval = 30
+```
+
+**Описание конфигурации:**
+- `email`: E-mail для входа в учетную запись (обязательно).
+- `password`: Пароль для входа в учетную запись (обязательно).
+- `enabled`: Включить ли эту учетную запись (опционально, по умолчанию true).
+
+**Глобальные параметры конфигурации:**
+- `base_url`: Адрес API-сервера (опционально, по умолчанию официальный адрес Кофейни «Хуафэн»).
+- `ws_url`: Адрес WebSocket-сервера (опционально, по умолчанию официальный адрес Кофейни «Хуафэн»).
+- `heartbeat_interval`: Интервал пульсирования в секундах (опционально, по умолчанию 30 секунд).
+
+### Использование Send DSL для указания учетной записи
+
+Можно указать, какой учетной записью отправлять сообщение, с помощью метода `Using()`:
+
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+# Отправка сообщением от имени учетной записи
+await ideaura.Send.Using("default").To("user", "user123").Text("Привет от аккаунта 1!")
+
+# Отправка от user_id (автоматически сопоставляет с соответствующей учетной записью)
+await ideaura.Send.Using("456").To("group", "chatroom").Text("Привет от аккаунта 2!")
+
+# При отсутствии указания используется первый включенный аккаунт
+await ideaura.Send.To("user", "user123").Text("Привет от аккаунта по умолчанию!")
+```
+
+### Идентификатор учетной записи в событиях
+
+Получаемые события автоматически содержат соответствующую информацию об учетной записи:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "ideaura":
+        account_id = event["self"]["user_id"]
+        print(f"Сообщение от аккаунта: {account_id}")
+```
+
+---
+
+## Описание расширенных полей
+
+- Все специфические поля идентифицируются префиксом `ideaura_`, чтобы избежать конфликтов со стандартными полями.
+- Исходные данные сохраняются в поле `ideaura_raw`, для удобства доступа к полным исходным данным платформы.
+- `self.user_id` представляет ID пользователя текущей вошедшей учетной записи.
+- `ideaura_source_type`: Тип источника сообщения (`chatroom`/`topic`/`private`).
+- `ideaura_sender_name`: Никнейм отправителя.
+- `ideaura_sender_avatar`: URL аватара отправителя.
+- `ideaura_sender_is_bot`: Является ли отправитель ботом.
+- `ideaura_is_self`: Отправлено ли это сообщение самим пользователем (само-сообщения отфильтрованы).
+- `ideaura_topic_name`: Название темы.
+- `ideaura_message_type`: Тип сообщения (normal/edited/forwarded/quoted).
+- `ideaura_message_subtype`: Подтип сообщения (text/image/video/file/markdown/html).
+
+### Особенности обработки файлов
+
+- Ограничение размера файла: 10 МБ (есть ограничения и при скачивании, и при локальном чтении).
+- Автоматическое определение типа файла: определение фактического типа через заголовок (магические байты).
+- Интеллектуальный разбор имени файла: автоматическое исправление бессмысленных расширений, таких как `.bin`/`.dat`/`.tmp`.
+- Поддержка трех способов ввода файла: bytes, URL, локальный путь.
+- Автоматическая загрузка файлов по URL и их загрузка на сервер.
+
+### Поддерживаемые типы файлов
+
+Определение типа через магические байты:
+
+| Тип | Расширение |
+|------|--------|
+| Изображение | png, jpg, gif, webp |
+| Видео | mp4, avi, flv |
+| Аудио | mp3, wav, ogg |
+| Документ | pdf, docx |
+
+---
+
+## Меры предосторожности
+
+1. Адрес сервера `api-cofe.allons-y.uk` является фиксированным адресом платформы и не меняется в зависимости от названия адаптера.
+2. Адаптер использует длинное WebSocket-соединение для приема событий и поддерживает автоматическое переподключение (фиксированная задержка 5 секунд).
+3. Сообщения, отправленные самим пользователем (`isSelf: true`), автоматически отфильтровываются и события не создаются.
+4. `@全体` (AtAll()) требует прав администратора.
+5. Ограничение размера загрузки файлов составляет 10 МБ.
+6. Файлы аудио отправляются как подтип `file` (платформа не различает отдельные типы аудио).
+7. Эмодзи отправляются в виде текста (Face()).
+8. При выходе из программы убедитесь, что вызван `shutdown()`, для освобождения ресурсов.
+
+
 ====
 代码规范
 ====
@@ -15666,304 +17365,3 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 6. **Устаревшие методы**: Помечать устаревшие методы и предоставлять альтернативы
    ```python
    {!--< deprecated >!--} используйте new_method() вместо этого | 2025-07-09
-
-
-======
-已知问题追踪
-======
-
-
-### 历史 Bug 记录
-
-# Трекер ошибок
-
-В этом документе описаны известные ошибки (bugs) и информация о том, как они были исправлены в SDK ErisPulse.
-
----
-
-## Исправленные ошибки
-
-### [BUG-001] Ошибка типа пути конфигурации адаптера для команды Init
-
-**Проблема**: При использовании команды `ep init` для интерактивной инициализации выбор конфигурационного адаптера приводит к ошибке типа:
-
-```
-Интерактивная инициализация не удалась: unsupported operand type(s) for /: 'str' and 'str'
-```
-
-**Причина**: В версии 2.3.7 при изменении пути к файлу конфигурации тип параметра метода стал inconsistent. `_configure_adapters_interactive_sync` принимает параметры типа `str`, но внутри использует оператор `/` объекта `Path` для конкатенации путей.
-
-**Затронутые версии**: 2.3.7 - 2.3.9-dev.1
-
-**Исправленная версия**: 2.3.9-dev.1
-
-**Исправление**: Изменить тип параметра метода `_configure_adapters_interactive_sync` с `str` на `Path` и передавать объект `Path` напрямую при вызове.
-
-**Дата исправления**: 2026/03/23
-
----
-
-### [BUG-002] События команд перестают работать после перезапуска
-
-**Проблема**: После вызова `sdk.restart()` команды, зарегистрированные через `@command`, не могут быть вызваны; отправка команды не вызывает ответа бота.
-
-**Причина**: После очистки `adapter.shutdown()` шины событий, статус `_linked_to_adapter_bus` в `BaseEventHandler` не сбрасывается в `False`, из-за чего метод `_process_event` считает, что он уже подключен к шине адаптера, и пропускает операцию подключения.
-
-**Затронутые версии**: 2.2.x - 2.4.0-dev.2
-
-**Исправленная версия**: 2.4.0-dev.3
-
-**Исправление**: Введен отслеживание статуса `_linked_to_adapter_bus`. После отключения шины в `_clear_handlers()`, при следующем `register()` происходит автоматическое повторное подключение, что обеспечивает работу в сценариях shutdown/restart.
-
-**Дата исправления**: 2026/04/09
-
----
-
-### [BUG-003] Неочищенные обработчики событий жизненного цикла
-
-**Проблема**: После `sdk.restart()` старые обработчики событий жизненного цикла остаются активными и срабатывают повторно, что приводит к многократной обработке одного и того же события.
-
-**Причина**: Словарь `lifecycle._handlers` никогда не очищается при `uninit()`, поэтому после перезапуска старые и новые обработчики существуют одновременно.
-
-**Затронутые версии**: 2.3.0 - 2.4.0-dev.2
-
-**Исправленная версия**: 2.4.0-dev.3
-
-**Исправление**: В конце очистки в `Uninitializer` (после передачи всех событий) выполняется очистка `lifecycle._handlers`.
-
-**Дата исправления**: 2026/04/09
-
----
-
-### [BUG-004] Дублирование присваивания набора слов подтверждения в Event.confirm()
-
-**Проблема**: В методе `Event.confirm()` код присваивания трем переменным `_yes`, `_no`, `_all` полностью дублирован дважды (всего 6 строк), что приводит к бесполезным повторным вычислениям.
-
-**Причина**: Ошибка копирования и вставки.
-
-**Затронутые версии**: 2.4.0-dev.4
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Удалены дублирующие строки кода присваивания в `wrapper.py` на позициях 739-741.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-005] Переопределение определения метода `at` в MessageBuilder (мертвый код)
-
-**Проблема**: В классе `MessageBuilder` метод `at` определен трижды: как экземплярный метод, как статический метод и затем перезаписывается присваиванием `_DualMethod`. Первые два определения являются мертвым кодом, который никогда не выполняется.
-
-**Причина**: При рефакторинге в `_DualMethod` забыл удалить старые ручные определения.
-
-**Затронутые версии**: 2.4.0-dev.0
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Удалены два мертвых определения метода `at` в `message_builder.py` на позициях 159-181, оставлено только присваивание `_DualMethod`.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-006] Несоответствие `detail_type` в `Event.is_friend_add()` / `Event.is_friend_delete()` со стандартом OB12
-
-**Проблема**: `Event.is_friend_add()` проверяет `detail_type == "friend_add"`, а `Event.is_friend_delete()` проверяет `detail_type == "friend_delete"`, однако стандарт OneBot12 определяет значения `detail_type` как `"friend_increase"` и `"friend_decrease"`. Это несовпадает со значениями, используемыми декораторами `on_friend_add`/`on_friend_remove` в `notice.py`, что приводит к тому, что методы срабатывания возвращают `False` при использовании декораторов.
-
-**Причина**: В `wrapper.py` использовались некорректные имена, тогда как `notice.py` использует стандартные имена OB12.
-
-**Затронутые версии**: с момента релиза rq
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Изменить значение сопоставления для `is_friend_add()` с `"friend_add"` на `"friend_increase"` и для `is_friend_delete()` с `"friend_delete"` на `"friend_decrease"`.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-007] `adapter.clear()` не очищает `_started_instances`, что приводит к неверному состоянию после перезапуска
-
-**Проблема**: Метод `AdapterManager.clear()` очищает `_adapters`, `_adapter_info`, обработчики и `_bots`, но пропускает множество `_started_instances`. Если `clear()` вызывается во время работы адаптера, `_started_instances` сохранит висячие ссылки, что приведет к ошибкам при проверке состояния после перезапуска.
-
-**Причина**: В версии 2.4.0-dev.1 при введении `_started_instances` не было выполнено синхронная очистка в `clear()`.
-
-**Затронутые версии**: 2.4.0-dev.1 - 2.4.2-dev.0
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Добавлено `self._started_instances.clear()` в метод `clear()`.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-008] Использование устаревшего `asyncio.get_event_loop()` в `command.wait_reply()`
-
-**Проблема**: Метод `CommandHandler.wait_reply()` использует `asyncio.get_event_loop()` для создания будущего и получения метки времени, что в Python 3.10+ устарело. В асинхронном контексте следует использовать `asyncio.get_running_loop()`. Это противоречит методу `wait_for()` в `wrapper.py` в том же файле, который использует `get_running_loop()`.
-
-**Причина**: При разработке использовался старый API, а добавленный позже `wait_for()` использовал правильный API, но старый код не был исправлен.
-
-**Затронутые версии**: 2.3.0-dev.0
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Заменить два вызова `asyncio.get_event_loop()` на `asyncio.get_running_loop()` в `command.py`.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-009] Молчаливое пропусков полей без `key` в `Event.collect()`
-
-**Проблема**: При переборе списка полей в методе `Event.collect()`, если в словаре поля отсутствует `key`, поле пропускается молча, без вывода логов или предупреждений. Если разработчик допустит опечатку (например, `"Key"` вместо `"key"`), всё поле будет безмолвно проигнорировано, что затрудняет отладку поведения на нижнем уровне.
-
-**Причина**: Отсутствует проверка ввода и обратная связь об ошибках.
-
-**Затронутые версии**: 2.4.0-dev.4
-
-**Исправленная версия**: 2.4.2-dev.1
-
-**Исправление**: Перед пропуском добавить `logger.warning()` для записи информации о поле, у которого отсутствует `key`.
-
-**Дата исправления**: 2026/04/13
-
----
-
-### [BUG-010] Неполная инициализация при синхронном доступе к BaseModule в LazyModule
-
-**Проблема**: Когда пользователь обращается к свойствам лениво загруженного BaseModule в синхронном контексте, модуль инициализируется асинхронно с помощью `loop.create_task()` без ожидания, что может привести к тому, что к моменту обращения к свойству инициализация еще не завершена, что вызывает состояние гонки (race condition).
-
-**Причина**: `_ensure_initialized()` сразу возвращает управление после вызова `loop.create_task(self._initialize())`, не ожидая завершения.
-
-**Затронутые версии**: 2.4.0-dev.0 - 2.4.2-dev.1
-
-**Исправленная версия**: 2.4.2-dev.2
-
-**Исправление**: В синхронном контексте для инициализации BaseModule изменено использование `asyncio.run(self._initialize())`, чтобы гарантировать завершение перед возвратом. Свойства прозрачного прокси (transparent proxy) сохранены, пользователю нет необходимости учитывать разницу синхронного/асинхронного кода.
-
-**Дата исправления**: 2026/04/21
-
----
-
-### [BUG-011] Потеря данных при многопоточной записи в системе конфигурации
-
-**Проблема**: В многопоточной среде, когда несколько потоков одновременно вызывают `config.setConfig()`, операция чтения-модификации-записи `_flush_config()` не является атомарной, что может привести к потере части записей.
-
-**Причина**: Хотя `_flush_config()` использует `RLock`, между чтением и записью в файл отсутствует защита файловой блокировкой, а Таймер `_schedule_write` может сработать несколько раз, приводя к перезаписи.
-
-**Затронутые версии**: 2.3.0 - 2.4.2-dev.1
-
-**Исправленная версия**: 2.4.2-dev.2
-
-**Исправление**:
-1. Добавлен механизм файловой блокировки (`_file_lock`) для обеспечения атомарности операций с файлом.
-2. Использование временного файла для записи с последующим атомарным переименованием (`os.replace`/`os.rename`).
-3. Улучшена логика отмены и переназначения Таймера `_schedule_write`.
-
-**Дата исправления**: 2026/04/21
-
----
-
-### [BUG-012] Неточное сообщение об ошибке при доступе к свойствам SDK
-
-**Проблема**: При доступе к несуществующему свойству сообщение об ошибке "вы, возможно, использовали неправильный объект регистрации SDK" может ввести пользователя в заблуждение, хотя на самом деле модуль может быть не включен или допущена опечатка в названии.
-
-**Причина**: Сообщение об ошибке в `__getattribute__` не различает различные сценарии и дает размытую подсказку.
-
-**Затронутые версии**: 2.0.0 - 2.4.2-dev.1
-
-**Исправленная версия**: 2.4.2-dev.2
-
-**Исправление**: Различение сценариев на основе имени свойства:
-1. Зарегистрирован, но не включен: предупреждение о том, что модуль/адаптер не включен.
-2. Полностью отсутствует: предупреждение о проверке правописания названия.
-Также оригинальный `AttributeError` повторно выбрасывается для удобства перехвата на верхнем уровне.
-
-**Дата исправления**: 2026/04/21
-
----
-
-### [BUG-013] Слишком сложная логика очистки Uninitializer для неинициализированных LazyModule
-
-**Проблема**: `Uninitializer` создает временный экземпляр для вызова `on_unload` у LazyModule, который никогда не был посещен, что делает код сложным и подверженным ошибкам.
-
-**Причина**: Попытка вызвать методы жизненного цикла для всех LazyModule, но неинициализированные модули не должны и не могут быть инициализированы.
-
-**Затронутые версии**: 2.4.0-dev.0 - 2.4.2-dev.1
-
-**Исправленная версия**: 2.4.2-dev.2
-
-**Исправление**: Упрощена логика очистки, обрабатываются только инициализированные LazyModule:
-1. Пропускаются неинициализированные LazyModule, временные экземпляры не создаются.
-2. Для инициализированных модулей вызывается `on_unload`.
-3. Удалена сложная логика создания временных экземпляров.
-
-**Дата исправления**: 2026/04/21
-
----
-
-### [BUG-014] Невозможно остановить программу по CTRL+C в Windows
-
-**Проблема**: При прямом запуске `python main.py` на Windows нажатие CTRL+C не останавливает программу. Программа запускается нормально, выводит информацию о сервере маршрутизации, но CTRL+C полностью не реагирует; процесс можно убить только через диспетчер задач. Запуск через `epsdk run` останавливается нормально — но `epsdk run` работает через модель подпроцессов.
-
-**Причина**: Внутренняя функция `serve()` ASGI-сервера Hypercorn регистрирует свой обработчик SIGINT через `signal.signal(SIGINT, handler)`, перезаписывая стандартный механизм обработки `KeyboardInterrupt` в Python. При запуске Hypercorn как фоновой задачи через `asyncio.create_task()` внутренний процесс выключения Hypercorn не может сработать нормально (так как он ожидает режим `worker_serve`), в результате сигнал CTRL+C поглощается Hypercorn, но не вызывает никаких действий по очистке.
-
-**Затронутые версии**: [2.3.6 - 2.4.2]
-
-**Исправленная версия**: 2.4.3-dev.0
-
-**Исправление**:
-1. Замена ASGI-сервера с Hypercorn на Uvicorn (изменение зависимости в `pyproject.toml`).
-2. Использование `uvicorn.Server._serve()` для прямого запуска сервера, **обход** контекстного менеджера обработки сигналов `capture_signals()`.
-3. Реализация плавной остановки через `server.should_exit = True`, таймаут приводит к отмене фоновой задачи.
-4. Синхронное удаление модели запуска через подпроцессы и модуля очистки `runtime/cleanup.py` (механизм очистки подпроцессов больше не нужен).
-
-**Дата исправления**: 2026/04/28
-
----
-
-### [BUG-015] Ошибка логики сортировки в стратегии загрузки модулей
-
-**Проблема**: `ModuleLoadStrategy` предоставляет поле `priority` для декларирования приоритета инициализации модулей, но реализация стратегии загрузки содержит ошибку, из-за чего модули инициализируются не в порядке ожидаемого приоритета, а по умолчанию в порядке `entry_points()`. При наличии зависимостей загрузки между модулями невозможно гарантировать правильный порядок инициализации с помощью `priority`.
-
-**Причина**: В реализации стратегии загрузки ошибка в логике сортировки, `initialize_modules()` не использует `priority` для сортировки модулей.
-
-**Затронутые версии**: 2.3.4 - 2.4.5-dev.2
-
-**Исправленная версия**: 2.4.5-dev.3
-
-**Исправление**: В `initialize_modules()` перед циклом по модулям отсортировать список модулей по убыванию `priority`. Модули с одинаковым приоритетом сохраняют исходный относительный порядок (stable sort).
-
-**Дата исправления**: 2026/05/15
-
----
-
-### [BUG-016] Проблема с потерей данных событий, когда адаптер возвращает None
-
-**Проблема**: При выполнении цепочки OneBot12-промежуточного ПО в `adapter.emit()`, если какой-либо промежуточный уровень возвращает `None` (например, разработчик забыл добавить `return data`), переменная `processed_data` во всех последующих обработчиках и промежуточном ПО становится `None`, что приводит к сбою обработки событий.
-
-**Причина**: Реализация цепочки промисов не проверяет, возвращается ли `None` из функции промежуточного ПО (`middleware`), и просто перезаписывает результат предыдущего шага значением `None`.
-
-**Затронутые версии**: unknown - 2.4.5-dev.3
-
-**Исправленная версия**: 2.4.5-dev.4
-
-**Исправление**: Добавлена проверка возврата: если middleware возвращает `None`, вместо использования `None` в качестве значения данных сохраняется исходный `processed_data` из предыдущего шага цепи, а в лог выводится предупреждение (warning).
-
-**Дата исправления**: 2026/05/15
-
----
-
-### [BUG-017] Зависимость пути конфигурации от рабочей директории
-
-**Проблема**: Конфигурация `ConfigManager` использует относительный путь по умолчанию `"config/config.toml"`, который разрешается относительно рабочей директории процесса с помощью `os.getcwd()`. Если рабочая директория изменяется во время выполнения (например, через `os.chdir()`), операция чтения или записи будет происходить в неправильном месте, что приводит к потере конфигурации или чтению устаревших данных.
-
-**Причина**: В конструкторе `__init__` путь хранится как относительная строка без обработки `os.path.abspath()`.
-
-**Затронутые версии**: 2.3.7 - 2.4.5-dev.3
-
-**Исправленная версия**: 2.4.5-dev.4
-
-**Исправление**: В методе `ConfigManager.__init__()` добавлена проверка: если в качестве пути передана относительная строка, она автоматически преобразуется в абсолютный путь с помощью `os.path.abspath()` перед использованием.

@@ -586,6 +586,7 @@ class BaseAdapter(ABC):
                 return asyncio.ensure_future(_send_raw())
 
     def __init__(self, sdk=None):
+        super().__init__()
         self._sdk = sdk
         if sdk:
             self.sdk = sdk

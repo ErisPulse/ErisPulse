@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1159,
+  "total_keywords": 1160,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -29,7 +29,7 @@
     "1. Categorized Exception Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 411,
+        "line": 448,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
@@ -83,7 +83,7 @@
     "1. Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 355,
+        "line": 392,
         "level": 3,
         "title": "1. Declarative Configuration (Recommended)"
       }
@@ -123,7 +123,7 @@
     "1. Maintain Platform Feature Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 575,
+        "line": 612,
         "level": 3,
         "title": "1. Maintain Platform Feature Documentation"
       }
@@ -147,7 +147,7 @@
     "1. Must Return Task Object": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 243,
+        "line": 280,
         "level": 3,
         "title": "1. Must Return Task Object"
       }
@@ -219,7 +219,7 @@
     "1. Standardized Response Format": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 304,
+        "line": 341,
         "level": 3,
         "title": "1. Standardized Response Format"
       }
@@ -227,7 +227,7 @@
     "1. Strictly Follow OneBot12 Standard": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 187,
+        "line": 224,
         "level": 3,
         "title": "1. Strictly Follow OneBot12 Standard"
       }
@@ -243,7 +243,7 @@
     "1. Unit Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 465,
+        "line": 502,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -275,7 +275,7 @@
     "1. Use Mixin Class for Batch Registration (Recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 523,
+        "line": 560,
         "level": 3,
         "title": "1. Use Mixin Class for Batch Registration (Recommended)"
       }
@@ -435,7 +435,7 @@
     "2. Account Selection Mechanism": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 394,
+        "line": 431,
         "level": 3,
         "title": "2. Account Selection Mechanism"
       }
@@ -467,7 +467,7 @@
     "2. Chainable Modifier Methods Return self": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 263,
+        "line": 300,
         "level": 3,
         "title": "2. Chainable Modifier Methods Return self"
       }
@@ -523,7 +523,7 @@
     "2. Error Code Specification": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 331,
+        "line": 368,
         "level": 3,
         "title": "2. Error Code Specification"
       }
@@ -555,7 +555,7 @@
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 489,
+        "line": 526,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -563,7 +563,7 @@
     "2. Logging": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 444,
+        "line": 481,
         "level": 3,
         "title": "2. Logging"
       },
@@ -673,7 +673,7 @@
     "2. Standardize Timestamps": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 209,
+        "line": 246,
         "level": 3,
         "title": "2. Standardize Timestamps"
       }
@@ -713,7 +713,7 @@
     "2. Update Version Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 633,
         "level": 3,
         "title": "2. Update Version Information"
       }
@@ -721,7 +721,7 @@
     "2. Use Decorator to Register Single Method": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 549,
+        "line": 586,
         "level": 3,
         "title": "2. Use Decorator to Register Single Method"
       }
@@ -865,7 +865,7 @@
     "3. Clean Up on Adapter Shutdown": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 559,
+        "line": 596,
         "level": 3,
         "title": "3. Clean Up on Adapter Shutdown"
       }
@@ -921,7 +921,7 @@
     "3. Event ID Generation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 225,
+        "line": 262,
         "level": 3,
         "title": "3. Event ID Generation"
       }
@@ -1025,7 +1025,7 @@
     "3. Support Platform-specific Methods": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 277,
+        "line": 314,
         "level": 3,
         "title": "3. Support Platform-specific Methods"
       }
@@ -1164,6 +1164,14 @@
         "line": 153,
         "level": 2,
         "title": "4. Event Convenience Methods"
+      }
+    ],
+    "4. Exposing Connection Information": [
+      {
+        "document": "developer-guide/adapters/best-practices.md",
+        "line": 185,
+        "level": 3,
+        "title": "4. Exposing Connection Information"
       }
     ],
     "4. Extended Field Description": [
@@ -1851,7 +1859,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 751,
+        "line": 753,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1899,7 +1907,7 @@
     "API Response": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 302,
+        "line": 339,
         "level": 2,
         "title": "API Response"
       },
@@ -1913,7 +1921,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 635,
+        "line": 637,
         "level": 2,
         "title": "API Response Standard"
       }
@@ -1959,7 +1967,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 698,
+        "line": 700,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -2167,7 +2175,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 809,
+        "line": 811,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2421,7 +2429,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 783,
+        "line": 785,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -2807,7 +2815,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 779,
+        "line": 781,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2835,7 +2843,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 845,
+        "line": 847,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3755,7 +3763,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 727,
+        "line": 729,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4171,7 +4179,7 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
+        "line": 673,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       }
@@ -4475,7 +4483,7 @@
     "Documentation Maintenance": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 573,
+        "line": 610,
         "level": 2,
         "title": "Documentation Maintenance"
       }
@@ -4631,13 +4639,13 @@
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 409,
+        "line": 446,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 725,
+        "line": 727,
         "level": 2,
         "title": "Error Handling"
       },
@@ -4701,7 +4709,7 @@
     "Event Conversion": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 185,
+        "line": 222,
         "level": 2,
         "title": "Event Conversion"
       },
@@ -5071,7 +5079,7 @@
     "Extended `self` Field Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 834,
+        "line": 836,
         "level": 3,
         "title": "Extended `self` Field Information"
       }
@@ -6141,7 +6149,7 @@
     "Listen to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 868,
+        "line": 870,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
       }
@@ -6375,7 +6383,7 @@
     "Manual Response Construction (Old method still compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 655,
+        "line": 657,
         "level": 3,
         "title": "Manual Response Construction (Old method still compatible)"
       }
@@ -6733,7 +6741,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 801,
+        "line": 803,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7057,7 +7065,7 @@
     "Multi-Account Support": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 669,
+        "line": 671,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -7081,7 +7089,7 @@
     "Multi-account Support": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 353,
+        "line": 390,
         "level": 2,
         "title": "Multi-account Support"
       }
@@ -7575,7 +7583,7 @@
     "Platform Event Method Extension": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 519,
+        "line": 556,
         "level": 2,
         "title": "Platform Event Method Extension"
       }
@@ -8221,7 +8229,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 605,
+        "line": 642,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8233,7 +8241,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 886,
+        "line": 888,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8557,7 +8565,7 @@
     "Reverse Conversion and Message Building": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 509,
+        "line": 546,
         "level": 2,
         "title": "Reverse Conversion and Message Building"
       }
@@ -8845,7 +8853,7 @@
     "SendDSL Implementation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 239,
+        "line": 276,
         "level": 2,
         "title": "SendDSL Implementation"
       }
@@ -9151,7 +9159,7 @@
     "Specify Account for Sending": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 712,
+        "line": 714,
         "level": 3,
         "title": "Specify Account for Sending"
       }
@@ -9387,7 +9395,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 641,
         "level": 3,
         "title": "Success Response"
       }
@@ -9635,7 +9643,7 @@
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 463,
+        "line": 500,
         "level": 2,
         "title": "Testing"
       },

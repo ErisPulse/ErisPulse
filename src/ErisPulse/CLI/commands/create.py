@@ -78,6 +78,7 @@ class Main(BaseModule):
         self.logger = self.sdk.logger.get_child("{name}")
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
+        self.client = self.sdk.client
 
         self.logger.info("{name} 初始化完成")
         self.config = self._load_config()
@@ -171,27 +172,38 @@ __all__ = [
 """
 
 _ADAPTER_CORE = """import asyncio
+import json
+from dataclasses import dataclass, field
 from ErisPulse.Core import BaseAdapter
-from ErisPulse.Core import logger, config as config_manager, adapter
+from ErisPulse.runtime.config_schema import AdapterConfig
+from ErisPulse.Core import router
+
+
+@dataclass
+class {name}Config(AdapterConfig):
+    \"\"\"{name} 适配器配置\"\"\"
+    endpoint: str = field(
+        default="https://api.example.com",
+        metadata={{"description": "平台 API 地址"}},
+    )
+    token: str = field(
+        default="",
+        metadata={{"description": "平台 Token", "required": True, "secret": True}},
+    )
 
 
 class {name}(BaseAdapter):
     \"\"\"
-    {name}适配器
+    {name} 适配器
 
-    继承自BaseAdapter基类，实现了SendDSL风格的链式调用接口
+    继承自 BaseAdapter 基类，使用声明式配置管理（ConfigClass），
+    实现了 SendDSL 风格的链式调用接口和 Bot 状态追踪。
     \"\"\"
+
+    ConfigClass = {name}Config
 
     def __init__(self, sdk=None):
         super().__init__()
-        from ErisPulse import sdk as _sdk
-        self.sdk = _sdk if sdk is None else sdk
-        self.logger = logger.get_child("{name}")
-        self.config_manager = config_manager
-        self.adapter = adapter
-
-        self.logger.info("{name} 初始化完成")
-        self.config = self._load_config()
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 
@@ -199,38 +211,16 @@ class {name}(BaseAdapter):
         from .Converter import {converter_name}
         return {converter_name}()
 
-    def _load_config(self):
-        if not self.config_manager:
-            return {{}}
-
-        config = self.config_manager.getConfig("{name}", {{}})
-
-        if config is None:
-            default_config = {{
-                "mode": "server",
-                "server": {{
-                    "path": "/webhook",
-                }},
-                "client": {{
-                    "url": "http://127.0.0.1:8080",
-                    "token": ""
-                }}
-            }}
-            self.config_manager.setConfig("{name}", default_config)
-            self.logger.info("已创建{name}默认配置")
-            return default_config
-        return config
-
     class Send(BaseAdapter.Send):
         \"\"\"
-        Send消息发送DSL
+        Send 消息发送 DSL
 
-        At/AtAll/Reply/Using(也就是使用的账户)/Account/To 由框架基类内置处理
+        At / AtAll / Reply / Using / To 由框架基类内置处理。
         使用 self._apply_modifiers(message) 合并修饰器到消息段。
         使用 self.send_context 获取发送上下文 (target_type, target_id, account_id)。
 
         支持链式调用:
-        Send.To("group","123").At("456").Reply("789").Text("hi")
+        Send.To("group", "123").At("456").Reply("789").Text("hi")
         \"\"\"
 
         def Raw_ob12(self, message, **kwargs):
@@ -240,9 +230,8 @@ class {name}(BaseAdapter):
                     endpoint="/send_message",
                     message=segments,
                     **self.send_context,
-                    **kwargs
+                    **kwargs,
                 )
-
             return asyncio.create_task(_do_send())
 
         def Text(self, text: str):
@@ -253,68 +242,175 @@ class {name}(BaseAdapter):
 
     class Request(BaseAdapter.Request):
         \"\"\"
-        Request请求操作DSL
+        Request 请求操作 DSL
 
-        适配器应重写 accept/reject 实现平台特定的请求处理逻辑。
-        通过 self._adapter.call_api() 调用平台 API。
-        通过 self._request_id 获取请求标识。
-        通过 self._account_id 获取 Bot 账号。
+        适配器应重写 accept / reject 实现平台特定的请求处理逻辑。
+        如果平台不支持请求操作，可不实现此内部类。
+        基类默认返回 retcode=10002（不支持的操作）。
         \"\"\"
 
         async def _do_accept(self, **kwargs):
-            # TODO: 实现同意请求的平台 API 调用
-            return await super()._do_accept(**kwargs)
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                approve=True,
+                account_id=self._account_id,
+                **kwargs,
+            )
+            return {{
+                "status": "ok" if result.get("code") == 0 else "failed",
+                "retcode": result.get("code", 0),
+                "data": None,
+                "message_id": "",
+                "message": result.get("message", ""),
+            }}
 
         async def _do_reject(self, **kwargs):
-            # TODO: 实现拒绝请求的平台 API 调用
-            return await super()._do_reject(**kwargs)
-
-    async def call_api(self, endpoint: str, **params):
-        raise NotImplementedError(f"需要实现平台特定的API调用: {{endpoint}}")
+            result = await self._adapter.call_api(
+                endpoint="/set_request",
+                request_id=self._request_id,
+                approve=False,
+                account_id=self._account_id,
+                **kwargs,
+            )
+            return {{
+                "status": "ok" if result.get("code") == 0 else "failed",
+                "retcode": result.get("code", 0),
+                "data": None,
+                "message_id": "",
+                "message": result.get("message", ""),
+            }}
 
     async def start(self):
-        self.logger.info(f"启动{name}，配置模式: {{self.config.get('mode', 'unknown')}}")
-        raise NotImplementedError("需要实现适配器启动逻辑")
+        \"\"\"启动适配器\"\"\"
+        cfg = self.config
+        self.logger.info(f"启动 {{cfg.endpoint}} 适配器")
+
+        router.register_websocket(
+            module_name="{entry_key}",
+            path="/ws",
+            handler=self._ws_handler,
+        )
+        self.logger.info("WebSocket 路由已注册: /ws")
+
+    async def _ws_handler(self, websocket):
+        bot_id = self._get_bot_id()
+
+        await self.emit_meta("connect", bot_id, user_name="{name}")
+        self.logger.info(f"Bot {{bot_id}} 已连接")
+
+        try:
+            while True:
+                data = await websocket.receive_text()
+                raw = json.loads(data)
+                event = self.convert(raw)
+                if event:
+                    await self.adapter.emit(event)
+        except Exception as e:
+            self.logger.warning(f"连接断开: {{e}}")
+        finally:
+            await self.emit_meta("disconnect", bot_id)
+            self.logger.info(f"Bot {{bot_id}} 已断开")
 
     async def shutdown(self):
-        self.logger.info("关闭{name}")
-        raise NotImplementedError("需要实现适配器关闭逻辑")
+        \"\"\"关闭适配器\"\"\"
+        router.unregister_websocket("{entry_key}", "/ws")
+        self.logger.info("适配器已关闭")
+
+    async def call_api(self, endpoint: str, **params):
+        \"\"\"调用平台 API\"\"\"
+        from ErisPulse.Core import client
+
+        cfg = self.config
+        headers = {{"Authorization": "Bearer " + cfg.token}}
+        url = cfg.endpoint + endpoint
+
+        try:
+            resp = await client.post(
+                url,
+                json=params,
+                headers=headers,
+                timeout=30,
+                max_retries=2,
+            )
+            result = await resp.json()
+            return self.make_response(
+                data=result.get("data"),
+                message_id=result.get("data", {{}}).get("message_id", ""),
+                raw=result,
+            )
+        except Exception as e:
+            self.logger.error(f"API 调用失败: {{e}}")
+            return self.make_error(message=str(e))
 """
 
 _ADAPTER_CONVERTER = """\"\"\"
-{name}转换器
+{name} 事件转换器
 
-用于在平台特定消息格式和ErisPulse标准格式之间进行转换
+将平台原生事件转换为 OneBot12 标准格式（正向转换）。
+反向转换（发送方向）由适配器的 Send.Raw_ob12() 处理。
 \"\"\"
+
+import time
+import uuid
 
 
 class {converter_name}:
     \"\"\"
-    {name}转换器类
+    {name} 转换器类
 
-    负责将平台特定的事件格式转换为ErisPulse标准格式
+    负责将平台特定的事件格式转换为 ErisPulse 标准 OneBot12 格式。
+    所有转换后的事件必须包含 platform_raw 字段以保留原始数据。
     \"\"\"
 
-    def __init__(self):
-        pass
-
-    def convert(self, data: dict) -> dict:
+    def convert(self, raw_event: dict) -> dict:
         \"\"\"
-        将平台特定消息格式转换为ErisPulse标准格式
+        将平台原生事件转换为 OneBot12 标准格式
 
-        :param data: 平台原始事件数据
-        :return: ErisPulse标准格式的事件数据
+        :param raw_event: 平台原始事件数据
+        :return: OneBot12 标准格式的事件字典，无法识别时返回 None
         \"\"\"
-        return data
+        if not isinstance(raw_event, dict):
+            return None
 
-    def reverse_convert(self, event: dict) -> dict:
-        \"\"\"
-        将ErisPulse标准格式转换为平台特定消息格式
+        event_id = raw_event.get("event_id") or str(uuid.uuid4())
+        timestamp = raw_event.get("timestamp") or int(time.time())
 
-        :param event: ErisPulse标准格式的事件数据
-        :return: 平台特定格式的事件数据
-        \"\"\"
+        event = {{
+            "id": str(event_id),
+            "time": int(timestamp),
+            "type": self._convert_type(raw_event),
+            "detail_type": self._convert_detail_type(raw_event),
+            "platform": "{entry_key}",
+            "self": {{
+                "platform": "{entry_key}",
+                "user_id": str(raw_event.get("self_id", "")),
+            }},
+            "{entry_key}_raw": raw_event,
+            "{entry_key}_raw_type": raw_event.get("type", ""),
+        }}
+
+        if event["type"] == "message":
+            event["user_id"] = str(raw_event.get("sender_id", ""))
+            event["message"] = self._convert_message_segments(raw_event.get("content", ""))
+            event["alt_message"] = raw_event.get("content", "")
+
         return event
+
+    def _convert_type(self, raw_event: dict) -> str:
+        event_type = raw_event.get("type", "")
+        type_map = {{
+            "chat": "message",
+        }}
+        return type_map.get(event_type, "unknown")
+
+    def _convert_detail_type(self, raw_event: dict) -> str:
+        return "private" if raw_event.get("is_private") else "group"
+
+    def _convert_message_segments(self, content) -> list:
+        if isinstance(content, str) and content:
+            return [{{"type": "text", "data": {{"text": content}}}}]
+        return []
 """
 
 _README_MODULE = """# {name}
@@ -378,9 +474,10 @@ token = ""
 
 def _camel_to_snake(name: str) -> str:
     import re
-    s = re.sub(r'(?<=[a-z0-9])([A-Z])', r'_\1', name)
-    s = re.sub(r'(?<=[A-Z])([A-Z])(?=[a-z])', r'_\1', s)
-    return s.lower().lstrip('_')
+
+    s = re.sub(r"(?<=[a-z0-9])([A-Z])", r"_\1", name)
+    s = re.sub(r"(?<=[A-Z])([A-Z])(?=[a-z])", r"_\1", s)
+    return s.lower().lstrip("_")
 
 
 def _to_converter_name(name: str) -> str:
@@ -392,7 +489,7 @@ def _validate_name(name: str) -> bool:
         return False
     if not name[0].isalpha():
         return False
-    return all(c.isalnum() or c == '_' for c in name)
+    return all(c.isalnum() or c == "_" for c in name)
 
 
 class CreateCommand(Command):
@@ -400,14 +497,23 @@ class CreateCommand(Command):
     description = "创建 Module / Adapter 项目脚手架"
 
     def add_arguments(self, parser: ArgumentParser):
-        parser.add_argument("create_type", nargs="?", choices=["module", "adapter"], help="创建类型: module 或 adapter")
+        parser.add_argument(
+            "create_type",
+            nargs="?",
+            choices=["module", "adapter"],
+            help="创建类型: module 或 adapter",
+        )
         parser.add_argument("--name", "-n", help="项目/模块/适配器名称 (PascalCase)")
         parser.add_argument("--description", "-d", help="项目描述", default="")
         parser.add_argument("--author", "-a", help="作者名称", default="")
         parser.add_argument("--email", "-e", help="作者邮箱", default="")
         parser.add_argument("--homepage", help="项目主页 URL", default="")
-        parser.add_argument("--output", "-o", help="输出目录 (默认当前目录)", default=".")
-        parser.add_argument("--force", "-f", action="store_true", help="强制覆盖已存在的目录")
+        parser.add_argument(
+            "--output", "-o", help="输出目录 (默认当前目录)", default="."
+        )
+        parser.add_argument(
+            "--force", "-f", action="store_true", help="强制覆盖已存在的目录"
+        )
 
     def execute(self, args):
         create_type = getattr(args, "create_type", None)
@@ -437,17 +543,23 @@ class CreateCommand(Command):
         console.print()
         return "module" if choice == 1 else "adapter"
 
-    def _ask_missing(self, args, field_name: str, prompt_text: str, default: str = "") -> str:
+    def _ask_missing(
+        self, args, field_name: str, prompt_text: str, default: str = ""
+    ) -> str:
         val = getattr(args, field_name, None) or ""
         if not val:
             val = Prompt.ask(f"  {prompt_text}", default=default)
         return val
 
     def _create_module(self, args, name: str):
-        description = self._ask_missing(args, "description", "模块描述", f"一个非常哇塞的{name}模块")
+        description = self._ask_missing(
+            args, "description", "模块描述", f"一个非常哇塞的{name}模块"
+        )
         author = self._ask_missing(args, "author", "作者名称", "yourname")
         email = self._ask_missing(args, "email", "作者邮箱", "your@mail.com")
-        homepage = self._ask_missing(args, "homepage", "项目主页", f"https://github.com/{author}/{name}")
+        homepage = self._ask_missing(
+            args, "homepage", "项目主页", f"https://github.com/{author}/{name}"
+        )
 
         output = Path(args.output)
         project_dir = output / name
@@ -463,8 +575,7 @@ class CreateCommand(Command):
 
             (pkg_dir / "__init__.py").write_text(_MODULE_INIT, encoding="utf-8")
             (pkg_dir / "Core.py").write_text(
-                _MODULE_CORE.format(name=name),
-                encoding="utf-8"
+                _MODULE_CORE.format(name=name), encoding="utf-8"
             )
             (project_dir / "pyproject.toml").write_text(
                 _MODULE_PYPROJECT.format(
@@ -474,15 +585,14 @@ class CreateCommand(Command):
                     email=email,
                     homepage=homepage,
                 ),
-                encoding="utf-8"
+                encoding="utf-8",
             )
             (project_dir / "LICENSE").write_text(
-                _LICENSE_TEMPLATE.format(year="2026", author=author),
-                encoding="utf-8"
+                _LICENSE_TEMPLATE.format(year="2026", author=author), encoding="utf-8"
             )
             (project_dir / "README.md").write_text(
                 _README_MODULE.format(name=name, description=description),
-                encoding="utf-8"
+                encoding="utf-8",
             )
 
             console.print()
@@ -508,10 +618,14 @@ class CreateCommand(Command):
             sys.exit(1)
 
     def _create_adapter(self, args, name: str):
-        description = self._ask_missing(args, "description", "适配器描述", f"{name}平台适配器")
+        description = self._ask_missing(
+            args, "description", "适配器描述", f"{name}平台适配器"
+        )
         author = self._ask_missing(args, "author", "作者名称", "yourname")
         email = self._ask_missing(args, "email", "作者邮箱", "your@mail.com")
-        homepage = self._ask_missing(args, "homepage", "项目主页", f"https://github.com/{author}/{name}")
+        homepage = self._ask_missing(
+            args, "homepage", "项目主页", f"https://github.com/{author}/{name}"
+        )
 
         converter_name = _to_converter_name(name)
         entry_key = _camel_to_snake(name)
@@ -529,15 +643,19 @@ class CreateCommand(Command):
 
             (pkg_dir / "__init__.py").write_text(
                 _ADAPTER_INIT.format(name=name, converter_name=converter_name),
-                encoding="utf-8"
+                encoding="utf-8",
             )
             (pkg_dir / "Core.py").write_text(
-                _ADAPTER_CORE.format(name=name, converter_name=converter_name),
-                encoding="utf-8"
+                _ADAPTER_CORE.format(
+                    name=name, converter_name=converter_name, entry_key=entry_key
+                ),
+                encoding="utf-8",
             )
             (pkg_dir / "Converter.py").write_text(
-                _ADAPTER_CONVERTER.format(name=name, converter_name=converter_name),
-                encoding="utf-8"
+                _ADAPTER_CONVERTER.format(
+                    name=name, converter_name=converter_name, entry_key=entry_key
+                ),
+                encoding="utf-8",
             )
             (project_dir / "pyproject.toml").write_text(
                 _ADAPTER_PYPROJECT.format(
@@ -548,15 +666,16 @@ class CreateCommand(Command):
                     homepage=homepage,
                     entry_key=entry_key,
                 ),
-                encoding="utf-8"
+                encoding="utf-8",
             )
             (project_dir / "LICENSE").write_text(
-                _LICENSE_TEMPLATE.format(year="2026", author=author),
-                encoding="utf-8"
+                _LICENSE_TEMPLATE.format(year="2026", author=author), encoding="utf-8"
             )
             (project_dir / "README.md").write_text(
-                _README_ADAPTER.format(name=name, description=description, name_snake=entry_key),
-                encoding="utf-8"
+                _README_ADAPTER.format(
+                    name=name, description=description, name_snake=entry_key
+                ),
+                encoding="utf-8",
             )
 
             console.print()

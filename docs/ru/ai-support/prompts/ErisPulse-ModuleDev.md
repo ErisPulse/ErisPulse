@@ -5023,9 +5023,856 @@ complex_msg = (
 - [Классы обертки событий](../developer-guide/modules/event-wrapper.md) - Метод event.reply_ob12()
 
 
+### HTTP 客户端
+
+# HTTP-клиент
+
+ErisPulse предоставляет унифицированный HTTP/WS-клиент. Модулям и адаптерам следует отдавать приоритет использованию этого клиента для отправки HTTP-запросов и установления WebSocket-соединений вместо самостоятельного импорта сторонних библиотек, таких как `aiohttp` / `httpx`.
+
+## Обзор
+
+Основные функции HTTP/WS-клиента:
+
+- **Единый интерфейс**: предоставляет методы `get` / `post` / `put` / `delete` / `patch` / `request`
+- **WebSocket-клиент**: установление клиентского WebSocket-соединения через `ws_connect`
+- **Автоматическое ведение логов**: все запросы автоматически логируются и собирается статистика
+- **Интеграция жизненного цикла**: каждый запрос вызывает событие жизненного цикла `client.request`, WS-соединение вызывает событие `client.ws.connect`
+- **Поддержка повторных попыток**: настраиваемое количество автоматических повторных попыток и интервалов
+- **Управление таймаутами**: отдельные таймауты для соединения и запроса
+- **Переиспользование пула соединений**: управление пулом соединений на основе `aiohttp.ClientSession`
+- **Иерархия исключений**: исключения `aiohttp` автоматически конвертируются в исключения `ErisPulse` (иерархия `ClientError`)
+
+## Быстрый старт
+
+### HTTP-запросы
+
+```python
+from ErisPulse.Core import client
+
+# GET-запрос
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)  # 200
+
+# POST-запрос
+resp = await client.post(
+    "https://httpbin.org/post",
+    json={"ключ": "значение"},
+)
+data = await resp.json()
+```
+
+### WebSocket-соединение
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+async for text in ws.iter_text():
+    await ws.send_text(f"Эхо: {text}")
+```
+
+## HttpResponse
+
+Все методы запросов возвращают объект `HttpResponse`:
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+
+resp.status       # int - HTTP-код состояния (например, 200, 404)
+resp.reason       # str | None - описание состояния (например, "OK")
+resp.headers      # заголовки ответа (регистронезависимые)
+resp.content_type # str | None - Content-Type
+resp.url          # финальный URL (может измениться из-за перенаправления)
+resp.raw          # базовый нативный объект ответа (в данный момент aiohttp.ClientResponse)
+
+# Чтение тела ответа
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # парсинг JSON
+text = await resp.text("gbk")  # указанная кодировка
+```
+
+## Методы запроса
+
+### GET
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get(
+    "https://api.example.com/users",
+    params={"page": "1", "limit": "10"},
+    headers={"Authorization": "Bearer token"},
+)
+```
+
+### POST
+
+```python
+from ErisPulse.Core import client
+
+# JSON-тело запроса
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"имя": "Alice", "возраст": 30},
+)
+
+# Тело формы
+resp = await client.post(
+    "https://api.example.com/login",
+    data={"имя пользователя": "admin", "пароль": "123"},
+)
+
+# Сырые данные
+resp = await client.post(
+    "https://api.example.com/upload",
+    data=b"raw bytes",
+    headers={"Content-Type": "application/octet-stream"},
+)
+```
+
+### PUT / DELETE / PATCH
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.put("https://api.example.com/users/1", json={"имя": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"возраст": 31})
+```
+
+### Общий метод request
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.request(
+    "OPTIONS",
+    "https://api.example.com/resource",
+    headers={"Origin": "https://example.com"},
+)
+```
+
+## Описание параметров
+
+### Параметры HTTP-запроса
+
+| Параметр | Тип | Описание |
+|------|------|------|
+| `url` | `str` | URL запроса |
+| `params` | `dict[str, str]` | Параметры запроса (необязательно) |
+| `headers` | `dict[str, str]` | Дополнительные заголовки (необязательно) |
+| `data` | `Any` | Тело запроса (форма или сырые данные) (необязательно) |
+| `json` | `Any` | JSON-тело запроса (необязательно) |
+| `timeout` | `float` | Таймаут этого запроса (секунды) (необязательно, переопределяет значение по умолчанию) |
+| `max_retries` | `int` | Максимальное количество повторных попыток для этого запроса (необязательно, переопределяет значение по умолчанию) |
+
+### Параметры ws_connect
+
+| Параметр | Тип | Описание |
+|------|------|------|
+| `url` | `str` | URL WebSocket-сервера |
+| `headers` | `dict[str, str]` | Дополнительные заголовки (необязательно) |
+| `heartbeat` | `float` | Интервал пульсации (секунды) (необязательно) |
+
+## Таймауты и повторные попытки
+
+```python
+from ErisPulse.Core import HttpClient
+
+# Создание клиента с пользовательским таймаутом
+client = HttpClient(
+    timeout=60,           # общий таймаут запроса 60s
+    connect_timeout=5,    # таймаут соединения 5s
+    max_retries=3,        # автоматические повторные попытки при неудаче 3 раза
+    retry_delay=2,        # задержка между повторными попытками 2s
+)
+
+# Переопределение таймаута для одного запроса
+resp = await client.get("https://slow-api.example.com/data", timeout=120)
+```
+
+## Пользовательские заголовки по умолчанию
+
+```python
+client = HttpClient(
+    headers={
+        "Authorization": "Bearer token",
+        "X-App-Id": "my-app",
+    },
+    user_agent="MyBot/1.0",
+)
+```
+
+## Статистика запросов
+
+```python
+from ErisPulse.Core import client
+
+# Просмотр статистики
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# Сброс статистики
+client.reset_stats()
+```
+
+## События жизненного цикла
+
+### События HTTP-запросов
+
+Событие `client.request` срабатывает после завершения каждого запроса, оно может использоваться для мониторинга:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+### События WebSocket-соединения
+
+Событие `client.ws.connect` срабатывает после установления каждого WebSocket-соединения:
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.ws.connect")
+async def on_ws_connect(event_data):
+    print(f"WS соединение: {event_data['url']}")
+```
+
+## Управление контекстом
+
+```python
+# Использование в качестве контекстного менеджера для автоматического закрытия сессии
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+    data = await resp.json()
+```
+
+## WebSocket-клиент
+
+Установка клиентского WebSocket-соединения через `client.ws_connect()`, возвращает объект `ClientWebSocket`. Клиент и сервер WebSocket совместно используют один и тот же базовый класс `WebSocketConnectionBase`, интерфейсы send/receive/iter идентичны.
+
+### Базовое использование
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+await ws.send_text("Привет")
+await ws.send_bytes(b"\x00\x01\x02")
+await ws.send_json({"тип": "ping"})
+```
+
+### Получение сообщений
+
+#### Высокоуровневые методы (рекомендуются)
+
+Автоматическая фильтрация типов сообщений, при разрыве соединения выбрасывается `WebSocketDisconnect`:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Прием по одной строке
+text = await ws.receive_text()    # str
+data = await ws.receive_bytes()   # bytes
+obj = await ws.receive_json()     # dict / list
+
+# Итеративный прием (автоматически останавливается при разрыве соединения)
+async for text in ws.iter_text():
+    print(text)
+
+async for data in ws.iter_bytes():
+    print(data)
+
+async for obj in ws.iter_json():
+    print(obj)
+```
+
+#### Низкоуровневые методы
+
+Использование `receive()` и `iter_messages()` для обработки необработанных типов сообщений, позволяет различать TEXT / BINARY / CLOSE / ERROR:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# Прием необработанного сообщения по одной строке
+msg = await ws.receive()
+# msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
+# msg.data  -> str | bytes | None
+
+# Итеративный прием необработанных сообщений (автоматически останавливается при CLOSE/ERROR)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(f"Текст: {msg.data}")
+    elif msg.type == WSMessage.BINARY:
+        print(f"Двоичные данные: {len(msg.data)} bytes")
+```
+
+### WSMessage
+
+`WSMessage` — это унифицированный тип WebSocket-сообщения, не зависящий от базовой библиотеки:
+
+| Свойство | Тип | Описание |
+|------|------|------|
+| `type` | `str` | Тип сообщения: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | Данные сообщения |
+
+### Свойства ClientWebSocket
+
+| Свойство | Тип | Описание |
+|------|------|------|
+| `url` | `URL` | URL соединения |
+| `headers` | `Headers` | Заголовки ответа |
+| `closed` | `bool` | Закрыто ли соединение |
+| `raw` | `object` | Базовый нативный объект (aiohttp.ClientWebSocketResponse) |
+
+### Жизненные цикл-хуки
+
+Аналогично `WebSocketConnection` на сервере, поддерживает `on_disconnect` и `on_error` колбэки:
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"Соединение разорвано: {reason}")
+
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"Ошибка соединения: {error}")
+```
+
+### Закрытие соединения
+
+```python
+await ws.close(code=1000, reason="Normal closure")
+```
+
+## Иерархия исключений
+
+ErisPulse определяет унифицированную иерархию исключений. Запросы, инициированные через `sdk.client`, автоматически конвертируют базовые исключения `aiohttp` в исключения `ErisPulse`.
+
+> **Обратная совместимость**: старые модули/адаптеры, использующие `aiohttp.ClientSession` напрямую, не затронуты. Конвертация исключений работает только при использовании `sdk.client` для запросов; код, использующий `aiohttp` напрямую, по-прежнему будет перехватывать нативные исключения, такие как `aiohttp.ClientError`. Оба способа могут сосуществовать.
+
+### Иерархия исключений
+
+```
+ErisPulseError
+├── ClientError                  # Базовый класс для всех исключений HTTP/WS-клиента
+│   ├── ClientConnectionError    # Ошибка соединения (сбой DNS, отказ в соединении, недоступность сети)
+│   ├── ClientTimeoutError       # Таймаут соединения или запроса
+│   └── HTTPStatusError          # Ошибка состояния HTTP 4xx/5xx
+└── WebSocketError               # Базовый класс для исключений WebSocket
+    └── WebSocketDisconnect      # Разрыв WebSocket-соединения (универсальный для клиента и сервера)
+```
+
+### Перехват исключений
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
+
+# Обработка исключений HTTP-запросов
+try:
+    resp = await client.get("https://api.example.com/data")
+    data = await resp.json()
+except ClientConnectionError:
+    print("Не удалось подключиться к серверу")
+except ClientTimeoutError:
+    print("Таймаут запроса")
+except ClientError as e:
+    print(f"Ошибка запроса: {e}")
+
+# Обработка исключений WebSocket
+try:
+    ws = await client.ws_connect("wss://example.com/ws")
+    async for text in ws.iter_text():
+        await ws.send_text(f"Эхо: {text}")
+except WebSocketDisconnect as e:
+    print(f"Соединение разорвано: code={e.code}, reason={e.reason}")
+except WebSocketError as e:
+    print(f"Ошибка WebSocket: {e}")
+```
+
+### Универсальный перехват
+
+Использование `ClientError` для перехвата всех исключений HTTP/WS-клиента:
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientError as e:
+    print(f"Клиентская ошибка: {e}")
+```
+
+### HTTPStatusError
+
+Когда необходимо проверить код состояния после запроса и выбросить исключение, можно использовать вручную:
+
+```python
+from ErisPulse.Core.Bases.errors import HTTPStatusError
+
+resp = await client.get("https://api.example.com/data")
+if resp.status >= 400:
+    raise HTTPStatusError(resp.status, await resp.text())
+```
+
+## Использование в адаптерах
+
+Адаптеры могут использовать глобальный клиент или создавать собственные экземпляры клиента для отправки запросов на API платформы:
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.errors import ClientError
+
+class MyAdapter(BaseAdapter):
+    async def call_api(self, endpoint, **params):
+        try:
+            resp = await client.post(
+                f"https://api.platform.com/{endpoint}",
+                json=params,
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            return await resp.json()
+        except ClientError as e:
+            self.logger.error(f"Ошибка вызова API: {e}")
+            raise
+```
+
+> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, эффект будет аналогичным.
+
+## Лучшие практики
+
+1. **Приоритет использования глобального клиента**: используйте `from ErisPulse.Core import client` для получения глобального экземпляра, это упрощает унифицированное управление и мониторинг со стороны фреймворка
+2. **Избегайте прямого импорта aiohttp**: используйте `client` вместо `aiohttp.ClientSession`, чтобы в будущем не нужно было менять код при смене базовой реализации
+3. **Использование иерархии исключений ErisPulse**: при использовании `sdk.client` перехватывайте `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной HTTP-библиотеки. Старый код, использующий `aiohttp` напрямую, не затронут
+4. **Рациональная настройка таймаутов**: установите разумные таймауты в зависимости от скорости ответа API, чтобы избежать длительной блокировки
+5. **Использование механизма повторных попыток**: включите повторные попытки для нестабильных API для повышения надежности
+6. **Мониторинг статистики запросов**: отслеживайте состояние запросов через `sdk.client.stats` или событие жизненного цикла `client.request`
+7. **Использование высокоуровневых методов WebSocket**: отдавайте предпочтение методам `iter_text` / `iter_json` и используйте `iter_messages` только в случае необходимости различать типы сообщений
+
+## Связанные документы
+
+- [Маршрутизатор](router.md) - серверные маршруты HTTP/WebSocket (WebSocketConnection на стороне сервера использует тот же базовый класс, что и на стороне клиента)
+- [Руководство по разработке адаптеров](../developer-guide/adapters/getting-started.md) - использование HTTP-клиента в адаптерах
+- [Управление жизненным циклом](lifecycle.md) - прослушивание событий запроса
+
+
+### SQL 查询构建器
+
+# SQL Query Builder
+
+Модуль хранения (Storage) в ErisPulse предоставляет универсальный конструктор SQL-запросов в стиле цепочки вызовов (chain-style), поддерживающий создание пользовательских таблиц, а также операции выборки, обновления и удаления.
+
+## Архитектура
+
+```
+Bases/storage.py                    Core/storage.py
+┌─────────────────────┐             ┌──────────────────────────┐
+│  BaseStorage (ABC)  │◄────────────│  StorageManager          │
+│  BaseQueryBuilder   │             │  (конкретная реализация  │
+│    (ABC)            │             │   на базе SQLite)        │
+└─────────────────────┘             │                          │
+                                    │  SQLiteQueryBuilder      │
+                                    │  AlterTableBuilder       │
+                                    └──────────────────────────┘
+```
+
+- `BaseStorage` / `BaseQueryBuilder` — это абстрактные базовые классы, определяющие единый интерфейс, который поддерживает расширение для других носителей хранения (Redis, MySQL и т. д.)
+- `StorageManager` — текущая конкретная реализация на базе SQLite, полностью сохраняющая обратную совместимость
+
+## Импорт
+
+```python
+from ErisPulse import sdk
+# или
+from ErisPulse.Core import storage
+
+# Базовые классы ABC (для типизации или пользовательской реализации)
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+## Управление таблицами
+
+### Создание таблицы
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0",
+    "email": "TEXT"
+})
+```
+
+### Проверка существования таблицы
+
+```python
+if sdk.storage.HasTable("users"):
+    print("Таблица users существует")
+```
+
+### Удаление таблицы
+
+```python
+sdk.storage.DropTable("users")
+```
+
+### Изменение структуры таблицы
+
+```python
+# Добавление столбца
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+
+# Переименование таблицы
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# Цепочка нескольких операций
+sdk.storage.AlterTable("users") \
+    .AddColumn("phone", "TEXT") \
+    .AddColumn("address", "TEXT") \
+    .Execute()
+```
+
+## Запросы в стиле цепочки (Chain Queries)
+
+### Вставка данных
+
+```python
+# Вставка одной строки (передача словаря)
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# Массовая вставка (передача списка словарей)
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35},
+    {"name": "Dave", "age": 40}
+]).Execute()
+```
+
+### Запрос данных
+
+> **Важно**: `Select()` возвращает `list[tuple]` (список кортежей), а не словарь. Вам необходимо получать значения, обращаясь по индексу в порядке следования столбцов.
+
+```python
+# Запрос всех столбцов
+rows = sdk.storage.Table("users").Select().Execute()
+# rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
+
+# Запрос указанных столбцов
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+# rows: [("Alice", 30), ("Bob", 25), ...]
+
+# Получение значения по индексу
+for row in rows:
+    name = row[0]   # "Alice"
+    age = row[1]    # 30
+```
+
+#### Преобразование кортежей в словари
+
+```python
+columns = ["id", "name", "age"]
+rows = sdk.storage.Table("users").Select(*columns).Execute()
+
+# Способ 1: zip внутри цикла
+for row in rows:
+    record = dict(zip(columns, row))
+    print(record["name"], record["age"])
+
+# Способ 2: преобразование списка кортежей в список словарей за один раз
+records = [dict(zip(columns, row)) for row in rows]
+```
+
+#### Получение одной записи
+
+```python
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ExecuteOne()
+
+# row — это кортеж или None
+if row is not None:
+    name = row[0]  # "Alice"
+    age = row[1]   # 30
+```
+
+### Фильтрация по условиям
+
+> `Where(condition, *params)` поддерживает передачу нескольких параметров, соответствующих нескольким заполнителям `?`.
+
+```python
+# Одно условие (один заполнитель, один параметр)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 18) \
+    .Execute()
+
+# Использование нескольких заполнителей в одном Where
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ? AND age < ?", 20, 40) \
+    .Execute()
+
+# Многократный вызов Where (связано оператором AND)
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 20) \
+    .Where("age < ?", 40) \
+    .Execute()
+```
+
+### Сортировка, пагинация
+
+```python
+# По возрастанию
+rows = sdk.storage.Table("users").Select("name", "age") \
+    .OrderBy("name") \
+    .Execute()
+
+# По убыванию
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("age", desc=True) \
+    .Execute()
+
+# Пагинация
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("id") \
+    .Limit(10) \
+    .Offset(20) \
+    .Execute()
+```
+
+### Обновление данных
+
+```python
+# Обновление по условию
+sdk.storage.Table("users") \
+    .Update({"age": 31}) \
+    .Where("name = ?", "Alice") \
+    .Execute()
+
+# Полное обновление
+sdk.storage.Table("users") \
+    .Update({"status": "active"}) \
+    .Execute()
+```
+
+### Удаление данных
+
+```python
+# Удаление по условию
+sdk.storage.Table("users") \
+    .Delete() \
+    .Where("name = ?", "Bob") \
+    .Execute()
+
+# Полное удаление
+sdk.storage.Table("users").Delete().Execute()
+```
+
+### Подсчет и проверка существования
+
+```python
+# Подсчет
+count = sdk.storage.Table("users").Count()
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# Проверка существования
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+```
+
+## Повторное использование условий запроса
+
+Используйте `copy()` для глубокого копирования конструктора для повторного использования базовых условий:
+
+```python
+base = sdk.storage.Table("users").Where("age > ?", 20)
+
+# Запрос на основе тех же условий
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+
+# Подсчет на основе тех же условий
+count = base.copy().Count()
+
+# Проверка существования на основе тех же условий
+exists = base.copy().Where("name = ?", "Alice").Exists()
+```
+
+## Сброс конструктора
+
+```python
+builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
+builder.clear()
+
+# Перестроение запроса
+builder.Select("name", "age").Where("name = ?", "Alice")
+rows = builder.Execute()
+```
+
+## Использование в транзакциях
+
+Операции в стиле цепочки полностью поддерживают транзакции:
+
+```python
+# Подтверждение транзакции
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
+    sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
+
+# Пример отката
+try:
+    with sdk.storage.transaction():
+        sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
+        raise Exception("force rollback")
+except Exception:
+    pass
+# Запись Alice все еще существует
+```
+
+## Описание возвращаемых значений
+
+| Операция | Тип возвращаемого значения | Описание |
+|------|---------|------|
+| `Select().Execute()` | `list[tuple]` | Список кортежей, упорядоченных по столбцам |
+| `Select().ExecuteOne()` | `tuple \| None` | Один кортеж или None |
+| `Insert().Execute()` | `int` | Количество затронутых строк |
+| `InsertMulti().Execute()` | `int` | Количество вставленных строк |
+| `Update().Execute()` | `int` | Количество затронутых строк |
+| `Delete().Execute()` | `int` | Количество затронутых строк |
+| `Count()` | `int` | Количество совпавших строк |
+| `Exists()` | `bool` | Наличие записи |
+
+### Примеры обработки возвращаемых значений
+
+```python
+# Select возвращает кортежи, берем значения по индексу
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # Имя в первой строке, первом столбце
+first_age = rows[0][1]   # Возраст в первой строке, втором столбце
+
+# Рекомендуется: преобразование в словарь с помощью списка имен столбцов + zip, код более читаем
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne возвращает один кортеж или None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete возвращают количество затронутых строк
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"Удалено записей: {affected}")
+```
+
+## Параметризованные запросы
+
+Все параметры WHERE используют заполнитель `?`, параметры передаются как последовательные аргументы метода `Where()` (**не** как кортеж или список):
+
+```python
+# Верно ✓ — передача нескольких параметров по отдельности
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# Верно ✓ — многократный вызов Where
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# Ошибочно ✗ — не передавайте кортеж
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# Это превратит весь кортеж в значение для первого заполнителя
+
+# Ошибочно ✗ — существует риск SQL-инъекции
+sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Правила передачи параметров Where
+
+```python
+# Where(condition: str, *params: Any)
+# params — переменное число аргументов, передаются по одному
+
+# Один параметр
+.Where("name = ?", "Alice")
+
+# Несколько параметров
+.Where("age > ? AND age < ?", 18, 60)
+
+# Запрос LIKE
+.Where("name LIKE ?", "A%")
+
+# Запрос IN (требуется вручную построить заполнители)
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
+```
+
+## Пользовательский бэкенд (хранилище)
+
+Наследуйте `BaseStorage` и `BaseQueryBuilder` для реализации пользовательского бэкенда:
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+class MyQueryBuilder(BaseQueryBuilder):
+    def Execute(self):
+        # Реализация конкретной логики выполнения
+        ...
+
+    def ExecuteOne(self):
+        ...
+
+    def Count(self):
+        ...
+
+    def Exists(self):
+        ...
+
+
+class MyStorage(BaseStorage):
+    def get(self, key, default=None):
+        ...
+
+    def set(self, key, value):
+        ...
+
+    # Реализация других абстрактных методов...
+    def Table(self, table_name):
+        return MyQueryBuilder(self, table_name)
+```
+
+## Связанные документы
+
+- [Ядро модулей API](../api-reference/core-modules.md) - Полный API модуля Storage
+- [API базовых классов хранилища](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Абстрактные интерфейсы BaseStorage/BaseQueryBuilder
+- [Конструктор сообщений](message-builder.md) - Ссылка на стиль цепочки вызовов MessageBuilder
+
+
 ### 路由系统
 
-# Менеджер маршрутизации (Router Manager)
+# Менеджер маршрутизации
 
 Менеджер маршрутизации ErisPulse предоставляет централизованное управление HTTP и WebSocket маршрутизацией, поддерживает регистрацию маршрутов через несколько адаптеров и управление жизненным циклом. В основе лежит абстрактный слой (в данный момент реализован на базе FastAPI + Uvicorn).
 
@@ -5077,15 +5924,12 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# Использование типов FastAPI также полностью совместимо
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 

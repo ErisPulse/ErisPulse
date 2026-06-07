@@ -63,7 +63,7 @@
 
 ---
 
-## [2.4.6-dev.6] - 2026/06/06
+## [2.4.6-dev.6] - 2026/06/07
 > 开发版本
 
 ### 新增
@@ -93,6 +93,22 @@
     - `_resolve_account()` 自动解析多账户
     - `on_config_update()` 配置热更新回调
   - `Core/constants.py` 新增 WS 客户端默认常量
+  - `Core/router.py` 新增路由发现与 SSE 支持：
+    - `get_module_routes(module_name)` 获取命名空间详细路由信息（HTTP 方法、WS 认证、SSE 流式标记）
+    - `get_module_urls(module_name)` 获取命名空间完整连接 URL（自动转换 ws:// / wss://）
+    - `get_module_urls_matching(prefix)` 按前缀聚合多命名空间路由（兼容多账户适配器）
+    - `list_namespaces()` 返回值新增 `"sse"` 键
+    - `register_sse()` / `@sse` 装饰器 / `RouteGroup.sse()` 注册 SSE 端点
+    - `unregister_sse()` 取消注册 SSE 路由
+    - `unregister_all_by_namespace()` 清理统计新增 `"sse_count"`
+  - `Core/Bases/router.py` 新增 `SseEmitter` 服务器无关 SSE 协议实现：
+    - `send(data, event, id, retry)` 自动格式化 SSE 协议（非 str 数据自动 JSON 序列化）
+    - `close()` / `closed` 优雅连接管理
+    - `request` 属性访问底层 HTTP 请求
+    - 通过 `on_send` / `on_close` 回调与服务器层解耦
+  - `Core/adapter.py` 新增 `get_connection_info(platform)` 适配器连接信息查询：
+    - 聚合 base_url、HTTP/WS/SSE 路由的完整 URL
+    - 精确匹配优先，无结果时自动按前缀聚合
 
 ### 变更
 - @wsu2059q
@@ -110,6 +126,9 @@
   - HTTP 客户端文档 → HTTP/WS 客户端文档，新增 WebSocket 客户端和异常体系章节
   - 适配器开发文档更新为声明式配置风格（ConfigClass / emit_meta / make_response）
   - 示例适配器 `MyAdapter` 全面重构，展示新 API 用法
+  - 适配器开发文档新增「连接信息与路由发现」和「SSE 支持」章节
+  - `core-concepts.md` WebSocket/WebHook 示例移除 FastAPI 类型注解依赖
+  - `best-practices.md` 新增连接信息暴露和 `module_name` 一致性说明
 
 ---
 

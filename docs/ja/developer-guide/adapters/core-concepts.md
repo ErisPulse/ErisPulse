@@ -1,6 +1,6 @@
-# アダプターのコア概念
+# アダプターの核心概念
 
-ErisPulse アダプターのコア概念を理解することは、アダプター開発の基礎となります。
+ErisPulse アダプターの核心概念を理解することは、アダプター開発の基礎となります。
 
 ## アダプターのアーキテクチャ
 
@@ -17,10 +17,9 @@ ErisPulse アダプターのコア概念を理解することは、アダプタ�
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│                  │   │ アダプター        │   │                  │
-│  Converter       │   │ (MyAdapter)      │   │ Send.Raw_ob12()  │
-│  (イベント       │──→│ ┌──────────────┐ │   │ (逆方向変換      │
-│   コンバーター)  │   │ │              │ │   │  エントリ)       │
+│                  │   │ 适配器 (MyAdapter) │   │                  │
+│  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
+│  (事件转换器)    │──→│ │              │ │   │ (反向转换入口)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
@@ -33,8 +32,8 @@ ErisPulse アダプターのコア概念を理解することは、アダプタ�
                                 │                      ↓
                                 ↓              ┌──────────────────┐
                        ┌──────────────────┐    │ 標準レスポンス   │
-                       │ イベントシステム │    └──────────────────┘
-                       └────────┬─────────┘
+                       │ イベントシステム │    │     形式         │
+                       └────────┬─────────┘    └──────────────────┘
                                 │
                                 ↓
                        ┌──────────────────┐
@@ -269,7 +268,7 @@ from ErisPulse.runtime.config_schema import AdapterConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(AdapterConfig):
-    """アダプター設定（宣言後フレームワーク自動管理）"""
+    """适配器配置（声明后框架自动管理）"""
     token: str = field(
         default="",
         metadata={
@@ -281,28 +280,28 @@ class MyConfig(AdapterConfig):
     )
 
 class MyAdapter(BaseAdapter):
-    ConfigClass = MyConfig  # 設定クラスを宣言
+    ConfigClass = MyConfig  # 声明配置类
     
-    # __init__ をオーバーライドする必要はありません。フレームワークが自動的に処理します：
+    # 无需覆写 __init__，框架自动处理：
     # - self.sdk, self.logger
-    # - self.config（型安全な設定インスタンス）
+    # - self.config（类型安全的配置实例）
     # - self.Send, self.Request
     
     async def start(self):
-        """アダプターの起動（必須実装）"""
-        cfg = self.config  # 型安全、自動ロード
+        """启动适配器（必须实现）"""
+        cfg = self.config  # 自动加载的类型安全配置
         pass
     
     async def shutdown(self):
-        """アダプターの終了（必須実装）"""
+        """关闭适配器（必须实现）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API の呼び出し（必須実装）"""
+        """调用平台 API（必须实现）"""
         pass
 ```
 
-### 設定管理
+### 配置管理
 
 フレームワークは宣言的設定管理を提供し、dataclass で設定構造を定義して、フレームワークが自動的にロード、検証、テンプレート生成を処理します。
 
@@ -321,7 +320,7 @@ class TelegramConfig(AdapterConfig):
         "webui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": "プロキシアドレス",
+        "description": "代理地址",
         "webui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
@@ -329,9 +328,9 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.config  # 型安全、自動ロード
+        cfg = self.config  # 类型安全，自动加载
         if not cfg.token:
-            raise ValueError("Token が設定されていません")
+            raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
@@ -343,12 +342,12 @@ from ErisPulse.runtime.config_schema import BotAccountConfig
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
-        "description": "ロボットID",
+        "description": "机器人ID",
         "required": True,
         "webui": {"widget": "text", "group": "basic", "order": 1},
     })
     token: str = field(default="", metadata={
-        "description": "ロボットToken",
+        "description": "机器人Token",
         "required": True,
         "secret": True,
         "webui": {"widget": "password", "group": "basic", "order": 2},
@@ -369,35 +368,35 @@ class YunhuAdapter(BaseAdapter):
 
 ```python
 metadata = {
-    "description": str,       # フィールドの説明（TOMLコメント + WebUI label）
-    "required": bool,         # 必須かどうか（検証 + WebUI 必須マーク）
-    "secret": bool,           # 敏感かどうか（WebUI では *** として表示、ログではマスキング）
+    "description": str,       # 字段描述（TOML注释 + WebUI label）
+    "required": bool,         # 是否必填（校验 + WebUI 必填标记）
+    "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
     "webui": {
-        "widget": str,        # コントロールタイプ: "text" | "switch" | "select" | "number" | "password"
-        "group": str,         # グループ: "basic" | "advanced" | "connection" 等
-        "order": int,         # 並び順の重み（数値が小さいほど先頭に配置）
-        "options": list,      # select コントロールのオプション [{label, value}]
-        "placeholder": str,   # 入力フィールドのプレースホルダー
+        "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
+        "group": str,         # 分组: "basic" | "advanced" | "connection" 等
+        "order": int,         # 排序权重（越小越靠前）
+        "options": list,      # select 控件的可选项 [{label, value}]
+        "placeholder": str,   # 输入框占位符
     }
 }
 ```
 
-#### アカウントの解決
+#### 账户解析
 
-多アカウントアダプターは `_resolve_account()` を使用して、ターゲットアカウントを自動的に解決できます：
+多账户适配器可使用 `_resolve_account()` 自动解析目标账户：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: アカウント名, account: 設定インスタンス
+    # name: 账户名, account: 配置实例
 ```
 
-解決戦略：アカウント名マッチング → `bot_id` フィールドマッチング → 他の str フィールドマッチング → 最初の有効アカウント。
+解析策略：账户名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一个启用账户。
 
-#### 設定のホット更新
+#### 配置热更新
 
-サブクラスは `on_config_update()` をオーバーライドして、設定変更に応答できます：
+子类可覆写 `on_config_update()` 响应配置变更：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -405,7 +404,7 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token が更新されました。再接続します")
+            self.logger.info("Token 已更新，将重新连接")
 ```
 
 ### 初期化プロセス
@@ -436,7 +435,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send ネストクラス。BaseAdapter.Send を継承"""
+        """Send 嵌套类，继承自 BaseAdapter.Send"""
         pass
 ```
 
@@ -446,8 +445,8 @@ class MyAdapter(BaseAdapter):
 
 | 属性 | 説明 | 設定方法 |
 |-----|------|---------|
-| `_target_id` | ターゲットID | `To(id)` または `To(type, id)` |
-| `_target_type` | ターゲットタイプ | `To(type, id)` |
+| `_target_id` | 目标ID | `To(id)` または `To(type, id)` |
+| `_target_type` | 目标类型 | `To(type, id)` |
 | `_target_to` | 簡略化されたターゲットID | `To(id)` |
 | `_account_id` | 送信アカウントID | `Using(account_id)` |
 | `_adapter` | アダプターインスタンス | 自動設定 |
@@ -469,7 +468,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推奨される実装方法"""
+        """推荐实现方式"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -519,17 +518,17 @@ OneBot12 標準イベント
 
 ```python
 {
-    "id": "イベントの唯一識別子",
-    "time": 1234567890,           # 10桁 Unix タイムスタンプ
+    "id": "事件唯一标识",
+    "time": 1234567890,           # 10位 Unix 时间戳
     "type": "message/notice/request/meta",
-    "detail_type": "イベントの詳細タイプ",
-    "platform": "プラットフォーム名",
+    "detail_type": "事件详细类型",
+    "platform": "平台名称",
     "self": {
-        "platform": "プラットフォーム名",
-        "user_id": "ロボットID"
+        "platform": "平台名称",
+        "user_id": "机器人ID"
     },
-    "{platform}_raw": {...},       # 元のデータ（必須）
-    "{platform}_raw_type": "..."    # 元のタイプ（必須）
+    "{platform}_raw": {...},       # 原始数据（必须）
+    "{platform}_raw_type": "..."    # 原始类型（必须）
 }
 ```
 
@@ -538,25 +537,25 @@ OneBot12 標準イベント
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォームの元のイベントを OneBot12 標準形式に変換"""
+        """将平台原生事件转换为 OneBot12 标准格式"""
         if not isinstance(raw_event, dict):
             return None
         
-        # イベントIDの生成
+        # 生成事件 ID
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
-        # タイムスタンプの変換
+        # 转换时间戳
         timestamp = raw_event.get("timestamp")
         if timestamp and timestamp > 10**12:
             timestamp = int(timestamp / 1000)
         else:
             timestamp = int(timestamp) if timestamp else int(time.time())
         
-        # イベントタイプの変換
+        # 转换事件类型
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 標準イベントの構築
+        # 构建标准事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -579,11 +578,9 @@ class MyPlatformConverter:
 ### WebSocket 接続
 
 ```python
-from fastapi import WebSocket
-
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """WebSocket ルートの登録"""
+        """注册 WebSocket 路由"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -591,8 +588,8 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
-        """WebSocket 接続ハンドラ"""
+    async def _ws_handler(self, websocket):
+        """WebSocket 连接处理器"""
         self.connection = websocket
         
         try:
@@ -602,12 +599,12 @@ class MyAdapter(BaseAdapter):
                 if onebot_event:
                     await self.adapter.emit(onebot_event)
         except WebSocketDisconnect:
-            self.logger.info("接続が切断されました")
+            self.logger.info("连接已断开")
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
-        """WebSocket 認証"""
+    async def _auth_handler(self, websocket) -> bool:
+        """WebSocket 认证"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
 ```
@@ -615,11 +612,9 @@ class MyAdapter(BaseAdapter):
 ### WebHook 接続
 
 ```python
-from fastapi import Request
-
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """WebHook ルートの登録"""
+        """注册 WebHook 路由"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -627,14 +622,16 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
-        """WebHook リクエストハンドラ"""
+    async def _webhook_handler(self, request):
+        """WebHook 请求处理器"""
         data = await request.json()
         onebot_event = self.convert(data)
         if onebot_event:
             await self.adapter.emit(onebot_event)
         return {"status": "ok"}
 ```
+
+> **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
 
 ## API 応答標準
 
@@ -672,7 +669,7 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多アカウントサポート
 
-### 宣言的設定（推奨）
+### 声明式設定（推奨）
 
 `AccountConfigClass` を使用して設定クラスを宣言すると、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します：
 
@@ -690,16 +687,16 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウント {name} を起動: {account.bot_id}")
+            self.logger.info(f"启动账户 {name}: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # account.token, account.bot_id などのフィールドを使用
+        # 使用 account.token, account.bot_id 等字段
 ```
 
-### アカウント設定ファイル
+### 账户配置文件
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -746,7 +743,7 @@ class MyAdapter(BaseAdapter):
                 retry_count += 1
                 if retry_count < max_retries:
                     wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(f"接続失敗、{wait_time}秒後に再試行します")
+                    self.logger.warning(f"连接失败，{wait_time}秒后重试")
                     await asyncio.sleep(wait_time)
                 else:
                     raise
@@ -768,13 +765,13 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self._standardize_response(response)
     except ClientTimeoutError:
-        self.logger.error(f"リクエストタイムアウト: {endpoint}")
-        return self._error_response("リクエストがタイムアウトしました", 32000)
+        self.logger.error(f"请求超时: {endpoint}")
+        return self._error_response("请求超时", 32000)
     except ClientError as e:
-        self.logger.error(f"ネットワークエラー: {e}")
-        return self._error_response("ネットワークリクエストに失敗しました", 33000)
+        self.logger.error(f"网络错误: {e}")
+        return self._error_response("网络请求失败", 33000)
     except Exception as e:
-        self.logger.error(f"不明なエラー: {e}")
+        self.logger.error(f"未知错误: {e}")
         return self._error_response(str(e), 34000)
 ```
 
@@ -782,49 +779,49 @@ async def call_api(self, endpoint: str, **params):
 
 ## Bot 状態管理
 
-AdapterManager には、すべての登録済み Bot のオンライン状態、アクティブ時間、メタ情報を自動的に維持する Bot 状態追跡システムが内蔵されています。
+AdapterManager 内置了 Bot 状态追踪系统，自动维护所有已注册 Bot 的在线状态、活跃时间和元信息。
 
 ### 自動発見メカニズム
 
 アダプターが `adapter.emit()` を呼び出すと、フレームワークはイベント内の `self` フィールドを自動的にチェックします：
 
-- **meta イベント**：`detail_type` に応じて対応する操作（connect で Bot を登録/disconnect でオフラインをマーク/heartbeat でアクティブ時間を更新）
-- **通常イベント**（message/notice/request）：Bot を自動的に発見し、アクティブ時間を更新
+- **meta イベント**：根据 `detail_type` 执行对应操作（connect 注册/断开标记离线/heartbeat 更新活跃时间）
+- **普通イベント**（message/notice/request）：自动发现 Bot 并更新活跃时间
 
 ```python
-# self フィールドを含むすべてのイベントが自動発見をトリガーします
+# 所有包含 self 字段的事件都会触发自动发现
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
     "self": {"platform": "myplatform", "user_id": "bot123"},
     # ...
 })
-# Bot "bot123" が自動的に登録されます（初めて出現する場合）し、アクティブ時間を更新します
+# Bot "bot123" 已自动注册（如果首次出现）并更新活跃时间
 ```
 
 ### Meta イベントタイプ
 
 | `detail_type` | 説明 | フレームワークの動作 |
 |---|---|---|
-| `connect` | Bot が接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントを発行します |
-| `disconnect` | Bot が切断 | Bot をオフラインにマークし、`adapter.bot.offline` ライフサイクルイベントを発行します |
-| `heartbeat` | Bot のハートビート | Bot のアクティブ時間とメタ情報を更新します |
+| `connect` | Bot 接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントを発行します |
+| `disconnect` | Bot 断开 | Bot をオフラインにマークし、`adapter.bot.offline` ライフサイクルイベントを発行します |
+| `heartbeat` | Bot ハートビート | Bot のアクティブ時間とメタ情報を更新します |
 
-### アダプターによる Meta イベント送信
+### 适配器发送 Meta 事件
 
-`emit_meta()` を1行で使用して、meta イベントを送信できます：
+使用 `emit_meta()` 一行即可发送 meta 事件：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
-        # 1行で connect イベントを送信
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のロボット")
+        # 一行发送 connect 事件
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-手動構築（旧版方式でも互換性あり）もサポートされています：
+也支持手动构造（旧版方式仍然兼容）：
 
 ```python
 await self.adapter.emit({
@@ -835,36 +832,36 @@ await self.adapter.emit({
 })
 ```
 
-### `self` フィールドの拡張情報
+### `self` 字段扩展信息
 
-`self` フィールドには、必須の `platform` と `user_id` の他に、以下のオプションフィールドをサポートします：
+`self` 字段除必需的 `platform` 和 `user_id` 外，还支持以下可选字段：
 
-| フィールド | 説明 |
+| 字段 | 説明 |
 |---|---|
-| `user_name` | Bot のユーザー名 |
-| `nickname` | Bot のニックネーム |
-| `avatar` | Bot のアバター URL |
-| `account_id` | 多アカウント識別子 |
+| `user_name` | Bot 用户名 |
+| `nickname` | Bot 昵称 |
+| `avatar` | Bot 头像 URL |
+| `account_id` | 多账户标识 |
 
 ### Bot 状態の照会
 
 ```python
 from ErisPulse import sdk
 
-# 単一の Bot 情報を取得
+# 获取单个 Bot 信息
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# すべての Bot を取得
+# 列出所有 Bot
 all_bots = sdk.adapter.list_bots()
 
-# 指定プラットフォームの Bot を取得
+# 列出指定平台的 Bot
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Bot がオンラインかを確認
+# 检查 Bot 是否在线
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 完全なステータスサマリーを取得（WebUI に表示するのに適しています）
+# 获取完整状态摘要（适合 WebUI 展示）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
@@ -878,13 +875,13 @@ from ErisPulse import sdk
 async def on_bot_online(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot がオンラインになりました: {platform}/{bot_id}")
+    sdk.logger.info(f"Bot 上线: {platform}/{bot_id}")
 
 @sdk.lifecycle.on("adapter.bot.offline")
 async def on_bot_offline(data):
     platform = data.get("platform")
     bot_id = data.get("bot_id")
-    sdk.logger.info(f"Bot がオフラインになりました: {platform}/{bot_id}")
+    sdk.logger.info(f"Bot 下线: {platform}/{bot_id}")
 ```
 
 ## 関連文書
