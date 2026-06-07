@@ -608,7 +608,7 @@ class SseEmitter:
         if data is not None:
             if not isinstance(data, str):
                 data = _json.dumps(data, ensure_ascii=False)
-            for line in data.split("\n"):
+            for line in data.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
                 payload_parts.append(f"data: {line}")
 
         payload_parts.append("")

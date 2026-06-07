@@ -54,7 +54,6 @@ def _convert_aiohttp_exception(exc: Exception) -> ClientError:
     if isinstance(exc, aiohttp.ClientError):
         return ClientError(str(exc))
     return ClientError(str(exc))
-    return ClientError(str(exc))
 
 
 class HttpResponse(BaseHttpResponse):
