@@ -21,8 +21,8 @@
 
 - **模块总数**: 65
 - **类总数**: 67（包括 5 个嵌套类）
-- **函数总数**: 50
-- **方法总数**: 666
+- **函数总数**: 53
+- **方法总数**: 667
 
 ---
 
@@ -116,7 +116,7 @@
 
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
-📦 1 个类
+📦 1 个类 | 🔧 1 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -261,7 +261,7 @@
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
 
-📦 3 个类 | 🔧 31 个方法
+📦 3 个类 | 🔧 31 个方法 | ⚙️ 2 个函数
 
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
@@ -311,7 +311,7 @@
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-📦 2 个类 | 🔧 26 个方法
+📦 2 个类 | 🔧 26 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
