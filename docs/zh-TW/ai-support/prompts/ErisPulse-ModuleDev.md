@@ -21,7 +21,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -232,7 +231,6 @@ flowchart TD
 > 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
 
 
-
 ### 术语表
 
 # ErisPulse 術語表
@@ -377,7 +375,6 @@ flowchart TD
 - 聯絡維護者
 
 
-
 ====
 快速开始
 ====
@@ -393,142 +390,40 @@ flowchart TD
 
 本指南按以下順序組織，建議依次閱讀：
 
-1. **建立第一個機器人** - 了解完整的專案初始化流程
-2. **基礎概念** - 理解 ErisPulse 的核心架構
-3. **事件處理入門** - 學習如何處理各類事件
-4. **常見任務範例** - 掌握常用功能的實作
+| 步驟 | 主題 | 說明 |
+|------|------|------|
+| 1 | [建立第一個機器人](first-bot.md) | 從專案初始化到執行第一個指令 |
+| 2 | [基礎概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |
+| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、指令、通知等各類事件 |
+| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |
 
 ## 開發方式選擇
 
-ErisPulse 支援兩種開發方式，你可以根據需求選擇：
+ErisPulse 支援兩種開發方式：
 
-### 嵌入式開發（適合快速原型）
+| 方式 | 適用場景 | 說明 |
+|------|---------|------|
+| **嵌入式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |
+| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |
 
-直接在專案中使用 ErisPulse，無需建立獨立模組。
+> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。
 
-```python
-# main.py
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
+## 架構概覽
 
-@command("hello")
-async def hello(event):
-    await event.reply("你好！")
+ErisPulse 採用事件驅動架構，核心由以下系統組成：
 
-# 執行 SDK 並且維持運作 | 需要在非同步環境中運作
-asyncio.run(sdk.run(keep_running=True))
-```
+- **適配器系統** — 與各平台通訊，將平台事件轉換為統一的 OneBot12 標準格式
+- **事件系統** — 處理訊息、指令、通知、請求、元事件五大類事件
+- **模組系統** — 透過獨立模組擴充功能，支援依賴管理和懶加載
+- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力
 
-**優點：**
-- 快速上手，無需額外設定
-- 適合專案內部專用功能
-- 便於除錯和測試
-
-**缺點：**
-- 不便於程式碼複用和分發
-- 難以獨立管理依賴
-
-### 模組開發（推薦用於生產）
-
-建立獨立的模組套件，透過套件管理員安裝使用。
-
-**優點：**
-- 便於分發和共享
-- 獨立的依賴管理
-- 清晰的版本控制
-
-**缺點：**
-- 需要額外的專案結構
-- 初期設定相對複雜
-
-## ErisPulse 核心概念
-
-### 架構概覽
-
-```
-┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
-├─────────────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────────┐      ┌──────────────┐    │
-│  │  適配器系統  │◄────►│  事件系統    │    │
-│  │             │      │              │    │
-│  │  Yunhu      │      │  Message     │    │
-│  │  Telegram   │      │  Command     │    │
-│  │  OneBot11   │      │  Notice      │    │
-│  │  Email      │      │  Request     │    │
-│  └──────────────┘      │  Meta        │    │
-│         │              └──────────────┘    │
-│         ▼                   │              │
-│  ┌──────────────┐           ▼              │
-│  │  模組系統    │◄──────────────┐       │
-│  │             │               │       │
-│  │  模組 A     │               │       │
-│  │  模組 B     │               │       │
-│  │  ...        │               │       │
-│  └──────────────┘               │       │
-│                               │       │
-│  ┌──────────────┐              │       │
-│  │  核心模組    │◄─────────────┘       │
-│  │  Storage    │                      │
-│  │  Config     │                      │
-│  │  Logger     │                      │
-│  │  Router     │                      │
-│  │  Metrics    │                      │
-│  └──────────────┘                      │
-└─────────────────────────────────────────────┘
-         │                    │
-         ▼                    ▼
-    ┌────────┐          ┌────────┐
-    │  平台   │          │  使用者 │
-    │  API    │          │  程式碼 │
-    └────────┘          └────────┘
-```
-
-### 核心元件說明
-
-#### 1. 適配器系統
-
-適配器負責與特定平台通訊，將平台特定的事件轉換為統一的 OneBot12 標準格式。
-
-**範例：**
-- Yunhu 適配器：與雲湖平台通訊
-- Telegram 適配器：與 Telegram Bot API 通訊
-- OneBot11 適配器：與 OneBot11 相容的應用程式通訊
-
-#### 2. 事件系統
-
-事件系統負責處理各類事件，包括：
-- **訊息事件**：使用者發送的訊息
-- **指令事件**：使用者輸入的指令（如 `/hello`）
-- **通知事件**：系統通知（如好友新增、群組成員變化）
-- **請求事件**：使用者請求（如好友請求、群組邀請）
-- **元事件**：系統層級事件（如連線、心跳）
-
-#### 3. 模組系統
-
-模組是功能擴充的主要方式，用於：
-- 註冊事件處理器
-- 實作業務邏輯
-- 提供指令介面
-- 呼叫適配器發送訊息
-
-#### 4. 核心模組
-
-提供基礎功能的模組：
-- **Storage**：基於 SQLite 的鍵值儲存
-- **Config**：TOML 格式的設定管理
-- **Logger**：模組化日誌系統
-- **Router**：HTTP 和 WebSocket 路由管理
-- **Metrics**：指標監控系統（Counter / Gauge / Histogram）
+> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。
 
 ## 開始學習
 
-準備好了嗎？讓我們開始建立你的第一個機器人。
+準備好開始了嗎？
 
-- [建立第一個機器人](first-bot.md)
-
+- [建立第一個機器人](first-bot.md) — 5 分鐘上手
 
 
 ### 创建第一个模块
@@ -710,7 +605,6 @@ async def hello_handler(event):
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能
-
 
 
 ### 基础概念
@@ -1064,7 +958,6 @@ class Main(BaseModule):
 
 - [事件處理入門](event-handling.md) - 學習如何處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握常用功能的實現
-
 
 
 ### 事件处理入门
@@ -1710,7 +1603,6 @@ async def conditional_handler(event):
 - [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 
-
 ### 常见任务示例
 
 # 常見任務範例
@@ -2167,7 +2059,6 @@ async def _identify_image(url):
 - [進階主題](../advanced/) - 深入了解框架特性
 
 
-
 ====
 模块开发
 ====
@@ -2322,7 +2213,6 @@ sdk.lifecycle  # 生命週期系統
 - [模組核心概念](core-concepts.md) - 深入了解模組架構
 - [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件
 - [模組最佳實踐](best-practices.md) - 開發高品質模組
-
 
 
 ### 模块核心概念
@@ -2557,7 +2447,6 @@ self.logger.critical("嚴重錯誤") # 嚴重錯誤
 - [模組開發入門](getting-started.md) - 建立第一個模組
 - [Event 包裝類別](event-wrapper.md) - 事件處理詳解
 - [最佳實務](best-practices.md) - 開發高品質模組
-
 
 
 ### Event 包装类详解
@@ -2908,7 +2797,6 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 - [模組開發入門](getting-started.md) - 建立第一個模組
 - [最佳實踐](best-practices.md) - 開發高品質模組
-
 
 
 ### 模块开发最佳实践
@@ -3328,7 +3216,6 @@ version = "1.0.0"
 - [Event 包裝類別](event-wrapper.md) - 事件處理詳解
 
 
-
 =====
 发布与工具
 =====
@@ -3687,7 +3574,6 @@ services:
 兩種方式不衝突——你可以同時透過 PyPI 發布模組到模組商店，又透過 GHCR 提供開箱即用的 Docker 鏡像。
 
 
-
 ### CLI 命令参考
 
 # CLI 命令參考
@@ -3866,7 +3752,6 @@ epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.c
 
 # 強制覆蓋已有目錄
 epsdk create module -n MyModule -f
-
 
 
 ======
@@ -4161,7 +4046,6 @@ async for text in ws.iter_text():
 - [路由管理器](../advanced/router.md) - 路由管理器完整文檔
 - [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文檔
-
 
 
 ### 事件系统 API
@@ -4697,7 +4581,6 @@ async def low_priority_handler(event):
 - [模組開發指南](../developer-guide/modules/) - 開發自定義模組
 
 
-
 ====
 高级主题
 ====
@@ -5027,7 +4910,6 @@ async def chat_handler(event):
 - [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder 詳解
@@ -5219,7 +5101,6 @@ complex_msg = (
 - [適配器 SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - Send 鏈式發送接口
 - [事件轉換標準](../standards/event-conversion.md) - 消息段轉換規範
 - [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
-
 
 
 ### 路由系统
@@ -5580,7 +5461,6 @@ async def on_server_stop(event):
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議
 
 
-
 ### 生命周期管理
 
 # 生命週期管理
@@ -5872,7 +5752,6 @@ class Main(BaseModule):
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 生命週期事件使用建議
 
 
-
 ### 懒加载系统
 
 # 延遲載入模組系統
@@ -5993,7 +5872,6 @@ result = sdk.my_module.some_sync_method()
 
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 學習開發模組
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 瞭解更多最佳實踐
-
 
 
 ### 会话类型系统
@@ -6177,7 +6055,6 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 - [事件轉換標準](../standards/event-conversion.md) - 事件轉換規範
 - [會話類型標準](../standards/session-types.md) - 會話類型正式定義
 - [事件轉換器實現](../../developer-guide/adapters/getting-started.md) - 適配器開發指南
-
 
 
 ### Dashboard 视窗注册
@@ -6512,7 +6389,6 @@ async def on_unload(self, event):
 7. **動態更新** — 模組註冊/註銷視窗後，Dashboard 前端會透過 WebSocket 實時更新側邊欄，無需刷新頁面
 
 
-
 ====
 技术标准
 ====
@@ -6805,7 +6681,6 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
-
 ====
 平台概览
 ====
@@ -7042,4 +6917,3 @@ ErisPulse 專案：
 4. 提交 Pull Request。
 
 感謝您的支援！
-
