@@ -17,6 +17,32 @@ ErisPulse 存储管理模块
 
 ---
 
+## 函数列表
+
+
+### `_validate_identifier(name: str, context: str = '标识符')`
+
+> **内部方法** 
+验证 SQL 标识符（表名/列名）是否安全
+
+:param name: 标识符名称
+:param context: 上下文描述（用于错误消息）
+**异常**: `ValueError` - 当标识符包含非法字符时
+
+---
+
+
+### `_validate_column_type(col_type: str)`
+
+> **内部方法** 
+验证列类型定义是否安全（防止通过类型定义注入 SQL）
+
+:param col_type: 列类型定义
+**异常**: `ValueError` - 当列类型包含潜在危险内容时
+
+---
+
+
 ## 类列表
 
 
