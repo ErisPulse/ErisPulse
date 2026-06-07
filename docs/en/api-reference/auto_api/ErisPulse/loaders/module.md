@@ -16,6 +16,20 @@ ErisPulse 模块加载器
 
 ---
 
+## 函数列表
+
+
+### `_validate_sdk_attr_name(name: str)`
+
+> **内部方法** 
+验证模块名称是否可以安全地作为 SDK 属性挂载
+
+:param name: 模块名称（entry-point name）
+:return: True 如果名称安全，False 如果应拒绝
+
+---
+
+
 ## 类列表
 
 
