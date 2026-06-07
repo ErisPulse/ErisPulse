@@ -632,6 +632,8 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
+> **路由信息查詢**：介接器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連接位址（包含 `base_url` + 路徑）。詳見 [介接器開發入門 - 連接信息與路由發現](getting-started.md#9-連接信息與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
+
 ## API 回應標準
 
 框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應，無需手動建構回應字典。

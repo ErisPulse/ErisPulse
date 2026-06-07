@@ -12,7 +12,6 @@
 - 各平台特性指南（OneBot11/12、Telegram、云湖、邮件等）
 - 模块/适配器发布流程和模块商店
 - 代码规范和文档字符串规范
-- 已知问题追踪和历史 Bug 记录
 
 你擅长：
 - 编写高质量的异步 Python 代码
@@ -4756,12 +4755,130 @@ class MyAdapter(BaseAdapter):
 | **Request 內部類** | 需要初始化請求相關狀態時 | `super().__init__(adapter, request_id, account_id)` |
 | 三個層面 | 大多數情況 | **聲明 ConfigClass 即可，不碰 `__init__`** |
 
+## 連接資訊與路由發現
+
+適配器註冊路由後，框架會記錄所有路由資訊。使用者可以透過以下 API 查看適配器的連接位址：
+
+```python
+from ErisPulse import sdk
+
+# 獲取適配器完整連接資訊
+info = sdk.adapter.get_connection_info("myplatform")
+# {
+#   "platform": "myplatform",
+#   "status": "started",
+#   "connection": {
+#     "base_url": "http://localhost:8080",
+#     "http_routes": [
+#       {"path": "/myplatform/webhook", "method": "POST",
+#        "url": "http://localhost:8080/myplatform/webhook"}
+#     ],
+#     "websocket_routes": [
+#       {"path": "/myplatform/ws",
+#        "url": "ws://localhost:8080/myplatform/ws"}
+#     ]
+#   }
+# }
+
+# 列出所有命名空間（適配器/模組）的路由
+namespaces = sdk.router.list_namespaces()
+# {"myplatform": {"http": ["/myplatform/webhook"], "websocket": ["/myplatform/ws"]}}
+
+# 獲取命名空間的完整連接 URL
+urls = sdk.router.get_module_urls("myplatform")
+# {"base_url": "http://localhost:8080", "http": [...], "websocket": [...]}
+
+# 獲取命名空間的詳細路由資訊
+routes = sdk.router.get_module_routes("myplatform")
+# {"http": [{"path": "/myplatform/webhook", "methods": ["POST"]}],
+#  "websocket": [{"path": "/myplatform/ws", "auth": false}]}
+```
+
+> **提示**：`get_connection_info()` 返回的資訊適合展示給使用者（如 WebUI），幫助使用者配置平台側的回呼位址或 WebSocket 連接位址。路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則路由發現將無法正確關聯。
+
+## SSE (Server-Sent Events) 支援
+
+ErisPulse 內建了伺服器無關的 SSE 支援，模組和適配器可以透過 `@sdk.router.sse()` 註冊 SSE 端點。
+
+#### 基本使用
+
+```python
+import asyncio
+from ErisPulse import sdk
+
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(sse):
+    """推送 SSE 事件"""
+    count = 0
+    while not sse.closed:
+        await sse.send({"count": count}, event="update")
+        count += 1
+        await asyncio.sleep(1)
+```
+
+#### 使用請求參數
+
+處理器可以聲明 `request` 參數來存取客戶端請求資訊：
+
+```python
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(request, sse):
+    token = request.query_params.get("token")
+    if not validate_token(token):
+        await sse.close()
+        return
+
+    while not sse.closed:
+        data = await fetch_data(token)
+        await sse.send(data)
+        await asyncio.sleep(5)
+```
+
+#### SseEmitter API
+
+| 方法 | 說明 |
+|------|------|
+| `sse.send(data, event=None, id=None, retry=None)` | 發送 SSE 事件。非 str 的 data 自動 JSON 序列化 |
+| `sse.close()` | 優雅關閉 SSE 連接（安全調用，可多次） |
+| `sse.closed` | 連接是否已關閉 |
+| `sse.request` | 底層請求物件（可用於讀取 query params、headers） |
+
+#### 在 RouteGroup 中使用
+
+```python
+api = sdk.router.group("MyModule", "/api", version="1")
+
+@api.sse("/events")
+async def events(sse):
+    await sse.send({"msg": "hello"})
+```
+
+#### 路由發現
+
+SSE 路由會自動出現在路由發現 API 中：
+
+```python
+# list_namespaces 會包含 "sse" 鍵
+sdk.router.list_namespaces()
+# {"MyModule": {"http": [...], "websocket": [...], "sse": ["/MyModule/events"]}}
+
+# get_module_routes 會標記 streaming: true
+sdk.router.get_module_routes("MyModule")
+# {"http": [...], "websocket": [...], "sse": [{"path": "/MyModule/events", "streaming": true}]}
+
+# get_module_urls 會生成完整 URL
+sdk.router.get_module_urls("MyModule")
+# {"sse": [{"path": "/MyModule/events", "url": "http://localhost:8080/MyModule/events"}]}
+```
+
+> **伺服器無關設計**：`SseEmitter` 透過回呼與底層 HTTP 框架解耦。框架提供了 `register_sse()` 和 `@sse` 裝飾器作為統一的註冊入口，適配器無需直接依賴任何底層 HTTP 框架即可實作 SSE 端點。
+
 ## 下一步
 
-- [`適配器核心概念`](core-concepts.md) - 了解適配器架構
-- [`SendDSL 詳解`](send-dsl.md) - 學習訊息發送
-- [`轉換器實現`](converter.md) - 了解事件轉換
-- [`適配器最佳實踐`](best-practices.md) - 開發高品質適配器
+- [適配器核心概念](core-concepts.md) - 了解適配器架構
+- [SendDSL 詳解](send-dsl.md) - 學習消息發送
+- [轉換器實現](converter.md) - 了解事件轉換
+- [適配器最佳實踐](best-practices.md) - 開發高品質適配器
 
 
 ### 适配器核心概念
@@ -5399,6 +5516,8 @@ class MyAdapter(BaseAdapter):
             await self.adapter.emit(onebot_event)
         return {"status": "ok"}
 ```
+
+> **路由信息查詢**：介接器註冊的路由（HTTP、WebSocket、SSE）可以透過 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查詢完整連接位址（包含 `base_url` + 路徑）。詳見 [介接器開發入門 - 連接信息與路由發現](getting-started.md#9-連接信息與路由發現) 和 [SSE 支援](getting-started.md#10-sse-server-sent-events-支援)。
 
 ## API 回應標準
 
@@ -6126,6 +6245,43 @@ class MyAdapter(BaseAdapter):
                 self.logger.error(f"心跳失敗: {e}")
                 break
 ```
+
+### 4. 連線資訊暴露
+
+配接器註冊的路由應對使用者可見，便於使用者配置平台側的回調地址。推薦在 `start()` 中主動輸出連線資訊：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket 位址: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+使用者可以透過以下 API 查看配接器的所有路由和連線地址：
+
+```python
+from ErisPulse import sdk
+
+# 配接器層級的連線資訊（推薦）
+info = sdk.adapter.get_connection_info("myplatform")
+
+# 路由管理員層級的查詢
+sdk.router.list_namespaces()              # 列出所有命名空間
+sdk.router.get_module_routes("myplatform")  # 詳細路由資訊
+sdk.router.get_module_urls("myplatform")    # 完整連線 URL
+```
+
+> **注意**：路由註冊時的 `module_name` 必須與配接器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳號配接器應為每個帳號註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
 
 ## 事件轉換
 
@@ -9814,9 +9970,1192 @@ if builder:
 - [請求操作規範](request-action-spec.md) - 請求事件字段要求、HandleRequest DSL 及適配器實作要求
 
 
+### 请求操作规范
+
+# ErisPulse 請求操作規範
+
+本文檔定義了 ErisPulse 配接器中請求事件操作的標準化規範，包括請求事件的字段要求、Request DSL 的使用方式和配接器實現要求。
+
+## 1. 概述
+
+請求事件（`type: "request"`）是 OneBot12 標準中定義的特殊事件類型，代表需要 Bot 做出決策的請求（如好友請求、群邀請等）。
+
+與消息事件不同，請求事件需要**雙向互動**：
+1. **接收**：配接器將平台原生請求轉換為標準請求事件
+2. **響應**：模組通過 `Request` DSL 或 `Event.approve()`/`Event.reject()` 執行操作
+
+```
+平台原生請求事件
+    │
+    ▼
+Converter.convert()        ← 配接器實現（正向轉換）
+    │
+    ▼
+標準請求事件 (含 request_id)
+    │
+    ├─→ 模組處理器 @request.on_friend_request()
+    │       │
+    │       ├─→ event.approve()     ← 同意請求
+    │       └─→ event.reject()      ← 拒絕請求
+    │               │
+    │               ▼
+    │       adapter.Request(request_id).accept()
+    │               │
+    │               ▼
+    │       BaseAdapter.Request.accept()  ← 配接器重寫
+    │               │
+    │               ▼
+    │       平台 API 調用
+    │
+    └─→ 或直接通過配接器操作
+            await adapter.Request("req_id").accept()
+```
+
+## 2. 請求事件字段要求
+
+### 2.1 標準字段
+
+請求事件除必須包含 OneBot12 標準字段外，還需包含以下字段：
+
+| 字段 | 類型 | 必選 | 說明 |
+|------|------|------|------|
+| `request_id` | string | **強烈推薦** | 請求標識符，用於同意/拒絕操作 |
+| `user_id` | string | 是 | 請求發起者ID |
+| `user_nickname` | string | 否 | 請求發起者暱稱 |
+| `comment` | string | 否 | 請求附言 |
+
+### 2.2 `request_id` 欄位
+
+`request_id` 是請求操作的核心標識符：
+
+- **用途**：標識一個可操作的請求，供 `Request` DSL 使用
+- **生成規則**：
+  - 優先使用平台原生的請求標識（如 OneBot11 的 `flag` 字段、Telegram 的 `chat_invite_link` 等）
+  - 如果平台沒有原生請求ID，配接器應生成一個唯一標識（建議格式：`{platform}_{timestamp}_{user_id}`）
+- **唯一性**：在同一平台範圍內應保持唯一
+- **缺失行為**：當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`
+
+### 2.3 請求事件示例
+
+```json
+{
+  "id": "evt_123456",
+  "time": 1752241225,
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "onebot11",
+  "self": {
+    "platform": "onebot11",
+    "user_id": "bot_123"
+  },
+  "user_id": "user_456",
+  "user_nickname": "YingXinche",
+  "comment": "請加好友",
+  "request_id": "flag_abc123",
+  "onebot11_raw": {...},
+  "onebot11_raw_type": "request"
+}
+```
+
+## 3. Request DSL
+
+### 3.1 連式呼叫
+
+`Request` 提供與 `Send` 風格一致的連式呼叫接口：
+
+```python
+# 基本用法
+await adapter.Request("req_id").accept()
+await adapter.Request("req_id").reject()
+
+# 指定 Bot 帳號
+await adapter.Request("req_id").Using("bot1").accept()
+
+# 附帶備註（通過 kwargs）
+await adapter.Request("req_id").accept(comment="歡迎")
+await adapter.Request("req_id").reject(comment="暫不添加")
+
+# 組合使用
+await adapter.Request("req_id").Using("bot1").accept(comment="歡迎")
+```
+
+### 3.2 方法列表
+
+| 方法 | 說明 | 返回值 |
+|------|------|--------|
+| `Using(account_id)` | 指定執行操作的 Bot 帳號 | `RequestDSL`（支援連式呼叫） |
+| `accept(**kwargs)` | 同意請求 | `asyncio.Task`（await 後返回標準響應） |
+| `reject(**kwargs)` | 拒絕請求 | `asyncio.Task`（await 後返回標準響應） |
+
+### 3.3 返回值格式
+
+操作返回標準 API 響應格式：
+
+**成功**：
+```json
+{
+    "status": "ok",
+    "retcode": 0,
+    "data": null,
+    "message_id": "",
+    "message": ""
+}
+```
+
+**失敗**：
+```json
+{
+    "status": "failed",
+    "retcode": 34001,
+    "data": null,
+    "message_id": "",
+    "message": "請求已過期或不存在的"
+}
+```
+
+**未實現**（配接器未重寫 `accept`/`reject`）：
+```json
+{
+    "status": "failed",
+    "retcode": 10002,
+    "data": null,
+    "message_id": "",
+    "message": "平台 MyAdapter 未實現請求操作 (accept)"
+}
+```
+
+## 4. Event 便捷方法
+
+`Event` 包裝類提供了便捷方法，適合在請求事件處理器中使用：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    # 檢查請求ID
+    request_id = event.get_request_id()
+    if not request_id:
+        print("警告：請求事件缺少 request_id")
+        return
+    
+    # 同意請求
+    result = await event.approve()
+    
+    # 或拒絕請求
+    # result = await event.reject(comment="暫不添加好友")
+    
+    # 檢查結果
+    if result.get("status") == "ok":
+        print("操作成功")
+    else:
+        print(f"操作失敗: {result.get('message')}")
+```
+
+### 4.1 Event 方法列表
+
+| 方法 | 說明 | 返回值 |
+|------|------|--------|
+| `get_request_id()` | 獲取請求ID | `str` |
+| `approve(comment=None)` | 同意當前請求事件 | 標準響應格式 |
+| `reject(comment=None)` | 拒絕當前請求事件 | 標準響應格式 |
+
+## 5. 配接器實現要求
+
+### 5.1 轉換器要求
+
+配接器的轉換器在轉換請求事件時，**必須**正確設置 `request_id` 字段：
+
+```python
+def convert_request_event(self, raw_event: dict) -> dict:
+    """轉換平台原生請求事件"""
+    return {
+        "id": self._generate_event_id(raw_event),
+        "time": int(time.time()),
+        "type": "request",
+        "detail_type": self._map_request_type(raw_event),  # "friend" 或 "group"
+        "platform": self._platform_name,
+        "self": {
+            "platform": self._platform_name,
+            "user_id": str(self._bot_id),
+        },
+        "user_id": str(raw_event.get("user_id", "")),
+        "user_nickname": raw_event.get("nickname", ""),
+        "comment": raw_event.get("message", ""),
+        "request_id": self._extract_request_id(raw_event),  # ← 關鍵字段
+        f"{self._platform_name}_raw": raw_event,
+        f"{self._platform_name}_raw_type": raw_event.get("type", ""),
+    }
+
+def _extract_request_id(self, raw_event: dict) -> str:
+    """
+    從平台原生事件提取請求ID
+    
+    優先使用平台原生ID，若無則生成唯一ID
+    """
+    # 優先使用平台原生ID
+    if flag := raw_event.get("flag"):
+        return str(flag)
+    if request_key := raw_event.get("request_key"):
+        return str(request_key)
+    
+    # 兜底：生成唯一ID
+    import hashlib
+    raw = f"{self._platform_name}_{raw_event.get('user_id')}_{raw_event.get('timestamp')}"
+    return hashlib.md5(raw.encode()).hexdigest()
+```
+
+### 5.2 Request 內部類實現
+
+配接器在 `Request` 內部類中重寫 `accept` 和 `reject` 即可：
+
+```python
+from ErisPulse.Core import BaseAdapter, RequestDSL
+
+class MyAdapter(BaseAdapter):
+    
+    class Request(RequestDSL):
+        """MyPlatform 請求操作實現"""
+        
+        def accept(self, **kwargs):
+            """
+            同意請求
+            
+            :param kwargs: 擴展參數，如 comment="備註"
+            :return: asyncio.Task
+            """
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=True,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"請求操作失敗: {e}",
+                    }
+            
+            return self._create_task(_do())
+        
+        def reject(self, **kwargs):
+            """拒絕請求"""
+            async def _do():
+                try:
+                    result = await self._adapter.call_api(
+                        endpoint="/set_request",
+                        request_id=self._request_id,
+                        approve=False,
+                        **kwargs,
+                    )
+                    return {
+                        "status": "ok" if result.get("code") == 0 else "failed",
+                        "retcode": result.get("code", 0),
+                        "data": None,
+                        "message_id": "",
+                        "message": result.get("message", ""),
+                    }
+                except Exception as e:
+                    return {
+                        "status": "failed",
+                        "retcode": 34001,
+                        "data": None,
+                        "message_id": "",
+                        "message": f"請求操作失敗: {e}",
+                    }
+            
+            return self._create_task(_do())
+```
+
+### 5.3 平台不支援請求操作
+
+如果平台本身不支援好友請求/群邀請操作（如某些平台自動處理請求），配接器可以：
+
+1. **不重寫 `Request` 內部類**：使用基類預設實現，呼叫 `accept()`/`reject()` 時返回 `retcode=10002`
+2. **在轉換時跳過 `request_id`**：不生成 `request_id`，讓 `event.approve()` 拋出 `ValueError`
+3. **記錄日誌**：在 `accept`/`reject` 中記錄警告並返回適當錯誤碼
+
+### 5.4 總結：Send 與 Request 並行
+
+配接器有兩個並行的 DSL 內部類，各司其職：
+
+```
+BaseAdapter
+├── Send(SendDSL)     ← 消息發送
+│   ├── Raw_ob12()    ← 必須實現
+│   ├── Text()        ← 推薦實現
+│   └── Image()       ← 按需實現
+│
+└── Request(RequestDSL) ← 請求操作
+    ├── accept()        ← 按需實現
+    └── reject()        ← 按需實現
+```
+
+### 5.5 配接器 `__init__` 注意事項
+
+重寫 `Request` 內部類的 `__init__` 時，必須透傳參數並呼叫 `super().__init__()`，詳見 [配接器開發入門 - `__init__` 注意事項](../../developer-guide/adapters/getting-started.md#init-注意事項)（`Request` 同理，參數為 `adapter, request_id, account_id`）。
+
+## 6. 配接器實現檢查清單
+
+### 基礎要求
+- [ ] 若重寫了 `__init__`，已呼叫 `super().__init__()`（確保 Send / Request 工廠初始化）
+
+### 請求事件轉換
+- [ ] 請求事件包含 `request_id` 欄位（強烈推薦）
+- [ ] `detail_type` 正確映射為 `"friend"` 或 `"group"`
+- [ ] 保留平台原始資料在 `{platform}_raw` 欄位中
+- [ ] `request_id` 生成規則有文件說明
+
+### 請求操作
+- [ ] `Request` 內部類已實現（如平台支援請求操作）
+- [ ] `accept()` 方法已實現
+- [ ] `reject()` 方法已實現
+- [ ] 操作返回標準 API 響應格式
+- [ ] 不支援的操作返回 `retcode=10002`
+- [ ] 網路錯誤返回 `retcode=33xxx`（遵循 API 響應標準）
+
+## 7. 錯誤碼擴展
+
+請求操作相關的推薦錯誤碼（遵循 [API 響應標準](api-response.md) §3.2）：
+
+| 錯誤碼 | 錯誤名 | 說明 |
+|-------|-------|------|
+| 34001 | Request Not Found | 請求不存在或已過期 |
+| 34002 | Request Already Handled | 請求已被處理 |
+| 34003 | Request Not Supported | 平台不支援該類型的請求操作 |
+| 34004 | Permission Denied | Bot 無權處理此請求 |
+
+## 8. 相關文檔
+
+- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範
+- [API 響應標準](api-response.md) - 配接器 API 響應格式標準
+- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範
+- [會話類型標準](session-types.md) - 會話類型定義和映射關係
+
+
 ====
 高级主题
 ====
+
+
+### HTTP 客户端
+
+# HTTP 客戶端
+
+ErisPulse 提供了統一的 HTTP/WS 客戶端，模組和適配器應優先使用此客戶端發送 HTTP 請求和建立 WebSocket 連線，而非自行匯入 `aiohttp` / `httpx` 等第三方函式庫。
+
+## 概述
+
+HTTP/WS 客戶端的主要功能：
+
+- **統一介面**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
+- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連線
+- **自動日誌**：所有請求自動記錄日誌和統計資訊
+- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連線觸發 `client.ws.connect` 事件
+- **重試支援**：可配置自動重試次數和間隔
+- **逾時控制**：獨立的連線逾時和請求逾時
+- **連線集區複用**：基於 aiohttp.ClientSession 的連線集區管理
+- **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 體系)
+
+## 快速開始
+
+### HTTP 請求
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)  # 200
+
+# POST 請求
+resp = await client.post(
+    "https://httpbin.org/post",
+    json={"key": "value"},
+)
+data = await resp.json()
+```
+
+### WebSocket 連線
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+## HttpResponse
+
+所有請求方法傳回 `HttpResponse` 物件：
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+
+resp.status       # int - HTTP 狀態碼 (如 200, 404)
+resp.reason       # str | None - 狀態描述 (如 "OK")
+resp.headers      # 回應標頭 (大小寫不敏感)
+resp.content_type # str | None - Content-Type
+resp.url          # 最終 URL (可能因重定向變化)
+resp.raw          # 底層原生回應物件 (目前為 aiohttp.ClientResponse)
+
+# 讀取回應主體
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定編碼
+```
+
+## 請求方法
+
+### GET
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get(
+    "https://api.example.com/users",
+    params={"page": "1", "limit": "10"},
+    headers={"Authorization": "Bearer token"},
+)
+```
+
+### POST
+
+```python
+from ErisPulse.Core import client
+
+# JSON 請求體
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# 表單請求體
+resp = await client.post(
+    "https://api.example.com/login",
+    data={"username": "admin", "password": "123"},
+)
+
+# 原始資料
+resp = await client.post(
+    "https://api.example.com/upload",
+    data=b"raw bytes",
+    headers={"Content-Type": "application/octet-stream"},
+)
+```
+
+### PUT / DELETE / PATCH
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+```
+
+### 通用 request
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.request(
+    "OPTIONS",
+    "https://api.example.com/resource",
+    headers={"Origin": "https://example.com"},
+)
+```
+
+## 參數說明
+
+### HTTP 請求參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | 請求 URL |
+| `params` | `dict[str, str]` | 查詢參數 (可選) |
+| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `data` | `Any` | 請求體 (表單或原始資料) (可選) |
+| `json` | `Any` | JSON 請求體 (可選) |
+| `timeout` | `float` | 本次請求逾時 (秒) (可選, 覆蓋預設值) |
+| `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋預設值) |
+
+### ws_connect 參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | WebSocket 伺服器 URL |
+| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `heartbeat` | `float` | 心跳間隔秒數 (可選) |
+
+## 逾時與重試
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 建立帶自訂逾時的客戶端
+client = HttpClient(
+    timeout=60,           # 請求總逾時 60s
+    connect_timeout=5,    # 連線逾時 5s
+    max_retries=3,        # 失敗自動重試 3 次
+    retry_delay=2,        # 重試間隔 2s
+)
+
+# 單次請求覆蓋逾時
+resp = await client.get("https://slow-api.example.com/data", timeout=120)
+```
+
+## 自訂預設標頭
+
+```python
+client = HttpClient(
+    headers={
+        "Authorization": "Bearer token",
+        "X-App-Id": "my-app",
+    },
+    user_agent="MyBot/1.0",
+)
+```
+
+## 請求統計
+
+```python
+from ErisPulse.Core import client
+
+# 查看統計
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置統計
+client.reset_stats()
+```
+
+## 生命週期事件
+
+### HTTP 請求事件
+
+每次請求完成後觸發 `client.request` 事件，可用於監控：
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+### WebSocket 連線事件
+
+每次 WebSocket 連線建立後觸發 `client.ws.connect` 事件：
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.ws.connect")
+async def on_ws_connect(event_data):
+    print(f"WS 連線: {event_data['url']}")
+```
+
+## 上下文管理
+
+```python
+# 作為上下文管理器，自動關閉會話
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+    data = await resp.json()
+```
+
+## WebSocket 客戶端
+
+透過 `client.ws_connect()` 建立 WebSocket 客戶端連線，傳回 `ClientWebSocket` 物件。客戶端和服務端 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 介面完全一致。
+
+### 基本用法
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+await ws.send_text("Hello")
+await ws.send_bytes(b"\x00\x01\x02")
+await ws.send_json({"type": "ping"})
+```
+
+### 接收訊息
+
+#### 高級方法 (推薦)
+
+自動過濾訊息類型，斷開時拋出 `WebSocketDisconnect`：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# 單條接收
+text = await ws.receive_text()    # str
+data = await ws.receive_bytes()   # bytes
+obj = await ws.receive_json()     # dict / list
+
+# 迭代接收 (自動在斷開時停止)
+async for text in ws.iter_text():
+    print(text)
+
+async for data in ws.iter_bytes():
+    print(data)
+
+async for obj in ws.iter_json():
+    print(obj)
+```
+
+#### 低階方法
+
+使用 `receive()` 和 `iter_messages()` 處理原始訊息類型，可區分 TEXT / BINARY / CLOSE / ERROR：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# 單條接收原始訊息
+msg = await ws.receive()
+# msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
+# msg.data  -> str | bytes | None
+
+# 迭代原始訊息 (CLOSE/ERROR 時自動停止)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(f"文本: {msg.data}")
+    elif msg.type == WSMessage.BINARY:
+        print(f"二進位: {len(msg.data)} bytes")
+```
+
+### WSMessage
+
+`WSMessage` 是統一的 WebSocket 訊息類型，不依賴底層函式庫：
+
+| 屬性 | 類型 | 說明 |
+|------|------|------|
+| `type` | `str` | 訊息類型: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | 訊息資料 |
+
+### ClientWebSocket 屬性
+
+| 屬性 | 類型 | 說明 |
+|------|------|------|
+| `url` | `URL` | 連線 URL |
+| `headers` | `Headers` | 回應標頭 |
+| `closed` | `bool` | 連線是否已關閉 |
+| `raw` | `object` | 底層原生物件 (aiohttp.ClientWebSocketResponse) |
+
+### 生命週期鉤子
+
+與 `服務端 WebSocketConnection` 一致，支援 `on_disconnect` 和 `on_error` 回調：
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"連線斷開: {reason}")
+
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"連線錯誤: {error}")
+```
+
+### 關閉連線
+
+```python
+await ws.close(code=1000, reason="Normal closure")
+```
+
+## 異常體系
+
+ErisPulse 定義了統一的異常層級，透過 `sdk.client` 發起的請求會自動將底層 aiohttp 異常轉換為 ErisPulse 異常。
+
+> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊模組/適配器完全不受影響。異常轉換僅在透過 `sdk.client` 發起請求時生效，直接使用 aiohttp 的程式碼仍然捕獲 `aiohttp.ClientError` 等原生異常。兩種方式可以共存。
+
+### 異常層級
+
+```
+ErisPulseError
+├── ClientError                  # 所有 HTTP/WS 客戶端請求異常的基類
+│   ├── ClientConnectionError    # 連線失敗 (DNS 解析失敗、連線被拒絕、網路不可達)
+│   ├── ClientTimeoutError       # 連線逾時或請求逾時
+│   └── HTTPStatusError          # HTTP 4xx/5xx 狀態碼錯誤
+└── WebSocketError               # WebSocket 異常基類
+    └── WebSocketDisconnect      # WebSocket 連線斷開 (客戶端和服務端通用)
+```
+
+### 異常捕獲
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
+
+# HTTP 請求異常處理
+try:
+    resp = await client.get("https://api.example.com/data")
+    data = await resp.json()
+except ClientConnectionError:
+    print("無法連線到伺服器")
+except ClientTimeoutError:
+    print("請求逾時")
+except ClientError as e:
+    print(f"請求失敗: {e}")
+
+# WebSocket 異常處理
+try:
+    ws = await client.ws_connect("wss://example.com/ws")
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
+except WebSocketDisconnect as e:
+    print(f"連線斷開: code={e.code}, reason={e.reason}")
+except WebSocketError as e:
+    print(f"WebSocket 錯誤: {e}")
+```
+
+### 統一捕獲
+
+使用 `ClientError` 統一捕獲所有 HTTP/WS 客戶端請求異常：
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientError as e:
+    print(f"客戶端錯誤: {e}")
+```
+
+### HTTPStatusError
+
+當需要在請求後檢查狀態碼並拋出異常時，可手動使用：
+
+```python
+from ErisPulse.Core.Bases.errors import HTTPStatusError
+
+resp = await client.get("https://api.example.com/data")
+if resp.status >= 400:
+    raise HTTPStatusError(resp.status, await resp.text())
+```
+
+## 適配器中使用
+
+適配器可使用全域客戶端或自行建立客戶端實例發送平台 API 請求：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.errors import ClientError
+
+class MyAdapter(BaseAdapter):
+    async def call_api(self, endpoint, **params):
+        try:
+            resp = await client.post(
+                f"https://api.platform.com/{endpoint}",
+                json=params,
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            return await resp.json()
+        except ClientError as e:
+            self.logger.error(f"API 呼叫失敗: {e}")
+            raise
+```
+
+> 也可透過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+
+## 最佳實踐
+
+1. **優先使用全域客戶端**：使用 `from ErisPulse.Core import client` 取得全域單例，便於框架統一管理和監控
+2. **避免直接匯入 aiohttp**：使用 `client` 取代 `aiohttp.ClientSession`，未來更換底層實作無需修改程式碼。舊程式碼直接使用 aiohttp 仍可正常工作，兩種方式可以共存
+3. **使用 ErisPulse 異常體系**：透過 `sdk.client` 請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保程式碼不依賴特定 HTTP 函式庫。直接使用 aiohttp 的舊程式碼不受影響
+4. **合理設定逾時**：根據 API 回應速度設定合理的逾時時間，避免長時間封鎖
+5. **使用重試機制**：對不穩定的 API 啟用重試，提高可靠性
+6. **監控請求統計**：透過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
+7. **WebSocket 使用高階方法**：優先使用 `iter_text` / `iter_json` 等高階方法，僅在需要區分訊息類型時使用 `iter_messages`
+
+## 相關文件
+
+- [路由管理器](router.md) - HTTP/WebSocket 伺服器端路由（服務端 WebSocketConnection 與客戶端共享同一基類）
+- [適配器開發指南](../developer-guide/adapters/getting-started.md) - 適配器中使用 HTTP 客戶端
+- [生命週期管理](lifecycle.md) - 監聽請求事件
+
+
+### SQL 查询构建器
+
+# SQL 查詢建構器
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。
+
+## 架構設計
+
+```
+Bases/storage.py                    Core/storage.py
+┌─────────────────────┐             ┌──────────────────────────┐
+│  BaseStorage (ABC)  │◄────────────│  StorageManager          │
+│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
+│    (ABC)            │             │                          │
+└─────────────────────┘             │  SQLiteQueryBuilder      │
+                                    │  AlterTableBuilder       │
+                                    └──────────────────────────┘
+```
+
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基底類別，定義統一介面，支援未來擴展其他儲存媒介（Redis、MySQL 等）
+- `StorageManager` 是當前 SQLite 具體實現，完全向後相容
+
+## 匯入
+
+```python
+from ErisPulse import sdk
+# 或
+from ErisPulse.Core import storage
+
+# ABC 基類（用於類型標註或自訂實現）
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+## 表管理
+
+### 建立表
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0",
+    "email": "TEXT"
+})
+```
+
+### 檢查表是否存在
+
+```python
+if sdk.storage.HasTable("users"):
+    print("users 表已存在")
+```
+
+### 刪除表
+
+```python
+sdk.storage.DropTable("users")
+```
+
+### 修改表結構
+
+```python
+# 欄位
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+
+# 重新命名表
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# 鏈式多個操作
+sdk.storage.AlterTable("users") \
+    .AddColumn("phone", "TEXT") \
+    .AddColumn("address", "TEXT") \
+    .Execute()
+```
+
+## 鏈式查詢
+
+### 插入資料
+
+```python
+# 單行插入
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 批量插入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35},
+    {"name": "Dave", "age": 40}
+]).Execute()
+```
+
+### 查詢資料
+
+```python
+# 查詢所有欄位
+rows = sdk.storage.Table("users").Select().Execute()
+
+# 查詢指定欄位
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+
+# 獲取單筆記錄
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ExecuteOne()
+# 回傳 tuple | None，如 ("Alice", 30)
+```
+
+### 條件過濾
+
+```python
+# 單條件
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 18) \
+    .Execute()
+
+# 多條件（AND 連接）
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 20) \
+    .Where("age < ?", 40) \
+    .Execute()
+```
+
+### 排序、分頁
+
+```python
+# 升序
+rows = sdk.storage.Table("users").Select("name", "age") \
+    .OrderBy("name") \
+    .Execute()
+
+# 降序
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("age", desc=True) \
+    .Execute()
+
+# 分頁
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("id") \
+    .Limit(10) \
+    .Offset(20) \
+    .Execute()
+```
+
+### 更新資料
+
+```python
+# 條件更新
+sdk.storage.Table("users") \
+    .Update({"age": 31}) \
+    .Where("name = ?", "Alice") \
+    .Execute()
+
+# 全量更新
+sdk.storage.Table("users") \
+    .Update({"status": "active"}) \
+    .Execute()
+```
+
+### 刪除資料
+
+```python
+# 條件刪除
+sdk.storage.Table("users") \
+    .Delete() \
+    .Where("name = ?", "Bob") \
+    .Execute()
+
+# 全量刪除
+sdk.storage.Table("users").Delete().Execute()
+```
+
+### 計數與存在性檢查
+
+```python
+# 計數
+count = sdk.storage.Table("users").Count()
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性檢查
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+```
+
+## 複用查詢條件
+
+使用 `copy()` 深拷貝建構器，複用基礎條件：
+
+```python
+base = sdk.storage.Table("users").Where("age > ?", 20)
+
+# 基於相同條件查詢
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+
+# 基於相同條件計數
+count = base.copy().Count()
+
+# 基於相同條件檢查存在性
+exists = base.copy().Where("name = ?", "Alice").Exists()
+```
+
+## 重置建構器
+
+```python
+builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
+builder.clear()
+
+# 重新建構查詢
+builder.Select("name", "age").Where("name = ?", "Alice")
+rows = builder.Execute()
+```
+
+## 事務中使用
+
+鏈式操作完全支援事務：
+
+```python
+# 提交事務
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
+    sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
+
+# 回滾範例
+try:
+    with sdk.storage.transaction():
+        sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
+        raise Exception("force rollback")
+except Exception:
+    pass
+# Alice 的記錄仍然存在
+```
+
+## 返回值說明
+
+| 操作 | 返回類型 | 說明 |
+|------|---------|------|
+| `Select().Execute()` | `list[tuple]` | 查詢結果列表 |
+| `Select().ExecuteOne()` | `tuple \| None` | 單筆記錄 |
+| `Insert().Execute()` | `int` | 受影響行數 |
+| `InsertMulti().Execute()` | `int` | 插入行數 |
+| `Update().Execute()` | `int` | 受影響行數 |
+| `Delete().Execute()` | `int` | 受影響行數 |
+| `Count()` | `int` | 符合行數 |
+| `Exists()` | `bool` | 是否存在 |
+
+### 返回值處理範例
+
+```python
+# Select 返回元組，按索引取值
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
+
+# 推薦：用列名列表 + zip 轉為字典，代碼更可讀
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne 返回單條元組或 None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete 返回受影響行數
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"刪除了 {affected} 條記錄")
+```
+
+## 參數化查詢
+
+所有 WHERE 參數使用 `?` 佔位符，參數作為 `Where()` 的後續參數傳入（**不是**元組或列表）：
+
+```python
+# 正確 ✓ — 多個參數逐一傳入
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# 正確 ✓ — 多次 Where 調用
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# 錯誤 ✗ — 不要傳入元組
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# 這會把整個元組當成第一個佔位符的值
+
+# 錯誤 ✗ — 存在 SQL 注入風險
+sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Where 參數傳遞規則
+
+```python
+# Where(condition: str, *params: Any)
+# params 是可變參數，逐個傳入即可
+
+# 單個參數
+.Where("name = ?", "Alice")
+
+# 多個參數
+.Where("age > ? AND age < ?", 18, 60)
+
+# LIKE 查詢
+.Where("name LIKE ?", "A%")
+
+# IN 查詢（需要手動構造佔位符）
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
+```
+
+## 自訂儲存後端
+
+繼承 `BaseStorage` 和 `BaseQueryBuilder` 實現自訂儲存後端：
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+class MyQueryBuilder(BaseQueryBuilder):
+    def Execute(self):
+        # 實現具體執行邏輯
+        ...
+
+    def ExecuteOne(self):
+        ...
+
+    def Count(self):
+        ...
+
+    def Exists(self):
+        ...
+
+
+class MyStorage(BaseStorage):
+    def get(self, key, default=None):
+        ...
+
+    def set(self, key, value):
+        ...
+
+    # 實現其他抽象方法...
+    def Table(self, table_name):
+        return MyQueryBuilder(self, table_name)
+```
+
+## 相關文件
+
+- [核心模組 API](../api-reference/core-modules.md) - Storage 模組完整 API
+- [儲存基類 API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象介面
+- [訊息建構器](message-builder.md) - MessageBuilder 鏈式呼叫風格參考
 
 
 ### 懒加载系统
@@ -11474,13 +12813,11 @@ var data = await resp.json();
 模組的 API 端點可以自行決定是否驗證 Token。如果需要驗證，可以從請求頭中提取：
 
 ```python
-from fastapi.responses import JSONResponse
-
 async def _api_data(self, request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not token:
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    return JSONResponse({"data": "hello"})
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
 ```
 
 ---
@@ -15374,6 +16711,447 @@ from ErisPulse.Core import adapter
 如有疑問，請聯絡相關適配器維護者或在專案 Issues 中提問。
 
 
+### 花枫咖啡馆适配
+
+# 花楓咖啡館（Ideaura）平台特性文件
+
+IdeauraAdapter 是基於花楓咖啡館（Allons）平台 API 構建的適配器，整合了所有平台功能模組，提供統一的事件處理和消息操作接口。
+
+---
+
+## 文件資訊
+
+- 對應模組: ErisPulse-Ideaura
+- 維護者: ErisPulse
+
+## 基本資訊
+
+- 平台簡介：花楓咖啡館（Allons）是一個即時通訊平台
+- 適配器名稱：IdeauraAdapter
+- 多帳戶支持：支持通過 email/password 配置多個帳戶
+- 鏈式修飾支持：支持 `.At()`、`.AtAll()`、`.Reply()` 等鏈式修飾方法
+- OneBot12相容：支持發送 OneBot12 格式消息
+
+## 支援的消息發送類型
+
+所有發送方法均通過鏈式語法實現，例如：
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+await ideaura.Send.To("group", "chatroom").Text("Hello World!")
+```
+
+支援的發送類型包括：
+- `.Text(text: str)`：發送純文本消息。
+- `.Image(file, filename: str = None)`：發送圖片消息，支持 bytes/URL/本地路徑。
+- `.Video(file, filename: str = None)`：發送視頻消息，支持 bytes/URL/本地路徑。
+- `.File(file, filename: str = None)`：發送文件消息，支持 bytes/URL/本地路徑。
+- `.Voice(file, filename: str = None)`：發送語音消息（作為文件發送）。
+- `.Face(face_id: str)`：發送表情（以純文本形式發送 emoji）。
+- `.Markdown(text: str)`：發送 Markdown 格式消息。
+- `.Html(html: str)`：發送 HTML 格式消息。
+- `.Edit(message_id: str, text: str, content_type: str = "text")`：編輯已有消息。
+- `.Recall(message_id: str)`：撤回消息。
+
+### 鏈式修飾方法（可組合使用）
+
+鏈式修飾方法返回 `self`，支援鏈式調用，必須在最終發送方法前調用：
+
+- `.At(user_id: str, name: str = None)`：@指定用戶。
+- `.AtAll()`：@所有人。
+- `.Reply(message_id: str)`：回覆指定消息。
+
+### 鏈式調用示例
+
+```python
+# 基礎發送
+await ideaura.Send.To("user", user_id).Text("Hello")
+
+# @用戶
+await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
+
+# @多人
+await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
+
+# 回覆消息
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("回覆消息")
+
+# 回覆 + @
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回覆並@")
+```
+
+### 發送到不同目標
+
+```python
+# 發送到聊天室
+await ideaura.Send.To("group", "chatroom").Text("聊天室消息")
+
+# 發送到話題
+await ideaura.Send.To("group", "topic_id").Text("話題消息")
+
+# 發送私聊消息
+await ideaura.Send.To("user", "user_id").Text("私聊消息")
+```
+
+### OneBot12消息支援
+
+適配器支援發送 OneBot12 格式的消息，便於跨平台消息相容：
+
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式消息。
+
+```python
+# 發送 OneBot12 格式消息
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
+await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
+
+# 配合鏈式修飾
+ob12_msg = [{"type": "text", "data": {"text": "回覆消息"}}]
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
+```
+
+## 發送方法返回值
+
+所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 適配器標準化返回規範：
+
+```python
+{
+    "status": "ok",           // 執行狀態
+    "retcode": 0,             // 返回碼
+    "data": {...},            // 響應數據
+    "self": {...},            // 自身信息（包含 user_id）
+    "message_id": "123456",   // 消息ID
+    "message": "",            // 錯誤信息
+    "ideaura_raw": {...}      // 原始響應數據
+}
+```
+
+## 特有事件類型
+
+需要 `platform=="ideaura"` 檢測再使用本平台特性
+
+### 核心差異點
+
+1. 特有事件類型：
+    - 消息編輯：ideaura_message_edit
+    - 消息撤回：ideaura_message_recall
+    - 消息轉發：ideaura_message_forward
+    - 消息已讀：ideaura_message_read
+    - 好友被拒：ideaura_friend_rejected
+    - 好友上線：ideaura_friend_online
+    - 好友下線：ideaura_friend_offline
+    - 用戶狀態變更：ideaura_user_status_change
+    - 轉發消息段：ideaura_forwarded
+    - 編輯標記段：ideaura_edited
+    - Markdown消息段：ideaura_markdown
+    - HTML消息段：ideaura_html
+2. 扩展字段：
+    - 所有特有字段均以 `ideaura_` 前綴標識
+    - 保留原始數據在 `ideaura_raw` 字段
+    - `self.user_id` 表示當前帳戶的用戶ID
+
+### 消息編輯事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_edit",
+  "platform": "ideaura",
+  "message_id": "消息ID",
+  "user_id": "編輯者ID",
+  "ideaura_new_content": "編輯後的內容",
+  "ideaura_updated_message": { ... },
+  "ideaura_source_type": "chatroom/topic/private"
+}
+```
+
+### 消息撤回事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_recall",
+  "platform": "ideaura",
+  "message_id": "被撤回的消息ID",
+  "user_id": "撤回者ID",
+  "group_id": "chatroom",
+  "ideaura_source_type": "chatroom",
+  "ideaura_recall_time": "撤回時間",
+  "ideaura_is_self": false
+}
+```
+
+### 消息轉發事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_forward",
+  "platform": "ideaura",
+  "message_id": "原始消息ID",
+  "user_id": "轉發者ID",
+  "ideaura_forward_to": "目標話題ID",
+  "ideaura_original_message_id": "原始消息ID",
+  "ideaura_forwarded_message_id": "轉發後的新消息ID"
+}
+```
+
+### 消息已讀事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_read",
+  "platform": "ideaura",
+  "message_id": "消息ID",
+  "ideaura_reader_id": "已讀者ID",
+  "ideaura_reader_name": "已讀者暱稱"
+}
+```
+
+### 好友上線事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_online",
+  "platform": "ideaura",
+  "user_id": "好友ID",
+  "user_nickname": "好友暱稱",
+  "ideaura_friend_avatar": "頭像URL",
+  "ideaura_presence_status": "online"
+}
+```
+
+### 好友下線事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_offline",
+  "platform": "ideaura",
+  "user_id": "好友ID",
+  "ideaura_presence_status": "offline"
+}
+```
+
+### 用戶狀態變更事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_user_status_change",
+  "platform": "ideaura",
+  "user_id": "用戶ID",
+  "ideaura_status": "新狀態",
+  "ideaura_previous_status": "舊狀態"
+}
+```
+
+### 好友請求事件
+
+```python
+{
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "ideaura",
+  "user_id": "請求者ID",
+  "user_nickname": "請求者暱稱",
+  "ideaura_request_id": "請求ID",
+  "ideaura_message": "驗證消息"
+}
+```
+
+### 好友被拒事件
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_rejected",
+  "platform": "ideaura",
+  "user_id": "拒絕者ID",
+  "user_nickname": "拒絕者暱稱",
+  "ideaura_request_id": "請求ID",
+  "ideaura_requester_id": "請求發起者ID",
+  "ideaura_requester_name": "請求發起者暱稱"
+}
+```
+
+### 轉發消息段 (ideaura_forwarded)
+
+當收到轉發消息時，消息段類型為 `ideaura_forwarded`：
+
+```json
+{
+  "type": "ideaura_forwarded",
+  "data": {
+    "forward_source_id": "1001",
+    "original_message_id": "1001"
+  }
+}
+```
+
+| 字段 | 類型 | 說明 |
+|------|------|------|
+| `forward_source_id` | string | 轉發源消息ID |
+| `original_message_id` | string | 原始消息ID |
+
+### 事件處理示例
+
+```python
+from ErisPulse.Core.Event import notice, message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "ideaura":
+        # 處理消息事件
+        for segment in event.get("message", []):
+            if segment.get("type") == "ideaura_forwarded":
+                data = segment["data"]
+                print(f"轉發消息，源ID: {data['forward_source_id']}")
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "ideaura_message_edit":
+        new_content = event.get("ideaura_new_content", "")
+        print(f"消息被編輯: {new_content}")
+
+    elif detail_type == "ideaura_message_recall":
+        message_id = event.get("message_id")
+        print(f"消息被撤回: {message_id}")
+
+    elif detail_type == "ideaura_friend_online":
+        friend_name = event.get_user_nickname()
+        print(f"好友上線: {friend_name}")
+
+    elif detail_type == "ideaura_user_status_change":
+        status = event.get("ideaura_status")
+        print(f"用戶狀態變更: {status}")
+```
+
+---
+
+## 多帳戶配置
+
+### 配置說明
+
+IdeauraAdapter 支援同時配置和運行多個帳戶。
+
+```toml
+# config.toml
+[IdeauraAdapter.accounts.default]
+email = "user1@example.com"     # 登錄郵箱（必填）
+password = "password1"          # 登錄密碼（必填）
+enabled = true                  # 是否啟用（可選，預設為true）
+
+[IdeauraAdapter.accounts.bot2]
+email = "user2@example.com"
+password = "password2"
+enabled = true
+
+# 可選：自定義伺服器地址
+[IdeauraAdapter]
+base_url = "https://api-cofe.allons-y.uk:3009"
+ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
+heartbeat_interval = 30
+```
+
+**配置項說明：**
+- `email`：帳戶登錄郵箱（必填）
+- `password`：帳戶登錄密碼（必填）
+- `enabled`：是否啟用該帳戶（可選，預設為true）
+
+**全域配置項：**
+- `base_url`：API 伺服器地址（可選，預設為花楓咖啡館官方地址）
+- `ws_url`：WebSocket 伺服器地址（可選，預設為花楓咖啡館官方地址）
+- `heartbeat_interval`：心跳間隔秒數（可選，預設30秒）
+
+### 使用 Send DSL 指定帳戶
+
+可以透過 `Using()` 方法指定使用哪個帳戶發送消息：
+
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+# 使用帳戶名發送消息
+await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
+
+# 使用 user_id 發送消息（自動匹配對應帳戶）
+await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
+
+# 不指定時使用第一個啟用的帳戶
+await ideaura.Send.To("user", "user123").Text("Hello from default account!")
+```
+
+### 事件中的帳戶標識
+
+接收到的事件會自動包含對應的帳戶信息：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "ideaura":
+        account_id = event["self"]["user_id"]
+        print(f"消息來自帳戶: {account_id}")
+```
+
+---
+
+## 扩展字段說明
+
+- 所有特有字段均以 `ideaura_` 前綴標識，避免與標準字段衝突
+- 保留原始數據在 `ideaura_raw` 字段，便於訪問平台的完整原始數據
+- `self.user_id` 表示當前登錄帳戶的用戶ID
+- `ideaura_source_type`：消息來源類型（`chatroom`/`topic`/`private`）
+- `ideaura_sender_name`：發送者暱稱
+- `ideaura_sender_avatar`：發送者頭像URL
+- `ideaura_sender_is_bot`：發送者是否為機器人
+- `ideaura_is_self`：是否為自己發送的消息（自消息已被過濾）
+- `ideaura_topic_name`：話題名稱
+- `ideaura_message_type`：消息類型（normal/edited/forwarded/quoted）
+- `ideaura_message_subtype`：消息子類型（text/image/video/file/markdown/html）
+
+### 文件處理特性
+
+- 文件大小限制：10MB（下載和本地讀取均有限制）
+- 自動文件類型檢測：通過文件頭魔法字節檢測實際類型
+- 智能文件名解析：對 `.bin`/`.dat`/`.tmp` 等無意義擴展名自動修正
+- 支援 bytes、URL、本地路徑三種文件輸入方式
+- URL 文件自動下載並上傳到伺服器
+
+### 支援的文件類型
+
+通過魔法字節自動檢測：
+
+| 類型 | 擴展名 |
+|------|--------|
+| 圖片 | png, jpg, gif, webp |
+| 視頻 | mp4, avi, flv |
+| 音頻 | mp3, wav, ogg |
+| 文檔 | pdf, docx |
+
+---
+
+## 注意事項
+
+1. 伺服器地址 `api-cofe.allons-y.uk` 是平台固有地址，不隨適配器名稱變化
+2. 適配器使用 WebSocket 長連接接收事件，支援自動重連（固定5秒延遲）
+3. 自身發送的消息（`isSelf: true`）會被自動過濾，不會產生事件
+4. @全體（`AtAll()`）需要管理員權限
+5. 文件上傳大小限制為 10MB
+6. 音頻文件作為 `file` 子類型發送（平台不區分獨立音頻類型）
+7. 表情（`Face()`）以純文本形式發送 emoji
+8. 程序退出時請調用 `shutdown()` 確保資源釋放
+
+
 ====
 代码规范
 ====
@@ -15475,246 +17253,3 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 6. **已棄用方法**：標記已棄用方法並提供替代方案
    ```python
    {!--< deprecated >!--} 請使用new_method()取代 | 2025-07-09
-
-
-======
-已知问题追踪
-======
-
-
-### 历史 Bug 记录
-
-# Bug 追蹤器
-
-本文檔記錄 ErisPulse SDK 的已知 Bug 和修復情況。
-
----
-
-## 已修復的 Bug
-
-### [BUG-001] Init 指令適配器配置路徑類型錯誤
-
-**問題**: 使用 `ep init` 指令進行互動式初始化時，選擇配置適配器會出現類型錯誤：
-
-```
-互動式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
-```
-
-**原因**: 2.3.7 版本調整配置檔路徑時，方法參數類型不一致。`_configure_adapters_interactive_sync` 接收 `str` 類型參數，但內部使用 `Path` 的 `/` 運算子拼接路徑。
-
-**影響版本**: 2.3.7 - 2.3.9-dev.1
-
-**修復版本**: 2.3.9-dev.1
-
-**修復內容**: 將 `_configure_adapters_interactive_sync` 方法的參數類型從 `str` 改為 `Path`，呼叫時直接傳遞 `Path` 物件。
-
-**修復日期**: 2026/03/23
-
----
-
-### [BUG-002] 重啟後指令事件失效
-
-**問題**: 呼叫 `sdk.restart()` 後，透過 `@command` 註冊的指令無法被觸發，表現為發送指令後機器人無響應。
-
-**原因**: `adapter.shutdown()` 清空事件總線後，`BaseEventHandler` 的 `_linked_to_adapter_bus` 狀態未重置為 `False`，導致 `_process_event` 方法認為已經掛載到適配器總線，跳過重新掛載操作。
-
-**影響版本**: 2.2.x - 2.4.0-dev.2
-
-**修復版本**: 2.4.0-dev.3
-
-**修復內容**: 引入 `_linked_to_adapter_bus` 狀態追蹤，`_clear_handlers()` 斷開總線連接後，下次 `register()` 自動重新掛載，適配 shutdown/restart 場景。
-
-**修復日期**: 2026/04/09
-
----
-
-### [BUG-003] 生命週期事件處理器未清理
-
-**問題**: `sdk.restart()` 後，舊的生命週期事件處理器仍然存在並重複觸發，導致同一個事件被多次處理。
-
-**原因**: `lifecycle._handlers` 字典在 `uninit()` 時從未被清理，restart 後舊處理器與新處理器同時存在。
-
-**影響版本**: 2.3.0 - 2.4.0-dev.2
-
-**修復版本**: 2.4.0-dev.3
-
-**修復內容**: 在 `Uninitializer` 的清理流程末尾（所有事件提交之後），清空 `lifecycle._handlers`。
-
-**修復日期**: 2026/04/09
-
----
-
-### [BUG-004] Event.confirm() 確認詞集合賦值重複
-
-**問題**: `Event.confirm()` 方法中，`_yes`、`_no`、`_all` 三個變數的賦值代碼被完全重複了兩次（共6行），導致無意義的重複計算。
-
-**原因**: 代碼複製貼上錯誤。
-
-**影響版本**: 2.4.0-dev.4
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 刪除 `wrapper.py` 中 739-741 行的重複賦值代碼。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-005] MessageBuilder.at 方法定義被覆蓋（死代碼）
-
-**問題**: `MessageBuilder` 類中 `at` 方法被定義了三次：一個實例方法、一個靜態方法、最後被 `_DualMethod` 賦值覆蓋。前兩個定義是永遠不會被執行的死代碼。
-
-**原因**: 重構為 `_DualMethod` 雙模式描述符時，忘記刪除舊的手動定義。
-
-**影響版本**: 2.4.0-dev.0
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 刪除 `message_builder.py` 中 159-181 行的兩個死 `at` 方法定義，只保留 `_DualMethod` 賦值。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-006] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致
-
-**問題**: `Event.is_friend_add()` 檢查 `detail_type == "friend_add"`，`Event.is_friend_delete()` 檢查 `detail_type == "friend_delete"`，但 OneBot12 標準定義的 `detail_type` 值為 `"friend_increase"` 和 `"friend_decrease"`。與 `notice.py` 中 `on_friend_add`/`on_friend_remove` 裝飾器使用的值不一致，導致透過裝飾器註冊的處理器觸發時，對應的 `is_friend_add()`/`is_friend_delete()` 判斷方法返回 `False`。
-
-**原因**: `wrapper.py` 中使用了非標準的命名，而 `notice.py` 使用了正確的 OB12 標準命名。
-
-**影響版本**: rq實裝至今
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 將 `is_friend_add()` 的匹配值從 `"friend_add"` 改為 `"friend_increase"`，`is_friend_delete()` 從 `"friend_delete"` 改為 `"friend_decrease"`。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-007] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確
-
-**問題**: `AdapterManager.clear()` 方法清除了 `_adapters`、`_adapter_info`、處理器和 `_bots`，但遺漏了 `_started_instances` 集合。如果適配器正在運行時呼叫 `clear()`，`_started_instances` 會保留懸空引用，導致重啟後狀態判斷錯誤。
-
-**原因**: 2.4.0-dev.1 引入 `_started_instances` 時未在 `clear()` 中同步清理。
-
-**影響版本**: 2.4.0-dev.1 - 2.4.2-dev.0
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 在 `clear()` 方法中添加 `self._started_instances.clear()`。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-008] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()
-
-**問題**: `CommandHandler.wait_reply()` 方法使用 `asyncio.get_event_loop()` 建立 future 和獲取時間戳，該方法在 Python 3.10+ 中已棄用，在非同步上下文中應使用 `asyncio.get_running_loop()`。與同檔案中 `wrapper.py` 的 `wait_for()` 方法使用的 `get_running_loop()` 不一致。
-
-**原因**: 開發時使用了舊版 API，後續新增的 `wait_for()` 使用了正確的 API 但未回溯修復舊代碼。
-
-**影響版本**: 2.3.0-dev.0
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 將 `command.py` 中兩處 `asyncio.get_event_loop()` 替換為 `asyncio.get_running_loop()`。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-009] Event.collect() 字段缺少 key 時靜默跳過
-
-**問題**: `Event.collect()` 方法在遍歷字段列表時，如果某個字段字典缺少 `key`，會靜默跳過該字段，不輸出任何日誌或警告。開發者如果拼寫錯誤（如 `"Key"` 而非 `"key"`），整個字段會被悄悄忽略，導致下游行為難以排查。
-
-**原因**: 缺少輸入驗證和錯誤反饋。
-
-**影響版本**: 2.4.0-dev.4
-
-**修復版本**: 2.4.2-dev.1
-
-**修復內容**: 在跳過前添加 `logger.warning()` 記錄缺少 `key` 的字段資訊。
-
-**修復日期**: 2026/04/13
-
----
-
-### [BUG-010] LazyModule 同步存取 BaseModule 導致未初始化完成
-
-**問題**: 使用者在同步上下文中存取懶載入的 BaseModule 屬性時，模組使用 `loop.create_task()` 非同步初始化但不等待，導致屬性存取時可能未初始化完成，引發競態條件。
-
-**原因**: `_ensure_initialized()` 對 BaseModule 使用 `loop.create_task(self._initialize())` 後立即返回，未確保初始化完成。
-
-**影響版本**: 2.4.0-dev.0 - 2.4.2-dev.1
-
-**修復版本**: 2.4.2-dev.2
-
-**修復內容**: 在同步上下文中，BaseModule 的初始化改為使用 `asyncio.run(self._initialize())`，確保初始化完成後再返回。保持透明代理特性，使用者無需感知同步/非同步差異。
-
-**修復日期**: 2026/04/21
-
----
-
-### [BUG-011] 配置系統多線寫入導致資料遺失
-
-**問題**: 在多線程環境下，多個線程同時呼叫 `config.setConfig()` 時，`_flush_config()` 讀取-修改-寫入操作不是原子性的，可能導致部分寫入遺失。
-
-**原因**: `_flush_config()` 雖然使用了 `RLock`，但檔案讀取和寫入之間沒有檔案鎖保護，且 `_schedule_write` 的 Timer 可能被多次觸發導致覆蓋。
-
-**影響版本**: 2.3.0 - 2.4.2-dev.1
-
-**修復版本**: 2.4.2-dev.2
-
-**修復內容**:
-1. 添加檔案鎖機制（`_file_lock`）確保檔案操作原子性
-2. 使用暫存檔案寫入後原子性重新命名（`os.replace`/`os.rename`）
-3. 改進 `_schedule_write` 的 Timer 取消和重新排程邏輯
-
-**修復日期**: 2026/04/21
-
----
-
-### [BUG-012] SDK 屬性存取錯誤資訊不準確
-
-**問題**: 存取不存在的屬性時，錯誤提示"您可能使用了錯誤的SDK註冊物件"，可能誤導使用者，實際可能是模組未啟用或名稱拼寫錯誤。
-
-**原因**: `__getattribute__` 的錯誤資訊沒有區分不同場景，統一給出模糊的提示。
-
-**影響版本**: 2.0.0 - 2.4.2-dev.1
-
-**修復版本**: 2.4.2-dev.2
-
-**修復內容**: 根據屬性名稱區分不同場景：
-1. 已註冊但未啟用：提示模組/適配器未啟用
-2. 完全不存在：提示檢查名稱拼寫
-同時將原始 AttributeError 重新拋出，便於上層捕捉。
-
-**修復日期**: 2026/04/21
-
----
-
-### [BUG-013] Uninitializer 對未初始化 LazyModule 的清理邏輯過於複雜
-
-**問題**: `Uninitializer` 為從未被存取過的 LazyModule 建立臨時實例來呼叫 `on_unload`，代碼複雜且容易出錯。
-
-**原因**: 企圖為所有 LazyModule 呼叫生命週期方法，但未初始化的模組不需要也不應該被初始化。
-
-**影響版本**: 2.4.0-dev.0 - 2.4.2-dev.1
-
-**修復版本**: 2.4.2-dev.2
-
-**修復內容**: 簡化清理邏輯，只處理已初始化的 LazyModule：
-1. 跳過未初始化的 LazyModule，不建立臨時實例
-2. 只為已初始化的模組呼叫 `on_unload`
-3. 刪除複雜的臨時實例建立邏輯
-
-**修復日期**: 2026/04/21
-
----
-
-### [BUG-014] Windows 下 CTRL+C 無法停止程式
-
-**問題**: 在 Windows 上直接執行 `python main.py` 時，按下 CTRL+C 無法終止程式。程式正常啟動並輸出路由伺服器資訊後，CTRL+C 完全無響應，只能透過工作管理員強殺進程。而透過 `epsdk run` 啟動時可以正常停止——但 `epsdk run` 是透過子進程模型執行的。
-
-**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部透過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 預設的 `KeyboardInterrupt` 處理機制。當透過 `asyncio.create_task()` 啟動 Hypercorn 作為後台任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因

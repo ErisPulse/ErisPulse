@@ -180,13 +180,11 @@ var data = await resp.json();
 模块的 API 端点可以自行决定是否验证 Token。如果需要验证，可以从请求头中提取：
 
 ```python
-from fastapi.responses import JSONResponse
-
 async def _api_data(self, request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not token:
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    return JSONResponse({"data": "hello"})
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
 ```
 
 ---
