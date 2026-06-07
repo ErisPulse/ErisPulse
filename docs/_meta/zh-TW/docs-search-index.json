@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1183,
+  "total_keywords": 1172,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -286,12 +286,12 @@
         "title": "1. 說明"
       }
     ],
-    "1. 適配器系統": [
+    "1. 選擇物料文件": [
       {
-        "document": "getting-started/README.md",
-        "line": 104,
-        "level": 4,
-        "title": "1. 適配器系統"
+        "document": "ai-support/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "1. 選擇物料文件"
       }
     ],
     "1. 配置 pyproject.toml": [
@@ -446,14 +446,6 @@
         "title": "2. Send 內部類（大多數情況不需要重寫）"
       }
     ],
-    "2. 事件系統": [
-      {
-        "document": "getting-started/README.md",
-        "line": 113,
-        "level": 4,
-        "title": "2. 事件系統"
-      }
-    ],
     "2. 使用裝飾器註冊單一方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -532,6 +524,14 @@
         "line": 226,
         "level": 3,
         "title": "2. 批次操作"
+      }
+    ],
+    "2. 提供上下文": [
+      {
+        "document": "ai-support/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "2. 提供上下文"
       }
     ],
     "2. 支援的訊息傳送類型": [
@@ -978,14 +978,6 @@
         "title": "3. 條件處理"
       }
     ],
-    "3. 模組系統": [
-      {
-        "document": "getting-started/README.md",
-        "line": 122,
-        "level": 4,
-        "title": "3. 模組系統"
-      }
-    ],
     "3. 清晰的設定管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -1000,6 +992,14 @@
         "line": 46,
         "level": 3,
         "title": "3. 特有事件類型"
+      }
+    ],
+    "3. 編寫需求描述": [
+      {
+        "document": "ai-support/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "3. 編寫需求描述"
       }
     ],
     "3. 缺少 `self` 欄位": [
@@ -1186,14 +1186,6 @@
         "title": "4. 擴展欄位說明"
       }
     ],
-    "4. 核心模組": [
-      {
-        "document": "getting-started/README.md",
-        "line": 130,
-        "level": 4,
-        "title": "4. 核心模組"
-      }
-    ],
     "4. 模組": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -1240,6 +1232,14 @@
         "line": 275,
         "level": 3,
         "title": "4. 設定鏡像為公開"
+      }
+    ],
+    "4. 驗證產生結果": [
+      {
+        "document": "ai-support/README.md",
+        "line": 52,
+        "level": 3,
+        "title": "4. 驗證產生結果"
       }
     ],
     "4.1 Event 方法列表": [
@@ -2158,14 +2158,6 @@
         "title": "ErisPulse 會話類型標準"
       }
     ],
-    "ErisPulse 核心概念": [
-      {
-        "document": "getting-started/README.md",
-        "line": 58,
-        "level": 2,
-        "title": "ErisPulse 核心概念"
-      }
-    ],
     "ErisPulse 發送方法規範": [
       {
         "document": "standards/send-method-spec.md",
@@ -2204,30 +2196,6 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse 適配器標準化回傳規範"
-      }
-    ],
-    "ErisPulse-AdapterDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 39,
-        "level": 4,
-        "title": "ErisPulse-AdapterDev.md"
-      }
-    ],
-    "ErisPulse-Full.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 54,
-        "level": 4,
-        "title": "ErisPulse-Full.md"
-      }
-    ],
-    "ErisPulse-ModuleDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 26,
-        "level": 4,
-        "title": "ErisPulse-ModuleDev.md"
       }
     ],
     "Event Mixin 擴展方法": [
@@ -2658,30 +2626,6 @@
         "line": 273,
         "level": 3,
         "title": "Q5: 郵件等特殊平台如何處理？"
-      }
-    ],
-    "Q: AI 產生的程式碼有問題怎麼辦？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 3,
-        "title": "Q: AI 產生的程式碼有問題怎麼辦？"
-      }
-    ],
-    "Q: 如何讓 AI 產生更高品質的程式碼？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 133,
-        "level": 3,
-        "title": "Q: 如何讓 AI 產生更高品質的程式碼？"
-      }
-    ],
-    "Q: 推薦使用什麼 AI 工具？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 118,
-        "level": 3,
-        "title": "Q: 推薦使用什麼 AI 工具？"
       }
     ],
     "QQBot平台特性文件": [
@@ -3549,7 +3493,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 141,
+        "line": 125,
         "level": 2,
         "title": "下一步"
       },
@@ -4214,6 +4158,14 @@
         "title": "使用延遲載入模組"
       }
     ],
+    "使用步驟": [
+      {
+        "document": "ai-support/README.md",
+        "line": 30,
+        "level": 2,
+        "title": "使用步驟"
+      }
+    ],
     "使用生命週期事件": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4856,20 +4808,20 @@
         "title": "取得方法詳細資訊"
       }
     ],
-    "取得素材文件": [
-      {
-        "document": "ai-support/README.md",
-        "line": 17,
-        "level": 3,
-        "title": "取得素材文件"
-      }
-    ],
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 439,
         "level": 3,
         "title": "可用屬性"
+      }
+    ],
+    "各文件覆蓋範圍": [
+      {
+        "document": "ai-support/README.md",
+        "line": 15,
+        "level": 3,
+        "title": "各文件覆蓋範圍"
       }
     ],
     "同時發布到 Docker Hub": [
@@ -5874,14 +5826,6 @@
         "title": "屬性存取"
       }
     ],
-    "嵌入式開發（適合快速原型）": [
-      {
-        "document": "getting-started/README.md",
-        "line": 18,
-        "level": 3,
-        "title": "嵌入式開發（適合快速原型）"
-      }
-    ],
     "工作原理": [
       {
         "document": "advanced/dashboard-view.md",
@@ -6035,7 +5979,7 @@
     "常見問題": [
       {
         "document": "ai-support/README.md",
-        "line": 116,
+        "line": 103,
         "level": 2,
         "title": "常見問題"
       },
@@ -6284,14 +6228,6 @@
         "line": 259,
         "level": 3,
         "title": "引導式註冊"
-      }
-    ],
-    "從 GitHub Releases 下載": [
-      {
-        "document": "ai-support/README.md",
-        "line": 19,
-        "level": 4,
-        "title": "從 GitHub Releases 下載"
       }
     ],
     "從本機安裝": [
@@ -6842,14 +6778,6 @@
         "title": "效能優化"
       }
     ],
-    "文件內容說明": [
-      {
-        "document": "ai-support/README.md",
-        "line": 24,
-        "level": 3,
-        "title": "文件內容說明"
-      }
-    ],
     "文件列表": [
       {
         "document": "advanced/README.md",
@@ -6958,14 +6886,6 @@
         "line": 7,
         "level": 2,
         "title": "文件資訊"
-      }
-    ],
-    "文件類型": [
-      {
-        "document": "ai-support/README.md",
-        "line": 9,
-        "level": 3,
-        "title": "文件類型"
       }
     ],
     "文檔導航": [
@@ -7251,8 +7171,8 @@
       },
       {
         "document": "getting-started/README.md",
-        "line": 60,
-        "level": 3,
+        "line": 27,
+        "level": 2,
         "title": "架構概覽"
       }
     ],
@@ -7316,14 +7236,6 @@
         "line": 67,
         "level": 2,
         "title": "核心 API"
-      }
-    ],
-    "核心元件說明": [
-      {
-        "document": "getting-started/README.md",
-        "line": 102,
-        "level": 3,
-        "title": "核心元件說明"
       }
     ],
     "核心初始化": [
@@ -7788,14 +7700,6 @@
         "title": "模組開發最佳實務"
       }
     ],
-    "模組開發（推薦用於生產）": [
-      {
-        "document": "getting-started/README.md",
-        "line": 45,
-        "level": 3,
-        "title": "模組開發（推薦用於生產）"
-      }
-    ],
     "模組間通訊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -7804,12 +7708,12 @@
         "title": "模組間通訊"
       }
     ],
-    "模組需求模板": [
+    "模組需求": [
       {
         "document": "ai-support/README.md",
-        "line": 69,
+        "line": 63,
         "level": 3,
-        "title": "模組需求模板"
+        "title": "模組需求"
       }
     ],
     "機器人公告看板事件示例": [
@@ -8058,6 +7962,14 @@
         "title": "版本更新說明"
       }
     ],
+    "物料文件": [
+      {
+        "document": "ai-support/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "物料文件"
+      }
+    ],
     "特有事件類型": [
       {
         "document": "platform-guide/email.md",
@@ -8188,6 +8100,14 @@
         "line": 121,
         "level": 2,
         "title": "獲取幫助"
+      }
+    ],
+    "獲取最新版本": [
+      {
+        "document": "ai-support/README.md",
+        "line": 23,
+        "level": 3,
+        "title": "獲取最新版本"
       }
     ],
     "獲取目標 ID": [
@@ -10092,12 +10012,12 @@
         "title": "適配器開發入門"
       }
     ],
-    "適配器需求模板": [
+    "適配器需求": [
       {
         "document": "ai-support/README.md",
-        "line": 92,
+        "line": 82,
         "level": 3,
-        "title": "適配器需求模板"
+        "title": "適配器需求"
       }
     ],
     "適配器：註冊平台擴展方法": [
@@ -10465,7 +10385,7 @@
     "開始學習": [
       {
         "document": "getting-started/README.md",
-        "line": 139,
+        "line": 38,
         "level": 2,
         "title": "開始學習"
       }
@@ -10489,7 +10409,7 @@
     "開發方式選擇": [
       {
         "document": "getting-started/README.md",
-        "line": 14,
+        "line": 16,
         "level": 2,
         "title": "開發方式選擇"
       }
@@ -10612,12 +10532,12 @@
         "title": "雲湖用戶平台特性文件"
       }
     ],
-    "需求描述模板": [
+    "需求描述範本": [
       {
         "document": "ai-support/README.md",
-        "line": 67,
+        "line": 61,
         "level": 2,
-        "title": "需求描述模板"
+        "title": "需求描述範本"
       }
     ],
     "靜態工廠 + 鏈式混合": [
@@ -10788,14 +10708,6 @@
         "line": 43,
         "level": 3,
         "title": "點式結構事件"
-      }
-    ],
-    "📦 AI 開發素材文件": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "📦 AI 開發素材文件"
       }
     ]
   }
