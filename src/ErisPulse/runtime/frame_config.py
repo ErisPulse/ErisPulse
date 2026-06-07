@@ -18,6 +18,7 @@ from ..Core.constants import (
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_USE_GLOBAL_DB,
+    DEFAULT_UNINIT_TIMEOUT_SECS,
     CONFIG_ROOT_KEY,
 )
 
@@ -31,6 +32,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,
+        "format": "rich",
         "log_files": [],
         "memory_limit": DEFAULT_LOG_MEMORY_LIMIT,
     },
@@ -51,7 +53,8 @@ DEFAULT_ERISPULSE_CONFIG = {
         },
     },
     "framework": {
-        "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED
+        "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
+        "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
     },
 }
 

@@ -197,11 +197,12 @@ class InstallCommand(Command):
             console.print(Text("  请选择组件类型:", style="bold"))
             console.print(Text("    1.  适配器", style="adapter"))
             console.print(Text("    2.  模块", style="module"))
-            console.print(Text("    3.  自定义安装", style="info"))
+            console.print(Text("    3.  搜索安装", style="info"))
+            console.print(Text("    4.  自定义安装", style="dim"))
             console.print(Text("    q.  退出", style="dim"))
 
             choice = Prompt.ask(
-                "\n  请输入选项", choices=["1", "2", "3", "q"], default="q"
+                "\n  请输入选项", choices=["1", "2", "3", "4", "q"], default="q"
             )
 
             if choice == "q":
@@ -212,6 +213,8 @@ class InstallCommand(Command):
             elif choice == "2":
                 self._install_modules(remote_packages, upgrade, pre)
             elif choice == "3":
+                self._install_search(remote_packages, upgrade, pre)
+            elif choice == "4":
                 self._install_custom(upgrade, pre)
 
             if not Confirm.ask("\n  [cyan]是否继续安装其他组件？[/]", default=False):
@@ -290,6 +293,114 @@ class InstallCommand(Command):
             self.package_manager.install_package(
                 selected_names, upgrade=upgrade, pre=pre
             )
+
+    def _install_search(self, remote_packages: dict, upgrade: bool, pre: bool):
+        """
+        搜索并安装
+
+        {!--< internal-use >!--}
+
+        :param remote_packages: [dict] 远程包列表
+        :param upgrade: [bool] 是否升级
+        :param pre: [bool] 是否包含预发布版本
+        """
+        from rich.table import Table
+        from rich.box import SIMPLE
+        from ..utils.display import section_header
+
+        query = Prompt.ask("\n  [cyan]请输入搜索关键词（或 q 返回）[/]")
+        if query.lower() == "q" or not query.strip():
+            return
+
+        results = self.package_manager.search_package(query.strip())
+        installed = results.get("installed", [])
+        remote = results.get("remote", [])
+
+        total = len(installed) + len(remote)
+        if total == 0:
+            console.print(f"[dim]  未找到与 '{query}' 相关的组件[/]")
+            return
+
+        # 显示已安装结果
+        if installed:
+            section_header("已安装")
+            table = Table(
+                box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
+            )
+            table.add_column("类型", width=8)
+            table.add_column("名称", style="bold", min_width=12)
+            table.add_column("包名", min_width=20)
+            table.add_column("版本", width=10)
+            table.add_column("描述")
+            for item in installed:
+                type_style = "adapter" if item["type"] == "adapter" else "module"
+                table.add_row(
+                    f"[{type_style}]{item['type']}[/]",
+                    item["name"],
+                    item["package"],
+                    item.get("version", ""),
+                    item.get("summary", ""),
+                )
+            console.print(table)
+            console.print(f"[dim]  {len(installed)} 个已安装[/]")
+
+        # 显示远程结果
+        if remote:
+            section_header("远程可用")
+            table = Table(
+                box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
+            )
+            table.add_column("类型", width=8)
+            table.add_column("名称", style="bold", min_width=12)
+            table.add_column("包名", min_width=20)
+            table.add_column("版本", width=10)
+            table.add_column("描述")
+            for item in remote:
+                type_style = "adapter" if item["type"] == "adapter" else "module"
+                table.add_row(
+                    f"[{type_style}]{item['type']}[/]",
+                    item["name"],
+                    item["package"],
+                    item.get("version", ""),
+                    item.get("summary", ""),
+                )
+            console.print(table)
+            console.print(f"[dim]  {len(remote)} 个远程组件[/]")
+
+        console.print(f"\n  [bold]共找到 {total} 个结果[/]")
+
+        # 序号选择安装
+        if not remote:
+            return
+
+        console.print()
+        for i, item in enumerate(remote, 1):
+            type_style = "adapter" if item["type"] == "adapter" else "module"
+            console.print(
+                f"    [dim]{i:>2}.[/] [{type_style}]{item['name']}[/]"
+                f"  [dim]{item['package']}[/]"
+            )
+
+        raw = Prompt.ask(
+            "\n  [cyan]输入序号安装（多个用逗号分隔，q 跳过）[/]",
+            default="q",
+        )
+        if raw.lower() == "q" or not raw.strip():
+            return
+
+        selected = []
+        for part in raw.strip().replace(" ", "").replace("，", ",").split(","):
+            try:
+                idx = int(part) - 1
+                if 0 <= idx < len(remote):
+                    selected.append(remote[idx]["package"])
+            except ValueError:
+                continue
+
+        if selected and Confirm.ask(
+            f"  [cyan]确认安装 {len(selected)} 个包？[/]", default=True
+        ):
+            self.package_manager.install_package(selected, upgrade=upgrade, pre=pre)
 
     def _install_custom(self, upgrade: bool, pre: bool):
         package_name = Prompt.ask("\n  [cyan]请输入要安装的包名（或 q 返回）[/]")

@@ -250,6 +250,12 @@ DEFAULT_EVENT_SOURCE = "ErisPulse"
 # 修改影响: 设大确保异步事件处理完成，设小加速关闭流程。过小可能丢失事件。
 UNINIT_SETTLE_DELAY_SECS = 0.1
 
+# 优雅关闭总超时时间（秒），超过此时间未完成则强制终止。
+# 用于防止模块 on_unload() 卡死阻塞 Docker/容器重启。
+# 0 表示不设超时（无限等待）。
+# 修改影响: 设小可能导致模块 on_unload 被强制中断。设大可能导致容器关闭超时。
+DEFAULT_UNINIT_TIMEOUT_SECS = 30
+
 # 生命周期计时器名称（用于性能分析）。
 # 修改影响: 生命周期事件中的计时器标识。仅影响日志和 WebUI 显示。
 LIFECYCLE_TIMER_CORE_INIT = "core.init"

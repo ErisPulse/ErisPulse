@@ -13,10 +13,30 @@ ErisPulse 日志系统
 import logging
 import inspect
 import datetime
+import json as _json
 from rich.logging import RichHandler
 from rich.console import Console
 from rich.text import Text
 from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOGGER_NAME, LOG_TIME_FORMAT
+
+
+class _JsonFormatter(logging.Formatter):
+    """
+    JSON 日志格式化器
+
+    {!--< internal-use >!--}
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        log_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info and record.exc_info[0] is not None:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return _json.dumps(log_entry, ensure_ascii=False)
 
 
 class Logger:
@@ -36,6 +56,7 @@ class Logger:
         self._max_logs = DEFAULT_LOG_MEMORY_LIMIT
         self._logs = {}
         self._module_levels = {}
+        self._json_mode = False
         self._logger = logging.getLogger(LOGGER_NAME)
         self._logger.setLevel(logging.DEBUG)
         self._file_handlers: list[logging.FileHandler] = []
@@ -124,7 +145,10 @@ class Logger:
         for p in path:
             try:
                 handler = logging.FileHandler(p, encoding="utf-8")
-                handler.setFormatter(logging.Formatter("%(message)s"))
+                if self._json_mode:
+                    handler.setFormatter(_JsonFormatter())
+                else:
+                    handler.setFormatter(logging.Formatter("%(message)s"))
                 self._logger.addHandler(handler)
                 self._file_handlers.append(handler)
                 success = True
@@ -135,6 +159,61 @@ class Logger:
             self._logger.warning("未能成功设置任何日志文件。")
 
         return success
+
+    def set_json_format(self, enabled: bool = True) -> bool:
+        """
+        启用或禁用 JSON 结构化日志输出
+
+        启用后，所有日志（控制台和文件）将以 JSON 格式输出，
+        适合 ELK / Grafana Loki / Datadog 等日志聚合系统。
+
+        :param enabled: 是否启用 JSON 格式（默认 True）
+        :return: bool 设置是否成功
+
+        :example:
+        >>> # 在 config.toml 中配置
+        >>> [ErisPulse.logger]
+        >>> format = "json"
+        >>>
+        >>> # 或代码中动态切换
+        >>> logger.set_json_format(True)
+        """
+        self._json_mode = enabled
+
+        # 移除现有控制台处理器
+        new_handlers = []
+        for handler in self._logger.handlers:
+            if isinstance(handler, RichHandler):
+                self._logger.removeHandler(handler)
+            else:
+                new_handlers.append(handler)
+
+        if enabled:
+            # 添加 JSON 控制台处理器
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(_JsonFormatter())
+            stream_handler.set_name("json_console")
+            self._logger.addHandler(stream_handler)
+        else:
+            # 恢复 Rich 控制台处理器
+            console_handler = RichHandler(
+                console=self._console,
+                show_time=True,
+                show_level=True,
+                show_path=False,
+                markup=False,
+                log_time_format=LOG_TIME_FORMAT,
+            )
+            self._logger.addHandler(console_handler)
+
+        # 更新文件处理器格式
+        for handler in self._file_handlers:
+            if enabled:
+                handler.setFormatter(_JsonFormatter())
+            else:
+                handler.setFormatter(logging.Formatter("%(message)s"))
+
+        return True
 
     def save_logs(self, path) -> bool:
         """
@@ -155,9 +234,13 @@ class Logger:
             try:
                 with open(p, "w", encoding="utf-8") as file:
                     for module, logs in self._logs.items():
-                        file.write(f"Module: {module}\n")
-                        for log in logs:
-                            file.write(f"  {log}\n")
+                        if self._json_mode:
+                            for log in logs:
+                                file.write(_json.dumps(log, ensure_ascii=False) + "\n")
+                        else:
+                            file.write(f"Module: {module}\n")
+                            for log in logs:
+                                file.write(f"  {log}\n")
                 self._logger.info(f"日志已被保存到：{p}。")
                 success = True
             except Exception as e:
@@ -169,26 +252,55 @@ class Logger:
         """
         获取日志内容
 
+        在 JSON 模式下返回结构化 dict 列表，在 Rich 模式下返回字符串列表。
+
         :param module_name (可选): 模块名称，None表示获取所有日志
         :return: dict 日志内容
         """
         if module_name is None:
-            # 返回所有日志
             return {k: v.copy() for k, v in self._logs.items()}
-        # 返回指定模块的日志
         return {module_name: self._logs.get(module_name, [])}
 
+    def iter_logs(self, module_name: str = None):
+        """
+        流式迭代日志（生成器）
+
+        适合处理大量日志或推送到 SSE / WebSocket。
+
+        :param module_name: [str] 模块名称，None 表示所有模块
+        :return: [Iterator[dict | str]] 每行日志，JSON 模式下为 dict，Rich 模式下为 str
+
+        :example:
+        >>> for log in logger.iter_logs():
+        ...     print(log)
+        """
+        if module_name:
+            yield from self._logs.get(module_name, [])
+        else:
+            for logs in self._logs.values():
+                yield from logs
+
     def _save_in_memory(self, ModuleName, msg):
+        """
+        {!--< internal-use >!--}
+        """
         if ModuleName not in self._logs:
             self._logs[ModuleName] = []
 
-        # 检查日志数量是否超过限制
         if len(self._logs[ModuleName]) >= self._max_logs:
             self._logs[ModuleName].pop(0)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        msg = f"{timestamp} - {msg}"
-        self._logs[ModuleName].append(msg)
+        if self._json_mode:
+            self._logs[ModuleName].append(
+                {
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "module": ModuleName,
+                    "message": msg,
+                }
+            )
+        else:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self._logs[ModuleName].append(f"{timestamp} - {msg}")
 
     def _setup_config(self):
         from ..runtime import get_logger_config
@@ -200,6 +312,8 @@ class Logger:
             self.set_output_file(logger_config["log_files"])
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
+        if logger_config.get("format") == "json":
+            self.set_json_format(True)
 
     def _get_effective_level(self, module_name):
         return self._module_levels.get(module_name, self._logger.level)

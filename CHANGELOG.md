@@ -63,6 +63,36 @@
 
 ---
 
+## [2.5.0-dev.0] - 2026/06/08
+> 开发版本
+
+**版本摘要**
+2.5.0 定位为「生产就绪」版本，新增健康检查/就绪探针、结构化日志、优雅关闭超时和 CLI 搜索安装功能。
+
+### 新增
+- @wsu2059q
+  - `Core/router.py` 新增 `/robots.txt` 端点，禁止所有主流爬虫/AI 爬虫收录路由
+  - `Core/logger.py` 新增 JSON 结构化日志支持：
+    - 新增 `Logger.set_json_format(enabled)` 方法
+    - 新增 `_JsonFormatter` 格式化器，输出 `{"timestamp", "level", "logger", "message"}` JSON
+    - 通过 `config.toml` 中 `[ErisPulse.logger] format = "json"` 启用
+    - 兼容 ELK / Grafana Loki / Datadog 等日志聚合系统
+  - `Core/constants.py` 新增 `DEFAULT_UNINIT_TIMEOUT_SECS = 30`：
+    - 反初始化总超时时间，防止模块 `on_unload()` 卡死阻塞容器重启
+    - 可在 `[ErisPulse.framework] uninit_timeout` 中配置
+  - `CLI/commands/install.py` 交互安装新增「搜索安装」功能：
+    - 输入关键词搜索模块/适配器（模糊匹配名称、包名、描述）
+    - 序号选择安装，支持多选
+
+### 变更
+- @wsu2059q
+  - `sdk.Uninitializer.uninit()` 重构为异步超时控制：
+    - 反初始化主体由 `asyncio.wait_for()` 包装
+    - 超时后记录 WARNING 并返回 `False`，允许进程继续退出
+    - 0 表示不设超时（保留行为兼容）
+
+---
+
 ## [2.4.6-dev.6] - 2026/06/07
 > 开发版本
 
