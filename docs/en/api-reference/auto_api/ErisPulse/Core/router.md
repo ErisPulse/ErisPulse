@@ -132,6 +132,15 @@ WebSocket 路由装饰器
 ---
 
 
+##### `sse(path: str)`
+
+SSE (Server-Sent Events) 路由装饰器
+
+:param path: str 路由路径
+
+---
+
+
 ##### `group(prefix: str)`
 
 创建嵌套分组
@@ -220,6 +229,27 @@ WebSocket 路由装饰器
 ##### `_make_ws_auth_handler(auth_handler: Callable)`
 
 根据签名创建 WebSocket 认证处理器包装
+
+> **内部方法**
+
+---
+
+
+##### `_make_sse_endpoint(handler: Callable)`
+
+根据处理器签名创建 SSE 端点包装器
+
+自动检测处理器是否需要 HttpRequest 参数。
+为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
+
+> **内部方法**
+
+---
+
+
+##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable)`
+
+SSE 路由注册内部实现
 
 > **内部方法**
 
@@ -435,6 +465,44 @@ WebSocket 路由装饰器
 ---
 
 
+##### `sse(module_name: str, path: str)`
+
+SSE (Server-Sent Events) 路由装饰器
+
+:param module_name: str 模块名称 (必填)
+:param path: str SSE 端点路径
+:param summary: str API 摘要 (可选)
+:param description: str API 描述 (可选)
+:param tags: list[str] API 标签 (可选)
+
+**示例**:
+```python
+>>> @sdk.router.sse("MyModule", "/events")
+... async def event_stream(sse):
+...     while True:
+...         await sse.send({"msg": "hello"})
+...         await asyncio.sleep(1)
+
+>>> @sdk.router.sse("MyModule", "/logs")
+... async def log_stream(request, sse):
+...     token = request.query_params.get("token")
+...     while True:
+...         line = await get_next_log(token)
+...         await sse.send(line, event="log")
+```
+
+---
+
+
+##### `_sse_decorate(full_path: str, module_name: str)`
+
+SSE 路由装饰器内部实现
+
+> **内部方法**
+
+---
+
+
 ##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None, rate_limit: str | dict | None = None, summary: str | None = None, description: str | None = None, tags: list[str] | None = None, response_model: type | None = None, deprecated: bool | None = None)`
 
 注册HTTP路由
@@ -513,12 +581,49 @@ WebSocket 路由注册内部实现
 ---
 
 
+##### `register_sse(module_name: str, path: str, handler: Callable)`
+
+注册 SSE (Server-Sent Events) 路由
+
+SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
+处理器接收 ``SseEmitter`` 实例（以及可选的 ``HttpRequest``），
+通过 ``sse.send()`` 推送事件，调用 ``sse.close()`` 断开连接。
+
+:param module_name: str 模块名称
+:param path: str SSE 端点路径
+:param handler: Callable 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
+
+**异常**: `ValueError` - 当路径已注册时抛出
+
+**示例**:
+```python
+>>> async def event_stream(sse):
+...     for i in range(10):
+...         await sse.send({"count": i})
+...         await asyncio.sleep(1)
+>>> router.register_sse("MyModule", "/events", event_stream)
+```
+
+---
+
+
+##### `unregister_sse(module_name: str, path: str)`
+
+取消注册 SSE 路由
+
+:param module_name: 模块名称
+:param path: SSE 路径
+:return: bool 是否成功取消注册
+
+---
+
+
 ##### `unregister_all_by_namespace(namespace: str)`
 
 清理指定命名空间下的所有路由
 
 :param namespace: 命名空间（适配器名或模块名）
-:return: dict 清理统计 {"http_count": int, "websocket_count": int}
+:return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
 
 ---
 
@@ -527,7 +632,7 @@ WebSocket 路由注册内部实现
 
 列出所有已注册的命名空间及其路由
 
-:return: dict {namespace: {"http": [paths], "websocket": [paths]}}
+:return: dict {namespace: {"http": [paths], "websocket": [paths], "sse": [paths]}}
 
 **示例**:
 ```python
@@ -535,8 +640,114 @@ WebSocket 路由注册内部实现
 {
     "onebot11": {
         "http": ["/onebot11/webhook", "/onebot11/callback"],
-        "websocket": ["/onebot11/ws"]
+        "websocket": ["/onebot11/ws"],
+        "sse": ["/onebot11/events"]
     }
+}
+```
+
+---
+
+
+##### `get_module_routes(module_name: str)`
+
+获取指定命名空间的详细路由信息
+
+与 list_namespaces() 不同，此方法返回每个路由的详细信息：
+- HTTP 路由包含路径和 HTTP 方法列表
+- WebSocket 路由包含路径和是否需要认证
+- SSE 路由包含路径和流式标记
+
+:param module_name: 模块/平台名称
+:return: {"http": [...], "websocket": [...], "sse": [...]}
+   http: [{"path": str, "methods": [str]}]
+   websocket: [{"path": str, "auth": bool}]
+   sse: [{"path": str, "streaming": true}]
+
+**示例**:
+```python
+>>> router.get_module_routes("onebot11")
+{
+    "http": [{"path": "/onebot11/webhook", "methods": ["POST"]}],
+    "websocket": [{"path": "/onebot11/ws", "auth": true}],
+    "sse": [{"path": "/onebot11/events", "streaming": true}]
+}
+```
+
+---
+
+
+##### `get_module_urls(module_name: str)`
+
+获取指定命名空间的完整连接 URL
+
+在 get_module_routes() 的基础上拼接 base_url，生成可直接使用的完整 URL。
+HTTP 路由使用 base_url 前缀，WebSocket 路由自动将 http/https 转换为 ws/wss，
+SSE 路由使用 base_url 前缀（HTTP）。
+
+:param module_name: 模块/平台名称
+:return: {
+    "base_url": str,
+    "http": [{"path": str, "method": str, "url": str}],
+    "websocket": [{"path": str, "url": str}],
+    "sse": [{"path": str, "url": str}]
+}
+
+**示例**:
+```python
+>>> # 假设 base_url = "http://localhost:8080"
+>>> router.get_module_urls("onebot11")
+{
+    "base_url": "http://localhost:8080",
+    "http": [
+        {"path": "/onebot11/webhook", "method": "POST",
+         "url": "http://localhost:8080/onebot11/webhook"}
+    ],
+    "websocket": [
+        {"path": "/onebot11/ws",
+         "url": "ws://localhost:8080/onebot11/ws"}
+    ],
+    "sse": [
+        {"path": "/onebot11/events",
+         "url": "http://localhost:8080/onebot11/events"}
+    ]
+}
+```
+
+---
+
+
+##### `get_module_urls_matching(prefix: str)`
+
+获取指定前缀的所有命名空间的聚合连接 URL
+
+适配器多账户场景下，路由可能注册为 ``yunhu_bot1``、``yunhu_bot2`` 等命名空间。
+此方法按前缀匹配聚合所有相关命名空间的路由信息。
+
+:param prefix: 命名空间前缀（如 "yunhu"）
+:return: {
+    "base_url": str,
+    "http": [{"path": str, "method": str, "url": str, "namespace": str}],
+    "websocket": [{"path": str, "url": str, "namespace": str}],
+    "sse": [{"path": str, "url": str, "namespace": str}]
+}
+
+**示例**:
+```python
+>>> # 命名空间: yunhu_bot1, yunhu_bot2, onebot11
+>>> router.get_module_urls_matching("yunhu")
+{
+    "base_url": "http://localhost:8080",
+    "http": [
+        {"path": "/yunhu_bot1/webhook", "method": "POST",
+         "url": "http://localhost:8080/yunhu_bot1/webhook",
+         "namespace": "yunhu_bot1"},
+        {"path": "/yunhu_bot2/webhook", "method": "POST",
+         "url": "http://localhost:8080/yunhu_bot2/webhook",
+         "namespace": "yunhu_bot2"}
+    ],
+    "websocket": [],
+    "sse": []
 }
 ```
 

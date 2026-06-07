@@ -497,3 +497,133 @@ class WebSocketConnection(WebSocketConnectionBase):
 
     def __len__(self) -> int:
         return len(self._ws)
+
+
+class SseEmitter:
+    """
+    SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
+
+    封装 SSE 协议的格式化细节，通过回调函数与服务器层解耦。
+    无论底层是 FastAPI、aiohttp 还是其他 HTTP 框架，只需提供
+    ``on_send`` 和 ``on_close`` 回调即可使用。
+
+    自动生成事件 ID，支持自定义事件类型和重试间隔。
+
+    {!--< tips >!--}
+    1. 由框架自动创建，模块开发者只需在 handler 中接收 sse 参数
+    2. ``send()`` 方法自动处理 JSON 序列化（非 str 数据转为 JSON）
+    3. 通过 ``request`` 属性可访问客户端请求（query params、headers 等）
+    4. 调用 ``close()`` 优雅关闭连接
+    {!--< /tips >!--}
+
+    :example:
+    >>> @sdk.router.sse("MyModule", "/events")
+    ... async def event_stream(sse: SseEmitter):
+    ...     while True:
+    ...         await sse.send({"msg": "hello"}, event="update")
+    ...         await asyncio.sleep(1)
+    """
+
+    __slots__ = ("_on_send", "_on_close", "_request", "_closed", "_id_counter")
+
+    def __init__(self, on_send, on_close=None, request=None):
+        """
+        :param on_send: 回调函数，接收格式化后的 SSE 文本并发送到底层传输层
+        :param on_close: 可选回调函数，连接关闭时调用
+        :param request: 可选，底层 HTTP 请求对象
+        """
+        self._on_send = on_send
+        self._on_close = on_close
+        self._request = request
+        self._closed = False
+        self._id_counter = 1
+
+    @property
+    def request(self):
+        """
+        底层 HTTP 请求对象
+
+        可用于读取查询参数、请求头等客户端信息。
+        在 FastAPI 环境下为 ``fastapi.Request`` 实例。
+
+        :return: object 底层 Request 对象或 None
+        """
+        return self._request
+
+    @property
+    def closed(self) -> bool:
+        """
+        连接是否已关闭
+
+        :return: bool
+        """
+        return self._closed
+
+    async def send(
+        self,
+        data=None,
+        event: str | None = None,
+        id: str | None = None,
+        retry: int | None = None,
+    ) -> None:
+        """
+        发送一个 SSE 事件
+
+        根据 SSE 协议自动格式化输出：
+        - ``event:`` 行（指定事件类型）
+        - ``id:`` 行（事件 ID，自动生成递增 ID）
+        - ``retry:`` 行（客户端重连间隔，毫秒）
+        - ``data:`` 行（事件数据，多行自动拆分）
+        - 末尾双换行结束一个事件
+
+        :param data: 事件数据。非 str 类型自动 JSON 序列化。为 None 时仅发送事件类型
+        :param event: 可选事件类型名
+        :param id: 可选事件 ID，不传则自动生成
+        :param retry: 可选重试间隔（毫秒）
+
+        :raises RuntimeError: 连接已关闭时抛出
+
+        :example:
+        >>> await sse.send({"msg": "hello"})
+        >>> await sse.send("plain text", event="notice")
+        >>> await sse.send({"error": "boom"}, event="error", id="err-1")
+        """
+        import json as _json
+
+        if self._closed:
+            raise RuntimeError("SSE connection is closed")
+
+        payload_parts = []
+
+        if event is not None:
+            payload_parts.append(f"event: {event}")
+
+        eid = id if id is not None else str(self._id_counter)
+        payload_parts.append(f"id: {eid}")
+        self._id_counter += 1
+
+        if retry is not None:
+            payload_parts.append(f"retry: {retry}")
+
+        if data is not None:
+            if not isinstance(data, str):
+                data = _json.dumps(data, ensure_ascii=False)
+            for line in data.split("\n"):
+                payload_parts.append(f"data: {line}")
+
+        payload_parts.append("")
+        payload = "\n".join(payload_parts) + "\n"
+
+        await self._on_send(payload)
+
+    async def close(self) -> None:
+        """
+        关闭 SSE 连接
+
+        安全方法，可多次调用。第一次调用时触发 ``on_close`` 回调。
+        """
+        if self._closed:
+            return
+        self._closed = True
+        if self._on_close is not None:
+            await self._on_close()

@@ -1,4 +1,4 @@
-# Менеджер маршрутизации (Router Manager)
+# Менеджер маршрутизации
 
 Менеджер маршрутизации ErisPulse предоставляет централизованное управление HTTP и WebSocket маршрутизацией, поддерживает регистрацию маршрутов через несколько адаптеров и управление жизненным циклом. В основе лежит абстрактный слой (в данный момент реализован на базе FastAPI + Uvicorn).
 
@@ -50,15 +50,12 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# Использование типов FastAPI также полностью совместимо
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
