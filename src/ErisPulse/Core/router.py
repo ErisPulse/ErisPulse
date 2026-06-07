@@ -602,17 +602,20 @@ class RouterManager:
         """
 
         @self.app.get("/health")
-        async def health_check() -> dict[str, str]:
+        async def health_check() -> dict[str, Any]:
             """
-            健康检查端点
+            各核心组件运行状态
 
-            :return: dict[str, str] 包含服务状态和版本信息
+            :return: [dict] 包含 status/router/storage/adapter/module 布尔状态
             """
+            from . import adapter, module, storage
+
             return {
-                "status": "ok",
-                "service": "ErisPulse Router",
-                "version": ERISPULSE_VERSION,
-                "python_version": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+                "status": "ok" if adapter._started_instances else "degraded",
+                "router": self._uvicorn_server is not None,
+                "storage": storage._is_ready(),
+                "adapter": len(adapter._started_instances) > 0,
+                "module": len(module._loaded_modules) > 0,
             }
 
         @self.app.get("/ping")
@@ -623,6 +626,52 @@ class RouterManager:
             :return: dict[str, Any] 包含响应状态和时间戳
             """
             return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+        @self.app.get("/robots.txt", include_in_schema=False)
+        async def robots_txt():
+            """
+            禁止爬虫/AI 爬虫收录路由
+
+            {!--< internal-use >!--}
+
+            :return: [PlainTextResponse] robots.txt 规则
+            """
+            from fastapi.responses import PlainTextResponse
+
+            return PlainTextResponse(
+                "User-agent: *\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: GPTBot\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: CCBot\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: Claude-Web\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: anthropic-ai\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: Google-Extended\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: FacebookBot\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: Bytespider\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: Baiduspider\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: YandexBot\n"
+                "Disallow: /\n"
+                "\n"
+                "User-agent: Sogou\n"
+                "Disallow: /\n"
+            )
 
         @self.app.get("/", include_in_schema=False)
         async def root_page(request: Request) -> HTMLResponse:
