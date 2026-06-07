@@ -11,6 +11,7 @@ ErisPulse 模块加载器
 """
 
 import sys
+import re
 import asyncio
 import inspect
 import importlib.metadata
@@ -22,6 +23,82 @@ from ..finders import ModuleFinder
 
 if TYPE_CHECKING:
     from ..Core.Bases.module import BaseModule
+
+# SDK 保留属性名，禁止模块覆盖
+_RESERVED_SDK_ATTRS = frozenset(
+    {
+        # Python 内部属性
+        "__class__",
+        "__dict__",
+        "__init__",
+        "__setattr__",
+        "__getattr__",
+        "__delattr__",
+        "__getattribute__",
+        "__repr__",
+        "__str__",
+        "__dir__",
+        "__new__",
+        "__doc__",
+        "__module__",
+        "__slots__",
+        "__weakref__",
+        # SDK 核心属性
+        "Event",
+        "lifecycle",
+        "logger",
+        "storage",
+        "env",
+        "config",
+        "adapter",
+        "module",
+        "router",
+        "client",
+        "BaseAdapter",
+        "SendDSL",
+        "BaseStorage",
+        "BaseQueryBuilder",
+        # SDK 实例内部属性
+        "_initializer",
+        "_initialized",
+        "init",
+        "init_sync",
+        "init_task",
+        "load_module",
+        "run",
+        "restart",
+        "hard_restart",
+        "uninit",
+        "RESTART_EXIT_CODE",
+        "_CORE_ATTR_NAMES",
+    }
+)
+
+# 入口点名称合法模式
+_SAFE_ENTRY_POINT_NAME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_]*$")
+
+
+def _validate_sdk_attr_name(name: str) -> bool:
+    """
+    {!--< internal-use >!--}
+    验证模块名称是否可以安全地作为 SDK 属性挂载
+
+    :param name: 模块名称（entry-point name）
+    :return: True 如果名称安全，False 如果应拒绝
+    """
+    if not name or not _SAFE_ENTRY_POINT_NAME_RE.match(name):
+        logger.error(
+            f"拒绝注册模块 '{name}'：名称不符合标识符规范"
+            f"（必须以字母开头，仅允许字母、数字和下划线）"
+        )
+        return False
+    if name.startswith("_"):
+        logger.error(f"拒绝注册模块 '{name}'：名称不能以下划线开头")
+        return False
+    if name in _RESERVED_SDK_ATTRS:
+        logger.error(f"拒绝注册模块 '{name}'：该名称为 SDK 保留属性")
+        return False
+    return True
 
 
 class ModuleLoader(BaseLoader):
@@ -94,8 +171,10 @@ class ModuleLoader(BaseLoader):
             logger.print_section_separator()
 
         except SystemExit as e:
-            logger.error(f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
-                         f"请不要使用 sys.exit() 或 raise SystemExit")
+            logger.error(
+                f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
+                f"请不要使用 sys.exit() 或 raise SystemExit"
+            )
         except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
 
@@ -195,8 +274,10 @@ class ModuleLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except SystemExit as e:
-            logger.error(f"加载模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                         f"请不要使用 sys.exit() 或 raise SystemExit")
+            logger.error(
+                f"加载模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                f"请不要使用 sys.exit() 或 raise SystemExit"
+            )
         except Exception as e:
             logger.error(f"从 entry-point 加载模块 {meta_name} 失败，已跳过: {e}")
 
@@ -362,8 +443,10 @@ class ModuleLoader(BaseLoader):
                         return True
                     return False
                 except SystemExit as e:
-                    logger.error(f"注册模块 {name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                                 f"请不要使用 sys.exit() 或 raise SystemExit")
+                    logger.error(
+                        f"注册模块 {name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                        f"请不要使用 sys.exit() 或 raise SystemExit"
+                    )
                     return False
                 except Exception as e:
                     logger.error(f"注册模块 {name} 失败: {e}")
@@ -513,6 +596,12 @@ class ModuleLoader(BaseLoader):
 
         for meta_name in sorted_meta_names:
             entry_name = name_to_entry[meta_name]
+
+            # 安全校验：防止模块名称覆盖 SDK 关键属性
+            if not _validate_sdk_attr_name(meta_name):
+                logger.warning(f"跳过模块 '{meta_name}'：名称不合法或为 SDK 保留属性")
+                continue
+
             try:
                 module_obj = module_objs[entry_name]
                 meta = module_obj.moduleInfo["meta"]
@@ -538,8 +627,10 @@ class ModuleLoader(BaseLoader):
                     else:
                         logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
             except SystemExit as e:
-                logger.warning(f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                               f"请不要使用 sys.exit() 或 raise SystemExit")
+                logger.warning(
+                    f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                    f"请不要使用 sys.exit() 或 raise SystemExit"
+                )
             except Exception as e:
                 logger.warning(f"初始化模块 {meta_name} 失败，已跳过: {e}")
 
@@ -582,6 +673,7 @@ class LazyModule:
         object.__setattr__(self, "_module_info", module_info)
         object.__setattr__(self, "_instance", None)
         object.__setattr__(self, "_initialized", False)
+        object.__setattr__(self, "_init_failed", False)
         object.__setattr__(self, "_manager_instance", manager_instance)
         object.__setattr__(
             self,
@@ -675,8 +767,10 @@ class LazyModule:
                 msg=f"模块 {module_name} 尝试退出进程 (SystemExit)",
                 data={"module_name": module_name, "success": False},
             )
-            logger.error(f"懒加载模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                         f"请不要使用 sys.exit() 或 raise SystemExit")
+            logger.error(
+                f"懒加载模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                f"请不要使用 sys.exit() 或 raise SystemExit"
+            )
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
         except Exception as e:
