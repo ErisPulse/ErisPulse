@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 59
-- **类总数**: 47（包括 5 个嵌套类）
-- **函数总数**: 39
-- **方法总数**: 520
+- **模块总数**: 65
+- **类总数**: 67（包括 5 个嵌套类）
+- **函数总数**: 53
+- **方法总数**: 667
 
 ---
 
@@ -116,7 +116,7 @@
 
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
-📦 1 个类
+📦 1 个类 | 🔧 1 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
@@ -126,7 +126,17 @@
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-📦 3 个类 | 🔧 25 个方法
+📦 3 个类 | 🔧 38 个方法
+
+
+### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)
+
+📦 3 个类 | 🔧 23 个方法
+
+
+### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
+
+📦 7 个类
 
 
 ### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)
@@ -139,9 +149,19 @@
 📦 1 个类 | 🔧 3 个方法
 
 
+### [ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)
+
+📦 3 个类 | 🔧 48 个方法
+
+
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
 
 📦 2 个类 | 🔧 29 个方法
+
+
+### [ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)
+
+📦 2 个类 | 🔧 17 个方法
 
 
 ### [ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)
@@ -201,7 +221,12 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-📦 1 个类 | 🔧 34 个方法
+📦 1 个类 | 🔧 35 个方法
+
+
+### [ErisPulse.Core.client](ErisPulse/Core/client.md)
+
+📦 3 个类 | 🔧 30 个方法
 
 
 ### [ErisPulse.Core.config](ErisPulse/Core/config.md)
@@ -231,12 +256,12 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-📦 3 个类 | 🔧 47 个方法
+📦 3 个类 | 🔧 61 个方法
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
 
-📦 3 个类 | 🔧 31 个方法
+📦 3 个类 | 🔧 31 个方法 | ⚙️ 2 个函数
 
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
@@ -286,7 +311,7 @@
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-📦 2 个类 | 🔧 26 个方法
+📦 2 个类 | 🔧 26 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)
@@ -297,6 +322,11 @@
 ### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)
 
 📄 模块文档
+
+
+### [ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)
+
+📦 2 个类 | ⚙️ 11 个函数
 
 
 ### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)

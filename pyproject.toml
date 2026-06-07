@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.4.6-dev.5"
+version = "2.4.6-dev.6"
 description = "ErisPulse 是一个模块化、可扩展的异步 Python SDK 框架，主要用于构建高效、可维护的机器人应用程序。"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,11 +24,21 @@ keywords = [
     "sdk",
     "framework",
     "robot",
+    "chatbot",
+    "bot-framework",
     "onebot",
+    "onebot12",
     "telegram",
+    "qq",
+    "multi-platform",
     "extensible",
     "modular",
-    "asyncio"
+    "asyncio",
+    "instant-messaging",
+    "kook",
+    "yunhu",
+    "matrix",
+    "email",
 ]
 
 classifiers = [

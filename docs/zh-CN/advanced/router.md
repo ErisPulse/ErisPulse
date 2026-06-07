@@ -28,6 +28,8 @@ ErisPulse 提供了服务端抽象类型，使模块无需直接依赖 FastAPI�
 | `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 连接封装，额外提供生命周期钩子 |
 | `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 断开异常 |
 
+> `WebSocketConnection` 继承自 `WebSocketConnectionBase`，与客户端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 接口。客户端和服务端 WebSocket 可以使用相同的业务逻辑代码。
+>
 > 通过 `.raw` 属性可访问底层 FastAPI 原生对象。直接使用 FastAPI 类型的代码也完全兼容。
 
 ## 装饰器路由（推荐）
@@ -48,15 +50,12 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# 继续使用 FastAPI 类型也完全兼容
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
@@ -99,7 +98,7 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocket 处理器和认证处理器也支持自动注入。如果参数注解为 `fastapi.WebSocket`，则传入原生对象；否则传入 `WebSocketConnection`。
+> **注意**：WebSocket 处理器和认证处理器也支持自动注入。无需参数注解即可获得 `WebSocketConnection`。标注 `fastapi.WebSocket` 也可传入原生对象，但推荐使用抽象类型。
 
 ## 传统注册方式
 
@@ -301,37 +300,6 @@ router.set_docs_info(
 # 实际访问路径为 "/my_module/api"
 router.register_http_route("my_module", "/api", handler)
 ```
-
-## 认证机制
-
-推荐使用 `auth_handler` 控制连接访问：
-
-```python
-from ErisPulse.Core import WebSocketConnection
-
-async def auth_handler(ws: WebSocketConnection) -> bool:
-    token = ws.query_params.get("token")
-    return token == "secret"
-
-# 装饰器方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(ws):
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"Echo: {data}")
-
-# 传统注册方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` 在连接建立后执行，返回 `False` 会自动关闭连接（状态码 1008）。
-
-> 仅在你需要完全控制连接流程（如自定义握手协议）时才设置 `auto_accept=False`。
 
 ## 系统路由
 

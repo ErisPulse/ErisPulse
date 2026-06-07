@@ -232,7 +232,6 @@ class InstallCommand(Command):
                 {"header": "序号", "style": "#A0B0C0", "width": 4},
                 {"header": "适配器名", "style": "adapter"},
                 {"header": "包名"},
-                {"header": "状态", "width": 8},
                 {"header": "描述"},
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(

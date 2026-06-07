@@ -21,7 +21,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -59,7 +58,8 @@ graph TB
     SDK --> Config["Config<br/>設定管理"]
     SDK --> AdapterMgr["Adapter<br/>適配器管理"]
     SDK --> ModuleMgr["Module<br/>模組管理"]
-    SDK --> Router["Router<br/>路由管理<br/>FastAPI + Uvicorn"]
+    SDK --> Router["Router<br/>路由管理"]
+    SDK --> Client["HttpClient<br/>HTTP 客戶端"]
     Event --> Command["command"]
     Event --> Message["message"]
     Event --> Notice["notice"]
@@ -90,7 +90,8 @@ graph TB
 | **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
 | **Config** | TOML 格式的設定檔管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **Router** | 基於 FastAPI 的 HTTP/WebSocket 路由管理，支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中介軟體、分組、限流、CORS |
+| **HttpClient** | 統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和服務端 WebSocket 共享 `WebSocketConnectionBase` 基類 |
 
 ## 初始化流程
 
@@ -227,8 +228,7 @@ flowchart TD
     G --> D2["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [延遲載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
-
+> 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md) 和 [生命週期管理](advanced/lifecycle.md)。
 
 
 ### 术语表
@@ -375,7 +375,6 @@ flowchart TD
 - 聯絡維護者
 
 
-
 ====
 快速开始
 ====
@@ -391,142 +390,40 @@ flowchart TD
 
 本指南按以下順序組織，建議依次閱讀：
 
-1. **建立第一個機器人** - 了解完整的專案初始化流程
-2. **基礎概念** - 理解 ErisPulse 的核心架構
-3. **事件處理入門** - 學習如何處理各類事件
-4. **常見任務範例** - 掌握常用功能的實作
+| 步驟 | 主題 | 說明 |
+|------|------|------|
+| 1 | [建立第一個機器人](first-bot.md) | 從專案初始化到執行第一個指令 |
+| 2 | [基礎概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |
+| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、指令、通知等各類事件 |
+| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |
 
 ## 開發方式選擇
 
-ErisPulse 支援兩種開發方式，你可以根據需求選擇：
+ErisPulse 支援兩種開發方式：
 
-### 嵌入式開發（適合快速原型）
+| 方式 | 適用場景 | 說明 |
+|------|---------|------|
+| **嵌入式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |
+| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |
 
-直接在專案中使用 ErisPulse，無需建立獨立模組。
+> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。
 
-```python
-# main.py
-import asyncio
-from ErisPulse import sdk
-from ErisPulse.Core.Event import command
+## 架構概覽
 
-@command("hello")
-async def hello(event):
-    await event.reply("你好！")
+ErisPulse 採用事件驅動架構，核心由以下系統組成：
 
-# 執行 SDK 並且維持運作 | 需要在非同步環境中運作
-asyncio.run(sdk.run(keep_running=True))
-```
+- **適配器系統** — 與各平台通訊，將平台事件轉換為統一的 OneBot12 標準格式
+- **事件系統** — 處理訊息、指令、通知、請求、元事件五大類事件
+- **模組系統** — 透過獨立模組擴充功能，支援依賴管理和懶加載
+- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力
 
-**優點：**
-- 快速上手，無需額外設定
-- 適合專案內部專用功能
-- 便於除錯和測試
-
-**缺點：**
-- 不便於程式碼複用和分發
-- 難以獨立管理依賴
-
-### 模組開發（推薦用於生產）
-
-建立獨立的模組套件，透過套件管理員安裝使用。
-
-**優點：**
-- 便於分發和共享
-- 獨立的依賴管理
-- 清晰的版本控制
-
-**缺點：**
-- 需要額外的專案結構
-- 初期設定相對複雜
-
-## ErisPulse 核心概念
-
-### 架構概覽
-
-```
-┌─────────────────────────────────────────────────────┐
-│                ErisPulse 框架                 │
-├─────────────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────────┐      ┌──────────────┐    │
-│  │  適配器系統  │◄────►│  事件系統    │    │
-│  │             │      │              │    │
-│  │  Yunhu      │      │  Message     │    │
-│  │  Telegram   │      │  Command     │    │
-│  │  OneBot11   │      │  Notice      │    │
-│  │  Email      │      │  Request     │    │
-│  └──────────────┘      │  Meta        │    │
-│         │              └──────────────┘    │
-│         ▼                   │              │
-│  ┌──────────────┐           ▼              │
-│  │  模組系統    │◄──────────────┐       │
-│  │             │               │       │
-│  │  模組 A     │               │       │
-│  │  模組 B     │               │       │
-│  │  ...        │               │       │
-│  └──────────────┘               │       │
-│                               │       │
-│  ┌──────────────┐              │       │
-│  │  核心模組    │◄─────────────┘       │
-│  │  Storage    │                      │
-│  │  Config     │                      │
-│  │  Logger     │                      │
-│  │  Router     │                      │
-│  │  Metrics    │                      │
-│  └──────────────┘                      │
-└─────────────────────────────────────────────┘
-         │                    │
-         ▼                    ▼
-    ┌────────┐          ┌────────┐
-    │  平台   │          │  使用者 │
-    │  API    │          │  程式碼 │
-    └────────┘          └────────┘
-```
-
-### 核心元件說明
-
-#### 1. 適配器系統
-
-適配器負責與特定平台通訊，將平台特定的事件轉換為統一的 OneBot12 標準格式。
-
-**範例：**
-- Yunhu 適配器：與雲湖平台通訊
-- Telegram 適配器：與 Telegram Bot API 通訊
-- OneBot11 適配器：與 OneBot11 相容的應用程式通訊
-
-#### 2. 事件系統
-
-事件系統負責處理各類事件，包括：
-- **訊息事件**：使用者發送的訊息
-- **指令事件**：使用者輸入的指令（如 `/hello`）
-- **通知事件**：系統通知（如好友新增、群組成員變化）
-- **請求事件**：使用者請求（如好友請求、群組邀請）
-- **元事件**：系統層級事件（如連線、心跳）
-
-#### 3. 模組系統
-
-模組是功能擴充的主要方式，用於：
-- 註冊事件處理器
-- 實作業務邏輯
-- 提供指令介面
-- 呼叫適配器發送訊息
-
-#### 4. 核心模組
-
-提供基礎功能的模組：
-- **Storage**：基於 SQLite 的鍵值儲存
-- **Config**：TOML 格式的設定管理
-- **Logger**：模組化日誌系統
-- **Router**：HTTP 和 WebSocket 路由管理
-- **Metrics**：指標監控系統（Counter / Gauge / Histogram）
+> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。
 
 ## 開始學習
 
-準備好了嗎？讓我們開始建立你的第一個機器人。
+準備好開始了嗎？
 
-- [建立第一個機器人](first-bot.md)
-
+- [建立第一個機器人](first-bot.md) — 5 分鐘上手
 
 
 ### 创建第一个模块
@@ -577,7 +474,7 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     """處理 hello 指令"""
     user_name = event.get_user_nickname() or "朋友"
-    await event.reply(f"你好，{user_name}！我是 ErisPulse 機器人。")
+    await event.reply(f"你好，{user_name}！我是 ErisPulse 機人。")
 
 @command("ping", help="測試機器人是否在線")
 async def ping_handler(event):
@@ -641,10 +538,13 @@ async def hello_handler(event):
 ```
 
 `event` 參數是一個 Event 物件，包含：
-- 訊息內容
-- 發送者資訊
-- 平台資訊
-- 等等...
+- 訊息內容：`event.get_text()`
+- 發送者資訊：`event.get_user_id()`、`event.get_user_nickname()`
+- 平台資訊：`event.get_platform()`
+- 群組資訊：`event.get_group_id()`
+- 原始資料：`event.get_raw()`
+
+> 完整的 Event 物件方法請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)。
 
 ### 傳送回覆
 
@@ -656,51 +556,20 @@ await event.reply("回覆內容")
 
 ## 擴充：新增更多功能
 
-### 新增訊息監聽
+ErisPulse 提供了豐富的事件處理和資料處理能力：
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    """監聽所有訊息"""
-    text = event.get_text()
-    if "你好" in text:
-        await event.reply("你好！")
-```
-
-### 新增通知監聽
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    """監聽好友新增事件"""
-    user_id = event.get_user_id()
-    await event.reply(f"歡迎新增我為好友！你的 ID 是 {user_id}")
-```
-
-### 使用儲存系統
-
-```python
-# 取得計數器
-count = sdk.storage.get("hello_count", 0)
-
-# 增加計數
-count += 1
-sdk.storage.set("hello_count", count)
-
-await event.reply(f"這是第 {count} 次呼叫 hello 指令")
-```
+- **訊息監聽**：使用 `@message.on_message()` 監聽各類訊息 → [事件處理入門](event-handling.md)
+- **通知監聽**：使用 `@notice.on_friend_add()` 等監聽系統通知 → [事件處理入門](event-handling.md)
+- **資料儲存**：使用 `sdk.storage.get/set` 持久化資料 → [常見任務範例](common-tasks.md)
 
 ## 常見問題
 
 ### 指令沒有回應？
 
-1. 檢查適配器是否正確設定
-2. 查看日誌輸出，確認是否有錯誤
-3. 確認指令前綴是否正確（預設是 `/`）
+1. 檢查適配器是否正確設定，確認 `config/config.toml` 中適配器的 `status` 為 `true`
+2. 查看終端日誌輸出，確認是否有錯誤訊息（特別是 `ERROR` 級別日誌）
+3. 確認指令前綴是否正確（預設是 `/`），可在設定檔中查看 `[ErisPulse.event.command]` 部分
+4. 確認指令名稱拼寫正確，注意大小寫敏感性設定
 
 ### 如何修改指令前綴？
 
@@ -714,7 +583,7 @@ case_sensitive = false
 
 ### 如何支援多平台？
 
-程式碼會自動適配所有已載入的平台適配器。只需確保你的邏輯相容即可：
+ErisPulse 使用 OneBot12 標準統一了不同平台的事件格式，`@command` 和 `@message` 註冊的處理器會自動接收所有平台的事件。透過 `event.get_platform()` 可以區分來源平台：
 
 ```python
 @command("hello")
@@ -725,15 +594,17 @@ async def hello_handler(event):
         await event.reply("你好！來自雲湖")
     elif platform == "telegram":
         await event.reply("Hello! From Telegram")
+    else:
+        await event.reply("你好！")
 ```
+
+> 更多多平台適配技巧請參考 [常見任務範例](common-tasks.md#多平台適配)。
 
 ## 下一步
 
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
-- [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
 - [常見任務範例](common-tasks.md) - 掌握更多實用功能
-
 
 
 ### 基础概念
@@ -798,7 +669,8 @@ sdk.logger     # 日誌系統
 sdk.adapter    # 適配器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
-sdk.lifecycle  # 生命周期系統
+sdk.client     # HTTP 客戶端
+sdk.lifecycle  # 生命週期系統
 ```
 
 ### 2. Event 對象
@@ -814,13 +686,13 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # 發送回复
+    # 發送回覆
     await event.reply(f"用戶: {user_id}, 平台: {platform}")
 ```
 
 ### 3. 適配器
 
-適配器是 ErisPulse 與外部平台之間的橋梁。
+適配器是 ErisPulse 與外部平台之間的橋樑。
 
 **職責：**
 - 接收平台原生事件
@@ -842,109 +714,85 @@ async def info_handler(event):
 - 調用適配器發送消息
 - 使用核心模組提供的服務
 
+#### 模組發現機制
+
+ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告入口點：
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+SDK 初始化時會掃描所有 `erispulse.module` 組的入口點，將模組類註冊到 `ModuleManager`，然後按依賴關係拓撲排序後依次初始化。
+
+#### 最小可用模組
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """模組加載時調用"""
-        # 註冊事件處理器
-        @command("mycmd", help="我的命令")
-        async def my_command(event):
-            await event.reply("命令執行成功")
-
         self.logger.info("模組已加載")
 
     async def on_unload(self, event):
-        """模組卸載時調用"""
         self.logger.info("模組已卸載")
 ```
 
+#### 模組生命週期
+
+- **註冊**：SDK 發現模組類並註冊到管理器
+- **加載**：建立模組實例，呼叫 `on_load(event)`（`event = {"module_name": "MyModule"}`）
+- **卸載**：呼叫 `on_unload(event)`，清理資源
+
+#### 加載策略
+
+透過 `get_load_strategy()` 聲明模組的加載行為：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # 是否懶加載（預設 True）
+            priority=0        # 加載優先級，數值越大越先初始化
+        )
+```
+
+- **`lazy_load=True`（預設）**：模組在首次被 `sdk.MyModule` 訪問時才初始化，減少啟動時間
+- **`lazy_load=False`**：SDK 啟動時立即初始化，適合需要監聽生命週期事件或執行定時任務的模組
+- **`priority`**：同優先級的模組按註冊順序加載；數值越大越先初始化
+
+> 詳細的懶加載機制說明請參考 [懶加載系統](../advanced/lazy-loading.md)。
+
 ## 事件類型
 
-### 消息事件
+ErisPulse 支援 5 類事件：
 
-處理用戶發送的任何消息（包括私聊和群聊）。
+| 事件類型 | 裝飾器 | 說明 |
+|---------|--------|------|
+| 消息事件 | `@message.on_message()` | 用戶發送的任何訊息（私聊、群聊） |
+| 命令事件 | `@command("name")` | 以命令前綴開頭的訊息（如 `/hello`） |
+| 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友添加、群成員變化等） |
+| 請求事件 | `@request.on_friend_request()` 等 | 用戶請求（好友請求、群邀請） |
+| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連接、斷開、心跳） |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"收到消息: {text}")
-```
-
-### 命令事件
-
-處理以命令前綴開頭的消息（如 `/hello`）。
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="發送問候")
-async def hello_handler(event):
-    await event.reply("你好！")
-```
-
-### 通知事件
-
-處理系統通知（如好友添加、群成員變化）。
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("歡迎添加我為好友！")
-```
-
-### 請求事件
-
-處理用戶請求（如好友請求、群邀請）。
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("已收到你的好友請求")
-```
-
-### 元事件
-
-處理系統級事件（如連接、心跳）。
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} 連接成功")
-```
+> 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。
 
 ## 核心模組說明
 
 ### Storage（儲存）
 
-基於 SQLite 的鍵值存儲系統，用於持久化數據。
+基於 SQLite 的鍵值儲存系統，用於持久化數據。
 
 ```python
-# 設置值
+# 設定值
 sdk.storage.set("key", "value")
 
 # 獲取值
@@ -970,7 +818,7 @@ TOML 格式的配置文件管理。
 # 獲取配置
 config = sdk.config.getConfig("MyModule", {})
 
-# 設置配置
+# 設定配置
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取嵌套配置
@@ -983,7 +831,7 @@ value = sdk.config.getConfig("MyModule.subkey", "default")
 
 ```python
 # 記錄日誌
-sdk.logger.info("這是一條信息")
+sdk.logger.info("這是一條資訊")
 sdk.logger.warning("這是一條警告")
 sdk.logger.error("這是一條錯誤")
 
@@ -994,58 +842,51 @@ child_logger.info("子模組日誌")
 
 **屬性訪問語法糖**
 
-除了使用 `get_child()` 方法外，你還可以通過**屬性訪問**的方式創建子logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性訪問**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 通過屬性訪問創建子logger
-sdk.logger.mymodule.info("模組消息")
+# 透過屬性訪問建立子logger
+sdk.logger.mymodule.info("模組訊息")
 
-# 支持嵌套訪問
-sdk.logger.mymodule.database.info("數據庫消息")
+# 支援嵌套訪問
+sdk.logger.mymodule.database.info("資料庫訊息")
 ```
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI 構建。
-
-> 路由處理器基於 FastAPI，必須正確使用類型註解，否則可能導致參數驗證錯誤。
+HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse.Core import HttpRequest
 
-# 註冊 HTTP 路由
-async def handler(request: Request):
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
-
-# 註冊 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：無需 await websocket.accept()，內部已自動調用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
-
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
 ```
 
-**常見問題：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保：
-- HTTP 處理器參數使用 `request: Request` 註解
-- WebSocket 處理器參數使用 `websocket: WebSocket` 註解
+> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
 
-更多路由功能請參考 [路由管理器](../advanced/router.md)。
+### Client（HTTP 客戶端）
+
+統一的 HTTP/WS 客戶端，提供自動重試、超時控制、請求統計和生命週期事件整合。模組和適配器應優先使用全域客戶端（`sdk.client`）而非直接導入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+> 完整的 HTTP 客戶端 API 請參考 [HTTP 客戶端](../advanced/http-client.md)。
 
 ## SendDSL 消息發送
 
-適配器提供鏈式調用的消息發送接口。
+適配器提供鏈式呼叫的消息發送介面。
 
 ### 基礎發送
 
@@ -1053,35 +894,35 @@ sdk.router.register_websocket(
 # 獲取適配器實例
 yunhu = sdk.adapter.get("yunhu")
 
-# 發送消息
+# 發送訊息
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# 指定發送賬號
-await yunhu.Send.Using("bot1").To("group", "G1001").Text("群消息")
+# 指定發送帳號
+await yunhu.Send.Using("bot1").To("group", "G1001").Text("群訊息")
 ```
 
 ### 鏈式修飾
 
 ```python
 # @用戶
-await yunhu.Send.To("group", "G1001").At("U2001").Text("@消息")
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@訊息")
 
-# 回復消息
-await yunhu.Send.To("group", "G1001").Reply("msg123").Text("回复")
+# 回覆訊息
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("回覆")
 
 # @全體
 await yunhu.Send.To("group", "G1001").AtAll().Text("公告")
 ```
 
-### Event 回復方法
+### Event 回覆方法
 
-Event 對象提供了便捷的回复方法：
+Event 對象提供了便捷的回覆方法：
 
 ```python
 @command("test")
 async def test_handler(event):
-    # 簡單文本回复
-    await event.reply("回复内容")
+    # 簡單文本回覆
+    await event.reply("回覆內容")
     
     # 發送圖片
     await event.reply("http://example.com/image.jpg", method="Image")
@@ -1090,31 +931,33 @@ async def test_handler(event):
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
-## 懶載入系統
+## 懶加載系統
 
-ErisPulse 支持模組懶載入，模組只在首次被訪問時才初始化，提高啟動速度。
+ErisPulse 預設啟用模組懶加載，模組只在首次被訪問（如 `sdk.MyModule`）時才初始化，顯著提高啟動速度。
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
-            lazy_load=True,   # 啟用懶載入（默認）
-            priority=0       # 載入優先級
+            lazy_load=True,   # 啟用懶加載（預設）
+            priority=0        # 加載優先級，數值越大越先初始化
         )
 ```
 
-**需要立即載入的場景：**
-- 監聽生命周期事件的模組
-- 定時任務模組
-- 需要在應用啟動時就初始化的模組
+**需要禁用懶加載的場景（`lazy_load=False`）：**
+- 監聽生命週期事件的模組（如 `core.init.complete`）
+- 啟動定時任務或後台服務的模組
+- 需要在其他模組加載前完成初始化的模組
+
+> 詳細的懶加載機制和注意事項請參考 [懶加載系統](../advanced/lazy-loading.md)。
 
 ## 下一步
 
 - [事件處理入門](event-handling.md) - 學習如何處理各類事件
-- [常見任務示例](common-tasks.md) - 掌握常用功能的實現
-
+- [常見任務範例](common-tasks.md) - 掌握常用功能的實現
 
 
 ### 事件处理入门
@@ -1500,23 +1343,280 @@ async def confirm_handler(event):
         text = reply_event.get_text().lower()
         
         if text in ["是", "yes", "y"]:
+            await event.reply("操作已確認！")
+        else:
+            await event.reply("操作已取消。")
+    
+    await event.reply("確認執行此操作嗎？(是/否)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
 
+### 確認對話 (confirm)
+
+等待使用者確認或否定，自動識別內置中英文確認詞：
+
+```python
+@command("confirm", help="確認操作")
+async def confirm_handler(event):
+    if await event.confirm("確定要執行此操作嗎？"):
+        await event.reply("已確認，執行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定義確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 選擇選單 (choose)
+
+使用者可回覆選項編號或選項文本：
+
+```python
+@command("choose", help="選擇")
+async def choose_handler(event):
+    choice = await event.choose(
+        "請選擇顏色：",
+        ["紅色", "綠色", "藍色"]
+    )
+    
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+    else:
+        await event.reply("逾時未選擇")
+```
+
+### 收集表單 (collect)
+
+多步驟收集使用者輸入：
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "請輸入郵箱："}
+    ])
+    
+    if data:
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+    else:
+        await event.reply("註冊逾時或輸入無效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待滿足條件的任意事件，不限於同一使用者：
+
+```python
+@command("wait_member", help="等待新成員")
+async def wait_member_handler(event):
+    await event.reply("等待群組成員加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
+    else:
+        await event.reply("等待逾時")
+```
+
+### 多輪對話 (conversation)
+
+建立可互動的多輪對話上下文：
+
+```python
+@command("survey", help="問卷調查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎參與問卷調查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("對話逾時，再見！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再見！")
+            break
+        
+        await conv.say(f"你說了：{text}，繼續輸入或回覆'退出'結束")
+```
+
+### 內置確認詞
+
+ErisPulse 內置了中英文確認詞集合：
+
+- **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
+- **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
+
+## 事件數據訪問
+
+### Event 物件常用方法
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基礎資訊
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 發送者資訊
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 訊息內容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # 群組資訊
+    group_id = event.get_group_id()
+    
+    # 機器人資訊
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始資料
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # 平台資訊
+    platform = event.get_platform()
+    
+    # 訊息類型判斷
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # 命令資訊
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### 平台擴展方法
+
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台呼叫專有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 專有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 郵件專有方法
+```
+
+如果不确定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台註冊的專有方法請參閱對應的 [平台文件](../platform-guide/)。
+
+## 事件處理最佳實踐
+
+### 1. 異常處理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # 業務邏輯
+        result = await do_some_work()
+        await event.reply(f"結果: {result}")
+    except ValueError as e:
+        # 預期的業務錯誤
+        await event.reply(f"參數錯誤: {e}")
+    except Exception as e:
+        # 未預期的錯誤
+        sdk.logger.error(f"處理失敗: {e}")
+        await event.reply("處理失敗，請稍後重試")
+```
+
+### 2. 日誌記錄
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"處理訊息: {user_id} - {text}")
+    
+    # 使用模組自己的日誌
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"詳細除錯資訊")
+```
+
+### 3. 條件處理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """條件處理 - 在處理器內部判斷"""
+    # 只處理特定使用者的訊息
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 只處理包含特定關鍵詞的訊息
+    if "關鍵詞" not in event.get_text():
+        return
+    
+    await event.reply("條件滿足，處理訊息")
+```
+
+## 下一步
+
+- [常見任務範例](common-tasks.md) - 學習常用功能的實作
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理
 
 
 ### 常见任务示例
 
 # 常見任務範例
 
-本指南提供常見功能的實作範例，協助您快速實作常用功能。
+本指南提供常見功能的實作範例，幫助你快速實作常用功能。
 
 ## 內容列表
 
 1. 資料持久化
 2. 定時任務
-3. 訊息過濾
+3. 消息過濾
 4. 多平台適配
 5. 權限控制
-6. 訊息統計
+6. 消息統計
 7. 搜尋功能
 8. 圖片處理
 
@@ -1614,10 +1714,10 @@ class TimerModule:
     async def _every_minute(self):
         """每分鐘執行的任務"""
         self.sdk.logger.info("每分鐘任務執行")
-        # 您的邏輯...
+        # 你的邏輯...
     
     async def _daily_task(self):
-        """每天凌晨執行的任務"""
+        """每天凌晨執行的任務（註：基於 UTC 時間計算，如需本地時間請自行調整）"""
         import time
         
         while True:
@@ -1629,7 +1729,7 @@ class TimerModule:
             
             # 執行任務
             self.sdk.logger.info("每日任務執行")
-            # 您的邏輯...
+            # 你的邏輯...
 ```
 
 ### 使用生命週期事件
@@ -1643,13 +1743,13 @@ async def init_complete_handler(event_data):
     async def daily_reminder():
         """每日提醒"""
         await asyncio.sleep(86400)  # 24小時
-        self.sdk.logger.info("執行每日任務")
+        sdk.logger.info("執行每日任務")
     
-    # 啟動背景任務
+    # 启动后台任务
     asyncio.create_task(daily_reminder())
 ```
 
-## 訊息過濾
+## 消息過濾
 
 ### 關鍵詞過濾
 
@@ -1675,7 +1775,7 @@ async def filter_handler(event):
 ### 黑名單過濾
 
 ```python
-# 從設定或儲存載入黑名單
+# 從配置或儲存載入黑名單
 blacklist = sdk.storage.get("user_blacklist", [])
 
 @message.on_message()
@@ -1687,7 +1787,7 @@ async def blacklist_handler(event):
         return  # 不處理
     
     # 正常處理
-    await event.reply(f"您好，{user_id}")
+    await event.reply(f"你好，{user_id}")
 ```
 
 ## 多平台適配
@@ -1695,24 +1795,24 @@ async def blacklist_handler(event):
 ### 平台特定回應
 
 ```python
-@command("help", help="顯示說明")
+@command("help", help="顯示幫助")
 async def help_handler(event):
     platform = event.get_platform()
     
     if platform == "yunhu":
-        await event.reply("雲湖平台說明...")
+        await event.reply("雲湖平台幫助...")
     elif platform == "telegram":
         await event.reply("Telegram platform help...")
     elif platform == "onebot11":
         await event.reply("OneBot11 help...")
     else:
-        await event.reply("通用說明資訊")
+        await event.reply("通用幫助資訊")
 ```
 
 ### 平台特性檢測
 
 ```python
-@command("rich", help="傳送富文本訊息")
+@command("rich", help="發送富文本訊息")
 async def rich_handler(event):
     platform = event.get_platform()
     
@@ -1720,17 +1820,17 @@ async def rich_handler(event):
         # 雲湖支援 HTML
         yunhu = sdk.adapter.get("yunhu")
         await yunhu.Send.To("user", event.get_user_id()).Html(
-            "<b>粗體文字</b><i>斜體文字</i>"
+            "<b>加粗文本</b><i>斜體文本</i>"
         )
     elif platform == "telegram":
         # Telegram 支援 Markdown
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.To("user", event.get_user_id()).Markdown(
-            "**粗體文字** *斜體文字*"
+            "**加粗文本** *斜體文本*"
         )
     else:
         # 其他平台使用純文字
-        await event.reply("粗體文字 斜體文字")
+        await event.reply("加粗文本 斜體文本")
 ```
 
 ## 權限控制
@@ -1738,22 +1838,22 @@ async def rich_handler(event):
 ### 管理員檢查
 
 ```python
-# 設定管理員清單
+# 配置管理員列表
 ADMINS = ["user123", "user456"]
 
 def is_admin(user_id):
     """檢查是否為管理員"""
     return user_id in ADMINS
 
-@command("admin", help="管理員指令")
+@command("admin", help="管理員命令")
 async def admin_handler(event):
     user_id = event.get_user_id()
     
     if not is_admin(user_id):
-        await event.reply("權限不足，此指令僅限管理員使用")
+        await event.reply("權限不足，此命令僅管理員可用")
         return
     
-    await event.reply("管理員指令執行成功")
+    await event.reply("管理員命令執行成功")
 
 @command("addadmin", help="新增管理員")
 async def addadmin_handler(event):
@@ -1773,21 +1873,23 @@ async def addadmin_handler(event):
 ### 群組權限
 
 ```python
-@command("groupinfo", help="檢視群組資訊")
+@command("groupinfo", help="查看群組資訊")
 async def groupinfo_handler(event):
     if not event.is_group_message():
-        await event.reply("此指令僅限群組使用")
+        await event.reply("此命令僅限群聊使用")
         return
     
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"群組 ID: {group_id}, 您的 ID: {user_id}")
+    await event.reply(f"群組 ID: {group_id}, 你的 ID: {user_id}")
 ```
 
-## 訊息統計
+## 消息統計
 
-### 訊息計數
+### 消息計數
+
+> **注意**：以下示例使用 `sdk.storage.get/set` 進行簡單計數。在高併發場景下，建議使用 `sdk.storage.transaction()` 保證原子性。
 
 ```python
 @message.on_message()
@@ -1805,10 +1907,10 @@ async def count_handler(event):
     user_id = event.get_user_id()
     stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
     
-    # 儲存
+    # 保存
     sdk.storage.set("message_stats", stats)
 
-@command("stats", help="檢視訊息統計")
+@command("stats", help="查看消息統計")
 async def stats_handler(event):
     stats = sdk.storage.get("message_stats", {
         "total": 0,
@@ -1823,15 +1925,17 @@ async def stats_handler(event):
     )[:5]
     
     top_text = "\n".join(
-        f"{uid}: {count} 則訊息" for uid, count in top_users
+        f"{uid}: {count} 條訊息" for uid, count in top_users
     )
     
-    await event.reply(f"總訊息數: {stats['total']}\n\n活躍使用者:\n{top_text}")
+    await event.reply(f"總訊息數: {stats['total']}\n\n活躍用戶:\n{top_text}")
 ```
 
 ## 搜尋功能
 
 ### 簡單搜尋
+
+> **注意**：以下示例使用記憶體列表儲存訊息歷史，**程式重啟後資料會遺失**。生產環境建議使用 `sdk.storage` 或 SQLite 表進行持久化儲存。
 
 ```python
 from ErisPulse.Core.Event import command, message
@@ -1860,7 +1964,7 @@ async def search_handler(event):
     args = event.get_command_args()
     
     if not args:
-        await event.reply("請輸入搜尋關鍵詞")
+        await event.reply("請輸入搜尋關鍵字")
         return
     
     keyword = " ".join(args)
@@ -1872,12 +1976,12 @@ async def search_handler(event):
             results.append(msg)
     
     if not results:
-        await event.reply("未找到符合的訊息")
+        await event.reply("未找到匹配的訊息")
         return
     
     # 顯示結果
-    result_text = f"找到 {len(results)} 則符合訊息:\n\n"
-    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 則
+    result_text = f"找到 {len(results)} 條匹配訊息:\n\n"
+    for i, msg in enumerate(results[:10], 1):  # 最多顯示 10 條
         result_text += f"{i}. {msg['text']}\n"
     
     await event.reply(result_text)
@@ -1885,9 +1989,11 @@ async def search_handler(event):
 
 ## 圖片處理
 
-### 圖片下載與儲存
+### 圖片下載和儲存
 
 ```python
+from ErisPulse.Core import client
+
 @message.on_message()
 async def image_handler(event):
     """處理圖片訊息"""
@@ -1898,62 +2004,59 @@ async def image_handler(event):
             file_url = segment.get("data", {}).get("file")
             
             if file_url:
-                # 下載圖片
-                import aiohttp
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        if response.status == 200:
-                            image_data = await response.read()
-                            
-                            # 儲存至檔案
-                            filename = f"images/{event.get_time()}.jpg"
-                            with open(filename, "wb") as f:
-                                f.write(image_data)
-                            
-                            sdk.logger.info(f"圖片已儲存: {filename}")
-                            await event.reply("圖片已儲存")
+                # 推薦使用 SDK 內建客戶端下載圖片
+                resp = await client.get(file_url)
+                if resp.status == 200:
+                    image_data = await resp.read()
+                    
+                    # 儲存到檔案
+                    filename = f"images/{event.get_time()}.jpg"
+                    with open(filename, "wb") as f:
+                        f.write(image_data)
+                    
+                    sdk.logger.info(f"圖片已儲存: {filename}")
+                    await event.reply("圖片已儲存")
 ```
 
-### 圖片辨識範例
+### 圖片識別示例
+
+> **注意**：以下示例使用占位 API 地址，實際使用時請替換為你自己的圖片識別服務。
 
 ```python
-@command("identify", help="辨識圖片")
+from ErisPulse.Core import client
+
+@command("identify", help="識別圖片")
 async def identify_handler(event):
-    """辨識訊息中的圖片"""
+    """識別訊息中的圖片"""
     message_segments = event.get_message()
     
     for segment in message_segments:
         if segment.get("type") == "image":
             file_url = segment.get("data", {}).get("file")
             
-            # 呼叫圖片辨識 API
+            # 呼叫圖片識別 API
             result = await _identify_image(file_url)
             
-            await event.reply(f"辨識結果: {result}")
+            await event.reply(f"識別結果: {result}")
             return
     
     await event.reply("未找到圖片")
 
 async def _identify_image(url):
-    """呼叫圖片辨識 API（範例）"""
-    import aiohttp
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            "https://api.example.com/identify",
-            json={"url": url}
-        ) as response:
-            data = await response.json()
-            return data.get("description", "辨識失敗")
+    """呼叫圖片識別 API（示例）- 使用 SDK 內建客戶端"""
+    resp = await client.post(
+        "https://api.example.com/identify",
+        json={"url": url}
+    )
+    data = await resp.json()
+    return data.get("description", "識別失敗")
 ```
 
 ## 下一步
 
-- [使用者使用指南](../user-guide/) - 了解設定與模組管理
-- [開發者指南](../developer-guide/) - 學習開發模組與介面卡
+- [使用者使用指南](../user-guide/) - 了解配置和模組管理
+- [開發者指南](../developer-guide/) - 學習開發模組和適配器
 - [進階主題](../advanced/) - 深入了解框架特性
-
 
 
 ====
@@ -2112,7 +2215,6 @@ sdk.lifecycle  # 生命週期系統
 - [模組最佳實踐](best-practices.md) - 開發高品質模組
 
 
-
 ### 模块核心概念
 
 # 模組核心概念
@@ -2151,8 +2253,8 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("你好！")
     
-    # 初始化資源
-    self.session = aiohttp.ClientSession()
+    # 使用 SDK 內建 HTTP 客戶端（自動管理連接池，無需手動建立 session）
+    # 通過 sdk.client 即可發送請求
 ```
 
 ### on_unload 方法
@@ -2161,8 +2263,8 @@ async def on_load(self, event):
 
 ```python
 async def on_unload(self, event):
-    # 清理資源
-    await self.session.close()
+    # 清理自訂資源
+    # sdk.client 由框架管理，無需手動關閉
     
     # 取消事件處理器（框架會自動處理）
     self.logger.info("模組已卸載")
@@ -2175,7 +2277,7 @@ async def on_unload(self, event):
 ```python
 from ErisPulse import sdk
 
-# 透過 sdk 物件存取所有核心模組
+# 通過 sdk 物件存取所有核心模組
 sdk.logger.info("日誌")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
@@ -2282,7 +2384,7 @@ async def info_handler(event):
 # 註冊訊息處理器
 @message.on_group_message()
 async def group_handler(event):
-    sdk.logger.info(f"收到群組訊息: {event.get_text()}")
+    sdk.logger.info(f"收到群訊息: {event.get_text()}")
 ```
 
 ### 事件處理器生命週期
@@ -2345,7 +2447,6 @@ self.logger.critical("嚴重錯誤") # 嚴重錯誤
 - [模組開發入門](getting-started.md) - 建立第一個模組
 - [Event 包裝類別](event-wrapper.md) - 事件處理詳解
 - [最佳實務](best-practices.md) - 開發高品質模組
-
 
 
 ### Event 包装类详解
@@ -2564,6 +2665,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - 返回 `Conversation` 物件，支援 `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` 屬性表示對話是否活躍
 
+#### 互動方法示例
+
+**confirm() - 確認對話：**
+
+```python
+@command("delete", help="刪除資料")
+async def delete_handler(event):
+    if await event.confirm("確定要刪除所有資料嗎？"):
+        sdk.storage.delete("all_data")
+        await event.reply("資料已刪除")
+    else:
+        await event.reply("已取消")
+```
+
+**choose() - 選擇選單：**
+
+```python
+@command("color", help="選擇顏色")
+async def color_handler(event):
+    choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+```
+
+**collect() - 表單收集：**
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"註冊成功！{data['name']}，{data['age']}歲")
+```
+
+**非 Text 方法的 reply：**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("看這張圖：").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> 完整的 Conversation 多輪對話用法請參考 [Conversation 多輪對話](../../advanced/conversation.md)。
+
 ### 指令資訊
 
 #### 指令基礎
@@ -2580,7 +2733,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 平台擴充方法
 
-介面卡會為各自平台註冊專有方法，以下為常見範例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
+介面卡會為各自平台註冊專有方法，以下為常見示例（具體方法請參閱各 [平台文件](../../platform-guide/)）：
 
 - `get_platform_event_methods(platform)` - 查詢指定平台已註冊的擴充方法列表
 - 平台擴充方法僅在對應平台的 Event 實例上可用
@@ -2646,7 +2799,6 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 - [最佳實踐](best-practices.md) - 開發高品質模組
 
 
-
 ### 模块开发最佳实践
 
 # 模組開發最佳實務
@@ -2704,7 +2856,23 @@ def _load_config(self):
 ### 1. 使用非同步程式庫
 
 ```python
-# 使用 aiohttp（非同步）
+# 推薦使用 SDK 內建 HTTP 用戶端（非同步，自動日誌和統計）
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# 也可透過 sdk.client 使用（效果相同）
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -2713,7 +2881,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 而不是 requests（同步，會阻塞）
+# 不要使用 requests（同步，會阻塞事件迴圈）
 import requests
 
 class MyModule(BaseModule):
@@ -2736,12 +2904,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # 初始化資源
-    self.session = aiohttp.ClientSession()
+    # SDK 用戶端已自動管理連線集區，無需手動建立 session
+    pass
     
 async def on_unload(self, event):
-    # 清理資源
-    await self.session.close()
+    # 如需自訂用戶端，記得清理資源
+    pass
 ```
 
 ## 事件處理
@@ -2813,7 +2981,8 @@ async def handle_event(self, event):
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
-        # 網路錯誤
+        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
+        # 舊程式碼直接用 aiohttp 仍可正常運作，但新程式碼推薦使用 ErisPulse 異常體系
         self.logger.error(f"網路錯誤: {e}")
         await event.reply("網路請求失敗，請稍後重試")
     except Exception as e:
@@ -2823,15 +2992,18 @@ async def handle_event(self, event):
         raise
 ```
 
-### 2. 逾時處理
+### 2. 超時處理
 
 ```python
+# 推薦使用 SDK 內建用戶端（自帶超時和重試）
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
-    except asyncio.TimeoutError:
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
+    except ClientTimeoutError:
         self.logger.warning(f"請求逾時: {url}")
         raise
 ```
@@ -2850,7 +3022,7 @@ async def update_user(self, user_id, data):
 # ❌ 不使用交易可能導致資料不一致
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # 如果這裡出錯，上面的設定無法還原
+    # 如果這裡出錯，上面的設定無法回滾
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -3042,7 +3214,6 @@ version = "1.0.0"
 - [模組開發入門](getting-started.md) - 建立第一個模組
 - [模組核心概念](core-concepts.md) - 理解模組架構
 - [Event 包裝類別](event-wrapper.md) - 事件處理詳解
-
 
 
 =====
@@ -3403,7 +3574,6 @@ services:
 兩種方式不衝突——你可以同時透過 PyPI 發布模組到模組商店，又透過 GHCR 提供開箱即用的 Docker 鏡像。
 
 
-
 ### CLI 命令参考
 
 # CLI 命令參考
@@ -3584,7 +3754,6 @@ epsdk create module -n MyModule -d "模組描述" -a "作者" -e "mail@example.c
 epsdk create module -n MyModule -f
 
 
-
 ======
 API 参考
 ======
@@ -3594,182 +3763,102 @@ API 参考
 
 # 核心模組 API
 
-本文檔詳細介紹了 ErisPulse 的核心模組 API。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文檔」連結。
 
 ## Storage 模組
+
+基於 SQLite 的鍵值存儲系統，支援通用 SQL 鏈式查詢。
 
 ### 基本操作
 
 ```python
 from ErisPulse import sdk
 
-# 設定值
 sdk.storage.set("key", "value")
-
-# 取得值
 value = sdk.storage.get("key", default_value)
-
-# 取得所有鍵
 keys = sdk.storage.keys()
-
-# 刪除值
 sdk.storage.delete("key")
-```
-
-### 事務操作
-
-```python
-# 使用事務確保資料一致性
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # 如果任何操作失敗，所有變更都會回滾
 ```
 
 ### 批次操作
 
 ```python
-# 批次設定
-sdk.storage.set_multi({
-    "key1": "value1",
-    "key2": "value2",
-    "key3": "value3"
-})
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
 
-# 批次取得
-values = sdk.storage.get_multi(["key1", "key2", "key3"])
+### 事務操作
 
-# 批次刪除
-sdk.storage.delete_multi(["key1", "key2", "key3"])
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### 屬性存取
+
+```python
+sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
 ### SQL 鏈式查詢
 
 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
-> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
-
 ```python
-from ErisPulse import sdk
-
-# 建立自訂表
 sdk.storage.CreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
-    "age": "INTEGER DEFAULT 0"
 })
 
-# 插入資料
-sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
-
-# 批次插入
-sdk.storage.Table("users").InsertMulti([
-    {"name": "Bob", "age": 25},
-    {"name": "Charlie", "age": 35}
-]).Execute()
-
-# 查詢資料
-rows = (sdk.storage.Table("users")
-    .Select("name", "age")
-    .Where("age > ?", 18)
-    .OrderBy("name")
-    .Limit(10)
-    .Execute())
-
-# 更新資料
-sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
-
-# 刪除資料
-sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
-
-# 計數
-count = sdk.storage.Table("users").Where("age > ?", 18).Count()
-
-# 存在性檢查
-exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
-
-# 取得單條記錄
-row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
-
-# 修改表結構
-sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
-sdk.storage.AlterTable("users").RenameTo("members").Execute()
-
-# 檢查表是否存在
-if sdk.storage.HasTable("users"):
-    sdk.storage.DropTable("users")
-
-# 事務中的鏈式操作
-with sdk.storage.transaction():
-    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
-    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
-
-# 複用查詢條件
-base = sdk.storage.Table("users").Where("age > ?", 20)
-rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
-count = base.copy().Count()
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
+
+> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 存儲後端抽象
 
-`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援未來拓展其他存儲介質（Redis、MySQL 等）。
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他存儲介質（Redis、MySQL 等）。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
-
-# BaseStorage 定義了統一介面：get/set/delete/Table/CreateTable/DropTable 等
-# BaseQueryBuilder 定義了鏈式查詢介面：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模組
 
-### 讀取配置
+TOML 格式的配置檔案管理，支援點號分隔的鍵路徑。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
+| `force_save()` | 強制將記憶體中的配置寫入檔案 |
+| `reload()` | 從檔案重新載入配置 |
+
+### 範例
 
 ```python
-from ErisPulse import sdk
-
-# 取得配置
 config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
 
-# 取得巢狀配置
-value = sdk.config.getConfig("MyModule.subkey.value", "default")
-```
-
-### 寫入配置
-
-```python
-# 設定配置
 sdk.config.setConfig("MyModule", {"key": "value"})
-
-# 設定巢狀配置
-sdk.config.setConfig("MyModule.subkey.value", "new_value")
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-### 配置範例
-
-```python
-def _load_config(self):
-    config = sdk.config.getConfig("MyModule")
-    if not config:
-        # 建立預設配置
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第三個參數為 True 時，立即儲存配置，是方便使用者可以直接修改設定檔的
-        return default_config
-    return config
-```
+> `setConfig` 預設採用延遲寫入（每 5 秒批次儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
-### 基本日誌
+模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。
+
+### 基本用法
 
 ```python
-from ErisPulse import sdk
-
-# 不同日誌層級
 sdk.logger.debug("除錯資訊")
 sdk.logger.info("執行資訊")
 sdk.logger.warning("警告資訊")
@@ -3777,416 +3866,186 @@ sdk.logger.error("錯誤資訊")
 sdk.logger.critical("致命錯誤")
 ```
 
-### 子日誌記錄器
+### 子日誌器
 
 ```python
-# 取得子日誌記錄器
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模組日誌")
 
-# 子模組還可以有子模組的日誌，這樣可以更精確地控制日誌輸出
-child_logger.get_child("utils")
+child_logger.get_child("utils")  # 支援巢狀
 ```
 
-### 日誌輸出
+### 日誌層級控制
 
 ```python
-# 設定輸出檔案
-sdk.logger.set_output_file("app.log")
+sdk.logger.set_level("DEBUG")                          # 全局層級
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組層級
+```
 
-# 儲存日誌到檔案
+### 輸出控制
+
+```python
+sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
 ```
 
 ## Adapter 模組
 
-### 取得適配器
+適配器管理器，管理多平台適配器的註冊、啟動和關閉。
 
-```python
-from ErisPulse import sdk
+### API 概覽
 
-# 取得適配器實例
-adapter = sdk.adapter.get("platform_name")
-
-# 透過屬性存取
-adapter = sdk.adapter.platform_name
-```
+| 方法 | 說明 |
+|------|------|
+| `get(platform)` | 取得適配器實例 |
+| `exists(platform)` | 檢查適配器是否已註冊 |
+| `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
+| `is_enabled(platform)` | 檢查是否啟用 |
+| `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
+| `is_running(platform)` | 檢查適配器是否正在運行 |
+| `list_running()` | 列出所有正在運行的適配器 |
+| `platforms` | 取得所有平台名稱列表 |
 
 ### 適配器事件
 
 ```python
-# 監聽標準事件
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# 監聽特定平台的事件
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
-
-# 監聽平台原生事件
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
 ```
 
-### 適配器管理
+### Bot 狀態查詢
 
 ```python
-# 取得所有平台
-platforms = sdk.adapter.platforms
-
-# 檢查適配器是否存在
-exists = sdk.adapter.exists("platform_name")
-
-# 啟用/停用適配器
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# 啟動/關閉適配器
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# 檢查適配器是否正在運行
-is_running = sdk.adapter.is_running("platform_name")
-
-# 列出所有正在運行的適配器
-running = sdk.adapter.list_running()
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
 ```
+
+> 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。
 
 ## Module 模組
 
-### 取得模組
+模組管理器，管理外掛的註冊、載入和卸載。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `get(name)` | 取得模組實例 |
+| `exists(name)` | 檢查是否已註冊 |
+| `is_loaded(name)` | 檢查是否已載入 |
+| `is_enabled(name)` | 檢查是否啟用 |
+| `enable(name)` / `disable(name)` | 啟用/停用模組 |
+| `load(name)` / `unload(name)` | 載入/卸載模組 |
+| `list_registered()` | 列出已註冊模組 |
+| `list_loaded()` | 列出已載入模組 |
+| `get_info(name)` | 取得模組資訊 |
+| `get_status_summary()` | 取得模組狀態摘要 |
+
+### 屬性存取
 
 ```python
-from ErisPulse import sdk
-
-# 取得模組實例
 module = sdk.module.get("ModuleName")
-
-# 透過屬性存取
 module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### 模組管理
-
-```python
-# 檢查模組是否存在
-exists = sdk.module.exists("ModuleName")
-
-# 檢查模組是否已載入
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# 檢查模組是否已啟用
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# 啟用/停用模組
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# 載入模組
-await sdk.module.load("ModuleName")
-
-# 卸載模組
-await sdk.module.unload("ModuleName")
-
-# 列出已載入的模組
-loaded = sdk.module.list_loaded()
-
-# 列出已註冊的模組
-registered = sdk.module.list_registered()
-
-# 取得模組資訊
-info = sdk.module.get_info("ModuleName")
-
-# 取得模組狀態摘要
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# 檢查模組是否正在運行（等價於 is_loaded）
-is_running = sdk.module.is_running("ModuleName")
-
-# 列出所有正在運行的模組
-running = sdk.module.list_running()
+module = sdk.ModuleName  # 等價快捷方式
 ```
 
 ## Lifecycle 模組
 
-### 事件提交
+事件驅動的生命週期管理器，提供事件提交和監聽功能。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和萬用字元 `*` |
+| `register(event, handler, priority=0)` | 函式式註冊處理器 |
+| `unregister(event, handler=None)` | 移除處理器 |
+| `emit(event, data)` | 非同步觸發事件 |
+| `emit_sync(event, data)` | 同步觸發事件 |
+| `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |
+| `start_timer(id)` / `stop_timer(id)` | 效能計時器 |
+
+### 範例
 
 ```python
-from ErisPulse import sdk
-
-# 提交自訂事件
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="自訂事件描述"
-)
-```
-
-### 事件監聽
-
-```python
-# 監聯特定事件
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"模組初始化: {event_data}")
 
-# 監聯父級事件
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"模組事件: {event_data}")
 
-# 監聯所有事件
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"系統事件: {event_data}")
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-### 計時器
-
-```python
-# 開始計時
-sdk.lifecycle.start_timer("my_operation")
-
-# ... 執行操作 ...
-
-# 取得持續時間
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# 停止計時
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
+> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
-### 裝飾器路由（推薦）
+HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
+
+> 完整的路由 API 文檔（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
+
+### 快速參考
 
 ```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP 路由裝飾器
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
+# HTTP 路由
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# 快捷方法裝飾器
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket 裝飾器
-from fastapi import WebSocket
-
+# WebSocket 路由
 @sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
 
-# 帶認證的 WebSocket 裝飾器
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### 傳統註冊方式
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="資料介面",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket 路由
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# 基本註冊（自動接受連線）
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# 取消路由
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**參數說明：**
-
-| 參數 | 說明 | 預設值 |
-|------|------|--------|
-| `module_name` | 模組名稱（必須） | - |
-| `path` | WebSocket 路徑 | - |
-| `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
-| `auto_accept` | 是否自動 `accept()` | `True` |
-
-> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
-
-### 路由分組
-
-```python
-# 建立路由組
+# 路由分組
 group = sdk.router.group("MyModule", prefix="/v1")
-
-# 在組內註冊路由
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request: HttpRequest):
     return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# 帶版本號的分組
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
 ```
 
-### 路由中介軟體
+## HTTP Client 模組
+
+統一 HTTP/WS 客戶端，基於 aiohttp，提供請求統計、重試、日誌、ErisPulse 異常體系。
+
+> 完整的 HTTP 客戶端文檔（請求方法、響應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
+
+### 快速參考
 
 ```python
-# 全域中介軟體（glob 匹配）
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
+from ErisPulse.Core import client
 
-# 特定路徑中介軟體
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
+# HTTP 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-### 速率限制
-
-```python
-# 對路由設定速率限制（滑動視窗）
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS 配置
-
-```python
-# 程式碼方式
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# 設定檔方式（config.toml）
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### 安全標頭
-
-```python
-# 自動新增安全回應標頭
-sdk.router.setup_security_headers()
-
-# 設定檔方式（config.toml）
-# [router.security]
-# enabled = true
-```
-
-### 自動文件
-
-```python
-# Router 預設啟用 OpenAPI 文件
-# 停用文件
-sdk.router.disable_docs()
-
-# 自訂文件資訊
-sdk.router.set_docs_info(
-    title="My API",
-    description="API 文件",
-    version="1.0.0"
-)
-```
-
-### 路由資訊
-
-```python
-app = sdk.router.get_app()
-```
-
-## 相關文件
+## 相關文檔
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
-
+- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文檔
+- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
+- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文檔
 
 
 ### 事件系统 API
@@ -4337,7 +4196,7 @@ async def at_handler(event):
 
 ```python
 # 使用優先級控制執行順序
-@message.on_message(priority=10)  # 數值越小優先級越高
+@message.on_message(priority=10)  # 數值越大優先級越高
 async def high_priority_handler(event):
     pass
 
@@ -4431,39 +4290,7 @@ async def heartbeat_handler(event):
 
 ### Bot 狀態查詢
 
-當適配器發送 meta 事件後，框架會自動追蹤 Bot 狀態。你可以透過適配器管理器查詢：
-
-```python
-from ErisPulse import sdk
-
-# 獲取單個 Bot 資訊
-info = sdk.adapter.get_bot_info("telegram", "123456")
-# {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
-
-# 列出所有 Bot
-all_bots = sdk.adapter.list_bots()
-
-# 列出指定平台的 Bot
-tg_bots = sdk.adapter.list_bots("telegram")
-
-# 檢查 Bot 是否上線
-is_online = sdk.adapter.is_bot_online("telegram", "123456")
-
-# 獲取完整狀態摘要
-summary = sdk.adapter.get_status_summary()
-```
-
-也可以透過生命週期事件監聽 Bot 上下線：
-
-```python
-@sdk.lifecycle.on("adapter.bot.online")
-async def on_bot_online(data):
-    sdk.logger.info(f"Bot 上線: {data['platform']}/{data['bot_id']}")
-
-@sdk.lifecycle.on("adapter.bot.offline")
-async def on_bot_offline(data):
-    sdk.logger.info(f"Bot 下線: {data['platform']}/{data['bot_id']}")
-```
+當適配器發送 meta 事件後，框架會自動追蹤 Bot 狀態。查詢 API 和生命週期事件監聽請參考 [適配器系統 API - Bot 狀態管理](adapter-system.md#bot-狀態管理)。
 
 ## Event 包裝類
 
@@ -4533,7 +4360,7 @@ await event.reply("這是一則訊息")
 # 指定發送方法
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# 带 @用戶 和回覆訊息
+# 帶 @用戶 和回覆訊息
 await event.reply("你好", at_users=["user1"], reply_to="msg_id")
 
 # @全體成員
@@ -4551,49 +4378,29 @@ reply = await event.wait_reply(timeout=30)
 ### 交互方法
 
 ```python
-# confirm — 確認對話
+# confirm — 確認對話（返回 True/False/None）
 if await event.confirm("確定要執行此操作嗎？"):
     await event.reply("已確認")
-else:
-    await event.reply("已取消")
 
-# 自定義確認詞
-if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
-    pass
-
-# choose — 選擇選單
+# choose — 選擇選單（返回選項索引或 None）
 choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
-if choice is not None:
-    await event.reply(f"你選擇了：{['紅色', '綠色', '藍色'][choice]}")
 
-# collect — 表單收集
+# collect — 表單收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "請輸入姓名："},
     {"key": "age", "prompt": "請輸入年齡：",
      "validator": lambda e: e.get_text().isdigit()},
 ])
-if data:
-    await event.reply(f"姓名: {data['name']}, 年齡: {data['age']}")
 
-# wait_for — 等待任意事件
-evt = await event.wait_for(
-    event_type="notice",
-    condition=lambda e: e.get_detail_type() == "group_member_increase",
-    timeout=120
-)
-if evt:
-    await event.reply(f"新成員: {evt.get_user_id()}")
+# wait_for — 等待滿足條件的任意事件
+evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — 多輪對話
+# conversation — 多輪對話上下文
 conv = event.conversation(timeout=60)
-await conv.say("歡迎！輸入'退出'結束。")
-while conv.is_active:
-    reply = await conv.wait()
-    if reply is None or reply.get_text() == "退出":
-        conv.stop()
-        break
-    await conv.say(f"你說: {reply.get_text()}")
+await conv.say("歡迎！")
 ```
+
+> 完整的交互方法參數說明和更多示例請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多輪對話](../advanced/conversation.md)。
 
 ### 工具方法
 
@@ -4671,8 +4478,107 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 
 ### 適配器：註冊平台擴展方法
 
-適配器可以通過裝飾
+適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由存取事件資料。
 
+#### 單個方法註冊
+
+```python
+from ErisPulse.Core.Event import register_event_method
+
+@register_event_method("email")
+def get_subject(self):
+    """獲取郵件主題"""
+    return self.get("email_raw", {}).get("subject", "")
+
+@register_event_method("email")
+def get_from(self):
+    """獲取寄件人"""
+    return self.get("email_raw", {}).get("from", {})
+```
+
+#### 批量註冊（Mixin 類）
+
+當方法較多時，推薦使用 Mixin 類批量註冊：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin
+
+class EmailEventMixin:
+    def get_subject(self):
+        return self.get("email_raw", {}).get("subject", "")
+
+    def get_from(self):
+        return self.get("email_raw", {}).get("from", {})
+
+    def get_attachments(self):
+        return self.get("email_raw", {}).get("attachments", [])
+
+# 一次性註冊所有方法
+register_event_mixin("email", EmailEventMixin)
+```
+
+#### 返回值規範
+
+| 場景 | 返回值 | 用戶使用方式 |
+|------|--------|------------|
+| 返回資料（文字、字典等） | 直接返回值 | `subject = event.get_subject()` |
+| 執行操作（發送訊息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
+
+> **建議**：非資料返回的方法返回 `asyncio.Task`，這樣用戶可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
+
+```python
+@register_event_method("email")
+def forward_email(self, to_address: str):
+    """轉發郵件 — 返回 Task，用戶可自行決定是否 await"""
+    import asyncio
+    return asyncio.create_task(
+        self._do_forward(to_address)
+    )
+
+# 用戶可以 await 等待結果
+await event.forward_email("user@example.com")
+
+# 也可以不 await，操作在背景執行
+event.forward_email("user@example.com")
+```
+
+#### 注銷方法
+
+```python
+from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
+
+# 注銷單個方法
+unregister_event_method("email", "get_subject")
+
+# 注銷某平台全部方法（適配器 shutdown 時調用）
+unregister_platform_event_methods("email")
+```
+
+#### 命名衝突檢測
+
+註冊時如果方法名與 Event 內建方法重名（如 `get_text`、`reply`），系統會發出 warning 並跳過註冊，不會覆蓋內建行為。
+
+## 優先級系統
+
+事件處理器支援優先級，數值越大優先級越高：
+
+```python
+# 高優先級處理器先執行
+@message.on_message(priority=10)
+async def high_priority_handler(event):
+    pass
+
+# 低優先級處理器後執行
+@message.on_message(priority=0)
+async def low_priority_handler(event):
+    pass
+```
+
+## 相關文檔
+
+- [核心模組 API](core-modules.md) - 核心模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [模組開發指南](../developer-guide/modules/) - 開發自定義模組
 
 
 ====
@@ -5004,20 +4910,28 @@ async def chat_handler(event):
 - [事件處理入門](../getting-started/event-handling.md) - 事件處理基礎
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder 詳解
 
 `MessageBuilder` 是 ErisPulse 提供的 OneBot12 標準消息段構建工具，用於構建結構化的消息內容，配合 `Send.Raw_ob12()` 使用。
 
+## 導入方式
+
+`MessageBuilder` 支援以下兩種導入方式（效果相同，推薦使用第一種）：
+
+```python
+from ErisPulse.Core.Event import MessageBuilder        # 推薦，透過包導出
+from ErisPulse.Core.Event.message_builder import MessageBuilder  # 直接導入模組
+```
+
 ## 雙模式機制
 
-MessageBuilder 提供兩種使用模式，通過 Python 描述符機制實現類別級別和實例級別的不同行為：
+MessageBuilder 提供兩種使用模式，透過 Python 描述符機制（`__get__`）實現類別級別和實例級別的不同行為：當透過類呼叫方法時，`__get__` 返回靜態方法的執行結果；當透過實例呼叫時，返回 `self` 以支援鏈式呼叫。
 
-### 鏈式調用模式（實例）
+### 鏈式呼叫模式（實例）
 
-通過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支持鏈式調用，最後用 `.build()` 獲取消息段列表：
+透過實例化 `MessageBuilder()` 使用，每個方法返回 `self`，支援鏈式呼叫，最後用 `.build()` 獲取消息段列表：
 
 ```python
 from ErisPulse.Core.Event.message_builder import MessageBuilder
@@ -5036,7 +4950,7 @@ segments = (
 
 ### 快速構建模式（靜態）
 
-通過類別直接調用方法，每個方法直接返回消息段列表，適合單段消息：
+透過類直接呼叫方法，每個方法直接返回消息段列表，適合單段消息：
 
 ```python
 # 直接返回 list[dict]，無需 .build()
@@ -5061,7 +4975,7 @@ segments = MessageBuilder.text("你好！")
 
 ## 配合 Send 使用
 
-構建的消息段列表通過 `Send.Raw_ob12()` 發送：
+構建的消息段列表透過 `Send.Raw_ob12()` 發送：
 
 ```python
 from ErisPulse import sdk
@@ -5087,7 +5001,7 @@ from ErisPulse.Core.Event import command
 async def report_handler(event):
     await event.reply_ob12(
         MessageBuilder()
-        .text("📊 日報匯總\n")
+        .text("📊 日報彙總\n")
         .text("今日完成任務: 5\n")
         .text("進行中任務: 3")
         .build()
@@ -5189,27 +5103,849 @@ complex_msg = (
 - [Event 包裝類](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
 
 
+### HTTP 客户端
+
+# HTTP 客戶端
+
+ErisPulse 提供了統一的 HTTP/WS 客戶端，模組和適配器應優先使用此客戶端發送 HTTP 請求和建立 WebSocket 連線，而非自行匯入 `aiohttp` / `httpx` 等第三方函式庫。
+
+## 概述
+
+HTTP/WS 客戶端的主要功能：
+
+- **統一介面**：提供 `get` / `post` / `put` / `delete` / `patch` / `request` 方法
+- **WebSocket 客戶端**：透過 `ws_connect` 建立客戶端 WebSocket 連線
+- **自動日誌**：所有請求自動記錄日誌和統計資訊
+- **生命週期整合**：每次請求觸發 `client.request` 生命週期事件，WS 連線觸發 `client.ws.connect` 事件
+- **重試支援**：可配置自動重試次數和間隔
+- **逾時控制**：獨立的連線逾時和請求逾時
+- **連線集區複用**：基於 aiohttp.ClientSession 的連線集區管理
+- **異常體系**：aiohttp 異常自動轉換為 ErisPulse 異常 (ClientError 體系)
+
+## 快速開始
+
+### HTTP 請求
+
+```python
+from ErisPulse.Core import client
+
+# GET 請求
+resp = await client.get("https://httpbin.org/get")
+data = await resp.json()
+print(resp.status)  # 200
+
+# POST 請求
+resp = await client.post(
+    "https://httpbin.org/post",
+    json={"key": "value"},
+)
+data = await resp.json()
+```
+
+### WebSocket 連線
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+## HttpResponse
+
+所有請求方法傳回 `HttpResponse` 物件：
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://httpbin.org/get")
+
+resp.status       # int - HTTP 狀態碼 (如 200, 404)
+resp.reason       # str | None - 狀態描述 (如 "OK")
+resp.headers      # 回應標頭 (大小寫不敏感)
+resp.content_type # str | None - Content-Type
+resp.url          # 最終 URL (可能因重定向變化)
+resp.raw          # 底層原生回應物件 (目前為 aiohttp.ClientResponse)
+
+# 讀取回應主體
+body = await resp.read()       # bytes
+text = await resp.text()       # str
+data = await resp.json()       # 解析 JSON
+text = await resp.text("gbk")  # 指定編碼
+```
+
+## 請求方法
+
+### GET
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get(
+    "https://api.example.com/users",
+    params={"page": "1", "limit": "10"},
+    headers={"Authorization": "Bearer token"},
+)
+```
+
+### POST
+
+```python
+from ErisPulse.Core import client
+
+# JSON 請求體
+resp = await client.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "age": 30},
+)
+
+# 表單請求體
+resp = await client.post(
+    "https://api.example.com/login",
+    data={"username": "admin", "password": "123"},
+)
+
+# 原始資料
+resp = await client.post(
+    "https://api.example.com/upload",
+    data=b"raw bytes",
+    headers={"Content-Type": "application/octet-stream"},
+)
+```
+
+### PUT / DELETE / PATCH
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.put("https://api.example.com/users/1", json={"name": "Bob"})
+resp = await client.delete("https://api.example.com/users/1")
+resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
+```
+
+### 通用 request
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.request(
+    "OPTIONS",
+    "https://api.example.com/resource",
+    headers={"Origin": "https://example.com"},
+)
+```
+
+## 參數說明
+
+### HTTP 請求參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | 請求 URL |
+| `params` | `dict[str, str]` | 查詢參數 (可選) |
+| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `data` | `Any` | 請求體 (表單或原始資料) (可選) |
+| `json` | `Any` | JSON 請求體 (可選) |
+| `timeout` | `float` | 本次請求逾時 (秒) (可選, 覆蓋預設值) |
+| `max_retries` | `int` | 本次最大重試次數 (可選, 覆蓋預設值) |
+
+### ws_connect 參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `url` | `str` | WebSocket 伺服器 URL |
+| `headers` | `dict[str, str]` | 額外請求標頭 (可選) |
+| `heartbeat` | `float` | 心跳間隔秒數 (可選) |
+
+## 逾時與重試
+
+```python
+from ErisPulse.Core import HttpClient
+
+# 建立帶自訂逾時的客戶端
+client = HttpClient(
+    timeout=60,           # 請求總逾時 60s
+    connect_timeout=5,    # 連線逾時 5s
+    max_retries=3,        # 失敗自動重試 3 次
+    retry_delay=2,        # 重試間隔 2s
+)
+
+# 單次請求覆蓋逾時
+resp = await client.get("https://slow-api.example.com/data", timeout=120)
+```
+
+## 自訂預設標頭
+
+```python
+client = HttpClient(
+    headers={
+        "Authorization": "Bearer token",
+        "X-App-Id": "my-app",
+    },
+    user_agent="MyBot/1.0",
+)
+```
+
+## 請求統計
+
+```python
+from ErisPulse.Core import client
+
+# 查看統計
+stats = client.stats
+# {"total_requests": 42, "total_errors": 1, "total_bytes_sent": 0, "total_bytes_received": 0}
+
+# 重置統計
+client.reset_stats()
+```
+
+## 生命週期事件
+
+### HTTP 請求事件
+
+每次請求完成後觸發 `client.request` 事件，可用於監控：
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.request")
+async def on_request(event_data):
+    print(f"{event_data['method']} {event_data['url']} -> {event_data['status']} ({event_data['elapsed']}s)")
+```
+
+### WebSocket 連線事件
+
+每次 WebSocket 連線建立後觸發 `client.ws.connect` 事件：
+
+```python
+from ErisPulse.Core import lifecycle
+
+@lifecycle.on("client.ws.connect")
+async def on_ws_connect(event_data):
+    print(f"WS 連線: {event_data['url']}")
+```
+
+## 上下文管理
+
+```python
+# 作為上下文管理器，自動關閉會話
+async with HttpClient(timeout=30) as client:
+    resp = await client.get("https://httpbin.org/get")
+    data = await resp.json()
+```
+
+## WebSocket 客戶端
+
+透過 `client.ws_connect()` 建立 WebSocket 客戶端連線，傳回 `ClientWebSocket` 物件。客戶端和服務端 WebSocket 共享相同的 `WebSocketConnectionBase` 基類，send/receive/iter 介面完全一致。
+
+### 基本用法
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
+
+await ws.send_text("Hello")
+await ws.send_bytes(b"\x00\x01\x02")
+await ws.send_json({"type": "ping"})
+```
+
+### 接收訊息
+
+#### 高級方法 (推薦)
+
+自動過濾訊息類型，斷開時拋出 `WebSocketDisconnect`：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# 單條接收
+text = await ws.receive_text()    # str
+data = await ws.receive_bytes()   # bytes
+obj = await ws.receive_json()     # dict / list
+
+# 迭代接收 (自動在斷開時停止)
+async for text in ws.iter_text():
+    print(text)
+
+async for data in ws.iter_bytes():
+    print(data)
+
+async for obj in ws.iter_json():
+    print(obj)
+```
+
+#### 低階方法
+
+使用 `receive()` 和 `iter_messages()` 處理原始訊息類型，可區分 TEXT / BINARY / CLOSE / ERROR：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.websocket import WSMessage
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+# 單條接收原始訊息
+msg = await ws.receive()
+# msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
+# msg.data  -> str | bytes | None
+
+# 迭代原始訊息 (CLOSE/ERROR 時自動停止)
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(f"文本: {msg.data}")
+    elif msg.type == WSMessage.BINARY:
+        print(f"二進位: {len(msg.data)} bytes")
+```
+
+### WSMessage
+
+`WSMessage` 是統一的 WebSocket 訊息類型，不依賴底層函式庫：
+
+| 屬性 | 類型 | 說明 |
+|------|------|------|
+| `type` | `str` | 訊息類型: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
+| `data` | `Any` | 訊息資料 |
+
+### ClientWebSocket 屬性
+
+| 屬性 | 類型 | 說明 |
+|------|------|------|
+| `url` | `URL` | 連線 URL |
+| `headers` | `Headers` | 回應標頭 |
+| `closed` | `bool` | 連線是否已關閉 |
+| `raw` | `object` | 底層原生物件 (aiohttp.ClientWebSocketResponse) |
+
+### 生命週期鉤子
+
+與 `服務端 WebSocketConnection` 一致，支援 `on_disconnect` 和 `on_error` 回調：
+
+```python
+from ErisPulse.Core import client
+
+ws = await client.ws_connect("wss://example.com/ws")
+
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"連線斷開: {reason}")
+
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"連線錯誤: {error}")
+```
+
+### 關閉連線
+
+```python
+await ws.close(code=1000, reason="Normal closure")
+```
+
+## 異常體系
+
+ErisPulse 定義了統一的異常層級，透過 `sdk.client` 發起的請求會自動將底層 aiohttp 異常轉換為 ErisPulse 異常。
+
+> **向後相容**：直接使用 `aiohttp.ClientSession` 的舊模組/適配器完全不受影響。異常轉換僅在透過 `sdk.client` 發起請求時生效，直接使用 aiohttp 的程式碼仍然捕獲 `aiohttp.ClientError` 等原生異常。兩種方式可以共存。
+
+### 異常層級
+
+```
+ErisPulseError
+├── ClientError                  # 所有 HTTP/WS 客戶端請求異常的基類
+│   ├── ClientConnectionError    # 連線失敗 (DNS 解析失敗、連線被拒絕、網路不可達)
+│   ├── ClientTimeoutError       # 連線逾時或請求逾時
+│   └── HTTPStatusError          # HTTP 4xx/5xx 狀態碼錯誤
+└── WebSocketError               # WebSocket 異常基類
+    └── WebSocketDisconnect      # WebSocket 連線斷開 (客戶端和服務端通用)
+```
+
+### 異常捕獲
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import (
+    ClientError,
+    ClientConnectionError,
+    ClientTimeoutError,
+    HTTPStatusError,
+    WebSocketDisconnect,
+    WebSocketError,
+)
+
+# HTTP 請求異常處理
+try:
+    resp = await client.get("https://api.example.com/data")
+    data = await resp.json()
+except ClientConnectionError:
+    print("無法連線到伺服器")
+except ClientTimeoutError:
+    print("請求逾時")
+except ClientError as e:
+    print(f"請求失敗: {e}")
+
+# WebSocket 異常處理
+try:
+    ws = await client.ws_connect("wss://example.com/ws")
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
+except WebSocketDisconnect as e:
+    print(f"連線斷開: code={e.code}, reason={e.reason}")
+except WebSocketError as e:
+    print(f"WebSocket 錯誤: {e}")
+```
+
+### 統一捕獲
+
+使用 `ClientError` 統一捕獲所有 HTTP/WS 客戶端請求異常：
+
+```python
+from ErisPulse.Core.Bases.errors import ClientError
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except ClientError as e:
+    print(f"客戶端錯誤: {e}")
+```
+
+### HTTPStatusError
+
+當需要在請求後檢查狀態碼並拋出異常時，可手動使用：
+
+```python
+from ErisPulse.Core.Bases.errors import HTTPStatusError
+
+resp = await client.get("https://api.example.com/data")
+if resp.status >= 400:
+    raise HTTPStatusError(resp.status, await resp.text())
+```
+
+## 適配器中使用
+
+適配器可使用全域客戶端或自行建立客戶端實例發送平台 API 請求：
+
+```python
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.errors import ClientError
+
+class MyAdapter(BaseAdapter):
+    async def call_api(self, endpoint, **params):
+        try:
+            resp = await client.post(
+                f"https://api.platform.com/{endpoint}",
+                json=params,
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            return await resp.json()
+        except ClientError as e:
+            self.logger.error(f"API 呼叫失敗: {e}")
+            raise
+```
+
+> 也可透過 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+
+## 最佳實踐
+
+1. **優先使用全域客戶端**：使用 `from ErisPulse.Core import client` 取得全域單例，便於框架統一管理和監控
+2. **避免直接匯入 aiohttp**：使用 `client` 取代 `aiohttp.ClientSession`，未來更換底層實作無需修改程式碼。舊程式碼直接使用 aiohttp 仍可正常工作，兩種方式可以共存
+3. **使用 ErisPulse 異常體系**：透過 `sdk.client` 請求時捕獲 `ClientError` 而非 `aiohttp.ClientError`，確保程式碼不依賴特定 HTTP 函式庫。直接使用 aiohttp 的舊程式碼不受影響
+4. **合理設定逾時**：根據 API 回應速度設定合理的逾時時間，避免長時間封鎖
+5. **使用重試機制**：對不穩定的 API 啟用重試，提高可靠性
+6. **監控請求統計**：透過 `sdk.client.stats` 或 `client.request` 生命週期事件監控請求情況
+7. **WebSocket 使用高階方法**：優先使用 `iter_text` / `iter_json` 等高階方法，僅在需要區分訊息類型時使用 `iter_messages`
+
+## 相關文件
+
+- [路由管理器](router.md) - HTTP/WebSocket 伺服器端路由（服務端 WebSocketConnection 與客戶端共享同一基類）
+- [適配器開發指南](../developer-guide/adapters/getting-started.md) - 適配器中使用 HTTP 客戶端
+- [生命週期管理](lifecycle.md) - 監聽請求事件
+
+
+### SQL 查询构建器
+
+# SQL 查詢建構器
+
+ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。
+
+## 架構設計
+
+```
+Bases/storage.py                    Core/storage.py
+┌─────────────────────┐             ┌──────────────────────────┐
+│  BaseStorage (ABC)  │◄────────────│  StorageManager          │
+│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │
+│    (ABC)            │             │                          │
+└─────────────────────┘             │  SQLiteQueryBuilder      │
+                                    │  AlterTableBuilder       │
+                                    └──────────────────────────┘
+```
+
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基底類別，定義統一介面，支援未來擴展其他儲存媒介（Redis、MySQL 等）
+- `StorageManager` 是當前 SQLite 具體實現，完全向後相容
+
+## 匯入
+
+```python
+from ErisPulse import sdk
+# 或
+from ErisPulse.Core import storage
+
+# ABC 基類（用於類型標註或自訂實現）
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+```
+
+## 表管理
+
+### 建立表
+
+```python
+sdk.storage.CreateTable("users", {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "name": "TEXT NOT NULL",
+    "age": "INTEGER DEFAULT 0",
+    "email": "TEXT"
+})
+```
+
+### 檢查表是否存在
+
+```python
+if sdk.storage.HasTable("users"):
+    print("users 表已存在")
+```
+
+### 刪除表
+
+```python
+sdk.storage.DropTable("users")
+```
+
+### 修改表結構
+
+```python
+# 欄位
+sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
+
+# 重新命名表
+sdk.storage.AlterTable("users").RenameTo("members").Execute()
+
+# 鏈式多個操作
+sdk.storage.AlterTable("users") \
+    .AddColumn("phone", "TEXT") \
+    .AddColumn("address", "TEXT") \
+    .Execute()
+```
+
+## 鏈式查詢
+
+### 插入資料
+
+```python
+# 單行插入
+sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+# 批量插入
+sdk.storage.Table("users").InsertMulti([
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35},
+    {"name": "Dave", "age": 40}
+]).Execute()
+```
+
+### 查詢資料
+
+```python
+# 查詢所有欄位
+rows = sdk.storage.Table("users").Select().Execute()
+
+# 查詢指定欄位
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+
+# 獲取單筆記錄
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ExecuteOne()
+# 回傳 tuple | None，如 ("Alice", 30)
+```
+
+### 條件過濾
+
+```python
+# 單條件
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 18) \
+    .Execute()
+
+# 多條件（AND 連接）
+rows = sdk.storage.Table("users").Select("name") \
+    .Where("age > ?", 20) \
+    .Where("age < ?", 40) \
+    .Execute()
+```
+
+### 排序、分頁
+
+```python
+# 升序
+rows = sdk.storage.Table("users").Select("name", "age") \
+    .OrderBy("name") \
+    .Execute()
+
+# 降序
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("age", desc=True) \
+    .Execute()
+
+# 分頁
+rows = sdk.storage.Table("users").Select("name") \
+    .OrderBy("id") \
+    .Limit(10) \
+    .Offset(20) \
+    .Execute()
+```
+
+### 更新資料
+
+```python
+# 條件更新
+sdk.storage.Table("users") \
+    .Update({"age": 31}) \
+    .Where("name = ?", "Alice") \
+    .Execute()
+
+# 全量更新
+sdk.storage.Table("users") \
+    .Update({"status": "active"}) \
+    .Execute()
+```
+
+### 刪除資料
+
+```python
+# 條件刪除
+sdk.storage.Table("users") \
+    .Delete() \
+    .Where("name = ?", "Bob") \
+    .Execute()
+
+# 全量刪除
+sdk.storage.Table("users").Delete().Execute()
+```
+
+### 計數與存在性檢查
+
+```python
+# 計數
+count = sdk.storage.Table("users").Count()
+count = sdk.storage.Table("users").Where("age > ?", 18).Count()
+
+# 存在性檢查
+exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
+```
+
+## 複用查詢條件
+
+使用 `copy()` 深拷貝建構器，複用基礎條件：
+
+```python
+base = sdk.storage.Table("users").Where("age > ?", 20)
+
+# 基於相同條件查詢
+rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
+
+# 基於相同條件計數
+count = base.copy().Count()
+
+# 基於相同條件檢查存在性
+exists = base.copy().Where("name = ?", "Alice").Exists()
+```
+
+## 重置建構器
+
+```python
+builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
+builder.clear()
+
+# 重新建構查詢
+builder.Select("name", "age").Where("name = ?", "Alice")
+rows = builder.Execute()
+```
+
+## 事務中使用
+
+鏈式操作完全支援事務：
+
+```python
+# 提交事務
+with sdk.storage.transaction():
+    sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
+    sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
+
+# 回滾範例
+try:
+    with sdk.storage.transaction():
+        sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
+        raise Exception("force rollback")
+except Exception:
+    pass
+# Alice 的記錄仍然存在
+```
+
+## 返回值說明
+
+| 操作 | 返回類型 | 說明 |
+|------|---------|------|
+| `Select().Execute()` | `list[tuple]` | 查詢結果列表 |
+| `Select().ExecuteOne()` | `tuple \| None` | 單筆記錄 |
+| `Insert().Execute()` | `int` | 受影響行數 |
+| `InsertMulti().Execute()` | `int` | 插入行數 |
+| `Update().Execute()` | `int` | 受影響行數 |
+| `Delete().Execute()` | `int` | 受影響行數 |
+| `Count()` | `int` | 符合行數 |
+| `Exists()` | `bool` | 是否存在 |
+
+### 返回值處理範例
+
+```python
+# Select 返回元組，按索引取值
+rows = sdk.storage.Table("users").Select("name", "age").Execute()
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
+
+# 推薦：用列名列表 + zip 轉為字典，代碼更可讀
+cols = ["name", "age"]
+rows = sdk.storage.Table("users").Select(*cols).Execute()
+for row in rows:
+    d = dict(zip(cols, row))
+    print(d["name"], d["age"])
+
+# ExecuteOne 返回單條元組或 None
+row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
+name = row[0] if row else None
+
+# Insert/Update/Delete 返回受影響行數
+affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
+print(f"刪除了 {affected} 條記錄")
+```
+
+## 參數化查詢
+
+所有 WHERE 參數使用 `?` 佔位符，參數作為 `Where()` 的後續參數傳入（**不是**元組或列表）：
+
+```python
+# 正確 ✓ — 多個參數逐一傳入
+sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
+
+# 正確 ✓ — 多次 Where 調用
+sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
+
+# 錯誤 ✗ — 不要傳入元組
+sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
+# 這會把整個元組當成第一個佔位符的值
+
+# 錯誤 ✗ — 存在 SQL 注入風險
+sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
+```
+
+### Where 參數傳遞規則
+
+```python
+# Where(condition: str, *params: Any)
+# params 是可變參數，逐個傳入即可
+
+# 單個參數
+.Where("name = ?", "Alice")
+
+# 多個參數
+.Where("age > ? AND age < ?", 18, 60)
+
+# LIKE 查詢
+.Where("name LIKE ?", "A%")
+
+# IN 查詢（需要手動構造佔位符）
+.Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
+```
+
+## 自訂儲存後端
+
+繼承 `BaseStorage` 和 `BaseQueryBuilder` 實現自訂儲存後端：
+
+```python
+from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+
+class MyQueryBuilder(BaseQueryBuilder):
+    def Execute(self):
+        # 實現具體執行邏輯
+        ...
+
+    def ExecuteOne(self):
+        ...
+
+    def Count(self):
+        ...
+
+    def Exists(self):
+        ...
+
+
+class MyStorage(BaseStorage):
+    def get(self, key, default=None):
+        ...
+
+    def set(self, key, value):
+        ...
+
+    # 實現其他抽象方法...
+    def Table(self, table_name):
+        return MyQueryBuilder(self, table_name)
+```
+
+## 相關文件
+
+- [核心模組 API](../api-reference/core-modules.md) - Storage 模組完整 API
+- [儲存基類 API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象介面
+- [訊息建構器](message-builder.md) - MessageBuilder 鏈式呼叫風格參考
+
 
 ### 路由系统
 
 # 路由管理器
 
-ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。它基於 FastAPI + Uvicorn 構建，提供了完整的 Web 服務功能。
+ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支援多適配器路由註冊和生命週期管理。底層透過抽象層封裝（當前為 FastAPI + Uvicorn）
 
 ## 概述
 
 路由管理器的主要功能：
 
 - **裝飾器路由**：支援 `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` 裝飾器快捷註冊
+- **自動注入**：路由處理器無需匯入 FastAPI 類型，框架自動注入抽象物件
 - **路由分組**：支援帶前綴和版本號的 `RouteGroup`
 - **路由中間件**：支援 glob 模式匹配的請求攔截
 - **速率限制**：內建滑動窗口限流
 - **CORS 支援**：一鍵開啟跨域資源共享
 - **安全頭**：自動添加安全回應頭
 - **自動文件**：基於 OpenAPI 的互動式文件
-- **WebSocket 支援**：完整的 WebSocket 連線管理和自訂認證
+- **WebSocket 支援**：完整的 WebSocket 連線管理、自訂認證和生命週期掛鉤
 - **生命週期整合**：與 ErisPulse 生命週期系統深度整合
 - **SSL/TLS 支援**：支援 HTTPS 和 WSS 安全連線
+
+## 抽象類型
+
+ErisPulse 提供了伺服器端抽象類型，使模組無需直接依賴 FastAPI：
+
+| 抽象類型 | FastAPI 對應 | 說明 |
+|---------|-------------|------|
+| `HttpRequest` | `fastapi.Request` | HTTP 請求封裝，介面完全相容 |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 連線封裝，額外提供生命週期掛鉤 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 斷開例外 |
+
+> `WebSocketConnection` 繼承自 `WebSocketConnectionBase`，與用戶端 WebSocket (`ClientWebSocket`) 共享相同的 send/receive/iter/close 介面。用戶端和伺服器端 WebSocket 可以使用相同的業務邏輯程式碼。
+>
+> 透過 `.raw` 屬性可存取底層 FastAPI 原生物件。直接使用 FastAPI 類型的程式碼也完全相容。
 
 ## 裝飾器路由（推薦）
 
@@ -5217,22 +5953,20 @@ ErisPulse 路由管理器提供統一的 HTTP 和 WebSocket 路由管理，支�
 
 ```python
 from ErisPulse.Core import router
-from fastapi import Request
-
-# 通用 HTTP 路由
-@router.http("my_module", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
-    return {"message": "Hello"}
-
-# 快捷方法
 @router.get("my_module", "/info")
-async def get_info(request: Request):
-    return {"info": "data"}
+async def get_info(request):
+    return {"method": request.method, "path": str(request.url)}
+
+# 也可顯式標註抽象類型
+from ErisPulse.Core import HttpRequest
 
 @router.post("my_module", "/data")
-async def post_data(request: Request):
+async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
+
+# 繼續使用 FastAPI 類型也完全相容
+from fastapi import Request
 
 @router.put("my_module", "/data/{item_id}")
 async def update_data(request: Request):
@@ -5243,38 +5977,51 @@ async def delete_data(request: Request):
     return {"deleted": True}
 ```
 
-> **注意**：`module_name` 必須作為第一個參數顯式傳入，路由路徑會自動添加模組名前綴。
+> **自動注入規則**：當處理器第一個參數名為 `request` 或 `req` 且無 FastAPI 類型註解時，框架自動注入 `HttpRequest`。無參數或非請求參數名的處理器不受影響。
 
 ### WebSocket 裝飾器
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
 # 基本 WebSocket
 @router.ws("my_module", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
-# 帶認證的 WebSocket（推薦：使用 auth_handler 控制連接）
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+# 帶生命週期掛鉤的 WebSocket
+@router.ws("my_module", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_disconnect(ws, reason="unknown"):
+        print(f"用戶斷開: {reason}")
+
+    @ws.on_error
+    async def on_error(ws, error=""):
+        print(f"連線錯誤: {error}")
+
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+
+# 帶認證的 WebSocket
+async def ws_auth(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 @router.ws("my_module", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
+async def secure_ws_handler(ws):
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+        data = await ws.receive_text()
+        await ws.send_text(f"Echo: {data}")
 ```
+
+> **注意**：WebSocket 處理器和認證處理器也支援自動注入。如果參數註解為 `fastapi.WebSocket`，則傳入原生物件；否則傳入 `WebSocketConnection`。
 
 ## 傳統註冊方式
 
 ```python
-from fastapi import Request
-
-async def hello_handler(request: Request):
+async def hello_handler(request):
     return {"message": "Hello World"}
 
 # 基本註冊
@@ -5300,12 +6047,11 @@ router.register_http_route(
 ### WebSocket 註冊
 
 ```python
-from fastapi import WebSocket
+from ErisPulse.Core import WebSocketConnection
 
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def websocket_handler(ws: WebSocketConnection):
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 
 # 基本註冊
 router.register_websocket(
@@ -5315,8 +6061,8 @@ router.register_websocket(
 )
 
 # 帶認證的註冊（推薦）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
+async def auth_handler(ws: WebSocketConnection) -> bool:
+    token = ws.query_params.get("token")
     return token == "secret"
 
 router.register_websocket(
@@ -5339,6 +6085,30 @@ router.register_websocket(
 
 > **推薦**：使用 `auth_handler` 進行連接確認，而非關閉 `auto_accept`。僅在你需要完全控制連接流程時才設置 `auto_accept=False`。
 
+## WebSocket 生命週期掛鉤
+
+`WebSocketConnection` 提供了斷開連接和錯誤的回呼註冊，無需手動 try/catch：
+
+```python
+from ErisPulse.Core import WebSocketConnection
+
+@router.ws("my_module", "/ws")
+async def my_ws(ws: WebSocketConnection):
+    # 裝飾器方式註冊
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"斷開原因: {reason}")
+
+    # 也可直接呼叫
+    async def on_err(ws, error=""):
+        print(f"錯誤: {error}")
+    ws.on_error(on_err)
+
+    # 正常業務邏輯
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
+```
+
 ## 路由分組
 
 ```python
@@ -5346,11 +6116,11 @@ router.register_websocket(
 group = router.group("my_module", prefix="/v1")
 
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request):
     return {"users": []}
 
 @group.post("/users")
-async def create_user(request: Request):
+async def create_user(request):
     return {"created": True}
 
 # 實際路徑: /my_module/v1/users
@@ -5362,14 +6132,14 @@ async def create_user(request: Request):
 
 ```python
 @router.middleware("/my_module/*")
-async def auth_middleware(request: Request, call_next):
+async def auth_middleware(request, call_next):
     token = request.headers.get("Authorization")
     if not token:
         return {"error": "Unauthorized"}
     return await call_next(request)
 
 @router.middleware("/my_module/admin/*")
-async def admin_middleware(request: Request, call_next):
+async def admin_middleware(request, call_next):
     return await call_next(request)
 ```
 
@@ -5379,11 +6149,11 @@ async def admin_middleware(request: Request, call_next):
 
 ```python
 @router.get("my_module", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
+async def limited_endpoint(request):
     return {"ok": True}
 
 @router.post("my_module", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
+async def submit_data(request):
     return {"submitted": True}
 ```
 
@@ -5449,35 +6219,6 @@ router.set_docs_info(
 router.register_http_route("my_module", "/api", handler)
 ```
 
-## 認證機制
-
-推薦使用 `auth_handler` 控制連接訪問：
-
-```python
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-# 裝飾器方式
-@router.ws("my_module", "/secure_ws", auth_handler=auth_handler)
-async def secure_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# 傳統註冊方式
-router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-```
-
-`auth_handler` 在連接建立後執行，返回 `False` 會自動關閉連接（狀態碼 1008）。
-
-> 僅在你需要完全控制連接流程（如自訂握手協定）時才設置 `auto_accept=False`。
-
 ## 系統路由
 
 路由管理器自動提供兩個系統路由：
@@ -5513,18 +6254,19 @@ async def on_server_stop(event):
 
 ## 最佳實踐
 
-1. **優先使用裝飾器**：`@router.get()` 等裝飾器比 `register_http_route()` 更簡潔
-2. **顯式傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
-3. **使用路由分組**：對同一模組的多個路由使用 `create_group()` 組織
-4. **安全性考量**：為敏感操作實作認證機制和安全頭
-5. **合理限流**：對高頻介面設置速率限制
-6. **錯誤處理**：實作適當的錯誤處理和回應格式
+1. **優先使用抽象類型**：使用 `HttpRequest` / `WebSocketConnection` 替代 `fastapi.Request` / `fastapi.WebSocket`，避免硬依賴
+2. **利用自動注入**：處理器第一個參數命名為 `request` 或 `req`，無需任何類型註解即可獲得 `HttpRequest`
+3. **顯式傳入 module_name**：裝飾器第一個參數必須為模組名，不可省略
+4. **使用路由分組**：對同一模組的多個路由使用 `group()` 組織
+5. **安全性考量**：為敏感操作實作認證機制和安全頭
+6. **合理限流**：對高頻介面設置速率限制
+7. **使用生命週期掛鉤**：透過 `@ws.on_disconnect` / `@ws.on_error` 處理 WebSocket 異常，避免手動 try/catch
 
 ## 相關文件
 
+- [HTTP 客戶端](http-client.md) - 使用內建 HTTP 客戶端發送請求
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 了解模組路由註冊
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 路由使用建議
-
 
 
 ### 生命周期管理
@@ -5818,7 +6560,6 @@ class Main(BaseModule):
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 生命週期事件使用建議
 
 
-
 ### 懒加载系统
 
 # 延遲載入模組系統
@@ -5918,8 +6659,7 @@ result = sdk.my_module.some_sync_method()
 
 ### 建議使用延遲載入的情境 (lazy_load=True)
 
-- 被動呼叫的工具類別
-- 被動類模組
+- 被動呼叫的工具類（如資料查詢模組、格式轉換器等，僅只在其他模組呼叫時才需要）
 
 ### 建議停用延遲載入的情境 (lazy_load=False)
 
@@ -5928,19 +6668,7 @@ result = sdk.my_module.some_sync_method()
 - 定時任務模組
 - 需要在應用程式啟動時就初始化的模組
 
-### 載入優先級
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # 立即載入
-            priority=100      # 高優先級，數值越大優先級越高
-        )
-```
+> `priority` 參數控制立即載入模組間的初始化順序，數值越大越先初始化。同優先級的模組按註冊順序載入。
 
 ## 注意事項
 
@@ -5952,7 +6680,6 @@ class MyModule(BaseModule):
 
 - [模組開發指南](../developer-guide/modules/getting-started.md) - 學習開發模組
 - [最佳實踐](../developer-guide/modules/best-practices.md) - 瞭解更多最佳實踐
-
 
 
 ### 会话类型系统
@@ -6138,7 +6865,6 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 - [事件轉換器實現](../../developer-guide/adapters/getting-started.md) - 適配器開發指南
 
 
-
 ### Dashboard 视窗注册
 
 # Dashboard 視窗註冊
@@ -6216,50 +6942,15 @@ sdk.Dashboard.register_view(
 
 ```python
 sdk.Dashboard.register_view(
-    id="Weather",
-    title="天氣", title_en="Weather",
-    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-    html_content='''
-        <h1 class="page-title">天氣查詢</h1>
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-header">當前天氣</div>
-                <div class="card-body">
-                    <div id="weather-info">載入中...</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">操作</div>
-                <div class="card-body">
-                    <button class="btn btn-primary" onclick="refreshWeather()">刷新</button>
-                </div>
-            </div>
-        </div>
-    ''',
-    js_content='''
-        async function loadWeatherView() {
-            await refreshWeather();
-        }
-        async function refreshWeather() {
-            var el = document.getElementById('weather-info');
-            if (!el) return;
-            try {
-                var token = localStorage.getItem('__ep_tk__');
-                var resp = await fetch('/Weather/api/current', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                var data = await resp.json();
-                el.innerHTML = '<p>溫度: ' + (data.temp || '--') + '°C</p>' +
-                               '<p>濕度: ' + (data.humidity || '--') + '%</p>';
-            } catch (e) {
-                el.textContent = '載入失敗: ' + e.message;
-            }
-        }
-    ''',
-    loader="loadWeatherView",
+    id="HelloPage",
+    title="你好頁面", title_en="Hello",
+    icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">這是一個示例頁面</div></div>',
     group="group_tools",
 )
 ```
+
+> 完整的天氣模組示例（包含 API 路由、JS 互動等）請見下方 [完整模組示例](#完整模組示例)。
 
 ### 模式二：iframe 嵌入
 
@@ -6330,7 +7021,7 @@ Dashboard 使用 CSS 變量控制主題色，你可以在模組視窗中直接�
 |----------|------|
 | `var(--bg-p)` | 主背景色 |
 | `var(--bg-s)` | 次背景色 |
-| `var(--bg-t)` | 三級背景色（卡片等） |
+| `var(--bg-t)` | 三级背景色（卡片等） |
 | `var(--tx-p)` | 主文字色 |
 | `var(--tx-s)` | 次文字色 |
 | `var(--tx-t)` | 輔助文字色 |
@@ -6358,20 +7049,18 @@ var data = await resp.json();
 模組的 API 端點可以自行決定是否驗證 Token。如果需要驗證，可以從請求頭中提取：
 
 ```python
-from fastapi.responses import JSONResponse
-
 async def _api_data(self, request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not token:
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    return JSONResponse({"data": "hello"})
+        return {"error": "Unauthorized"}, 401
+    return {"data": "hello"}
 ```
 
 ---
 
-## 完整模組範例
+## 完整模組示例
 
-以下是一個完整的天氣模組範例，展示如何註冊視窗、提供 API 數據、以及在卸載時清理資源：
+以下是一個完整的天氣模組示例，展示如何註冊視窗、提供 API 數據、以及在卸載時清理資源：
 
 ```python
 from ErisPulse import sdk
@@ -6422,12 +7111,11 @@ class Main(BaseModule):
             pass
 
     async def _api_current(self, request):
-        from fastapi.responses import JSONResponse
-        return JSONResponse({
+        return {
             "city": self.config.get("city", "北京"),
             "temp": 25,
             "humidity": 60,
-        })
+        }
 
     def _register_dashboard_view(self):
         try:
@@ -6438,7 +7126,7 @@ class Main(BaseModule):
                 icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
                 html_content='''
                     <h1 class="page-title">天氣查詢</h1>
-                    <p style="color:var(--tx-s);margin-bottom:16px">查看當前天氣信息</p>
+                    <p style="color:var(--tx-s);margin-bottom:16px">查看當前天氣資訊</p>
                     <div class="grid-2">
                         <div class="card">
                             <div class="card-header">當前天氣</div>
@@ -6501,9 +7189,10 @@ async def on_unload(self, event):
 1. **載入順序** — Dashboard 的載入優先級為 `99999`（高優先級），你的模組優先級應低於此值（如 `50`），確保 Dashboard 先載入完成
 2. **防禦性編程** — 註冊視窗時使用 `try/except` 包裹，因為 Dashboard 模組可能未安裝或未載入
 3. **資源清理** — 在 `on_unload` 中呼叫 `unregister_view()` 移除已註冊的視窗
-4. **ID 唯一性** — `id` 參數在整個 Dashboard 中必須唯一，建議直接使用模組名稱
-5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼
-
+4. **ID 唯一性** — `id` 參數在整个 Dashboard 中必須唯一，建議直接使用模組名稱
+5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 繼承 Dashboard 主題色
+6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），避免與其他模組衝突
+7. **動態更新** — 模組註冊/註銷視窗後，Dashboard 前端會透過 WebSocket 實時更新側邊欄，無需刷新頁面
 
 
 ====
@@ -6798,7 +7487,6 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 
-
 ====
 平台概览
 ====
@@ -7035,4 +7723,3 @@ ErisPulse 專案：
 4. 提交 Pull Request。
 
 感謝您的支援！
-

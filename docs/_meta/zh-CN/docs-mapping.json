@@ -4,7 +4,7 @@
   "categories": {
     "快速开始": {
       "description": "ErisPulse 快速入门指南",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "ErisPulse 文档",
@@ -36,7 +36,7 @@
     },
     "入门指南": {
       "description": "ErisPulse 基础概念和使用教程",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "创建第一个机器人",
@@ -68,7 +68,7 @@
     },
     "用户使用指南": {
       "description": "ErisPulse 配置和命令参考",
-      "count": 10,
+      "count": 5,
       "documents": [
         {
           "title": "用户使用指南",
@@ -100,7 +100,7 @@
     },
     "开发者指南": {
       "description": "模块和适配器开发指南",
-      "count": 22,
+      "count": 11,
       "documents": [
         {
           "title": "开发者指南",
@@ -173,7 +173,7 @@
     },
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
-      "count": 24,
+      "count": 12,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -240,7 +240,7 @@
     },
     "API 参考": {
       "description": "核心 API 和接口文档",
-      "count": 8,
+      "count": 4,
       "documents": [
         {
           "title": "API 参考",
@@ -267,7 +267,7 @@
     },
     "高级主题": {
       "description": "深入理解框架的高级特性",
-      "count": 18,
+      "count": 10,
       "documents": [
         {
           "title": "高级主题",
@@ -310,6 +310,11 @@
           "level": 1
         },
         {
+          "title": "HTTP 客户端",
+          "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
           "title": "SQL 查询构建器",
           "path": "advanced/sql-builder.md",
           "level": 1
@@ -319,7 +324,7 @@
     },
     "AI 辅助开发": {
       "description": "使用 AI 辅助开发 ErisPulse",
-      "count": 2,
+      "count": 1,
       "documents": [
         {
           "title": "AI 辅助开发",
@@ -331,7 +336,7 @@
     },
     "技术标准": {
       "description": "框架的技术规范和标准",
-      "count": 12,
+      "count": 6,
       "documents": [
         {
           "title": "技术标准",
@@ -368,7 +373,7 @@
     },
     "风格指南": {
       "description": "代码和文档风格规范",
-      "count": 4,
+      "count": 2,
       "documents": [
         {
           "title": "风格指南",

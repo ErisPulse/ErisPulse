@@ -58,7 +58,8 @@ sdk.logger     # 日誌系統
 sdk.adapter    # 適配器系統
 sdk.module     # 模組系統
 sdk.router     # 路由系統
-sdk.lifecycle  # 生命周期系統
+sdk.client     # HTTP 客戶端
+sdk.lifecycle  # 生命週期系統
 ```
 
 ### 2. Event 對象
@@ -74,13 +75,13 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # 發送回复
+    # 發送回覆
     await event.reply(f"用戶: {user_id}, 平台: {platform}")
 ```
 
 ### 3. 適配器
 
-適配器是 ErisPulse 與外部平台之間的橋梁。
+適配器是 ErisPulse 與外部平台之間的橋樑。
 
 **職責：**
 - 接收平台原生事件
@@ -102,109 +103,85 @@ async def info_handler(event):
 - 調用適配器發送消息
 - 使用核心模組提供的服務
 
+#### 模組發現機制
+
+ErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告入口點：
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+SDK 初始化時會掃描所有 `erispulse.module` 組的入口點，將模組類註冊到 `ModuleManager`，然後按依賴關係拓撲排序後依次初始化。
+
+#### 最小可用模組
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """模組加載時調用"""
-        # 註冊事件處理器
-        @command("mycmd", help="我的命令")
-        async def my_command(event):
-            await event.reply("命令執行成功")
-
         self.logger.info("模組已加載")
 
     async def on_unload(self, event):
-        """模組卸載時調用"""
         self.logger.info("模組已卸載")
 ```
 
+#### 模組生命週期
+
+- **註冊**：SDK 發現模組類並註冊到管理器
+- **加載**：建立模組實例，呼叫 `on_load(event)`（`event = {"module_name": "MyModule"}`）
+- **卸載**：呼叫 `on_unload(event)`，清理資源
+
+#### 加載策略
+
+透過 `get_load_strategy()` 聲明模組的加載行為：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # 是否懶加載（預設 True）
+            priority=0        # 加載優先級，數值越大越先初始化
+        )
+```
+
+- **`lazy_load=True`（預設）**：模組在首次被 `sdk.MyModule` 訪問時才初始化，減少啟動時間
+- **`lazy_load=False`**：SDK 啟動時立即初始化，適合需要監聽生命週期事件或執行定時任務的模組
+- **`priority`**：同優先級的模組按註冊順序加載；數值越大越先初始化
+
+> 詳細的懶加載機制說明請參考 [懶加載系統](../advanced/lazy-loading.md)。
+
 ## 事件類型
 
-### 消息事件
+ErisPulse 支援 5 類事件：
 
-處理用戶發送的任何消息（包括私聊和群聊）。
+| 事件類型 | 裝飾器 | 說明 |
+|---------|--------|------|
+| 消息事件 | `@message.on_message()` | 用戶發送的任何訊息（私聊、群聊） |
+| 命令事件 | `@command("name")` | 以命令前綴開頭的訊息（如 `/hello`） |
+| 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友添加、群成員變化等） |
+| 請求事件 | `@request.on_friend_request()` 等 | 用戶請求（好友請求、群邀請） |
+| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連接、斷開、心跳） |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"收到消息: {text}")
-```
-
-### 命令事件
-
-處理以命令前綴開頭的消息（如 `/hello`）。
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="發送問候")
-async def hello_handler(event):
-    await event.reply("你好！")
-```
-
-### 通知事件
-
-處理系統通知（如好友添加、群成員變化）。
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("歡迎添加我為好友！")
-```
-
-### 請求事件
-
-處理用戶請求（如好友請求、群邀請）。
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("已收到你的好友請求")
-```
-
-### 元事件
-
-處理系統級事件（如連接、心跳）。
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} 連接成功")
-```
+> 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。
 
 ## 核心模組說明
 
 ### Storage（儲存）
 
-基於 SQLite 的鍵值存儲系統，用於持久化數據。
+基於 SQLite 的鍵值儲存系統，用於持久化數據。
 
 ```python
-# 設置值
+# 設定值
 sdk.storage.set("key", "value")
 
 # 獲取值
@@ -230,7 +207,7 @@ TOML 格式的配置文件管理。
 # 獲取配置
 config = sdk.config.getConfig("MyModule", {})
 
-# 設置配置
+# 設定配置
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取嵌套配置
@@ -243,7 +220,7 @@ value = sdk.config.getConfig("MyModule.subkey", "default")
 
 ```python
 # 記錄日誌
-sdk.logger.info("這是一條信息")
+sdk.logger.info("這是一條資訊")
 sdk.logger.warning("這是一條警告")
 sdk.logger.error("這是一條錯誤")
 
@@ -254,58 +231,51 @@ child_logger.info("子模組日誌")
 
 **屬性訪問語法糖**
 
-除了使用 `get_child()` 方法外，你還可以通過**屬性訪問**的方式創建子logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你還可以透過**屬性訪問**的方式建立子logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 通過屬性訪問創建子logger
-sdk.logger.mymodule.info("模組消息")
+# 透過屬性訪問建立子logger
+sdk.logger.mymodule.info("模組訊息")
 
-# 支持嵌套訪問
-sdk.logger.mymodule.database.info("數據庫消息")
+# 支援嵌套訪問
+sdk.logger.mymodule.database.info("資料庫訊息")
 ```
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，基於 FastAPI 構建。
-
-> 路由處理器基於 FastAPI，必須正確使用類型註解，否則可能導致參數驗證錯誤。
+HTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。
 
 ```python
-from fastapi import Request, WebSocket
+from ErisPulse.Core import HttpRequest
 
-# 註冊 HTTP 路由
-async def handler(request: Request):
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
+    data = await request.json()
     return {"status": "ok"}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["GET"]
-)
-
-# 註冊 WebSocket 路由
-async def ws_handler(websocket: WebSocket):
-    # 注意：無需 await websocket.accept()，內部已自動調用
-    data = await websocket.receive_text()
-    await websocket.send_text(f"Echo: {data}")
-
-sdk.router.register_websocket(
-    module_name="MyModule",
-    path="/ws",
-    handler=ws_handler
-)
 ```
 
-**常見問題：** 如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 錯誤，說明缺少類型註解。請確保：
-- HTTP 處理器參數使用 `request: Request` 註解
-- WebSocket 處理器參數使用 `websocket: WebSocket` 註解
+> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。
 
-更多路由功能請參考 [路由管理器](../advanced/router.md)。
+### Client（HTTP 客戶端）
+
+統一的 HTTP/WS 客戶端，提供自動重試、超時控制、請求統計和生命週期事件整合。模組和適配器應優先使用全域客戶端（`sdk.client`）而非直接導入 `aiohttp`。
+
+```python
+from ErisPulse.Core import client
+
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
+```
+
+> 完整的 HTTP 客戶端 API 請參考 [HTTP 客戶端](../advanced/http-client.md)。
 
 ## SendDSL 消息發送
 
-適配器提供鏈式調用的消息發送接口。
+適配器提供鏈式呼叫的消息發送介面。
 
 ### 基礎發送
 
@@ -313,35 +283,35 @@ sdk.router.register_websocket(
 # 獲取適配器實例
 yunhu = sdk.adapter.get("yunhu")
 
-# 發送消息
+# 發送訊息
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# 指定發送賬號
-await yunhu.Send.Using("bot1").To("group", "G1001").Text("群消息")
+# 指定發送帳號
+await yunhu.Send.Using("bot1").To("group", "G1001").Text("群訊息")
 ```
 
 ### 鏈式修飾
 
 ```python
 # @用戶
-await yunhu.Send.To("group", "G1001").At("U2001").Text("@消息")
+await yunhu.Send.To("group", "G1001").At("U2001").Text("@訊息")
 
-# 回復消息
-await yunhu.Send.To("group", "G1001").Reply("msg123").Text("回复")
+# 回覆訊息
+await yunhu.Send.To("group", "G1001").Reply("msg123").Text("回覆")
 
 # @全體
 await yunhu.Send.To("group", "G1001").AtAll().Text("公告")
 ```
 
-### Event 回復方法
+### Event 回覆方法
 
-Event 對象提供了便捷的回复方法：
+Event 對象提供了便捷的回覆方法：
 
 ```python
 @command("test")
 async def test_handler(event):
-    # 簡單文本回复
-    await event.reply("回复内容")
+    # 簡單文本回覆
+    await event.reply("回覆內容")
     
     # 發送圖片
     await event.reply("http://example.com/image.jpg", method="Image")
@@ -350,27 +320,30 @@ async def test_handler(event):
     await event.reply("http://example.com/voice.mp3", method="Voice")
 ```
 
-## 懶載入系統
+## 懶加載系統
 
-ErisPulse 支持模組懶載入，模組只在首次被訪問時才初始化，提高啟動速度。
+ErisPulse 預設啟用模組懶加載，模組只在首次被訪問（如 `sdk.MyModule`）時才初始化，顯著提高啟動速度。
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
-            lazy_load=True,   # 啟用懶載入（默認）
-            priority=0       # 載入優先級
+            lazy_load=True,   # 啟用懶加載（預設）
+            priority=0        # 加載優先級，數值越大越先初始化
         )
 ```
 
-**需要立即載入的場景：**
-- 監聽生命周期事件的模組
-- 定時任務模組
-- 需要在應用啟動時就初始化的模組
+**需要禁用懶加載的場景（`lazy_load=False`）：**
+- 監聽生命週期事件的模組（如 `core.init.complete`）
+- 啟動定時任務或後台服務的模組
+- 需要在其他模組加載前完成初始化的模組
+
+> 詳細的懶加載機制和注意事項請參考 [懶加載系統](../advanced/lazy-loading.md)。
 
 ## 下一步
 
 - [事件處理入門](event-handling.md) - 學習如何處理各類事件
-- [常見任務示例](common-tasks.md) - 掌握常用功能的實現
+- [常見任務範例](common-tasks.md) - 掌握常用功能的實現

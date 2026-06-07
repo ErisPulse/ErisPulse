@@ -103,100 +103,76 @@ async def info_handler(event):
 - 调用适配器发送消息
 - 使用核心模块提供的服务
 
+#### 模块发现机制
+
+ErisPulse 通过 Python 的 `importlib.metadata.entry_points` 发现已安装的模块。模块在 `pyproject.toml` 中声明入口点：
+
+```toml
+[project.entry-points."erispulse.module"]
+MyModule = "my_package:Main"
+```
+
+SDK 初始化时会扫描所有 `erispulse.module` 组的入口点，将模块类注册到 `ModuleManager`，然后按依赖关系拓扑排序后依次初始化。
+
+#### 最小可用模块
+
 ```python
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse import sdk
 
-class MyModule(BaseModule):
+class Main(BaseModule):
     def __init__(self):
         self.sdk = sdk
         self.logger = sdk.logger.get_child("MyModule")
 
-    @staticmethod
-    def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
-        return ModuleLoadStrategy(
-            lazy_load=True,
-            priority=0
-        )
-
     async def on_load(self, event):
-        """模块加载时调用"""
-        # 注册事件处理器
-        @command("mycmd", help="我的命令")
-        async def my_command(event):
-            await event.reply("命令执行成功")
-
         self.logger.info("模块已加载")
 
     async def on_unload(self, event):
-        """模块卸载时调用"""
         self.logger.info("模块已卸载")
 ```
 
+#### 模块生命周期
+
+- **注册**：SDK 发现模块类并注册到管理器
+- **加载**：创建模块实例，调用 `on_load(event)`（`event = {"module_name": "MyModule"}`）
+- **卸载**：调用 `on_unload(event)`，清理资源
+
+#### 加载策略
+
+通过 `get_load_strategy()` 声明模块的加载行为：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=True,   # 是否懒加载（默认 True）
+            priority=0        # 加载优先级，数值越大越先初始化
+        )
+```
+
+- **`lazy_load=True`（默认）**：模块在首次被 `sdk.MyModule` 访问时才初始化，减少启动时间
+- **`lazy_load=False`**：SDK 启动时立即初始化，适合需要监听生命周期事件或执行定时任务的模块
+- **`priority`**：同优先级的模块按注册顺序加载；数值越大越先初始化
+
+> 详细的懒加载机制说明请参考 [懒加载系统](../advanced/lazy-loading.md)。
+
 ## 事件类型
 
-### 消息事件
+ErisPulse 支持 5 类事件：
 
-处理用户发送的任何消息（包括私聊和群聊）。
+| 事件类型 | 装饰器 | 说明 |
+|---------|--------|------|
+| 消息事件 | `@message.on_message()` | 用户发送的任何消息（私聊、群聊） |
+| 命令事件 | `@command("name")` | 以命令前缀开头的消息（如 `/hello`） |
+| 通知事件 | `@notice.on_friend_add()` 等 | 系统通知（好友添加、群成员变化等） |
+| 请求事件 | `@request.on_friend_request()` 等 | 用户请求（好友请求、群邀请） |
+| 元事件 | `@meta.on_connect()` 等 | 系统级事件（连接、断开、心跳） |
 
-```python
-from ErisPulse.Core.Event import message
-
-@message.on_message()
-async def message_handler(event):
-    text = event.get_text()
-    await event.reply(f"收到消息: {text}")
-```
-
-### 命令事件
-
-处理以命令前缀开头的消息（如 `/hello`）。
-
-```python
-from ErisPulse.Core.Event import command
-
-@command("hello", help="发送问候")
-async def hello_handler(event):
-    await event.reply("你好！")
-```
-
-### 通知事件
-
-处理系统通知（如好友添加、群成员变化）。
-
-```python
-from ErisPulse.Core.Event import notice
-
-@notice.on_friend_add()
-async def friend_add_handler(event):
-    await event.reply("欢迎添加我为好友！")
-```
-
-### 请求事件
-
-处理用户请求（如好友请求、群邀请）。
-
-```python
-from ErisPulse.Core.Event import request
-
-@request.on_friend_request()
-async def friend_request_handler(event):
-    await event.reply("已收到你的好友请求")
-```
-
-### 元事件
-
-处理系统级事件（如连接、心跳）。
-
-```python
-from ErisPulse.Core.Event import meta
-
-@meta.on_connect()
-async def connect_handler(event):
-    platform = event.get_platform()
-    sdk.logger.info(f"{platform} 连接成功")
-```
+> 各事件类型的详细用法和代码示例请参考 [事件处理入门](event-handling.md)。
 
 ## 核心模块说明
 
@@ -267,69 +243,35 @@ sdk.logger.mymodule.database.info("数据库消息")
 
 ### Router（路由）
 
-HTTP 和 WebSocket 路由管理，支持 FastAPI 原生类型和 ErisPulse 抽象类型。
-
-> 路由处理器支持两种类型注解：FastAPI 原生类型（`fastapi.Request` / `fastapi.WebSocket`）和 ErisPulse 抽象类型（`HttpRequest` / `WebSocketConnection`）。推荐使用抽象类型以获得更好的可移植性。
+HTTP 和 WebSocket 路由管理，基于 FastAPI + Uvicorn。支持装饰器路由、中间件、分组、限流、CORS。
 
 ```python
-from ErisPulse import sdk
-
-# 方式一：使用 ErisPulse 抽象类型（推荐）
-from ErisPulse.Core import HttpRequest, WebSocketConnection
+from ErisPulse.Core import HttpRequest
 
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     data = await request.json()
     return {"status": "ok"}
-
-@sdk.router.ws("MyModule", "/ws")
-async def ws_handler(ws: WebSocketConnection):
-    data = await ws.receive_text()
-    await ws.send_text(f"Echo: {data}")
-
-# 方式二：使用 FastAPI 原生类型（兼容已有代码）
-from fastapi import Request, WebSocket
-
-@sdk.router.get("MyModule", "/api2")
-async def handler2(request: Request):
-    return {"status": "ok"}
 ```
 
-{!--< tips >!--}
-> **自动注入**：路由系统会根据参数注解自动注入对应类型的对象，无需手动创建。
-> 
-> **常见问题**：如果看到 `{"detail":[{"type":"missing","loc":["query","request"],"msg":"Field required"}]}` 错误，说明缺少类型注解。请确保 HTTP 处理器参数使用 `request` 注解，WebSocket 处理器参数使用 `websocket` 或 `ws` 注解。
-
-更多路由功能请参考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API（WebSocket、中间件、速率限制、CORS 等）请参考 [路由管理器](../advanced/router.md)。
 
 ### Client（HTTP 客户端）
 
-统一的 HTTP 客户端，用于发送 HTTP 请求。模块和适配器应优先使用全局客户端而非直接导入 `aiohttp`。
+统一的 HTTP/WS 客户端，提供自动重试、超时控制、请求统计和生命周期事件集成。模块和适配器应优先使用全局客户端（`sdk.client`）而非直接导入 `aiohttp`。
 
 ```python
 from ErisPulse.Core import client
 
-# GET 请求
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
-# POST 请求
-resp = await client.post(
-    "https://api.example.com/users",
-    json={"name": "Alice"},
-)
-
-# 响应属性
-resp.status        # 状态码 (如 200)
-resp.headers       # 响应头
-body = await resp.text()   # 文本响应体
-data = await resp.json()   # JSON 解析
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-{!--< tips >!--}
-> 全局客户端具有自动重试、超时控制、请求统计和生命周期事件集成等功能。详见 [HTTP 客户端](../advanced/http-client.md)。
->
-> 也可通过 `from ErisPulse import sdk` 使用 `sdk.client`，效果相同。
+> 完整的 HTTP 客户端 API 请参考 [HTTP 客户端](../advanced/http-client.md)。
 
 ## SendDSL 消息发送
 
@@ -380,23 +322,26 @@ async def test_handler(event):
 
 ## 懒加载系统
 
-ErisPulse 支持模块懒加载，模块只在首次被访问时才初始化，提高启动速度。
+ErisPulse 默认启用模块懒加载，模块只在首次被访问（如 `sdk.MyModule`）时才初始化，显著提高启动速度。
 
 ```python
-class MyModule(BaseModule):
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
-        from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,   # 启用懒加载（默认）
-            priority=0       # 加载优先级
+            priority=0        # 加载优先级，数值越大越先初始化
         )
 ```
 
-**需要立即加载的场景：**
-- 监听生命周期事件的模块
-- 定时任务模块
-- 需要在应用启动时就初始化的模块
+**需要禁用懒加载的场景（`lazy_load=False`）：**
+- 监听生命周期事件的模块（如 `core.init.complete`）
+- 启动定时任务或后台服务的模块
+- 需要在其他模块加载前完成初始化的模块
+
+> 详细的懒加载机制和注意事项请参考 [懒加载系统](../advanced/lazy-loading.md)。
 
 ## 下一步
 

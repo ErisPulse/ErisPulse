@@ -1,0 +1,392 @@
+{
+  "version": "1.1",
+  "total_categories": 10,
+  "categories": {
+    "Быстрый старт": {
+      "description": "Краткое руководство по ErisPulse",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Документация ErisPulse",
+          "path": "README.md",
+          "level": 1
+        },
+        {
+          "title": "Быстрый старт",
+          "path": "quick-start.md",
+          "level": 1
+        },
+        {
+          "title": "Обзор архитектуры",
+          "path": "architecture.md",
+          "level": 1
+        },
+        {
+          "title": "Трекер ошибок",
+          "path": "bug-tracker.md",
+          "level": 1
+        },
+        {
+          "title": "Термины ErisPulse",
+          "path": "terminology.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Начало работы": {
+      "description": "Основные концепции и учебные материалы ErisPulse",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Создание первого бота",
+          "path": "getting-started/first-bot.md",
+          "level": 1
+        },
+        {
+          "title": "Руководство по началу работы",
+          "path": "getting-started/README.md",
+          "level": 1
+        },
+        {
+          "title": "Основные концепции",
+          "path": "getting-started/basic-concepts.md",
+          "level": 1
+        },
+        {
+          "title": "Примеры распространённых задач",
+          "path": "getting-started/common-tasks.md",
+          "level": 1
+        },
+        {
+          "title": "Введение в обработку событий",
+          "path": "getting-started/event-handling.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство пользователя": {
+      "description": "Настройка и справочник команд ErisPulse",
+      "count": 5,
+      "documents": [
+        {
+          "title": "Руководство пользователя",
+          "path": "user-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Установка и настройка",
+          "path": "user-guide/installation.md",
+          "level": 1
+        },
+        {
+          "title": "Описание конфигурационного файла",
+          "path": "user-guide/configuration.md",
+          "level": 1
+        },
+        {
+          "title": "Справочник по командам CLI",
+          "path": "user-guide/cli-reference.md",
+          "level": 1
+        },
+        {
+          "title": "Руководство по развертыванию",
+          "path": "user-guide/deployment.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство разработчика": {
+      "description": "Руководство по разработке модулей и адаптеров",
+      "count": 11,
+      "documents": [
+        {
+          "title": "Руководство для разработчиков",
+          "path": "developer-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Руководство по публикации и модулю магазина",
+          "path": "developer-guide/publishing.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {
+        "modules": {
+          "name": "Разработка модулей",
+          "documents": [
+            {
+              "title": "Основы разработки модулей",
+              "path": "developer-guide/modules/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "Основные концепции модулей",
+              "path": "developer-guide/modules/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "Подробное описание класса Event Wrapper",
+              "path": "developer-guide/modules/event-wrapper.md",
+              "level": 1
+            },
+            {
+              "title": "Лучшие практики разработки модулей",
+              "path": "developer-guide/modules/best-practices.md",
+              "level": 1
+            }
+          ]
+        },
+        "adapters": {
+          "name": "Разработка адаптеров",
+          "documents": [
+            {
+              "title": "Введение в разработку адаптеров",
+              "path": "developer-guide/adapters/getting-started.md",
+              "level": 1
+            },
+            {
+              "title": "Основные концепции адаптера",
+              "path": "developer-guide/adapters/core-concepts.md",
+              "level": 1
+            },
+            {
+              "title": "SendDSL: Подробное руководство",
+              "path": "developer-guide/adapters/send-dsl.md",
+              "level": 1
+            },
+            {
+              "title": "Рекомендации по разработке адаптера",
+              "path": "developer-guide/adapters/best-practices.md",
+              "level": 1
+            },
+            {
+              "title": "Руководство по реализации конвертера событий",
+              "path": "developer-guide/adapters/converter.md",
+              "level": 1
+            }
+          ]
+        }
+      }
+    },
+    "Руководство по платформам": {
+      "description": "Возможности платформ и документация адаптеров",
+      "count": 12,
+      "documents": [
+        {
+          "title": "Документация по функциональности ErisPulse PlatformFeatures",
+          "path": "platform-guide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Характеристики платформы OneBot11",
+          "path": "platform-guide/onebot11.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по особенностям платформы OneBot12",
+          "path": "platform-guide/onebot12.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по особенностям платформы Telegram",
+          "path": "platform-guide/telegram.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по характеристикам платформы электронной почты",
+          "path": "platform-guide/email.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по функциям платформы Yunhu",
+          "path": "platform-guide/yunhu.md",
+          "level": 1
+        },
+        {
+          "title": "Инструкции по поддержке документации",
+          "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Документ по характеристикам платформы Цветущей берёзы (Ideaura)",
+          "path": "platform-guide/ideaura.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по функциям платформы Kook",
+          "path": "platform-guide/kook.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по функциям платформы Matrix",
+          "path": "platform-guide/matrix.md",
+          "level": 1
+        },
+        {
+          "title": "Документация по функциональным особенностям платформы QQBot",
+          "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "Характеристики платформы пользователей Cloud Lake (Yunhu)",
+          "path": "platform-guide/yunhu_user.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Справочник API": {
+      "description": "Документация по основному API и интерфейсам",
+      "count": 4,
+      "documents": [
+        {
+          "title": "API Справочник",
+          "path": "api-reference/README.md",
+          "level": 1
+        },
+        {
+          "title": "API адаптерной системы",
+          "path": "api-reference/adapter-system.md",
+          "level": 1
+        },
+        {
+          "title": "API основных модулей ядра",
+          "path": "api-reference/core-modules.md",
+          "level": 1
+        },
+        {
+          "title": "API системы событий",
+          "path": "api-reference/event-system.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Продвинутые темы": {
+      "description": "Глубокое изучение продвинутых функций фреймворка",
+      "count": 10,
+      "documents": [
+        {
+          "title": "Продвинутые темы",
+          "path": "advanced/README.md",
+          "level": 1
+        },
+        {
+          "title": "Управление жизненным циклом",
+          "path": "advanced/lifecycle.md",
+          "level": 1
+        },
+        {
+          "title": "Система модулей с отложенной загрузкой",
+          "path": "advanced/lazy-loading.md",
+          "level": 1
+        },
+        {
+          "title": "Менеджер маршрутизации",
+          "path": "advanced/router.md",
+          "level": 1
+        },
+        {
+          "title": "Подробное описание MessageBuilder",
+          "path": "advanced/message-builder.md",
+          "level": 1
+        },
+        {
+          "title": "Система типов сессий",
+          "path": "advanced/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Многопроходный диалог (Conversation)",
+          "path": "advanced/conversation.md",
+          "level": 1
+        },
+        {
+          "title": "Регистрация представлений Dashboard",
+          "path": "advanced/dashboard-view.md",
+          "level": 1
+        },
+        {
+          "title": "HTTP-клиент",
+          "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "SQL Query Builder",
+          "path": "advanced/sql-builder.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Разработка с ИИ": {
+      "description": "Использование ИИ для разработки ErisPulse",
+      "count": 1,
+      "documents": [
+        {
+          "title": "AI-ассистированная разработка",
+          "path": "ai-support/README.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Технические стандарты": {
+      "description": "Технические спецификации и стандарты фреймворка",
+      "count": 6,
+      "documents": [
+        {
+          "title": "Технические стандарты",
+          "path": "standards/README.md",
+          "level": 1
+        },
+        {
+          "title": "Стандарт типов сессий ErisPulse",
+          "path": "standards/session-types.md",
+          "level": 1
+        },
+        {
+          "title": "Спецификация стандартного возвращаемого значения для адаптера ErisPulse",
+          "path": "standards/api-response.md",
+          "level": 1
+        },
+        {
+          "title": "Спецификация стандартизации преобразования адаптеров",
+          "path": "standards/event-conversion.md",
+          "level": 1
+        },
+        {
+          "title": "Спецификация методов отправки ErisPulse",
+          "path": "standards/send-method-spec.md",
+          "level": 1
+        },
+        {
+          "title": "ErisPulse Спецификация операций запросов",
+          "path": "standards/request-action-spec.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    },
+    "Руководство по стилю": {
+      "description": "Руководство по стилю кода и документации",
+      "count": 2,
+      "documents": [
+        {
+          "title": "Руководство по стилю",
+          "path": "styleguide/README.md",
+          "level": 1
+        },
+        {
+          "title": "Руководство по стилю комментариев ErisPulse",
+          "path": "styleguide/docstring.md",
+          "level": 1
+        }
+      ],
+      "subgroups": {}
+    }
+  }
+}

@@ -379,3 +379,261 @@ async def confirm_handler(event):
         text = reply_event.get_text().lower()
         
         if text in ["是", "yes", "y"]:
+            await event.reply("操作已確認！")
+        else:
+            await event.reply("操作已取消。")
+    
+    await event.reply("確認執行此操作嗎？(是/否)")
+    
+    await event.wait_reply(
+        timeout=30,
+        callback=handle_confirmation
+    )
+```
+
+### 確認對話 (confirm)
+
+等待使用者確認或否定，自動識別內置中英文確認詞：
+
+```python
+@command("confirm", help="確認操作")
+async def confirm_handler(event):
+    if await event.confirm("確定要執行此操作嗎？"):
+        await event.reply("已確認，執行中...")
+    else:
+        await event.reply("已取消")
+
+# 自定義確認詞
+if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
+    pass
+```
+
+### 選擇選單 (choose)
+
+使用者可回覆選項編號或選項文本：
+
+```python
+@command("choose", help="選擇")
+async def choose_handler(event):
+    choice = await event.choose(
+        "請選擇顏色：",
+        ["紅色", "綠色", "藍色"]
+    )
+    
+    if choice is not None:
+        colors = ["紅色", "綠色", "藍色"]
+        await event.reply(f"你選擇了：{colors[choice]}")
+    else:
+        await event.reply("逾時未選擇")
+```
+
+### 收集表單 (collect)
+
+多步驟收集使用者輸入：
+
+```python
+@command("register", help="註冊")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "請輸入姓名："},
+        {"key": "age", "prompt": "請輸入年齡：", 
+         "validator": lambda e: e.get_text().isdigit()},
+        {"key": "email", "prompt": "請輸入郵箱："}
+    ])
+    
+    if data:
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+    else:
+        await event.reply("註冊逾時或輸入無效")
+```
+
+### 等待任意事件 (wait_for)
+
+等待滿足條件的任意事件，不限於同一使用者：
+
+```python
+@command("wait_member", help="等待新成員")
+async def wait_member_handler(event):
+    await event.reply("等待群組成員加入...")
+    
+    evt = await event.wait_for(
+        event_type="notice",
+        condition=lambda e: e.get_detail_type() == "group_member_increase",
+        timeout=120
+    )
+    
+    if evt:
+        await event.reply(f"歡迎新成員：{evt.get_user_id()}")
+    else:
+        await event.reply("等待逾時")
+```
+
+### 多輪對話 (conversation)
+
+建立可互動的多輪對話上下文：
+
+```python
+@command("survey", help="問卷調查")
+async def survey_handler(event):
+    conv = event.conversation(timeout=60)
+    
+    await conv.say("歡迎參與問卷調查！")
+    
+    while conv.is_active:
+        reply = await conv.wait()
+        
+        if reply is None:
+            await conv.say("對話逾時，再見！")
+            break
+        
+        text = reply.get_text()
+        
+        if text == "退出":
+            await conv.say("再見！")
+            break
+        
+        await conv.say(f"你說了：{text}，繼續輸入或回覆'退出'結束")
+```
+
+### 內置確認詞
+
+ErisPulse 內置了中英文確認詞集合：
+
+- **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
+- **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
+
+## 事件數據訪問
+
+### Event 物件常用方法
+
+```python
+@command("info")
+async def info_handler(event):
+    # 基礎資訊
+    event_id = event.get_id()
+    event_time = event.get_time()
+    event_type = event.get_type()
+    detail_type = event.get_detail_type()
+    
+    # 發送者資訊
+    user_id = event.get_user_id()
+    nickname = event.get_user_nickname()
+    
+    # 訊息內容
+    message_segments = event.get_message()
+    alt_message = event.get_alt_message()
+    text = event.get_text()
+    
+    # 群組資訊
+    group_id = event.get_group_id()
+    
+    # 機器人資訊
+    self_id = event.get_self_user_id()
+    self_platform = event.get_self_platform()
+    
+    # 原始資料
+    raw_data = event.get_raw()
+    raw_type = event.get_raw_type()
+    
+    # 平台資訊
+    platform = event.get_platform()
+    
+    # 訊息類型判斷
+    is_private = event.is_private_message()
+    is_group = event.is_group_message()
+    is_at = event.is_at_message()
+    
+    # 命令資訊
+    if event.is_command():
+        cmd_name = event.get_command_name()
+        cmd_args = event.get_command_args()
+        cmd_raw = event.get_command_raw()
+```
+
+### 平台擴展方法
+
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    platform = event.get_platform()
+
+    # 根據平台呼叫專有方法
+    if platform == "telegram":
+        chat_type = event.get_chat_type()      # Telegram 專有方法
+    elif platform == "email":
+        subject = event.get_subject()           # 郵件專有方法
+```
+
+如果不确定平台是否註冊了某個方法，可以查詢某個平台註冊了哪些方法：
+
+```python
+from ErisPulse.Core.Event import get_platform_event_methods
+
+methods = get_platform_event_methods("telegram")
+# ["get_chat_type", "is_bot_message", ...]
+```
+
+> 各平台註冊的專有方法請參閱對應的 [平台文件](../platform-guide/)。
+
+## 事件處理最佳實踐
+
+### 1. 異常處理
+
+```python
+@command("process")
+async def process_handler(event):
+    try:
+        # 業務邏輯
+        result = await do_some_work()
+        await event.reply(f"結果: {result}")
+    except ValueError as e:
+        # 預期的業務錯誤
+        await event.reply(f"參數錯誤: {e}")
+    except Exception as e:
+        # 未預期的錯誤
+        sdk.logger.error(f"處理失敗: {e}")
+        await event.reply("處理失敗，請稍後重試")
+```
+
+### 2. 日誌記錄
+
+```python
+@message.on_message()
+async def message_handler(event):
+    user_id = event.get_user_id()
+    text = event.get_text()
+    
+    sdk.logger.info(f"處理訊息: {user_id} - {text}")
+    
+    # 使用模組自己的日誌
+    from ErisPulse import sdk
+    logger = sdk.logger.get_child("MyHandler")
+    logger.debug(f"詳細除錯資訊")
+```
+
+### 3. 條件處理
+
+```python
+@message.on_message(priority=0)
+async def conditional_handler(event):
+    """條件處理 - 在處理器內部判斷"""
+    # 只處理特定使用者的訊息
+    if event.get_user_id() in ["bot1", "bot2"]:
+        return
+    
+    # 只處理包含特定關鍵詞的訊息
+    if "關鍵詞" not in event.get_text():
+        return
+    
+    await event.reply("條件滿足，處理訊息")
+```
+
+## 下一步
+
+- [常見任務範例](common-tasks.md) - 學習常用功能的實作
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理

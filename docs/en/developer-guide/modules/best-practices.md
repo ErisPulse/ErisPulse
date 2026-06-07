@@ -53,7 +53,23 @@ def _load_config(self):
 ### 1. Use Asynchronous Libraries
 
 ```python
-# Use aiohttp (asynchronous)
+# Recommended: Use SDK built-in HTTP client (asynchronous, with automatic logging and statistics)
+from ErisPulse.Core import client
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await client.get(url)
+        return await resp.json()
+
+# Can also be used via sdk.client (same effect)
+from ErisPulse import sdk
+
+class MyModule(BaseModule):
+    async def fetch_data(self, url):
+        resp = await sdk.client.get(url)
+        return await resp.json()
+
+# Do not import aiohttp directly (inconvenient for unified framework management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -62,7 +78,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Instead of requests (synchronous, will block)
+# Do not use requests (synchronous, will block the event loop)
 import requests
 
 class MyModule(BaseModule):
@@ -85,12 +101,12 @@ async def handle_command(self, event):
 
 ```python
 async def on_load(self, event):
-    # Initialize resources
-    self.session = aiohttp.ClientSession()
+    # The SDK client automatically manages the connection pool, no need to manually create a session
+    pass
     
 async def on_unload(self, event):
-    # Clean up resources
-    await self.session.close()
+    # If using a custom client, remember to clean up resources
+    pass
 ```
 
 ## Event Handling
@@ -162,7 +178,7 @@ async def handle_event(self, event):
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Invalid argument: {e}")
     except aiohttp.ClientError as e:
-        # Network error
+        # Network error (this exception is rare when using sdk.client due to the built-in retry mechanism)
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
@@ -175,12 +191,15 @@ async def handle_event(self, event):
 ### 2. Timeout Handling
 
 ```python
+# Recommended: Use the SDK built-in client (comes with timeout and retry)
+from ErisPulse.Core import client
+from ErisPulse.Core.Bases.errors import ClientTimeoutError
+
 async def fetch_with_timeout(self, url, timeout=30):
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
-                return await response.json()
-    except asyncio.TimeoutError:
+        resp = await client.get(url, timeout=timeout)
+        return await resp.json()
+    except ClientTimeoutError:
         self.logger.warning(f"Request timeout: {url}")
         raise
 ```

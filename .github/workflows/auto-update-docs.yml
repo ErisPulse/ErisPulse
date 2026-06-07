@@ -81,6 +81,8 @@ jobs:
         id: translate-docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BIGMODEL_API_KEY: ${{ secrets.BIGMODEL_API_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
           echo "艾莉丝开始翻译文档啦~"
@@ -95,7 +97,6 @@ jobs:
           # 运行翻译脚本（自动为所有语言翻译）
           TRANSLATE_EXIT_CODE=0
           if [ -f "scripts/tools/translate-docs.py" ]; then
-            # 检查是否配置了 API 密钥
             if [ -n "$OPENAI_API_KEY" ]; then
               echo "开始翻译文档..."
               python scripts/tools/translate-docs.py $FORCE_FLAG || TRANSLATE_EXIT_CODE=$?
@@ -171,14 +172,14 @@ jobs:
 
       - name: 统计更新情况
         run: |
-          echo "艾莉丝正在统计今天的文档更新情况~"
+          echo "开始统计文档更新情况..."
           
           # 统计API文档更新
           api_files=$(git diff --name-only docs/*/api-reference/ 2>/dev/null | wc -l)
           echo "API文档更新文件数: $api_files"
           
           # 统计翻译文档更新
-          translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
+          translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ docs/ja/ docs/ru/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
           echo "翻译文档更新文件数: $translated_files"
           
           # 统计AI Prompt文档更新
@@ -192,6 +193,8 @@ jobs:
           # 统计翻译缓存更新
           cache_files=$(git diff --name-only .github/.translate_cache/ 2>/dev/null | wc -l)
           echo "翻译缓存更新文件数: $cache_files"
+
+
 
       - name: 配置 Git 身份
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'

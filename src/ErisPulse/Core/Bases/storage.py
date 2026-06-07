@@ -13,6 +13,9 @@ ErisPulse 存储基类
 from abc import ABC, abstractmethod
 from typing import Any
 
+# 哨兵值，用于区分"键不存在"和"值为 None"
+_SENTINEL = object()
+
 
 class BaseQueryBuilder(ABC):
     """
@@ -376,8 +379,8 @@ class BaseStorage(ABC):
         """
         results = {}
         for key in keys:
-            value = self.get(key)
-            if value is not None:
+            value = self.get(key, _SENTINEL)
+            if value is not _SENTINEL:
                 results[key] = value
         return results
 
@@ -418,8 +421,8 @@ class BaseStorage(ABC):
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute '{key}'"
             )
-        value = self.get(key)
-        if value is None:
+        value = self.get(key, _SENTINEL)
+        if value is _SENTINEL:
             raise AttributeError(f"存储项 {key} 不存在")
         return value
 
@@ -427,10 +430,7 @@ class BaseStorage(ABC):
         if key.startswith("_"):
             super().__setattr__(key, value)
             return
-        try:
-            self.set(key, value)
-        except Exception:
-            super().__setattr__(key, value)
+        self.set(key, value)
 
 
 __all__ = [

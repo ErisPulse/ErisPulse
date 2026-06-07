@@ -1,12 +1,33 @@
 {
   "source_lang": "zh-CN",
-  "target_langs": ["en", "zh-TW"],
-  "ai_provider": "openai",
-  "api_key_env": "OPENAI_API_KEY",
-  "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
-  "model": "GLM-4.7-Flash",
+  "target_langs": ["en", "zh-TW", "ja", "ru"],
   "concurrent": 1,
   "ignore_dirs": ["ai-support/prompts", "api-reference/auto_api", "_meta"],
-  "translate_code_comments": true,
-  "cache_dir": ".github/.translate_cache"
+  "cache_dir": ".github/.translate_cache",
+  "default": {
+    "request_delay": 2,
+    "max_retries": 5,
+    "retry_base_delay": 10,
+    "max_tokens": 40000,
+    "temperature": 0.3,
+    "enable_reasoning": false,
+    "self_check": true,
+    "self_check_retries": 1
+  },
+  "providers": [
+    {
+      "name": "siliconflow",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "api_key_env": "SILICONFLOW_API_KEY",
+      "model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+      "supports_thinking": false,
+      "max_tokens": 40000
+    },
+    {
+      "name": "bigmodel",
+      "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
+      "api_key_env": "BIGMODEL_API_KEY",
+      "model": "GLM-4.7-Flash"
+    }
+  ]
 }

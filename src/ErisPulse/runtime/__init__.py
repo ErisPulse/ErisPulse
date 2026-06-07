@@ -27,6 +27,16 @@ from .frame_config import (
     get_framework_config,
 )
 
+from .config_schema import (
+    AdapterConfig,
+    BotAccountConfig,
+    dataclass_to_toml_with_comments,
+    dataclass_to_defaults_dict,
+    dict_to_dataclass,
+    validate_config,
+    get_config_schema,
+)
+
 __all__ = [
     # 异常处理
     "ExceptionHandler",
@@ -43,4 +53,12 @@ __all__ = [
     "get_storage_config",
     "get_event_config",
     "get_framework_config",
+    # 适配器配置 Schema
+    "AdapterConfig",
+    "BotAccountConfig",
+    "dataclass_to_toml_with_comments",
+    "dataclass_to_defaults_dict",
+    "dict_to_dataclass",
+    "validate_config",
+    "get_config_schema",
 ]

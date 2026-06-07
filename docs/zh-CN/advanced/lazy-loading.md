@@ -95,8 +95,7 @@ result = sdk.my_module.some_sync_method()
 
 ### 推荐使用懒加载的场景（lazy_load=True）
 
-- 被动调用的工具类
-- 被动类模块
+- 被动调用的工具类（如数据查询模块，格式转换器等，仅只在其他模块调用时才需要）
 
 ### 推荐禁用懒加载的场景（lazy_load=False）
 
@@ -105,19 +104,7 @@ result = sdk.my_module.some_sync_method()
 - 定时任务模块
 - 需要在应用启动时就初始化的模块
 
-### 加载优先级
-
-```python
-from ErisPulse.loaders import ModuleLoadStrategy
-
-class MyModule(BaseModule):
-    @staticmethod
-    def get_load_strategy():
-        return ModuleLoadStrategy(
-            lazy_load=False,  # 立即加载
-            priority=100      # 高优先级，数值越大优先级越高
-        )
-```
+> `priority` 参数控制立即加载模块间的初始化顺序，数值越大越先初始化。同优先级的模块按注册顺序加载。
 
 ## 注意事项
 

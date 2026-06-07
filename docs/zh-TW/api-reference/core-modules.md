@@ -1,181 +1,101 @@
 # 核心模組 API
 
-本文檔詳細介紹了 ErisPulse 的核心模組 API。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文檔」連結。
 
 ## Storage 模組
+
+基於 SQLite 的鍵值存儲系統，支援通用 SQL 鏈式查詢。
 
 ### 基本操作
 
 ```python
 from ErisPulse import sdk
 
-# 設定值
 sdk.storage.set("key", "value")
-
-# 取得值
 value = sdk.storage.get("key", default_value)
-
-# 取得所有鍵
 keys = sdk.storage.keys()
-
-# 刪除值
 sdk.storage.delete("key")
-```
-
-### 事務操作
-
-```python
-# 使用事務確保資料一致性
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # 如果任何操作失敗，所有變更都會回滾
 ```
 
 ### 批次操作
 
 ```python
-# 批次設定
-sdk.storage.set_multi({
-    "key1": "value1",
-    "key2": "value2",
-    "key3": "value3"
-})
+sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+values = sdk.storage.get_multi(["key1", "key2"])
+sdk.storage.delete_multi(["key1", "key2"])
+```
 
-# 批次取得
-values = sdk.storage.get_multi(["key1", "key2", "key3"])
+### 事務操作
 
-# 批次刪除
-sdk.storage.delete_multi(["key1", "key2", "key3"])
+```python
+with sdk.storage.transaction():
+    sdk.storage.set("key1", "value1")
+    sdk.storage.set("key2", "value2")
+```
+
+### 屬性存取
+
+```python
+sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
 ### SQL 鏈式查詢
 
 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
-> 詳見 [SQL 查詢建構器](../advanced/sql-builder.md) 取得完整文件。
-
 ```python
-from ErisPulse import sdk
-
-# 建立自訂表
 sdk.storage.CreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
-    "age": "INTEGER DEFAULT 0"
 })
 
-# 插入資料
-sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
-
-# 批次插入
-sdk.storage.Table("users").InsertMulti([
-    {"name": "Bob", "age": 25},
-    {"name": "Charlie", "age": 35}
-]).Execute()
-
-# 查詢資料
-rows = (sdk.storage.Table("users")
-    .Select("name", "age")
-    .Where("age > ?", 18)
-    .OrderBy("name")
-    .Limit(10)
-    .Execute())
-
-# 更新資料
-sdk.storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
-
-# 刪除資料
-sdk.storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
-
-# 計數
-count = sdk.storage.Table("users").Where("age > ?", 18).Count()
-
-# 存在性檢查
-exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
-
-# 取得單條記錄
-row = sdk.storage.Table("users").Select("name", "age").Where("name = ?", "Alice").ExecuteOne()
-
-# 修改表結構
-sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
-sdk.storage.AlterTable("users").RenameTo("members").Execute()
-
-# 檢查表是否存在
-if sdk.storage.HasTable("users"):
-    sdk.storage.DropTable("users")
-
-# 事務中的鏈式操作
-with sdk.storage.transaction():
-    sdk.storage.Table("users").Insert({"name": "Dave", "age": 40}).Execute()
-    sdk.storage.Table("users").Update({"age": 41}).Where("name = ?", "Dave").Execute()
-
-# 複用查詢條件
-base = sdk.storage.Table("users").Where("age > ?", 20)
-rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
-count = base.copy().Count()
+sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
+rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
+
+> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 存儲後端抽象
 
-`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援未來拓展其他存儲介質（Redis、MySQL 等）。
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他存儲介質（Redis、MySQL 等）。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
-
-# BaseStorage 定義了統一介面：get/set/delete/Table/CreateTable/DropTable 等
-# BaseQueryBuilder 定義了鏈式查詢介面：Select/Insert/Update/Delete/Where/OrderBy/Limit 等
 ```
 
 ## Config 模組
 
-### 讀取配置
+TOML 格式的配置檔案管理，支援點號分隔的鍵路徑。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
+| `force_save()` | 強制將記憶體中的配置寫入檔案 |
+| `reload()` | 從檔案重新載入配置 |
+
+### 範例
 
 ```python
-from ErisPulse import sdk
-
-# 取得配置
 config = sdk.config.getConfig("MyModule", {})
+value = sdk.config.getConfig("MyModule.timeout", 30)
 
-# 取得巢狀配置
-value = sdk.config.getConfig("MyModule.subkey.value", "default")
-```
-
-### 寫入配置
-
-```python
-# 設定配置
 sdk.config.setConfig("MyModule", {"key": "value"})
-
-# 設定巢狀配置
-sdk.config.setConfig("MyModule.subkey.value", "new_value")
+sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-### 配置範例
-
-```python
-def _load_config(self):
-    config = sdk.config.getConfig("MyModule")
-    if not config:
-        # 建立預設配置
-        default_config = {
-            "api_url": "https://api.example.com",
-            "timeout": 30,
-            "cache_ttl": 3600
-        }
-        sdk.config.setConfig("MyModule", default_config, immediate=True)  # 第三個參數為 True 時，立即儲存配置，是方便使用者可以直接修改設定檔的
-        return default_config
-    return config
-```
+> `setConfig` 預設採用延遲寫入（每 5 秒批次儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
 
 ## Logger 模組
 
-### 基本日誌
+模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。
+
+### 基本用法
 
 ```python
-from ErisPulse import sdk
-
-# 不同日誌層級
 sdk.logger.debug("除錯資訊")
 sdk.logger.info("執行資訊")
 sdk.logger.warning("警告資訊")
@@ -183,412 +103,183 @@ sdk.logger.error("錯誤資訊")
 sdk.logger.critical("致命錯誤")
 ```
 
-### 子日誌記錄器
+### 子日誌器
 
 ```python
-# 取得子日誌記錄器
 child_logger = sdk.logger.get_child("MyModule")
 child_logger.info("子模組日誌")
 
-# 子模組還可以有子模組的日誌，這樣可以更精確地控制日誌輸出
-child_logger.get_child("utils")
+child_logger.get_child("utils")  # 支援巢狀
 ```
 
-### 日誌輸出
+### 日誌層級控制
 
 ```python
-# 設定輸出檔案
-sdk.logger.set_output_file("app.log")
+sdk.logger.set_level("DEBUG")                          # 全局層級
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組層級
+```
 
-# 儲存日誌到檔案
+### 輸出控制
+
+```python
+sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
+sdk.logger.get_logs("MyModule")
+sdk.logger.set_memory_limit(1000)
 ```
 
 ## Adapter 模組
 
-### 取得適配器
+適配器管理器，管理多平台適配器的註冊、啟動和關閉。
 
-```python
-from ErisPulse import sdk
+### API 概覽
 
-# 取得適配器實例
-adapter = sdk.adapter.get("platform_name")
-
-# 透過屬性存取
-adapter = sdk.adapter.platform_name
-```
+| 方法 | 說明 |
+|------|------|
+| `get(platform)` | 取得適配器實例 |
+| `exists(platform)` | 檢查適配器是否已註冊 |
+| `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
+| `is_enabled(platform)` | 檢查是否啟用 |
+| `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
+| `is_running(platform)` | 檢查適配器是否正在運行 |
+| `list_running()` | 列出所有正在運行的適配器 |
+| `platforms` | 取得所有平台名稱列表 |
 
 ### 適配器事件
 
 ```python
-# 監聽標準事件
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# 監聽特定平台的事件
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
-
-# 監聽平台原生事件
-@sdk.adapter.on("raw_event", raw=True, platform="yunhu")
-async def handle_raw_event(data):
-    pass
 ```
 
-### 適配器管理
+### Bot 狀態查詢
 
 ```python
-# 取得所有平台
-platforms = sdk.adapter.platforms
-
-# 檢查適配器是否存在
-exists = sdk.adapter.exists("platform_name")
-
-# 啟用/停用適配器
-sdk.adapter.enable("platform_name")
-sdk.adapter.disable("platform_name")
-
-# 啟動/關閉適配器
-await sdk.adapter.startup(["platform1", "platform2"])
-await sdk.adapter.shutdown(["platform1", "platform2"])
-
-# 檢查適配器是否正在運行
-is_running = sdk.adapter.is_running("platform_name")
-
-# 列出所有正在運行的適配器
-running = sdk.adapter.list_running()
+sdk.adapter.get_bot_info("telegram", "123456")
+sdk.adapter.list_bots("telegram")
+sdk.adapter.is_bot_online("telegram", "123456")
+sdk.adapter.get_status_summary()
 ```
+
+> 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。
 
 ## Module 模組
 
-### 取得模組
+模組管理器，管理外掛的註冊、載入和卸載。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `get(name)` | 取得模組實例 |
+| `exists(name)` | 檢查是否已註冊 |
+| `is_loaded(name)` | 檢查是否已載入 |
+| `is_enabled(name)` | 檢查是否啟用 |
+| `enable(name)` / `disable(name)` | 啟用/停用模組 |
+| `load(name)` / `unload(name)` | 載入/卸載模組 |
+| `list_registered()` | 列出已註冊模組 |
+| `list_loaded()` | 列出已載入模組 |
+| `get_info(name)` | 取得模組資訊 |
+| `get_status_summary()` | 取得模組狀態摘要 |
+
+### 屬性存取
 
 ```python
-from ErisPulse import sdk
-
-# 取得模組實例
 module = sdk.module.get("ModuleName")
-
-# 透過屬性存取
 module = sdk.module.ModuleName
-module = sdk.ModuleName
-```
-
-### 模組管理
-
-```python
-# 檢查模組是否存在
-exists = sdk.module.exists("ModuleName")
-
-# 檢查模組是否已載入
-is_loaded = sdk.module.is_loaded("ModuleName")
-
-# 檢查模組是否已啟用
-is_enabled = sdk.module.is_enabled("ModuleName")
-
-# 啟用/停用模組
-sdk.module.enable("ModuleName")
-sdk.module.disable("ModuleName")
-
-# 載入模組
-await sdk.module.load("ModuleName")
-
-# 卸載模組
-await sdk.module.unload("ModuleName")
-
-# 列出已載入的模組
-loaded = sdk.module.list_loaded()
-
-# 列出已註冊的模組
-registered = sdk.module.list_registered()
-
-# 取得模組資訊
-info = sdk.module.get_info("ModuleName")
-
-# 取得模組狀態摘要
-summary = sdk.module.get_status_summary()
-# {"modules": {"ModuleName": {"status": "loaded", "enabled": True, "is_base_module": True}}}
-
-# 檢查模組是否正在運行（等價於 is_loaded）
-is_running = sdk.module.is_running("ModuleName")
-
-# 列出所有正在運行的模組
-running = sdk.module.list_running()
+module = sdk.ModuleName  # 等價快捷方式
 ```
 
 ## Lifecycle 模組
 
-### 事件提交
+事件驅動的生命週期管理器，提供事件提交和監聽功能。
+
+### API 概覽
+
+| 方法 | 說明 |
+|------|------|
+| `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和萬用字元 `*` |
+| `register(event, handler, priority=0)` | 函式式註冊處理器 |
+| `unregister(event, handler=None)` | 移除處理器 |
+| `emit(event, data)` | 非同步觸發事件 |
+| `emit_sync(event, data)` | 同步觸發事件 |
+| `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |
+| `start_timer(id)` / `stop_timer(id)` | 效能計時器 |
+
+### 範例
 
 ```python
-from ErisPulse import sdk
-
-# 提交自訂事件
-await sdk.lifecycle.submit_event(
-    "custom.event",
-    data={"key": "value"},
-    source="MyModule",
-    msg="自訂事件描述"
-)
-```
-
-### 事件監聽
-
-```python
-# 監聯特定事件
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
     print(f"模組初始化: {event_data}")
 
-# 監聯父級事件
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
     print(f"模組事件: {event_data}")
 
-# 監聯所有事件
-@sdk.lifecycle.on("*")
-async def handle_any_event(event_data):
-    print(f"系統事件: {event_data}")
+await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-### 計時器
-
-```python
-# 開始計時
-sdk.lifecycle.start_timer("my_operation")
-
-# ... 執行操作 ...
-
-# 取得持續時間
-duration = sdk.lifecycle.get_duration("my_operation")
-
-# 停止計時
-total_time = sdk.lifecycle.stop_timer("my_operation")
-```
+> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
-### 裝飾器路由（推薦）
+HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
+
+> 完整的路由 API 文檔（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
+
+### 快速參考
 
 ```python
-from ErisPulse import sdk
-from fastapi import Request
-
-# HTTP 路由裝飾器
-@sdk.router.http("MyModule", "/api", methods=["GET", "POST"])
-async def api_handler(request: Request):
+# HTTP 路由
+@sdk.router.get("MyModule", "/api")
+async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# 快捷方法裝飾器
-@sdk.router.get("MyModule", "/info")
-async def get_info(request: Request):
-    return {"module": "MyModule"}
-
-@sdk.router.post("MyModule", "/data")
-async def post_data(request: Request):
-    data = await request.json()
-    return {"received": data}
-
-@sdk.router.put("MyModule", "/data/{item_id}")
-async def put_data(request: Request):
-    return {"updated": True}
-
-@sdk.router.delete("MyModule", "/data/{item_id}")
-async def delete_data(request: Request):
-    return {"deleted": True}
-
-# WebSocket 裝飾器
-from fastapi import WebSocket
-
+# WebSocket 路由
 @sdk.router.ws("MyModule", "/ws")
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
+async def ws_handler(ws: WebSocketConnection):
+    async for text in ws.iter_text():
+        await ws.send_text(f"Echo: {text}")
 
-# 帶認證的 WebSocket 裝飾器
-async def ws_auth(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-@sdk.router.ws("MyModule", "/secure_ws", auth_handler=ws_auth)
-async def secure_ws_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-```
-
-### 傳統註冊方式
-
-```python
-from ErisPulse import sdk
-from fastapi import Request
-
-async def handler(request: Request):
-    data = await request.json()
-    return {"status": "ok", "data": data}
-
-sdk.router.register_http_route(
-    module_name="MyModule",
-    path="/api",
-    handler=handler,
-    methods=["POST"],
-    rate_limit="10/minute",
-    summary="資料介面",
-    tags=["API"],
-)
-
-sdk.router.unregister_http_route("MyModule", "/api")
-```
-
-### WebSocket 路由
-
-```python
-from ErisPulse import sdk
-from fastapi import WebSocket
-
-async def websocket_handler(websocket: WebSocket):
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Echo: {data}")
-
-# 基本註冊（自動接受連線）
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/ws",
-    handler=websocket_handler,
-)
-
-# 帶認證的註冊（推薦：使用 auth_handler 控制連線）
-async def auth_handler(websocket: WebSocket) -> bool:
-    token = websocket.query_params.get("token")
-    return token == "secret"
-
-sdk.router.register_websocket(
-    module_name="my_module",
-    path="/secure_ws",
-    handler=websocket_handler,
-    auth_handler=auth_handler,
-)
-
-# 取消路由
-sdk.router.unregister_websocket("MyModule", "/ws")
-```
-
-**參數說明：**
-
-| 參數 | 說明 | 預設值 |
-|------|------|--------|
-| `module_name` | 模組名稱（必須） | - |
-| `path` | WebSocket 路徑 | - |
-| `handler` | 處理函式 | - |
-| `auth_handler` | 認證函式，返回 `False` 會自動關閉連線 | `None` |
-| `auto_accept` | 是否自動 `accept()` | `True` |
-
-> **推薦**：使用 `auth_handler` 進行連線確認，而非關閉 `auto_accept`。僅在你需要完全控制連線流程時才設定 `auto_accept=False`。
-
-### 路由分組
-
-```python
-# 建立路由組
+# 路由分組
 group = sdk.router.group("MyModule", prefix="/v1")
-
-# 在組內註冊路由
 @group.get("/users")
-async def list_users(request: Request):
+async def list_users(request: HttpRequest):
     return {"users": []}
-
-@group.post("/users")
-async def create_user(request: Request):
-    return {"created": True}
-
-# 帶版本號的分組
-v2 = sdk.router.group("MyModule", prefix="/v2", version="2")
 ```
 
-### 路由中介軟體
+## HTTP Client 模組
+
+統一 HTTP/WS 客戶端，基於 aiohttp，提供請求統計、重試、日誌、ErisPulse 異常體系。
+
+> 完整的 HTTP 客戶端文檔（請求方法、響應物件、WebSocket 客戶端、異常體系等）請參考 [HTTP 客戶端](../advanced/http-client.md)。
+
+### 快速參考
 
 ```python
-# 全域中介軟體（glob 匹配）
-@sdk.router.middleware("/MyModule/*")
-async def auth_middleware(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"error": "Unauthorized"}
-    response = await call_next(request)
-    return response
+from ErisPulse.Core import client
 
-# 特定路徑中介軟體
-@sdk.router.middleware("/MyModule/admin/*")
-async def admin_middleware(request: Request, call_next):
-    return await call_next(request)
+# HTTP 請求
+resp = await client.get("https://api.example.com/users")
+data = await resp.json()
+
+# WebSocket
+ws = await client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
-### 速率限制
-
-```python
-# 對路由設定速率限制（滑動視窗）
-@sdk.router.get("MyModule", "/limited", rate_limit="10/minute")
-async def limited_endpoint(request: Request):
-    return {"ok": True}
-
-@sdk.router.post("MyModule", "/submit", rate_limit="5/minute")
-async def submit_data(request: Request):
-    return {"submitted": True}
-```
-
-### CORS 配置
-
-```python
-# 程式碼方式
-sdk.router.setup_cors(
-    allow_origins=["https://example.com"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
-# 設定檔方式（config.toml）
-# [router.cors]
-# allow_origins = ["https://example.com"]
-# allow_methods = ["GET", "POST"]
-# allow_headers = ["*"]
-```
-
-### 安全標頭
-
-```python
-# 自動新增安全回應標頭
-sdk.router.setup_security_headers()
-
-# 設定檔方式（config.toml）
-# [router.security]
-# enabled = true
-```
-
-### 自動文件
-
-```python
-# Router 預設啟用 OpenAPI 文件
-# 停用文件
-sdk.router.disable_docs()
-
-# 自訂文件資訊
-sdk.router.set_docs_info(
-    title="My API",
-    description="API 文件",
-    version="1.0.0"
-)
-```
-
-### 路由資訊
-
-```python
-app = sdk.router.get_app()
-```
-
-## 相關文件
+## 相關文檔
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
+- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文檔
+- [路由管理器](../advanced/router.md) - 路由管理器完整文檔
+- [HTTP 客戶端](../advanced/http-client.md) - HTTP 客戶端完整文檔
+- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文檔

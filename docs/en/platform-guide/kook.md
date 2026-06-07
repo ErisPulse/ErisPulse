@@ -389,4 +389,88 @@ async def handle_notice(event):
 
     sub_type = event.get("sub_type")
 
-    if sub_type == "
+    if sub_type == "added_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 对消息 {msg_id} 添加了表情回应")
+
+    elif sub_type == "deleted_reaction":
+        emoji = event.get("emoji", {})
+        user_id = event.get("user_id")
+        msg_id = event.get("message_id")
+        print(f"用户 {user_id} 移除了消息 {msg_id} 的表情回应")
+```
+
+### Sending Media Messages
+
+```python
+# Send image (URL)
+await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
+
+# Send image (binary)
+with open("image.png", "rb") as f:
+    image_bytes = f.read()
+await kook.Send.To("group", channel_id).Image(image_bytes)
+
+# Send video
+await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
+
+# Send file
+await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
+
+# Send voice
+await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
+```
+
+### Sending KMarkdown and Card Messages
+
+```python
+# KMarkdown
+await kook.Send.To("group", channel_id).Markdown("**粗体** *斜体* [链接](https://example.com)")
+
+# Card message
+card = {
+    "type": "card",
+    "theme": "primary",
+    "size": "lg",
+    "modules": [
+        {"type": "header", "text": {"type": "plain-text", "content": "标题"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "内容"}}
+    ]
+}
+await kook.Send.To("group", channel_id).Card(card)
+```
+
+### Message Editing and Recall
+
+```python
+# Send message
+result = await kook.Send.To("group", channel_id).Markdown("**原始内容**")
+msg_id = result["data"]["msg_id"]
+
+# Edit message (only supports KMarkdown and CardMessage)
+await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+
+# Recall message
+await kook.Send.To("group", channel_id).Recall(msg_id)
+```
+
+### Handling Private Message Edit and Delete Notifications
+
+```python
+@notice.on_notice()
+async def handle_private_notice(event):
+    if event.get("platform") != "kook":
+        return
+
+    sub_type = event.get("sub_type")
+
+    if sub_type == "updated_private_message":
+        msg_id = event.get("message_id")
+        content = event.get("content")
+        print(f"私信消息已更新: {msg_id}, 新内容: {content}")
+
+    elif sub_type == "deleted_private_message":
+        msg_id = event.get("message_id")
+        print(f"私信消息已删除: {msg_id}")
