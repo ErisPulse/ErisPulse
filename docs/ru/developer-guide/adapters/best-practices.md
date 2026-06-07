@@ -24,7 +24,7 @@ class MyAdapter(BaseAdapter):
         bot_id = self._get_bot_id()
 
         # Бот онлайн: отправить событие connect одной строкой
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的机器人")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="Мой робот")
 
         try:
             while True:
@@ -69,7 +69,7 @@ onebot_event = {
         "platform": "myplatform",
         "user_id": "bot123",
         "user_name": "MyBot",
-        "nickname": "我的机器人",
+        "nickname": "Мой робот",
     },
     # ... остальные поля
 }
@@ -181,6 +181,43 @@ class MyAdapter(BaseAdapter):
                 self.logger.error(f"Ошибка пульсации: {e}")
                 break
 ```
+
+### 4. Экспозиция информации о соединении
+
+Адаптер должен сделать маршруты, которые он регистрирует, видимыми для пользователя, чтобы пользователи могли легко настраивать адреса обратного вызова на платформе. Рекомендуется активно выводить информацию о соединении в `start()`:
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket адрес: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+Пользователи могут просмотреть все маршруты и адреса соединения адаптера через следующие API:
+
+```python
+from ErisPulse import sdk
+
+# Информация о соединении на уровне адаптера (рекомендуется)
+info = sdk.adapter.get_connection_info("myplatform")
+
+# Запрос на уровне менеджера маршрутов
+sdk.router.list_namespaces()              # Вывод списка всех пространств имен
+sdk.router.get_module_routes("myplatform")  # Детальная информация о маршрутах
+sdk.router.get_module_urls("myplatform")    # Полный URL подключения
+```
+
+> **Примечание**: при регистрации маршрута поле `module_name` должно полностью совпадать с именем платформы, под которым адаптер зарегистрирован в ErisPulse, иначе `get_connection_info()` не сможет сопоставить маршрут. Адаптеры с несколькими учетными записями должны регистрировать дочерние пути для каждого аккаунта (например, `/account1/webhook`, `/account2/webhook`), а не использовать разные значения `module_name`.
 
 ## Конвертация событий
 
