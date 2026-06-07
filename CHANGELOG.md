@@ -120,6 +120,35 @@
   - 适配器注册时自动注入 `instance._platform`
   - 生命周期事件 `client.request` 更名为 `client.request.success`
   - HTTP 请求异常分类处理：`ClientConnectionError` 重建 session 重试，`TimeoutError` 独立重试
+  - `WebSocket` 路由存储元组从 `(handler, auth_handler)` 扩展为 `(handler, auth_handler, auto_accept)`，确保服务重启后 `auto_accept` 标志不丢失
+  - `loaders/strategy.py` `ModuleLoadStrategy.__getattr__` 不存在的属性现在抛出 `AttributeError` 而非静默返回 `None`
+  - `config/config.toml` 清除所有硬编码凭证，替换为占位符值
+  - `.gitignore` 新增 `config/config.toml`、`config/config.db` 等敏感配置文件排除规则
+
+### 安全
+- @wsu2059q
+  - `Core/storage.py` 新增 SQL 标识符（表名/列名/列类型）白名单校验，防止 SQL 注入：
+    - 新增 `_validate_identifier()` 函数，仅允许 `^[a-zA-Z_][a-zA-Z0-9_]*$` 格式
+    - 新增 `_validate_column_type()` 函数，拒绝包含分号、注释符等危险字符的类型定义
+    - 所有 `Table()`、`CreateTable()`、`DropTable()`、`AlterTable()`、`Select()`、`Insert()`、`Update()`、`OrderBy()` 入口添加校验
+  - `CLI/utils/package_manager.py` 移除 SSL 证书验证静默降级逻辑，检测到代理时不再以 `ssl.CERT_NONE` 重试
+  - `CLI/utils/package_manager.py` 新增 `_sanitize_proxy_url()` 方法，脱敏代理 URL 中的用户名/密码，防止凭证泄露到控制台
+  - `loaders/module.py` 新增 SDK 属性名安全校验：
+    - 新增 `_RESERVED_SDK_ATTRS` 保留属性集合，禁止模块覆盖 `logger`、`config`、`__class__` 等关键属性
+    - 新增 `_validate_sdk_attr_name()` 函数，拒绝 `_` 前缀、不符合标识符规范、与保留属性冲突的模块名称
+    - `initialize_modules()` 在 `setattr(sdk_instance, ...)` 之前强制校验
+  - `Core/Bases/storage.py` 修复 `BaseStorage.__setattr__` 静默吞没后端写入失败的问题：移除 `except` fallback，让异常正常传播
+
+### 修复
+- @wsu2059q
+  - 修复 `BaseStorage.get_multi()` / `__getattr__()` 将存储值 `None` 与键不存在混淆的问题：引入 `_SENTINEL` 哨兵值区分
+  - 修复 `loaders/adapter.py` 异常处理捕获 `BaseException` 导致 `KeyboardInterrupt`（Ctrl+C）被静默吞没的问题
+  - 修复 `loaders/module.py` `LazyModule._init_failed` 属性未在 `__init__` 中初始化，导致 `hasattr` 检查脆弱的问题
+  - 修复 `Core/client.py` `_convert_aiohttp_exception` 中重复 `return` 死代码
+  - 修复 `CLI/commands/install.py` 适配器交互安装表格定义 5 列但 `row_builder` 只提供 4 值导致 Rich 报错或显示错乱的问题
+  - 修复 `Core/router.py` `_restore_routes_from_records` 中 `auto_accept` 硬编码为 `False`，导致服务重启后所有 WebSocket 路由 `auto_accept` 丢失、连接挂起的问题
+  - 修复 `Core/Bases/router.py` `SseEmitter.send()` 数据分割不处理 `\r\n`（Windows 换行符），可能导致部分 SSE 客户端解析异常的问题
+  - 修复 `CLI/commands/create.py` LICENSE 模板硬编码年份 `"2026"`，导致后续年份生成错误版权日期的问题
 
 ### 文档
 - @wsu2059q
