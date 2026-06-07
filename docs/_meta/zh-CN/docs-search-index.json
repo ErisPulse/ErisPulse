@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1148,
+  "total_keywords": 1145,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -286,6 +286,14 @@
         "title": "1. 说明"
       }
     ],
+    "1. 选择物料文档": [
+      {
+        "document": "ai-support/README.md",
+        "line": 32,
+        "level": 3,
+        "title": "1. 选择物料文档"
+      }
+    ],
     "1. 配置 pyproject.toml": [
       {
         "document": "developer-guide/publishing.md",
@@ -524,6 +532,14 @@
         "line": 226,
         "level": 3,
         "title": "2. 批量操作"
+      }
+    ],
+    "2. 提供上下文": [
+      {
+        "document": "ai-support/README.md",
+        "line": 40,
+        "level": 3,
+        "title": "2. 提供上下文"
       }
     ],
     "2. 支持的消息发送类型": [
@@ -978,6 +994,14 @@
         "title": "3. 特有事件类型"
       }
     ],
+    "3. 编写需求描述": [
+      {
+        "document": "ai-support/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "3. 编写需求描述"
+      }
+    ],
     "3. 缺少 `self` 字段": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -1208,6 +1232,14 @@
         "line": 275,
         "level": 3,
         "title": "4. 设置镜像为公开"
+      }
+    ],
+    "4. 验证生成结果": [
+      {
+        "document": "ai-support/README.md",
+        "line": 52,
+        "level": 3,
+        "title": "4. 验证生成结果"
       }
     ],
     "4.1 Event 方法列表": [
@@ -2218,30 +2250,6 @@
         "title": "ErisPulse 适配器标准化返回规范"
       }
     ],
-    "ErisPulse-AdapterDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 39,
-        "level": 4,
-        "title": "ErisPulse-AdapterDev.md"
-      }
-    ],
-    "ErisPulse-Full.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 54,
-        "level": 4,
-        "title": "ErisPulse-Full.md"
-      }
-    ],
-    "ErisPulse-ModuleDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 26,
-        "level": 4,
-        "title": "ErisPulse-ModuleDev.md"
-      }
-    ],
     "Event Mixin 扩展方法": [
       {
         "document": "platform-guide/telegram.md",
@@ -2668,30 +2676,6 @@
         "line": 274,
         "level": 3,
         "title": "Q5: 邮箱等特殊平台如何处理？"
-      }
-    ],
-    "Q: AI 生成的代码有问题怎么办？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 3,
-        "title": "Q: AI 生成的代码有问题怎么办？"
-      }
-    ],
-    "Q: 如何让 AI 生成更高质量的代码？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 133,
-        "level": 3,
-        "title": "Q: 如何让 AI 生成更高质量的代码？"
-      }
-    ],
-    "Q: 推荐使用什么 AI 工具？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 118,
-        "level": 3,
-        "title": "Q: 推荐使用什么 AI 工具？"
       }
     ],
     "QQBot平台特性文档": [
@@ -3571,7 +3555,7 @@
     "下一步": [
       {
         "document": "ai-support/README.md",
-        "line": 141,
+        "line": 125,
         "level": 2,
         "title": "下一步"
       },
@@ -4120,14 +4104,6 @@
         "title": "什么是适配器"
       }
     ],
-    "从 GitHub Releases 下载": [
-      {
-        "document": "ai-support/README.md",
-        "line": 19,
-        "level": 4,
-        "title": "从 GitHub Releases 下载"
-      }
-    ],
     "从本地安装": [
       {
         "document": "user-guide/installation.md",
@@ -4262,6 +4238,14 @@
         "line": 59,
         "level": 2,
         "title": "使用懒加载模块"
+      }
+    ],
+    "使用步骤": [
+      {
+        "document": "ai-support/README.md",
+        "line": 30,
+        "level": 2,
+        "title": "使用步骤"
       }
     ],
     "使用生命周期事件": [
@@ -5044,6 +5028,14 @@
         "line": 439,
         "level": 3,
         "title": "可用属性"
+      }
+    ],
+    "各文档覆盖范围": [
+      {
+        "document": "ai-support/README.md",
+        "line": 15,
+        "level": 3,
+        "title": "各文档覆盖范围"
       }
     ],
     "同时发布到 Docker Hub": [
@@ -6223,7 +6215,7 @@
     "常见问题": [
       {
         "document": "ai-support/README.md",
-        "line": 116,
+        "line": 103,
         "level": 2,
         "title": "常见问题"
       },
@@ -7156,14 +7148,6 @@
         "title": "文档信息"
       }
     ],
-    "文档内容说明": [
-      {
-        "document": "ai-support/README.md",
-        "line": 24,
-        "level": 3,
-        "title": "文档内容说明"
-      }
-    ],
     "文档列表": [
       {
         "document": "advanced/README.md",
@@ -7198,14 +7182,6 @@
         "line": 99,
         "level": 3,
         "title": "文档格式规范"
-      }
-    ],
-    "文档类型": [
-      {
-        "document": "ai-support/README.md",
-        "line": 9,
-        "level": 3,
-        "title": "文档类型"
       }
     ],
     "文档结构规范": [
@@ -8066,12 +8042,12 @@
         "title": "模块间通信"
       }
     ],
-    "模块需求模板": [
+    "模块需求": [
       {
         "document": "ai-support/README.md",
-        "line": 69,
+        "line": 63,
         "level": 3,
-        "title": "模块需求模板"
+        "title": "模块需求"
       }
     ],
     "模式一：HTML/JS 注入（推荐）": [
@@ -8536,6 +8512,14 @@
         "line": 105,
         "level": 3,
         "title": "版本更新说明"
+      }
+    ],
+    "物料文档": [
+      {
+        "document": "ai-support/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "物料文档"
       }
     ],
     "特有事件类型": [
@@ -9394,12 +9378,12 @@
         "title": "获取方法详细信息"
       }
     ],
-    "获取物料文档": [
+    "获取最新版本": [
       {
         "document": "ai-support/README.md",
-        "line": 17,
+        "line": 23,
         "level": 3,
-        "title": "获取物料文档"
+        "title": "获取最新版本"
       }
     ],
     "获取目标 ID": [
@@ -10064,12 +10048,12 @@
         "title": "适配器系统 API"
       }
     ],
-    "适配器需求模板": [
+    "适配器需求": [
       {
         "document": "ai-support/README.md",
-        "line": 92,
+        "line": 82,
         "level": 3,
-        "title": "适配器需求模板"
+        "title": "适配器需求"
       }
     ],
     "适配器：注册平台扩展方法": [
@@ -10665,7 +10649,7 @@
     "需求描述模板": [
       {
         "document": "ai-support/README.md",
-        "line": 67,
+        "line": 61,
         "level": 2,
         "title": "需求描述模板"
       }
@@ -10796,14 +10780,6 @@
         "line": 214,
         "level": 3,
         "title": "默认配置"
-      }
-    ],
-    "📦 AI 物料文档": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "📦 AI 物料文档"
       }
     ]
   }

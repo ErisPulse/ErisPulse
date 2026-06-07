@@ -21,7 +21,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -232,7 +231,6 @@ flowchart TD
 > For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
 
 
-
 ### 术语表
 
 # ErisPulse Glossary
@@ -377,7 +375,6 @@ If you find other terms in the documentation that you do not understand, feel fr
 - Contact the maintainers
 
 
-
 ====
 快速开始
 ====
@@ -427,7 +424,6 @@ ErisPulse adopts an event-driven architecture and consists of the following core
 Are you ready to get started?
 
 - [Create Your First Bot](first-bot.md) — Get up and running in 5 minutes
-
 
 
 ### 创建第一个模块
@@ -609,7 +605,6 @@ async def hello_handler(event):
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions
-
 
 
 ### 基础概念
@@ -962,7 +957,6 @@ class Main(BaseModule):
 
 - [Event Handling Intro](event-handling.md) - Learn how to handle various events
 - [Common Tasks Examples](common-tasks.md) - Master the implementation of common functions
-
 
 
 ### 事件处理入门
@@ -1608,7 +1602,6 @@ async def conditional_handler(event):
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
-
 ### 常见任务示例
 
 # Common Task Examples
@@ -2059,7 +2052,6 @@ async def _identify_image(url):
 - [Advanced Topics](../advanced/) - Deep dive into framework features
 
 
-
 ====
 模块开发
 ====
@@ -2214,7 +2206,6 @@ sdk.lifecycle  # Lifecycle system
 - [Core Concepts of Modules](core-concepts.md) - Deep dive into module architecture
 - [Detailed Guide to Event Wrapper Classes](event-wrapper.md) - Learn about Event objects
 - [Best Practices for Modules](best-practices.md) - Develop high-quality modules
-
 
 
 ### 模块核心概念
@@ -2449,7 +2440,6 @@ self.logger.critical("Fatal error") # Fatal error
 - [Module Development Getting Started](getting-started.md) - Create your first module
 - [Event Wrapper](event-wrapper.md) - Detailed Event Handling
 - [Best Practices](best-practices.md) - Develop high-quality modules
-
 
 
 ### Event 包装类详解
@@ -2748,7 +2738,6 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 
 - [Getting Started with Module Development](getting-started.md) - Create your first module
 - [Best Practices](best-practices.md) - Develop high-quality modules
-
 
 
 ### 模块开发最佳实践
@@ -3167,7 +3156,6 @@ Follow Semantic Versioning:
 - [Event Wrapper Class](event-wrapper.md) - Detailed event handling explanation
 
 
-
 =====
 发布与工具
 =====
@@ -3525,7 +3513,6 @@ Extend the workflow by adding a Docker Hub login step and increasing Docker Hub 
 The two methods are not mutually exclusive—you can publish modules to the Module Store via PyPI while also providing ready-to-use Docker images via GHCR.
 
 
-
 ### CLI 命令参考
 
 # CLI Command Reference
@@ -3704,7 +3691,6 @@ epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@exa
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
-
 
 
 ======
@@ -3999,7 +3985,6 @@ async for text in ws.iter_text():
 - [Router Manager](../advanced/router.md) - Router Manager Complete Documentation
 - [HTTP Client](../advanced/http-client.md) - HTTP Client Complete Documentation
 - [Lifecycle Management](../advanced/lifecycle.md) - Lifecycle Complete Documentation
-
 
 
 ### 事件系统 API
@@ -4589,7 +4574,6 @@ async def low_priority_handler(event):
 - [Module Development Guide](../developer-guide/modules/) - Developing custom modules
 
 
-
 ====
 高级主题
 ====
@@ -4919,7 +4903,6 @@ async def chat_handler(event):
 - [Introduction to Event Handling](../getting-started/event-handling.md) - Event handling basics
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder Detailed Explanation
@@ -5111,7 +5094,6 @@ complex_msg = (
 - [Adapter SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Send chaining send interface
 - [Event Conversion Standard](../standards/event-conversion.md) - Message segment conversion specification
 - [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
-
 
 
 ### 路由系统
@@ -5472,7 +5454,6 @@ async def on_server_stop(event):
 - [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for route usage
 
 
-
 ### 生命周期管理
 
 # Lifecycle Management
@@ -5764,7 +5745,6 @@ class Main(BaseModule):
 - [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using lifecycle events
 
 
-
 ### 懒加载系统
 
 # Lazy Loading Module System
@@ -5886,7 +5866,6 @@ result = sdk.my_module.some_sync_method()
 
 - [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn to develop modules
 - [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
-
 
 
 ### 会话类型系统
@@ -6070,7 +6049,6 @@ clear_custom_types(platform="discord")  # Clear only specified platform
 - [Event Conversion Standard](../standards/event-conversion.md) - Event conversion specification
 - [Session Type Standard](../standards/session-types.md) - Formal definition of session types
 - [Event Converter Implementation](../../developer-guide/adapters/converter.md) - Converter development guide
-
 
 
 ### Dashboard 视窗注册
@@ -6441,7 +6419,6 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 7. **Dynamic Updates** — After registering/unregistering module views, the Dashboard frontend will update the sidebar through WebSocket in real time, no page refresh needed
 
 
-
 ====
 技术标准
 ====
@@ -6728,7 +6705,6 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 - [Adapter Development Guide](../developer-guide/adapters/) - Complete guide for adapter development
 
 
-
 ====
 平台概览
 ====
@@ -6965,4 +6941,3 @@ We welcome more developers to participate in writing and maintaining adapter doc
 4. Submit Pull Request.
 
 Thank you for your support!
-

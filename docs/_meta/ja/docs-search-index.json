@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1170,
+  "total_keywords": 1167,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -274,6 +274,14 @@
         "title": "1. 機密データの保護"
       }
     ],
+    "1. 物料ドキュメントの選択": [
+      {
+        "document": "ai-support/README.md",
+        "line": 54,
+        "level": 3,
+        "title": "1. 物料ドキュメントの選択"
+      }
+    ],
     "1. 説明": [
       {
         "document": "standards/api-response.md",
@@ -440,6 +448,14 @@
         "line": 331,
         "level": 3,
         "title": "2. エラーコード規約"
+      }
+    ],
+    "2. コンテキストの提供": [
+      {
+        "document": "ai-support/README.md",
+        "line": 62,
+        "level": 3,
+        "title": "2. コンテキストの提供"
       }
     ],
     "2. サポートされているメッセージ送信タイプ": [
@@ -960,6 +976,14 @@
         "title": "3. 条件処理"
       }
     ],
+    "3. 要求の記述": [
+      {
+        "document": "ai-support/README.md",
+        "line": 70,
+        "level": 3,
+        "title": "3. 要求の記述"
+      }
+    ],
     "3. 送信アカウントを指定する": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -1150,6 +1174,14 @@
         "line": 64,
         "level": 3,
         "title": "4. 拡張フィールドの説明"
+      }
+    ],
+    "4. 生成結果の検証": [
+      {
+        "document": "ai-support/README.md",
+        "line": 74,
+        "level": 3,
+        "title": "4. 生成結果の検証"
       }
     ],
     "4. 組み合わせて使用する": [
@@ -2140,30 +2172,6 @@
         "title": "ErisPulse 送信方法仕様書"
       }
     ],
-    "ErisPulse-AdapterDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 39,
-        "level": 4,
-        "title": "ErisPulse-AdapterDev.md"
-      }
-    ],
-    "ErisPulse-Full.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 54,
-        "level": 4,
-        "title": "ErisPulse-Full.md"
-      }
-    ],
-    "ErisPulse-ModuleDev.md": [
-      {
-        "document": "ai-support/README.md",
-        "line": 26,
-        "level": 4,
-        "title": "ErisPulse-ModuleDev.md"
-      }
-    ],
     "ErisPulseのインストール": [
       {
         "document": "quick-start.md",
@@ -2234,14 +2242,6 @@
         "line": 74,
         "level": 3,
         "title": "GET"
-      }
-    ],
-    "GitHub Releasesからダウンロード": [
-      {
-        "document": "ai-support/README.md",
-        "line": 19,
-        "level": 4,
-        "title": "GitHub Releasesからダウンロード"
       }
     ],
     "HTTP Client モジュール": [
@@ -2624,30 +2624,6 @@
         "line": 274,
         "level": 3,
         "title": "Q5: メールなどの特殊なプラットフォームはどう処理しますか？"
-      }
-    ],
-    "Q: AIがより高品質なコードを生成するようにするにはどうすればよいですか？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 133,
-        "level": 3,
-        "title": "Q: AIがより高品質なコードを生成するようにするにはどうすればよいですか？"
-      }
-    ],
-    "Q: AIが生成したコードに問題がある場合はどうすればよいですか？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 125,
-        "level": 3,
-        "title": "Q: AIが生成したコードに問題がある場合はどうすればよいですか？"
-      }
-    ],
-    "Q: どのようなAIツールをおすすめしますか？": [
-      {
-        "document": "ai-support/README.md",
-        "line": 118,
-        "level": 3,
-        "title": "Q: どのようなAIツールをおすすめしますか？"
       }
     ],
     "QQBotプラットフォーム特性": [
@@ -3601,7 +3577,7 @@
     "よくある質問": [
       {
         "document": "ai-support/README.md",
-        "line": 116,
+        "line": 125,
         "level": 2,
         "title": "よくある質問"
       },
@@ -3836,12 +3812,12 @@
         "title": "アダプター標準化変換仕様"
       }
     ],
-    "アダプター要件テンプレート": [
+    "アダプター要件": [
       {
         "document": "ai-support/README.md",
-        "line": 92,
+        "line": 104,
         "level": 3,
-        "title": "アダプター要件テンプレート"
+        "title": "アダプター要件"
       }
     ],
     "アダプター開発": [
@@ -5686,22 +5662,6 @@
         "title": "トリガー"
       }
     ],
-    "ドキュメントの内容説明": [
-      {
-        "document": "ai-support/README.md",
-        "line": 24,
-        "level": 3,
-        "title": "ドキュメントの内容説明"
-      }
-    ],
-    "ドキュメントの種類": [
-      {
-        "document": "ai-support/README.md",
-        "line": 9,
-        "level": 3,
-        "title": "ドキュメントの種類"
-      }
-    ],
     "ドキュメントの維持": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -6424,14 +6384,6 @@
         "line": 98,
         "level": 4,
         "title": "ボット情報"
-      }
-    ],
-    "マテリアルドキュメントの入手": [
-      {
-        "document": "ai-support/README.md",
-        "line": 17,
-        "level": 3,
-        "title": "マテリアルドキュメントの入手"
       }
     ],
     "マルチBot設定": [
@@ -7184,12 +7136,12 @@
         "title": "モジュール発見メカニズム"
       }
     ],
-    "モジュール要件テンプレート": [
+    "モジュール要件": [
       {
         "document": "ai-support/README.md",
-        "line": 69,
+        "line": 85,
         "level": 3,
-        "title": "モジュール要件テンプレート"
+        "title": "モジュール要件"
       }
     ],
     "モジュール設定": [
@@ -7908,6 +7860,14 @@
         "title": "使用例"
       }
     ],
+    "使用手順": [
+      {
+        "document": "ai-support/README.md",
+        "line": 52,
+        "level": 2,
+        "title": "使用手順"
+      }
+    ],
     "例": [
       {
         "document": "api-reference/core-modules.md",
@@ -8220,6 +8180,14 @@
         "line": 7,
         "level": 3,
         "title": "受信タイプ (ReceiveType)"
+      }
+    ],
+    "各ドキュメントのカバー範囲": [
+      {
+        "document": "ai-support/README.md",
+        "line": 15,
+        "level": 3,
+        "title": "各ドキュメントのカバー範囲"
       }
     ],
     "同期フロー": [
@@ -9122,6 +9090,14 @@
         "title": "最小限のモジュール"
       }
     ],
+    "最新バージョンの入手": [
+      {
+        "document": "ai-support/README.md",
+        "line": 45,
+        "level": 3,
+        "title": "最新バージョンの入手"
+      }
+    ],
     "最終ユーザー向け": [
       {
         "document": "standards/README.md",
@@ -9313,7 +9289,7 @@
     "次のステップ": [
       {
         "document": "ai-support/README.md",
-        "line": 141,
+        "line": 147,
         "level": 2,
         "title": "次のステップ"
       },
@@ -9430,6 +9406,14 @@
         "line": 229,
         "level": 3,
         "title": "添付ファイルメッセージセグメント"
+      }
+    ],
+    "物料ドキュメント": [
+      {
+        "document": "ai-support/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "物料ドキュメント"
       }
     ],
     "特有のイベントタイプ": [
@@ -9738,12 +9722,12 @@
         "title": "複数アカウント送信構文"
       }
     ],
-    "要件記述テンプレート": [
+    "要求記述テンプレート": [
       {
         "document": "ai-support/README.md",
-        "line": 67,
+        "line": 83,
         "level": 2,
-        "title": "要件記述テンプレート"
+        "title": "要求記述テンプレート"
       }
     ],
     "設定": [
@@ -10570,14 +10554,6 @@
         "line": 250,
         "level": 4,
         "title": "高度なメソッド (推奨)"
-      }
-    ],
-    "📦 AI マテリアルドキュメント": [
-      {
-        "document": "ai-support/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "📦 AI マテリアルドキュメント"
       }
     ]
   }

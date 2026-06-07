@@ -26,12 +26,10 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
 # ErisPulse 完整开发物料
-
 > **注意**：本文档内容较多，建议仅用于具有强大上下文能力的 AI 模型
 
 
@@ -238,7 +236,6 @@ flowchart TD
 > For more details, please refer to [Lazy Loading System](advanced/lazy-loading.md) and [Lifecycle Management](advanced/lifecycle.md).
 
 
-
 ### 术语表
 
 # ErisPulse Glossary
@@ -381,7 +378,6 @@ If you find other terms in the documentation that you do not understand, feel fr
 - Submit a GitHub Issue
 - Participate in community discussions
 - Contact the maintainers
-
 
 
 ====
@@ -550,7 +546,6 @@ level = "INFO"
 - [Developer Guide](developer-guide/) - Develop custom modules and adapters
 
 
-
 ====
 入门指南
 ====
@@ -600,7 +595,6 @@ ErisPulse adopts an event-driven architecture and consists of the following core
 Are you ready to get started?
 
 - [Create Your First Bot](first-bot.md) — Get up and running in 5 minutes
-
 
 
 ### 创建第一个机器人
@@ -782,7 +776,6 @@ async def hello_handler(event):
 - [Basic Concepts](basic-concepts.md) - Understand ErisPulse core concepts deeply
 - [Event Handling Introduction](event-handling.md) - Learn how to handle various events
 - [Common Task Examples](common-tasks.md) - Master more practical functions
-
 
 
 ### 基础概念
@@ -1135,7 +1128,6 @@ class Main(BaseModule):
 
 - [Event Handling Intro](event-handling.md) - Learn how to handle various events
 - [Common Tasks Examples](common-tasks.md) - Master the implementation of common functions
-
 
 
 ### 事件处理入门
@@ -1781,7 +1773,6 @@ async def conditional_handler(event):
 - [User Guide](../user-guide/) - Learn about configuration and module management
 
 
-
 ### 常见任务示例
 
 # Common Task Examples
@@ -2232,7 +2223,6 @@ async def _identify_image(url):
 - [Advanced Topics](../advanced/) - Deep dive into framework features
 
 
-
 ====
 用户指南
 ====
@@ -2434,7 +2424,6 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - [Configuration File Explanation](configuration.md) - Learn detailed configuration options
 
 
-
 ### CLI 命令参考
 
 # CLI Command Reference
@@ -2615,7 +2604,6 @@ epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@exa
 epsdk create module -n MyModule -f
 
 
-
 ### 配置文件说明
 
 # Configuration File Guide
@@ -2780,7 +2768,6 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 - [CLI Command Reference](cli-reference.md) - Learn about all command line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules
-
 
 
 ### 部署指南
@@ -3053,7 +3040,6 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 # Or export using the "Backup" function in Dashboard
 
 
-
 =====
 开发者指南
 =====
@@ -3165,11 +3151,13 @@ Then go to [ErisPulse-ModuleRepo](https://github.com/ErisPulse/ErisPulse-ModuleR
 - [Platform Guide](../platform-guide/) - Learn about the features of various platform adapters
 
 
+====
+模块开发
+====
+
 
 模块开发
 ----
-
-
 
 
 ### 模块开发入门
@@ -3321,7 +3309,6 @@ sdk.lifecycle  # Lifecycle system
 - [Core Concepts of Modules](core-concepts.md) - Deep dive into module architecture
 - [Detailed Guide to Event Wrapper Classes](event-wrapper.md) - Learn about Event objects
 - [Best Practices for Modules](best-practices.md) - Develop high-quality modules
-
 
 
 ### 模块核心概念
@@ -3556,7 +3543,6 @@ self.logger.critical("Fatal error") # Fatal error
 - [Module Development Getting Started](getting-started.md) - Create your first module
 - [Event Wrapper](event-wrapper.md) - Detailed Event Handling
 - [Best Practices](best-practices.md) - Develop high-quality modules
-
 
 
 ### Event 包装类详解
@@ -3855,7 +3841,6 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 
 - [Getting Started with Module Development](getting-started.md) - Create your first module
 - [Best Practices](best-practices.md) - Develop high-quality modules
-
 
 
 ### 模块开发最佳实践
@@ -4274,11 +4259,13 @@ Follow Semantic Versioning:
 - [Event Wrapper Class](event-wrapper.md) - Detailed event handling explanation
 
 
+=====
+适配器开发
+=====
+
 
 适配器开发
 -----
-
-
 
 
 ### 适配器开发入门
@@ -4729,7 +4716,6 @@ class MyAdapter(BaseAdapter):
 - [SendDSL Details](send-dsl.md) - Learn about message sending
 - [Converter Implementation](converter.md) - Learn about event conversion
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
-
 
 
 ### 适配器核心概念
@@ -5626,7 +5612,6 @@ async def on_bot_offline(data):
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
 
 
-
 ### SendDSL 详解
 
 # SendDSL Deep Dive
@@ -5908,7 +5893,6 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 - [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
 - [Sending Method Naming Conventions](../../standards/send-type-naming.md) - Naming conventions
-
 
 
 ### 适配器开发最佳实践
@@ -6524,7 +6508,6 @@ version = "2.0.0"  # Update version number
 - [Detailed Explanation of SendDSL](send-dsl.md) - Learn message sending
 
 
-
 ### 事件转换器
 
 # Event Converter Implementation Guide
@@ -6859,7 +6842,6 @@ Ensure that the message segment types generated by the Converter correspond to t
 - [SendDSL Detailed Explanation](send-dsl.md) - Reverse conversion (sending direction)
 - [Event Conversion Standard](../../standards/event-conversion.md) - Formal event conversion specification
 - [Session Type System](../../advanced/session-types.md) - Session type mapping rules
-
 
 
 ### 发布与模块商店指南
@@ -7214,7 +7196,6 @@ Extend the workflow by adding a Docker Hub login step and increasing Docker Hub 
 The two methods are not mutually exclusive—you can publish modules to the Module Store via PyPI while also providing ready-to-use Docker images via GHCR.
 
 
-
 ======
 API 参考
 ======
@@ -7507,7 +7488,6 @@ async for text in ws.iter_text():
 - [Router Manager](../advanced/router.md) - Router Manager Complete Documentation
 - [HTTP Client](../advanced/http-client.md) - HTTP Client Complete Documentation
 - [Lifecycle Management](../advanced/lifecycle.md) - Lifecycle Complete Documentation
-
 
 
 ### 事件系统 API
@@ -8097,7 +8077,6 @@ async def low_priority_handler(event):
 - [Module Development Guide](../developer-guide/modules/) - Developing custom modules
 
 
-
 ### 适配器系统 API
 
 # Adapter System API
@@ -8533,7 +8512,6 @@ def on_status_change(event):
 - [Adapter Development Guide](../developer-guide/adapters/) - Developing Platform Adapters
 
 
-
 ====
 技术标准
 ====
@@ -8818,7 +8796,6 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
 - [Send Method Specification](send-method-spec.md) - Naming and parameter specification for Send class methods
 - [Adapter Development Guide](../developer-guide/adapters/) - Complete guide for adapter development
-
 
 
 ### 事件转换标准
@@ -9273,7 +9250,6 @@ await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 - [API Response Standard](api-response.md) - Adapter API response format standards
 
 
-
 ### API 响应标准
 
 # ErisPulse Adapter Standardized Return Specification
@@ -9426,7 +9402,6 @@ The return value should include a `{platform}_raw` field, containing a complete 
 - For 3xxxx error codes, the last three digits can be defined by the implementation
 - Avoid using reserved error segments (4xxxx, 5xxxx)
 - Error messages should be concise and clear for debugging
-
 
 
 ### 发送方法规范
@@ -10007,7 +9982,6 @@ if builder:
 - [Request Operation Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements
 
 
-
 ====
 高级主题
 ====
@@ -10134,7 +10108,6 @@ result = sdk.my_module.some_sync_method()
 
 - [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn to develop modules
 - [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
-
 
 
 ### 生命周期管理
@@ -10426,7 +10399,6 @@ class Main(BaseModule):
 
 - [Module Development Guide](../developer-guide/modules/getting-started.md) - Learn about module lifecycle methods
 - [Best Practices](../developer-guide/modules/best-practices.md) - Recommendations for using lifecycle events
-
 
 
 ### 路由系统
@@ -10787,7 +10759,6 @@ async def on_server_stop(event):
 - [Best Practices](../developer-guide/modules/best-practices.md) - Suggestions for route usage
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder Detailed Explanation
@@ -10981,7 +10952,6 @@ complex_msg = (
 - [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method
 
 
-
 ### 会话类型系统
 
 # Session Type System
@@ -11163,7 +11133,6 @@ clear_custom_types(platform="discord")  # Clear only specified platform
 - [Event Conversion Standard](../standards/event-conversion.md) - Event conversion specification
 - [Session Type Standard](../standards/session-types.md) - Formal definition of session types
 - [Event Converter Implementation](../../developer-guide/adapters/converter.md) - Converter development guide
-
 
 
 ### Conversation 多轮对话
@@ -11488,7 +11457,6 @@ async def chat_handler(event):
 
 - [Event Wrapper](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
 - [Introduction to Event Handling](../getting-started/event-handling.md) - Event handling basics
-
 
 
 ### Dashboard 视窗注册
@@ -11859,7 +11827,6 @@ After unregistering, the Dashboard frontend will remove the sidebar navigation i
 7. **Dynamic Updates** — After registering/unregistering module views, the Dashboard frontend will update the sidebar through WebSocket in real time, no page refresh needed
 
 
-
 ======
 平台特性指南
 ======
@@ -12096,7 +12063,6 @@ We welcome more developers to participate in writing and maintaining adapter doc
 4. Submit Pull Request.
 
 Thank you for your support!
-
 
 
 ### OneBot11 适配
@@ -12376,7 +12342,6 @@ connection_status = {
 
 # Dynamically enable/disable accounts (requires restarting adapter)
 onebot.accounts["test"].enabled = False
-
 
 
 ### OneBot12 适配
@@ -12720,7 +12685,6 @@ Follows the OneBot12 standard API specification:
 3.  **Message Sending**: Use appropriate message types and avoid sending unsupported messages.
 4.  **Connection Monitoring**: Regularly check connection status to ensure service availability.
 5.  **Performance Optimization**: Use the Batch method for sending to reduce network overhead when sending in bulk.
-
 
 
 ### Telegram 适配
@@ -13101,7 +13065,6 @@ port = 1080
 type = "socks5"
 
 
-
 ### 云湖适配
 
 # Yunhu Platform Feature Documentation
@@ -13338,7 +13301,6 @@ async def handle_yunhu_notice(event):
     elif event
 
 
-
 ### 邮件适配
 
 # Mail Platform Feature Documentation
@@ -13479,7 +13441,6 @@ Conversion of email events to OneBot12 protocol, main differences:
     }
   ]
 }
-
 
 
 ### Kook 适配
@@ -13962,7 +13923,6 @@ async def handle_private_notice(event):
         print(f"私信消息已删除: {msg_id}")
 
 
-
 ### Matrix 适配
 
 # Matrix Platform Features Document
@@ -14381,7 +14341,6 @@ async def handle_member_change(event):
         print(f"User {user_id} was removed, operator: {operator_id}")
 
 
-
 ### QQBot 适配
 
 # QQBot Platform Features Documentation
@@ -14745,7 +14704,6 @@ async def handle_audit(event):
     elif detail_type == "qqbot_audit_reject":
         reason = event.get("qqbot_audit_reject_reason", "")
         print(f"Message audit rejected: {reason}")
-
 
 
 ### 云湖用户端适配
@@ -15383,7 +15341,6 @@ result = await yunhu_user.call_api("/button_report",
 | `/button_report` | Button event report |
 
 
-
 ### 平台文档维护说明
 
 # Documentation Maintenance Guidelines
@@ -15532,7 +15489,6 @@ Refer to the following documents when writing to ensure consistency:
 If you have any questions, please contact the relevant adapter maintainer or ask in the project Issues.
 
 
-
 ====
 代码规范
 ====
@@ -15637,7 +15593,6 @@ When method comments contain the following content, corresponding effects will o
    {!--< deprecated >!--} Please use new_method() instead | 2025-07-09
 
 
-
 ======
 已知问题追踪
 ======
@@ -15740,4 +15695,3 @@ Interactive initialization failed: unsupported operand type(s) for /: 'str' and 
 ### [BUG-006] `detail_type` of `Event.is_friend_add/is_friend_delete` Inconsistent with OB12 Standard
 
 **Issue**: `Event.is_friend_add()` checks `detail_type == "friend_add"`, and `Event.is_friend_delete()` checks `detail_type == "friend_delete"`, but the OneBot12 standard defines the `detail_type` values as `"friend_increase"` and `"friend_decrease"`. This is inconsistent with the values used by
-

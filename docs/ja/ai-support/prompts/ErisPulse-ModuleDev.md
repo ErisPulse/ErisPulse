@@ -21,7 +21,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -232,7 +231,6 @@ flowchart TD
 > 詳細については、[遅延ロード・システム](advanced/lazy-loading.md) および [ライフサイクル管理](advanced/lifecycle.md) をご参照ください。
 
 
-
 ### 术语表
 
 # ErisPulse 用語集
@@ -377,7 +375,6 @@ flowchart TD
 - メンテナに連絡する
 
 
-
 ====
 快速开始
 ====
@@ -427,7 +424,6 @@ ErisPulse はイベント駆動型アーキテクチャを採用しており、�
 準備はできましたか？
 
 - [最初のボットを作成する](first-bot.md) — 5 分で使い方を理解
-
 
 
 ### 创建第一个模块
@@ -609,7 +605,6 @@ async def hello_handler(event):
 - [基本概念](basic-concepts.md) - ErisPulse のコア概念を詳しく理解する
 - [イベント処理入門](event-handling.md) - 各種イベントの処理を学ぶ
 - [一般的なタスクの例](common-tasks.md) - より実用的な機能をマスターする
-
 
 
 ### 基础概念
@@ -996,7 +991,6 @@ class Main(BaseModule):
 
 - [イベント処理の入門](event-handling.md) - 各種イベントの処理方法を学ぶ
 - [一般的なタスクの例](common-tasks.md) - 一般的な機能の実装をマスターする
-
 
 
 ### 事件处理入门
@@ -1642,7 +1636,6 @@ async def conditional_handler(event):
 - [ユーザーガイド](../user-guide/) - 設定とモジュール管理を理解する
 
 
-
 ### 常见任务示例
 
 # よくあるタスクの例
@@ -2099,7 +2092,6 @@ async def _identify_image(url):
 - [高度なトピック](../advanced/) - フレームワークの機能を深く理解する
 
 
-
 ====
 模块开发
 ====
@@ -2254,7 +2246,6 @@ sdk.lifecycle  # ライフサイクルシステム
 - [モジュールのコア概念](core-concepts.md) - モジュールアーキテクチャを深く理解する
 - [Event ラッパークラスの詳細](event-wrapper.md) - Event オブジェクトを学ぶ
 - [モジュールのベストプラクティス](best-practices.md) - 高品質なモジュールを開発する
-
 
 
 ### 模块核心概念
@@ -2489,7 +2480,6 @@ self.logger.critical("致命的エラー") # 致命的なエラー
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成
 - [Eventラッパークラス](event-wrapper.md) - イベント処理の詳細
 - [ベストプラクティス](best-practices.md) - 高品質なモジュールの開発
-
 
 
 ### Event 包装类详解
@@ -2840,7 +2830,6 @@ hasattr(event, "get_subject")   # platform="email" の場合のみ True を返�
 
 - [モジュール開発入門](getting-started.md) - 最初のモジュールを作成
 - [ベストプラクティス](best-practices.md) - 高品質なモジュールを開発
-
 
 
 ### 模块开发最佳实践
@@ -3259,7 +3248,6 @@ version = "1.0.0"
 - [Event ラッパークラス](event-wrapper.md) - イベント処理の詳細
 
 
-
 =====
 发布与工具
 =====
@@ -3616,7 +3604,6 @@ services:
 これら2つの方法は矛盾しません。PyPI からモジュールストアにモジュールを公開しつつ、GHCR からすぐに使える Docker イメージを提供することができます。
 
 
-
 ### CLI 命令参考
 
 # CLI コマンドリファレンス
@@ -3795,7 +3782,6 @@ epsdk create module -n MyModule -d "モジュールの説明" -a "作者" -e "ma
 
 # 既存のディレクトリを強制上書き
 epsdk create module -n MyModule -f
-
 
 
 ======
@@ -4090,7 +4076,6 @@ async for text in ws.iter_text():
 - [ルーター管理](../advanced/router.md) - ルーターマネージャーの完全なドキュメント
 - [HTTP クライアント](../advanced/http-client.md) - HTTP クライアントの完全なドキュメント
 - [ライフサイクル管理](../advanced/lifecycle.md) - ライフサイクルの完全なドキュメント
-
 
 
 ### 事件系统 API
@@ -4679,7 +4664,6 @@ async def low_priority_handler(event):
 - [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発
 
 
-
 ====
 高级主题
 ====
@@ -5009,7 +4993,6 @@ async def chat_handler(event):
 - [イベント処理入門](../getting-started/event-handling.md) - イベント処理の基礎
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder 詳細
@@ -5201,7 +5184,6 @@ complex_msg = (
 - [アダプター SendDSL 詳細](../developer-guide/adapters/send-dsl.md) - Send チェーン送信インターフェース
 - [イベント変換標準](../standards/event-conversion.md) - メッセージセグメント変換仕様
 - [Event ラッパークラス](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() メソッド
-
 
 
 ### 路由系统
@@ -5562,7 +5544,6 @@ async def on_server_stop(event):
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ルーティングの使用に関する推奨事項
 
 
-
 ### 生命周期管理
 
 # ライフサイクル管理
@@ -5854,7 +5835,6 @@ class Main(BaseModule):
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - ライフサイクルイベントの使用に関する推奨事項
 
 
-
 ### 懒加载系统
 
 # リアルタイム読み込みモジュールシステム
@@ -5975,7 +5955,6 @@ result = sdk.my_module.some_sync_method()
 
 - [モジュール開発ガイド](../developer-guide/modules/getting-started.md) - モジュールの開発を学ぶ
 - [ベストプラクティス](../developer-guide/modules/best-practices.md) - その他のベストプラクティスについて学ぶ
-
 
 
 ### 会话类型系统
@@ -6159,7 +6138,6 @@ clear_custom_types(platform="discord")  # 指定したプラットフォーム�
 - [イベント変換標準](../standards/event-conversion.md) - イベント変換の仕様
 - [セッションタイプ標準](../standards/session-types.md) - セッションタイプの正式な定義
 - [イベントコンバーターの実装](../developer-guide/adapters/getting-started.md) - アダプター開発ガイド
-
 
 
 ### Dashboard 视窗注册
@@ -6494,7 +6472,6 @@ async def on_unload(self, event):
 7. **動的更新** — モジュールで View を登録/解除した後、Dashboard フロントエンドは WebSocket を介してサイドバーをリアルタイムで更新するため、ページのリフレッシュは不要です
 
 
-
 ====
 技术标准
 ====
@@ -6786,7 +6763,6 @@ A: 一般的なものやプラットフォーム固有の型については、`{
 - [アダプター開発ガイド](../developer-guide/adapters/) - アダプター開発の完全ガイド
 
 
-
 ====
 平台概览
 ====
@@ -7023,4 +6999,3 @@ ErisPulse プロジェクト：
 4. Pull Request を提出してください。
 
 ご支援ありがとうございます！
-

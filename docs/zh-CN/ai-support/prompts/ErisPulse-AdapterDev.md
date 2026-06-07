@@ -22,7 +22,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -233,7 +232,6 @@ flowchart TD
 > 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
 
 
-
 ### 术语表
 
 # ErisPulse 术语表
@@ -378,7 +376,6 @@ flowchart TD
 - 联系维护者
 
 
-
 ====
 基础概念
 ====
@@ -428,7 +425,6 @@ ErisPulse 采用事件驱动架构，核心由以下系统组成：
 准备好开始了吗？
 
 - [创建第一个机器人](first-bot.md) — 5 分钟上手
-
 
 
 
@@ -783,7 +779,6 @@ class Main(BaseModule):
 
 - [事件处理入门](event-handling.md) - 学习如何处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握常用功能的实现
-
 
 
 ### 事件处理入门
@@ -1430,7 +1425,6 @@ async def conditional_handler(event):
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
 
-
 =====
 适配器开发
 =====
@@ -1884,7 +1878,6 @@ class MyAdapter(BaseAdapter):
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
 - [转换器实现](converter.md) - 了解事件转换
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
-
 
 
 ### 适配器核心概念
@@ -2781,7 +2774,6 @@ async def on_bot_offline(data):
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
 
 
-
 ### SendDSL 详解
 
 # SendDSL 详解
@@ -3063,7 +3055,6 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
 - [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
-
 
 
 ### 适配器开发最佳实践
@@ -3679,7 +3670,6 @@ version = "2.0.0"  # 更新版本号
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
 
 
-
 ### 事件转换器
 
 # 事件转换器实现指南
@@ -4017,13 +4007,12 @@ import time
 
 
 
-
 =====
 发布与工具
 =====
 
 
-### 发布适配器到模块商店
+### 发布模块到模块商店
 
 # 发布与模块商店指南
 
@@ -4375,7 +4364,6 @@ services:
 
 
 
-
 ### CLI 命令参考
 
 # CLI 命令参考
@@ -4555,7 +4543,6 @@ epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.c
 # 强制覆盖已有目录
 epsdk create module -n MyModule -f
 ```
-
 
 
 ======
@@ -5000,7 +4987,6 @@ def on_status_change(event):
 
 
 
-
 ### 核心模块 API
 
 # 核心模块 API
@@ -5288,7 +5274,6 @@ async for text in ws.iter_text():
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
 - [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
 - [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
-
 
 
 
@@ -5589,7 +5574,6 @@ class Main(BaseModule):
 
 
 
-
 ### 懒加载系统
 
 # 懒加载模块系统
@@ -5710,7 +5694,6 @@ result = sdk.my_module.some_sync_method()
 
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
 - [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
-
 
 
 ### Dashboard 视窗注册
@@ -6046,7 +6029,6 @@ async def on_unload(self, event):
 
 
 
-
 ====
 技术标准
 ====
@@ -6336,7 +6318,6 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
-
 
 
 ### 事件转换标准
@@ -6791,7 +6772,6 @@ await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 
 
-
 ### API 响应标准
 
 # ErisPulse 适配器标准化返回规范
@@ -6944,7 +6924,6 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 - 对于3xxxx错误码，低三位可由实现自行定义
 - 避免使用保留错误段(4xxxx、5xxxx)
 - 错误信息应当简洁明了，便于调试
-
 
 
 
@@ -7526,7 +7505,6 @@ if builder:
 - [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
 
 
-
 ======
 平台特性指南
 ======
@@ -7763,7 +7741,6 @@ ErisPulse 项目：
 4. 提交 Pull Request。
 
 感谢您的支持！
-
 
 
 
@@ -8044,7 +8021,6 @@ connection_status = {
 # 动态启用/禁用账户（需要重启适配器）
 onebot.accounts["test"].enabled = False
 ```
-
 
 
 
@@ -8389,7 +8365,6 @@ OneBot12使用标准化的消息段格式：
 3. **消息发送**: 使用合适的消息类型，避免发送不支持的消息
 4. **连接监控**: 定期检查连接状态，确保服务可用性
 5. **性能优化**: 批量发送时使用Batch方法，减少网络开销
-
 
 
 ### Telegram 适配
@@ -8768,7 +8743,6 @@ proxy_enabled = false
 host = "127.0.0.1"
 port = 1080
 type = "socks5"
-
 
 
 ### 云湖适配
@@ -9241,7 +9215,6 @@ yunhu.bots["bot1"].enabled = False
 系统会自动兼容旧格式的配置，但建议迁移到新配置格式以获得更好的多bot支持。
 
 
-
 ### 邮件适配
 
 # 邮件平台特性文档
@@ -9382,7 +9355,6 @@ await mail.Send.Using("from@example.com")
     }
   ]
 }
-
 
 
 
@@ -9868,7 +9840,6 @@ async def handle_private_notice(event):
 
 
 
-
 ### Matrix 适配
 
 # Matrix平台特性文档
@@ -10287,7 +10258,6 @@ async def handle_member_change(event):
         print(f"用户 {user_id} 被移除，操作者: {operator_id}")
 
 
-
 ### QQBot 适配
 
 # QQBot平台特性文档
@@ -10656,7 +10626,6 @@ async def handle_audit(event):
         reason = event.get("qqbot_audit_reject_reason", "")
         print(f"消息审核拒绝: {reason}")
 ```
-
 
 
 
@@ -11296,7 +11265,6 @@ result = await yunhu_user.call_api("/button_report",
 
 
 
-
 ### 平台文档维护说明
 
 # 文档维护说明
@@ -11446,7 +11414,6 @@ from ErisPulse.Core import adapter
 
 
 
-
 ====
 代码规范
 ====
@@ -11549,4 +11516,3 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
    ```python
    {!--< deprecated >!--} 请使用new_method()代替 | 2025-07-09
    ```
-
