@@ -18,7 +18,12 @@ import importlib
 import os
 import sys
 from typing import TYPE_CHECKING
-from .Core.constants import UNINIT_SETTLE_DELAY_SECS, LIFECYCLE_TIMER_CORE_INIT, LIFECYCLE_TIMER_CORE_UNINIT
+from .Core.constants import (
+    UNINIT_SETTLE_DELAY_SECS,
+    DEFAULT_UNINIT_TIMEOUT_SECS,
+    LIFECYCLE_TIMER_CORE_INIT,
+    LIFECYCLE_TIMER_CORE_UNINIT,
+)
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
@@ -88,9 +93,20 @@ def _resolve_core(attr: str):
 
 # 核心属性名称集合
 _CORE_ATTR_NAMES = {
-    "Event", "lifecycle", "logger", "storage", "env", "config",
-    "adapter", "module", "router", "client",
-    "BaseAdapter", "SendDSL", "BaseStorage", "BaseQueryBuilder",
+    "Event",
+    "lifecycle",
+    "logger",
+    "storage",
+    "env",
+    "config",
+    "adapter",
+    "module",
+    "router",
+    "client",
+    "BaseAdapter",
+    "SendDSL",
+    "BaseStorage",
+    "BaseQueryBuilder",
 }
 
 
@@ -171,6 +187,7 @@ class SDK:
         # 非核心属性：提供友好的错误提示
         try:
             from .Core.logger import logger as _logger
+
             err_logger = _logger.error
         except Exception:
             err_logger = lambda msg: None
@@ -341,10 +358,14 @@ class SDK:
                 self.logger.print_info(f"耗时: {duration_str}", level=1)
 
                 if enabled_adapters:
-                    self.logger.print_info(f"适配器: {len(enabled_adapters)} 个", level=1)
+                    self.logger.print_info(
+                        f"适配器: {len(enabled_adapters)} 个", level=1
+                    )
                     for i, adapter_name in enumerate(enabled_adapters):
                         is_last = i == len(enabled_adapters) - 1
-                        self.logger.print_tree_item(adapter_name, level=1, is_last=is_last)
+                        self.logger.print_tree_item(
+                            adapter_name, level=1, is_last=is_last
+                        )
                 else:
                     self.logger.print_info("适配器: 无", level=1)
 
@@ -352,7 +373,9 @@ class SDK:
                     self.logger.print_info(f"模块: {len(enabled_modules)} 个", level=1)
                     for i, module_name in enumerate(enabled_modules):
                         is_last = i == len(enabled_modules) - 1
-                        self.logger.print_tree_item(module_name, level=1, is_last=is_last)
+                        self.logger.print_tree_item(
+                            module_name, level=1, is_last=is_last
+                        )
                 else:
                     self.logger.print_info("模块: 无", level=1)
 
@@ -432,7 +455,16 @@ class SDK:
             """
             self.lifecycle.start_timer(LIFECYCLE_TIMER_CORE_UNINIT)
 
+            uninit_timeout = DEFAULT_UNINIT_TIMEOUT_SECS
             try:
+                from ..runtime import get_framework_config
+
+                framework_config = get_framework_config()
+                uninit_timeout = framework_config.get("uninit_timeout", uninit_timeout)
+            except Exception:
+                pass
+
+            async def _do_uninit():
                 adapter_manager = self.adapter
                 module_manager = self.module
                 router_manager = self.router
@@ -551,6 +583,31 @@ class SDK:
                 self.logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
                 return True
 
+            try:
+                if uninit_timeout > 0:
+                    success = await asyncio.wait_for(
+                        _do_uninit(), timeout=uninit_timeout
+                    )
+                    return success
+                else:
+                    return await _do_uninit()
+            except asyncio.TimeoutError:
+                uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
+                self.logger.warning(
+                    f"SDK反初始化超时 ({uninit_timeout}s)，已强制终止。"
+                    f"部分模块 on_unload 可能未执行完毕。"
+                )
+                await self.lifecycle.submit_event(
+                    "core.uninit.complete",
+                    msg="SDK反初始化超时",
+                    data={
+                        "duration": uninit_duration,
+                        "success": False,
+                        "error": f"Uninit timeout after {uninit_timeout}s",
+                    },
+                )
+                self.lifecycle._hooks.clear()
+                return False
             except Exception as e:
                 uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 await self.lifecycle.submit_event(
@@ -910,7 +967,9 @@ class SDK:
         importlib.invalidate_caches()
 
         if framework_modules:
-            self.logger.debug(f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存")
+            self.logger.debug(
+                f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存"
+            )
 
     def _invalidate_metadata_cache(self) -> None:
         """
