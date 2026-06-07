@@ -21,7 +21,6 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
@@ -232,7 +231,6 @@ flowchart TD
 > 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
 
 
-
 ### 术语表
 
 # ErisPulse 术语表
@@ -377,7 +375,6 @@ flowchart TD
 - 联系维护者
 
 
-
 ====
 快速开始
 ====
@@ -427,7 +424,6 @@ ErisPulse 采用事件驱动架构，核心由以下系统组成：
 准备好开始了吗？
 
 - [创建第一个机器人](first-bot.md) — 5 分钟上手
-
 
 
 
@@ -610,7 +606,6 @@ async def hello_handler(event):
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能
-
 
 
 ### 基础概念
@@ -964,7 +959,6 @@ class Main(BaseModule):
 
 - [事件处理入门](event-handling.md) - 学习如何处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握常用功能的实现
-
 
 
 ### 事件处理入门
@@ -1611,7 +1605,6 @@ async def conditional_handler(event):
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
 
-
 ### 常见任务示例
 
 # 常见任务示例
@@ -2068,7 +2061,6 @@ async def _identify_image(url):
 - [高级主题](../advanced/) - 深入了解框架特性
 
 
-
 ====
 模块开发
 ====
@@ -2223,7 +2215,6 @@ sdk.lifecycle  # 生命周期系统
 - [模块核心概念](core-concepts.md) - 深入了解模块架构
 - [Event 包装类详解](event-wrapper.md) - 学习 Event 对象
 - [模块最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### 模块核心概念
@@ -2458,7 +2449,6 @@ self.logger.critical("致命错误") # 致命错误
 - [模块开发入门](getting-started.md) - 创建第一个模块
 - [Event 包装类](event-wrapper.md) - 事件处理详解
 - [最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### Event 包装类详解
@@ -2809,7 +2799,6 @@ hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
 
 - [模块开发入门](getting-started.md) - 创建第一个模块
 - [最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### 模块开发最佳实践
@@ -3229,7 +3218,6 @@ version = "1.0.0"
 - [Event 包装类](event-wrapper.md) - 事件处理详解
 
 
-
 =====
 发布与工具
 =====
@@ -3587,7 +3575,6 @@ services:
 
 
 
-
 ### CLI 命令参考
 
 # CLI 命令参考
@@ -3767,7 +3754,6 @@ epsdk create module -n MyModule -d "模块描述" -a "作者" -e "mail@example.c
 # 强制覆盖已有目录
 epsdk create module -n MyModule -f
 ```
-
 
 
 ======
@@ -4062,7 +4048,6 @@ async for text in ws.iter_text():
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
 - [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
 - [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
-
 
 
 
@@ -4599,7 +4584,6 @@ async def low_priority_handler(event):
 - [模块开发指南](../developer-guide/modules/) - 开发自定义模块
 
 
-
 ====
 高级主题
 ====
@@ -4930,7 +4914,6 @@ async def chat_handler(event):
 
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder 详解
@@ -5122,7 +5105,6 @@ complex_msg = (
 - [适配器 SendDSL 详解](../developer-guide/adapters/send-dsl.md) - Send 链式发送接口
 - [事件转换标准](../standards/event-conversion.md) - 消息段转换规范
 - [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() 方法
-
 
 
 
@@ -5485,7 +5467,6 @@ async def on_server_stop(event):
 
 
 
-
 ### 生命周期管理
 
 # 生命周期管理
@@ -5778,7 +5759,6 @@ class Main(BaseModule):
 
 
 
-
 ### 懒加载系统
 
 # 懒加载模块系统
@@ -5899,7 +5879,6 @@ result = sdk.my_module.some_sync_method()
 
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
 - [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
-
 
 
 ### 会话类型系统
@@ -6083,7 +6062,6 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 - [事件转换标准](../standards/event-conversion.md) - 事件转换规范
 - [会话类型标准](../standards/session-types.md) - 会话类型正式定义
 - [事件转换器实现](../developer-guide/adapters/getting-started.md) - 适配器开发指南
-
 
 
 
@@ -6420,7 +6398,6 @@ async def on_unload(self, event):
 
 
 
-
 ====
 技术标准
 ====
@@ -6712,7 +6689,6 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
 
 
-
 ====
 平台概览
 ====
@@ -6949,5 +6925,4 @@ ErisPulse 项目：
 4. 提交 Pull Request。
 
 感谢您的支持！
-
 

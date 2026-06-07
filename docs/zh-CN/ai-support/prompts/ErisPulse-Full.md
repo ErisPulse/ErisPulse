@@ -26,12 +26,10 @@
 **使用以下文档作为知识库，回答问题时请优先参考文档内容。**
 
 
-
 ---
 
 
 # ErisPulse 完整开发物料
-
 > **注意**：本文档内容较多，建议仅用于具有强大上下文能力的 AI 模型
 
 
@@ -238,7 +236,6 @@ flowchart TD
 > 更多详情请参考 [懒加载系统](advanced/lazy-loading.md) 和 [生命周期管理](advanced/lifecycle.md)。
 
 
-
 ### 术语表
 
 # ErisPulse 术语表
@@ -381,7 +378,6 @@ flowchart TD
 - 提交 GitHub Issue
 - 参与社区讨论
 - 联系维护者
-
 
 
 ====
@@ -551,7 +547,6 @@ level = "INFO"
 
 
 
-
 ====
 入门指南
 ====
@@ -601,7 +596,6 @@ ErisPulse 采用事件驱动架构，核心由以下系统组成：
 准备好开始了吗？
 
 - [创建第一个机器人](first-bot.md) — 5 分钟上手
-
 
 
 
@@ -784,7 +778,6 @@ async def hello_handler(event):
 - [基础概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件处理入门](event-handling.md) - 学习处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握更多实用功能
-
 
 
 ### 基础概念
@@ -1138,7 +1131,6 @@ class Main(BaseModule):
 
 - [事件处理入门](event-handling.md) - 学习如何处理各类事件
 - [常见任务示例](common-tasks.md) - 掌握常用功能的实现
-
 
 
 ### 事件处理入门
@@ -1785,7 +1777,6 @@ async def conditional_handler(event):
 - [用户使用指南](../user-guide/) - 了解配置和模块管理
 
 
-
 ### 常见任务示例
 
 # 常见任务示例
@@ -2242,7 +2233,6 @@ async def _identify_image(url):
 - [高级主题](../advanced/) - 深入了解框架特性
 
 
-
 ====
 用户指南
 ====
@@ -2444,7 +2434,6 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - [配置文件说明](configuration.md) - 详细了解配置选项
 
 
-
 ### CLI 命令参考
 
 # CLI 命令参考
@@ -2626,7 +2615,6 @@ epsdk create module -n MyModule -f
 ```
 
 
-
 ### 配置文件说明
 
 # 配置文件说明
@@ -2791,7 +2779,6 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 - [CLI 命令参考](cli-reference.md) - 了解所有命令行命令
 - [开发者指南](../developer-guide/) - 学习开发自定义模块
-
 
 
 ### 部署指南
@@ -3066,7 +3053,6 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 
 
-
 =====
 开发者指南
 =====
@@ -3156,11 +3142,13 @@ level = "DEBUG"
 
 
 
+====
+模块开发
+====
+
 
 模块开发
 ----
-
-
 
 
 ### 模块开发入门
@@ -3312,7 +3300,6 @@ sdk.lifecycle  # 生命周期系统
 - [模块核心概念](core-concepts.md) - 深入了解模块架构
 - [Event 包装类详解](event-wrapper.md) - 学习 Event 对象
 - [模块最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### 模块核心概念
@@ -3547,7 +3534,6 @@ self.logger.critical("致命错误") # 致命错误
 - [模块开发入门](getting-started.md) - 创建第一个模块
 - [Event 包装类](event-wrapper.md) - 事件处理详解
 - [最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### Event 包装类详解
@@ -3898,7 +3884,6 @@ hasattr(event, "get_subject")   # 仅当 platform="email" 时返回 True
 
 - [模块开发入门](getting-started.md) - 创建第一个模块
 - [最佳实践](best-practices.md) - 开发高质量模块
-
 
 
 ### 模块开发最佳实践
@@ -4318,11 +4303,13 @@ version = "1.0.0"
 - [Event 包装类](event-wrapper.md) - 事件处理详解
 
 
+=====
+适配器开发
+=====
+
 
 适配器开发
 -----
-
-
 
 
 ### 适配器开发入门
@@ -4773,7 +4760,6 @@ class MyAdapter(BaseAdapter):
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
 - [转换器实现](converter.md) - 了解事件转换
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
-
 
 
 ### 适配器核心概念
@@ -5670,7 +5656,6 @@ async def on_bot_offline(data):
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
 
 
-
 ### SendDSL 详解
 
 # SendDSL 详解
@@ -5952,7 +5937,6 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 - [适配器核心概念](core-concepts.md) - 了解适配器架构
 - [适配器最佳实践](best-practices.md) - 开发高质量适配器
 - [发送方法规范](../../standards/send-method-spec.md) - 发送方法完整规范
-
 
 
 ### 适配器开发最佳实践
@@ -6568,7 +6552,6 @@ version = "2.0.0"  # 更新版本号
 - [SendDSL 详解](send-dsl.md) - 学习消息发送
 
 
-
 ### 事件转换器
 
 # 事件转换器实现指南
@@ -6903,7 +6886,6 @@ import time
 - [SendDSL 详解](send-dsl.md) - 反向转换（发送方向）
 - [事件转换标准](../../standards/event-conversion.md) - 正式的事件转换规范
 - [会话类型系统](../../advanced/session-types.md) - 会话类型映射规则
-
 
 
 
@@ -7259,7 +7241,6 @@ services:
 
 
 
-
 ======
 API 参考
 ======
@@ -7552,7 +7533,6 @@ async for text in ws.iter_text():
 - [路由管理器](../advanced/router.md) - 路由管理器完整文档
 - [HTTP 客户端](../advanced/http-client.md) - HTTP 客户端完整文档
 - [生命周期管理](../advanced/lifecycle.md) - 生命周期完整文档
-
 
 
 
@@ -8089,7 +8069,6 @@ async def low_priority_handler(event):
 - [模块开发指南](../developer-guide/modules/) - 开发自定义模块
 
 
-
 ### 适配器系统 API
 
 # 适配器系统 API
@@ -8527,7 +8506,6 @@ def on_status_change(event):
 
 
 
-
 ====
 技术标准
 ====
@@ -8817,7 +8795,6 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范
 - [发送方法规范](send-method-spec.md) - Send 类的方法命名和参数规范
 - [适配器开发指南](../developer-guide/adapters/) - 适配器开发完整指南
-
 
 
 ### 事件转换标准
@@ -9272,7 +9249,6 @@ await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
 - [API 响应标准](api-response.md) - 适配器 API 响应格式标准
 
 
-
 ### API 响应标准
 
 # ErisPulse 适配器标准化返回规范
@@ -9425,7 +9401,6 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 - 对于3xxxx错误码，低三位可由实现自行定义
 - 避免使用保留错误段(4xxxx、5xxxx)
 - 错误信息应当简洁明了，便于调试
-
 
 
 
@@ -10007,7 +9982,6 @@ if builder:
 - [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
 
 
-
 ====
 高级主题
 ====
@@ -10133,7 +10107,6 @@ result = sdk.my_module.some_sync_method()
 
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 学习开发模块
 - [最佳实践](../developer-guide/modules/best-practices.md) - 了解更多最佳实践
-
 
 
 ### 生命周期管理
@@ -10425,7 +10398,6 @@ class Main(BaseModule):
 
 - [模块开发指南](../developer-guide/modules/getting-started.md) - 了解模块生命周期方法
 - [最佳实践](../developer-guide/modules/best-practices.md) - 生命周期事件使用建议
-
 
 
 
@@ -10788,7 +10760,6 @@ async def on_server_stop(event):
 
 
 
-
 ### MessageBuilder 详解
 
 # MessageBuilder 详解
@@ -10983,7 +10954,6 @@ complex_msg = (
 
 
 
-
 ### 会话类型系统
 
 # 会话类型系统
@@ -11165,7 +11135,6 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 - [事件转换标准](../standards/event-conversion.md) - 事件转换规范
 - [会话类型标准](../standards/session-types.md) - 会话类型正式定义
 - [事件转换器实现](../developer-guide/adapters/getting-started.md) - 适配器开发指南
-
 
 
 
@@ -11491,7 +11460,6 @@ async def chat_handler(event):
 
 - [Event 包装类](../developer-guide/modules/event-wrapper.md) - Event 对象的所有方法
 - [事件处理入门](../getting-started/event-handling.md) - 事件处理基础
-
 
 
 
@@ -11828,7 +11796,6 @@ async def on_unload(self, event):
 
 
 
-
 ======
 平台特性指南
 ======
@@ -12065,7 +12032,6 @@ ErisPulse 项目：
 4. 提交 Pull Request。
 
 感谢您的支持！
-
 
 
 
@@ -12346,7 +12312,6 @@ connection_status = {
 # 动态启用/禁用账户（需要重启适配器）
 onebot.accounts["test"].enabled = False
 ```
-
 
 
 
@@ -12691,7 +12656,6 @@ OneBot12使用标准化的消息段格式：
 3. **消息发送**: 使用合适的消息类型，避免发送不支持的消息
 4. **连接监控**: 定期检查连接状态，确保服务可用性
 5. **性能优化**: 批量发送时使用Batch方法，减少网络开销
-
 
 
 ### Telegram 适配
@@ -13070,7 +13034,6 @@ proxy_enabled = false
 host = "127.0.0.1"
 port = 1080
 type = "socks5"
-
 
 
 ### 云湖适配
@@ -13543,7 +13506,6 @@ yunhu.bots["bot1"].enabled = False
 系统会自动兼容旧格式的配置，但建议迁移到新配置格式以获得更好的多bot支持。
 
 
-
 ### 邮件适配
 
 # 邮件平台特性文档
@@ -13684,7 +13646,6 @@ await mail.Send.Using("from@example.com")
     }
   ]
 }
-
 
 
 
@@ -14170,7 +14131,6 @@ async def handle_private_notice(event):
 
 
 
-
 ### Matrix 适配
 
 # Matrix平台特性文档
@@ -14589,7 +14549,6 @@ async def handle_member_change(event):
         print(f"用户 {user_id} 被移除，操作者: {operator_id}")
 
 
-
 ### QQBot 适配
 
 # QQBot平台特性文档
@@ -14958,7 +14917,6 @@ async def handle_audit(event):
         reason = event.get("qqbot_audit_reject_reason", "")
         print(f"消息审核拒绝: {reason}")
 ```
-
 
 
 
@@ -15598,7 +15556,6 @@ result = await yunhu_user.call_api("/button_report",
 
 
 
-
 ### 平台文档维护说明
 
 # 文档维护说明
@@ -15748,7 +15705,6 @@ from ErisPulse.Core import adapter
 
 
 
-
 ====
 代码规范
 ====
@@ -15851,7 +15807,6 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
    ```python
    {!--< deprecated >!--} 请使用new_method()代替 | 2025-07-09
    ```
-
 
 
 ======
@@ -16153,5 +16108,4 @@ def complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:
 **修复版本**: 2.4.5-dev.4
 
 **修复内容**: 在 `ConfigManager.__init__()` 中，如果传入的路径为相对路径，自动通过 `os.path.abspath()` 解析为绝对路径。
-
 
