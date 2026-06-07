@@ -91,10 +91,15 @@ class AdapterLoader(BaseLoader):
 
             logger.print_section_separator()
 
-        except BaseException as e:
+        except KeyboardInterrupt:
+            raise  # 允许用户中断
+        except SystemExit as e:
+            logger.error(
+                f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
+                f"请不要使用 sys.exit() 或 raise SystemExit"
+            )
+        except Exception as e:
             logger.error(f"加载 {group_name} entry-points 失败: {e}")
-            if isinstance(e, SystemExit):
-                logger.warning(f"拦截到 SystemExit，已阻止进程退出，跳过后续适配器加载")
 
         return objs, enabled_list, disabled_list
 
@@ -175,8 +180,10 @@ class AdapterLoader(BaseLoader):
             enabled_list.append(meta_name)
 
         except SystemExit as e:
-            logger.error(f"加载适配器 {meta_name} 时触发 SystemExit({e.code})，已跳过。"
-                         f"请不要在适配器中使用 sys.exit() 或 raise SystemExit")
+            logger.error(
+                f"加载适配器 {meta_name} 时触发 SystemExit({e.code})，已跳过。"
+                f"请不要在适配器中使用 sys.exit() 或 raise SystemExit"
+            )
         except Exception as e:
             logger.error(f"加载适配器 {meta_name} 失败，已跳过: {e}")
 
@@ -230,8 +237,10 @@ class AdapterLoader(BaseLoader):
                             )
                     return success
                 except SystemExit as e:
-                    logger.error(f"适配器 {name} 注册时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                                 f"请不要使用 sys.exit() 或 raise SystemExit")
+                    logger.error(
+                        f"适配器 {name} 注册时尝试退出进程 (SystemExit({e.code}))，已跳过。"
+                        f"请不要使用 sys.exit() 或 raise SystemExit"
+                    )
                     await lifecycle.submit_event(
                         "adapter.load",
                         msg=f"适配器 {name} 注册时触发 SystemExit",
