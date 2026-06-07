@@ -182,6 +182,43 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
+### 4. 连接信息暴露
+
+适配器注册的路由应对用户可见，便于用户配置平台侧的回调地址。推荐在 `start()` 中主动输出连接信息：
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket 地址: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+用户可以通过以下 API 查看适配器的所有路由和连接地址：
+
+```python
+from ErisPulse import sdk
+
+# 适配器级别的连接信息（推荐）
+info = sdk.adapter.get_connection_info("myplatform")
+
+# 路由管理器级别的查询
+sdk.router.list_namespaces()              # 列出所有命名空间
+sdk.router.get_module_routes("myplatform")  # 详细路由信息
+sdk.router.get_module_urls("myplatform")    # 完整连接 URL
+```
+
+> **注意**：路由注册时的 `module_name` 必须与适配器在 ErisPulse 中注册的 `platform` 名称完全一致，否则 `get_connection_info()` 将无法关联路由。多账户适配器应为每个账户注册子路径（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+
 ## 事件转换
 
 ### 1. 严格遵循 OneBot12 标准

@@ -182,6 +182,43 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
+### 4. 接続情報の公開
+
+アダプターが登録したルートはユーザーに可視すべきであり、ユーザーがプラットフォーム側のコールバックアドレスを設定するのに役立ちます。`start()` で接続情報を主に出力することを推奨します。
+
+```python
+class MyAdapter(BaseAdapter):
+    async def start(self):
+        router.register_websocket(
+            module_name=self.platform,
+            path="/ws",
+            handler=self._ws_handler
+        )
+
+        if self.sdk:
+            info = self.sdk.adapter.get_connection_info(self.platform)
+            if info:
+                self.logger.info(f"WebSocket アドレス: "
+                    f"{info.get('connection', {}).get('base_url', '')}"
+                    f"{info.get('connection', {}).get('websocket_routes', [])}")
+```
+
+ユーザーは以下の API を通じてアダプターのすべてのルートと接続アドレスを確認できます。
+
+```python
+from ErisPulse import sdk
+
+# アダプターレベルの接続情報（推奨）
+info = sdk.adapter.get_connection_info("myplatform")
+
+# ルートマネージャーレベルの照会
+sdk.router.list_namespaces()              # すべてのネームスペースを一覧表示
+sdk.router.get_module_routes("myplatform")  # 詳細なルート情報
+sdk.router.get_module_urls("myplatform")    # 完全な接続 URL
+```
+
+> **注意**：ルートを登録する際の `module_name` は、ErisPulse で登録されたアダプターの `platform` 名と完全に一致している必要があります。それ以外の場合、`get_connection_info()` はルートを関連付けられません。マルチアカウントアダプターは、各アカウントに対してサブパス（例: `/account1/webhook`、`/account2/webhook`）を登録する必要があります。`module_name` を使い分けることはできません。
+
 ## イベント変換
 
 ### 1. OneBot12 標準の厳格な遵守

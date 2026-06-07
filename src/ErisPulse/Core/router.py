@@ -13,7 +13,7 @@ ErisPulse 路由系统
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 from starlette.staticfiles import StaticFiles
 from typing import Any, TypeAlias
@@ -21,7 +21,7 @@ from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
-from .Bases.router import HttpRequest, WebSocketConnection
+from .Bases.router import HttpRequest, WebSocketConnection, SseEmitter
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .constants import (
     DEFAULT_SERVER_HOST,
@@ -207,6 +207,15 @@ class RouteGroup:
         resolved = self._resolve_path(path)
         return self._router._ws_decorate(resolved, self._module_name, **kwargs)
 
+    def sse(self, path: str, **kwargs):
+        """
+        SSE (Server-Sent Events) 路由装饰器
+
+        :param path: str 路由路径
+        """
+        resolved = self._resolve_path(path)
+        return self._router._sse_decorate(resolved, self._module_name, **kwargs)
+
     def group(self, prefix: str, **kwargs) -> "RouteGroup":
         """
         创建嵌套分组
@@ -265,6 +274,7 @@ class RouterManager:
         self._websocket_routes: dict[
             str, dict[str, tuple[Callable, Callable | None]]
         ] = defaultdict(dict)
+        self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
         self.base_url = ""
         self._server_task: asyncio.Task | None = None
         self._uvicorn_server: uvicorn.Server | None = None
@@ -456,6 +466,109 @@ class RouterManager:
             return result
 
         return _wrapper
+
+    def _make_sse_endpoint(self, handler: Callable) -> Callable:
+        """
+        根据处理器签名创建 SSE 端点包装器
+
+        自动检测处理器是否需要 HttpRequest 参数。
+        为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        sig = inspect.signature(handler)
+        params = list(sig.parameters.values())
+
+        wants_request = False
+        if params:
+            first = params[0]
+            if first.annotation in (HttpRequest, Request):
+                wants_request = True
+            elif first.annotation is SseEmitter:
+                wants_request = False
+            elif first.name in _REQUEST_LIKE_NAMES:
+                wants_request = True
+
+        async def wrapper(request: Request):
+            queue: asyncio.Queue = asyncio.Queue()
+            is_closed = False
+
+            async def on_send(payload: str):
+                if not is_closed:
+                    await queue.put(payload)
+
+            async def on_close():
+                nonlocal is_closed
+                if not is_closed:
+                    is_closed = True
+                    await queue.put(None)
+
+            if wants_request:
+                sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
+                handler_task = asyncio.create_task(handler(HttpRequest(request), sse))
+            else:
+                sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
+                handler_task = asyncio.create_task(handler(sse))
+
+            async def generator():
+                yield ":ok\n\n"
+                while True:
+                    payload = await queue.get()
+                    if payload is None:
+                        break
+                    yield payload
+
+            try:
+                response = StreamingResponse(
+                    generator(),
+                    media_type="text/event-stream",
+                    headers={
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        "X-Accel-Buffering": "no",
+                    },
+                )
+                return response
+            except Exception:
+                handler_task.cancel()
+                raise
+
+        return wrapper
+
+    def _register_sse_endpoint(
+        self,
+        full_path: str,
+        module_name: str,
+        handler: Callable,
+        **kwargs,
+    ) -> None:
+        """
+        SSE 路由注册内部实现
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if full_path in self._sse_routes.get(module_name, {}):
+            raise ValueError(f"SSE路径 {full_path} 已在模块 {module_name} 中注册")
+
+        endpoint = self._make_sse_endpoint(handler)
+        route = APIRoute(
+            path=full_path,
+            endpoint=endpoint,
+            methods=["GET"],
+            name=f"{module_name}_{full_path.replace('/', '_')}_sse",
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k
+                in ("summary", "description", "tags", "response_model", "deprecated")
+            },
+        )
+        self.app.router.routes.append(route)
+        self._sse_routes[module_name][full_path] = handler
+
+        logger.info(f"[{module_name}] 注册SSE路由: {full_path}")
 
     @staticmethod
     async def _run_ws_hooks(
@@ -939,8 +1052,16 @@ class RouterManager:
                 )
                 restored_ws += 1
 
-        if restored_http or restored_ws:
-            logger.debug(f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}")
+        restored_sse = 0
+        for module_name, paths in self._sse_routes.items():
+            for full_path, handler in paths.items():
+                self._register_sse_endpoint(full_path, module_name, handler)
+                restored_sse += 1
+
+        if restored_http or restored_ws or restored_sse:
+            logger.debug(
+                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}, SSE={restored_sse}"
+            )
 
     # 路由中间件
 
@@ -1259,6 +1380,47 @@ class RouterManager:
         full_path = self._normalize_path(module_name, path)
         return self._ws_decorate(full_path, module_name, **kwargs)
 
+    def sse(self, module_name: str, path: str, **kwargs):
+        """
+        SSE (Server-Sent Events) 路由装饰器
+
+        :param module_name: str 模块名称 (必填)
+        :param path: str SSE 端点路径
+        :param summary: str API 摘要 (可选)
+        :param description: str API 描述 (可选)
+        :param tags: list[str] API 标签 (可选)
+
+        :example:
+        >>> @sdk.router.sse("MyModule", "/events")
+        ... async def event_stream(sse):
+        ...     while True:
+        ...         await sse.send({"msg": "hello"})
+        ...         await asyncio.sleep(1)
+
+        >>> @sdk.router.sse("MyModule", "/logs")
+        ... async def log_stream(request, sse):
+        ...     token = request.query_params.get("token")
+        ...     while True:
+        ...         line = await get_next_log(token)
+        ...         await sse.send(line, event="log")
+        """
+        full_path = self._normalize_path(module_name, path)
+        return self._sse_decorate(full_path, module_name, **kwargs)
+
+    def _sse_decorate(self, full_path: str, module_name: str, **kwargs):
+        """
+        SSE 路由装饰器内部实现
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+
+        def decorator(func):
+            self._register_sse_endpoint(full_path, module_name, func, **kwargs)
+            return func
+
+        return decorator
+
     # 传统注册 API
 
     def register_http_route(
@@ -1547,14 +1709,78 @@ class RouterManager:
             logger.error(f"注销WebSocket失败: {e}")
             return False
 
+    def register_sse(
+        self,
+        module_name: str,
+        path: str,
+        handler: Callable,
+        **kwargs,
+    ) -> None:
+        """
+        注册 SSE (Server-Sent Events) 路由
+
+        SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
+        处理器接收 ``SseEmitter`` 实例（以及可选的 ``HttpRequest``），
+        通过 ``sse.send()`` 推送事件，调用 ``sse.close()`` 断开连接。
+
+        :param module_name: str 模块名称
+        :param path: str SSE 端点路径
+        :param handler: Callable 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
+
+        :raises ValueError: 当路径已注册时抛出
+
+        :example:
+        >>> async def event_stream(sse):
+        ...     for i in range(10):
+        ...         await sse.send({"count": i})
+        ...         await asyncio.sleep(1)
+        >>> router.register_sse("MyModule", "/events", event_stream)
+        """
+        full_path = self._normalize_path(module_name, path)
+        self._register_sse_endpoint(full_path, module_name, handler, **kwargs)
+
+    def unregister_sse(self, module_name: str, path: str) -> bool:
+        """
+        取消注册 SSE 路由
+
+        :param module_name: 模块名称
+        :param path: SSE 路径
+        :return: bool 是否成功取消注册
+        """
+        try:
+            full_path = self._normalize_path(module_name, path)
+
+            if (
+                sse_routes := self._sse_routes.get(module_name)
+            ) and full_path in sse_routes:
+                logger.info(f"注销SSE: {full_path}")
+                del sse_routes[full_path]
+
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (
+                        isinstance(route, APIRoute)
+                        and route.path == full_path
+                        and "GET" in route.methods
+                    )
+                ]
+                return True
+
+            logger.debug(f"\n取消注册的SSE路由不存在: {full_path}\n")
+            return False
+        except Exception as e:
+            logger.error(f"注销SSE失败: {e}")
+            return False
+
     def unregister_all_by_namespace(self, namespace: str) -> dict[str, int]:
         """
         清理指定命名空间下的所有路由
 
         :param namespace: 命名空间（适配器名或模块名）
-        :return: dict 清理统计 {"http_count": int, "websocket_count": int}
+        :return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
         """
-        result = {"http_count": 0, "websocket_count": 0}
+        result = {"http_count": 0, "websocket_count": 0, "sse_count": 0}
 
         # 清理 HTTP 路由
         if namespace in self._http_routes:
@@ -1583,10 +1809,31 @@ class RouterManager:
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
 
-        if result["http_count"] > 0 or result["websocket_count"] > 0:
+        if namespace in self._sse_routes:
+            paths = list(self._sse_routes[namespace].keys())
+            for path in paths:
+                self._sse_routes[namespace].pop(path, None)
+                result["sse_count"] += 1
+            self.app.router.routes = [
+                route
+                for route in self.app.router.routes
+                if not (
+                    isinstance(route, APIRoute)
+                    and "GET" in route.methods
+                    and route.path in paths
+                )
+            ]
+            if namespace in self._sse_routes:
+                del self._sse_routes[namespace]
+
+        if (
+            result["http_count"] > 0
+            or result["websocket_count"] > 0
+            or result["sse_count"] > 0
+        ):
             logger.info(
                 f"已清理命名空间 [{namespace}] 的路由: "
-                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}, SSE={result['sse_count']}"
             )
 
         return result
@@ -1595,14 +1842,15 @@ class RouterManager:
         """
         列出所有已注册的命名空间及其路由
 
-        :return: dict {namespace: {"http": [paths], "websocket": [paths]}}
+        :return: dict {namespace: {"http": [paths], "websocket": [paths], "sse": [paths]}}
 
         :example:
         >>> router.list_namespaces()
         {
             "onebot11": {
                 "http": ["/onebot11/webhook", "/onebot11/callback"],
-                "websocket": ["/onebot11/ws"]
+                "websocket": ["/onebot11/ws"],
+                "sse": ["/onebot11/events"]
             }
         }
         """
@@ -1610,13 +1858,220 @@ class RouterManager:
 
         for namespace, routes in self._http_routes.items():
             if namespace not in result:
-                result[namespace] = {"http": [], "websocket": []}
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
             result[namespace]["http"] = list(routes.keys())
 
         for namespace, routes in self._websocket_routes.items():
             if namespace not in result:
-                result[namespace] = {"http": [], "websocket": []}
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
             result[namespace]["websocket"] = list(routes.keys())
+
+        for namespace, routes in self._sse_routes.items():
+            if namespace not in result:
+                result[namespace] = {"http": [], "websocket": [], "sse": []}
+            result[namespace]["sse"] = list(routes.keys())
+
+        return result
+
+    def get_module_routes(self, module_name: str) -> dict[str, list[dict]]:
+        """
+        获取指定命名空间的详细路由信息
+
+        与 list_namespaces() 不同，此方法返回每个路由的详细信息：
+        - HTTP 路由包含路径和 HTTP 方法列表
+        - WebSocket 路由包含路径和是否需要认证
+        - SSE 路由包含路径和流式标记
+
+        :param module_name: 模块/平台名称
+        :return: {"http": [...], "websocket": [...], "sse": [...]}
+           http: [{"path": str, "methods": [str]}]
+           websocket: [{"path": str, "auth": bool}]
+           sse: [{"path": str, "streaming": true}]
+
+        :example:
+        >>> router.get_module_routes("onebot11")
+        {
+            "http": [{"path": "/onebot11/webhook", "methods": ["POST"]}],
+            "websocket": [{"path": "/onebot11/ws", "auth": true}],
+            "sse": [{"path": "/onebot11/events", "streaming": true}]
+        }
+        """
+        result: dict[str, list[dict]] = {"http": [], "websocket": [], "sse": []}
+
+        for path, method_map in self._http_routes.get(module_name, {}).items():
+            result["http"].append(
+                {
+                    "path": path,
+                    "methods": sorted(method_map.keys()),
+                }
+            )
+
+        for path, (_, auth_handler) in self._websocket_routes.get(
+            module_name, {}
+        ).items():
+            result["websocket"].append(
+                {
+                    "path": path,
+                    "auth": auth_handler is not None,
+                }
+            )
+
+        for path in self._sse_routes.get(module_name, {}):
+            result["sse"].append({"path": path, "streaming": True})
+
+        return result
+
+    def get_module_urls(self, module_name: str) -> dict[str, Any]:
+        """
+        获取指定命名空间的完整连接 URL
+
+        在 get_module_routes() 的基础上拼接 base_url，生成可直接使用的完整 URL。
+        HTTP 路由使用 base_url 前缀，WebSocket 路由自动将 http/https 转换为 ws/wss，
+        SSE 路由使用 base_url 前缀（HTTP）。
+
+        :param module_name: 模块/平台名称
+        :return: {
+            "base_url": str,
+            "http": [{"path": str, "method": str, "url": str}],
+            "websocket": [{"path": str, "url": str}],
+            "sse": [{"path": str, "url": str}]
+        }
+
+        :example:
+        >>> # 假设 base_url = "http://localhost:8080"
+        >>> router.get_module_urls("onebot11")
+        {
+            "base_url": "http://localhost:8080",
+            "http": [
+                {"path": "/onebot11/webhook", "method": "POST",
+                 "url": "http://localhost:8080/onebot11/webhook"}
+            ],
+            "websocket": [
+                {"path": "/onebot11/ws",
+                 "url": "ws://localhost:8080/onebot11/ws"}
+            ],
+            "sse": [
+                {"path": "/onebot11/events",
+                 "url": "http://localhost:8080/onebot11/events"}
+            ]
+        }
+        """
+        base = getattr(self, "base_url", "")
+        result: dict[str, Any] = {
+            "base_url": base,
+            "http": [],
+            "websocket": [],
+            "sse": [],
+        }
+
+        for path, method_map in self._http_routes.get(module_name, {}).items():
+            url = f"{base}{path}" if base else path
+            for method in method_map:
+                result["http"].append(
+                    {
+                        "path": path,
+                        "method": method,
+                        "url": url,
+                    }
+                )
+
+        if base:
+            ws_base = base.replace("https://", "wss://").replace("http://", "ws://")
+        else:
+            ws_base = ""
+
+        for path, (_, _) in self._websocket_routes.get(module_name, {}).items():
+            ws_url = f"{ws_base}{path}" if ws_base else path
+            result["websocket"].append(
+                {
+                    "path": path,
+                    "url": ws_url,
+                }
+            )
+
+        for path in self._sse_routes.get(module_name, {}):
+            url = f"{base}{path}" if base else path
+            result["sse"].append(
+                {
+                    "path": path,
+                    "url": url,
+                }
+            )
+
+        return result
+
+    def get_module_urls_matching(self, prefix: str) -> dict[str, Any]:
+        """
+        获取指定前缀的所有命名空间的聚合连接 URL
+
+        适配器多账户场景下，路由可能注册为 ``yunhu_bot1``、``yunhu_bot2`` 等命名空间。
+        此方法按前缀匹配聚合所有相关命名空间的路由信息。
+
+        :param prefix: 命名空间前缀（如 "yunhu"）
+        :return: {
+            "base_url": str,
+            "http": [{"path": str, "method": str, "url": str, "namespace": str}],
+            "websocket": [{"path": str, "url": str, "namespace": str}],
+            "sse": [{"path": str, "url": str, "namespace": str}]
+        }
+
+        :example:
+        >>> # 命名空间: yunhu_bot1, yunhu_bot2, onebot11
+        >>> router.get_module_urls_matching("yunhu")
+        {
+            "base_url": "http://localhost:8080",
+            "http": [
+                {"path": "/yunhu_bot1/webhook", "method": "POST",
+                 "url": "http://localhost:8080/yunhu_bot1/webhook",
+                 "namespace": "yunhu_bot1"},
+                {"path": "/yunhu_bot2/webhook", "method": "POST",
+                 "url": "http://localhost:8080/yunhu_bot2/webhook",
+                 "namespace": "yunhu_bot2"}
+            ],
+            "websocket": [],
+            "sse": []
+        }
+        """
+        base = getattr(self, "base_url", "")
+        result: dict[str, Any] = {
+            "base_url": base,
+            "http": [],
+            "websocket": [],
+            "sse": [],
+        }
+
+        if base:
+            ws_base = base.replace("https://", "wss://").replace("http://", "ws://")
+        else:
+            ws_base = ""
+
+        matched = [
+            ns
+            for ns in set(
+                list(self._http_routes.keys())
+                + list(self._websocket_routes.keys())
+                + list(self._sse_routes.keys())
+            )
+            if ns == prefix or ns.startswith(f"{prefix}_")
+        ]
+
+        for ns in matched:
+            for path, method_map in self._http_routes.get(ns, {}).items():
+                url = f"{base}{path}" if base else path
+                for method in method_map:
+                    result["http"].append(
+                        {"path": path, "method": method, "url": url, "namespace": ns}
+                    )
+
+            for path, (_, _) in self._websocket_routes.get(ns, {}).items():
+                ws_url = f"{ws_base}{path}" if ws_base else path
+                result["websocket"].append(
+                    {"path": path, "url": ws_url, "namespace": ns}
+                )
+
+            for path in self._sse_routes.get(ns, {}):
+                url = f"{base}{path}" if base else path
+                result["sse"].append({"path": path, "url": url, "namespace": ns})
 
         return result
 

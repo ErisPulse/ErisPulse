@@ -575,8 +575,6 @@ class MyPlatformConverter:
 ### WebSocket 连接
 
 ```python
-from fastapi import WebSocket
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """注册 WebSocket 路由"""
@@ -587,7 +585,7 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
+    async def _ws_handler(self, websocket):
         """WebSocket 连接处理器"""
         self.connection = websocket
         
@@ -602,7 +600,7 @@ class MyAdapter(BaseAdapter):
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
+    async def _auth_handler(self, websocket) -> bool:
         """WebSocket 认证"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
@@ -611,8 +609,6 @@ class MyAdapter(BaseAdapter):
 ### WebHook 连接
 
 ```python
-from fastapi import Request
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """注册 WebHook 路由"""
@@ -623,7 +619,7 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
+    async def _webhook_handler(self, request):
         """WebHook 请求处理器"""
         data = await request.json()
         onebot_event = self.convert(data)
@@ -631,6 +627,8 @@ class MyAdapter(BaseAdapter):
             await self.adapter.emit(onebot_event)
         return {"status": "ok"}
 ```
+
+> **路由信息查询**：适配器注册的路由（HTTP、WebSocket、SSE）可以通过 `sdk.adapter.get_connection_info(platform)` 和 `sdk.router.get_module_urls(module_name)` 查询完整连接地址（包含 `base_url` + 路径）。详见 [适配器开发入门 - 连接信息与路由发现](getting-started.md#9-连接信息与路由发现) 和 [SSE 支持](getting-started.md#10-sse-server-sent-events-支持)。
 
 ## API 响应标准
 

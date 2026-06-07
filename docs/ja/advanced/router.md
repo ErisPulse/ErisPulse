@@ -1,40 +1,40 @@
 # ルーティングマネージャー
 
-ErisPulseルーティングマネージャーは、統一されたHTTPおよびWebSocketルーティング管理を提供し、マルチアダプターのルーティング登録とライフサイクル管理をサポートしています。下部構造は抽象レイヤーによってカプセル化されています（現在はFastAPI + Uvicorn）。
+ErisPulse ルーティングマネージャーは、統一された HTTP および WebSocket ルーティング管理を提供し、マルチアダプターのルーティング登録とライフサイクル管理をサポートしています。下部構造は抽象レイヤーによってカプセル化されています（現在は FastAPI + Uvicorn）。
 
 ## 概要
 
 ルーティングマネージャーの主な機能：
 
 - **デコレータールーティング**：`@http` / `@get` / `@post` / `@put` / `@delete` / `@ws` デコレーターによるクイック登録をサポート
-- **自動インジェクション**：ルートハンドラーはFastAPIの型をインポートする必要がなく、フレームワークが抽象オブジェクトを自動的にインジェクションします
+- **自動インジェクション**：ルートハンドラーは FastAPI の型をインポートする必要がなく、フレームワークが抽象オブジェクトを自動的にインジェクションします
 - **ルートグループ化**：プレフィックスとバージョン番号付きの `RouteGroup` をサポート
-- **ルーティングミドルウェア**：globパターンマッチングによるリクエスト傍受をサポート
+- **ルーティングミドルウェア**：glob パターンマッチングによるリクエスト傍受をサポート
 - **レート制限**：スライディングウィンドウによるレートリミットを内蔵
-- **CORSサポート**：ワンクリックでCross-Origin Resource Sharing（クロスオリジンリソース共有）を有効化
+- **CORS サポート**：ワンクリックで Cross-Origin Resource Sharing（クロスオリジンリソース共有）を有効化
 - **セキュリティヘッダー**：セキュリティレスポンスヘッダーを自動的に追加
-- **自動ドキュメント**：OpenAPIベースのインタラクティブなドキュメント
-- **WebSocketサポート**：完全なWebSocket接続管理、カスタム認証、ライフサイクルフック
-- **ライフサイクル統合**：ErisPulseライフサイクルシステムと深く統合
-- **SSL/TLSサポート**：HTTPSおよびWSSの安全な接続をサポート
+- **自動ドキュメント**：OpenAPI ベースのインタラクティブなドキュメント
+- **WebSocket サポート**：完全な WebSocket 接続管理、カスタム認証、ライフサイクルフック
+- **ライフサイクル統合**：ErisPulse ライフサイクルシステムと深く統合
+- **SSL/TLS サポート**：HTTPS および WSS の安全な接続をサポート
 
 ## 抽象型
 
-ErisPulseはサーバー側の抽象型を提供しており、モジュールはFastAPIに直接依存する必要がありません：
+ErisPulse はサーバー側の抽象型を提供しており、モジュールは FastAPI に直接依存する必要がありません：
 
-| 抽象型 | FastAPIでの対応 | 説明 |
+| 抽象型 | FastAPI での対応 | 説明 |
 |---------|-------------|------|
-| `HttpRequest` | `fastapi.Request` | HTTPリクエストのカプセル化、インターフェースは完全に互換性あり |
-| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket接続のカプセル化、ライフサイクルフックを追加で提供 |
-| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket切断例外 |
+| `HttpRequest` | `fastapi.Request` | HTTP リクエストのカプセル化、インターフェースは完全に互換性あり |
+| `WebSocketConnection` | `fastapi.WebSocket` | WebSocket 接続のカプセル化、ライフサイクルフックを追加で提供 |
+| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | WebSocket 断開例外 |
 
-> `WebSocketConnection` は `WebSocketConnectionBase` から継承されており、クライアントWebSocket（`ClientWebSocket`）と同じ `send/receive/iter/close` インターフェースを共有します。クライアントとサーバーのWebSocketは、同じビジネスロジックコードを使用できます。
+> `WebSocketConnection` は `WebSocketConnectionBase` から継承されており、クライアント WebSocket（`ClientWebSocket`）と同じ `send/receive/iter/close` インターフェースを共有します。クライアントとサーバーの WebSocket は、同じビジネスロジックコードを使用できます。
 >
-> `.raw` 属性を使用して、基盤となるFastAPIネイティブオブジェクトにアクセスできます。FastAPIの型を直接使用するコードも完全に互換性があります。
+> `.raw` 属性を使用して、基盤となる FastAPI ネイティブオブジェクトにアクセスできます。FastAPI の型を直接使用するコードも完全に互換性があります。
 
 ## デコレータールーティング（推奨）
 
-### HTTPデコレーター
+### HTTP デコレーター
 
 ```python
 from ErisPulse.Core import router
@@ -50,32 +50,29 @@ async def post_data(request: HttpRequest):
     data = await request.json()
     return {"received": data}
 
-# FastAPIの型を引き続き使用することも完全に互換性があります
-from fastapi import Request
-
 @router.put("my_module", "/data/{item_id}")
-async def update_data(request: Request):
+async def update_data(request):
     return {"updated": True}
 
 @router.delete("my_module", "/data/{item_id}")
-async def delete_data(request: Request):
+async def delete_data(request):
     return {"deleted": True}
 ```
 
-> **自動インジェクションルール**：ハンドラーの最初の引数名が `request` または `req` であり、FastAPIの型アノテーションがない場合、フレームワークは自動的に `HttpRequest` をインジェクションします。パラメータのない、またはリクエストパラメータ名以外のハンドラーには影響しません。
+> **自動インジェクションルール**：ハンドラーの最初の引数名が `request` または `req` であり、FastAPI の型アノテーションがない場合、フレームワークは自動的に `HttpRequest` をインジェクションします。パラメータのない、またはリクエストパラメータ名以外のハンドラーには影響しません。
 
-### WebSocketデコレーター
+### WebSocket デコレーター
 
 ```python
 from ErisPulse.Core import WebSocketConnection, WebSocketDisconnect
 
-# 基本的なWebSocket
+# 基本的な WebSocket
 @router.ws("my_module", "/ws")
 async def websocket_handler(ws):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# ライフサイクルフック付きのWebSocket
+# ライフサイクルフック付きの WebSocket
 @router.ws("my_module", "/ws/chat")
 async def chat(ws: WebSocketConnection):
     @ws.on_disconnect
@@ -89,7 +86,7 @@ async def chat(ws: WebSocketConnection):
     async for msg in ws.iter_text():
         await ws.send_text(f"Echo: {msg}")
 
-# 認証付きのWebSocket
+# 認証付きの WebSocket
 async def ws_auth(ws: WebSocketConnection) -> bool:
     token = ws.query_params.get("token")
     return token == "secret"
@@ -101,7 +98,7 @@ async def secure_ws_handler(ws):
         await ws.send_text(f"Echo: {data}")
 ```
 
-> **注意**：WebSocketハンドラーと認証ハンドラーも自動インジェクションをサポートしています。パラメータのアノテーションが `fastapi.WebSocket` の場合はネイティブオブジェクトが渡され、それ以外の場合は `WebSocketConnection` が渡されます。
+> **注意**：WebSocket ハンドラーと認証ハンドラーも自動インジェクションをサポートしています。パラメータのアノテーションが `fastapi.WebSocket` の場合はネイティブオブジェクトが渡され、それ以外の場合は `WebSocketConnection` が渡されます。
 
 ## 従来の登録方式
 
@@ -129,7 +126,7 @@ router.register_http_route(
 )
 ```
 
-### WebSocket登録
+### WebSocket 登録
 
 ```python
 from ErisPulse.Core import WebSocketConnection
@@ -163,14 +160,14 @@ router.register_websocket(
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `module_name` | モジュール名（必須） | - |
-| `path` | WebSocketのパス | - |
+| `path` | WebSocket のパス | - |
 | `handler` | ハンドラー関数 | - |
 | `auth_handler` | 認証関数。`False` を返すと自動的に接続を閉じます | `None` |
 | `auto_accept` | 自動的に `accept()` するかどうか | `True` |
 
 > **推奨**：`auto_accept` をオフにするのではなく、`auth_handler` を使用して接続を確認してください。接続フローを完全に制御する必要がある場合にのみ `auto_accept=False` を設定してください。
 
-## WebSocketライフサイクルフック
+## WebSocket ライフサイクルフック
 
 `WebSocketConnection` は切断やエラー時のコールバック登録を提供しており、手動での try/catch は不要です：
 
@@ -213,7 +210,7 @@ async def create_user(request):
 
 ## ルーティングミドルウェア
 
-ミドルウェアはglobパターンによるパスマッチングをサポートしています：
+ミドルウェアは glob パターンによるパスマッチングをサポートしています：
 
 ```python
 @router.middleware("/my_module/*")
@@ -244,7 +241,7 @@ async def submit_data(request):
 
 レート制限のフォーマット：`{回数}/{時間枠}`、例：`10/minute`、`100/hour`。
 
-## CORS設定
+## CORS 設定
 
 ```python
 router.setup_cors(
@@ -280,7 +277,7 @@ enabled = true
 
 ## 自動ドキュメント
 
-RouterはデフォルトでOpenAPIのインタラクティブなドキュメントを有効にしています：
+Router はデフォルトで OpenAPI のインタラクティブなドキュメントを有効にしています：
 
 ```python
 # ドキュメントを無効化
@@ -316,7 +313,7 @@ GET /health
 {"status": "ok", "service": "ErisPulse Router"}
 ```
 
-### 路由リスト
+### ルートリスト
 
 ```python
 GET /routes
@@ -345,7 +342,7 @@ async def on_server_stop(event):
 4. **ルートグループ化を使用する**：同じモジュールの複数のルートには `group()` を使用して整理する
 5. **セキュリティを考慮する**：機密性の高い操作には認証メカニズムとセキュリティヘッダーを実装する
 6. **適切なレートリミット**：高頻度のインターフェースにはレート制限を設定する
-7. **ライフサイクルフックを使用する**：`@ws.on_disconnect` / `@ws.on_error` を使用してWebSocketの例外を処理し、手動の try/catch を避ける
+7. **ライフサイクルフックを使用する**：`@ws.on_disconnect` / `@ws.on_error` を使用して WebSocket の例外を処理し、手動の try/catch を避ける
 
 ## 関連ドキュメント
 
