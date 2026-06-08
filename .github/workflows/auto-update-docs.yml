@@ -1,9 +1,9 @@
-name: "📚 艾莉丝的文档更新"
+name: "📚 Eris Docs Update"
 
 permissions:
   contents: write
 
-# 防止翻译期间 push 回仓库再次触发同一条工作流，取消重复运行
+# Prevent push during translation from re-triggering the same workflow, cancel duplicate runs
 concurrency:
   group: docs-update
   cancel-in-progress: true
@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       force_translate:
-        description: '强制重新翻译所有文档'
+        description: 'Force re-translate all documents'
         required: false
         default: 'false'
 
@@ -24,60 +24,60 @@ jobs:
   update-and-generate-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 准备环境
+      - name: Setup environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests openai
     
-      - name: 检查缓存目录状态
+      - name: Check cache directory status
         run: |
-          echo "=== 检查缓存目录 ==="
-          echo "当前工作目录: $(pwd)"
-          echo "缓存目录是否存在: $(test -d .github/.translate_cache && echo 'YES' || echo 'NO')"
+          echo "=== Checking cache directory ==="
+          echo "Current working directory: $(pwd)"
+          echo "Cache directory exists: $(test -d .github/.translate_cache && echo 'YES' || echo 'NO')"
           if [ -d ".github/.translate_cache" ]; then
-            echo "缓存文件数量: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l)"
-            echo "缓存目录内容:"
+            echo "Cache file count: $(find .github/.translate_cache -name '*.cache' 2>/dev/null | wc -l)"
+            echo "Cache directory contents:"
             ls -la .github/.translate_cache/ | head -10
             echo ""
-            echo "示例缓存文件:"
+            echo "Sample cache files:"
             ls -la .github/.translate_cache/*.cache 2>/dev/null | head -3
           fi
           echo "==================="
     
-      - name: 更新API文档（多语言）
+      - name: Update API docs (multilingual)
         id: update-api
         run: |
-          echo "艾莉丝开始更新API文档了哦~"
+          echo "Starting API docs update..."
           
-          # 运行API文档更新脚本（自动为所有语言生成）
+          # Run API docs update script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-api-docs.py" ]; then
             python scripts/tools/generate-api-docs.py
-            echo "API文档更新完成"
+            echo "API docs update complete"
           else
-            echo "未找到API文档更新脚本，跳过此步骤"
+            echo "API docs update script not found, skipping this step"
           fi
           
-          # 检查API文档是否有更新
+          # Check if API docs were updated
           if git diff --quiet docs/*/api-reference/; then
-            echo "API文档没有变化"
+            echo "No changes in API docs"
             echo "api_updated=false" >> $GITHUB_OUTPUT
           else
-            echo "发现了API文档更新"
+            echo "API docs changes detected"
             echo "api_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 自动翻译文档
+      - name: Auto-translate docs
         id: translate-docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -85,173 +85,173 @@ jobs:
           SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           DEBUG_TRANSLATE: "1"
         run: |
-          echo "艾莉丝开始翻译文档啦~"
+          echo "Starting document translation..."
           
-          # 检查是否需要强制翻译
+          # Check if force translation is needed
           FORCE_FLAG=""
           if [ "${{ github.event.inputs.force_translate }}" == "true" ]; then
             FORCE_FLAG="--force"
-            echo "强制重新翻译模式已启用"
+            echo "Force re-translation mode enabled"
           fi
           
-          # 运行翻译脚本（自动为所有语言翻译）
+          # Run translation script (auto-translates for all languages)
           TRANSLATE_EXIT_CODE=0
           if [ -f "scripts/tools/translate-docs.py" ]; then
             if [ -n "$OPENAI_API_KEY" ]; then
-              echo "开始翻译文档..."
+              echo "Starting document translation..."
               python scripts/tools/translate-docs.py $FORCE_FLAG || TRANSLATE_EXIT_CODE=$?
-              echo "文档翻译完成 (退出码: $TRANSLATE_EXIT_CODE)"
+              echo "Document translation complete (exit code: $TRANSLATE_EXIT_CODE)"
             else
-              echo "未配置 OPENAI_API_KEY，跳过翻译步骤"
-              echo "翻译需要在仓库 Secrets 中配置 OPENAI_API_KEY"
+              echo "OPENAI_API_KEY not configured, skipping translation step"
+              echo "Translation requires OPENAI_API_KEY to be configured in repository Secrets"
             fi
           else
-            echo "未找到翻译脚本，跳过此步骤"
+            echo "Translation script not found, skipping this step"
           fi
           
-          # 检查翻译文档是否有更新（包括根目录的 README.*.md 文件）
+          # Check if translated docs were updated (including root README.*.md files)
           if git diff --quiet -- docs/ README.md README.*.md 2>/dev/null; then
-            echo "翻译文档没有变化"
+            echo "No changes in translated docs"
             echo "docs_updated=false" >> $GITHUB_OUTPUT
           else
-            echo "发现了翻译文档更新"
+            echo "Translated docs changes detected"
             echo "docs_updated=true" >> $GITHUB_OUTPUT
           fi
           
-          # 记录翻译失败状态（但不中断工作流）
+          # Record translation failure status (but don't interrupt the workflow)
           if [ $TRANSLATE_EXIT_CODE -ne 0 ]; then
-            echo "⚠️ 部分文件翻译失败，但已成功翻译的文件将被提交"
+            echo "⚠️ Some files failed to translate, but successfully translated files will be committed"
             echo "translate_failed=true" >> $GITHUB_OUTPUT
           else
             echo "translate_failed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: 生成 AI Prompt 文档（多语言）
+      - name: Generate AI Prompt docs (multilingual)
         id: generate-ai-prompts
         run: |
-          echo "艾莉丝开始生成 AI Prompt 文档~"
+          echo "Starting AI Prompt document generation..."
           
-          # 运行 AI prompt 生成脚本（自动为所有语言生成）
+          # Run AI prompt generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
-            echo "AI Prompt 文档生成完成"
+            echo "AI Prompt document generation complete"
           else
-            echo "未找到 AI Prompt 生成脚本，跳过此步骤"
+            echo "AI Prompt generation script not found, skipping this step"
           fi
           
-          # 检查 AI Prompt 文档是否有更新
+          # Check if AI Prompt docs were updated
           if git diff --quiet docs/*/ai-support/prompts/; then
-            echo "AI Prompt 文档没有变化"
+            echo "No changes in AI Prompt docs"
             echo "ai_prompts_updated=false" >> $GITHUB_OUTPUT
           else
-            echo "发现了 AI Prompt 文档更新"
+            echo "AI Prompt docs changes detected"
             echo "ai_prompts_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 生成文档索引（多语言）
+      - name: Generate docs index (multilingual)
         id: generate-docs-index
         run: |
-          echo "艾莉丝开始生成文档索引~"
+          echo "Starting docs index generation..."
           
-          # 运行文档索引生成脚本（自动为所有语言生成）
+          # Run docs index generation script (auto-generates for all languages)
           if [ -f "scripts/tools/generate-docs-index.py" ]; then
             python scripts/tools/generate-docs-index.py
-            echo "文档索引生成完成"
+            echo "Docs index generation complete"
           else
-            echo "未找到文档索引生成脚本，跳过此步骤"
+            echo "Docs index generation script not found, skipping this step"
           fi
           
-          # 检查文档索引是否有更新
+          # Check if docs index was updated
           if git diff --quiet docs/_meta/; then
-            echo "文档索引没有变化"
+            echo "No changes in docs index"
             echo "docs_index_updated=false" >> $GITHUB_OUTPUT
           else
-            echo "发现了文档索引更新"
+            echo "Docs index changes detected"
             echo "docs_index_updated=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 统计更新情况
+      - name: Summarize updates
         run: |
-          echo "开始统计文档更新情况..."
+          echo "Summarizing document updates..."
           
-          # 统计API文档更新
+          # Count API doc updates
           api_files=$(git diff --name-only docs/*/api-reference/ 2>/dev/null | wc -l)
-          echo "API文档更新文件数: $api_files"
+          echo "API docs updated files: $api_files"
           
-          # 统计翻译文档更新
+          # Count translated doc updates
           translated_files=$(git diff --name-only docs/en/ docs/zh-TW/ docs/ja/ docs/ru/ 2>/dev/null | grep -v "api-reference\|ai-support" | wc -l)
-          echo "翻译文档更新文件数: $translated_files"
+          echo "Translated docs updated files: $translated_files"
           
-          # 统计AI Prompt文档更新
+          # Count AI Prompt doc updates
           ai_prompts=$(git diff --name-only docs/*/ai-support/prompts/ 2>/dev/null | wc -l)
-          echo "AI Prompt文档更新文件数: $ai_prompts"
+          echo "AI Prompt docs updated files: $ai_prompts"
           
-          # 统计文档索引更新
+          # Count docs index updates
           docs_index=$(git diff --name-only docs/_meta/ 2>/dev/null | wc -l)
-          echo "文档索引更新文件数: $docs_index"
+          echo "Docs index updated files: $docs_index"
           
-          # 统计翻译缓存更新
+          # Count translation cache updates
           cache_files=$(git diff --name-only .github/.translate_cache/ 2>/dev/null | wc -l)
-          echo "翻译缓存更新文件数: $cache_files"
+          echo "Translation cache updated files: $cache_files"
 
 
 
-      - name: 配置 Git 身份
+      - name: Configure Git identity
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 提交更新
+      - name: Commit updates
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
-          echo "艾莉丝正在保存文档更新~"
+          echo "Saving document updates..."
           
-          # 添加所有更新的文档和缓存
+          # Add all updated docs and cache
           git add docs/ .github/.translate_cache/ README.md README.*.md
           
-          # 提交更改
-          git commit -m "chore(docs): auto-update docs [skip ci]" || echo "没有需要提交的更改"
-          # 先拉取远程最新变更再推送,避免因翻译期间有人推送导致 push 被拒绝
-          git pull --rebase --autostash || echo "拉取远程更新失败,尝试直接推送"
-          git push || echo "没有新的提交需要推送"
+          # Commit changes
+          git commit -m "chore(docs): auto-update docs [skip ci]" || echo "No changes to commit"
+          # Pull latest remote changes before pushing to avoid push rejection due to concurrent pushes during translation
+          git pull --rebase --autostash || echo "Failed to pull remote updates, attempting direct push"
+          git push || echo "No new commits to push"
           
-          # 如果有翻译失败,输出警告信息
+          # If there were translation failures, output warning
           if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
             echo ""
-            echo "⚠️ 注意: 本次有部分文件翻译失败"
-            echo "💡 已成功的翻译已保存并提交"
-            echo "🔄 可以稍后重新触发工作流来重试失败的文件"
+            echo "⚠️ Note: Some files failed to translate this time"
+            echo "💡 Successfully translated files have been saved and committed"
+            echo "🔄 You can re-trigger the workflow later to retry failed files"
           fi
 
-      - name: 文档更新完成
+      - name: Docs update complete
         if: steps.update-api.outputs.api_updated == 'true' || steps.translate-docs.outputs.docs_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
         run: |
-          echo "艾莉丝今天也努力完成了文档更新呢"
-          echo "所有文档已更新并提交到仓库"
-          echo "包含了:"
+          echo "Document update complete"
+          echo "All documents have been updated and committed to the repository"
+          echo "Includes:"
           if [ "${{ steps.update-api.outputs.api_updated }}" == "true" ]; then
-            echo "  - API 参考文档（多语言）"
+            echo "  - API reference docs (multilingual)"
           fi
           if [ "${{ steps.translate-docs.outputs.docs_updated }}" == "true" ]; then
-            echo "  - 翻译文档"
-            echo "  - 翻译缓存"
+            echo "  - Translated docs"
+            echo "  - Translation cache"
             if [ "${{ steps.translate-docs.outputs.translate_failed }}" == "true" ]; then
-              echo "  ⚠️ 注意: 有部分文件翻译失败,可以稍后重试"
+              echo "  ⚠️ Note: Some files failed to translate, you can retry later"
             fi
           fi
           if [ "${{ steps.generate-ai-prompts.outputs.ai_prompts_updated }}" == "true" ]; then
-            echo "  - AI Prompt 文档（多语言）"
+            echo "  - AI Prompt docs (multilingual)"
           fi
           if [ "${{ steps.generate-docs-index.outputs.docs_index_updated }}" == "true" ]; then
-            echo "  - 文档索引（多语言）"
+            echo "  - Docs index (multilingual)"
           fi
-          echo "今天的文档工作完成啦~"
+          echo "Document work complete"
 
-      - name: 无更新时的说明
+      - name: No updates notice
         if: steps.update-api.outputs.api_updated != 'true' && steps.translate-docs.outputs.docs_updated != 'true' && steps.generate-ai-prompts.outputs.ai_prompts_updated != 'true' && steps.generate-docs-index.outputs.docs_index_updated != 'true'
         run: |
-          echo "今天没有发现需要更新的文档呢~"
-          echo "所有文档都是最新状态"
-          echo "艾莉丝会继续守护着我们的文档库"
-          echo "下次更新再见啦~"
+          echo "No document updates found today"
+          echo "All documents are up to date"
+          echo "Will continue monitoring the document repository"
+          echo "See you next update"
