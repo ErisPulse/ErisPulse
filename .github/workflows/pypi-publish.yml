@@ -1,6 +1,5 @@
-name: 🎀 艾莉丝的PyPI发布
+name: 🎀 Eris PyPI Publish
 
-# 艾莉丝今天也要努力发包呢
 on:
   workflow_dispatch: {}
 
@@ -12,50 +11,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 版本检查
+      - name: Version check
         id: version
         run: |
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          echo "当前版本: $CURRENT_TAG"
+          echo "Current version: $CURRENT_TAG"
 
           if [[ $CURRENT_TAG =~ \.dev|\.alpha|\.beta ]]; then
             BASE_VERSION=$(echo $CURRENT_TAG | sed -E 's/([0-9]+)$//')
             PREV_TAG=$(git tag --sort=-v:refname | grep "^$BASE_VERSION" | grep -v "$CURRENT_TAG" | head -n 1)
 
             if [ -z "$PREV_TAG" ]; then
-              echo "找不到上一个版本"
+              echo "Previous version not found"
               exit 1
             fi
-            echo "发现上一个试验版本: $PREV_TAG"
+            echo "Found previous pre-release version: $PREV_TAG"
             git checkout $PREV_TAG
             echo "use_current=false" >> $GITHUB_OUTPUT
           else
-            echo "正式版本"
+            echo "Stable release"
             echo "use_current=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 环境准备
+      - name: Setup environment
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: 生成类型存根
+      - name: Generate type stubs
         run: |
           python scripts/tools/generate-type-stubs.py --src src --output src --clean --force
-          echo "类型存根生成完成"
+          echo "Type stubs generation complete"
 
-      - name: 打包构建
+      - name: Build package
         run: |
           python -m pip install --upgrade pip
           python -m pip install build
           python -m build
 
-      - name: 暂存包裹
+      - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-dists
@@ -72,23 +71,23 @@ jobs:
       url: https://pypi.org/p/erispulse
 
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 获取包裹
+      - name: Retrieve artifacts
         uses: actions/download-artifact@v4
         with:
           name: release-dists
           path: dist/
 
-      - name: 发布上传
+      - name: Publish to PyPI
         id: publish
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
           verbose: true
 
-      - name: 读取收件人列表
+      - name: Read recipient list
         id: get_emails
         run: |
           emails=$(cat .github/config/notify.json | jq -c '.emails')
