@@ -1,4 +1,4 @@
-name: 🎀 艾莉丝的版本管理
+name: 🎀 Eris Version Management
 
 permissions:
   contents: write
@@ -12,56 +12,56 @@ jobs:
   update-latest-release:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 准备 Python 环境
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: 创建标签和发行
+      - name: Create tag and release
         id: create-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          # 读取当前版本
+          # Read current version
           version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
           tag_name="v$version"
           
-          echo "当前版本: $version"
-          echo "标签名称: $tag_name"
+          echo "Current version: $version"
+          echo "Tag name: $tag_name"
           
-          # 从 CHANGELOG.md 提取更新日志
+          # Extract changelog from CHANGELOG.md
           if [ -f "CHANGELOG.md" ]; then
-            # 修复版本号格式：将 -de. 替换为 -dev.
+            # Fix version format: replace -de. with -dev.
             fixed_version=$(echo "$version" | sed 's/-de\./-dev./g')
             
-            echo "尝试匹配版本: $version 或 $fixed_version"
+            echo "Trying to match version: $version or $fixed_version"
             
-            # 使用 sed 提取版本更新日志
-            # 先尝试匹配原始版本号
+            # Use sed to extract version changelog
+            # First try matching the original version number
             changelog_section=$(sed -n "/^## \[$version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
             
-            # 如果没找到，尝试匹配修复后的版本号
+            # If not found, try matching the fixed version number
             if [ -z "$changelog_section" ]; then
               changelog_section=$(sed -n "/^## \[$fixed_version\] -/,/^## \[.*\] -/p" CHANGELOG.md | sed '$d')
             fi
             
-            # 移除第一行（标题行）
+            # Remove the first line (title line)
             if [ -n "$changelog_section" ]; then
               changelog=$(echo "$changelog_section" | tail -n +2)
               
-              # 判断是否为开发版本
+              # Determine if this is a dev version
               if [[ $version =~ dev|alpha|beta|pre|a|b ]]; then
                 is_dev="true"
                 latest_flag=""
@@ -70,48 +70,48 @@ jobs:
                 latest_flag="--latest"
               fi
               
-              # 检查标签是否已存在
+              # Check if tag already exists
               if ! git rev-parse "$tag_name" >/dev/null 2>&1; then
-                echo "正在创建新标签 $tag_name"
+                echo "Creating new tag $tag_name"
                 git tag "$tag_name"
                 git push origin "$tag_name"
               else
-                echo "标签 $tag_name 已存在"
+                echo "Tag $tag_name already exists"
               fi
               
-              # 检查发行是否存在
+              # Check if release exists
               if gh release view "$tag_name" &>/dev/null; then
-                # 更新发行
-                echo "正在更新发行 $tag_name"
+                # Update release
+                echo "Updating release $tag_name"
                 gh release edit "$tag_name" \
                   --notes "$changelog" \
                   --prerelease=$is_dev
-                echo "发行更新完成 $tag_name"
+                echo "Release updated $tag_name"
                 echo "release_updated=true" >> $GITHUB_OUTPUT
               else
-                # 创建发行
-                echo "正在创建发行 $tag_name"
+                # Create release
+                echo "Creating release $tag_name"
                 gh release create "$tag_name" \
                   --notes "$changelog" \
                   --title "ErisPulse $tag_name" \
                   --prerelease=$is_dev \
                   $latest_flag
-                echo "发行创建完成 $tag_name"
+                echo "Release created $tag_name"
                 echo "release_created=true" >> $GITHUB_OUTPUT
               fi
               
-              echo "发行页面: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
+              echo "Release page: https://github.com/${{ github.repository }}/releases/tag/$tag_name"
             else
-              echo "未找到版本 $version 的更新日志"
+              echo "No changelog found for version $version"
             fi
           else
-            echo "CHANGELOG.md 文件不存在"
+            echo "CHANGELOG.md file does not exist"
           fi
 
-      - name: 生成 AI 物料文档
+      - name: Generate AI material documents
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         run: |
-          # 动态为所有语言创建输出目录
+          # Dynamically create output directories for all languages
           for lang_dir in docs/*/; do
             lang=$(basename "$lang_dir")
             if [ "$lang" != "_meta" ]; then
@@ -121,12 +121,12 @@ jobs:
           
           if [ -f "scripts/tools/generate-ai-prompts.py" ]; then
             python scripts/tools/generate-ai-prompts.py
-            echo "AI 物料文档生成完成"
+            echo "AI material documents generated"
           else
-            echo "未找到 AI Prompt 生成脚本，跳过此步骤"
+            echo "AI Prompt generation script not found, skipping this step"
           fi
 
-      - name: 上传 AI 物料文档到 Release
+      - name: Upload AI material documents to Release
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -136,7 +136,7 @@ jobs:
           
           mkdir -p temp_release_assets
           
-          # 动态扫描所有语言目录
+          # Dynamically scan all language directories
           PROMPT_FILES="ErisPulse-ModuleDev.md ErisPulse-AdapterDev.md ErisPulse-Full.md"
           for lang_dir in docs/*/; do
             lang=$(basename "$lang_dir")
@@ -151,12 +151,12 @@ jobs:
             done
           done
           
-          echo "检查文件..."
+          echo "Checking files..."
           ls -la temp_release_assets/
           
           if [ -n "$(ls -A temp_release_assets)" ]; then
             gh release upload "$tag_name" temp_release_assets/* --clobber
-            echo "上传完成"
+            echo "Upload complete"
           else
-            echo "没有找到 AI 物料文件"
+            echo "No AI material files found"
           fi
