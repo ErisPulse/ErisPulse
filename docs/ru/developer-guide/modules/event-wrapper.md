@@ -183,26 +183,30 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### Функция ожидания ответа
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None)` - ожидание ответа пользователя
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ожидание ответа пользователя
   - `prompt`: сообщение-запрос, если предоставлено, будет отправлено пользователю
   - `timeout`: время ожидания (в секундах), по умолчанию 60 секунд
   - `callback`: функция обратного вызова, выполняемая при получении ответа
   - `validator`: функция проверки, используемая для валидации ответа
+  - `method`: метод отправки, по умолчанию "Text"
   - Возвращает объект Event ответа пользователя, если время истекло, возвращает None
 
 #### Методы взаимодействия
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - подтверждение диалога
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - подтверждение диалога
   - Возвращает `True` (подтверждение) / `False` (отрицание) / `None` (тайм-аут)
   - Автоматическое распознавание встроенных слов подтверждения на китайском и английском, настраиваемый набор слов
+  - `method`: метод отправки, по умолчанию "Text"；поддерживает "Image"/"Markdown" и другие не текстовые методы отправки подсказки
 
-- `choose(prompt, options, timeout=60.0)` - меню выбора
+- `choose(prompt, options, timeout=60.0, method="Text")` - меню выбора
   - `options`: список текстов опций
   - Возвращает индекс опции (0-based), если тайм-аут, возвращает `None`
+  - `method`: метод отправки；текстовые методы (Text/Markdown/Html) объединят опции в одно сообщение с prompt；методы с богатым содержанием сначала отправят богатое содержание, затем отправят список текстовых опций
 
 - `collect(fields, timeout_per_field=60.0)` - сбор формы
-  - `fields`: список полей, каждое поле содержит `key`, `prompt`, необязательный `validator`
+  - `fields`: список полей, каждое поле содержит `key`, `prompt`, необязательный `validator`, необязательный `method`
   - Возвращает словарь `{key: value}`, если тайм-аут любого поля, возвращает `None`
+  - Каждое поле поддерживает ключ `method` для указания метода отправки, например при сборе изображения: `{"key": "avatar", "prompt": "Пожалуйста, отправьте аватар", "method": "Image"}`
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - ожидание произвольного события
   - `condition`: функция фильтрации, возвращает `True`, когда совпадает
@@ -214,7 +218,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 #### Методы взаимодействия 示例
 
-**confirm() - подтверждение диалога:**
+**confirm() - подтверждение диалога：**
 
 ```python
 @command("delete", help="удалить данные")
@@ -226,7 +230,7 @@ async def delete_handler(event):
         await event.reply("Отменено")
 ```
 
-**choose() - меню выбора:**
+**choose() - меню выбора：**
 
 ```python
 @command("color", help="выбрать цвет")
@@ -237,7 +241,7 @@ async def color_handler(event):
         await event.reply(f"Вы выбрали: {colors[choice]}")
 ```
 
-**collect() - сбор формы:**
+**collect() - сбор формы：**
 
 ```python
 @command("register", help="зарегистрироваться")
@@ -251,7 +255,7 @@ async def register_handler(event):
         await event.reply(f"Регистрация прошла успешно! {data['name']}, {data['age']} лет")
 ```
 
-**non-Text методы reply:**
+**non-Text методы reply：**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
@@ -262,7 +266,7 @@ segments = MessageBuilder.text("Посмотрите на эту картинк�
 await event.reply_ob12(segments)
 ```
 
-> Полное использование многошагового диалога с помощью Conversation см. в [Документации по многошаговому диалогу](../../advanced/conversation.md).
+> Полное использование многошагового диалога с помощью Conversation см. в [Документации по многошаговому диалогу](../../advanced/conversation.md)。
 
 ### Информация о командах
 

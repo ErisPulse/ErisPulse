@@ -3731,26 +3731,30 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### Wait Reply Functionality
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None)` - Wait for user reply
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Wait for user reply
   - `prompt`: Prompt message, if provided it will be sent to the user
   - `timeout`: Wait timeout (seconds), default 60 seconds
   - `callback`: Callback function, executed when a reply is received
   - `validator`: Validator function, used to validate if the reply is valid
+  - `method`: Send method for prompt, default "Text"
   - Returns the Event object of the user's reply, returns None on timeout
 
 #### Interaction Methods
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - Confirmation dialog
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - Confirmation dialog
   - Returns `True` (Confirm)/ `False` (Deny)/ `None` (Timeout)
   - Built-in Chinese/English confirmation word auto-recognition, customizable word set
+  - `method`: Send method for prompt, default "Text"; supports "Image"/"Markdown" etc. for non-text prompts
 
-- `choose(prompt, options, timeout=60.0)` - Selection menu
+- `choose(prompt, options, timeout=60.0, method="Text")` - Selection menu
   - `options`: List of option text
   - Returns option index (0-based), returns `None` on timeout
+  - `method`: Send method; text methods (Text/Markdown/Html) will append options to prompt in one message; rich media methods will send rich media content first then Text options list
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
-  - `fields`: List of fields, each item contains `key`, `prompt`, optional `validator`
+  - `fields`: List of fields, each item contains `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
+  - Each field supports `method` key to specify send method, e.g., collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for arbitrary event
   - `condition`: Filter function, returns `True` when matched
@@ -3759,6 +3763,58 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 - `conversation(timeout=60.0)` - Create multi-turn dialog context
   - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` attribute indicates if the dialog is active
+
+#### Interaction Method Examples
+
+**confirm() - Confirmation dialog:**
+
+```python
+@command("delete", help="Delete data")
+async def delete_handler(event):
+    if await event.confirm("Are you sure to delete all data?"):
+        sdk.storage.delete("all_data")
+        await event.reply("Data has been deleted")
+    else:
+        await event.reply("Cancelled")
+```
+
+**choose() - Selection menu:**
+
+```python
+@command("color", help="Choose color")
+async def color_handler(event):
+    choice = await event.choose("Please choose color:", ["Red", "Green", "Blue"])
+    if choice is not None:
+        colors = ["Red", "Green", "Blue"]
+        await event.reply(f"You selected: {colors[choice]}")
+```
+
+**collect() - Form collection:**
+
+```python
+@command("register", help="Register")
+async def register_handler(event):
+    data = await event.collect([
+        {"key": "name", "prompt": "Please enter your name:"},
+        {"key": "age", "prompt": "Please enter your age:",
+         "validator": lambda e: e.get_text().isdigit()},
+    ])
+    if data:
+        await event.reply(f"Registration successful! {data['name']}, {data['age']} years old")
+```
+
+**Non-Text reply methods:**
+
+```python
+await event.reply("http://example.com/img.jpg", method="Image")
+await event.reply("http://example.com/audio.mp3", method="Voice")
+
+from ErisPulse.Core.Event import MessageBuilder
+segments = MessageBuilder.text("Look at this image:").image("http://example.com/img.jpg").build()
+await event.reply_ob12(segments)
+```
+
+> Complete Conversation multi-turn dialog usage please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -3776,7 +3832,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### Platform Extension Methods
 
-Adapters will register proprietary methods for their respective platforms. The following are common examples (for specific methods, please refer to the respective [Platform Documentation](../../platform-guide/)):
+Adapters can register proprietary methods for their respective platforms. The following are common examples (for specific methods, please refer to the respective [Platform Documentation](../../platform-guide/)):
 
 - `get_platform_event_methods(platform)` - Query the list of registered extension methods for the specified platform
 - Platform extension methods are only available on Event instances of the corresponding platform
@@ -3800,7 +3856,7 @@ message = event.message          # Equivalent to event["message"]
 
 ## Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises an `AttributeError`.
+Adapters will register proprietary methods for the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises an `AttributeError`.
 
 ```python
 # Email event - Only email methods
@@ -5444,6 +5500,23 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 # By account ID
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
+
+### Relationship between self.user_id and Using
+
+The framework's event reply mechanism automatically extracts `account_id` (priority) or `user_id` from the event's `self` field and passes it as the `Using` parameter. Adapter developers need to ensure the `self.user_id` value in the Converter can be correctly matched by `_resolve_account()`.
+
+**Framework Internal Behavior** (`Event._get_adapter_and_target`):
+
+```python
+# Framework logic for extracting bot_id
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# Only call Using if bot_id is not empty
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **Key Point**: Even if the adapter uses only one Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. Adapters need to ensure `self.user_id` is consistent with the identification field in `AccountConfigClass` (e.g., `bot_id`), enabling `_resolve_account()` to match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `account_id` received by `call_api` will be `None`, causing `_resolve_account(None)` to return the first enabled account.
 
 ## Error Handling
 

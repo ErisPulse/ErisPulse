@@ -3722,26 +3722,30 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 等待回复功能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None)` - 等待用户回复
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - 等待用户回复
   - `prompt`: 提示消息，如果提供会发送给用户
   - `timeout`: 等待超时时间（秒），默认60秒
   - `callback`: 回调函数，当收到回复时执行
   - `validator`: 验证函数，用于验证回复是否有效
+  - `method`: 发送提示消息的方法，默认 "Text"
   - 返回用户回复的 Event 对象，超时返回 None
 
 #### 交互方法
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - 确认对话
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - 确认对话
   - 返回 `True`（确认）/ `False`（否定）/ `None`（超时）
   - 内置中英文确认词自动识别，可自定义词集
+  - `method`: 发送方法，默认 "Text"；支持 "Image"/"Markdown" 等非文本方式发送提示
 
-- `choose(prompt, options, timeout=60.0)` - 选择菜单
+- `choose(prompt, options, timeout=60.0, method="Text")` - 选择菜单
   - `options`: 选项文本列表
   - 返回选项索引（0-based），超时返回 `None`
+  - `method`: 发送方法；文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 一条消息发送；富媒体方法先发富媒体内容再发 Text 选项列表
 
 - `collect(fields, timeout_per_field=60.0)` - 表单收集
-  - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`
+  - `fields`: 字段列表，每项包含 `key`、`prompt`、可选 `validator`、可选 `method`
   - 返回 `{key: value}` 字典，任一字段超时返回 `None`
+  - 每个 field 支持 `method` 键指定发送方法，例如收集图片时用 `{"key": "avatar", "prompt": "请发送头像", "method": "Image"}`
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
   - `condition`: 过滤函数，返回 `True` 时匹配
@@ -3819,31 +3823,9 @@ await event.reply_ob12(segments)
 
 ### 平台扩展方法
 
-适配器会为各自平台注册专有方法，以下为常见示例（具体方法请参阅各 [平台文档](../../platform-guide/)）：
-
-- `get_platform_event_methods(platform)` - 查询指定平台已注册的扩展方法列表
-- 平台扩展方法仅在对应平台的 Event 实例上可用
-- 可通过 `hasattr(event, "method_name")` 安全判断方法是否存在
-
-### 工具方法
-
-- `to_dict()` - 转换为普通字典
-- `is_processed()` - 是否已被处理
-- `mark_processed()` - 标记为已处理
-
-### 点式访问
-
-Event 继承自 dict，支持点式访问所有字典键：
-
-```python
-platform = event.platform          # 等同于 event["platform"]
-user_id = event.user_id          # 等同于 event["user_id"]
-message = event.message          # 等同于 event["message"]
-```
-
-## 平台扩展方法
-
 适配器可以为 Event 包装类注册平台专有方法。方法仅在对应平台的 Event 实例上可用，其他平台访问时抛出 `AttributeError`。
+
+平台方法通过 `Event.__getattribute__` 优先于内置方法生效，因此可以覆写 `confirm`、`choose`、`collect`、`wait_reply` 等内置交互方法，提供平台特色实现（如按钮、卡片等）。内置实现作为 `_builtin_*` 函数导出供覆写方调用。
 
 ```python
 # 邮件事件 - 只有邮件方法
@@ -5602,6 +5584,23 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 # 通过账户 ID
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
+
+### self.user_id 与 Using 的关系
+
+框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
+
+**框架内部行为**（`Event._get_adapter_and_target`）：
+
+```python
+# 框架提取 bot_id 的逻辑
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# 仅在 bot_id 非空时调用 Using
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了 `self.user_id`，框架就会将其作为 `Using` 参数传入。适配器需确保 `self.user_id` 与 `AccountConfigClass` 中的标识字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正确账户。如果 `self.user_id` 为空，框架不会调用 `Using`，此时 `call_api` 收到的 `account_id` 为 `None`，`_resolve_account(None)` 返回第一个启用的账户。
 
 ## 错误处理
 
@@ -8022,14 +8021,22 @@ reply = await event.wait_reply(timeout=30)
 if await event.confirm("确定要执行此操作吗？"):
     await event.reply("已确认")
 
+# 使用非 Text 方式发送确认提示
+if await event.confirm("http://example.com/image.jpg", method="Image"):
+    await event.reply("已确认图片提示")
+
 # choose — 选择菜单（返回选项索引或 None）
 choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
+
+# choose 支持指定发送方法，富媒体方法会拆分为两条消息
+choice = await event.choose("请选择：", ["A", "B"], method="Markdown")
 
 # collect — 表单收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "请输入姓名："},
     {"key": "age", "prompt": "请输入年龄：",
      "validator": lambda e: e.get_text().isdigit()},
+    {"key": "avatar", "prompt": "请发送头像：", "method": "Image"},
 ])
 
 # wait_for — 等待满足条件的任意事件
@@ -8194,9 +8201,26 @@ unregister_event_method("email", "get_subject")
 unregister_platform_event_methods("email")
 ```
 
-#### 命名冲突检测
+#### 覆写内置方法
 
-注册时如果方法名与 Event 内置方法重名（如 `get_text`、`reply`），系统会发出 warning 并跳过注册，不会覆盖内置行为。
+`register_event_mixin` / `register_event_method` 支持覆写 Event 内置方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。注册的平台方法通过 `Event.__getattribute__` 优先于内置方法生效，因此适配器可以提供平台特色的交互实现。
+
+内置实现作为 `_builtin_*` 函数导出，覆写方可以调用它们作为回退：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
+
+class YunhuEventMixin:
+    async def choose(self, prompt, options, timeout=60, method="Text"):
+        # 云湖平台使用按钮组件
+        buttons = [[{"text": opt} for opt in options]]
+        await self.reply(prompt)
+        # ...等待按钮回调或文本回复...
+        # 回退到内置逻辑
+        return await _builtin_choose(self, None, options, timeout, "Text")
+
+register_event_mixin("yunhu", YunhuEventMixin)
+```
 
 ## 优先级系统
 

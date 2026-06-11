@@ -330,14 +330,22 @@ reply = await event.wait_reply(timeout=30)
 if await event.confirm("確定要執行此操作嗎？"):
     await event.reply("已確認")
 
+# 使用非 Text 方式發送確認提示
+if await event.confirm("http://example.com/image.jpg", method="Image"):
+    await event.reply("已確認圖片提示")
+
 # choose — 選擇選單（返回選項索引或 None）
 choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
+
+# choose 支持指定發送方法，富媒體方法會拆分為兩條訊息
+choice = await event.choose("請選擇：", ["A", "B"], method="Markdown")
 
 # collect — 表單收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "請輸入姓名："},
     {"key": "age", "prompt": "請輸入年齡：",
      "validator": lambda e: e.get_text().isdigit()},
+    {"key": "avatar", "prompt": "請發送頭像：", "method": "Image"},
 ])
 
 # wait_for — 等待滿足條件的任意事件
@@ -502,9 +510,26 @@ unregister_event_method("email", "get_subject")
 unregister_platform_event_methods("email")
 ```
 
-#### 命名衝突檢測
+#### 覆寫內建方法
 
-註冊時如果方法名與 Event 內建方法重名（如 `get_text`、`reply`），系統會發出 warning 並跳過註冊，不會覆蓋內建行為。
+`register_event_mixin` / `register_event_method` 支持覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法通過 `Event.__getattribute__` 會優先於內建方法生效，因此適配器可以提供平台特色的交互實現。
+
+內建實現作為 `_builtin_*` 函數導出，覆寫方可以調用它們作為回退：
+
+```python
+from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
+
+class YunhuEventMixin:
+    async def choose(self, prompt, options, timeout=60, method="Text"):
+        # 云湖平台使用按鈕組件
+        buttons = [[{"text": opt} for opt in options]]
+        await self.reply(prompt)
+        # ...等待按鈕回調或文字回覆...
+        # 回退到內建邏輯
+        return await _builtin_choose(self, None, options, timeout, "Text")
+
+register_event_mixin("yunhu", YunhuEventMixin)
+```
 
 ## 優先級系統
 

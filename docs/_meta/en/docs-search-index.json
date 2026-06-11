@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1160,
+  "total_keywords": 1162,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1859,7 +1859,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 753,
+        "line": 770,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -2175,7 +2175,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 811,
+        "line": 828,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2429,7 +2429,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
+        "line": 802,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -2815,7 +2815,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 781,
+        "line": 798,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2843,7 +2843,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 847,
+        "line": 864,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3279,7 +3279,7 @@
     "Command Basic": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 217,
+        "line": 273,
         "level": 4,
         "title": "Command Basic"
       }
@@ -3331,7 +3331,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 215,
+        "line": 271,
         "level": 3,
         "title": "Command Information"
       }
@@ -3763,7 +3763,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 729,
+        "line": 746,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4515,7 +4515,7 @@
     "Dot Notation Access": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 243,
+        "line": 299,
         "level": 3,
         "title": "Dot Notation Access"
       }
@@ -4645,7 +4645,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 727,
+        "line": 744,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5079,7 +5079,7 @@
     "Extended `self` Field Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 836,
+        "line": 853,
         "level": 3,
         "title": "Extended `self` Field Information"
       }
@@ -5940,6 +5940,14 @@
         "title": "Inter-module Communication"
       }
     ],
+    "Interaction Method Examples": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 219,
+        "level": 4,
+        "title": "Interaction Method Examples"
+      }
+    ],
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
@@ -5949,7 +5957,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "Interaction Methods"
       }
@@ -6149,7 +6157,7 @@
     "Listen to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 870,
+        "line": 887,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
       }
@@ -6741,7 +6749,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 803,
+        "line": 820,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7613,13 +7621,13 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 229,
+        "line": 285,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 253,
+        "line": 309,
         "level": 2,
         "title": "Platform Extension Methods"
       },
@@ -7933,7 +7941,7 @@
     "Querying Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 273,
+        "line": 329,
         "level": 3,
         "title": "Querying Registered Methods"
       }
@@ -8037,7 +8045,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 224,
+        "line": 280,
         "level": 3,
         "title": "Raw Data"
       }
@@ -8241,7 +8249,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 888,
+        "line": 905,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8265,7 +8273,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 291,
+        "line": 347,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8302,6 +8310,14 @@
         "line": 127,
         "level": 2,
         "title": "Related Links"
+      }
+    ],
+    "Relationship between self.user_id and Using": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 727,
+        "level": 3,
+        "title": "Relationship between self.user_id and Using"
       }
     ],
     "Reply": [
@@ -10065,7 +10081,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 237,
+        "line": 293,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -10379,7 +10395,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 282,
+        "line": 338,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }
