@@ -21,19 +21,15 @@ ErisPulse 事件包装类
 ## 函数列表
 
 
-### `_get_event_builtin_names()`
-
-获取 Event 类的所有公开方法名，用于冲突检测
-
----
-
-
 ### `register_event_mixin(platform: str, mixin_cls: type)`
 
 注册一个类的所有公开方法到指定平台
 
 适配器可以创建一个 Mixin 类集中定义平台专有方法，
 然后通过此函数一次性注册。
+
+注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
 :param platform: 平台名称（需与适配器注册名一致）
 :param mixin_cls: 包含平台方法的类
@@ -58,6 +54,9 @@ ErisPulse 事件包装类
 装饰器：注册单个方法到指定平台
 
 适合少量方法或动态注册的场景。
+
+注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
 :param platform: 平台名称（需与适配器注册名一致）
 
@@ -100,6 +99,45 @@ ErisPulse 事件包装类
 
 :param platform: 平台名称
 :return: 方法名列表
+
+---
+
+
+### `async async _builtin_wait_reply(event: 'Event', prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
+
+内置 wait_reply 实现
+
+供覆写函数调用以复用内置等待逻辑。
+
+---
+
+
+### `async async _builtin_confirm(event: 'Event', prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
+
+内置 confirm 实现
+
+供覆写函数调用以复用内置确认逻辑。
+
+---
+
+
+### `async async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD)`
+
+内置 choose 实现
+
+供覆写函数调用以复用内置选择逻辑。
+文本类方法 (Text/Markdown/Html) 会将选项拼接到 prompt 后一条消息发送；
+富媒体类方法会先发富媒体内容，再单独发 Text 选项列表。
+
+---
+
+
+### `async async _builtin_collect(event: 'Event', fields: list[dict[str, Any]], timeout_per_field: float = 60.0)`
+
+内置 collect 实现
+
+供覆写函数调用以复用内置收集逻辑。
+每个 field 支持 `method` 键来指定发送方法。
 
 ---
 
@@ -624,7 +662,7 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait_reply(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
+##### `async async wait_reply(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -632,12 +670,13 @@ ErisPulse 事件包装类
 :param timeout: 等待超时时间(秒)
 :param callback: 回调函数，当收到回复时执行
 :param validator: 验证函数，用于验证回复是否有效
+:param method: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
 :return: 用户回复的事件数据，如果超时则返回None
 
 ---
 
 
-##### `async async confirm(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None)`
+##### `async async confirm(prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, yes_words: set[str] | frozenset[str] = None, no_words: set[str] | frozenset[str] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户确认 (是/否)
 
@@ -648,31 +687,33 @@ ErisPulse 事件包装类
 :param timeout: float - 超时时间(秒)（默认: 60.0）
 :param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
 :param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+:param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
 :return: bool|None - True=确认, False=否定, None=超时
-
-**异常**: `ValueError` - 当 yes_words 或 no_words 为空集合时
 
 **示例**:
 ```python
 >>> if await event.confirm("确定要执行此操作吗？"):
 ...     await event.reply("已执行")
->>> # 自定义确认词
->>> if await event.confirm("继续吗？", yes_words={"go", "run"}, no_words={"stop", "quit"}):
-...     await event.reply("开始执行")
+>>> # 发送图片作为确认提示
+>>> if await event.confirm("https://example.com/image.jpg", method="Image"):
+...     await event.reply("已确认")
 ```
 
 ---
 
 
-##### `async async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS)`
+##### `async async choose(prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户从选项中选择
 
-自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本
+自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本。
+文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 后一条消息发送；
+富媒体类方法 (Image/Voice 等) 先发富媒体内容，再单独发 Text 选项列表。
 
 :param prompt: str - 提示消息（必须）
 :param options: list[str] - 选项列表（不能为空）
 :param timeout: float - 超时时间(秒)（默认: 60.0）
+:param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
 :return: int|None - 选中选项的索引(0-based), 超时返回 None
 
 **异常**: `ValueError` - 当 options 为空时
@@ -699,6 +740,7 @@ ErisPulse 事件包装类
     - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
     - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
     - max_retries: int - 最大重试次数（默认: 3）
+    - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
 :param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
 :return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 
@@ -708,6 +750,7 @@ ErisPulse 事件包装类
 ...     {"key": "name", "prompt": "请输入姓名"},
 ...     {"key": "age", "prompt": "请输入年龄",
 ...      "validator": lambda e: e.get("alt_message", "").strip().isdigit()},
+...     {"key": "avatar", "prompt": "请发送头像图片", "method": "Image"},
 ... ])
 >>> if data:
 ...     await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
@@ -857,6 +900,18 @@ ErisPulse 事件包装类
 ---
 
 
+##### `__getattribute__(name: str)`
+
+属性查找优先级:
+1. 平台注册的方法覆写（仅当前平台，优先于内置方法）
+2. 内置方法/属性（正常解析）
+
+:param name: str - 属性名
+:return: Any - 属性值
+
+---
+
+
 ##### `__getattr__(name: str)`
 
 属性查找优先级:
@@ -933,12 +988,13 @@ ErisPulse 事件包装类
 ---
 
 
-##### `async async wait(prompt: str = None, timeout: float = None)`
+##### `async async wait(prompt: str = None, timeout: float = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
 :param prompt: str - 提示消息（可选）
 :param timeout: float - 超时时间(秒)，默认使用对话的超时设置
+:param method: str - 发送方法（默认: "Text"）
 :return: Event|None - 用户回复的事件, 超时返回 None
 
 ---

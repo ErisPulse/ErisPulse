@@ -183,26 +183,30 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 返信待機機能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None)` - ユーザーからの返信を待機
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - ユーザーからの返信を待機
   - `prompt`: プロンプトメッセージ、指定した場合ユーザーに送信されます
   - `timeout`: 待機タイムアウト時間（秒）、デフォルトは60秒
   - `callback`: コールバック関数、返信を受信した際に実行
   - `validator`: 検証関数、返信が有効かどうかを検証するために使用
+  - `method`: 発信方法、デフォルトは "Text"
   - ユーザーが返信した Event オブジェクトを返します。タイムアウトした場合は None を返します
 
 #### 対話メソッド
 
-- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None)` - 確認ダイアログ
+- `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text")` - 確認ダイアログ
   - `True`（確認）/ `False`（否定）/ `None`（タイムアウト）を返します
-  - 中国語・英語の肯定/否定語の自動認識を内蔵、語彙セットのカスタマイズも可能
+  - 内部的に中国語・英語の肯定/否定語の自動認識を内蔵、語彙セットのカスタマイズも可能です
+  - `method`: 発信方法、デフォルトは "Text"、"Image"/"Markdown" などの非テキスト方法もサポート
 
-- `choose(prompt, options, timeout=60.0)` - 選択メニュー
+- `choose(prompt, options, timeout=60.0, method="Text")` - 選択メニュー
   - `options`: オプションのテキストリスト
   - 選択されたインデックス（0-based）を返します。タイムアウトした場合は `None` を返します
+  - `method`: 発信方法、テキスト系メソッド (Text/Markdown/Html) はオプションをプロンプトに1つのメッセージとして送信、豊富なメディアメソッドではまず豊富なメディアコンテンツを送信してから Text オプションリストを送信
 
 - `collect(fields, timeout_per_field=60.0)` - フォーム収集
-  - `fields`: フィールドのリスト。各項目には `key`、`prompt`、任意で `validator` が含まれます
+  - `fields`: フィールドのリスト、各項目には `key`、`prompt`、任意で `validator`、任意で `method` が含まれます
   - `{key: value}` の辞書を返します。いずれかのフィールドがタイムアウトした場合は `None` を返します
+  - 各フィールドは `method` キーで発信方法を指定でき、例えば画像を収集する際には `{"key": "avatar", "prompt": "頭像を送ってください", "method": "Image"}` のようにします
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 任意のイベントを待機
   - `condition`: フィルター関数。`True` を返した場合に一致とみなされます
@@ -280,31 +284,9 @@ await event.reply_ob12(segments)
 
 ### プラットフォーム拡張メソッド
 
-アダプターは各プラットフォーム専用のメソッドを登録します。以下は一般的な例です（具体的なメソッドについては各 [プラットフォームガイド](../../platform-guide/) を参照してください）：
-
-- `get_platform_event_methods(platform)` - 指定したプラットフォームに登録されている拡張メソッドのリストを照会
-- プラットフォーム拡張メソッドは、対応するプラットフォームの Event インスタンスでのみ利用可能です
-- `hasattr(event, "method_name")` を使用してメソッドが存在するかどうかを安全に判定できます
-
-### ユーティリティメソッド
-
-- `to_dict()` - 通常の辞書に変換
-- `is_processed()` - すでに処理済みかどうか
-- `mark_processed()` - 処理済みとしてマーク
-
-### ドットアクセス
-
-Event は dict を継承しているため、すべての辞書キーへのドットアクセスをサポートしています：
-
-```python
-platform = event.platform          # event["platform"] と同等
-user_id = event.user_id          # event["user_id"] と同等
-message = event.message          # event["message"] と同等
-```
-
-## プラットフォーム拡張メソッド
-
 アダプターは Event ラッパークラスに対してプラットフォーム専用のメソッドを登録できます。メソッドは対応するプラットフォームの Event インスタンスでのみ利用可能であり、他のプラットフォームからアクセスすると `AttributeError` がスローされます。
+
+プラットフォームメソッドは `Event.__getattribute__` により、組み込みメソッドよりも優先的に有効になるため、`confirm`、`choose`、`collect`、`wait_reply` などの組み込み対話メソッドを覆写して、プラットフォーム固有の実装（ボタン、カードなど）を提供できます。組み込み実装は覆写可能な `_builtin_*` 関数としてエクスポートされ、覆写する際に使用できます。
 
 ```python
 # メールイベント - メールメソッドのみ

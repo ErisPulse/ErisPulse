@@ -724,6 +724,23 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
+### Relationship between self.user_id and Using
+
+The framework's event reply mechanism automatically extracts `account_id` (priority) or `user_id` from the event's `self` field and passes it as the `Using` parameter. Adapter developers need to ensure the `self.user_id` value in the Converter can be correctly matched by `_resolve_account()`.
+
+**Framework Internal Behavior** (`Event._get_adapter_and_target`):
+
+```python
+# Framework logic for extracting bot_id
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# Only call Using if bot_id is not empty
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **Key Point**: Even if the adapter uses only one Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. Adapters need to ensure `self.user_id` is consistent with the identification field in `AccountConfigClass` (e.g., `bot_id`), enabling `_resolve_account()` to match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `account_id` received by `call_api` will be `None`, causing `_resolve_account(None)` to return the first enabled account.
+
 ## Error Handling
 
 ### Connection Retry
