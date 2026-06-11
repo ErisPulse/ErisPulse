@@ -529,6 +529,7 @@ class HttpClient(BaseHttpClient):
                     **kwargs,
                 ) as resp:
                     response = HttpResponse(resp)
+                    await response._eager_read()
                     elapsed = time.monotonic() - start
 
                     self._stats["total_requests"] += 1

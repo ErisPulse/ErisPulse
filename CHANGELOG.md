@@ -114,6 +114,10 @@
     - 移除 `_ALLOW_OVERRIDE_NAMES`、`_get_event_builtin_names()` 
     - 移除相关 `warnings` 导入
 
+### 修复
+- @wsu2059q
+  - 修复 HTTP 客户端请求后响应体未预读导致的连接泄漏问题
+
 ---
 
 ## [2.4.6] - 2026/06/08
