@@ -109,9 +109,9 @@ async def confirm_command(event):
     )
 ```
 
-## Модуль сообщений Message
+## Message 消息模块
 
-### Событие сообщения
+### 消息事件
 
 ```python
 from ErisPulse.Core.Event import message
@@ -157,9 +157,9 @@ async def filtered_handler(event):
     pass
 ```
 
-## Модуль уведомлений Notice
+## Notice 通知模块
 
-### События уведомлений
+### 通知 события
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -189,9 +189,9 @@ async def member_decrease_handler(event):
     sdk.logger.info(f"Участник вышел из группы: {user_id}")
 ```
 
-## Модуль запросов Request
+## Request 请求模块
 
-### События запросов
+### Запросы
 
 ```python
 from ErisPulse.Core.Event import request
@@ -211,7 +211,7 @@ async def group_request_handler(event):
     sdk.logger.info(f"Приглашение в группу: {group_id}, от: {user_id}")
 ```
 
-## Модуль метасобытий Meta
+## Meta 元事件模块
 
 ### Метасобытия
 

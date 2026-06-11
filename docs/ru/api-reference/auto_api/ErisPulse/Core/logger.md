@@ -192,6 +192,20 @@ JSON 日志格式化器
 ---
 
 
+##### `trace(msg)`
+
+记录 TRACE 级别日志（比 DEBUG 更细粒度）
+
+---
+
+
+##### `message(msg)`
+
+记录 MESSAGE 级别日志（消息收发专用）
+
+---
+
+
 ##### `debug(msg)`
 
 记录 DEBUG 级别日志
@@ -326,6 +340,20 @@ JSON 日志格式化器
 :param level_name: 日志级别名称
 :param level_const: 日志级别常量
 :param msg: 日志消息
+
+---
+
+
+##### `trace(msg)`
+
+记录 TRACE 级别日志（比 DEBUG 更细粒度）
+
+---
+
+
+##### `message(msg)`
+
+记录 MESSAGE 级别日志（消息收发专用）
 
 ---
 

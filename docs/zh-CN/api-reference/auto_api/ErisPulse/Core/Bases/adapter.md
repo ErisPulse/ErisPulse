@@ -15,6 +15,19 @@ ErisPulse 适配器基础模块
 
 ---
 
+## 函数列表
+
+
+### `_wrap_send_method(method_name: str, original_method: Callable, send_dsl: 'SendDSL')`
+
+为发送方法注入生命周期钩子
+
+仅对返回 Task/Awaitable 的发送方法生效，链式修饰方法（返回 SendDSL）不受影响。
+不改变原方法的返回值类型或执行行为，仅在 Task 上添加回调来触发钩子。
+
+---
+
+
 ## 类列表
 
 
