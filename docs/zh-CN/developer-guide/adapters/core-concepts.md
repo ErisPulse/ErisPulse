@@ -720,6 +720,23 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
+### self.user_id 与 Using 的关系
+
+框架的事件回复机制会自动从事件的 `self` 字段中提取 `account_id`（优先）或 `user_id`，作为 `Using` 参数传入。适配器开发者需要确保 Converter 中 `self.user_id` 的值与 `_resolve_account()` 能够正确匹配。
+
+**框架内部行为**（`Event._get_adapter_and_target`）：
+
+```python
+# 框架提取 bot_id 的逻辑
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# 仅在 bot_id 非空时调用 Using
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **关键点**：即使适配器只使用一个 Bot 配置，只要 Converter 正确设置了 `self.user_id`，框架就会将其作为 `Using` 参数传入。适配器需确保 `self.user_id` 与 `AccountConfigClass` 中的标识字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正确账户。如果 `self.user_id` 为空，框架不会调用 `Using`，此时 `call_api` 收到的 `account_id` 为 `None`，`_resolve_account(None)` 返回第一个启用的账户。
+
 ## 错误处理
 
 ### 连接重试

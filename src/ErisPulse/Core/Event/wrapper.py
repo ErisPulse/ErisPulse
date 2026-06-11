@@ -14,7 +14,6 @@ ErisPulse 事件包装类
 
 import asyncio
 import inspect
-import warnings
 from typing import Any, Optional
 from collections.abc import Callable, Awaitable
 from .. import adapter, logger
@@ -29,6 +28,7 @@ from ..constants import (
     DEFAULT_WAIT_TIMEOUT_SECS,
     DEFAULT_MAX_RETRIES,
     DEFAULT_SEND_METHOD,
+    TEXT_BASED_METHODS,
     CONVERSATION_KEY_PREFIX,
     EVENT_TYPE_MESSAGE,
     EVENT_TYPE_NOTICE,
@@ -49,14 +49,6 @@ from ..constants import (
 _platform_event_methods: dict[str, dict[str, Callable]] = {}
 
 
-def _get_event_builtin_names() -> set:
-    """获取 Event 类的所有公开方法名，用于冲突检测"""
-    return {
-        name
-        for name, member in inspect.getmembers(Event, predicate=inspect.isfunction)
-        if not name.startswith("_")
-    }
-
 
 def register_event_mixin(platform: str, mixin_cls: type) -> int:
     """
@@ -64,6 +56,9 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
 
     适配器可以创建一个 Mixin 类集中定义平台专有方法，
     然后通过此函数一次性注册。
+
+    注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+    因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
     :param platform: 平台名称（需与适配器注册名一致）
     :param mixin_cls: 包含平台方法的类
@@ -81,19 +76,10 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
     if platform not in _platform_event_methods:
         _platform_event_methods[platform] = {}
 
-    builtin_names = _get_event_builtin_names()
     registered = 0
 
     for name, func in inspect.getmembers(mixin_cls, predicate=inspect.isfunction):
         if name.startswith("_"):
-            continue
-        if name in builtin_names:
-            warnings.warn(
-                f"register_event_mixin: 跳过方法 '{name}'，"
-                f"与 Event 内置方法冲突 (platform={platform})",
-                RuntimeWarning,
-                stacklevel=2,
-            )
             continue
         _platform_event_methods[platform][name] = func
         registered += 1
@@ -107,6 +93,9 @@ def register_event_method(platform: str):
     装饰器：注册单个方法到指定平台
 
     适合少量方法或动态注册的场景。
+
+    注册的方法会通过 Event.__getattribute__ 优先于内置方法生效，
+    因此可以覆写 confirm / choose / collect / wait_reply 等内置交互式方法。
 
     :param platform: 平台名称（需与适配器注册名一致）
 
@@ -123,17 +112,6 @@ def register_event_method(platform: str):
         name = func.__name__
 
         if name.startswith("_"):
-            return func
-
-        builtin_names = _get_event_builtin_names()
-
-        if name in builtin_names:
-            warnings.warn(
-                f"register_event_method: 跳过方法 '{name}'，"
-                f"与 Event 内置方法冲突 (platform={platform})",
-                RuntimeWarning,
-                stacklevel=2,
-            )
             return func
 
         _platform_event_methods[platform][name] = func
@@ -187,6 +165,176 @@ def get_platform_event_methods(platform: str) -> list[str]:
     if platform in _platform_event_methods:
         return list(_platform_event_methods[platform].keys())
     return []
+
+
+# ==================== 内置交互式方法实现 ====================
+
+
+async def _builtin_wait_reply(
+    event: "Event",
+    prompt: str = None,
+    timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
+    callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
+    validator: Callable[[dict[str, Any]], bool] = None,
+    method: str = DEFAULT_SEND_METHOD,
+) -> Optional["Event"]:
+    """
+    内置 wait_reply 实现
+
+    供覆写函数调用以复用内置等待逻辑。
+    """
+    from .command import command as command_handler
+
+    result = await command_handler.wait_reply(
+        event=event._event_data if isinstance(event, Event) else event,
+        prompt=prompt,
+        timeout=timeout,
+        callback=callback,
+        validator=validator,
+        method=method,
+    )
+
+    if result:
+        return Event(result)
+    return None
+
+
+async def _builtin_confirm(
+    event: "Event",
+    prompt: str = None,
+    timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
+    yes_words: set[str] | frozenset[str] = None,
+    no_words: set[str] | frozenset[str] = None,
+    method: str = DEFAULT_SEND_METHOD,
+) -> Optional[bool]:
+    """
+    内置 confirm 实现
+
+    供覆写函数调用以复用内置确认逻辑。
+    """
+    _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
+    _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
+    _all = _yes | _no
+
+    def validator(event_dict: dict[str, Any]) -> bool:
+        text = event_dict.get("alt_message", "").strip().lower()
+        return text in _all
+
+    result = await _builtin_wait_reply(
+        event, prompt=prompt, timeout=timeout, validator=validator, method=method,
+    )
+
+    if result is None:
+        return None
+
+    text = result.get("alt_message", "").strip().lower()
+    return text in _yes
+
+
+async def _builtin_choose(
+    event: "Event",
+    prompt: str,
+    options: list[str],
+    timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
+    method: str = DEFAULT_SEND_METHOD,
+) -> Optional[int]:
+    """
+    内置 choose 实现
+
+    供覆写函数调用以复用内置选择逻辑。
+    文本类方法 (Text/Markdown/Html) 会将选项拼接到 prompt 后一条消息发送；
+    富媒体类方法会先发富媒体内容，再单独发 Text 选项列表。
+    """
+    if not options:
+        raise ValueError("选项列表不能为空")
+
+    options_text = "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
+
+    index_map = {str(i + 1): i for i in range(len(options))}
+    lower_text_map = {opt.lower(): i for i, opt in enumerate(options)}
+    valid_inputs = set(index_map.keys()) | set(lower_text_map.keys())
+
+    def validator(event_dict: dict[str, Any]) -> bool:
+        text = event_dict.get("alt_message", "").strip().lower()
+        return text in valid_inputs
+
+    if method in TEXT_BASED_METHODS:
+        full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
+        result = await _builtin_wait_reply(
+            event, prompt=full_prompt, timeout=timeout,
+            validator=validator, method=method,
+        )
+    else:
+        if prompt:
+            await event.reply(prompt, method=method)
+        result = await _builtin_wait_reply(
+            event, prompt=options_text, timeout=timeout,
+            validator=validator, method=DEFAULT_SEND_METHOD,
+        )
+
+    if result is None:
+        return None
+
+    text = result.get("alt_message", "").strip().lower()
+    if text in index_map:
+        return index_map[text]
+    if text in lower_text_map:
+        return lower_text_map[text]
+    return None
+
+
+async def _builtin_collect(
+    event: "Event",
+    fields: list[dict[str, Any]],
+    timeout_per_field: float = 60.0,
+) -> Optional[dict[str, str]]:
+    """
+    内置 collect 实现
+
+    供覆写函数调用以复用内置收集逻辑。
+    每个 field 支持 `method` 键来指定发送方法。
+    """
+    if not fields:
+        return {}
+
+    result = {}
+
+    for field in fields:
+        key = field.get("key")
+        if not key:
+            from ..logger import logger as _logger
+
+            _logger.warning(f"collect: 字段缺少 'key', 已跳过: {field}")
+            continue
+
+        prompt = field.get("prompt", f"请输入 {key}")
+        validator = field.get("validator")
+        retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
+        max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
+        method = field.get("method", DEFAULT_SEND_METHOD)
+
+        reply = await _builtin_wait_reply(
+            event, prompt=prompt, timeout=timeout_per_field, method=method,
+        )
+
+        if reply is None:
+            return None
+
+        if validator:
+            retries = 0
+            while not validator(reply):
+                retries += 1
+                if retries >= max_retries:
+                    return None
+                reply = await _builtin_wait_reply(
+                    event, prompt=retry_prompt, timeout=timeout_per_field, method=method,
+                )
+                if reply is None:
+                    return None
+
+        result[key] = reply.get("alt_message", "").strip()
+
+    return result
 
 
 class Event(dict):
@@ -761,28 +909,7 @@ class Event(dict):
         if not send_method or not callable(send_method):
             raise ValueError(f"适配器不支持方法: {method}")
 
-        # 钩子: 消息发送前
-        from ..lifecycle import lifecycle
-        await lifecycle.emit("message.sending", {
-            "platform": self.get("platform", "unknown"),
-            "method": method,
-            "detail_type": detail_type,
-            "target_id": target_id,
-            "bot_id": bot_id,
-        })
-
-        result = await send_method(content)
-
-        # 钩子: 消息发送后
-        await lifecycle.emit("message.sent", {
-            "platform": self.get("platform", "unknown"),
-            "method": method,
-            "detail_type": detail_type,
-            "target_id": target_id,
-            "bot_id": bot_id,
-        })
-
-        return result
+        return await send_method(content)
 
     # ==================== OB12 消息回复 ====================
 
@@ -838,6 +965,7 @@ class Event(dict):
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
         validator: Callable[[dict[str, Any]], bool] = None,
+        method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
         """
         等待用户回复
@@ -846,21 +974,10 @@ class Event(dict):
         :param timeout: 等待超时时间(秒)
         :param callback: 回调函数，当收到回复时执行
         :param validator: 验证函数，用于验证回复是否有效
+        :param method: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
         :return: 用户回复的事件数据，如果超时则返回None
         """
-        from .command import command as command_handler
-
-        result = await command_handler.wait_reply(
-            event=self._event_data,
-            prompt=prompt,
-            timeout=timeout,
-            callback=callback,
-            validator=validator,
-        )
-
-        if result:
-            return Event(result)
-        return None
+        return await _builtin_wait_reply(self, prompt, timeout, callback, validator, method)
 
     # ==================== 交互式对话方法 ====================
 
@@ -870,6 +987,7 @@ class Event(dict):
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         yes_words: set[str] | frozenset[str] = None,
         no_words: set[str] | frozenset[str] = None,
+        method: str = DEFAULT_SEND_METHOD,
     ) -> Optional[bool]:
         """
         等待用户确认 (是/否)
@@ -881,49 +999,36 @@ class Event(dict):
         :param timeout: float - 超时时间(秒)（默认: 60.0）
         :param yes_words: set[str] - 自定义确认词集合（默认: 内置 CONFIRM_YES_WORDS）
         :param no_words: set[str] - 自定义否定词集合（默认: 内置 CONFIRM_NO_WORDS）
+        :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
         :return: bool|None - True=确认, False=否定, None=超时
-
-        :raises ValueError: 当 yes_words 或 no_words 为空集合时
 
         :example:
         >>> if await event.confirm("确定要执行此操作吗？"):
         ...     await event.reply("已执行")
-        >>> # 自定义确认词
-        >>> if await event.confirm("继续吗？", yes_words={"go", "run"}, no_words={"stop", "quit"}):
-        ...     await event.reply("开始执行")
+        >>> # 发送图片作为确认提示
+        >>> if await event.confirm("https://example.com/image.jpg", method="Image"):
+        ...     await event.reply("已确认")
         """
-        _yes = frozenset(w.lower() for w in (yes_words or CONFIRM_YES_WORDS))
-        _no = frozenset(w.lower() for w in (no_words or CONFIRM_NO_WORDS))
-        _all = _yes | _no
-
-        def validator(event_dict: dict[str, Any]) -> bool:
-            text = event_dict.get("alt_message", "").strip().lower()
-            return text in _all
-
-        result = await self.wait_reply(
-            prompt=prompt, timeout=timeout, validator=validator
-        )
-
-        if result is None:
-            return None
-
-        text = result.get("alt_message", "").strip().lower()
-        return text in _yes
+        return await _builtin_confirm(self, prompt, timeout, yes_words, no_words, method)
 
     async def choose(
         self,
         prompt: str,
         options: list[str],
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
+        method: str = DEFAULT_SEND_METHOD,
     ) -> Optional[int]:
         """
         等待用户从选项中选择
 
-        自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本
+        自动发送编号选项列表 (1.选项1 2.选项2 ...)，用户可回复编号或选项文本。
+        文本类方法 (Text/Markdown/Html) 将选项拼接到 prompt 后一条消息发送；
+        富媒体类方法 (Image/Voice 等) 先发富媒体内容，再单独发 Text 选项列表。
 
         :param prompt: str - 提示消息（必须）
         :param options: list[str] - 选项列表（不能为空）
         :param timeout: float - 超时时间(秒)（默认: 60.0）
+        :param method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
         :return: int|None - 选中选项的索引(0-based), 超时返回 None
 
         :raises ValueError: 当 options 为空时
@@ -933,33 +1038,7 @@ class Event(dict):
         >>> if choice is not None:
         ...     await event.reply(f"你选择了: {['红','绿','蓝'][choice]}")
         """
-        if not options:
-            raise ValueError("选项列表不能为空")
-
-        options_text = "\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options))
-        full_prompt = f"{prompt}\n{options_text}" if prompt else options_text
-
-        index_map = {str(i + 1): i for i in range(len(options))}
-        lower_text_map = {opt.lower(): i for i, opt in enumerate(options)}
-        valid_inputs = set(index_map.keys()) | set(lower_text_map.keys())
-
-        def validator(event_dict: dict[str, Any]) -> bool:
-            text = event_dict.get("alt_message", "").strip().lower()
-            return text in valid_inputs
-
-        result = await self.wait_reply(
-            prompt=full_prompt, timeout=timeout, validator=validator
-        )
-
-        if result is None:
-            return None
-
-        text = result.get("alt_message", "").strip().lower()
-        if text in index_map:
-            return index_map[text]
-        if text in lower_text_map:
-            return lower_text_map[text]
-        return None
+        return await _builtin_choose(self, prompt, options, timeout, method)
 
     async def collect(
         self,
@@ -977,6 +1056,7 @@ class Event(dict):
             - validator: callable - 验证函数，接收 Event 对象，返回 bool（可选）
             - retry_prompt: str - 验证失败时的重试提示（默认: "输入无效，请重新输入"）
             - max_retries: int - 最大重试次数（默认: 3）
+            - method: str - 发送方法（默认: "Text"，可选: "Image", "Markdown" 等）
         :param timeout_per_field: float - 每个字段的超时时间(秒)（默认: 60.0）
         :return: dict|None - 收集到的数据字典, 任何步骤超时或重试耗尽返回 None
 
@@ -985,48 +1065,12 @@ class Event(dict):
         ...     {"key": "name", "prompt": "请输入姓名"},
         ...     {"key": "age", "prompt": "请输入年龄",
         ...      "validator": lambda e: e.get("alt_message", "").strip().isdigit()},
+        ...     {"key": "avatar", "prompt": "请发送头像图片", "method": "Image"},
         ... ])
         >>> if data:
         ...     await event.reply(f"姓名: {data['name']}, 年龄: {data['age']}")
         """
-        if not fields:
-            return {}
-
-        result = {}
-
-        for field in fields:
-            key = field.get("key")
-            if not key:
-                from ..logger import logger as _logger
-
-                _logger.warning(f"collect: 字段缺少 'key', 已跳过: {field}")
-                continue
-
-            prompt = field.get("prompt", f"请输入 {key}")
-            validator = field.get("validator")
-            retry_prompt = field.get("retry_prompt", "输入无效，请重新输入")
-            max_retries = field.get("max_retries", DEFAULT_MAX_RETRIES)
-
-            reply = await self.wait_reply(prompt=prompt, timeout=timeout_per_field)
-
-            if reply is None:
-                return None
-
-            if validator:
-                retries = 0
-                while not validator(reply):
-                    retries += 1
-                    if retries >= max_retries:
-                        return None
-                    reply = await self.wait_reply(
-                        prompt=retry_prompt, timeout=timeout_per_field
-                    )
-                    if reply is None:
-                        return None
-
-            result[key] = reply.get("alt_message", "").strip()
-
-        return result
+        return await _builtin_collect(self, fields, timeout_per_field)
 
     async def wait_for(
         self,
@@ -1201,6 +1245,23 @@ class Event(dict):
 
     # ==================== 魔术方法 ====================
 
+    def __getattribute__(self, name: str) -> Any:
+        """
+        属性查找优先级:
+        1. 平台注册的方法覆写（仅当前平台，优先于内置方法）
+        2. 内置方法/属性（正常解析）
+
+        :param name: str - 属性名
+        :return: Any - 属性值
+        """
+        platform = dict.get(self, "platform", "")
+        platform_methods = _platform_event_methods.get(platform)
+        if platform_methods and name in platform_methods:
+            func = platform_methods[name]
+            return func.__get__(self, type(self))
+
+        return object.__getattribute__(self, name)
+
     def __getattr__(self, name: str) -> Any:
         """
         属性查找优先级:
@@ -1305,13 +1366,15 @@ class Conversation:
         return self
 
     async def wait(
-        self, prompt: str = None, timeout: float = None
+        self, prompt: str = None, timeout: float = None,
+        method: str = DEFAULT_SEND_METHOD,
     ) -> Optional["Event"]:
         """
         等待用户回复
 
         :param prompt: str - 提示消息（可选）
         :param timeout: float - 超时时间(秒)，默认使用对话的超时设置
+        :param method: str - 发送方法（默认: "Text"）
         :return: Event|None - 用户回复的事件, 超时返回 None
         """
         if not self._alive:
@@ -1319,6 +1382,7 @@ class Conversation:
         result = await self._event.wait_reply(
             prompt=prompt,
             timeout=timeout if timeout is not None else self._timeout,
+            method=method,
         )
         if result is None:
             self._alive = False
@@ -1603,4 +1667,9 @@ __all__ = [
     "unregister_event_method",
     "unregister_platform_event_methods",
     "get_platform_event_methods",
+    # 内置交互式方法实现（供平台 Mixin 覆写时调用）
+    "_builtin_wait_reply",
+    "_builtin_confirm",
+    "_builtin_choose",
+    "_builtin_collect",
 ]

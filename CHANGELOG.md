@@ -71,18 +71,32 @@
 
 ### 新增
 - @wsu2059q
-  - `Core/router.py` 新增 `/robots.txt` 端点，禁止所有主流爬虫/AI 爬虫收录路由
   - `Core/logger.py` 新增 JSON 结构化日志支持：
     - 新增 `Logger.set_json_format(enabled)` 方法
     - 新增 `_JsonFormatter` 格式化器，输出 `{"timestamp", "level", "logger", "message"}` JSON
     - 通过 `config.toml` 中 `[ErisPulse.logger] format = "json"` 启用
     - 兼容 ELK / Grafana Loki / Datadog 等日志聚合系统
-  - `Core/constants.py` 新增 `DEFAULT_UNINIT_TIMEOUT_SECS = 30`：
-    - 反初始化总超时时间，防止模块 `on_unload()` 卡死阻塞容器重启
-    - 可在 `[ErisPulse.framework] uninit_timeout` 中配置
-  - `CLI/commands/install.py` 交互安装新增「搜索安装」功能：
-    - 输入关键词搜索模块/适配器（模糊匹配名称、包名、描述）
-    - 序号选择安装，支持多选
+  - `Core/router.py` 新增 `/robots.txt` 端点，禁止所有主流爬虫/AI 爬虫收录路由
+  - `Core/logger.py` 新增 TRACE (5) / MESSAGE (60) 自定义日志等级：
+    - TRACE (5)：比 DEBUG (10) 更低，用于最细粒度调试
+    - MESSAGE (60)：高于 CRITICAL (50)，用于消息收发日志，不受日志级别过滤影响
+  - `Core/constants.py` 新增 `TEXT_BASED_METHODS = frozenset({"Text", "Markdown", "Html"})`
+  - `Core/adapter.py` 新增 `[Recv]` 消息接收日志（MESSAGE 级别），显示 `platform/detail_type(user_id): content`
+  - `Core/Bases/adapter.py` 新增 `[Send]` 消息发送日志（MESSAGE 级别），显示 `platform/method -> target: content`
+    - 文本类方法（Text/Markdown/Html）显示消息内容
+    - 非文本方法仅显示方法名和目标
+    - Send/Recv 日志统一使用 `[Message]` 子 logger，前缀一致
+  - `Core/Bases/adapter.py` 新增 `_wrap_send_method` 钩子注入机制：
+    - 自动为 `SendDSL` 非链式发送方法注入 `message.sending` / `message.sent` 生命周期钩子
+    - 新增 `SendDSL.__getattribute__`，自动包装返回 `asyncio.Task` 的方法
+    - `_CHAIN_MODIFIER_NAMES` frozenset 跳过链式修饰方法（At/AtAll/Reply/To/Using/Account）
+  - `Core/Event/wrapper.py` 交互方法新增 `method` 参数：
+    - `confirm(prompt, ..., method="Text")` 支持非文本方式发送确认提示
+    - `choose(prompt, options, ..., method="Text")` 文本类方法合并选项到一条消息，富媒体方法拆分为两条
+    - `collect(fields, ...)` 每个 field 支持 `method` 键指定发送方式
+    - `wait_reply(prompt, ..., method="Text")` 支持指定发送方法
+  - `Core/Event/wrapper.py` 新增 `Event.__getattribute__`，平台方法优先于内置方法生效
+  - `Core/Event/wrapper.py` 新增 `_builtin_wait_reply` / `_builtin_confirm` / `_builtin_choose` / `_builtin_collect` 模块级函数，供覆写方回退调用
 
 ### 变更
 - @wsu2059q
@@ -90,6 +104,15 @@
     - 反初始化主体由 `asyncio.wait_for()` 包装
     - 超时后记录 WARNING 并返回 `False`，允许进程继续退出
     - 0 表示不设超时（保留行为兼容）
+  - `Core/logger.py` `_log` / `LoggerChild._log` 改用 `self._logger.log()` 替代 `getattr(self._logger, level_name)`，支持自定义日志等级
+  - `Core/Event/wrapper.py` `register_event_mixin` / `register_event_method` 允许覆写所有内置方法名，不再做冲突检测
+  - `Core/Event/wrapper.py` `Event.reply()` 中的 `message.sending` / `message.sent` 生命周期钩子下沉至 `SendDSL.__getattribute__`，所有适配器发送操作均触发
+
+### 移除
+- @wsu2059q
+  - `Core/Event/wrapper.py` 移除命名冲突检测：
+    - 移除 `_ALLOW_OVERRIDE_NAMES`、`_get_event_builtin_names()` 
+    - 移除相关 `warnings` 导入
 
 ---
 

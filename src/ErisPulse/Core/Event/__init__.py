@@ -25,6 +25,10 @@ from .wrapper import (
     unregister_event_method,
     unregister_platform_event_methods,
     get_platform_event_methods,
+    _builtin_wait_reply,
+    _builtin_confirm,
+    _builtin_choose,
+    _builtin_collect,
 )
 from .message_builder import MessageBuilder
 from .session_type import (
@@ -101,4 +105,9 @@ __all__ = [
     "unregister_event_method",
     "unregister_platform_event_methods",
     "get_platform_event_methods",
+    # 内置交互式方法实现
+    "_builtin_wait_reply",
+    "_builtin_confirm",
+    "_builtin_choose",
+    "_builtin_collect",
 ]
