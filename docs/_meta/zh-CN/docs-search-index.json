@@ -1933,7 +1933,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 749,
+        "line": 766,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -2041,7 +2041,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 843,
+        "line": 860,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2061,7 +2061,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 777,
+        "line": 794,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -2485,7 +2485,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 799,
+        "line": 816,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -3203,7 +3203,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 420,
+        "line": 428,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -3211,7 +3211,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 334,
+        "line": 316,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -3219,7 +3219,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 832,
+        "line": 849,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -3494,6 +3494,14 @@
         "line": 249,
         "level": 3,
         "title": "self 字段扩展"
+      }
+    ],
+    "self.user_id 与 Using 的关系": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 723,
+        "level": 3,
+        "title": "self.user_id 与 Using 的关系"
       }
     ],
     "stop()": [
@@ -4107,7 +4115,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "交互方法"
       }
@@ -4115,7 +4123,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 215,
+        "line": 219,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -4187,7 +4195,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 509,
+        "line": 534,
         "level": 2,
         "title": "优先级系统"
       }
@@ -4737,7 +4745,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 431,
+        "line": 439,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -4761,7 +4769,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 276,
+        "line": 280,
         "level": 3,
         "title": "原始数据"
       }
@@ -5157,7 +5165,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 267,
+        "line": 271,
         "level": 3,
         "title": "命令信息"
       }
@@ -5189,7 +5197,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 269,
+        "line": 273,
         "level": 4,
         "title": "命令基础"
       }
@@ -5240,14 +5248,6 @@
         "line": 103,
         "level": 3,
         "title": "命令配置"
-      }
-    ],
-    "命名冲突检测": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 505,
-        "level": 4,
-        "title": "命名冲突检测"
       }
     ],
     "命名规范": [
@@ -6183,13 +6183,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 353,
-        "level": 3,
-        "title": "工具方法"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 361,
         "level": 3,
         "title": "工具方法"
       }
@@ -6335,20 +6329,14 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 368,
+        "line": 376,
         "level": 3,
         "title": "平台扩展方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 281,
+        "line": 285,
         "level": 3,
-        "title": "平台扩展方法"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 305,
-        "level": 2,
         "title": "平台扩展方法"
       },
       {
@@ -6369,7 +6357,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 404,
+        "line": 412,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -6903,7 +6891,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 447,
+        "line": 455,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -7591,7 +7579,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 307,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -7599,7 +7587,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 389,
+        "line": 397,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -8197,7 +8185,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 493,
+        "line": 501,
         "level": 4,
         "title": "注销方法"
       }
@@ -8544,14 +8532,6 @@
         "title": "点式结构事件"
       }
     ],
-    "点式访问": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 295,
-        "level": 3,
-        "title": "点式访问"
-      }
-    ],
     "热重载": [
       {
         "document": "terminology.md",
@@ -8795,7 +8775,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 372,
+        "line": 380,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -8803,7 +8783,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 866,
+        "line": 883,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -8949,7 +8929,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 525,
+        "line": 550,
         "level": 2,
         "title": "相关文档"
       },
@@ -8973,7 +8953,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 884,
+        "line": 901,
         "level": 2,
         "title": "相关文档"
       },
@@ -8997,7 +8977,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 343,
+        "line": 325,
         "level": 2,
         "title": "相关文档"
       },
@@ -9341,7 +9321,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 781,
+        "line": 798,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -9502,6 +9482,14 @@
         "line": 35,
         "level": 2,
         "title": "装饰器路由（推荐）"
+      }
+    ],
+    "覆写内置方法": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 513,
+        "level": 4,
+        "title": "覆写内置方法"
       }
     ],
     "触发": [
@@ -9877,7 +9865,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 468,
+        "line": 476,
         "level": 4,
         "title": "返回值规范"
       }
@@ -9929,7 +9917,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 725,
+        "line": 742,
         "level": 3,
         "title": "连接重试"
       }
@@ -9989,7 +9977,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 807,
+        "line": 824,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -10121,7 +10109,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 427,
+        "line": 435,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -10651,7 +10639,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 723,
+        "line": 740,
         "level": 2,
         "title": "错误处理"
       },

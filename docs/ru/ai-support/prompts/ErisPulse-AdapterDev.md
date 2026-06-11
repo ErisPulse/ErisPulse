@@ -2586,6 +2586,20 @@ await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
+### self.user_id 与 Using 的关系
+
+```python
+# Внутреннее поведение фреймворка (Event._get_adapter_and_target)
+# Логика извлечения bot_id из события
+bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
+
+# Вызов Using только при непустом bot_id
+if bot_id:
+    send_chain = send_chain.Using(bot_id)
+```
+
+> **Ключевой момент**: Даже если адаптер использует только одну конфигурацию бота, фреймворк передаст `self.user_id` как параметр `Using`, при условии, что Converter правильно установил это значение. Адаптер должен гарантировать, что `self.user_id` соответствует идентификационному полю в `AccountConfigClass` (например, `bot_id`), чтобы `_resolve_account()` мог сопоставить правильный аккаунт. Если `self.user_id` пуст, фреймворк не будет вызывать `Using`, и в этом случае `account_id`, полученный в `call_api`, будет равен `None`, а `_resolve_account(None)` вернет первый включенный аккаунт.
+
 ## Обработка ошибок
 
 ### Повтор подключения
