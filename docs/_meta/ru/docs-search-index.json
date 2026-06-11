@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1197,
+  "total_keywords": 1198,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -1974,6 +1974,22 @@
         "title": "Logger (Логирование)"
       }
     ],
+    "Message 消息模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 112,
+        "level": 2,
+        "title": "Message 消息模块"
+      }
+    ],
+    "Meta 元事件模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 214,
+        "level": 2,
+        "title": "Meta 元事件模块"
+      }
+    ],
     "Middleware": [
       {
         "document": "api-reference/adapter-system.md",
@@ -1994,6 +2010,14 @@
         "line": 211,
         "level": 2,
         "title": "Middleware маршрутов"
+      }
+    ],
+    "Notice 通知模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 160,
+        "level": 2,
+        "title": "Notice 通知模块"
       }
     ],
     "OneBot11": [
@@ -2066,6 +2090,14 @@
         "line": 274,
         "level": 3,
         "title": "Q5: Как обрабатывать специальные платформы, такие как электронная почта?"
+      }
+    ],
+    "Request 请求模块": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 192,
+        "level": 2,
+        "title": "Request 请求模块"
       }
     ],
     "Router (Маршрутизация)": [
@@ -2522,6 +2554,14 @@
         "title": "say(content, **kwargs)"
       }
     ],
+    "self.user_id 与 Using 的关系": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 731,
+        "level": 3,
+        "title": "self.user_id 与 Using 的关系"
+      }
+    ],
     "stop()": [
       {
         "document": "advanced/conversation.md",
@@ -2777,7 +2817,7 @@
     "Базовая информация о команде": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 269,
+        "line": 273,
         "level": 4,
         "title": "Базовая информация о команде"
       }
@@ -3651,7 +3691,7 @@
     "Доступ через точку": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 295,
+        "line": 299,
         "level": 3,
         "title": "Доступ через точку"
       }
@@ -3831,7 +3871,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 851,
+        "line": 865,
         "level": 3,
         "title": "Запрос состояния бота"
       },
@@ -3848,6 +3888,14 @@
         "line": 239,
         "level": 3,
         "title": "Запрос статуса бота"
+      }
+    ],
+    "Запросы": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 194,
+        "level": 3,
+        "title": "Запросы"
       }
     ],
     "Запросы в стиле цепочки (Chain Queries)": [
@@ -4259,7 +4307,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 267,
+        "line": 271,
         "level": 3,
         "title": "Информация о командах"
       }
@@ -4961,7 +5009,7 @@
     "Методы взаимодействия": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
+        "line": 194,
         "level": 4,
         "title": "Методы взаимодействия"
       }
@@ -4969,7 +5017,7 @@
     "Методы взаимодействия 示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 215,
+        "line": 219,
         "level": 4,
         "title": "Методы взаимодействия 示例"
       }
@@ -5143,7 +5191,7 @@
     "Механизм автоматического обнаружения": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 789,
+        "line": 803,
         "level": 3,
         "title": "Механизм автоматического обнаружения"
       }
@@ -5316,44 +5364,12 @@
         "title": "Модуль Storage"
       }
     ],
-    "Модуль запросов Request": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 192,
-        "level": 2,
-        "title": "Модуль запросов Request"
-      }
-    ],
     "Модуль команд Command": [
       {
         "document": "api-reference/event-system.md",
         "line": 5,
         "level": 2,
         "title": "Модуль команд Command"
-      }
-    ],
-    "Модуль метасобытий Meta": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 214,
-        "level": 2,
-        "title": "Модуль метасобытий Meta"
-      }
-    ],
-    "Модуль сообщений Message": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 112,
-        "level": 2,
-        "title": "Модуль сообщений Message"
-      }
-    ],
-    "Модуль уведомлений Notice": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 160,
-        "level": 2,
-        "title": "Модуль уведомлений Notice"
       }
     ],
     "Можно ли зарегистрировать несколько модулей в одном пакете?": [
@@ -5471,7 +5487,7 @@
     "Необработанные данные": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 276,
+        "line": 280,
         "level": 3,
         "title": "Необработанные данные"
       }
@@ -5695,7 +5711,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 731,
+        "line": 745,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -5727,7 +5743,7 @@
     "Обработка ошибок API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 757,
+        "line": 771,
         "level": 3,
         "title": "Обработка ошибок API"
       }
@@ -6587,7 +6603,7 @@
     "Отправка meta-событий адаптером": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 815,
+        "line": 829,
         "level": 3,
         "title": "Отправка meta-событий адаптером"
       }
@@ -6915,7 +6931,7 @@
     "Повтор подключения": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 733,
+        "line": 747,
         "level": 3,
         "title": "Повтор подключения"
       }
@@ -7035,7 +7051,7 @@
     "Поддержка `hasattr` и `dir`": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 334,
+        "line": 338,
         "level": 3,
         "title": "Поддержка `hasattr` и `dir`"
       }
@@ -7185,7 +7201,7 @@
     "Поиск зарегистрированных методов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 325,
+        "line": 329,
         "level": 3,
         "title": "Поиск зарегистрированных методов"
       }
@@ -8159,7 +8175,7 @@
     "Расширенная информация поля `self`": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 840,
+        "line": 854,
         "level": 3,
         "title": "Расширенная информация поля `self`"
       }
@@ -8175,13 +8191,13 @@
     "Расширенные методы платформы": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 281,
+        "line": 285,
         "level": 3,
         "title": "Расширенные методы платформы"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 305,
+        "line": 309,
         "level": 2,
         "title": "Расширенные методы платформы"
       }
@@ -8653,7 +8669,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 892,
+        "line": 906,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -8677,7 +8693,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 341,
+        "line": 345,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -8981,7 +8997,7 @@
     "Слушивание жизненного цикла бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 874,
+        "line": 888,
         "level": 3,
         "title": "Слушивание жизненного цикла бота"
       }
@@ -9104,14 +9120,6 @@
         "title": "Событие редактирования сообщения"
       }
     ],
-    "Событие сообщения": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 114,
-        "level": 3,
-        "title": "Событие сообщения"
-      }
-    ],
     "События HTTP-запросов": [
       {
         "document": "advanced/http-client.md",
@@ -9148,14 +9156,6 @@
         "line": 388,
         "level": 3,
         "title": "События жизненного цикла"
-      }
-    ],
-    "События запросов": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 194,
-        "level": 3,
-        "title": "События запросов"
       }
     ],
     "События запросов (Request Events)": [
@@ -9204,14 +9204,6 @@
         "line": 60,
         "level": 3,
         "title": "События сообщений (Message Events)"
-      }
-    ],
-    "События уведомлений": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 162,
-        "level": 3,
-        "title": "События уведомлений"
       }
     ],
     "События уведомлений (Notice Events)": [
@@ -9885,7 +9877,7 @@
     "Типы meta-событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 807,
+        "line": 821,
         "level": 3,
         "title": "Типы meta-событий"
       }
@@ -10229,7 +10221,7 @@
     "Управление состоянием бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
+        "line": 799,
         "level": 2,
         "title": "Управление состоянием бота"
       }
@@ -10383,7 +10375,7 @@
     "Утилитарные методы": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 289,
+        "line": 293,
         "level": 3,
         "title": "Утилитарные методы"
       }
@@ -10806,6 +10798,22 @@
         "line": 226,
         "level": 2,
         "title": "富媒体 сообщения"
+      }
+    ],
+    "消息事件": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 114,
+        "level": 3,
+        "title": "消息事件"
+      }
+    ],
+    "通知 события": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 162,
+        "level": 3,
+        "title": "通知 события"
       }
     ]
   }

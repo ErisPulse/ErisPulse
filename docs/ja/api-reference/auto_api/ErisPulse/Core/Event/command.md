@@ -68,7 +68,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None)`
+##### `async async wait_reply(event: dict[str, Any], prompt: str = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] = None, validator: Callable[[dict[str, Any]], bool] = None, method: str = DEFAULT_SEND_METHOD)`
 
 等待用户回复
 
@@ -77,6 +77,7 @@ ErisPulse 命令处理模块
 :param timeout: 等待超时时间(秒)
 :param callback: 回调函数，当收到回复时执行
 :param validator: 验证函数，用于验证回复是否有效
+:param method: 发送方法，默认为 "Text"
 :return: 用户回复的事件数据，如果超时则返回None
 
 ---
