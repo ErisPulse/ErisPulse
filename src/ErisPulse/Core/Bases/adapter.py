@@ -12,7 +12,7 @@ ErisPulse 适配器基础模块
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from ..constants import (
     RETCODE_NOT_IMPLEMENTED,
     STATUS_FAILED,
@@ -20,6 +20,62 @@ from ..constants import (
     DEFAULT_SEND_TARGET_TYPE,
     DETAIL_TYPE_PRIVATE,
 )
+
+
+_CHAIN_MODIFIER_NAMES = frozenset({"At", "AtAll", "Reply", "To", "Using", "Account"})
+
+
+def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "SendDSL"):
+    """
+    为发送方法注入生命周期钩子
+
+    仅对返回 Task/Awaitable 的发送方法生效，链式修饰方法（返回 SendDSL）不受影响。
+    不改变原方法的返回值类型或执行行为，仅在 Task 上添加回调来触发钩子。
+    """
+    def hooked(*args, **kwargs):
+        result = original_method(*args, **kwargs)
+
+        if isinstance(result, SendDSL):
+            return result
+
+        if not isinstance(result, asyncio.Task):
+            return result
+
+        platform = getattr(send_dsl._adapter, "_platform", "") or ""
+        send_ctx = {
+            "platform": platform,
+            "method": method_name,
+            "detail_type": send_dsl._target_type or "",
+            "target_id": send_dsl._target_id or "",
+            "bot_id": send_dsl._account_id or "",
+        }
+
+        from ..adapter import _msg_logger
+        target_type = send_dsl._target_type or ""
+        target_id = send_dsl._target_id or ""
+        log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
+        if method_name in ("Text", "Markdown", "Html") and args:
+            content = str(args[0])
+            if len(content) > 50:
+                content = content[:50] + "..."
+            _msg_logger.message(f"[Send] {platform}/{method_name} -> {log_target}: {content}")
+        else:
+            _msg_logger.message(f"[Send] {platform}/{method_name} -> {log_target}")
+
+        async def _emit_hooks():
+            from ..lifecycle import lifecycle
+            await lifecycle.emit("message.sending", send_ctx)
+
+        async def _emit_hooks_done(_):
+            from ..lifecycle import lifecycle
+            await lifecycle.emit("message.sent", send_ctx)
+
+        sending_task = asyncio.ensure_future(_emit_hooks())
+        result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+
+        return result
+
+    return hooked
 
 
 class SendDSL:
@@ -65,6 +121,17 @@ class SendDSL:
         self._reply_message_id: str | None = None
         self._at_all: bool = False
 
+    def __getattribute__(self, name):
+        attr = object.__getattribute__(self, name)
+
+        if name.startswith("_") or not callable(attr):
+            return attr
+
+        if name in _CHAIN_MODIFIER_NAMES:
+            return attr
+
+        return _wrap_send_method(name, attr, self)
+
     def __getattr__(self, name: str):
         """
         动态属性访问处理，实现大小写不敏感调用
@@ -76,28 +143,25 @@ class SendDSL:
         :return: 匹配的方法或属性
         :raises AttributeError: 当属性不存在时抛出
         """
-        # 检查所有实际存在的方法
         for attr_name in dir(self.__class__):
-            # 跳过特殊方法
             if attr_name.startswith("_"):
                 continue
 
-            # 大小写不敏感匹配
             if attr_name.lower() == name.lower():
-                # 返回实际的方法绑定到当前实例
                 attr = getattr(self.__class__, attr_name)
                 if callable(attr):
-                    return attr.__get__(self, self.__class__)
+                    resolved = attr.__get__(self, self.__class__)
+                    if attr_name not in _CHAIN_MODIFIER_NAMES:
+                        return _wrap_send_method(attr_name, resolved, self)
+                    return resolved
                 return attr
 
-        # 没有找到匹配的方法，打印警告
         from ..logger import logger
 
         logger.warning(
             f"平台 {self._adapter.__class__.__name__} 未实现 {name} 发送方法"
         )
 
-        # 抛出 AttributeError，这样 hasattr() 能正常工作
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )

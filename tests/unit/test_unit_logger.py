@@ -196,6 +196,43 @@ class TestLogger:
         # 验证
         assert any("Critical message" in record.message for record in caplog.records)
     
+    def test_trace_logging(self, temp_logger, caplog):
+        """测试TRACE日志记录"""
+        temp_logger.set_level("DEBUG")
+        temp_logger._logger.setLevel(5)
+        
+        with caplog.at_level(5):
+            temp_logger.trace("Trace message")
+        
+        assert any("Trace message" in record.message for record in caplog.records)
+    
+    def test_trace_filtered_by_debug_level(self, temp_logger, caplog):
+        """测试TRACE日志在DEBUG级别下被过滤"""
+        temp_logger.set_level("DEBUG")
+        
+        with caplog.at_level(5):
+            temp_logger.trace("This should be filtered")
+        
+        assert not any("This should be filtered" in record.message for record in caplog.records)
+    
+    def test_message_logging(self, temp_logger, caplog):
+        """测试MESSAGE日志记录"""
+        temp_logger.set_level("DEBUG")
+        
+        with caplog.at_level(60):
+            temp_logger.message("Message event")
+        
+        assert any("Message event" in record.message for record in caplog.records)
+    
+    def test_message_not_filtered_by_critical(self, temp_logger, caplog):
+        """测试MESSAGE级别高于CRITICAL，不会被过滤"""
+        temp_logger.set_level("CRITICAL")
+        
+        with caplog.at_level(60):
+            temp_logger.message("Should still appear")
+        
+        assert any("Should still appear" in record.message for record in caplog.records)
+    
     def test_debug_logging_filtered(self, temp_logger, caplog):
         """测试DEBUG日志被过滤"""
         # 设置INFO级别（DEBUG会被过滤）
@@ -454,6 +491,25 @@ class TestLoggerChild:
         
         # 验证
         assert any("Child critical message" in record.message for record in caplog.records)
+    
+    def test_child_trace_logging(self, child_logger, caplog):
+        """测试子日志器TRACE记录"""
+        child_logger._parent.set_level("DEBUG")
+        child_logger._parent._logger.setLevel(5)
+        
+        with caplog.at_level(5):
+            child_logger.trace("Child trace message")
+        
+        assert any("Child trace message" in record.message for record in caplog.records)
+    
+    def test_child_message_logging(self, child_logger, caplog):
+        """测试子日志器MESSAGE记录"""
+        child_logger._parent.set_level("DEBUG")
+        
+        with caplog.at_level(60):
+            child_logger.message("Child message event")
+        
+        assert any("Child message event" in record.message for record in caplog.records)
     
     def test_child_nested(self, parent_logger):
         """测试嵌套子日志器"""

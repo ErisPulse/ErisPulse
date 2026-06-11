@@ -19,6 +19,12 @@ from rich.console import Console
 from rich.text import Text
 from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOGGER_NAME, LOG_TIME_FORMAT
 
+TRACE = 5
+MESSAGE = 60
+
+logging.addLevelName(TRACE, "TRACE")
+logging.addLevelName(MESSAGE, "MESSAGE")
+
 
 class _JsonFormatter(logging.Formatter):
     """
@@ -331,8 +337,8 @@ class Logger:
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
             self._save_in_memory(caller_module, msg)
-            getattr(self._logger, level_name)(
-                f"[{caller_module}] {msg}", *args, **kwargs
+            self._logger.log(
+                level_const, f"[{caller_module}] {msg}", *args, **kwargs
             )
 
     def _get_caller(self):
@@ -400,6 +406,14 @@ class Logger:
         else:
             full_module_name = caller_module
         return LoggerChild(self, full_module_name)
+
+    def trace(self, msg, *args, **kwargs):
+        """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
+        self._log("trace", TRACE, msg, *args, **kwargs)
+
+    def message(self, msg, *args, **kwargs):
+        """记录 MESSAGE 级别日志（消息收发专用）"""
+        self._log("message", MESSAGE, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""
@@ -542,9 +556,17 @@ class LoggerChild:
 
         if self._parent._get_effective_level(display_name.split(".")[0]) <= level_const:
             self._parent._save_in_memory(display_name, msg)
-            getattr(self._parent._logger, level_name)(
-                f"[{display_name}] {msg}", *args, **kwargs
+            self._parent._logger.log(
+                level_const, f"[{display_name}] {msg}", *args, **kwargs
             )
+
+    def trace(self, msg, *args, **kwargs):
+        """记录 TRACE 级别日志（比 DEBUG 更细粒度）"""
+        self._log("trace", TRACE, msg, *args, **kwargs)
+
+    def message(self, msg, *args, **kwargs):
+        """记录 MESSAGE 级别日志（消息收发专用）"""
+        self._log("message", MESSAGE, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         """记录 DEBUG 级别日志"""

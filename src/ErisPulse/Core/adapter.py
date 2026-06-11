@@ -16,6 +16,8 @@ from .logger import logger
 from .Bases.adapter import BaseAdapter
 from .config import config
 from .lifecycle import lifecycle
+
+_msg_logger = logger.get_child("Message", relative=False)
 from .Bases.manager import ManagerBase
 from ..runtime.context import handler_waits
 from .constants import (
@@ -722,8 +724,18 @@ class AdapterManager(ManagerBase):
         """
         platform = data.get("platform", "unknown")
         event_type = data.get("type", "unknown")
+        detail_type = data.get("detail_type", "")
         platform_raw = data.get(f"{platform}_raw", {})
         raw_event_type = data.get(f"{platform}_raw_type")
+
+        if event_type == "message":
+            user_id = data.get("user_id", "")
+            alt_msg = data.get("alt_message", "")
+            if len(alt_msg) > 50:
+                alt_msg = alt_msg[:50] + "..."
+            _msg_logger.message(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
+        else:
+            _msg_logger.message(f"[Recv] {platform}/{event_type}/{detail_type}")
 
         # 钩子: 事件接收（最早期，所有事件都经过此处）
         await lifecycle.emit(
