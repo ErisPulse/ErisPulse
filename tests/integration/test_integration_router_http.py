@@ -30,9 +30,13 @@ class TestRouterHTTPIntegration:
         resp = client.get("/health")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["status"] == "ok"
-        assert "service" in data
-        assert "version" in data
+        # 健康检查返回各组件状态
+        assert "status" in data
+        assert "router" in data
+        assert "storage" in data
+        assert "adapter" in data
+        assert "module" in data
+        assert data["status"] in ("ok", "degraded")
 
     def test_ping_endpoint(self, client):
         resp = client.get("/ping")

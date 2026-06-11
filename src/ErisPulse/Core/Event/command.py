@@ -22,6 +22,7 @@ from ..constants import (
     DEFAULT_COMMAND_MUST_AT_BOT,
     DETAIL_TYPE_PRIVATE,
     DETAIL_TYPE_USER,
+    DEFAULT_SEND_METHOD,
 )
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from typing import Any
@@ -223,6 +224,7 @@ class CommandHandler:
         timeout: float = DEFAULT_WAIT_TIMEOUT_SECS,
         callback: Callable[[dict[str, Any]], Awaitable[Any]] = None,
         validator: Callable[[dict[str, Any]], bool] = None,
+        method: str = DEFAULT_SEND_METHOD,
     ) -> dict[str, Any] | None:
         """
         等待用户回复
@@ -232,6 +234,7 @@ class CommandHandler:
         :param timeout: 等待超时时间(秒)
         :param callback: 回调函数，当收到回复时执行
         :param validator: 验证函数，用于验证回复是否有效
+        :param method: 发送方法，默认为 "Text"
         :return: 用户回复的事件数据，如果超时则返回None
         """
         platform = event.get("platform")
@@ -250,7 +253,11 @@ class CommandHandler:
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(prompt)
+                send_func = getattr(send_dsl, method, None)
+                if send_func and callable(send_func):
+                    await send_func(prompt)
+                else:
+                    await send_dsl.Text(prompt)
             except Exception as e:
                 logger.warning(f"发送提示消息失败: {e}")
 
