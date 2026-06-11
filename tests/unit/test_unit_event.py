@@ -822,22 +822,21 @@ class TestRegisterEventMethod:
 
         assert "test" not in _platform_event_methods or "_private_helper" not in _platform_event_methods.get("test", {})
 
-    def test_conflict_with_builtin_warns(self):
-        """测试与内置方法冲突时发出警告"""
+    def test_override_builtin_method_succeeds(self):
+        """测试覆写内置方法名时成功注册"""
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
             @register_event_method("test")
             def get_text(self):
-                pass
+                return "overridden"
 
-            assert len(w) == 1
-            assert issubclass(w[0].category, RuntimeWarning)
-            assert "get_text" in str(w[0].message)
-            assert "内置方法冲突" in str(w[0].message)
+            assert len(w) == 0
 
-        # 冲突方法不应被注册
-        assert "get_text" not in _platform_event_methods.get("test", {})
+        assert "get_text" in _platform_event_methods.get("test", {})
+
+        event = Event({"platform": "test", "alt_message": "original"})
+        assert event.get_text() == "overridden"
 
     def test_decorator_returns_original_function(self):
         """测试装饰器返回原始函数"""
@@ -885,28 +884,32 @@ class TestRegisterEventMixin:
         count = register_event_mixin("test", EmptyMixin)
         assert count == 0
 
-    def test_mixin_conflict_skips_with_warning(self):
-        """测试 Mixin 中与内置冲突的方法被跳过"""
+    def test_mixin_all_methods_registered(self):
+        """测试 Mixin 中所有方法都被注册（包括与内置同名的方法）"""
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
             class BadMixin:
                 def get_text(self):
-                    pass
+                    return "overridden"
 
                 def get_platform(self):
-                    pass
+                    return "overridden_platform"
 
                 def custom_method(self):
                     pass
 
             count = register_event_mixin("test", BadMixin)
 
-            # 应有 2 个警告（get_text 和 get_platform 冲突）
-            assert len(w) == 2
-            # 只有 custom_method 被注册
-            assert count == 1
+            assert len(w) == 0
+            assert count == 3
+            assert "get_text" in _platform_event_methods["test"]
+            assert "get_platform" in _platform_event_methods["test"]
             assert "custom_method" in _platform_event_methods["test"]
+
+        event = Event({"platform": "test", "alt_message": "orig"})
+        assert event.get_text() == "overridden"
+        assert event.get_platform() == "overridden_platform"
 
 
 class TestUnregisterEventMethod:
@@ -1147,6 +1150,62 @@ class TestEventPlatformMethodDispatch:
         })
         assert event.get_subject() == "Test Subject"
         assert event.get_from() == "sender@example.com"
+
+    @pytest.mark.asyncio
+    async def test_override_builtin_choose(self):
+        """测试通过 Mixin 覆写内置 choose 方法"""
+        class TestMixin:
+            async def choose(self, prompt, options, timeout=60, method="Text"):
+                return 42
+
+        register_event_mixin("test_platform", TestMixin)
+
+        event = Event({"platform": "test_platform", "type": "message"})
+        result = await event.choose("pick", ["a", "b"])
+        assert result == 42
+
+    @pytest.mark.asyncio
+    async def test_override_builtin_confirm(self):
+        """测试通过 register_event_method 覆写内置 confirm"""
+        @register_event_method("test_platform")
+        async def confirm(self, prompt=None, timeout=60, yes_words=None, no_words=None, method="Text"):
+            return True
+
+        event = Event({"platform": "test_platform", "type": "message"})
+        result = await event.confirm("ok?")
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_override_builtin_wait_reply(self):
+        """测试通过 Mixin 覆写内置 wait_reply"""
+        class TestMixin:
+            async def wait_reply(self, prompt=None, timeout=60, callback=None, validator=None, method="Text"):
+                return Event({"platform": "test_platform", "alt_message": "mocked"})
+
+        register_event_mixin("test_platform", TestMixin)
+
+        event = Event({"platform": "test_platform", "type": "message"})
+        result = await event.wait_reply("hello?")
+        assert result is not None
+        assert result.get_text() == "mocked"
+
+    @pytest.mark.asyncio
+    async def test_override_only_applies_to_matching_platform(self):
+        """测试覆写只对匹配的平台生效"""
+        class TestMixin:
+            async def choose(self, prompt, options, timeout=60, method="Text"):
+                return 99
+
+        register_event_mixin("platform_a", TestMixin)
+
+        event_a = Event({"platform": "platform_a", "type": "message"})
+        event_b = Event({"platform": "platform_b", "type": "message"})
+
+        result_a = await event_a.choose("pick", ["a"])
+        assert result_a == 99
+
+        assert hasattr(event_b, "choose")
+        assert callable(event_b.choose)
 
 
 # ==================== 并行事件处理测试 ====================
