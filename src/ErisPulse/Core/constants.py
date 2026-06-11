@@ -399,6 +399,10 @@ RETCODE_OK = 0
 # 修改影响: 未指定 method 时默认发送文本消息。
 DEFAULT_SEND_METHOD = "Text"
 
+# 文本类发送方法集合：内容为纯文本，可拼接选项文本等内容。
+# 修改影响: Event.choose() 等交互式方法判断是否需要拆分消息。
+TEXT_BASED_METHODS = frozenset({"Text", "Markdown", "Html"})
+
 # 默认发送目标类型（当无法从事件推断时的回退值）。
 # 修改影响: Send.To() 未指定类型时的目标推断。
 DEFAULT_SEND_TARGET_TYPE = "user"
