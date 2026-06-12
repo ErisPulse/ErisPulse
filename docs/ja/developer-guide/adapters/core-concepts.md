@@ -19,14 +19,14 @@ ErisPulse アダプターの核心概念を理解することは、アダプタ�
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
 │                  │   │ 适配器 (MyAdapter) │   │                  │
 │  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (イベント変換器)│──→│ │              │ │   │ (逆方向変換エントリポイント)│
+│  (事件转换器)    │──→│ │              │ │   │ (反向转换入口)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
                        ┌──────────────────┐    │ プラットフォーム  │
-                       │ OneBot12 標準イベント│    │ API 呼び出し     │
+                       │ OneBot12 標準事件 │    │ API 呼び出し     │
                        └────────┬─────────┘    └────────┬─────────┘
                                 │                      ↓
                                 ↓              ┌──────────────────┐
@@ -335,30 +335,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多アカウント設定
 
+`BotAccountConfig` 基クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームプロトコルまたはログイン応答から自動的に `bot_id` を取得でき、イベント変換時にアカウント設定に注入します。：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# 多くのアダプター：bot_id は実行時に自動的に取得され、設定不要
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# ログイン時に bot_id を取得できない場合、ユーザーが設定で入力できるようにする
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "ロボットID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "ロボットToken",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "ロボットID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata 約定

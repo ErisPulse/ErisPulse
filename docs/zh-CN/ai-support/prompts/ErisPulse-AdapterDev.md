@@ -2335,30 +2335,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多账户配置
 
+`BotAccountConfig` 基类提供 `enabled` 和 `name` 字段。绝大多数适配器能从平台协议或登录响应中自动获取 bot_id，在事件转换时注入到账户配置中。：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# 大多数适配器：bot_id 运行时自动获取，无需配置
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# 如果登录时无法获取 bot_id，可以让用户在配置中填写
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "机器人ID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "机器人Token",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "机器人ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata 约定
@@ -2524,7 +2524,7 @@ OneBot12 标准事件
     "platform": "平台名称",
     "self": {
         "platform": "平台名称",
-        "user_id": "机器人ID"
+        "user_id": "机器人ID"     # 必须与 bot_id 一致
     },
     "{platform}_raw": {...},       # 原始数据（必须）
     "{platform}_raw_type": "..."    # 原始类型（必须）
@@ -2715,11 +2715,11 @@ enabled = true
 # 使用 Using 方法指定账户
 my_adapter = adapter.get("myplatform")
 
+# 通过事件中的 self.user_id（推荐，最通用）
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
+
 # 通过账户名
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# 通过账户 ID
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
 ### self.user_id 与 Using 的关系
@@ -3005,12 +3005,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的
 
 ### Using 方法
 
+`Using()` 用于指定发送消息的账户。传入的标识符会通过 `_resolve_account()` 按以下优先级匹配：
+
+1. **账户名** — 配置中的键名（如 `"default"`、`"bot1"`）
+2. **运行时注入的 bot_id** — 从事件转换时自动注入的标识符
+3. **任意 str 字段** — 配置中其他字符串字段
+4. **兜底** — 第一个启用的账户
+
 ```python
 # 使用账户名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用账户 ID
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# 使用 bot_id（即事件中的 self.user_id）
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account 方法
@@ -3585,7 +3592,7 @@ async def call_api(self, endpoint: str, **params):
 
 ### 1. 声明式配置（推荐）
 
-使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成。`BotAccountConfig` 基类提供 `enabled` 和 `name` 字段，适配器无需声明：
 
 ```python
 from dataclasses import dataclass, field
@@ -3606,6 +3613,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"启动账户 {name}")
             await self._connect(name, account.token)
+            # bot_id 由框架自动从平台协议/登录响应中获取并回填
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -3624,13 +3632,18 @@ name = ""
 
 ### 2. 账户选择机制
 
-框架内置 `_resolve_account()` 方法，支持多种匹配策略：
+框架内置 `_resolve_account()` 方法，匹配优先级：
+
+1. **账户名** — 配置键名精确匹配
+2. **`bot_id` 字段** — 自动获取的 bot_id（即 `event["self"]["user_id"]`）
+3. **任意 str 字段** — 配置中其他字符串字段
+4. **兜底** — 第一个启用的账户
 
 ```python
 # 按账户名匹配
 name, account = self._resolve_account("account1")
 
-# 按 bot_id 字段匹配（如果配置中有 bot_id 字段）
+# 按 bot_id 匹配（最常用的方式，来自事件）
 name, account = self._resolve_account("bot_123")
 
 # 获取第一个启用的账户（传入 None）

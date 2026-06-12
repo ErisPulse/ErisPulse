@@ -53,7 +53,7 @@
     "1. 使用 Mixin 类批量注册（推荐）": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 560,
+        "line": 566,
         "level": 3,
         "title": "1. 使用 Mixin 类批量注册（推荐）"
       }
@@ -85,7 +85,7 @@
     "1. 分类异常处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 448,
+        "line": 454,
         "level": 3,
         "title": "1. 分类异常处理"
       },
@@ -123,7 +123,7 @@
     "1. 单元测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 502,
+        "line": 508,
         "level": 3,
         "title": "1. 单元测试"
       },
@@ -265,7 +265,7 @@
     "1. 维护平台特性文档": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 612,
+        "line": 618,
         "level": 3,
         "title": "1. 维护平台特性文档"
       }
@@ -465,7 +465,7 @@
     "2. 使用装饰器注册单个方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 586,
+        "line": 592,
         "level": 3,
         "title": "2. 使用装饰器注册单个方法"
       }
@@ -569,7 +569,7 @@
     "2. 日志记录": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 481,
+        "line": 487,
         "level": 3,
         "title": "2. 日志记录"
       },
@@ -599,7 +599,7 @@
     "2. 更新版本信息": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 633,
+        "line": 639,
         "level": 3,
         "title": "2. 更新版本信息"
       }
@@ -663,7 +663,7 @@
     "2. 账户选择机制": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 431,
+        "line": 432,
         "level": 3,
         "title": "2. 账户选择机制"
       }
@@ -719,7 +719,7 @@
     "2. 集成测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 526,
+        "line": 532,
         "level": 3,
         "title": "2. 集成测试"
       },
@@ -1045,7 +1045,7 @@
     "3. 适配器关闭时清理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 596,
+        "line": 602,
         "level": 3,
         "title": "3. 适配器关闭时清理"
       }
@@ -1949,7 +1949,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 112,
         "level": 3,
         "title": "Account 方法"
       }
@@ -2657,7 +2657,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 147,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2903,7 +2903,7 @@
     "Task 对象": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 187,
+        "line": 194,
         "level": 3,
         "title": "Task 对象"
       }
@@ -3665,7 +3665,7 @@
     "不等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 122,
         "level": 3,
         "title": "不等待结果"
       }
@@ -4777,7 +4777,7 @@
     "原始消息与消息构建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
+        "line": 273,
         "level": 3,
         "title": "原始消息与消息构建"
       }
@@ -4869,7 +4869,7 @@
     "反向转换与消息构建": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 546,
+        "line": 552,
         "level": 2,
         "title": "反向转换与消息构建"
       }
@@ -5253,7 +5253,7 @@
     "命名规范": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 138,
+        "line": 145,
         "level": 2,
         "title": "命名规范"
       }
@@ -5363,7 +5363,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 238,
+        "line": 245,
         "level": 3,
         "title": "基本使用"
       },
@@ -6035,7 +6035,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 236,
+        "line": 243,
         "level": 2,
         "title": "完整示例"
       }
@@ -6305,7 +6305,7 @@
     "平台事件方法扩展": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 556,
+        "line": 562,
         "level": 2,
         "title": "平台事件方法扩展"
       }
@@ -6397,7 +6397,7 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 167,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -6553,7 +6553,7 @@
     "异步处理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "异步处理"
       }
@@ -7237,7 +7237,7 @@
     "文档维护": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 610,
+        "line": 616,
         "level": 2,
         "title": "文档维护"
       }
@@ -7627,7 +7627,7 @@
     "标准化响应": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 205,
+        "line": 212,
         "level": 3,
         "title": "标准化响应"
       }
@@ -8209,7 +8209,7 @@
     "测试": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 500,
+        "line": 506,
         "level": 2,
         "title": "测试"
       },
@@ -8941,7 +8941,7 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 642,
+        "line": 648,
         "level": 2,
         "title": "相关文档"
       },
@@ -8959,7 +8959,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 281,
         "level": 2,
         "title": "相关文档"
       },
@@ -9119,7 +9119,7 @@
     "等待结果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 132,
         "level": 3,
         "title": "等待结果"
       }
@@ -9841,7 +9841,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 192,
         "level": 2,
         "title": "返回值"
       }
@@ -10573,7 +10573,7 @@
     "链式调用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 256,
+        "line": 263,
         "level": 3,
         "title": "链式调用"
       }
@@ -10633,7 +10633,7 @@
     "错误处理": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 446,
+        "line": 452,
         "level": 2,
         "title": "错误处理"
       },

@@ -2195,30 +2195,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### Конфигурация нескольких аккаунтов
 
+`BotAccountConfig` базовый класс предоставляет поля `enabled` и `name`. У большинства адаптеров bot_id может быть автоматически получен из платформенного протокола или ответа на вход, и внедрен в конфигурацию учетной записи при преобразовании событий.：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# Большинство адаптеров: bot_id автоматически получается во время выполнения, конфигурация не требуется
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Токен", "required": True})
+
+# Если bot_id не удается получить при входе, его можно заполнить пользователем в конфигурации
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "Идентификатор бота",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "Токен бота",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "ID бота", "required": True})
+    token: str = field(default="", metadata={"description": "Токен", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### Соглашения о metadata
@@ -2772,7 +2772,7 @@ async def on_bot_offline(data):
 
 # SendDSL: Подробное руководство
 
-SendDSL — это интерфейс отправки сообщений со стилем цепных вызовов (method chaining), предоставляемый адаптером ErisPulse.
+SendDSL — это интерфейс отправки сообщений со стилем цепных вызовов, предоставляемый адаптером ErisPulse.
 
 ## Основные способы вызова
 
@@ -2866,12 +2866,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Ответ
 
 ### Метод Using
 
+`Using()` используется для указания аккаунта для отправки сообщения. Передаваемый идентификатор сопоставляется по следующему приоритету:
+
+1. **Имя аккаунта** — ключ в конфигурации (например, `"default"`, `"bot1"`)
+2. **Внедренный bot_id** — идентификатор, автоматически внедряемый при преобразовании событий
+3. **Любое строковое поле** — другое строковое поле в конфигурации
+4. **Fallback** — первый включенный аккаунт
+
 ```python
 # Использование имени аккаунта
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Использование ID аккаунта
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# Использование bot_id (то есть self.user_id из события)
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Метод Account
@@ -2976,7 +2983,22 @@ def Text(self, text: str):
 
 ### Стандартизированный ответ
 
-Метод `call_api` должен возвращать стандартизированный ответ:
+Метод `call_api` должен возвращать стандартизированный ответ. Рекомендуется использовать методы `make_response()` / `make_error()`:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+Также поддерживается ручное создание (старый способ по-прежнему совместим):
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -3044,7 +3066,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Текст 
 
 ## Управление состоянием бота и Meta-события
 
-Адаптер должен активно отправлять meta-события через `adapter.emit()`, чтобы фреймворк автоматически отслеживал соединение бота, моменты онлайна и пульсации (heartbeat).
+Адаптер должен активно отправлять meta-события через `adapter.emit()` для того, чтобы фреймворк автоматически отслеживал соединение бота, моменты онлайна и пульсации (heartbeat).
 
 ### 1. Когда отправлять Meta-события
 
@@ -3056,7 +3078,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Текст 
 
 ### 2. Отправка Meta-события
 
-Фреймворк предоставляет метод `emit_meta()`, с помощью которого можно отправить meta-событие одной строкой:
+Фреймворк предоставляет метод `emit_meta()` для отправки meta-события одной строкой:
 
 ```python
 class MyAdapter(BaseAdapter):

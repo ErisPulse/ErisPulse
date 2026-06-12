@@ -2763,7 +2763,7 @@
     "Асинхронная обработка": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "Асинхронная обработка"
       }
@@ -2871,7 +2871,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 223,
+        "line": 245,
         "level": 3,
         "title": "Базовое использование"
       },
@@ -3149,7 +3149,7 @@
     "Возвращаемое значение": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 192,
         "level": 2,
         "title": "Возвращаемое значение"
       }
@@ -4425,7 +4425,7 @@
     "Исходные сообщения и построение сообщений": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 251,
+        "line": 273,
         "level": 3,
         "title": "Исходные сообщения и построение сообщений"
       }
@@ -4913,7 +4913,7 @@
     "Метод Account": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 112,
         "level": 3,
         "title": "Метод Account"
       }
@@ -5455,7 +5455,7 @@
     "Не ожидание результата": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 122,
         "level": 3,
         "title": "Не ожидание результата"
       }
@@ -5471,7 +5471,7 @@
     "Нейминг PascalCase": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 147,
         "level": 3,
         "title": "Нейминг PascalCase"
       }
@@ -5953,7 +5953,7 @@
     "Объект Task": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 187,
+        "line": 194,
         "level": 3,
         "title": "Объект Task"
       }
@@ -6041,7 +6041,7 @@
     "Ожидание результата": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 132,
         "level": 3,
         "title": "Ожидание результата"
       }
@@ -6915,7 +6915,7 @@
     "Платформенно-специфические методы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 167,
         "level": 3,
         "title": "Платформенно-специфические методы"
       }
@@ -7221,7 +7221,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 221,
+        "line": 243,
         "level": 2,
         "title": "Полный пример"
       }
@@ -8675,7 +8675,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 259,
+        "line": 281,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -9233,7 +9233,7 @@
     "Соглашения об именовании": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 138,
+        "line": 145,
         "level": 2,
         "title": "Соглашения об именовании"
       }
@@ -9599,7 +9599,7 @@
     "Стандартизированный ответ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 205,
+        "line": 212,
         "level": 3,
         "title": "Стандартизированный ответ"
       }
@@ -10585,7 +10585,7 @@
     "Цепные вызовы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 241,
+        "line": 263,
         "level": 3,
         "title": "Цепные вызовы"
       }

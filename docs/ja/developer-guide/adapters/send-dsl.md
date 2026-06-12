@@ -94,12 +94,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的
 
 ### Using メソッド
 
+`Using()` はメッセージを送信するアカウントを指定するために使用されます。渡された識別子は、以下の優先順位で `_resolve_account()` によって一致させられます：
+
+1. **アカウント名** — 設定内のキー名（例：`"default"`、`"bot1"`）
+2. **実行時注入された bot_id** — イベント変換時に自動注入される識別子
+3. **任意の str フィールド** — 設定内の他の文字列フィールド
+4. **フォールバック（兜底）** — 有効になっている最初のアカウント
+
 ```python
 # アカウント名を使用
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# アカウントIDを使用
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# bot_idを使用（つまりイベント内の self.user_id）
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account メソッド

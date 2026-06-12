@@ -1,6 +1,6 @@
 # アダプター開発ベストプラクティス
 
-本ドキュメントでは、ErisPulse アダプター開発のベストプラクティスを提供します。
+本文書では、ErisPulse アダプター開発のベストプラクティスを提供します。
 
 ## Bot の状態管理と Meta イベント
 
@@ -550,7 +550,7 @@ async def test_send_message():
 `MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
 
 > 完全な実装規範、コード例、使用方法は以下を参照してください：
-> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
+> - [送信メソッド規範 §6 逆変換規范](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
 > - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
