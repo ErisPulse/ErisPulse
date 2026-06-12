@@ -200,6 +200,19 @@ SSE (Server-Sent Events) 路由装饰器
 ---
 
 
+##### `_track_owner_namespace(namespace: str)`
+
+> **内部方法** 
+若当前处于加载上下文（current_owner 已设置），记录命名空间归属，
+以便后续按 owner 兜底清理路由。
+
+适配器常以"平台名"作为 owner，却使用更细颗粒度的命名空间
+（如 onebot11_default）注册路由。仅靠 unregister_all_by_namespace(平台名)
+无法覆盖这些路由，故在此自动建立 owner -> namespace 的映射。
+
+---
+
+
 ##### `_make_http_endpoint(handler: Callable)`
 
 根据处理器签名创建 FastAPI 兼容的 HTTP 端点
@@ -623,6 +636,21 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 清理指定命名空间下的所有路由
 
 :param namespace: 命名空间（适配器名或模块名）
+:return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
+
+---
+
+
+##### `unregister_all_by_owner(owner: str)`
+
+清理指定归属者注册的所有路由
+
+与 :meth:`unregister_all_by_namespace` 不同，本方法基于注册期间
+通过 ``current_owner`` 自动追踪的归属关系进行清理，适用于"以平台名
+为 owner、却用更细颗粒度命名空间（如 ``onebot11_default``）注册路由"
+的适配器热重载场景。
+
+:param owner: 归属者（适配器平台名或模块名）
 :return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
 
 ---

@@ -110,6 +110,57 @@ ErisPulse 适配器系统
 ---
 
 
+##### `async async _stop_adapter(platform: str)`
+
+> **内部方法** 
+停止单个平台适配器——shutdown 即清理。
+
+将"停止适配器"与"回收其注册的资源"绑定在一次调用里：调用适配器自身的
+``shutdown()`` 后立即清理该平台的路由/事件/命令。restart、启动失败重试等
+场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
+
+对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
+也能正确回收 start() 期间已注册的资源。
+
+:param platform: 平台名称
+
+---
+
+
+##### `_cleanup_adapter_resources(platform: str)`
+
+> **内部方法** 
+适配器资源兜底清理（与模块卸载对齐颗粒度）。
+
+清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+- 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
+- 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
+  （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
+
+:param platform: 平台名称
+
+---
+
+
+##### `async async restart(platform: str)`
+
+重启指定平台适配器（shutdown + 资源兜底清理 + start）
+
+框架自动处理该平台在运行期间注册的路由/事件/命令清理（与模块卸载对齐颗粒度），
+并在重启时注入 owner，使新注册的资源可被后续按 owner 清理。
+第三方模块（如 Dashboard）的热重载应调用本方法，而非直接操作适配器实例。
+
+:param platform: 平台名称
+:return: 是否实际执行了重启（平台存在且原本在运行时为 True）
+
+**示例**:
+```python
+>>> await sdk.adapter.restart("OneBot11")
+```
+
+---
+
+
 ##### `clear()`
 
 清除所有适配器实例和信息
