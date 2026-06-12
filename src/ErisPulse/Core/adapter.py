@@ -19,7 +19,7 @@ from .lifecycle import lifecycle
 
 _msg_logger = logger.get_child("Message", relative=False)
 from .Bases.manager import ManagerBase
-from ..runtime.context import handler_waits
+from ..runtime.context import handler_waits, current_owner
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
@@ -258,7 +258,13 @@ class AdapterManager(ManagerBase):
 
             while True:
                 try:
-                    await adapter.start()
+                    # 注入 owner，使适配器 start() 期间注册的资源（路由/事件处理器/命令）
+                    # 自动归属到该平台，从而支持后续按 owner 兜底清理（与模块卸载对齐颗粒度）
+                    token = current_owner.set(platform)
+                    try:
+                        await adapter.start()
+                    finally:
+                        current_owner.reset(token)
                     self._started_instances.add(adapter)
 
                     # 提交适配器状态变化事件（started）
@@ -290,10 +296,8 @@ class AdapterManager(ManagerBase):
                         },
                     )
 
-                    try:
-                        await adapter.shutdown()
-                    except Exception as stop_err:
-                        logger.warning(f"停止适配器失败: {stop_err}")
+                    # 停止 + 清理（shutdown 即清理），避免重试时路由冲突
+                    await self._stop_adapter(platform)
 
                     # 计算等待时间
                     if retry_count <= len(backoff_intervals):
@@ -412,13 +416,10 @@ class AdapterManager(ManagerBase):
                                     },
                                 )
 
-            # 清理被关闭平台的路由
+            # 清理被关闭平台注册的资源（路由 + 命令 + 事件处理器），与模块卸载对齐颗粒度。
+            # 同时覆盖"以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册"的资源。
             for platform in platforms:
-                result = router.unregister_all_by_namespace(platform)
-                if result["http_count"] > 0 or result["websocket_count"] > 0:
-                    logger.debug(
-                        f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
-                    )
+                self._cleanup_adapter_resources(platform)
 
             # 将相关 Bot 标记为离线
             for platform, bot_id in bots_to_offline:
@@ -448,6 +449,129 @@ class AdapterManager(ManagerBase):
         finally:
             # 清除关闭标志
             self._is_being_shutdown = False
+
+    async def _stop_adapter(self, platform: str) -> None:
+        """
+        {!--< internal-use >!--}
+        停止单个平台适配器——shutdown 即清理。
+
+        将"停止适配器"与"回收其注册的资源"绑定在一次调用里：调用适配器自身的
+        ``shutdown()`` 后立即清理该平台的路由/事件/命令。restart、启动失败重试等
+        场景均经此入口，保证适配器一旦停止、归属资源必被回收，无需调用方再补清理。
+
+        对未注册的平台直接返回；``shutdown()`` 与清理均幂等，半途失败的重试场景
+        也能正确回收 start() 期间已注册的资源。
+
+        :param platform: 平台名称
+        {!--< /internal-use >!--}
+        """
+        adapter_instance = self._adapters.get(platform)
+        if adapter_instance is None:
+            return
+
+        # 调用适配器自身 shutdown（未启动/半途失败的重试场景也需清理部分状态）
+        try:
+            await adapter_instance.shutdown()
+        except Exception as e:
+            logger.error(f"停止适配器 {platform} 失败: {e}")
+        self._started_instances.discard(adapter_instance)
+
+        # 回收该平台运行期间注册的路由/事件/命令（幂等）
+        self._cleanup_adapter_resources(platform)
+
+    def _cleanup_adapter_resources(self, platform: str) -> None:
+        """
+        {!--< internal-use >!--}
+        适配器资源兜底清理（与模块卸载对齐颗粒度）。
+
+        清理该平台在运行期间注册的所有路由、命令与事件处理器。同时覆盖两种注册方式：
+        - 直接以平台名为命名空间注册的路由（unregister_all_by_namespace）
+        - 适配器以平台名为 owner、用细颗粒度命名空间（如 onebot11_default）注册的路由
+          （unregister_all_by_owner，依赖 start() 期间注入的 current_owner）
+
+        :param platform: 平台名称
+        {!--< /internal-use >!--}
+        """
+        try:
+            from .router import router
+
+            result_ns = router.unregister_all_by_namespace(platform)
+            result_owner = router.unregister_all_by_owner(platform)
+            http_c = result_ns["http_count"] + result_owner["http_count"]
+            ws_c = result_ns["websocket_count"] + result_owner["websocket_count"]
+            sse_c = result_ns["sse_count"] + result_owner["sse_count"]
+            if http_c or ws_c or sse_c:
+                logger.debug(
+                    f"已清理平台 {platform} 的路由: HTTP={http_c}, WebSocket={ws_c}, SSE={sse_c}"
+                )
+        except Exception as e:
+            logger.debug(f"清理平台 {platform} 路由失败: {e}")
+
+        try:
+            from .Event import command, message, notice, request, meta
+
+            cleaned = command.unregister_by_owner(platform)
+            for event_handler in (message, notice, request, meta):
+                cleaned += event_handler.handler.unregister_by_owner(platform)
+            if cleaned > 0:
+                logger.debug(f"已清理平台 {platform} 的 {cleaned} 个事件处理器/命令")
+        except Exception as e:
+            logger.debug(f"清理平台 {platform} 事件处理器失败: {e}")
+
+    async def restart(self, platform: str) -> bool:
+        """
+        重启指定平台适配器（shutdown + 资源兜底清理 + start）
+
+        框架自动处理该平台在运行期间注册的路由/事件/命令清理（与模块卸载对齐颗粒度），
+        并在重启时注入 owner，使新注册的资源可被后续按 owner 清理。
+        第三方模块（如 Dashboard）的热重载应调用本方法，而非直接操作适配器实例。
+
+        :param platform: 平台名称
+        :return: 是否实际执行了重启（平台存在且原本在运行时为 True）
+
+        :example:
+        >>> await sdk.adapter.restart("OneBot11")
+        """
+        adapter_instance = self._adapters.get(platform)
+        if adapter_instance is None:
+            logger.warning(f"平台 {platform} 未注册，无法重启")
+            return False
+        if adapter_instance not in self._started_instances:
+            logger.info(f"平台 {platform} 未运行，跳过重启")
+            return False
+
+        # 1) 停止适配器（shutdown 即清理：路由/事件/命令随之回收）
+        await lifecycle.submit_event(
+            "adapter.status.change",
+            msg=f"适配器 {platform} 状态变化: stopping",
+            data={"platform": platform, "status": "stopping"},
+        )
+        await self._stop_adapter(platform)
+
+        # 2) 重新启动，注入 owner 使 start() 期间注册的资源归属该平台
+        await lifecycle.submit_event(
+            "adapter.status.change",
+            msg=f"适配器 {platform} 状态变化: starting",
+            data={"platform": platform, "status": "starting"},
+        )
+        token = current_owner.set(platform)
+        try:
+            await adapter_instance.start()
+        except Exception as e:
+            logger.error(f"重启平台 {platform} 时启动失败: {e}")
+            # 启动失败：回滚（停止 + 清理本次注册的资源），避免下次冲突
+            await self._stop_adapter(platform)
+            return False
+        finally:
+            current_owner.reset(token)
+        self._started_instances.add(adapter_instance)
+
+        await lifecycle.submit_event(
+            "adapter.status.change",
+            msg=f"适配器 {platform} 状态变化: started",
+            data={"platform": platform, "status": "started"},
+        )
+        return True
 
     def clear(self) -> None:
         """
