@@ -63,6 +63,44 @@
 
 ---
 
+## [2.4.8] - 2026/06/12
+> 正式发布
+
+**版本摘要**
+2.4.8 是一个 HTTP/WS 客户端稳定性和适配器重连可靠性修复版本。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复 WebSocket 客户端并发 `receive()` 导致 `Concurrent call to receive() is not allowed` 崩溃
+  - 修复 HTTP 客户端连接错误重试时 session 泄漏（`_drain_sessions` 未关闭旧连接）
+  - 修复 HTTP 请求异常处理顺序错误导致连接重试 + session 重建逻辑从未执行（死代码）
+  - 修复适配器重连竞态导致 `Cannot write to closing transport`
+
+**注意事项**
+- `ClientWebSocket.send_*()` 现在会在连接已关闭时抛出 `WebSocketError` 而非底层 aiohttp 异常
+
+### 修复
+
+- @wsu2059q
+  - 修复 `Core/client.py` `ClientWebSocket` 多个协程并发调用 `receive()` 导致 aiohttp 抛出 `Concurrent call to receive() is not allowed` 异常：
+    - 新增 `_recv_lock` (asyncio.Lock) 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 调用
+  - 修复 `Core/client.py` `_get_http_session()` / `_get_ws_session()` 并发调用可能创建多个 aiohttp session 导致连接泄漏：
+    - 新增 `_session_lock` (asyncio.Lock) 保护 session 创建
+  - 修复 `Core/client.py` `_drain_sessions()` 仅置空引用未关闭底层 session 导致连接泄漏：
+    - 改为异步方法，先释放锁再安全关闭旧 session
+  - 修复 `Core/client.py` `request()` 异常处理顺序错误：
+    - `except ClientConnectionError` 捕获 ErisPulse 异常（永不触发），aiohttp 连接错误被通用 `except Exception` 接住
+    - 连接重试 + session 重建逻辑（`_drain_sessions`）从未执行
+    - 重构为按 `asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（触发 session 重建）→ `aiohttp.ClientError` → `ClientError`（透传）→ `Exception` 顺序捕获
+  - 修复 `Core/client.py` `ClientWebSocket.send_json()` 忽略 `mode` 参数，`mode="binary"` 时仍以文本模式发送
+  - 修复 `Core/client.py` `_get_ws_session()` 未传入 `self._default_headers`，WS 连接不携带全局默认请求头
+  - 修复 `Core/client.py` `close()` 与并发请求/WS 连接的竞态条件，改为锁保护
+  - 修复 `Core/client.py` `HttpResponse.__aexit__` 在 `request()` 返回后重复调用 `release()`：
+    - 新增 `_released` 标记，`request()` 退出 `async with` 后标记已释放
+
+---
+
 ## [2.5.0-dev.0] - 2026/06/08
 > 开发版本
 
