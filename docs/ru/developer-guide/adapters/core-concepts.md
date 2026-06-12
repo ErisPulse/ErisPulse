@@ -337,30 +337,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### Конфигурация нескольких аккаунтов
 
+`BotAccountConfig` базовый класс предоставляет поля `enabled` и `name`. У большинства адаптеров bot_id может быть автоматически получен из платформенного протокола или ответа на вход, и внедрен в конфигурацию учетной записи при преобразовании событий.：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# Большинство адаптеров: bot_id автоматически получается во время выполнения, конфигурация не требуется
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Токен", "required": True})
+
+# Если bot_id не удается получить при входе, его можно заполнить пользователем в конфигурации
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "Идентификатор бота",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "Токен бота",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "ID бота", "required": True})
+    token: str = field(default="", metadata={"description": "Токен", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### Соглашения о metadata

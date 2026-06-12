@@ -2035,14 +2035,14 @@ ErisPulse アダプターの核心概念を理解することは、アダプタ�
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
 │                  │   │ 适配器 (MyAdapter) │   │                  │
 │  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (イベント変換器)│──→│ │              │ │   │ (逆方向変換エントリポイント)│
+│  (事件转换器)    │──→│ │              │ │   │ (反向转换入口)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
                        ┌──────────────────┐    │ プラットフォーム  │
-                       │ OneBot12 標準イベント│    │ API 呼び出し     │
+                       │ OneBot12 標準事件 │    │ API 呼び出し     │
                        └────────┬─────────┘    └────────┬─────────┘
                                 │                      ↓
                                 ↓              ┌──────────────────┐
@@ -2351,30 +2351,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多アカウント設定
 
+`BotAccountConfig` 基クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームプロトコルまたはログイン応答から自動的に `bot_id` を取得でき、イベント変換時にアカウント設定に注入します。：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# 多くのアダプター：bot_id は実行時に自動的に取得され、設定不要
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# ログイン時に bot_id を取得できない場合、ユーザーが設定で入力できるようにする
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "ロボットID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "ロボットToken",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "ロボットID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata 約定
@@ -3021,12 +3021,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的
 
 ### Using メソッド
 
+`Using()` はメッセージを送信するアカウントを指定するために使用されます。渡された識別子は、以下の優先順位で `_resolve_account()` によって一致させられます：
+
+1. **アカウント名** — 設定内のキー名（例：`"default"`、`"bot1"`）
+2. **実行時注入された bot_id** — イベント変換時に自動注入される識別子
+3. **任意の str フィールド** — 設定内の他の文字列フィールド
+4. **フォールバック（兜底）** — 有効になっている最初のアカウント
+
 ```python
 # アカウント名を使用
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# アカウントIDを使用
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# bot_idを使用（つまりイベント内の self.user_id）
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account メソッド
@@ -3210,7 +3217,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("公告消�
 
 # アダプター開発ベストプラクティス
 
-本ドキュメントでは、ErisPulse アダプター開発のベストプラクティスを提供します。
+本文書では、ErisPulse アダプター開発のベストプラクティスを提供します。
 
 ## Bot の状態管理と Meta イベント
 
@@ -3760,7 +3767,7 @@ async def test_send_message():
 `MessageBuilder` は `Raw_ob12` と一緒に使用するメッセージセグメント構築ツールで、チェーン呼び出しと高速構築をサポートします。
 
 > 完全な実装規範、コード例、使用方法は以下を参照してください：
-> - [送信メソッド規範 §6 逆変換規範](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
+> - [送信メソッド規範 §6 逆変換規范](../../standards/send-method-spec.md#6-逆変換規范onebot12--プラットフォーム)
 > - [送信メソッド規範 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
