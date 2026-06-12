@@ -64,19 +64,31 @@ uv sync
 
 ### 项目结构
 
+> 以下为简化结构，仅列出关键目录，便于快速定位代码。
+
 ```
 ErisPulse/
 ├── src/
 │   └── ErisPulse/           # 核心源代码
+│       ├── CLI/             # 命令行工具 (epsdk)
 │       ├── Core/            # 核心模块
 │       │   ├── Bases/       # 基础类定义
 │       │   ├── Event/       # 事件系统
 │       │   └── ...          # 其他核心组件
-│       └── __init__.py      # SDK入口点
+│       ├── finders/         # 模块 / 适配器发现
+│       ├── loaders/         # 加载器（含懒加载策略）
+│       ├── runtime/         # 运行时
+│       ├── web_status/      # Web 状态服务
+│       ├── sdk.py           # SDK 入口实现
+│       └── __init__.py      # 包入口
+├── config/                  # 默认配置
+├── docs/                    # 多语言文档 (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # 示例代码
-├── docs/                   # 文档
-├── tests/                  # 测试代码
-└── scripts/                # 脚本文件
+├── tests/                   # 测试代码 (unit / integration / performance / stress)
+├── scripts/                 # 工具脚本
+├── workers/                 # 后台 Worker
+├── pyproject.toml           # 项目与依赖配置
+└── pytest.ini               # 测试配置
 ```
 
 ## 注解存根通知
@@ -84,9 +96,45 @@ ErisPulse/
 如果你需要使用这些注解，请运行 `python3 scripts/tools/generate-type-stubs.py` , 它将在本地生成pyi文件
 提交时，请确保您本地的pyi文件已清除，使用 `python3 scripts/tools/generate-type-stubs.py --clean-only` 完成清理
 
+## 测试与代码检查
+
+### 运行测试
+
+项目使用 `pytest`，配置见 `pytest.ini`（已开启覆盖率、`asyncio-mode=auto` 及各类测试标记）。在虚拟环境中执行：
+
+```bash
+# 运行全部测试（含覆盖率报告）
+uv run pytest
+
+# 仅运行单元测试 / 集成测试
+uv run pytest -m unit
+uv run pytest -m integration
+
+# 运行指定路径或单个用例
+uv run pytest tests/unit
+uv run pytest tests/unit/test_xxx.py::TestClass::test_method
+```
+
+可用 `-m` 按标记筛选，常用标记：`unit`、`integration`、`e2e`、`adapter`、`module`、`event`、`lifecycle`、`config`、`storage`、`logger`、`router`。
+
+### 代码检查与格式化
+
+项目使用 [Ruff](https://docs.astral.sh/ruff/)（配置见 `pyproject.toml` 的 `[tool.ruff]`）。提交前请确保代码通过检查：
+
+```bash
+# 代码检查
+uv run ruff check .
+
+# 自动修复可修复的问题
+uv run ruff check . --fix
+
+# 代码格式化
+uv run ruff format .
+```
+
 ## 代码注释规范
 
-> 详细注释规范请参考 docs/styleguide/
+> 详细注释规范请参考 [docs/zh-CN/styleguide/docstring.md](docs/zh-CN/styleguide/docstring.md)
 
 ## 贡献流程
 
@@ -98,7 +146,7 @@ ErisPulse/
 3.  **开发工作**
     *   在您的功能分支上进行开发。
     *   保持提交信息清晰明确（例如：`feat: 添加用户登录功能`）。
-    *   严格遵守docs/styleguide/docstring_spec.md，为所有新增的公开API添加文档注释。
+    *   严格遵守[文档注释规范](docs/zh-CN/styleguide/docstring.md)，为所有新增的公开API添加文档注释。
     *   提交前，确保在 `CHANGELOG.md` 中添加了变更描述。
     *   为了减少合并冲突，建议定期从**官方仓库的 `Develop/v2` 分支**拉取（`pull`）更新。
 
@@ -125,7 +173,7 @@ ErisPulse/
 
 *   **请勿**直接向官方的 `main` 或 `Pre-Release/v2` 分支提交代码或PR，所有功能开发应通过PR至 `Develop/v2` 的方式进入代码库。
 *   **例外情况**：如流程第4.1条所述，为特定目的（如发布测试版本）向 `Pre-Release/v2` 等分支提交PR是允许的，但需在PR中充分说明。
-*   所有公开API方法必须包含完整注释，请参考docs/styleguide/docstring_spec.md。
+*   所有公开API方法必须包含完整注释，请参考[文档注释规范](docs/zh-CN/styleguide/docstring.md)。
 *   如有疑问，请联系 `erisdev@88.com` 或 云湖群ID 635409929
 
 感谢您的贡献！
