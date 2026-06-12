@@ -1791,7 +1791,7 @@
     "Account メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 112,
         "level": 3,
         "title": "Account メソッド"
       }
@@ -2589,7 +2589,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 147,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2877,7 +2877,7 @@
     "Task オブジェクト": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 187,
+        "line": 194,
         "level": 3,
         "title": "Task オブジェクト"
       }
@@ -6087,7 +6087,7 @@
     "プラットフォーム固有のメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 167,
         "level": 3,
         "title": "プラットフォーム固有のメソッド"
       }
@@ -6555,7 +6555,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 256,
+        "line": 263,
         "level": 3,
         "title": "メソッドチェーン"
       }
@@ -8253,7 +8253,7 @@
     "命名規則": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 138,
+        "line": 145,
         "level": 2,
         "title": "命名規則"
       }
@@ -8513,7 +8513,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 238,
+        "line": 245,
         "level": 3,
         "title": "基本的な使用方法"
       },
@@ -8689,7 +8689,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 236,
+        "line": 243,
         "level": 2,
         "title": "完全な例"
       }
@@ -8863,7 +8863,7 @@
     "戻り値": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 192,
         "level": 2,
         "title": "戻り値"
       }
@@ -9309,7 +9309,7 @@
     "標準化されたレスポンス": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 205,
+        "line": 212,
         "level": 3,
         "title": "標準化されたレスポンス"
       }
@@ -9535,7 +9535,7 @@
     "生メッセージとメッセージ構築": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
+        "line": 273,
         "level": 3,
         "title": "生メッセージとメッセージ構築"
       }
@@ -9681,7 +9681,7 @@
     "結果を待たない": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 122,
         "level": 3,
         "title": "結果を待たない"
       }
@@ -9689,7 +9689,7 @@
     "結果を待つ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 132,
         "level": 3,
         "title": "結果を待つ"
       }
@@ -10461,7 +10461,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 281,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -10551,7 +10551,7 @@
     "非同期処理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "非同期処理"
       }
