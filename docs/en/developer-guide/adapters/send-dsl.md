@@ -48,7 +48,7 @@ All sending methods must return an `asyncio.Task` object.
 | `Video(file: bytes \| str)` | Send video | `asyncio.Task` |
 | `File(file: bytes \| str)` | Send file | `asyncio.Task` |
 
-### Raw Methods
+### Protocol Methods
 
 | Method Name | Description | Return Value | Required |
 |--------|------|---------|---------|
@@ -94,12 +94,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Reply to @
 
 ### Using Method
 
+`Using()` is used to specify the sending account. The identifier passed in is matched by `_resolve_account()` with the following priority:
+
+1. **Account Name** — The key name in the configuration (e.g., `"default"`, `"bot1"`)
+2. **Runtime injected bot_id** — The identifier automatically injected from event conversion
+3. **Any str field** — Other string fields in the configuration
+4. **Fallback** — The first enabled account
+
 ```python
 # Use account name
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Use account ID
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# Use bot_id (i.e., self.user_id from the event)
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account Method
@@ -276,4 +283,4 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 - [Adapter Development Getting Started](getting-started.md) - Create adapter
 - [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
-- [Sending Method Naming Conventions](../../standards/send-type-naming.md) - Naming conventions
+- [Sending Method Specifications](../../standards/send-method-spec.md) - Sending method specifications

@@ -1,6 +1,6 @@
 # SendDSL: Подробное руководство
 
-SendDSL — это интерфейс отправки сообщений со стилем цепных вызовов (method chaining), предоставляемый адаптером ErisPulse.
+SendDSL — это интерфейс отправки сообщений со стилем цепных вызовов, предоставляемый адаптером ErisPulse.
 
 ## Основные способы вызова
 
@@ -94,12 +94,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Ответ
 
 ### Метод Using
 
+`Using()` используется для указания аккаунта для отправки сообщения. Передаваемый идентификатор сопоставляется по следующему приоритету:
+
+1. **Имя аккаунта** — ключ в конфигурации (например, `"default"`, `"bot1"`)
+2. **Внедренный bot_id** — идентификатор, автоматически внедряемый при преобразовании событий
+3. **Любое строковое поле** — другое строковое поле в конфигурации
+4. **Fallback** — первый включенный аккаунт
+
 ```python
 # Использование имени аккаунта
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Использование ID аккаунта
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# Использование bot_id (то есть self.user_id из события)
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Метод Account
@@ -204,7 +211,22 @@ def Text(self, text: str):
 
 ### Стандартизированный ответ
 
-Метод `call_api` должен возвращать стандартизированный ответ:
+Метод `call_api` должен возвращать стандартизированный ответ. Рекомендуется использовать методы `make_response()` / `make_error()`:
+
+```python
+async def call_api(self, endpoint: str, **params):
+    try:
+        result = await self._do_api_call(endpoint, **params)
+        return self.make_response(
+            data=result.get("data"),
+            message_id=result.get("message_id", ""),
+            raw=result,
+        )
+    except Exception as e:
+        return self.make_error(message=str(e))
+```
+
+Также поддерживается ручное создание (старый способ по-прежнему совместим):
 
 ```python
 async def call_api(self, endpoint: str, **params):
