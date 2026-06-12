@@ -21,6 +21,7 @@ from collections.abc import Callable, Awaitable
 from collections import defaultdict
 from .logger import logger
 from .lifecycle import lifecycle
+from ..runtime.context import current_owner
 from .Bases.router import HttpRequest, WebSocketConnection, SseEmitter
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .constants import (
@@ -275,6 +276,10 @@ class RouterManager:
             str, dict[str, tuple[Callable, Callable | None, bool]]
         ] = defaultdict(dict)
         self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
+        # 资源归属者 -> 其注册的命名空间集合。
+        # 适配器/模块加载期间若设置了 current_owner，注册路由时会自动记录归属，
+        # 以便按 owner 兜底清理（热重载等场景）。
+        self._owner_namespaces: dict[str, set[str]] = defaultdict(set)
         self.base_url = ""
         self._server_task: asyncio.Task | None = None
         self._uvicorn_server: uvicorn.Server | None = None
@@ -300,6 +305,21 @@ class RouterManager:
         # 去除首尾斜杠并合并
         parts = [part.strip("/") for part in [prefix, path] if part.strip("/")]
         return "/" + "/".join(parts)
+
+    def _track_owner_namespace(self, namespace: str) -> None:
+        """
+        {!--< internal-use >!--}
+        若当前处于加载上下文（current_owner 已设置），记录命名空间归属，
+        以便后续按 owner 兜底清理路由。
+
+        适配器常以"平台名"作为 owner，却使用更细颗粒度的命名空间
+        （如 onebot11_default）注册路由。仅靠 unregister_all_by_namespace(平台名)
+        无法覆盖这些路由，故在此自动建立 owner -> namespace 的映射。
+        {!--< /internal-use >!--}
+        """
+        owner = current_owner.get()
+        if owner is not None:
+            self._owner_namespaces[owner].add(namespace)
 
     # 自动注入
 
@@ -551,6 +571,8 @@ class RouterManager:
         """
         if full_path in self._sse_routes.get(module_name, {}):
             raise ValueError(f"SSE路径 {full_path} 已在模块 {module_name} 中注册")
+
+        self._track_owner_namespace(module_name)
 
         endpoint = self._make_sse_endpoint(handler)
         route = APIRoute(
@@ -1514,6 +1536,8 @@ class RouterManager:
         if conflicting_methods:
             raise ValueError(f"路径 {full_path} 的方法 {conflicting_methods} 已注册")
 
+        self._track_owner_namespace(module_name)
+
         route_kwargs = {}
         for k, v in [
             ("summary", summary),
@@ -1600,6 +1624,8 @@ class RouterManager:
         """
         if full_path in self._websocket_routes[module_name]:
             raise ValueError(f"WebSocket路径 {full_path} 已注册")
+
+        self._track_owner_namespace(module_name)
 
         wrapped_handler = self._make_ws_handler(handler)
         wrapped_auth = (
@@ -1888,6 +1914,29 @@ class RouterManager:
                 f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}, SSE={result['sse_count']}"
             )
 
+        # 同步清理 owner 索引：该命名空间已被整体清理，移除其在所有 owner 下的归属记录
+        for owner_ns in self._owner_namespaces.values():
+            owner_ns.discard(namespace)
+
+        return result
+
+    def unregister_all_by_owner(self, owner: str) -> dict[str, int]:
+        """
+        清理指定归属者注册的所有路由
+
+        与 :meth:`unregister_all_by_namespace` 不同，本方法基于注册期间
+        通过 ``current_owner`` 自动追踪的归属关系进行清理，适用于"以平台名
+        为 owner、却用更细颗粒度命名空间（如 ``onebot11_default``）注册路由"
+        的适配器热重载场景。
+
+        :param owner: 归属者（适配器平台名或模块名）
+        :return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
+        """
+        result = {"http_count": 0, "websocket_count": 0, "sse_count": 0}
+        for namespace in self._owner_namespaces.pop(owner, set()):
+            sub = self.unregister_all_by_namespace(namespace)
+            for key in result:
+                result[key] += sub[key]
         return result
 
     def list_namespaces(self) -> dict[str, dict[str, list[str]]]:
@@ -2478,6 +2527,7 @@ class RouterManager:
         logger.debug("清理所有注册的路由...")
         self._http_routes.clear()
         self._websocket_routes.clear()
+        self._owner_namespaces.clear()
         self._rate_limit_store.clear()
         self._route_middlewares.clear()
         self._global_middlewares.clear()
