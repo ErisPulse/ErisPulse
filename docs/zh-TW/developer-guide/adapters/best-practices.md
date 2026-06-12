@@ -330,7 +330,7 @@ class Send(BaseAdapter.Send):
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": card_data}],
+                message=[{"type": "card", "data": {"card_data": card_data}}],
                 **self.send_context
             )
         )
@@ -549,8 +549,8 @@ async def test_send_message():
 
 `MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫和快速建構。
 
-> 完整的實作規範、程式碼範例和使用方法請參閱：
-> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規范onebot12--平台)
+> 完整的實作規範、程式碼示例和使用方法請參閱：
+> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
 > - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
 ## 平台事件方法擴充

@@ -1859,7 +1859,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 770,
+        "line": 763,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -1921,7 +1921,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 637,
+        "line": 633,
         "level": 2,
         "title": "API Response Standard"
       }
@@ -1967,7 +1967,7 @@
     "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 696,
         "level": 3,
         "title": "Account Configuration File"
       }
@@ -1997,7 +1997,7 @@
     "Account Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 112,
         "level": 3,
         "title": "Account Method"
       }
@@ -2175,7 +2175,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 828,
+        "line": 821,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2321,7 +2321,7 @@
     "Asynchronous Handling": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "Asynchronous Handling"
       }
@@ -2429,7 +2429,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 802,
+        "line": 795,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -2701,7 +2701,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 238,
+        "line": 245,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -2815,7 +2815,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 798,
+        "line": 791,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -2843,7 +2843,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 864,
+        "line": 857,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -2975,7 +2975,7 @@
     "Chain Calling": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 256,
+        "line": 263,
         "level": 3,
         "title": "Chain Calling"
       }
@@ -3511,7 +3511,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 236,
+        "line": 243,
         "level": 2,
         "title": "Complete Examples"
       }
@@ -3763,7 +3763,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 746,
+        "line": 739,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4179,7 +4179,7 @@
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 673,
+        "line": 669,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       }
@@ -4335,7 +4335,7 @@
     "Do Not Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 122,
         "level": 3,
         "title": "Do Not Wait for Result"
       }
@@ -4645,7 +4645,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 744,
+        "line": 737,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5079,7 +5079,7 @@
     "Extended `self` Field Information": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 853,
+        "line": 846,
         "level": 3,
         "title": "Extended `self` Field Information"
       }
@@ -6157,7 +6157,7 @@
     "Listen to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 887,
+        "line": 880,
         "level": 3,
         "title": "Listen to Bot Lifecycle"
       }
@@ -6391,7 +6391,7 @@
     "Manual Response Construction (Old method still compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 657,
+        "line": 653,
         "level": 3,
         "title": "Manual Response Construction (Old method still compatible)"
       }
@@ -6749,7 +6749,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 820,
+        "line": 813,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -7073,7 +7073,7 @@
     "Multi-Account Support": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 671,
+        "line": 667,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -7145,7 +7145,7 @@
     "Naming Conventions": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 138,
+        "line": 145,
         "level": 2,
         "title": "Naming Conventions"
       }
@@ -7551,7 +7551,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 147,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -7697,7 +7697,7 @@
     "Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 167,
         "level": 3,
         "title": "Platform-Specific Methods"
       }
@@ -7792,6 +7792,14 @@
         "line": 249,
         "level": 4,
         "title": "Property Access"
+      }
+    ],
+    "Protocol Methods": [
+      {
+        "document": "developer-guide/adapters/send-dsl.md",
+        "line": 51,
+        "level": 3,
+        "title": "Protocol Methods"
       }
     ],
     "Proxy Configuration": [
@@ -8061,17 +8069,9 @@
     "Raw Messages and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
+        "line": 273,
         "level": 3,
         "title": "Raw Messages and Message Building"
-      }
-    ],
-    "Raw Methods": [
-      {
-        "document": "developer-guide/adapters/send-dsl.md",
-        "line": 51,
-        "level": 3,
-        "title": "Raw Methods"
       }
     ],
     "Reading Configuration": [
@@ -8249,13 +8249,13 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 905,
+        "line": 898,
         "level": 2,
         "title": "Related Documentation"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 281,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -8315,7 +8315,7 @@
     "Relationship between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 727,
+        "line": 720,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
       }
@@ -8537,7 +8537,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 192,
         "level": 2,
         "title": "Return Values"
       }
@@ -9175,7 +9175,7 @@
     "Specify Account for Sending": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 714,
+        "line": 710,
         "level": 3,
         "title": "Specify Account for Sending"
       }
@@ -9255,7 +9255,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 205,
+        "line": 212,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -9411,7 +9411,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 641,
+        "line": 637,
         "level": 3,
         "title": "Success Response"
       }
@@ -9621,7 +9621,7 @@
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 187,
+        "line": 194,
         "level": 3,
         "title": "Task Object"
       }
@@ -10145,7 +10145,7 @@
     "Wait for Result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 132,
         "level": 3,
         "title": "Wait for Result"
       }
@@ -10185,7 +10185,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 611,
+        "line": 609,
         "level": 3,
         "title": "WebHook Connection"
       }

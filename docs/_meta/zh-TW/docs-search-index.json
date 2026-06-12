@@ -1881,7 +1881,7 @@
     "Account 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 112,
         "level": 3,
         "title": "Account 方法"
       }
@@ -2591,7 +2591,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 140,
+        "line": 147,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -2845,7 +2845,7 @@
     "Task 物件": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 187,
+        "line": 194,
         "level": 3,
         "title": "Task 物件"
       }
@@ -3589,7 +3589,7 @@
     "不等待結果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 122,
         "level": 3,
         "title": "不等待結果"
       }
@@ -4735,7 +4735,7 @@
     "原始訊息與訊息構建": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
+        "line": 273,
         "level": 3,
         "title": "原始訊息與訊息構建"
       }
@@ -4961,7 +4961,7 @@
     "命名規範": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 138,
+        "line": 145,
         "level": 2,
         "title": "命名規範"
       }
@@ -5149,7 +5149,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 238,
+        "line": 245,
         "level": 3,
         "title": "基本使用"
       },
@@ -5372,6 +5372,14 @@
         "line": 41,
         "level": 3,
         "title": "基類"
+      }
+    ],
+    "声明式配置（推薦）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 673,
+        "level": 3,
+        "title": "声明式配置（推薦）"
       }
     ],
     "多元素消息": [
@@ -5729,7 +5737,7 @@
     "完整範例": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 236,
+        "line": 243,
         "level": 2,
         "title": "完整範例"
       }
@@ -5748,14 +5756,6 @@
         "line": 75,
         "level": 2,
         "title": "定時任務"
-      }
-    ],
-    "宣告式設定（推薦）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 673,
-        "level": 3,
-        "title": "宣告式設定（推薦）"
       }
     ],
     "富媒體訊息轉換示例": [
@@ -5934,14 +5934,6 @@
         "line": 381,
         "level": 4,
         "title": "帳戶解析"
-      }
-    ],
-    "帳戶設定檔": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
-        "level": 3,
-        "title": "帳戶設定檔"
       }
     ],
     "帳戶配置": [
@@ -6171,7 +6163,7 @@
     "平台特有方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 160,
+        "line": 167,
         "level": 3,
         "title": "平台特有方法"
       }
@@ -6562,20 +6554,20 @@
         "title": "指令配置"
       }
     ],
-    "指定帳戶發送": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 714,
-        "level": 3,
-        "title": "指定帳戶發送"
-      }
-    ],
     "指定發送帳號": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 117,
         "level": 3,
         "title": "指定發送帳號"
+      }
+    ],
+    "指定账户发送": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 714,
+        "level": 3,
+        "title": "指定账户发送"
       }
     ],
     "按鈕參數說明": [
@@ -7505,7 +7497,7 @@
     "標準化回應": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 205,
+        "line": 212,
         "level": 3,
         "title": "標準化回應"
       }
@@ -8537,7 +8529,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 281,
         "level": 2,
         "title": "相關文件"
       },
@@ -8725,7 +8717,7 @@
     "等待結果": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 125,
+        "line": 132,
         "level": 3,
         "title": "等待結果"
       }
@@ -9564,6 +9556,14 @@
         "title": "質量檢查清單"
       }
     ],
+    "账户配置文件": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 700,
+        "level": 3,
+        "title": "账户配置文件"
+      }
+    ],
     "超級文件分享事件示例": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -9679,7 +9679,7 @@
     "返回值": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 192,
         "level": 2,
         "title": "返回值"
       }
@@ -10421,7 +10421,7 @@
     "鏈式調用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 256,
+        "line": 263,
         "level": 3,
         "title": "鏈式調用"
       }
@@ -10639,7 +10639,7 @@
     "非同步處理": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "非同步處理"
       }

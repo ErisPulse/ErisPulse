@@ -5200,30 +5200,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多帳戶設定
 
+`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數介接器能從平台協定或登入回應中自動取得 bot_id，在事件轉換時注入到帳戶設定中。：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# 絕大多數介接器：bot_id 執行時自動取得，無需設定
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# 如果登入時無法取得 bot_id，可以讓使用者在設定中填寫
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "機器人ID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "機器人Token",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "機器人ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata 約定
@@ -5389,7 +5389,7 @@ OneBot12 標準事件
     "platform": "平台名稱",
     "self": {
         "platform": "平台名稱",
-        "user_id": "機器人ID"
+        "user_id": "機器人ID"     # 必須與 bot_id 一致
     },
     "{platform}_raw": {...},       # 原始資料（必須）
     "{platform}_raw_type": "..."    # 原始類型（必須）
@@ -5454,7 +5454,7 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
+    async def _ws_handler(self, websocket):
         """WebSocket 連接處理器"""
         self.connection = websocket
         
@@ -5469,7 +5469,7 @@ class MyAdapter(BaseAdapter):
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
+    async def _auth_handler(self, websocket) -> bool:
         """WebSocket 認證"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
@@ -5490,7 +5490,7 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
+    async def _webhook_handler(self, request):
         """WebHook 請求處理器"""
         data = await request.json()
         onebot_event = self.convert(data)
@@ -5537,7 +5537,7 @@ async def call_api(self, endpoint: str, **params):
 
 ## 多帳戶支援
 
-### 宣告式設定（推薦）
+### 声明式配置（推薦）
 
 使用 `AccountConfigClass` 宣告設定類後，框架自動管理多帳戶載入、校驗和範本生成：
 
@@ -5564,7 +5564,7 @@ class MyAdapter(BaseAdapter):
         # 使用 account.token, account.bot_id 等欄位
 ```
 
-### 帳戶設定檔
+### 账户配置文件
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -5578,17 +5578,17 @@ token = "token2"
 enabled = true
 ```
 
-### 指定帳戶發送
+### 指定账户发送
 
 ```python
 # 使用 Using 方法指定帳戶
 my_adapter = adapter.get("myplatform")
 
+# 透過事件中的 self.user_id（推薦，最通用）
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
+
 # 透過帳戶名
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# 透過帳戶 ID
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
 ### self.user_id 與 Using 的關係
@@ -5874,12 +5874,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回覆@的
 
 ### Using 方法
 
+`Using()` 用於指定發送訊息的帳號。傳入的識別符會透過 `_resolve_account()` 按以下優先級匹配：
+
+1. **帳號名** — 配置中的鍵名（如 `"default"`、`"bot1"`）
+2. **運行時注入的 bot_id** — 從事件轉換時自動注入的識別符
+3. **任意 str 欄位** — 配置中其他字串欄位
+4. **兜底** — 第一個啟用的帳號
+
 ```python
 # 使用帳號名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用帳號 ID
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# 使用 bot_id（即事件中的 self.user_id）
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account 方法
@@ -6393,7 +6400,7 @@ class Send(BaseAdapter.Send):
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
-                message=[{"type": "card", "data": card_data}],
+                message=[{"type": "card", "data": {"card_data": card_data}}],
                 **self.send_context
             )
         )
@@ -6612,8 +6619,8 @@ async def test_send_message():
 
 `MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段構建工具，支援鏈式呼叫和快速建構。
 
-> 完整的實作規範、程式碼範例和使用方法請參閱：
-> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規范onebot12--平台)
+> 完整的實作規範、程式碼示例和使用方法請參閱：
+> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
 > - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
 ## 平台事件方法擴充
