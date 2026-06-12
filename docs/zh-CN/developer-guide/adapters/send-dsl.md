@@ -94,12 +94,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("回复@的
 
 ### Using 方法
 
+`Using()` 用于指定发送消息的账户。传入的标识符会通过 `_resolve_account()` 按以下优先级匹配：
+
+1. **账户名** — 配置中的键名（如 `"default"`、`"bot1"`）
+2. **运行时注入的 bot_id** — 从事件转换时自动注入的标识符
+3. **任意 str 字段** — 配置中其他字符串字段
+4. **兜底** — 第一个启用的账户
+
 ```python
 # 使用账户名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用账户 ID
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# 使用 bot_id（即事件中的 self.user_id）
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account 方法

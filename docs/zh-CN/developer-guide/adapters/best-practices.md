@@ -391,7 +391,7 @@ async def call_api(self, endpoint: str, **params):
 
 ### 1. 声明式配置（推荐）
 
-使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成：
+使用 `AccountConfigClass` 声明配置类后，框架自动管理多账户加载、校验和模板生成。`BotAccountConfig` 基类提供 `enabled` 和 `name` 字段，适配器无需声明：
 
 ```python
 from dataclasses import dataclass, field
@@ -412,6 +412,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"启动账户 {name}")
             await self._connect(name, account.token)
+            # bot_id 由框架自动从平台协议/登录响应中获取并回填
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -430,13 +431,18 @@ name = ""
 
 ### 2. 账户选择机制
 
-框架内置 `_resolve_account()` 方法，支持多种匹配策略：
+框架内置 `_resolve_account()` 方法，匹配优先级：
+
+1. **账户名** — 配置键名精确匹配
+2. **`bot_id` 字段** — 自动获取的 bot_id（即 `event["self"]["user_id"]`）
+3. **任意 str 字段** — 配置中其他字符串字段
+4. **兜底** — 第一个启用的账户
 
 ```python
 # 按账户名匹配
 name, account = self._resolve_account("account1")
 
-# 按 bot_id 字段匹配（如果配置中有 bot_id 字段）
+# 按 bot_id 匹配（最常用的方式，来自事件）
 name, account = self._resolve_account("bot_123")
 
 # 获取第一个启用的账户（传入 None）

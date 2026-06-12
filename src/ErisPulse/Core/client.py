@@ -73,7 +73,7 @@ class HttpResponse(BaseHttpResponse):
     >>> data = await resp.json()
     """
 
-    __slots__ = ("_response", "_body", "_body_read")
+    __slots__ = ("_response", "_body", "_body_read", "_released")
 
     def __init__(self, response):
         """
@@ -82,6 +82,7 @@ class HttpResponse(BaseHttpResponse):
         self._response = response
         self._body: bytes | None = None
         self._body_read = False
+        self._released = False
 
     @property
     def status(self) -> int:
@@ -179,7 +180,9 @@ class HttpResponse(BaseHttpResponse):
         return self
 
     async def __aexit__(self, *args):
-        self._response.release()
+        if not self._released:
+            self._response.release()
+            self._released = True
 
 
 class ClientWebSocket(BaseClientWebSocket):
@@ -201,13 +204,14 @@ class ClientWebSocket(BaseClientWebSocket):
     ...     await ws.send_text(f"Echo: {text}")
     """
 
-    __slots__ = ()
+    __slots__ = ("_recv_lock",)
 
     def __init__(self, ws):
         """
         :param ws: aiohttp.ClientWebSocketResponse 底层 aiohttp WS 对象
         """
         super().__init__(ws)
+        self._recv_lock = asyncio.Lock()
 
     @property
     def closed(self) -> bool:
@@ -226,6 +230,8 @@ class ClientWebSocket(BaseClientWebSocket):
 
         :param data: str 文本内容
         """
+        if self._ws.closed:
+            raise WebSocketError("WebSocket is closed")
         await self._ws.send_str(data)
 
     async def send_bytes(self, data: bytes) -> None:
@@ -234,6 +240,8 @@ class ClientWebSocket(BaseClientWebSocket):
 
         :param data: bytes 二进制内容
         """
+        if self._ws.closed:
+            raise WebSocketError("WebSocket is closed")
         await self._ws.send_bytes(data)
 
     async def send_json(self, data: Any, mode: str = "text") -> None:
@@ -243,7 +251,13 @@ class ClientWebSocket(BaseClientWebSocket):
         :param data: Any 要序列化的数据
         :param mode: str 发送模式 ("text" 或 "binary") (默认: "text")
         """
-        await self._ws.send_json(data)
+        if self._ws.closed:
+            raise WebSocketError("WebSocket is closed")
+        if mode == "binary":
+            payload = json.dumps(data).encode("utf-8")
+            await self._ws.send_bytes(payload)
+        else:
+            await self._ws.send_json(data)
 
     # ---- Receive ----
 
@@ -277,7 +291,8 @@ class ClientWebSocket(BaseClientWebSocket):
 
         :return: WSMessage 消息对象
         """
-        msg = await self._ws.receive()
+        async with self._recv_lock:
+            msg = await self._ws.receive()
         return self._convert_ws_msg(msg)
 
     async def receive_text(self) -> str:
@@ -290,7 +305,8 @@ class ClientWebSocket(BaseClientWebSocket):
         """
         import aiohttp
 
-        msg = await self._ws.receive()
+        async with self._recv_lock:
+            msg = await self._ws.receive()
         if msg.type == aiohttp.WSMsgType.TEXT:
             return msg.data
         elif msg.type in (
@@ -315,7 +331,8 @@ class ClientWebSocket(BaseClientWebSocket):
         """
         import aiohttp
 
-        msg = await self._ws.receive()
+        async with self._recv_lock:
+            msg = await self._ws.receive()
         if msg.type == aiohttp.WSMsgType.BINARY:
             return msg.data
         elif msg.type in (
@@ -421,6 +438,7 @@ class HttpClient(BaseHttpClient):
             )
         self._session = None
         self._ws_session = None
+        self._session_lock = asyncio.Lock()
         self._stats = {
             "total_requests": 0,
             "total_errors": 0,
@@ -431,39 +449,58 @@ class HttpClient(BaseHttpClient):
     # ---- Session 管理 ----
 
     async def _get_ws_session(self):
-        if self._ws_session is None or self._ws_session.closed:
-            import aiohttp
+        async with self._session_lock:
+            if self._ws_session is None or self._ws_session.closed:
+                import aiohttp
 
-            self._ws_session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(),
-            )
-        return self._ws_session
+                self._ws_session = aiohttp.ClientSession(
+                    timeout=aiohttp.ClientTimeout(),
+                    headers=self._default_headers or None,
+                )
+            return self._ws_session
 
-    def _drain_sessions(self):
-        self._session = None
-        self._ws_session = None
+    async def _drain_sessions(self):
+        async with self._session_lock:
+            old_session = self._session
+            old_ws = self._ws_session
+            self._session = None
+            self._ws_session = None
+        if old_session and not old_session.closed:
+            try:
+                await old_session.close()
+            except Exception:
+                pass
+        if old_ws and not old_ws.closed:
+            try:
+                await old_ws.close()
+            except Exception:
+                pass
 
     async def _get_http_session(self):
-        if self._session is None or self._session.closed:
-            import aiohttp
+        async with self._session_lock:
+            if self._session is None or self._session.closed:
+                import aiohttp
 
-            timeout = aiohttp.ClientTimeout(
-                total=self._timeout,
-                connect=self._connect_timeout,
-            )
-            self._session = aiohttp.ClientSession(
-                timeout=timeout,
-                headers=self._default_headers,
-            )
-        return self._session
+                timeout = aiohttp.ClientTimeout(
+                    total=self._timeout,
+                    connect=self._connect_timeout,
+                )
+                self._session = aiohttp.ClientSession(
+                    timeout=timeout,
+                    headers=self._default_headers,
+                )
+            return self._session
 
     async def close(self) -> None:
-        if self._session and not self._session.closed:
-            await self._session.close()
+        async with self._session_lock:
+            old_session = self._session
+            old_ws = self._ws_session
             self._session = None
-        if self._ws_session and not self._ws_session.closed:
-            await self._ws_session.close()
             self._ws_session = None
+        if old_session and not old_session.closed:
+            await old_session.close()
+        if old_ws and not old_ws.closed:
+            await old_ws.close()
 
     # ---- 核心请求方法 ----
 
@@ -530,6 +567,7 @@ class HttpClient(BaseHttpClient):
                 ) as resp:
                     response = HttpResponse(resp)
                     await response._eager_read()
+                    response._released = True
                     elapsed = time.monotonic() - start
 
                     self._stats["total_requests"] += 1
@@ -545,20 +583,6 @@ class HttpClient(BaseHttpClient):
 
                     return response
 
-            except ClientConnectionError as e:
-                last_exc = e
-                self._stats["total_errors"] += 1
-                elapsed = time.monotonic() - start
-                if attempt < retries:
-                    logger.debug(
-                        f"[HttpClient] {method} {url} 连接中断，重建 session 后重试 (尝试 {attempt + 1}/{retries + 1})"
-                    )
-                    self._drain_sessions()
-                    await asyncio.sleep(self._retry_delay)
-                else:
-                    logger.error(
-                        f"[HttpClient] {method} {url} 最终连接失败 ({elapsed:.3f}s)"
-                    )
             except asyncio.TimeoutError as e:
                 last_exc = _convert_aiohttp_exception(e)
                 self._stats["total_errors"] += 1
@@ -572,11 +596,37 @@ class HttpClient(BaseHttpClient):
                     logger.error(
                         f"[HttpClient] {method} {url} 最终超时 ({elapsed:.3f}s)"
                     )
-            except Exception as e:
-                if isinstance(e, aiohttp.ClientError):
-                    last_exc = _convert_aiohttp_exception(e)
+            except aiohttp.ClientConnectionError as e:
+                last_exc = _convert_aiohttp_exception(e)
+                self._stats["total_errors"] += 1
+                elapsed = time.monotonic() - start
+                if attempt < retries:
+                    logger.debug(
+                        f"[HttpClient] {method} {url} 连接中断，重建 session 后重试 (尝试 {attempt + 1}/{retries + 1})"
+                    )
+                    await self._drain_sessions()
+                    await asyncio.sleep(self._retry_delay)
                 else:
-                    last_exc = ClientError(str(e))
+                    logger.error(
+                        f"[HttpClient] {method} {url} 最终连接失败 ({elapsed:.3f}s)"
+                    )
+            except aiohttp.ClientError as e:
+                last_exc = _convert_aiohttp_exception(e)
+                self._stats["total_errors"] += 1
+                elapsed = time.monotonic() - start
+                if attempt < retries:
+                    logger.debug(
+                        f"[HttpClient] {method} {url} 失败 (尝试 {attempt + 1}/{retries + 1}): {e}"
+                    )
+                    await asyncio.sleep(self._retry_delay)
+                else:
+                    logger.error(
+                        f"[HttpClient] {method} {url} 最终失败 ({elapsed:.3f}s): {e}"
+                    )
+            except ClientError:
+                raise
+            except Exception as e:
+                last_exc = ClientError(str(e))
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
