@@ -63,44 +63,6 @@
 
 ---
 
-## [2.4.8] - 2026/06/12
-> 正式发布
-
-**版本摘要**
-2.4.8 是一个 HTTP/WS 客户端稳定性和适配器重连可靠性修复版本。
-
-**升级建议**
-- **强烈建议升级**
-- 升级原因：
-  - 修复 WebSocket 客户端并发 `receive()` 导致 `Concurrent call to receive() is not allowed` 崩溃
-  - 修复 HTTP 客户端连接错误重试时 session 泄漏（`_drain_sessions` 未关闭旧连接）
-  - 修复 HTTP 请求异常处理顺序错误导致连接重试 + session 重建逻辑从未执行（死代码）
-  - 修复适配器重连竞态导致 `Cannot write to closing transport`
-
-**注意事项**
-- `ClientWebSocket.send_*()` 现在会在连接已关闭时抛出 `WebSocketError` 而非底层 aiohttp 异常
-
-### 修复
-
-- @wsu2059q
-  - 修复 `Core/client.py` `ClientWebSocket` 多个协程并发调用 `receive()` 导致 aiohttp 抛出 `Concurrent call to receive() is not allowed` 异常：
-    - 新增 `_recv_lock` (asyncio.Lock) 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 调用
-  - 修复 `Core/client.py` `_get_http_session()` / `_get_ws_session()` 并发调用可能创建多个 aiohttp session 导致连接泄漏：
-    - 新增 `_session_lock` (asyncio.Lock) 保护 session 创建
-  - 修复 `Core/client.py` `_drain_sessions()` 仅置空引用未关闭底层 session 导致连接泄漏：
-    - 改为异步方法，先释放锁再安全关闭旧 session
-  - 修复 `Core/client.py` `request()` 异常处理顺序错误：
-    - `except ClientConnectionError` 捕获 ErisPulse 异常（永不触发），aiohttp 连接错误被通用 `except Exception` 接住
-    - 连接重试 + session 重建逻辑（`_drain_sessions`）从未执行
-    - 重构为按 `asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（触发 session 重建）→ `aiohttp.ClientError` → `ClientError`（透传）→ `Exception` 顺序捕获
-  - 修复 `Core/client.py` `ClientWebSocket.send_json()` 忽略 `mode` 参数，`mode="binary"` 时仍以文本模式发送
-  - 修复 `Core/client.py` `_get_ws_session()` 未传入 `self._default_headers`，WS 连接不携带全局默认请求头
-  - 修复 `Core/client.py` `close()` 与并发请求/WS 连接的竞态条件，改为锁保护
-  - 修复 `Core/client.py` `HttpResponse.__aexit__` 在 `request()` 返回后重复调用 `release()`：
-    - 新增 `_released` 标记，`request()` 退出 `async with` 后标记已释放
-
----
-
 ## [2.5.0-dev.0] - 2026/06/08
 > 开发版本
 
@@ -155,6 +117,101 @@
 ### 修复
 - @wsu2059q
   - 修复 HTTP 客户端请求后响应体未预读导致的连接泄漏问题
+
+---
+
+## [2.4.9] - 2026/06/12
+> 正式发布
+
+**版本摘要**
+2.4.9 修复适配器热重载时路由冲突导致重载失败的关键问题。框架自动管理适配器生命周期资源（路由/事件/命令），与模块卸载对齐颗粒度。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复第三方模块（如 Dashboard）触发适配器热重载时，因旧路由未清理导致 `WebSocket路径 ... 已注册` 冲突、重载失败的问题
+  - 修复适配器启动失败重试时，残留路由同样导致冲突的问题
+  - 新增框架级 `adapter.restart(platform)` API，第三方模块无需自行管理适配器重载生命周期
+
+**注意事项**
+- 适配器热重载现在由框架统一处理资源清理，第三方模块应调用 `sdk.adapter.restart(platform)` 而非直接操作适配器实例
+- 需重启进程使本版本生效（旧版本注册的路由无 owner 归属记录）
+
+### 新增
+
+- @wsu2059q
+  - `Core/router.py` 新增路由归属者追踪与按 owner 清理机制：
+    - 新增 `_owner_namespaces: dict[str, set[str]]` 映射，在路由注册时自动记录 `current_owner → namespace` 归属关系
+    - 新增 `_track_owner_namespace(namespace)` 内部方法，读取 `current_owner` ContextVar 建立归属记录
+    - HTTP / WebSocket / SSE 路由注册（`register_http_route` / `_register_ws_endpoint` / `_register_sse`）在重复检查后自动调用归属追踪
+    - 新增 `unregister_all_by_owner(owner)` 公开方法，按归属者清理其名下所有命名空间的路由（适用于"以平台名为 owner、用细颗粒度命名空间注册"的场景）
+  - `Core/adapter.py` 新增 `restart(platform)` 框架级适配器重载 API：
+    - 自动执行 shutdown + 资源兜底清理 + owner 注入启动 的完整生命周期
+    - 提交 `adapter.status.change` 事件（stopping / starting / started）
+    - 启动失败时自动回滚（停止 + 清理本次注册的资源），避免下次冲突
+    - 第三方模块的热重载应调用本方法，而非直接操作适配器实例
+  - `Core/adapter.py` 新增 `_stop_adapter(platform)` 内部原语（"停止即清理"）：
+    - 将"停止适配器"与"回收其注册的资源"绑定在一次调用里
+    - 调用适配器自身 `shutdown()` 后立即清理路由/事件/命令（幂等）
+    - `restart()` 和启动失败重试均经此入口，保证适配器一旦停止、归属资源必被回收
+  - `Core/adapter.py` 新增 `_cleanup_adapter_resources(platform)` 内部方法：
+    - 同时清理以平台名为命名空间注册的路由（`unregister_all_by_namespace`）和以平台名为 owner 注册的路由（`unregister_all_by_owner`）
+    - 清理 `command` / `message` / `notice` / `request` / `meta` 下按 owner 注册的事件处理器和命令
+
+### 变更
+
+- @wsu2059q
+  - `Core/adapter.py` `_run_adapter()` 在调用 `adapter.start()` 期间注入 `current_owner.set(platform)`，使适配器注册的路由/事件处理器自动归属到该平台（与模块加载对齐）
+  - `Core/adapter.py` `restart()` / 启动失败重试路径在重新启动前调用 `_stop_adapter(platform)`，保证旧资源已回收
+  - `Core/adapter.py` `shutdown()` 新增逐平台 `_cleanup_adapter_resources(platform)` 调用，覆盖以平台名为 owner 注册的细颗粒度命名空间路由
+  - `Core/router.py` `unregister_all_by_namespace()` 在清理命名空间后同步从所有 owner 索引中移除该命名空间的归属记录
+  - `Core/router.py` `clear()` 重置 `_owner_namespaces`
+
+### 修复
+
+- @wsu2059q
+  - 修复适配器热重载时因旧路由（如 `onebot11_default`）未清理导致 `WebSocket路径 ... 已注册` 冲突、重载失败的问题：
+    - **根因**：`AdapterManager.shutdown()` 仅以 `unregister_all_by_namespace(platform)` 清理路由，但适配器（如 OneBot11）以 `onebot11_{account_name}` 为命名空间注册 WS 路由，颗粒度不匹配导致清理为空操作
+    - **方案**：路由注册时通过 `current_owner` 自动追踪 owner→namespace 归属，停止/重启时同时按 owner 清理，覆盖细颗粒度命名空间
+  - 修复适配器启动失败重试时，上次尝试注册的残留路由同样导致冲突的问题（重试路径现经 `_stop_adapter` 清理）
+
+---
+
+## [2.4.8] - 2026/06/12
+> 正式发布
+
+**版本摘要**
+2.4.8 是一个 HTTP/WS 客户端稳定性和适配器重连可靠性修复版本。
+
+**升级建议**
+- **强烈建议升级**
+- 升级原因：
+  - 修复 WebSocket 客户端并发 `receive()` 导致 `Concurrent call to receive() is not allowed` 崩溃
+  - 修复 HTTP 客户端连接错误重试时 session 泄漏（`_drain_sessions` 未关闭旧连接）
+  - 修复 HTTP 请求异常处理顺序错误导致连接重试 + session 重建逻辑从未执行（死代码）
+  - 修复适配器重连竞态导致 `Cannot write to closing transport`
+
+**注意事项**
+- `ClientWebSocket.send_*()` 现在会在连接已关闭时抛出 `WebSocketError` 而非底层 aiohttp 异常
+
+### 修复
+
+- @wsu2059q
+  - 修复 `Core/client.py` `ClientWebSocket` 多个协程并发调用 `receive()` 导致 aiohttp 抛出 `Concurrent call to receive() is not allowed` 异常：
+    - 新增 `_recv_lock` (asyncio.Lock) 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 调用
+  - 修复 `Core/client.py` `_get_http_session()` / `_get_ws_session()` 并发调用可能创建多个 aiohttp session 导致连接泄漏：
+    - 新增 `_session_lock` (asyncio.Lock) 保护 session 创建
+  - 修复 `Core/client.py` `_drain_sessions()` 仅置空引用未关闭底层 session 导致连接泄漏：
+    - 改为异步方法，先释放锁再安全关闭旧 session
+  - 修复 `Core/client.py` `request()` 异常处理顺序错误：
+    - `except ClientConnectionError` 捕获 ErisPulse 异常（永不触发），aiohttp 连接错误被通用 `except Exception` 接住
+    - 连接重试 + session 重建逻辑（`_drain_sessions`）从未执行
+    - 重构为按 `asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（触发 session 重建）→ `aiohttp.ClientError` → `ClientError`（透传）→ `Exception` 顺序捕获
+  - 修复 `Core/client.py` `ClientWebSocket.send_json()` 忽略 `mode` 参数，`mode="binary"` 时仍以文本模式发送
+  - 修复 `Core/client.py` `_get_ws_session()` 未传入 `self._default_headers`，WS 连接不携带全局默认请求头
+  - 修复 `Core/client.py` `close()` 与并发请求/WS 连接的竞态条件，改为锁保护
+  - 修复 `Core/client.py` `HttpResponse.__aexit__` 在 `request()` 返回后重复调用 `release()`：
+    - 新增 `_released` 标记，`request()` 退出 `async with` 后标记已释放
 
 ---
 
