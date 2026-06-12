@@ -2214,30 +2214,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
+The `BotAccountConfig` base class provides `enabled` and `name` fields. The vast majority of adapters can automatically obtain `bot_id` from the platform protocol or login response, and inject it into the account configuration during event conversion.：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# Most adapters: bot_id obtained automatically at runtime, no need to configure
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# If bot_id cannot be obtained during login, let users fill it in the configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "Bot ID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "Bot Token",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "Bot ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata Conventions
@@ -2403,7 +2403,7 @@ All converted events must include:
     "platform": "Platform name",
     "self": {
         "platform": "Platform name",
-        "user_id": "Bot ID"
+        "user_id": "Bot ID"     # Must match bot_id
     },
     "{platform}_raw": {...},       # Raw data (required)
     "{platform}_raw_type": "..."    # Raw type (required)
@@ -2456,8 +2456,6 @@ class MyPlatformConverter:
 ### WebSocket Connection
 
 ```python
-from fastapi import WebSocket
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """Register WebSocket route"""
@@ -2468,7 +2466,7 @@ class MyAdapter(BaseAdapter):
             auth_handler=self._auth_handler
         )
     
-    async def _ws_handler(self, websocket: WebSocket):
+    async def _ws_handler(self, websocket):
         """WebSocket connection handler"""
         self.connection = websocket
         
@@ -2483,7 +2481,7 @@ class MyAdapter(BaseAdapter):
         finally:
             self.connection = None
     
-    async def _auth_handler(self, websocket: WebSocket) -> bool:
+    async def _auth_handler(self, websocket) -> bool:
         """WebSocket authentication"""
         token = websocket.query_params.get("token")
         return token == "valid_token"
@@ -2492,8 +2490,6 @@ class MyAdapter(BaseAdapter):
 ### WebHook Connection
 
 ```python
-from fastapi import Request
-
 class MyAdapter(BaseAdapter):
     async def start(self):
         """Register WebHook route"""
@@ -2504,7 +2500,7 @@ class MyAdapter(BaseAdapter):
             methods=["POST"]
         )
     
-    async def _webhook_handler(self, request: Request):
+    async def _webhook_handler(self, request):
         """WebHook request handler"""
         data = await request.json()
         onebot_event = self.convert(data)
@@ -2600,9 +2596,6 @@ my_adapter = adapter.get("myplatform")
 
 # By account name
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# By account ID
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
 ### Relationship between self.user_id and Using
@@ -2842,7 +2835,7 @@ All sending methods must return an `asyncio.Task` object.
 | `Video(file: bytes \| str)` | Send video | `asyncio.Task` |
 | `File(file: bytes \| str)` | Send file | `asyncio.Task` |
 
-### Raw Methods
+### Protocol Methods
 
 | Method Name | Description | Return Value | Required |
 |--------|------|---------|---------|
@@ -2888,12 +2881,19 @@ await adapter.Send.To("group", "123").At("456").Reply("msg_id").Text("Reply to @
 
 ### Using Method
 
+`Using()` is used to specify the sending account. The identifier passed in is matched by `_resolve_account()` with the following priority:
+
+1. **Account Name** — The key name in the configuration (e.g., `"default"`, `"bot1"`)
+2. **Runtime injected bot_id** — The identifier automatically injected from event conversion
+3. **Any str field** — Other string fields in the configuration
+4. **Fallback** — The first enabled account
+
 ```python
 # Use account name
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# Use account ID
-await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
+# Use bot_id (i.e., self.user_id from the event)
+await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
 
 ### Account Method
@@ -3070,7 +3070,7 @@ await my_adapter.Send.Using("bot1").To("group", "456").AtAll().Text("Announcemen
 - [Adapter Development Getting Started](getting-started.md) - Create adapter
 - [Adapter Core Concepts](core-concepts.md) - Understand adapter architecture
 - [Adapter Best Practices](best-practices.md) - Develop high-quality adapters
-- [Sending Method Naming Conventions](../../standards/send-type-naming.md) - Naming conventions
+- [Sending Method Specifications](../../standards/send-method-spec.md) - Sending method specifications
 
 
 ### 适配器开发最佳实践
