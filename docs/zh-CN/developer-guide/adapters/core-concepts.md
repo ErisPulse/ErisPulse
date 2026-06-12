@@ -333,30 +333,30 @@ class TelegramAdapter(BaseAdapter):
 
 #### 多账户配置
 
+`BotAccountConfig` 基类提供 `enabled` 和 `name` 字段。绝大多数适配器能从平台协议或登录响应中自动获取 bot_id，在事件转换时注入到账户配置中。：
+
 ```python
+from dataclasses import dataclass, field
 from ErisPulse.runtime.config_schema import BotAccountConfig
 
+# 大多数适配器：bot_id 运行时自动获取，无需配置
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    token: str = field(default="", metadata={"description": "Token", "required": True})
+
+# 如果登录时无法获取 bot_id，可以让用户在配置中填写
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
-    bot_id: str = field(default="", metadata={
-        "description": "机器人ID",
-        "required": True,
-        "webui": {"widget": "text", "group": "basic", "order": 1},
-    })
-    token: str = field(default="", metadata={
-        "description": "机器人Token",
-        "required": True,
-        "secret": True,
-        "webui": {"widget": "password", "group": "basic", "order": 2},
-    })
+    bot_id: str = field(default="", metadata={"description": "机器人ID", "required": True})
+    token: str = field(default="", metadata={"description": "Token", "required": True})
 
-class YunhuAdapter(BaseAdapter):
-    AccountConfigClass = YunhuBotConfig
+class MyAdapter(BaseAdapter):
+    AccountConfigClass = MyBotConfig
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            await self._connect(name, account)
-            await self.emit_meta("connect", account.bot_id, user_name=account.name)
+            user_id = await self._login(name, account)
+            await self.emit_meta("connect", user_id)
 ```
 
 #### metadata 约定
@@ -522,7 +522,7 @@ OneBot12 标准事件
     "platform": "平台名称",
     "self": {
         "platform": "平台名称",
-        "user_id": "机器人ID"
+        "user_id": "机器人ID"     # 必须与 bot_id 一致
     },
     "{platform}_raw": {...},       # 原始数据（必须）
     "{platform}_raw_type": "..."    # 原始类型（必须）
@@ -713,11 +713,11 @@ enabled = true
 # 使用 Using 方法指定账户
 my_adapter = adapter.get("myplatform")
 
+# 通过事件中的 self.user_id（推荐，最通用）
+await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
+
 # 通过账户名
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
-
-# 通过账户 ID
-await my_adapter.Send.Using("account_id").To("user", "123").Text("Hello")
 ```
 
 ### self.user_id 与 Using 的关系
