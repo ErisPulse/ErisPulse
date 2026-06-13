@@ -9,6 +9,7 @@ import sys
 import time
 import asyncio
 import subprocess
+import threading
 import runpy
 from argparse import ArgumentParser
 from rich.panel import Panel
@@ -41,11 +42,21 @@ class ReloadHandler(FileSystemEventHandler):
     """
 
     def __init__(self, loop: asyncio.AbstractEventLoop):
+        """
+        初始化热重载处理器
+
+        :param loop: [asyncio.AbstractEventLoop] 用于调度重载协程的事件循环
+        """
         super().__init__()
         self._loop = loop
         self._last_reload = 0.0
 
     def on_modified(self, event):
+        """
+        文件修改事件回调，对 .py 文件触发热重载
+
+        :param event: [FileSystemEvent] 文件系统事件
+        """
         now = time.time()
         if now - self._last_reload < 1.0:
             return
@@ -54,7 +65,13 @@ class ReloadHandler(FileSystemEventHandler):
             self._schedule_reload(event)
 
     def _schedule_reload(self, event):
+        """
+        在事件循环中调度 SDK 重启以执行热重载
+
+        :param event: [FileSystemEvent] 触发重载的文件系统事件
+        """
         async def _do_reload():
+            """执行 SDK 重启以完成热重载"""
             try:
                 from ... import sdk
 
@@ -77,6 +94,7 @@ class RunCommand(Command):
 
     name = "run"
     description = "运行主程序"
+    aliases = ["r"]
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
@@ -128,6 +146,11 @@ class RunCommand(Command):
 
         if reload_mode:
             async def _run():
+                """
+                设置文件监控并运行 SDK
+
+                :return: [None] 无返回值
+                """
                 from ... import sdk
 
                 loop = asyncio.get_running_loop()
@@ -162,6 +185,12 @@ class RunCommand(Command):
             pass
 
     def _run_script(self, script_path: str, reload_mode: bool):
+        """
+        运行指定的脚本文件，可选启用热重载
+
+        :param script_path: [str] 脚本文件路径
+        :param reload_mode: [bool] 是否启用热重载模式
+        """
         script_path_abs = os.path.abspath(script_path)
 
         if reload_mode:
@@ -175,30 +204,51 @@ class RunCommand(Command):
                 pass
 
     def _run_script_with_reload(self, script_path_abs: str):
+        """
+        以子进程方式运行脚本并监控文件变更以自动重启
+
+        进程的所有终止与重启均在主线程完成；文件监控线程仅负责发出重载信号，
+        避免双线程同时操作子进程导致的竞态。脚本进程因错误（如语法错误、异常）
+        退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启。
+
+        :param script_path_abs: [str] 脚本的绝对路径
+        """
         watch_dir = os.path.dirname(script_path_abs)
 
-        process = subprocess.Popen([sys.executable, script_path_abs])
-
         reload_state = {
-            "process": process,
+            "process": None,
             "last_reload": 0.0,
+            "changed_file": None,
+            "reload_event": threading.Event(),
         }
 
+        def _spawn():
+            """启动脚本子进程并记录到 reload_state"""
+            reload_state["process"] = subprocess.Popen(
+                [sys.executable, script_path_abs]
+            )
+
         class _ScriptReloadHandler(FileSystemEventHandler):
+            """
+            脚本重载信号处理器，监控 .py 文件变更并发出重载信号
+
+            仅设置重载事件，不直接操作子进程（终止/重启由主线程统一处理）。
+            """
+
             def on_modified(self, event):
+                """
+                文件修改事件回调，设置重载信号供主线程处理
+
+                :param event: [FileSystemEvent] 文件系统事件
+                """
                 now = time.time()
                 if now - reload_state["last_reload"] < 1.0:
                     return
-                if event.src_path.endswith(".py"):
-                    reload_state["last_reload"] = now
-                    console.print(
-                        f"检测到文件变更 ({os.path.basename(event.src_path)})，正在重启..."
-                    )
-                    reload_state["process"].terminate()
-                    reload_state["process"].wait()
-                    reload_state["process"] = subprocess.Popen(
-                        [sys.executable, script_path_abs]
-                    )
+                if not event.src_path.endswith(".py"):
+                    return
+                reload_state["last_reload"] = now
+                reload_state["changed_file"] = os.path.basename(event.src_path)
+                reload_state["reload_event"].set()
 
         observer = Observer()
         observer.schedule(_ScriptReloadHandler(), watch_dir, recursive=True)
@@ -213,19 +263,69 @@ class RunCommand(Command):
         )
 
         try:
+            _spawn()
             while True:
                 proc = reload_state["process"]
-                proc.wait()
-                time.sleep(0.3)
-                if reload_state["process"] is proc:
-                    break
+                # 等待进程退出或重载信号（带超时轮询，保证 Ctrl+C 可响应）
+                while proc.poll() is None and not reload_state["reload_event"].is_set():
+                    reload_state["reload_event"].wait(timeout=0.2)
+
+                if proc.poll() is None:
+                    # 进程仍在运行，由文件变更触发重载：先终止再重启
+                    console.print(
+                        f"[info]检测到文件变更 ([cmd]{reload_state['changed_file']}[/])，"
+                        "正在重启...[/]"
+                    )
+                    reload_state["reload_event"].clear()
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                        proc.wait()
+                    _spawn()
+                    continue
+
+                # 进程已退出。若无排队的重载请求，提示等待文件变更
+                if not reload_state["reload_event"].is_set():
+                    if proc.returncode == 0:
+                        console.print("[info]进程已正常退出，等待文件变更后重启[/]")
+                    else:
+                        console.print(
+                            f"[warning]进程异常退出（退出码 {proc.returncode}），"
+                            "修复后保存文件将自动重启[/]"
+                        )
+                    while not reload_state["reload_event"].wait(timeout=0.3):
+                        pass
+
+                # 收到重载请求，重启进程
+                reload_state["reload_event"].clear()
+                console.print(
+                    f"[info]检测到文件变更 ([cmd]{reload_state['changed_file']}[/])，"
+                    "正在重启...[/]"
+                )
+                _spawn()
         except KeyboardInterrupt:
-            reload_state["process"].terminate()
+            pass
         finally:
+            proc = reload_state["process"]
+            if proc is not None and proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
             observer.stop()
             observer.join()
 
     def _setup_watchdog(self, watch_dir: str, loop: asyncio.AbstractEventLoop):
+        """
+        配置 watchdog 监控指定目录的文件变更以实现热重载
+
+        :param watch_dir: [str] 要监控的目录路径
+        :param loop: [asyncio.AbstractEventLoop] 用于调度重载的事件循环
+        """
         if not os.path.exists(watch_dir):
             return
 

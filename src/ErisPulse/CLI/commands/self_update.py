@@ -20,10 +20,20 @@ from ..base import Command
 
 
 class SelfUpdateCommand(Command):
+    """
+    self-update 命令
+
+    更新 ErisPulse SDK 本身
+    """
+
     name = "self-update"
     description = "更新 ErisPulse SDK 本身"
+    aliases = ["su", "update"]
 
     def __init__(self):
+        """
+        初始化 SelfUpdateCommand，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -34,8 +44,12 @@ class SelfUpdateCommand(Command):
         parser.add_argument(
             "--force", "-f", action="store_true", help="强制更新，即使版本相同"
         )
+        parser.add_argument(
+            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 更新"
+        )
 
     def execute(self, args):
+        self.package_manager.no_uv = getattr(args, "no_uv", False)
         current_version = self.package_manager.get_installed_version()
         console.print(f"  当前版本: [bold]{current_version}[/]")
 
@@ -70,6 +84,15 @@ class SelfUpdateCommand(Command):
     def _select_target_version(
         self, versions, specified_version: str = None, include_pre: bool = False
     ) -> str:
+        """
+        交互式选择目标更新版本
+
+        :param versions: [list] 可用版本信息列表
+        :param specified_version: [str] 指定的版本号 (默认: None)
+        :param include_pre: [bool] 是否包含预发布版本 (默认: False)
+
+        :return: [str] 选定的目标版本号，取消时返回 None
+        """
         if specified_version:
             if not any(v["version"] == specified_version for v in versions):
                 console.print(f"[warning]  版本 {specified_version} 可能不存在[/]")
@@ -146,6 +169,14 @@ class SelfUpdateCommand(Command):
             return selected
 
     def _select_from_version_list(self, versions, include_pre: bool = False) -> str:
+        """
+        以分页列表形式展示版本并供用户选择
+
+        :param versions: [list] 可用版本信息列表
+        :param include_pre: [bool] 是否包含预发布版本 (默认: False)
+
+        :return: [str] 选定的目标版本号，返回时返回 None
+        """
         from ..utils.display import _page_size
 
         filtered = [v for v in versions if include_pre or not v["pre_release"]]
@@ -206,6 +237,14 @@ class SelfUpdateCommand(Command):
                 console.print("[warning]  无效的版本序号或版本号[/]")
 
     def _parse_version_input(self, user_input: str, version_list: list) -> str:
+        """
+        解析用户输入的版本序号或版本号字符串
+
+        :param user_input: [str] 用户输入内容
+        :param version_list: [list] 可用版本信息列表
+
+        :return: [str] 匹配到的版本号，无匹配时返回 None
+        """
         text = user_input.strip()
         if not text:
             return None
