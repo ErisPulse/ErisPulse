@@ -26,6 +26,36 @@ Run 命令实现
 > 3. 内置 1 秒防抖，避免短时间内多次重载
 
 
+#### 方法列表
+
+
+##### `__init__(loop: asyncio.AbstractEventLoop)`
+
+初始化热重载处理器
+
+- **loop** (`asyncio.AbstractEventLoop`): 用于调度重载协程的事件循环
+
+---
+
+
+##### `on_modified(event)`
+
+文件修改事件回调，对 .py 文件触发热重载
+
+- **event** (`FileSystemEvent`): 文件系统事件
+
+---
+
+
+##### `_schedule_reload(event)`
+
+在事件循环中调度 SDK 重启以执行热重载
+
+- **event** (`FileSystemEvent`): 触发重载的文件系统事件
+
+---
+
+
 ### `class RunCommand(Command)`
 
 Run 命令
@@ -42,6 +72,39 @@ Run 命令
 
 以子进程方式运行 SDK，支持硬重启：当 SDK 进程以特定退出码退出时，
 自动重新启动新进程，确保资源完全释放。
+
+---
+
+
+##### `_run_script(script_path: str, reload_mode: bool)`
+
+运行指定的脚本文件，可选启用热重载
+
+- **script_path** (`str`): 脚本文件路径
+- **reload_mode** (`bool`): 是否启用热重载模式
+
+---
+
+
+##### `_run_script_with_reload(script_path_abs: str)`
+
+以子进程方式运行脚本并监控文件变更以自动重启
+
+进程的所有终止与重启均在主线程完成；文件监控线程仅负责发出重载信号，
+避免双线程同时操作子进程导致的竞态。脚本进程因错误（如语法错误、异常）
+退出时不会终止重载循环，而是等待下一次文件变更后再尝试重启。
+
+- **script_path_abs** (`str`): 脚本的绝对路径
+
+---
+
+
+##### `_setup_watchdog(watch_dir: str, loop: asyncio.AbstractEventLoop)`
+
+配置 watchdog 监控指定目录的文件变更以实现热重载
+
+- **watch_dir** (`str`): 要监控的目录路径
+- **loop** (`asyncio.AbstractEventLoop`): 用于调度重载的事件循环
 
 ---
 

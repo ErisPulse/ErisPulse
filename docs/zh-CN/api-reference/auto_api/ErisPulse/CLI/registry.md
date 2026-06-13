@@ -25,6 +25,7 @@ CLI 命令注册器
 > 2. 支持命令的动态注册和查找
 
 :ivar _commands: 已注册的命令字典 {name: Command}
+:ivar _aliases: 命令别名到命令名的映射 {alias: command_name}
 
 
 #### 方法列表
@@ -47,11 +48,21 @@ CLI 命令注册器
 ---
 
 
+##### `resolve(name: str)`
+
+将命令名或别名解析为规范命令名
+
+:param name: 命令名或别名
+**返回值** (`str`): 规范命令名，未找到返回 None
+
+---
+
+
 ##### `get(name: str)`
 
-获取命令
+获取命令（支持通过别名查找）
 
-:param name: 命令名称
+:param name: 命令名称或别名
 :return: 命令实例，未找到返回 None
 
 ---
@@ -84,11 +95,20 @@ CLI 命令注册器
 ---
 
 
+##### `list_aliases()`
+
+列出所有命令别名映射
+
+**返回值** (`dict`): 别名到规范命令名的映射 {alias: command_name}
+
+---
+
+
 ##### `exists(name: str)`
 
-检查命令是否存在
+检查命令是否存在（支持别名）
 
-:param name: 命令名称
+:param name: 命令名称或别名
 :return: 命令是否存在
 
 ---
