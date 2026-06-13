@@ -23,7 +23,8 @@ CLI 命令基类
 > **提示**
 > 1. 每个命令类必须实现 add_arguments 和 execute 方法
 > 2. name 和 description 为类属性，必须在子类中定义
-> 3. execute 方法接收解析后的 args 对象
+> 3. aliases 为可选类属性，用于定义命令的简化形式
+> 4. execute 方法接收解析后的 args 对象
 
 
 #### 方法列表
