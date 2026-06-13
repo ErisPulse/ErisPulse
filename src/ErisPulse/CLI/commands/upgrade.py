@@ -13,10 +13,20 @@ from ..base import Command
 
 
 class UpgradeCommand(Command):
+    """
+    upgrade 命令
+
+    升级组件（不指定包名则升级所有）
+    """
+
     name = "upgrade"
     description = "升级组件（不指定包名则升级所有）"
+    aliases = ["up"]
 
     def __init__(self):
+        """
+        初始化升级命令，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -27,8 +37,12 @@ class UpgradeCommand(Command):
             "--force", "-f", action="store_true", help="跳过确认直接升级"
         )
         parser.add_argument("--pre", action="store_true", help="包含预发布版本")
+        parser.add_argument(
+            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 升级"
+        )
 
     def execute(self, args):
+        self.package_manager.no_uv = getattr(args, "no_uv", False)
         if args.package:
             # 升级指定包
             success = self.package_manager.upgrade_package(args.package, pre=args.pre)

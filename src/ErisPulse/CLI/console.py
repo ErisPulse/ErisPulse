@@ -1,4 +1,14 @@
-import sys
+"""
+CLI 控制台模块
+
+提供全局 Rich 控制台实例、主题样式与启动 Banner。
+
+{!--< tips >!--}
+1. 所有 CLI 输出统一使用全局 `console` 实例，保证样式一致
+2. 通过 `print_banner()` 输出一次性 Banner（仅首次生效）
+{!--< /tips >!--}
+"""
+
 from rich.console import Console
 from rich.theme import Theme
 from rich.highlighter import RegexHighlighter
@@ -30,6 +40,11 @@ _banner_printed = False
 
 
 def print_banner():
+    """
+    输出 ErisPulse 启动 Banner
+
+    根据终端宽度选择完整版或精简版 Banner，且仅在首次调用时输出。
+    """
     global _banner_printed
     if _banner_printed:
         return

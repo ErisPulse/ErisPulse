@@ -17,10 +17,20 @@ from ..base import Command
 
 
 class ListRemoteCommand(Command):
+    """
+    list-remote 命令
+
+    列出远程可用的组件
+    """
+
     name = "list-remote"
     description = "列出远程可用的组件"
+    aliases = ["lr"]
 
     def __init__(self):
+        """
+        初始化 ListRemoteCommand，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -54,6 +64,14 @@ class ListRemoteCommand(Command):
         console.print(f"[dim]  共 {total} 个远程组件[/]")
 
     def _print_group(self, title: str, items: dict, style: str, name_col: str):
+        """
+        以表格形式打印一组远程组件
+
+        :param title: [str] 分组标题
+        :param items: [dict] 组件信息字典
+        :param style: [str] 名称列的显示样式
+        :param name_col: [str] 名称列的列标题
+        """
         if not items:
             return
 

@@ -67,7 +67,7 @@
 > 开发版本
 
 **版本摘要**
-2.5.0 定位为「生产就绪」版本，新增健康检查/就绪探针、结构化日志、优雅关闭超时和 CLI 搜索安装功能。
+2.5.0 定位为「生产就绪」版本，新增健康检查/就绪探针、结构化日志、优雅关闭超时等
 
 ### 新增
 - @wsu2059q
@@ -97,6 +97,21 @@
     - `wait_reply(prompt, ..., method="Text")` 支持指定发送方法
   - `Core/Event/wrapper.py` 新增 `Event.__getattribute__`，平台方法优先于内置方法生效
   - `Core/Event/wrapper.py` 新增 `_builtin_wait_reply` / `_builtin_confirm` / `_builtin_choose` / `_builtin_collect` 模块级函数，供覆写方回退调用
+  - `CLI` 命令别名体系，支持短命令快速调用：
+    - `create`→`c`/`new`、`install`→`i`/`add`、`uninstall`→`rm`/`remove`、`upgrade`→`up`、`self-update`→`su`/`update`、`list`→`l`/`ls`、`list-remote`→`lr`、`run`→`r`、`init`→`ini`
+    - `Command` 基类新增 `aliases` 类属性；命令注册表新增 `resolve()`/`list_aliases()` 别名解析与冲突保护（首注册优先）
+  - `CLI/utils/package_manager.py` 新增 `--no-uv` 标志（install/uninstall/upgrade/self-update/init），强制使用 pip；同时支持 `ERISPULSE_NO_UV` 环境变量
+  - `CLI/commands/init.py` 新增 `--here` 标志与交互提示，支持在当前目录初始化项目
+  - `CLI/utils/display.py` 新增 `prompt_validated()` 输入校验循环辅助方法
+  - 新增 CLI 单元测试套件（`tests/unit/test_unit_cli.py`，61 个测试），覆盖命令注册/发现、参数解析、命令路由与别名体系
+
+### 优化
+- @wsu2059q
+  - `CLI/utils/package_manager.py` 安装路由优化：
+    - 优先使用独立 uv 二进制（`shutil.which("uv")`），其次回退 `python -m uv`，最后回退 pip
+    - `_get_target_python()` 解析 `VIRTUAL_ENV`，确保依赖安装到活动虚拟环境
+  - `CLI/commands/{create,init}.py` 校验失败时保留输入重新提示，而非 `sys.exit` 直接退出
+  - `CLI` 全系统补充符合文档字符串规范的注释
 
 ### 变更
 - @wsu2059q
@@ -117,6 +132,11 @@
 ### 修复
 - @wsu2059q
   - 修复 HTTP 客户端请求后响应体未预读导致的连接泄漏问题
+  - `CLI/commands/run.py` 重构热重载机制，修复多个问题：
+    - 进程因错误（语法错误/异常）退出时不再终止整个 CLI，改为等待下次文件变更后自动重启
+    - 修复正常重载（进程运行中保存文件）时误报「进程异常退出」的竞态：文件监控线程不再直接操作子进程，仅发出重载信号，终止/重启统一由主线程处理
+    - 修复重载等待状态下 Ctrl+C 无响应（事件等待无超时阻塞信号处理），改为轮询等待
+  - 修复 `tests/unit/test_unit_client.py` 陈旧测试（响应体 `read` 未设为 `AsyncMock`、`close` 行为断言与实现不符）
 
 ---
 

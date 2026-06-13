@@ -14,16 +14,30 @@ from ..base import Command
 
 
 class UninstallCommand(Command):
+    """
+    uninstall 命令
+
+    卸载模块/适配器包
+    """
+
     name = "uninstall"
     description = "卸载模块/适配器包"
+    aliases = ["rm", "remove"]
 
     def __init__(self):
+        """
+        初始化卸载命令，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("package", nargs="*", help="要卸载的包名（可指定多个）")
+        parser.add_argument(
+            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 卸载"
+        )
 
     def execute(self, args):
+        self.package_manager.no_uv = getattr(args, "no_uv", False)
         if args.package:
             success = self.package_manager.uninstall_package(args.package)
             if not success:
@@ -32,6 +46,9 @@ class UninstallCommand(Command):
             self._interactive_uninstall()
 
     def _interactive_uninstall(self):
+        """
+        交互式卸载向导，展示已安装的适配器与模块并卸载所选包
+        """
         installed = self.package_manager.get_installed_packages()
 
         all_packages = []

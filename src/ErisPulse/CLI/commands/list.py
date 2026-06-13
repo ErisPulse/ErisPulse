@@ -16,10 +16,20 @@ from ..base import Command
 
 
 class ListCommand(Command):
+    """
+    list 命令
+
+    列出已安装的组件
+    """
+
     name = "list"
     description = "列出已安装的组件"
+    aliases = ["l", "ls"]
 
     def __init__(self):
+        """
+        初始化 ListCommand，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -45,6 +55,12 @@ class ListCommand(Command):
             self._print_installed_packages(pkg_type, outdated_only)
 
     def _print_installed_packages(self, pkg_type: str, outdated_only: bool = False):
+        """
+        以表格形式打印已安装的模块或适配器
+
+        :param pkg_type: [str] 组件类型 (modules 或 adapters)
+        :param outdated_only: [bool] 是否仅显示可升级的包 (默认: False)
+        """
         installed = self.package_manager.get_installed_packages()
 
         if pkg_type == "modules" and installed["modules"]:
@@ -114,6 +130,14 @@ class ListCommand(Command):
             console.print(f"[dim]  没有{pkg_type}[/]")
 
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
+        """
+        判断指定包是否存在较新的远程版本
+
+        :param package_name: [str] 包名
+        :param current_version: [str] 当前已安装的版本号
+
+        :return: [bool] 存在更新版本返回 True，否则返回 False
+        """
         remote_packages = asyncio.run(self.package_manager.get_remote_packages())
         for module_info in remote_packages["modules"].values():
             if module_info["package"] == package_name:
