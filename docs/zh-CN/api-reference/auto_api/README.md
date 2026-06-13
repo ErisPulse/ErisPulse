@@ -20,9 +20,9 @@
 ## 统计信息
 
 - **模块总数**: 65
-- **类总数**: 69（包括 5 个嵌套类）
-- **函数总数**: 57
-- **方法总数**: 681
+- **类总数**: 76（包括 5 个嵌套类）
+- **函数总数**: 72
+- **方法总数**: 756
 
 ---
 
@@ -51,57 +51,57 @@
 
 ### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 4 个方法 | ⚙️ 3 个函数
 
 
 ### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 7 个方法 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
 
-📦 1 个类 | 🔧 1 个方法
+📦 1 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.list](ErisPulse/CLI/commands/list.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 3 个方法
 
 
 ### [ErisPulse.CLI.commands.list_remote](ErisPulse/CLI/commands/list_remote.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 2 个方法
 
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-📦 2 个类 | 🔧 1 个方法
+📦 2 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 4 个方法
 
 
 ### [ErisPulse.CLI.commands.uninstall](ErisPulse/CLI/commands/uninstall.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 2 个方法
 
 
 ### [ErisPulse.CLI.commands.upgrade](ErisPulse/CLI/commands/upgrade.md)
 
-📄 模块文档
+📦 1 个类 | 🔧 1 个方法
 
 
 ### [ErisPulse.CLI.console](ErisPulse/CLI/console.md)
 
-📦 1 个类
+📦 1 个类 | ⚙️ 1 个函数
 
 
 ### [ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)
 
-📦 1 个类 | 🔧 7 个方法
+📦 1 个类 | 🔧 9 个方法
 
 
 ### [ErisPulse.CLI.utils.__init__](ErisPulse/CLI/utils/__init__.md)
@@ -111,12 +111,12 @@
 
 ### [ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)
 
-📄 模块文档
+⚙️ 10 个函数
 
 
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
-📦 1 个类 | 🔧 1 个方法
+📦 1 个类 | 🔧 39 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
