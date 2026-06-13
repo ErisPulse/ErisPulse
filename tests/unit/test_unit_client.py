@@ -360,8 +360,8 @@ class TestHttpClientClose:
 
         await c.close()
         mock_session.close.assert_not_called()
-        # Session 仍保留引用但已关闭，close() 只在需要时清理
-        assert c._session is mock_session
+        # close() 始终清理 session 引用（已关闭的 session 不会再次 close）
+        assert c._session is None
 
     @pytest.mark.asyncio
     async def test_close_with_no_session(self):
@@ -434,6 +434,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
         cm = AsyncMock()
         cm.__aenter__ = AsyncMock(return_value=mock_resp)
         cm.__aexit__ = AsyncMock(return_value=False)
@@ -475,6 +476,7 @@ class TestHttpClientRequest:
                 raise ConnectionError("temporary failure")
             mock_resp = MagicMock()
             mock_resp.status = 200
+            mock_resp.read = AsyncMock(return_value=b"")
             return mock_resp
 
         mock_session = MagicMock()
@@ -510,6 +512,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
 
         cm = AsyncMock()
         cm.__aenter__ = AsyncMock(return_value=mock_resp)
@@ -538,6 +541,7 @@ class TestHttpClientRequest:
                 raise ConnectionError("once")
             mock_resp = MagicMock()
             mock_resp.status = 200
+            mock_resp.read = AsyncMock(return_value=b"")
             return mock_resp
 
         mock_session = MagicMock()
@@ -560,6 +564,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
 
         async def capture_request(*args, **kwargs):
             captured_kwargs.update(kwargs)
@@ -598,6 +603,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
         cm = AsyncMock()
         cm.__aenter__ = AsyncMock(return_value=mock_resp)
         cm.__aexit__ = AsyncMock(return_value=False)
@@ -624,6 +630,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 500
+        mock_resp.read = AsyncMock(return_value=b"")
         cm = AsyncMock()
         cm.__aenter__ = AsyncMock(return_value=mock_resp)
         cm.__aexit__ = AsyncMock(return_value=False)
@@ -646,6 +653,7 @@ class TestHttpClientRequest:
 
         mock_resp = MagicMock()
         mock_resp.status = 200
+        mock_resp.read = AsyncMock(return_value=b"")
 
         async def capture(*args, **kwargs):
             captured.update(kwargs)

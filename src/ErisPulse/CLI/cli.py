@@ -16,7 +16,6 @@ from rich.text import Text
 from .console import console, print_banner
 from .registry import CommandRegistry
 from .base import Command
-from .utils.display import section_header
 
 
 class CLI:
@@ -117,9 +116,13 @@ class CLI:
         """注册所有内置命令（通过自动发现）"""
         self._auto_discover_commands()
 
-        # 添加所有命令的参数
+        # 添加所有命令的参数（同时注册命令别名）
         for command in self.registry.get_all():
-            parser = self.subparsers.add_parser(command.name, help=command.description)
+            parser = self.subparsers.add_parser(
+                command.name,
+                aliases=getattr(command, "aliases", None) or [],
+                help=command.description,
+            )
             command.add_arguments(parser)
 
     def _print_version(self):
@@ -158,16 +161,19 @@ class CLI:
             self.parser.print_help()
             return
 
-        if unknown and args.command not in ("install", "create"):
+        # 将别名解析为规范命令名
+        canonical = self.registry.resolve(args.command) or args.command
+
+        if unknown and canonical not in ("install", "create"):
             console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
 
         try:
             # 执行命令
-            command = self.registry.get(args.command)
+            command = self.registry.get(canonical)
             if command:
                 console.print()
                 console.print(
-                    Text(f"  ── ", style="dim"),
+                    Text("  ── ", style="dim"),
                     Text(command.description, style="bold"),
                     sep="",
                 )
