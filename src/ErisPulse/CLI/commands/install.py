@@ -18,10 +18,20 @@ from ..base import Command
 
 
 class InstallCommand(Command):
+    """
+    install 命令
+
+    安装模块/适配器包，支持交互式与批量安装
+    """
+
     name = "install"
     description = "安装模块/适配器包"
+    aliases = ["i", "add"]
 
     def __init__(self):
+        """
+        初始化安装命令，创建包管理器实例
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -97,8 +107,18 @@ class InstallCommand(Command):
         parser.add_argument(
             "--break-system-packages", action="store_true", help="允许覆盖系统管理的包"
         )
+        parser.add_argument(
+            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 安装"
+        )
 
     def _build_extra_pip_args(self, args) -> list:
+        """
+        根据解析后的命令行参数构建额外的 pip 安装参数列表
+
+        :param args: [Namespace] 解析后的命令行参数
+
+        :return: [list] 额外的 pip 命令行参数列表
+        """
         extra = []
         if getattr(args, "user", False):
             extra.append("--user")
@@ -153,6 +173,7 @@ class InstallCommand(Command):
         return extra
 
     def execute(self, args):
+        self.package_manager.no_uv = getattr(args, "no_uv", False)
         editable_paths = getattr(args, "editable", None)
         requirement_file = getattr(args, "requirement", None)
 
@@ -189,6 +210,12 @@ class InstallCommand(Command):
             self._interactive_install(args.upgrade, args.pre)
 
     def _interactive_install(self, upgrade: bool = False, pre: bool = False):
+        """
+        交互式安装向导，提供适配器、模块、搜索与自定义安装选项
+
+        :param upgrade: [bool] 是否升级已安装的包 (默认: False)
+        :param pre: [bool] 是否包含预发布版本 (默认: False)
+        """
         with console.status("[bold green]正在获取远程包列表...", spinner="dots"):
             remote_packages = asyncio.run(self.package_manager.get_remote_packages())
 
@@ -221,6 +248,13 @@ class InstallCommand(Command):
                 break
 
     def _install_adapters(self, remote_packages: dict, upgrade: bool, pre: bool):
+        """
+        交互式选择并安装适配器
+
+        :param remote_packages: [dict] 远程包列表
+        :param upgrade: [bool] 是否升级已安装的包
+        :param pre: [bool] 是否包含预发布版本
+        """
         adapters = remote_packages.get("adapters", {})
         if not adapters:
             console.print("[dim]  没有可用的适配器[/]")
@@ -258,6 +292,13 @@ class InstallCommand(Command):
             )
 
     def _install_modules(self, remote_packages: dict, upgrade: bool, pre: bool):
+        """
+        交互式选择并安装模块
+
+        :param remote_packages: [dict] 远程包列表
+        :param upgrade: [bool] 是否升级已安装的包
+        :param pre: [bool] 是否包含预发布版本
+        """
         modules = remote_packages.get("modules", {})
         if not modules:
             console.print("[dim]  没有可用的模块[/]")
@@ -403,6 +444,12 @@ class InstallCommand(Command):
             self.package_manager.install_package(selected, upgrade=upgrade, pre=pre)
 
     def _install_custom(self, upgrade: bool, pre: bool):
+        """
+        自定义安装，提示用户输入包名并安装
+
+        :param upgrade: [bool] 是否升级已安装的包
+        :param pre: [bool] 是否包含预发布版本
+        """
         package_name = Prompt.ask("\n  [cyan]请输入要安装的包名（或 q 返回）[/]")
         if package_name.lower() == "q":
             return

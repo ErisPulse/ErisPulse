@@ -14,7 +14,7 @@ from rich.text import Text
 
 from ..console import console
 from ..base import Command
-from ..utils.display import section_header
+from ..utils.display import section_header, prompt_validated
 
 
 _LICENSE_TEMPLATE = """MIT License
@@ -474,6 +474,12 @@ token = ""
 
 
 def _camel_to_snake(name: str) -> str:
+    """
+    将 PascalCase/CamelCase 名称转换为 snake_case
+
+    :param name: [str] 原始名称
+    :return: [str] 转换后的 snake_case 名称
+    """
     import re
 
     s = re.sub(r"(?<=[a-z0-9])([A-Z])", r"_\1", name)
@@ -482,10 +488,24 @@ def _camel_to_snake(name: str) -> str:
 
 
 def _to_converter_name(name: str) -> str:
+    """
+    根据适配器名称生成转换器类名
+
+    :param name: [str] 适配器名称
+    :return: [str] 转换器类名（名称后追加 Converter）
+    """
     return f"{name}Converter"
 
 
 def _validate_name(name: str) -> bool:
+    """
+    校验项目/模块/适配器名称是否合法
+
+    名称必须以字母开头，且只能包含字母、数字和下划线。
+
+    :param name: [str] 待校验的名称
+    :return: [bool] 合法返回 True，否则 False
+    """
     if not name:
         return False
     if not name[0].isalpha():
@@ -494,8 +514,15 @@ def _validate_name(name: str) -> bool:
 
 
 class CreateCommand(Command):
+    """
+    create 命令
+
+    脚手架工具，快速创建 Module / Adapter 项目模板
+    """
+
     name = "create"
     description = "创建 Module / Adapter 项目脚手架"
+    aliases = ["c", "new"]
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
@@ -521,14 +548,16 @@ class CreateCommand(Command):
         if not create_type:
             create_type = self._interactive_select_type()
 
+        default_name = "MyModule" if create_type == "module" else "MyAdapter"
         name = args.name
-        if not name:
-            default_name = "MyModule" if create_type == "module" else "MyAdapter"
-            name = Prompt.ask("  名称 (PascalCase)", default=default_name)
-
-        if not _validate_name(name):
-            console.print("[error]  名称必须以字母开头，只能包含字母、数字和下划线")
-            sys.exit(1)
+        # 名称校验：非法时保留输入并重新提示，而非直接退出
+        if not (name and _validate_name(name)):
+            name = prompt_validated(
+                "  名称 (PascalCase)",
+                default=name or default_name,
+                validate=_validate_name,
+                error_msg="名称必须以字母开头，只能包含字母、数字和下划线",
+            )
 
         if create_type == "module":
             self._create_module(args, name)
@@ -536,6 +565,11 @@ class CreateCommand(Command):
             self._create_adapter(args, name)
 
     def _interactive_select_type(self) -> str:
+        """
+        交互式选择创建类型（Module 或 Adapter）
+
+        :return: [str] 返回 "module" 或 "adapter"
+        """
         section_header("选择创建类型")
         console.print("    [bold]1.[/] Module   [dim]— 自定义功能模块[/]")
         console.print("    [bold]2.[/] Adapter  [dim]— 平台适配器[/]")
@@ -547,12 +581,28 @@ class CreateCommand(Command):
     def _ask_missing(
         self, args, field_name: str, prompt_text: str, default: str = ""
     ) -> str:
+        """
+        获取参数值，若缺失则交互式提示输入
+
+        :param args: [Any] 解析后的命令参数对象
+        :param field_name: [str] 参数字段名
+        :param prompt_text: [str] 提示文本
+        :param default: [str] 默认值 (默认: "")
+        :return: [str] 获取到的参数值
+        """
         val = getattr(args, field_name, None) or ""
         if not val:
             val = Prompt.ask(f"  {prompt_text}", default=default)
         return val
 
     def _create_module(self, args, name: str):
+        """
+        创建 Module 项目脚手架
+
+        :param args: [Any] 解析后的命令参数对象
+        :param name: [str] 模块名称
+        :return: [None] 无返回值
+        """
         description = self._ask_missing(
             args, "description", "模块描述", f"一个非常哇塞的{name}模块"
         )
@@ -604,24 +654,31 @@ class CreateCommand(Command):
             console.print()
             console.print(Text("  项目结构:", style="bold"))
             console.print(f"    {name}/")
-            console.print(f"    ├── pyproject.toml")
-            console.print(f"    ├── LICENSE")
-            console.print(f"    ├── README.md")
+            console.print("    ├── pyproject.toml")
+            console.print("    ├── LICENSE")
+            console.print("    ├── README.md")
             console.print(f"    └── {name}/")
-            console.print(f"        ├── __init__.py")
-            console.print(f"        └── Core.py")
+            console.print("        ├── __init__.py")
+            console.print("        └── Core.py")
             console.print()
             console.print(Text("  接下来:", style="bold"))
             console.print(f"    · cd {name}")
             console.print(f"    · 编辑 {name}/Core.py 实现模块逻辑")
-            console.print(f"    · pip install -e .  (开发模式安装)")
-            console.print(f"    · epsdk run  (运行测试)")
+            console.print("    · pip install -e .  (开发模式安装)")
+            console.print("    · epsdk run  (运行测试)")
 
         except Exception as e:
             console.print(f"[error]  创建失败: {e}")
             sys.exit(1)
 
     def _create_adapter(self, args, name: str):
+        """
+        创建 Adapter 项目脚手架
+
+        :param args: [Any] 解析后的命令参数对象
+        :param name: [str] 适配器名称
+        :return: [None] 无返回值
+        """
         description = self._ask_missing(
             args, "description", "适配器描述", f"{name}平台适配器"
         )
@@ -690,20 +747,20 @@ class CreateCommand(Command):
             console.print()
             console.print(Text("  项目结构:", style="bold"))
             console.print(f"    {name}/")
-            console.print(f"    ├── pyproject.toml")
-            console.print(f"    ├── LICENSE")
-            console.print(f"    ├── README.md")
+            console.print("    ├── pyproject.toml")
+            console.print("    ├── LICENSE")
+            console.print("    ├── README.md")
             console.print(f"    └── {name}/")
-            console.print(f"        ├── __init__.py")
-            console.print(f"        ├── Core.py")
-            console.print(f"        └── Converter.py")
+            console.print("        ├── __init__.py")
+            console.print("        ├── Core.py")
+            console.print("        └── Converter.py")
             console.print()
             console.print(Text("  接下来:", style="bold"))
             console.print(f"    · cd {name}")
             console.print(f"    · 编辑 {name}/Core.py 实现适配器逻辑")
             console.print(f"    · 编辑 {name}/Converter.py 实现消息格式转换")
-            console.print(f"    · pip install -e .  (开发模式安装)")
-            console.print(f"    · epsdk run  (运行测试)")
+            console.print("    · pip install -e .  (开发模式安装)")
+            console.print("    · epsdk run  (运行测试)")
 
         except Exception as e:
             console.print(f"[error]  创建失败: {e}")

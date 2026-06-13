@@ -6,25 +6,41 @@ Init 命令实现
 
 import asyncio
 import concurrent.futures
-import subprocess
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Confirm, IntPrompt
 from rich.text import Text
 
 from ..console import console
 from ..utils import PackageManager
-from ..utils.display import section_header, _input
+from ..utils.display import section_header, _input, prompt_validated
 from ..base import Command
 
 
+def _validate_project_name(name: str) -> bool:
+    """项目名称校验：仅允许字母、数字、下划线、连字符和点号"""
+    return bool(name) and all(
+        c.isalnum() or c in ("_", "-", ".") for c in name
+    )
+
+
 class InitCommand(Command):
+    """
+    init 命令
+
+    交互式初始化 ErisPulse 项目
+    """
+
     name = "init"
     description = "初始化 ErisPulse 项目"
+    aliases = ["ini"]
 
     def __init__(self):
+        """
+        初始化 InitCommand 实例，创建包管理器
+        """
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
@@ -35,12 +51,29 @@ class InitCommand(Command):
         parser.add_argument(
             "--force", "-f", action="store_true", help="强制覆盖现有配置"
         )
+        parser.add_argument(
+            "--here",
+            action="store_true",
+            help="在当前目录初始化，而非创建新子目录",
+        )
+        parser.add_argument(
+            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 安装"
+        )
 
     def execute(self, args):
-        if args.quick and args.project_name:
-            success = self._init_project(args.project_name, [])
+        self.no_uv = getattr(args, "no_uv", False)
+        here = getattr(args, "here", False)
+
+        if args.quick:
+            if here:
+                name = args.project_name or Path(".").resolve().name
+                success = self._init_project(name, [], in_current_dir=True)
+            elif args.project_name:
+                success = self._init_project(args.project_name, [])
+            else:
+                success = self._interactive_init(args.project_name, args.force, here)
         else:
-            success = self._interactive_init(args.project_name, args.force)
+            success = self._interactive_init(args.project_name, args.force, here)
 
         if success:
             console.print("[success]  项目初始化完成[/]")
@@ -48,17 +81,33 @@ class InitCommand(Command):
             console.print("[error]  项目初始化失败[/]")
             sys.exit(1)
 
-    def _init_project(self, project_name: str, adapter_list: list = None) -> bool:
-        if not project_name or not all(
-            c.isalnum() or c in ("_", "-", ".") for c in project_name
-        ):
-            console.print(
-                "[error]  项目名称只能包含字母、数字、下划线、连字符和点号[/]"
-            )
-            return False
+    def _init_project(
+        self,
+        project_name: str,
+        adapter_list: list = None,
+        in_current_dir: bool = False,
+    ) -> bool:
+        """
+        创建项目目录结构并生成配置文件
 
-        try:
+        :param project_name: [str] 项目名称
+        :param adapter_list: [list] 适配器名称列表 (默认: None)
+        :param in_current_dir: [bool] 是否在当前目录初始化 (默认: False)
+        :return: [bool] 初始化成功返回 True，失败返回 False
+        """
+        if in_current_dir:
+            project_path = Path(".")
+            display_name = project_name or Path(".").resolve().name
+        else:
+            if not _validate_project_name(project_name):
+                console.print(
+                    "[error]  项目名称只能包含字母、数字、下划线、连字符和点号[/]"
+                )
+                return False
+
             project_path = Path(project_name)
+            display_name = project_name
+
             if project_path.exists():
                 if project_path.is_dir():
                     console.print(f"[warning]  目录 {project_name} 已存在[/]")
@@ -69,6 +118,7 @@ class InitCommand(Command):
                 project_path.mkdir()
                 console.print(f"[success]  创建项目目录: {project_name}[/]")
 
+        try:
             for dir_name in ["config", "logs"]:
                 (project_path / dir_name).mkdir(exist_ok=True)
 
@@ -95,7 +145,7 @@ class InitCommand(Command):
             main_file = project_path / "main.py"
             if not main_file.exists():
                 with open(main_file, "w", encoding="utf-8") as f:
-                    f.write(f'"""\n{project_name} 主程序\n\n')
+                    f.write(f'"""\n{display_name} 主程序\n\n')
                     f.write("这是 ErisPulse 自动生成的主程序文件\n")
                     f.write('"""\n\n')
                     f.write("import asyncio\n")
@@ -105,11 +155,15 @@ class InitCommand(Command):
                     f.write('if __name__ == "__main__":\n')
                     f.write("    asyncio.run(main())\n")
 
-            console.print(f"[success]  项目 {project_name} 初始化成功[/]")
+            console.print(f"[success]  项目 {display_name} 初始化成功[/]")
             console.print()
             console.print(Text("  接下来:", style="bold"))
-            console.print(f"    · 编辑 {project_name}/config/config.toml 配置适配器")
-            console.print(f"    · cd {project_name} && epsdk run")
+            if in_current_dir:
+                console.print("    · 编辑 config/config.toml 配置适配器")
+                console.print("    · epsdk run")
+            else:
+                console.print(f"    · 编辑 {display_name}/config/config.toml 配置适配器")
+                console.print(f"    · cd {display_name} && epsdk run")
             return True
 
         except Exception as e:
@@ -118,6 +172,12 @@ class InitCommand(Command):
 
     @staticmethod
     def _get_full_example_config(adapter_list=None):
+        """
+        生成完整的配置示例文本
+
+        :param adapter_list: [list] 适配器名称列表 (默认: None)
+        :return: [str] 完整配置示例字符串
+        """
         lines = [
             "# ErisPulse 完整配置示例",
             "# 此文件展示所有可用配置项及其默认值",
@@ -207,6 +267,11 @@ class InitCommand(Command):
         return "\n".join(lines)
 
     async def _fetch_available_adapters(self):
+        """
+        获取可用的适配器列表
+
+        :return: [dict] 适配器名称到描述的映射，获取失败时返回内置默认列表
+        """
         try:
             remote_packages = await self.package_manager.get_remote_packages()
             adapters = {}
@@ -224,20 +289,62 @@ class InitCommand(Command):
             "email": "邮件适配器",
         }
 
-    def _interactive_init(self, project_name: str = None, force: bool = False) -> bool:
+    def _interactive_init(
+        self, project_name: str = None, force: bool = False, here: bool = False
+    ) -> bool:
+        """
+        交互式初始化项目，引导用户配置项目位置及基本参数
+
+        :param project_name: [str] 项目名称 (默认: None)
+        :param force: [bool] 是否强制覆盖已存在目录 (默认: False)
+        :param here: [bool] 是否在当前目录初始化 (默认: False)
+        :return: [bool] 初始化成功返回 True，失败返回 False
+        """
         try:
-            if not project_name:
-                project_name = Prompt.ask("  项目名称", default="my_erispulse_project")
+            in_current_dir = here
+            if not here:
+                section_header("初始化位置")
+                console.print(
+                    "    [bold]1.[/] 在当前目录初始化   [dim]— 使用当前工作目录[/]"
+                )
+                console.print(
+                    "    [bold]2.[/] 创建新项目目录     [dim]— 新建一个子目录[/]"
+                )
+                console.print()
+                location_choice = IntPrompt.ask(
+                    "  请选择", default=2, choices=["1", "2"]
+                )
+                console.print()
+                in_current_dir = location_choice == 1
 
-            project_path = Path(project_name)
-            if project_path.exists() and not force:
-                if not Confirm.ask(
-                    f"  [cyan]目录 {project_name} 已存在，是否覆盖？[/]", default=False
-                ):
-                    console.print("[info]  操作已取消[/]")
-                    return False
+            if in_current_dir:
+                default_name = Path(".").resolve().name
+                project_name = prompt_validated(
+                    "  项目名称",
+                    default=project_name or default_name,
+                    validate=_validate_project_name,
+                    error_msg="项目名称只能包含字母、数字、下划线、连字符和点号",
+                )
+                project_path = Path(".")
+            else:
+                project_name = prompt_validated(
+                    "  项目名称",
+                    default=project_name or "my_erispulse_project",
+                    validate=_validate_project_name,
+                    error_msg="项目名称只能包含字母、数字、下划线、连字符和点号",
+                )
+                project_path = Path(project_name)
+                if project_path.exists() and not force:
+                    if not Confirm.ask(
+                        f"  [cyan]目录 {project_name} 已存在，是否覆盖？[/]",
+                        default=False,
+                    ):
+                        console.print("[info]  操作已取消[/]")
+                        return False
 
-            if not self._init_project(project_name, []):
+            if not self._init_project(
+                project_name, [], in_current_dir=in_current_dir
+            ):
                 return False
 
             from ErisPulse import config
@@ -269,11 +376,15 @@ class InitCommand(Command):
             current_port = str(config.getConfig("ErisPulse.server.port", 8000))
             console.print(f"  监听端口 [dim]({current_port})[/]")
             new_port = _input(">")
-            if new_port:
+            while new_port:
                 try:
                     config.setConfig("ErisPulse.server.port", int(new_port))
+                    break
                 except ValueError:
-                    console.print(f"[warning]  无效的端口号: {new_port}[/]")
+                    console.print(
+                        f"[warning]  无效的端口号: {new_port}，请重新输入（留空跳过）[/]"
+                    )
+                    new_port = _input(">")
 
             if Confirm.ask("\n  [cyan]是否配置适配器？[/]", default=True):
                 self._configure_adapters(project_path)
@@ -286,6 +397,11 @@ class InitCommand(Command):
             return False
 
     def _configure_adapters(self, project_path: Path):
+        """
+        交互式配置适配器
+
+        :param project_path: [Path] 项目路径
+        """
         from ErisPulse import config
 
         with console.status("[bold green]正在获取适配器列表...", spinner="dots"):
@@ -308,17 +424,18 @@ class InitCommand(Command):
         for i, (name, desc) in enumerate(adapter_list, 1):
             console.print(f"    [bold]{i}.[/] {name} [dim]— {desc}[/]")
 
-        console.print("  选择要启用的适配器 (序号，逗号分隔)")
-        selected = _input(">")
-        if not selected.strip():
-            console.print("[info]  未选择适配器[/]")
-            return
-
-        try:
-            indices = [int(idx.strip()) for idx in selected.split(",")]
-        except ValueError:
-            console.print("[warning]  请输入数字序号[/]")
-            return
+        # 输入非法序号时保留输入并重新提示，留空跳过
+        console.print("  选择要启用的适配器 (序号，逗号分隔，留空跳过)")
+        indices = None
+        while indices is None:
+            selected = _input(">")
+            if not selected.strip():
+                console.print("[info]  未选择适配器[/]")
+                return
+            try:
+                indices = [int(idx.strip()) for idx in selected.split(",")]
+            except ValueError:
+                console.print("[warning]  请输入数字序号[/]")
 
         enabled = []
         for idx in indices:
@@ -339,7 +456,14 @@ class InitCommand(Command):
             self._install_adapters(enabled, adapters)
 
     def _install_adapters(self, adapter_names, adapters_info):
+        """
+        安装选中的适配器
+
+        :param adapter_names: [list] 适配器简称列表
+        :param adapters_info: [dict] 适配器信息
+        """
         pkg_manager = PackageManager()
+        pkg_manager.no_uv = getattr(self, "no_uv", False)
         for adapter_name in adapter_names:
             package_name = None
             try:
@@ -364,15 +488,4 @@ class InitCommand(Command):
             success = pkg_manager.install_package([package_name])
 
             if not success:
-                console.print("[warning]  标准安装失败，尝试 uv...[/]")
-                try:
-                    result = subprocess.run(
-                        [sys.executable, "-m", "uv", "pip", "install", package_name],
-                        capture_output=True,
-                        text=True,
-                        timeout=300,
-                    )
-                    if result.returncode != 0:
-                        console.print(f"[error]  {adapter_name} 安装失败[/]")
-                except Exception as e:
-                    console.print(f"[error]  {adapter_name} 安装出错: {e}[/]")
+                console.print(f"[error]  {adapter_name} 安装失败[/]")
