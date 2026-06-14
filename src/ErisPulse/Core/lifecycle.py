@@ -13,25 +13,38 @@ ErisPulse 生命周期管理模块
 
 import asyncio
 import inspect
-from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
 import time
-from typing import Any
 from collections.abc import Callable
+from typing import Any
+
+from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
+from .i18n import i18n
 
 
 class _NullLogger:
     """静默日志器，在 logger 模块尚未初始化时作为替代"""
-    def debug(self, *args, **kwargs): pass
-    def info(self, *args, **kwargs): pass
-    def warning(self, *args, **kwargs): pass
-    def error(self, *args, **kwargs): pass
-    def critical(self, *args, **kwargs): pass
+
+    def debug(self, *args, **kwargs):
+        pass
+
+    def info(self, *args, **kwargs):
+        pass
+
+    def warning(self, *args, **kwargs):
+        pass
+
+    def error(self, *args, **kwargs):
+        pass
+
+    def critical(self, *args, **kwargs):
+        pass
 
 
 def _get_logger():
     """延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）"""
     try:
         from .logger import logger
+
         return logger
     except (ImportError, AttributeError):
         return _NullLogger()
@@ -53,9 +66,9 @@ class LifecycleManager:
     >>> @lifecycle.on("module.load")
     ... async def on_load(data):
     ...     print(data)
-    
+
     >>> lifecycle.register("module.load", on_load)
-    
+
     两种触发方式等价：
     >>> await lifecycle.emit("module.load", {"module_name": "Test"})
     >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
@@ -67,14 +80,23 @@ class LifecycleManager:
         "core": ["init.start", "init.complete", "uninit.complete"],
         "module": ["load", "init", "unload", "register"],
         "adapter": [
-            "load", "start", "status.change", "stop", "stopped",
-            "event.receive", "event.dispatched",
-            "bot.online", "bot.offline",
+            "load",
+            "start",
+            "status.change",
+            "stop",
+            "stopped",
+            "event.receive",
+            "event.dispatched",
+            "bot.online",
+            "bot.offline",
         ],
         "server": [
-            "start", "stop",
-            "request", "response",
-            "websocket.connect", "websocket.disconnect",
+            "start",
+            "stop",
+            "request",
+            "response",
+            "websocket.connect",
+            "websocket.disconnect",
         ],
         "event": ["pre_process"],
         "message": ["sending", "sent"],
@@ -108,7 +130,7 @@ class LifecycleManager:
         ...     pass
         """
         if not isinstance(event, str) or not event:
-            raise ValueError("事件名称必须是非空字符串")
+            raise ValueError(i18n.t("core.lifecycle.event_name_required"))
 
         def decorator(func: Callable) -> Callable:
             self._hooks.setdefault(event, []).append((priority, func))
@@ -129,7 +151,7 @@ class LifecycleManager:
         >>> lifecycle.register("config.set", my_handler, priority=10)
         """
         if not isinstance(event, str) or not event:
-            raise ValueError("事件名称必须是非空字符串")
+            raise ValueError(i18n.t("core.lifecycle.event_name_required"))
         self._hooks.setdefault(event, []).append((priority, handler))
         self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
@@ -239,11 +261,13 @@ class LifecycleManager:
         >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
         """
         if event_type is None:
-            _get_logger().error("事件类型不能为None")
+            _get_logger().error(i18n.t("core.lifecycle.event_type_none"))
             return
 
         if not isinstance(event_type, str) or not event_type:
-            _get_logger().error(f"事件类型必须是非空字符串，收到: {event_type}")
+            _get_logger().error(
+                i18n.t("core.lifecycle.event_type_empty", type=event_type)
+            )
             return
 
         if timestamp is None:
@@ -296,9 +320,7 @@ class LifecycleManager:
 
     # ==================== 内部方法 ====================
 
-    async def _execute_handlers(
-        self, hook_name: str, event: str, data: Any
-    ) -> Any:
+    async def _execute_handlers(self, hook_name: str, event: str, data: Any) -> Any:
         """
         执行匹配的事件处理器（异步）
 
@@ -308,26 +330,31 @@ class LifecycleManager:
         :return: Any 处理后的数据
         """
         import time as _time
+
         for priority, handler in self._hooks[hook_name]:
             try:
                 _t = _time.monotonic()
-                _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
+                _hname = getattr(
+                    handler, "__qualname__", getattr(handler, "__name__", str(handler))
+                )
                 if inspect.iscoroutinefunction(handler):
                     result = await handler(data)
                 else:
                     result = handler(data)
                 _elapsed = _time.monotonic() - _t
                 if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-                    _get_logger().warning(f"[Lifecycle] Slow handler {_hname} for event '{event}' took {_elapsed:.4f}s")
+                    _get_logger().warning(
+                        f"[Lifecycle] Slow handler {_hname} for event '{event}' took {_elapsed:.4f}s"
+                    )
                 if result is not None:
                     data = result
             except Exception as e:
-                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
+                _get_logger().error(
+                    i18n.t("core.lifecycle.handler_error", event=event, error=e)
+                )
         return data
 
-    def _execute_handlers_sync(
-        self, hook_name: str, event: str, data: Any
-    ) -> Any:
+    def _execute_handlers_sync(self, hook_name: str, event: str, data: Any) -> Any:
         """
         执行匹配的事件处理器（同步）
 
@@ -349,7 +376,9 @@ class LifecycleManager:
                     if result is not None:
                         data = result
             except Exception as e:
-                _get_logger().error(f"生命周期事件处理器执行错误 {event}: {e}")
+                _get_logger().error(
+                    i18n.t("core.lifecycle.handler_error", event=event, error=e)
+                )
         return data
 
     # ==================== 工具方法 ====================

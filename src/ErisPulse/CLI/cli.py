@@ -4,18 +4,19 @@
 ErisPulse 命令行接口主入口
 """
 
-import sys
 import importlib
-import traceback
 import pkgutil
+import sys
+import traceback
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from rich.panel import Panel
 from rich.text import Text
 
-from .console import console, print_banner
-from .registry import CommandRegistry
 from .base import Command
+from .console import console, print_banner
+from .i18n import i18n
+from .registry import CommandRegistry
 
 
 class CLI:
@@ -40,24 +41,31 @@ class CLI:
         parser = ArgumentParser(
             prog="epsdk",
             formatter_class=RawDescriptionHelpFormatter,
-            description="ErisPulse SDK 命令行工具",
+            description=i18n.t("cli.parser.description"),
         )
         parser._positionals.title = "命令"
         parser._optionals.title = "选项"
 
         # 全局选项
-        parser.add_argument("--version", "-V", action="store_true", help="显示版本信息")
+        parser.add_argument(
+            "--version",
+            "-V",
+            action="store_true",
+            help=i18n.t("cli.parser.version_help"),
+        )
         parser.add_argument(
             "--verbose",
             "-v",
             action="count",
             default=0,
-            help="增加输出详细程度 (-v, -vv, -vvv)",
+            help=i18n.t("cli.parser.verbose_help"),
         )
 
         # 子命令
         subparsers = parser.add_subparsers(
-            dest="command", metavar="<命令>", help="要执行的操作"
+            dest="command",
+            metavar=i18n.t("cli.parser.command_meta"),
+            help=i18n.t("cli.parser.command_help"),
         )
 
         self.subparsers = subparsers
@@ -103,14 +111,18 @@ class CLI:
                                 self.registry.register(command_instance)
                             except Exception as e:
                                 console.print(
-                                    f"[warning]实例化命令 {attr_name} 失败: {e}[/]"
+                                    f"[warning]{i18n.t('cli.discover.instantiate_failed', name=attr_name, error=e)}[/]"
                                 )
 
                 except Exception as e:
-                    console.print(f"[warning]加载命令模块 {module_name} 失败: {e}[/]")
+                    console.print(
+                        f"[warning]{i18n.t('cli.discover.load_failed', name=module_name, error=e)}[/]"
+                    )
 
         except ImportError as e:
-            console.print(f"[warning]无法导入 commands 包: {e}[/]")
+            console.print(
+                f"[warning]{i18n.t('cli.discover.import_failed', error=e)}[/]"
+            )
 
     def _register_builtin_commands(self):
         """注册所有内置命令（通过自动发现）"""
@@ -131,7 +143,7 @@ class CLI:
 
         console.print(
             Panel(
-                f"[title]ErisPulse SDK[/] 版本: [bold]{__version__}[/]",
+                f"[title]{i18n.t('cli.run.version_text', version=__version__)}[/]",
                 subtitle=f"Python {sys.version.split()[0]}",
                 style="title",
             )
@@ -157,7 +169,9 @@ class CLI:
         # 没有指定命令时显示帮助
         if not args.command:
             if unknown:
-                console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
+                console.print(
+                    f"[warning]{i18n.t('cli.run.unknown_args', args=' '.join(unknown))}[/]"
+                )
             self.parser.print_help()
             return
 
@@ -165,7 +179,9 @@ class CLI:
         canonical = self.registry.resolve(args.command) or args.command
 
         if unknown and canonical not in ("install", "create"):
-            console.print(f"[warning]未识别的参数: {' '.join(unknown)}[/]")
+            console.print(
+                f"[warning]{i18n.t('cli.run.unknown_args', args=' '.join(unknown))}[/]"
+            )
 
         try:
             # 执行命令
@@ -180,15 +196,17 @@ class CLI:
                 console.print()
                 command.execute(args)
             else:
-                console.print(f"[error]未知命令: {args.command}[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.run.unknown_command', command=args.command)}[/]"
+                )
                 self.parser.print_help()
                 sys.exit(1)
 
         except KeyboardInterrupt:
-            console.print("\n[warning]操作被用户中断[/]")
+            console.print(f"\n[warning]{i18n.t('cli.run.user_interrupted')}[/]")
             sys.exit(1)
         except Exception as e:
-            console.print(f"[error]执行命令时出错: {e}[/]")
+            console.print(f"[error]{i18n.t('cli.run.exec_error', error=e)}[/]")
             if args.verbose >= 1:
                 console.print(traceback.format_exc())
             sys.exit(1)

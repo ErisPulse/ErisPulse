@@ -5,21 +5,23 @@ ErisPulse 框架配置管理模块
 """
 
 import copy
-from typing import Dict, Any, Union, Optional
+from typing import Any, Dict, Optional, Union
+
 from ..Core.constants import (
-    DEFAULT_SERVER_HOST,
-    DEFAULT_SERVER_PORT,
+    CONFIG_ROOT_KEY,
+    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_CASE_SENSITIVE,
+    DEFAULT_COMMAND_MUST_AT_BOT,
+    DEFAULT_COMMAND_PREFIX,
+    DEFAULT_I18N_LANGUAGE,
+    DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_LOG_LEVEL,
     DEFAULT_LOG_MEMORY_LIMIT,
-    DEFAULT_COMMAND_PREFIX,
-    DEFAULT_COMMAND_CASE_SENSITIVE,
-    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
-    DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_MESSAGE_IGNORE_SELF,
-    DEFAULT_LAZY_LOADING_ENABLED,
-    DEFAULT_USE_GLOBAL_DB,
+    DEFAULT_SERVER_HOST,
+    DEFAULT_SERVER_PORT,
     DEFAULT_UNINIT_TIMEOUT_SECS,
-    CONFIG_ROOT_KEY,
+    DEFAULT_USE_GLOBAL_DB,
 )
 
 # 默认配置
@@ -55,6 +57,9 @@ DEFAULT_ERISPULSE_CONFIG = {
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
+    },
+    "i18n": {
+        "language": DEFAULT_I18N_LANGUAGE,
     },
 }
 
@@ -219,6 +224,15 @@ def get_framework_config() -> Dict[str, Any]:
     return get_config("framework")
 
 
+def get_i18n_config() -> Dict[str, Any]:
+    """
+    获取国际化配置
+
+    :return: 国际化配置字典
+    """
+    return get_config("i18n")
+
+
 __all__ = [
     "DEFAULT_ERISPULSE_CONFIG",
     "get_erispulse_config",
@@ -229,4 +243,5 @@ __all__ = [
     "get_storage_config",
     "get_event_config",
     "get_framework_config",
+    "get_i18n_config",
 ]
