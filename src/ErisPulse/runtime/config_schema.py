@@ -13,8 +13,31 @@ ErisPulse 适配器配置 Schema 模块
 {!--< /tips >!--}
 """
 
-from dataclasses import dataclass, field, fields, MISSING
+from dataclasses import MISSING, dataclass, field, fields
 
+
+@dataclass
+class I18nConfig:
+    """
+    国际化配置
+
+    控制框架的显示语言和翻译行为
+    """
+
+    language: str = field(
+        default="auto",
+        metadata={
+            "description": "显示语言 (auto=自动检测, zh-CN, zh-TW, en, ja, ru)",
+            "required": False,
+            "webui": {
+                "widget": "select",
+                "options": ["auto", "zh-CN", "zh-TW", "en", "ja", "ru"],
+                "group": "basic",
+                "order": 1,
+            },
+        },
+    )
+9
 
 @dataclass
 class AdapterConfig:
@@ -312,6 +335,7 @@ def _get_field_default(f):
 __all__ = [
     "AdapterConfig",
     "BotAccountConfig",
+    "I18nConfig",
     "dataclass_to_toml_with_comments",
     "dataclass_to_defaults_dict",
     "dict_to_dataclass",

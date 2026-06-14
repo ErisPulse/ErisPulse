@@ -10,14 +10,17 @@ ErisPulse 日志系统
 {!--< /tips >!--}
 """
 
-import logging
-import inspect
 import datetime
+import inspect
 import json as _json
-from rich.logging import RichHandler
+import logging
+
 from rich.console import Console
+from rich.logging import RichHandler
 from rich.text import Text
-from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOGGER_NAME, LOG_TIME_FORMAT
+
+from .constants import DEFAULT_LOG_MEMORY_LIMIT, LOG_TIME_FORMAT, LOGGER_NAME
+from .i18n import i18n
 
 TRACE = 5
 MESSAGE = 60
@@ -94,7 +97,7 @@ class Logger:
                     self._logs[module_name].pop(0)
             return True
         else:
-            self._logger.warning("日志存储上限必须大于0。")
+            self._logger.warning(i18n.t("core.logger.memory_limit_invalid"))
             return False
 
     def set_level(self, level: str) -> bool:
@@ -111,7 +114,7 @@ class Logger:
                 return True
             return False
         except Exception:
-            self._logger.error(f"无效的日志等级: {level}")
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
             return False
 
     def set_module_level(self, module_name: str, level: str) -> bool:
@@ -125,10 +128,12 @@ class Logger:
         level = level.upper()
         if hasattr(logging, level):
             self._module_levels[module_name] = getattr(logging, level)
-            self._logger.info(f"模块 {module_name} 日志等级已设置为 {level}")
+            self._logger.info(
+                i18n.t("core.logger.module_level_set", module=module_name, level=level)
+            )
             return True
         else:
-            self._logger.error(f"无效的日志等级: {level}")
+            self._logger.error(i18n.t("core.logger.invalid_level", level=level))
             return False
 
     def set_output_file(self, path) -> bool:
@@ -159,10 +164,12 @@ class Logger:
                 self._file_handlers.append(handler)
                 success = True
             except Exception as e:
-                self._logger.error(f"无法设置日志文件 {p}: {e}")
+                self._logger.error(
+                    i18n.t("core.logger.set_output_failed", path=p, error=e)
+                )
 
         if not success:
-            self._logger.warning("未能成功设置任何日志文件。")
+            self._logger.warning(i18n.t("core.logger.no_output_set"))
 
         return success
 
@@ -229,7 +236,7 @@ class Logger:
         :return: bool 设置是否成功
         """
         if not self._logs or all(len(logs) == 0 for logs in self._logs.values()):
-            self._logger.warning("没有log记录可供保存。")
+            self._logger.warning(i18n.t("core.logger.no_logs_to_save"))
             return False
 
         if isinstance(path, str):
@@ -247,10 +254,10 @@ class Logger:
                             file.write(f"Module: {module}\n")
                             for log in logs:
                                 file.write(f"  {log}\n")
-                self._logger.info(f"日志已被保存到：{p}。")
+                self._logger.info(i18n.t("core.logger.saved", path=p))
                 success = True
             except Exception as e:
-                self._logger.error(f"无法保存日志到 {p}: {e}。")
+                self._logger.error(i18n.t("core.logger.save_failed", path=p, error=e))
 
         return success
 
@@ -337,9 +344,7 @@ class Logger:
         caller_module = self._get_caller()
         if self._get_effective_level(caller_module) <= level_const:
             self._save_in_memory(caller_module, msg)
-            self._logger.log(
-                level_const, f"[{caller_module}] {msg}", *args, **kwargs
-            )
+            self._logger.log(level_const, f"[{caller_module}] {msg}", *args, **kwargs)
 
     def _get_caller(self):
         try:

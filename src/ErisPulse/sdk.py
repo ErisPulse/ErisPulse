@@ -18,39 +18,49 @@ import importlib
 import os
 import sys
 from typing import TYPE_CHECKING
+
 from .Core.constants import (
-    UNINIT_SETTLE_DELAY_SECS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
+    UNINIT_SETTLE_DELAY_SECS,
 )
-
-# 导入懒加载模块类
-from .loaders.module import LazyModule
+from .Core.i18n import i18n
 
 # 导入加载器类
 from .loaders.adapter import AdapterLoader
-from .loaders.module import ModuleLoader
+
+# 导入懒加载模块类
+from .loaders.module import LazyModule, ModuleLoader
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-    from .Core import Event as _EventModule
     from .Core import (
-        LifecycleManager,
         AdapterManager,
-        ModuleManager,
-        StorageManager,
-        Logger,
         ConfigManager,
+        I18nManager,
+        LifecycleManager,
+        Logger,
+        ModuleManager,
         RouterManager,
+        StorageManager,
     )
     from .Core import (
         BaseAdapter as _BaseAdapter,
-        SendDSL as _SendDSL,
-        BaseStorage as _BaseStorage,
+    )
+    from .Core import (
         BaseQueryBuilder as _BaseQueryBuilder,
+    )
+    from .Core import (
+        BaseStorage as _BaseStorage,
+    )
+    from .Core import Event as _EventModule
+    from .Core import (
         HttpClient as _HttpClient,
+    )
+    from .Core import (
+        SendDSL as _SendDSL,
     )
 
 
@@ -73,6 +83,7 @@ def _resolve_core(attr: str):
         "storage": ("ErisPulse.Core", "storage"),
         "env": ("ErisPulse.Core", "env"),
         "config": ("ErisPulse.Core", "config"),
+        "i18n": ("ErisPulse.Core", "i18n"),
         "adapter": ("ErisPulse.Core", "adapter"),
         "module": ("ErisPulse.Core", "module"),
         "router": ("ErisPulse.Core", "router"),
@@ -99,6 +110,7 @@ _CORE_ATTR_NAMES = {
     "storage",
     "env",
     "config",
+    "i18n",
     "adapter",
     "module",
     "router",
@@ -129,6 +141,7 @@ class SDK:
     - storage: 存储管理器
     - env: 存储管理器别名
     - config: 配置管理器
+    - i18n: 国际化管理器
     - adapter: 适配器管理器
     - BaseAdapter: 适配器基类
     - SendDSL: DSL 发送接口基类
@@ -147,6 +160,7 @@ class SDK:
     storage: StorageManager
     env: StorageManager
     config: ConfigManager
+    i18n: "I18nManager"
     adapter: AdapterManager
     module: ModuleManager
     router: RouterManager
@@ -182,7 +196,9 @@ class SDK:
             try:
                 return _resolve_core(name)
             except (ImportError, AttributeError):
-                raise AttributeError(f"ErisPulse SDK: 核心模块 '{name}' 无法解析")
+                raise AttributeError(
+                    i18n.t("core.sdk.attr.core_resolve_failed", name=name)
+                )
 
         # 非核心属性：提供友好的错误提示
         try:
@@ -197,23 +213,15 @@ class SDK:
                 mod_mgr = _resolve_core("module")
                 adap_mgr = _resolve_core("adapter")
                 if name in mod_mgr._module_classes:
-                    err_logger(
-                        f"[SDK] 模块 '{name}' 已注册但未加载或未启用，请检查模块配置"
-                    )
+                    err_logger(i18n.t("core.sdk.attr.module_not_loaded", name=name))
                 elif name in adap_mgr._adapters:
-                    err_logger(
-                        f"[SDK] 适配器 '{name}' 已注册但未启用，请检查适配器配置"
-                    )
+                    err_logger(i18n.t("core.sdk.attr.adapter_not_enabled", name=name))
                 else:
-                    err_logger(
-                        f"[SDK] 未找到属性或模块/适配器 '{name}'，请检查名称是否正确"
-                    )
+                    err_logger(i18n.t("core.sdk.attr.not_found", name=name))
             except Exception:
-                err_logger(
-                    f"[SDK] 未找到属性或模块/适配器 '{name}'，请检查名称是否正确"
-                )
+                err_logger(i18n.t("core.sdk.attr.not_found", name=name))
 
-        raise AttributeError(f"ErisPulse SDK has no attribute '{name}'")
+        raise AttributeError(i18n.t("core.sdk.attr.no_attribute", name=name))
 
     def __repr__(self) -> str:
         """
@@ -268,7 +276,7 @@ class SDK:
 
             :raises ImportError: 当加载失败时抛出
             """
-            self.logger.info("SDK 正在初始化...")
+            self.logger.info(i18n.t("core.sdk.init.starting"))
             self.lifecycle.start_timer(LIFECYCLE_TIMER_CORE_INIT)
 
             try:
@@ -277,7 +285,9 @@ class SDK:
                 module_manager = self.module
 
                 # 模块发现阶段
-                self.logger.print_section_header("入口发现阶段")
+                self.logger.print_section_header(
+                    i18n.t("core.sdk.init.discovery_phase")
+                )
 
                 (adapter_result, module_result) = await asyncio.gather(
                     self._adapter_loader.load(adapter_manager),
@@ -287,11 +297,17 @@ class SDK:
 
                 # 检查是否有异常，使用空结果继续而非终止
                 if isinstance(adapter_result, Exception):
-                    self.logger.error(f"适配器加载失败: {adapter_result}")
+                    self.logger.error(
+                        i18n.t(
+                            "core.sdk.init.adapter_load_failed", error=adapter_result
+                        )
+                    )
                     adapter_result = ({}, [], [])
 
                 if isinstance(module_result, Exception):
-                    self.logger.error(f"模块加载失败: {module_result}")
+                    self.logger.error(
+                        i18n.t("core.sdk.init.module_load_failed", error=module_result)
+                    )
                     module_result = ({}, [], [])
 
                 # 解包结果
@@ -299,37 +315,47 @@ class SDK:
                 module_objs, enabled_modules, disabled_modules = module_result  # type: ignore
 
                 # 2. 注册适配器
-                self.logger.print_section_header("适配器注册阶段")
+                self.logger.print_section_header(
+                    i18n.t("core.sdk.init.adapter_register_phase")
+                )
                 if not await self._adapter_loader.register_to_manager(
                     enabled_adapters, adapter_objs, adapter_manager
                 ):
-                    self.logger.warning("部分适配器注册失败，已跳过")
+                    self.logger.warning(
+                        i18n.t("core.sdk.init.adapter_register_partial")
+                    )
 
                 # 3. 启动适配器
                 if enabled_adapters:
-                    self.logger.print_section_header("适配器启动阶段")
+                    self.logger.print_section_header(
+                        i18n.t("core.sdk.init.adapter_start_phase")
+                    )
                     await adapter_manager.startup()
 
                 # 4. 注册模块
-                self.logger.print_section_header("模块注册阶段")
+                self.logger.print_section_header(
+                    i18n.t("core.sdk.init.module_register_phase")
+                )
                 if not await self._module_loader.register_to_manager(
                     enabled_modules, module_objs, module_manager
                 ):
-                    self.logger.warning("部分模块注册失败，已跳过")
+                    self.logger.warning(i18n.t("core.sdk.init.module_register_partial"))
 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
-                self.logger.print_section_header("模块初始化阶段")
+                self.logger.print_section_header(
+                    i18n.t("core.sdk.init.module_init_phase")
+                )
                 if enabled_modules:
                     success = await self._module_loader.initialize_modules(
                         enabled_modules, module_objs, module_manager, self._sdk
                     )
                     if not success:
-                        self.logger.warning("部分模块初始化失败，已跳过")
+                        self.logger.warning(i18n.t("core.sdk.init.module_init_partial"))
                 else:
                     success = True
 
                 # 6. 启动路由服务器
-                self.logger.print_section_header("路由服务器启动")
+                self.logger.print_section_header(i18n.t("core.sdk.init.router_start"))
                 from ErisPulse.runtime import get_server_config
 
                 _server_config = get_server_config()
@@ -341,13 +367,15 @@ class SDK:
                         ssl_keyfile=_server_config.get("ssl_keyfile"),
                     )
                 except Exception as e:
-                    self.logger.warning(f"路由服务器启动失败: {e}")
+                    self.logger.warning(
+                        i18n.t("core.sdk.init.router_start_failed", error=e)
+                    )
 
                 # 获取加载耗时
                 load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
 
                 # 总结
-                self.logger.print_section_header("初始化完成")
+                self.logger.print_section_header(i18n.t("core.sdk.init.complete"))
 
                 # 显示耗时
                 duration_str = (
@@ -355,11 +383,16 @@ class SDK:
                     if load_duration >= 1
                     else f"{load_duration * 1000:.0f}ms"
                 )
-                self.logger.print_info(f"耗时: {duration_str}", level=1)
+                self.logger.print_info(
+                    i18n.t("core.sdk.init.duration", duration=duration_str), level=1
+                )
 
                 if enabled_adapters:
                     self.logger.print_info(
-                        f"适配器: {len(enabled_adapters)} 个", level=1
+                        i18n.t(
+                            "core.sdk.init.adapter_count", count=len(enabled_adapters)
+                        ),
+                        level=1,
                     )
                     for i, adapter_name in enumerate(enabled_adapters):
                         is_last = i == len(enabled_adapters) - 1
@@ -367,25 +400,34 @@ class SDK:
                             adapter_name, level=1, is_last=is_last
                         )
                 else:
-                    self.logger.print_info("适配器: 无", level=1)
+                    self.logger.print_info(
+                        i18n.t("core.sdk.init.adapter_none"), level=1
+                    )
 
                 if enabled_modules:
-                    self.logger.print_info(f"模块: {len(enabled_modules)} 个", level=1)
+                    self.logger.print_info(
+                        i18n.t(
+                            "core.sdk.init.module_count", count=len(enabled_modules)
+                        ),
+                        level=1,
+                    )
                     for i, module_name in enumerate(enabled_modules):
                         is_last = i == len(enabled_modules) - 1
                         self.logger.print_tree_item(
                             module_name, level=1, is_last=is_last
                         )
                 else:
-                    self.logger.print_info("模块: 无", level=1)
+                    self.logger.print_info(i18n.t("core.sdk.init.module_none"), level=1)
 
                 self.logger.print_section_footer()
 
-                self.logger.info(f"SDK初始化成功 (耗时: {duration_str})")
+                self.logger.info(i18n.t("core.sdk.init.success", duration=duration_str))
 
                 await self.lifecycle.submit_event(
                     "core.init.complete",
-                    msg="模块初始化完成" if success else "模块初始化部分失败",
+                    msg=i18n.t("core.sdk.init.module_init_complete")
+                    if success
+                    else i18n.t("core.sdk.init.module_init_partial_failed"),
                     data={
                         "duration": load_duration,
                         "success": success,
@@ -405,10 +447,10 @@ class SDK:
                 load_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
                 await self.lifecycle.submit_event(
                     "core.init.complete",
-                    msg="模块初始化失败",
+                    msg=i18n.t("core.sdk.init.module_init_failed"),
                     data={"duration": load_duration, "success": False, "error": str(e)},
                 )
-                self.logger.critical(f"SDK初始化严重错误: {e}")
+                self.logger.critical(i18n.t("core.sdk.init.critical_error", error=e))
                 return False  # 核心初始化级别的异常仍然返回 False
 
     class Uninitializer:
@@ -516,7 +558,11 @@ class SDK:
                                         instance.on_unload({"module_name": lm_name})
                                 except Exception as e:
                                     self.logger.warning(
-                                        f"清理懒加载模块 {lm_name} 的 on_unload 失败: {e}"
+                                        i18n.t(
+                                            "core.sdk.uninit.unload_failed",
+                                            name=lm_name,
+                                            error=e,
+                                        )
                                     )
                         # 清除 LazyModule 内部引用，打破循环引用链
                         object.__setattr__(attr_value, "_sdk_ref", None)
@@ -549,7 +595,13 @@ class SDK:
                             del instance_dict[module_name]
                             module_properties_cleared += 1
                     except Exception as e:
-                        self.logger.warning(f"清理模块属性 {module_name} 失败: {e}")
+                        self.logger.warning(
+                            i18n.t(
+                                "core.sdk.uninit.attr_clean_failed",
+                                name=module_name,
+                                error=e,
+                            )
+                        )
 
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
@@ -563,7 +615,7 @@ class SDK:
                 # 提交生命周期事件
                 await self.lifecycle.submit_event(
                     "core.uninit.complete",
-                    msg="SDK反初始化完成",
+                    msg=i18n.t("core.sdk.uninit.complete"),
                     data={
                         "duration": uninit_duration,
                         "success": True,
@@ -580,7 +632,9 @@ class SDK:
                 # 9. 清理生命周期事件处理器（在所有事件完成之后）
                 self.lifecycle._hooks.clear()
 
-                self.logger.info(f"SDK反初始化成功 (耗时: {duration_str})")
+                self.logger.info(
+                    i18n.t("core.sdk.uninit.success", duration=duration_str)
+                )
                 return True
 
             try:
@@ -594,12 +648,11 @@ class SDK:
             except asyncio.TimeoutError:
                 uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 self.logger.warning(
-                    f"SDK反初始化超时 ({uninit_timeout}s)，已强制终止。"
-                    f"部分模块 on_unload 可能未执行完毕。"
+                    i18n.t("core.sdk.uninit.timeout", timeout=uninit_timeout)
                 )
                 await self.lifecycle.submit_event(
                     "core.uninit.complete",
-                    msg="SDK反初始化超时",
+                    msg=i18n.t("core.sdk.uninit.timeout_msg"),
                     data={
                         "duration": uninit_duration,
                         "success": False,
@@ -612,7 +665,7 @@ class SDK:
                 uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
                 await self.lifecycle.submit_event(
                     "core.uninit.complete",
-                    msg="SDK反初始化失败",
+                    msg=i18n.t("core.sdk.uninit.failed_msg"),
                     data={
                         "duration": uninit_duration,
                         "success": False,
@@ -630,7 +683,7 @@ class SDK:
                     # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
                     # 在这种情况下，我们直接返回True即可
                     return True
-                self.logger.error(f"SDK反初始化严重错误: {e}")
+                self.logger.error(i18n.t("core.sdk.uninit.critical_error", error=e))
                 return False
 
     # ==================== SDK 逻辑方法 ====================
@@ -674,27 +727,27 @@ class SDK:
 
         await _lifecycle.submit_event(
             "core.init.start",
-            msg="开始初始化",
+            msg=i18n.t("core.sdk.prepare.start"),
         )
 
-        _logger.info("准备初始化环境...")
+        _logger.info(i18n.t("core.sdk.prepare.starting"))
         try:
             from .runtime import get_erispulse_config
 
             get_erispulse_config()
-            _logger.info("配置文件已加载")
+            _logger.info(i18n.t("core.sdk.prepare.config_loaded"))
             return True
         except Exception as e:
             load_duration = _lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)
             await _lifecycle.submit_event(
                 "core.init.complete",
-                msg="模块初始化失败",
+                msg=i18n.t("core.sdk.init.module_init_failed"),
                 data={
                     "duration": load_duration,
                     "success": False,
                 },
             )
-            _logger.error(f"环境准备失败: {e}")
+            _logger.error(i18n.t("core.sdk.prepare.failed", error=e))
             return False
 
     def init_sync(self) -> bool:
@@ -766,13 +819,17 @@ class SDK:
                     await module_instance._initialize()
                     return True
             elif module_instance is not None:
-                self.logger.warning(f"模块 {module_name} 已经加载")
+                self.logger.warning(
+                    i18n.t("core.sdk.module.already_loaded", name=module_name)
+                )
                 return False
             else:
-                self.logger.error(f"模块 {module_name} 不存在")
+                self.logger.error(i18n.t("core.sdk.module.not_found", name=module_name))
                 return False
         except Exception as e:
-            self.logger.error(f"加载模块 {module_name} 失败: {e}")
+            self.logger.error(
+                i18n.t("core.sdk.module.load_failed", name=module_name, error=e)
+            )
             return False
 
     async def run(self, keep_running: bool = True) -> None:
@@ -788,14 +845,14 @@ class SDK:
             isInit = await self.init()
 
             if not isInit:
-                self.logger.error("ErisPulse 初始化失败，请检查日志")
+                self.logger.error(i18n.t("core.sdk.run.init_failed"))
                 return
 
             if keep_running:
                 shutdown_event = asyncio.Event()
                 await shutdown_event.wait()
         except asyncio.CancelledError:
-            self.logger.info("收到关闭信号，正在清理...")
+            self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
         except Exception as e:
             self.logger.error(e)
         finally:
@@ -827,7 +884,11 @@ class SDK:
         try:
             # 获取所有已加载包的顶层 Python 模块名（必须在 uninit 之前，因为 uninit 会清除管理器注册信息）
             top_level_modules = self._collect_top_level_modules()
-            self.logger.debug(f"[Reload] 收集到外部包顶层模块: {top_level_modules}")
+            self.logger.debug(
+                i18n.t(
+                    "core.sdk.reload.collected_top_modules", modules=top_level_modules
+                )
+            )
 
             # 反初始化
             await self.uninit()
@@ -843,18 +904,18 @@ class SDK:
 
             # 重新初始化
             if not await self.init():
-                self.logger.error("[Reload] 初始化失败，请检查日志")
+                self.logger.error(i18n.t("core.sdk.reload.init_failed"))
                 return False
 
             # SDK 核心属性通过 __getattr__ 动态解析，无需手动刷新引用。
             # init() 触发的新 import 会创建新单例，
             # 后续 self.logger / self.adapter 等访问自动获取最新单例。
 
-            self.logger.info("[Reload] 重新加载完成")
-            self.logger.info("[Reload] ErisPulse已重新加载 [Reload]")
+            self.logger.info(i18n.t("core.sdk.reload.complete"))
+            self.logger.info(i18n.t("core.sdk.reload.done"))
             return True
         except Exception as e:
-            self.logger.error(f"[Reload] 重启失败: {e}")
+            self.logger.error(i18n.t("core.sdk.reload.failed", error=e))
             return False
 
     def _collect_top_level_modules(self) -> set[str]:
@@ -878,7 +939,7 @@ class SDK:
                     top_level_set.update(fallback)
                 else:
                     self.logger.warning(
-                        f"[Reload] 模块 '{module_name}' 无法推导顶层模块名，其缓存可能无法被清除"
+                        i18n.t("core.sdk.reload.module_top_infer", name=module_name)
                     )
 
         for adapter_name, info in self.adapter._adapter_info.items():
@@ -891,10 +952,12 @@ class SDK:
                     top_level_set.update(fallback)
                 else:
                     self.logger.warning(
-                        f"[Reload] 适配器 '{adapter_name}' 无法推导顶层模块名，其缓存可能无法被清除"
+                        i18n.t("core.sdk.reload.adapter_top_infer", name=adapter_name)
                     )
 
-        self.logger.debug(f"[Reload] 收集到 top_level 模块: {top_level_set}")
+        self.logger.debug(
+            i18n.t("core.sdk.reload.collected_top", modules=top_level_set)
+        )
         return top_level_set
 
     @staticmethod
@@ -939,7 +1002,11 @@ class SDK:
 
         if modules_to_remove:
             self.logger.debug(
-                f"[Reload] 已清理 {len(modules_to_remove)} 个外部包 sys.modules 缓存: {modules_to_remove}"
+                i18n.t(
+                    "core.sdk.reload.cleaned_modules",
+                    count=len(modules_to_remove),
+                    modules=modules_to_remove,
+                )
             )
 
     def _invalidate_framework_cache(self) -> None:
@@ -968,7 +1035,9 @@ class SDK:
 
         if framework_modules:
             self.logger.debug(
-                f"[Reload] 已清理 {len(framework_modules)} 个框架子模块缓存"
+                i18n.t(
+                    "core.sdk.reload.cleaned_framework", count=len(framework_modules)
+                )
             )
 
     def _invalidate_metadata_cache(self) -> None:
@@ -998,7 +1067,7 @@ class SDK:
 
         if metadata_modules:
             self.logger.debug(
-                f"[Reload] 已清理 {len(metadata_modules)} 个 importlib.metadata 缓存"
+                i18n.t("core.sdk.reload.cleaned_metadata", count=len(metadata_modules))
             )
 
     async def restart(self) -> bool:
@@ -1028,7 +1097,7 @@ class SDK:
         :example:
         >>> await sdk.restart()
         """
-        self.logger.info("[Reload] 开始重新加载SDK...")
+        self.logger.info(i18n.t("core.sdk.reload.starting"))
 
         # 使用 ensure_future 将任务注册到事件循环调度器 - 不受上层协程取消影响
         asyncio.ensure_future(self._do_restart())
@@ -1058,11 +1127,11 @@ class SDK:
         async def _do_hard_restart():
             await asyncio.sleep(0.5)
             try:
-                self.logger.info("[HardRestart] 开始硬重启，执行反初始化...")
+                self.logger.info(i18n.t("core.sdk.hardrestart.starting"))
                 await self.uninit()
-                self.logger.info("[HardRestart] 反初始化完成，正在退出进程...")
+                self.logger.info(i18n.t("core.sdk.hardrestart.uninit_done"))
             except Exception as e:
-                self.logger.error(f"[HardRestart] 反初始化异常: {e}")
+                self.logger.error(i18n.t("core.sdk.hardrestart.uninit_error", error=e))
             os._exit(self.RESTART_EXIT_CODE)
 
         asyncio.ensure_future(_do_hard_restart())

@@ -7,7 +7,9 @@
 </td>
 <td valign="middle">
 
-[English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
+> [English](README.en.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
+
+> 🎉 **v2.5.0-dev.1 现已支持多语言！** 框架核心及 CLI 界面已内置中文（简/繁）、英文、日文、俄文支持，自动检测您的系统语言!
 
 # ErisPulse
 

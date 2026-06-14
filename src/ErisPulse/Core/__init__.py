@@ -31,6 +31,7 @@ from .logger import logger, Logger, LoggerChild
 from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
+from .i18n import i18n, I18nManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -83,4 +84,6 @@ __all__ = [
     "LoggerChild",  # 日志子类
     "lifecycle",  # 生命周期模块单例
     "LifecycleManager",  # 生命周期管理器类
+    "i18n",  # 国际化模块单例
+    "I18nManager",  # 国际化管理器类
 ]
