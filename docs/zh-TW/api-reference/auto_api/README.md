@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 65
-- **类总数**: 76（包括 5 个嵌套类）
-- **函数总数**: 72
-- **方法总数**: 756
+- **模块总数**: 80
+- **类总数**: 79（包括 5 个嵌套类）
+- **函数总数**: 77
+- **方法总数**: 778
 
 ---
 
@@ -97,6 +97,41 @@
 ### [ErisPulse.CLI.console](ErisPulse/CLI/console.md)
 
 📦 1 个类 | ⚙️ 1 个函数
+
+
+### [ErisPulse.CLI.i18n.__init__](ErisPulse/CLI/i18n/__init__.md)
+
+📦 1 个类 | 🔧 5 个方法 | ⚙️ 3 个函数
+
+
+### [ErisPulse.CLI.i18n.locales.__init__](ErisPulse/CLI/i18n/locales/__init__.md)
+
+📄 模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.en](ErisPulse/CLI/i18n/locales/en.md)
+
+📄 模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ja](ErisPulse/CLI/i18n/locales/ja.md)
+
+📄 模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.ru](ErisPulse/CLI/i18n/locales/ru.md)
+
+📄 模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_cn](ErisPulse/CLI/i18n/locales/zh_cn.md)
+
+📄 模块文档
+
+
+### [ErisPulse.CLI.i18n.locales.zh_tw](ErisPulse/CLI/i18n/locales/zh_tw.md)
+
+📄 模块文档
 
 
 ### [ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)
@@ -239,6 +274,46 @@
 📄 模块文档
 
 
+### [ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)
+
+📦 1 个类 | 🔧 17 个方法
+
+
+### [ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)
+
+📄 模块文档
+
+
+### [ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)
+
+⚙️ 1 个函数
+
+
+### [ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)
+
+📄 模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)
+
+📄 模块文档
+
+
+### [ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)
+
+📄 模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)
+
+📄 模块文档
+
+
+### [ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)
+
+📄 模块文档
+
+
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
 📦 2 个类 | 🔧 13 个方法 | ⚙️ 1 个函数
@@ -326,7 +401,7 @@
 
 ### [ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)
 
-📦 2 个类 | ⚙️ 11 个函数
+📦 3 个类 | ⚙️ 11 个函数
 
 
 ### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)
@@ -341,7 +416,7 @@
 
 ### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
 
-⚙️ 10 个函数
+⚙️ 11 个函数
 
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
