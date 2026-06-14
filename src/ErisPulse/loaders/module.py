@@ -10,16 +10,18 @@ ErisPulse 模块加载器
 {!--< /tips >!--}
 """
 
-import sys
-import re
 import asyncio
-import inspect
 import importlib.metadata
-from typing import Any, TYPE_CHECKING
-from .bases.loader import BaseLoader
-from ..Core.logger import logger
+import inspect
+import re
+import sys
+from typing import TYPE_CHECKING, Any
+
+from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
+from ..Core.logger import logger
 from ..finders import ModuleFinder
+from .bases.loader import BaseLoader
 
 if TYPE_CHECKING:
     from ..Core.Bases.module import BaseModule
@@ -87,16 +89,13 @@ def _validate_sdk_attr_name(name: str) -> bool:
     :return: True 如果名称安全，False 如果应拒绝
     """
     if not name or not _SAFE_ENTRY_POINT_NAME_RE.match(name):
-        logger.error(
-            f"拒绝注册模块 '{name}'：名称不符合标识符规范"
-            f"（必须以字母开头，仅允许字母、数字和下划线）"
-        )
+        logger.error(i18n.t("loader.module.invalid_identifier", name=name))
         return False
     if name.startswith("_"):
-        logger.error(f"拒绝注册模块 '{name}'：名称不能以下划线开头")
+        logger.error(i18n.t("loader.module.invalid_name", name=name))
         return False
     if name in _RESERVED_SDK_ATTRS:
-        logger.error(f"拒绝注册模块 '{name}'：该名称为 SDK 保留属性")
+        logger.error(i18n.t("loader.module.reserved_name", name=name))
         return False
     return True
 
@@ -150,12 +149,14 @@ class ModuleLoader(BaseLoader):
         try:
             # 使用 ModuleFinder 查找 entry-points
             if entries := self._finder.find_all():
-                logger.print_info(f"发现 {len(entries)} 个模块", level=1)
+                logger.print_info(
+                    i18n.t("loader.module.discovered", count=len(entries)), level=1
+                )
                 for i, entry in enumerate(entries):
                     is_last = i == len(entries) - 1
                     logger.print_tree_item(entry.name, level=1, is_last=is_last)
             else:
-                logger.print_info("未发现模块", level=1)
+                logger.print_info(i18n.t("loader.module.none"), level=1)
 
             # 处理每个 entry-point
             for entry_point in entries:
@@ -176,7 +177,7 @@ class ModuleLoader(BaseLoader):
                 f"请不要使用 sys.exit() 或 raise SystemExit"
             )
         except Exception as e:
-            logger.error(f"加载 {group_name} entry-points 失败: {e}")
+            logger.error(i18n.t("loader.module.load_failed", group=group_name, error=e))
 
         return objs, enabled_list, disabled_list
 
@@ -279,7 +280,9 @@ class ModuleLoader(BaseLoader):
                 f"请不要使用 sys.exit() 或 raise SystemExit"
             )
         except Exception as e:
-            logger.error(f"从 entry-point 加载模块 {meta_name} 失败，已跳过: {e}")
+            logger.error(
+                i18n.t("loader.module.load_single_failed", name=meta_name, error=e)
+            )
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -318,7 +321,7 @@ class ModuleLoader(BaseLoader):
             framework_config = get_framework_config()
             return framework_config.get("enable_lazy_loading", True)
         except Exception as e:
-            logger.debug(f"获取框架配置失败: {e}，使用默认值 True")
+            logger.debug(i18n.t("loader.module.config_failed", error=e))
             return True
 
     def _resolve_strategy(self, module_class: type) -> Any:
@@ -449,7 +452,9 @@ class ModuleLoader(BaseLoader):
                     )
                     return False
                 except Exception as e:
-                    logger.error(f"注册模块 {name} 失败: {e}")
+                    logger.error(
+                        i18n.t("loader.module.register_failed", name=name, error=e)
+                    )
                     return False
 
             register_tasks.append(register_module(meta_name, module_obj, module_class))
@@ -462,7 +467,9 @@ class ModuleLoader(BaseLoader):
         for i, result in enumerate(register_results):
             module_name = modules[i]
             if isinstance(result, BaseException) or result is False:
-                logger.warning(f"模块 {module_name} 注册失败，已跳过")
+                logger.warning(
+                    i18n.t("loader.module.register_skipped", name=module_name)
+                )
                 failed_modules.append(module_name)
 
         for name in failed_modules:
@@ -572,7 +579,9 @@ class ModuleLoader(BaseLoader):
         missing = self._validate_dependencies(modules, module_objs)
         if missing:
             for name, deps in missing.items():
-                logger.warning(f"模块 '{name}' 缺少依赖: {deps}, 已跳过")
+                logger.warning(
+                    i18n.t("loader.module.missing_deps", name=name, deps=deps)
+                )
 
         skip_set = set()
         for name in modules:
@@ -599,7 +608,7 @@ class ModuleLoader(BaseLoader):
 
             # 安全校验：防止模块名称覆盖 SDK 关键属性
             if not _validate_sdk_attr_name(meta_name):
-                logger.warning(f"跳过模块 '{meta_name}'：名称不合法或为 SDK 保留属性")
+                logger.warning(i18n.t("loader.module.skip_invalid", name=meta_name))
                 continue
 
             try:
@@ -616,23 +625,31 @@ class ModuleLoader(BaseLoader):
                         manager_instance,
                     )
                     setattr(sdk_instance, meta_name, lazy_module)
-                    logger.debug(f"挂载懒加载模块到 sdk: {meta_name}")
+                    logger.debug(i18n.t("loader.module.mount_lazy", name=meta_name))
                 else:
                     result = await manager_instance.load(meta_name)
                     if result:
                         setattr(
                             sdk_instance, meta_name, manager_instance.get(meta_name)
                         )
-                        logger.debug(f"挂载立即加载模块到 sdk: {meta_name}")
+                        logger.debug(
+                            i18n.t("loader.module.mount_eager", name=meta_name)
+                        )
                     else:
-                        logger.warning(f"立即加载模块 {meta_name} 失败，已跳过")
+                        logger.warning(
+                            i18n.t(
+                                "loader.module.immediate_load_failed", name=meta_name
+                            )
+                        )
             except SystemExit as e:
                 logger.warning(
                     f"初始化模块 {meta_name} 时尝试退出进程 (SystemExit({e.code}))，已跳过。"
                     f"请不要使用 sys.exit() 或 raise SystemExit"
                 )
             except Exception as e:
-                logger.warning(f"初始化模块 {meta_name} 失败，已跳过: {e}")
+                logger.warning(
+                    i18n.t("loader.module.init_failed", name=meta_name, error=e)
+                )
 
         return True
 
@@ -695,7 +712,7 @@ class LazyModule:
             return
 
         module_name = object.__getattribute__(self, "_module_name")
-        logger.debug(f"正在初始化懒加载模块 {module_name}...")
+        logger.debug(i18n.t("loader.module.init_lazy_start", name=module_name))
 
         try:
             is_base_module = object.__getattribute__(self, "_is_base_module")
@@ -750,7 +767,10 @@ class LazyModule:
 
             await lifecycle.submit_event(
                 "module.init",
-                msg=f"模块 {object.__getattribute__(self, '_module_name')} 初始化完毕",
+                msg=i18n.t(
+                    "loader.module.init_complete",
+                    name=object.__getattribute__(self, "_module_name"),
+                ),
                 data={
                     "module_name": object.__getattribute__(self, "_module_name"),
                     "success": True,
@@ -764,7 +784,7 @@ class LazyModule:
             module_name = object.__getattribute__(self, "_module_name")
             await lifecycle.submit_event(
                 "module.init",
-                msg=f"模块 {module_name} 尝试退出进程 (SystemExit)",
+                msg=i18n.t("loader.module.systemexit", name=module_name),
                 data={"module_name": module_name, "success": False},
             )
             logger.error(
@@ -776,7 +796,7 @@ class LazyModule:
         except Exception as e:
             await lifecycle.submit_event(
                 "module.init",
-                msg=f"模块初始化失败: {e}",
+                msg=i18n.t("loader.module.init_failed_msg", error=e),
                 data={
                     "module_name": object.__getattribute__(self, "_module_name"),
                     "success": False,
@@ -935,7 +955,10 @@ class LazyModule:
             # 这里只需要提交生命周期事件即可
             await lifecycle.submit_event(
                 "module.init",
-                msg=f"模块 {object.__getattribute__(self, '_module_name')} 初始化完毕",
+                msg=i18n.t(
+                    "loader.module.init_complete",
+                    name=object.__getattribute__(self, "_module_name"),
+                ),
                 data={
                     "module_name": object.__getattribute__(self, "_module_name"),
                     "success": True,
@@ -947,7 +970,7 @@ class LazyModule:
         except Exception as e:
             await lifecycle.submit_event(
                 "module.init",
-                msg=f"模块初始化失败: {e}",
+                msg=i18n.t("loader.module.init_failed_msg", error=e),
                 data={
                     "module_name": object.__getattribute__(self, "_module_name"),
                     "success": False,

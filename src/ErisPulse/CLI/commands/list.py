@@ -7,12 +7,13 @@ List 命令实现
 import asyncio
 from argparse import ArgumentParser
 
-from rich.table import Table
 from rich.box import SIMPLE
+from rich.table import Table
 
-from ..utils import PackageManager
-from ..console import console
 from ..base import Command
+from ..console import console
+from ..i18n import i18n
+from ..utils import PackageManager
 
 
 class ListCommand(Command):
@@ -23,7 +24,7 @@ class ListCommand(Command):
     """
 
     name = "list"
-    description = "列出已安装的组件"
+    description = i18n.t("cli.list.description")
     aliases = ["l", "ls"]
 
     def __init__(self):
@@ -38,10 +39,13 @@ class ListCommand(Command):
             "-t",
             choices=["modules", "adapters", "all"],
             default="all",
-            help="列出类型 (默认: all)",
+            help=i18n.t("cli.list.type_help"),
         )
         parser.add_argument(
-            "--outdated", "-o", action="store_true", help="仅显示可升级的包"
+            "--outdated",
+            "-o",
+            action="store_true",
+            help=i18n.t("cli.list.outdated_help"),
         )
 
     def execute(self, args):
@@ -67,11 +71,13 @@ class ListCommand(Command):
             table = Table(
                 box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
             )
-            table.add_column("模块名", style="module", min_width=12)
-            table.add_column("包名", min_width=20)
-            table.add_column("版本", width=10)
-            table.add_column("状态", width=8)
-            table.add_column("描述")
+            table.add_column(
+                i18n.t("cli.list.header_module"), style="module", min_width=12
+            )
+            table.add_column(i18n.t("cli.list.header_package"), min_width=20)
+            table.add_column(i18n.t("cli.list.header_version"), width=10)
+            table.add_column(i18n.t("cli.list.header_status"), width=8)
+            table.add_column(i18n.t("cli.list.header_desc"))
 
             count = 0
             for name, info in installed["modules"].items():
@@ -80,7 +86,9 @@ class ListCommand(Command):
                 ):
                     continue
                 status = (
-                    "[green]启用[/]" if info.get("enabled", True) else "[yellow]禁用[/]"
+                    f"[green]{i18n.t('cli.list.status_enabled')}[/]"
+                    if info.get("enabled", True)
+                    else f"[yellow]{i18n.t('cli.list.status_disabled')}[/]"
                 )
                 table.add_row(
                     name,
@@ -93,18 +101,22 @@ class ListCommand(Command):
 
             if count > 0:
                 console.print(table)
-                console.print(f"[dim]  {count} 个模块[/]")
+                console.print(
+                    f"[dim]  {i18n.t('cli.list.count_modules', count=count)}[/]"
+                )
             else:
-                console.print("[dim]  没有符合条件的模块[/]")
+                console.print(f"[dim]  {i18n.t('cli.list.no_modules')}[/]")
 
         elif pkg_type == "adapters" and installed["adapters"]:
             table = Table(
                 box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
             )
-            table.add_column("适配器名", style="adapter", min_width=12)
-            table.add_column("包名", min_width=20)
-            table.add_column("版本", width=10)
-            table.add_column("描述")
+            table.add_column(
+                i18n.t("cli.list.header_adapter"), style="adapter", min_width=12
+            )
+            table.add_column(i18n.t("cli.list.header_package"), min_width=20)
+            table.add_column(i18n.t("cli.list.header_version"), width=10)
+            table.add_column(i18n.t("cli.list.header_desc"))
 
             count = 0
             for name, info in installed["adapters"].items():
@@ -122,12 +134,16 @@ class ListCommand(Command):
 
             if count > 0:
                 console.print(table)
-                console.print(f"[dim]  {count} 个适配器[/]")
+                console.print(
+                    f"[dim]  {i18n.t('cli.list.count_adapters', count=count)}[/]"
+                )
             else:
-                console.print("[dim]  没有符合条件的适配器[/]")
+                console.print(f"[dim]  {i18n.t('cli.list.no_adapters')}[/]")
 
         elif not installed.get(pkg_type, {}):
-            console.print(f"[dim]  没有{pkg_type}[/]")
+            console.print(
+                f"[dim]  {i18n.t('cli.list.no_packages', pkg_type=pkg_type)}[/]"
+            )
 
     def _is_package_outdated(self, package_name: str, current_version: str) -> bool:
         """

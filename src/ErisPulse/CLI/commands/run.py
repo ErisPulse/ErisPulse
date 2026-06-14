@@ -4,22 +4,24 @@ Run 命令实现
 直接运行主程序，支持热重载模式
 """
 
-import os
-import sys
-import time
 import asyncio
-import subprocess
-import threading
+import os
 import runpy
+import subprocess
+import sys
+import threading
+import time
 from argparse import ArgumentParser
+
 from rich.panel import Panel
 
-from ..console import console
 from ..base import Command
+from ..console import console
+from ..i18n import i18n
 
 try:
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
 
     _WATCHDOG_AVAILABLE = True
 except ImportError:
@@ -70,6 +72,7 @@ class ReloadHandler(FileSystemEventHandler):
 
         :param event: [FileSystemEvent] 触发重载的文件系统事件
         """
+
         async def _do_reload():
             """执行 SDK 重启以完成热重载"""
             try:
@@ -77,11 +80,14 @@ class ReloadHandler(FileSystemEventHandler):
 
                 await sdk.restart()
             except Exception as e:
-                console.print(f"[error]热重载失败: {e}[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.run.hot_reload_failed', error=e)}[/]"
+                )
 
-        console.print(
-            f"检测到文件变更 ({os.path.basename(event.src_path)})，正在热重载..."
-        )
+            console.print(
+                i18n.t("cli.run.file_changed", file=os.path.basename(event.src_path))
+            )
+
         asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
 
 
@@ -93,18 +99,18 @@ class RunCommand(Command):
     """
 
     name = "run"
-    description = "运行主程序"
+    description = i18n.t("cli.run.description")
     aliases = ["r"]
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
-            "script",
-            nargs="?",
-            default=None,
-            help="要运行的主程序路径 (不指定则直接运行 SDK)",
+            "script", nargs="?", default=None, help=i18n.t("cli.run.script_help")
         )
         parser.add_argument(
-            "--reload", action="store_true", default=False, help="启用热重载模式"
+            "--reload",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.run.reload_help"),
         )
 
     def execute(self, args):
@@ -112,22 +118,22 @@ class RunCommand(Command):
         reload_mode = args.reload
 
         if reload_mode and not _WATCHDOG_AVAILABLE:
-            console.print(
-                "[error]热重载需要 watchdog 库，请运行: pip install watchdog[/]"
-            )
+            console.print(f"[error]{i18n.t('cli.run.watchdog_missing')}[/]")
             reload_mode = False
 
         if script:
             if not os.path.exists(script):
-                console.print(f"[error]脚本 [path]{script}[/] 不存在[/]")
-                console.print("[info]使用 [cyan]epsdk init[/cyan] 创建新项目[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.run.script_not_found', script=script)}[/]"
+                )
+                console.print(f"[info]{i18n.t('cli.run.use_init')}[/]")
                 return
             if os.path.isdir(script):
-                console.print(f"[error][path]{script}[/] 是一个目录，无法直接运行[/]")
                 console.print(
-                    "[info]请指定具体的脚本文件，例如: [cyan]epsdk run {0}/main.py[/]".format(
-                        script
-                    )
+                    f"[error]{i18n.t('cli.run.is_directory', script=script)}[/]"
+                )
+                console.print(
+                    "[info]{0}[/]".format(i18n.t("cli.run.specify_file", script=script))
                 )
                 return
             self._run_script(script, reload_mode)
@@ -145,6 +151,7 @@ class RunCommand(Command):
         """
 
         if reload_mode:
+
             async def _run():
                 """
                 设置文件监控并运行 SDK
@@ -167,9 +174,12 @@ class RunCommand(Command):
                     self._observer.join()
             return
 
-        cmd = [sys.executable, "-c",
-               "import asyncio; from ErisPulse import sdk; "
-               "asyncio.run(sdk.run(keep_running=True))"]
+        cmd = [
+            sys.executable,
+            "-c",
+            "import asyncio; from ErisPulse import sdk; "
+            "asyncio.run(sdk.run(keep_running=True))",
+        ]
 
         try:
             while True:
@@ -177,7 +187,7 @@ class RunCommand(Command):
                 process.wait()
 
                 if process.returncode == self._RESTART_EXIT_CODE:
-                    console.print("[info]收到硬重启请求，正在重新启动...[/]")
+                    console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
                     time.sleep(0.5)
                     continue
                 break
@@ -256,8 +266,8 @@ class RunCommand(Command):
 
         console.print(
             Panel(
-                f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
-                title="热重载已启动",
+                i18n.t("cli.run.reload_mode_panel", watch_dir=watch_dir),
+                title=i18n.t("cli.run.reload_title"),
                 border_style="info",
             )
         )
@@ -273,8 +283,7 @@ class RunCommand(Command):
                 if proc.poll() is None:
                     # 进程仍在运行，由文件变更触发重载：先终止再重启
                     console.print(
-                        f"[info]检测到文件变更 ([cmd]{reload_state['changed_file']}[/])，"
-                        "正在重启...[/]"
+                        f"[info]{i18n.t('cli.run.file_changed_restart', file=reload_state['changed_file'])}[/]"
                     )
                     reload_state["reload_event"].clear()
                     proc.terminate()
@@ -289,11 +298,10 @@ class RunCommand(Command):
                 # 进程已退出。若无排队的重载请求，提示等待文件变更
                 if not reload_state["reload_event"].is_set():
                     if proc.returncode == 0:
-                        console.print("[info]进程已正常退出，等待文件变更后重启[/]")
+                        console.print(f"[info]{i18n.t('cli.run.process_exited')}[/]")
                     else:
                         console.print(
-                            f"[warning]进程异常退出（退出码 {proc.returncode}），"
-                            "修复后保存文件将自动重启[/]"
+                            f"[warning]{i18n.t('cli.run.process_crashed', code=proc.returncode)}[/]"
                         )
                     while not reload_state["reload_event"].wait(timeout=0.3):
                         pass
@@ -301,8 +309,7 @@ class RunCommand(Command):
                 # 收到重载请求，重启进程
                 reload_state["reload_event"].clear()
                 console.print(
-                    f"[info]检测到文件变更 ([cmd]{reload_state['changed_file']}[/])，"
-                    "正在重启...[/]"
+                    f"[info]{i18n.t('cli.run.file_changed_restart', file=reload_state['changed_file'])}[/]"
                 )
                 _spawn()
         except KeyboardInterrupt:
@@ -336,8 +343,8 @@ class RunCommand(Command):
 
         console.print(
             Panel(
-                f"[bold]开发重载模式[/]\n监控目录: [path]{watch_dir}[/]",
-                title="热重载已启动",
+                i18n.t("cli.run.reload_mode_panel", watch_dir=watch_dir),
+                title=i18n.t("cli.run.reload_title"),
                 border_style="info",
             )
         )

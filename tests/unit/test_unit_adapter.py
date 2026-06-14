@@ -4,23 +4,25 @@
 测试适配器管理器和基础适配器类的功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from typing import Dict, Any
+from typing import Any, Dict
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import pytest
+
+from ErisPulse.Core import router
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Bases import BaseAdapter, SendDSL
 from ErisPulse.Core.config import config
+from ErisPulse.Core.i18n import i18n
 from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core import router
-
 
 # ==================== 适配器管理器测试 ====================
 
+
 class TestAdapterManager:
     """适配器管理器测试类"""
-    
+
     @pytest.fixture
     def manager(self):
         """创建适配器管理器实例"""
@@ -33,22 +35,24 @@ class TestAdapterManager:
         manager._raw_handlers.clear()
         manager._onebot_middlewares.clear()
         return manager
-    
+
     @pytest.fixture
     def test_adapter_class(self):
         """创建测试适配器类"""
+
         class TestAdapter(BaseAdapter):
             def __init__(self, sdk=None):
                 super().__init__()
                 self.sdk = sdk
                 self.started = False
                 self.shutdown_called = False
+
             async def start(self):
                 self.started = True
-            
+
             async def shutdown(self):
                 self.shutdown_called = True
-            
+
             async def call_api(self, endpoint: str, **params):
                 return {
                     "status": "ok",
@@ -56,93 +60,107 @@ class TestAdapterManager:
                     "data": {"test": True},
                     "message_id": "test_id",
                     "message": "",
-                    "test_raw": params
+                    "test_raw": params,
                 }
-        
+
         return TestAdapter
-    
+
     # ==================== 注册测试 ====================
-    
+
     def test_register_adapter_success(self, manager, test_adapter_class):
         """测试成功注册适配器"""
         # 执行
-        result = manager.register("test_platform", test_adapter_class, {"version": "1.0.0"})
-        
+        result = manager.register(
+            "test_platform", test_adapter_class, {"version": "1.0.0"}
+        )
+
         # 验证
         assert result is True
         assert "test_platform" in manager._adapters
         assert isinstance(manager._adapters["test_platform"], test_adapter_class)
         assert "test_platform" in manager._adapter_info
         assert manager._adapter_info["test_platform"]["version"] == "1.0.0"
-    
+
     def test_register_adapter_invalid_class(self, manager):
         """测试注册无效的适配器类"""
+
         class InvalidAdapter:
             pass
-        
+
         # 执行和验证
-        with pytest.raises(TypeError, match="必须继承自BaseAdapter"):
+        with pytest.raises(TypeError, match=i18n.t("core.adapter.must_inherit_base")):
             manager.register("invalid", InvalidAdapter)
-    
+
     def test_register_adapter_duplicate(self, manager, test_adapter_class):
         """测试注册重复的适配器"""
         # 第一次注册
         manager.register("test_platform", test_adapter_class)
-        
+
         # 第二次注册（覆盖，会记录 warning 日志）
         manager.register("test_platform", test_adapter_class)
-        
+
         # 验证仍然只有一个实例（因为同一类会复用实例）
-        assert len([a for a in manager._adapters.values() if isinstance(a, test_adapter_class)]) == 1
-    
-    def test_register_adapter_multiple_platforms_same_class(self, manager, test_adapter_class):
+        assert (
+            len(
+                [
+                    a
+                    for a in manager._adapters.values()
+                    if isinstance(a, test_adapter_class)
+                ]
+            )
+            == 1
+        )
+
+    def test_register_adapter_multiple_platforms_same_class(
+        self, manager, test_adapter_class
+    ):
         """测试同一适配器类注册到多个平台"""
         # 注册到多个平台
         manager.register("platform1", test_adapter_class)
         manager.register("platform2", test_adapter_class)
-        
+
         # 验证
         assert "platform1" in manager._adapters
         assert "platform2" in manager._adapters
         # 验证是同一个实例
         assert manager._adapters["platform1"] is manager._adapters["platform2"]
-    
+
     def test_register_platform_attributes(self, manager, test_adapter_class):
         """测试平台属性注册"""
         manager.register("Test", test_adapter_class)
-        
+
         # 验证属性可以通过不同大小写访问
         assert hasattr(manager, "test")
         assert hasattr(manager, "Test")
         assert hasattr(manager, "TEST")
         assert manager.test is manager._adapters["Test"]
-    
+
     # ==================== 启动和关闭测试 ====================
-    
+
     @pytest.mark.asyncio
     async def test_startup_all_adapters(self, manager, test_adapter_class):
         """测试启动所有适配器"""
         manager.register("platform1", test_adapter_class)
         manager.register("platform2", test_adapter_class)
-        
+
         await manager.startup()
-        
+
         assert len(manager._started_instances) == 0  # 异步，还未完成
-    
+
     @pytest.mark.asyncio
     async def test_startup_specific_adapters(self, manager, test_adapter_class):
         """测试启动指定的适配器"""
         manager.register("platform1", test_adapter_class)
         manager.register("platform2", test_adapter_class)
-        
+
         await manager.startup(["platform1"])
-    
+
     @pytest.mark.asyncio
     async def test_startup_nonexistent_platform(self, manager):
         """测试启动不存在的平台"""
         await manager.startup(["nonexistent"])
         assert "nonexistent" not in manager._adapters
-    
+
     @pytest.mark.asyncio
     async def test_shutdown_all_adapters(self, manager, test_adapter_class):
         """测试关闭所有适配器"""
@@ -150,140 +168,144 @@ class TestAdapterManager:
         manager.register("platform1", test_adapter_class)
         adapter1 = manager._adapters["platform1"]
         adapter1.started = True
-        
+
         manager.register("platform2", test_adapter_class)
         adapter2 = manager._adapters["platform2"]
         adapter2.started = True
-        
+
         manager._started_instances.add(adapter1)
-        
+
         # Mock router
-        with patch.object(router, 'stop'):
+        with patch.object(router, "stop"):
             # 执行
             await manager.shutdown()
-            
+
             # 验证所有适配器已关闭（adapter1 和 adapter2 是同一个实例）
             assert adapter1.shutdown_called
             # 注意：由于同一类会复用实例，started_instances 只有一个实例
             assert len(manager._started_instances) == 0
-    
+
     # ==================== 配置管理测试 ====================
-    
+
     def test_adapter_exists(self, manager, test_adapter_class):
         """测试检查适配器是否存在"""
         # Mock config
-        with patch.object(config, 'getConfig', return_value={}):
+        with patch.object(config, "getConfig", return_value={}):
             # 注册并检查
             manager.register("test_platform", test_adapter_class)
-            
+
             # 验证
             assert manager.exists("test_platform") is True
             assert manager.exists("nonexistent") is False
-    
+
     def test_adapter_is_enabled(self, manager):
         """测试检查适配器是否启用"""
-        with patch.object(config, 'getConfig') as mock_get:
+        with patch.object(config, "getConfig") as mock_get:
             # 启用状态
             mock_get.return_value = True
             assert manager.is_enabled("test_platform") is True
-            
+
             # 禁用状态
             mock_get.return_value = False
             assert manager.is_enabled("test_platform") is False
-            
+
             # 未配置状态
             mock_get.return_value = None
             assert manager.is_enabled("test_platform") is False
-    
+
     def test_adapter_enable(self, manager, test_adapter_class):
         """测试启用适配器"""
         # 先注册适配器
         manager.register("test_platform", test_adapter_class)
-        
-        with patch.object(config, 'setConfig') as mock_set:
+
+        with patch.object(config, "setConfig") as mock_set:
             # 执行
             result = manager.enable("test_platform")
-            
+
             # 验证
             assert result is True
-            mock_set.assert_called_once_with("ErisPulse.adapters.status.test_platform", True)
-    
+            mock_set.assert_called_once_with(
+                "ErisPulse.adapters.status.test_platform", True
+            )
+
     def test_adapter_disable(self, manager, test_adapter_class):
         """测试禁用适配器"""
         # 先注册适配器
         manager.register("test_platform", test_adapter_class)
-        
-        with patch.object(config, 'setConfig') as mock_set:
+
+        with patch.object(config, "setConfig") as mock_set:
             # 执行
             result = manager.disable("test_platform")
-            
+
             # 验证
             assert result is True
-            mock_set.assert_called_once_with("ErisPulse.adapters.status.test_platform", False)
-    
+            mock_set.assert_called_once_with(
+                "ErisPulse.adapters.status.test_platform", False
+            )
+
     def test_unregister_adapter(self, manager, test_adapter_class):
         """测试取消注册适配器"""
         # 注册适配器
         manager.register("Test", test_adapter_class)
         assert "Test" in manager._adapters
-        
+
         # 执行取消注册
         result = manager.unregister("Test")
-        
+
         # 验证
         assert result is True
         assert "Test" not in manager._adapters
         assert not hasattr(manager, "test")
         assert not hasattr(manager, "Test")
-    
+
     # ==================== 工具方法测试 ====================
-    
+
     def test_get_adapter(self, manager, test_adapter_class):
         """测试获取适配器实例"""
         manager.register("test_platform", test_adapter_class)
-        
+
         # 执行
         adapter = manager.get("test_platform")
-        
+
         # 验证
         assert adapter is not None
         assert isinstance(adapter, test_adapter_class)
-    
+
     def test_get_adapter_case_insensitive(self, manager, test_adapter_class):
         """测试获取适配器（大小写不敏感）"""
         manager.register("TestPlatform", test_adapter_class)
-        
+
         # 验证不同大小写都能获取
         assert manager.get("testplatform") is not None
         assert manager.get("TESTPLATFORM") is not None
         assert manager.get("TestPlatform") is not None
-    
+
     def test_get_adapter_nonexistent(self, manager):
         """测试获取不存在的适配器"""
         adapter = manager.get("nonexistent")
         assert adapter is None
-    
+
     def test_platforms_property(self, manager, test_adapter_class):
         """测试获取所有平台列表"""
         manager.register("platform1", test_adapter_class)
         manager.register("platform2", test_adapter_class)
-        
+
         # 执行
         platforms = manager.platforms
-        
+
         # 验证
         assert "platform1" in platforms
         assert "platform2" in platforms
         assert len(platforms) == 2
-    
+
     def test_list_sends(self, manager, test_adapter_class):
         """测试列出支持的发送方法"""
         # 注册适配器
         manager.register("test_platform", test_adapter_class)
-        
+
         # 执行
         methods = manager.list_sends("test_platform")
-        
+
         # 验证 - 应该包含Example方法（从BaseAdapter.Send继承），但不包含基类方法
         assert "Example" in methods
         # 验证不包含基类方法
@@ -293,27 +315,30 @@ class TestAdapterManager:
         assert "At" not in methods
         assert "Reply" not in methods
         assert "AtAll" not in methods
-    
+
     def test_list_sends_nonexistent_platform(self, manager):
         """测试列出不存在平台的方法"""
         # 执行和验证
-        with pytest.raises(ValueError, match="平台.*不存在"):
+        with pytest.raises(
+            ValueError,
+            match=i18n.t("core.adapter.platform_not_exist", platform="nonexistent"),
+        ):
             manager.list_sends("nonexistent")
-    
+
     def test_send_info(self, manager, test_adapter_class):
         """测试获取发送方法详情"""
         # 注册适配器
         manager.register("test_platform", test_adapter_class)
-        
+
         # 执行
         info = manager.send_info("test_platform", "Example")
-        
+
         # 验证基本信息
         assert info["name"] == "Example"
         assert "Awaitable" in info["return_type"]
         assert "Any" in info["return_type"]
         assert "示例消息发送方法" in info["docstring"]
-        
+
         # 验证参数信息
         parameters = info["parameters"]
         assert len(parameters) == 1
@@ -321,85 +346,91 @@ class TestAdapterManager:
         assert "str" in parameters[0]["type"]
         assert "str" in parameters[0]["annotation"]
         assert parameters[0]["default"] is None
-    
+
     def test_send_info_nonexistent_platform(self, manager):
         """测试获取不存在平台的方法详情"""
         # 执行和验证
-        with pytest.raises(ValueError, match="平台.*不存在"):
+        with pytest.raises(
+            ValueError,
+            match=i18n.t("core.adapter.platform_not_exist", platform="nonexistent"),
+        ):
             manager.send_info("nonexistent", "Example")
-    
+
     def test_send_info_nonexistent_method(self, manager, test_adapter_class):
         """测试获取不存在方法的详情"""
         # 注册适配器
         manager.register("test_platform", test_adapter_class)
-        
+
         # 执行和验证
-        with pytest.raises(ValueError, match="方法.*不存在"):
+        with pytest.raises(
+            ValueError,
+            match=i18n.t("core.adapter.method_not_exist", method="NonexistentMethod"),
+        ):
             manager.send_info("test_platform", "NonexistentMethod")
-    
+
     def test_contains_operator(self, manager, test_adapter_class):
         """测试包含操作符"""
-        with patch.object(config, 'getConfig', return_value=True):
+        with patch.object(config, "getConfig", return_value=True):
             # 启用的适配器（先注册）
-            with patch.object(config, 'setConfig'):
+            with patch.object(config, "setConfig"):
                 manager.register("enabled", test_adapter_class)
                 assert "enabled" in manager
-            
+
             # 禁用的适配器
-            with patch.object(config, 'getConfig', return_value=False):
+            with patch.object(config, "getConfig", return_value=False):
                 assert "disabled" not in manager
-            
+
             # 不存在的适配器
             assert "nonexistent" not in manager
-    
+
     # ==================== 事件处理测试 ====================
-    
+
     def test_register_onebot_handler(self, manager):
         """测试注册OneBot12事件处理器"""
         handler_called = []
-        
+
         @manager.on("message")
         async def handler(data):
             handler_called.append(data)
-        
+
         # 验证处理器已注册
         assert "message" in manager._onebot_handlers
         assert len(manager._onebot_handlers["message"]) == 1
-    
+
     def test_register_raw_handler(self, manager):
         """测试注册原生事件处理器"""
         handler_called = []
-        
+
         @manager.on("test_event", raw=True, platform="test_platform")
         async def handler(data):
             handler_called.append(data)
-        
+
         # 验证处理器已注册
         assert "test_event" in manager._raw_handlers
         assert len(manager._raw_handlers["test_event"]) == 1
-    
+
     def test_register_middleware(self, manager):
         """测试注册中间件"""
         middleware_called = []
-        
+
         @manager.middleware
         async def middleware(data):
             middleware_called.append(data)
             return data
-        
+
         # 验证中间件已注册
         assert len(manager._onebot_middlewares) == 1
         assert middleware_called == []
-    
+
     @pytest.mark.asyncio
     async def test_emit_onebot_event(self, manager):
         """测试提交OneBot12标准事件"""
         handler_called = []
-        
+
         @manager.on("message")
         async def handler(data):
             handler_called.append(data)
-        
+
         # 提交事件
         event_data = {
             "id": "test_123",
@@ -408,25 +439,25 @@ class TestAdapterManager:
             "detail_type": "private",
             "platform": "test",
             "self": {"platform": "test", "user_id": "bot_123"},
-            "message": [{"type": "text", "data": {"text": "test"}}]
+            "message": [{"type": "text", "data": {"text": "test"}}],
         }
-        
+
         await manager.emit(event_data)
         await asyncio.sleep(0)
-        
+
         # 验证处理器被调用
         assert len(handler_called) == 1
         assert handler_called[0] == event_data
-    
+
     @pytest.mark.asyncio
     async def test_emit_raw_event(self, manager):
         """测试提交原生事件"""
         handler_called = []
-        
+
         @manager.on("test_raw_event", raw=True, platform="test")
         async def handler(data):
             handler_called.append(data)
-        
+
         # 提交事件
         event_data = {
             "id": "test_123",
@@ -435,44 +466,44 @@ class TestAdapterManager:
             "platform": "test",
             "self": {"platform": "test", "user_id": "bot_123"},
             "test_raw": {"raw_data": "test"},
-            "test_raw_type": "test_raw_event"
+            "test_raw_type": "test_raw_event",
         }
-        
+
         await manager.emit(event_data)
         await asyncio.sleep(0)
-        
+
         # 验证原生处理器被调用
         assert len(handler_called) == 1
         assert handler_called[0] == event_data["test_raw"]
-    
+
     @pytest.mark.asyncio
     async def test_emit_with_middleware(self, manager):
         """测试事件经过中间件处理"""
         middleware_data = []
         handler_data = []
-        
+
         @manager.middleware
         async def middleware(data):
             middleware_data.append(data)
             data["middleware_added"] = True
             return data
-        
+
         @manager.on("message")
         async def handler(data):
             handler_data.append(data)
-        
+
         # 提交事件
         event_data = {
             "id": "test_123",
             "type": "message",
             "platform": "test",
             "self": {"platform": "test", "user_id": "bot_123"},
-            "message": []
+            "message": [],
         }
-        
+
         await manager.emit(event_data)
         await asyncio.sleep(0)
-        
+
         # 验证中间件和处理器都被调用
         assert len(middleware_data) == 1
         assert len(handler_data) == 1
@@ -481,74 +512,76 @@ class TestAdapterManager:
 
 # ==================== SendDSL 测试 ====================
 
+
 class TestSendDSL:
     """消息发送DSL测试类"""
-    
+
     @pytest.fixture
     def base_adapter(self):
         """创建基础适配器"""
+
         class TestAdapter(BaseAdapter):
             async def start(self):
                 pass
-            
+
             async def shutdown(self):
                 pass
-            
+
             async def call_api(self, endpoint: str, **params):
                 return {
                     "status": "ok",
                     "retcode": 0,
                     "data": {},
-                    "message_id": "test_id"
+                    "message_id": "test_id",
                 }
-        
+
         return TestAdapter()
-    
+
     def test_send_dsl_initialization(self, base_adapter):
         """测试SendDSL初始化"""
         send_dsl = SendDSL(base_adapter, "user", "123", None)
-        
+
         assert send_dsl._adapter is base_adapter
         assert send_dsl._target_type == "user"
         assert send_dsl._target_id == "123"
         assert send_dsl._account_id is None
-    
+
     def test_send_dsl_to_method(self, base_adapter):
         """测试To方法"""
         send_dsl = SendDSL(base_adapter)
-        
+
         # 设置目标
         result = send_dsl.To("group", "456")
-        
+
         assert result._target_type == "group"
         assert result._target_id == "456"
         assert result._target_to == "456"
-    
+
     def test_send_dsl_to_single_arg(self, base_adapter):
         """测试To方法单参数"""
         send_dsl = SendDSL(base_adapter)
-        
+
         # 只传ID
         result = send_dsl.To("789")
-        
+
         assert result._target_to == "789"
-    
+
     def test_send_dsl_using_method(self, base_adapter):
         """测试Using方法"""
         send_dsl = SendDSL(base_adapter)
-        
+
         # 设置账号
         result = send_dsl.Using("account_123")
-        
+
         assert result._account_id == "account_123"
-    
+
     def test_send_dsl_chaining(self, base_adapter):
         """测试链式调用"""
         send_dsl = SendDSL(base_adapter)
-        
+
         # 链式调用
         result = send_dsl.Using("account_1").To("user", "123")
-        
+
         assert result._account_id == "account_1"
         assert result._target_type == "user"
         assert result._target_id == "123"
@@ -556,58 +589,62 @@ class TestSendDSL:
 
 # ==================== BaseAdapter 测试 ====================
 
+
 class TestBaseAdapter:
     """基础适配器测试类"""
-    
+
     @pytest.fixture
     def concrete_adapter(self):
         """创建具体适配器"""
+
         class ConcreteAdapter(BaseAdapter):
             def __init__(self):
                 super().__init__()
                 self.initialized = False
                 self.started = False
                 self.shutdown_called = False
-            
+
             async def start(self):
                 self.started = True
-            
+
             async def shutdown(self):
                 self.shutdown_called = True
-            
+
             async def call_api(self, endpoint: str, **params):
                 return {
                     "status": "ok",
                     "retcode": 0,
                     "data": {"endpoint": endpoint},
-                    "message_id": "test_id"
+                    "message_id": "test_id",
                 }
-        
+
         return ConcreteAdapter()
-    
+
     def test_adapter_has_send_dsl(self, concrete_adapter):
         """测试适配器有Send DSL"""
         assert hasattr(concrete_adapter, "Send")
         assert isinstance(concrete_adapter.Send, SendDSL)
-    
+
     def test_send_dsl_adapter_reference(self, concrete_adapter):
         """测试Send DSL引用适配器"""
         assert concrete_adapter.Send._adapter is concrete_adapter
-    
+
     @pytest.mark.asyncio
     async def test_adapter_send_method(self, concrete_adapter):
         """测试send便捷方法"""
         task = concrete_adapter.send("user", "123", "test message", method="Example")
-        
+
         # 验证返回的是Task
         import asyncio
+
         assert isinstance(task, asyncio.Task)
-    
+
     def test_abstract_methods_not_implemented(self):
         """测试抽象方法未实现会抛出异常"""
+
         class IncompleteAdapter(BaseAdapter):
             pass
-        
+
         # 使用 ABC，无法实例化未实现抽象方法的类
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
             IncompleteAdapter()
@@ -615,12 +652,14 @@ class TestBaseAdapter:
 
 # ==================== SendDSL Raw_ob12 测试 ====================
 
+
 class TestSendDSLRawMethods:
     """SendDSL Raw_ob12 方法测试类"""
 
     @pytest.fixture
     def base_adapter(self):
         """创建基础适配器（未重写 Raw_ob12）"""
+
         class TestAdapter(BaseAdapter):
             async def start(self):
                 pass
@@ -629,7 +668,12 @@ class TestSendDSLRawMethods:
                 pass
 
             async def call_api(self, endpoint: str, **params):
-                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "test_id"}
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {},
+                    "message_id": "test_id",
+                }
 
         return TestAdapter()
 
@@ -648,7 +692,7 @@ class TestSendDSLRawMethods:
     @pytest.mark.asyncio
     async def test_raw_ob12_default_logs_error(self, base_adapter):
         """测试未重写 Raw_ob12 时记录错误日志"""
-        with patch('ErisPulse.Core.logger.logger') as mock_logger:
+        with patch("ErisPulse.Core.logger.logger") as mock_logger:
             send = SendDSL(base_adapter, "user", "123", None)
             await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
             mock_logger.error.assert_called_once()
@@ -672,6 +716,7 @@ class TestSendDSLRawMethods:
                 def Raw_ob12(self, message, **kwargs):
                     async def _do():
                         return await self._adapter.call_api("/send", message=message)
+
                     return asyncio.create_task(_do())
 
         adapter = CustomAdapter()
@@ -682,6 +727,7 @@ class TestSendDSLRawMethods:
     @pytest.mark.asyncio
     async def test_raw_ob12_overridden_awaitable(self):
         """测试重写的 Raw_ob12 可以 await 并返回结果"""
+
         class CustomAdapter(BaseAdapter):
             async def start(self):
                 pass
@@ -695,8 +741,10 @@ class TestSendDSLRawMethods:
             class Send(BaseAdapter.Send):
                 def Raw_ob12(self, message, **kwargs):
                     import asyncio
+
                     async def _do():
                         return await self._adapter.call_api("/send", message=message)
+
                     return asyncio.create_task(_do())
 
         adapter = CustomAdapter()
@@ -709,6 +757,7 @@ class TestSendDSLRawMethods:
     @pytest.mark.asyncio
     async def test_raw_ob12_accepts_dict_input(self):
         """测试 Raw_ob12 接受单个 dict 输入"""
+
         class CustomAdapter(BaseAdapter):
             async def start(self):
                 pass
@@ -722,23 +771,27 @@ class TestSendDSLRawMethods:
             class Send(BaseAdapter.Send):
                 def Raw_ob12(self, message, **kwargs):
                     import asyncio
+
                     # 记录收到的 message 类型
                     self._received_type = type(message).__name__
+
                     async def _do():
                         return {}
+
                     return asyncio.create_task(_do())
 
         adapter = CustomAdapter()
         send = adapter.Send.To("user", "123")
         await send.Raw_ob12({"type": "text", "data": {"text": "hi"}})
         # 基类会将 dict 包装为 list
-        assert hasattr(send, '_received_type')
+        assert hasattr(send, "_received_type")
 
     @pytest.mark.asyncio
     async def test_raw_ob12_with_message_builder(self):
         """测试 Raw_ob12 配合 MessageBuilder 使用"""
-        from ErisPulse.Core.Event.message_builder import MessageBuilder
         import asyncio
+
+        from ErisPulse.Core.Event.message_builder import MessageBuilder
 
         captured_segments = []
 
@@ -756,8 +809,10 @@ class TestSendDSLRawMethods:
                 def Raw_ob12(self, message, **kwargs):
                     captured_segments.append(message)
                     import asyncio
+
                     async def _do():
                         return {}
+
                     return asyncio.create_task(_do())
 
         adapter = CustomAdapter()
@@ -774,6 +829,7 @@ class TestSendDSLRawMethods:
     async def test_standard_methods_delegate_to_raw_ob12(self):
         """测试标准方法（Text/Image）委托给 Raw_ob12 时行为一致"""
         import asyncio
+
         calls = []
 
         class CustomAdapter(BaseAdapter):
@@ -790,8 +846,10 @@ class TestSendDSLRawMethods:
                 def Raw_ob12(self, message, **kwargs):
                     calls.append(message)
                     import asyncio
+
                     async def _do():
                         return {}
+
                     return asyncio.create_task(_do())
 
                 def Text(self, text: str):
@@ -810,6 +868,7 @@ class TestSendDSLRawMethods:
 
 
 # ==================== Bot 状态追踪测试 ====================
+
 
 class TestBotStatusTracking:
     """Bot 状态追踪测试类"""
@@ -830,16 +889,26 @@ class TestBotStatusTracking:
     @pytest.fixture
     def test_adapter_class(self):
         """创建测试适配器类"""
+
         class TestAdapter(BaseAdapter):
             def __init__(self, sdk=None):
                 super().__init__()
                 self.sdk = sdk
+
             async def start(self):
                 pass
+
             async def shutdown(self):
                 pass
+
             async def call_api(self, endpoint: str, **params):
-                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "test_id"}
+                return {
+                    "status": "ok",
+                    "retcode": 0,
+                    "data": {},
+                    "message_id": "test_id",
+                }
+
         return TestAdapter
 
     # ==================== meta connect 事件测试 ====================
@@ -857,11 +926,11 @@ class TestBotStatusTracking:
                 "platform": "telegram",
                 "user_id": "123456",
                 "user_name": "TestBot",
-                "avatar": "https://example.com/avatar.jpg"
-            }
+                "avatar": "https://example.com/avatar.jpg",
+            },
         }
 
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
             await manager.emit(event)
             await asyncio.sleep(0)
 
@@ -881,13 +950,12 @@ class TestBotStatusTracking:
             "type": "meta",
             "detail_type": "connect",
             "platform": "telegram",
-            "self": {
-                "platform": "telegram",
-                "user_id": "123456"
-            }
+            "self": {"platform": "telegram", "user_id": "123456"},
         }
 
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock) as mock_submit:
+        with patch.object(
+            lifecycle, "submit_event", new_callable=AsyncMock
+        ) as mock_submit:
             await manager.emit(event)
             await asyncio.sleep(0)
             # 验证 adapter.bot.online 事件被提交
@@ -901,20 +969,34 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_meta_connect_first_time_vs_repeat(self, manager):
         """测试首次和重复 meta connect"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
             # 第一次 connect
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
-            })
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"},
+                }
+            )
             await asyncio.sleep(0)
             # 第二次 connect（应该更新元信息而不是报错）
-            await manager.emit({
-                "id": "2", "time": 2, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1Updated"}
-            })
+            await manager.emit(
+                {
+                    "id": "2",
+                    "time": 2,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {
+                        "platform": "tg",
+                        "user_id": "bot1",
+                        "user_name": "Bot1Updated",
+                    },
+                }
+            )
             await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -929,23 +1011,33 @@ class TestBotStatusTracking:
         import time
 
         # 先注册 Bot
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1"}
-            })
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
         old_active = manager.get_bot_info("tg", "bot1")["last_active"]
         time.sleep(0.05)
 
         # 发送心跳
-        await manager.emit({
-            "id": "2", "time": 2, "type": "meta",
-            "detail_type": "heartbeat", "platform": "tg",
-            "self": {"platform": "tg", "user_id": "bot1"}
-        })
+        await manager.emit(
+            {
+                "id": "2",
+                "time": 2,
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1"},
+            }
+        )
         await asyncio.sleep(0)
 
         new_active = manager.get_bot_info("tg", "bot1")["last_active"]
@@ -954,20 +1046,34 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_meta_heartbeat_updates_metadata(self, manager):
         """测试 meta heartbeat 更新元信息"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
-            })
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
         # 心跳中更新头像
-        await manager.emit({
-            "id": "2", "time": 2, "type": "meta",
-            "detail_type": "heartbeat", "platform": "tg",
-            "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.avatar.jpg"}
-        })
+        await manager.emit(
+            {
+                "id": "2",
+                "time": 2,
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "tg",
+                "self": {
+                    "platform": "tg",
+                    "user_id": "bot1",
+                    "avatar": "https://new.avatar.jpg",
+                },
+            }
+        )
         await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -977,11 +1083,16 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_meta_heartbeat_unknown_bot_no_crash(self, manager):
         """测试 meta heartbeat 对未知 Bot 不崩溃"""
-        await manager.emit({
-            "id": "1", "time": 1, "type": "meta",
-            "detail_type": "heartbeat", "platform": "tg",
-            "self": {"platform": "tg", "user_id": "unknown_bot"}
-        })
+        await manager.emit(
+            {
+                "id": "1",
+                "time": 1,
+                "type": "meta",
+                "detail_type": "heartbeat",
+                "platform": "tg",
+                "self": {"platform": "tg", "user_id": "unknown_bot"},
+            }
+        )
         await asyncio.sleep(0)
         # 不崩溃即可
         assert manager.get_bot_info("tg", "unknown_bot") is None
@@ -991,24 +1102,34 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_meta_disconnect_marks_offline(self, manager):
         """测试 meta disconnect 标记 Bot 离线"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
             # 先上线
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1"}
-            })
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is True
 
         # 断开连接
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "2", "time": 2, "type": "meta",
-                "detail_type": "disconnect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1"}
-            })
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "2",
+                    "time": 2,
+                    "type": "meta",
+                    "detail_type": "disconnect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is False
@@ -1018,12 +1139,17 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_meta_disconnect_unknown_bot(self, manager):
         """测试 meta disconnect 对未知 Bot 不崩溃"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "disconnect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "unknown_bot"}
-            })
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "disconnect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "unknown_bot"},
+                }
+            )
             await asyncio.sleep(0)
         # 应该被注册但状态为 offline
         bot_info = manager.get_bot_info("tg", "unknown_bot")
@@ -1035,12 +1161,17 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_message_event_auto_discovers_bot(self, manager):
         """测试普通消息事件自动发现 Bot"""
-        await manager.emit({
-            "id": "1", "time": 1, "type": "message",
-            "detail_type": "group", "platform": "tg",
-            "self": {"platform": "tg", "user_id": "bot1", "user_name": "AutoBot"},
-            "message": [{"type": "text", "data": {"text": "hi"}}]
-        })
+        await manager.emit(
+            {
+                "id": "1",
+                "time": 1,
+                "type": "message",
+                "detail_type": "group",
+                "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1", "user_name": "AutoBot"},
+                "message": [{"type": "text", "data": {"text": "hi"}}],
+            }
+        )
         await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -1051,12 +1182,17 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_notice_event_auto_discovers_bot(self, manager):
         """测试通知事件自动发现 Bot"""
-        await manager.emit({
-            "id": "1", "time": 1, "type": "notice",
-            "detail_type": "friend_add", "platform": "tg",
-            "self": {"platform": "tg", "user_id": "bot1"},
-            "user_id": "user1"
-        })
+        await manager.emit(
+            {
+                "id": "1",
+                "time": 1,
+                "type": "notice",
+                "detail_type": "friend_add",
+                "platform": "tg",
+                "self": {"platform": "tg", "user_id": "bot1"},
+                "user_id": "user1",
+            }
+        )
         await asyncio.sleep(0)
 
         assert manager.is_bot_online("tg", "bot1") is True
@@ -1064,10 +1200,9 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_event_without_self_no_crash(self, manager):
         """测试无 self 字段的事件不崩溃"""
-        await manager.emit({
-            "id": "1", "time": 1, "type": "message",
-            "platform": "tg", "message": []
-        })
+        await manager.emit(
+            {"id": "1", "time": 1, "type": "message", "platform": "tg", "message": []}
+        )
         await asyncio.sleep(0)
         # 不崩溃即可
         assert len(manager._bots) == 0
@@ -1075,11 +1210,15 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_event_with_self_no_userid_no_crash(self, manager):
         """测试 self 字段无 user_id 的事件不崩溃"""
-        await manager.emit({
-            "id": "1", "time": 1, "type": "message",
-            "platform": "tg",
-            "self": {"platform": "tg"}
-        })
+        await manager.emit(
+            {
+                "id": "1",
+                "time": 1,
+                "type": "message",
+                "platform": "tg",
+                "self": {"platform": "tg"},
+            }
+        )
         await asyncio.sleep(0)
         # 不崩溃即可
         assert len(manager._bots) == 0
@@ -1089,18 +1228,23 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_self_field_metadata_extraction(self, manager):
         """测试 self 字段扩展元信息提取"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
                     "platform": "tg",
-                    "user_id": "bot1",
-                    "user_name": "MyBot",
-                    "avatar": "https://avatar.jpg",
-                    "account_id": "acc_001"
+                    "self": {
+                        "platform": "tg",
+                        "user_id": "bot1",
+                        "user_name": "MyBot",
+                        "avatar": "https://avatar.jpg",
+                        "account_id": "acc_001",
+                    },
                 }
-            })
+            )
             await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -1111,22 +1255,35 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_metadata_merge_on_repeated_events(self, manager):
         """测试重复事件时元信息合并"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
             # 第一次：只有 user_name
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"}
-            })
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "tg",
+                    "self": {"platform": "tg", "user_id": "bot1", "user_name": "Bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
             # 第二次：添加 avatar
-            await manager.emit({
-                "id": "2", "time": 2, "type": "message",
-                "platform": "tg",
-                "self": {"platform": "tg", "user_id": "bot1", "avatar": "https://new.jpg"},
-                "message": []
-            })
+            await manager.emit(
+                {
+                    "id": "2",
+                    "time": 2,
+                    "type": "message",
+                    "platform": "tg",
+                    "self": {
+                        "platform": "tg",
+                        "user_id": "bot1",
+                        "avatar": "https://new.jpg",
+                    },
+                    "message": [],
+                }
+            )
             await asyncio.sleep(0)
 
         bot_info = manager.get_bot_info("tg", "bot1")
@@ -1143,7 +1300,7 @@ class TestBotStatusTracking:
         """测试列出所有 Bot"""
         manager._bots = {
             "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}},
-            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}}
+            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}},
         }
         result = manager.list_bots()
         assert "tg" in result
@@ -1155,7 +1312,7 @@ class TestBotStatusTracking:
         """测试列出指定平台的 Bot"""
         manager._bots = {
             "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}},
-            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}}
+            "dc": {"bot2": {"status": "offline", "last_active": 2.0, "info": {}}},
         }
         result = manager.list_bots("tg")
         assert "tg" in result
@@ -1171,7 +1328,7 @@ class TestBotStatusTracking:
         manager._bots = {
             "tg": {
                 "bot1": {"status": "online", "last_active": 1.0, "info": {}},
-                "bot2": {"status": "offline", "last_active": 2.0, "info": {}}
+                "bot2": {"status": "offline", "last_active": 2.0, "info": {}},
             }
         }
         assert manager.is_bot_online("tg", "bot1") is True
@@ -1184,7 +1341,11 @@ class TestBotStatusTracking:
         manager.register("tg", test_adapter_class)
         manager._bots = {
             "tg": {
-                "bot1": {"status": "online", "last_active": 1.0, "info": {"user_name": "Bot1"}}
+                "bot1": {
+                    "status": "online",
+                    "last_active": 1.0,
+                    "info": {"user_name": "Bot1"},
+                }
             }
         }
         summary = manager.get_status_summary()
@@ -1205,11 +1366,11 @@ class TestBotStatusTracking:
         manager._bots = {
             "tg": {
                 "bot1": {"status": "online", "last_active": 1.0, "info": {}},
-                "bot2": {"status": "online", "last_active": 2.0, "info": {}}
+                "bot2": {"status": "online", "last_active": 2.0, "info": {}},
             }
         }
 
-        with patch.object(router, 'stop'):
+        with patch.object(router, "stop"):
             await manager.shutdown()
 
         # 验证所有 Bot 都离线
@@ -1231,20 +1392,38 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_multiple_platforms_multiple_bots(self, manager):
         """测试多平台多 Bot 场景"""
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
             # Telegram Bot 上线
-            await manager.emit({
-                "id": "1", "time": 1, "type": "meta",
-                "detail_type": "connect", "platform": "telegram",
-                "self": {"platform": "telegram", "user_id": "tg_bot1", "user_name": "TGBot"}
-            })
+            await manager.emit(
+                {
+                    "id": "1",
+                    "time": 1,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "telegram",
+                    "self": {
+                        "platform": "telegram",
+                        "user_id": "tg_bot1",
+                        "user_name": "TGBot",
+                    },
+                }
+            )
             await asyncio.sleep(0)
             # Discord Bot 上线
-            await manager.emit({
-                "id": "2", "time": 2, "type": "meta",
-                "detail_type": "connect", "platform": "discord",
-                "self": {"platform": "discord", "user_id": "dc_bot1", "user_name": "DCBot"}
-            })
+            await manager.emit(
+                {
+                    "id": "2",
+                    "time": 2,
+                    "type": "meta",
+                    "detail_type": "connect",
+                    "platform": "discord",
+                    "self": {
+                        "platform": "discord",
+                        "user_id": "dc_bot1",
+                        "user_name": "DCBot",
+                    },
+                }
+            )
             await asyncio.sleep(0)
 
         # 验证两个平台的 Bot 都已注册
@@ -1256,12 +1435,17 @@ class TestBotStatusTracking:
         assert "discord" in all_bots
 
         # Telegram Bot 离线
-        with patch.object(lifecycle, 'submit_event', new_callable=AsyncMock):
-            await manager.emit({
-                "id": "3", "time": 3, "type": "meta",
-                "detail_type": "disconnect", "platform": "telegram",
-                "self": {"platform": "telegram", "user_id": "tg_bot1"}
-            })
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock):
+            await manager.emit(
+                {
+                    "id": "3",
+                    "time": 3,
+                    "type": "meta",
+                    "detail_type": "disconnect",
+                    "platform": "telegram",
+                    "self": {"platform": "telegram", "user_id": "tg_bot1"},
+                }
+            )
             await asyncio.sleep(0)
 
         assert manager.is_bot_online("telegram", "tg_bot1") is False

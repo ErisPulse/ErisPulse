@@ -14,25 +14,25 @@ import importlib.metadata
 
 # 导入核心模块
 from .Core import (
+    BaseAdapter,
     Event,
+    SendDSL,
+    adapter,
+    config,
+    env,
+    i18n,
     lifecycle,
     logger,
-    storage,
-    env,
-    config,
-    adapter,
-    BaseAdapter,
-    SendDSL,
     module,
     router,
+    storage,
 )
-
-# 导入实际的SDK对象
-from .sdk import sdk
 
 # 导入懒加载模块类
 from .loaders.module import LazyModule
 
+# 导入实际的SDK对象
+from .sdk import sdk
 
 # ==================== 版本信息 ====================
 

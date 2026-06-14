@@ -4,18 +4,18 @@ Create 命令实现
 脚手架工具，快速创建 Module / Adapter 项目模板
 """
 
-import sys
 import datetime
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from rich.prompt import Prompt, IntPrompt
+from rich.prompt import IntPrompt, Prompt
 from rich.text import Text
 
-from ..console import console
 from ..base import Command
-from ..utils.display import section_header, prompt_validated
-
+from ..console import console
+from ..i18n import i18n
+from ..utils.display import prompt_validated, section_header
 
 _LICENSE_TEMPLATE = """MIT License
 
@@ -521,7 +521,7 @@ class CreateCommand(Command):
     """
 
     name = "create"
-    description = "创建 Module / Adapter 项目脚手架"
+    description = i18n.t("cli.create.description")
     aliases = ["c", "new"]
 
     def add_arguments(self, parser: ArgumentParser):
@@ -529,18 +529,26 @@ class CreateCommand(Command):
             "create_type",
             nargs="?",
             choices=["module", "adapter"],
-            help="创建类型: module 或 adapter",
+            help=i18n.t("cli.create.type_help"),
         )
-        parser.add_argument("--name", "-n", help="项目/模块/适配器名称 (PascalCase)")
-        parser.add_argument("--description", "-d", help="项目描述", default="")
-        parser.add_argument("--author", "-a", help="作者名称", default="")
-        parser.add_argument("--email", "-e", help="作者邮箱", default="")
-        parser.add_argument("--homepage", help="项目主页 URL", default="")
+        parser.add_argument("--name", "-n", help=i18n.t("cli.create.name_help"))
         parser.add_argument(
-            "--output", "-o", help="输出目录 (默认当前目录)", default="."
+            "--description", "-d", help=i18n.t("cli.create.desc_help"), default=""
         )
         parser.add_argument(
-            "--force", "-f", action="store_true", help="强制覆盖已存在的目录"
+            "--author", "-a", help=i18n.t("cli.create.author_help"), default=""
+        )
+        parser.add_argument(
+            "--email", "-e", help=i18n.t("cli.create.email_help"), default=""
+        )
+        parser.add_argument(
+            "--homepage", help=i18n.t("cli.create.homepage_help"), default=""
+        )
+        parser.add_argument(
+            "--output", "-o", help=i18n.t("cli.create.output_help"), default="."
+        )
+        parser.add_argument(
+            "--force", "-f", action="store_true", help=i18n.t("cli.create.force_help")
         )
 
     def execute(self, args):
@@ -553,10 +561,10 @@ class CreateCommand(Command):
         # 名称校验：非法时保留输入并重新提示，而非直接退出
         if not (name and _validate_name(name)):
             name = prompt_validated(
-                "  名称 (PascalCase)",
+                i18n.t("cli.create.name_prompt"),
                 default=name or default_name,
                 validate=_validate_name,
-                error_msg="名称必须以字母开头，只能包含字母、数字和下划线",
+                error_msg=i18n.t("cli.create.name_error"),
             )
 
         if create_type == "module":
@@ -570,11 +578,17 @@ class CreateCommand(Command):
 
         :return: [str] 返回 "module" 或 "adapter"
         """
-        section_header("选择创建类型")
-        console.print("    [bold]1.[/] Module   [dim]— 自定义功能模块[/]")
-        console.print("    [bold]2.[/] Adapter  [dim]— 平台适配器[/]")
+        section_header(i18n.t("cli.create.select_type_title"))
+        console.print(
+            f"    [bold]1.[/] Module   [dim]{i18n.t('cli.create.select_type_module')}[/]"
+        )
+        console.print(
+            f"    [bold]2.[/] Adapter  [dim]{i18n.t('cli.create.select_type_adapter')}[/]"
+        )
         console.print()
-        choice = IntPrompt.ask("  请选择", default=1, choices=["1", "2"])
+        choice = IntPrompt.ask(
+            i18n.t("cli.create.select_prompt"), default=1, choices=["1", "2"]
+        )
         console.print()
         return "module" if choice == 1 else "adapter"
 
@@ -604,19 +618,31 @@ class CreateCommand(Command):
         :return: [None] 无返回值
         """
         description = self._ask_missing(
-            args, "description", "模块描述", f"一个非常哇塞的{name}模块"
+            args,
+            "description",
+            i18n.t("cli.create.module_desc_prompt"),
+            i18n.t("cli.create.module_desc_placeholder", name=name),
         )
-        author = self._ask_missing(args, "author", "作者名称", "yourname")
-        email = self._ask_missing(args, "email", "作者邮箱", "your@mail.com")
+        author = self._ask_missing(
+            args, "author", i18n.t("cli.create.author_prompt"), "yourname"
+        )
+        email = self._ask_missing(
+            args, "email", i18n.t("cli.create.email_prompt"), "your@mail.com"
+        )
         homepage = self._ask_missing(
-            args, "homepage", "项目主页", f"https://github.com/{author}/{name}"
+            args,
+            "homepage",
+            i18n.t("cli.create.homepage_prompt"),
+            f"https://github.com/{author}/{name}",
         )
 
         output = Path(args.output)
         project_dir = output / name
 
         if project_dir.exists() and not args.force:
-            console.print(f"[error]  目录 {project_dir} 已存在，使用 --force 覆盖")
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(project_dir))}"
+            )
             sys.exit(1)
 
         try:
@@ -650,9 +676,11 @@ class CreateCommand(Command):
             )
 
             console.print()
-            console.print(f"[success]  Module 项目 [{name}] 创建成功[/]")
+            console.print(
+                f"[success]  {i18n.t('cli.create.module_created', name=name)}[/]"
+            )
             console.print()
-            console.print(Text("  项目结构:", style="bold"))
+            console.print(Text(i18n.t("cli.create.project_structure"), style="bold"))
             console.print(f"    {name}/")
             console.print("    ├── pyproject.toml")
             console.print("    ├── LICENSE")
@@ -661,14 +689,16 @@ class CreateCommand(Command):
             console.print("        ├── __init__.py")
             console.print("        └── Core.py")
             console.print()
-            console.print(Text("  接下来:", style="bold"))
-            console.print(f"    · cd {name}")
-            console.print(f"    · 编辑 {name}/Core.py 实现模块逻辑")
-            console.print("    · pip install -e .  (开发模式安装)")
-            console.print("    · epsdk run  (运行测试)")
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=name)}")
+            console.print(
+                f"    · {i18n.t('cli.create.edit_module', file=name + '/Core.py')}"
+            )
+            console.print(f"    · {i18n.t('cli.create.install_dev')}")
+            console.print(f"    · {i18n.t('cli.create.run_test')}")
 
         except Exception as e:
-            console.print(f"[error]  创建失败: {e}")
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
             sys.exit(1)
 
     def _create_adapter(self, args, name: str):
@@ -680,12 +710,22 @@ class CreateCommand(Command):
         :return: [None] 无返回值
         """
         description = self._ask_missing(
-            args, "description", "适配器描述", f"{name}平台适配器"
+            args,
+            "description",
+            i18n.t("cli.create.adapter_desc_prompt"),
+            i18n.t("cli.create.adapter_desc_placeholder", name=name),
         )
-        author = self._ask_missing(args, "author", "作者名称", "yourname")
-        email = self._ask_missing(args, "email", "作者邮箱", "your@mail.com")
+        author = self._ask_missing(
+            args, "author", i18n.t("cli.create.author_prompt"), "yourname"
+        )
+        email = self._ask_missing(
+            args, "email", i18n.t("cli.create.email_prompt"), "your@mail.com"
+        )
         homepage = self._ask_missing(
-            args, "homepage", "项目主页", f"https://github.com/{author}/{name}"
+            args,
+            "homepage",
+            i18n.t("cli.create.homepage_prompt"),
+            f"https://github.com/{author}/{name}",
         )
 
         converter_name = _to_converter_name(name)
@@ -694,7 +734,9 @@ class CreateCommand(Command):
         project_dir = output / name
 
         if project_dir.exists() and not args.force:
-            console.print(f"[error]  目录 {project_dir} 已存在，使用 --force 覆盖")
+            console.print(
+                f"[error]  {i18n.t('cli.create.dir_exists', dir=str(project_dir))}"
+            )
             sys.exit(1)
 
         try:
@@ -743,9 +785,11 @@ class CreateCommand(Command):
             )
 
             console.print()
-            console.print(f"[success]  Adapter 项目 [{name}] 创建成功[/]")
+            console.print(
+                f"[success]  {i18n.t('cli.create.adapter_created', name=name)}[/]"
+            )
             console.print()
-            console.print(Text("  项目结构:", style="bold"))
+            console.print(Text(i18n.t("cli.create.project_structure"), style="bold"))
             console.print(f"    {name}/")
             console.print("    ├── pyproject.toml")
             console.print("    ├── LICENSE")
@@ -755,13 +799,17 @@ class CreateCommand(Command):
             console.print("        ├── Core.py")
             console.print("        └── Converter.py")
             console.print()
-            console.print(Text("  接下来:", style="bold"))
-            console.print(f"    · cd {name}")
-            console.print(f"    · 编辑 {name}/Core.py 实现适配器逻辑")
-            console.print(f"    · 编辑 {name}/Converter.py 实现消息格式转换")
-            console.print("    · pip install -e .  (开发模式安装)")
-            console.print("    · epsdk run  (运行测试)")
+            console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
+            console.print(f"    · {i18n.t('cli.create.cd_to', dir=name)}")
+            console.print(
+                f"    · {i18n.t('cli.create.edit_adapter', file=name + '/Core.py')}"
+            )
+            console.print(
+                f"    · {i18n.t('cli.create.edit_converter', file=name + '/Converter.py')}"
+            )
+            console.print(f"    · {i18n.t('cli.create.install_dev')}")
+            console.print(f"    · {i18n.t('cli.create.run_test')}")
 
         except Exception as e:
-            console.print(f"[error]  创建失败: {e}")
+            console.print(f"[error]  {i18n.t('cli.create.failed', error=e)}")
             sys.exit(1)
