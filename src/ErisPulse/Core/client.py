@@ -22,24 +22,25 @@ import json
 import time
 from typing import Any
 
-from .logger import logger
-from .lifecycle import lifecycle
-from .constants import (
-    DEFAULT_HTTP_CLIENT_TIMEOUT_SECS,
-    DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS,
-    DEFAULT_HTTP_CLIENT_MAX_RETRIES,
-    DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS,
-    DEFAULT_HTTP_CLIENT_USER_AGENT,
-)
-from .Bases.client import BaseHttpClient, BaseHttpResponse, BaseClientWebSocket
-from .Bases.websocket import WSMessage
+from .Bases.client import BaseClientWebSocket, BaseHttpClient, BaseHttpResponse
 from .Bases.errors import (
-    ClientError,
     ClientConnectionError,
+    ClientError,
     ClientTimeoutError,
     WebSocketDisconnect,
     WebSocketError,
 )
+from .Bases.websocket import WSMessage
+from .constants import (
+    DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS,
+    DEFAULT_HTTP_CLIENT_MAX_RETRIES,
+    DEFAULT_HTTP_CLIENT_RETRY_DELAY_SECS,
+    DEFAULT_HTTP_CLIENT_TIMEOUT_SECS,
+    DEFAULT_HTTP_CLIENT_USER_AGENT,
+)
+from .i18n import i18n
+from .lifecycle import lifecycle
+from .logger import logger
 
 
 def _convert_aiohttp_exception(exc: Exception) -> ClientError:
@@ -589,12 +590,23 @@ class HttpClient(BaseHttpClient):
                 elapsed = time.monotonic() - start
                 if attempt < retries:
                     logger.debug(
-                        f"[HttpClient] {method} {url} 超时 (尝试 {attempt + 1}/{retries + 1})"
+                        i18n.t(
+                            "core.client.timeout_retry",
+                            method=method,
+                            url=url,
+                            attempt=attempt + 1,
+                            total=retries + 1,
+                        )
                     )
                     await asyncio.sleep(self._retry_delay)
                 else:
                     logger.error(
-                        f"[HttpClient] {method} {url} 最终超时 ({elapsed:.3f}s)"
+                        i18n.t(
+                            "core.client.timeout_final",
+                            method=method,
+                            url=url,
+                            elapsed=f"{elapsed:.3f}",
+                        )
                     )
             except aiohttp.ClientConnectionError as e:
                 last_exc = _convert_aiohttp_exception(e)
@@ -602,13 +614,24 @@ class HttpClient(BaseHttpClient):
                 elapsed = time.monotonic() - start
                 if attempt < retries:
                     logger.debug(
-                        f"[HttpClient] {method} {url} 连接中断，重建 session 后重试 (尝试 {attempt + 1}/{retries + 1})"
+                        i18n.t(
+                            "core.client.conn_broken_retry",
+                            method=method,
+                            url=url,
+                            attempt=attempt + 1,
+                            total=retries + 1,
+                        )
                     )
                     await self._drain_sessions()
                     await asyncio.sleep(self._retry_delay)
                 else:
                     logger.error(
-                        f"[HttpClient] {method} {url} 最终连接失败 ({elapsed:.3f}s)"
+                        i18n.t(
+                            "core.client.conn_final_failed",
+                            method=method,
+                            url=url,
+                            elapsed=f"{elapsed:.3f}",
+                        )
                     )
             except aiohttp.ClientError as e:
                 last_exc = _convert_aiohttp_exception(e)
@@ -616,12 +639,25 @@ class HttpClient(BaseHttpClient):
                 elapsed = time.monotonic() - start
                 if attempt < retries:
                     logger.debug(
-                        f"[HttpClient] {method} {url} 失败 (尝试 {attempt + 1}/{retries + 1}): {e}"
+                        i18n.t(
+                            "core.client.request_failed_retry",
+                            method=method,
+                            url=url,
+                            attempt=attempt + 1,
+                            total=retries + 1,
+                            error=e,
+                        )
                     )
                     await asyncio.sleep(self._retry_delay)
                 else:
                     logger.error(
-                        f"[HttpClient] {method} {url} 最终失败 ({elapsed:.3f}s): {e}"
+                        i18n.t(
+                            "core.client.request_final_failed",
+                            method=method,
+                            url=url,
+                            elapsed=f"{elapsed:.3f}",
+                            error=e,
+                        )
                     )
             except ClientError:
                 raise
@@ -631,12 +667,25 @@ class HttpClient(BaseHttpClient):
                 elapsed = time.monotonic() - start
                 if attempt < retries:
                     logger.debug(
-                        f"[HttpClient] {method} {url} 失败 (尝试 {attempt + 1}/{retries + 1}): {e}"
+                        i18n.t(
+                            "core.client.request_failed_retry",
+                            method=method,
+                            url=url,
+                            attempt=attempt + 1,
+                            total=retries + 1,
+                            error=e,
+                        )
                     )
                     await asyncio.sleep(self._retry_delay)
                 else:
                     logger.error(
-                        f"[HttpClient] {method} {url} 最终失败 ({elapsed:.3f}s): {e}"
+                        i18n.t(
+                            "core.client.request_final_failed",
+                            method=method,
+                            url=url,
+                            elapsed=f"{elapsed:.3f}",
+                            error=e,
+                        )
                     )
 
         raise last_exc
@@ -686,7 +735,7 @@ class HttpClient(BaseHttpClient):
                 },
             )
 
-            logger.debug(f"[HttpClient] WS 连接: {url}")
+            logger.debug(i18n.t("core.client.ws_connect", url=url))
             return ClientWebSocket(ws)
 
         except ClientError:

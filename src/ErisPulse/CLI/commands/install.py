@@ -4,17 +4,18 @@ Install 命令实现
 支持交互式和批量安装模块、适配器
 """
 
-import sys
 import asyncio
+import sys
 from argparse import ArgumentParser
 
 from rich.prompt import Confirm, Prompt
 from rich.text import Text
 
+from ..base import Command
+from ..console import console
+from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import interactive_select_table
-from ..console import console
-from ..base import Command
 
 
 class InstallCommand(Command):
@@ -25,7 +26,7 @@ class InstallCommand(Command):
     """
 
     name = "install"
-    description = "安装模块/适配器包"
+    description = i18n.t("cli.install.description")
     aliases = ["i", "add"]
 
     def __init__(self):
@@ -36,79 +37,126 @@ class InstallCommand(Command):
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
-            "package", nargs="*", help="要安装的包名或模块/适配器简称（可指定多个）"
+            "package", nargs="*", help=i18n.t("cli.install.package_help")
         )
         parser.add_argument(
-            "--upgrade", "-U", action="store_true", help="升级已安装的包"
+            "--upgrade",
+            "-U",
+            action="store_true",
+            help=i18n.t("cli.install.upgrade_help"),
         )
-        parser.add_argument("--pre", action="store_true", help="包含预发布版本")
+        parser.add_argument(
+            "--pre", action="store_true", help=i18n.t("cli.install.pre_help")
+        )
         parser.add_argument(
             "-e",
             "--editable",
             action="append",
             metavar="PATH",
-            help="以可编辑模式安装包（开发者模式，可多次指定）",
+            help=i18n.t("cli.install.editable_help"),
         )
-        parser.add_argument("--user", action="store_true", help="安装到用户目录")
-        parser.add_argument("--no-deps", action="store_true", help="不安装依赖包")
-        parser.add_argument("-t", "--target", metavar="DIR", help="安装到指定目录")
-        parser.add_argument("--index-url", metavar="URL", help="指定包索引 URL")
+        parser.add_argument(
+            "--user", action="store_true", help=i18n.t("cli.install.user_help")
+        )
+        parser.add_argument(
+            "--no-deps", action="store_true", help=i18n.t("cli.install.no_deps_help")
+        )
+        parser.add_argument(
+            "-t", "--target", metavar="DIR", help=i18n.t("cli.install.target_help")
+        )
+        parser.add_argument(
+            "--index-url", metavar="URL", help=i18n.t("cli.install.index_url_help")
+        )
         parser.add_argument(
             "--extra-index-url",
             action="append",
             metavar="URL",
-            help="额外的包索引 URL（可多次指定）",
-        )
-        parser.add_argument("--no-cache-dir", action="store_true", help="禁用 pip 缓存")
-        parser.add_argument(
-            "-r", "--requirement", metavar="FILE", help="从 requirements 文件安装"
+            help=i18n.t("cli.install.extra_index_url_help"),
         )
         parser.add_argument(
-            "-c", "--constraint", metavar="FILE", help="使用约束文件限制版本"
+            "--no-cache-dir",
+            action="store_true",
+            help=i18n.t("cli.install.no_cache_dir_help"),
         )
         parser.add_argument(
-            "--force-reinstall", action="store_true", help="强制重新安装所有包"
+            "-r",
+            "--requirement",
+            metavar="FILE",
+            help=i18n.t("cli.install.requirement_help"),
         )
         parser.add_argument(
-            "--ignore-installed", action="store_true", help="忽略已安装的包"
+            "-c",
+            "--constraint",
+            metavar="FILE",
+            help=i18n.t("cli.install.constraint_help"),
         )
-        parser.add_argument("--compile", action="store_true", help="编译 Python 源文件")
         parser.add_argument(
-            "--no-compile", action="store_true", help="不编译 Python 源文件"
+            "--force-reinstall",
+            action="store_true",
+            help=i18n.t("cli.install.force_reinstall_help"),
         )
-        parser.add_argument("--prefix", metavar="DIR", help="安装前缀目录")
-        parser.add_argument("--src", metavar="DIR", help="可编辑包的检出目录")
+        parser.add_argument(
+            "--ignore-installed",
+            action="store_true",
+            help=i18n.t("cli.install.ignore_installed_help"),
+        )
+        parser.add_argument(
+            "--compile", action="store_true", help=i18n.t("cli.install.compile_help")
+        )
+        parser.add_argument(
+            "--no-compile",
+            action="store_true",
+            help=i18n.t("cli.install.no_compile_help"),
+        )
+        parser.add_argument(
+            "--prefix", metavar="DIR", help=i18n.t("cli.install.prefix_help")
+        )
+        parser.add_argument("--src", metavar="DIR", help=i18n.t("cli.install.src_help"))
         parser.add_argument(
             "--config-settings",
             action="append",
             metavar="SETTINGS",
-            help="构建后端的配置设置（可多次指定）",
+            help=i18n.t("cli.install.config_settings_help"),
         )
         parser.add_argument(
-            "--no-binary", action="append", metavar="FORMAT", help="不使用二进制包"
+            "--no-binary",
+            action="append",
+            metavar="FORMAT",
+            help=i18n.t("cli.install.no_binary_help"),
         )
         parser.add_argument(
-            "--only-binary", action="append", metavar="FORMAT", help="只使用二进制包"
+            "--only-binary",
+            action="append",
+            metavar="FORMAT",
+            help=i18n.t("cli.install.only_binary_help"),
         )
         parser.add_argument(
-            "--prefer-binary", action="store_true", help="优先使用二进制包"
+            "--prefer-binary",
+            action="store_true",
+            help=i18n.t("cli.install.prefer_binary_help"),
         )
         parser.add_argument(
-            "--build-isolation", action="store_true", help="启用构建隔离"
+            "--build-isolation",
+            action="store_true",
+            help=i18n.t("cli.install.build_isolation_help"),
         )
         parser.add_argument(
-            "--no-build-isolation", action="store_true", help="禁用构建隔离"
+            "--no-build-isolation",
+            action="store_true",
+            help=i18n.t("cli.install.no_build_isolation_help"),
         )
         parser.add_argument(
             "--upgrade-strategy",
             choices=["eager", "only-if-needed", "to-satisfy-only"],
-            help="升级策略",
+            help=i18n.t("cli.install.upgrade_strategy_help"),
         )
         parser.add_argument(
-            "--break-system-packages", action="store_true", help="允许覆盖系统管理的包"
+            "--break-system-packages",
+            action="store_true",
+            help=i18n.t("cli.install.break_system_packages_help"),
         )
         parser.add_argument(
-            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 安装"
+            "--no-uv", action="store_true", help=i18n.t("cli.install.no_uv_help")
         )
 
     def _build_extra_pip_args(self, args) -> list:
@@ -185,13 +233,18 @@ class InstallCommand(Command):
             if editable_paths:
                 for path in editable_paths:
                     if not pm.install_direct(
-                        ["-e", path] + extra, f"可编辑安装 {path}"
+                        ["-e", path] + extra,
+                        i18n.t("cli.install.installing_editable", path=path),
                     ):
                         success = False
 
             if requirement_file:
                 if not pm.install_direct(
-                    ["-r", requirement_file] + extra, f"从文件安装 {requirement_file}"
+                    ["-r", requirement_file] + extra,
+                    i18n.t(
+                        "cli.install.installing_requirement",
+                        requirement_file=requirement_file,
+                    ),
                 ):
                     success = False
 
@@ -216,24 +269,36 @@ class InstallCommand(Command):
         :param upgrade: [bool] 是否升级已安装的包 (默认: False)
         :param pre: [bool] 是否包含预发布版本 (默认: False)
         """
-        with console.status("[bold green]正在获取远程包列表...", spinner="dots"):
+        with console.status(
+            f"[bold green]{i18n.t('cli.install.fetching_packages')}[/]", spinner="dots"
+        ):
             remote_packages = asyncio.run(self.package_manager.get_remote_packages())
 
         while True:
             console.print()
-            console.print(Text("  请选择组件类型:", style="bold"))
-            console.print(Text("    1.  适配器", style="adapter"))
-            console.print(Text("    2.  模块", style="module"))
-            console.print(Text("    3.  搜索安装", style="info"))
-            console.print(Text("    4.  自定义安装", style="dim"))
-            console.print(Text("    q.  退出", style="dim"))
+            console.print(Text(i18n.t("cli.install.select_type"), style="bold"))
+            console.print(
+                Text(f"    1.  {i18n.t('cli.install.type_adapter')}", style="adapter")
+            )
+            console.print(
+                Text(f"    2.  {i18n.t('cli.install.type_module')}", style="module")
+            )
+            console.print(
+                Text(f"    3.  {i18n.t('cli.install.type_search')}", style="info")
+            )
+            console.print(
+                Text(f"    4.  {i18n.t('cli.install.type_custom')}", style="dim")
+            )
+            console.print(Text(f"    q.  {i18n.t('cli.install.quit')}", style="dim"))
 
             choice = Prompt.ask(
-                "\n  请输入选项", choices=["1", "2", "3", "4", "q"], default="q"
+                "\n  {0}".format(i18n.t("cli.install.enter_option")),
+                choices=["1", "2", "3", "4", "q"],
+                default="q",
             )
 
             if choice == "q":
-                console.print("[info]  退出安装向导[/]")
+                console.print(f"[info]{i18n.t('cli.install.exit_wizard')}[/]")
                 break
             elif choice == "1":
                 self._install_adapters(remote_packages, upgrade, pre)
@@ -244,7 +309,9 @@ class InstallCommand(Command):
             elif choice == "4":
                 self._install_custom(upgrade, pre)
 
-            if not Confirm.ask("\n  [cyan]是否继续安装其他组件？[/]", default=False):
+            if not Confirm.ask(
+                f"\n  [cyan]{i18n.t('cli.install.continue_install')}[/]", default=False
+            ):
                 break
 
     def _install_adapters(self, remote_packages: dict, upgrade: bool, pre: bool):
@@ -257,23 +324,32 @@ class InstallCommand(Command):
         """
         adapters = remote_packages.get("adapters", {})
         if not adapters:
-            console.print("[dim]  没有可用的适配器[/]")
+            console.print(f"[dim]  {i18n.t('cli.install.no_adapters')}[/]")
             return
 
         adapter_list = list(adapters.items())
 
         selected = interactive_select_table(
-            "适配器",
+            i18n.t("cli.install.type_adapter"),
             adapter_list,
             columns=[
-                {"header": "序号", "style": "#A0B0C0", "width": 4},
-                {"header": "适配器名", "style": "adapter"},
-                {"header": "包名"},
-                {"header": "描述"},
+                {
+                    "header": i18n.t("cli.list_remote.header_index"),
+                    "style": "#A0B0C0",
+                    "width": 4,
+                },
+                {
+                    "header": i18n.t("cli.list_remote.header_adapter"),
+                    "style": "adapter",
+                },
+                {"header": i18n.t("cli.list_remote.header_package")},
+                {"header": i18n.t("cli.list_remote.header_desc")},
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(
                 ("● " if checked else "  ") + str(idx + 1),
-                item[0] if item[1].get("verified", True) else f"{item[0]}（未验证）",
+                item[0]
+                if item[1].get("verified", True)
+                else i18n.t("cli.install.unverified", name=item[0]),
                 item[1].get("package", ""),
                 item[1].get("description", ""),
             ),
@@ -283,9 +359,12 @@ class InstallCommand(Command):
             return
 
         selected_names = [name for name, _ in selected]
-        console.print(f"\n  [dim]已选择: [bold]{', '.join(selected_names)}[/][/]")
+        console.print(
+            f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]"
+        )
         if Confirm.ask(
-            f"  [cyan]确认安装 {len(selected_names)} 个适配器？[/]", default=True
+            f"  [cyan]{i18n.t('cli.install.confirm_adapters', count=len(selected_names))}[/]",
+            default=True,
         ):
             self.package_manager.install_package(
                 selected_names, upgrade=upgrade, pre=pre
@@ -301,23 +380,29 @@ class InstallCommand(Command):
         """
         modules = remote_packages.get("modules", {})
         if not modules:
-            console.print("[dim]  没有可用的模块[/]")
+            console.print(f"[dim]  {i18n.t('cli.install.no_modules')}[/]")
             return
 
         module_list = list(modules.items())
 
         selected = interactive_select_table(
-            "模块",
+            i18n.t("cli.install.type_module"),
             module_list,
             columns=[
-                {"header": "序号", "style": "#A0B0C0", "width": 4},
-                {"header": "模块名", "style": "module"},
-                {"header": "包名"},
-                {"header": "描述"},
+                {
+                    "header": i18n.t("cli.list_remote.header_index"),
+                    "style": "#A0B0C0",
+                    "width": 4,
+                },
+                {"header": i18n.t("cli.list_remote.header_module"), "style": "module"},
+                {"header": i18n.t("cli.list_remote.header_package")},
+                {"header": i18n.t("cli.list_remote.header_desc")},
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(
                 ("● " if checked else "  ") + str(idx + 1),
-                item[0] if item[1].get("verified", True) else f"{item[0]}（未验证）",
+                item[0]
+                if item[1].get("verified", True)
+                else i18n.t("cli.install.unverified", name=item[0]),
                 item[1].get("package", ""),
                 item[1].get("description", ""),
             ),
@@ -327,9 +412,12 @@ class InstallCommand(Command):
             return
 
         selected_names = [name for name, _ in selected]
-        console.print(f"\n  [dim]已选择: [bold]{', '.join(selected_names)}[/][/]")
+        console.print(
+            f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]"
+        )
         if Confirm.ask(
-            f"  [cyan]确认安装 {len(selected_names)} 个模块？[/]", default=True
+            f"  [cyan]{i18n.t('cli.install.confirm_modules', count=len(selected_names))}[/]",
+            default=True,
         ):
             self.package_manager.install_package(
                 selected_names, upgrade=upgrade, pre=pre
@@ -345,11 +433,12 @@ class InstallCommand(Command):
         :param upgrade: [bool] 是否升级
         :param pre: [bool] 是否包含预发布版本
         """
-        from rich.table import Table
         from rich.box import SIMPLE
+        from rich.table import Table
+
         from ..utils.display import section_header
 
-        query = Prompt.ask("\n  [cyan]请输入搜索关键词（或 q 返回）[/]")
+        query = Prompt.ask(f"\n  [cyan]{i18n.t('cli.install.search_prompt')}[/]")
         if query.lower() == "q" or not query.strip():
             return
 
@@ -359,20 +448,22 @@ class InstallCommand(Command):
 
         total = len(installed) + len(remote)
         if total == 0:
-            console.print(f"[dim]  未找到与 '{query}' 相关的组件[/]")
+            console.print(f"[dim]  {i18n.t('cli.install.no_results', query=query)}[/]")
             return
 
         # 显示已安装结果
         if installed:
-            section_header("已安装")
+            section_header(i18n.t("cli.install.installed_section"))
             table = Table(
                 box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
             )
-            table.add_column("类型", width=8)
-            table.add_column("名称", style="bold", min_width=12)
-            table.add_column("包名", min_width=20)
-            table.add_column("版本", width=10)
-            table.add_column("描述")
+            table.add_column(i18n.t("cli.install.type_header"), width=8)
+            table.add_column(
+                i18n.t("cli.install.name_header"), style="bold", min_width=12
+            )
+            table.add_column(i18n.t("cli.install.pkg_header"), min_width=20)
+            table.add_column(i18n.t("cli.install.ver_header"), width=10)
+            table.add_column(i18n.t("cli.install.desc_header"))
             for item in installed:
                 type_style = "adapter" if item["type"] == "adapter" else "module"
                 table.add_row(
@@ -383,19 +474,23 @@ class InstallCommand(Command):
                     item.get("summary", ""),
                 )
             console.print(table)
-            console.print(f"[dim]  {len(installed)} 个已安装[/]")
+            console.print(
+                f"[dim]  {i18n.t('cli.install.count_installed', count=len(installed))}[/]"
+            )
 
         # 显示远程结果
         if remote:
-            section_header("远程可用")
+            section_header(i18n.t("cli.install.remote_section"))
             table = Table(
                 box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
             )
-            table.add_column("类型", width=8)
-            table.add_column("名称", style="bold", min_width=12)
-            table.add_column("包名", min_width=20)
-            table.add_column("版本", width=10)
-            table.add_column("描述")
+            table.add_column(i18n.t("cli.install.type_header"), width=8)
+            table.add_column(
+                i18n.t("cli.install.name_header"), style="bold", min_width=12
+            )
+            table.add_column(i18n.t("cli.install.pkg_header"), min_width=20)
+            table.add_column(i18n.t("cli.install.ver_header"), width=10)
+            table.add_column(i18n.t("cli.install.desc_header"))
             for item in remote:
                 type_style = "adapter" if item["type"] == "adapter" else "module"
                 table.add_row(
@@ -406,9 +501,13 @@ class InstallCommand(Command):
                     item.get("summary", ""),
                 )
             console.print(table)
-            console.print(f"[dim]  {len(remote)} 个远程组件[/]")
+            console.print(
+                f"[dim]  {i18n.t('cli.install.count_remote', count=len(remote))}[/]"
+            )
 
-        console.print(f"\n  [bold]共找到 {total} 个结果[/]")
+        console.print(
+            f"\n  [bold]{i18n.t('cli.install.total_results', total=total)}[/]"
+        )
 
         # 序号选择安装
         if not remote:
@@ -423,7 +522,7 @@ class InstallCommand(Command):
             )
 
         raw = Prompt.ask(
-            "\n  [cyan]输入序号安装（多个用逗号分隔，q 跳过）[/]",
+            f"\n  [cyan]{i18n.t('cli.install.select_install_prompt')}[/]",
             default="q",
         )
         if raw.lower() == "q" or not raw.strip():
@@ -439,7 +538,8 @@ class InstallCommand(Command):
                 continue
 
         if selected and Confirm.ask(
-            f"  [cyan]确认安装 {len(selected)} 个包？[/]", default=True
+            f"  [cyan]{i18n.t('cli.install.confirm_search_install', count=len(selected))}[/]",
+            default=True,
         ):
             self.package_manager.install_package(selected, upgrade=upgrade, pre=pre)
 
@@ -450,11 +550,14 @@ class InstallCommand(Command):
         :param upgrade: [bool] 是否升级已安装的包
         :param pre: [bool] 是否包含预发布版本
         """
-        package_name = Prompt.ask("\n  [cyan]请输入要安装的包名（或 q 返回）[/]")
+        package_name = Prompt.ask(f"\n  [cyan]{i18n.t('cli.install.custom_prompt')}[/]")
         if package_name.lower() == "q":
             return
         if package_name:
-            if Confirm.ask(f"  [cyan]确认安装 {package_name}？[/]", default=True):
+            if Confirm.ask(
+                f"  [cyan]{i18n.t('cli.install.confirm_custom_install', package_name=package_name)}[/]",
+                default=True,
+            ):
                 self.package_manager.install_package(
                     [package_name], upgrade=upgrade, pre=pre
                 )

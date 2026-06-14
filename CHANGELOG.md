@@ -63,6 +63,49 @@
 
 ---
 
+## [2.5.0-dev.1] - 2026/06/15
+> 开发版本
+
+**版本摘要**
+2.5.0-dev.1 为框架添加完整的国际化（i18n）支持，覆盖所有内置文本
+
+### 新增
+- @agent
+  - `Core/i18n/` 新增国际化模块，支持 5 种语言：
+    - zh-CN（简体中文）、zh-TW（繁体中文）、en（英文）、ja（日文）、ru（俄文）
+    - 内置 271 个翻译键，覆盖 SDK 初始化/反初始化、适配器管理、模块管理、路由服务器、生命周期、
+      存储、配置、HTTP 客户端等全部核心模块的运行时消息
+    - 自动检测用户语言环境，按就近原则映射：zh-TW/HK/MO → 繁体，其他 zh* → 简体，en* → 英文等
+    - 跨平台语言检测：Windows 优先使用 `GetUserDefaultLocaleName` API，
+      Unix/macOS 优先使用环境变量 `LANG`/`LC_ALL`
+    - 专用环境变量 `ERISPULSE_LANG` 最高优先级，支持测试时快速切换语言：
+      `$env:ERISPULSE_LANG="en"`
+    - 外部模块可通过 `i18n.register()` 注册自定义翻译，通过 `i18n.unregister_domain()` 卸载
+  - `Core/i18n/locales/` 内置翻译数据包，每种语言一个独立文件
+  - `CLI/i18n/` 新增 CLI 独立国际化模块，与 Core i18n 完全解耦：
+    - 内置 253 个翻译键，覆盖 create/init/install/list/run/self-update/uninstall/upgrade 等全部命令
+    - 纯内部使用，外部模块不应直接依赖
+  - `runtime/config_schema.py` 新增 `I18nConfig` dataclass，支持 WebUI 配置
+  - `runtime/frame_config.py` 新增 `[ErisPulse.i18n] language` 配置项（默认 `auto`）
+  - `Core/constants.py` 新增 `DEFAULT_I18N_LANGUAGE` 常量
+  - `tests/unit/test_unit_i18n.py` 新增 48 个单元测试（语言检测/就近映射/翻译查找/注册功能/Windows API）
+
+### 变更
+- @agent
+  - `sdk.py` 及全部 Core 模块运行时中文文本改为通过 `i18n.t()` 获取翻译
+  - `loaders/adapter.py` 及 `loaders/module.py` 运行时中文文本改为通过 `i18n.t()` 获取翻译
+  - `CLI/cli.py` 及全部 CLI 命令运行时中文文本改为通过 `CLI.i18n.t()` 获取翻译
+  - `Core/__init__.py` 导出 `i18n` / `I18nManager`
+  - `sdk.py` 新增 `sdk.i18n` 属性，与 `sdk.logger`、`sdk.config` 同级
+  - `tests/unit/test_unit_adapter.py` 4 个测试适配 i18n 输出
+
+### 内部
+- @agent
+  - `Core/i18n/__init__.py` 优化跨平台语言检测，Windows 优先系统 API 避免 Git Bash 等工具覆盖 `LANG`
+  - 将 `i18n.t()` 的 `key` 参数改为仅位置参数（`/`），解决翻译值含 `{key}` 占位符时的参数冲突
+
+---
+
 ## [2.5.0-dev.0] - 2026/06/08
 > 开发版本
 

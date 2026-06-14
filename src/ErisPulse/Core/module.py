@@ -7,17 +7,19 @@ ErisPulse 模块系统
 import inspect
 import warnings
 from typing import Any
-from .logger import logger
-from .config import config
-from .Bases import BaseModule
-from .lifecycle import lifecycle
-from .Bases.manager import ManagerBase
+
 from ..runtime.context import current_owner
+from .Bases import BaseModule
+from .Bases.manager import ManagerBase
+from .config import config
 from .constants import (
-    CONFIG_KEY_MODULES_STATUS,
     CONFIG_KEY_MODULE_STATUS_OF,
+    CONFIG_KEY_MODULES_STATUS,
     DEFAULT_MODULE_ENABLED,
 )
+from .i18n import i18n
+from .lifecycle import lifecycle
+from .logger import logger
 
 
 class ModuleManager(ManagerBase):
@@ -43,7 +45,10 @@ class ModuleManager(ManagerBase):
         if base_cls.__name__ == cls.__name__:
             return False
         for parent in cls.__mro__:
-            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
+            if (
+                parent.__name__ == base_cls.__name__
+                and parent.__module__ == base_cls.__module__
+            ):
                 return True
         return False
 
@@ -66,7 +71,7 @@ class ModuleManager(ManagerBase):
             self._sdk = sdk
             return True
         except Exception as e:
-            logger.error(f"设置SDK引用失败: {e}")
+            logger.error(i18n.t("core.module.set_sdk_failed", error=e))
             return False
 
     # ==================== 模块注册与管理 ====================
@@ -90,12 +95,20 @@ class ModuleManager(ManagerBase):
         # 严格验证模块类，确保继承自BaseModule
         # 先检查是否为类对象
         if not isinstance(module_class, type):
-            error_msg = f"模块 {module_name} 的参数必须是类，而不是 {type(module_class).__name__}"
+            error_msg = i18n.t(
+                "core.module.param_must_be_class",
+                name=module_name,
+                type=type(module_class).__name__,
+            )
             logger.error(error_msg)
             raise TypeError(error_msg)
 
         if not self._is_subclass(module_class, BaseModule):
-            warn_msg = f"模块 {module_name} 的类 {module_class.__name__} 虽然没有继承自BaseModule，但我们仍会继续尝试加载这个模块"
+            warn_msg = i18n.t(
+                "core.module.not_inherit_base",
+                name=module_name,
+                classname=module_class.__name__,
+            )
             logger.warning(warn_msg)
             # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
             # logger.error(error_msg)
@@ -103,13 +116,13 @@ class ModuleManager(ManagerBase):
 
         # 验证模块名是否合法
         if not module_name or not isinstance(module_name, str):
-            error_msg = "模块名称必须是非空字符串"
+            error_msg = i18n.t("core.module.name_required")
             logger.error(error_msg)
             raise TypeError(error_msg)
 
         # 检查模块名是否已存在
         if module_name in self._module_classes:
-            warn_msg = f"模块 {module_name} 已存在，将覆盖原模块类"
+            warn_msg = i18n.t("core.module.exists_overwrite", name=module_name)
             logger.warning(warn_msg)
 
         self._module_classes[module_name] = module_class
@@ -117,12 +130,15 @@ class ModuleManager(ManagerBase):
             self._module_info[module_name] = module_info
 
         # 触发模块注册事件
-        lifecycle.emit_sync("module.register", {
-            "module_name": module_name,
-            "success": True,
-        })
+        lifecycle.emit_sync(
+            "module.register",
+            {
+                "module_name": module_name,
+                "success": True,
+            },
+        )
 
-        logger.info(f"模块 {module_name} 已注册")
+        logger.info(i18n.t("core.module.registered", name=module_name))
         return True
 
     async def load(self, module_name: str) -> bool:
@@ -137,12 +153,12 @@ class ModuleManager(ManagerBase):
         """
         # 检查模块是否已注册
         if module_name not in self._module_classes:
-            logger.error(f"模块 {module_name} 未注册")
+            logger.error(i18n.t("core.module.not_registered", name=module_name))
             return False
 
         # 检查模块是否已加载
         if module_name in self._loaded_modules:
-            logger.info(f"模块 {module_name} 已加载")
+            logger.info(i18n.t("core.module.already_loaded", name=module_name))
             return True
 
         try:
@@ -173,7 +189,11 @@ class ModuleManager(ManagerBase):
                         else:
                             instance.on_load({"module_name": module_name})
                     except Exception as e:
-                        logger.error(f"模块 {module_name} on_load 方法执行失败: {e}")
+                        logger.error(
+                            i18n.t(
+                                "core.module.on_load_failed", name=module_name, error=e
+                            )
+                        )
                         return False
             finally:
                 current_owner.reset(token)
@@ -188,7 +208,10 @@ class ModuleManager(ManagerBase):
                     "module_name": module_name,
                     "success": True,
                 },
-                msg=f"模块 {module_name if module_name else 'All'} 加载成功",
+                msg=i18n.t(
+                    "core.module.load_success_msg",
+                    name=module_name if module_name else "All",
+                ),
             )
 
             await lifecycle.submit_event(
@@ -197,10 +220,10 @@ class ModuleManager(ManagerBase):
                     "module_name": module_name,
                     "success": True,
                 },
-                msg=f"模块 {module_name} 初始化完毕",
+                msg=i18n.t("core.module.init_done_msg", name=module_name),
             )
 
-            logger.info(f"模块 {module_name} 加载成功")
+            logger.info(i18n.t("core.module.load_success", name=module_name))
             return True
 
         except SystemExit as e:
@@ -210,10 +233,11 @@ class ModuleManager(ManagerBase):
                     "module_name": module_name,
                     "success": False,
                 },
-                msg=f"模块 {module_name} 尝试退出进程 (SystemExit)",
+                msg=i18n.t("core.module.systemexit", name=module_name, code=e.code),
             )
-            logger.error(f"模块 {module_name} 尝试退出进程 (SystemExit({e.code}))，已跳过该模块。"
-                         f"请不要在模块中使用 sys.exit() 或 raise SystemExit，请改用 raise RuntimeError 或返回错误")
+            logger.error(
+                i18n.t("core.module.systemexit", name=module_name, code=e.code)
+            )
             return False
         except Exception as e:
             await lifecycle.submit_event(
@@ -222,9 +246,13 @@ class ModuleManager(ManagerBase):
                     "module_name": module_name,
                     "success": False,
                 },
-                msg=f"模块 {module_name if module_name else 'All'} 加载失败: {e}",
+                msg=i18n.t(
+                    "core.module.load_failed",
+                    name=module_name if module_name else "All",
+                    error=e,
+                ),
             )
-            logger.error(f"加载模块 {module_name} 失败: {e}")
+            logger.error(i18n.t("core.module.load_failed", name=module_name, error=e))
             return False
 
     async def unload(self, module_name: str | None = None) -> bool:
@@ -250,9 +278,9 @@ class ModuleManager(ManagerBase):
 
         await lifecycle.submit_event(
             "module.unload",
-            msg=f"模块 {module_name} 卸载完成"
+            msg=i18n.t("core.module.unload_complete", name=module_name)
             if success
-            else f"模块 {module_name} 卸载失败",
+            else i18n.t("core.module.unload_failed_msg", name=module_name),
             data={
                 "module_name": module_name,
                 "success": success,
@@ -270,7 +298,7 @@ class ModuleManager(ManagerBase):
         """
         # 模块未加载，返回 True（表示没有需要卸载的模块，这不是错误）
         if module_name not in self._loaded_modules:
-            logger.warning(f"模块 {module_name} 未加载")
+            logger.warning(i18n.t("core.module.unload_not_loaded", name=module_name))
             return True
 
         try:
@@ -282,27 +310,42 @@ class ModuleManager(ManagerBase):
                     else:
                         instance.on_unload({"module_name": module_name})
                 except Exception as e:
-                    logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
+                    logger.error(
+                        i18n.t(
+                            "core.module.on_unload_failed", name=module_name, error=e
+                        )
+                    )
 
             from .router import router
 
             result = router.unregister_all_by_namespace(module_name)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
                 logger.debug(
-                    f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                    i18n.t(
+                        "core.module.unload_routes_cleaned",
+                        name=module_name,
+                        http=result["http_count"],
+                        ws=result["websocket_count"],
+                    )
                 )
 
-            from .Event import command, message, notice, request, meta
+            from .Event import command, message, meta, notice, request
 
             total_cleaned = 0
             total_cleaned += command.unregister_by_owner(module_name)
             for event_handler in [message, notice, request, meta]:
                 total_cleaned += event_handler.handler.unregister_by_owner(module_name)
             if total_cleaned > 0:
-                logger.debug(f"已清理模块 {module_name} 的 {total_cleaned} 个事件处理器/命令")
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_handlers_cleaned",
+                        name=module_name,
+                        count=total_cleaned,
+                    )
+                )
 
             if self._sdk is not None:
-                sdk_dict = getattr(self._sdk, '__dict__', {})
+                sdk_dict = getattr(self._sdk, "__dict__", {})
                 if module_name in sdk_dict:
                     try:
                         del sdk_dict[module_name]
@@ -312,11 +355,11 @@ class ModuleManager(ManagerBase):
             del self._modules[module_name]
             self._loaded_modules.discard(module_name)
 
-            logger.info(f"模块 {module_name} 卸载成功")
+            logger.info(i18n.t("core.module.unload_success", name=module_name))
             return True
 
         except Exception as e:
-            logger.error(f"卸载模块 {module_name} 失败: {e}")
+            logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
 
     def get(self, module_name: str) -> Any:
@@ -423,8 +466,14 @@ class ModuleManager(ManagerBase):
 
         # 模块不存在，进行注册
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), enabled)
-        status = "启用" if enabled else "禁用"
-        logger.info(f"模块 {module_name} 已注册并{status}")
+        status = (
+            i18n.t("core.adapter.status_enabled")
+            if enabled
+            else i18n.t("core.adapter.status_disabled")
+        )
+        logger.info(
+            i18n.t("core.module.registered_status", name=module_name, status=status)
+        )
         return True
 
     def is_enabled(self, module_name: str) -> bool:
@@ -461,11 +510,11 @@ class ModuleManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         if module_name not in self._module_classes:
-            logger.error(f"模块 {module_name} 不存在")
+            logger.error(i18n.t("core.module.module_not_exist", name=module_name))
             return False
 
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True)
-        logger.info(f"模块 {module_name} 已启用")
+        logger.info(i18n.t("core.module.module_enabled", name=module_name))
         return True
 
     def disable(self, module_name: str) -> bool:
@@ -476,7 +525,7 @@ class ModuleManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False)
-        logger.info(f"模块 {module_name} 已禁用")
+        logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
         if module_name not in self._loaded_modules:
             return True
@@ -493,24 +542,26 @@ class ModuleManager(ManagerBase):
                             instance.on_unload({"module_name": module_name})
                         )
                     except RuntimeError:
-                        asyncio.run(
-                            instance.on_unload({"module_name": module_name})
-                        )
+                        asyncio.run(instance.on_unload({"module_name": module_name}))
                 else:
                     instance.on_unload({"module_name": module_name})
             except Exception as e:
-                logger.error(f"模块 {module_name} on_unload 方法执行失败: {e}")
+                logger.error(
+                    i18n.t("core.module.on_unload_failed", name=module_name, error=e)
+                )
 
         from .router import router
+
         router.unregister_all_by_namespace(module_name)
 
-        from .Event import command, message, notice, request, meta
+        from .Event import command, message, meta, notice, request
+
         command.unregister_by_owner(module_name)
         for event_handler in [message, notice, request, meta]:
             event_handler.handler.unregister_by_owner(module_name)
 
         if self._sdk is not None:
-            sdk_dict = getattr(self._sdk, '__dict__', {})
+            sdk_dict = getattr(self._sdk, "__dict__", {})
             if module_name in sdk_dict:
                 try:
                     del sdk_dict[module_name]
@@ -534,7 +585,7 @@ class ModuleManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         if module_name not in self._module_classes:
-            logger.warning(f"模块 {module_name} 未注册")
+            logger.warning(i18n.t("core.module.not_registered", name=module_name))
             return False
 
         # 移除模块类
@@ -544,7 +595,7 @@ class ModuleManager(ManagerBase):
         if module_name in self._module_info:
             self._module_info.pop(module_name)
 
-        logger.info(f"模块 {module_name} 已取消注册")
+        logger.info(i18n.t("core.module.module_unregistered", name=module_name))
         return True
 
     def clear(self) -> None:
@@ -562,7 +613,12 @@ class ModuleManager(ManagerBase):
             result = router.unregister_all_by_namespace(module_name)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
                 logger.debug(
-                    f"已清理模块 {module_name} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                    i18n.t(
+                        "core.module.unload_routes_cleaned",
+                        name=module_name,
+                        http=result["http_count"],
+                        ws=result["websocket_count"],
+                    )
                 )
 
         # 清除所有模块实例
@@ -577,7 +633,7 @@ class ModuleManager(ManagerBase):
         # 清除所有模块信息
         self._module_info.clear()
 
-        logger.debug("模块管理器已完全清理")
+        logger.debug(i18n.t("core.module.cleared"))
 
     def list_items(self) -> dict[str, bool]:
         """
@@ -632,7 +688,7 @@ class ModuleManager(ManagerBase):
     # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> dict[str, bool]:
         warnings.warn(
-            "list_modules() 已弃用，请使用 list_items() 代替",
+            i18n.t("core.module.list_modules_deprecated"),
             DeprecationWarning,
             stacklevel=2,
         )
@@ -652,7 +708,9 @@ class ModuleManager(ManagerBase):
         >>> my_module = module.MyModule
         """
         if (module_instance := self.get(module_name)) is None:
-            raise AttributeError(f"模块 {module_name} 不存在或未启用")
+            raise AttributeError(
+                i18n.t("core.module.module_not_enabled", name=module_name)
+            )
         return module_instance
 
     def __contains__(self, module_name: str) -> bool:

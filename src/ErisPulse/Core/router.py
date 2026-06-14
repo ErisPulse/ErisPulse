@@ -12,51 +12,55 @@ ErisPulse 路由系统
 {!--< /tips >!--}
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from fastapi.routing import APIRoute
-from starlette.staticfiles import StaticFiles
-from typing import Any, TypeAlias
-from collections.abc import Callable, Awaitable
-from collections import defaultdict
-from .logger import logger
-from .lifecycle import lifecycle
-from ..runtime.context import current_owner
-from .Bases.router import HttpRequest, WebSocketConnection, SseEmitter
-from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
-from .constants import (
-    DEFAULT_SERVER_HOST,
-    DEFAULT_SERVER_PORT,
-    SERVER_SHUTDOWN_TIMEOUT_SECS,
-    DEFAULT_RATE_LIMIT_WINDOW_SECS,
-    DEFAULT_RATE_LIMIT_MAX_REQUESTS,
-    DEFAULT_HTTP_METHODS,
-    DEFAULT_WS_AUTO_ACCEPT,
-    DEFAULT_CORS_ORIGINS,
-    DEFAULT_CORS_METHODS,
-    DEFAULT_CORS_HEADERS,
-    DEFAULT_CORS_MAX_AGE_SECS,
-    DEFAULT_SECURITY_HEADERS,
-    WS_CLOSE_POLICY_VIOLATION,
-    WS_CLOSE_INTERNAL_ERROR,
-    WILDCARD_IPV4,
-    WILDCARD_IPV6,
-    FALLBACK_IPV4,
-    FALLBACK_IPV6_HOST,
-    CONFIG_KEY_ROUTER_CORS,
-    CONFIG_KEY_ROUTER_SECURITY,
-)
 import asyncio
 import functools
+import importlib.metadata
 import inspect
+import ipaddress
 import os
 import socket
-import ipaddress
 import sys
 import time
-import importlib.metadata
+from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
+from typing import Any, TypeAlias
+
 import uvicorn
+from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.routing import APIRoute
+from starlette.routing import WebSocketRoute
+from starlette.staticfiles import StaticFiles
+
+from ..runtime.context import current_owner
+from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
+from .Bases.router import HttpRequest, SseEmitter, WebSocketConnection
+from .constants import (
+    CONFIG_KEY_ROUTER_CORS,
+    CONFIG_KEY_ROUTER_SECURITY,
+    DEFAULT_CORS_HEADERS,
+    DEFAULT_CORS_MAX_AGE_SECS,
+    DEFAULT_CORS_METHODS,
+    DEFAULT_CORS_ORIGINS,
+    DEFAULT_HTTP_METHODS,
+    DEFAULT_RATE_LIMIT_MAX_REQUESTS,
+    DEFAULT_RATE_LIMIT_WINDOW_SECS,
+    DEFAULT_SECURITY_HEADERS,
+    DEFAULT_SERVER_HOST,
+    DEFAULT_SERVER_PORT,
+    DEFAULT_WS_AUTO_ACCEPT,
+    FALLBACK_IPV4,
+    FALLBACK_IPV6_HOST,
+    SERVER_SHUTDOWN_TIMEOUT_SECS,
+    WILDCARD_IPV4,
+    WILDCARD_IPV6,
+    WS_CLOSE_INTERNAL_ERROR,
+    WS_CLOSE_POLICY_VIOLATION,
+)
+from .i18n import i18n
+from .lifecycle import lifecycle
+from .logger import logger
 
 ERISPULSE_VERSION = "UnknownVersion"
 
@@ -570,7 +574,11 @@ class RouterManager:
         {!--< /internal-use >!--}
         """
         if full_path in self._sse_routes.get(module_name, {}):
-            raise ValueError(f"SSE路径 {full_path} 已在模块 {module_name} 中注册")
+            raise ValueError(
+                i18n.t(
+                    "core.router.sse_path_exists", path=full_path, module=module_name
+                )
+            )
 
         self._track_owner_namespace(module_name)
 
@@ -590,7 +598,9 @@ class RouterManager:
         self.app.router.routes.append(route)
         self._sse_routes[module_name][full_path] = handler
 
-        logger.info(f"[{module_name}] 注册SSE路由: {full_path}")
+        logger.info(
+            i18n.t("core.router.register_sse", module=module_name, path=full_path)
+        )
 
     @staticmethod
     async def _run_ws_hooks(
@@ -613,7 +623,7 @@ class RouterManager:
                 if inspect.isawaitable(result):
                     await result
             except Exception as e:
-                logger.debug(f"WebSocket lifecycle hook error: {e}")
+                logger.debug(i18n.t("core.router.ws_hook_error", error=e))
 
     def _setup_core_routes(self) -> None:
         """
@@ -789,14 +799,14 @@ class RouterManager:
     <div class="content">
       <h1>ErisPulse</h1>
       <p class="ver">v{ERISPULSE_VERSION}</p>
-      <p class="sub">你似乎访问了根路径，这里没有内容哦~</p>
+      <p class="sub">{i18n.t("core.router.root_page_text")}</p>
       {dashboard_html}
       <div class="endpoints"><a href="/health">Health</a> &middot; <a href="/ping">Ping</a></div>
       <div class="links">
         <a href="https://github.com/ErisPulse/ErisPulse" target="_blank">GitHub</a>
-        <a href="https://www.erisdev.com" target="_blank">文档</a>
+        <a href="https://www.erisdev.com" target="_blank">{i18n.t("core.router.link_docs")}</a>
         <a href="https://pypi.org/project/ErisPulse/" target="_blank">PyPI</a>
-        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank">社区</a>
+        <a href="https://github.com/ErisPulse/ErisPulse/discussions" target="_blank">{i18n.t("core.router.link_community")}</a>
       </div>
     </div>
   </div>
@@ -878,7 +888,7 @@ class RouterManager:
     <img class="page-img" src="/status-assets/{img}" alt="" onerror="this.style.display='none'" />
     <h1 class="page-title">{title}</h1>
     {desc_html}
-    <a class="page-link" href="/">返回首页</a>
+    <a class="page-link" href="/">{i18n.t("core.router.error_page_home")}</a>
   </div>
 </body>
 </html>"""
@@ -892,8 +902,8 @@ class RouterManager:
                     content=_html(
                         404,
                         "4xx.png",
-                        "你是怎么找到这里的？",
-                        "这个页面似乎不存在，或者从未存在过。",
+                        i18n.t("core.router.error_404_title"),
+                        i18n.t("core.router.error_404_desc"),
                     ),
                     status_code=404,
                 )
@@ -911,8 +921,8 @@ class RouterManager:
                     content=_html(
                         403,
                         "4xx.png",
-                        "嗯？这里不对外开放哦~",
-                        "你可能没有访问这个资源的权限。",
+                        i18n.t("core.router.error_403_title"),
+                        i18n.t("core.router.error_403_desc"),
                     ),
                     status_code=403,
                 )
@@ -923,7 +933,7 @@ class RouterManager:
 
         @self.app.exception_handler(500)
         async def _h500(request: Request, exc):
-            logger.error(f"未处理的异常: {exc}")
+            logger.error(i18n.t("core.router.unhandled_exception", error=exc))
             if request.method == "GET" and "text/html" in request.headers.get(
                 "accept", ""
             ):
@@ -931,8 +941,8 @@ class RouterManager:
                     content=_html(
                         500,
                         "5xx.png",
-                        "耶耶~搞怪成功!服务器飞走辣~！",
-                        "我们已经记录了这个问题，请稍后再试。",
+                        i18n.t("core.router.error_500_title"),
+                        i18n.t("core.router.error_500_desc"),
                     ),
                     status_code=500,
                 )
@@ -954,8 +964,8 @@ class RouterManager:
                     content=_html(
                         502,
                         "5xx.png",
-                        "耶耶~搞怪成功!服务器飞走辣~！",
-                        "上游服务似乎不太对劲。",
+                        i18n.t("core.router.error_500_title"),
+                        i18n.t("core.router.error_502_desc"),
                     ),
                     status_code=502,
                 )
@@ -973,8 +983,8 @@ class RouterManager:
                     content=_html(
                         503,
                         "5xx.png",
-                        "耶耶~搞怪成功!服务器飞走辣~！",
-                        "服务暂时不可用，请稍后再来。",
+                        i18n.t("core.router.error_500_title"),
+                        i18n.t("core.router.error_503_desc"),
                     ),
                     status_code=503,
                 )
@@ -989,7 +999,7 @@ class RouterManager:
 
         @self.app.exception_handler(Exception)
         async def _h_generic(request: Request, exc: Exception):
-            logger.error(f"未处理的异常: {exc}")
+            logger.error(i18n.t("core.router.unhandled_exception", error=exc))
             if request.method == "GET" and "text/html" in request.headers.get(
                 "accept", ""
             ):
@@ -997,8 +1007,8 @@ class RouterManager:
                     content=_html(
                         500,
                         "unknow.png",
-                        "诶？发生了什么……",
-                        "有些事情我们也没预料到，正在排查中。",
+                        i18n.t("core.router.error_generic_title"),
+                        i18n.t("core.router.error_generic_desc"),
                     ),
                     status_code=500,
                 )
@@ -1109,7 +1119,7 @@ class RouterManager:
                                 "error": str(e),
                             },
                         )
-                        logger.error(f"WebSocket错误: {e}")
+                        logger.error(i18n.t("core.router.ws_error", error=e))
                         try:
                             await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
                         except Exception:
@@ -1130,7 +1140,12 @@ class RouterManager:
 
         if restored_http or restored_ws or restored_sse:
             logger.debug(
-                f"已恢复路由: HTTP={restored_http}, WebSocket={restored_ws}, SSE={restored_sse}"
+                i18n.t(
+                    "core.router.routes_restored",
+                    http=restored_http,
+                    ws=restored_ws,
+                    sse=restored_sse,
+                )
             )
 
     # 路由中间件
@@ -1223,7 +1238,7 @@ class RouterManager:
 
                 return response
         except RuntimeError:
-            logger.debug("FastAPI 应用已启动，跳过中间件安装（已有中间件继续生效）")
+            logger.debug(i18n.t("core.router.middleware_skip"))
 
     def middleware(self, *paths: str):
         """
@@ -1341,7 +1356,12 @@ class RouterManager:
                 self._apply_rate_limit(full_path, rate_limit)
 
             logger.info(
-                f"[{module_name}] 注册HTTP路由: {full_path} 方法: {resolved_methods}"
+                i18n.t(
+                    "core.router.register_http",
+                    module=module_name,
+                    path=full_path,
+                    methods=resolved_methods,
+                )
             )
             return func
 
@@ -1534,7 +1554,13 @@ class RouterManager:
                     conflicting_methods.append(method)
 
         if conflicting_methods:
-            raise ValueError(f"路径 {full_path} 的方法 {conflicting_methods} 已注册")
+            raise ValueError(
+                i18n.t(
+                    "core.router.method_conflict",
+                    path=full_path,
+                    methods=conflicting_methods,
+                )
+            )
 
         self._track_owner_namespace(module_name)
 
@@ -1569,7 +1595,14 @@ class RouterManager:
         if rate_limit:
             self._apply_rate_limit(full_path, rate_limit)
 
-        logger.info(f"[{module_name}] 注册HTTP路由: {full_path} 方法: {methods}")
+        logger.info(
+            i18n.t(
+                "core.router.register_http",
+                module=module_name,
+                path=full_path,
+                methods=methods,
+            )
+        )
 
     def register_webhook(self, *args, **kwargs) -> None:
         """
@@ -1587,14 +1620,22 @@ class RouterManager:
         """
         try:
             full_path = self._normalize_path(module_name, path)
-            if full_path not in self._http_routes[module_name]:
-                logger.debug(f"\n取消注册的路由不存在: {full_path}\n")
+
+            http_routes = self._http_routes.get(module_name)
+            if http_routes is None or full_path not in http_routes:
+                logger.debug(
+                    "\n"
+                    + i18n.t("core.router.unregister_not_exist", path=full_path)
+                    + "\n"
+                )
                 return False
 
             # 获取所有方法
-            methods = list(self._http_routes[module_name][full_path].keys())
-            logger.info(f"注销HTTP路由: {full_path} 方法: {methods}")
-            del self._http_routes[module_name][full_path]
+            methods = list(http_routes[full_path].keys())
+            logger.info(
+                i18n.t("core.router.unregister_http", path=full_path, methods=methods)
+            )
+            del http_routes[full_path]
 
             # 从路由列表中移除匹配的路由
             self.app.router.routes = [
@@ -1605,7 +1646,7 @@ class RouterManager:
 
             return True
         except Exception as e:
-            logger.error(f"取消注册HTTP路由失败: {e}")
+            logger.error(i18n.t("core.router.unregister_http_failed", error=e))
             return False
 
     def _register_ws_endpoint(
@@ -1623,7 +1664,7 @@ class RouterManager:
         {!--< /internal-use >!--}
         """
         if full_path in self._websocket_routes[module_name]:
-            raise ValueError(f"WebSocket路径 {full_path} 已注册")
+            raise ValueError(i18n.t("core.router.ws_path_exists", path=full_path))
 
         self._track_owner_namespace(module_name)
 
@@ -1677,7 +1718,7 @@ class RouterManager:
                         "reason": "client_disconnect",
                     },
                 )
-                logger.debug(f"客户端断开: {full_path}")
+                logger.debug(i18n.t("core.router.client_disconnect", path=full_path))
             except asyncio.CancelledError:
                 await self._run_ws_hooks(ws_conn, "disconnect", reason="cancelled")
                 await lifecycle.emit(
@@ -1688,7 +1729,7 @@ class RouterManager:
                         "reason": "cancelled",
                     },
                 )
-                logger.debug(f"WebSocket连接被取消: {full_path}")
+                logger.debug(i18n.t("core.router.ws_cancelled", path=full_path))
                 raise
             except Exception as e:
                 await self._run_ws_hooks(ws_conn, "error", error=str(e))
@@ -1703,7 +1744,7 @@ class RouterManager:
                         "error": str(e),
                     },
                 )
-                logger.error(f"WebSocket错误: {e}")
+                logger.error(i18n.t("core.router.ws_error", error=e))
                 try:
                     await websocket.close(code=WS_CLOSE_INTERNAL_ERROR)
                 except Exception:
@@ -1721,7 +1762,12 @@ class RouterManager:
         )
 
         logger.info(
-            f"[{module_name}] 注册WebSocket: {full_path}{'(需认证)' if auth_handler else ''}"
+            i18n.t(
+                "core.router.register_ws",
+                module=module_name,
+                path=full_path,
+                auth="(需认证)" if auth_handler else "",
+            )
         )
 
     def register_websocket(
@@ -1769,22 +1815,25 @@ class RouterManager:
             if (
                 ws_routes := self._websocket_routes.get(module_name)
             ) and full_path in ws_routes:
-                logger.info(f"注销WebSocket: {full_path}")
+                logger.info(i18n.t("core.router.unregister_ws", path=full_path))
                 del ws_routes[full_path]
 
                 # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
-                # FastAPI 的 WebSocket 路由有 websocket_endpoint 属性
                 self.app.router.routes = [
                     route
                     for route in self.app.router.routes
-                    if not (hasattr(route, "path") and route.path == full_path)
+                    if not (
+                        isinstance(route, WebSocketRoute) and route.path == full_path
+                    )
                 ]
                 return True
 
-            logger.debug(f"\n取消注册的路由不存在: {full_path}\n")
+            logger.debug(
+                "\n" + i18n.t("core.router.unregister_not_exist", path=full_path) + "\n"
+            )
             return False
         except Exception as e:
-            logger.error(f"注销WebSocket失败: {e}")
+            logger.error(i18n.t("core.router.unregister_ws_failed", error=e))
             return False
 
     def register_sse(
@@ -1831,7 +1880,7 @@ class RouterManager:
             if (
                 sse_routes := self._sse_routes.get(module_name)
             ) and full_path in sse_routes:
-                logger.info(f"注销SSE: {full_path}")
+                logger.info(i18n.t("core.router.unregister_sse", path=full_path))
                 del sse_routes[full_path]
 
                 self.app.router.routes = [
@@ -1845,10 +1894,12 @@ class RouterManager:
                 ]
                 return True
 
-            logger.debug(f"\n取消注册的SSE路由不存在: {full_path}\n")
+            logger.debug(
+                "\n" + i18n.t("core.router.unregister_not_exist", path=full_path) + "\n"
+            )
             return False
         except Exception as e:
-            logger.error(f"注销SSE失败: {e}")
+            logger.error(i18n.t("core.router.unregister_sse_failed", error=e))
             return False
 
     def unregister_all_by_namespace(self, namespace: str) -> dict[str, int]:
@@ -1882,7 +1933,7 @@ class RouterManager:
             self.app.router.routes = [
                 route
                 for route in self.app.router.routes
-                if not (hasattr(route, "path") and route.path in paths)
+                if not (isinstance(route, WebSocketRoute) and route.path in paths)
             ]
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
@@ -1910,8 +1961,13 @@ class RouterManager:
             or result["sse_count"] > 0
         ):
             logger.info(
-                f"已清理命名空间 [{namespace}] 的路由: "
-                f"HTTP={result['http_count']}, WebSocket={result['websocket_count']}, SSE={result['sse_count']}"
+                i18n.t(
+                    "core.router.namespace_cleaned",
+                    namespace=namespace,
+                    http=result["http_count"],
+                    ws=result["websocket_count"],
+                    sse=result["sse_count"],
+                )
             )
 
         # 同步清理 owner 索引：该命名空间已被整体清理，移除其在所有 owner 下的归属记录
@@ -2309,7 +2365,7 @@ class RouterManager:
             max_age=max_age,
             expose_headers=expose_headers or [],
         )
-        logger.info("已配置 CORS 中间件")
+        logger.info(i18n.t("core.router.cors_configured"))
 
     def setup_security_headers(self, headers: dict[str, str] = None):
         """
@@ -2332,7 +2388,7 @@ class RouterManager:
                 response.headers[k] = v
             return response
 
-        logger.info("已配置安全响应头")
+        logger.info(i18n.t("core.router.security_headers_configured"))
 
     def disable_docs(self):
         """
@@ -2381,7 +2437,7 @@ class RouterManager:
             if security and security.get("enabled"):
                 self.setup_security_headers(security.get("headers"))
         except Exception as e:
-            logger.debug(f"应用路由配置失败: {e}")
+            logger.debug(i18n.t("core.router.apply_config_failed", error=e))
 
     # ==================== 服务器管理 ====================
 
@@ -2425,7 +2481,7 @@ class RouterManager:
                 except ValueError:
                     continue
         except Exception as e:
-            logger.debug(f"获取本地IP地址失败: {e}")
+            logger.debug(i18n.t("core.router.get_local_ip_failed", error=e))
 
     async def start(
         self,
@@ -2446,7 +2502,7 @@ class RouterManager:
         """
         try:
             if self._server_task and not self._server_task.done():
-                raise RuntimeError("服务器已在运行中")
+                raise RuntimeError(i18n.t("core.router.already_running"))
 
             self._ensure_middleware_installed()
             self._get_local_ips()
@@ -2467,14 +2523,20 @@ class RouterManager:
             registered_routes = [
                 r.path for r in self.app.router.routes if hasattr(r, "path")
             ]
-            logger.info(f"启动路由服务器 {display_url}")
-            logger.debug(f"已注册 {len(registered_routes)} 条路由: {registered_routes}")
+            logger.info(i18n.t("core.router.starting", url=display_url))
+            logger.debug(
+                i18n.t(
+                    "core.router.routes_registered",
+                    count=len(registered_routes),
+                    routes=registered_routes,
+                )
+            )
 
             self._server_task = asyncio.create_task(self._uvicorn_server._serve())
 
             await lifecycle.submit_event(
                 "server.start",
-                msg="路由服务器已启动",
+                msg=i18n.t("core.router.started"),
                 data={
                     "base_url": self.base_url,
                     "host": host,
@@ -2485,14 +2547,14 @@ class RouterManager:
             display_url = self._format_display_url(self.base_url)
             await lifecycle.submit_event(
                 "server.start",
-                msg="路由服务器启动失败",
+                msg=i18n.t("core.router.start_failed_msg"),
                 data={
                     "base_url": self.base_url,
                     "host": host,
                     "port": port,
                 },
             )
-            logger.error(f"启动服务器失败: {e}")
+            logger.error(i18n.t("core.router.start_failed", error=e))
             raise e
 
     async def stop(self) -> None:
@@ -2503,28 +2565,28 @@ class RouterManager:
             self._uvicorn_server.should_exit = True
 
         if self._server_task:
-            logger.debug("正在停止路由服务器...")
+            logger.debug(i18n.t("core.router.stopping"))
             try:
                 await asyncio.wait_for(
                     self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS
                 )
-                logger.debug("路由服务器已正常停止")
+                logger.debug(i18n.t("core.router.stopped_normal"))
             except asyncio.CancelledError:
-                logger.info("路由服务器已被取消")
+                logger.info(i18n.t("core.router.stopped_cancelled"))
             except asyncio.TimeoutError:
                 self._server_task.cancel()
                 try:
                     await self._server_task
                 except (asyncio.CancelledError, Exception):
                     pass
-                logger.warning("路由服务器停止超时，强制终止")
+                logger.warning(i18n.t("core.router.stop_timeout"))
             except Exception as e:
-                logger.error(f"路由服务器停止时发生错误: {e}", exc_info=True)
+                logger.error(i18n.t("core.router.stop_error", error=e), exc_info=True)
             finally:
                 self._server_task = None
                 self._uvicorn_server = None
 
-        logger.debug("清理所有注册的路由...")
+        logger.debug(i18n.t("core.router.clearing_routes"))
         self._http_routes.clear()
         self._websocket_routes.clear()
         self._owner_namespaces.clear()
@@ -2536,7 +2598,9 @@ class RouterManager:
         self.app.router.routes.clear()
         self._setup_core_routes()
 
-        await lifecycle.submit_event("server.stop", msg="服务器已停止")
+        await lifecycle.submit_event(
+            "server.stop", msg=i18n.t("core.router.server_stopped")
+        )
 
     def _format_display_url(self, url: str) -> str:
         """
@@ -2563,7 +2627,7 @@ class RouterManager:
         # 无本地IP或通配符地址
         if not self._local_ips:
             fallback = FALLBACK_IPV4 if WILDCARD_IPV4 in host else FALLBACK_IPV6_HOST
-            return f"{url}\n  └─ 可访问: http://{fallback}:{port}{path}"
+            return f"{url}\n  └─ {i18n.t('core.router.accessible')}: http://{fallback}:{port}{path}"
 
         # 树状显示
         lines = [url]
@@ -2572,10 +2636,12 @@ class RouterManager:
 
         if lan_v4:
             lines.append(
-                f"  {'└─' if not lan_v6 else '├─'} 局域网IPv4: {protocol}://{lan_v4[0]}:{port}{path}"
+                f"  {'└─' if not lan_v6 else '├─'} {i18n.t('core.router.lan_ipv4')}: {protocol}://{lan_v4[0]}:{port}{path}"
             )
         if lan_v6:
-            lines.append(f"  └─ 局域网IPv6: {protocol}://[{lan_v6[0]}]:{port}{path}")
+            lines.append(
+                f"  └─ {i18n.t('core.router.lan_ipv6')}: {protocol}://[{lan_v6[0]}]:{port}{path}"
+            )
 
         return "\n".join(lines)
 
