@@ -189,7 +189,7 @@ TRANSLATIONS = {
     "core.router.unregister_ws_failed": "WebSocket の登録解除に失敗しました: {error}",
     "core.router.unregister_sse": "SSE の登録を解除しています: {path}",
     "core.router.unregister_sse_failed": "SSE の登録解除に失敗しました: {error}",
-    "core.router.namespace_cleaned": "名前空間 [{namespace}] のルートをクリーンアップしました: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.router.namespace_cleaned": "名前空間 [{namespace}] の残りのルートをクリーンアップしました: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.cors_configured": "CORS ミドルウェアを設定しました",
     "core.router.security_headers_configured": "セキュリティレスポンスヘッダーを設定しました",
     "core.router.apply_config_failed": "ルーター設定の適用に失敗しました: {error}",
