@@ -12,11 +12,18 @@ ErisPulse 配置中心
 """
 
 import os
-import time
-import toml
 import threading
+import time
 from typing import Any, TypeAlias
-from .constants import DEFAULT_CONFIG_FILE_PATH, CONFIG_CACHE_TIMEOUT_SECS, CONFIG_WRITE_DELAY_SECS
+
+import toml
+
+from .constants import (
+    CONFIG_CACHE_TIMEOUT_SECS,
+    CONFIG_WRITE_DELAY_SECS,
+    DEFAULT_CONFIG_FILE_PATH,
+)
+from .i18n import i18n
 
 ConfigValue: TypeAlias = Any
 ConfigKey: TypeAlias = str
@@ -101,7 +108,8 @@ class ConfigManager:
         except Exception as e:
             try:
                 from .logger import logger
-                logger.warning(f"配置文件迁移失败: {e}")
+
+                logger.warning(i18n.t("core.config.migrate_failed", error=e))
             except (ImportError, AttributeError):
                 pass
 
@@ -126,7 +134,12 @@ class ConfigManager:
             except Exception as e:
                 try:
                     from .logger import logger
-                    logger.error(f"加载配置文件 {self.CONFIG_FILE} 失败: {e}")
+
+                    logger.error(
+                        i18n.t(
+                            "core.config.load_failed", path=self.CONFIG_FILE, error=e
+                        )
+                    )
                 except (ImportError, AttributeError):
                     pass
                 self._cache = {}
@@ -212,7 +225,14 @@ class ConfigManager:
                 except Exception as e:
                     try:
                         from .logger import logger
-                        logger.error(f"写入配置文件 {self.CONFIG_FILE} 失败: {e}")
+
+                        logger.error(
+                            i18n.t(
+                                "core.config.write_failed",
+                                path=self.CONFIG_FILE,
+                                error=e,
+                            )
+                        )
                     except (ImportError, AttributeError):
                         pass
                     # 清理临时文件
@@ -320,7 +340,8 @@ class ConfigManager:
         except Exception as e:
             try:
                 from .logger import logger
-                logger.error(f"设置配置项 {key} 失败: {e}")
+
+                logger.error(i18n.t("core.config.set_failed", key=key, error=e))
             except (ImportError, AttributeError):
                 pass
             return False

@@ -7,13 +7,14 @@ List-Remote 命令实现
 import asyncio
 from argparse import ArgumentParser
 
-from rich.table import Table
 from rich.box import SIMPLE
+from rich.table import Table
 
+from ..base import Command
+from ..console import console
+from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import section_header
-from ..console import console
-from ..base import Command
 
 
 class ListRemoteCommand(Command):
@@ -24,7 +25,7 @@ class ListRemoteCommand(Command):
     """
 
     name = "list-remote"
-    description = "列出远程可用的组件"
+    description = i18n.t("cli.list_remote.description")
     aliases = ["lr"]
 
     def __init__(self):
@@ -39,14 +40,19 @@ class ListRemoteCommand(Command):
             "-t",
             choices=["modules", "adapters", "all"],
             default="all",
-            help="列出类型 (默认: all)",
+            help=i18n.t("cli.list_remote.type_help"),
         )
         parser.add_argument(
-            "--refresh", "-r", action="store_true", help="强制刷新远程包列表"
+            "--refresh",
+            "-r",
+            action="store_true",
+            help=i18n.t("cli.list_remote.refresh_help"),
         )
 
     def execute(self, args):
-        with console.status("[bold green]正在获取远程包列表...", spinner="dots"):
+        with console.status(
+            f"[bold green]{i18n.t('cli.list_remote.fetching')}[/]", spinner="dots"
+        ):
             remote_packages = asyncio.run(
                 self.package_manager.get_remote_packages(force_refresh=args.refresh)
             )
@@ -56,12 +62,22 @@ class ListRemoteCommand(Command):
         adapters = remote_packages.get("adapters", {})
 
         if pkg_type in ("all", "modules"):
-            self._print_group("模块", modules, "module", "模块名")
+            self._print_group(
+                i18n.t("cli.list_remote.group_modules"),
+                modules,
+                "module",
+                i18n.t("cli.list_remote.header_module"),
+            )
         if pkg_type in ("all", "adapters"):
-            self._print_group("适配器", adapters, "adapter", "适配器名")
+            self._print_group(
+                i18n.t("cli.list_remote.group_adapters"),
+                adapters,
+                "adapter",
+                i18n.t("cli.list_remote.header_adapter"),
+            )
 
         total = len(modules) + len(adapters)
-        console.print(f"[dim]  共 {total} 个远程组件[/]")
+        console.print(f"[dim]  {i18n.t('cli.list_remote.total_count', total=total)}[/]")
 
     def _print_group(self, title: str, items: dict, style: str, name_col: str):
         """
@@ -79,13 +95,15 @@ class ListRemoteCommand(Command):
 
         table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
         table.add_column(name_col, style=style, min_width=12)
-        table.add_column("包名", min_width=20)
-        table.add_column("最新版本", width=10)
-        table.add_column("描述")
+        table.add_column(i18n.t("cli.list_remote.header_package"), min_width=20)
+        table.add_column(i18n.t("cli.list_remote.header_version"), width=10)
+        table.add_column(i18n.t("cli.list_remote.header_desc"))
 
         for name, info in items.items():
             verified = info.get("verified", True)
-            display_name = name if verified else f"{name}（未验证）"
+            display_name = (
+                name if verified else i18n.t("cli.list_remote.unverified", name=name)
+            )
             table.add_row(
                 display_name,
                 info.get("package", ""),
@@ -95,8 +113,10 @@ class ListRemoteCommand(Command):
 
         console.print(table)
 
-        unverified_count = sum(1 for info in items.values() if not info.get("verified", True))
-        summary = f"[dim]  {len(items)} 个{title}[/]"
+        unverified_count = sum(
+            1 for info in items.values() if not info.get("verified", True)
+        )
+        summary = f"[dim]  {i18n.t('cli.list_remote.group_summary', count=len(items), title=title)}[/]"
         if unverified_count:
-            summary += f"  [dim]({unverified_count} 个未验证)[/]"
+            summary += f"  [dim]{i18n.t('cli.list_remote.unverified_count', count=unverified_count)}[/]"
         console.print(summary)

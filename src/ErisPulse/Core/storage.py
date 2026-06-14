@@ -11,20 +11,21 @@ ErisPulse 存储管理模块
 {!--< /tips >!--}
 """
 
+import json
 import os
 import re
-import json
 import sqlite3
 import threading
-from typing import Any, TypeAlias
 from contextlib import contextmanager
+from typing import Any, TypeAlias
 
-from .Bases.storage import BaseStorage, BaseQueryBuilder
+from .Bases.storage import BaseQueryBuilder, BaseStorage
 from .constants import (
+    DEFAULT_KV_TABLE_NAME,
     SQLITE_JOURNAL_MODE,
     SQLITE_SYNCHRONOUS_MODE,
-    DEFAULT_KV_TABLE_NAME,
 )
+from .i18n import i18n
 
 StorageKey: TypeAlias = str
 StorageValue: TypeAlias = Any
@@ -80,8 +81,7 @@ def _validate_identifier(name: str, context: str = "标识符") -> None:
     """
     if not name or not _IDENTIFIER_RE.match(name):
         raise ValueError(
-            f"不安全的 SQL {context}: '{name}'。"
-            f"仅允许字母、数字和下划线，且不能以数字开头"
+            i18n.t("core.storage.unsafe_identifier", context=context, name=name)
         )
 
 
@@ -94,19 +94,21 @@ def _validate_column_type(col_type: str) -> None:
     :raises ValueError: 当列类型包含潜在危险内容时
     """
     if not col_type or not col_type.strip():
-        raise ValueError("列类型不能为空")
+        raise ValueError(i18n.t("core.storage.col_type_empty"))
     stripped = col_type.strip().upper()
     # 检查类型定义的第一个词是否为已知类型
     first_word = stripped.split()[0] if stripped.split() else ""
     if first_word.rstrip("(") not in _VALID_COLUMN_TYPES and not _IDENTIFIER_RE.match(
         first_word.rstrip("(")
     ):
-        raise ValueError(f"不安全的列类型定义: '{col_type}'")
+        raise ValueError(i18n.t("core.storage.unsafe_col_type", type=col_type))
     # 拒绝包含分号等危险字符的类型定义
     dangerous_chars = (";", "--", "/*", "*/", "\x00")
     for char in dangerous_chars:
         if char in col_type:
-            raise ValueError(f"列类型定义包含非法字符: '{col_type}'")
+            raise ValueError(
+                i18n.t("core.storage.col_type_invalid_char", type=col_type)
+            )
 
 
 class SQLiteQueryBuilder(BaseQueryBuilder):
@@ -162,7 +164,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
 
     def _execute_insert_multi(self, storage: "StorageManager") -> int:
         if not isinstance(self._data, list) or not self._data:
-            raise ValueError("InsertMulti 需要非空列表类型数据")
+            raise ValueError(i18n.t("core.storage.insert_multi_empty"))
 
         columns = list(self._data[0].keys())
         for col in columns:
@@ -238,7 +240,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         elif self._operation == "delete":
             return self._build_delete_sql()
         else:
-            raise ValueError("未设置操作类型，请先调用 Select/Insert/Update/Delete")
+            raise ValueError(i18n.t("core.storage.no_op_type"))
 
     def _build_select_sql(self) -> tuple[str, list[Any]]:
         if self._columns:
@@ -257,7 +259,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     def _build_insert_sql(self) -> tuple[str, list[Any]]:
         data = self._data
         if not isinstance(data, dict):
-            raise ValueError("Insert 需要字典类型数据")
+            raise ValueError(i18n.t("core.storage.insert_needs_dict"))
         columns = list(data.keys())
         for col in columns:
             _validate_identifier(col, "列名")
@@ -270,7 +272,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
     def _build_update_sql(self) -> tuple[str, list[Any]]:
         data = self._data
         if not isinstance(data, dict):
-            raise ValueError("Update 需要字典类型数据")
+            raise ValueError(i18n.t("core.storage.update_needs_dict"))
 
         for k in data.keys():
             _validate_identifier(k, "列名")
@@ -398,7 +400,11 @@ class AlterTableBuilder:
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"修改表 {self._table_name} 失败: {e}")
+            logger.error(
+                i18n.t(
+                    "core.storage.alter_table_failed", table=self._table_name, error=e
+                )
+            )
             return False
 
 
@@ -536,7 +542,7 @@ class StorageManager(BaseStorage):
         """
         from .logger import logger
 
-        logger.debug(f"初始化数据库: {self.db_path}")
+        logger.debug(i18n.t("core.storage.init_db", path=self.db_path))
 
         try:
             os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
@@ -560,10 +566,10 @@ class StorageManager(BaseStorage):
             conn.commit()
             conn.close()
         except sqlite3.OperationalError as e:
-            logger.error(f"无法创建或打开数据库文件: {e}")
+            logger.error(i18n.t("core.storage.cannot_open_db", error=e))
             raise
         except Exception as e:
-            logger.error(f"初始化数据库时发生未知错误: {e}")
+            logger.error(i18n.t("core.storage.init_db_error", error=e))
             raise
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -598,12 +604,12 @@ class StorageManager(BaseStorage):
             else:
                 from .logger import logger
 
-                logger.error(f"数据库操作错误: {e}")
+                logger.error(i18n.t("core.storage.db_op_error", error=e))
                 return default
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"获取存储项 {key} 时发生错误: {e}")
+            logger.error(i18n.t("core.storage.get_error", key=key, error=e))
             return default
 
     def get_all_keys(self) -> list[str]:
@@ -627,7 +633,7 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"获取所有键名时发生错误: {e}")
+            logger.error(i18n.t("core.storage.get_keys_error", error=e))
             return []
 
     def keys(self) -> list[str]:
@@ -670,7 +676,7 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"设置存储项 {key} 失败: {e}")
+            logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
             return False
 
     def set_multi(self, items: dict[str, Any]) -> bool:
@@ -817,7 +823,7 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"批量获取存储项失败: {e}")
+            logger.error(i18n.t("core.storage.get_multi_failed", error=e))
             return {}
 
     def transaction(self) -> "StorageManager._Transaction":
@@ -911,7 +917,9 @@ class StorageManager(BaseStorage):
                             self.conn.rollback()
                         from .logger import logger
 
-                        logger.error(f"事务执行失败: {exc_val}")
+                        logger.error(
+                            i18n.t("core.storage.transaction_failed", error=exc_val)
+                        )
                 finally:
                     if hasattr(self.conn, "close"):
                         self.conn.close()
@@ -979,7 +987,9 @@ class StorageManager(BaseStorage):
         except ValueError as e:
             from .logger import logger
 
-            logger.error(f"创建表 {table_name} 失败: {e}")
+            logger.error(
+                i18n.t("core.storage.create_table_failed", table=table_name, error=e)
+            )
             return False
 
         try:
@@ -994,7 +1004,9 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"创建表 {table_name} 失败: {e}")
+            logger.error(
+                i18n.t("core.storage.create_table_failed", table=table_name, error=e)
+            )
             return False
 
     def DropTable(self, table_name: str) -> bool:
@@ -1015,7 +1027,7 @@ class StorageManager(BaseStorage):
         except ValueError as e:
             from .logger import logger
 
-            logger.error(f"删除表失败: {e}")
+            logger.error(i18n.t("core.storage.drop_table_failed", error=e))
             return False
 
         try:
@@ -1027,7 +1039,9 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"删除表 {table_name} 失败: {e}")
+            logger.error(
+                i18n.t("core.storage.drop_table_name_failed", table=table_name, error=e)
+            )
             return False
 
     def HasTable(self, table_name: str) -> bool:
@@ -1084,11 +1098,15 @@ class StorageManager(BaseStorage):
         # 避免访问内置属性时出现问题
         if key.startswith("_"):
             raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{key}'"
+                i18n.t(
+                    "core.storage.no_attribute",
+                    classname=self.__class__.__name__,
+                    key=key,
+                )
             )
 
         if not self._is_ready():
-            raise AttributeError(f"存储尚未初始化完成: {key}")
+            raise AttributeError(i18n.t("core.storage.not_initialized", key=key))
 
         # 检查键是否存在
         try:
@@ -1096,11 +1114,11 @@ class StorageManager(BaseStorage):
                 cursor = conn.cursor()
                 cursor.execute("SELECT value FROM config WHERE key = ?", (key,))
                 if (result := cursor.fetchone()) is None:
-                    raise AttributeError(f"存储项 {key} 不存在")
+                    raise AttributeError(i18n.t("core.storage.item_not_exist", key=key))
         except AttributeError:
             raise
         except Exception:
-            raise AttributeError(f"存储项 {key} 不存在或访问出错")
+            raise AttributeError(i18n.t("core.storage.item_not_exist_error", key=key))
 
         # 解析并返回值
         try:
@@ -1133,7 +1151,7 @@ class StorageManager(BaseStorage):
         except Exception as e:
             from .logger import logger
 
-            logger.error(f"设置存储项 {key} 失败: {e}")
+            logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
 
 
 storage: StorageManager = StorageManager()
