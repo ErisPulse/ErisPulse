@@ -30,6 +30,7 @@ import uvicorn
 from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
+from starlette.routing import WebSocketRoute
 from starlette.staticfiles import StaticFiles
 
 from ..runtime.context import current_owner
@@ -1619,7 +1620,9 @@ class RouterManager:
         """
         try:
             full_path = self._normalize_path(module_name, path)
-            if full_path not in self._http_routes[module_name]:
+
+            http_routes = self._http_routes.get(module_name)
+            if http_routes is None or full_path not in http_routes:
                 logger.debug(
                     "\n"
                     + i18n.t("core.router.unregister_not_exist", path=full_path)
@@ -1628,11 +1631,11 @@ class RouterManager:
                 return False
 
             # 获取所有方法
-            methods = list(self._http_routes[module_name][full_path].keys())
+            methods = list(http_routes[full_path].keys())
             logger.info(
                 i18n.t("core.router.unregister_http", path=full_path, methods=methods)
             )
-            del self._http_routes[module_name][full_path]
+            del http_routes[full_path]
 
             # 从路由列表中移除匹配的路由
             self.app.router.routes = [
@@ -1816,11 +1819,12 @@ class RouterManager:
                 del ws_routes[full_path]
 
                 # 从 FastAPI 路由列表中移除对应的 WebSocket 路由
-                # FastAPI 的 WebSocket 路由有 websocket_endpoint 属性
                 self.app.router.routes = [
                     route
                     for route in self.app.router.routes
-                    if not (hasattr(route, "path") and route.path == full_path)
+                    if not (
+                        isinstance(route, WebSocketRoute) and route.path == full_path
+                    )
                 ]
                 return True
 
@@ -1929,7 +1933,7 @@ class RouterManager:
             self.app.router.routes = [
                 route
                 for route in self.app.router.routes
-                if not (hasattr(route, "path") and route.path in paths)
+                if not (isinstance(route, WebSocketRoute) and route.path in paths)
             ]
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
