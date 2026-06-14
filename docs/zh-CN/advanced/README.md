@@ -5,6 +5,7 @@
 ## 文档列表
 
 - [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理和配置
+- [国际化 (i18n)](i18n.md) - 多语言支持、翻译注册与语言检测
 - [生命周期管理](lifecycle.md) - 生命周期事件系统的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
 - [HTTP 客户端](http-client.md) - 统一 HTTP 请求客户端

@@ -189,7 +189,7 @@ TRANSLATIONS = {
     "core.router.unregister_ws_failed": "注销WebSocket失败: {error}",
     "core.router.unregister_sse": "注销SSE: {path}",
     "core.router.unregister_sse_failed": "注销SSE失败: {error}",
-    "core.router.namespace_cleaned": "已清理命名空间 [{namespace}] 的路由: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.router.namespace_cleaned": "清理命名空间 [{namespace}] 的残余路由: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.cors_configured": "已配置 CORS 中间件",
     "core.router.security_headers_configured": "已配置安全响应头",
     "core.router.apply_config_failed": "应用路由配置失败: {error}",
