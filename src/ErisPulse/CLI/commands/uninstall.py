@@ -7,10 +7,11 @@ Uninstall 命令实现
 import sys
 from argparse import ArgumentParser
 
+from ..base import Command
+from ..console import console
+from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import interactive_select_table
-from ..console import console
-from ..base import Command
 
 
 class UninstallCommand(Command):
@@ -21,7 +22,7 @@ class UninstallCommand(Command):
     """
 
     name = "uninstall"
-    description = "卸载模块/适配器包"
+    description = i18n.t("cli.uninstall.description")
     aliases = ["rm", "remove"]
 
     def __init__(self):
@@ -31,9 +32,11 @@ class UninstallCommand(Command):
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
-        parser.add_argument("package", nargs="*", help="要卸载的包名（可指定多个）")
         parser.add_argument(
-            "--no-uv", action="store_true", help="禁用 uv，强制使用 pip 卸载"
+            "package", nargs="*", help=i18n.t("cli.uninstall.package_help")
+        )
+        parser.add_argument(
+            "--no-uv", action="store_true", help=i18n.t("cli.uninstall.no_uv_help")
         )
 
     def execute(self, args):
@@ -55,7 +58,7 @@ class UninstallCommand(Command):
         for name, info in installed.get("adapters", {}).items():
             all_packages.append(
                 {
-                    "type": "适配器",
+                    "type": i18n.t("cli.uninstall.type_adapter"),
                     "name": name,
                     "package": info["package"],
                     "version": info["version"],
@@ -64,7 +67,7 @@ class UninstallCommand(Command):
         for name, info in installed.get("modules", {}).items():
             all_packages.append(
                 {
-                    "type": "模块",
+                    "type": i18n.t("cli.uninstall.type_module"),
                     "name": name,
                     "package": info["package"],
                     "version": info["version"],
@@ -72,18 +75,26 @@ class UninstallCommand(Command):
             )
 
         if not all_packages:
-            console.print("[dim]  没有已安装的包[/]")
+            console.print(f"[dim]  {i18n.t('cli.uninstall.no_packages')}[/]")
             return
 
         selected = interactive_select_table(
-            "选择要卸载的包",
+            i18n.t("cli.uninstall.select_title"),
             all_packages,
             columns=[
-                {"header": "序号", "style": "#A0B0C0", "width": 4},
-                {"header": "类型", "style": "bold", "width": 6},
-                {"header": "名称"},
-                {"header": "包名"},
-                {"header": "版本", "width": 10},
+                {
+                    "header": i18n.t("cli.uninstall.header_index"),
+                    "style": "#A0B0C0",
+                    "width": 4,
+                },
+                {
+                    "header": i18n.t("cli.uninstall.header_type"),
+                    "style": "bold",
+                    "width": 6,
+                },
+                {"header": i18n.t("cli.uninstall.header_name")},
+                {"header": i18n.t("cli.uninstall.header_package")},
+                {"header": i18n.t("cli.uninstall.header_version"), "width": 10},
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(
                 ("● " if checked else "  ") + str(idx + 1),
