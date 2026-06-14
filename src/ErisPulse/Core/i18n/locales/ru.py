@@ -189,7 +189,7 @@ TRANSLATIONS = {
     "core.router.unregister_ws_failed": "Ошибка отмены регистрации WebSocket: {error}",
     "core.router.unregister_sse": "Отмена регистрации SSE: {path}",
     "core.router.unregister_sse_failed": "Ошибка отмены регистрации SSE: {error}",
-    "core.router.namespace_cleaned": "Очищены маршруты для пространства имён [{namespace}]: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.router.namespace_cleaned": "Очищены оставшиеся маршруты для пространства имён [{namespace}]: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.cors_configured": "Промежуточное ПО CORS настроено",
     "core.router.security_headers_configured": "Заголовки безопасности ответов настроены",
     "core.router.apply_config_failed": "Ошибка применения конфигурации маршрутизатора: {error}",
