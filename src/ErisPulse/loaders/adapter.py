@@ -10,14 +10,16 @@ ErisPulse 适配器加载器
 {!--< /tips >!--}
 """
 
-import sys
 import asyncio
 import importlib.metadata
+import sys
 from typing import Any
-from .bases.loader import BaseLoader
-from ..Core.logger import logger
+
+from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
+from ..Core.logger import logger
 from ..finders import AdapterFinder
+from .bases.loader import BaseLoader
 
 
 class AdapterLoader(BaseLoader):
@@ -71,12 +73,14 @@ class AdapterLoader(BaseLoader):
             entries = self._finder.find_all()
 
             if entries:
-                logger.print_info(f"发现 {len(entries)} 个适配器", level=1)
+                logger.print_info(
+                    i18n.t("loader.adapter.discovered", count=len(entries)), level=1
+                )
                 for i, entry in enumerate(entries):
                     is_last = i == len(entries) - 1
                     logger.print_tree_item(entry.name, level=1, is_last=is_last)
             else:
-                logger.print_info("未发现适配器", level=1)
+                logger.print_info(i18n.t("loader.adapter.none"), level=1)
 
             # 处理每个 entry-point
             for entry_point in entries:
@@ -95,11 +99,12 @@ class AdapterLoader(BaseLoader):
             raise  # 允许用户中断
         except SystemExit as e:
             logger.error(
-                f"加载 {group_name} 时触发 SystemExit({e.code})，已阻止进程退出。"
-                f"请不要使用 sys.exit() 或 raise SystemExit"
+                i18n.t("loader.adapter.systemexit", group=group_name, code=e.code)
             )
         except Exception as e:
-            logger.error(f"加载 {group_name} entry-points 失败: {e}")
+            logger.error(
+                i18n.t("loader.adapter.load_failed", group=group_name, error=e)
+            )
 
         return objs, enabled_list, disabled_list
 
@@ -181,11 +186,12 @@ class AdapterLoader(BaseLoader):
 
         except SystemExit as e:
             logger.error(
-                f"加载适配器 {meta_name} 时触发 SystemExit({e.code})，已跳过。"
-                f"请不要在适配器中使用 sys.exit() 或 raise SystemExit"
+                i18n.t("loader.adapter.systemexit_single", name=meta_name, code=e.code)
             )
         except Exception as e:
-            logger.error(f"加载适配器 {meta_name} 失败，已跳过: {e}")
+            logger.error(
+                i18n.t("loader.adapter.load_single_failed", name=meta_name, error=e)
+            )
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -232,27 +238,34 @@ class AdapterLoader(BaseLoader):
                             # 提交适配器加载完成事件
                             await lifecycle.submit_event(
                                 "adapter.load",
-                                msg=f"适配器 {platform} 加载完成",
+                                msg=i18n.t(
+                                    "loader.adapter.load_complete", name=platform
+                                ),
                                 data={"platform": platform, "success": True},
                             )
                     return success
                 except SystemExit as e:
                     logger.error(
-                        f"适配器 {name} 注册时尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                        f"请不要使用 sys.exit() 或 raise SystemExit"
+                        i18n.t(
+                            "loader.adapter.register_systemexit", name=name, code=e.code
+                        )
                     )
                     await lifecycle.submit_event(
                         "adapter.load",
-                        msg=f"适配器 {name} 注册时触发 SystemExit",
+                        msg=i18n.t("loader.adapter.register_systemexit_msg", name=name),
                         data={"platform": name, "success": False},
                     )
                     return False
                 except Exception as e:
-                    logger.error(f"适配器 {name} 注册失败: {e}")
+                    logger.error(
+                        i18n.t("loader.adapter.register_failed", name=name, error=e)
+                    )
                     # 提交适配器加载失败事件
                     await lifecycle.submit_event(
                         "adapter.load",
-                        msg=f"适配器 {name} 加载失败: {e}",
+                        msg=i18n.t(
+                            "loader.adapter.load_failed_msg", name=name, error=e
+                        ),
                         data={"platform": name, "success": False},
                     )
                     return False
@@ -267,7 +280,9 @@ class AdapterLoader(BaseLoader):
         for i, result in enumerate(register_results):
             adapter_name = adapters[i]
             if isinstance(result, BaseException) or result is False:
-                logger.warning(f"适配器 {adapter_name} 注册失败，已跳过")
+                logger.warning(
+                    i18n.t("loader.adapter.register_skipped", name=adapter_name)
+                )
                 failed_adapters.append(adapter_name)
 
         for name in failed_adapters:

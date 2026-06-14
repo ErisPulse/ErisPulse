@@ -4,22 +4,24 @@ ErisPulse 适配器系统
 提供平台适配器管理功能。支持多平台消息处理、事件驱动和生命周期管理。
 """
 
-import functools
 import asyncio
+import functools
 import inspect
 import time
 import warnings
-from typing import Any
-from collections.abc import Callable
 from collections import defaultdict
-from .logger import logger
+from collections.abc import Callable
+from typing import Any
+
 from .Bases.adapter import BaseAdapter
 from .config import config
+from .i18n import i18n
 from .lifecycle import lifecycle
+from .logger import logger
 
 _msg_logger = logger.get_child("Message", relative=False)
+from ..runtime.context import current_owner, handler_waits
 from .Bases.manager import ManagerBase
-from ..runtime.context import handler_waits, current_owner
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
@@ -94,7 +96,7 @@ class AdapterManager(ManagerBase):
             self._sdk = sdk
             return True
         except Exception as e:
-            logger.error(f"设置SDK引用失败: {e}")
+            logger.error(i18n.t("core.adapter.set_sdk_failed", error=e))
             return False
 
     # ==================== 适配器注册与管理 ====================
@@ -119,13 +121,11 @@ class AdapterManager(ManagerBase):
         >>> adapter.register("MyPlatform", MyPlatformAdapter)
         """
         if not self._is_subclass(adapter_class, BaseAdapter):
-            raise TypeError(
-                "适配器必须继承自BaseAdapter，否则我们无法加载这个适配器，它会导致未知的错误"
-            )
+            raise TypeError(i18n.t("core.adapter.must_inherit_base"))
 
         # 检查是否已存在该平台的适配器
         if platform in self._adapters:
-            logger.warning(f"平台 {platform} 已存在，将覆盖原适配器")
+            logger.warning(i18n.t("core.adapter.platform_exists", platform=platform))
 
         if adapter_info:
             self._adapter_info[platform] = adapter_info
@@ -165,12 +165,17 @@ class AdapterManager(ManagerBase):
                 self._adapters[platform] = instance
             except SystemExit as e:
                 logger.error(
-                    f"适配器 {platform} 尝试退出进程 (SystemExit({e.code}))，已跳过。"
-                    f"请不要在适配器中使用 sys.exit() 或 raise SystemExit"
+                    i18n.t(
+                        "core.adapter.systemexit_skipped",
+                        platform=platform,
+                        code=e.code,
+                    )
                 )
                 return False
             except Exception as e:
-                logger.error(f"创建适配器实例 {platform} 失败: {e}")
+                logger.error(
+                    i18n.t("core.adapter.create_failed", platform=platform, error=e)
+                )
                 return False
 
         return True
@@ -197,14 +202,16 @@ class AdapterManager(ManagerBase):
         skipped_platforms = []
         for platform in list(platforms):
             if platform not in self._adapters:
-                logger.warning(f"平台 {platform} 未注册，已跳过")
+                logger.warning(i18n.t("core.adapter.not_registered", platform=platform))
                 platforms.remove(platform)
                 skipped_platforms.append(platform)
 
-        logger.info(f"启动适配器 {platforms}")
+        logger.info(i18n.t("core.adapter.starting_platforms", platforms=platforms))
 
         await lifecycle.submit_event(
-            "adapter.start", msg="开始启动适配器", data={"platforms": platforms}
+            "adapter.start",
+            msg=i18n.t("core.adapter.start_msg"),
+            data={"platforms": platforms},
         )
 
         scheduled_adapters = set()
@@ -237,7 +244,11 @@ class AdapterManager(ManagerBase):
             # 再次确认是否已经被启动
             if adapter in self._started_instances:
                 logger.info(
-                    f"适配器 {platform}（实例ID: {id(adapter)}）已被其他协程启动，跳过"
+                    i18n.t(
+                        "core.adapter.already_started",
+                        platform=platform,
+                        id=id(adapter),
+                    )
                 )
                 return
 
@@ -248,7 +259,7 @@ class AdapterManager(ManagerBase):
             # 提交适配器状态变化事件（starting）
             await lifecycle.submit_event(
                 "adapter.status.change",
-                msg=f"适配器 {platform} 状态变化: starting",
+                msg=i18n.t("core.adapter.state_starting", platform=platform),
                 data={
                     "platform": platform,
                     "status": "starting",
@@ -270,24 +281,33 @@ class AdapterManager(ManagerBase):
                     # 提交适配器状态变化事件（started）
                     await lifecycle.submit_event(
                         "adapter.status.change",
-                        msg=f"适配器 {platform} 状态变化: started",
+                        msg=i18n.t("core.adapter.state_started", platform=platform),
                         data={"platform": platform, "status": "started"},
                     )
 
                     return
                 except asyncio.CancelledError:
-                    logger.info(f"适配器 {platform} 启动任务被取消")
+                    logger.info(
+                        i18n.t("core.adapter.task_cancelled", platform=platform)
+                    )
                     return
                 except Exception as e:
                     retry_count += 1
                     logger.error(
-                        f"平台 {platform} 启动失败（第{retry_count}次重试）: {e}"
+                        i18n.t(
+                            "core.adapter.start_retry_failed",
+                            platform=platform,
+                            count=retry_count,
+                            error=e,
+                        )
                     )
 
                     # 提交适配器状态变化事件（start_failed）
                     await lifecycle.submit_event(
                         "adapter.status.change",
-                        msg=f"适配器 {platform} 状态变化: start_failed",
+                        msg=i18n.t(
+                            "core.adapter.state_start_failed", platform=platform
+                        ),
                         data={
                             "platform": platform,
                             "status": "start_failed",
@@ -305,7 +325,13 @@ class AdapterManager(ManagerBase):
                     else:
                         wait_time = fixed_delay
 
-                    logger.info(f"将在 {wait_time // 60} 分钟后再次尝试重启 {platform}")
+                    logger.info(
+                        i18n.t(
+                            "core.adapter.retry_wait",
+                            minutes=wait_time // 60,
+                            platform=platform,
+                        )
+                    )
                     await asyncio.sleep(wait_time)
 
     async def shutdown(self, platforms: str | list[str] | None = None) -> None:
@@ -333,14 +359,18 @@ class AdapterManager(ManagerBase):
                 platforms = [platforms]
             for platform in list(platforms):
                 if platform not in self._adapters:
-                    logger.warning(f"平台 {platform} 未注册，已跳过")
+                    logger.warning(
+                        i18n.t("core.adapter.not_registered", platform=platform)
+                    )
                     platforms.remove(platform)
 
-            logger.info(f"关闭适配器 {platforms}")
+            logger.info(i18n.t("core.adapter.closing_platforms", platforms=platforms))
 
             # 提交适配器关闭开始事件
             await lifecycle.submit_event(
-                "adapter.stop", msg="开始关闭适配器", data={"platforms": platforms}
+                "adapter.stop",
+                msg=i18n.t("core.adapter.stop_msg"),
+                data={"platforms": platforms},
             )
 
             from .router import router
@@ -354,7 +384,9 @@ class AdapterManager(ManagerBase):
                 task = self._adapter_tasks.pop(platform, None)
                 if task and not task.done():
                     task.cancel()
-                    logger.debug(f"已取消平台 {platform} 的后台启动任务")
+                    logger.debug(
+                        i18n.t("core.adapter.task_cancelled_debug", platform=platform)
+                    )
 
             for platform in platforms:
                 adapter_instance = self._adapters[platform]
@@ -384,7 +416,7 @@ class AdapterManager(ManagerBase):
                         if p in platforms:
                             await lifecycle.submit_event(
                                 "adapter.status.change",
-                                msg=f"适配器 {p} 状态变化: stopping",
+                                msg=i18n.t("core.adapter.state_stopping", platform=p),
                                 data={"platform": p, "status": "stopping"},
                             )
 
@@ -397,18 +429,28 @@ class AdapterManager(ManagerBase):
                             if p in platforms:
                                 await lifecycle.submit_event(
                                     "adapter.status.change",
-                                    msg=f"适配器 {p} 状态变化: stopped",
+                                    msg=i18n.t(
+                                        "core.adapter.state_stopped", platform=p
+                                    ),
                                     data={"platform": p, "status": "stopped"},
                                 )
                     except Exception as e:
-                        logger.error(f"关闭适配器实例 {id(adapter_instance)} 失败: {e}")
+                        logger.error(
+                            i18n.t(
+                                "core.adapter.stop_failed",
+                                id=id(adapter_instance),
+                                error=e,
+                            )
+                        )
 
                         # 提交适配器状态变化事件（stop_failed）
                         for p in instance_platforms:
                             if p in platforms:
                                 await lifecycle.submit_event(
                                     "adapter.status.change",
-                                    msg=f"适配器 {p} 状态变化: stop_failed",
+                                    msg=i18n.t(
+                                        "core.adapter.state_stop_failed", platform=p
+                                    ),
                                     data={
                                         "platform": p,
                                         "status": "stop_failed",
@@ -427,7 +469,9 @@ class AdapterManager(ManagerBase):
                     self._bots[platform][bot_id]["status"] = "offline"
                     await lifecycle.submit_event(
                         "adapter.bot.offline",
-                        msg=f"Bot {platform}/{bot_id} 离线",
+                        msg=i18n.t(
+                            "core.adapter.bot_offline", platform=platform, bot_id=bot_id
+                        ),
                         data={
                             "platform": platform,
                             "bot_id": bot_id,
@@ -444,7 +488,9 @@ class AdapterManager(ManagerBase):
 
             # 提交适配器关闭完成事件
             await lifecycle.submit_event(
-                "adapter.stopped", msg="适配器关闭完成", data={"platforms": platforms}
+                "adapter.stopped",
+                msg=i18n.t("core.adapter.shutdown_complete"),
+                data={"platforms": platforms},
             )
         finally:
             # 清除关闭标志
@@ -473,7 +519,9 @@ class AdapterManager(ManagerBase):
         try:
             await adapter_instance.shutdown()
         except Exception as e:
-            logger.error(f"停止适配器 {platform} 失败: {e}")
+            logger.error(
+                i18n.t("core.adapter.stop_adapter_failed", platform=platform, error=e)
+            )
         self._started_instances.discard(adapter_instance)
 
         # 回收该平台运行期间注册的路由/事件/命令（幂等）
@@ -502,21 +550,37 @@ class AdapterManager(ManagerBase):
             sse_c = result_ns["sse_count"] + result_owner["sse_count"]
             if http_c or ws_c or sse_c:
                 logger.debug(
-                    f"已清理平台 {platform} 的路由: HTTP={http_c}, WebSocket={ws_c}, SSE={sse_c}"
+                    i18n.t(
+                        "core.adapter.routes_cleaned",
+                        platform=platform,
+                        http=http_c,
+                        ws=ws_c,
+                        sse=sse_c,
+                    )
                 )
         except Exception as e:
-            logger.debug(f"清理平台 {platform} 路由失败: {e}")
+            logger.debug(
+                i18n.t("core.adapter.routes_clean_failed", platform=platform, error=e)
+            )
 
         try:
-            from .Event import command, message, notice, request, meta
+            from .Event import command, message, meta, notice, request
 
             cleaned = command.unregister_by_owner(platform)
             for event_handler in (message, notice, request, meta):
                 cleaned += event_handler.handler.unregister_by_owner(platform)
             if cleaned > 0:
-                logger.debug(f"已清理平台 {platform} 的 {cleaned} 个事件处理器/命令")
+                logger.debug(
+                    i18n.t(
+                        "core.adapter.handlers_cleaned",
+                        platform=platform,
+                        count=cleaned,
+                    )
+                )
         except Exception as e:
-            logger.debug(f"清理平台 {platform} 事件处理器失败: {e}")
+            logger.debug(
+                i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
+            )
 
     async def restart(self, platform: str) -> bool:
         """
@@ -534,16 +598,16 @@ class AdapterManager(ManagerBase):
         """
         adapter_instance = self._adapters.get(platform)
         if adapter_instance is None:
-            logger.warning(f"平台 {platform} 未注册，无法重启")
+            logger.warning(i18n.t("core.adapter.cannot_restart", platform=platform))
             return False
         if adapter_instance not in self._started_instances:
-            logger.info(f"平台 {platform} 未运行，跳过重启")
+            logger.info(i18n.t("core.adapter.not_running_skip", platform=platform))
             return False
 
         # 1) 停止适配器（shutdown 即清理：路由/事件/命令随之回收）
         await lifecycle.submit_event(
             "adapter.status.change",
-            msg=f"适配器 {platform} 状态变化: stopping",
+            msg=i18n.t("core.adapter.state_stopping", platform=platform),
             data={"platform": platform, "status": "stopping"},
         )
         await self._stop_adapter(platform)
@@ -551,14 +615,16 @@ class AdapterManager(ManagerBase):
         # 2) 重新启动，注入 owner 使 start() 期间注册的资源归属该平台
         await lifecycle.submit_event(
             "adapter.status.change",
-            msg=f"适配器 {platform} 状态变化: starting",
+            msg=i18n.t("core.adapter.state_starting", platform=platform),
             data={"platform": platform, "status": "starting"},
         )
         token = current_owner.set(platform)
         try:
             await adapter_instance.start()
         except Exception as e:
-            logger.error(f"重启平台 {platform} 时启动失败: {e}")
+            logger.error(
+                i18n.t("core.adapter.restart_start_failed", platform=platform, error=e)
+            )
             # 启动失败：回滚（停止 + 清理本次注册的资源），避免下次冲突
             await self._stop_adapter(platform)
             return False
@@ -568,7 +634,7 @@ class AdapterManager(ManagerBase):
 
         await lifecycle.submit_event(
             "adapter.status.change",
-            msg=f"适配器 {platform} 状态变化: started",
+            msg=i18n.t("core.adapter.state_started", platform=platform),
             data={"platform": platform, "status": "started"},
         )
         return True
@@ -588,7 +654,12 @@ class AdapterManager(ManagerBase):
             result = router.unregister_all_by_namespace(platform)
             if result["http_count"] > 0 or result["websocket_count"] > 0:
                 logger.debug(
-                    f"已清理平台 {platform} 的路由: HTTP={result['http_count']}, WebSocket={result['websocket_count']}"
+                    i18n.t(
+                        "core.adapter.clear_routes_result",
+                        platform=platform,
+                        http=result["http_count"],
+                        ws=result["websocket_count"],
+                    )
                 )
 
         # 清除所有适配器实例
@@ -614,7 +685,7 @@ class AdapterManager(ManagerBase):
         # 清除Bot状态
         self._bots.clear()
 
-        logger.debug("适配器管理器已完全清理")
+        logger.debug(i18n.t("core.adapter.cleared"))
 
     # ==================== 适配器配置管理 ====================
 
@@ -631,8 +702,14 @@ class AdapterManager(ManagerBase):
             return True
 
         config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), enabled)
-        status = "启用" if enabled else "禁用"
-        logger.debug(f"平台适配器 {platform} 已注册并{status}")
+        status = (
+            i18n.t("core.adapter.status_enabled")
+            if enabled
+            else i18n.t("core.adapter.status_disabled")
+        )
+        logger.debug(
+            i18n.t("core.adapter.registered_status", platform=platform, status=status)
+        )
         return True
 
     def exists(self, platform: str) -> bool:
@@ -678,11 +755,11 @@ class AdapterManager(ManagerBase):
         """
         # 启用平台时自动在配置中注册
         if platform not in self._adapters:
-            logger.error(f"平台 {platform} 不存在")
+            logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
             return False
 
         config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), True)
-        logger.info(f"平台 {platform} 已启用")
+        logger.info(i18n.t("core.adapter.platform_enabled", platform=platform))
         return True
 
     def disable(self, platform: str) -> bool:
@@ -694,11 +771,11 @@ class AdapterManager(ManagerBase):
         """
         # 禁用平台时自动在配置中注册
         if platform not in self._adapters:
-            logger.error(f"平台 {platform} 不存在")
+            logger.error(i18n.t("core.adapter.platform_not_exist", platform=platform))
             return False
 
         config.setConfig(CONFIG_KEY_ADAPTER_STATUS_OF.format(platform), False)
-        logger.info(f"平台 {platform} 已禁用")
+        logger.info(i18n.t("core.adapter.platform_disabled", platform=platform))
         return True
 
     def unregister(self, platform: str) -> bool:
@@ -713,13 +790,15 @@ class AdapterManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         if platform not in self._adapters:
-            logger.warning(f"平台 {platform} 未注册")
+            logger.warning(
+                i18n.t("core.adapter.platform_unregistered_short", platform=platform)
+            )
             return False
 
         # 移除适配器实例
         self._adapters.pop(platform)
 
-        logger.info(f"平台 {platform} 已取消注册")
+        logger.info(i18n.t("core.adapter.platform_unregistered", platform=platform))
         return True
 
     def list_registered(self) -> list[str]:
@@ -748,7 +827,7 @@ class AdapterManager(ManagerBase):
         {!--< deprecated >!--} 此方法已弃用，请使用 list_items() 代替
         """
         warnings.warn(
-            "list_adapters() 已弃用，请使用 list_items() 代替",
+            i18n.t("core.adapter.list_adapters_deprecated"),
             DeprecationWarning,
             stacklevel=2,
         )
@@ -857,7 +936,9 @@ class AdapterManager(ManagerBase):
             alt_msg = data.get("alt_message", "")
             if len(alt_msg) > 50:
                 alt_msg = alt_msg[:50] + "..."
-            _msg_logger.message(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
+            _msg_logger.message(
+                f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}"
+            )
         else:
             _msg_logger.message(f"[Recv] {platform}/{event_type}/{detail_type}")
 
@@ -887,7 +968,11 @@ class AdapterManager(ManagerBase):
                         bot_id = str(self_info["user_id"])
                         await lifecycle.submit_event(
                             "adapter.bot.online",
-                            msg=f"Bot {platform}/{bot_id} 上线",
+                            msg=i18n.t(
+                                "core.adapter.bot_online",
+                                platform=platform,
+                                bot_id=bot_id,
+                            ),
                             data={
                                 "platform": platform,
                                 "bot_id": bot_id,
@@ -915,7 +1000,9 @@ class AdapterManager(ManagerBase):
                     bot_id = str(self_info["user_id"])
                     await lifecycle.submit_event(
                         "adapter.bot.online",
-                        msg=f"Bot {platform}/{bot_id} 上线",
+                        msg=i18n.t(
+                            "core.adapter.bot_online", platform=platform, bot_id=bot_id
+                        ),
                         data={
                             "platform": platform,
                             "bot_id": bot_id,
@@ -934,7 +1021,10 @@ class AdapterManager(ManagerBase):
                 processed_data = result
             else:
                 logger.warning(
-                    f"中间件 {middleware.__qualname__} 返回 None，已忽略并保留原数据"
+                    i18n.t(
+                        "core.adapter.middleware_returned_none",
+                        name=middleware.__qualname__,
+                    )
                 )
 
         # 分发到OneBot12事件处理器（每个 handler 在独立 Task 中执行，不阻塞框架）
@@ -1030,8 +1120,13 @@ class AdapterManager(ManagerBase):
                 pass
             except Exception as e:
                 logger.error(
-                    f"事件处理器执行错误 [{_func_name}] "
-                    f"type={event_type} platform={platform}: {e}"
+                    i18n.t(
+                        "core.adapter.handler_error",
+                        handler=_func_name,
+                        type=event_type,
+                        platform=platform,
+                        error=e,
+                    )
                 )
             finally:
                 elapsed = _time.monotonic() - t0
@@ -1065,9 +1160,15 @@ class AdapterManager(ManagerBase):
                 else:
                     if elapsed > HANDLER_SLOW_THRESHOLD_SECS:
                         logger.warning(
-                            f"事件处理器执行缓慢 [{_func_name}] "
-                            f"耗时 {elapsed:.2f}s > {HANDLER_SLOW_THRESHOLD_SECS}s "
-                            f"type={event_type} platform={platform}{_owner_tag}"
+                            i18n.t(
+                                "core.adapter.handler_slow",
+                                handler=_func_name,
+                                elapsed=f"{elapsed:.2f}",
+                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                type=event_type,
+                                platform=platform,
+                                tag=_owner_tag,
+                            )
                         )
 
         try:
@@ -1125,7 +1226,11 @@ class AdapterManager(ManagerBase):
         }
 
         if is_new:
-            logger.debug(f"自动发现Bot: {platform}/{bot_id}")
+            logger.debug(
+                i18n.t(
+                    "core.adapter.auto_discover_bot", platform=platform, bot_id=bot_id
+                )
+            )
 
         return is_new
 
@@ -1152,7 +1257,13 @@ class AdapterManager(ManagerBase):
             self._bots[platform][bot_id]["status"] = status
             if old_status != status:
                 logger.debug(
-                    f"Bot状态变更: {platform}/{bot_id} {old_status} -> {status}"
+                    i18n.t(
+                        "core.adapter.bot_status_change",
+                        platform=platform,
+                        bot_id=bot_id,
+                        old=old_status,
+                        new=status,
+                    )
                 )
 
         if status == "offline":
@@ -1165,7 +1276,11 @@ class AdapterManager(ManagerBase):
                         try:
                             await lifecycle.submit_event(
                                 "adapter.bot.offline",
-                                msg=f"Bot {platform}/{bot_id} 离线",
+                                msg=i18n.t(
+                                    "core.adapter.bot_offline",
+                                    platform=platform,
+                                    bot_id=bot_id,
+                                ),
                                 data={
                                     "platform": platform,
                                     "bot_id": bot_id,
@@ -1416,7 +1531,9 @@ class AdapterManager(ManagerBase):
         >>> print(methods)  # ["Text", "Image", "Voice", ...]
         """
         if (adapter_instance := self.get(platform)) is None:
-            raise ValueError(f"平台 {platform} 不存在")
+            raise ValueError(
+                i18n.t("core.adapter.platform_not_exist", platform=platform)
+            )
 
         # 获取Send类
         send_class = adapter_instance.Send.__class__
@@ -1464,14 +1581,18 @@ class AdapterManager(ManagerBase):
         # }
         """
         if (adapter_instance := self.get(platform)) is None:
-            raise ValueError(f"平台 {platform} 不存在")
+            raise ValueError(
+                i18n.t("core.adapter.platform_not_exist", platform=platform)
+            )
 
         # 获取Send类
         send_class = adapter_instance.Send.__class__
 
         # 检查方法是否存在
         if not hasattr(send_class, method_name):
-            raise ValueError(f"方法 {method_name} 不存在")
+            raise ValueError(
+                i18n.t("core.adapter.method_not_exist", method=method_name)
+            )
 
         method = getattr(send_class, method_name)
 
@@ -1540,7 +1661,9 @@ class AdapterManager(ManagerBase):
         :raises AttributeError: 当平台不存在或未启用时
         """
         if (adapter_instance := self.get(platform)) is None:
-            raise AttributeError(f"平台 {platform} 不存在或未启用")
+            raise AttributeError(
+                i18n.t("core.adapter.platform_not_enabled", platform=platform)
+            )
         return adapter_instance
 
     def __contains__(self, platform: str) -> bool:
