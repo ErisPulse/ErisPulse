@@ -189,7 +189,7 @@ TRANSLATIONS = {
     "core.router.unregister_ws_failed": "Failed to unregister WebSocket: {error}",
     "core.router.unregister_sse": "Unregistering SSE: {path}",
     "core.router.unregister_sse_failed": "Failed to unregister SSE: {error}",
-    "core.router.namespace_cleaned": "Cleaned routes for namespace [{namespace}]: HTTP={http}, WebSocket={ws}, SSE={sse}",
+    "core.router.namespace_cleaned": "Cleaned remaining routes for namespace [{namespace}]: HTTP={http}, WebSocket={ws}, SSE={sse}",
     "core.router.cors_configured": "CORS middleware configured",
     "core.router.security_headers_configured": "Security response headers configured",
     "core.router.apply_config_failed": "Failed to apply router configuration: {error}",
