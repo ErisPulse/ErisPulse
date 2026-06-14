@@ -57,6 +57,7 @@ ErisPulse SDK 主类
 > - storage: 存储管理器
 > - env: 存储管理器别名
 > - config: 配置管理器
+> - i18n: 国际化管理器
 > - adapter: 适配器管理器
 > - BaseAdapter: 适配器基类
 > - SendDSL: DSL 发送接口基类

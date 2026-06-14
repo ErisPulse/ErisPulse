@@ -129,6 +129,13 @@ ErisPulse 适配器配置 Schema 模块
 ## 类列表
 
 
+### `class I18nConfig`
+
+国际化配置
+
+控制框架的显示语言和翻译行为
+
+
 ### `class AdapterConfig`
 
 适配器全局配置基类（单账户/无账户适配器使用）
