@@ -4,11 +4,11 @@ ErisPulse 全局异常处理系统
 提供统一的异常捕获和格式化功能，支持同步和异步代码的异常处理。
 """
 
-import sys
-import traceback
 import asyncio
 import os
-from typing import Dict, Any, Type
+import sys
+import traceback
+from typing import Any, Dict, Type
 
 
 class ExceptionHandler:
@@ -99,13 +99,10 @@ def async_exception_handler(
             formatted_error = ExceptionHandler.format_async_exception(exception)
             err_logger(formatted_error + "\n")
         except Exception:
-            err_logger(
-                f"ERROR: 捕捉器发生错误，原始异常信息：\n\n{exception}\n\n"
-                + traceback.format_exc()
-            )
+            err_logger(f"ERROR Raw：\n\n{exception}\n\n" + traceback.format_exc())
     else:
-        msg = context.get("message", "未知异步错误")
-        err_logger(f"ERROR: 未处理的异步错误: {msg}\n")
+        msg = context.get("message", "Async - Unkonw Error")
+        err_logger(f"Async - Error: {msg}\n")
 
 
 def setup_exception_handling() -> None:
