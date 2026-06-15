@@ -267,7 +267,7 @@
     },
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
-      "count": 10,
+      "count": 11,
       "documents": [
         {
           "title": "高度なトピック",
@@ -312,6 +312,11 @@
         {
           "title": "HTTP クライアント",
           "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "国際化 (i18n) システム",
+          "path": "advanced/i18n.md",
           "level": 1
         },
         {

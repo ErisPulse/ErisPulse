@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1179,
+  "total_keywords": 1205,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1792,6 +1792,12 @@
         "title": "API 參考"
       },
       {
+        "document": "advanced/i18n.md",
+        "line": 141,
+        "level": 2,
+        "title": "API 參考"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 1,
         "level": 1,
@@ -2332,6 +2338,14 @@
         "line": 49,
         "level": 2,
         "title": "HttpResponse"
+      }
+    ],
+    "I18nManager": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 143,
+        "level": 3,
+        "title": "I18nManager"
       }
     ],
     "ID 欄位查詢": [
@@ -3144,6 +3158,14 @@
         "line": 853,
         "level": 3,
         "title": "`self` 欄位擴展資訊"
+      }
+    ],
+    "`t()` 方法詳解": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 159,
+        "level": 4,
+        "title": "`t()` 方法詳解"
       }
     ],
     "call_api 方法": [
@@ -4228,6 +4250,14 @@
         "title": "使用範例"
       }
     ],
+    "使用翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 101,
+        "level": 3,
+        "title": "使用翻譯"
+      }
+    ],
     "使用者指南": [
       {
         "document": "README.md",
@@ -4663,7 +4693,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "前置知識"
       }
@@ -4698,6 +4728,14 @@
         "line": 141,
         "level": 4,
         "title": "加載策略"
+      }
+    ],
+    "動態內容": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 237,
+        "level": 3,
+        "title": "動態內容"
       }
     ],
     "匯入": [
@@ -5058,6 +5096,14 @@
         "title": "國內映像加速"
       }
     ],
+    "國際化 (i18n) 系統": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 1,
+        "level": 1,
+        "title": "國際化 (i18n) 系統"
+      }
+    ],
     "圖片下載和儲存": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5088,6 +5134,30 @@
         "line": 529,
         "level": 4,
         "title": "在 RouteGroup 中使用"
+      }
+    ],
+    "在模組中使用 i18n": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 77,
+        "level": 2,
+        "title": "在模組中使用 i18n"
+      }
+    ],
+    "在模組類別中使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 116,
+        "level": 3,
+        "title": "在模組類別中使用"
+      }
+    ],
+    "在程式碼中手動切換": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "在程式碼中手動切換"
       }
     ],
     "型別註解": [
@@ -5126,6 +5196,14 @@
         "line": 361,
         "level": 3,
         "title": "執行模式"
+      }
+    ],
+    "執行階段設定": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 189,
+        "level": 2,
+        "title": "執行階段設定"
       }
     ],
     "基本使用": [
@@ -5466,6 +5544,14 @@
         "line": 361,
         "level": 2,
         "title": "多機器人設定"
+      }
+    ],
+    "多語言覆蓋": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 233,
+        "level": 3,
+        "title": "多語言覆蓋"
       }
     ],
     "多輪對話 (conversation)": [
@@ -5850,6 +5936,14 @@
         "line": 5,
         "level": 2,
         "title": "導入方式"
+      }
+    ],
+    "就近對應原則": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "就近對應原則"
       }
     ],
     "屬性存取": [
@@ -6256,6 +6350,14 @@
         "title": "引導式註冊"
       }
     ],
+    "從 SDK 執行個體存取": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 177,
+        "level": 3,
+        "title": "從 SDK 執行個體存取"
+      }
+    ],
     "從本機安裝": [
       {
         "document": "user-guide/installation.md",
@@ -6394,6 +6496,14 @@
         "line": 1,
         "level": 1,
         "title": "快速開始"
+      }
+    ],
+    "快速體驗": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 15,
+        "level": 2,
+        "title": "快速體驗"
       }
     ],
     "懶加載系統": [
@@ -6788,6 +6898,14 @@
         "title": "支援的訊息傳送類型"
       }
     ],
+    "支援的語言": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 5,
+        "level": 2,
+        "title": "支援的語言"
+      }
+    ],
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
@@ -7048,6 +7166,14 @@
         "title": "日誌層級控制"
       }
     ],
+    "日誌訊息": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 249,
+        "level": 3,
+        "title": "日誌訊息"
+      }
+    ],
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -7116,6 +7242,14 @@
         "line": 142,
         "level": 3,
         "title": "更新資料"
+      }
+    ],
+    "最佳實務": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 221,
+        "level": 2,
+        "title": "最佳實務"
       }
     ],
     "最佳實踐": [
@@ -7345,6 +7479,12 @@
       }
     ],
     "核心方法": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 145,
+        "level": 4,
+        "title": "核心方法"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 247,
@@ -8912,6 +9052,14 @@
         "title": "群聊訊息（含 @提及）"
       }
     ],
+    "翻譯鍵命名": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 223,
+        "level": 3,
+        "title": "翻譯鍵命名"
+      }
+    ],
     "自動推斷": [
       {
         "document": "advanced/session-types.md",
@@ -8966,6 +9114,14 @@
         "line": 122,
         "level": 2,
         "title": "自訂類型註冊"
+      }
+    ],
+    "與 CLI i18n 的關係": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 259,
+        "level": 2,
+        "title": "與 CLI i18n 的關係"
       }
     ],
     "舊設定相容": [
@@ -9094,6 +9250,14 @@
         "line": 117,
         "level": 3,
         "title": "解除安裝模組"
+      }
+    ],
+    "解除安裝翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 132,
+        "level": 3,
+        "title": "解除安裝翻譯"
       }
     ],
     "觸發": [
@@ -9354,6 +9518,14 @@
         "title": "設定選項"
       }
     ],
+    "設定項說明": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 203,
+        "level": 3,
+        "title": "設定項說明"
+      }
+    ],
     "註冊 API": [
       {
         "document": "advanced/dashboard-view.md",
@@ -9376,6 +9548,14 @@
         "line": 7,
         "level": 3,
         "title": "註冊命令"
+      }
+    ],
+    "註冊自訂翻譯": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "註冊自訂翻譯"
       }
     ],
     "註冊與取消": [
@@ -9416,6 +9596,14 @@
         "line": 168,
         "level": 2,
         "title": "認證與 API 呼叫"
+      }
+    ],
+    "語言偵測機制": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 54,
+        "level": 2,
+        "title": "語言偵測機制"
       }
     ],
     "請求事件": [
@@ -9740,6 +9928,30 @@
         "title": "透過 Docker 鏡像分發應用"
       }
     ],
+    "透過環境變數切換": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 17,
+        "level": 3,
+        "title": "透過環境變數切換"
+      }
+    ],
+    "透過設定 API 讀取 i18n 設定": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 191,
+        "level": 3,
+        "title": "透過設定 API 讀取 i18n 設定"
+      }
+    ],
+    "透過設定檔切換": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 28,
+        "level": 3,
+        "title": "透過設定檔切換"
+      }
+    ],
     "通用 request": [
       {
         "document": "advanced/http-client.md",
@@ -9932,12 +10144,6 @@
         "line": 75,
         "level": 3,
         "title": "進階主題"
-      },
-      {
-        "document": "advanced/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "進階主題"
       }
     ],
     "逾時與重試": [
@@ -9967,7 +10173,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "適用對象"
       },
@@ -10734,6 +10940,14 @@
         "line": 132,
         "level": 2,
         "title": "驗證安裝"
+      }
+    ],
+    "高級主題": [
+      {
+        "document": "advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "高級主題"
       }
     ],
     "高級方法 (推薦)": [
