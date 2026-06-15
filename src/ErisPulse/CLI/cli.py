@@ -43,8 +43,8 @@ class CLI:
             formatter_class=RawDescriptionHelpFormatter,
             description=i18n.t("cli.parser.description"),
         )
-        parser._positionals.title = "命令"
-        parser._optionals.title = "选项"
+        parser._positionals.title = i18n.t("cli.parser.positionals_title")
+        parser._optionals.title = i18n.t("cli.parser.optionals_title")
 
         # 全局选项
         parser.add_argument(
@@ -149,6 +149,47 @@ class CLI:
             )
         )
 
+    def _maybe_show_language_hint(self) -> None:
+        """
+        在前几次启动时提醒用户确认语言
+
+        由于检测到的语言可能不正确，提示会同时展示所有支持语言，
+        确保用户总能看懂。显示 {LANG_HINT_MAX_SHOWS} 次后自动静默消失。
+        """
+        from .i18n import LANG_HINT_MAX_SHOWS, LANGUAGE_NAMES, SUPPORTED_LANGUAGES
+
+        shown_count = i18n.get_lang_hint_shown_count()
+        if shown_count >= LANG_HINT_MAX_SHOWS:
+            return
+
+        current = i18n.get_language()
+        current_name = LANGUAGE_NAMES.get(current, current)
+        remaining = LANG_HINT_MAX_SHOWS - shown_count - 1
+
+        lines = []
+        for lang in SUPPORTED_LANGUAGES:
+            msg = i18n.t_in(
+                lang,
+                "cli.lang_hint.message",
+                lang=current_name,
+                remaining=remaining,
+            )
+            # \[ 转义使 Rich 显示字面方括号，消息中的 [cyan] 等标签正常解析
+            if lang == current:
+                lines.append(f"\\[{lang}] [bold]{msg}[/]")
+            else:
+                lines.append(f"\\[{lang}] [dim]{msg}[/]")
+
+        console.print()
+        console.print(
+            Panel(
+                "\n".join(lines),
+                border_style="info",
+                title=i18n.t("cli.lang_hint.title"),
+            )
+        )
+        i18n.increment_lang_hint()
+
     def run(self):
         """
         运行 CLI
@@ -160,6 +201,9 @@ class CLI:
         args._unknown_args = unknown
 
         print_banner()
+
+        # 前几次启动时提醒用户确认语言（检测错误时用户仍可看懂多语言提示）
+        self._maybe_show_language_hint()
 
         # 处理版本选项
         if args.version:

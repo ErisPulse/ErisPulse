@@ -18,16 +18,7 @@ from rich.panel import Panel
 from ..base import Command
 from ..console import console
 from ..i18n import i18n
-
-try:
-    from watchdog.events import FileSystemEventHandler
-    from watchdog.observers import Observer
-
-    _WATCHDOG_AVAILABLE = True
-except ImportError:
-    _WATCHDOG_AVAILABLE = False
-    Observer = None
-    FileSystemEventHandler = object
+from ..utils.file_watcher import FileSystemEventHandler, PollingObserver
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -116,10 +107,6 @@ class RunCommand(Command):
     def execute(self, args):
         script = args.script
         reload_mode = args.reload
-
-        if reload_mode and not _WATCHDOG_AVAILABLE:
-            console.print(f"[error]{i18n.t('cli.run.watchdog_missing')}[/]")
-            reload_mode = False
 
         if script:
             if not os.path.exists(script):
@@ -260,7 +247,7 @@ class RunCommand(Command):
                 reload_state["changed_file"] = os.path.basename(event.src_path)
                 reload_state["reload_event"].set()
 
-        observer = Observer()
+        observer = PollingObserver()
         observer.schedule(_ScriptReloadHandler(), watch_dir, recursive=True)
         observer.start()
 
@@ -336,7 +323,7 @@ class RunCommand(Command):
         if not os.path.exists(watch_dir):
             return
 
-        self._observer = Observer()
+        self._observer = PollingObserver()
         self._handler = ReloadHandler(loop=loop)
         self._observer.schedule(self._handler, watch_dir, recursive=True)
         self._observer.start()

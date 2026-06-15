@@ -4,24 +4,44 @@ ErisPulse SDK 包管理器
 提供包安装、卸载、升级和查询功能
 """
 
+import asyncio
+import json
 import os
 import re
 import shutil
-import asyncio
-import json
 import ssl
 import subprocess
 import sys
 import time
-import urllib.request
 import urllib.error
-from typing import List, Dict, Tuple, Optional, Any
+import urllib.request
+from typing import Any, Dict, List, Optional, Tuple
 
 from rich.panel import Panel
 from rich.prompt import Confirm
 
+from ...finders import AdapterFinder, ModuleFinder
 from ..console import console
-from ...finders import ModuleFinder, AdapterFinder
+from ..i18n import i18n
+
+# 版本号解析正则：支持 release 段 + 可选预发布后缀 (dev/a/alpha/b/beta/rc)
+# 例如 2.5.0-dev.1 / 2.5.0a1 / 2.4.5 均可解析
+_VERSION_RE = re.compile(
+    r"^\s*v?(?P<release>\d+(?:\.\d+)*)"
+    r"(?:[-._]?(?P<pre>dev|alpha|beta|rc|a|b|c|pre)[-._]?(?P<num>\d+))?",
+    re.IGNORECASE,
+)
+# 预发布类型排序权重：正式版 > rc > beta > alpha > dev
+_PRE_RELEASE_RANK = {
+    "dev": 0,
+    "alpha": 1,
+    "a": 1,
+    "beta": 2,
+    "b": 2,
+    "rc": 3,
+    "c": 3,
+    "pre": 3,
+}
 
 
 class PackageManager:
@@ -226,11 +246,9 @@ class PackageManager:
             resp = opener.open(req, timeout=timeout)
             return resp.read().decode("utf-8")
         except ssl.SSLError as e:
-            console.print(f"[error]SSL 验证失败: {e}[/]")
+            console.print(f"[error]{i18n.t('cli.package.ssl_error', error=e)}[/]")
             if proxy:
-                console.print(
-                    "[dim]  检测到代理，请确保代理配置正确或尝试设置 HTTPS_PROXY 环境变量[/]"
-                )
+                console.print(f"[dim]{i18n.t('cli.package.ssl_error_proxy_hint')}[/]")
             return None
         except Exception:
             return None
@@ -287,15 +305,15 @@ class PackageManager:
                 break
 
         if not result["modules"] and not result["adapters"]:
-            console.print("[warning]无法获取远程包列表，请检查网络连接或代理设置[/]")
+            console.print(f"[warning]{i18n.t('cli.package.fetch_remote_failed')}[/]")
             proxy = self._get_system_proxy()
             if proxy:
                 safe_proxy = {k: self._sanitize_proxy_url(v) for k, v in proxy.items()}
-                console.print(f"[dim]  检测到代理: {safe_proxy}[/]")
-            else:
                 console.print(
-                    "[dim]  未检测到系统代理，如需使用代理请设置 HTTPS_PROXY 环境变量[/]"
+                    f"[dim]{i18n.t('cli.package.proxy_detected', proxy=safe_proxy)}[/]"
                 )
+            else:
+                console.print(f"[dim]{i18n.t('cli.package.no_proxy_detected')}[/]")
 
         self._cache[cache_key] = result
         self._cache_time[cache_key] = time.time()
@@ -331,7 +349,9 @@ class PackageManager:
                     }
 
         except Exception as e:
-            console.print(f"[error] 获取已安装包信息失败: {e}[/]")
+            console.print(
+                f"[error]{i18n.t('cli.package.get_installed_failed', error=e)}[/]"
+            )
             import traceback
 
             console.print(traceback.format_exc())
@@ -600,7 +620,9 @@ class PackageManager:
             )
             proxy_hint = f" [dim](proxy: {safe_proxy})[/]"
 
-        console.print(f"\n[bold blue]⚙ {description}[/] [dim]({backend})[/]{proxy_hint}")
+        console.print(
+            f"\n[bold blue]⚙ {description}[/] [dim]({backend})[/]{proxy_hint}"
+        )
         console.print("[dim]─────────────────────────────────────────────────[/]")
 
         try:
@@ -611,10 +633,14 @@ class PackageManager:
                 stderr=sys.stderr,
             )
         except FileNotFoundError as e:
-            console.print(f"[error]找不到 {backend}: {e}[/]")
+            console.print(
+                f"[error]{i18n.t('cli.package.backend_not_found', backend=backend, error=e)}[/]"
+            )
             return False
         except Exception as e:
-            console.print(f"[error]启动 {backend} 失败: {e}[/]")
+            console.print(
+                f"[error]{i18n.t('cli.package.backend_start_failed', backend=backend, error=e)}[/]"
+            )
             return False
 
         try:
@@ -627,7 +653,9 @@ class PackageManager:
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)
-            console.print("\n[warning]操作被用户中断[/]")
+            console.print(
+                f"\n[warning]{i18n.t('cli.package.operation_interrupted')}[/]"
+            )
             return False
 
         console.print("[dim]─────────────────────────────────────────────────[/]")
@@ -653,10 +681,40 @@ class PackageManager:
         if uv_cmd:
             if self._execute_backend(uv_cmd + ["pip"], args, description, "uv"):
                 return True
-            console.print("[warning]uv 执行失败，回退到 pip 重试...[/]")
+            console.print(f"[warning]{i18n.t('cli.package.uv_fallback_to_pip')}[/]")
 
         pip_cmd = [self._get_target_python(), "-m", "pip"]
         return self._execute_backend(pip_cmd, args, description, "pip")
+
+    def _version_key(self, version: str) -> tuple:
+        """
+        将版本号解析为可比较的元组键
+
+        遵循项目命名规则排序：正式版 > rc > beta > alpha > dev。
+        例如 2.4.5-dev.1 先于 2.4.5 正式版。
+
+        :param version: [str] 版本号字符串
+        :return: [tuple] 可直接用于排序/比较的元组键
+        """
+        match = _VERSION_RE.match(str(version).strip().lstrip("vV"))
+        if not match:
+            # 无法解析时退化为基础键，保证不抛异常
+            return ((0, 0, 0, 0), (1,), str(version))
+
+        release = tuple(int(x) for x in match.group("release").split("."))
+        # release 段对齐到固定长度，确保 (2.5) 与 (2.5.0) 可正确比较
+        padded = release + (0,) * max(0, 4 - len(release))
+
+        pre_type = match.group("pre")
+        if pre_type is None:
+            # 正式版：预发布键高于任何预发布版本
+            pre_key = (1,)
+        else:
+            rank = _PRE_RELEASE_RANK.get(pre_type.lower(), 1)
+            pre_num = int(match.group("num") or 0)
+            pre_key = (0, rank, pre_num)
+
+        return (padded, pre_key, "")
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         """
@@ -666,24 +724,14 @@ class PackageManager:
         :param version2: [str] 第二个版本号
         :return: [int] version1 大于/等于/小于 version2 时分别返回 1/0/-1
         """
-        from packaging import version as comparison
-
-        try:
-            v1 = comparison.parse(version1)
-            v2 = comparison.parse(version2)
-            if v1 > v2:
-                return 1
-            elif v1 < v2:
-                return -1
-            else:
-                return 0
-        except comparison.InvalidVersion:
-            if version1 > version2:
-                return 1
-            elif version1 < version2:
-                return -1
-            else:
-                return 0
+        k1 = self._version_key(version1)
+        k2 = self._version_key(version2)
+        if k1 > k2:
+            return 1
+        elif k1 < k2:
+            return -1
+        else:
+            return 0
 
     def _check_sdk_compatibility(self, min_sdk_version: str) -> Tuple[bool, str]:
         """
@@ -700,22 +748,30 @@ class PackageManager:
             current_version = "unknown"
 
         if current_version == "unknown":
-            return True, "无法确定当前SDK版本"
+            return True, i18n.t("cli.package.sdk_version_unknown")
 
         try:
             compatibility = self._compare_versions(current_version, min_sdk_version)
             if compatibility >= 0:
                 return (
                     True,
-                    f"当前SDK版本 {current_version} 满足最低要求 {min_sdk_version}",
+                    i18n.t(
+                        "cli.package.sdk_compatible",
+                        current=current_version,
+                        required=min_sdk_version,
+                    ),
                 )
             else:
                 return (
                     False,
-                    f"当前SDK版本 {current_version} 低于最低要求 {min_sdk_version}",
+                    i18n.t(
+                        "cli.package.sdk_incompatible",
+                        current=current_version,
+                        required=min_sdk_version,
+                    ),
                 )
         except Exception:
-            return True, "无法验证SDK版本兼容性"
+            return True, i18n.t("cli.package.sdk_compat_check_failed")
 
     async def _get_package_info(self, package_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -760,12 +816,12 @@ class PackageManager:
 
             if actual_package:
                 console.print(
-                    f"[info]找到别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]"
+                    f"[info]{i18n.t('cli.package.alias_found', alias=f'[bold]{package_name}[/]', package=f'[package]{actual_package}[/]')}[/]"
                 )
                 current_package_name = actual_package
             else:
                 console.print(
-                    f"[info]未找到别名，将直接安装: [package]{package_name}[/][/]"
+                    f"[info]{i18n.t('cli.package.alias_not_found_install', package=f'[package]{package_name}[/]')}[/]"
                 )
                 current_package_name = package_name
 
@@ -773,16 +829,24 @@ class PackageManager:
             if package_info and not package_info.get("verified", True):
                 console.print(
                     Panel(
-                        f"包 [package]{current_package_name}[/] 尚未被官方验证。\n\n"
-                        f"未验证的包可能存在安全风险，请确认你信任该包的作者后再安装。\n"
-                        f"作者: {package_info.get('author', '未知')}\n"
-                        f"仓库: {package_info.get('repository', '未知')}",
-                        title="未验证模块",
+                        i18n.t(
+                            "cli.package.unverified_warning",
+                            package=f"[package]{current_package_name}[/]",
+                            author=package_info.get(
+                                "author", i18n.t("cli.package.unknown")
+                            ),
+                            repository=package_info.get(
+                                "repository", i18n.t("cli.package.unknown")
+                            ),
+                        ),
+                        title=i18n.t("cli.package.unverified_title"),
                         border_style="yellow",
                     )
                 )
-                if not Confirm.ask("是否继续安装？", default=False):
-                    console.print("[info]已取消安装[/]")
+                if not Confirm.ask(
+                    i18n.t("cli.package.confirm_install"), default=False
+                ):
+                    console.print(f"[info]{i18n.t('cli.package.install_cancelled')}[/]")
                     all_success = False
                     continue
 
@@ -793,16 +857,22 @@ class PackageManager:
                 if not is_compatible:
                     console.print(
                         Panel(
-                            f"[warning]SDK版本兼容性警告[/]\n"
-                            f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
-                            f"{message}\n\n"
-                            f"继续安装可能会导致问题。",
-                            title="兼容性警告",
+                            i18n.t(
+                                "cli.package.compat_warning_install",
+                                package=f"[package]{current_package_name}[/]",
+                                version=package_info["min_sdk_version"],
+                                message=message,
+                            ),
+                            title=i18n.t("cli.package.compat_warning_title"),
                             border_style="warning",
                         )
                     )
-                    if not Confirm.ask("是否继续安装？", default=False):
-                        console.print("[info]已取消安装[/]")
+                    if not Confirm.ask(
+                        i18n.t("cli.package.confirm_install"), default=False
+                    ):
+                        console.print(
+                            f"[info]{i18n.t('cli.package.install_cancelled')}[/]"
+                        )
                         all_success = False
                         continue
                 else:
@@ -818,13 +888,17 @@ class PackageManager:
             cmd.append(current_package_name)
 
             success = self._run_pip_command_with_output(
-                cmd, f"安装 {current_package_name}"
+                cmd, i18n.t("cli.package.installing", package=current_package_name)
             )
 
             if success:
-                console.print(f"[success]✔ 包 {current_package_name} 安装成功[/]")
+                console.print(
+                    f"[success]{i18n.t('cli.package.install_success', package=current_package_name)}[/]"
+                )
             else:
-                console.print(f"[error]✘ 包 {current_package_name} 安装失败[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.package.install_failed', package=current_package_name)}[/]"
+                )
                 all_success = False
 
         return all_success
@@ -843,9 +917,13 @@ class PackageManager:
         success = self._run_pip_command_with_output(cmd, description)
 
         if success:
-            console.print(f"[success]✔ {description} 成功[/]")
+            console.print(
+                f"[success]{i18n.t('cli.package.operation_success', description=description)}[/]"
+            )
         else:
-            console.print(f"[error]✘ {description} 失败[/]")
+            console.print(
+                f"[error]{i18n.t('cli.package.operation_failed', description=description)}[/]"
+            )
 
         return success
 
@@ -868,18 +946,20 @@ class PackageManager:
 
             if actual_package:
                 console.print(
-                    f"[info]  别名映射: [bold]{package_name}[/] → [package]{actual_package}[/][/]"
+                    f"[info]{i18n.t('cli.package.alias_mapping', alias=f'[bold]{package_name}[/]', package=f'[package]{actual_package}[/]')}[/]"
                 )
                 packages_to_uninstall.append(actual_package)
             else:
                 installed_package = self._find_installed_package_by_name(package_name)
                 if installed_package:
                     package_name = installed_package
-                    console.print(f"[info]  找到已安装包: [bold]{package_name}[/][/]")
+                    console.print(
+                        f"[info]{i18n.t('cli.package.installed_package_found', package=f'[bold]{package_name}[/]')}[/]"
+                    )
                     packages_to_uninstall.append(package_name)
                 else:
                     console.print(
-                        f"[warning]  未找到别名，将尝试直接卸载: [package]{package_name}[/][/]"
+                        f"[warning]{i18n.t('cli.package.uninstall_alias_not_found', package=f'[package]{package_name}[/]')}[/]"
                     )
                     packages_to_uninstall.append(package_name)
 
@@ -887,19 +967,27 @@ class PackageManager:
             package_list = "\n".join(
                 [f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall]
             )
-            if not Confirm.ask(f"确认卸载以下包吗？\n{package_list}", default=False):
-                console.print("[info]  操作已取消[/]")
+            if not Confirm.ask(
+                i18n.t("cli.package.confirm_uninstall", packages=package_list),
+                default=False,
+            ):
+                console.print(f"[info]{i18n.t('cli.package.operation_cancelled')}[/]")
                 return False
 
         for package_name in packages_to_uninstall:
             success = self._run_pip_command_with_output(
-                ["uninstall", "-y", package_name], f"卸载 {package_name}"
+                ["uninstall", "-y", package_name],
+                i18n.t("cli.package.uninstalling", package=package_name),
             )
 
             if success:
-                console.print(f"[success]✔ 包 {package_name} 卸载成功[/]")
+                console.print(
+                    f"[success]{i18n.t('cli.package.uninstall_success', package=package_name)}[/]"
+                )
             else:
-                console.print(f"[error]✘ 包 {package_name} 卸载失败[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.package.uninstall_failed', package=package_name)}[/]"
+                )
                 all_success = False
 
         return all_success
@@ -913,41 +1001,45 @@ class PackageManager:
         updates = asyncio.run(self.check_package_updates())
 
         if not updates:
-            console.print("[success]所有ErisPulse包已是最新版本[/]")
+            console.print(f"[success]{i18n.t('cli.package.all_up_to_date')}[/]")
             return True
 
         console.print(
             Panel(
-                f"找到 [bold]{len(updates)}[/] 个可升级的包:\n"
+                i18n.t("cli.package.updates_found", count=f"[bold]{len(updates)}[/]")
+                + "\n"
                 + "\n".join(
                     f"  - [package]{pkg}[/] [dim]{current_ver}[/] → [success]{new_ver}[/]"
                     for pkg, (current_ver, new_ver) in updates.items()
                 ),
-                title="升级列表",
+                title=i18n.t("cli.package.upgrade_list_title"),
             )
         )
 
-        if not Confirm.ask("确认升级以上包吗？", default=False):
-            console.print("[info]操作已取消[/]")
+        if not Confirm.ask(i18n.t("cli.package.confirm_upgrade_all"), default=False):
+            console.print(f"[info]{i18n.t('cli.package.operation_cancelled')}[/]")
             return False
 
         results = {}
         for pkg in sorted(updates.keys()):
-            console.print(f"\n[info]正在升级 [package]{pkg}[/]...")
+            console.print(
+                f"\n[info]{i18n.t('cli.package.upgrading_package', package=f'[package]{pkg}[/]')}[/]"
+            )
             results[pkg] = self.install_package([pkg], upgrade=True)
 
         success_count = sum(1 for success in results.values() if success)
         console.print(
-            f"\n[success]升级完成: {success_count}/{len(results)} 个包成功[/]"
+            f"\n[success]{i18n.t('cli.package.upgrade_complete', success=success_count, total=len(results))}[/]"
         )
 
         failed = [pkg for pkg, success in results.items() if not success]
         if failed:
             console.print(
                 Panel(
-                    "以下包升级失败:\n"
+                    i18n.t("cli.package.upgrade_failed_list")
+                    + "\n"
                     + "\n".join(f"  - [error]{pkg}[/]" for pkg in failed),
-                    title="警告",
+                    title=i18n.t("cli.package.warning_title"),
                     style="warning",
                 )
             )
@@ -969,7 +1061,9 @@ class PackageManager:
             actual_package = asyncio.run(self._find_package_by_alias(package_name))
 
             if actual_package:
-                console.print(f"[info]找到包: [package]{actual_package}[/][/]")
+                console.print(
+                    f"[info]{i18n.t('cli.package.package_found', package=f'[package]{actual_package}[/]')}[/]"
+                )
                 current_package_name = actual_package
             else:
                 current_package_name = package_name
@@ -993,19 +1087,21 @@ class PackageManager:
                     comparison = self._compare_versions(remote_version, current_version)
                     if comparison <= 0:
                         console.print(
-                            f"[success]{current_package_name} 已是最新版本 ({current_version})[/]"
+                            f"[success]{i18n.t('cli.package.already_latest', package=current_package_name, version=current_version)}[/]"
                         )
                         continue
                     else:
                         console.print(
-                            f"[info]{current_package_name}: {current_version} → {remote_version}[/]"
+                            f"[info]{i18n.t('cli.package.version_update_available', package=current_package_name, old=current_version, new=remote_version)}[/]"
                         )
                 else:
                     console.print(
-                        f"[info]{current_package_name}: 当前版本 {current_version}[/]"
+                        f"[info]{i18n.t('cli.package.current_version_info', package=current_package_name, version=current_version)}[/]"
                     )
             else:
-                console.print(f"[warning]未找到 {current_package_name} 的安装信息[/]")
+                console.print(
+                    f"[warning]{i18n.t('cli.package.install_info_not_found', package=current_package_name)}[/]"
+                )
 
             package_info = asyncio.run(self._get_package_info(current_package_name))
             if package_info and "min_sdk_version" in package_info:
@@ -1015,16 +1111,22 @@ class PackageManager:
                 if not is_compatible:
                     console.print(
                         Panel(
-                            f"[warning]SDK版本兼容性警告[/]\n"
-                            f"包 [package]{current_package_name}[/] 需要最低SDK版本 {package_info['min_sdk_version']}\n"
-                            f"{message}\n\n"
-                            f"继续升级可能会导致问题。",
-                            title="兼容性警告",
+                            i18n.t(
+                                "cli.package.compat_warning_upgrade",
+                                package=f"[package]{current_package_name}[/]",
+                                version=package_info["min_sdk_version"],
+                                message=message,
+                            ),
+                            title=i18n.t("cli.package.compat_warning_title"),
                             border_style="warning",
                         )
                     )
-                    if not Confirm.ask("是否继续升级？", default=False):
-                        console.print("[info]已取消升级[/]")
+                    if not Confirm.ask(
+                        i18n.t("cli.package.confirm_upgrade"), default=False
+                    ):
+                        console.print(
+                            f"[info]{i18n.t('cli.package.upgrade_cancelled')}[/]"
+                        )
                         all_success = False
                         continue
                 else:
@@ -1036,13 +1138,17 @@ class PackageManager:
             cmd.append(current_package_name)
 
             success = self._run_pip_command_with_output(
-                cmd, f"升级 {current_package_name}"
+                cmd, i18n.t("cli.package.upgrading", package=current_package_name)
             )
 
             if success:
-                console.print(f"[success]✔ 包 {current_package_name} 升级成功[/]")
+                console.print(
+                    f"[success]{i18n.t('cli.package.upgrade_success', package=current_package_name)}[/]"
+                )
             else:
-                console.print(f"[error]✘ 包 {current_package_name} 升级失败[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.package.upgrade_failed', package=current_package_name)}[/]"
+                )
                 all_success = False
 
         return all_success
@@ -1120,8 +1226,6 @@ class PackageManager:
 
         :return: [List[Dict[str, Any]]] 版本信息列表，失败时返回空列表
         """
-        from packaging import version as comparison
-
         url = "https://pypi.org/pypi/ErisPulse/json"
         text = self._http_get(url)
         if not text:
@@ -1137,7 +1241,7 @@ class PackageManager:
                         "pre_release": self._is_pre_release(version_str),
                     }
                     versions.append(release_info)
-            versions.sort(key=lambda x: comparison.parse(x["version"]), reverse=True)
+            versions.sort(key=lambda x: self._version_key(x["version"]), reverse=True)
             return versions
         except (json.JSONDecodeError, KeyError, Exception):
             return []
@@ -1152,7 +1256,7 @@ class PackageManager:
         try:
             return await loop.run_in_executor(None, self._get_pypi_versions_sync)
         except Exception:
-            console.print("[error]获取PyPI版本信息失败[/]")
+            console.print(f"[error]{i18n.t('cli.package.pypi_versions_failed')}[/]")
             return []
 
     def _is_pre_release(self, version: str) -> bool:
@@ -1176,13 +1280,17 @@ class PackageManager:
         current_version = self.get_installed_version()
 
         if target_version and target_version == current_version and not force:
-            console.print(f"[info]当前已是目标版本 [bold]{current_version}[/][/]")
+            console.print(
+                f"[info]{i18n.t('cli.package.already_target_version', version=f'[bold]{current_version}[/]')}[/]"
+            )
             return True
 
         package_spec = "ErisPulse"
         if target_version:
             if not re.match(r"^[a-zA-Z0-9._+\-]+$", target_version):
-                console.print(f"[error]无效的版本号: {target_version}[/]")
+                console.print(
+                    f"[error]{i18n.t('cli.package.invalid_version', version=target_version)}[/]"
+                )
                 return False
             package_spec += f"=={target_version}"
 
@@ -1199,7 +1307,7 @@ try:
     result = subprocess.run([
         sys.executable, "-m", "pip", "install", "--upgrade", "{package_spec}"
     ], capture_output=True, text=True, timeout=300)
-    
+
     if result.returncode == 0:
         print("更新成功!")
         print(result.stdout)
@@ -1220,8 +1328,8 @@ except:
             with open(script_path, "w", encoding="utf-8") as f:
                 f.write(update_script)
 
-            console.print("[info]正在启动更新进程...[/]")
-            console.print("[info]请稍后重新运行CLI以使用新版本[/]")
+            console.print(f"[info]{i18n.t('cli.package.starting_update')}[/]")
+            console.print(f"[info]{i18n.t('cli.package.rerun_cli_later')}[/]")
 
             subprocess.Popen(
                 [sys.executable, script_path],
@@ -1230,19 +1338,26 @@ except:
 
             return True
         else:
+            if target_version:
+                update_desc = i18n.t(
+                    "cli.package.update_desc_with_version", version=target_version
+                )
+            else:
+                update_desc = i18n.t("cli.package.update_desc_latest")
+
             success = self._run_pip_command_with_output(
                 ["install", "--upgrade", package_spec],
-                f"更新 ErisPulse SDK {f'到 {target_version}' if target_version else '到最新版本'}",
+                update_desc,
             )
 
             if success:
-                new_version = target_version or "最新版本"
+                new_version = target_version or i18n.t("cli.package.latest_version")
                 console.print(
-                    f"[success]✔ ErisPulse SDK 更新成功: {current_version} → {new_version}[/]"
+                    f"[success]{i18n.t('cli.package.sdk_update_success', old=current_version, new=new_version)}[/]"
                 )
                 if not target_version:
-                    console.print("[info]请重新启动CLI以使用新版本[/]")
+                    console.print(f"[info]{i18n.t('cli.package.restart_cli')}[/]")
             else:
-                console.print("[error]✘ ErisPulse SDK 更新失败[/]")
+                console.print(f"[error]{i18n.t('cli.package.sdk_update_failed')}[/]")
 
             return success
