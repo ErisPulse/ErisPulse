@@ -20,7 +20,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-
 # ---------------------------------------------------------------------------
 # 数据模型
 # ---------------------------------------------------------------------------
@@ -190,6 +189,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
         DocEntry("会话类型系统", "advanced/session-types.md"),
+        DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
     ],
 )
@@ -201,6 +201,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懒加载系统", "advanced/lazy-loading.md"),
+        DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
     ],
 )
@@ -216,6 +217,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
         DocEntry("会话类型系统", "advanced/session-types.md"),
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
+        DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("Dashboard 视窗注册", "advanced/dashboard-view.md"),
     ],
 )

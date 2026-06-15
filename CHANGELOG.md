@@ -63,6 +63,54 @@
 
 ---
 
+## [2.5.0-dev.2] - 2026/06/15
+> 开发版本
+
+**版本摘要**
+2.5.0-dev.2 移除含 C 扩展的三方依赖以提升 aarch64 等平台兼容性，新增语言切换命令与首次启动语言确认提示，完善 CLI 工具层国际化
+
+### 新增
+- @wsu2059q
+  - `CLI/utils/file_watcher.py` 新增纯 Python 文件变更监控模块：
+    - `PollingObserver` 通过定期比较 .py 文件 mtime 检测变更，不依赖任何 C 扩展
+    - `FileSystemEventHandler` / `FileChangeEvent` 提供与 watchdog 一致的事件接口
+  - `CLI/commands/language.py` 新增 `epsdk i18n` 命令（别名 `language` / `lang`）：
+    - 交互式选择语言或直接指定语言代码切换（如 `epsdk i18n en`）
+    - 支持 `--list` 列出所有支持的语言
+  - `CLI/cli.py` 新增首次启动语言确认提示：
+    - 同时展示全部支持语言，确保检测错误时用户仍能看懂
+    - 前 5 次启动时提醒，括号内显示倒计时（此提示将在 x 次启动后静默消失）
+    - 当前语言行高亮显示
+  - `CLI/i18n/__init__.py` 新增：
+    - 语言选择持久化（`~/.erispulse/cli_state.json`），跨会话保留用户选择
+    - `t_in()` 方法获取指定语言的翻译，用于多语言同时展示
+    - 语言提示计数器（`get_lang_hint_shown_count` / `increment_lang_hint`）
+    - `LANGUAGE_NAMES` 常量映射语言代码到显示名称
+  - `CLI/utils/package_manager.py` 新增 `_version_key()` 内置版本比较：
+    - 遵循项目命名规则排序：正式版 > rc > beta > alpha > dev
+    - 支持 `2.5.0-dev.1`、`2.5.0a1`、`2.4.5` 等格式
+
+### 变更
+- @wsu2059q
+  - `CLI/commands/run.py` 热重载改用 `utils/file_watcher.PollingObserver`，不再依赖 watchdog
+  - `CLI/cli.py` 帮助文本的「命令」/「选项」标题改为通过 i18n 获取
+  - `CLI/utils/display.py` 全部硬编码中文改为通过 i18n 获取（翻页导航、确认提示等）
+  - `CLI/utils/package_manager.py` 全部硬编码中文改为通过 i18n 获取
+  - `CLI/i18n/locales/` 5 个语言文件新增语言确认提示、display 工具、package_manager 工具相关翻译键
+  - `CLI/i18n/__init__.py` 语言优先级调整：显式选择 > `ERISPULSE_LANG` 环境变量 > 持久化选择 > 自动检测
+
+### 移除
+- @wsu2059q
+  - 移除 `watchdog` 三方依赖（含 C 扩展，在 aarch64 等平台可能无预编译 wheel 导致安装失败）
+  - 移除 `packaging` 三方依赖（仅用于版本比较，已由内置 `_version_key()` 替代）
+
+### 优化
+- @wsu2059q
+  - 减少第三方依赖数量，提升 aarch64/ARM 等无预编译 wheel 平台的兼容性
+  - CLI 工具层完全国际化，所有用户可见文本支持 5 种语言
+
+---
+
 ## [2.5.0-dev.1] - 2026/06/15
 > 开发版本
 
