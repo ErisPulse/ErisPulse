@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1162,
+  "total_keywords": 1186,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -1898,6 +1898,12 @@
         "title": "API Reference"
       },
       {
+        "document": "advanced/i18n.md",
+        "line": 141,
+        "level": 2,
+        "title": "API Reference"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 1,
         "level": 1,
@@ -1940,6 +1946,14 @@
         "line": 21,
         "level": 2,
         "title": "Abstract Types"
+      }
+    ],
+    "Access from SDK Instance": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 177,
+        "level": 3,
+        "title": "Access from SDK Instance"
       }
     ],
     "Accessing Core Modules": [
@@ -2748,6 +2762,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 444,
+        "level": 2,
+        "title": "Best Practices"
+      },
+      {
+        "document": "advanced/i18n.md",
+        "line": 221,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3658,6 +3678,14 @@
         "title": "Configuration Instructions"
       }
     ],
+    "Configuration Item Descriptions": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 203,
+        "level": 3,
+        "title": "Configuration Item Descriptions"
+      }
+    ],
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3983,6 +4011,12 @@
       }
     ],
     "Core Methods": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 145,
+        "level": 4,
+        "title": "Core Methods"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 279,
@@ -4542,6 +4576,14 @@
         "line": 52,
         "level": 3,
         "title": "Drop Table"
+      }
+    ],
+    "Dynamic Content": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 237,
+        "level": 3,
+        "title": "Dynamic Content"
       }
     ],
     "Environment Variables": [
@@ -5690,6 +5732,14 @@
         "title": "HttpResponse"
       }
     ],
+    "I18nManager": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 143,
+        "level": 3,
+        "title": "I18nManager"
+      }
+    ],
     "ID Field Query": [
       {
         "document": "advanced/session-types.md",
@@ -6014,6 +6064,14 @@
         "title": "Interactive Message Types"
       }
     ],
+    "Internationalization (i18n) System": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 1,
+        "level": 1,
+        "title": "Internationalization (i18n) System"
+      }
+    ],
     "Introduction to Module Development": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -6044,6 +6102,14 @@
         "line": 1,
         "level": 1,
         "title": "Kook Platform Features Documentation"
+      }
+    ],
+    "Language Detection Mechanism": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 54,
+        "level": 2,
+        "title": "Language Detection Mechanism"
       }
     ],
     "Lazy Loading": [
@@ -6280,6 +6346,14 @@
         "line": 115,
         "level": 3,
         "title": "Log Level Control"
+      }
+    ],
+    "Log Messages": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 249,
+        "level": 3,
+        "title": "Log Messages"
       }
     ],
     "Logger Module": [
@@ -7118,6 +7192,14 @@
         "title": "Multi-instance Deployment"
       }
     ],
+    "Multi-language Coverage": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 233,
+        "level": 3,
+        "title": "Multi-language Coverage"
+      }
+    ],
     "Multi-platform Adaptation": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7713,7 +7795,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "Prerequisites"
       },
@@ -7800,6 +7882,14 @@
         "line": 51,
         "level": 3,
         "title": "Protocol Methods"
+      }
+    ],
+    "Proximity Mapping Principle": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "Proximity Mapping Principle"
       }
     ],
     "Proxy Configuration": [
@@ -7962,6 +8052,14 @@
         "title": "Quick Build Mode (Static)"
       }
     ],
+    "Quick Experience": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 15,
+        "level": 2,
+        "title": "Quick Experience"
+      }
+    ],
     "Quick Initialization": [
       {
         "document": "quick-start.md",
@@ -8082,6 +8180,14 @@
         "title": "Reading Configuration"
       }
     ],
+    "Reading i18n Configuration via Configuration API": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 191,
+        "level": 3,
+        "title": "Reading i18n Configuration via Configuration API"
+      }
+    ],
     "Receive Type": [
       {
         "document": "advanced/session-types.md",
@@ -8120,6 +8226,14 @@
         "line": 7,
         "level": 3,
         "title": "Registering Commands"
+      }
+    ],
+    "Registering Custom Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "Registering Custom Translations"
       }
     ],
     "Registering Handlers": [
@@ -8318,6 +8432,14 @@
         "line": 720,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
+      }
+    ],
+    "Relationship with CLI i18n": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 259,
+        "level": 2,
+        "title": "Relationship with CLI i18n"
       }
     ],
     "Reply": [
@@ -8688,6 +8810,14 @@
         "line": 140,
         "level": 3,
         "title": "Running Projects"
+      }
+    ],
+    "Runtime Configuration": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 189,
+        "level": 2,
+        "title": "Runtime Configuration"
       }
     ],
     "SDK": [
@@ -9456,6 +9586,14 @@
         "title": "Supported File Types"
       }
     ],
+    "Supported Languages": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 5,
+        "level": 2,
+        "title": "Supported Languages"
+      }
+    ],
     "Supported Message Sending Types": [
       {
         "document": "platform-guide/email.md",
@@ -9534,6 +9672,30 @@
         "title": "Supported Submission Types"
       }
     ],
+    "Switch Manually in Code": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "Switch Manually in Code"
+      }
+    ],
+    "Switch via Configuration File": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 28,
+        "level": 3,
+        "title": "Switch via Configuration File"
+      }
+    ],
+    "Switch via Environment Variables": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 17,
+        "level": 3,
+        "title": "Switch via Environment Variables"
+      }
+    ],
     "Sync API Connection": [
       {
         "document": "platform-guide/matrix.md",
@@ -9607,7 +9769,7 @@
     "Target Audience": [
       {
         "document": "advanced/README.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "Target Audience"
       },
@@ -9734,6 +9896,14 @@
         "title": "Transaction Usage"
       }
     ],
+    "Translation Key Naming": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 223,
+        "level": 3,
+        "title": "Translation Key Naming"
+      }
+    ],
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
@@ -9818,6 +9988,14 @@
         "line": 143,
         "level": 2,
         "title": "Unique Event Types"
+      }
+    ],
+    "Unloading Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 132,
+        "level": 3,
+        "title": "Unloading Translations"
       }
     ],
     "Unregister Methods": [
@@ -10034,6 +10212,30 @@
         "line": 486,
         "level": 3,
         "title": "Using Send DSL to Specify Accounts"
+      }
+    ],
+    "Using Translations": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 101,
+        "level": 3,
+        "title": "Using Translations"
+      }
+    ],
+    "Using i18n in Modules": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 77,
+        "level": 2,
+        "title": "Using i18n in Modules"
+      }
+    ],
+    "Using in Module Classes": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 116,
+        "level": 3,
+        "title": "Using in Module Classes"
       }
     ],
     "Using in Transactions": [
@@ -10398,6 +10600,14 @@
         "line": 338,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
+      }
+    ],
+    "`t()` Method Details": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 159,
+        "level": 4,
+        "title": "`t()` Method Details"
       }
     ],
     "call_api Method": [

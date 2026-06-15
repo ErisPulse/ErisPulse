@@ -42,7 +42,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `prompt_validated(message: str, default: str = '', validate: Optional[Callable[[str], Union[bool, str, None]]] = None, error_msg: str = '输入无效')`
+### `prompt_validated(message: str, default: str = '', validate: Optional[Callable[[str], Union[bool, str, None]]] = None, error_msg: Optional[str] = None)`
 
 交互式输入，校验失败时保留上次输入并重新提示，直到通过校验。
 

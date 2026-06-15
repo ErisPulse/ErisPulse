@@ -1,10 +1,11 @@
-# 進階主題
+# 高級主題
 
-本目錄包含 ErisPulse 框架的進階功能和深入主題。
+本目錄包含 ErisPulse 框架的高階特性與深入主題。
 
 ## 文件列表
 
 - [懶載入系統](lazy-loading.md) - 懶載入模組系統的運作原理與設定
+- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言偵測
 - [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
 - [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端
