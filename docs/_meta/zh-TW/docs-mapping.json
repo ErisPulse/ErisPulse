@@ -267,10 +267,10 @@
     },
     "進階主題": {
       "description": "深入理解框架的進階特性",
-      "count": 10,
+      "count": 11,
       "documents": [
         {
-          "title": "進階主題",
+          "title": "高級主題",
           "path": "advanced/README.md",
           "level": 1
         },
@@ -312,6 +312,11 @@
         {
           "title": "HTTP 客戶端",
           "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "國際化 (i18n) 系統",
+          "path": "advanced/i18n.md",
           "level": 1
         },
         {

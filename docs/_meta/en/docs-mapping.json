@@ -267,7 +267,7 @@
     },
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
-      "count": 10,
+      "count": 11,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -312,6 +312,11 @@
         {
           "title": "HTTP Client",
           "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "Internationalization (i18n) System",
+          "path": "advanced/i18n.md",
           "level": 1
         },
         {

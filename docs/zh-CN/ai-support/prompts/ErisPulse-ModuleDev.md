@@ -6917,6 +6917,277 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 
 
+### 国际化（i18n）系统
+
+# 国际化 (i18n) 系统
+
+ErisPulse v2.5.0 起内置了完整的国际化支持。框架核心及 CLI 界面均可根据您的系统语言自动切换显示文本，也支持外部模块注册自己的翻译。
+
+## 支持的语言
+
+| 语言 | 代码 | 说明 |
+|------|------|------|
+| 简体中文 | `zh-CN` | 默认语言（框架原生语言） |
+| 繁體中文 | `zh-TW` | 繁体中文（香港/澳门/台湾） |
+| English | `en` | 英文（通用回退语言） |
+| 日本語 | `ja` | 日文 |
+| Русский | `ru` | 俄文 |
+
+## 快速体验
+
+### 通过环境变量切换
+
+```bash
+# Windows PowerShell
+$env:ERISPULSE_LANG = "en"
+epsdk run
+
+# macOS / Linux
+ERISPULSE_LANG=ja epsdk run
+```
+
+### 通过配置文件切换
+
+在 `config/config.toml` 中添加：
+
+```toml
+[ErisPulse.i18n]
+language = "zh-TW"
+```
+
+设为 `"auto"`（默认值）则自动检测系统语言。
+
+### 在代码中手动切换
+
+```python
+from ErisPulse import i18n
+
+# 手动设置语言
+i18n.set_language("en")
+print(i18n.get_language())  # "en"
+
+# 重置为自动检测
+i18n.reset_language()
+```
+
+---
+
+## 语言检测机制
+
+框架按以下优先级检测用户语言：
+
+1. **环境变量 `ERISPULSE_LANG`** — 最高优先级，用于测试和临时切换
+2. **Windows API** — `GetUserDefaultLocaleName`（仅 Windows，不受 Git Bash 等工具覆盖 `LANG` 的影响）
+3. **环境变量** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 标准）
+4. **系统 Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
+5. **兜底** — en（英文）
+
+### 就近映射原则
+
+当检测到的语言不是精确匹配时，按就近原则映射到支持的语言：
+
+- `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体中文**
+- 其他所有 `zh-*`（如 `zh-CN`, `zh-SG`）→ **简体中文**
+- `en-US`, `en-GB`, `en-AU` 等 → **英文**
+- `ja-JP` → **日文**
+- `ru-RU` → **俄文**
+- 其他未识别语言 → **简体中文（兜底）**
+
+---
+
+## 在模块中使用 i18n
+
+您可以为自己的模块注册翻译文本，让您的模块也支持多语言。
+
+### 注册自定义翻译
+
+```python
+from ErisPulse import i18n
+
+# 注册中文翻译
+i18n.register("zh-CN", {
+    "my_module.welcome": "欢迎使用我的模块！",
+    "my_module.goodbye": "再见！",
+    "my_module.hello": "你好，{name}！",
+}, domain="my_module")
+
+# 注册英文翻译
+i18n.register("en", {
+    "my_module.welcome": "Welcome to my module!",
+    "my_module.goodbye": "Goodbye!",
+    "my_module.hello": "Hello, {name}!",
+}, domain="my_module")
+```
+
+### 使用翻译
+
+```python
+from ErisPulse import i18n
+
+# 简单翻译
+i18n.t("my_module.welcome")  # 自动使用当前语言
+
+# 带格式化参数
+i18n.t("my_module.hello", name="Alice")
+
+# 指定默认值（翻译键不存在时返回）
+i18n.t("my_module.unknown_key", default="默认文本")
+```
+
+### 在模块类中使用
+
+```python
+from ErisPulse import i18n
+from ErisPulse.Core.Bases import BaseModule
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        self.logger.info(i18n.t("my_module.welcome"))
+    
+    @command("hello")
+    async def hello_handler(self, event):
+        name = event.get_user_nickname() or "friend"
+        await event.reply(i18n.t("my_module.hello", name=name))
+```
+
+### 卸载翻译
+
+```python
+# 卸载整个域的翻译
+i18n.unregister_domain("my_module")
+```
+
+---
+
+## API 参考
+
+### I18nManager
+
+#### 核心方法
+
+| 方法 | 说明 |
+|------|------|
+| `t(key, default=None, **kwargs)` | 获取翻译文本（`gettext()` 是别名） |
+| `set_language(lang)` | 手动设置语言 |
+| `get_language()` | 获取当前语言 |
+| `reset_language()` | 重置为自动检测（并重新检测环境） |
+| `get_supported_languages()` | 获取所有支持的语言列表 |
+| `has_translation(key, lang=None)` | 检查翻译键是否存在 |
+| `register(lang, translations, domain)` | 注册自定义翻译 |
+| `unregister_domain(domain)` | 卸载指定域的所有翻译 |
+| `reload()` | 重新加载内置翻译并重新检测语言 |
+
+#### `t()` 方法详解
+
+```python
+def t(self, key, /, default=None, **kwargs):
+```
+
+- `key` — 翻译键（仅位置参数，不与 `**kwargs` 中的 `key=` 冲突）
+- `default` — 翻译不存在时返回的默认值，默认为 `None`（返回键名本身）
+- `**kwargs` — 格式化参数，用于填充翻译值中的 `{placeholder}`
+
+示例：
+
+```python
+# 翻译定义: "greeting": "你好，{name}！欢迎来到{place}。"
+i18n.t("greeting", name="Alice", place="ErisPulse")
+# 返回: "你好，Alice！欢迎来到ErisPulse。"
+```
+
+### 从 SDK 实例访问
+
+```python
+from ErisPulse import sdk
+
+# sdk.i18n 与直接导入的 i18n 是同一个对象
+sdk.i18n.set_language("en")
+print(sdk.i18n.t("core.sdk.init.starting"))
+```
+
+---
+
+## 运行时配置
+
+### 通过配置 API 读取 i18n 配置
+
+```python
+from ErisPulse.runtime import get_i18n_config, I18nConfig
+
+config = get_i18n_config()
+print(config["language"])  # "auto" 或具体语言代码
+
+# I18nConfig 是 dataclass，可用于生成配置模板
+schema = I18nConfig.__dataclass_fields__
+```
+
+### 配置项说明
+
+在 `config/config.toml` 的 `[ErisPulse.i18n]` 部分：
+
+```toml
+[ErisPulse.i18n]
+# 显示语言，可选值:
+# - "auto"      — 自动检测系统语言（默认）
+# - "zh-CN"     — 简体中文
+# - "zh-TW"     — 繁体中文
+# - "en"        — 英文
+# - "ja"        — 日文
+# - "ru"        — 俄文
+language = "auto"
+```
+
+---
+
+## 最佳实践
+
+### 翻译键命名
+
+建议使用点号分隔的命名空间格式：
+
+```
+<模块名>.<类别>.<描述>
+```
+
+例如：`my_module.command.hello_desc`、`core.adapter.start_failed`
+
+### 多语言覆盖
+
+不必一次性提供所有语言的翻译，缺失的语言会自动回退到英文，如果英文也没有则显示键名本身。
+
+### 动态内容
+
+对于动态生成的内容（如用户名、数量等），使用 `{placeholder}` 格式化：
+
+```python
+# 翻译定义
+"user_count": "当前在线用户：{count} 人"
+
+# 使用
+i18n.t("user_count", count=len(users))
+```
+
+### 日志消息
+
+如果您的模块使用了框架的 Logger，这些消息也会自动使用当前语言：
+
+```python
+self.logger.info(i18n.t("my_module.startup"))
+```
+
+---
+
+## 与 CLI i18n 的关系
+
+CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核心的国际化模块完全解耦。
+
+- **Core i18n** — 框架核心模块使用，外部模块可注册翻译
+- **CLI i18n** — 命令行界面内部使用，不与 Core 共享翻译数据
+
+这种设计确保 CLI 的翻译变更不会影响框架核心的稳定性。
+
+
+
 ### Dashboard 视窗注册
 
 # Dashboard 视窗注册
