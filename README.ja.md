@@ -9,6 +9,8 @@
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-TW.md) | **日本語** | [Русский](README.ru.md)
 
+> 🎉 **v2.5.0-dev.1 は多言語をサポートしました！** フレームワークのコアと CLI インターフェースには、中国語（簡体/繁体）、英語、日本語、ロシア語が内蔵されており、システム言語を自動検出して切り替えます！
+
 # ErisPulse
 
 **イベント駆動型マルチプラットフォームロボット開発フレームワーク**
@@ -164,7 +166,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 ```bash
 # 環境変数を使用する方法（推奨）
-ERISPULSE_CHANNEL=dev ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+ERISPULSE_CHANNEL=dev ERISPpulse_DASHBOARD_TOKEN=your-token docker compose up -d
 
 # Devイメージを構築する方法
 ERISPULSE_BUILD_TARGET=dev docker compose up -d --build

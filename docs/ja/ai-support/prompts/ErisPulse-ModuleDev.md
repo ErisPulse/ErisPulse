@@ -6965,6 +6965,276 @@ clear_custom_types(platform="discord")  # 指定したプラットフォーム�
 - [イベントコンバーターの実装](../developer-guide/adapters/getting-started.md) - アダプター開発ガイド
 
 
+### 国际化（i18n）系统
+
+# 国際化 (i18n) システム
+
+ErisPulse v2.5.0 から、完全な国際化サポートが組み込まれました。フレームワークのコアおよび CLI インターフェースは、システム言語に基づいて表示テキストを自動的に切り替えることができ、外部モジュールによる独自の翻訳の登録もサポートしています。
+
+## サポートされる言語
+
+| 言語 | コード | 説明 |
+|------|------|------|
+| 簡体字中国語 | `zh-CN` | デフォルト言語（フレームワークのネイティブ言語） |
+| 繁体字中国語 | `zh-TW` | 繁体字中国語（香港・マカオ・台湾） |
+| English | `en` | 英語（一般的なフォールバック言語） |
+| 日本語 | `ja` | 日本語 |
+| Русский | `ru` | ロシア語 |
+
+## クイック体験
+
+### 環境変数による切り替え
+
+```bash
+# Windows PowerShell
+$env:ERISPULSE_LANG = "en"
+epsdk run
+
+# macOS / Linux
+ERISPULSE_LANG=ja epsdk run
+```
+
+### 設定ファイルによる切り替え
+
+`config/config.toml` に以下を追加します：
+
+```toml
+[ErisPulse.i18n]
+language = "zh-TW"
+```
+
+`"auto"`（デフォルト値）に設定すると、システム言語を自動的に検出します。
+
+### コードでの手動切り替え
+
+```python
+from ErisPulse import i18n
+
+# 手動で言語を設定
+i18n.set_language("en")
+print(i18n.get_language())  # "en"
+
+# 自動検出にリセット
+i18n.reset_language()
+```
+
+---
+
+## 言語検出メカニズム
+
+フレームワークは、以下の優先順位に従ってユーザーの言語を検出します。
+
+1. **環境変数 `ERISPULSE_LANG`** — 最高の優先度。テストや一時的な切り替えに使用
+2. **Windows API** — `GetUserDefaultLocaleName`（Windows のみ。Git Bash などのツールによる `LANG` の上書きの影響を受けません）
+3. **環境変数** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG`（Unix/macOS 標準）
+4. **システムロケール** — `locale.getlocale()` / `locale.getdefaultlocale()`
+5. **フォールバック** — en（英語）
+
+### 近接マッピングの原則
+
+検出された言語が正確に一致しない場合、近接原則に従ってサポートされる言語にマッピングされます。
+
+- `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **繁体字中国語**
+- その他すべての `zh-*`（例: `zh-CN`, `zh-SG`）→ **簡体字中国語**
+- `en-US`, `en-GB`, `en-AU` など → **英語**
+- `ja-JP` → **日本語**
+- `ru-RU` → **ロシア語**
+- その他認識できない言語 → **簡体字中国語（フォールバック）**
+
+---
+
+## モジュールでの i18n の使用
+
+独自の翻訳テキストを登録することで、自分のモジュールでも多言語をサポートさせることができます。
+
+### カスタム翻訳の登録
+
+```python
+from ErisPulse import i18n
+
+# 中国語翻訳を登録
+i18n.register("zh-CN", {
+    "my_module.welcome": "私のモジュールへようこそ！",
+    "my_module.goodbye": "さようなら！",
+    "my_module.hello": "こんにちは、{name}！",
+}, domain="my_module")
+
+# 英語翻訳を登録
+i18n.register("en", {
+    "my_module.welcome": "Welcome to my module!",
+    "my_module.goodbye": "Goodbye!",
+    "my_module.hello": "Hello, {name}!",
+}, domain="my_module")
+```
+
+### 翻訳の使用
+
+```python
+from ErisPulse import i18n
+
+# シンプルな翻訳
+i18n.t("my_module.welcome")  # 現在の言語を自動的に使用
+
+# フォーマットパラメータ付き
+i18n.t("my_module.hello", name="Alice")
+
+# デフォルト値を指定（翻訳キーが存在しない場合に返却）
+i18n.t("my_module.unknown_key", default="デフォルトテキスト")
+```
+
+### モジュールクラスでの使用
+
+```python
+from ErisPulse import i18n
+from ErisPulse.Core.Bases import BaseModule
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        self.logger.info(i18n.t("my_module.welcome"))
+    
+    @command("hello")
+    async def hello_handler(self, event):
+        name = event.get_user_nickname() or "friend"
+        await event.reply(i18n.t("my_module.hello", name=name))
+```
+
+### 翻訳のアンインストール
+
+```python
+# ドメイン全体の翻訳をアンインストール
+i18n.unregister_domain("my_module")
+```
+
+---
+
+## API リファレンス
+
+### I18nManager
+
+#### コアメソッド
+
+| メソッド | 説明 |
+|------|------|
+| `t(key, default=None, **kwargs)` | 翻訳テキストを取得（`gettext()` のエイリアス） |
+| `set_language(lang)` | 手動で言語を設定 |
+| `get_language()` | 現在の言語を取得 |
+| `reset_language()` | 自動検出にリセット（環境の再検出も行います） |
+| `get_supported_languages()` | サポートされているすべての言語リストを取得 |
+| `has_translation(key, lang=None)` | 翻訳キーが存在するかチェック |
+| `register(lang, translations, domain)` | カスタム翻訳を登録 |
+| `unregister_domain(domain)` | 指定されたドメインのすべての翻訳をアンインストール |
+| `reload()` | 組み込み翻訳を再読み込みし、言語を再検出 |
+
+#### `t()` メソッドの詳細
+
+```python
+def t(self, key, /, default=None, **kwargs):
+```
+
+- `key` — 翻訳キー（位置引数のみ。`**kwargs` 内の `key=` と競合しません）
+- `default` — 翻訳が存在しない場合に返されるデフォルト値。デフォルトは `None`（キー名自体を返します）
+- `**kwargs` — フォーマットパラメータ。翻訳値内の `{placeholder}` を埋めます
+
+例：
+
+```python
+# 翻訳定義: "greeting": "こんにちは、{name}！{place}へようこそ。"
+i18n.t("greeting", name="Alice", place="ErisPulse")
+# 返却: "こんにちは、Alice！ErisPulseへようこそ。"
+```
+
+### SDK インスタンスからのアクセス
+
+```python
+from ErisPulse import sdk
+
+# sdk.i18n は直接インポートした i18n と同じオブジェクトです
+sdk.i18n.set_language("en")
+print(sdk.i18n.t("core.sdk.init.starting"))
+```
+
+---
+
+## 実行時設定
+
+### 設定 API 経由で i18n 設定を読み取る
+
+```python
+from ErisPulse.runtime import get_i18n_config, I18nConfig
+
+config = get_i18n_config()
+print(config["language"])  # "auto" または具体的な言語コード
+
+# I18nConfig は dataclass で、設定テンプレートの生成に使用できます
+schema = I18nConfig.__dataclass_fields__
+```
+
+### 設定項目の説明
+
+`config/config.toml` の `[ErisPulse.i18n]` セクション：
+
+```toml
+[ErisPulse.i18n]
+# 表示言語。オプション値:
+# - "auto"      — システム言語を自動検出（デフォルト）
+# - "zh-CN"     — 簡体字中国語
+# - "zh-TW"     — 繁体字中国語
+# - "en"        — 英語
+# - "ja"        — 日本語
+# - "ru"        — ロシア語
+language = "auto"
+```
+
+---
+
+## ベストプラクティス
+
+### 翻訳キーの命名
+
+ドットで区切られた名前空間形式の使用を推奨します。
+
+```
+<モジュール名>.<カテゴリ>.<説明>
+```
+
+例: `my_module.command.hello_desc`、`core.adapter.start_failed`
+
+### 多言語のオーバーライド
+
+すべての言語の翻訳を一度に提供する必要はありません。言語が欠落している場合は自動的に英語にフォールバックします。英語もない場合はキー名自体が表示されます。
+
+### 動的コンテンツ
+
+動的に生成されるコンテンツ（ユーザー名、数量など）については、`{placeholder}` 形式を使用します。
+
+```python
+# 翻訳定義
+"user_count": "現在オンラインのユーザー：{count} 人"
+
+# 使用
+i18n.t("user_count", count=len(users))
+```
+
+### ログメッセージ
+
+モジュールでフレームワークの Logger を使用している場合、これらのメッセージも現在の言語が自動的に使用されます。
+
+```python
+self.logger.info(i18n.t("my_module.startup"))
+```
+
+---
+
+## CLI i18n との関係
+
+CLI は**独立**した国際化モジュール（`ErisPulse.CLI.i18n`）を持ち、フレームワークコアの国際化モジュールとは完全に疎結合です。
+
+- **Core i18n** — フレームワークコアモジュールで使用。外部モジュールが翻訳を登録できます
+- **CLI i18n** — コマンドラインインターフェース内部で使用。Core と翻訳データを共有しません
+
+この設計により、CLI の翻訳変更がフレームワークコアの安定性に影響することはありません。
+
+
 ### Dashboard 视窗注册
 
 # Dashboard View の登録

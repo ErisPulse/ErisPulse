@@ -5,6 +5,7 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 ## Documentation List
 
 - [Lazy Loading System](lazy-loading.md) - How the lazy loading module system works and its configuration
+- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
 - [Lifecycle Management](lifecycle.md) - Usage of the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
 - [HTTP Client](http-client.md) - Unified HTTP request client

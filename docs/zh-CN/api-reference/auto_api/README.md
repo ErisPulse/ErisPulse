@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 80
-- **类总数**: 79（包括 5 个嵌套类）
+- **模块总数**: 82
+- **类总数**: 83（包括 5 个嵌套类）
 - **函数总数**: 77
-- **方法总数**: 778
+- **方法总数**: 803
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### [ErisPulse.CLI.cli](ErisPulse/CLI/cli.md)
 
-📦 1 个类 | 🔧 6 个方法
+📦 1 个类 | 🔧 7 个方法
 
 
 ### [ErisPulse.CLI.commands.__init__](ErisPulse/CLI/commands/__init__.md)
@@ -62,6 +62,11 @@
 ### [ErisPulse.CLI.commands.install](ErisPulse/CLI/commands/install.md)
 
 📦 1 个类 | 🔧 7 个方法
+
+
+### [ErisPulse.CLI.commands.language](ErisPulse/CLI/commands/language.md)
+
+📦 1 个类 | 🔧 3 个方法
 
 
 ### [ErisPulse.CLI.commands.list](ErisPulse/CLI/commands/list.md)
@@ -101,7 +106,7 @@
 
 ### [ErisPulse.CLI.i18n.__init__](ErisPulse/CLI/i18n/__init__.md)
 
-📦 1 个类 | 🔧 5 个方法 | ⚙️ 3 个函数
+📦 1 个类 | 🔧 12 个方法 | ⚙️ 3 个函数
 
 
 ### [ErisPulse.CLI.i18n.locales.__init__](ErisPulse/CLI/i18n/locales/__init__.md)
@@ -149,9 +154,14 @@
 ⚙️ 10 个函数
 
 
+### [ErisPulse.CLI.utils.file_watcher](ErisPulse/CLI/utils/file_watcher.md)
+
+📦 3 个类 | 🔧 13 个方法
+
+
 ### [ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)
 
-📦 1 个类 | 🔧 39 个方法
+📦 1 个类 | 🔧 40 个方法
 
 
 ### [ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)
