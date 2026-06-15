@@ -6590,6 +6590,276 @@ result = sdk.my_module.some_sync_method()
 - [Best Practices](../developer-guide/modules/best-practices.md) - Learn more best practices
 
 
+### 国际化（i18n）系统
+
+# Internationalization (i18n) System
+
+ErisPulse v2.5.0 includes built-in full internationalization support. Both the framework core and the CLI interface can automatically switch display text according to your system language, and external modules can also register their own translations.
+
+## Supported Languages
+
+| Language | Code | Description |
+|----------|------|-------------|
+| Simplified Chinese | `zh-CN` | Default language (native language of the framework) |
+| Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
+| English | `en` | English (General fallback language) |
+| 日本語 | `ja` | Japanese |
+| Русский | `ru` | Russian |
+
+## Quick Experience
+
+### Switch via Environment Variables
+
+```bash
+# Windows PowerShell
+$env:ERISPULSE_LANG = "en"
+epsdk run
+
+# macOS / Linux
+ERISPULSE_LANG=ja epsdk run
+```
+
+### Switch via Configuration File
+
+Add the following to `config/config.toml`:
+
+```toml
+[ErisPulse.i18n]
+language = "zh-TW"
+```
+
+Setting it to `"auto"` (default) automatically detects the system language.
+
+### Switch Manually in Code
+
+```python
+from ErisPulse import i18n
+
+# Manually set language
+i18n.set_language("en")
+print(i18n.get_language())  # "en"
+
+# Reset to auto detection
+i18n.reset_language()
+```
+
+---
+
+## Language Detection Mechanism
+
+The framework detects user language with the following priority:
+
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, unaffected by `LANG` overrides from tools like Git Bash)
+3. **Environment variable** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
+4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
+5. **Fallback** — en (English)
+
+### Proximity Mapping Principle
+
+When the detected language is not an exact match, map it to a supported language based on the principle of proximity:
+
+- `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
+- All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
+- `en-US`, `en-GB`, `en-AU` etc. → **English**
+- `ja-JP` → **Japanese**
+- `ru-RU` → **Russian**
+- Other unrecognized languages → **Simplified Chinese (fallback)**
+
+---
+
+## Using i18n in Modules
+
+You can register translation text for your own modules, allowing your modules to support multiple languages as well.
+
+### Registering Custom Translations
+
+```python
+from ErisPulse import i18n
+
+# Register Chinese translation
+i18n.register("zh-CN", {
+    "my_module.welcome": "Welcome to my module!",
+    "my_module.goodbye": "Goodbye!",
+    "my_module.hello": "Hello, {name}!",
+}, domain="my_module")
+
+# Register English translation
+i18n.register("en", {
+    "my_module.welcome": "Welcome to my module!",
+    "my_module.goodbye": "Goodbye!",
+    "my_module.hello": "Hello, {name}!",
+}, domain="my_module")
+```
+
+### Using Translations
+
+```python
+from ErisPulse import i18n
+
+# Simple translation
+i18n.t("my_module.welcome")  # Automatically uses current language
+
+# With formatting arguments
+i18n.t("my_module.hello", name="Alice")
+
+# Specify default value (returned when translation key does not exist)
+i18n.t("my_module.unknown_key", default="Default text")
+```
+
+### Using in Module Classes
+
+```python
+from ErisPulse import i18n
+from ErisPulse.Core.Bases import BaseModule
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        self.logger.info(i18n.t("my_module.welcome"))
+    
+    @command("hello")
+    async def hello_handler(self, event):
+        name = event.get_user_nickname() or "friend"
+        await event.reply(i18n.t("my_module.hello", name=name))
+```
+
+### Unloading Translations
+
+```python
+# Unload all translations for a domain
+i18n.unregister_domain("my_module")
+```
+
+---
+
+## API Reference
+
+### I18nManager
+
+#### Core Methods
+
+| Method | Description |
+|--------|-------------|
+| `t(key, default=None, **kwargs)` | Get translated text (`gettext()` is an alias) |
+| `set_language(lang)` | Manually set language |
+| `get_language()` | Get current language |
+| `reset_language()` | Reset to auto detection (and re-detect environment) |
+| `get_supported_languages()` | Get list of all supported languages |
+| `has_translation(key, lang=None)` | Check if translation key exists |
+| `register(lang, translations, domain)` | Register custom translation |
+| `unregister_domain(domain)` | Unload all translations for a specific domain |
+| `reload()` | Reload built-in translations and re-detect language |
+
+#### `t()` Method Details
+
+```python
+def t(self, key, /, default=None, **kwargs):
+```
+
+- `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
+- `default` — Default value returned when translation does not exist, defaults to `None` (returns the key itself)
+- `**kwargs` — Formatting parameters used to fill `{placeholder}` in the translated value
+
+Examples:
+
+```python
+# Translation definition: "greeting": "你好，{name}！欢迎来到{place}。"
+i18n.t("greeting", name="Alice", place="ErisPulse")
+# Returns: "你好，Alice！欢迎来到ErisPulse。"
+```
+
+### Access from SDK Instance
+
+```python
+from ErisPulse import sdk
+
+# sdk.i18n is the same object as the directly imported i18n
+sdk.i18n.set_language("en")
+print(sdk.i18n.t("core.sdk.init.starting"))
+```
+
+---
+
+## Runtime Configuration
+
+### Reading i18n Configuration via Configuration API
+
+```python
+from ErisPulse.runtime import get_i18n_config, I18nConfig
+
+config = get_i18n_config()
+print(config["language"])  # "auto" or specific language code
+
+# I18nConfig is a dataclass, can be used to generate a configuration template
+schema = I18nConfig.__dataclass_fields__
+```
+
+### Configuration Item Descriptions
+
+In the `[ErisPulse.i18n]` section of `config/config.toml`:
+
+```toml
+[ErisPulse.i18n]
+# Display language, optional values:
+# - "auto"      — Automatically detect system language (default)
+# - "zh-CN"     — Simplified Chinese
+# - "zh-TW"     — Traditional Chinese
+# - "en"        — English
+# - "ja"        — Japanese
+# - "ru"        — Russian
+language = "auto"
+```
+
+---
+
+## Best Practices
+
+### Translation Key Naming
+
+It is recommended to use a dot-separated namespace format:
+
+```
+<module_name>.<category>.<description>
+```
+
+Examples: `my_module.command.hello_desc`, `core.adapter.start_failed`
+
+### Multi-language Coverage
+
+There is no need to provide translations for all languages at once. Missing languages will automatically fall back to English; if English is also missing, the key name itself will be displayed.
+
+### Dynamic Content
+
+For dynamically generated content (such as usernames, quantities, etc.), use the `{placeholder}` format:
+
+```python
+# Translation definition
+"user_count": "当前在线用户：{count} 人"
+
+# Usage
+i18n.t("user_count", count=len(users))
+```
+
+### Log Messages
+
+If your module uses the framework's Logger, these messages will also automatically use the current language:
+
+```python
+self.logger.info(i18n.t("my_module.startup"))
+```
+
+---
+
+## Relationship with CLI i18n
+
+The CLI has an **independent** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the internationalization module of the framework core.
+
+- **Core i18n** — Used by the framework core module; external modules can register translations
+- **CLI i18n** — Used internally by the Command Line Interface; does not share translation data with Core
+
+This design ensures that translation changes to the CLI will not affect the stability of the framework core.
+
+
 ### Dashboard 视窗注册
 
 # Dashboard View Registration

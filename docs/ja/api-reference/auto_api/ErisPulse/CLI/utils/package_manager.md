@@ -287,6 +287,19 @@ ErisPulse包管理器
 ---
 
 
+##### `_version_key(version: str)`
+
+将版本号解析为可比较的元组键
+
+遵循项目命名规则排序：正式版 > rc > beta > alpha > dev。
+例如 2.4.5-dev.1 先于 2.4.5 正式版。
+
+- **version** (`str`): 版本号字符串
+**返回值** (`tuple`): 可直接用于排序/比较的元组键
+
+---
+
+
 ##### `_compare_versions(version1: str, version2: str)`
 
 比较两个版本号的大小
