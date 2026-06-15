@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1152,
+  "total_keywords": 1176,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1862,6 +1862,12 @@
         "title": "API 参考"
       },
       {
+        "document": "advanced/i18n.md",
+        "line": 141,
+        "level": 2,
+        "title": "API 参考"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 1,
         "level": 1,
@@ -2400,6 +2406,14 @@
         "line": 49,
         "level": 2,
         "title": "HttpResponse"
+      }
+    ],
+    "I18nManager": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 143,
+        "level": 3,
+        "title": "I18nManager"
       }
     ],
     "ID 字段查询": [
@@ -3224,6 +3238,14 @@
         "title": "`self` 字段扩展信息"
       }
     ],
+    "`t()` 方法详解": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 159,
+        "level": 4,
+        "title": "`t()` 方法详解"
+      }
+    ],
     "call_api 方法": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3668,6 +3690,14 @@
         "line": 122,
         "level": 3,
         "title": "不等待结果"
+      }
+    ],
+    "与 CLI i18n 的关系": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 259,
+        "level": 2,
+        "title": "与 CLI i18n 的关系"
       }
     ],
     "两种注入模式": [
@@ -4144,6 +4174,14 @@
         "title": "什么是适配器"
       }
     ],
+    "从 SDK 实例访问": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 177,
+        "level": 3,
+        "title": "从 SDK 实例访问"
+      }
+    ],
     "从本地安装": [
       {
         "document": "user-guide/installation.md",
@@ -4320,6 +4358,14 @@
         "line": 287,
         "level": 3,
         "title": "使用示例"
+      }
+    ],
+    "使用翻译": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 101,
+        "level": 3,
+        "title": "使用翻译"
       }
     ],
     "使用请求参数": [
@@ -4675,7 +4721,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "前置知识"
       }
@@ -4708,6 +4754,14 @@
         "line": 141,
         "level": 4,
         "title": "加载策略"
+      }
+    ],
+    "动态内容": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 237,
+        "level": 3,
+        "title": "动态内容"
       }
     ],
     "包名必须以 `ErisPulse-` 开头吗？": [
@@ -4764,6 +4818,14 @@
         "line": 117,
         "level": 3,
         "title": "卸载模块"
+      }
+    ],
+    "卸载翻译": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 132,
+        "level": 3,
+        "title": "卸载翻译"
       }
     ],
     "原始数据": [
@@ -5310,6 +5372,14 @@
         "title": "国内镜像加速"
       }
     ],
+    "国际化 (i18n) 系统": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 1,
+        "level": 1,
+        "title": "国际化 (i18n) 系统"
+      }
+    ],
     "图片下载和存储": [
       {
         "document": "getting-started/common-tasks.md",
@@ -5340,6 +5410,30 @@
         "line": 529,
         "level": 4,
         "title": "在 RouteGroup 中使用"
+      }
+    ],
+    "在代码中手动切换": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "在代码中手动切换"
+      }
+    ],
+    "在模块中使用 i18n": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 77,
+        "level": 2,
+        "title": "在模块中使用 i18n"
+      }
+    ],
+    "在模块类中使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 116,
+        "level": 3,
+        "title": "在模块类中使用"
       }
     ],
     "基本使用": [
@@ -5712,6 +5806,14 @@
         "line": 186,
         "level": 2,
         "title": "多平台适配"
+      }
+    ],
+    "多语言覆盖": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 233,
+        "level": 3,
+        "title": "多语言覆盖"
       }
     ],
     "多账户发送语法": [
@@ -6118,6 +6220,14 @@
         "line": 109,
         "level": 4,
         "title": "将元组转为字典"
+      }
+    ],
+    "就近映射原则": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "就近映射原则"
       }
     ],
     "属性访问": [
@@ -6634,6 +6744,14 @@
         "title": "必需字段"
       }
     ],
+    "快速体验": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 15,
+        "level": 2,
+        "title": "快速体验"
+      }
+    ],
     "快速初始化": [
       {
         "document": "quick-start.md",
@@ -7098,6 +7216,14 @@
         "title": "支持的消息发送类型"
       }
     ],
+    "支持的语言": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 5,
+        "level": 2,
+        "title": "支持的语言"
+      }
+    ],
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
@@ -7350,6 +7476,14 @@
         "title": "日志信息"
       }
     ],
+    "日志消息": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 249,
+        "level": 3,
+        "title": "日志消息"
+      }
+    ],
     "日志级别控制": [
       {
         "document": "api-reference/core-modules.md",
@@ -7432,6 +7566,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 444,
+        "level": 2,
+        "title": "最佳实践"
+      },
+      {
+        "document": "advanced/i18n.md",
+        "line": 221,
         "level": 2,
         "title": "最佳实践"
       },
@@ -7783,6 +7923,12 @@
       }
     ],
     "核心方法": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 145,
+        "level": 4,
+        "title": "核心方法"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 247,
@@ -8146,6 +8292,14 @@
         "line": 12,
         "level": 3,
         "title": "注册处理器"
+      }
+    ],
+    "注册自定义翻译": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "注册自定义翻译"
       }
     ],
     "注意事项": [
@@ -9318,6 +9472,14 @@
         "title": "群邀请请求"
       }
     ],
+    "翻译键命名": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 223,
+        "level": 3,
+        "title": "翻译键命名"
+      }
+    ],
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9522,6 +9684,14 @@
         "line": 56,
         "level": 3,
         "title": "访问核心模块"
+      }
+    ],
+    "语言检测机制": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 54,
+        "level": 2,
+        "title": "语言检测机制"
       }
     ],
     "请求事件": [
@@ -9808,6 +9978,14 @@
         "title": "运行控制命令"
       }
     ],
+    "运行时配置": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 189,
+        "level": 2,
+        "title": "运行时配置"
+      }
+    ],
     "运行模式": [
       {
         "document": "platform-guide/telegram.md",
@@ -9933,7 +10111,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "适用对象"
       },
@@ -10240,6 +10418,30 @@
         "title": "通过 Docker 镜像分发应用"
       }
     ],
+    "通过环境变量切换": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 17,
+        "level": 3,
+        "title": "通过环境变量切换"
+      }
+    ],
+    "通过配置 API 读取 i18n 配置": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 191,
+        "level": 3,
+        "title": "通过配置 API 读取 i18n 配置"
+      }
+    ],
+    "通过配置文件切换": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 28,
+        "level": 3,
+        "title": "通过配置文件切换"
+      }
+    ],
     "通配符": [
       {
         "document": "advanced/lifecycle.md",
@@ -10472,6 +10674,14 @@
         "line": 167,
         "level": 3,
         "title": "配置错误"
+      }
+    ],
+    "配置项说明": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 203,
+        "level": 3,
+        "title": "配置项说明"
       }
     ],
     "重置构建器": [

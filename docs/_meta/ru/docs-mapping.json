@@ -267,7 +267,7 @@
     },
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
-      "count": 10,
+      "count": 11,
       "documents": [
         {
           "title": "Продвинутые темы",
@@ -312,6 +312,11 @@
         {
           "title": "HTTP-клиент",
           "path": "advanced/http-client.md",
+          "level": 1
+        },
+        {
+          "title": "Система интернационализации (i18n)",
+          "path": "advanced/i18n.md",
           "level": 1
         },
         {

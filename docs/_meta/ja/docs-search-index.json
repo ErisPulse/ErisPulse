@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1175,
+  "total_keywords": 1199,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -1710,6 +1710,12 @@
         "title": "API リファレンス"
       },
       {
+        "document": "advanced/i18n.md",
+        "line": 141,
+        "level": 2,
+        "title": "API リファレンス"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 1,
         "level": 1,
@@ -1938,6 +1944,14 @@
         "line": 796,
         "level": 2,
         "title": "Bot 状態管理"
+      }
+    ],
+    "CLI i18n との関係": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 259,
+        "level": 2,
+        "title": "CLI i18n との関係"
       }
     ],
     "CLI コマンドリファレンス": [
@@ -2324,6 +2338,14 @@
         "title": "HttpResponse"
       }
     ],
+    "I18nManager": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 143,
+        "level": 3,
+        "title": "I18nManager"
+      }
+    ],
     "ID フィールドのクエリ": [
       {
         "document": "advanced/session-types.md",
@@ -2688,6 +2710,14 @@
         "line": 39,
         "level": 3,
         "title": "SDK"
+      }
+    ],
+    "SDK インスタンスからのアクセス": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 177,
+        "level": 3,
+        "title": "SDK インスタンスからのアクセス"
       }
     ],
     "SDK オブジェクト": [
@@ -3220,6 +3250,14 @@
         "line": 851,
         "level": 3,
         "title": "`self` 字段扩展信息"
+      }
+    ],
+    "`t()` メソッドの詳細": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 159,
+        "level": 4,
+        "title": "`t()` メソッドの詳細"
       }
     ],
     "call_api メソッド": [
@@ -4452,6 +4490,14 @@
         "title": "カスタムメッセージセグメント"
       }
     ],
+    "カスタム翻訳の登録": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 81,
+        "level": 3,
+        "title": "カスタム翻訳の登録"
+      }
+    ],
     "キーワードフィルタリング": [
       {
         "document": "getting-started/common-tasks.md",
@@ -4516,6 +4562,14 @@
         "line": 14,
         "level": 2,
         "title": "クイックリファレンス"
+      }
+    ],
+    "クイック体験": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 15,
+        "level": 2,
+        "title": "クイック体験"
       }
     ],
     "クイック公開": [
@@ -4673,6 +4727,12 @@
       }
     ],
     "コアメソッド": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 145,
+        "level": 4,
+        "title": "コアメソッド"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 279,
@@ -4960,6 +5020,14 @@
         "title": "コンポーネントの関係"
       }
     ],
+    "コードでの手動切り替え": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 39,
+        "level": 3,
+        "title": "コードでの手動切り替え"
+      }
+    ],
     "コードの説明": [
       {
         "document": "getting-started/first-bot.md",
@@ -5080,6 +5148,14 @@
         "line": 20,
         "level": 2,
         "title": "サポートされるメッセージ送信タイプ"
+      }
+    ],
+    "サポートされる言語": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 5,
+        "level": 2,
+        "title": "サポートされる言語"
       }
     ],
     "サポートするメッセージ送信タイプ": [
@@ -6326,6 +6402,12 @@
         "title": "ベストプラクティス"
       },
       {
+        "document": "advanced/i18n.md",
+        "line": 221,
+        "level": 2,
+        "title": "ベストプラクティス"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 94,
         "level": 2,
@@ -6992,6 +7074,14 @@
         "title": "モジュール"
       }
     ],
+    "モジュールでの i18n の使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 77,
+        "level": 2,
+        "title": "モジュールでの i18n の使用"
+      }
+    ],
     "モジュールのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
@@ -7080,6 +7170,14 @@
         "line": 174,
         "level": 3,
         "title": "モジュールインストールに失敗"
+      }
+    ],
+    "モジュールクラスでの使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 116,
+        "level": 3,
+        "title": "モジュールクラスでの使用"
       }
     ],
     "モジュールストアの概要": [
@@ -7640,6 +7738,14 @@
         "title": "ログ"
       }
     ],
+    "ログメッセージ": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 249,
+        "level": 3,
+        "title": "ログメッセージ"
+      }
+    ],
     "ログレベル制御": [
       {
         "document": "api-reference/core-modules.md",
@@ -8135,7 +8241,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "前提知識"
       }
@@ -8160,6 +8266,14 @@
         "line": 14,
         "level": 2,
         "title": "動作原理"
+      }
+    ],
+    "動的コンテンツ": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 237,
+        "level": 3,
+        "title": "動的コンテンツ"
       }
     ],
     "単一アカウント設定": [
@@ -8346,6 +8460,14 @@
         "line": 24,
         "level": 3,
         "title": "国内イメージミラーサイトの高速化"
+      }
+    ],
+    "国際化 (i18n) システム": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 1,
+        "level": 1,
+        "title": "国際化 (i18n) システム"
       }
     ],
     "型アノテーション": [
@@ -8634,6 +8756,14 @@
         "title": "多回の対話 (conversation)"
       }
     ],
+    "多言語のオーバーライド": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 233,
+        "level": 3,
+        "title": "多言語のオーバーライド"
+      }
+    ],
     "失敗応答例": [
       {
         "document": "standards/api-response.md",
@@ -8726,6 +8856,14 @@
         "title": "実行制御コマンド"
       }
     ],
+    "実行時設定": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 189,
+        "level": 2,
+        "title": "実行時設定"
+      }
+    ],
     "審査にはどのくらい時間がかかりますか？": [
       {
         "document": "developer-guide/publishing.md",
@@ -8783,7 +8921,7 @@
     "対象読者": [
       {
         "document": "advanced/README.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "対象読者"
       }
@@ -9524,6 +9662,14 @@
         "title": "環境変数"
       }
     ],
+    "環境変数による切り替え": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 17,
+        "level": 3,
+        "title": "環境変数による切り替え"
+      }
+    ],
     "生データ": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9718,6 +9864,30 @@
         "title": "継承関係"
       }
     ],
+    "翻訳のアンインストール": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 132,
+        "level": 3,
+        "title": "翻訳のアンインストール"
+      }
+    ],
+    "翻訳の使用": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 101,
+        "level": 3,
+        "title": "翻訳の使用"
+      }
+    ],
+    "翻訳キーの命名": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 223,
+        "level": 3,
+        "title": "翻訳キーの命名"
+      }
+    ],
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
@@ -9782,12 +9952,28 @@
         "title": "要求記述テンプレート"
       }
     ],
+    "言語検出メカニズム": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 54,
+        "level": 2,
+        "title": "言語検出メカニズム"
+      }
+    ],
     "設定": [
       {
         "document": "terminology.md",
         "line": 81,
         "level": 3,
         "title": "設定"
+      }
+    ],
+    "設定 API 経由で i18n 設定を読み取る": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 191,
+        "level": 3,
+        "title": "設定 API 経由で i18n 設定を読み取る"
       }
     ],
     "設定のホット更新": [
@@ -9856,6 +10042,14 @@
         "line": 139,
         "level": 2,
         "title": "設定ファイル"
+      }
+    ],
+    "設定ファイルによる切り替え": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 28,
+        "level": 3,
+        "title": "設定ファイルによる切り替え"
       }
     ],
     "設定ファイルの場所": [
@@ -9942,6 +10136,14 @@
         "title": "設定説明"
       }
     ],
+    "設定項目の説明": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 203,
+        "level": 3,
+        "title": "設定項目の説明"
+      }
+    ],
     "認証と API 呼び出し": [
       {
         "document": "advanced/dashboard-view.md",
@@ -9988,6 +10190,14 @@
         "line": 173,
         "level": 4,
         "title": "転送機能"
+      }
+    ],
+    "近接マッピングの原則": [
+      {
+        "document": "advanced/i18n.md",
+        "line": 64,
+        "level": 3,
+        "title": "近接マッピングの原則"
       }
     ],
     "返り値仕様": [

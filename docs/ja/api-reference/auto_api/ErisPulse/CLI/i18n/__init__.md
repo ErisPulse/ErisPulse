@@ -62,7 +62,7 @@ CLI 国际化管理器
 
 ##### `set_language(lang: str)`
 
-手动设置语言
+手动设置语言并持久化
 
 ---
 
@@ -81,6 +81,66 @@ CLI 国际化管理器
 ---
 
 
+##### `_state_path()`
+
+获取 CLI 状态文件路径
+
+**返回值** (`Path`): 状态文件路径 (~/.erispulse/cli_state.json)
+
+---
+
+
+##### `_load_state()`
+
+加载 CLI 持久化状态
+
+> **内部方法** 
+
+**返回值** (`dict`): 状态字典，读取失败时返回空字典
+
+---
+
+
+##### `_save_state(state: dict)`
+
+保存 CLI 持久化状态
+
+> **内部方法** 
+
+- **state** (`dict`): 状态字典
+
+---
+
+
+##### `_persist_language(lang: str)`
+
+持久化语言选择到状态文件
+
+> **内部方法** 
+
+- **lang** (`str`): 语言代码
+
+---
+
+
+##### `get_lang_hint_shown_count()`
+
+获取语言提示已显示次数
+
+**返回值** (`int`): 已显示次数
+
+---
+
+
+##### `increment_lang_hint()`
+
+语言提示显示次数 +1 并持久化
+
+**返回值** (`int`): 更新后的已显示次数
+
+---
+
+
 ##### `t(key: str, default: str | None = None)`
 
 获取 CLI 翻译文本
@@ -89,6 +149,19 @@ CLI 国际化管理器
 :param default: 默认值
 :param kwargs: 格式化参数
 :return: 翻译文本
+
+---
+
+
+##### `t_in(target_lang: str, key: str, default: str | None = None)`
+
+获取指定语言的翻译文本（用于多语言同时展示）
+
+- **target_lang** (`str`): 目标语言代码
+- **key** (`str`): 翻译键
+- **default** (`str`): 默认值 (默认: None)
+:param kwargs: 格式化参数
+**返回值** (`str`): 翻译文本
 
 ---
 
