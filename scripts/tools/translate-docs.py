@@ -18,18 +18,19 @@ ErisPulse 文档翻译器
     python scripts/tools/translate-docs.py --no-check
 """
 
+import argparse
+import asyncio
+import hashlib
+import json
 import os
 import re
-import json
-import hashlib
-import argparse
 import sys
 import threading
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from datetime import datetime
-import time
-import asyncio
+
 from openai import AsyncOpenAI
 
 

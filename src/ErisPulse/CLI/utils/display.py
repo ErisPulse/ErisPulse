@@ -5,14 +5,15 @@ ErisPulse CLI 显示工具
 """
 
 import os
-from typing import List, Any, Optional, Callable, Union
+from typing import Any, Callable, List, Optional, Union
 
-from rich.text import Text
-from rich.table import Table
 from rich.box import SIMPLE
 from rich.prompt import Prompt
+from rich.table import Table
+from rich.text import Text
 
 from ..console import console
+from ..i18n import i18n
 
 
 def _terminal_height() -> int:
@@ -54,7 +55,7 @@ def prompt_validated(
     message: str,
     default: str = "",
     validate: Optional[Callable[[str], Union[bool, str, None]]] = None,
-    error_msg: str = "输入无效",
+    error_msg: Optional[str] = None,
 ) -> str:
     """
     交互式输入，校验失败时保留上次输入并重新提示，直到通过校验。
@@ -67,6 +68,8 @@ def prompt_validated(
     :return: [str] 通过校验的输入值
     """
     value = default
+    if error_msg is None:
+        error_msg = i18n.t("cli.display.invalid_input")
     while True:
         result = Prompt.ask(message, default=value)
         if validate is None:
@@ -174,10 +177,10 @@ def paginated_table(
 
         nav = []
         if has_prev:
-            nav.append("p 上一页")
+            nav.append(i18n.t("cli.display.nav_prev"))
         if has_next:
-            nav.append("n 下一页")
-        console.print(f"[dim]  {', '.join(nav)}, q 返回[/]")
+            nav.append(i18n.t("cli.display.nav_next"))
+        console.print(f"[dim]  {', '.join(nav)}, {i18n.t('cli.display.nav_return')}[/]")
         choice = _input(">")
         if choice.lower() == "q":
             break
@@ -207,7 +210,7 @@ def interactive_select_table(
     :return: [List[Any]] 用户选中的数据项列表
     """
     if not items:
-        console.print("[dim]  没有可选项[/]")
+        console.print(f"[dim]  {i18n.t('cli.display.no_items')}[/]")
         return []
 
     section_header(title_text)
@@ -252,19 +255,19 @@ def interactive_select_table(
         if selected_indices:
             nav = []
             if has_prev:
-                nav.append("p 上一页")
+                nav.append(i18n.t("cli.display.nav_prev"))
             if has_next:
-                nav.append("n 下一页")
+                nav.append(i18n.t("cli.display.nav_next"))
             nav_text = ", ".join(nav) + ", " if nav else ""
-            console.print(f"[dim]  {nav_text}Enter 确认, q 返回[/]")
+            console.print(f"[dim]  {nav_text}{i18n.t('cli.display.nav_confirm')}[/]")
         else:
             nav = []
             if has_prev:
-                nav.append("p 上一页")
+                nav.append(i18n.t("cli.display.nav_prev"))
             if has_next:
-                nav.append("n 下一页")
+                nav.append(i18n.t("cli.display.nav_next"))
             nav_text = ", ".join(nav) + ", " if nav else ""
-            console.print(f"[dim]  {nav_text}输入序号选择, q 返回[/]")
+            console.print(f"[dim]  {nav_text}{i18n.t('cli.display.nav_select')}[/]")
 
         choice = _input(_sel_label())
 
