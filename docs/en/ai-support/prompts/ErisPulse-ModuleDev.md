@@ -7884,7 +7884,7 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 
 ### 平台特性与 SendDSL 通用语法
 
-# ErisPulse PlatformFeatures Documentation
+# ErisPulse Platform Features Documentation
 
 > Base Protocol: [OneBot12](https://12.onebot.dev/) 
 > 
@@ -7915,6 +7915,9 @@ This section is maintained by developers of each adapter to explain the differen
 - [Matrix Platform Features](matrix.md)
 - [QQ Official Bot Platform Features](qqbot.md)
 - [Ideaura Platform Features](ideaura.md)
+- [Discord](discord.md)
+- [Webhook Protocol Bridge](webhook.md)
+- [WeChat Official Account](wechatmp.md)
 
 > Additionally, there is a `sandbox` adapter, but this adapter does not require platform-specific feature documentation
 

@@ -1,6 +1,6 @@
 # Matrixプラットフォーム特性ドキュメント
 
-MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべてのコア機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべての核心的な機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
@@ -11,35 +11,49 @@ MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて
 
 ## 基本情報
 
-- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、ダイレクトメッセージ、グループなどの複数のシナリオをサポートしています。
+- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、プライベートメッセージ（ダイレクトメッセージ）、グループなど複数のシナリオをサポートしています。
 - アダプター名：MatrixAdapter
-- 接続方式：ロングポーリング（Matrix Sync API `/sync` 経由）
-- 認証方式：access_token または user_id + password によるログインでトークンを取得
-- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()` などのメソッドチェーン修飾をサポート
+- 複数アカウントサポート：同時に複数のMatrixアカウントを設定することが可能です。
+- 接続方式：Long Polling（Matrix Sync API `/sync` 経由）
+- 認証方式：access_tokenまたはuser_id+passwordのログインに基づいてトークンを取得
+- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()`などのメソッドチェーン修飾をサポート
 - OneBot12互換：OneBot12フォーマットのメッセージ送信をサポート
 
 ## 設定説明
 
+MatrixAdapterは複数アカウント設定をサポートしており、各アカウントはhomeserverと認証情報を独立して設定します。
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# アカウント1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrixサーバーアドレス（必須）
 access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id+password と二択）
 user_id = ""                                # MatrixユーザーID（例: @bot:matrix.org）
 password = ""                               # Matrixユーザーパスワード
 auto_accept_invites = true                  # ルームへの招待を自動的に承諾するか（任意、デフォルトはtrue）
+enabled = true                              # 有効にするか（任意、デフォルトはtrue）
+
+# アカウント2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**設定項目の説明：**
-- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは `https://matrix.org`
+> 旧設定との互換性：古い単一アカウントの`[Matrix_Adapter]`設定（access_tokenを含む）を検出した場合、自動的に`accounts.default`に移行されます。
+
+**設定項目の説明（各アカウント）：**
+- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは`https://matrix.org`
 - `access_token`：アクセストークン。Matrixクライアントから取得可能。既存のトークンがある場合は直接入力します。
-- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password` と組み合わせてログインに使用します。
-- `password`：Matrixユーザーパスワード。自動ログインで access_token を取得するために使用します。
-- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは `true`。
+- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password`と組み合わせてログインに使用します。
+- `password`：Matrixユーザーパスワード。自動ログインでaccess_tokenを取得するために使用します。
+- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは`true`。
+- `enabled`：このアカウントを有効にするかどうか（任意、デフォルトはtrue）。
 
 **認証方式：**
-- 方式1（推奨）：直接 `access_token` を提供する
-- 方式2：`user_id` と `password` を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
+- 方式1（推奨）：直接`access_token`を提供する
+- 方式2：`user_id`と`password`を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
 
 ## サポートするメッセージ送信タイプ
 
@@ -57,17 +71,17 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 - `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.File(file: bytes | str, filename: str = "")`：ファイルメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Notice(text: str)`：通知メッセージ（Matrixの m.notice タイプ）を送信します。
+- `.Notice(text: str)`：通知メッセージ（Matrixのm.noticeタイプ）を送信します。
 - `.Html(html: str, fallback: str = "")`：HTMLフォーマットのメッセージを送信します。リッチテキストコンテンツをサポートします。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12フォーマットのメッセージを送信します。
 
 ### メソッドチェーン修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーン修飾メソッドは `self` を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+メソッドチェーン修飾メソッドは`self`を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの `m.in_reply_to` リレーション経由）。
-- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの `m.mentions` フィールドで実装）。
-- `.AtAll()`：ルーム内の全員にメンションします（Matrixの `@room` メンションで実装）。
+- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの`m.in_reply_to`リレーション経由）。
+- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの`m.mentions`フィールドで実装）。
+- `.AtAll()`：ルーム内の全員にメンションします（Matrixの`@room`メンションで実装）。
 
 ### メソッドチェーン呼び出し例
 
@@ -75,7 +89,7 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 # 基本的な送信
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# 返信
+# 返信メッセージ
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("返信メッセージ")
 
 # ユーザーへのメンション
@@ -118,7 +132,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、直接 `await` して送信結果を取得できます。戻り値は ErisPulse アダプターの標準化された戻り値の仕様に従います：
+すべての送信メソッドはTaskオブジェクトを返し、直接`await`して送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値の仕様に従います：
 
 ```python
 {
@@ -142,24 +156,24 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ## 固有のイベントタイプ
 
-`platform=="matrix"` で検出してからこのプラットフォームの特性を使用する必要があります。
+`platform=="matrix"`で検出してからこのプラットフォームの特性を使用する必要があります。
 
-### コアな違い
+### 核心な違い
 
-1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは `@user:server.domain`、ルームIDのフォーマットは `!room_id:server.domain` です。
+1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは`@user:server.domain`、ルームIDのフォーマットは`!room_id:server.domain`です。
 2. **ルームの概念**：Matrixはグループチャットとダイレクトメッセージを区別せず、すべての会話は「ルーム」です。アダプターはDM（Direct Message）アカウントデータを通じてダイレクトメッセージのルームを自動的に識別します。
 3. **ロングポーリング同期**：WebSocketではなく、`/sync` APIを使用してロングポーリングを行い、新しいイベントを取得します。
-4. **MXC URI**：メディアファイルは `mxc://server.domain/media_id` フォーマットで参照されます。
-5. **HTMLリッチテキスト**：`formatted_body` を通じたHTMLフォーマットのメッセージ送信をサポートします。
+4. **MXC URI**：メディアファイルは`mxc://server.domain/media_id`フォーマットで参照されます。
+5. **HTMLリッチテキスト**：`formatted_body`を通じたHTMLフォーマットのメッセージ送信をサポートします。
 6. **絵文字リアクション**：従来の返信メッセージとは異なる、メッセージレベルの絵文字リアクション（Reaction）をサポートします。
-7. **メッセージ編集**：`m.replace` リレーションによる送信済みメッセージの編集をサポートします。
-8. **メッセージの削除**：`m.room.redaction` によるメッセージの削除をサポートします。
+7. **メッセージ編集**：`m.replace`リレーションによる送信済みメッセージの編集をサポートします。
+8. **メッセージの削除**：`m.room.redaction`によるメッセージの削除をサポートします。
 
 ### 拡張フィールド
 
-- すべての固有フィールドは `matrix_` プレフィックスで識別されます。
-- 生のデータは `matrix_raw` フィールドに保持されます。
-- `matrix_raw_type` は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
+- すべての固有フィールドは`matrix_`プレフィックスで識別されます。
+- 生のデータは`matrix_raw`フィールドに保持されます。
+- `matrix_raw_type`は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
 
 ### 特殊フィールドの例
 
@@ -214,7 +228,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ### メッセージセグメントタイプ
 
-Matrixメッセージは `msgtype` に基づいて対応するメッセージセグメントに自動的に変換されます：
+Matrixメッセージは`msgtype`に基づいて対応するメッセージセグメントに自動的に変換されます：
 
 | msgtype | 変換タイプ | 説明 |
 |---|---|---|
@@ -278,7 +292,7 @@ MatrixAdapterは以下のイベントミックスインメソッドを登録し�
 | `get_matrix_sender()` | `str` | 生の送信者IDを取得 |
 | `get_reaction_key()` | `str` | リアクションの絵文字を取得 |
 | `is_edited()` | `bool` | メッセージが編集されたものか判定 |
-| `is_notice()` | `bool` | メッセージが m.notice タイプか判定 |
+| `is_notice()` | `bool` | メッセージがm.noticeタイプか判定 |
 
 ```python
 @message.on_message()
@@ -297,24 +311,24 @@ async def handle_message(event):
 
 ### 同期フロー
 
-1. access_token または user_id + password を使用して認証
-2. `/_matrix/client/v3/account/whoami` を呼び出して bot_user_id を取得
-3. connect メタイベントを発火
-4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch` トークンを取得
+1. access_tokenまたはuser_id+passwordを使用して認証
+2. `/_matrix/client/v3/account/whoami`を呼び出してbot_user_idを取得
+3. connectメタイベントを発火
+4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch`トークンを取得
 5. DMルームを検出（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
 6. ロングポーリング同期ループを開始（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
 7. 毎回の同期で返された新しいイベントを処理し、変換して発火
 
 ### ハートビートメカニズム
 
-- アダプターは30秒ごとに1回 `heartbeat` メタイベントを発火します。
-- 接続成功時に `connect` メタイベントを発火します。
-- 終了時に `disconnect` メタイベントを発火します。
+- アダプターは30秒ごとに1回`heartbeat`メタイベントを発火します。
+- 接続成功時に`connect`メタイベントを発火します。
+- 終了時に`disconnect`メタイベントを発火します。
 
 ### ルームへの招待
 
-- ルームへの招待（`invite` ステータスのルーム）を受信した際、`auto_accept_invites` が `true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
-- ルームへの参加は `/_matrix/client/v3/join/{room_id}` インターフェースを呼び出します。
+- ルームへの招待（`invite`ステータスのルーム）を受信した際、`auto_accept_invites`が`true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
+- ルームへの参加は`/_matrix/client/v3/join/{room_id}`インターフェースを呼び出します。
 
 ## 使用例
 

@@ -7867,7 +7867,7 @@ A: 一般的なものやプラットフォーム固有の型については、`{
 
 # ErisPulse PlatformFeatures ドキュメント
 
-> 基本プロトコル：[OneBot12](https://12.onebot.dev/) 
+> 基準プロトコル：[OneBot12](https://12.onebot.dev/) 
 > 
 > 本ドキュメントは**プラットフォーム固有機能ガイド**であり、以下を含みます：
 > - 各アダプタがサポートするSendメソッドチェーン（連鎖呼び出し）の例
@@ -7896,8 +7896,11 @@ A: 一般的なものやプラットフォーム固有の型については、`{
 - [Matrixプラットフォーム固有機能](matrix.md)
 - [QQ公式ボットプラットフォーム固有機能](qqbot.md)
 - [花枫カフェ](ideaura.md)
+- [Discord](discord.md)
+- [Webhookプロトコルブリッジ](webhook.md)
+- [WeChat公式アカウント](wechatmp.md)
 
-> その他にも `sandbox` アダプタがありますが、このアダプタにはプラットフォーム固有機能のドキュメントメンテナンスは不要です。
+> また、`sandbox`アダプタもありますが、このアダプタにはプラットフォーム固有機能のドキュメントメンテナンスは不要です。
 
 ---
 
@@ -7972,7 +7975,7 @@ result = await task
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到{AdapterName}原生事件: {data}")
+       logger.info(f"收到{AdapterName}原生イベント: {data}")
    ```
 
 2. OneBot12標準イベント監視：
@@ -7982,12 +7985,12 @@ result = await task
    # OneBot12標準イベントを監視
    @adapter.on("event_type")
    async def handler(data):
-       logger.info(f"收到标准事件: {data}")
+       logger.info(f"收到標準イベント: {data}")
 
    # 特定プラットフォームの標準イベントを監視
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到{AdapterName}标准事件: {data}")
+       logger.info(f"收到{AdapterName}標準イベント: {data}")
    ```
 
 3. Eventモジュール監視：

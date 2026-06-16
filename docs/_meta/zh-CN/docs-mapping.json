@@ -173,7 +173,7 @@
     },
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
-      "count": 12,
+      "count": 15,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -191,7 +191,7 @@
           "level": 1
         },
         {
-          "title": "Telegram平台特性文档",
+          "title": "文档信息",
           "path": "platform-guide/telegram.md",
           "level": 1
         },
@@ -208,6 +208,11 @@
         {
           "title": "文档维护说明",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Discord 平台特性文档",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -228,6 +233,16 @@
         {
           "title": "QQBot平台特性文档",
           "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "平台特性说明 — Webhook 通用桥接适配器",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "微信公众号（WechatMp）适配器 - 平台特性文档",
+          "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {

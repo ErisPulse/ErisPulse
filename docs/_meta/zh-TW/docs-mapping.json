@@ -173,7 +173,7 @@
     },
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
-      "count": 12,
+      "count": 15,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文檔",
@@ -211,6 +211,11 @@
           "level": 1
         },
         {
+          "title": "Discord 平台特性文件",
+          "path": "platform-guide/discord.md",
+          "level": 1
+        },
+        {
           "title": "花楓咖啡館（Ideaura）平台特性文件",
           "path": "platform-guide/ideaura.md",
           "level": 1
@@ -228,6 +233,16 @@
         {
           "title": "QQBot平台特性文件",
           "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "平台特性說明 — Webhook 通用橋接適配器",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "微信公眾號（WechatMp）適配器 - 平台特性文檔",
+          "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {

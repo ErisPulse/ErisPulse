@@ -13163,7 +13163,7 @@ async def on_unload(self, event):
 
 # ErisPulse PlatformFeatures ドキュメント
 
-> 基本プロトコル：[OneBot12](https://12.onebot.dev/) 
+> 基準プロトコル：[OneBot12](https://12.onebot.dev/) 
 > 
 > 本ドキュメントは**プラットフォーム固有機能ガイド**であり、以下を含みます：
 > - 各アダプタがサポートするSendメソッドチェーン（連鎖呼び出し）の例
@@ -13192,8 +13192,11 @@ async def on_unload(self, event):
 - [Matrixプラットフォーム固有機能](matrix.md)
 - [QQ公式ボットプラットフォーム固有機能](qqbot.md)
 - [花枫カフェ](ideaura.md)
+- [Discord](discord.md)
+- [Webhookプロトコルブリッジ](webhook.md)
+- [WeChat公式アカウント](wechatmp.md)
 
-> その他にも `sandbox` アダプタがありますが、このアダプタにはプラットフォーム固有機能のドキュメントメンテナンスは不要です。
+> また、`sandbox`アダプタもありますが、このアダプタにはプラットフォーム固有機能のドキュメントメンテナンスは不要です。
 
 ---
 
@@ -13268,7 +13271,7 @@ result = await task
    
    @adapter.on("event_type", raw=True, platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到{AdapterName}原生事件: {data}")
+       logger.info(f"收到{AdapterName}原生イベント: {data}")
    ```
 
 2. OneBot12標準イベント監視：
@@ -13278,12 +13281,12 @@ result = await task
    # OneBot12標準イベントを監視
    @adapter.on("event_type")
    async def handler(data):
-       logger.info(f"收到标准事件: {data}")
+       logger.info(f"收到標準イベント: {data}")
 
    # 特定プラットフォームの標準イベントを監視
    @adapter.on("event_type", platform="{AdapterName}")
    async def handler(data):
-       logger.info(f"收到{AdapterName}标准事件: {data}")
+       logger.info(f"收到{AdapterName}標準イベント: {data}")
    ```
 
 3. Eventモジュール監視：
@@ -13402,7 +13405,7 @@ OneBot11Adapter は OneBot V11 プロトコルに基づいて構築されたア�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 3.6.0
+- 対応モジュールバージョン: 4.0.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -13411,7 +13414,7 @@ OneBot11Adapter は OneBot V11 プロトコルに基づいて構築されたア�
 - アダプター名：OneBotAdapter
 - サポートするプロトコル/APIバージョン：OneBot V11
 - 複数アカウントサポート：デフォルトで複数アカウントアーキテクチャを採用し、複数のOneBotアカウントの同時設定と実行をサポートします
-- 旧設定との互換性：旧バージョンの設定フォーマットと互換性があり、移行のリマインダーを提供します（自動移行ではありません）
+- 設定キー名：`OneBotAdapter`
 
 ## サポートするメッセージ送信タイプ
 
@@ -13426,11 +13429,11 @@ await onebot.Send.To("group", group_id).Text("Hello World!")
 # 特定のアカウントを指定して送信
 await onebot.Send.Using("main").To("group", group_id).Text("主アカウントからのメッセージ")
 
-# メソッドチェーン修飾：ユーザーへのメンション + 返信
-await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("返信メッセージ")
+# 链式修饰：@用户 + 回复
+await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("回复消息")
 
-# 全員へのメンション
-await onebot.Send.To("group", group_id).AtAll().Text("アナウンスメッセージ")
+# @全体成员
+await onebot.Send.To("group", group_id).AtAll().Text("公告消息")
 ```
 
 ### 基本送信メソッド
@@ -13443,6 +13446,35 @@ await onebot.Send.To("group", group_id).AtAll().Text("アナウンスメッセ�
 - `.File(file: Union[str, bytes], filename: str = "file.dat")`：ファイルを送信します（タイプを自動判定）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します（自動的にOB11に変換）。
 - `.Recall(message_id: Union[str, int])`：メッセージを取り消します。
+
+### 群操作メソッド
+
+以下のメソッドは `To("group", group_id)` を使用して対象のグループを指定し、グループコンテキストで実行する必要があります：
+
+- `.Kick(user_id, reject_add_request=False)`：グループメンバーをキックします。
+- `.Ban(user_id, duration=1800)`：グループメンバーを禁止します（秒単位、0は解禁）。
+- `.WholeBan(enable=True)`：全員禁止を有効/無効にします。
+- `.SetAdmin(user_id, enable=True)`：グループ管理者を設定/解除します。
+- `.SetCard(user_id, card="")`：グループ名前を設定します。
+- `.SetGroupName(name)`：グループ名を変更します。
+- `.Leave(is_dismiss=False)`：グループから退会します（グループオーナーは解散も可能です）。
+- `.SetTitle(user_id, title="")`：グループタイトルを設定します。
+- `.SetPortrait(file)`：グループアイコンを設定します。
+
+### 検索メソッド
+
+- `.GetMsg(message_id)`：メッセージ内容を取得します。
+- `.GetForwardMsg(id)`：転送メッセージを取得します。
+- `.GetLoginInfo()`：現在のログイン情報（BotのQQ番号）を取得します。
+- `.GetFriendList()`：友達リストを取得します。
+- `.GetGroupInfo()`：グループ情報を取得します（`To("group", group_id)`が必要）。
+- `.GetGroupList()`：グループリストを取得します。
+- `.GetGroupMemberInfo(user_id)`：グループメンバー情報を取得します（`To("group", group_id)`が必要）。
+- `.GetGroupMemberList()`：グループメンバーのリストを取得します（`To("group", group_id)`が必要）。
+
+### 友達操作メソッド
+
+- `.Like(user_id, times=1)`：友達にいいねを送信します（最大10回）。
 
 ### メソッドチェーン修飾メソッド（組み合わせ可能）
 
@@ -13458,15 +13490,39 @@ await onebot.Send.To("group", group_id).AtAll().Text("アナウンスメッセ�
 # 基本送信
 await onebot.Send.To("group", 123456).Text("Hello")
 
-# 単一ユーザーにメンション
-await onebot.Send.To("group", 123456).At(789012).Text("こんにちは")
+# @单个用户
+await onebot.Send.To("group", 123456).At(789012).Text("你好")
 
-# 複数ユーザーにメンション
-await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("皆さんこんにちは")
+# @多个用户
+await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 
-# OneBot12形式のメッセージを送信
+# 发送 OneBot12 格式消息
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
+
+# 点赞
+await onebot.Send.Like(123456, times=10)
+
+# 禁言群成员
+await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
+
+# 解禁
+await onebot.Send.To("group", 123456).Ban(789012, duration=0)
+
+# 踢人
+await onebot.Send.To("group", 123456).Kick(789012)
+
+# 设置群管理员
+await onebot.Send.To("group", 123456).SetAdmin(789012)
+
+# 修改群名
+await onebot.Send.To("group", 123456).SetGroupName("新群名")
+
+# 获取群信息
+result = await onebot.Send.To("group", 123456).GetGroupInfo()
+
+# 指定账户操作
+await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
 ### サポートされていないタイプの処理
@@ -13478,47 +13534,148 @@ await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
 # 実際の送信: "[サポートされていない送信タイプ] メソッド名: SomeUnsupportedMethod, パラメータ: [...]"
 ```
 
-## 固有のイベントタイプ
+## 要求操作（Request DSL）
 
-OneBot11イベントはOneBot12プロトコルに変換されます。標準フィールドはOneBot12プロトコルに完全に準拠していますが、以下の違いがあります：
+アダプターは要求操作DSLを提供し、友達リクエストとグループリクエスト（グループ追加/招待）の承認/拒否操作に使用できます。
 
-### 主要な違い
+### Event 快捷方法
 
-1. 固有のイベントタイプ：
-   - CQコード拡張イベント：onebot11_cq_{type}
-   - 名誉変更イベント：onebot11_honor
-   - Pokeイベント：onebot11_poke
-   - 群レッドパッケージラッキーキングイベント：onebot11_lucky_king
-
-2. 拡張フィールド：
-   - すべての固有フィールドは `onebot11_` プレフィックスで識別されます
-   - 元のCQコードメッセージは `onebot11_raw_message` フィールドに保持されます
-   - 元のイベントデータは `onebot11_raw` フィールドに保持されます
-
-### 特殊フィールドの例
+要求イベントは `event.approve()` と `event.reject()` のショートカットメソッドをサポートし、内部的にRequest DSLを自動的に呼び出します：
 
 ```python
-// 名誉変更イベント
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+@request.on_group_request()
+async def handle_group_request(event):
+    group_id = event.get("group_id")
+    await event.approve()
+```
+
+### 手动调用 Request DSL
+
+```python
+# 同意请求
+await onebot.Request("flag_string").accept()
+
+# 拒绝请求
+await onebot.Request("flag_string").reject()
+
+# 指定账户操作
+await onebot.Request("flag_string").Using("main").accept()
+```
+
+### 完整示例
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    comment = event.get("comment", "")
+
+    # 方式一：使用 Event 快捷方法
+    if comment == "passphrase":
+        await event.approve()
+    else:
+        await event.reject()
+
+    # 方式二：使用 Request DSL
+    flag = event.get("flag")
+    if comment == "passphrase":
+        await onebot.Request(flag).accept()
+    else:
+        await onebot.Request(flag).reject()
+```
+
+### 要求操作の戻り値
+
+```python
 {
-  "type": "notice",
-  "detail_type": "onebot11_honor",
-  "group_id": "123456",
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "",
+    "message": ""
+}
+```
+
+## イベントタイプのマッピング
+
+### 標準 OB12 マッピング
+
+| OB11 原始タイプ | 変換後の detail_type | 説明 |
+|--------------|-------------------|------|
+| message_type: private | `private` | プライベートチャットメッセージ |
+| message_type: group | `group` | グループチャットメッセージ |
+| request_type: friend | `friend` | 友達リクエスト |
+| request_type: group | `group` | グループリクエスト |
+| meta_event_type: heartbeat | `heartbeat` | ハートビート |
+| notice_type: group_upload | `group_file_upload` | グループファイルアップロード |
+| notice_type: group_admin | `group_admin_change` | グループ管理者変更 |
+| notice_type: group_increase | `group_member_increase` | グループメンバー増加 |
+| notice_type: group_decrease | `group_member_decrease` | グループメンバー減少 |
+| notice_type: group_ban | `group_ban` | グループ禁止 |
+| notice_type: friend_add | `friend_increase` | 友達追加 |
+| notice_type: friend_delete | `friend_decrease` | 友達削除 |
+| notice_type: group_recall / friend_recall | `message_recall` | メッセージ撤回 |
+
+### 平台特有イベント（onebot11_ 前綴）
+
+| OB11 原始タイプ | 変換後の detail_type | 説明 |
+|--------------|-------------------|------|
+| meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot 実装のライフサイクル |
+| notify + sub_type: honor | `onebot11_honor` | グループの名誉変更 |
+| notify + sub_type: poke | `onebot11_poke` | ポケポケ |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | グループのラッキーキング |
+| CQ 码未知タイプ | メッセージセグメント `onebot11_{type}` | 未認識の CQ コード |
+
+### イベントの例
+
+```python
+// 好友请求
+{
+  "type": "request",
+  "detail_type": "friend",
   "user_id": "789012",
-  "onebot11_honor_type": "talkative",
-  "onebot11_operation": "set"
+  "comment": "请加好友",
+  "request_id": "flag_abc123",
+  "flag": "flag_abc123"
 }
 
-// Pokeイベント
+// 心跳
+{
+  "type": "meta_event",
+  "detail_type": "heartbeat",
+  "interval": 5000,
+  "status": {...}
+}
+
+// 生命周期（プラットフォーム特有）
+{
+  "type": "meta_event",
+  "detail_type": "onebot11_lifecycle",
+  "sub_type": "enable"
+}
+
+// 戳一戳（プラットフォーム特有）
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
   "group_id": "123456",
   "user_id": "789012",
-  "target_id": "345678",
-  "onebot11_poke_type": "normal"
+  "target_id": "345678"
 }
 
-// 群レッドパッケージラッキーキングイベント
+// 群红包运气王（プラットフォーム特有）
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -13527,18 +13684,20 @@ OneBot11イベントはOneBot12プロトコルに変換されます。標準フ�
   "target_id": "345678"
 }
 
-// CQコードメッセージセグメント
+// 荣誉变更（プラットフォーム特有）
+{
+  "type": "notice",
+  "detail_type": "onebot11_honor",
+  "group_id": "123456",
+  "user_id": "789012",
+  "honor_type": "talkative"
+}
+
+// CQ 码拡張メッセージセグメント
 {
   "type": "message",
   "message": [
-    {
-      "type": "onebot11_face",
-      "data": {"id": "123"}
-    },
-    {
-      "type": "onebot11_shake",
-      "data": {} 
-    }
+    {"type": "onebot11_shake", "data": {}}
   ]
 }
 ```
@@ -13546,53 +13705,111 @@ OneBot11イベントはOneBot12プロトコルに変換されます。標準フ�
 ### 拡張フィールドの説明
 
 - すべての固有フィールドは `onebot11_` プレフィックスで識別されます
-- 元のCQコードメッセージは `onebot11_raw_message` フィールドに保持されます
 - 元のイベントデータは `onebot11_raw` フィールドに保持されます
-- メッセージ内容のCQコードは対応するメッセージセグメントに変換されます
-- 返信メッセージには `reply` タイプのメッセージセグメントが追加されます
-- メンション(@)メッセージには `mention` タイプのメッセージセグメントが追加されます
+- 元のイベントタイプは `onebot11_raw_type` フィールドに保持されます
+- メッセージ内容のCQコードは対応するメッセージセグメントに変換されます（標準タイプは前綴なし、未知タイプは `onebot11_` 前綴付き）
+- 回答メッセージには `reply` タイプのメッセージセグメントが追加されます
+- @メッセージには `mention` タイプのメッセージセグメントが追加されます
+
+## イベント拡張メソッド
+
+OneBot11アダプターはイベントオブジェクトに以下のプラットフォーム固有メソッドを登録し、イベントハンドラ内で直接呼び出すことができます：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    raw_self_id = event.get_raw_self_id()
+    sender_info = event.get_sender_info()
+    sender_role = event.get_sender_role()
+```
+
+### メソッドリスト
+
+| メソッド | 戻り値の型 | 説明 |
+|------|----------|------|
+| `get_raw_self_id()` | `str` | BotのQQ番号（原始self_id）を取得します |
+| `get_sender_info()` | `dict` | 完全な送信者情報（nickname、role、levelなど）を取得します |
+| `get_sender_role()` | `str` | 送信者がグループ内の役割（owner/admin/member）を取得します |
+| `get_sender_level()` | `int` | 送信者の等級を取得します |
+| `get_sender_title()` | `str` | 送信者のグループタイトルを取得します |
+| `is_system_message()` | `bool` | システムメッセージかどうかを判定します（sub_type == "system"） |
+
+### 使用例
+
+```python
+from ErisPulse.Core.Event import message, command
+
+@message.on_group_message()
+async def handle_group(event):
+    role = event.get_sender_role()
+    if role == "admin" or role == "owner":
+        await event.reply("管理员好！")
+
+    title = event.get_sender_title()
+    if title:
+        await event.reply(f"你的头衔是: {title}")
+
+@command("whoami")
+async def whoami(event):
+    info = event.get_sender_info()
+    nickname = info.get("nickname", "未知")
+    level = event.get_sender_level()
+    await event.reply(f"昵称: {nickname}, 等级: {level}")
+```
 
 ## 設定オプション
 
-OneBotアダプターは各アカウントに対して以下のオプションを個別に設定します：
+OneBot11アダプターは多アカウントアーキテクチャを採用し、各アカウントを個別に設定できます。設定キー名は `OneBotAdapter` です。
 
-### アカウント設定
-- `mode`: このアカウントの実行モード ("server" または "client")
-- `server_path`: ServerモードでのWebSocketパス
-- `server_token`: Serverモードでの認証Token（オプション）
-- `client_url`: Clientモードで接続するWebSocketアドレス
-- `client_token`: Clientモードでの認証Token（オプション）
-- `enabled`: このアカウントを有効にするかどうか
+### アカウント設定フィールド
+
+| フィールド | 型 | 必須 | デフォルト値 | 説明 |
+|------|------|------|--------|------|
+| `bot_id` | `str` | はい | `""` | ロボットのQQ番号、アカウントを識別するため |
+| `mode` | `str` | いいえ | `"server"` | 実行モード：`"server"`（パッシブリッスン）または `"client"`（アクティブ接続） |
+| `url` | `str` | いいえ | `"ws://127.0.0.1:3001"` | ClientモードのWebSocketアドレス |
+| `token` | `str` | いいえ | `""` | 認証トークン（Clientモード接続トークン / Serverモード検証トークン） |
+| `server_path` | `str` | いいえ | `"/"` | ServerモードのWebSocketパス |
+| `enabled` | `bool` | いいえ | `true` | このアカウントを有効にするかどうか |
+| `name` | `str` | いいえ | `""` | アカウントの備考名 |
 
 ### 内蔵デフォルト値
+
 - 再接続間隔：30秒
 - API呼び出しタイムアウト：30秒
-- 最大リトライ回数：3回
 
 ### 設定例
+
 ```toml
-[OneBotv11_Adapter.accounts.main]
+[OneBotAdapter.accounts.main]
+bot_id = "123456789"
 mode = "server"
 server_path = "/onebot-main"
-server_token = "main_token"
+token = "main_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.backup]
+[OneBotAdapter.accounts.backup]
+bot_id = "987654321"
 mode = "client"
-client_url = "ws://127.0.0.1:3002"
-client_token = "backup_token"
+url = "ws://127.0.0.1:3002"
+token = "backup_token"
 enabled = true
 
-[OneBotv11_Adapter.accounts.test]
+[OneBotAdapter.accounts.test]
+bot_id = "111222333"
 mode = "client"
-client_url = "ws://127.0.0.1:3003"
+url = "ws://127.0.0.1:3003"
 enabled = false
 ```
 
 ### デフォルト設定
+
 アカウントが設定されていない場合、アダプターは自動的に作成します：
 ```toml
-[OneBotv11_Adapter.accounts.default]
+[OneBotAdapter.accounts.default]
+bot_id = ""
 mode = "server"
 server_path = "/"
 enabled = true
@@ -13604,30 +13821,40 @@ enabled = true
 
 ```python
 {
-    "status": "ok",           // 実行ステータス
-    "retcode": 0,             // リターンコード
-    "data": {...},            // レスポンスデータ
-    "self": {...},            // 自身の情報
-    "message_id": "123456",   // メッセージID
-    "message": "",            // エラーメッセージ
-    "onebot_raw": {...}       // 元のレスポンスデータ
+    "status": "ok",
+    "retcode": 0,
+    "data": {...},
+    "message_id": "123456",
+    "message": "",
+    "onebot11_raw": {...}
 }
 ```
 
-### 複数アカウント送信構文
+### 多アカウント送信構文
 
 ```python
 # アカウント選択メソッド
 await onebot.Send.Using("main").To("group", 123456).Text("主アカウントメッセージ")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
+# 通过 bot_id 选择账户
+await onebot.Send.Using("123456789").To("group", 123456).Text("通过QQ号选择")
+
 # API呼び出し方法
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
 ```
 
+### 账户解析优先级
+
+`call_api` および `Using()` の `account_id` パラメータの解析優先順位は以下の通りです：
+1. アカウント名と正確に一致する
+2. `bot_id` フィールドと一致する
+3. アカウントの任意の `str` 型フィールドと一致する
+4. 有効な最初のアカウントに回帰する
+
 ## 非同期処理メカニズム
 
-OneBotアダプターは非同期ノンブロッキング設計を採用し、以下を保証します：
+OneBot11アダプターは非同期ノンブロッキング設計を採用し、以下のことを保証します：
 1. メッセージ送信がイベント処理ループをブロックしないこと
 2. 複数の同時送信操作が並行して行えること
 3. APIレスポンスがタイムリーに処理されること
@@ -13639,20 +13866,22 @@ OneBotアダプターは非同期ノンブロッキング設計を採用し、�
 アダプターは完全なエラー処理メカニズムを提供します：
 1. ネットワーク接続例外の自動再接続（各アカウントの独立した再接続をサポート、間隔は30秒）
 2. API呼び出しタイムアウト処理（固定30秒タイムアウト）
-3. メッセージ送信失敗時のリトライ（最大3回までリトライ）
+3. 送信失敗時のリトライ（最大3回までリトライ）
 
 ## イベント処理の強化
 
-複数アカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：
+多アカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：
 ```python
 {
     "type": "message",
     "detail_type": "private",
-    "self": {"user_id": "main"},  // 追加：イベントを送信したアカウントID（標準フィールド）
+    "self": {"user_id": "123456789", "platform": "onebot11"},
     "platform": "onebot11",
     // ... その他のイベントフィールド
 }
 ```
+
+アダプターは自動的に `self_id → account_name` のマッピングを維持し、`event.reply()` は手動でアカウントを指定しなくても送信元アカウントに正しくルーティングされます。
 
 ## 管理インターフェース
 
@@ -13668,6 +13897,21 @@ connection_status = {
 
 # アカウントを動的に有効化/無効化（アダプターの再起動が必要）
 onebot.accounts["test"].enabled = False
+```
+
+## self_id 自動マッピング
+
+アダプターはOneBot `self_id`（QQ番号）から `account_name` へのマッピングを自動的に作成し、イベントの返信ルーティングに使用します：
+
+```python
+# アダプター内部で自動的に実行
+# イベントを受け取ったとき、self.user_idフィールドにbot_idが入力されます
+# アダプターは自動的に記録します: self_id("123456789") → account_name("main")
+
+# そのためevent.reply()は正しいアカウントに自動的に送信されます
+@message.on_message()
+async def handler(event):
+    await event.reply("自動的に正しいアカウントにルーティングされます")
 
 
 ### OneBot12 适配
@@ -13680,7 +13924,7 @@ OneBot12Adapterは、ErisPulseフレームワークのベースラインプロ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.0.0
+- 対応モジュールバージョン: 4.0.0
 - メンテナ: ErisPulse
 - プロトコルバージョン: OneBot V12
 
@@ -13693,7 +13937,7 @@ OneBot12Adapterは、ErisPulseフレームワークのベースラインプロ�
 
 ## サポートされるメッセージ送信タイプ
 
-すべての送信メソッドはチェーン構文（メソッドチェーン）で実装されています。例：
+すべての送信メソッドはチェーン構文で実装されています。例：
 
 ```python
 from ErisPulse.Core import adapter
@@ -13706,17 +13950,54 @@ await onebot12.Send.To("group", group_id).Text("Hello World!")
 await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
 ```
 
+### 大小写不敏感調用
+
+すべての送信メソッドとチェーン修飾メソッドは、大小文字を区別せずに呼び出すことができます。アダプターは正しい標準メソッド名に自動的にマッピングします：
+
+```python
+# 以下のすべての呼び出し方法は等価です
+await onebot12.Send.To("user", 123).Text("hello")
+await onebot12.Send.To("user", 123).text("hello")
+await onebot12.Send.To("user", 123).TEXT("hello")
+
+# チェーン修飾メソッドも同様にサポートされています
+await onebot12.Send.To("group", 123).At(456).Text("hello")
+await onebot12.Send.To("group", 123).at(456).TEXT("hello")
+await onebot12.Send.To("group", 123).AT(456).text("hello")
+```
+
+### 不支持的方法調用
+
+存在しないメソッドを呼び出す場合、アダプターは例外をスローするのではなく、親切なテキストメッセージを返します：
+
+```python
+# 不支持のメソッドを呼び出す
+result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
+
+# 返却される結果は送信されたテキストメッセージです
+# メッセージ内容: [不支持的发送类型] 方法名: UnsupportedMethod, 参数: [args[0]: 'test']
+```
+
 ### 基本メッセージタイプ
 
 - `.Text(text: str)`：純テキストメッセージを送信
 - `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像メッセージを送信（URL、Base64、またはbytesをサポート）
 - `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：音声メッセージを送信
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：音声メッセージを送信（Audioの別名、OneBot11と互換性あり）
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：動画メッセージを送信
 
-### インタラクションメッセージタイプ
+### チェーン修飾メソッド（selfを返すことでチェーン呼び出しをサポート）
 
-- `.Mention(user_id: Union[str, int], user_name: str = None)`：メンション（@メッセージ）を送信
-- `.Reply(message_id: Union[str, int], content: str = None)`：返信メッセージを送信
+- `.At(user_id: Union[str, int])`：メンション（@ユーザー）を送信（複数回呼び出すことができます）
+- `.AtAll()`：全員にメンション（@全体）を送信
+- `.Reply(message_id: Union[str, int])`：返信メッセージを送信
+
+### 原生メッセージ送信
+
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`：OneBot12の原生フォーマットメッセージを送信（命名規則に準拠）
+
+### その他のメッセージタイプ
+
 - `.Sticker(file_id: str)`：ステッカー/絵文字を送信
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：位置情報を送信
 
@@ -13731,6 +14012,24 @@ await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户�
 
 OneBot12アダプターはOneBot12標準を完全に準拠しており、イベント形式の変換は不要で、そのままフレームワークに送信されます。
 
+### 新機能：元のイベントタイプフィールド
+
+`standards/event-conversion.md`の規格に従い、すべてのイベントに元のイベントタイプフィールド`onebot12_raw_type`が保持されます：
+
+```python
+{
+    "id": "event-id",
+    "type": "message",              # イベントタイプ
+    "onebot12_raw_type": "message", # 元のイベントタイプ（typeと同じ）
+    "detail_type": "private",
+    "self": {"user_id": "bot-id"},
+    "user_id": "user-id",
+    "message": [{"type": "text", "data": {"text": "Hello"}}],
+    "alt_message": "Hello",
+    "time": 1234567890
+}
+```
+
 ### メッセージイベント (Message Events)
 
 ```python
@@ -13738,6 +14037,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "private",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -13750,6 +14050,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "message",
+    "onebot12_raw_type": "message",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -13767,6 +14068,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_increase",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -13779,7 +14081,8 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 # グループメンバー減少
 {
     "id": "event-id",
-    "type": "notice", 
+    "type": "notice",
+    "onebot12_raw_type": "notice",
     "detail_type": "group_member_decrease",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -13797,6 +14100,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
@@ -13809,6 +14113,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "request",
+    "onebot12_raw_type": "request",
     "detail_type": "group",
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
@@ -13827,6 +14132,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "lifecycle",
     "self": {"user_id": "bot-id"},
     "sub_type": "enable",
@@ -13837,6 +14143,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 {
     "id": "event-id",
     "type": "meta_event",
+    "onebot12_raw_type": "meta_event",
     "detail_type": "heartbeat",
     "self": {"user_id": "bot-id"},
     "interval": 5000,
@@ -13899,24 +14206,66 @@ platform = "onebot12"
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドはTaskオブジェクトを返し、そのままawaitして送信結果を取得できます。戻り値はOneBot12標準に準拠しています：
+### メッセージ送信メソッド
+すべてのメッセージ送信メソッド（`.Text()`、`.Image()`、`.Raw_ob12()`など）は`asyncio.Task`オブジェクトを返し、`await`することで送信結果を取得できます：
 
 ```python
+task = await onebot12.Send.To("group", 123456).Text("Hello")
+```
+
+### チェーン修飾メソッド
+すべてのチェーン修飾メソッド（`.At()`、`.AtAll()`、`.Reply()`）は`self`を返し、チェーン呼び出しをサポートします：
+
+```python
+# 複数の修飾メソッドを組み合わせて使用
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("文本")
+```
+
+## APIレスポンス標準
+
+アダプターはErisPulseの標準化された返却規格（`standards/api-response.md`）に準拠しています：
+
+```python
+# 成功レスポンス
 {
-    "status": "ok",           // 実行状態
-    "retcode": 0,             // リターンコード
-    "data": {...},            // レスポンスデータ
-    "self": {"user_id": "account-id"},  // アカウント情報
-    "message_id": "123456",   // メッセージID
-    "message": ""             // エラーメッセージ
+    "status": "ok",              // 必須：実行状態
+    "retcode": 0,                // 必須：返却コード（0は成功）
+    "data": {                     // 必須：レスポンスデータ
+        "message_id": "123456",
+        "time": 1632847927.599013
+    },
+    "message_id": "123456",       // 必須：メッセージID（無ければ空文字列）
+    "message": "",                // 必須：エラーメッセージ（成功時は空）
+    "echo": "1234",               // 可能：リクエスト中のechoをそのまま返す
+    "onebot12_raw": {...}        // 可能：元のレスポンスデータ
+}
+
+# 失敗レスポンス
+{
+    "status": "failed",           // 必須：実行状態
+    "retcode": 10003,            // 必須：返却コード（0以外は失敗）
+    "data": None,                // 必須：失敗時はnull
+    "message_id": "",            // 必須：失敗時は空文字列
+    "message": "缺少必要参数",    // 必須：エラーメッセージ
+    "echo": "1234",              // 可能：リクエスト中のechoをそのまま返す
+    "onebot12_raw": {...}        // 可能：元のレスポンスデータ
 }
 ```
+
+### エラーコード規格
+
+OneBot12標準のエラーコードに準拠しています：
+
+- **0**: 成功
+- **1xxxx**: 動作リクエストエラー
+- **2xxxx**: 動作プロセッサエラー
+- **3xxxx**: 動作実行エラー（33001はネットワークタイムアウト）
 
 ### マルチアカウント送信構文
 
 ```python
 # アカウント選択メソッド
-await onebot12.Send.Using("main").To("group", 123456).Text("主アカウントのメッセージ")
+await onebot12.Send.Using("main").To("group", 123456).Text("主账户消息")
 await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
 # API呼び出し方式
@@ -13941,7 +14290,8 @@ OneBot12アダプターは非同期かつ非ブロッキング設計を採用し
 
 1. ネットワーク接続の異常は自動的に再接続します（各アカウントごとに独立して再接続、間隔30秒）
 2. API呼び出しのタイムアウト処理（固定30秒のタイムアウト）
-3. メッセージ送信の失敗は自動的に再試行します（最大3回）
+3. 消息送信の失敗は自動的に再試行します（最大3回）
+4. 不支持的方法調用は親切なテキストメッセージを返します
 
 ## イベント処理の強化
 
@@ -13950,7 +14300,9 @@ OneBot12アダプターは非同期かつ非ブロッキング設計を採用し
 ```python
 {
     "type": "message",
+    "onebot12_raw_type": "message",  // 元のイベントタイプ
     "detail_type": "private",
+    "self": {"user_id": "123456"},  // 発生したアカウントID（標準フィールド）
     "platform": "onebot12",
     // ... 他のイベントフィールド
 }
@@ -13968,7 +14320,7 @@ connection_status = {
     for account_id, connection in onebot12.connections.items()
 }
 
-# 動的にアカウントの有効化/無効化（アダプターの再起動が必要）
+# アカウントの有効化/無効化（アダプターの再起動が必要）
 onebot12.accounts["test"].enabled = False
 ```
 
@@ -13997,7 +14349,7 @@ OneBot12は標準化されたメッセージセグメントフォーマットを
 OneBot12標準API仕様に準拠しています：
 
 - `send_message`: メッセージを送信
-- `delete_message`: メッセージを削除（撤回）
+- `delete_message`: メッセージを撤回
 - `edit_message`: メッセージを編集
 - `get_message`: メッセージを取得
 - `get_self_info`: 自身の情報を取得
@@ -14011,11 +14363,12 @@ OneBot12標準API仕様に準拠しています：
 3. **メッセージ送信**: サポートされているメッセージタイプを適切に使用し、非対応のメッセージを送信しないようにします。
 4. **接続監視**: 接続状態を定期的にチェックし、サービスの可用性を確保します。
 5. **パフォーマンスの最適化**: バッチ送信時はBatchメソッドを使用して、ネットワークオーバーヘッドを減らします。
+6. **メソッド呼び出し**: 推奨される大文字始まりの命名規則（例：`.Text()`）を使用することを推奨しますが、小文字形式もサポートされており、異なるプログラミングスタイルに互換性があります（この方法は旧バージョンと互換性がない可能性があります）。
 
 
 ### Telegram 适配
 
-# Telegram プラットフォーム特性ドキュメント
+# Telegramプラットフォーム特性ドキュメント
 
 TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプターであり、複数のメッセージタイプとイベント処理をサポートしています。
 
@@ -14023,7 +14376,7 @@ TelegramAdapterは、Telegram Bot APIに基づいて構築されたアダプタ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 3.6.5
+- 対応モジュールバージョン: 4.0.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -14048,7 +14401,7 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 | メソッド | 説明 | パラメータ |
 |------|------|------|
 | `.Text(text)` | 純粋なテキストメッセージを送信 | `text: str` |
-| `.Face(emoji)` | ダイススタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
+| `.Face(emoji)` | エモイジスタンプを送信 | `emoji: str`（例：🎲 🎯 🏀） |
 | `.Markdown(text, content_type)` | Markdown形式のメッセージを送信 | `content_type` のデフォルトは `"MarkdownV2"` |
 | `.HTML(text)` | HTML形式のメッセージを送信 | `text: str` |
 | `.Sticker(file)` | ステッカーを送信 | `file: str (file_id/URL) \| bytes` |
@@ -14157,7 +14510,7 @@ Telegramのイベント変換はOneBot12標準に準拠しつつ、`telegram_` �
 ### 固有のイベントタイプ
 
 | detail_type | 説明 |
-|---|---|
+|------|------|
 | `telegram_callback_query` | コールバッククエリ（インラインキーボードボタンのクリック） |
 | `telegram_inline_query` | インラインクエリ |
 | `telegram_chosen_inline_result` | 選択されたインライン結果 |
@@ -14327,7 +14680,78 @@ async def handle_message(event):
 
     # メッセージセグメントデータ
     sticker = event.get_sticker_info()
-    contact
+    contact = event.get_contact_info()
+    location = event.get_location()
+    keyboard = event.get_inline_keyboard()
+
+    # トピック
+    if event.is_topic_message():
+        topic_id = event.get_topic_id()
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get("platform") != "telegram":
+        return
+
+    if event.get("detail_type") == "telegram_callback_query":
+        callback_data = event.get_callback_data()
+        callback_id = event.get_callback_id()
+
+        # コールバッククエリに応答
+        telegram = sdk.adapter.get("telegram")
+        await telegram.Send.AnswerCallback(callback_id, text="既にクリック")
+
+        # メッセージに返信
+        await event.reply(f"{callback_data}をクリックしました")
+```
+
+## 拡張フィールド説明
+
+- すべての固有フィールドは `telegram_` プレフィックスで識別されます
+- 原始データは `telegram_raw` フィールドに保持されます
+- 原始イベントタイプは `telegram_raw_type` フィールドに保持されます
+- チャンネルメッセージでは `detail_type="channel"` を使用します
+- プライベートチャットメッセージでは `detail_type="private"` を使用します（送信時に `user` に変換する必要があります）
+- トピックメッセージには `thread_id` フィールドが含まれます
+- `@` メンションは標準の `mention` メッセージセグメントタイプ（`type: "mention"`）を使用し、テキストには `@` ユーザー名が含まれません
+
+## 設定オプション
+
+Telegram アダプターは複数アカウントの設定をサポートしています：
+
+### 設定例
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
+
+### 実行モード
+
+Telegram アダプターは **Polling（ポーリング）** モードのみをサポートしており、Webhook モードは削除されました。
+
+### プロキシ設定
+
+Telegram API にプロキシ経由で接続する場合は、システムレベルのプロキシ（環境変数 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）を使用してください。
+
+### 旧設定のマイグレーション
+
+旧バージョンの単一 token 設定は自動的に互換性があります：
+```toml
+# 旧形式（まだ使用可能ですが、マイグレーションを推奨します）
+[Telegram_Adapter]
+token = "YOUR_BOT_TOKEN"
+```
+
+新形式へのマイグレーションを推奨します：
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
 
 ### 云湖适配
@@ -14340,7 +14764,7 @@ YunhuAdapterは、雲湖プロトコルに基づいて構築されたアダプ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 3.10.1
+- 対応モジュールバージョン: 4.0.0
 - メンテナ: ErisPulse
 
 ## 基本情報
@@ -14378,9 +14802,47 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.DismissBoard(scope: str, **kwargs)`：公告掲示板を取り消します。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：ストリーミングメッセージを送信します。
 
+### グループ管理メソッド
+
+全てのグループ管理メソッドはチェーン構文を使用してグループを指定する必要があります。例：
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`：グループメンバーを削除します。ロボットには「グループメンバーを削除する権限」が必要です。
+- `.Ban(user_id: str, duration: int = 600)`：ユーザーを禁止します。`duration` は禁止期間（秒）。0は解除、-1は永久禁止です。ロボットには「ユーザーを禁止する権限」が必要です。
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：グループタグを作成します。`color` は #RRGGBB 形式、`sort` は小さいほど先頭に来ます。ロボットには「タググループを制御する権限」が必要です。
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：グループタグを編集します。各パラメータはオプションで、省略すると変更されません。ロボットには「タググループを制御する権限」が必要です。
+- `.DeleteTag(tag: str)`：グループタグを削除します。ロボットには「タググループを制御する権限」が必要です。
+- `.GetTagList()`：グループタグリストを取得します。`list` 配列を含むレスポンスデータを返します。
+- `.AddUserTag(user_id: str, tag: str)`：ユーザーにタグを追加します。ロボットには「タググループを制御する権限」が必要です。
+- `.RemoveUserTag(user_id: str, tag: str)`：ユーザーからタグを削除します。ロボットには「タググループを制御する権限」が必要です。
+- `.SetMsgTypeLimit(types: str)`：グループ内のメッセージタイプを制御します。`types` はメッセージタイプ名、複数の場合はカンマ区切り（例：`"text,image,video"`）。空文字は制限なしを示します。ロボットには「グループ情報を変更する権限」が必要です。
+
+### メッセージクエリメソッド
+
+指定されたセッション（ユーザー/グループ）の履歴メッセージリストを取得するには、チェーン構文でターゲットを指定する必要があります。例：
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：セッション履歴メッセージを取得します。`list` 配列と `total` 総数を含むレスポンスデータを返します。
+  - `message_id`：メッセージID（オプション）。未入力の場合、`before` と共に最近のN件を返します。
+  - `before`：指定されたメッセージIDの前N件を返します。
+  - `after`：指定されたメッセージIDの後N件を返します。
+  - > **注意：** `before` と `after` は少なくとも一方を指定し、かつ 0 より大きい値である必要があります。そうしないと、サーバーは何も返しません。
+
 Board の board_type は以下のタイプをサポートします：
 
-- `local`：ユーザー専用の掲示板
+- `local`：指定ユーザー用掲示板
 - `global`：グローバル掲示板
 
 ### ボタンパラメータの説明
@@ -14430,6 +14892,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("返信メッセージ
 
 # 返信 + ボタン
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きのメッセージ")
+```
+
+### グループ管理の例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# グループメンバーを削除
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# ユーザーを禁止（10分間）
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# 禁止解除
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# 永久禁止
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# グループタグを作成
+await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会員")
+
+# グループタグを編集
+await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
+
+# グループタグを削除
+await yunhu.Send.To("group", group_id).DeleteTag("VIPユーザー")
+
+# グループタグリストを取得
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# ユーザーにタグを追加
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
+
+# ユーザータグを削除
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
+
+# メッセージタイプの制限を設定
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# メッセージタイプの制限を解除
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### メッセージクエリの例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# グループの最近10件のメッセージを取得（合計10件）
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# グループ内の指定されたメッセージIDの前10件を取得（合計11件）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# グループ内の指定されたメッセージIDの前後各10件を取得（合計21件）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# ユーザーセッションの履歴メッセージを取得
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12メッセージサポート
@@ -14532,6 +15056,7 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
     "interaction_json": "インタラクションデータJSON文字列"
   }
 }
+```
 
 ### ボタンクリックイベントの処理例
 
@@ -14954,7 +15479,7 @@ await mail.Send.Using("from@example.com")
 
 # Kookプラットフォーム特性ドキュメント
 
-KookAdapter は、Kook（旧称开黑啦）Bot WebSocket プロトコルを基に構築されたアダプターで、Kook のすべての機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づいて構築されたアダプターで、Kookのすべての機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
 
 ---
 
@@ -14965,27 +15490,41 @@ KookAdapter は、Kook（旧称开黑啦）Bot WebSocket プロトコルを基�
 
 ## 基本情報
 
-- プラットフォーム紹介：Kook（旧称开黑啦）は、テキスト、音声、ビデオ通信をサポートするコミュニティプラットフォームであり、完全な Bot 開発インターフェースを提供します
+- プラットフォーム紹介：Kook（旧称開黒啦）は、テキスト、音声、ビデオ通信をサポートするコミュニティプラットフォームであり、完全な Bot 開発インターフェースを提供します
 - アダプター名：KookAdapter
+- 多アカウントサポート：複数の Kook ロボットを同時に設定できます
 - 接続方式：WebSocket ロング接続（Kook ゲートウェイ経由）
-- 認証方式：Bot Token ベースの認証
+- 認証方式：Bot Token を使用した認証
 - チェーン構文修飾のサポート：`.Reply()`、`.At()`、`.AtAll()` などのチェーン構文修飾メソッドをサポート
 - OneBot12互換性：OneBot12 形式メッセージの送信をサポート
 
 ## 設定説明
 
+KookAdapter は複数アカウントの設定をサポートし、各アカウントは独立した Kook ロボットに対応します。
+
 ```toml
 # config.toml
-[KookAdapter]
+# アカウント1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必須、形式: Bot xxx/xxx）
 bot_id = ""                   # Bot ユーザーID（任意、未入力の場合は token から解析）
 compress = true               # WebSocket 圧縮を有効にするかどうか（任意、デフォルトは true）
+enabled = true                # 有効かどうか（任意、デフォルトは true）
+
+# アカウント2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**設定項目の説明：**
+> 旧設定の互換性：旧の単一アカウントの `[KookAdapter]` 設定（token を含む）が検出された場合、自動的に `accounts.default` に移行されます。
+
+**設定項目の説明（各アカウント）：**
 - `token`：Kook Bot の Token（必須）。[Kook Developer Center](https://developer.kookapp.cn) から取得、形式は `Bot xxx/xxx`
 - `bot_id`：Bot のユーザーID（任意）。未入力の場合、アダプターは token から自動的に解析を試みます。正確性を確保するために手動で入力することを推奨します
 - `compress`：WebSocket データ圧縮を有効にするかどうか（任意、デフォルトは `true`）。有効にすると zlib を使用してデータを展開します
+- `enabled`：アカウントの有効化（任意、デフォルトは `true`）
 
 **API環境：**
 - Kook API ベースアドレス：`https://www.kookapp.cn/api/v3`
@@ -15435,7 +15974,7 @@ async def handle_private_notice(event):
 
 # Matrixプラットフォーム特性ドキュメント
 
-MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべてのコア機能モジュールを統合し、統一されたイベント処理とメッセージ操作インターフェースを提供します。
+MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて構築されたアダプターであり、Matrixプロトコルのすべての核心的な機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。
 
 ---
 
@@ -15446,35 +15985,49 @@ MatrixAdapterは[Matrixプロトコル](https://spec.matrix.org/)に基づいて
 
 ## 基本情報
 
-- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、ダイレクトメッセージ、グループなどの複数のシナリオをサポートしています。
+- プラットフォーム概要：Matrixはオープンな非中央集権型通信プロトコルであり、プライベートメッセージ（ダイレクトメッセージ）、グループなど複数のシナリオをサポートしています。
 - アダプター名：MatrixAdapter
-- 接続方式：ロングポーリング（Matrix Sync API `/sync` 経由）
-- 認証方式：access_token または user_id + password によるログインでトークンを取得
-- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()` などのメソッドチェーン修飾をサポート
+- 複数アカウントサポート：同時に複数のMatrixアカウントを設定することが可能です。
+- 接続方式：Long Polling（Matrix Sync API `/sync` 経由）
+- 認証方式：access_tokenまたはuser_id+passwordのログインに基づいてトークンを取得
+- メソッドチェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()`などのメソッドチェーン修飾をサポート
 - OneBot12互換：OneBot12フォーマットのメッセージ送信をサポート
 
 ## 設定説明
 
+MatrixAdapterは複数アカウント設定をサポートしており、各アカウントはhomeserverと認証情報を独立して設定します。
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# アカウント1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrixサーバーアドレス（必須）
 access_token = "YOUR_ACCESS_TOKEN"          # アクセストークン（user_id+password と二択）
 user_id = ""                                # MatrixユーザーID（例: @bot:matrix.org）
 password = ""                               # Matrixユーザーパスワード
 auto_accept_invites = true                  # ルームへの招待を自動的に承諾するか（任意、デフォルトはtrue）
+enabled = true                              # 有効にするか（任意、デフォルトはtrue）
+
+# アカウント2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**設定項目の説明：**
-- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは `https://matrix.org`
+> 旧設定との互換性：古い単一アカウントの`[Matrix_Adapter]`設定（access_tokenを含む）を検出した場合、自動的に`accounts.default`に移行されます。
+
+**設定項目の説明（各アカウント）：**
+- `homeserver`：Matrixサーバーアドレス（必須）、デフォルトは`https://matrix.org`
 - `access_token`：アクセストークン。Matrixクライアントから取得可能。既存のトークンがある場合は直接入力します。
-- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password` と組み合わせてログインに使用します。
-- `password`：Matrixユーザーパスワード。自動ログインで access_token を取得するために使用します。
-- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは `true`。
+- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password`と組み合わせてログインに使用します。
+- `password`：Matrixユーザーパスワード。自動ログインでaccess_tokenを取得するために使用します。
+- `auto_accept_invites`：ルームへの招待を自動的に承諾するかどうか。デフォルトは`true`。
+- `enabled`：このアカウントを有効にするかどうか（任意、デフォルトはtrue）。
 
 **認証方式：**
-- 方式1（推奨）：直接 `access_token` を提供する
-- 方式2：`user_id` と `password` を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
+- 方式1（推奨）：直接`access_token`を提供する
+- 方式2：`user_id`と`password`を提供すると、アダプターが自動的にログインAPIを呼び出してトークンを取得します。
 
 ## サポートするメッセージ送信タイプ
 
@@ -15492,17 +16045,17 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 - `.Voice(file: bytes | str)`：音声メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.Video(file: bytes | str)`：動画メッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
 - `.File(file: bytes | str, filename: str = "")`：ファイルメッセージを送信します。ファイルパス、URL、MXC URI、バイナリデータをサポートします。
-- `.Notice(text: str)`：通知メッセージ（Matrixの m.notice タイプ）を送信します。
+- `.Notice(text: str)`：通知メッセージ（Matrixのm.noticeタイプ）を送信します。
 - `.Html(html: str, fallback: str = "")`：HTMLフォーマットのメッセージを送信します。リッチテキストコンテンツをサポートします。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12フォーマットのメッセージを送信します。
 
 ### メソッドチェーン修飾メソッド（組み合わせて使用可能）
 
-メソッドチェーン修飾メソッドは `self` を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
+メソッドチェーン修飾メソッドは`self`を返し、メソッドチェーン呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの `m.in_reply_to` リレーション経由）。
-- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの `m.mentions` フィールドで実装）。
-- `.AtAll()`：ルーム内の全員にメンションします（Matrixの `@room` メンションで実装）。
+- `.Reply(message_id: str)`：指定したメッセージに返信します（Matrixの`m.in_reply_to`リレーション経由）。
+- `.At(user_id: str)`：指定したユーザーにメンションします（Matrixの`m.mentions`フィールドで実装）。
+- `.AtAll()`：ルーム内の全員にメンションします（Matrixの`@room`メンションで実装）。
 
 ### メソッドチェーン呼び出し例
 
@@ -15510,7 +16063,7 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 # 基本的な送信
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
-# 返信
+# 返信メッセージ
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("返信メッセージ")
 
 # ユーザーへのメンション
@@ -15553,7 +16106,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、直接 `await` して送信結果を取得できます。戻り値は ErisPulse アダプターの標準化された戻り値の仕様に従います：
+すべての送信メソッドはTaskオブジェクトを返し、直接`await`して送信結果を取得できます。戻り値はErisPulseアダプターの標準化された戻り値の仕様に従います：
 
 ```python
 {
@@ -15577,24 +16130,24 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ## 固有のイベントタイプ
 
-`platform=="matrix"` で検出してからこのプラットフォームの特性を使用する必要があります。
+`platform=="matrix"`で検出してからこのプラットフォームの特性を使用する必要があります。
 
-### コアな違い
+### 核心な違い
 
-1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは `@user:server.domain`、ルームIDのフォーマットは `!room_id:server.domain` です。
+1. **非中央集権型アーキテクチャ**：Matrixは非中央集権型の通信プロトコルであり、ユーザーIDのフォーマットは`@user:server.domain`、ルームIDのフォーマットは`!room_id:server.domain`です。
 2. **ルームの概念**：Matrixはグループチャットとダイレクトメッセージを区別せず、すべての会話は「ルーム」です。アダプターはDM（Direct Message）アカウントデータを通じてダイレクトメッセージのルームを自動的に識別します。
 3. **ロングポーリング同期**：WebSocketではなく、`/sync` APIを使用してロングポーリングを行い、新しいイベントを取得します。
-4. **MXC URI**：メディアファイルは `mxc://server.domain/media_id` フォーマットで参照されます。
-5. **HTMLリッチテキスト**：`formatted_body` を通じたHTMLフォーマットのメッセージ送信をサポートします。
+4. **MXC URI**：メディアファイルは`mxc://server.domain/media_id`フォーマットで参照されます。
+5. **HTMLリッチテキスト**：`formatted_body`を通じたHTMLフォーマットのメッセージ送信をサポートします。
 6. **絵文字リアクション**：従来の返信メッセージとは異なる、メッセージレベルの絵文字リアクション（Reaction）をサポートします。
-7. **メッセージ編集**：`m.replace` リレーションによる送信済みメッセージの編集をサポートします。
-8. **メッセージの削除**：`m.room.redaction` によるメッセージの削除をサポートします。
+7. **メッセージ編集**：`m.replace`リレーションによる送信済みメッセージの編集をサポートします。
+8. **メッセージの削除**：`m.room.redaction`によるメッセージの削除をサポートします。
 
 ### 拡張フィールド
 
-- すべての固有フィールドは `matrix_` プレフィックスで識別されます。
-- 生のデータは `matrix_raw` フィールドに保持されます。
-- `matrix_raw_type` は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
+- すべての固有フィールドは`matrix_`プレフィックスで識別されます。
+- 生のデータは`matrix_raw`フィールドに保持されます。
+- `matrix_raw_type`は生のMatrixイベントタイプ（例: `m.room.message`、`m.room.member`）を識別します。
 
 ### 特殊フィールドの例
 
@@ -15649,7 +16202,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 ### メッセージセグメントタイプ
 
-Matrixメッセージは `msgtype` に基づいて対応するメッセージセグメントに自動的に変換されます：
+Matrixメッセージは`msgtype`に基づいて対応するメッセージセグメントに自動的に変換されます：
 
 | msgtype | 変換タイプ | 説明 |
 |---|---|---|
@@ -15713,7 +16266,7 @@ MatrixAdapterは以下のイベントミックスインメソッドを登録し�
 | `get_matrix_sender()` | `str` | 生の送信者IDを取得 |
 | `get_reaction_key()` | `str` | リアクションの絵文字を取得 |
 | `is_edited()` | `bool` | メッセージが編集されたものか判定 |
-| `is_notice()` | `bool` | メッセージが m.notice タイプか判定 |
+| `is_notice()` | `bool` | メッセージがm.noticeタイプか判定 |
 
 ```python
 @message.on_message()
@@ -15732,24 +16285,24 @@ async def handle_message(event):
 
 ### 同期フロー
 
-1. access_token または user_id + password を使用して認証
-2. `/_matrix/client/v3/account/whoami` を呼び出して bot_user_id を取得
-3. connect メタイベントを発火
-4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch` トークンを取得
+1. access_tokenまたはuser_id+passwordを使用して認証
+2. `/_matrix/client/v3/account/whoami`を呼び出してbot_user_idを取得
+3. connectメタイベントを発火
+4. 初期同期（`/_matrix/client/v3/sync?timeout=0`）を実行し、`next_batch`トークンを取得
 5. DMルームを検出（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
 6. ロングポーリング同期ループを開始（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
 7. 毎回の同期で返された新しいイベントを処理し、変換して発火
 
 ### ハートビートメカニズム
 
-- アダプターは30秒ごとに1回 `heartbeat` メタイベントを発火します。
-- 接続成功時に `connect` メタイベントを発火します。
-- 終了時に `disconnect` メタイベントを発火します。
+- アダプターは30秒ごとに1回`heartbeat`メタイベントを発火します。
+- 接続成功時に`connect`メタイベントを発火します。
+- 終了時に`disconnect`メタイベントを発火します。
 
 ### ルームへの招待
 
-- ルームへの招待（`invite` ステータスのルーム）を受信した際、`auto_accept_invites` が `true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
-- ルームへの参加は `/_matrix/client/v3/join/{room_id}` インターフェースを呼び出します。
+- ルームへの招待（`invite`ステータスのルーム）を受信した際、`auto_accept_invites`が`true`（デフォルト）に設定されている場合、アダプターは自動的にルームに参加します。
+- ルームへの参加は`/_matrix/client/v3/join/{room_id}`インターフェースを呼び出します。
 
 ## 使用例
 
@@ -17021,7 +17574,7 @@ IdeauraAdapterは、花楓カフェ（Allons）プラットフォームのAPIに
 
 - プラットフォーム紹介：花楓カフェ（Allons）はインスタントメッセージングプラットフォームです
 - アダプター名：IdeauraAdapter
-- マルチアカウントサポート：email/passwordによる複数アカウントの設定をサポート
+- マルチアカウントサポート：tokenまたはemail/passwordによる複数アカウントの設定をサポート
 - メソッドチェーンサポート：`.At()`、`.AtAll()`、`.Reply()`などのメソッドチェーンによる修飾をサポート
 - OneBot12互換：OneBot12形式のメッセージ送信をサポート
 
@@ -17143,7 +17696,308 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
     - 生データは `ideaura_raw` フィールドに保持されます
     - `self.user_id` は現在のアカウントのユーザーIDを示します
 
-### メッセージ編
+### メッセージ編集イベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_edit",
+  "platform": "ideaura",
+  "message_id": "メッセージID",
+  "user_id": "編集者ID",
+  "ideaura_new_content": "編集後的内容",
+  "ideaura_updated_message": { ... },
+  "ideaura_source_type": "chatroom/topic/private"
+}
+```
+
+### メッセージ取り消しイベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_recall",
+  "platform": "ideaura",
+  "message_id": "取り消されたメッセージID",
+  "user_id": "取り消し者ID",
+  "group_id": "chatroom",
+  "ideaura_source_type": "chatroom",
+  "ideaura_recall_time": "取り消し時間",
+  "ideaura_is_self": false
+}
+```
+
+### メッセージ転送イベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_forward",
+  "platform": "ideaura",
+  "message_id": "元のメッセージID",
+  "user_id": "転送者ID",
+  "ideaura_forward_to": "転送先トピックID",
+  "ideaura_original_message_id": "元のメッセージID",
+  "ideaura_forwarded_message_id": "転送後の新しいメッセージID"
+}
+```
+
+### メッセージ既読イベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_message_read",
+  "platform": "ideaura",
+  "message_id": "メッセージID",
+  "ideaura_reader_id": "既読者ID",
+  "ideaura_reader_name": "既読者のニックネーム"
+}
+```
+
+### 友達オンラインイベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_online",
+  "platform": "ideaura",
+  "user_id": "友達ID",
+  "user_nickname": "友達のニックネーム",
+  "ideaura_friend_avatar": "プロフィール画像URL",
+  "ideaura_presence_status": "online"
+}
+```
+
+### 友達オフラインイベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_offline",
+  "platform": "ideaura",
+  "user_id": "友達ID",
+  "ideaura_presence_status": "offline"
+}
+```
+
+### ユーザーステータス変更イベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_user_status_change",
+  "platform": "ideaura",
+  "user_id": "ユーザーID",
+  "ideaura_status": "新しいステータス",
+  "ideaura_previous_status": "前のステータス"
+}
+```
+
+### 友達リクエストイベント
+
+```python
+{
+  "type": "request",
+  "detail_type": "friend",
+  "platform": "ideaura",
+  "user_id": "リクエスト者ID",
+  "user_nickname": "リクエスト者のニックネーム",
+  "ideaura_request_id": "リクエストID",
+  "ideaura_message": "確認メッセージ"
+}
+```
+
+### 友達拒否イベント
+
+```python
+{
+  "type": "notice",
+  "detail_type": "ideaura_friend_rejected",
+  "platform": "ideaura",
+  "user_id": "拒否者ID",
+  "user_nickname": "拒否者のニックネーム",
+  "ideaura_request_id": "リクエストID",
+  "ideaura_requester_id": "リクエスト発起者ID",
+  "ideaura_requester_name": "リクエスト発起者のニックネーム"
+}
+```
+
+### 転送メッセージセグメント (ideaura_forwarded)
+
+転送メッセージを受け取った場合、メッセージセグメントのタイプは `ideaura_forwarded` になります：
+
+```json
+{
+  "type": "ideaura_forwarded",
+  "data": {
+    "forward_source_id": "1001",
+    "original_message_id": "1001"
+  }
+}
+```
+
+| フィールド | タイプ | 説明 |
+|------|------|------|
+| `forward_source_id` | string | 転送元メッセージID |
+| `original_message_id` | string | 元のメッセージID |
+
+### イベント処理の例
+
+```python
+from ErisPulse.Core.Event import notice, message
+
+@message.on_message()
+async def handle_message(event):
+    if event.get_platform() == "ideaura":
+        # メッセージイベントを処理
+        for segment in event.get("message", []):
+            if segment.get("type") == "ideaura_forwarded":
+                data = segment["data"]
+                print(f"転送メッセージ、元ID: {data['forward_source_id']}")
+
+@notice.on_notice()
+async def handle_notice(event):
+    if event.get_platform() != "ideaura":
+        return
+
+    detail_type = event.get("detail_type")
+
+    if detail_type == "ideaura_message_edit":
+        new_content = event.get("ideaura_new_content", "")
+        print(f"メッセージが編集されました: {new_content}")
+
+    elif detail_type == "ideaura_message_recall":
+        message_id = event.get("message_id")
+        print(f"メッセージが取り消されました: {message_id}")
+
+    elif detail_type == "ideaura_friend_online":
+        friend_name = event.get_user_nickname()
+        print(f"友達がオンラインになりました: {friend_name}")
+
+    elif detail_type == "ideaura_user_status_change":
+        status = event.get("ideaura_status")
+        print(f"ユーザーのステータスが変更されました: {status}")
+```
+
+---
+
+## マルチアカウント設定
+
+### 設定説明
+
+IdeauraAdapterは複数のアカウントを同時に設定および実行することができ、各アカウントはTokenログインまたはメール/パスワードログイン（どちらか一方）を選択できます。
+
+```toml
+# config.toml
+# アカウント1：Tokenログイン（推奨、メール/パスワード不要）
+[IdeauraAdapter.accounts.default]
+token = "your-token-here"        # ログインToken（email+passwordと二択）
+enabled = true                   # 有効化するかどうか（オプション、デフォルトはtrue）
+
+# アカウント2：メール/パスワードログイン
+[IdeauraAdapter.accounts.bot2]
+email = "user2@example.com"      # ログインメールアドレス
+password = "password2"           # ログインパスワード
+enabled = true
+
+# オプション：カスタムサーバーのアドレス
+[IdeauraAdapter]
+base_url = "https://api-cofe.allons-y.uk:3009"
+ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
+heartbeat_interval = 30
+```
+
+**設定項目の説明：**
+- `token`：ログインToken（オプション、記入するとTokenログインが優先され、メール/パスワードは不要）
+- `email`：ログインメールアドレス（Tokenログイン時は不要、メール/パスワードログイン時は必須）
+- `password`：ログインパスワード（Tokenログイン時は不要、メール/パスワードログイン時は必須）
+- `enabled`：アカウントを有効にするかどうか（オプション、デフォルトはtrue）
+
+**グローバル設定項目：**
+- `base_url`：APIサーバーのアドレス（オプション、デフォルトは花楓カフェの公式アドレス）
+- `ws_url`：WebSocketサーバーのアドレス（オプション、デフォルトは花楓カフェの公式アドレス）
+- `heartbeat_interval`：ハートビートの間隔（秒）（オプション、デフォルトは30秒）
+
+### Send DSLを使用してアカウントを指定
+
+`Using()`メソッドを使用してどのアカウントでメッセージを送信するかを指定できます：
+
+```python
+from ErisPulse.Core import adapter
+ideaura = adapter.get("ideaura")
+
+# アカウント名を使用してメッセージを送信
+await ideaura.Send.Using("default").To("user", "user123").Text("アカウント1から送信されたHello!")
+
+# user_idを使用してメッセージを送信（自動的に対応するアカウントにマッチ）
+await ideaura.Send.Using("456").To("group", "chatroom").Text("アカウント2から送信されたHello!")
+
+# 指定しない場合は、最初に有効化されたアカウントが使用されます
+await ideaura.Send.To("user", "user123").Text("デフォルトアカウントから送信されたHello!")
+```
+
+### イベントにおけるアカウント識別
+
+イベントは自動的に対応するアカウント情報を含みます：
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "ideaura":
+        account_id = event["self"]["user_id"]
+        print(f"メッセージはアカウントから来ています: {account_id}")
+```
+
+---
+
+## 拡張フィールドの説明
+
+- すべての固有フィールドは `ideaura_` プレフィックスで識別され、標準フィールドとの衝突を避ける
+- 生データは `ideaura_raw` フィールドに保持され、プラットフォームの完全な生データにアクセスできる
+- `self.user_id` は現在のログインアカウントのユーザーIDを示す
+- `ideaura_source_type`：メッセージの送信元タイプ（`chatroom`/`topic`/`private`）
+- `ideaura_sender_name`：送信者のニックネーム
+- `ideaura_sender_avatar`：送信者のプロフィール画像URL
+- `ideaura_sender_is_bot`：送信者がボットかどうか
+- `ideaura_is_self`：自ら送信したメッセージかどうか（自メッセージはフィルタリング済み）
+- `ideaura_topic_name`：トピックの名前
+- `ideaura_message_type`：メッセージのタイプ（normal/edited/forwarded/quoted）
+- `ideaura_message_subtype`：メッセージのサブタイプ（text/image/video/file/markdown/html）
+
+### ファイル処理の特徴
+
+- ファイルサイズ制限：10MB（ダウンロードとローカル読み込みの両方に制限あり）
+- 自動ファイルタイプ検出：ファイルヘッダーの魔法バイトで実際のタイプを検出
+- スマートなファイル名解析：`.bin`/`.dat`/`.tmp`などの意味のない拡張子を自動的に修正
+- bytes、URL、ローカルパスの3種類のファイル入力方式をサポート
+- URLファイルは自動的にダウンロードしてサーバーにアップロード
+
+### サポートされるファイルタイプ
+
+魔法バイトで自動検出：
+
+| タイプ | 拡張子 |
+|------|--------|
+| 画像 | png, jpg, gif, webp |
+| 動画 | mp4, avi, flv |
+| 音声 | mp3, wav, ogg |
+| ドキュメント | pdf, docx |
+
+---
+
+## 注意事項
+
+1. サーバーのアドレス `api-cofe.allons-y.uk` はプラットフォーム固有のアドレスであり、アダプター名の変更に応じて変化しません
+2. アダプターはWebSocketの長時間接続を使ってイベントを受け取り、自動再接続（固定5秒の遅延）をサポートします
+3. 自身が送信したメッセージ（`isSelf: true`）は自動的にフィルタリングされ、イベントとして送信されません
+4. `@全員（AtAll()）` は管理者権限が必要です
+5. ファイルのアップロードサイズ制限は10MBです
+6. 音声ファイルは `file` サブタイプとして送信されます（プラットフォームでは独立した音声タイプを区別しません）
+7. 表情（`Face()`）は純粋なテキスト形式のemojiとして送信されます
+8. プログラムを終了する際は `shutdown()` を呼び出してリソースの解放を確実にしてください
 
 
 ====

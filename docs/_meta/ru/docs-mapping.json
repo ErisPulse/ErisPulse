@@ -173,7 +173,7 @@
     },
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
-      "count": 12,
+      "count": 15,
       "documents": [
         {
           "title": "Документация по функциональности ErisPulse PlatformFeatures",
@@ -211,6 +211,11 @@
           "level": 1
         },
         {
+          "title": "Документация по функциям платформы Discord",
+          "path": "platform-guide/discord.md",
+          "level": 1
+        },
+        {
           "title": "Документ по характеристикам платформы Цветущей берёзы (Ideaura)",
           "path": "platform-guide/ideaura.md",
           "level": 1
@@ -228,6 +233,16 @@
         {
           "title": "Документация по функциональным особенностям платформы QQBot",
           "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "Описание функций платформы — универсальный адаптер Webhook",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "Адаптер WeChatMp (微信公众号适配器) — Документация по платформенным особенностям",
+          "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {

@@ -13,7 +13,7 @@ IdeauraAdapter is an adapter built based on the Ideaura Cafe (Allons) platform A
 
 - Platform Introduction: Ideaura Cafe (Allons) is an instant messaging platform
 - Adapter Name: IdeauraAdapter
-- Multi-account Support: Supports configuring multiple accounts via email/password
+- Multi-account Support: Supports configuring multiple accounts via token or email/password (one of the two)
 - Chaining Support: Supports chaining methods such as `.At()`, `.AtAll()`, `.Reply()`
 - OneBot12 Compatibility: Supports sending OneBot12 format messages
 
@@ -323,18 +323,19 @@ async def handle_notice(event):
 
 ### Configuration
 
-IdeauraAdapter supports configuring and running multiple accounts simultaneously.
+IdeauraAdapter supports configuring and running multiple accounts simultaneously, with each account able to choose between Token login or email/password login (one of the two).
 
 ```toml
 # config.toml
+# Account 1: Token login (recommended, no email/password required)
 [IdeauraAdapter.accounts.default]
-email = "user1@example.com"     # Login email (required)
-password = "password1"          # Login password (required)
-enabled = true                  # Enable account (optional, default true)
+token = "your-token-here"        # Login Token (optional, if provided, email+password is not required)
+enabled = true                   # Enable account (optional, default true)
 
+# Account 2: Email/password login
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"
-password = "password2"
+email = "user2@example.com"      # Login email
+password = "password2"           # Login password
 enabled = true
 
 # Optional: Custom server address
@@ -345,8 +346,9 @@ heartbeat_interval = 30
 ```
 
 **Configuration Description:**
-- `email`: Account login email (required)
-- `password`: Account login password (required)
+- `token`: Login Token (optional, if provided, email+password is not required)
+- `email`: Login email (optional for Token login, required for email/password login)
+- `password`: Login password (optional for Token login, required for email/password login)
 - `enabled`: Whether to enable this account (optional, default true)
 
 **Global Configuration Items:**
