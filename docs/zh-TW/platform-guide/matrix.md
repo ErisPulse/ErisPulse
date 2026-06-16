@@ -13,29 +13,43 @@ MatrixAdapter 是基於 [Matrix協議](https://spec.matrix.org/) 構建的適配
 
 - 平台簡介：Matrix是一個開放的去中心化通訊協議，支援私聊、群組等多種場景
 - 適配器名稱：MatrixAdapter
-- 連接方式：Long Polling（通過 Matrix Sync API `/sync`）
+- 多帳戶支援：支援同時配置多個 Matrix 帳戶
+- 連接方式：Long Polling（透過 Matrix Sync API `/sync`）
 - 認證方式：基於 access_token 或 user_id + password 登入獲取 token
 - 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()` 等鏈式修飾方法
-- OneBot12相容：支援傳送 OneBot12 格式消息
+- OneBot12相容：支援傳送 OneBot12 格式訊息
 
 ## 配置說明
 
+MatrixAdapter 支援多帳戶配置，每個帳戶獨立配置 homeserver 和認證資訊。
+
 ```toml
 # config.toml
-[Matrix_Adapter]
+# 帳戶1
+[Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix伺服器位址（必填）
 access_token = "YOUR_ACCESS_TOKEN"          # 存取令牌（與 user_id+password 二選一）
 user_id = ""                                # Matrix使用者ID（如 @bot:matrix.org）
 password = ""                               # Matrix使用者密碼
 auto_accept_invites = true                  # 是否自動接受房間邀請（可選，預設為true）
+enabled = true                              # 是否啟用（可選，預設為true）
+
+# 帳戶2
+[Matrix_Adapter.accounts.bot2]
+homeserver = "https://matrix.example.com"
+access_token = "ANOTHER_TOKEN"
+enabled = true
 ```
 
-**配置項說明：**
+> 相容舊配置：若偵測到舊的單帳戶 `[Matrix_Adapter]` 配置（含 access_token），會自動遷移為 `accounts.default`。
+
+**配置項說明（每個帳戶）：**
 - `homeserver`：Matrix伺服器位址（必填），預設為 `https://matrix.org`
 - `access_token`：存取令牌，可從Matrix用戶端獲取。如果已有 token，直接填寫即可
 - `user_id`：Matrix用戶ID（如 `@bot:matrix.org`），與 `password` 配合使用進行登入
 - `password`：Matrix用戶密碼，用於自動登入獲取 access_token
 - `auto_accept_invites`：是否自動接受房間邀請，預設為 `true`
+- `enabled`：是否啟用該帳戶（可選，預設為true）
 
 **認證方式：**
 - 方式一（推薦）：直接提供 `access_token`
@@ -52,14 +66,14 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
 支援的發送類型包括：
-- `.Text(text: str)`：發送純文字消息。
-- `.Image(file: bytes | str)`：發送圖片消息，支援檔案路徑、URL、MXC URI、二進位元數據。
-- `.Voice(file: bytes | str)`：發送語音消息，支援檔案路徑、URL、MXC URI、二進位元數據。
-- `.Video(file: bytes | str)`：發送影片消息，支援檔案路徑、URL、MXC URI、二進位元數據。
-- `.File(file: bytes | str, filename: str = "")`：發送檔案消息，支援檔案路徑、URL、MXC URI、二進位元數據。
-- `.Notice(text: str)`：發送通知消息（Matrix的 m.notice 類型）。
-- `.Html(html: str, fallback: str = "")`：發送HTML格式消息，支援富文本內容。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式消息。
+- `.Text(text: str)`：發送純文字訊息。
+- `.Image(file: bytes | str)`：發送圖片訊息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Voice(file: bytes | str)`：發送語音訊息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Video(file: bytes | str)`：發送影片訊息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.File(file: bytes | str, filename: str = "")`：發送檔案訊息，支援檔案路徑、URL、MXC URI、二進位元數據。
+- `.Notice(text: str)`：發送通知訊息（Matrix的 m.notice 類型）。
+- `.Html(html: str, fallback: str = "")`：發送HTML格式訊息，支援富文字內容。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
 
 ### 鏈式修飾方法（可組合使用）
 

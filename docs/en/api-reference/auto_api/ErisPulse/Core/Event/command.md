@@ -95,7 +95,7 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str)`
+##### `async async _try_execute_command(event: dict[str, Any], original_text: str, check_text: str, prefix: str)`
 
 尝试执行命令
 
@@ -105,6 +105,7 @@ ErisPulse 命令处理模块
 :param event: 消息事件数据
 :param original_text: 原始文本内容
 :param check_text: 用于检查的文本内容（可能已转换为小写）
+:param prefix: 已匹配的命令前缀（可能已转换为小写）
 :return: 是否成功执行命令
 
 ---

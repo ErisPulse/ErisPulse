@@ -12,14 +12,14 @@ IdeauraAdapter 是基於花楓咖啡館（Allons）平台 API 構建的適配器
 ## 基本資訊
 
 - 平台簡介：花楓咖啡館（Allons）是一個即時通訊平台
-- 適配器名稱：IdeauraAdapter
-- 多帳戶支持：支持通過 email/password 配置多個帳戶
-- 鏈式修飾支持：支持 `.At()`、`.AtAll()`、`.Reply()` 等鏈式修飾方法
-- OneBot12相容：支持發送 OneBot12 格式消息
+- 适配器名稱：IdeauraAdapter
+- 多帳戶支持：支援透過 token 或 email/password 配置多個帳戶
+- 鏈式修飾支持：支援 `.At()`、`.AtAll()`、`.Reply()` 等鏈式修飾方法
+- OneBot12相容：支援發送 OneBot12 格式消息
 
 ## 支援的消息發送類型
 
-所有發送方法均通過鏈式語法實現，例如：
+所有發送方法均透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -29,9 +29,9 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 
 支援的發送類型包括：
 - `.Text(text: str)`：發送純文本消息。
-- `.Image(file, filename: str = None)`：發送圖片消息，支持 bytes/URL/本地路徑。
-- `.Video(file, filename: str = None)`：發送視頻消息，支持 bytes/URL/本地路徑。
-- `.File(file, filename: str = None)`：發送文件消息，支持 bytes/URL/本地路徑。
+- `.Image(file, filename: str = None)`：發送圖片消息，支援 bytes/URL/本地路徑。
+- `.Video(file, filename: str = None)`：發送視頻消息，支援 bytes/URL/本地路徑。
+- `.File(file, filename: str = None)`：發送文件消息，支援 bytes/URL/本地路徑。
 - `.Voice(file, filename: str = None)`：發送語音消息（作為文件發送）。
 - `.Face(face_id: str)`：發送表情（以純文本形式發送 emoji）。
 - `.Markdown(text: str)`：發送 Markdown 格式消息。
@@ -325,18 +325,19 @@ async def handle_notice(event):
 
 ### 配置說明
 
-IdeauraAdapter 支援同時配置和運行多個帳戶。
+IdeauraAdapter 支援同時配置和運行多個帳戶，每個帳戶可選擇 Token 登入或郵箱密碼登入（二選一）。
 
 ```toml
 # config.toml
+# 帳戶1：Token 登入（推薦，無需郵箱密碼）
 [IdeauraAdapter.accounts.default]
-email = "user1@example.com"     # 登錄郵箱（必填）
-password = "password1"          # 登錄密碼（必填）
-enabled = true                  # 是否啟用（可選，預設為true）
+token = "your-token-here"        # 登入Token（與 email+password 二選一）
+enabled = true                   # 是否啟用（可選，預設為true）
 
+# 帳戶2：郵箱密碼登入
 [IdeauraAdapter.accounts.bot2]
-email = "user2@example.com"
-password = "password2"
+email = "user2@example.com"      # 登入郵箱
+password = "password2"           # 登入密碼
 enabled = true
 
 # 可選：自定義伺服器地址
@@ -347,8 +348,9 @@ heartbeat_interval = 30
 ```
 
 **配置項說明：**
-- `email`：帳戶登錄郵箱（必填）
-- `password`：帳戶登錄密碼（必填）
+- `token`：登入Token（選填，填寫後優先使用Token登入，無需郵箱密碼）
+- `email`：登入郵箱（Token登入時可不填，郵箱密碼登入時必填）
+- `password`：登入密碼（Token登入時可不填，郵箱密碼登入時必填）
 - `enabled`：是否啟用該帳戶（可選，預設為true）
 
 **全域配置項：**
@@ -394,7 +396,7 @@ async def handle_message(event):
 
 - 所有特有字段均以 `ideaura_` 前綴標識，避免與標準字段衝突
 - 保留原始數據在 `ideaura_raw` 字段，便於訪問平台的完整原始數據
-- `self.user_id` 表示當前登錄帳戶的用戶ID
+- `self.user_id` 表示當前登入帳戶的用戶ID
 - `ideaura_source_type`：消息來源類型（`chatroom`/`topic`/`private`）
 - `ideaura_sender_name`：發送者暱稱
 - `ideaura_sender_avatar`：發送者頭像URL
@@ -407,14 +409,14 @@ async def handle_message(event):
 ### 文件處理特性
 
 - 文件大小限制：10MB（下載和本地讀取均有限制）
-- 自動文件類型檢測：通過文件頭魔法字節檢測實際類型
+- 自動文件類型檢測：透過文件頭魔法字節檢測實際類型
 - 智能文件名解析：對 `.bin`/`.dat`/`.tmp` 等無意義擴展名自動修正
 - 支援 bytes、URL、本地路徑三種文件輸入方式
 - URL 文件自動下載並上傳到伺服器
 
 ### 支援的文件類型
 
-通過魔法字節自動檢測：
+透過魔法字節自動檢測：
 
 | 類型 | 擴展名 |
 |------|--------|

@@ -173,7 +173,7 @@
     },
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
-      "count": 12,
+      "count": 15,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -191,7 +191,7 @@
           "level": 1
         },
         {
-          "title": "Telegram プラットフォーム特性ドキュメント",
+          "title": "Telegramプラットフォーム特性ドキュメント",
           "path": "platform-guide/telegram.md",
           "level": 1
         },
@@ -208,6 +208,11 @@
         {
           "title": "ドキュメントメンテナンス手順",
           "path": "platform-guide/maintain-notes.md",
+          "level": 1
+        },
+        {
+          "title": "Discord プラットフォーム仕様ドキュメント",
+          "path": "platform-guide/discord.md",
           "level": 1
         },
         {
@@ -228,6 +233,16 @@
         {
           "title": "QQBotプラットフォーム特性",
           "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "WeChat 公衆アカウント (WechatMp) アダプタ - プラットフォーム特性ドキュメント",
+          "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {

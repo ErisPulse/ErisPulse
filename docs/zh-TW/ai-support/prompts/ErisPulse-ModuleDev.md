@@ -7802,6 +7802,9 @@ A: 針對不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 - [Matrix平台特性](matrix.md)
 - [QQ官方機器人平台特性](qqbot.md)
 - [花楓咖啡館](ideaura.md)
+- [Discord](discord.md)
+- [Webhook協定橋](webhook.md)
+- [微信公眾號](wechatmp.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
 

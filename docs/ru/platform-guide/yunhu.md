@@ -6,7 +6,7 @@ YunhuAdapter — это адаптер, основанный на протоко
 
 ## Информация о документе
 
-- Версия соответствующего модуля: 3.10.1
+- Версия соответствующего модуля: 4.0.0
 - Поддерживающий: ErisPulse
 
 ## Основная информация
@@ -43,6 +43,44 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.DismissBoard(scope: str, **kwargs)`: Удаление дашборда объявлений.
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Отправка потокового сообщения.
 
+### Методы управления группами
+
+Все методы управления группами требуют указания группы через цепочной синтаксис, например:
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`: Удаление участника группы. Боту требуется разрешение `Разрешить удаление участников группы`.
+- `.Ban(user_id: str, duration: int = 600)`: Бан пользователя. `duration` — это длительность бана в секундах, 0 для разбана, -1 для вечного бана. Боту требуется разрешение `Разрешить бан пользователей`.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Создание тега группы. `color` должно быть в формате #RRGGBB, `sort` — чем меньше, тем выше приоритет. Боту требуется разрешение `Разрешить управление группами тегов`.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Редактирование тега группы. Все параметры необязательны; если не переданы, изменения не вносятся. Боту требуется разрешение `Разрешить управление группами тегов`.
+- `.DeleteTag(tag: str)`: Удаление тега группы. Боту требуется разрешение `Разрешить управление группами тегов`.
+- `.GetTagList()`: Получение списка тегов группы. Возвращает ответные данные, содержащие массив `list`.
+- `.AddUserTag(user_id: str, tag: str)`: Добавление тега пользователю. Боту требуется разрешение `Разрешить управление группами тегов`.
+- `.RemoveUserTag(user_id: str, tag: str)`: Удаление тега у пользователя. Боту требуется разрешение `Разрешить управление группами тегов`.
+- `.SetMsgTypeLimit(types: str)`: Управление типами сообщений в группе. `types` — это имя типа сообщения, несколько типов разделены запятыми (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Боту требуется разрешение `Разрешить изменение информации группы`.
+
+### Методы запроса сообщений
+
+Для получения списка истории сообщений в указанном сеансе (пользователь/группа) необходимо указать цель через цепочный синтаксис, например:
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Получение истории сообщений сеанса. Возвращает ответные данные, содержащие массив `list` и общее количество `total`.
+  - `message_id`: ID сообщения (необязательно). Если не указано, возвращаются последние N сообщений вместе с `before`.
+  - `before`: Возвращает N сообщений перед указанным ID сообщения.
+  - `after`: Возвращает N сообщений после указанного ID сообщения.
+  - > **Примечание:** `before` или `after` должно быть указано хотя бы одно и больше 0, иначе сервер не вернет никаких сообщений.
+
 Типы дашбордов `Board` поддерживают следующие значения:
 - `local`: Пользовательский дашборд
 - `global`: Глобальный дашборд
@@ -56,7 +94,7 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 | `text`       | string | Да          | Текст на кнопке                                                           |
 | `actionType` | int    | Да          | Тип действия:<br>`1`: Перенаправление на URL<br>`2`: Копировать<br>`3`: Нажатие для отчета            |
 | `url`        | string | Нет         | Используется при `actionType=1`, указывает целевой URL для перенаправления                         |
-| `value`      | string | Нет         | При `actionType=2` значение будет скопировано в буфер обмена<br>При `actionType=3` значение будет отправлено в подписчика |
+| `value`      | string | Нет         | При `actionType=2` значение будет скопировано в буфер обмена<br>При `actionType=3` значение будет отправлено в подписчики |
 
 Пример:
 
@@ -93,6 +131,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Ответ на со�
 
 # Ответ + Кнопки
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Сообщение с ответом и кнопками")
+```
+
+### Примеры управления группами
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Удаление участника группы
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# Бан пользователя (10 минут)
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# Разбан
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# Вечный бан
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# Создание тега группы
+await yunhu.Send.To("group", group_id).CreateTag("VIP-пользователь", color="#FF5733", desc="VIP-член")
+
+# Редактирование тега группы
+await yunhu.Send.To("group", group_id).EditTag("VIP-пользователь", new_tag="SVIP-пользователь", color="#33C4FF")
+
+# Удаление тега группы
+await yunhu.Send.To("group", group_id).DeleteTag("VIP-пользователь")
+
+# Получение списка тегов группы
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# Добавление тега пользователю
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP-пользователь")
+
+# Удаление тега у пользователя
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP-пользователь")
+
+# Установка ограничений на типы сообщений
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# Отмена ограничений на типы сообщений
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### Примеры запроса сообщений
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# Получение последних 10 сообщений группы (всего возвращается 10 сообщений)
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# Получение 10 сообщений перед указанным ID сообщения в группе (всего возвращается 11 сообщений)
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# Получение 10 сообщений до и после указанного ID сообщения в группе (всего возвращается 21 сообщение)
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# Получение истории сообщений сеанса пользователя
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### Поддержка сообщений OneBot12
@@ -195,7 +295,6 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
     "interaction_json": "Строка JSON с данными взаимодействия"
   }
 }
-```
 
 ### Пример обработки события нажатия кнопки
 
@@ -410,4 +509,61 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.Using("bot1").To("user", "user123").Text("Привет от bot1!")
 
 # Отправка сообщения с использованием bot_id (автоматическое сопоставление с аккаунтом)
-await yunhu.Send.Using("30535459").To("group", "group456").Text("Привет от бота
+await yunhu.Send.Using("30535459").To("group", "group456").Text("Привет от бота!")
+
+# Использование первого включенного бота, если не указан
+await yunhu.Send.To("user", "user123").Text("Привет от бота по умолчанию!")
+```
+
+> **Примечание:** При использовании `bot_id` система автоматически найдет соответствующий аккаунт в конфигурации. Это особенно полезно при обработке ответов на события, так как можно напрямую использовать `event["self"]["user_id"]` для ответа от того же аккаунта.
+
+### Идентификация бота в событиях
+
+События, полученные адаптером, автоматически содержат соответствующую информацию `bot_id`:
+
+```python
+from ErisPulse.Core.Event import message
+
+@message.on_message()
+async def handle_message(event):
+    if event["platform"] == "yunhu":
+        # Получение ID бота, инициировавшего событие
+        bot_id = event["self"]["user_id"]
+        print(f"Сообщение от бота: {bot_id}")
+        
+        # Использование того же бота для ответа
+        yunhu = adapter.get("yunhu")
+        await yunhu.Send.Using(bot_id).To(
+            event["detail_type"],
+            event["user_id"] if event["detail_type"] == "private" else event["group_id"]
+        ).Text("Ответ сообщения")
+```
+
+### Информация в логах
+
+Адаптер автоматически включает информацию `bot_id` в логах для отладки и отслеживания:
+
+```
+[INFO] [yunhu] [bot:30535459] Получено личное сообщение от пользователя user123
+[INFO] [yunhu] [bot:12345678] Успешная отправка сообщения, message_id: abc123
+```
+
+### Управляющий интерфейс
+
+```python
+# Получение информации обо всех аккаунтах
+bots = yunhu.bots
+
+# Проверка состояния аккаунта
+bot_status = {
+    bot_name: bot_config.enabled
+    for bot_name, bot_config in yunhu.bots.items()
+}
+
+# Динамическое включение/отключение аккаунта (требует перезапуска адаптера)
+yunhu.bots["bot1"].enabled = False
+```
+
+### Совместимость со старой конфигурацией
+
+Система автоматически поддерживает старые форматы конфигурации, но рекомендуется перенести на новый формат для лучшей поддержки нескольких ботов.
