@@ -1,4 +1,4 @@
-# Telegram平台特性文档
+﻿# Telegram平台特性文档
 
 TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
 
@@ -6,7 +6,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 3.6.5
+- 对应模块版本: 4.0.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -347,28 +347,39 @@ async def handle_notice(event):
 
 ## 配置选项
 
-Telegram 适配器支持以下配置选项：
+Telegram 适配器支持多账号配置：
 
-### 基本配置
-- `token`: Telegram Bot Token
-- `proxy_enabled`: 是否启用代理
+### 配置示例
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
 
-### 代理配置
-- `proxy.host`: 代理服务器地址
-- `proxy.port`: 代理端口
-- `proxy.type`: 代理类型 (`"socks4"` 或 `"socks5"`)
+[Telegram_Adapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+enabled = true
+```
 
 ### 运行模式
 
 Telegram 适配器仅支持 **Polling（轮询）** 模式，Webhook 模式已移除。
 
-配置示例：
+### 代理配置
+
+如需通过代理连接 Telegram API，请使用系统级代理（环境变量 ` + 'ALL_PROXY' + ` / ` + 'HTTPS_PROXY' + `）。
+
+### 旧版配置迁移
+
+旧版单 token 配置会自动兼容：
 ```toml
+# 旧版格式（仍可使用，但建议迁移）
 [Telegram_Adapter]
 token = "YOUR_BOT_TOKEN"
-proxy_enabled = false
+```
 
-[Telegram_Adapter.proxy]
-host = "127.0.0.1"
-port = 1080
-type = "socks5"
+建议迁移到新格式：
+```toml
+[Telegram_Adapter.accounts.default]
+token = "YOUR_BOT_TOKEN"
+enabled = true
+```

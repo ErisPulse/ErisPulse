@@ -13,6 +13,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 - 平台简介：Kook（原开黑啦）是一款支持文字、语音、视频通信的社区平台，提供完整的 Bot 开发接口
 - 适配器名称：KookAdapter
+- 多账户支持：支持同时配置多个 Kook 机器人
 - 连接方式：WebSocket 长连接（通过Kook网关）
 - 认证方式：基于 Bot Token 进行身份认证
 - 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()` 等链式修饰方法
@@ -20,18 +21,31 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 配置说明
 
+KookAdapter 支持多账户配置，每个账户对应一个独立的 Kook 机器人。
+
 ```toml
 # config.toml
-[KookAdapter]
+# 账户1
+[KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token（必填，格式: Bot xxx/xxx）
 bot_id = ""                   # Bot 用户ID（可选，不填则从 token 中解析）
 compress = true               # 是否启用 WebSocket 压缩（可选，默认为 true）
+enabled = true                # 是否启用（可选，默认为true）
+
+# 账户2
+[KookAdapter.accounts.bot2]
+token = "ANOTHER_BOT_TOKEN"
+bot_id = ""
+enabled = true
 ```
 
-**配置项说明：**
+> 兼容旧配置：若检测到旧的单账户 `[KookAdapter]` 配置（含 token），会自动迁移为 `accounts.default`。
+
+**配置项说明（每个账户）：**
 - `token`：Kook Bot 的 Token（必填），从 [Kook开发者中心](https://developer.kookapp.cn) 获取，格式为 `Bot xxx/xxx`
 - `bot_id`：Bot 的用户ID（可选），如果不填写，适配器会尝试从 token 中自动解析。建议手动填写以确保准确性
 - `compress`：是否启用 WebSocket 数据压缩（可选，默认为 `true`），启用后使用 zlib 解压数据
+- `enabled`：是否启用该账户（可选，默认为true）
 
 **API环境：**
 - Kook API 基础地址：`https://www.kookapp.cn/api/v3`

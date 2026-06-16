@@ -29,6 +29,9 @@
 - [Matrix平台特性](matrix.md)
 - [QQ官方机器人平台特性](qqbot.md)
 - [花枫咖啡馆](ideaura.md)
+- [Discord](discord.md)
+- [Webhook协议桥](webhook.md)
+- [微信公众号](wechatmp.md)
 
 > 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
 
