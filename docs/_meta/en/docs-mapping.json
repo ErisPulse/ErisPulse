@@ -173,10 +173,10 @@
     },
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
-      "count": 12,
+      "count": 15,
       "documents": [
         {
-          "title": "ErisPulse PlatformFeatures Documentation",
+          "title": "ErisPulse Platform Features Documentation",
           "path": "platform-guide/README.md",
           "level": 1
         },
@@ -211,6 +211,11 @@
           "level": 1
         },
         {
+          "title": "Discord Platform Feature Documentation",
+          "path": "platform-guide/discord.md",
+          "level": 1
+        },
+        {
           "title": "Ideaura Cafe Platform Features Documentation",
           "path": "platform-guide/ideaura.md",
           "level": 1
@@ -228,6 +233,16 @@
         {
           "title": "QQBot Platform Features Documentation",
           "path": "platform-guide/qqbot.md",
+          "level": 1
+        },
+        {
+          "title": "Platform Feature Description — Webhook Generic Bridge Adapter",
+          "path": "platform-guide/webhook.md",
+          "level": 1
+        },
+        {
+          "title": "WechatMp Adapter - Platform Features Document",
+          "path": "platform-guide/wechatmp.md",
           "level": 1
         },
         {

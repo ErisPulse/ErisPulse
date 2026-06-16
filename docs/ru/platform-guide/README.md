@@ -29,6 +29,9 @@
 - [Особенности платформы Matrix](matrix.md)
 - [Особенности платформы QQ Official Bot](qqbot.md)
 - [Ideaura](ideaura.md)
+- [Discord](discord.md)
+- [Webhook协议桥](webhook.md)
+- [微信公众号](wechatmp.md)
 
 > Кроме того, существует адаптер `sandbox`, но для этого адаптера не требуется поддерживать документацию по функциональности платформы.
 

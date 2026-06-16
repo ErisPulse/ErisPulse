@@ -6,7 +6,7 @@ YunhuAdapterは、雲湖プロトコルに基づいて構築されたアダプ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 3.10.1
+- 対応モジュールバージョン: 4.0.0
 - メンテナ: ErisPulse
 
 ## 基本情報
@@ -44,9 +44,47 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 - `.DismissBoard(scope: str, **kwargs)`：公告掲示板を取り消します。
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`：ストリーミングメッセージを送信します。
 
+### グループ管理メソッド
+
+全てのグループ管理メソッドはチェーン構文を使用してグループを指定する必要があります。例：
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+await yunhu.Send.To("group", group_id).Kick(user_id)
+```
+
+- `.Kick(user_id: str)`：グループメンバーを削除します。ロボットには「グループメンバーを削除する権限」が必要です。
+- `.Ban(user_id: str, duration: int = 600)`：ユーザーを禁止します。`duration` は禁止期間（秒）。0は解除、-1は永久禁止です。ロボットには「ユーザーを禁止する権限」が必要です。
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`：グループタグを作成します。`color` は #RRGGBB 形式、`sort` は小さいほど先頭に来ます。ロボットには「タググループを制御する権限」が必要です。
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`：グループタグを編集します。各パラメータはオプションで、省略すると変更されません。ロボットには「タググループを制御する権限」が必要です。
+- `.DeleteTag(tag: str)`：グループタグを削除します。ロボットには「タググループを制御する権限」が必要です。
+- `.GetTagList()`：グループタグリストを取得します。`list` 配列を含むレスポンスデータを返します。
+- `.AddUserTag(user_id: str, tag: str)`：ユーザーにタグを追加します。ロボットには「タググループを制御する権限」が必要です。
+- `.RemoveUserTag(user_id: str, tag: str)`：ユーザーからタグを削除します。ロボットには「タググループを制御する権限」が必要です。
+- `.SetMsgTypeLimit(types: str)`：グループ内のメッセージタイプを制御します。`types` はメッセージタイプ名、複数の場合はカンマ区切り（例：`"text,image,video"`）。空文字は制限なしを示します。ロボットには「グループ情報を変更する権限」が必要です。
+
+### メッセージクエリメソッド
+
+指定されたセッション（ユーザー/グループ）の履歴メッセージリストを取得するには、チェーン構文でターゲットを指定する必要があります。例：
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+```
+
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：セッション履歴メッセージを取得します。`list` 配列と `total` 総数を含むレスポンスデータを返します。
+  - `message_id`：メッセージID（オプション）。未入力の場合、`before` と共に最近のN件を返します。
+  - `before`：指定されたメッセージIDの前N件を返します。
+  - `after`：指定されたメッセージIDの後N件を返します。
+  - > **注意：** `before` と `after` は少なくとも一方を指定し、かつ 0 より大きい値である必要があります。そうしないと、サーバーは何も返しません。
+
 Board の board_type は以下のタイプをサポートします：
 
-- `local`：ユーザー専用の掲示板
+- `local`：指定ユーザー用掲示板
 - `global`：グローバル掲示板
 
 ### ボタンパラメータの説明
@@ -96,6 +134,68 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Text("返信メッセージ
 
 # 返信 + ボタン
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きのメッセージ")
+```
+
+### グループ管理の例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# グループメンバーを削除
+await yunhu.Send.To("group", group_id).Kick(user_id)
+
+# ユーザーを禁止（10分間）
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
+
+# 禁止解除
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
+
+# 永久禁止
+await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
+
+# グループタグを作成
+await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会員")
+
+# グループタグを編集
+await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
+
+# グループタグを削除
+await yunhu.Send.To("group", group_id).DeleteTag("VIPユーザー")
+
+# グループタグリストを取得
+result = await yunhu.Send.To("group", group_id).GetTagList()
+
+# ユーザーにタグを追加
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
+
+# ユーザータグを削除
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
+
+# メッセージタイプの制限を設定
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
+
+# メッセージタイプの制限を解除
+await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
+```
+
+### メッセージクエリの例
+
+```python
+from ErisPulse.Core import adapter
+yunhu = adapter.get("yunhu")
+
+# グループの最近10件のメッセージを取得（合計10件）
+result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
+
+# グループ内の指定されたメッセージIDの前10件を取得（合計11件）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
+
+# グループ内の指定されたメッセージIDの前後各10件を取得（合計21件）
+result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
+
+# ユーザーセッションの履歴メッセージを取得
+result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12メッセージサポート
@@ -198,6 +298,7 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
     "interaction_json": "インタラクションデータJSON文字列"
   }
 }
+```
 
 ### ボタンクリックイベントの処理例
 
