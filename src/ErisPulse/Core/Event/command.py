@@ -11,24 +11,25 @@ ErisPulse 命令处理模块
 {!--< /tips >!--}
 """
 
-from .base import BaseEventHandler
-from .. import adapter, logger
-from ...runtime import get_event_config
-from ...runtime.context import current_owner, handler_waits
-from ..constants import (
-    DEFAULT_WAIT_TIMEOUT_SECS,
-    UNKNOWN_PLATFORM,
-    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
-    DEFAULT_COMMAND_MUST_AT_BOT,
-    DETAIL_TYPE_PRIVATE,
-    DETAIL_TYPE_USER,
-    DEFAULT_SEND_METHOD,
-)
-from .session_type import get_send_type_and_target_id, infer_receive_type
-from typing import Any
-from collections.abc import Callable, Awaitable
 import asyncio
 import inspect
+from collections.abc import Awaitable, Callable
+from typing import Any
+
+from ...runtime import get_event_config
+from ...runtime.context import current_owner, handler_waits
+from .. import adapter, logger
+from ..constants import (
+    DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_MUST_AT_BOT,
+    DEFAULT_SEND_METHOD,
+    DEFAULT_WAIT_TIMEOUT_SECS,
+    DETAIL_TYPE_PRIVATE,
+    DETAIL_TYPE_USER,
+    UNKNOWN_PLATFORM,
+)
+from .base import BaseEventHandler
+from .session_type import get_send_type_and_target_id, infer_receive_type
 
 
 class CommandHandler:
@@ -47,10 +48,19 @@ class CommandHandler:
         # 从 _bootstrap 获取配置
         event_config = get_event_config()
         command_config = event_config.get("command", {})
+        # prefix 支持字符串（单个）或列表（多个），保持原始类型以向后兼容
         self.prefix = command_config.get("prefix", "/")
+        # 归一化为列表，用于内部统一处理
+        self._prefixes = (
+            list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
+        )
         self.case_sensitive = command_config.get("case_sensitive", True)
-        self.allow_space_prefix = command_config.get("allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX)
-        self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
+        self.allow_space_prefix = command_config.get(
+            "allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX
+        )
+        self.must_at_bot = command_config.get(
+            "must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT
+        )
 
         # 等待回复相关
         self._waiting_replies = {}  # 存储等待回复的用户信息
@@ -192,13 +202,16 @@ class CommandHandler:
         :param owner: 归属者（模块名）
         :return: 移除的命令数量
         """
-        to_remove = [name for name, info in self.commands.items() if info.get("owner") == owner]
+        to_remove = [
+            name for name, info in self.commands.items() if info.get("owner") == owner
+        ]
         for cmd_name in to_remove:
             cmd_info = self.commands[cmd_name]
             main_name = cmd_info.get("main_name", cmd_name)
 
             self.aliases = {
-                a: n for a, n in self.aliases.items()
+                a: n
+                for a, n in self.aliases.items()
                 if not (n == main_name and a != main_name)
             }
 
@@ -214,7 +227,10 @@ class CommandHandler:
 
         if to_remove:
             from ..logger import logger as _logger
-            _logger.debug(f"[Command] 已清理 {owner} 的 {len(to_remove)} 个命令: {to_remove}")
+
+            _logger.debug(
+                f"[Command] 已清理 {owner} 的 {len(to_remove)} 个命令: {to_remove}"
+            )
         return len(to_remove)
 
     async def wait_reply(
@@ -280,6 +296,7 @@ class CommandHandler:
         try:
             # 等待回复或超时
             import time as _time
+
             _wait_t0 = _time.monotonic()
             try:
                 result = await asyncio.wait_for(future, timeout=timeout)
@@ -289,11 +306,13 @@ class CommandHandler:
                 # 不在则跳过（handler_waits 为 None，说明是独立调用）。
                 _acc = handler_waits.get()
                 if _acc is not None:
-                    _acc.append({
-                        "owner": current_owner.get(),
-                        "duration": _wait_elapsed,
-                        "wait_key": wait_key,
-                    })
+                    _acc.append(
+                        {
+                            "owner": current_owner.get(),
+                            "duration": _wait_elapsed,
+                            "wait_key": wait_key,
+                        }
+                    )
 
             # 如果提供了回调函数，则执行
             if callback:
@@ -350,15 +369,24 @@ class CommandHandler:
 
             # 处理大小写敏感性
             check_text = text if self.case_sensitive else text.lower()
-            prefix = self.prefix if self.case_sensitive else self.prefix.lower()
-
-            # 检查前缀
-            has_prefix = check_text.startswith(prefix)
-            has_space_prefix = self.allow_space_prefix and check_text.startswith(
-                prefix + " "
+            prefixes = (
+                self._prefixes
+                if self.case_sensitive
+                else [p.lower() for p in self._prefixes]
             )
 
-            if not has_prefix and not has_space_prefix:
+            # 检查前缀，找出匹配的前缀（支持多个前缀）
+            matched_prefix = None
+            for prefix in prefixes:
+                has_prefix = check_text.startswith(prefix)
+                has_space_prefix = self.allow_space_prefix and check_text.startswith(
+                    prefix + " "
+                )
+                if has_prefix or has_space_prefix:
+                    matched_prefix = prefix
+                    break
+
+            if matched_prefix is None:
                 return False
 
             # 检查是否必须@机器人
@@ -382,7 +410,9 @@ class CommandHandler:
                         return False
 
             # 尝试执行命令
-            return await self._try_execute_command(event, text, check_text)
+            return await self._try_execute_command(
+                event, text, check_text, matched_prefix
+            )
 
         # 从 message 列表和 alt_message 中提取文本内容
         message_segments = event.get("message", [])
@@ -411,7 +441,7 @@ class CommandHandler:
         return
 
     async def _try_execute_command(
-        self, event: dict[str, Any], original_text: str, check_text: str
+        self, event: dict[str, Any], original_text: str, check_text: str, prefix: str
     ) -> bool:
         """
         尝试执行命令
@@ -422,10 +452,9 @@ class CommandHandler:
         :param event: 消息事件数据
         :param original_text: 原始文本内容
         :param check_text: 用于检查的文本内容（可能已转换为小写）
+        :param prefix: 已匹配的命令前缀（可能已转换为小写）
         :return: 是否成功执行命令
         """
-        prefix = self.prefix if self.case_sensitive else self.prefix.lower()
-
         # 解析命令和参数
         command_text = check_text[len(prefix) :].strip()
         parts = command_text.split()
@@ -484,20 +513,22 @@ class CommandHandler:
 
             # 钩子: 命令匹配
             from ..lifecycle import lifecycle
-            await lifecycle.emit("command.matched", {
-                "command": actual_cmd_name,
-                "args": args,
-                "platform": event.get("platform", UNKNOWN_PLATFORM),
-                "user_id": event.get("user_id", ""),
-            })
+
+            await lifecycle.emit(
+                "command.matched",
+                {
+                    "command": actual_cmd_name,
+                    "args": args,
+                    "platform": event.get("platform", UNKNOWN_PLATFORM),
+                    "user_id": event.get("user_id", ""),
+                },
+            )
 
             try:
                 # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
                 # wait_reply / 日志等能正确归因到具体业务模块。
                 cmd_owner = cmd_info.get("owner")
-                _owner_token = (
-                    current_owner.set(cmd_owner) if cmd_owner else None
-                )
+                _owner_token = current_owner.set(cmd_owner) if cmd_owner else None
                 try:
                     if inspect.iscoroutinefunction(handler):
                         await handler(event)
@@ -509,27 +540,35 @@ class CommandHandler:
 
                 # 钩子: 命令执行完成
                 from ..lifecycle import lifecycle
-                await lifecycle.emit("command.executed", {
-                    "command": actual_cmd_name,
-                    "args": args,
-                    "platform": event.get("platform", UNKNOWN_PLATFORM),
-                    "user_id": event.get("user_id", ""),
-                    "success": True,
-                })
+
+                await lifecycle.emit(
+                    "command.executed",
+                    {
+                        "command": actual_cmd_name,
+                        "args": args,
+                        "platform": event.get("platform", UNKNOWN_PLATFORM),
+                        "user_id": event.get("user_id", ""),
+                        "success": True,
+                    },
+                )
             except Exception as e:
                 logger.error(f"命令执行错误: {e}")
                 await self._send_command_error(event, str(e))
 
                 # 钩子: 命令执行失败
                 from ..lifecycle import lifecycle
-                await lifecycle.emit("command.executed", {
-                    "command": actual_cmd_name,
-                    "args": args,
-                    "platform": event.get("platform", UNKNOWN_PLATFORM),
-                    "user_id": event.get("user_id", ""),
-                    "success": False,
-                    "error": str(e),
-                })
+
+                await lifecycle.emit(
+                    "command.executed",
+                    {
+                        "command": actual_cmd_name,
+                        "args": args,
+                        "platform": event.get("platform", UNKNOWN_PLATFORM),
+                        "user_id": event.get("user_id", ""),
+                        "success": False,
+                        "error": str(e),
+                    },
+                )
 
             return True
 
@@ -691,11 +730,16 @@ class CommandHandler:
         :param show_hidden: 是否显示隐藏命令
         :return: 帮助信息字符串
         """
+        # 用于显示的前缀：单个时保持原始字符串，多个时取第一个
+        display_prefix = (
+            self.prefix[0] if isinstance(self.prefix, list) else self.prefix
+        )
+
         if command_name:
             cmd_info = self.get_command(command_name)
             if cmd_info:
                 help_text = cmd_info.get("help", "无帮助信息")
-                usage = cmd_info.get("usage", f"{self.prefix}{command_name}")
+                usage = cmd_info.get("usage", f"{display_prefix}{command_name}")
                 return f"命令: {command_name}\n用法: {usage}\n说明: {help_text}"
             else:
                 return f"未找到命令: {command_name}"
@@ -717,7 +761,7 @@ class CommandHandler:
             help_lines = ["可用命令:"]
             for cmd_name, cmd_info in commands_to_show.items():
                 help_text = cmd_info.get("help", "无说明")
-                help_lines.append(f"  {self.prefix}{cmd_name} - {help_text}")
+                help_lines.append(f"  {display_prefix}{cmd_name} - {help_text}")
             return "\n".join(help_lines)
 
 

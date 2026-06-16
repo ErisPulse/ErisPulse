@@ -48,6 +48,7 @@ DEFAULT_ERISPULSE_CONFIG = {
             "ignore_self": DEFAULT_MESSAGE_IGNORE_SELF,
         },
         "command": {
+            # prefix 可以是字符串（单个前缀）或列表（多个前缀）
             "prefix": DEFAULT_COMMAND_PREFIX,
             "case_sensitive": DEFAULT_COMMAND_CASE_SENSITIVE,
             "allow_space_prefix": DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
