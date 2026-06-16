@@ -98,6 +98,7 @@
   - `CLI/utils/package_manager.py` 全部硬编码中文改为通过 i18n 获取
   - `CLI/i18n/locales/` 5 个语言文件新增语言确认提示、display 工具、package_manager 工具相关翻译键
   - `CLI/i18n/__init__.py` 语言优先级调整：显式选择 > `ERISPULSE_LANG` 环境变量 > 持久化选择 > 自动检测
+  - `Core/Event/command` 支持设置多个前缀匹配
 
 ### 移除
 - @wsu2059q

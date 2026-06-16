@@ -4,13 +4,13 @@
 测试从消息事件到命令解析、handler 执行、别名、权限、帮助文本、wait_reply 的完整流程。
 """
 
-import pytest
 import asyncio
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from ErisPulse.Core.adapter import adapter
-from ErisPulse.Core.Event import command
-from ErisPulse.Core.Event import _clear_all_handlers
+from ErisPulse.Core.Event import _clear_all_handlers, command
 
 
 def _make_msg(text, **kwargs):
@@ -258,3 +258,58 @@ class TestCommandFlowIntegration:
         alias_info = command.get_command("p")
         assert alias_info is not None
         assert alias_info["main_name"] == "primary"
+
+    @pytest.mark.asyncio
+    async def test_multiple_prefixes(self, clean_cmd):
+        """多个命令前缀"""
+        received = []
+
+        @command("hello", help="问候命令")
+        async def hello(event):
+            received.append(event)
+
+        original_prefix = command.prefix
+        original_prefixes = command._prefixes
+        try:
+            command.prefix = ["/", "!"]
+            command._prefixes = ["/", "!"]
+
+            await adapter.emit(_make_msg("/hello"))
+            await asyncio.sleep(0)
+            await adapter.emit(_make_msg("!hello"))
+            await asyncio.sleep(0)
+        finally:
+            command.prefix = original_prefix
+            command._prefixes = original_prefixes
+
+        assert len(received) == 2
+
+    @pytest.mark.asyncio
+    async def test_multiple_prefixes_non_match(self, clean_cmd):
+        """未配置的前缀不触发命令"""
+        received = []
+
+        @command("hello", help="问候命令")
+        async def hello(event):
+            received.append(event)
+
+        original_prefix = command.prefix
+        original_prefixes = command._prefixes
+        try:
+            command.prefix = ["/", "!"]
+            command._prefixes = ["/", "!"]
+
+            await adapter.emit(_make_msg("#hello"))
+            await asyncio.sleep(0)
+        finally:
+            command.prefix = original_prefix
+            command._prefixes = original_prefixes
+
+        assert len(received) == 0
+
+    @pytest.mark.asyncio
+    async def test_single_prefix_backward_compat(self, clean_cmd):
+        """单个前缀保持字符串类型（向后兼容）"""
+        # self.prefix 应该是字符串，而非列表
+        assert isinstance(command.prefix, str)
+        assert command._prefixes == [command.prefix]
